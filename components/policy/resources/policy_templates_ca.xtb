@@ -185,6 +185,7 @@
 <translation id="1522425503138261032">Permet que els llocs facin un seguiment de la ubicació física dels usuaris</translation>
 <translation id="152657506688053119">Llista d'URL alternatius per al proveïdor de cerca predeterminat</translation>
 <translation id="1530812829012954197">Renderitza sempre els patrons d'URL següents al navegador de l'amfitrió</translation>
+<translation id="1541170838458414064">Restringeix la mida de la pàgina d'impressió</translation>
 <translation id="1553684822621013552">Quan aquesta política s'estableix en "true", s'activa ARC per a l'usuari
       (depenent de les comprovacions addicionals de la configuració de la política;
       però ARC no estarà disponible si el mode efímer
@@ -390,6 +391,8 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Si la política no s'estableix, el valor predeterminat és 0 graus, i l'usuari
       és lliure de canviar-lo. En aquest cas, el valor predeterminat no es torna a aplicar
       després de reiniciar el dispositiu.</translation>
+<translation id="214901426630414675">Restringeix el mode d'impressió a doble cara</translation>
+<translation id="2149330464730004005">Permet la impressió en color</translation>
 <translation id="2156132677421487971">Configura les polítiques per a <ph name="PRODUCT_NAME" />, una funció que permet als usuaris enviar el contingut de les pestanyes, dels llocs web o de l'escriptori des del navegador a pantalles remotes i sistemes de so.</translation>
 <translation id="2166472654199325139">No filtris llocs web amb contingut per a adults</translation>
 <translation id="2168397434410358693">Retard d'inactivitat quan s'utilitza alimentació</translation>
@@ -578,6 +581,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="2529880111512635313">Configura la llista d'aplicacions i d'extensions instal·lades per força</translation>
 <translation id="253135976343875019">Retard d'advertiment d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2536525645274582300">L'usuari decideix si vol activar els serveis d'ubicació de Google</translation>
+<translation id="2550593661567988768">Només impressió per una cara</translation>
 <translation id="2552966063069741410">Zona horària</translation>
 <translation id="2562339630163277285">Especifica l'URL del motor de cerca utilitzat per proporcionar resultats instantanis. L'URL ha de contenir la cadena <ph name="SEARCH_TERM_MARKER" />, que se substituirà, en el moment de fer la consulta, pel text que l'usuari hagi introduït fins al moment.
 
@@ -706,8 +710,10 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Si actives aquesta opció de configuració, a Previsualització de la impressió s'utilitzarà la impressora predeterminada del sistema operatiu com a opció de destinació predeterminada.</translation>
 <translation id="2867699958489427143">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació. Executa la funció Powerwash durant el procés.</translation>
 <translation id="2872961005593481000">Apaga</translation>
+<translation id="2873651257716068683">Substitueix la mida de la pàgina d'impressió predeterminada. Si la mida de la pàgina no està disponible, aquesta política s'ignora.</translation>
 <translation id="2874209944580848064">Nota per als dispositius <ph name="PRODUCT_OS_NAME" /> que admeten aplicacions per a Android:</translation>
 <translation id="2877225735001246144">Desactiva la cerca de CNAME en negociar l'autenticació de Kerberos</translation>
+<translation id="2892414556511568464">Restringeix el mode d'impressió a doble cara. Si la política no es defineix o es deixa buida, no s'aplica cap restricció.</translation>
 <translation id="2893546967669465276">Envia registres del sistema al servidor de gestió</translation>
 <translation id="2899002520262095963">Les aplicacions per a Android poden utilitzar les configuracions de xarxa i els certificats de CA establerts a través d'aquesta política, però no tenen accés a algunes opcions de configuració.</translation>
 <translation id="290002216614278247">Et permet bloquejar la sessió de l'usuari en funció de l'hora del client o de la quota d'ús del dia.
@@ -902,6 +908,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
         El valor d'aquesta política és un testimoni d'inscripció que es pot recuperar de la Consola d'administració de Google.</translation>
 <translation id="3496296378755072552">Gestor de contrasenyes</translation>
+<translation id="3502555714327823858">Permet tots els modes d'impressió a doble cara</translation>
 <translation id="350443680860256679">Configura ARC</translation>
 <translation id="3504791027627803580">Especifica l'URL del motor de cerca utilitzat per proporcionar la cerca d'imatges. Les sol·licituds de cerca s'enviaran mitjançant el mètode GET. Si la política DefaultSearchProviderImageURLPostParams està definida, les sol·licituds de cerca d'imatges utilitzaran el mètode POST.
 
@@ -911,6 +918,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="350797926066071931">Activa Google Traductor</translation>
 <translation id="3512226956150568738">Si el model de dispositiu del client ja admetia ARC abans que la migració a ext4 fos necessària per executar ARC, i si la política ArcEnabled s'estableix en "true", aquesta opció es comportarà com AskUser (valor 3). En la resta de casos (si abans el model de dispositiu no admetia ARC o si la política ArcEnabled s'estableix en "false"), aquest valor és equivalent a DisallowArc (valor 0).</translation>
 <translation id="3524204464536655762">No permet que cap lloc web sol·liciti accés a dispositius USB mitjançant l'API WebUSB</translation>
+<translation id="3526752951628474302">Només impressió monocroma</translation>
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
 <translation id="3545457887306538845">Et permet controlar on es poden utilitzar les Eines per a desenvolupadors.
 
@@ -934,6 +942,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3577251398714997599">Configuració d'anuncis per als llocs web amb anuncis intrusius</translation>
 <translation id="3591584750136265240">Configura el comportament de l'autenticació d'inici de sessió</translation>
 <translation id="3627678165642179114">Activació o desactivació del servei web de correcció ortogràfica</translation>
+<translation id="3628480121685794414">Permet la impressió per una cara</translation>
 <translation id="3646859102161347133">Defineix el tipus de lupa</translation>
 <translation id="3653237928288822292">Icona del proveïdor de cerca predeterminat</translation>
 <translation id="3660562134618097814">Transfereix les galetes del proveïdor d'identitat SAML durant l'inici de sessió</translation>
@@ -1026,6 +1035,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
 
       Si la política s'estableix en "false", no s'ofereix informació de la sessió. Si s'estableix en "true" o no s'hi estableix cap valor, s'ofereix informació de la sessió.</translation>
+<translation id="3858658082795336534">Mode d'impressió a doble cara predeterminat</translation>
 <translation id="3859780406608282662">Afegeix un paràmetre a l'obtenció de la propagació de variacions a <ph name="PRODUCT_OS_NAME" />.
 
       Si s'especifica, s'afegirà un paràmetre de consulta anomenat "restrict" a l'URL utilitzar per obtenir la propagació de variacions. El valor del paràmetre serà el valor especificat en aquesta política.
@@ -1531,6 +1541,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="5366977351895725771">Si es defineix com a fals, la creació d'usuaris supervisats per part d'aquest usuari es desactivarà. Els usuaris supervisats existents continuaran estant disponibles.
 
           Si es defineix com a vertader o bé no es configura, aquest usuari pot crear i gestionar usuaris supervisats.</translation>
+<translation id="5369937289900051171">Només impressió en color</translation>
 <translation id="5370279767682621504">Activa la compatibilitat amb HTTP/0.9 als ports no predeterminats</translation>
 <translation id="5378985487213287085">Us permet definir si els llocs web poden mostrar notificacions d'escriptori. La visualització de notificacions d'escriptori es pot autoritzar o denegar de manera predeterminada o bé es pot demanar cada vegada a l'usuari si vol que es mostrin notificacions d'escriptori. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AskNotifications" i l'usuari podrà canviar-lo.</translation>
 <translation id="538108065117008131">Permet que <ph name="PRODUCT_FRAME_NAME" /> gestioni els tipus de contingut següents.</translation>
@@ -1550,6 +1561,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política es defineix en una llista d'identificadors de mètodes d'introducció, els mètodes d'introducció indicats estaran disponibles a la pantalla d'inici de sessió. Es preseleccionarà el primer mètode d'introducció de la llista. La selecció d'usuaris es mostrarà al centre de la pantalla d'inici de sessió, però també es mostrarà el mètode d'introducció que l'usuari ha fet servir més recentment, a més dels mètodes d'introducció indicats per aquesta política. Si aquesta política no es defineix, els mètodes d'introducció de la pantalla d'inici de sessió es derivaran de la configuració regional en què es mostri la pantalla d'inici de sessió. S'ignoraran els valors que no siguin identificadors vàlids del mètode d'introducció.</translation>
 <translation id="5423001109873148185">Si està activada, aquesta política fa que els motors de cerca s'importin des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, el motor de cerca predeterminat no s'importarà. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="5423197884968724595">Nom de la restricció de WebView per a Android:</translation>
+<translation id="5424147596523390018">Permet tots els modes de color</translation>
 <translation id="5442026853063570579">Aquesta política també controla l'accés a les Opcions per a desenvolupadors d'Android. Si l'estableixes en "DeveloperToolsDisallowed" (valor 2), els usuaris no podran accedir a les Opcions per a desenvolupadors. Si l'estableixes en un altre valor o la deixes sense establir, els usuaris podran accedir a les Opcions per a desenvolupadors tocant set vegades el número de compilació que hi ha a l'aplicació de configuració d'Android.</translation>
 <translation id="5447306928176905178">Activa els informes d'informació de memòria (mida de pila JS) a la pàgina (no disponible)</translation>
 <translation id="5457065417344056871">Activa el mode de convidat al navegador</translation>
@@ -1616,6 +1628,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 <translation id="5586942249556966598">No facis res</translation>
 <translation id="5630352020869108293">Restaura l'última sessió</translation>
 <translation id="5645779841392247734">Permet les galetes en aquests llocs</translation>
+<translation id="5689430183304951538">Mida de la pàgina d'impressió predeterminada</translation>
 <translation id="5693469654327063861">Permet la migració de dades</translation>
 <translation id="5694594914843889579">Quan aquesta política s'estableixi en "true", l'emmagatzematge extern no estarà disponible al navegador de fitxers.
 
@@ -1645,6 +1658,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
           Quan aquesta política no es defineix, s'utilitza un temps predeterminat.
 
           El valor de la política s'ha d'indicar en mil·lisegons.</translation>
+<translation id="5783009211970309878">Imprimeix capçaleres i peus de pàgina</translation>
 <translation id="5809728392451418079">Defineix el nom de visualització per als comptes locals del dispositiu</translation>
 <translation id="5814301096961727113">Estableix l'estat predeterminat dels comentaris de veu a la pantalla d'inici de sessió</translation>
 <translation id="5815129011704381141">Reinicia automàticament després d'actualitzar</translation>
@@ -1656,6 +1670,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 
       Si no es defineix aquesta opció, s'utilitzarà el directori de perfil predeterminat.</translation>
 <translation id="5826047473100157858">Especifica si l'usuari pot obrir les pàgines en mode d'incògnit a <ph name="PRODUCT_NAME" />. Si se selecciona l'opció "activat" o no es defineix la política, les pàgines es podran obrir en mode d'incògnit. Si se selecciona l'opció "desactivat", les pàgines no es podran obrir en mode d'incògnit. Si se selecciona l'opció "forçat", les pàgines NOMÉS es podran obrir en mode d'incògnit.</translation>
+<translation id="582857022372205358">Permet la impressió a doble cara per la vora curta</translation>
 <translation id="583091600226586337">
       Si s'activa la política, es preguntarà a l'usuari on cal desar cada fitxer abans de baixar-lo.
       Si es desactiva la política, les baixades començaran immediatament i no es preguntarà a l'usuari on cal desar el fitxer. 
@@ -1691,6 +1706,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 
           Si es desactiva o no es configura aquesta opció, les sol·licituds d'autenticació Gnubby s'enviaran per un servidor intermediari.</translation>
 <translation id="5898486742390981550">Quan diversos usuaris tenen la sessió iniciada, només el principal pot utilitzar les aplicacions per a Android.</translation>
+<translation id="5901427587865226597">Només impressió a doble cara</translation>
 <translation id="5906199912611534122">Permet activar o desactivar la limitació de l'amplada de banda de la xarxa.
       S'aplica a tots els usuaris i a totes les interfícies del dispositiu. Un cop establerta, la limitació continua fins que la política es canvia per desactivar-la.
 
@@ -1797,6 +1813,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           El valor de la política s'ha d'especificar en mil·lisegons. Els valors es fixen perquè siguin inferiors al temps d'inactivitat.</translation>
 <translation id="6097601282776163274">Activa la recollida de dades anonimitzades mitjançant URL amb clau</translation>
+<translation id="6099853574908182288">Mode d'impressió en color predeterminat</translation>
 <translation id="6111936128861357925">Permet el joc sorpresa del dinosaure</translation>
 <translation id="6114416803310251055">obsolet</translation>
 <translation id="6133088669883929098">Permet que tots els llocs utilitzin la generació de claus</translation>
@@ -1809,6 +1826,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
 <translation id="6190022522129724693">Configuració predeterminada de les finestres emergents</translation>
+<translation id="6190367314942602985">Proporciona informació d'identificació de l'usuari</translation>
 <translation id="6197453924249895891">Permet que les extensions tinguin accés a les claus corporatives.
 
       Si les claus es generen amb l'API chrome.enterprise.platformKeys en un compte gestionat, es designen per a l'ús corporatiu. Tanmateix, no s'aplica aquesta designació si es generen d'una altra manera o si s'importen.
@@ -1818,6 +1836,8 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       De manera predeterminada, una extensió no pot utilitzar una clau designada per a l'ús corporatiu, que equival a establir allowCorporateKeyUsage en "false" per a l'extensió en qüestió.
 
       L'únic cas en què una extensió pot utilitzar una clau de plataforma marcada per a l'ús corporatiu per signar dades arbitràries és si allowCorporateKeyUsage s'estableix en "true". Aquest permís només s'ha de concedir si es confia que l'extensió protegeixi la clau contra l'accés d'atacants.</translation>
+<translation id="6208896993204286313">Proporciona informació sobre la política <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210259502936598222">Proporciona informació sobre el sistema operatiu i la versió del producte <ph name="PRODUCT_NAME" /></translation>
 <translation id="6211428344788340116">Informa dels períodes de temps d'activitat del dispositiu.
 
       Si aquesta opció de configuració no es defineix o es defineix com a certa, els dispositius inscrits informaran dels períodes de temps quan hi hagi un usuari actiu al dispositiu. Si es defineix com a falsa, els períodes de temps d'activitat del dispositiu no s'enregistraran ni se n'informarà.</translation>
@@ -1831,6 +1851,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6233173491898450179">Estableix el directori de baixada</translation>
 <translation id="6244210204546589761">URL que s'han d'obrir en iniciar</translation>
 <translation id="6258193603492867656">Especifica si l'SPN de Kerberos que es genera ha d'incloure un port no estàndard. Si activeu aquest paràmetre i introduïu un port no estàndard (p. ex. un port diferent de 80 o de 443), s'inclourà a l'SPN de Kerberos que es generi. Si desactiveu aquest paràmetre o no el definiu, l'SPN del Kerberos que es generi no inclourà cap port en cap cas.</translation>
+<translation id="6261643884958898336">Proporciona informació d'identificació de l'ordinador</translation>
 <translation id="6281043242780654992">Configura les polítiques per a la missatgeria nativa. Només es permetran els amfitrions de missatgeria nativa afegits a la llista negra si també apareixen a la llista blanca.</translation>
 <translation id="6282799760374509080">Permet o bloqueja la captura d'àudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1861,6 +1882,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si decideixes detectar automàticament el servidor intermediari, es proporcionarà l'URL de script "http://wpad/wpad.dat" a les aplicacions per a Android. No s'utilitzarà cap altra part del protocol de detecció automàtica del servidor intermediari.
 
           Si decideixes fer servir un script de servidor intermediari .pac, es proporcionarà l'URL de script a les aplicacions per a Android.</translation>
+<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Permet que els llocs web naveguin i obrin finestres emergents simultàniament</translation>
 <translation id="6447948611083700881">Còpia de seguretat i restauració desactivades</translation>
 <translation id="645425387487868471">Permet l'inici de sessió forçat a <ph name="PRODUCT_NAME" /></translation>
@@ -1907,6 +1929,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6628646143828354685">Us permet definir si els llocs web poden obtenir accés a dispositius Bluetooth propers. Es pot bloquejar completament o es pot consultar a l'usuari cada cop que un lloc web vulgui obtenir accés a dispositius Bluetooth propers.
 
           Si aquesta política es deixa sense establir, es farà servir el valor "3" i l'usuari podrà canviar-lo.</translation>
+<translation id="663685822663765995">Restringeix el mode de color d'impressió</translation>
 <translation id="6641981670621198190">Desactiva la compatibilitat amb API de gràfics en 3D</translation>
 <translation id="6647965994887675196">Si es defineix com a vertader, es poden crear usuaris supervisats i es poden fer servir.
 
@@ -1934,6 +1957,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbAskForUrls. No s'ha especificat quina de les dues polítiques té prioritat si un URL coincideix amb totes dues.</translation>
 <translation id="6689792153960219308">Informa de l'estat del maquinari</translation>
+<translation id="6698632841807204978">Permet la impressió monocroma</translation>
 <translation id="6699880231565102694">Activació de l'autenticació de dos factors per als amfitrions d'accés remot</translation>
 <translation id="6724842112053619797">Si actives aquesta opció de configuració, les opcions de configuració emmagatzemades als perfils que hi ha a <ph name="PRODUCT_NAME" />, com ara les adreces d'interès, les dades d'Emplenament automàtic o les contrasenyes, entre d'altres, també s'introduiran en un fitxer emmagatzemat a la carpeta Itinerància del perfil de l'usuari o a la ubicació especificada per l'administrador a la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. En activar aquesta política, es desactiva la sincronització en núvol.
 
@@ -2066,6 +2090,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       </translation>
 <translation id="6922884955650325312">Bloqueja el connector <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Especifica el nom del proveïdor de cerca predeterminat. Si es deixa buit o no es defineix, s'utilitzarà el nom de l'amfitrió especificat a l'URL de cerca. Aquesta política només es tindrà en compte si la política "DefaultSearchProviderEnabled" està activada.</translation>
+<translation id="6926703471186170050">Permet la impressió a doble cara per la vora llarga</translation>
 <translation id="6931242315485576290">Desactiva la sincronització de dades amb Google</translation>
 <translation id="6936894225179401731">Especifica el nombre màxim de connexions simultànies al servidor intermediari.
 
@@ -2260,6 +2285,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta opció de configuració es desactiva o no s'estableix, els usuaris poden decidir si volen accedir al lloc web marcat després de veure l'advertiment.
 
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
+<translation id="737655323154569539">Restringeix la mida de la pàgina d'impressió. Si la política no es defineix o es deixa buida, no s'aplica cap restricció.</translation>
 <translation id="7417728346887499628">Si es desactiva, Neteja de Chrome no podrà escanejar el sistema per detectar-hi programari no desitjat ni per netejar-lo. L'opció per activar Neteja de Chrome manualment des de chrome://settings/cleanup estarà desactivada.
 
       Si s'activa o es deixa sense establir, Neteja de Chrome escanejarà periòdicament el sistema per detectar-hi programari no desitjat i, si en troba, preguntarà a l'usuari si el vol suprimir. L'opció per activar Neteja de Chrome manualment des de chrome://settings estarà activada.
@@ -2328,6 +2354,8 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7617319494457709698">Aquesta política especifica les extensions que tenen permís per utilitzar la funció <ph name="CHALLENGE_USER_KEY_FUNCTION" /> de l'<ph name="ENTERPRISE_PLATFORM_KEYS_API" /> per a la confirmació remota. Les extensions s'han d'afegir a aquesta llista per poder utilitzar l'API.
 
           Si no s'estableix la llista o no s'hi inclou alguna extensió, les crides a l'API tornaran un codi d'error.</translation>
+<translation id="7618907117929117943">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació i es pot dur a terme una configuració a nivell del dispositiu (que inclogui les credencials de xarxa) mitjançant la reversió, també ometre OOBE després de la reversió. No duguis a terme o cancel·lis la reversió si no és possible (perquè la versió de destinació no admet la restauració de dades o a causa d'un canvi incompatible amb versions anteriors).
+          S'admet a <ph name="PRODUCT_OS_NAME" /> versió 70 i posteriors. En clients més antics, aquest valor indica que la reversió està desactivada.</translation>
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>
@@ -2516,6 +2544,7 @@ NOTA: a Android, l'aïllament de llocs web és experimental. Amb el temps se'n m
       Si actives aquesta opció de configuració o no hi estableixes cap valor, els usuaris podran continuar controlant Emplenament automàtic. D'aquesta manera, podran configurar perfils d'Emplenament automàtic i activar o desactivar Emplenament automàtic segons el seu criteri.</translation>
 <translation id="8044493735196713914">Informa del mode d'inici del dispositiu</translation>
 <translation id="8050080920415773384">Impressió nativa</translation>
+<translation id="8053580360728293758">Substitueix el mode de color d'impressió predeterminat. Si el mode no està disponible, aquesta política s'ignora.</translation>
 <translation id="8059164285174960932">URL on els clients d'accés remot han d'obtenir el testimoni d'autenticació</translation>
 <translation id="8078366200175825572">Permet definir una llista de patrons d'URL que especifiquin els llocs web que no poden establir galetes.
 
@@ -2703,6 +2732,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       En aquesta política, "versió" pot ser una versió exacta com ara "61.0.3163.120" o un prefix per a la versió com ara "61.0".  </translation>
 <translation id="8544375438507658205">Renderitzador HTML predeterminat per a <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Permet que se sincronitzin missatges SMS del telèfon al dispositiu Chromebook.</translation>
+<translation id="8548832052135586762">Estableix la impressió en només color, només monocroma o sense restriccions en el mode de color. Si la política no s'estableix, no s'aplica cap restricció.</translation>
 <translation id="8549772397068118889">Mostra un advertiment quan es visitin llocs no inclosos en paquets de contingut.</translation>
 <translation id="8566842294717252664">Amaga Web Store a la pàgina Pestanya nova i al Menú d'aplicacions</translation>
 <translation id="8586528890725660268">Especifica les impressores que un usuari no pot fer servir.
@@ -2730,13 +2760,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
           Separeu els diversos noms de servidor amb comes. Es permet l'ús de comodins (*).
 
           Si deixeu aquesta política sense definir, <ph name="PRODUCT_NAME" /> provarà de detectar si un servidor es troba a la intranet i, en aquest cas, respondrà a les sol·licituds IWA. Si es detecta un servidor com a Internet, aleshores <ph name="PRODUCT_NAME" /> ometrà les sol·licituds IWA que enviï.</translation>
-<translation id="8667812577403206506">Et permet controlar si es poden executar màquines virtuals a Chrome OS.
-
-      Si la política es defineix en "true", el dispositiu podrà executar màquines virtuals.
-      Si la política es defineix en "false", el dispositiu no podrà executar màquines virtuals.
-      Si la política es canvia a "false", afectarà l'execució de màquines virtuals noves, però no desactivarà les que ja s'estan executant.
-      Si la política no es defineix en un dispositiu gestionat, el dispositiu no tindrà permís per executar màquines virtuals.
-      Els dispositius no gestionats tenen permís per executar màquines virtuals.</translation>
 <translation id="8669669491594628013">Et permet controlar l'activació d'un advertiment sobre la protecció de contrasenyes, que avisa els usuaris quan reutilitzen una contrasenya protegida en llocs web potencialment sospitosos.
 
       Pots utilitzar les polítiques PasswordProtectionLoginURLs i PasswordProtectionChangePasswordURL per configurar quina contrasenya vols protegir.
@@ -2812,6 +2835,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 
       Si deixes l'opció sense definir, l'usuari podrà decidir si vol utilitzar aquesta funció o no.</translation>
 <translation id="8870318296973696995">Pàgina d'inici</translation>
+<translation id="8876188741456358123">Substitueix el mode d'impressió a doble cara predeterminat. Si el mode no està disponible, aquesta política s'ignora.</translation>
 <translation id="8882006618241293596">Bloqueja el connector <ph name="FLASH_PLUGIN_NAME" /> en aquests llocs</translation>
 <translation id="890403179930035128">Força l'activació del corrector ortogràfic d'idiomes. S'ignoraran els idiomes de la llista que no es reconeguin.
 
@@ -2894,6 +2918,8 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="9084985621503260744">Especifica si l'activitat de vídeo afecta la gestió d'alimentació</translation>
 <translation id="9088433379343318874">Activa el proveïdor de contingut de l'usuari supervisat</translation>
 <translation id="9088444059179765143">Configura el mètode de detecció automàtica de la zona horària</translation>
+<translation id="9094064873808699479">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació. Prova de dur a terme una configuració a nivell del dispositiu (que inclou credencials de xarxa) mitjançant el procés de reversió sempre que sigui possible. Executa la reversió amb la funció Powerwash completa, fins i tot si no es poden restaurar les dades (perquè la versió de destinació no admet la restauració de dades o a causa d'un canvi incompatible amb versions anteriors).
+          S'admet a <ph name="PRODUCT_OS_NAME" /> versió 70 i posteriors. En clients més antics, aquest valor indica que la reversió està desactivada.</translation>
 <translation id="9096086085182305205">Llista blanca del servidor d'autenticació</translation>
 <translation id="9098553063150791878">Polítiques per a l'autenticació HTTP</translation>
 <translation id="9105265795073104888">Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari. No pots forçar-les a utilitzar un servidor intermediari, sinó que és decisió d'elles.</translation>
@@ -2945,6 +2971,13 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="9187743794267626640">Desactivació del muntatge d'emmagatzematge extern</translation>
 <translation id="9197740283131855199">Percentatge que permet ajustar el temps d'espera d'inactivitat de la pantalla si l'usuari passa a estar actiu després de la inactivitat.</translation>
 <translation id="9200828125069750521">Paràmetres de l'URL de la imatge que utilitza POST</translation>
+<translation id="920209539000507585">Força que l'opció Capçaleres i peus de pàgina estigui activada o desactivada al quadre de diàleg d'impressió.
+
+      Si la política no es defineix, l'usuari pot decidir si vol imprimir capçaleres i peus de pàgina.
+
+      Si la política s'estableix en "false", l'opció Capçaleres i peus de pàgina no se selecciona al quadre de diàleg de previsualització de la impressió i l'usuari no ho pot canviar.
+
+      Si la política s'estableix en "true", l'opció Capçaleres i peus de pàgina se selecciona al quadre de diàleg de previsualització de la impressió i l'usuari no ho pot canviar.</translation>
 <translation id="9210953373038593554">Configura el tipus d'autenticació per a inicis de sessió amb SAML.
 
       Si aquesta política no es defineix o es defineix en el valor predeterminat (0), el comportament dels inicis de sessió amb SAML el determina el navegador en funció d'altres factors. En el cas més senzill, l'autenticació de l'usuari i la protecció de les dades de l'usuari emmagatzemades a la memòria cau es basen en contrasenyes introduïdes manualment pels usuaris.

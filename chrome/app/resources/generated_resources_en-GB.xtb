@@ -1521,7 +1521,6 @@
 <translation id="3285322247471302225">New &amp;Tab</translation>
 <translation id="3288047731229977326">Extensions running in developer mode can harm your computer. If you're not a developer, you should disable these extensions running in developer mode to stay safe.</translation>
 <translation id="3289856944988573801">To check for updates, please use Ethernet or Wi-Fi.</translation>
-<translation id="3292421191230118801">Resume viewing sites from mobile on your Chromebook</translation>
 <translation id="32939749466444286">The Linux container didn't start. Please try again.</translation>
 <translation id="3294437725009624529">Guest</translation>
 <translation id="329703603001918157">Can’t edit shortcut</translation>
@@ -5001,7 +5000,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8557930019681227453">Manifest</translation>
 <translation id="8559694214572302298">Image Decoder</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
-<translation id="8562084399541316921">Continue reading</translation>
 <translation id="8565650234829130278">Attempted to downgrade app.</translation>
 <translation id="8569002732135253578">Now printing <ph name="DOCUMENT_NAME" /></translation>
 <translation id="8569682776816196752">No destinations found</translation>

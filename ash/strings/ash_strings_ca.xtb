@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
 <translation id="2761704814324807722">Safata d'estat. Hora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">S'està tornant a connectar a la xarxa <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Triar si els llocs web poden utilitzar els serveis d'ubicació o el micròfon, la càmera o altres funcions del dispositiu</translation>
 <translation id="2792498699870441125">Alt+Cerca</translation>
 <translation id="2805756323405976993">Aplicacions</translation>
 <translation id="2808012452536866044">Better Together ha canviat a un telèfon nou</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Has premut la drecera de la lupa acoblada. Vols activar-la?</translation>
 <translation id="4217571870635786043">Dictat</translation>
 <translation id="4261870227682513959">Mostra la configuració de notificacions. Les notificacions estan desactivades.</translation>
+<translation id="4269883910223712419">L'administrador d'aquest dispositiu pot dur a terme les accions següents:</translation>
 <translation id="4274921305979314545">Connecta Chromebook al telèfon</translation>
 <translation id="4279490309300973883">S'està creant una rèplica</translation>
 <translation id="4292681942966152062">S'està activant <ph name="NETWORK_NAME" /></translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">Horitzontal</translation>
 <translation id="476166673298332917">L'administrador d'aquest dispositiu té accés a tota l'activitat, incloses les contrasenyes i les comunicacions.</translation>
 <translation id="4776917500594043016">Contrasenya per a <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">L'Assistent de Google no està disponible en les sessions de demostració.</translation>
 <translation id="479989351350248267">cerca</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
 <translation id="4849058404725798627">Ressalta l'objecte amb el focus del teclat</translation>
@@ -336,6 +339,7 @@
 <translation id="6751826523481687655">La traça del rendiment està activada</translation>
 <translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE" />% i s'està carregant.</translation>
 <translation id="6803622936009808957">No s'ha pogut fer la rèplica de les pantalles, perquè no s'ha trobat cap resolució compatible. S'està entrant al mode d'escriptori ampliat.</translation>
+<translation id="6814658242098378692">Gestionar aplicacions, extensions i temes</translation>
 <translation id="6820676911989879663">Fes una pausa</translation>
 <translation id="683971173229319003">Cerca + L</translation>
 <translation id="6857811139397017780">Activa <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +363,7 @@
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micròfon posterior</translation>
 <translation id="726276584504105859">Arrossega-la aquí per utilitzar la pantalla dividida</translation>
+<translation id="7303365578352795231">S'està responent en un altre dispositiu.</translation>
 <translation id="7348093485538360975">Teclat en pantalla</translation>
 <translation id="735745346212279324">VPN desconnectada</translation>
 <translation id="7377169924702866686">Bloq Maj està activat.</translation>
@@ -391,6 +396,7 @@
 <translation id="7842211907556571265">S'està connectant a <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advertiment: funció experimental</translation>
 <translation id="7846634333498149051">Teclat</translation>
+<translation id="7886169021410746335">Ajustar la configuració relacionada amb la privadesa</translation>
 <translation id="7886277072580235377">Les dades de la sessió a Internet s'esborraran en tancar-la. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Envia un correu electrònic</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>

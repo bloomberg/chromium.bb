@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Produs necunoscut <ph name="PRODUCT_ID" /> de la <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Fișierul manifest este nevalid</translation>
 <translation id="7217838517480956708">Administratorul acestui dispozitiv solicită instalarea extensiei <ph name="EXTENSION_NAME" />. Aceasta nu poate fi eliminată sau modificată.</translation>
+<translation id="7612608473764576263">Valoarea introdusă pentru cheia privată trebuie să aibă un format valid (cheie RSA codificată PEM în format PKCS#8).</translation>
 <translation id="7939686037314084444">Extensia nu s-a încărcat corect. S-ar putea să nu intercepteze solicitările de rețea.</translation>
 <translation id="7972881773422714442">Opțiuni: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Camera foto frontală</translation>

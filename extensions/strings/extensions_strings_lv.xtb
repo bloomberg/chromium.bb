@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Nezināms produkts (ID: <ph name="PRODUCT_ID" />), ko piedāvā <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Manifesta fails nav derīgs.</translation>
 <translation id="7217838517480956708">Šīs ierīces administrators uzskata, ka paplašinājumam <ph name="EXTENSION_NAME" /> ir jābūt instalētam. To nevar noņemt vai pārveidot.</translation>
+<translation id="7612608473764576263">Privātās atslēgas ievades vērtībai jābūt derīgam formātam (PKCS#8-formāta PEM-kodēta RSA atslēga).</translation>
 <translation id="7939686037314084444">Neizdevās pareizi ielādēt paplašinājumu. Iespējams, tas nevarēs pārtvert tīkla pieprasījumus.</translation>
 <translation id="7972881773422714442">Iespējas: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Vērsta uz lietotāju</translation>

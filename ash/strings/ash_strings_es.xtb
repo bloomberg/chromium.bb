@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Conectado a un cargador de baja potencia. Es posible que la carga de la batería no sea fiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Volviendo a conectar con <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Permitir que los sitios web usen los servicios de ubicación, el micrófono, la cámara y otras funciones del dispositivo</translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2808012452536866044">Better Together ha cambiado a un nuevo teléfono</translation>
@@ -195,6 +196,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4200057768455216496">Has pulsado la combinación de teclas de la lupa fijada. ¿Quieres activarla?</translation>
 <translation id="4217571870635786043">Dictado</translation>
 <translation id="4261870227682513959">Muestra la configuración de notificaciones. Las notificaciones están desactivadas.</translation>
+<translation id="4269883910223712419">El administrador de este dispositivo puede hacer lo siguiente:</translation>
 <translation id="4274921305979314545">Conecta tu Chromebook con tu teléfono</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4292681942966152062">Activando <ph name="NETWORK_NAME" /></translation>
@@ -222,6 +224,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="476166673298332917">El administrador de este dispositivo tiene acceso a toda la actividad, incluidas las contraseñas y las comunicaciones.</translation>
 <translation id="4776917500594043016">Contraseña de <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">El Asistente de Google no está disponible en las sesiones de demostración.</translation>
 <translation id="479989351350248267">buscar</translation>
 <translation id="4804818685124855865">Desvincular</translation>
 <translation id="4849058404725798627">Resaltar el objeto con el foco del teclado</translation>
@@ -337,6 +340,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6751826523481687655">El control del rendimiento está activado</translation>
 <translation id="6785414152754474415">La batería se está cargando y está al <ph name="PERCENTAGE" />%.</translation>
 <translation id="6803622936009808957">No se han podido duplicar las pantallas porque no se han encontrado resoluciones compatibles. Se ha utilizado el modo de escritorio ampliado en su lugar.</translation>
+<translation id="6814658242098378692">Gestionar aplicaciones, extensiones y temas</translation>
 <translation id="6820676911989879663">Haz una pausa</translation>
 <translation id="683971173229319003">Buscar+L</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
@@ -360,6 +364,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micrófono trasero</translation>
 <translation id="726276584504105859">Arrastra hasta aquí para utilizar la pantalla dividida</translation>
+<translation id="7303365578352795231">Se está respondiendo en otro dispositivo.</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7377169924702866686">El bloqueo de mayúsculas está activado.</translation>
@@ -392,6 +397,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7842211907556571265">Estableciendo conexión con <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advertencia: Función experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
+<translation id="7886169021410746335">Ajustar la configuración de privacidad</translation>
 <translation id="7886277072580235377">Tu sesión de Internet se borrará cuando la cierres. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Enviar un correo electrónico</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta ha inhabilitado el inicio de sesión múltiple.</translation>

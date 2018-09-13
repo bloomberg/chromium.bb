@@ -385,12 +385,6 @@
 <translation id="2082205219176343977">Konfigūruoti mažiausią leistiną įrenginio „Chrome“ versiją.</translation>
 <translation id="209586405398070749">Stabilus kanalas</translation>
 <translation id="2098658257603918882">Įgalinti naudojimo ir su strigtimis susijusių duomenų ataskaitų kūrimą</translation>
-<translation id="2098916259427011890">Ši politika valdo, ar pranešti versijos informaciją, pvz., OS versiją, OS platformą, OS architektūrą, „<ph name="PRODUCT_NAME" />“ versiją ir „<ph name="PRODUCT_NAME" />“ kanalą.
-
-      Kai ši politika nenustatyta arba nustatyta kaip „Tiesa“, versijos informacija renkama.
-      Kai ši politika nustatyta kaip „Netiesa“, versijos informacija nerenkama.
-
-      Ši politika galioja, tik kai įgalinti „Chrome“ ataskaitų teikimo plėtinys ir „Cloud Management“.</translation>
 <translation id="2111016292707172233">Įgalinamas Paieškos palietus pasiekiamumas „<ph name="PRODUCT_NAME" />“ turinio rodinyje.
 
       Jei įgalinsite šį nustatymą, naudotojams bus pasiekiama Paieška palietus ir jie galės įjungti arba išjungti funkciją.
@@ -1210,12 +1204,6 @@
       Priešingu atveju gali būti nustatyta viena iš nurodytų verčių: „tls1.2“ arba „tls1.3“. Nustačius „<ph name="PRODUCT_NAME" />“ nenaudos naujesnių SSL / TLS versijų, nei nurodyta versija. Neatpažįstamos vertės nebus paisoma.</translation>
 <translation id="4121350739760194865">Neleisti rodyti programų reklamų naujo skirtuko puslapyje</translation>
 <translation id="412697421478384751">Leisti naudotojams nustatyti nesudėtingus užrakinimo ekrano PIN kodus</translation>
-<translation id="4129183564590133854">Ši politika valdo, ar pranešti informaciją, kurią galima naudoti naudotojams identifikuoti, pvz., OS prisijungimo duomenis, „<ph name="PRODUCT_NAME" />“ profilio prisijungimo duomenis, „<ph name="PRODUCT_NAME" />“ profilio pavadinimą, „<ph name="PRODUCT_NAME" />“ profilio kelią ir „<ph name="PRODUCT_NAME" />“ vykdomąjį kelią.
-
-      Kai ši politika nenustatyta arba nustatyta kaip „Tiesa“, informacija, kurią galima naudoti naudotojams identifikuoti, renkama.
-      Kai ši politika nustatyta kaip „Netiesa“, informacija, kurią galima naudoti naudotojams identifikuoti, nerenkama.
-
-      Ši politika galioja, tik kai įgalinti „Chrome“ ataskaitų teikimo plėtinys ir „Cloud Management“.</translation>
 <translation id="4138655880188755661">Laiko apribojimas</translation>
 <translation id="4157003184375321727">Pranešti OS ir programinės aparatinės įrangos versiją</translation>
 <translation id="4157594634940419685">Leisti pasiekti savuosius CUPS spausdintuvus</translation>
@@ -1526,12 +1514,6 @@
       Jei nenustatyta, naudotojo gali būti klausiama, ar importuoti, arba gali būti automatiškai importuojama.</translation>
 <translation id="5056708224511062314">Ekrano didinimas išjungtas</translation>
 <translation id="5058573563327660283">Pasirinkti strategiją, naudojamą vietai diske atlaisvinti, kai atliekamas automatinis valymas (nebenaudojama)</translation>
-<translation id="5058771123777243130">Ši politika valdo, ar pranešti politikos duomenis ir politikos gavimo laiką.
-
-      Kai ši politika nenustatyta arba nustatyta kaip „Tiesa“, politikos duomenys ir politikos gavimo laikas renkami.
-      Kai ši politika nustatyta kaip „Netiesa“, politikos duomenys ir politikos gavimo laikas nerenkami.
-
-      Ši politika galioja, tik kai įgalinti „Chrome“ ataskaitų teikimo plėtinys ir „Cloud Management“.</translation>
 <translation id="5067143124345820993">Prisijungusių naudotojų baltasis sąrašas</translation>
 <translation id="5068140065960598044">Taikant „<ph name="PRODUCT_NAME" />“ debesies politiką įrenginio politikos nebepaisoma.</translation>
 <translation id="5085647276663819155">Neleisti spaudinio peržiūros</translation>
@@ -2124,12 +2106,6 @@
       Šis nustatymas valdo pasisveikinimo puslapių, kuriuose padedama naudotojams prisijungti prie naršyklės „<ph name="PRODUCT_NAME" />“, pasirinkti ją kaip numatytąją naršyklę ar kitais būdais informuoti apie produkto funkcijas, rodymą.</translation>
 <translation id="6766216162565713893">Leisti svetainėms prašyti naudotojo suteikti leidimą pasiekti netoliese esantį „Bluetooth“ įrenginį</translation>
 <translation id="6770454900105963262">Informacijos apie aktyvias viešojo terminalo sesijas ataskaitos pateikimas</translation>
-<translation id="6773056206551814546">Ši politika valdo, ar pranešti informaciją, kurią galima naudoti įrenginiams identifikuoti, pvz., įrenginio pavadinimą ir tinklo adresus.
-
-      Kai ši politika nenustatyta arba nustatyta kaip „Tiesa“, informacija, kurią galima naudoti įrenginiams identifikuoti, renkama.
-      Kai ši politika nustatyta kaip „Netiesa“, informacija, kurią galima naudoti įrenginiams identifikuoti, nerenkama.
-
-      Ši politika galioja, tik kai įgalinti „Chrome“ ataskaitų teikimo plėtinys ir „Cloud Management“.</translation>
 <translation id="6786747875388722282">Plėtiniai</translation>
 <translation id="6786967369487349613">Nustatyti tarptinklinio ryšio profilio katalogą</translation>
 <translation id="6810445994095397827">Blokuoti „JavaScript“ šiose svetainėse</translation>
@@ -2930,13 +2906,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
           Kelis serverių pavadinimus atskirkite kableliais. Leidžiama naudoti pakaitos simbolius (*).
 
           Jei nenustatysite šios politikos, „<ph name="PRODUCT_NAME" />“ bandys nustatyti, ar serveris yra intranete ir tik tada atsakys į IWA užklausas. Jei serveris aptinkamas internete, „<ph name="PRODUCT_NAME" />“ nepaisys jo siunčiamų IWA užklausų.</translation>
-<translation id="8667812577403206506">Galima valdyti, ar virtualiesiems įrenginiams leidžiama veikti „Chrome“ OS.
-
-      Jei politika nustatyta į „True“, įrenginiui leidžiama paleisti virtualiuosius įrenginius.
-      Jei politika nustatyta į „False“, įrenginiui neleidžiama paleisti virtualiųjų įrenginių.
-      Pakeitus šios politikos nustatymą į „False“, jis taikomas paleidžiant naujus virtualiuosius įrenginius, bet jau veikiantys virtualieji įrenginiai nėra išjungiami.
-      Jei ši politika nenustatyta valdomame įrenginyje, įrenginiui neleidžiama paleisti virtualiųjų įrenginių.
-      Nevaldomiems įrenginiams leidžiama paleisti virtualiuosius įrenginius.</translation>
 <translation id="8669669491594628013">Galite valdyti įspėjimo dėl slaptažodžio apsaugos suaktyvinimą. Slaptažodžio apsauga įspėja naudotojus, kai jie pakartotinai naudoja apsaugotus slaptažodžius potencialiai įtartinose svetainėse.
 
       Politiką „PasswordProtectionLoginURLs“ ir „PasswordProtectionChangePasswordURL“ galite naudoti konfigūruodami, kuriuos slaptažodžius apsaugoti.
@@ -3192,9 +3161,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Kai ši politika nustatyta į „ClientCertificate“ (vertė „1“), naujai pridėtų naudotojų, kurie prisijungia per SAML, tapatybei nustatyti naudojamas kliento sertifikato autentifikavimas. Tokiems naudotojas autentifikuoti nenaudojami slaptažodžiai, o talpykloje saugomi vietiniai duomenys apsaugomi naudojant atitinkamus kriptografinius raktus. Pvz., naudojant šį nustatymą galima konfigūruoti išmaniąją kortelę pasitelkiant naudotojo autentifikavimą (atminkite, kad išmaniosios kortelės tarpinės programos turi būti įdiegtos naudojant politiką „DeviceLoginScreenAppInstallList“).
 
       Ši politika daro įtaką tik naudotojams, kurie autentifikuojami naudojant SAML.</translation>
-<translation id="9211439035693857287">Konfigūruojama su „Chrome“ ataskaitų teikimo plėtiniu susijusi politika.
-
-      Ši politika galioja, tik kai įgalinti „Chrome“ ataskaitų teikimo plėtinys ir „Cloud Management“.</translation>
 <translation id="9213347477683611358">Konfigūruokite įrenginio lygio ekrano fono vaizdą, kuris rodomas prisijungimo ekrane, jei prie įrenginio neprisijungė joks naudotojas. Politika nustatoma nurodant URL, kuriuo „Chrome“ OS įrenginys gali atsisiųsti ekrano fono vaizdą ir kriptografinę maišos vertę, kuri naudojama atsisiuntimo vientisumui patvirtinti. Vaizdas turi būti JPEG formato, o dydis neturi viršyti 16 MB. URL turi būti pasiekiamas be autentifikavimo. Ekrano fono vaizdas atsisiunčiamas ir įkeliamas į talpyklą. Jis bus iš naujo atsisiųstas pasikeitus URL arba maišos vertei.
 
       Politika turėtų būti nurodyta kaip eilutė, kurioje pateikiamas URL ir maišos vertė JSON formatu, pvz.,

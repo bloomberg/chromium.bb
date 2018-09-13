@@ -365,12 +365,6 @@
 <translation id="2082205219176343977">Mengonfigurasi versi minimum Chrome yang diizinkan untuk perangkat.</translation>
 <translation id="209586405398070749">Saluran stabil</translation>
 <translation id="2098658257603918882">Aktifkan laporan data penggunaan dan yang terkait error</translation>
-<translation id="2098916259427011890">Kebijakan ini mengontrol apakah akan melaporkan informasi versi, seperti versi OS, platform OS, arsitektur OS, versi <ph name="PRODUCT_NAME" />, dan saluran <ph name="PRODUCT_NAME" />.
-
-      Jika kebijakan ini tidak disetel atau disetel ke True, informasi versi akan dikumpulkan.
-      Jika kebijakan ini disetel ke False, informasi versi tidak akan dikumpulkan.
-
-      Kebijakan ini hanya berlaku jika Ekstensi Pelaporan Chrome dan Pengelolaan Cloud diaktifkan.</translation>
 <translation id="2111016292707172233">Mengaktifkan ketersediaan Tap untuk Menelusuri di tampilan konten <ph name="PRODUCT_NAME" />.
 
 Jika Anda mengaktifkan setelan ini, Tap untuk Menelusuri akan tersedia untuk pengguna dan mereka dapat memilih untuk mengaktifkan atau menonaktifkannya.
@@ -1155,12 +1149,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
       Jika dikonfigurasi, kebijakan dapat disetel ke salah satu nilai berikut: "tls1.2" atau "tls1.3". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih besar daripada versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
 <translation id="4121350739760194865">Mencegah promosi apl muncul di halaman tab baru</translation>
 <translation id="412697421478384751">Izinkan pengguna menyetel PIN lemah untuk PIN layar kunci</translation>
-<translation id="4129183564590133854">Kebijakan ini mengontrol apakah akan melaporkan informasi yang dapat digunakan untuk mengidentifikasi pengguna, seperti login OS, login Profil <ph name="PRODUCT_NAME" />, nama Profil <ph name="PRODUCT_NAME" />, jalur Profil <ph name="PRODUCT_NAME" />, dan jalur <ph name="PRODUCT_NAME" /> yang dapat dieksekusi.
-
-      Jika kebijakan ini tidak disetel atau disetel ke True, informasi yang dapat digunakan untuk mengidentifikasi pengguna akan dikumpulkan.
-      Jika kebijakan ini disetel ke False, informasi yang dapat digunakan untuk mengidentifikasi pengguna tidak akan dikumpulkan.
-
-      Kebijakan ini hanya berlaku jika Ekstensi Pelaporan Chrome dan Pengelolaan Cloud diaktifkan.</translation>
 <translation id="4138655880188755661">Batas Waktu</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan firmware</translation>
 <translation id="4157594634940419685">Izinkan akses ke printer CUPS native</translation>
@@ -1460,12 +1448,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5052081091120171147">Kebijakan ini memaksa histori browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada histori browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="5056708224511062314">Lup dinonaktifkan</translation>
 <translation id="5058573563327660283">Pilih strategi yang digunakan untuk mengosongkan ruang disk selama pembersihan otomatis (tidak digunakan lagi)</translation>
-<translation id="5058771123777243130">Kebijakan ini mengontrol apakah akan melaporkan data kebijakan dan waktu pengambilan kebijakan.
-
-      Jika kebijakan ini tidak disetel atau disetel ke True, data kebijakan dan waktu pengambilan kebijakan akan dikumpulkan.
-      Jika kebijakan ini disetel ke False, data kebijakan dan waktu pengambilan kebijakan tidak akan dikumpulkan.
-
-      Kebijakan ini hanya berlaku jika Ekstensi Pelaporan Chrome dan Pengelolaan Cloud diaktifkan.</translation>
 <translation id="5067143124345820993">Daftar putih pengguna masuk</translation>
 <translation id="5068140065960598044">Kebijakan cloud <ph name="PRODUCT_NAME" /> mengganti kebijakan Perangkat.</translation>
 <translation id="5085647276663819155">Nonaktifkan Pratinjau Cetak</translation>
@@ -2026,11 +2008,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
       Setelan ini mengontrol penyajian halaman sambutan yang membantu pengguna login ke <ph name="PRODUCT_NAME" />, memilihnya sebagai browser default, atau memberi tahu pengguna tentang fitur produk.</translation>
 <translation id="6766216162565713893">Izinkan situs meminta pengguna memberikan akses ke perangkat Bluetooth di sekitar</translation>
 <translation id="6770454900105963262">Melaporkan informasi tentang sesi kios aktif</translation>
-<translation id="6773056206551814546">This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
-
-      Jika kebijakan ini tidak disetel atau disetel ke True, informasi yang dapat digunakan untuk mengidentifikasi mesin akan dikumpulkan.
-      Jika kebijakan ini disetel ke False, informasi yang dapat digunakan untuk mengidentifikasi mesin tidak akan dikumpulkan.
-      Kebijakan ini hanya berlaku jika Ekstensi Pelaporan Chrome dan Pengelolaan Cloud diaktifkan.</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
 <translation id="6786967369487349613">Menyetel direktori profil roaming</translation>
 <translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
@@ -2805,7 +2782,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
           Pisahkan beberapa nama server dengan koma. Karakter pengganti (*) diizinkan.
 
           Jika Anda membiarkan kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> akan mencoba mendeteksi apakah server ada di internet dan akan menanggapi permintaan IWA setelahnya.  Jika server terdeteksi sebagai internet, permintaan IWA darinya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Mengizinkan Anda untuk mengontrol apakah mesin virtual diizinkan untuk berjalan di Chrome OS atau tidak. Jika kebijakan disetel ke True, perangkat diizinkan untuk menjalankan mesin virtual. Jika kebijakan disetel ke False, perangkat tidak diizinkan untuk menjalankan mesin virtual. Jika kebijakan ini diubah ke False, setelan ini berlaku untuk mesin virtual yang baru dimulai, tetapi tidak mematikan mesin virtual yang sedang berjalan. Jika kebijakan ini tidak disetel di perangkat yang dikelola, perangkat tidak diizinkan untuk menjalankan mesin virtual. Perangkat yang tidak dikelola diizinkan untuk menjalankan mesin virtual.</translation>
 <translation id="8669669491594628013">Memungkinkan Anda mengontrol pemicu peringatan perlindungan sandi. Perlindungan sandi memberi tahu pengguna saat mereka menggunakan kembali sandi yang dilindungi di situs yang berpotensi mencurigakan.
 
       Anda dapat menggunakan kebijakan 'PasswordProtectionLoginURLs' dan 'PasswordProtectionChangePasswordURL' untuk mengonfigurasi sandi mana yang harus dilindungi.
@@ -3030,9 +3006,6 @@ Jika kebijakan ini tidak disetel atau disetel ke Default (nilai 0), perilaku log
 Jika kebijakan ini disetel ke ClientCertificate (nilai 1), autentikasi sertifikat klien digunakan untuk pengguna yang baru ditambahkan yang login melalui SAML. Tidak ada sandi yang digunakan untuk pengguna tersebut, dan data lokalnya yang disimpan dalam cache dilindungi menggunakan kunci kriptografi yang sesuai. Misalnya, setelan ini memungkinkan konfigurasi kartu smart berdasarkan autentikasi pengguna (perlu diketahui bahwa aplikasi middleware kartu smart harus diinstal melalui kebijakan DeviceLoginScreenAppInstallList).
 
 Kebijakan ini hanya memengaruhi pengguna yang melakukan autentikasi menggunakan SAML.</translation>
-<translation id="9211439035693857287">Konfigurasikan kebijakan terkait Ekstensi Pelaporan Chrome.
-
-      Kebijakan ini hanya berlaku jika Ekstensi Pelaporan Chrome dan Pengelolaan Cloud diaktifkan.</translation>
 <translation id="9213347477683611358">Mengonfigurasi gambar wallpaper tingkat perangkat yang ditampilkan di layar login jika belum ada pengguna yang login ke perangkat. Kebijakan ini disetel dengan menetapkan URL tempat perangkat Chrome OS dapat mendownload gambar wallpaper dan potongan kriptografi yang digunakan untuk memverifikasi integritas download. Gambar harus dalam format JPEG dan ukuran filenya tidak boleh melebihi 16MB. URL harus dapat diakses tanpa autentikasi apa pun. Gambar wallpaper akan didownload dan disimpan dalam cache. Gambar ini akan didownload jika URL atau potongan berubah.
 
       Kebijakan ini harus ditetapkan sebagai string yang mengekspresikan URL dan potongan dalam format JSON, misalnya:

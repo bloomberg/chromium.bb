@@ -383,12 +383,6 @@
 <translation id="2082205219176343977">I-configure ang minimum na pinapayagang bersyon ng Chrome para sa device.</translation>
 <translation id="209586405398070749">Stable na channel</translation>
 <translation id="2098658257603918882">Paganahin ang pag-uulat ng data ng paggamit at kaugnay ng crash</translation>
-<translation id="2098916259427011890">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyon ng bersyon, gaya ng bersyon ng OS, platform ng OS, architecture ng OS, bersyon ng <ph name="PRODUCT_NAME" />, at channel ng <ph name="PRODUCT_NAME" />.
-
-      Kapag hinayaang hindi nakatakda ang patakarang ito o nakatakda sa True, kukunin ang impormasyon ng bersyon.
-      Kung nakatakda ang patakarang ito sa False, hindi kukunin ang impormasyon ng bersyon.
-
-      May bisa lang ang patakarang ito kapag naka-enable ang Chrome Reporting Extension at Cloud Management.</translation>
 <translation id="2111016292707172233">Ine-enable ang availability ng I-tap para Maghanap sa view ng content ng <ph name="PRODUCT_NAME" />.
 
       Kung ie-enable mo ang setting na ito, magagamit ng user ang I-tap para Maghanap at maaari niyang piliing i-on o i-off ang feature.
@@ -1201,12 +1195,6 @@
       Kung hindi, maaari itong itakda sa isa sa mga sumusunod na value: "tls1.2" o "tls1.3." Kapag naitakda, hindi gagamit ang <ph name="PRODUCT_NAME" /> ng mga bersyon ng SSL/TLS na mas bago kaysa sa tinukoy na bersyon. Babalewalain ang hindi kilalang value.</translation>
 <translation id="4121350739760194865">Pigilan ang paglitaw ng mga pag-promote ng app sa pahina ng bagong tab</translation>
 <translation id="412697421478384751">I-enable ang mga user na magtakda ng madadaling hulaang PIN para sa PIN ng lock screen</translation>
-<translation id="4129183564590133854">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyong magagamit para makilala ang mga user, gaya ng login ng OS, login ng Profile sa <ph name="PRODUCT_NAME" />, pangalan ng Profile sa <ph name="PRODUCT_NAME" />, path ng Profile sa <ph name="PRODUCT_NAME" />, at nae-execute na path sa <ph name="PRODUCT_NAME" />.
-
-      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukunin ang impormasyong magagamit sa pagkilala ng mga user.
-      Kung nakatakda ang patakarang ito sa False, hindi kukunin ang impormasyong magagamit sa pagkilala ng mga user.
-
-      May bisa lang ang patakarang ito kapag naka-enable ang Chrome Reporting Extension at Cloud Management.</translation>
 <translation id="4138655880188755661">Limitasyon sa Oras</translation>
 <translation id="4157003184375321727">I-ulat ang bersyon ng OS at firmware.</translation>
 <translation id="4157594634940419685">Payagan ang pag-access sa mga native na CUPS printer</translation>
@@ -1518,12 +1506,6 @@
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="5056708224511062314">Naka-disable ang magnifier ng screen</translation>
 <translation id="5058573563327660283">Piliin ang diskarteng gagamitin para magbakante ng espasyo sa disk sa panahon ng awtomatikong pag-clean-up (hindi na ginagamit)</translation>
-<translation id="5058771123777243130">Kinokontrol ng patakarang ito kung mag-uulat ng data ng patakaran at oras ng pagkuha ng patakaran.
-
-      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukunin ang data ng patakaran at oras ng pagkuha ng patakaran.
-      Kung nakatakda ang patakarang ito sa False, hindi kukunin ang data ng patakaran at oras ng pagkuha ng patakaran.
-
-      May bisa lang ang patakarang ito kapag naka-enable ang Chrome Reporting Extension at Cloud Management.</translation>
 <translation id="5067143124345820993">White list ng user sa pag-login</translation>
 <translation id="5068140065960598044">Ino-override ng patakaran sa cloud ng <ph name="PRODUCT_NAME" /> ang patakaran sa Machine.</translation>
 <translation id="5085647276663819155">Huwag paganahin ang Preview ng Pag-print</translation>
@@ -2113,12 +2095,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kinokontrol ng setting na ito ang presentasyon ng mga welcome page na nakakatulong sa mga user na mag-sign in sa <ph name="PRODUCT_NAME" />, piliin ito bilang kanilang default na browser, o abisuhan sila tungkol sa mga feature ng produkto.</translation>
 <translation id="6766216162565713893">Payagan ang mga site na hilingin sa user na magbigay ng access sa malapit na Bluetooth device</translation>
 <translation id="6770454900105963262">Mag-ulat ng impormasyon tungkol sa mga aktibong session ng kiosk</translation>
-<translation id="6773056206551814546">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyong magagamit para makilala ang mga machine, gaya ng pangalan ng machine at mga address ng network.
-
-      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukunin ang impormasyong magagamit sa pagkilala ng mga machine.
-      Kung nakatakda ang patakarang ito sa False, hindi kukunin ang impormasyong magagamit sa pagkilala ng mga machine.
-
-      May bisa lang ang patakarang ito kapag naka-enable ang Chrome Reporting Extension at Cloud Management.</translation>
 <translation id="6786747875388722282">Mga Extension</translation>
 <translation id="6786967369487349613">Itakda ang direktoryo ng roaming na profile</translation>
 <translation id="6810445994095397827">I-block ang JavaScript sa mga site na ito</translation>
@@ -2921,13 +2897,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
           Paghiwalayin ang maraming pangalan ng server gamit ang mga kuwit. Pinapayagan ang mga wildcard (*).
 
           Kung iiwanan mong hindi nakatakda ang patakarang ito, susubukan ng <ph name="PRODUCT_NAME" /> na i-detect kung nasa Intranet ang server, at kung oo ay doon lang ito tutugon sa mga kahilingan ng IWA.  Kung na-detect ang server bilang Internet, babalewalain ng <ph name="PRODUCT_NAME" /> ang mga kahilingan ng IWA mula dito.</translation>
-<translation id="8667812577403206506">Magbibigay-daan sa iyong kontrolin kung papayagan ang pagtakbo ng mga virtual machine sa Chrome OS.
-
-      Kung nakatakda ang patakaran sa True, pinapayagan ang device na magpatakbo ng mga virtual machine.
-      Kung nakatakda ang patakaran sa False, hindi papayagan ang device na magpatakbo ng mga virtual machine.
-      Kapag binago sa False ang patakarang ito, ilalapat ito sa mga nagsisimulang bagong virtual machine ngunit hindi magsa-shut down sa mga virtual machine na tumatakbo na.
-      Kapag hindi nakatakda ang patakaran sa isang pinamamahalaang device, hindi pinapayagan ang device na magpatakbo ng mga virtual machine.
-      Pinapayagan ang mga hindi pinamamahalaang device na magpatakbo ng mga virtual machine.</translation>
 <translation id="8669669491594628013">Nagbibigay-daan sa iyong kontrolin ang pag-trigger ng babala sa pagprotekta ng password. Aalertuhan ng pagprotekta ng password ang mga user kapag muli nilang ginamit ang kanilang pinoprotektahang password sa mga potensyal na kahina-hinalang site.
 
       Maaari mong gamitin ang patakarang 'PasswordProtectionLoginURLs' at 'PasswordProtectionChangePasswordURL' para i-configure ang poprotektahang password.
@@ -3182,9 +3151,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung nakatakda ang patakarang ito sa ClientCertificate (value 1), gagamitin ang pag-authenticate ng certificate ng kliyente para sa mga bagong naidagdag na user na nagla-log in sa pamamagitan ng SAML. Walang ginagamit na password para sa mga nasabing user, at pinoprotektahan ang kanilang naka-cache na lokal na data gamit ang mga kaukulang cryptographic key. Halimbawa, nagagamit ang setting na ito para ma-configure ang smart card batay sa pag-authenticate ng user (tandaang kailangang i-install ang mga smart card middleware app sa pamamagitan ng patakarang DeviceLoginScreenAppInstallList).
 
       Maaapektuhan lang ng patakarang ito ang mga user na nao-authenticate gamit ang SAML.</translation>
-<translation id="9211439035693857287">I-configure ang mga patakarang nauugnay sa Chrome Reporting Extension.
-
-      May bisa lang ang mga patakarang ito kapag naka-enable ang Chrome Reporting Extension at Cloud Management.</translation>
 <translation id="9213347477683611358">Nagko-configure ng larawan ng wallpaper sa device na ipinapakita sa screen ng pag-login kung wala pang naka-sign in na user sa device. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan maaaring i-download ng Chrome OS device ang larawan ng wallpaper at isang cryptographic hash na ginagamit upang i-verify ang integridad ng pag-download. Dapat ay nasa format na JPEG ang larawan, at hindi dapat lumampas ang laki ng file sa 16MB. Dapat ay naa-access ang URL nang walang anumang pag-authenticate. Na-download at na-cache ang larawan ng wallpaper. Ida-download itong muli sa tuwing magbabago ang URL o ang hash.
 
       Dapat ay tukuyin ang patakaran bilang isang string na nagpapakita ng URL at hash sa format na JSON, hal.,

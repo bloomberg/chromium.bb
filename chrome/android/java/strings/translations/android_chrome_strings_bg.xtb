@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">Активността ви и данните ви за сърфирането, синхронизирани с профила ви в Google</translation>
 <translation id="116280672541001035">Използвани</translation>
 <translation id="1172593791219290334">Страница при стартиране</translation>
+<translation id="1175310183703641346">Вашите отметки, история, пароли и др. повече няма да се синхронизират с профила ви в Google</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="1197267115302279827">Преместване на отметки</translation>
@@ -48,6 +49,7 @@
 <translation id="129553762522093515">Наскоро затворени</translation>
 <translation id="1326317727527857210">Влезте в Chrome, за да получите разделите си от другите си устройства.</translation>
 <translation id="1332501820983677155">Комбинации за функции на Google Chrome</translation>
+<translation id="1360432990279830238">Изход и изключване на синхронизирането?</translation>
 <translation id="136248372334525878">Предварително зареждане на страниците с цел по-бързо отваряне и четене офлайн</translation>
 <translation id="1369915414381695676">Сайтът <ph name="SITE_NAME" /> е добавен</translation>
 <translation id="1373696734384179344">Недостатъчно памет за изтегляне на избраното съдържание.</translation>
@@ -159,6 +161,7 @@
 <translation id="2131665479022868825">Спестихте <ph name="DATA" /></translation>
 <translation id="213279576345780926">Затворихте „<ph name="TAB_TITLE" />“</translation>
 <translation id="2139186145475833000">Добавяне към началния екран</translation>
+<translation id="2142289305367051020">Любимите ви страници са тук</translation>
 <translation id="2146738493024040262">Отваряне на мигновеното приложение</translation>
 <translation id="2148716181193084225">Днес</translation>
 <translation id="2154484045852737596">Редактиране на картата</translation>
@@ -350,6 +353,7 @@
 <translation id="3822502789641063741">Изчистване на данните?</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Придвижване напред</translation>
+<translation id="3868004864571585162">„Бисквитки“, лицензи за мултимедия и данни за сайтове</translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
 <translation id="3895926599014793903">Принудително активиране на промяната на мащаба</translation>
 <translation id="3927692899758076493">Безсерифен</translation>
@@ -910,6 +914,7 @@
 <translation id="8109613176066109935">Включете синхронизирането, за да получите отметките си на всичките си устройства</translation>
 <translation id="8116925261070264013">Заглушени</translation>
 <translation id="813082847718468539">Преглед на информацията за сайта</translation>
+<translation id="8156139159503939589">Какви езици четете?</translation>
 <translation id="8168435359814927499">Съдържание</translation>
 <translation id="8186512483418048923">Остават <ph name="FILES" /> файла</translation>
 <translation id="8190358571722158785">Остава 1 ден</translation>
@@ -922,6 +927,7 @@
 <translation id="8260126382462817229">Опитайте да влезете отново</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8266862848225348053">Местоположение за изтеглянията</translation>
+<translation id="8274165955039650276">Преглед на изтеглянията</translation>
 <translation id="8283853025636624853">Синхронизира се със: <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Стандартни раздели</translation>
 <translation id="8313455859591948645">Редактиране на страницата при стартиране</translation>
@@ -938,6 +944,7 @@
 <translation id="8441146129660941386">Придвижване назад</translation>
 <translation id="8445448999790540984">Паролите не могат да бъдат експортирани</translation>
 <translation id="8447861592752582886">Отмяна на разрешението за достъп до устройството</translation>
+<translation id="8477071352266846533">Синхронизирането е изключено за <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8487700953926739672">Налице офлайн</translation>
 <translation id="8489271220582375723">Отваряне на страницата „История“</translation>
 <translation id="8493948351860045254">Освобождаване на място</translation>
@@ -977,6 +984,7 @@
 <translation id="8728487861892616501">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8748850008226585750">Съдържанието е скрито</translation>
+<translation id="8751914237388039244">Изберете изображение</translation>
 <translation id="8788968922598763114">Повторно отваряне на последно затворения раздел</translation>
 <translation id="8812260976093120287">На някои уебсайтове можете да извършвате плащания чрез посочените по-горе поддържани приложения за плащане на устройството ви.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> ще се отвори в Chrome. С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на браузъра, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>

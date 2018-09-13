@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
 <translation id="2761704814324807722">Statusfelt, klokken <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Kobler til <ph name="NAME" /> på nytt</translation>
+<translation id="2790844815106384441">Velg om nettsteder kan bruke posisjonstjenester eller enhetens mikrofon, kamera eller andre funksjoner</translation>
 <translation id="2792498699870441125">Alt + Søk</translation>
 <translation id="2805756323405976993">Apper</translation>
 <translation id="2808012452536866044">Bedre sammen byttet til en ny telefon</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Du trykket på snarveien for den dokkede lupen. Vil du slå den på?</translation>
 <translation id="4217571870635786043">Diktering</translation>
 <translation id="4261870227682513959">Vis innstillinger for varsler. Varsler er av</translation>
+<translation id="4269883910223712419">Administratoren av denne enheten kan</translation>
 <translation id="4274921305979314545">Koble Chromebook til telefonen</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4292681942966152062">Aktiverer <ph name="NETWORK_NAME" /></translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">Horisontal</translation>
 <translation id="476166673298332917">Administratoren av denne enheten har tilgang til all aktivitet, inkludert passord og kommunikasjon.</translation>
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Google-assistenten er ikke tilgjengelig under demonstrasjonsøkter.</translation>
 <translation id="479989351350248267">søk</translation>
 <translation id="4804818685124855865">Koble fra</translation>
 <translation id="4849058404725798627">Fremhev objektet med tastaturfokus</translation>
@@ -336,6 +339,7 @@
 <translation id="6751826523481687655">Ytelsessporing er slått på</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % fullt og til lading.</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
+<translation id="6814658242098378692">administrere programmer, utvidelser og temaer</translation>
 <translation id="6820676911989879663">Ta en pause!</translation>
 <translation id="683971173229319003">Søk+L</translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +363,7 @@
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
 <translation id="726276584504105859">Dra hit for å bruke delt skjerm</translation>
+<translation id="7303365578352795231">Svarer på en annen enhet</translation>
 <translation id="7348093485538360975">Skjermtastatur</translation>
 <translation id="735745346212279324">VPN frakoblet</translation>
 <translation id="7377169924702866686">Caps Lock er på.</translation>
@@ -391,6 +396,7 @@
 <translation id="7842211907556571265">Kobler til <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advarsel: Funksjon på forsøksstadiet</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="7886169021410746335">justere personverninnstillinger</translation>
 <translation id="7886277072580235377">Internett-økten din fjernes når du logger av. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Send e-post</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>

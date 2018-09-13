@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2761704814324807722">Строка состояния, время <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Повторное подключение к сети <ph name="NAME" />…</translation>
+<translation id="2790844815106384441">Настраивать доступ сайтов к местоположению устройства, его камере, микрофону и другим функциям.</translation>
 <translation id="2792498699870441125">Alt + Search</translation>
 <translation id="2805756323405976993">Приложения</translation>
 <translation id="2808012452536866044">В режиме Better Together теперь используется другой телефон.</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Вы нажали сочетание клавиш для закрепленной лупы. Включить ее?</translation>
 <translation id="4217571870635786043">Голосовой ввод</translation>
 <translation id="4261870227682513959">Показать настройки уведомлений. Уведомления отключены.</translation>
+<translation id="4269883910223712419">Администратор этого устройства имеет возможность:</translation>
 <translation id="4274921305979314545">Подключите Chromebook к телефону.</translation>
 <translation id="4279490309300973883">Отражение</translation>
 <translation id="4292681942966152062">Активация сети "<ph name="NETWORK_NAME" />"</translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">Горизонтальная ориентация</translation>
 <translation id="476166673298332917">Администратору этого устройства доступна информация обо всех действиях, а также пароли и сообщения.</translation>
 <translation id="4776917500594043016">Пароль для адреса электронной почты <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Google Ассистент в демонстрационном сеансе недоступен</translation>
 <translation id="479989351350248267">поиск</translation>
 <translation id="4804818685124855865">Отключиться</translation>
 <translation id="4849058404725798627">Выделять элементы, выбранные с помощью клавиатуры</translation>
@@ -336,6 +339,7 @@
 <translation id="6751826523481687655">Отслеживание эффективности включено.</translation>
 <translation id="6785414152754474415">Батарея заряжена на <ph name="PERCENTAGE" />% и подключена к источнику питания.</translation>
 <translation id="6803622936009808957">Не удалось дублировать изображение экрана, т. к. указанное разрешение не поддерживается. Включен режим расширенного рабочего стола.</translation>
+<translation id="6814658242098378692">Управлять приложениями, расширениями и темами.</translation>
 <translation id="6820676911989879663">Пора отдохнуть!</translation>
 <translation id="683971173229319003">Клавиша поиска + L</translation>
 <translation id="6857811139397017780">Активировать <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +363,7 @@
 <translation id="7168224885072002358">Возврат к предыдущему разрешению через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Основной микрофон</translation>
 <translation id="726276584504105859">Перетащите сюда, чтобы разделить экран</translation>
+<translation id="7303365578352795231">Ассистент отвечает на другом устройстве.</translation>
 <translation id="7348093485538360975">Экранная клавиатура</translation>
 <translation id="735745346212279324">VPN-соединение прервано</translation>
 <translation id="7377169924702866686">Включен режим Caps Lock.</translation>
@@ -391,6 +396,7 @@
 <translation id="7842211907556571265">Подключение к сети "<ph name="NETWORK_NAME" />"</translation>
 <translation id="7842569679327885685">Внимание! Экспериментальная функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
+<translation id="7886169021410746335">Изменять настройки конфиденциальности.</translation>
 <translation id="7886277072580235377">После выхода из аккаунта данные о ваших действиях в Интернете будут удалены. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Отправить письмо</translation>
 <translation id="7904094684485781019">Администратор этого аккаунта запретил множественный вход</translation>

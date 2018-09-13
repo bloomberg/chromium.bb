@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
 <translation id="2761704814324807722">स्थिति ट्रे, समय <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> से पुनः कनेक्ट कर रहा है</translation>
+<translation id="2790844815106384441">यह चुनें कि वेबसाइटें जगह सेवाओं का इस्तेमाल या डिवाइस के माइक्रोफ़ोन, कैमरे या दूसरी सुविधाओं का इस्तेमाल करें या नहीं</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">ऐप्स</translation>
 <translation id="2808012452536866044">Better Together को नए फ़ोन पर स्विच किया गया</translation>
@@ -195,6 +196,7 @@
 <translation id="4200057768455216496">आपने 'सामग्री को बड़ा दिखाने वाली डॉक की गई सेवा' का शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
 <translation id="4217571870635786043">लिखवाना</translation>
 <translation id="4261870227682513959">सूचना सेटिंग दिखाएं. सूचनाएं बंद हैं</translation>
+<translation id="4269883910223712419">इस डिवाइस के एडमिन ये काम कर सकते हैं:</translation>
 <translation id="4274921305979314545">अपने Chromebook को अपने फ़ोन से कनेक्ट करें</translation>
 <translation id="4279490309300973883">स्क्रीन शेयर करने की सुविधा चालू है</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> चालू हो रहा है</translation>
@@ -222,6 +224,7 @@
 <translation id="4734965478015604180">क्षैतिज</translation>
 <translation id="476166673298332917">इस डिवाइस के एडमिन के पास सभी गतिविधियों का एक्सेस है, जिनमें पासवर्ड और संचार शामिल हैं.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> के लिए पासवर्ड</translation>
+<translation id="4778095205580009397">डेमो सत्र में Google Assistant मौजूद नहीं है.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="4849058404725798627">कीबोर्ड फ़ोकस वाला ऑब्जेक्ट हाइलाइट करें</translation>
@@ -337,6 +340,7 @@
 <translation id="6751826523481687655">'परफ़ॉर्मेंस ट्रेसिंग' चालू कर दी गई है</translation>
 <translation id="6785414152754474415">बैटरी <ph name="PERCENTAGE" />% भरी हुई है और चार्ज हो रही है.</translation>
 <translation id="6803622936009808957">प्रदर्शनों को मिरर नहीं किया जा सका क्योंकि कोई समर्थित रिज़ॉल्यूशन नहीं मिला. इसके बजाय विस्तारित डेस्कटॉप में चला गया है.</translation>
+<translation id="6814658242098378692">ऐप्लिकेशन, एक्सटेंशन और थीम प्रबंधित करें</translation>
 <translation id="6820676911989879663">आज के लिए इतना ही!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> को सक्रिय करें</translation>
@@ -360,6 +364,7 @@
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> में पुराने रिज़ॉल्यूशन में वापस लौट रहा है</translation>
 <translation id="7256634071279256947">पीछे वाला माइक्रोफ़ोन</translation>
 <translation id="726276584504105859">दो स्क्रीन का इस्तेमाल करने के लिए यहां खींचें और छोडें</translation>
+<translation id="7303365578352795231">दूसरे डिवाइस पर जवाब देना.</translation>
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
 <translation id="735745346212279324">VPN डिसकनेक्ट है</translation>
 <translation id="7377169924702866686">Caps Lock चालू है.</translation>
@@ -392,6 +397,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> से कनेक्ट हो रहा है</translation>
 <translation id="7842569679327885685">चेतावनी: यह फ़ीचर प्रयोग के लिए है</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
+<translation id="7886169021410746335">गोपनीयता सेटिंग समायोजित करें</translation>
 <translation id="7886277072580235377">जब आप साइन आउट करेंगे तो आपके इंटरनेट सत्र की जानकारी हटा दी जाएगी. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ईमेल भेजो</translation>
 <translation id="7904094684485781019">इस खाते के व्यवस्थापक ने एक से ज़्यादा साइन-इन को अक्षम कर दिया है.</translation>

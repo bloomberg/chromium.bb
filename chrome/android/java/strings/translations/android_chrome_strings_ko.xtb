@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">Google 계정에 동기화되는 인터넷 사용 기록 및 활동</translation>
 <translation id="116280672541001035">사용</translation>
 <translation id="1172593791219290334">시작 페이지</translation>
+<translation id="1175310183703641346">북마크, 방문 기록, 비밀번호 등이 더 이상 Google 계정과 동기화되지 않습니다.</translation>
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1197267115302279827">북마크 이동</translation>
@@ -48,6 +49,7 @@
 <translation id="129553762522093515">최근에 닫은 탭</translation>
 <translation id="1326317727527857210">다른 기기에서 탭을 가져오려면 Chrome에 로그인하세요.</translation>
 <translation id="1332501820983677155">Chrome 기능 단축키</translation>
+<translation id="1360432990279830238">로그아웃하고 동기화를 사용 중지하시겠습니까?</translation>
 <translation id="136248372334525878">더 빠른 로드와 오프라인 읽기를 위해 페이지를 미리 로드합니다</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> 사이트 추가됨</translation>
 <translation id="1373696734384179344">선택한 콘텐츠를 다운로드할 공간이 부족합니다.</translation>
@@ -159,6 +161,7 @@
 <translation id="2131665479022868825"><ph name="DATA" /> 절약됨</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> 닫음</translation>
 <translation id="2139186145475833000">홈 화면에 추가</translation>
+<translation id="2142289305367051020">즐겨찾는 페이지가 여기에 표시됩니다.</translation>
 <translation id="2146738493024040262">인스턴트 앱 열기</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2154484045852737596">카드 수정</translation>
@@ -350,6 +353,7 @@
 <translation id="3822502789641063741">사이트 저장공간을 삭제하시겠습니까?</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3859306556332390985">앞으로 탐색</translation>
+<translation id="3868004864571585162">쿠키, 미디어 라이선스, 사이트 데이터</translation>
 <translation id="3894427358181296146">폴더 추가</translation>
 <translation id="3895926599014793903">확대/축소 강제 사용</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -909,6 +913,7 @@
 <translation id="8109613176066109935">어느 기기에서나 내 북마크를 사용하려면 동기화를 사용 설정하세요.</translation>
 <translation id="8116925261070264013">음소거됨</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
+<translation id="8156139159503939589">어떤 언어로 읽을 수 있으신가요?</translation>
 <translation id="8168435359814927499">콘텐츠</translation>
 <translation id="8186512483418048923">파일 <ph name="FILES" />개가 남았습니다.</translation>
 <translation id="8190358571722158785">1일 남음</translation>
@@ -921,6 +926,7 @@
 <translation id="8260126382462817229">다시 로그인해 주세요.</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8266862848225348053">다운로드 위치</translation>
+<translation id="8274165955039650276">다운로드 항목 보기</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" />에 동기화 중</translation>
 <translation id="8310344678080805313">일반 탭</translation>
 <translation id="8313455859591948645">시작 페이지 수정</translation>
@@ -937,6 +943,7 @@
 <translation id="8441146129660941386">뒤로 탐색</translation>
 <translation id="8445448999790540984">비밀번호를 내보낼 수 없음</translation>
 <translation id="8447861592752582886">기기 액세스 권한 취소</translation>
+<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> 동기화 해제됨</translation>
 <translation id="8487700953926739672">오프라인으로 사용 가능</translation>
 <translation id="8489271220582375723">방문 기록 페이지 열기</translation>
 <translation id="8493948351860045254">저장 공간 확보하기</translation>
@@ -976,6 +983,7 @@
 <translation id="8728487861892616501">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />, <ph name="BEGIN_LINK3" />Family Link로 관리되는 Google 계정용 개인정보처리방침<ph name="END_LINK3" />에 동의하게 됩니다.</translation>
 <translation id="8730621377337864115">완료</translation>
 <translation id="8748850008226585750">숨겨진 콘텐츠</translation>
+<translation id="8751914237388039244">이미지 선택</translation>
 <translation id="8788968922598763114">마지막으로 닫은 탭 다시 열기</translation>
 <translation id="8812260976093120287">일부 웹사이트에서는 위의 결제 앱을 사용하여 내 기기에서 결제할 수 있습니다.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" />이(가) Chrome에서 열립니다. 계속하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" /> 및 <ph name="BEGIN_LINK3" />Family Link로 관리되는 Google 계정용 개인정보처리방침<ph name="END_LINK3" />에 동의하는 것으로 간주됩니다.</translation>

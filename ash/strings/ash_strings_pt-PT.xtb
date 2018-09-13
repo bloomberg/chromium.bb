@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
 <translation id="2761704814324807722">Tabuleiro do estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">A restabelecer ligação a <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Escolha se os Websites podem utilizar serviços de localização ou o microfone, a câmara ou outras funcionalidades do dispositivo</translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
 <translation id="2805756323405976993">Aplicações</translation>
 <translation id="2808012452536866044">O Melhores em conjunto mudou para um novo telemóvel.</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Premiu o atalho da lupa ancorada. Pretende ativá-la?</translation>
 <translation id="4217571870635786043">Ditado</translation>
 <translation id="4261870227682513959">Mostrar definições de notificação. As notificações estão desativadas</translation>
+<translation id="4269883910223712419">O administrador deste dispositivo pode:</translation>
 <translation id="4274921305979314545">Associe o seu Chromebook ao seu telemóvel.</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4292681942966152062">A ativar <ph name="NETWORK_NAME" />…</translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="476166673298332917">O administrador deste dispositivo tem acesso a toda a atividade, incluindo palavras-passe e comunicações.</translation>
 <translation id="4776917500594043016">Palavra-passe para <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">O Assistente Google não está disponível numa sessão de demonstração.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desligar</translation>
 <translation id="4849058404725798627">Realçar objeto com foco do teclado</translation>
@@ -336,6 +339,7 @@
 <translation id="6751826523481687655">O rastreio do desempenho está ativado.</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os ecrãs, porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido.</translation>
+<translation id="6814658242098378692">Gerir aplicações, extensões e temas</translation>
 <translation id="6820676911989879663">Faça uma pausa!</translation>
 <translation id="683971173229319003">Pesquisa+L</translation>
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +363,7 @@
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
 <translation id="726276584504105859">Arraste para aqui para utilizar o ecrã dividido</translation>
+<translation id="7303365578352795231">A responder noutro dispositivo…</translation>
 <translation id="7348093485538360975">Teclado no ecrã</translation>
 <translation id="735745346212279324">VPN desligado</translation>
 <translation id="7377169924702866686">Caps Lock ativado.</translation>
@@ -391,6 +396,7 @@
 <translation id="7842211907556571265">A ligar a <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Aviso: funcionalidade experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
+<translation id="7886169021410746335">Ajustar as definições de privacidade</translation>
 <translation id="7886277072580235377">Quando terminar sessão, a sua sessão de Internet será apagada. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Enviar um email</translation>
 <translation id="7904094684485781019">O gestor desta conta removeu a permissão de início de sessão integrado.</translation>

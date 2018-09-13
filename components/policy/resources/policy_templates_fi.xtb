@@ -2766,13 +2766,6 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
           Erota palvelinten nimet pilkulla. Jokerimerkit (*) sallitaan.
 
           Jos et aseta käytäntöä, <ph name="PRODUCT_NAME" /> pyrkii tarkistamaan, onko palvelin sisäverkossa, ja vastaa vasta sitten IWA-pyyntöihin. Jos palvelimen todetaan sijaitsevan sisäverkossa, <ph name="PRODUCT_NAME" /> ohittaa sen IWA-pyynnöt.</translation>
-<translation id="8667812577403206506">Tällä käytännöllä määritetään, voidaanko Chrome-käyttöjärjestelmässä suorittaa virtuaalikoneita.
-
-      Jos käytännön arvoksi asetetaan Tosi, laitteella on sallittua suorittaa virtuaalikoneita.
-      Jos käytännön arvoksi asetetaan Epätosi, laitteella ei ole sallittua suorittaa virtuaalikoneita.
-      Kun käytännön arvoksi muutetaan Epätosi, muutos koskee uusien virtuaalikoneiden käynnistämistä, mutta jo käynnissä olevia virtuaalikoneita ei sammuteta.
-      Jos tätä asetusta ei ole määritetty hallinnoidulla laitteella, laitteella ei ole sallittua suorittaa virtuaalikoneita.
-      Ei-hallinnoiduilla laitteilla on sallittua suorittaa virtuaalikoneita.</translation>
 <translation id="8669669491594628013">Sallii salasanasuojauksen varoituksen näyttämisen hallinnan. Salasanasuojaus ilmoittaa käyttäjille, jos nämä käyttävät suojattuja salasanoja uudelleen mahdollisesti haitallisilla sivustoilla.
 
       PasswordProtectionLoginURLs- ja PasswordProtectionChangePasswordURL-käytäntöjen avulla voit määrittää, mitkä salasanat suojataan.

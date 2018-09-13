@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Ansluten till en laddare med låg effekt. Batteriet kanske inte laddas ordentligt.</translation>
 <translation id="2761704814324807722">Statusfältet, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Återansluter till <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Välj om webbplatser ska kunna använda platstjänster eller enhetens mikrofon, kamera eller andra funktioner</translation>
 <translation id="2792498699870441125">Alt + Sök</translation>
 <translation id="2805756323405976993">Appar</translation>
 <translation id="2808012452536866044">Funktionen Better Together har flyttats till en ny mobil</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Du tryckte på kortkommandot för dockad skärmförstoring. Vill du aktivera funktionen?</translation>
 <translation id="4217571870635786043">Diktering</translation>
 <translation id="4261870227682513959">Visa aviseringsinställningar. Aviseringar har inaktiverats</translation>
+<translation id="4269883910223712419">Enhetens administratör kan</translation>
 <translation id="4274921305979314545">Koppla Chromebook till mobilen</translation>
 <translation id="4279490309300973883">Spegling</translation>
 <translation id="4292681942966152062">Aktiverar <ph name="NETWORK_NAME" /></translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">Horisontell</translation>
 <translation id="476166673298332917">Enhetens administratör har tillgång till all aktivitet, inklusive lösenord och kommunikation.</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Google-assistenten är inte tillgänglig i en demosession.</translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="4804818685124855865">Koppla från</translation>
 <translation id="4849058404725798627">Markera objekt med tangentbordsfokus</translation>
@@ -336,6 +339,7 @@
 <translation id="6751826523481687655">Prestandaspårning har aktiverats</translation>
 <translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE" /> % och laddas.</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
+<translation id="6814658242098378692">Hantera appar, tillägg och teman</translation>
 <translation id="6820676911989879663">Ta en paus!</translation>
 <translation id="683971173229319003">Sök+L</translation>
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +363,7 @@
 <translation id="7168224885072002358">Återgår till den gamla upplösningen om <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofonen på baksidan</translation>
 <translation id="726276584504105859">Dra hit för att dela upp skärmen</translation>
+<translation id="7303365578352795231">Svarar på en annan enhet.</translation>
 <translation id="7348093485538360975">Skärmtangentbord</translation>
 <translation id="735745346212279324">VPN frånkopplat</translation>
 <translation id="7377169924702866686">Caps Lock är på.</translation>
@@ -391,6 +396,7 @@
 <translation id="7842211907556571265">Ansluter till <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Varning: Experimentfunktion</translation>
 <translation id="7846634333498149051">Tangentbord</translation>
+<translation id="7886169021410746335">Ändra sekretessinställningarna</translation>
 <translation id="7886277072580235377">Internetsessionen rensas när du loggar ut. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Skicka e-post</translation>
 <translation id="7904094684485781019">Administratören för kontot tillåter inte multiinloggning.</translation>

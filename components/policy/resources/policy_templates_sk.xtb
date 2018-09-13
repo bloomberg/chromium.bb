@@ -360,12 +360,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2082205219176343977">Konfigurácia minimálnej povolenej verzie Chromu pre zariadenie.</translation>
 <translation id="209586405398070749">Stabilná verzia</translation>
 <translation id="2098658257603918882">Povoliť hlásenie údajov týkajúcich sa používania a zlyhaní</translation>
-<translation id="2098916259427011890">Toto pravidlo ovláda, či sa majú nahlasovať informácie o verzii, napríklad verzia, platforma, architektúra operačného systému, verzia prehliadača <ph name="PRODUCT_NAME" /> a kanál <ph name="PRODUCT_NAME" />.
-
-      Keď ho nenastavíte alebo nastavíte na hodnotu true, informácie o verzii sa zhromažďujú.
-      Keď ho nastavíte na hodnotu false, informácie o verzii sa nezhromažďujú.
-
-      Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie na nahlasovanie údajov o Chrome a správu cloudu.</translation>
 <translation id="2111016292707172233">Povolí dostupnosť Vyhľadávania klepnutím v zobrazení obsahu v prehliadači <ph name="PRODUCT_NAME" />.
 
       Ak toto nastavenie povolíte, bude mať používateľ k dispozícii Vyhľadávanie klepnutím a bude si môcť túto funkciu vypnúť alebo zapnúť.
@@ -1173,12 +1167,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Inak ho môžete nastaviť na niektorú z nesledujúcich hodnôt: tls1.2 alebo tls1.3. Keď ho nastavíte, <ph name="PRODUCT_NAME" /> nebude používať verzie protokolu SSL/TLS vyššie ako stanovená verzia. Hodnota, ktorá sa nebude dať rozpoznať, bude ignorovaná.</translation>
 <translation id="4121350739760194865">Zabraňuje tomu, aby sa propagácie aplikácií zobrazovali na stránke Nová karta</translation>
 <translation id="412697421478384751">Povoliť používateľom nastaviť slabé kódy PIN na uzamknutej obrazovke</translation>
-<translation id="4129183564590133854">Toto pravidlo ovláda, či sa majú nahlasovať informácie, ktoré sa dajú použiť na identifikáciu používateľov, ako sú napríklad prihlasovacie údaje operačného systému, prihlasovacie údaje profilu v prehliadači <ph name="PRODUCT_NAME" />, názov profilu v prehliadači <ph name="PRODUCT_NAME" />, cesta k profilu v prehliadači <ph name="PRODUCT_NAME" /> a spustiteľná cesta k prehliadaču <ph name="PRODUCT_NAME" />.
-
-      Keď ho nenastavíte alebo nastavíte na hodnotu true, informácie použiteľné na identifikáciu používateľov sa zhromažďujú.
-      Keď ho nastavíte na hodnotu false, informácie použiteľné na identifikáciu používateľov sa nezhromažďujú
-
-       Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie na nahlasovanie údajov o Chrome a správu cloudu.</translation>
 <translation id="4138655880188755661">Časový limit</translation>
 <translation id="4157003184375321727">Hlásiť verziu operačného systému a firmvéru</translation>
 <translation id="4157594634940419685">Povoliť prístup k natívnym tlačiarňam CUPS</translation>
@@ -1492,12 +1480,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce históriu prehliadania importovať, alebo môže import prebehnúť automaticky.</translation>
 <translation id="5056708224511062314">Lupa obrazovky je vypnutá</translation>
 <translation id="5058573563327660283">Vybrať stratégiu, ktorá sa použije na uvoľnenie miesta na disku počas automatického čistenia (podpora bola ukončená)</translation>
-<translation id="5058771123777243130">Toto pravidlo ovláda, či sa majú nahlasovať údaje o pravidle a čas načítania pravidla.
-
-       Keď ho nenastavíte alebo nastavíte na hodnotu true, údaje o pravidle a čas jeho načítania sa zhromažďujú.
-      Keď ho nastavíte na hodnotu false, údaje o pravidle a čas jeho načítania sa nezhromažďujú.
-
-      Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie na nahlasovnie údajov o Chrome a správu cloudu.</translation>
 <translation id="5067143124345820993">Zoznam používateľov s povolením na prihlásenie</translation>
 <translation id="5068140065960598044">Pravidlá používania cloudu v prehliadači <ph name="PRODUCT_NAME" /> prepíšu pravidlá zariadenia.</translation>
 <translation id="5085647276663819155">Zakázať ukážku pred tlačou</translation>
@@ -2085,12 +2067,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Toto nastavenie ovláda prezentovanie uvítacích stránok, ktoré pomáhajú používateľom prihlásiť sa do prehliadača <ph name="PRODUCT_NAME" /> a vybrať ho ako svoj predvolený prehliadač alebo ich pomáhajú inak informovať o funkciách produktov.</translation>
 <translation id="6766216162565713893">Povoliť webom žiadať používateľa o prístup k zariadeniam Bluetooth v blízkosti</translation>
 <translation id="6770454900105963262">Nahlásiť informácie o aktívnych reláciách verejného terminálu</translation>
-<translation id="6773056206551814546">Toto pravidlo ovláda, či sa majú nahlasovať informácie, ktoré sa dajú použiť na identifikáciu zariadení, ako napríklad názov zariadenia a sieťové adresy.
-
-      Keď ho nenastavíte alebo nastavíte na hodnotu true, informácie použiteľné na identifikáciu zariadení sa zhromažďujú.
-      Keď ho nastavíte na hodnotu false, informácie použiteľné na identifikáciu zariadení sa nezhromažďujú.
-
-      Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie na nahlasovanie údajov o Chrome a správu cloudu.</translation>
 <translation id="6786747875388722282">Rozšírenia</translation>
 <translation id="6786967369487349613">Nastaviť adresár roamingového profilu</translation>
 <translation id="6810445994095397827">Blokovať jazyk JavaScript na týchto webových stránkach</translation>
@@ -2890,13 +2866,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
           Ak chcete zadať niekoľko názvov serverov, oddeľte ich čiarkami. Zástupné znaky (*) sú povolené.
 
           Ak pravidlo zostane nenastavené, prehliadač <ph name="PRODUCT_NAME" /> sa najprv pokúsi zistiť, či sa server nachádza v sieti intranet, a až potom bude reagovať na žiadosti IWA. Ak sa zistí, že je server v sieti internet, prehliadač <ph name="PRODUCT_NAME" /> bude žiadosti IWA ignorovať.</translation>
-<translation id="8667812577403206506">Umožňuje ovládať, či sa virtuálne počítače môžu spúšťať v systéme Chrome OS.
-
-      Ak toto pravidlo nastavíte na hodnotu True, zariadenie bude môcť spúšťať virtuálne počítače.
-      Ak ho nastavíte na hodnotu False, zariadenie nebude môcť spúšťať virtuálne počítače.
-      Keď ho zmeníte na hodnotu False, použije sa na začínajúce nové virtuálne počítače, ale nevypne tie, ktoré sú už spustené.
-      Ak toto pravidlo nenastavíte v spravovanom zariadení, nebude môcť spúšťať virtuálne počítače.
-      Nespravované zariadenia môžu spúšťať virtuálne počítače.</translation>
 <translation id="8669669491594628013">Umožňuje ovládať spustenie upozornenia v rámci ochrany heslom. Ochrana heslom upozorňuje používateľov, keď svoje chránené heslo opätovne použijú na potenciálne podozrivých weboch.
 
       Pomocou pravidiel PasswordProtectionLoginURLs a PasswordProtectionChangePasswordURL môžete nakonfigurovať, ktoré heslo chcete chrániť.
@@ -3139,9 +3108,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Keď tieto pravidlá nastavíte na možnosť ClientCertificate (hodnota 1), overenie certifikátu klienta sa použije pre nových pridaných používateľov, ktorí sa prihlásia prostredníctvom SAML. Nepoužijú sa pre nich žiadne heslá a ich miestne dáta vo vyrovnávacej pamäti sú chránené pomocou zodpovedajúcich kryptografických kľúčov. Toto nastavenie umožňuje napríklad konfigurovať inteligentnú kartu na základe overenia totožnosti používateľa (pamätajte, že middlevérové aplikácie inteligentných kariet musíte nainštalovať prostredníctvom pravidla DeviceLoginScreenAppInstallList).
 
       Toto pravidlo sa vzťahuje iba na používateľov, ktorí sa prihlásia pomocou SAML.</translation>
-<translation id="9211439035693857287">Umožňuje konfigurovať pravidlá súvisiace s rozšírením na nahlasovanie údajov o Chrome.
-
-      Tieto pravidlá sú účinné iba vtedy, keď povolíte aj rozšírenie na nahlasovanie údajov o Chrome a správu cloudu.</translation>
 <translation id="9213347477683611358">Slúži na konfiguráciu obrázku tapety na úrovni zariadenia, ktorý sa bude zobrazovať na obrazovke prihlásenia, ak sa do zariadenia zatiaľ neprihlásil žiadny používateľ. Pravidlo nastavíte určením webovej adresy, z ktorej môže zariadenie so systémom Chrome OS stiahnuť daný obrázok tapety, a určením kryptografickej hodnoty hash, pomocou ktorej sa overí integrita stiahnutého súboru. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 16 MB. Webová adresa musí byť prístupná bez overenia totožnosti. Obrázok tapety sa stiahne a uloží do vyrovnávacej pamäte. Obrázok sa stiahne znova v prípade, že sa zmení webová adresa alebo hodnota hash.
 
       Toto pravidlo je potrebné zadať ako reťazec, ktorý udáva webovú adresu a hodnotu hash vo formáte JSON. Príklad:

@@ -377,12 +377,6 @@
 <translation id="2082205219176343977">Az engedélyezett legrégebbi Chrome-verzió beállítása az eszközön.</translation>
 <translation id="209586405398070749">Stabil csatorna</translation>
 <translation id="2098658257603918882">Használati és összeomlással kapcsolatos adatok jelentésének engedélyezése</translation>
-<translation id="2098916259427011890">Ez a házirend szabályozza, hogy megtörténjen-e a verzióadatok, például az operációs rendszer verziójának, platformjának, architektúrájának, valamint a <ph name="PRODUCT_NAME" /> verziójának és a <ph name="PRODUCT_NAME" />-csatornának a jelentése.
-
-      Ha a házirend nincs beállítva, illetve értéke igaz, akkor megtörténik a verzióadatok begyűjtése.
-      Ha a házirend értéke hamis, akkor nem történik meg a verzióadatok begyűjtése.
-
-      Ez a házirend csak akkor érvényesül, ha be van kapcsolva a Chrome Reporting Extension és a Cloud Management.</translation>
 <translation id="2111016292707172233">Lehetővé teszi a Keresés koppintással funkció használatát a <ph name="PRODUCT_NAME" /> tartalomnézetében.
 
       Ha aktiválja ezt a beállítást, akkor a felhasználó használhatja a Keresés koppintással funkciót, és saját maga döntheti el, hogy be- vagy kikapcsolja-e azt.
@@ -1167,12 +1161,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ellenkező esetben a következő értékek egyike állítható be: „tls1.2” vagy „tls1.3”. Ha beállítja a házirendet, a <ph name="PRODUCT_NAME" /> nem használ majd a megadottnál magasabb verziószámú SSL/TLS-verziót. Az ismeretlen értékeket figyelmen kívül hagyja a böngésző.</translation>
 <translation id="4121350739760194865">Megakadályozza az alkalmazáspromóciók megjelenését az új lap oldalon</translation>
 <translation id="412697421478384751">Annak engedélyezése, hogy a felhasználók gyenge PIN-kódot adjanak meg a lezárási képernyő PIN-kódjaként.</translation>
-<translation id="4129183564590133854">Ez a házirend szabályozza, hogy készüljön-e jelentés az olyan adatokról, amelyek alkalmasak a felhasználók azonosítására (pl. operációs rendszeren használt bejelentkezési adatok, <ph name="PRODUCT_NAME" />-profil bejelentkezési adatai, <ph name="PRODUCT_NAME" />-profil neve, <ph name="PRODUCT_NAME" />-profil elérési útja és a <ph name="PRODUCT_NAME" /> futtatható fájljának elérési útja.
-
-      Ha a házirend nincs beállítva, illetve értéke igaz, akkor megtörténik a felhasználók azonosítására alkalmas adatok begyűjtése.
-      Ha a házirend értéke hamis, akkor nem történik meg a felhasználók azonosítására alkalmas adatok begyűjtése.
-
-      Ez a házirend csak akkor érvényesül, ha be van kapcsolva a Chrome Reporting Extension és a Cloud Management.</translation>
 <translation id="4138655880188755661">Időkorlát</translation>
 <translation id="4157003184375321727">Az operációs rendszer és a firmware verziójának jelentése</translation>
 <translation id="4157594634940419685">Hozzáférés engedélyezése a natív CUPS-nyomtatókhoz</translation>
@@ -1472,12 +1460,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5052081091120171147">Ez a házirend engedélyezése esetén a böngészési előzmények importálását kényszeríti a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Ha le van tiltva, nem történik meg a böngészési előzmények importálása. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="5056708224511062314">Nagyító kikapcsolva</translation>
 <translation id="5058573563327660283">Az automatikus megtisztítás során a lemezterület felszabadításához használt stratégia kiválasztása (elavult)</translation>
-<translation id="5058771123777243130">Ez a házirend szabályozza, hogy készüljön-e jelentés a házirendadatokról és a házirend lekérésének idejéről.
-
-      Ha a házirend nincs beállítva, illetve értéke igaz, akkor megtörténik a házirendadatok, illetve a lekérésük idejére vonatkozó dátum- és időadatok begyűjtése.
-      Ha a házirend értéke hamis, akkor nem történik meg a házirendadatok, illetve a lekérésük idejére vonatkozó dátum- és időadatok begyűjtése.
-
-      Ez a házirend csak akkor érvényesül, ha be van kapcsolva a Chrome Reporting Extension és a Cloud Management.</translation>
 <translation id="5067143124345820993">A bejelentkezett felhasználó engedélyezőlistája</translation>
 <translation id="5068140065960598044">A(z) <ph name="PRODUCT_NAME" /> felhővel kapcsolatos házirendje felülírja a számítógép házirendjét.</translation>
 <translation id="5085647276663819155">Nyomtatási előnézet letiltása</translation>
@@ -2039,12 +2021,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ez a beállítás szabályozza azon üdvözlő oldalak megjelenését, amelyek segítik a felhasználókat a <ph name="PRODUCT_NAME" /> böngészőbe való bejelentkezésben, a böngésző alapértelmezettként való kiválasztásában, vagy a felhasználók termékfunkciókról való, más módon történő tájékoztatásában.</translation>
 <translation id="6766216162565713893">Engedélyezi azt, hogy a felhasználótól hozzáférést kérjenek a webhelyek egy közeli Bluetooth-eszköz használatára</translation>
 <translation id="6770454900105963262">Az aktív kioszkmunkamenetekkel kapcsolatos információk jelentése</translation>
-<translation id="6773056206551814546">Ez a házirend szabályozza, hogy készüljön-e jelentés az olyan adatokról, amelyek alkalmasak az eszközök azonosítására (pl. eszköz neve, hálózati cím).
-
-      Ha a házirend nincs beállítva, illetve értéke igaz, akkor megtörténik az eszközök azonosítására alkalmas adatok begyűjtése.
-      Ha a házirend értéke hamis, akkor nem történik meg az eszközök azonosítására alkalmas adatok begyűjtése.
-
-      Ez a házirend csak akkor érvényesül, ha be van kapcsolva a Chrome Reporting Extension és a Cloud Management.</translation>
 <translation id="6786747875388722282">Bővítmények</translation>
 <translation id="6786967369487349613">Barangolási profilcímtár beállítása</translation>
 <translation id="6810445994095397827">JavaScript letiltása ezeken a webhelyeken</translation>
@@ -2819,13 +2795,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
           Több szervernév megadása esetén azokat vesszővel kell elválasztani. A helyettesítő karakterek (*) engedélyezettek.
 
           Ha nem állítja be ezt a házirendet, a <ph name="PRODUCT_NAME" /> megpróbálja érzékelni, hogy egy szerver az intraneten van-e, és csak akkor válaszol az IWA-kérésekre. Ha a szervert az interneten lévőnek észleli, a <ph name="PRODUCT_NAME" /> figyelmen kívül hagyja annak IWA-kéréseit.</translation>
-<translation id="8667812577403206506">Segítségével szabályozhatja, hogy futhatnak-e virtuális gépek a Chrome OS rendszeren.
-
-      Ha a házirend értéke igaz, az eszközön futhatnak virtuális gépek.
-      Ha a házirend értéke hamis, az eszközön nem futhatnak virtuális gépek.
-      Amikor hamis értékre állítja ezt a házirendet, a módosítás az új virtuális gépek indítására vonatkozik, de nem kapcsolja ki a már futó virtuális gépeket.
-      Ha a házirend nincs beállítva kezelt eszközön, az eszköz számára nem lesz engedélyezve a virtuális gépek futtatása.
-      A nem kezelt eszközök számára engedélyezett a virtuális gépek futtatása.</translation>
 <translation id="8669669491594628013">Lehetővé teszi a jelszóvédelmi figyelmeztetés aktiválásának szabályozását. A jelszóvédelem figyelmezteti a felhasználót, ha potenciálisan gyanús webhelyen próbálja újra felhasználni védett jelszavát.
 
       A „PasswordProtectionLoginURLs” és a „PasswordProtectionChangePasswordURL” házirendeket használhatja a védendő jelszavak beállítására.
@@ -3065,9 +3034,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ha a házirend beállítása ClientCertificate (klienstanúsítvány, 1-es érték), akkor a böngésző klienstanúsítványon alapuló hitelesítést használ az újonnan hozzáadott felhasználók esetében, akik SAML használatával jelentkezhetnek be. Az ilyen felhasználóknak nem kell jelszót használniuk, gyorsítótárazott helyi adataikat pedig a megfelelő titkosítási kulcsok védik. Ez a beállítás lehetővé teszi például az intelligens kártyákon alapuló felhasználói hitelesítés beállítását (felhívjuk figyelmét, hogy ehhez telepíteni kell az intelligens kártya köztes alkalmazását a DeviceLoginScreenAppInstallList házirenden keresztül).
 
       Ez a házirend csak azokra a felhasználókra érvényes, akik SAML-alapú hitelesítést használnak.</translation>
-<translation id="9211439035693857287">A Chrome Reporting Extension házirendjeinek konfigurálása.
-
-      Ezek a házirendek csak akkor érvényesek, ha a Chrome Reporting Extension és a Cloud Management aktiválva van.</translation>
 <translation id="9213347477683611358">Beállítja az eszközszintű háttérképet, amely akkor jelenik meg a bejelentkezési képernyőn, ha még nem jelentkezett be felhasználó az eszközre. Az irányelv annak az URL-nek a megadásával állítható be, ahonnan a Chrome OS-eszköz letöltheti a háttérképet és a letöltés integritásának ellenőrzésére szolgáló kriptográfiai hash-értéket. A képnek JPEG formátumban kell lennie, mérete pedig nem haladhatja meg a 16 MB-ot. Az URL-nek hitelesítés nélkül is elérhetőnek kell lennie. A letöltés után a háttérkép a gyorsítótárba kerül. A rendszer az URL vagy a hash-érték változása esetén minden esetben újból letölti a képet.
 
       Az irányelvet olyan karakterláncként kell megadni, amely JSON formátumban fejezi ki az URL-t és a hash-értéket, például:

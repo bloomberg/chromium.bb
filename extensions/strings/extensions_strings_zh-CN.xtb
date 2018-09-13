@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">来自<ph name="VENDOR_NAME" />的未知产品 <ph name="PRODUCT_ID" /></translation>
 <translation id="7068383018033524534">清单文件无效</translation>
 <translation id="7217838517480956708">此计算机的管理员要求安装 <ph name="EXTENSION_NAME" />。该扩展程序无法删除或修改。</translation>
+<translation id="7612608473764576263">私钥的输入值必须采用有效格式（必须是采用 PKCS#8 格式且经过 PEM 编码的 RSA 密钥）。</translation>
 <translation id="7939686037314084444">此扩展程序未能正确加载。它可能无法拦截网络请求。</translation>
 <translation id="7972881773422714442">选项：<ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">前置</translation>

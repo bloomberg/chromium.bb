@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el sistema operatiu del vostre ordinador considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="1151972924205500581">Es requereix una contrasenya</translation>
 <translation id="1152921474424827756">Accediu a una <ph name="BEGIN_LINK" />còpia emmagatzemada a la memòria cau<ph name="END_LINK" /> de la pàgina <ph name="URL" />.</translation>
+<translation id="1156303062776767266">Estàs consultant un fitxer local o compartit</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> ha tancat la connexió de manera inesperada.</translation>
 <translation id="1161325031994447685">Torna't a connectar a la xarxa Wi-Fi.</translation>
 <translation id="1165039591588034296">Error</translation>
@@ -515,6 +516,7 @@
 <translation id="4408413947728134509">Galetes <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Adreça de recollida</translation>
 <translation id="4424024547088906515">Aquest servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè Chrome considera que el seu certificat de seguretat no és de confiança. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
+<translation id="4430369329743628066">S'ha afegit a les adreces d'interès</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> no ha acceptat el certificat d'inici de sessió o pot ser que no se n'hagi proporcionat cap.</translation>
 <translation id="4434045419905280838">Finest. emergents i redireccions</translation>
 <translation id="443673843213245140">L'ús d'un servidor intermediari no està activat, però s'ha especificat una configuració explícita d'un servidor intermediari.</translation>
@@ -534,6 +536,7 @@
 <translation id="4592951414987517459">La connexió a <ph name="DOMAIN" /> s'ha encriptat amb un sistema de xifratge modern.</translation>
 <translation id="4594403342090139922">&amp;Desfés la supressió</translation>
 <translation id="4619615317237390068">Pestanyes d'altres dispositius</translation>
+<translation id="4646534391647090355">Porta-m'hi ara</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat conté errors. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="4690462567478992370">Deixa de fer servir un certificat no vàlid</translation>
@@ -580,6 +583,7 @@
 <translation id="4958444002117714549">Desplega la llista</translation>
 <translation id="4974590756084640048">Torna a activar els advertiments</translation>
 <translation id="4988217478422488391">Agilitza el pagament de les compres en línia</translation>
+<translation id="4989163558385430922">Mostra-ho tot</translation>
 <translation id="4989809363548539747">Aquest connector no és compatible</translation>
 <translation id="5002932099480077015">Si s'activa, Chrome emmagatzemarà una còpia de la targeta en aquest dispositiu per agilitzar l'emplenament de formularis.</translation>
 <translation id="5018422839182700155">No es pot obrir aquesta pàgina</translation>
@@ -724,6 +728,7 @@
 <translation id="5922853866070715753">Ja queda poc</translation>
 <translation id="5939518447894949180">Restableix</translation>
 <translation id="5951495562196540101">El dispositiu no es pot inscriure amb un compte de consumidor (llicència empaquetada disponible).</translation>
+<translation id="5966151627327109289">Et tanca la sessió de la majoria de llocs web. Pot ser que deixis de tenir accés al contingut protegit del lloc web <ph name="SITE" /> i d'altres llocs web.</translation>
 <translation id="5967592137238574583">Edita la informació de contacte</translation>
 <translation id="5967867314010545767">Elimina de l'historial</translation>
 <translation id="5975083100439434680">Redueix</translation>
@@ -745,6 +750,7 @@
 <translation id="6071091556643036997">El tipus de política no és vàlid.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Aquesta targeta es desarà al Compte de Google per poder pagar més ràpidament des de qualsevol dispositiu.}other{Aquestes targetes es desaran al Compte de Google per poder pagar més ràpidament des de qualsevol dispositiu.}}</translation>
 <translation id="6080696365213338172">Heu accedit a contingut mitjançant un certificat proporcionat per l'administrador. Per tant, l'administrador por interceptar les dades que proporcioneu a <ph name="DOMAIN" />.</translation>
+<translation id="6096619198407627433">Et tanca la sessió de la majoria de llocs web, però no la del Compte de Google. Pot ser que deixis de tenir accés al contingut protegit del lloc web <ph name="SITE" /> i d'altres llocs web.</translation>
 <translation id="610911394827799129">A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, trobaràs altres maneres d'explorar l'historial del teu compte de Google</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Cap}=1{1 contrasenya (sincronitzada)}other{# contrasenyes (sincronitzades)}}</translation>
 <translation id="6146055958333702838">Reviseu els cables i reinicieu els encaminadors, els mòdems o altres
@@ -816,6 +822,7 @@
 <translation id="6710594484020273272">&lt;Escriviu el terme de cerca&gt;</translation>
 <translation id="6711464428925977395">Hi ha hagut algun problema amb el servidor intermediari o l'adreça no és correcta.</translation>
 <translation id="674375294223700098">Error de certificat del servidor desconegut.</translation>
+<translation id="6744009308914054259">Mentre esperes a tenir connexió, pots visitar Baixades per llegir articles sense connexió.</translation>
 <translation id="6753269504797312559">Valor de la política</translation>
 <translation id="6757797048963528358">El dispositiu ha entrat en mode de repòs.</translation>
 <translation id="6778737459546443941">El teu pare o la teva mare encara no ho han aprovat</translation>
@@ -912,6 +919,7 @@ Detalls addicionals:
 <translation id="7416351320495623771">Gestiona les contrasenyes…</translation>
 <translation id="7419106976560586862">Camí del perfil</translation>
 <translation id="7437289804838430631">Afegeix informació de contacte</translation>
+<translation id="7440140511386898319">Explora sense connexió</translation>
 <translation id="7441627299479586546">Usuari de la política incorrecte</translation>
 <translation id="7444046173054089907">Aquest lloc està bloquejat</translation>
 <translation id="7445762425076701745">La identitat del servidor al qual esteu connectat no es pot acabar de validar. Esteu connectat a un servidor que utilitza un nom que només és vàlid dins la vostra xarxa, de manera que una autoritat de certificació externa no en pot validar la propietat. Com que de tota manera algunes autoritats de certificació emetran certificats per a aquests noms, no es pot assegurar que estigueu connectat al lloc web previst i no a un atacant.</translation>

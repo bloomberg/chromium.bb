@@ -367,12 +367,6 @@
 <translation id="2082205219176343977">Konfiguriraj najmanju dopuštenu verziju Chromea za uređaj.</translation>
 <translation id="209586405398070749">Stabilan kanal</translation>
 <translation id="2098658257603918882">Omogući izvješćivanje o upotrebi i podatke o rušenjima programa</translation>
-<translation id="2098916259427011890">Pravilo određuje hoće li se prijavljivati informacije o verziji, kao što su verzija OS-a, platforma OS-a, arhitektura OS-a, verzija preglednika <ph name="PRODUCT_NAME" /> i kanal preglednika <ph name="PRODUCT_NAME" />.
-
-      Ako se pravilo ne postavi ili se postavi na True, prikupljaju se informacije o verziji.
-      Ako se pravilo postavi na False, ne prikupljaju se informacije o verziji.
-
-      To se pravilo primjenjuje samo kada su Chromeovo proširenje za prijavljivanje i Upravljanje u oblaku omogućeni.</translation>
 <translation id="2111016292707172233">Omogućuje dostupnost značajke Dodirnite za pretraživanje u prikazu sadržaja preglednika <ph name="PRODUCT_NAME" />.
 
       Ako omogućite tu postavku, korisniku će biti dostupna značajka Dodirnite za pretraživanje i moći će je samostalno uključiti ili isključiti.
@@ -1159,12 +1153,6 @@
       U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1.2" ili "tls1.3". Kad se pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a veće od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>
 <translation id="4121350739760194865">Sprječavanje prikaza promocija aplikacija na stranici Nova kartica</translation>
 <translation id="412697421478384751">Omogući korisnicima da postave slabe PIN-ove za zaključan zaslon</translation>
-<translation id="4129183564590133854">Pravilo određuje hoće li se prijavljivati informacije koje se mogu upotrijebiti za identifikaciju korisnika, kao što su prijava OS-a, prijava na <ph name="PRODUCT_NAME" /> profil, naziv <ph name="PRODUCT_NAME" /> profila, put <ph name="PRODUCT_NAME" /> profila i izvršna putanja preglednika <ph name="PRODUCT_NAME" />.
-
-      Ako se pravilo ne postavi ili se postavi na True, prikupljaju se informacije koje se mogu upotrijebiti za identifikaciju korisnika.
-      Ako se pravilo postavi na False, ne prikupljaju se informacije koje se mogu upotrijebiti za identifikaciju korisnika.
-
-      To se pravilo primjenjuje samo kada su Chromeovo proširenje za prijavljivanje i Upravljanje u oblaku omogućeni.</translation>
 <translation id="4138655880188755661">Vremensko ograničenje</translation>
 <translation id="4157003184375321727">Izvješće o verziji OS-a i opreme</translation>
 <translation id="4157594634940419685">Dopusti pristup nativnim CUPS pisačima</translation>
@@ -1466,12 +1454,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="5052081091120171147">Ako je omogućeno, ovo pravilo prisilno uvozi povijest pregledavanja iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, povijest pregledavanja se ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti povijest pregledavanja ili do uvoza može doći automatski.</translation>
 <translation id="5056708224511062314">Povećalo je onemogućeno</translation>
 <translation id="5058573563327660283">Odaberi strategiju kojom se oslobađa prostor na disku tijekom automatskog čišćenja (obustavljeno)</translation>
-<translation id="5058771123777243130">Pravilo određuje hoće li se prijavljivati podaci pravila i vrijeme dohvaćanja pravila.
-
-      Ako se pravilo ne postavi ili se postavi na True, prikupljaju se podaci pravila i vrijeme dohvaćanja pravila.
-      Ako se pravilo postavi na False, ne prikupljaju se podaci pravila ni vrijeme dohvaćanja pravila.
-
-      To se pravilo primjenjuje samo kada su Chromeovo proširenje za prijavljivanje i Upravljanje u oblaku omogućeni.</translation>
 <translation id="5067143124345820993">Popis korisnika kojima je dopuštena prijava</translation>
 <translation id="5068140065960598044">Pravila oblaka za <ph name="PRODUCT_NAME" /> nadjačavaju pravila računala.</translation>
 <translation id="5085647276663819155">Onemogući pregled ispisa</translation>
@@ -2036,12 +2018,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ta postavka upravlja prikazivanjem stranica dobrodošlice koje korisnicima pomažu da se prijave na <ph name="PRODUCT_NAME" /> i odaberu ga kao zadani preglednik ili ih na neki drugi način informiraju o značajkama proizvoda.</translation>
 <translation id="6766216162565713893">Dopusti web-lokacijama da traže dopuštenje korisnika za pristup Bluetooth uređajima u blizini</translation>
 <translation id="6770454900105963262">Izvješćivanje o informacijama o aktivnim sesijama kioska</translation>
-<translation id="6773056206551814546">Pravilo određuje hoće li se prijavljivati informacije koje se mogu upotrijebiti za identifikaciju računala, kao što su naziv računala i mrežne adrese.
-
-      Ako se pravilo ne postavi ili se postavi na True, prikupljaju se informacije koje se mogu upotrijebiti za identifikaciju računala.
-      Ako se pravilo postavi na False, ne prikupljaju se informacije koje se mogu upotrijebiti za identifikaciju računala.
-
-      To se pravilo primjenjuje samo kada su Chromeovo proširenje za prijavljivanje i Upravljanje u oblaku omogućeni.</translation>
 <translation id="6786747875388722282">Proširenja</translation>
 <translation id="6786967369487349613">Postavljanje direktorija roaming profila</translation>
 <translation id="6810445994095397827">Blok JavaScript na ovim web-lokacijama</translation>
@@ -2807,13 +2783,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
           Razdvojite više poslužitelja zarezima. Zamjenski su znakovi (*) dopušteni.
 
           Ako ne postavite ovo pravilo, <ph name="PRODUCT_NAME" /> pokušat će otkriti je li poslužitelj na intranetu te će jedino tada odgovoriti na IWA zahtjeve. Ako otkrije da se radi o poslužitelju na internetu, <ph name="PRODUCT_NAME" /> zanemarit će njegove IWA zahtjeve.</translation>
-<translation id="8667812577403206506">Omogućuje vam da odredite je li virtualnim računalima dopušteno pokretanje na OS-u Chrome.
-
-      Ako je pravilo postavljeno na True, uređaju je dopušteno pokretanje virtualnih računala.
-      Ako je pravilo postavljeno na False, uređaju nije dopušteno pokretanje virtualnih računala.
-      Kada se to pravilo promijeni na False, primjenjuje se na pokretanje novih virtualnih računala, ali ne isključuje virtualna računala koja su već pokrenuta.
-      Kada to pravilo nije postavljeno na upravljanom uređaju, uređaju nije dopušteno pokretanje virtualnih računala.
-      Neupravljanim je uređajima dopušteno pokretanje virtualnih računala.</translation>
 <translation id="8669669491594628013">Omogućuje vam da odredite okidač na temelju kojeg će zaštita zaporke prikazati upozorenje. Zaštita zaporke to upozorenje prikazuje korisnicima kada ponovo upotrijebe svoju zaštićenu zaporku na potencijalno sumnjivim web-lokacijama.
 
       Da biste konfigurirali koju zaporku zaštititi, upotrijebite "PasswordProtectionLoginURLs" i "PasswordProtectionChangePasswordURL".
@@ -3043,9 +3012,6 @@ za preglednike imaju isti raspored.
       Kada se to pravilo postavi na ClientCertificate (vrijednost 1), autentifikacija korisničkim certifikatom upotrebljava se za novo dodane korisnike koji se prijavljuju putem SAML-a. Za te se korisnike ne upotrebljavaju nikakve zaporke i njihovi se predmemorirani lokalni podaci štite pomoću odgovarajućih kriptografskih ključeva. Na primjer, ta postavka omogućuje konfiguriranje autentifikacije korisnika na temelju pametne kartice (napominjemo da se posredničke aplikacije za pametne kartice trebaju instalirati pomoću pravila DeviceLoginScreenAppInstallList).
 
       To se pravilo primjenjuje samo na korisnike koji se autentificiraju putem SAML-a.</translation>
-<translation id="9211439035693857287">Konfigurira pravila povezana s Chromeovim proširenjem za prijavljivanje.
-
-      Ta se pravila primjenjuju samo kada su Chromeovo proširenje za prijavljivanje i Upravljanje u oblaku omogućeni.</translation>
 <translation id="9213347477683611358">Konfigurira pozadinsku sliku koja se prikazuje na zaslonu za prijavu na razini uređaja ako na uređaju još nema prijavljenih korisnika. Pravilo se postavlja određivanjem URL-a s kojega uređaj s OS-om Chrome može preuzeti pozadinsku sliku i kriptografskog raspršivanja za provjeru integriteta preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije. Pozadinska slika preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili raspršivanje promijene.
 
       Pravilo se navodi kao niz koji izražava URL i sažetak u JSON obliku, na primjer:

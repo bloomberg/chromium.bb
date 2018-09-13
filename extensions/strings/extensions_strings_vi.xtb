@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Sản phẩm không xác định <ph name="PRODUCT_ID" /> từ <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Tệp kê khai không hợp lệ</translation>
 <translation id="7217838517480956708">Quản trị viên của máy này yêu cầu cài đặt <ph name="EXTENSION_NAME" />. Bạn không thể xóa hoặc sửa đổi tiện ích này.</translation>
+<translation id="7612608473764576263">Giá trị đầu vào của khóa riêng tư phải có định dạng hợp lệ (khóa RSA mã hóa kiểu PEM có định dạng PKCS#8).</translation>
 <translation id="7939686037314084444">Không tải được tiện ích đúng cách. Tiện ích này có thể không chặn được các yêu cầu mạng.</translation>
 <translation id="7972881773422714442">Tùy chọn: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Máy ảnh mặt trước</translation>

@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">Din webbinformation och aktivitet som synkroniseras med Google-kontot</translation>
 <translation id="116280672541001035">Använd</translation>
 <translation id="1172593791219290334">Startflik</translation>
+<translation id="1175310183703641346">Bokmärken, historik, lösenord med mera synkroniseras inte längre med ditt Google-konto</translation>
 <translation id="1178581264944972037">Paus</translation>
 <translation id="1181037720776840403">Ta bort</translation>
 <translation id="1197267115302279827">Flytta bokmärken</translation>
@@ -48,6 +49,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="129553762522093515">Nyligen stängda</translation>
 <translation id="1326317727527857210">Logga in i Chrome om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="1332501820983677155">Kortkommandon för funktioner i Google Chrome</translation>
+<translation id="1360432990279830238">Logga ut och inaktivera synkronisering?</translation>
 <translation id="136248372334525878">Genom att läsa in sidor i förväg går det snabbare att läsa in sidor och läsa offline</translation>
 <translation id="1369915414381695676">Webbplatsen <ph name="SITE_NAME" /> har lagts till</translation>
 <translation id="1373696734384179344">Det finns inte tillräckligt med minne för att ladda ned det valda innehållet.</translation>
@@ -159,6 +161,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="2131665479022868825"><ph name="DATA" /> har sparats</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> har stängts</translation>
 <translation id="2139186145475833000">Lägg till på startskärmen</translation>
+<translation id="2142289305367051020">Här finns dina favoritsidor</translation>
 <translation id="2146738493024040262">Öppna snabbappen</translation>
 <translation id="2148716181193084225">Idag</translation>
 <translation id="2154484045852737596">Redigera kortet</translation>
@@ -350,6 +353,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="3822502789641063741">Rensa webbplatslagring?</translation>
 <translation id="385051799172605136">Bakåt</translation>
 <translation id="3859306556332390985">Sök framåt</translation>
+<translation id="3868004864571585162">Cookies, medielicenser och webbplatsdata</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
 <translation id="3895926599014793903">Tvinga aktivering av zoom</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -909,6 +913,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8109613176066109935">Aktivera synkronisering om du vill ha dina bokmärken tillgängliga på alla enheter</translation>
 <translation id="8116925261070264013">Ljudet avstängt</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
+<translation id="8156139159503939589">Vilka språk kan du läsa?</translation>
 <translation id="8168435359814927499">Innehåll</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> filer återstår</translation>
 <translation id="8190358571722158785">1 dag kvar</translation>
@@ -921,6 +926,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8260126382462817229">Försök att logga in igen</translation>
 <translation id="8261506727792406068">Radera</translation>
 <translation id="8266862848225348053">Nedladdningsplats</translation>
+<translation id="8274165955039650276">Visa nedladdningar</translation>
 <translation id="8283853025636624853">Synkroniseras med <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standardflikar</translation>
 <translation id="8313455859591948645">Redigera startfliken</translation>
@@ -937,6 +943,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8441146129660941386">Sök bakåt</translation>
 <translation id="8445448999790540984">Det gick inte att exportera lösenord</translation>
 <translation id="8447861592752582886">Återkalla enhetsbehörighet</translation>
+<translation id="8477071352266846533">Synkronisering inaktiverad för <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8487700953926739672">Tillgänglig offline</translation>
 <translation id="8489271220582375723">Öppna historiksidan</translation>
 <translation id="8493948351860045254">Frigör lagringsutrymme</translation>
@@ -976,6 +983,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8728487861892616501">Genom att fortsätta att använda programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" /> och <ph name="BEGIN_LINK3" />sekretessmeddelandet för Google-konton som hanteras via Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Klart</translation>
 <translation id="8748850008226585750">Innehållet har dolts</translation>
+<translation id="8751914237388039244">Välj en bild</translation>
 <translation id="8788968922598763114">Öppna den senast stängda fliken igen</translation>
 <translation id="8812260976093120287">På vissa webbplatser kan du betala med ovanstående betalningsappar som stöds på enheten.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> öppnas i Chrome. Genom att fortsätta godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretesspolicy<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />sekretessmeddelandet för  Google-konton som hanteras via Family Link<ph name="END_LINK3" />.</translation>

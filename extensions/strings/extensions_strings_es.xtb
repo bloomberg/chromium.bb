@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Producto <ph name="PRODUCT_ID" /> de <ph name="VENDOR_NAME" /> desconocido</translation>
 <translation id="7068383018033524534">El archivo de manifiesto no es válido</translation>
 <translation id="7217838517480956708">El administrador de este ordenador necesita que se instale <ph name="EXTENSION_NAME" />. No se puede eliminar ni modificar.</translation>
+<translation id="7612608473764576263">El valor de entrada de la clave privada debe tener un formato válido (clave RSA con formato PKCS#8 y codificada con PEM).</translation>
 <translation id="7939686037314084444">No se ha podido cargar la extensión correctamente. Es posible que no pueda interceptar solicitudes de red.</translation>
 <translation id="7972881773422714442">Opciones: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Delantera</translation>

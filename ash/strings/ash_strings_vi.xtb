@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2761704814324807722">Khay trạng thái, thời gian <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Đang kết nối lại với <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Chọn xem các trang web có thể sử dụng dịch vụ vị trí hoặc micrô, camera hay các tính năng khác của thiết bị hay không</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">Ứng dụng</translation>
 <translation id="2808012452536866044">Đã chuyển tính năng Better Together sang một điện thoại mới</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Bạn đã nhấn phím tắt của tính năng phóng to ở vị trí cố định. Bạn có muốn bật tính năng này không?</translation>
 <translation id="4217571870635786043">Nhập bằng giọng nói</translation>
 <translation id="4261870227682513959">Hiển thị các tùy chọn cài đặt thông báo. Thông báo hiện đang tắt</translation>
+<translation id="4269883910223712419">Quản trị viên của thiết bị này có thể:</translation>
 <translation id="4274921305979314545">Kết nối Chromebook với điện thoại của bạn</translation>
 <translation id="4279490309300973883">Đang phản chiếu</translation>
 <translation id="4292681942966152062">Đang kích hoạt <ph name="NETWORK_NAME" /></translation>
@@ -222,6 +224,7 @@
 <translation id="4734965478015604180">Ngang</translation>
 <translation id="476166673298332917">Quản trị viên của thiết bị này có quyền truy cập vào mọi hoạt động, bao gồm cả mật khẩu và hoạt động giao tiếp.</translation>
 <translation id="4776917500594043016">Mật khẩu cho <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Bạn không thể sử dụng Trợ lý Google trong phiên minh họa.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Ngắt kết nối</translation>
 <translation id="4849058404725798627">Đánh dấu đối tượng bằng tiêu điểm bàn phím</translation>
@@ -337,6 +340,7 @@
 <translation id="6751826523481687655">Tính năng theo dõi hiệu suất đang bật</translation>
 <translation id="6785414152754474415">Pin đầy <ph name="PERCENTAGE" />% và đang sạc.</translation>
 <translation id="6803622936009808957">Không thể phản chiếu màn hình do không tìm thấy độ phân giải được hỗ trợ. Thay vào đó, đã chuyển sang chế độ màn hình mở rộng.</translation>
+<translation id="6814658242098378692">Quản lý ứng dụng, tiện ích và chủ đề</translation>
 <translation id="6820676911989879663">Hãy nghỉ giải lao!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Kích hoạt <ph name="NETWORKSERVICE" /></translation>
@@ -360,6 +364,7 @@
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
 <translation id="726276584504105859">Kéo vào đây để sử dụng chế độ chia đôi màn hình</translation>
+<translation id="7303365578352795231">Đang trả lời trên thiết bị khác.</translation>
 <translation id="7348093485538360975">Bàn phím ảo</translation>
 <translation id="735745346212279324">Đã ngắt kết nối VPN</translation>
 <translation id="7377169924702866686">Caps Lock đang bật.</translation>
@@ -392,6 +397,7 @@
 <translation id="7842211907556571265">Đang kết nối với <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Cảnh báo: Tính năng thử nghiệm</translation>
 <translation id="7846634333498149051">Bàn phím</translation>
+<translation id="7886169021410746335">Điều chỉnh tùy chọn cài đặt quyền riêng tư</translation>
 <translation id="7886277072580235377">Phiên hoạt động trên Internet của bạn sẽ bị xóa khi bạn đăng xuất. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Gửi email</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>

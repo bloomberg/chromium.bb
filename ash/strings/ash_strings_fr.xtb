@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
 <translation id="2761704814324807722">Barre d'état – Heure : <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Reconnexion à <ph name="NAME" />…</translation>
+<translation id="2790844815106384441">Choisir si les sites Web peuvent utiliser les services de localisation ou le micro, la caméra ou d'autres fonctionnalités de l'appareil</translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
 <translation id="2805756323405976993">Applications</translation>
 <translation id="2808012452536866044">Better Together sur un nouveau téléphone</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Vous avez utilisé le raccourci de la loupe ancrée. Voulez-vous l'activer ?</translation>
 <translation id="4217571870635786043">Dictée</translation>
 <translation id="4261870227682513959">Afficher les paramètres de notification. Les notifications sont désactivées</translation>
+<translation id="4269883910223712419">L'administrateur de cet appareil peut :</translation>
 <translation id="4274921305979314545">Associez votre Chromebook à votre téléphone</translation>
 <translation id="4279490309300973883">Mise en miroir</translation>
 <translation id="4292681942966152062">Activation de <ph name="NETWORK_NAME" />…</translation>
@@ -222,6 +224,7 @@
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="476166673298332917">L'administrateur de cet appareil a accès à toute l'activité, y compris aux mots de passe et aux communications.</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">L'Assistant Google n'est pas disponible dans une session de démonstration.</translation>
 <translation id="479989351350248267">rechercher</translation>
 <translation id="4804818685124855865">Se déconnecter</translation>
 <translation id="4849058404725798627">Mettre l'objet sélectionné au clavier en surbrillance</translation>
@@ -337,6 +340,7 @@
 <translation id="6751826523481687655">Le suivi des performances est activé</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
+<translation id="6814658242098378692">Gérer les applications, les extensions et les thèmes</translation>
 <translation id="6820676911989879663">Faites une pause !</translation>
 <translation id="683971173229319003">Recherche+L</translation>
 <translation id="6857811139397017780">Activer <ph name="NETWORKSERVICE" /></translation>
@@ -360,6 +364,7 @@
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micro arrière</translation>
 <translation id="726276584504105859">Faire glisser ici pour utiliser l'écran partagé</translation>
+<translation id="7303365578352795231">Réponse sur un autre appareil.</translation>
 <translation id="7348093485538360975">Clavier virtuel</translation>
 <translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="7377169924702866686">La touche de verrouillage des majuscules est activée</translation>
@@ -392,6 +397,7 @@
 <translation id="7842211907556571265">Connexion à <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Avertissement : Fonctionnalité expérimentale</translation>
 <translation id="7846634333498149051">Clavier</translation>
+<translation id="7886169021410746335">Régler les paramètres de confidentialité</translation>
 <translation id="7886277072580235377">Votre session Internet est effacée lorsque vous vous déconnectez. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Envoie un e-mail</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>

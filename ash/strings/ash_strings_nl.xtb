@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Aangesloten op een laag-vermogen-lader. Opladen van de batterij mogelijk niet betrouwbaar.</translation>
 <translation id="2761704814324807722">Statusvak, tijd <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Opnieuw verbinding maken met <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Kies of websites locatieservices of de microfoon, camera of andere functies van het apparaat kunnen gebruiken</translation>
 <translation id="2792498699870441125">Alt+Zoeken</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2808012452536866044">Better Together overgeschakeld naar een nieuwe telefoon</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">Je hebt op de sneltoets voor het gedockte vergrootglas gedrukt. Wil je deze functie inschakelen?</translation>
 <translation id="4217571870635786043">Dicteren</translation>
 <translation id="4261870227682513959">Instellingen voor meldingen weergeven. Meldingen zijn uitgeschakeld</translation>
+<translation id="4269883910223712419">De beheerder van dit apparaat kan het volgende doen:</translation>
 <translation id="4274921305979314545">Koppel je Chromebook aan je telefoon</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> activeren</translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">Horizontaal</translation>
 <translation id="476166673298332917">De beheerder van dit apparaat heeft toegang tot alle activiteit, inclusief wachtwoorden en communicatie.</translation>
 <translation id="4776917500594043016">Wachtwoord voor <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">De Google Assistent is niet beschikbaar in een demosessie.</translation>
 <translation id="479989351350248267">zoeken</translation>
 <translation id="4804818685124855865">Verbinding verbreken</translation>
 <translation id="4849058404725798627">Object met toetsenbordfocus markeren</translation>
@@ -336,6 +339,7 @@
 <translation id="6751826523481687655">Bijhouden van prestaties is ingeschakeld</translation>
 <translation id="6785414152754474415">De batterij is <ph name="PERCENTAGE" />% vol en wordt opgeladen.</translation>
 <translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>
+<translation id="6814658242098378692">Apps, extensies en thema's beheren</translation>
 <translation id="6820676911989879663">Neem een pauze</translation>
 <translation id="683971173229319003">Zoeken+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> activeren</translation>
@@ -359,6 +363,7 @@
 <translation id="7168224885072002358">Terugzetten naar oude resolutie over <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfoon aan achterzijde</translation>
 <translation id="726276584504105859">Sleep hier naartoe om het scherm te splitsen</translation>
+<translation id="7303365578352795231">Je vraag wordt beantwoord op een ander apparaat.</translation>
 <translation id="7348093485538360975">Schermtoetsenbord</translation>
 <translation id="735745346212279324">Verbinding met VPN verbroken</translation>
 <translation id="7377169924702866686">Caps Lock is ingeschakeld.</translation>
@@ -391,6 +396,7 @@
 <translation id="7842211907556571265">Verbinding maken met <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Waarschuwing: Experimentele functie</translation>
 <translation id="7846634333498149051">Toetsenbord</translation>
+<translation id="7886169021410746335">Privacyinstellingen aanpassen</translation>
 <translation id="7886277072580235377">Je internetsessie wordt gewist wanneer je uitlogt. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Stuur een e-mail</translation>
 <translation id="7904094684485781019">De beheerder van dit account heeft toegang tot meerdere accounts niet toegestaan.</translation>

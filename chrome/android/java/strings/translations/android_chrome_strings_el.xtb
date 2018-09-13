@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">Τα δεδομένα και η δραστηριότητα περιήγησής σας, συγχρονισμένα με τον Λογαριασμό σας Google</translation>
 <translation id="116280672541001035">Χρησιμοποιήθηκαν</translation>
 <translation id="1172593791219290334">Σελίδα εκκίνησης</translation>
+<translation id="1175310183703641346">Οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλα στοιχεία δεν θα συγχρονίζονται πλέον με τον Λογαριασμό σας Google</translation>
 <translation id="1178581264944972037">Παύση</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="1197267115302279827">Μετακίνηση σελιδοδεικτών</translation>
@@ -48,6 +49,7 @@
 <translation id="129553762522093515">Έκλεισαν πρόσφατα</translation>
 <translation id="1326317727527857210">Για να εμφανίζονται οι καρτέλες από τις άλλες συσκευές σας, συνδεθείτε στο Chrome.</translation>
 <translation id="1332501820983677155">Συντομεύσεις λειτουργιών Google Chrome</translation>
+<translation id="1360432990279830238">Αποσύνδεση και απενεργοπ. συγχρονισμού;</translation>
 <translation id="136248372334525878">Προφόρτωση ιστοσελίδων για ταχύτερη φόρτωση και ανάγνωση εκτός σύνδεσης</translation>
 <translation id="1369915414381695676">Προστέθηκε ο ιστότοπος <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Ανεπαρκής μνήμη για τη λήψη του επιλεγμένου περιεχομένου.</translation>
@@ -159,6 +161,7 @@
 <translation id="2131665479022868825">Αποθηκεύτηκαν <ph name="DATA" /></translation>
 <translation id="213279576345780926">Η καρτέλα <ph name="TAB_TITLE" /> έκλεισε</translation>
 <translation id="2139186145475833000">Προσθήκη στην αρχική οθόνη</translation>
+<translation id="2142289305367051020">Οι αγαπημένες σας σελίδες είναι εδώ</translation>
 <translation id="2146738493024040262">Άνοιγμα Instant Εφαρμογής</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
 <translation id="2154484045852737596">Επεξεργασία κάρτας</translation>
@@ -350,6 +353,7 @@
 <translation id="3822502789641063741">Διαγ.αποθ.χώρου ιστότ.;</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3859306556332390985">Αναζήτηση προς τα εμπρός</translation>
+<translation id="3868004864571585162">Cookie, άδειες πολυμέσων και δεδομένα ιστοτόπων</translation>
 <translation id="3894427358181296146">Προσθήκη φακέλου…</translation>
 <translation id="3895926599014793903">Αναγκαστική ενεργοποίηση εστίασης</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -909,6 +913,7 @@
 <translation id="8109613176066109935">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, ενεργοποιήστε τον συγχρονισμό</translation>
 <translation id="8116925261070264013">Σε σίγαση</translation>
 <translation id="813082847718468539">Προβολή πληροφοριών τοποθεσίας</translation>
+<translation id="8156139159503939589">Σε ποιες γλώσσες μπορείτε να διαβάσετε;</translation>
 <translation id="8168435359814927499">Περιεχόμενο</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> αρχεία απομένουν</translation>
 <translation id="8190358571722158785">Απομένει 1 ημέρα</translation>
@@ -921,6 +926,7 @@
 <translation id="8260126382462817229">Δοκιμάστε να συνδεθείτε ξανά</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8266862848225348053">Τοποθεσία λήψης</translation>
+<translation id="8274165955039650276">Εμφάνιση λήψεων</translation>
 <translation id="8283853025636624853">Συγχρονισμός με <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Τυπικές καρτέλες</translation>
 <translation id="8313455859591948645">Επεξεργασία σελίδας εκκίνησης</translation>
@@ -937,6 +943,7 @@
 <translation id="8441146129660941386">Αναζήτηση προς τα πίσω</translation>
 <translation id="8445448999790540984">Δεν είναι δυνατή η εξαγωγή κωδικών πρόσβασης</translation>
 <translation id="8447861592752582886">Ανάκληση άδειας συσκευής</translation>
+<translation id="8477071352266846533">Ο συγχρονισμός είναι απενεργοποιημένος για τον λογαριασμό <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="8489271220582375723">Άνοιγμα σελίδας "Ιστορικό"</translation>
 <translation id="8493948351860045254">Ελευθερώστε χώρο</translation>
@@ -976,6 +983,7 @@
 <translation id="8728487861892616501">Χρησιμοποιώντας αυτήν την εφαρμογή, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση απορρήτου<ph name="END_LINK2" /> του Chrome, καθώς και με τη <ph name="BEGIN_LINK3" />Σημείωση απορρήτου για Λογαριασμούς Google, των οποίων η διαχείριση γίνεται μέσω του Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
 <translation id="8748850008226585750">Κρυφό περιεχόμενο</translation>
+<translation id="8751914237388039244">Επιλογή εικόνας</translation>
 <translation id="8788968922598763114">Εκ νέου άνοιγμα της καρτέλας που έκλεισε τελευταία</translation>
 <translation id="8812260976093120287">Σε ορισμένους ιστοτόπους, μπορείτε να πληρώσετε χρησιμοποιώντας τις παραπάνω υποστηριζόμενες εφαρμογές πληρωμών στη συσκευή σας.</translation>
 <translation id="8816439037877937734">Η εφαρμογή <ph name="APP_NAME" /> θα ανοίξει στο Chrome. Εάν συνεχίσετε, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση απορρήτου<ph name="END_LINK2" /> του Chrome, καθώς και με τη <ph name="BEGIN_LINK3" />Σημείωση απορρήτου για Λογαριασμούς Google των οποίων η διαχείριση γίνεται μέσω του Family Link<ph name="END_LINK3" />.</translation>

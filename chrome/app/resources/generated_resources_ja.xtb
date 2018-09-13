@@ -1522,7 +1522,6 @@
 <translation id="3285322247471302225">新しいタブ(&amp;T)</translation>
 <translation id="3288047731229977326">デベロッパー モードで実行される拡張機能はパソコンにダメージを与える恐れがあります。デベロッパーでない場合は、安全のため、デベロッパー モードで実行されているこれらの拡張機能を無効にしてください。</translation>
 <translation id="3289856944988573801">アップデートの有無を確認するには、イーサネットまたは Wi-Fi を使用してください。</translation>
-<translation id="3292421191230118801">Chromebook でモバイル接続を使ってサイトの閲覧を再開します</translation>
 <translation id="32939749466444286">Linux コンテナを起動できませんでした。もう一度お試しください。</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="329703603001918157">ショートカットの編集はできません</translation>
@@ -5003,7 +5002,6 @@
 <translation id="8557930019681227453">マニフェスト</translation>
 <translation id="8559694214572302298">イメージ デコーダー</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
-<translation id="8562084399541316921">読み続ける</translation>
 <translation id="8565650234829130278">アプリのダウングレードが試行されました。</translation>
 <translation id="8569002732135253578">「<ph name="DOCUMENT_NAME" />」の印刷中</translation>
 <translation id="8569682776816196752">送信先が見つかりません</translation>

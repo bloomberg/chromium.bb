@@ -387,12 +387,6 @@
 <translation id="2082205219176343977">Konfigurasikan versi Chrome minimum yang dibenarkan untuk peranti ini.</translation>
 <translation id="209586405398070749">Saluran stabil</translation>
 <translation id="2098658257603918882">Dayakan laporan penggunaan dan data berkaitan nahas</translation>
-<translation id="2098916259427011890">Dasar ini mengawal sama ada hendak melaporkan maklumat versi, seperti versi OS, platform OS, seni bina OS, versi <ph name="PRODUCT_NAME" /> dan saluran <ph name="PRODUCT_NAME" />.
-
-      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, maklumat versi akan dikumpulkan.
-      Apabila dasar ini ditetapkan kepada Palsu, maklumat versi tidak akan dikumpulkan.
-
-      Dasar ini hanya dikuatkuasakan apabila Sambungan Pelaporan Chrome dan Pengurusan Awan didayakan.</translation>
 <translation id="2111016292707172233">Mendayakan ketersediaan Ketik untuk Mencari dalam paparan kandungan <ph name="PRODUCT_NAME" />.
 
       Jika anda mendayakan tetapan ini, Ketik untuk Mencari akan tersedia kepada pengguna dan mereka boleh memilih untuk menghidupkan atau mematikan ciri tersebut.
@@ -1211,12 +1205,6 @@
       Jika tidak, dasar ini mungkin ditetapkan kepada satu daripada nilai berikut: "tls1.2" atau "tls1.3". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih tinggi daripada versi yang dinyatakan. Nilai yang tidak dicam akan diabaikan.</translation>
 <translation id="4121350739760194865">Elakkan promosi apl daripada muncul pada halaman tab baharu</translation>
 <translation id="412697421478384751">Benarkan pengguna menetapkan PIN yang lemah bagi PIN kunci skrin</translation>
-<translation id="4129183564590133854">Dasar ini mengawal sama ada hendak melaporkan maklumat versi yang boleh digunakan untuk mengenal pasti pengguna, seperti Log masuk OS, Log masuk profil <ph name="PRODUCT_NAME" />, Nama profil <ph name="PRODUCT_NAME" />, Laluan profil <ph name="PRODUCT_NAME" /> dan laluan boleh laksana <ph name="PRODUCT_NAME" />.
-
-      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, maklumat yang boleh digunakan untuk mengenal pasti pengguna akan dikumpulkan.
-      Apabila dasar ini ditetapkan kepada Palsu, maklumat yang boleh digunakan untuk mengenal pasti pengguna tidak akan dikumpulkan.
-
-      Dasar ini hanya dikuatkuasakan apabila Sambungan Pelaporan Chrome dan Pengurusan Awan didayakan.</translation>
 <translation id="4138655880188755661">Had Masa</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan perisian tegar</translation>
 <translation id="4157594634940419685">Benarkan akses kepada pencetak CUPS asli</translation>
@@ -1528,12 +1516,6 @@
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada hendak mengimport atau import boleh berlaku secara automatik.</translation>
 <translation id="5056708224511062314">Penggadang skrin dilumpuhkan</translation>
 <translation id="5058573563327660283">Pilih strategi yang digunakan untuk mengosongkan ruang cakera semasa pembersihan automatik (ditamatkan)</translation>
-<translation id="5058771123777243130">Dasar ini mengawal sama ada hendak melaporkan data dasar dan masa pengambilan dasar.
-
-      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, data dasar dan masa pengambilan dasar akan dikumpulkan.
-      Apabila dasar ini ditetapkan kepada Palsu, data dasar dan masa pengambilan data tidak akan dikumpulkan.
-
-       Dasar ini hanya dikuatkuasakan apabila Sambungan Pelaporan Chrome dan Pengurusan Awan didayakan.</translation>
 <translation id="5067143124345820993">Log masuk senarai putih pengguna</translation>
 <translation id="5068140065960598044">Dasar awan <ph name="PRODUCT_NAME" /> mengatasi dasar Mesin.</translation>
 <translation id="5085647276663819155">Lumpuhkan Pratonton Cetakan</translation>
@@ -2122,12 +2104,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Tetapan ini mengawal persembahan halaman pertama yang membantu pengguna log masuk ke <ph name="PRODUCT_NAME" />, memilihnya sebagai penyemak imbas lalai mereka atau memaklumi mereka tentang ciri produk.</translation>
 <translation id="6766216162565713893">Benarkan tapak web meminta pengguna memberikan akses kepada peranti Bluetooth berhampiran</translation>
 <translation id="6770454900105963262">Laporkan maklumat tentang sesi kios aktif</translation>
-<translation id="6773056206551814546">Dasar ini mengawal sama ada hendak melaporkan maklumat versi yang boleh digunakan untuk mengenal pasti mesin, seperti nama mesin dan alamat rangkaian.
-
-      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, maklumat yang boleh digunakan untuk mengenal pasti mesin akan dikumpulkan.
-      Apabila dasar ini ditetapkan kepada Palsu, maklumat yang boleh digunakan untuk mengenal pasti mesin tidak akan dikumpulkan.
-
-      Dasar ini hanya dikuatkuasakan apabila Sambungan Pelaporan Chrome dan Pengurusan Awan didayakan.</translation>
 <translation id="6786747875388722282">Pelanjutan</translation>
 <translation id="6786967369487349613">Tetapkan direktori profil perayauan</translation>
 <translation id="6810445994095397827">Sekat JavaScript pada tapak ini</translation>
@@ -2931,13 +2907,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
           
           Jika anda membiarkan dasar ini tanpa ditetapkan <ph name="PRODUCT_NAME" /> akan cuba mengesan jika pelayan berada di Intranet dan hanya selepas itu permintaan IWA akan dibalas.   Jika pelayan dikesan sebagai Internet, maka permintaan IWA daripadanya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Membolehkan anda mengawal sama ada mesin maya dibenarkan untuk dijalankan pada OS Chrome.
-
-      Jika dasar ditetapkan kepada Benar, peranti dibenarkan untuk menjalankan mesin maya.
-      Jika dasar ditetapkan kepada Palsu, peranti tidak akan dibenarkan untuk menjalankan mesin maya.
-      Apabila dasar ini ditukar kepada Palsu, dasar ini digunakan apabila memulakan mesin maya baharu tetapi tidak mematikan mesin maya yang sudah dijalankan.
-      Apabila dasar ini tidak ditetapkan pada peranti terurus, peranti tidak dibenarkan untuk menjalankan mesin maya.
-      Peranti yang tidak diurus dibenarkan untuk menjalankan mesin maya.</translation>
 <translation id="8669669491594628013">Membolehkan anda mengawal pencetusan amaran perlindungan kata laluan. Perlindungan kata laluan memaklumi pengguna apabila mereka menggunakan semula kata laluan yang dilindungi pada tapak yang mungkin mencurigakan.
 
       Anda boleh menggunakan 'PasswordProtectionLoginURLs' dan 'PasswordProtectionChangePasswordURL' untuk mengkonfigurasi kata laluan yang hendak dilindungi.
@@ -3196,9 +3165,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Apabila dasar ini ditetapkan kepada ClientCertificate (nilai 1), pengesahan sijil pelanggan digunakan untuk pengguna yang baru ditambahkan, yang log masuk melalui SAML. Tiada kata laluan digunakan untuk pengguna sedemikian dan data setempat mereka yang dicache dilindungi menggunakan kunci kriptografi yang sepadan. Contohnya, tetapan ini membenarkan konfigurasi kad pintar dilakukan berdasarkan pengesahan pengguna (harap maklum bahawa apl perisian tengah kad pintar perlu dipasang melalui dasar DeviceLoginScreenAppInstallList).
 
       Dasar ini hanya memberi kesan pada pengguna yang membuat pengesahan menggunakan SAML.</translation>
-<translation id="9211439035693857287">Konfigurasikan dasar yang berkaitan dengan Sambungan Pelaporan Chrome.
-
-      Dasar ini hanya dikuatkuasakan apabila Sambungan Pelaporan Chrome dan Pengurusan Awan didayakan.</translation>
 <translation id="9213347477683611358">Mengkonfigurasikan imej kertas dinding tahap peranti yang dipaparkan pada skrin log masuk jika belum ada pengguna yang pernah log masuk ke peranti. Dasar ini ditetapkan dengan menentukan URL tempat peranti OS Chrome boleh memuat turun imej kertas dinding itu dan cincangan kriptografi digunakan untuk mengesahkan integriti muat turun itu. Imej mestilah dalam format JPEG dan saiznya tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan. Imej kertas dinding dimuat turun dan dicache. Imej kertas dinding akan dimuat turun semula setiap kali URL atau cincangan berubah.
 
       Dasar ini hendaklah ditetapkan sebagai rentetan yang menyatakan URL dan cincangan dalam format JSON, mis.,

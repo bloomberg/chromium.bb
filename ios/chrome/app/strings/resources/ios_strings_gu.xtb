@@ -105,7 +105,7 @@
 <translation id="2704606927547763573">કૉપિ કર્યું</translation>
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
 <translation id="2712127207578915686">ફાઇલ ખોલવામાં અસમર્થ છે</translation>
-<translation id="2718352093833049315">ફક્ત Wi-Fi પર</translation>
+<translation id="2718352093833049315">ફક્ત વાઇ-ફાઇ પર</translation>
 <translation id="2747003861858887689">પહેલાનું ફીલ્ડ</translation>
 <translation id="2780046210906776326">ઇમેઇલ એકાઉન્ટ્સ નથી</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -165,7 +165,7 @@
 <translation id="3607167657931203000">સ્વતઃભરણ ડેટા</translation>
 <translation id="360930808415985584">સિંક, વૈયક્તિકરણ અને વધુ બાબતોને નિયંત્રિત કરો</translation>
 <translation id="3609785682760573515">સમન્વય કરી રહ્યું છે...</translation>
-<translation id="3628119975092896051">તમારી વાંચન સૂચિ ઑફલાઇન ઉપલબ્ધ છે. તમારી વાંચન સૂચિમાં પૃષ્ઠ ઉમેરવા માટે, <ph name="SHARE_OPENING_ICON" /> ટૅપ કરો.</translation>
+<translation id="3628119975092896051">તમારી વાંચન સૂચિ ઑફલાઇન ઉપલબ્ધ છે. તમારી વાંચન સૂચિમાં પેજ ઉમેરવા માટે, <ph name="SHARE_OPENING_ICON" /> ટૅપ કરો.</translation>
 <translation id="3638472932233958418">વેબપૃષ્ઠો પહેલાથી લોડ કરો</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> પર બુકમાર્ક કર્યું</translation>
 <translation id="3765471630796399471">અન્ય પાસવર્ડનો ઉપયોગ કરો</translation>
@@ -232,7 +232,7 @@
 <translation id="4904877109095351937">વાંચેલ તરીકે ચિહ્નિત કરો</translation>
 <translation id="4930268273022498155">અસ્તિત્વમાંનો ડેટા કાઢી નાખો. તમે <ph name="USER_EMAIL1" /> પર પાછા સ્વિચ કરીને તેને પુનઃપ્રાપ્ત કરી શકો છો.</translation>
 <translation id="4941089862236492464">માફ કરશો, તમારી આઇટમને શેર કરવામાં સમસ્યા આવી હતી.</translation>
-<translation id="4979397965658815378">તમારા બુકમાર્ક્સ, પાસવર્ડ્સ, ઇતિહાસ અને અન્ય સેટિંગ્સને તમારા બધા ઉપકરણો પર મેળવવા માટે તમારા Google એકાઉન્ટ સાથે સાઇન ઇન કરો.</translation>
+<translation id="4979397965658815378">તમારા બુકમાર્ક, પાસવર્ડ, ઇતિહાસ અને અન્ય સેટિંગને તમારા બધા ડિવાઇસ પર મેળવવા માટે તમારા Google એકાઉન્ટ સાથે સાઇન ઇન કરો.</translation>
 <translation id="5004416275253351869">Google પ્રવૃત્તિ નિયંત્રણો</translation>
 <translation id="5005498671520578047">પાસવર્ડની કૉપિ કરો</translation>
 <translation id="5010803260590204777">ખાનગીપણે વેબ બ્રાઉઝ કરવા છૂપું ટેબ ખોલો.</translation>
@@ -284,10 +284,11 @@
 <translation id="5916664084637901428">ચાલુ</translation>
 <translation id="5938160824633642847">તમારું ઉપકરણ લગભગ ભરાઈ ગયું છે. સ્પેસ બનાવો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="5948291296578561264">આ તમને તમારી ફોટો લાઇબ્રેરીમાં ફોટો સાચવવા દે છે.</translation>
-<translation id="5955891643922670672">ઑફલાઇન સંસ્કરણ જોઈ રહ્યાં છે</translation>
+<translation id="5955891643922670672">ઑફલાઇન વર્ઝન જોઈ રહ્યા છે</translation>
 <translation id="5957613098218939406">વધુ વિકલ્પો</translation>
 <translation id="5964480694698977962">નવું છૂપું ટૅબ બનાવો</translation>
 <translation id="5965679971710331625">તમે સાઇન ઇન છો</translation>
+<translation id="5979837087407522202">પાસવર્ડ શોધો</translation>
 <translation id="5982717868370722439">અસ્તિત્વમાંના ડેટાને <ph name="USER_EMAIL" /> માં ઉમેરો.</translation>
 <translation id="6012140227487808125">એન્ક્રિપ્ટ કરી રહ્યું છે...</translation>
 <translation id="6021332621416007159">આમાં ખોલો...</translation>
@@ -376,7 +377,7 @@
 <translation id="7346909386216857016">બરાબર, સમજાઇ ગયું</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="741204030948306876">હા, હું સંમત છું</translation>
-<translation id="7425346204213733349">તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સમાં ફેરફારને હવે તમારા Google એકાઉન્ટ પર સમન્વયિત કરવામાં આવશે નહીં. જો કે, તમારો અસ્તિત્વમાંનો ડેટા તમારા Google એકાઉન્ટમાં સંગ્રહિત રહેશે.</translation>
+<translation id="7425346204213733349">તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને અન્ય સેટિંગમાં ફેરફારને હવે તમારા Google એકાઉન્ટ પર સિંક કરવામાં આવશે નહીં. જો કે, તમારો અસ્તિત્વમાંનો ડેટા તમારા Google એકાઉન્ટમાં સંગ્રહિત રહેશે.</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> નથી</translation>
 <translation id="7454057999980797137">રાજ્ય / કાઉન્ટી</translation>
 <translation id="7456847797759667638">સ્થાન ખોલો...</translation>
@@ -447,7 +448,7 @@
 <translation id="8721297211384281569">સાધન મેનૂ</translation>
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8730621377337864115">થઈ ગયું</translation>
-<translation id="8741995161408053644">તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના અન્ય સ્વરૂપો હોઇ શકે છે.</translation>
+<translation id="8741995161408053644">તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના અન્ય સ્વરૂપો હોઈ શકે છે.</translation>
 <translation id="8775144690796719618">અમાન્ય URL</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>
 <translation id="8840513115188359703">તમે તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ થશો નહીં.</translation>
@@ -472,7 +473,7 @@
 <translation id="9203116392574189331">હેન્ડઓફ</translation>
 <translation id="9223358826628549784">ક્રેશ રિપોર્ટ મોકલ્યો.</translation>
 <translation id="932327136139879170">હોમ</translation>
-<translation id="935490618240037774">તમારા Google એકાઉન્ટ પર તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ સમન્વયિત કરવામાં આવશે જેથી કરીને તમે તમારા બધા ઉપકરણો પર તેમનો ઉપયોગ કરી શકો</translation>
+<translation id="935490618240037774">તમારા Google એકાઉન્ટ પર તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને અન્ય સેટિંગ સિંક કરવામાં આવશે, જેથી કરીને તમે તમારા બધા ડિવાઇસ પર તેમનો ઉપયોગ કરી શકો.</translation>
 <translation id="939598580284253335">પાસફ્રેઝ દાખલ કરો</translation>
 <translation id="976982866697960176">સમન્વયિત ડેટા સંચાલિત કરો…</translation>
 <translation id="988141524645182168">અન્ય ઉપકરણો</translation>

@@ -385,12 +385,6 @@
 <translation id="2082205219176343977">Configure minimum allowed Chrome version for the device.</translation>
 <translation id="209586405398070749">Stable channel</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
-<translation id="2098916259427011890">This policy controls whether to report version information, such as OS version, OS platform, OS architecture, <ph name="PRODUCT_NAME" /> version and <ph name="PRODUCT_NAME" /> channel.
-
-      When this policy is left unset or set to True, version information is gathered.
-      When this policy is set to False, version information is not gathered.
-
-      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="2111016292707172233">Enables the availability of Tap to Search in <ph name="PRODUCT_NAME" />'s content view.
 
       If you enable this setting, Tap to Search will be available to the user and they can choose to turn the feature on or off.
@@ -1212,12 +1206,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Otherwise it may be set to one of the following values: 'tls1.2' or 'tls1.3'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="412697421478384751">Enable users to set weak PINs for the lock screen PIN</translation>
-<translation id="4129183564590133854">This policy controls whether to report information that can be used to identify users, such as OS login, <ph name="PRODUCT_NAME" /> Profile login, <ph name="PRODUCT_NAME" /> Profile name, <ph name="PRODUCT_NAME" /> Profile path and <ph name="PRODUCT_NAME" /> executable path.
-
-      When this policy is left unset or set to True, information that can be used to identify users is gathered.
-      When this policy is set to False, information that can be used to identify users is not gathered.
-
-      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="4138655880188755661">Time Limit</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
 <translation id="4157594634940419685">Allow access to native CUPS printers</translation>
@@ -1529,12 +1517,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5056708224511062314">Screen magnifier disabled</translation>
 <translation id="5058573563327660283">Select the strategy used to free up disk space during automatic clean-up (deprecated)</translation>
-<translation id="5058771123777243130">This policy controls whether to report policy data and time of policy fetch.
-
-      When this policy is left unset or set to True, policy data and time of policy fetch are gathered.
-      When this policy is set to False, policy data and time of policy fetch are not gathered.
-
-      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="5067143124345820993">Login user white list</translation>
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
@@ -2124,12 +2106,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       This setting controls the presentation of the welcome pages that help users sign in to <ph name="PRODUCT_NAME" />, choose it as their default browser or otherwise inform them of product features.</translation>
 <translation id="6766216162565713893">Allow sites to ask the user to grant access to a nearby Bluetooth device</translation>
 <translation id="6770454900105963262">Report information about active kiosk sessions</translation>
-<translation id="6773056206551814546">This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
-
-      When this policy is left unset or set to True, information that can be used to identify machines is gathered.
-      When this policy is set to False, information that can be used to identify machines is not gathered.
-
-      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="6786967369487349613">Set the roaming profile directory</translation>
 <translation id="6810445994095397827">Block JavaScript on these sites</translation>
@@ -2931,13 +2907,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
           If you leave this policy unset <ph name="PRODUCT_NAME" /> will try to detect if a server is on the Intranet and only then will it respond to IWA requests. If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8667812577403206506">Allows you to control whether virtual machines are allowed to run on Chrome OS.
-
-      If the policy is set to True, the device is allowed to run virtual machines.
-      If the policy is set to False, the device will not be allowed to run virtual machines.
-      When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
-      When this policy is not set on a managed device, the device is not allowed to run virtual machines.
-      Unmanaged devices are allowed to run virtual machines.</translation>
 <translation id="8669669491594628013">Allows you to control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
 
       You can use 'PasswordProtectionLoginURLs' and 'PasswordProtectionChangePasswordURL' policies to configure which password to protect.
@@ -3194,9 +3163,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card-based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenAppInstallList policy).
 
       This policy only affects users who authenticate using SAML.</translation>
-<translation id="9211439035693857287">Configure Chrome Reporting Extension-related policies.
-
-      These policies are only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="9213347477683611358">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
       The policy should be specified as a string that expresses the URL and hash in JSON format, e.g.,

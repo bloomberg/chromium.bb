@@ -387,12 +387,6 @@
 <translation id="2082205219176343977">Seadmes kõige vanema lubatud Chrome'i versiooni seadistamine.</translation>
 <translation id="209586405398070749">Stabiilne kanal</translation>
 <translation id="2098658257603918882">Luba kasutus- ja krahhiandmete aruandlus</translation>
-<translation id="2098916259427011890">Reegel määrab, kas edastada versiooniteavet, nagu operatsioonisüsteemi versioon, platvorm ja arhitektuur, rakenduse <ph name="PRODUCT_NAME" /> versioon ja rakenduse <ph name="PRODUCT_NAME" /> kanal.
-
-      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse versiooniteavet.
-      Kui reegel on seatud väärtusele Väär, ei koguta versiooniteavet.
-
-      Reegel kehtib ainult juhul, kui Chrome'i aruandluse laiendus ja pilvehaldus on lubatud.</translation>
 <translation id="2111016292707172233">Lubab teenuse <ph name="PRODUCT_NAME" /> sisu vaates funktsiooni Puuduta otsimiseks.
 
       Kui selle seade lubate, on funktsioon Puuduta otsimiseks kasutaja jaoks saadaval ja ta saab selle sisse või välja lülitada.
@@ -1203,12 +1197,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Muul juhul võidakse määrata üks järgmistest väärtustest: „tls1.2” või „tls1.3”. Kui see on määratud, ei kasuta teenus <ph name="PRODUCT_NAME" /> määratud versioonist uuemaid SSL-i/TLS-i versioone. Tuvastamatut väärtust eiratakse.</translation>
 <translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
 <translation id="412697421478384751">Nõrkade lukustuskuva PIN-koodide määramise lubamine</translation>
-<translation id="4129183564590133854">Reegel määrab, kas edastada teavet, mille alusel saab kasutajaid identifitseerida, nagu operatsioonisüsteemi sisselogimisteave, rakenduse <ph name="PRODUCT_NAME" /> profiili sisselogimisteave, rakenduse <ph name="PRODUCT_NAME" /> profiili nimi, rakenduse <ph name="PRODUCT_NAME" /> profiili tee ja rakenduse <ph name="PRODUCT_NAME" /> täitmistee.
-
-      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse teavet, mille alusel saab kasutajaid identifitseerida.
-      Kui reegel on seatud väärtusele Väär, ei koguta teavet, mille alusel saab kasutajaid identifitseerida.
-
-      Reegel kehtib ainult juhul, kui Chrome'i aruandluse laiendus ja pilvehaldus on lubatud.</translation>
 <translation id="4138655880188755661">Ajapiirang</translation>
 <translation id="4157003184375321727">OS-ist ja püsivara versioonist teavitamine</translation>
 <translation id="4157594634940419685">CUPS-i omaprinteritele juurdepääsu lubamine</translation>
@@ -1520,12 +1508,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui jätate reegli määramata, siis võib importimine toimuda automaatselt või kasutajalt võidakse küsida, kas ta soovib importida.</translation>
 <translation id="5056708224511062314">Ekraaniluup on keelatud</translation>
 <translation id="5058573563327660283">Automaatse puhastamise ajal kettaruumi vabastamiseks kasutatava strateegia valimine (tugi on katkestatud)</translation>
-<translation id="5058771123777243130">Reegel määrab, kas edastada reegli andmed ja reegli toomise aeg.
-
-      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse reegli andmed ja reegli toomise aeg.
-      Kui reegel on seatud väärtusele väär, ei koguta reegli andmeid ja reegli toomise aega.
-
-      Reegel kehtib ainult juhul, kui Chrome'i aruandluse laiendus ja pilvehaldus on lubatud.</translation>
 <translation id="5067143124345820993">Kasutajate sisselogimise lubatud loend</translation>
 <translation id="5068140065960598044">Teenuse <ph name="PRODUCT_NAME" /> pilve-eeskirjad alistavad seadme-eeskirjad.</translation>
 <translation id="5085647276663819155">Printimise eelvaate keelamine</translation>
@@ -2115,12 +2097,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Selle seadega hallatakse tervituslehtede esitamist, mis aitavad kasutajatel teenusesse <ph name="PRODUCT_NAME" /> sisse logida, määrata selle vaikebrauseriks või muul viisil neid toote funktsioonidest teavitada.</translation>
 <translation id="6766216162565713893">Luba saitidel paluda kasutajatelt juurdepääsu läheduses asuvatele Bloetoothi seadmetele</translation>
 <translation id="6770454900105963262">Aruandeteave aktiivsete kioskiseansside kohta</translation>
-<translation id="6773056206551814546">Reegel määrab, kas koguda teavet, mille alusel saab masinaid identifitseerida, nagu masina nimi ja võrguaadressid.
-
-      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse teavet, mille alusel saab masinaid identifitseerida.
-      Kui reegel on seatud väärtusele Väär, ei koguta teavet, mille alusel saab masinaid identifitseerida.
-
-      Reegel kehtib ainult juhul, kui Chrome'i aruandluse laiendus ja pilvehaldus on lubatud.</translation>
 <translation id="6786747875388722282">Laiendused</translation>
 <translation id="6786967369487349613">Rändlusprofiili kataloogi määramine</translation>
 <translation id="6810445994095397827">Blokeeri JavaScript nendel saitidel</translation>
@@ -2926,13 +2902,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
           Eraldage serveri nimed komadega. Metamärgid (*) on lubatud.
 
           Kui jätate selle reegli määramata, üritab <ph name="PRODUCT_NAME" /> tuvastada, kas server on intranetis, ja alles siis vastab IWA taotlustele. Kui server tuvastatakse Internetis, siis eirab <ph name="PRODUCT_NAME" /> sealt tulevaid IWA taotlusi.</translation>
-<translation id="8667812577403206506">Võimaldab juhtida, kas virtuaalsete masinate käitamine Chrome OS-is on lubatud.
-
-      Kui reegel on määratud väärtusele Tõene, lubatakse seadmes käitada virtuaalseid masinaid.
-      Kui reegel on määratud väärtusele Väär, ei lubata seadmes käitada virtuaalseid masinaid.
-      Kui reegli seade muudetakse väärtusele Väär, kehtib see uute virtuaalsete masinate käivitamisel, ent juba töötavaid virtuaalseid masinaid välja ei lülitata.
-      Kui reegel jäetakse hallatavas seadmes määramata, on seadmes virtuaalsete masinate käitamine keelatud.
-      Haldamata seadmetes on virtuaalsete masinate käitamine lubatud.</translation>
 <translation id="8669669491594628013">Võimaldab teil juhtida paroolikaitse hoiatuse käivitamist. Paroolikaitse hoiatab kasutajaid, kui nad kasutavad oma kaitstud parooli potentsiaalselt kahtlastel saitidel.
 
       Kaitstava parooli määramiseks võite kasutada reegleid „PasswordProtectionLoginURLs” ja „PasswordProtectionChangePasswordURL”.
@@ -3187,9 +3156,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui reegel on seatud väärtusele ClientCertificate (1), kasutatakse äsja lisatud ja SAML-i kaudu sisse logivate kasutajate puhul kliendi sertifikaadi autentimist. Selliste kasutajate puhul ei kasutata paroole ja nende vahemällu talletatud kohalikke andmeid kaitstakse vastavate krüptovõtmetega. See seade võimaldab näiteks seadistada kiipkaardipõhise autentimise (pange tähele, et kiipkaardi vaherakendused tuleb installida reegli DeviceLoginScreenAppInstallList kaudu).
 
       Reegel mõjutab ainult kasutajaid, kes kasutavad autentimiseks SAML-i.</translation>
-<translation id="9211439035693857287">Võimaldab seadistada Chrome'i aruandluse laiendusega seotud reeglid.
-
-      Reeglid kehtivad ainult juhul, kui Chrome'i aruandluse laiendus ja pilvehaldus on lubatud.</translation>
 <translation id="9213347477683611358">Seadistage seadmetasemel taustapildi kujutis, mis kuvatakse sisselogimisekraanil, kui ükski kasutaja pole veel seadmesse sisse loginud. Selle reegli määramiseks tuleb määrata URL, kust Chrome OS-i seade saab alla laadida taustapildi kujutise ja krüptograafilise räsiväärtuse, mida kasutatakse allalaadimise terviklikkuse kontrollimiseks. Kujutis peab olema JPEG-vormingus ja faili suurus ei tohi ületada 16 MB. URL peab olema autentimiseta juurdepääsetav. Taustapildi kujutis laaditakse alla ja salvestatakse vahemällu. See laaditakse uuesti alla iga kord, kui URL või räsiväärtus muutub.
 
       Reegel tuleks määrata stringina, mis näitab URL-i ja räsiväärtust JSON-vormingus, nt
