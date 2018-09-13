@@ -818,6 +818,7 @@ static int main_loop(int argc, const char **argv_) {
                 aom_img_alloc(NULL, img->fmt, render_width, render_height, 16);
             scaled_img->bit_depth = img->bit_depth;
             scaled_img->monochrome = img->monochrome;
+            scaled_img->csp = img->csp;
           }
 
           if (img->d_w != scaled_img->d_w || img->d_h != scaled_img->d_h) {
@@ -859,6 +860,7 @@ static int main_loop(int argc, const char **argv_) {
                   aom_img_alloc(NULL, shifted_fmt, img->d_w, img->d_h, 16);
               img_shifted->bit_depth = output_bit_depth;
               img_shifted->monochrome = img->monochrome;
+              img_shifted->csp = img->csp;
             }
             if (output_bit_depth > img->bit_depth) {
               aom_img_upshift(img_shifted, img,
@@ -884,7 +886,7 @@ static int main_loop(int argc, const char **argv_) {
               len = y4m_write_file_header(
                   y4m_buf, sizeof(y4m_buf), aom_input_ctx.width,
                   aom_input_ctx.height, &aom_input_ctx.framerate,
-                  img->monochrome, img->fmt, img->bit_depth);
+                  img->monochrome, img->csp, img->fmt, img->bit_depth);
               if (do_md5) {
                 MD5Update(&md5_ctx, (md5byte *)y4m_buf, (unsigned int)len);
               } else {

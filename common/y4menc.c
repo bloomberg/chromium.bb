@@ -26,15 +26,27 @@ const char *monochrome_colorspace(unsigned int bit_depth) {
   }
 }
 
+// Return the Y4M name of the 8-bit colorspace, given the chroma position and
+// image format.
+const char *colorspace8(aom_chroma_sample_position_t csp, aom_img_fmt_t fmt) {
+  switch (fmt) {
+    case AOM_IMG_FMT_444A: return "C444alpha";
+    case AOM_IMG_FMT_I444: return "C444";
+    case AOM_IMG_FMT_I422: return "C422";
+    default:
+      if (csp == AOM_CSP_VERTICAL) {
+        return "C420mpeg2 XYSCSS=420MPEG2";
+      } else {
+        return "C420jpeg";
+      }
+  }
+}
+
 // Return the Y4M name of the colorspace, given the bit depth and image format.
-const char *colorspace(unsigned int bit_depth, aom_img_fmt_t fmt) {
+const char *colorspace(unsigned int bit_depth, aom_chroma_sample_position_t csp,
+                       aom_img_fmt_t fmt) {
   switch (bit_depth) {
-    case 8:
-      return fmt == AOM_IMG_FMT_444A
-                 ? "C444alpha"
-                 : fmt == AOM_IMG_FMT_I444
-                       ? "C444"
-                       : fmt == AOM_IMG_FMT_I422 ? "C422" : "C420jpeg";
+    case 8: return colorspace8(csp, fmt);
     case 9:
       return fmt == AOM_IMG_FMT_I44416
                  ? "C444p9 XYSCSS=444P9"
@@ -66,9 +78,10 @@ const char *colorspace(unsigned int bit_depth, aom_img_fmt_t fmt) {
 
 int y4m_write_file_header(char *buf, size_t len, int width, int height,
                           const struct AvxRational *framerate, int monochrome,
-                          aom_img_fmt_t fmt, unsigned int bit_depth) {
+                          aom_chroma_sample_position_t csp, aom_img_fmt_t fmt,
+                          unsigned int bit_depth) {
   const char *color = monochrome ? monochrome_colorspace(bit_depth)
-                                 : colorspace(bit_depth, fmt);
+                                 : colorspace(bit_depth, csp, fmt);
   return snprintf(buf, len, "YUV4MPEG2 W%u H%u F%u:%u I%c %s\n", width, height,
                   framerate->numerator, framerate->denominator, 'p', color);
 }
