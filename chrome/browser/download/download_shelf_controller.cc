@@ -25,7 +25,7 @@ void DownloadShelfController::OnItemsAdded(
 
 void DownloadShelfController::OnItemRemoved(const ContentId& id) {
   OfflineItemModelManagerFactory::GetForBrowserContext(profile_)
-      ->RemoveOfflineItemModel(id);
+      ->RemoveOfflineItemModelData(id);
 }
 
 void DownloadShelfController::OnItemUpdated(const OfflineItem& item) {
@@ -34,15 +34,15 @@ void DownloadShelfController::OnItemUpdated(const OfflineItem& item) {
 
   OfflineItemModelManager* manager =
       OfflineItemModelManagerFactory::GetForBrowserContext(profile_);
-  OfflineItemModel* model = manager->GetOrCreateOfflineItemModel(item);
-
-  if (!model->was_ui_notified()) {
-    OnNewOfflineItemReady(item);
-    model->set_was_ui_notified(true);
+  OfflineItemModel model(manager, item);
+  if (!model.WasUINotified()) {
+    model.SetWasUINotified(true);
+    OnNewOfflineItemReady(model);
   }
 }
 
-void DownloadShelfController::OnNewOfflineItemReady(const OfflineItem& item) {
+void DownloadShelfController::OnNewOfflineItemReady(
+    const OfflineItemModel& item) {
   Browser* browser = browser = chrome::FindLastActiveWithProfile(profile_);
 
   if (browser && browser->window()) {

@@ -31,7 +31,7 @@ class DownloadShelfController : public OfflineContentProvider::Observer {
   void OnItemUpdated(const OfflineItem& item) override;
 
   // Called when a new OfflineItem is to be displayed on UI.
-  void OnNewOfflineItemReady(const OfflineItem& item);
+  void OnNewOfflineItemReady(const OfflineItemModel& item);
 
   Profile* profile_;
 

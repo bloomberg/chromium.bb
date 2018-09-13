@@ -7,12 +7,11 @@
 
 #include <memory>
 
-#include "chrome/browser/download/offline_item_model.h"
+#include "chrome/browser/download/offline_item_model_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_item.h"
 
 using ContentId = offline_items_collection::ContentId;
-using OfflineItem = offline_items_collection::OfflineItem;
 
 // Class for managing all the OfflineModels for a profile.
 class OfflineItemModelManager : public KeyedService {
@@ -23,13 +22,13 @@ class OfflineItemModelManager : public KeyedService {
 
   // Returns the OfflineItemModel for the ContentId, if not found, an empty
   // OfflineItemModel will be created and returned.
-  OfflineItemModel* GetOrCreateOfflineItemModel(
-      const OfflineItem& offline_item);
+  OfflineItemModelData* GetOrCreateOfflineItemModelData(const ContentId& id);
 
-  void RemoveOfflineItemModel(const ContentId& id);
+  void RemoveOfflineItemModelData(const ContentId& id);
 
  private:
-  std::map<ContentId, std::unique_ptr<OfflineItemModel>> offline_item_models_;
+  std::map<ContentId, std::unique_ptr<OfflineItemModelData>>
+      offline_item_model_data_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineItemModelManager);
 };
