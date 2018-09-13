@@ -225,8 +225,23 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   if (!is_active_profile)
     return true;
 
+  // Send all blur and focus events first. This ensures we correctly dispatch
+  // these events, which gets re-targetted in the js bindings and ensures it
+  // receives the correct value for |event_from|.
+  for (const auto& event : event_bundle.events) {
+    if (event.event_type != ax::mojom::Event::kFocus &&
+        event.event_type != ax::mojom::Event::kBlur)
+      continue;
+
+    api::automation::EventType automation_event_type =
+        ToAutomationEvent(event.event_type);
+    owner_->SendAutomationEvent(event_bundle.tree_id,
+                                event_bundle.mouse_location, event,
+                                automation_event_type);
+  }
+
   // Send auto-generated AXEventGenerator events.
-  for (auto targeted_event : *this) {
+  for (const auto& targeted_event : *this) {
     api::automation::EventType event_type =
         ToAutomationEvent(targeted_event.event_params.event);
     if (IsEventTypeHandledByAXEventGenerator(event_type)) {
@@ -240,7 +255,11 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   }
   ClearEvents();
 
-  for (auto event : event_bundle.events) {
+  for (const auto& event : event_bundle.events) {
+    if (event.event_type == ax::mojom::Event::kFocus ||
+        event.event_type == ax::mojom::Event::kBlur)
+      continue;
+
     api::automation::EventType automation_event_type =
         ToAutomationEvent(event.event_type);
 
