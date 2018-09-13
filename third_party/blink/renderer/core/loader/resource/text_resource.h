@@ -25,7 +25,7 @@ class CORE_EXPORT TextResource : public Resource {
 
  protected:
   TextResource(const ResourceRequest&,
-               Type,
+               ResourceType,
                const ResourceLoaderOptions&,
                const TextResourceDecoderOptions&);
   ~TextResource() override;

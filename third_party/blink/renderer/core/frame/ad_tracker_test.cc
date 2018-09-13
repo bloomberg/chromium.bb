@@ -60,7 +60,7 @@ class TestAdTracker : public AdTracker {
                        ResourceRequest& resource_request,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo& fetch_initiator_info,
-                       Resource::Type resource_type) override {
+                       ResourceType resource_type) override {
     if (!ad_suffix_.IsEmpty() &&
         resource_request.Url().GetString().EndsWith(ad_suffix_)) {
       resource_request.SetIsAdResource();

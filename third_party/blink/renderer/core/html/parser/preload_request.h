@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -24,6 +23,8 @@
 namespace blink {
 
 class Document;
+class Resource;
+enum class ResourceType : uint8_t;
 
 class CORE_EXPORT PreloadRequest {
   USING_FAST_MALLOC(PreloadRequest);
@@ -44,7 +45,7 @@ class CORE_EXPORT PreloadRequest {
       const TextPosition& initiator_position,
       const String& resource_url,
       const KURL& base_url,
-      Resource::Type resource_type,
+      ResourceType resource_type,
       const ReferrerPolicy referrer_policy,
       ReferrerSource referrer_source,
       ResourceFetcher::IsImageSet is_image_set,
@@ -84,7 +85,7 @@ class CORE_EXPORT PreloadRequest {
   void SetNonce(const String& nonce) { nonce_ = nonce; }
   const String& Nonce() const { return nonce_; }
 
-  Resource::Type ResourceType() const { return resource_type_; }
+  ResourceType GetResourceType() const { return resource_type_; }
 
   const String& ResourceURL() const { return resource_url_; }
   float ResourceWidth() const {
@@ -125,7 +126,7 @@ class CORE_EXPORT PreloadRequest {
                  const TextPosition& initiator_position,
                  const String& resource_url,
                  const KURL& base_url,
-                 Resource::Type resource_type,
+                 ResourceType resource_type,
                  const FetchParameters::ResourceWidth& resource_width,
                  const ClientHintsPreferences& client_hints_preferences,
                  RequestType request_type,
@@ -156,7 +157,7 @@ class CORE_EXPORT PreloadRequest {
   String resource_url_;
   KURL base_url_;
   String charset_;
-  Resource::Type resource_type_;
+  ResourceType resource_type_;
   ScriptType script_type_;
   CrossOriginAttributeValue cross_origin_;
   mojom::FetchImportanceMode importance_;

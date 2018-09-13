@@ -41,6 +41,7 @@
 namespace blink {
 
 class FetchClientSettingsObjectSnapshot;
+class Resource;
 class ScriptElementBase;
 class Script;
 class ScriptResource;

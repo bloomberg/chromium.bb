@@ -198,10 +198,12 @@ static bool PrepareResourceBuffer(Resource* cached_resource,
 }
 
 static bool HasTextContent(Resource* cached_resource) {
-  Resource::Type type = cached_resource->GetType();
-  return type == Resource::kCSSStyleSheet || type == Resource::kXSLStyleSheet ||
-         type == Resource::kScript || type == Resource::kRaw ||
-         type == Resource::kImportResource || type == Resource::kMainResource;
+  ResourceType type = cached_resource->GetType();
+  return type == ResourceType::kCSSStyleSheet ||
+         type == ResourceType::kXSLStyleSheet ||
+         type == ResourceType::kScript || type == ResourceType::kRaw ||
+         type == ResourceType::kImportResource ||
+         type == ResourceType::kMainResource;
 }
 
 static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
@@ -334,13 +336,13 @@ bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
 
   DCHECK(cached_resource);
   switch (cached_resource->GetType()) {
-    case Resource::kCSSStyleSheet:
+    case blink::ResourceType::kCSSStyleSheet:
       MaybeEncodeTextContent(
           ToCSSStyleSheetResource(cached_resource)
               ->SheetText(nullptr, CSSStyleSheetResource::MIMETypeCheck::kLax),
           cached_resource->ResourceBuffer(), result, base64_encoded);
       return true;
-    case Resource::kScript:
+    case blink::ResourceType::kScript:
       MaybeEncodeTextContent(
           cached_resource->ResourceBuffer()
               ? ToScriptResource(cached_resource)->DecodedText()
@@ -351,7 +353,7 @@ bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
       String text_encoding_name =
           cached_resource->GetResponse().TextEncodingName();
       if (text_encoding_name.IsEmpty() &&
-          cached_resource->GetType() != Resource::kRaw)
+          cached_resource->GetType() != blink::ResourceType::kRaw)
         text_encoding_name = "WinLatin1";
       return InspectorPageAgent::SharedBufferContent(
           cached_resource->ResourceBuffer(),
@@ -405,28 +407,28 @@ String InspectorPageAgent::ResourceTypeJson(
 }
 
 InspectorPageAgent::ResourceType InspectorPageAgent::ToResourceType(
-    const Resource::Type resource_type) {
+    const blink::ResourceType resource_type) {
   switch (resource_type) {
-    case Resource::kImage:
+    case blink::ResourceType::kImage:
       return InspectorPageAgent::kImageResource;
-    case Resource::kFont:
+    case blink::ResourceType::kFont:
       return InspectorPageAgent::kFontResource;
-    case Resource::kAudio:
-    case Resource::kVideo:
+    case blink::ResourceType::kAudio:
+    case blink::ResourceType::kVideo:
       return InspectorPageAgent::kMediaResource;
-    case Resource::kManifest:
+    case blink::ResourceType::kManifest:
       return InspectorPageAgent::kManifestResource;
-    case Resource::kTextTrack:
+    case blink::ResourceType::kTextTrack:
       return InspectorPageAgent::kTextTrackResource;
-    case Resource::kCSSStyleSheet:
+    case blink::ResourceType::kCSSStyleSheet:
     // Fall through.
-    case Resource::kXSLStyleSheet:
+    case blink::ResourceType::kXSLStyleSheet:
       return InspectorPageAgent::kStylesheetResource;
-    case Resource::kScript:
+    case blink::ResourceType::kScript:
       return InspectorPageAgent::kScriptResource;
-    case Resource::kImportResource:
+    case blink::ResourceType::kImportResource:
     // Fall through.
-    case Resource::kMainResource:
+    case blink::ResourceType::kMainResource:
       return InspectorPageAgent::kDocumentResource;
     default:
       break;
@@ -656,7 +658,7 @@ static void CachedResourcesForDocument(Document* document,
     // agent), fonts that were referenced in CSS but never used/downloaded, etc.
     if (cached_resource->StillNeedsLoad())
       continue;
-    if (cached_resource->GetType() == Resource::kRaw && skip_xhrs)
+    if (cached_resource->GetType() == ResourceType::kRaw && skip_xhrs)
       continue;
     result.push_back(cached_resource);
   }

@@ -66,7 +66,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
                                ResourceRequestBlockedReason,
-                               Resource::Type) const override {}
+                               ResourceType) const override {}
   bool ShouldBypassMainWorldCSP() const override { return false; }
   bool IsSVGImageChromeClient() const override { return false; }
   void CountUsage(WebFeature) const override {}
@@ -308,7 +308,7 @@ TEST_F(BaseFetchContextTest, CanRequest) {
 
   EXPECT_EQ(ResourceRequestBlockedReason::kCSP,
             fetch_context_->CanRequest(
-                Resource::kScript, resource_request, url, options,
+                ResourceType::kScript, resource_request, url, options,
                 SecurityViolationReportingPolicy::kReport,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_EQ(1u, policy->violation_reports_sent_.size());
@@ -345,53 +345,57 @@ TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
 
   EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
-                Resource::kRaw, request, url, ResourceLoaderOptions(),
+                ResourceType::kRaw, request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
                 ResourceRequest::RedirectStatus::kNoRedirect));
 
-  EXPECT_EQ(base::nullopt,
-            fetch_context_->CanRequest(
-                Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
-                SecurityViolationReportingPolicy::kSuppressReporting,
-                ResourceRequest::RedirectStatus::kNoRedirect));
+  EXPECT_EQ(
+      base::nullopt,
+      fetch_context_->CanRequest(
+          ResourceType::kRaw, keepalive_request, url, ResourceLoaderOptions(),
+          SecurityViolationReportingPolicy::kSuppressReporting,
+          ResourceRequest::RedirectStatus::kNoRedirect));
 
   EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
-                Resource::kRaw, request, url, ResourceLoaderOptions(),
+                ResourceType::kRaw, request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
 
-  EXPECT_EQ(base::nullopt,
-            fetch_context_->CanRequest(
-                Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
-                SecurityViolationReportingPolicy::kSuppressReporting,
-                ResourceRequest::RedirectStatus::kFollowedRedirect));
+  EXPECT_EQ(
+      base::nullopt,
+      fetch_context_->CanRequest(
+          ResourceType::kRaw, keepalive_request, url, ResourceLoaderOptions(),
+          SecurityViolationReportingPolicy::kSuppressReporting,
+          ResourceRequest::RedirectStatus::kFollowedRedirect));
 
   fetch_context_->SetIsDetached(true);
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
             fetch_context_->CanRequest(
-                Resource::kRaw, request, url, ResourceLoaderOptions(),
+                ResourceType::kRaw, request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
                 ResourceRequest::RedirectStatus::kNoRedirect));
 
-  EXPECT_EQ(ResourceRequestBlockedReason::kOther,
-            fetch_context_->CanRequest(
-                Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
-                SecurityViolationReportingPolicy::kSuppressReporting,
-                ResourceRequest::RedirectStatus::kNoRedirect));
+  EXPECT_EQ(
+      ResourceRequestBlockedReason::kOther,
+      fetch_context_->CanRequest(
+          ResourceType::kRaw, keepalive_request, url, ResourceLoaderOptions(),
+          SecurityViolationReportingPolicy::kSuppressReporting,
+          ResourceRequest::RedirectStatus::kNoRedirect));
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
             fetch_context_->CanRequest(
-                Resource::kRaw, request, url, ResourceLoaderOptions(),
+                ResourceType::kRaw, request, url, ResourceLoaderOptions(),
                 SecurityViolationReportingPolicy::kSuppressReporting,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
 
-  EXPECT_EQ(base::nullopt,
-            fetch_context_->CanRequest(
-                Resource::kRaw, keepalive_request, url, ResourceLoaderOptions(),
-                SecurityViolationReportingPolicy::kSuppressReporting,
-                ResourceRequest::RedirectStatus::kFollowedRedirect));
+  EXPECT_EQ(
+      base::nullopt,
+      fetch_context_->CanRequest(
+          ResourceType::kRaw, keepalive_request, url, ResourceLoaderOptions(),
+          SecurityViolationReportingPolicy::kSuppressReporting,
+          ResourceRequest::RedirectStatus::kFollowedRedirect));
 }
 
 // Test that User Agent CSS can only load images with data urls.
@@ -405,19 +409,19 @@ TEST_F(BaseFetchContextTest, UACSSTest) {
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
             fetch_context_->CanRequest(
-                Resource::kScript, resource_request, test_url, options,
+                ResourceType::kScript, resource_request, test_url, options,
                 SecurityViolationReportingPolicy::kReport,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
             fetch_context_->CanRequest(
-                Resource::kImage, resource_request, test_url, options,
+                ResourceType::kImage, resource_request, test_url, options,
                 SecurityViolationReportingPolicy::kReport,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
 
   EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
-                Resource::kImage, resource_request, data_url, options,
+                ResourceType::kImage, resource_request, data_url, options,
                 SecurityViolationReportingPolicy::kReport,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
 }
@@ -438,7 +442,7 @@ TEST_F(BaseFetchContextTest, UACSSTest_BypassCSP) {
 
   EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(
-                Resource::kImage, resource_request, data_url, options,
+                ResourceType::kImage, resource_request, data_url, options,
                 SecurityViolationReportingPolicy::kReport,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
 }

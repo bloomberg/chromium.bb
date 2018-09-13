@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Page.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8-inspector.h"
@@ -58,6 +57,7 @@ class LocalFrame;
 class ScheduledNavigation;
 class ScriptSourceCode;
 class SharedBuffer;
+enum class ResourceType : uint8_t;
 
 using blink::protocol::Maybe;
 
@@ -103,7 +103,7 @@ class CORE_EXPORT InspectorPageAgent final
                                   bool* base64_encoded);
 
   static String ResourceTypeJson(ResourceType);
-  static ResourceType ToResourceType(const Resource::Type);
+  static ResourceType ToResourceType(const blink::ResourceType);
   static String CachedResourceTypeJson(const Resource&);
 
   // Page API for frontend

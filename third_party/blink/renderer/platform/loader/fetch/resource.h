@@ -65,6 +65,26 @@ class ResourceTimingInfo;
 class ResourceLoader;
 class SecurityOrigin;
 
+// |ResourceType| enum values are used in UMAs, so do not change the values of
+// existing types. When adding a new type, append it at the end.
+enum class ResourceType : uint8_t {
+  kMainResource,
+  kImage,
+  kCSSStyleSheet,
+  kScript,
+  kFont,
+  kRaw,
+  kSVGDocument,
+  kXSLStyleSheet,
+  kLinkPrefetch,
+  kTextTrack,
+  kImportResource,
+  kAudio,
+  kVideo,
+  kManifest,
+  kMock  // Only for testing
+};
+
 // A callback for sending the serialized data of cached metadata back to the
 // platform.
 class CachedMetadataSender {
@@ -134,28 +154,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     kImagePlaceholder,
   };
 
-  // |Type| enum values are used in UMAs, so do not change the values of
-  // existing |Type|. When adding a new |Type|, append it at the end and update
-  // |kLastResourceType|.
-  enum Type : uint8_t {
-    kMainResource,
-    kImage,
-    kCSSStyleSheet,
-    kScript,
-    kFont,
-    kRaw,
-    kSVGDocument,
-    kXSLStyleSheet,
-    kLinkPrefetch,
-    kTextTrack,
-    kImportResource,
-    kAudio,
-    kVideo,
-    kManifest,
-    kMock  // Only for testing
-  };
-  static const int kLastResourceType = kMock + 1;
-
   // Used by reloadIfLoFiOrPlaceholderImage().
   enum ReloadLoFiOrPlaceholderPolicy {
     kReloadIfNeeded,
@@ -194,7 +192,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // This url can have a fragment, but it can match resources that differ by the
   // fragment only.
   const KURL& Url() const { return GetResourceRequest().Url(); }
-  Type GetType() const { return static_cast<Type>(type_); }
+  ResourceType GetType() const { return static_cast<ResourceType>(type_); }
   const ResourceLoaderOptions& Options() const { return options_; }
   ResourceLoaderOptions& MutableOptions() { return options_; }
 
@@ -407,7 +405,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
 
   static const char* ResourceTypeToString(
-      Type,
+      ResourceType,
       const AtomicString& fetch_initiator_name);
 
   class ProhibitAddRemoveClientInScope : public base::AutoReset<bool> {
@@ -427,7 +425,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
 
  protected:
-  Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
+  Resource(const ResourceRequest&, ResourceType, const ResourceLoaderOptions&);
 
   virtual void NotifyFinished();
 
@@ -518,7 +516,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // handler.
   std::unique_ptr<CachedMetadataSender> CreateCachedMetadataSender() const;
 
-  Type type_;
+  ResourceType type_;
   ResourceStatus status_;
 
   // A SecurityOrigin representing the origin from which the loading of the
@@ -598,23 +596,23 @@ class ResourceFactory {
                            const ResourceLoaderOptions&,
                            const TextResourceDecoderOptions&) const = 0;
 
-  Resource::Type GetType() const { return type_; }
+  ResourceType GetType() const { return type_; }
   TextResourceDecoderOptions::ContentType ContentType() const {
     return content_type_;
   }
 
  protected:
-  explicit ResourceFactory(Resource::Type type,
+  explicit ResourceFactory(ResourceType type,
                            TextResourceDecoderOptions::ContentType content_type)
       : type_(type), content_type_(content_type) {}
 
-  Resource::Type type_;
+  ResourceType type_;
   TextResourceDecoderOptions::ContentType content_type_;
 };
 
 class NonTextResourceFactory : public ResourceFactory {
  protected:
-  explicit NonTextResourceFactory(Resource::Type type)
+  explicit NonTextResourceFactory(ResourceType type)
       : ResourceFactory(type, TextResourceDecoderOptions::kPlainTextContent) {}
 
   virtual Resource* Create(const ResourceRequest&,
@@ -627,10 +625,10 @@ class NonTextResourceFactory : public ResourceFactory {
   }
 };
 
-#define DEFINE_RESOURCE_TYPE_CASTS(typeName)                      \
-  DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource,       \
-                    resource->GetType() == Resource::k##typeName, \
-                    resource.GetType() == Resource::k##typeName);
+#define DEFINE_RESOURCE_TYPE_CASTS(typeName)                          \
+  DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource,           \
+                    resource->GetType() == ResourceType::k##typeName, \
+                    resource.GetType() == ResourceType::k##typeName);
 
 }  // namespace blink
 

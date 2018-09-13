@@ -212,11 +212,11 @@ const KURL& DocumentLoader::Url() const {
   return request_.Url();
 }
 
-Resource* DocumentLoader::StartPreload(Resource::Type type,
+Resource* DocumentLoader::StartPreload(ResourceType type,
                                        FetchParameters& params) {
   Resource* resource = nullptr;
   switch (type) {
-    case Resource::kImage:
+    case ResourceType::kImage:
       if (frame_) {
         if (frame_->IsClientLoFiAllowed(params.GetResourceRequest())) {
           params.SetClientLoFiPlaceholder();
@@ -226,27 +226,27 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
       }
       resource = ImageResource::Fetch(params, Fetcher());
       break;
-    case Resource::kScript:
+    case ResourceType::kScript:
       params.SetRequestContext(WebURLRequest::kRequestContextScript);
       resource = ScriptResource::Fetch(params, Fetcher(), nullptr);
       break;
-    case Resource::kCSSStyleSheet:
+    case ResourceType::kCSSStyleSheet:
       resource = CSSStyleSheetResource::Fetch(params, Fetcher(), nullptr);
       break;
-    case Resource::kFont:
+    case ResourceType::kFont:
       resource = FontResource::Fetch(params, Fetcher(), nullptr);
       break;
-    case Resource::kAudio:
-    case Resource::kVideo:
+    case ResourceType::kAudio:
+    case ResourceType::kVideo:
       resource = RawResource::FetchMedia(params, Fetcher(), nullptr);
       break;
-    case Resource::kTextTrack:
+    case ResourceType::kTextTrack:
       resource = RawResource::FetchTextTrack(params, Fetcher(), nullptr);
       break;
-    case Resource::kImportResource:
+    case ResourceType::kImportResource:
       resource = RawResource::FetchImport(params, Fetcher(), nullptr);
       break;
-    case Resource::kRaw:
+    case ResourceType::kRaw:
       resource = RawResource::Fetch(params, Fetcher(), nullptr);
       break;
     default:

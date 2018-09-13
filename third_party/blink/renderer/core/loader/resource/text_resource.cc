@@ -12,7 +12,7 @@
 namespace blink {
 
 TextResource::TextResource(const ResourceRequest& resource_request,
-                           Resource::Type type,
+                           ResourceType type,
                            const ResourceLoaderOptions& options,
                            const TextResourceDecoderOptions& decoder_options)
     : Resource(resource_request, type, options),

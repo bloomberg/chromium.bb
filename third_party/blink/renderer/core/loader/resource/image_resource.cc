@@ -136,7 +136,7 @@ class ImageResource::ImageResourceInfoImpl final
   }
 
   void LoadDeferredImage(ResourceFetcher* fetcher) override {
-    if (resource_->GetType() == Resource::kImage &&
+    if (resource_->GetType() == ResourceType::kImage &&
         resource_->StillNeedsLoad() &&
         !fetcher->ShouldDeferImageLoad(resource_->Url())) {
       fetcher->StartLoad(resource_);
@@ -151,7 +151,7 @@ class ImageResource::ImageResourceFactory : public NonTextResourceFactory {
 
  public:
   explicit ImageResourceFactory(const FetchParameters& fetch_params)
-      : NonTextResourceFactory(Resource::kImage),
+      : NonTextResourceFactory(ResourceType::kImage),
         fetch_params_(&fetch_params) {}
 
   Resource* Create(const ResourceRequest& request,
@@ -223,7 +223,7 @@ ImageResource::ImageResource(const ResourceRequest& resource_request,
                              const ResourceLoaderOptions& options,
                              ImageResourceContent* content,
                              bool is_placeholder)
-    : Resource(resource_request, kImage, options),
+    : Resource(resource_request, ResourceType::kImage, options),
       content_(content),
       is_scheduling_reload_(false),
       placeholder_option_(

@@ -72,8 +72,10 @@ XSLStyleSheetResource::XSLStyleSheetResource(
     const ResourceRequest& resource_request,
     const ResourceLoaderOptions& options,
     const TextResourceDecoderOptions& decoder_options)
-    : TextResource(resource_request, kXSLStyleSheet, options, decoder_options) {
-}
+    : TextResource(resource_request,
+                   ResourceType::kXSLStyleSheet,
+                   options,
+                   decoder_options) {}
 
 void XSLStyleSheetResource::NotifyFinished() {
   if (Data())

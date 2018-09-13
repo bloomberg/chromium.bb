@@ -14,7 +14,7 @@ namespace {
 
 class MockResourceFactory final : public NonTextResourceFactory {
  public:
-  MockResourceFactory() : NonTextResourceFactory(Resource::kMock) {}
+  MockResourceFactory() : NonTextResourceFactory(ResourceType::kMock) {}
 
   Resource* Create(const ResourceRequest& request,
                    const ResourceLoaderOptions& options) const override {
@@ -46,7 +46,7 @@ MockResource* MockResource::Create(const KURL& url) {
 
 MockResource::MockResource(const ResourceRequest& request,
                            const ResourceLoaderOptions& options)
-    : Resource(request, Resource::kMock, options) {}
+    : Resource(request, ResourceType::kMock, options) {}
 
 CachedMetadataHandler* MockResource::CreateCachedMetadataHandler(
     std::unique_ptr<CachedMetadataSender> send_callback) {

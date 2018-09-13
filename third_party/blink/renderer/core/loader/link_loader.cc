@@ -272,25 +272,25 @@ static void PreconnectIfNeeded(
   }
 }
 
-base::Optional<Resource::Type> LinkLoader::GetResourceTypeFromAsAttribute(
+base::Optional<ResourceType> LinkLoader::GetResourceTypeFromAsAttribute(
     const String& as) {
   DCHECK_EQ(as.DeprecatedLower(), as);
   if (as == "image") {
-    return Resource::kImage;
+    return ResourceType::kImage;
   } else if (as == "script") {
-    return Resource::kScript;
+    return ResourceType::kScript;
   } else if (as == "style") {
-    return Resource::kCSSStyleSheet;
+    return ResourceType::kCSSStyleSheet;
   } else if (as == "video") {
-    return Resource::kVideo;
+    return ResourceType::kVideo;
   } else if (as == "audio") {
-    return Resource::kAudio;
+    return ResourceType::kAudio;
   } else if (as == "track") {
-    return Resource::kTextTrack;
+    return ResourceType::kTextTrack;
   } else if (as == "font") {
-    return Resource::kFont;
+    return ResourceType::kFont;
   } else if (as == "fetch") {
-    return Resource::kRaw;
+    return ResourceType::kRaw;
   }
   return base::nullopt;
 }
@@ -299,25 +299,25 @@ Resource* LinkLoader::GetResourceForTesting() {
   return finish_observer_ ? finish_observer_->GetResource() : nullptr;
 }
 
-static bool IsSupportedType(Resource::Type resource_type,
+static bool IsSupportedType(ResourceType resource_type,
                             const String& mime_type) {
   if (mime_type.IsEmpty())
     return true;
   switch (resource_type) {
-    case Resource::kImage:
+    case ResourceType::kImage:
       return MIMETypeRegistry::IsSupportedImagePrefixedMIMEType(mime_type);
-    case Resource::kScript:
+    case ResourceType::kScript:
       return MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type);
-    case Resource::kCSSStyleSheet:
+    case ResourceType::kCSSStyleSheet:
       return MIMETypeRegistry::IsSupportedStyleSheetMIMEType(mime_type);
-    case Resource::kFont:
+    case ResourceType::kFont:
       return MIMETypeRegistry::IsSupportedFontMIMEType(mime_type);
-    case Resource::kAudio:
-    case Resource::kVideo:
+    case ResourceType::kAudio:
+    case ResourceType::kVideo:
       return MIMETypeRegistry::IsSupportedMediaMIMEType(mime_type, String());
-    case Resource::kTextTrack:
+    case ResourceType::kTextTrack:
       return MIMETypeRegistry::IsSupportedTextTrackMIMEType(mime_type);
-    case Resource::kRaw:
+    case ResourceType::kRaw:
       return true;
     default:
       NOTREACHED();
@@ -357,12 +357,12 @@ static Resource* PreloadIfNeeded(const LinkLoadParameters& params,
   if (!document.Loader() || !params.rel.IsLinkPreload())
     return nullptr;
 
-  base::Optional<Resource::Type> resource_type =
+  base::Optional<ResourceType> resource_type =
       LinkLoader::GetResourceTypeFromAsAttribute(params.as);
 
   MediaValues* media_values = nullptr;
   KURL url;
-  if (resource_type == Resource::kImage && !params.srcset.IsEmpty() &&
+  if (resource_type == ResourceType::kImage && !params.srcset.IsEmpty() &&
       RuntimeEnabledFeatures::PreloadImageSrcSetEnabled()) {
     media_values = CreateMediaValues(document, viewport_description);
     float source_size =
@@ -594,8 +594,8 @@ static Resource* PrefetchIfNeeded(const LinkLoadParameters& params,
       link_fetch_params.SetCrossOriginAccessControl(
           document.GetSecurityOrigin(), params.cross_origin);
     }
-    return LinkFetchResource::Fetch(Resource::kLinkPrefetch, link_fetch_params,
-                                    document.Fetcher());
+    return LinkFetchResource::Fetch(ResourceType::kLinkPrefetch,
+                                    link_fetch_params, document.Fetcher());
   }
   return nullptr;
 }

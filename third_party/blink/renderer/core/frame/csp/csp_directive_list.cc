@@ -1057,7 +1057,7 @@ const String& CSPDirectiveList::PluginTypesText() const {
   return plugin_types_->GetText();
 }
 
-bool CSPDirectiveList::ShouldSendCSPHeader(Resource::Type type) const {
+bool CSPDirectiveList::ShouldSendCSPHeader(ResourceType type) const {
   // TODO(mkwst): Revisit this once the CORS prefetch issue with the 'CSP'
   //              header is worked out, one way or another:
   //              https://github.com/whatwg/fetch/issues/52

@@ -73,7 +73,7 @@ class CORE_EXPORT FontResource final : public Resource {
  private:
   class FontResourceFactory : public NonTextResourceFactory {
    public:
-    FontResourceFactory() : NonTextResourceFactory(Resource::kFont) {}
+    FontResourceFactory() : NonTextResourceFactory(ResourceType::kFont) {}
 
     Resource* Create(const ResourceRequest& request,
                      const ResourceLoaderOptions& options) const override {

@@ -56,7 +56,7 @@ void FetchContext::AddAdditionalRequestHeaders(ResourceRequest&,
 
 mojom::FetchCacheMode FetchContext::ResourceRequestCachePolicy(
     const ResourceRequest&,
-    Resource::Type,
+    ResourceType,
     FetchParameters::DeferOption defer) const {
   return mojom::FetchCacheMode::kDefault;
 }
@@ -66,7 +66,7 @@ void FetchContext::PrepareRequest(ResourceRequest&, RedirectType) {}
 void FetchContext::DispatchWillSendRequest(unsigned long,
                                            ResourceRequest&,
                                            const ResourceResponse&,
-                                           Resource::Type,
+                                           ResourceType,
                                            const FetchInitiatorInfo&) {}
 
 void FetchContext::DispatchDidLoadResourceFromMemoryCache(
@@ -103,7 +103,7 @@ void FetchContext::DispatchDidFail(const KURL&,
 
 void FetchContext::RecordLoadingActivity(
     const ResourceRequest&,
-    Resource::Type,
+    ResourceType,
     const AtomicString& fetch_initiator_name) {}
 
 void FetchContext::DidLoadResource(Resource*) {}
@@ -117,7 +117,7 @@ void FetchContext::AddWarningConsoleMessage(const String&, LogSource) const {}
 void FetchContext::AddErrorConsoleMessage(const String&, LogSource) const {}
 
 void FetchContext::PopulateResourceRequest(
-    Resource::Type,
+    ResourceType,
     const ClientHintsPreferences&,
     const FetchParameters::ResourceWidth&,
     ResourceRequest&) {}

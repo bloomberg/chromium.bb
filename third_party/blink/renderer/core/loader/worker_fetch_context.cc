@@ -143,7 +143,7 @@ void WorkerFetchContext::DispatchDidBlockRequest(
     const ResourceRequest& resource_request,
     const FetchInitiatorInfo& fetch_initiator_info,
     ResourceRequestBlockedReason blocked_reason,
-    Resource::Type resource_type) const {
+    ResourceType resource_type) const {
   probe::didBlockRequest(global_scope_, resource_request, nullptr,
                          fetch_initiator_info, blocked_reason, resource_type);
 }
@@ -321,7 +321,7 @@ void WorkerFetchContext::DispatchWillSendRequest(
     unsigned long identifier,
     ResourceRequest& request,
     const ResourceResponse& redirect_response,
-    Resource::Type resource_type,
+    ResourceType resource_type,
     const FetchInitiatorInfo& initiator_info) {
   probe::willSendRequest(global_scope_, identifier, nullptr, request,
                          redirect_response, initiator_info, resource_type);
@@ -393,7 +393,7 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
 }
 
 void WorkerFetchContext::PopulateResourceRequest(
-    Resource::Type type,
+    ResourceType type,
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& out_request) {

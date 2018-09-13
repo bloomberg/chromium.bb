@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Emulation.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -23,6 +22,7 @@ class ResourceRequest;
 class ResourceResponse;
 class WebLocalFrameImpl;
 class WebViewImpl;
+enum class ResourceType : uint8_t;
 struct FetchInitiatorInfo;
 
 namespace protocol {
@@ -89,7 +89,7 @@ class CORE_EXPORT InspectorEmulationAgent final
                        ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
-                       Resource::Type);
+                       ResourceType);
 
   // InspectorBaseAgent overrides.
   protocol::Response disable() override;

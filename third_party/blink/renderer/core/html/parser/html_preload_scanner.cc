@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -209,7 +210,7 @@ class TokenPreloadScanner::StartTagScanner {
       const ReferrerPolicy document_referrer_policy) {
     PreloadRequest::RequestType request_type =
         PreloadRequest::kRequestTypePreload;
-    base::Optional<Resource::Type> type;
+    base::Optional<ResourceType> type;
     if (ShouldPreconnect()) {
       request_type = PreloadRequest::kRequestTypePreconnect;
     } else {
@@ -220,7 +221,7 @@ class TokenPreloadScanner::StartTagScanner {
           return nullptr;
       } else if (IsLinkRelModulePreload()) {
         request_type = PreloadRequest::kRequestTypeLinkRelPreload;
-        type = Resource::kScript;
+        type = ResourceType::kScript;
       }
       if (!ShouldPreload(type)) {
         return nullptr;
@@ -247,7 +248,7 @@ class TokenPreloadScanner::StartTagScanner {
     }
 
     if (type == base::nullopt)
-      type = ResourceType();
+      type = GetResourceType();
 
     // The element's 'referrerpolicy' attribute (if present) takes precedence
     // over the document's referrer policy.
@@ -479,26 +480,26 @@ class TokenPreloadScanner::StartTagScanner {
     return charset_;
   }
 
-  base::Optional<Resource::Type> ResourceTypeForLinkPreload() const {
+  base::Optional<ResourceType> ResourceTypeForLinkPreload() const {
     DCHECK(link_is_preload_);
     return LinkLoader::GetResourceTypeFromAsAttribute(as_attribute_value_);
   }
 
-  Resource::Type ResourceType() const {
+  ResourceType GetResourceType() const {
     if (Match(tag_impl_, scriptTag)) {
-      return Resource::kScript;
+      return ResourceType::kScript;
     } else if (Match(tag_impl_, imgTag) || Match(tag_impl_, videoTag) ||
                (Match(tag_impl_, inputTag) && input_is_image_)) {
-      return Resource::kImage;
+      return ResourceType::kImage;
     } else if (Match(tag_impl_, linkTag) && link_is_style_sheet_) {
-      return Resource::kCSSStyleSheet;
+      return ResourceType::kCSSStyleSheet;
     } else if (link_is_preconnect_) {
-      return Resource::kRaw;
+      return ResourceType::kRaw;
     } else if (Match(tag_impl_, linkTag) && link_is_import_) {
-      return Resource::kImportResource;
+      return ResourceType::kImportResource;
     }
     NOTREACHED();
-    return Resource::kRaw;
+    return ResourceType::kRaw;
   }
 
   bool ShouldPreconnect() const {
@@ -516,7 +517,7 @@ class TokenPreloadScanner::StartTagScanner {
            !url_to_load_.IsEmpty();
   }
 
-  bool ShouldPreloadLink(base::Optional<Resource::Type>& type) const {
+  bool ShouldPreloadLink(base::Optional<ResourceType>& type) const {
     if (link_is_style_sheet_) {
       return type_attribute_value_.IsEmpty() ||
              MIMETypeRegistry::IsSupportedStyleSheetMIMEType(
@@ -525,12 +526,12 @@ class TokenPreloadScanner::StartTagScanner {
       if (type_attribute_value_.IsEmpty())
         return true;
       String type_from_attribute = ContentType(type_attribute_value_).GetType();
-      if ((type == Resource::kFont &&
+      if ((type == ResourceType::kFont &&
            !MIMETypeRegistry::IsSupportedFontMIMEType(type_from_attribute)) ||
-          (type == Resource::kImage &&
+          (type == ResourceType::kImage &&
            !MIMETypeRegistry::IsSupportedImagePrefixedMIMEType(
                type_from_attribute)) ||
-          (type == Resource::kCSSStyleSheet &&
+          (type == ResourceType::kCSSStyleSheet &&
            !MIMETypeRegistry::IsSupportedStyleSheetMIMEType(
                type_from_attribute))) {
         return false;
@@ -544,7 +545,7 @@ class TokenPreloadScanner::StartTagScanner {
     return true;
   }
 
-  bool ShouldPreload(base::Optional<Resource::Type>& type) const {
+  bool ShouldPreload(base::Optional<ResourceType>& type) const {
     if (url_to_load_.IsEmpty())
       return false;
     if (!matched_)

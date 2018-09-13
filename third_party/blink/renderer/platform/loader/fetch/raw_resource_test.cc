@@ -69,7 +69,7 @@ TEST_F(RawResourceTest, DontIgnoreAcceptForCacheReuse) {
       SecurityOrigin::CreateUniqueOpaque();
 
   RawResource* jpeg_resource(
-      RawResource::CreateForTest(jpeg_request, Resource::kRaw));
+      RawResource::CreateForTest(jpeg_request, ResourceType::kRaw));
   jpeg_resource->SetSourceOrigin(source_origin);
 
   ResourceRequest png_request;
@@ -156,7 +156,8 @@ class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
 };
 
 TEST_F(RawResourceTest, AddClientDuringCallback) {
-  Resource* raw = RawResource::CreateForTest("data:text/html,", Resource::kRaw);
+  Resource* raw =
+      RawResource::CreateForTest("data:text/html,", ResourceType::kRaw);
   raw->SetResponse(ResourceResponse(KURL("http://600.613/")));
   raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());
@@ -198,7 +199,8 @@ class RemovingClient : public GarbageCollectedFinalized<RemovingClient>,
 };
 
 TEST_F(RawResourceTest, RemoveClientDuringCallback) {
-  Resource* raw = RawResource::CreateForTest("data:text/html,", Resource::kRaw);
+  Resource* raw =
+      RawResource::CreateForTest("data:text/html,", ResourceType::kRaw);
   raw->SetResponse(ResourceResponse(KURL("http://600.613/")));
   raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());

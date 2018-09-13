@@ -182,7 +182,7 @@ void ServiceWorkerCachedMetadataSender::Send(const char* data, size_t size) {
 }
 
 Resource::Resource(const ResourceRequest& request,
-                   Type type,
+                   ResourceType type,
                    const ResourceLoaderOptions& options)
     : type_(type),
       status_(ResourceStatus::kNotStarted),
@@ -335,7 +335,7 @@ void Resource::SetDataBufferingPolicy(
   SetEncodedSize(0);
 }
 
-static bool NeedsSynchronousCacheHit(Resource::Type type,
+static bool NeedsSynchronousCacheHit(ResourceType type,
                                      const ResourceLoaderOptions& options) {
   // Synchronous requests must always succeed or fail synchronously.
   if (options.synchronous_policy == kRequestSynchronously)
@@ -346,11 +346,11 @@ static bool NeedsSynchronousCacheHit(Resource::Type type,
   // performance regression.
   // FIXME: Get to the point where we don't need to special-case sync/async
   // behavior for different resource types.
-  if (type == Resource::kCSSStyleSheet)
+  if (type == ResourceType::kCSSStyleSheet)
     return true;
-  if (type == Resource::kScript)
+  if (type == ResourceType::kScript)
     return true;
-  if (type == Resource::kFont)
+  if (type == ResourceType::kFont)
     return true;
   return false;
 }
@@ -1186,38 +1186,38 @@ static const char* InitiatorTypeNameToString(
 }
 
 const char* Resource::ResourceTypeToString(
-    Type type,
+    ResourceType type,
     const AtomicString& fetch_initiator_name) {
   switch (type) {
-    case Resource::kMainResource:
+    case ResourceType::kMainResource:
       return "Main resource";
-    case Resource::kImage:
+    case ResourceType::kImage:
       return "Image";
-    case Resource::kCSSStyleSheet:
+    case ResourceType::kCSSStyleSheet:
       return "CSS stylesheet";
-    case Resource::kScript:
+    case ResourceType::kScript:
       return "Script";
-    case Resource::kFont:
+    case ResourceType::kFont:
       return "Font";
-    case Resource::kRaw:
+    case ResourceType::kRaw:
       return InitiatorTypeNameToString(fetch_initiator_name);
-    case Resource::kSVGDocument:
+    case ResourceType::kSVGDocument:
       return "SVG document";
-    case Resource::kXSLStyleSheet:
+    case ResourceType::kXSLStyleSheet:
       return "XSL stylesheet";
-    case Resource::kLinkPrefetch:
+    case ResourceType::kLinkPrefetch:
       return "Link prefetch resource";
-    case Resource::kTextTrack:
+    case ResourceType::kTextTrack:
       return "Text track";
-    case Resource::kImportResource:
+    case ResourceType::kImportResource:
       return "Imported resource";
-    case Resource::kAudio:
+    case ResourceType::kAudio:
       return "Audio";
-    case Resource::kVideo:
+    case ResourceType::kVideo:
       return "Video";
-    case Resource::kManifest:
+    case ResourceType::kManifest:
       return "Manifest";
-    case Resource::kMock:
+    case ResourceType::kMock:
       return "Mock";
   }
   NOTREACHED();
@@ -1230,22 +1230,22 @@ bool Resource::ShouldBlockLoadEvent() const {
 
 bool Resource::IsLoadEventBlockingResourceType() const {
   switch (type_) {
-    case Resource::kMainResource:
-    case Resource::kImage:
-    case Resource::kCSSStyleSheet:
-    case Resource::kScript:
-    case Resource::kFont:
-    case Resource::kSVGDocument:
-    case Resource::kXSLStyleSheet:
-    case Resource::kImportResource:
+    case ResourceType::kMainResource:
+    case ResourceType::kImage:
+    case ResourceType::kCSSStyleSheet:
+    case ResourceType::kScript:
+    case ResourceType::kFont:
+    case ResourceType::kSVGDocument:
+    case ResourceType::kXSLStyleSheet:
+    case ResourceType::kImportResource:
       return true;
-    case Resource::kRaw:
-    case Resource::kLinkPrefetch:
-    case Resource::kTextTrack:
-    case Resource::kAudio:
-    case Resource::kVideo:
-    case Resource::kManifest:
-    case Resource::kMock:
+    case ResourceType::kRaw:
+    case ResourceType::kLinkPrefetch:
+    case ResourceType::kTextTrack:
+    case ResourceType::kAudio:
+    case ResourceType::kVideo:
+    case ResourceType::kManifest:
+    case ResourceType::kMock:
       return false;
   }
   NOTREACHED();
