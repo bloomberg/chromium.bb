@@ -845,8 +845,12 @@ inline Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
 // https://html.spec.whatwg.org/#look-up-a-custom-element-definition
 CustomElementDefinition* HTMLConstructionSite::LookUpCustomElementDefinition(
     Document& document,
-    AtomicHTMLToken* token,
+    const QualifiedName& tag_name,
     const AtomicString& is) {
+  // "1. If namespace is not the HTML namespace, return null."
+  if (tag_name.NamespaceURI() != HTMLNames::xhtmlNamespaceURI)
+    return nullptr;
+
   // "2. If document does not have a browsing context, return null."
   LocalDOMWindow* window = document.ExecutingWindow();
   if (!window)
@@ -858,7 +862,7 @@ CustomElementDefinition* HTMLConstructionSite::LookUpCustomElementDefinition(
   if (!registry)
     return nullptr;
 
-  const AtomicString& local_name = token->GetName();
+  const AtomicString& local_name = tag_name.LocalName();
   const AtomicString& name = !is.IsNull() ? is : local_name;
   CustomElementDescriptor descriptor(name, local_name);
 
@@ -880,7 +884,7 @@ Element* HTMLConstructionSite::CreateElement(
   const Attribute* is_attribute = token->GetAttributeItem(HTMLNames::isAttr);
   const AtomicString& is = is_attribute ? is_attribute->Value() : g_null_atom;
   // "4. Let definition be the result of looking up a custom element ..." etc.
-  auto* definition = LookUpCustomElementDefinition(document, token, is);
+  auto* definition = LookUpCustomElementDefinition(document, tag_name, is);
   // "5. If definition is non-null and the parser was not originally created
   // for the HTML fragment parsing algorithm, then let will execute script
   // be true."
