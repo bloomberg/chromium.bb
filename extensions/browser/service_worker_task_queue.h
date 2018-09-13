@@ -16,6 +16,7 @@
 
 namespace content {
 class BrowserContext;
+class ServiceWorkerContext;
 }
 
 namespace extensions {
@@ -46,8 +47,29 @@ class ServiceWorkerTaskQueue : public KeyedService,
   // e.g. unregistering |extension|'s worker.
   void DeactivateExtension(const Extension* extension);
 
+  // Called once an extension Service Worker started running.
+  void DidStartServiceWorkerContext(const ExtensionId& extension_id,
+                                    int64_t service_worker_version_id);
+  // Called once an extension Service Worker was destroyed.
+  void DidStopServiceWorkerContext(const ExtensionId& extension_id,
+                                   int64_t service_worker_version_id);
+
  private:
   struct TaskInfo;
+
+  static void DidStartWorkerForPatternOnIO(
+      LazyContextTaskQueue::PendingTask task,
+      const ExtensionId& extension_id,
+      base::WeakPtr<ServiceWorkerTaskQueue> task_queue,
+      int64_t version_id,
+      int process_id,
+      int thread_id);
+  static void StartServiceWorkerOnIOToRunTask(
+      base::WeakPtr<ServiceWorkerTaskQueue> task_queue_weak,
+      const GURL& pattern,
+      const ExtensionId& extension_id,
+      content::ServiceWorkerContext* service_worker_context,
+      LazyContextTaskQueue::PendingTask task);
 
   void RunTaskAfterStartWorker(LazyContextId* context_id,
                                LazyContextTaskQueue::PendingTask task);
@@ -56,12 +78,28 @@ class ServiceWorkerTaskQueue : public KeyedService,
   void DidUnregisterServiceWorker(const ExtensionId& extension_id,
                                   bool success);
 
+  void DidStartWorkerForPattern(LazyContextTaskQueue::PendingTask task,
+                                const ExtensionId& extension_id,
+                                int64_t version_id,
+                                int process_id,
+                                int thread_id);
+
   // Set of extension ids that hasn't completed Service Worker registration.
   std::set<ExtensionId> pending_registrations_;
 
   // Map of extension id -> pending tasks. These are run once the Service Worker
   // registration of the extension completes.
   std::map<ExtensionId, std::vector<TaskInfo>> pending_tasks_;
+
+  struct WaitingDidStartWorkerTask;
+
+  using WaitingDidStartWorkerTaskKey =
+      std::pair<ExtensionId, int64_t /* service_worker_version_id */>;
+  // All service workers that are currently loaded.
+  std::set<WaitingDidStartWorkerTaskKey> running_service_worker_contexts_;
+  // All service worker tasks that are waiting for the worker to start.
+  std::map<WaitingDidStartWorkerTaskKey, std::vector<WaitingDidStartWorkerTask>>
+      waiting_did_start_worker_tasks_;
 
   content::BrowserContext* const browser_context_ = nullptr;
 

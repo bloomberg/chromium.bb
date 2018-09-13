@@ -213,6 +213,10 @@ class ChromeContentRendererClient
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
       const GURL& script_url) override;
+  void DidStartServiceWorkerContextOnWorkerThread(
+      int64_t service_worker_version_id,
+      const GURL& service_worker_scope,
+      const GURL& script_url) override;
   void WillDestroyServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
       int64_t service_worker_version_id,

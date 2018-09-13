@@ -356,6 +356,13 @@ class CONTENT_EXPORT ContentRendererClient {
       const GURL& service_worker_scope,
       const GURL& script_url) {}
 
+  // Notifies that a service worker context has finished executing its top-level
+  // JavaScript. This function is called from the worker thread.
+  virtual void DidStartServiceWorkerContextOnWorkerThread(
+      int64_t service_worker_version_id,
+      const GURL& service_worker_scope,
+      const GURL& script_url) {}
+
   // Notifies that a service worker context will be destroyed. This function
   // is called from the worker thread.
   virtual void WillDestroyServiceWorkerContextOnWorkerThread(
