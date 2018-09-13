@@ -33,12 +33,12 @@
 #include "libdrm_macros.h"
 #include "internal.h"
 
-int kms_create(int fd, struct kms_driver **out)
+drm_public int kms_create(int fd, struct kms_driver **out)
 {
 	return linux_create(fd, out);
 }
 
-int kms_get_prop(struct kms_driver *kms, unsigned key, unsigned *out)
+drm_public int kms_get_prop(struct kms_driver *kms, unsigned key, unsigned *out)
 {
 	switch (key) {
 	case KMS_BO_TYPE:
@@ -49,7 +49,7 @@ int kms_get_prop(struct kms_driver *kms, unsigned key, unsigned *out)
 	return kms->get_prop(kms, key, out);
 }
 
-int kms_destroy(struct kms_driver **kms)
+drm_public int kms_destroy(struct kms_driver **kms)
 {
 	if (!(*kms))
 		return 0;
@@ -59,7 +59,7 @@ int kms_destroy(struct kms_driver **kms)
 	return 0;
 }
 
-int kms_bo_create(struct kms_driver *kms, const unsigned *attr, struct kms_bo **out)
+drm_public int kms_bo_create(struct kms_driver *kms, const unsigned *attr, struct kms_bo **out)
 {
 	unsigned width = 0;
 	unsigned height = 0;
@@ -97,7 +97,7 @@ int kms_bo_create(struct kms_driver *kms, const unsigned *attr, struct kms_bo **
 	return kms->bo_create(kms, width, height, type, attr, out);
 }
 
-int kms_bo_get_prop(struct kms_bo *bo, unsigned key, unsigned *out)
+drm_public int kms_bo_get_prop(struct kms_bo *bo, unsigned key, unsigned *out)
 {
 	switch (key) {
 	case KMS_PITCH:
@@ -113,17 +113,17 @@ int kms_bo_get_prop(struct kms_bo *bo, unsigned key, unsigned *out)
 	return 0;
 }
 
-int kms_bo_map(struct kms_bo *bo, void **out)
+drm_public int kms_bo_map(struct kms_bo *bo, void **out)
 {
 	return bo->kms->bo_map(bo, out);
 }
 
-int kms_bo_unmap(struct kms_bo *bo)
+drm_public int kms_bo_unmap(struct kms_bo *bo)
 {
 	return bo->kms->bo_unmap(bo);
 }
 
-int kms_bo_destroy(struct kms_bo **bo)
+drm_public int kms_bo_destroy(struct kms_bo **bo)
 {
 	int ret;
 
