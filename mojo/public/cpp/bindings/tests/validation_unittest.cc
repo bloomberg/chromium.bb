@@ -51,7 +51,7 @@ Message CreateRawMessage(size_t size) {
                              nullptr, 0, &options, &buffer, &buffer_size);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
-  return Message(std::move(handle));
+  return Message::CreateFromMessageHandle(&handle);
 }
 
 template <typename T>

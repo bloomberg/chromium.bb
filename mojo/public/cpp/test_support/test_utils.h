@@ -21,7 +21,9 @@ bool SerializeAndDeserialize(UserType* input, UserType* output) {
   // This accurately simulates full serialization to ensure that all attached
   // handles are serialized as well. Necessary for DeserializeFromMessage to
   // work properly.
-  message = mojo::Message(message.TakeMojoMessage());
+  mojo::ScopedMessageHandle handle = message.TakeMojoMessage();
+  message = mojo::Message::CreateFromMessageHandle(&handle);
+  DCHECK(!message.IsNull());
 
   return MojomType::DeserializeFromMessage(std::move(message), output);
 }
