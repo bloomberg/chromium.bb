@@ -4,8 +4,14 @@ FAIL MerchantValidationEvent can be constructed with an EventInitDict, even if n
 FAIL MerchantValidationEvent can be dispatched, even if not trusted. MerchantValidationEvent is not defined
 FAIL Must have a validationURL IDL attribute, which is initialized with to the validationURL dictionary value. MerchantValidationEvent is not defined
 FAIL Must throw TypeError if initialized with an invalid URL. assert_throws: function "() => {
-    new MerchantValidationEvent("test", { validationURL })
+    new MerchantValidationEvent("test", { validationURL });
   }" threw object "ReferenceError: MerchantValidationEvent is not defined" ("ReferenceError") expected object "TypeError" ("TypeError")
 FAIL Relative validationURLs use the document as the base. MerchantValidationEvent is not defined
+FAIL Must have a methodName IDL attribute, which is initialized with to the methodName dictionary value. MerchantValidationEvent is not defined
+FAIL When no methodName is passed, methodName attribute defaults to the empty string MerchantValidationEvent is not defined
+FAIL MerchantValidationEvent can be constructed with valid PMIs MerchantValidationEvent is not defined
+FAIL MerchantValidationEvent can't be constructed with invalid PMIs assert_throws: expected to throw when constructed with invalid PMI: 'basic-💳' function "() => {
+        const event = new MerchantValidationEvent("test", { methodName });
+      }" threw object "ReferenceError: MerchantValidationEvent is not defined" ("ReferenceError") expected object "RangeError" ("RangeError")
 Harness: the test ran to completion.
 
