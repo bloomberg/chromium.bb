@@ -46,6 +46,9 @@ class ScriptExecutor : public ActionDelegate {
   void FillCardForm(const std::string& guid,
                     const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
+  void SelectOption(const std::vector<std::string>& selectors,
+                    const std::string& selected_option,
+                    base::OnceCallback<void(bool)> callback) override;
   ClientMemory* GetClientMemory() override;
 
  private:

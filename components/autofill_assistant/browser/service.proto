@@ -108,6 +108,7 @@ message ActionProto {
 
   oneof action_info {
     ClickProto click = 5;
+    SelectOptionProto select_option = 7;
     TellProto tell = 11;
     WaitForDomProto wait_for_dom = 19;
     UseCreditCardProto use_card = 28;
@@ -142,6 +143,14 @@ message ElementReferenceProto {
 // Contain all arguments to perform a click.
 message ClickProto {
   required ElementReferenceProto element_to_click = 1;
+}
+
+// Contain all arguments to perform a select option action.
+message SelectOptionProto {
+  // The drop down element on which to select an option.
+  optional ElementReferenceProto element = 2;
+  // Value of the option to use.
+  optional string selected_option = 3;
 }
 
 // Contain a localized text message from the server.

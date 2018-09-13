@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/actions/select_option_action.h"
 #include "components/autofill_assistant/browser/actions/tell_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -131,6 +132,10 @@ bool ProtocolUtils::ParseActions(const std::string& response,
       }
       case ActionProto::ActionInfoCase::kWaitForDom: {
         actions->emplace_back(std::make_unique<WaitForDomAction>(action));
+        break;
+      }
+      case ActionProto::ActionInfoCase::kSelectOption: {
+        actions->emplace_back(std::make_unique<SelectOptionAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

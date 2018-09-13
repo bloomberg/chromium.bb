@@ -53,6 +53,12 @@ class ActionDelegate {
                             const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback) = 0;
 
+  // Select the option given by |selectors| and the value of the option to be
+  // picked.
+  virtual void SelectOption(const std::vector<std::string>& selectors,
+                            const std::string& selected_option,
+                            base::OnceCallback<void(bool)> callback) = 0;
+
   // Return the current ClientMemory.
   virtual ClientMemory* GetClientMemory() = 0;
 
