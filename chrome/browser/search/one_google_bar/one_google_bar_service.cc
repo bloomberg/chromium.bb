@@ -9,39 +9,38 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class OneGoogleBarService::SigninObserver
-    : public GaiaCookieManagerService::Observer {
+    : public identity::IdentityManager::Observer {
  public:
   using SigninStatusChangedCallback = base::Closure;
 
-  SigninObserver(GaiaCookieManagerService* cookie_service,
+  SigninObserver(identity::IdentityManager* identity_manager,
                  const SigninStatusChangedCallback& callback)
-      : cookie_service_(cookie_service), callback_(callback) {
-    cookie_service_->AddObserver(this);
+      : identity_manager_(identity_manager), callback_(callback) {
+    identity_manager_->AddObserver(this);
   }
 
-  ~SigninObserver() override { cookie_service_->RemoveObserver(this); }
+  ~SigninObserver() override { identity_manager_->RemoveObserver(this); }
 
  private:
-  // GaiaCookieManagerService::Observer implementation.
-  void OnGaiaAccountsInCookieUpdated(const std::vector<gaia::ListedAccount>&,
-                                     const std::vector<gaia::ListedAccount>&,
-                                     const GoogleServiceAuthError&) override {
+  // IdentityManager::Observer implementation.
+  void OnAccountsInCookieUpdated(
+      const std::vector<AccountInfo>& accounts) override {
     callback_.Run();
   }
 
-  GaiaCookieManagerService* const cookie_service_;
+  identity::IdentityManager* const identity_manager_;
   SigninStatusChangedCallback callback_;
 };
 
 OneGoogleBarService::OneGoogleBarService(
-    GaiaCookieManagerService* cookie_service,
+    identity::IdentityManager* identity_manager,
     std::unique_ptr<OneGoogleBarLoader> loader)
     : loader_(std::move(loader)),
       signin_observer_(std::make_unique<SigninObserver>(
-          cookie_service,
+          identity_manager,
           base::Bind(&OneGoogleBarService::SigninStatusChanged,
                      base::Unretained(this)))) {}
 

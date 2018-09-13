@@ -14,11 +14,11 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,32 +57,29 @@ class OneGoogleBarServiceTest : public testing::Test {
  public:
   OneGoogleBarServiceTest()
       : signin_client_(&pref_service_),
-        cookie_service_(&token_service_,
-                        GaiaConstants::kChromeSource,
-                        &signin_client_) {
+        identity_env_(/*use_fake_url_loader_for_gaia_cookie_manager=*/true) {
     // GaiaCookieManagerService calls static methods of AccountTrackerService
     // which access prefs.
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
 
     auto loader = std::make_unique<FakeOneGoogleBarLoader>();
     loader_ = loader.get();
-    service_ = std::make_unique<OneGoogleBarService>(&cookie_service_,
-                                                     std::move(loader));
+    service_ = std::make_unique<OneGoogleBarService>(
+        identity_env_.identity_manager(), std::move(loader));
   }
 
   FakeOneGoogleBarLoader* loader() { return loader_; }
   OneGoogleBarService* service() { return service_.get(); }
 
   void SignIn() {
-    cookie_service_.SetListAccountsResponseOneAccount("user@gmail.com",
-                                                      "gaia_id");
-    cookie_service_.TriggerListAccounts(GaiaConstants::kChromeSource);
+    AccountInfo account_info =
+        identity_env_.MakeAccountAvailable("test@email.com");
+    identity_env_.SetCookieAccounts({{account_info.email, account_info.gaia}});
     task_environment_.RunUntilIdle();
   }
 
   void SignOut() {
-    cookie_service_.SetListAccountsResponseNoAccounts();
-    cookie_service_.TriggerListAccounts(GaiaConstants::kChromeSource);
+    identity_env_.SetCookieAccounts({});
     task_environment_.RunUntilIdle();
   }
 
@@ -92,7 +89,7 @@ class OneGoogleBarServiceTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   FakeOAuth2TokenService token_service_;
-  FakeGaiaCookieManagerService cookie_service_;
+  identity::IdentityTestEnvironment identity_env_;
 
   // Owned by the service.
   FakeOneGoogleBarLoader* loader_;
