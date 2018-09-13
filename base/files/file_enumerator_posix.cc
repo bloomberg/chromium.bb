@@ -89,6 +89,12 @@ FileEnumerator::FileEnumerator(const FilePath& root_path,
   // INCLUDE_DOT_DOT must not be specified if recursive.
   DCHECK(!(recursive && (INCLUDE_DOT_DOT & file_type_)));
 
+  if (recursive && !(file_type & SHOW_SYM_LINKS)) {
+    struct stat st;
+    GetStat(root_path, false, &st);
+    visited_directories_.insert(st.st_ino);
+  }
+
   pending_paths_.push(root_path);
 }
 
@@ -154,12 +160,18 @@ FilePath FileEnumerator::Next() {
         continue;
 
       const FilePath full_path = root_path_.Append(info.filename_);
-      GetStat(full_path, file_type_ & SHOW_SYM_LINKS, &info.stat_);
+      const bool show_sym_links = file_type_ & SHOW_SYM_LINKS;
+      GetStat(full_path, show_sym_links, &info.stat_);
 
       const bool is_dir = info.IsDirectory();
 
-      if (recursive_ && is_dir)
+      // Recursive mode: schedule traversal of a directory if either
+      // SHOW_SYM_LINKS is on or we haven't visited the directory yet.
+      if (recursive_ && is_dir &&
+          (show_sym_links ||
+           visited_directories_.insert(info.stat_.st_ino).second)) {
         pending_paths_.push(full_path);
+      }
 
       if (is_pattern_matched && IsTypeMatched(is_dir))
         directory_entries_.push_back(std::move(info));
