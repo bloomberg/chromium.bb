@@ -3179,15 +3179,21 @@ bool Element::ParseAttributeName(QualifiedName& out,
   return true;
 }
 
-void Element::setAttributeNS(const AtomicString& namespace_uri,
-                             const AtomicString& qualified_name,
-                             const AtomicString& value,
-                             ExceptionState& exception_state) {
+void Element::setAttributeNS(
+    const AtomicString& namespace_uri,
+    const AtomicString& qualified_name,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
+        string_or_TT,
+    ExceptionState& exception_state) {
+  String value =
+      GetStringFromTrustedType(string_or_TT, &GetDocument(), exception_state);
+  if (exception_state.HadException())
+    return;
   QualifiedName parsed_name = g_any_name;
   if (!ParseAttributeName(parsed_name, namespace_uri, qualified_name,
                           exception_state))
     return;
-  setAttribute(parsed_name, value);
+  setAttribute(parsed_name, AtomicString(value));
 }
 
 void Element::RemoveAttributeInternal(

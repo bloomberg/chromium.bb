@@ -251,10 +251,11 @@ class CORE_EXPORT Element : public ContainerNode {
                                  const AtomicString& namespace_uri,
                                  const AtomicString& qualified_name,
                                  ExceptionState&);
-  void setAttributeNS(const AtomicString& namespace_uri,
-                      const AtomicString& qualified_name,
-                      const AtomicString& value,
-                      ExceptionState&);
+  void setAttributeNS(
+      const AtomicString& namespace_uri,
+      const AtomicString& qualified_name,
+      const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&,
+      ExceptionState&);
 
   bool toggleAttribute(const AtomicString&, ExceptionState&);
   bool toggleAttribute(const AtomicString&, bool force, ExceptionState&);
