@@ -27,6 +27,11 @@ bool CursorManager::ShouldHideCursorOnKeyEvent(
   if (event.type() != ui::ET_KEY_PRESSED)
     return false;
 
+  // Pressing one key repeatedly will not hide the cursor.
+  // To deal with the issue 855163 (http://crbug.com/855163).
+  if (event.is_repeat())
+    return false;
+
   // Do not hide cursor when clicking the key with mouse button pressed.
   if (Shell::Get()->aura_env()->IsMouseButtonDown())
     return false;
