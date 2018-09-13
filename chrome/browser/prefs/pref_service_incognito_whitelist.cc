@@ -211,7 +211,7 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kPushMessagingAppIdentifierMap,
 
     prefs::kWebRTCMultipleRoutesEnabled, prefs::kWebRTCNonProxiedUdpEnabled,
-    prefs::kWebRTCIPHandlingPolicy, prefs::kWebRTCUDPPortRange,
+    prefs::kWebRTCIPHandlingPolicy,
 
 #if defined(OS_WIN)
     prefs::kHasSeenWin10PromoPage,
@@ -235,10 +235,7 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kRestartLastSessionOnShutdown,
 #if !defined(OS_ANDROID)
-#if !defined(OS_CHROMEOS)
-    prefs::kPromotionalTabsEnabled,
-#endif
-    prefs::kSuppressUnsupportedOSWarning, prefs::kWasRestarted,
+    prefs::kWasRestarted,
 #endif  // !defined(OS_ANDROID)
 
     prefs::kGoogleServicesPasswordHash,
@@ -246,20 +243,12 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kWebAppCreateOnDesktop, prefs::kWebAppCreateInAppsMenu,
     prefs::kWebAppCreateInQuickLaunchBar,
 
-    prefs::kWebAppInstallForceList,
-
     prefs::kGeolocationAccessToken,
 
     prefs::kDefaultAudioCaptureDevice, prefs::kDefaultVideoCaptureDevice,
     prefs::kMediaDeviceIdSalt, prefs::kMediaStorageIdSalt,
 
-    prefs::kMaxConnectionsPerProxy,
-
-    prefs::kAudioCaptureAllowed, prefs::kAudioCaptureAllowedUrls,
-    prefs::kVideoCaptureAllowed, prefs::kVideoCaptureAllowedUrls,
-
     prefs::kClearPluginLSODataEnabled, prefs::kPepperFlashSettingsEnabled,
-    prefs::kDiskCacheDir, prefs::kDiskCacheSize, prefs::kMediaCacheSize,
 
     prefs::kPerformanceTracingEnabled,
 
@@ -268,26 +257,16 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kRegisteredBackgroundContents,
 
 #if defined(OS_WIN)
-    prefs::kLastWelcomedOSVersion, prefs::kWelcomePageOnOSUpgradeEnabled,
+    prefs::kLastWelcomedOSVersion,
 #endif
-
-    prefs::kAuthSchemes, prefs::kDisableAuthNegotiateCnameLookup,
-    prefs::kEnableAuthNegotiatePort, prefs::kAuthServerWhitelist,
-    prefs::kAuthNegotiateDelegateWhitelist, prefs::kGSSAPILibraryName,
-    prefs::kAuthAndroidNegotiateAccountType, prefs::kAllowCrossOriginAuthPrompt,
-
-#if defined(OS_POSIX)
-    prefs::kNtlmV2Enabled,
-#endif  // defined(OS_POSIX)
 
     prefs::kCertRevocationCheckingEnabled,
     prefs::kCertRevocationCheckingRequiredLocalAnchors,
     prefs::kCertEnableSha1LocalAnchors,
-    prefs::kCertEnableSymantecLegacyInfrastructure, prefs::kSSLVersionMin,
-    prefs::kSSLVersionMax, prefs::kTLS13Variant, prefs::kCipherSuiteBlacklist,
+    prefs::kCertEnableSymantecLegacyInfrastructure, prefs::kTLS13Variant,
+    prefs::kCipherSuiteBlacklist,
 
-    prefs::kBuiltInDnsClientEnabled, prefs::kDnsOverHttpsServers,
-    prefs::kDnsOverHttpsServerMethods,
+    prefs::kDnsOverHttpsServers, prefs::kDnsOverHttpsServerMethods,
 
     prefs::kRegisteredProtocolHandlers, prefs::kIgnoredProtocolHandlers,
     prefs::kCustomHandlersEnabled,
@@ -297,18 +276,10 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kMigratedLoginItemPref, prefs::kNotifyWhenAppsKeepChromeAlive,
 #endif
 
-    prefs::kBackgroundModeEnabled, prefs::kHardwareAccelerationModeEnabled,
-    prefs::kHardwareAccelerationModePrevious,
+    prefs::kBackgroundModeEnabled, prefs::kHardwareAccelerationModePrevious,
 
     prefs::kFactoryResetRequested, prefs::kFactoryResetTPMFirmwareUpdateMode,
     prefs::kDebuggingFeaturesRequested,
-
-#if !defined(OS_ANDROID)
-#if !defined(OS_CHROMEOS)
-    prefs::kRelaunchNotification,
-#endif  // !defined(OS_CHROMEOS)
-    prefs::kRelaunchNotificationPeriod,
-#endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
     prefs::kAttemptedToEnableAutoupdate,
@@ -339,8 +310,7 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kPartnerBookmarkMappings,
 #endif  // defined(OS_ANDROID)
 
-    prefs::kQuickCheckEnabled, prefs::kPacHttpsUrlStrippingEnabled,
-    prefs::kBrowserGuestModeEnabled, prefs::kBrowserAddPersonEnabled,
+    prefs::kQuickCheckEnabled,
 
     prefs::kRecoveryComponentNeedsElevation,
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -348,17 +318,13 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    prefs::kAnimationPolicy, prefs::kSecurityKeyPermitAttestation,
+    prefs::kAnimationPolicy,
 #endif
 
     prefs::kBackgroundTracingLastUpload,
 
-    prefs::kAllowDinosaurEasterEgg,
-
     prefs::kOriginTrialPublicKey, prefs::kOriginTrialDisabledFeatures,
     prefs::kOriginTrialDisabledTokens,
-
-    prefs::kComponentUpdatesEnabled,
 
     prefs::kMediaEngagementSchemaVersion,
 };
