@@ -5,6 +5,7 @@
 #include <libdrm/drm_fourcc.h>
 #include <linux/videodev2.h>
 #include <string.h>
+#include <sstream>
 
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
@@ -377,6 +378,38 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
   DCHECK_LE(sizeimage, VideoFrame::AllocationSize(frame_format, coded_size));
 
   return coded_size;
+}
+
+// static
+std::string V4L2Device::V4L2FormatToString(const struct v4l2_format& format) {
+  std::ostringstream s;
+  s << "v4l2_format type: " << format.type;
+  if (format.type == V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+      format.type == V4L2_BUF_TYPE_VIDEO_OUTPUT) {
+    //  single-planar
+    const struct v4l2_pix_format& pix = format.fmt.pix;
+    s << ", width_height: " << gfx::Size(pix.width, pix.height).ToString()
+      << ", pixelformat: " << FourccToString(pix.pixelformat)
+      << ", field: " << pix.field << ", bytesperline: " << pix.bytesperline
+      << ", sizeimage: " << pix.sizeimage;
+  } else if (V4L2_TYPE_IS_MULTIPLANAR(format.type)) {
+    const struct v4l2_pix_format_mplane& pix_mp = format.fmt.pix_mp;
+    // As long as num_planes's type is uint8_t, ostringstream treats it as a
+    // char instead of an integer, which is not what we want. Casting
+    // pix_mp.num_planes unsigned int solves the issue.
+    s << ", width_height: " << gfx::Size(pix_mp.width, pix_mp.height).ToString()
+      << ", pixelformat: " << FourccToString(pix_mp.pixelformat)
+      << ", field: " << pix_mp.field
+      << ", num_planes: " << static_cast<unsigned int>(pix_mp.num_planes);
+    for (size_t i = 0; i < pix_mp.num_planes; ++i) {
+      const struct v4l2_plane_pix_format& plane_fmt = pix_mp.plane_fmt[i];
+      s << ", plane_fmt[" << i << "].sizeimage: " << plane_fmt.sizeimage
+        << ", plane_fmt[" << i << "].bytesperline: " << plane_fmt.bytesperline;
+    }
+  } else {
+    s << " unsupported yet.";
+  }
+  return s.str();
 }
 
 void V4L2Device::GetSupportedResolution(uint32_t pixelformat,

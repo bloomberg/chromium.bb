@@ -53,6 +53,9 @@ class MEDIA_GPU_EXPORT V4L2Device
   static int32_t VideoCodecProfileToV4L2H264Profile(VideoCodecProfile profile);
   static int32_t H264LevelIdcToV4L2H264Level(uint8_t level_idc);
 
+  // Composes human readable string of v4l2_format.
+  static std::string V4L2FormatToString(const struct v4l2_format& format);
+
   enum class Type {
     kDecoder,
     kEncoder,
