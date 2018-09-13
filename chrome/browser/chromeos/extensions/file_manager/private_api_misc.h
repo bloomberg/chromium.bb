@@ -279,17 +279,17 @@ class FileManagerPrivateIsCrostiniEnabledFunction
   ResponseAction Run() override;
 };
 
-// Implements the chrome.fileManagerPrivate.mountCrostiniContainer method.
+// Implements the chrome.fileManagerPrivate.mountCrostini method.
 // Starts and mounts crostini container.
-class FileManagerPrivateMountCrostiniContainerFunction
+class FileManagerPrivateMountCrostiniFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.mountCrostiniContainer",
-                             FILEMANAGERPRIVATE_MOUNTCROSTINICONTAINER)
-  FileManagerPrivateMountCrostiniContainerFunction();
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.mountCrostini",
+                             FILEMANAGERPRIVATE_MOUNTCROSTINI)
+  FileManagerPrivateMountCrostiniFunction();
 
  protected:
-  ~FileManagerPrivateMountCrostiniContainerFunction() override;
+  ~FileManagerPrivateMountCrostiniFunction() override;
 
   bool RunAsync() override;
   void RestartCallback(crostini::ConciergeClientResult);
@@ -299,18 +299,16 @@ class FileManagerPrivateMountCrostiniContainerFunction
   std::string mount_label_;
 };
 
-// Implements the chrome.fileManagerPrivate.sharePathWithCrostiniContainer
+// Implements the chrome.fileManagerPrivate.sharePathWithCrostini
 // method.  Shares specified path.
-class FileManagerPrivateInternalSharePathWithCrostiniContainerFunction
+class FileManagerPrivateInternalSharePathWithCrostiniFunction
     : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION(
-      "fileManagerPrivateInternal.sharePathWithCrostiniContainer",
-      FILEMANAGERPRIVATEINTERNAL_SHAREPATHWITHCROSTINICONTAINER)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.sharePathWithCrostini",
+                             FILEMANAGERPRIVATEINTERNAL_SHAREPATHWITHCROSTINI)
 
  protected:
-  ~FileManagerPrivateInternalSharePathWithCrostiniContainerFunction() override =
-      default;
+  ~FileManagerPrivateInternalSharePathWithCrostiniFunction() override = default;
 
  private:
   ResponseAction Run() override;

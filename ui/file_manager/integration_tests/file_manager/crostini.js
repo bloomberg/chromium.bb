@@ -4,7 +4,7 @@
 
 'use strict';
 
-testcase.mountCrostiniContainer = function() {
+testcase.mountCrostini = function() {
   const fake = '#directory-tree .tree-item [root-type-icon="crostini"]';
   const real = '#directory-tree .tree-item [volume-type-icon="crostini"]';
   let appId;

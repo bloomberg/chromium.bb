@@ -20,9 +20,9 @@ crostini.testCrostiniNotEnabled = (done) => {
 };
 
 crostini.testMountCrostiniSuccess = (done) => {
-  const oldMount = chrome.fileManagerPrivate.mountCrostiniContainer;
+  const oldMount = chrome.fileManagerPrivate.mountCrostini;
   let mountCallback = null;
-  chrome.fileManagerPrivate.mountCrostiniContainer = (callback) => {
+  chrome.fileManagerPrivate.mountCrostini = (callback) => {
     mountCallback = callback;
   };
   test.setupAndWaitUntilReady()
@@ -40,26 +40,26 @@ crostini.testMountCrostiniSuccess = (done) => {
         return test.waitForElement('paper-progress:not([hidden])');
       })
       .then(() => {
-        // Ensure mountCrostiniContainer is called.
+        // Ensure mountCrostini is called.
         return test.repeatUntil(() => {
           if (!mountCallback)
-            return test.pending('Waiting for mountCrostiniContainer');
+            return test.pending('Waiting for mountCrostini');
           return mountCallback;
         });
       })
       .then(() => {
-        // Intercept the fileManagerPrivate.mountCrostiniContainer call
+        // Intercept the fileManagerPrivate.mountCrostini call
         // and add crostini disk mount.
         test.mountCrostini();
-        // Continue from fileManagerPrivate.mountCrostiniContainer callback
+        // Continue from fileManagerPrivate.mountCrostini callback
         // and ensure expected files are shown.
         mountCallback();
         return test.waitForFiles(
             test.TestEntryInfo.getExpectedRows(test.BASIC_CROSTINI_ENTRY_SET));
       })
       .then(() => {
-        // Reset fileManagerPrivate.mountCrostiniContainer and remove mount.
-        chrome.fileManagerPrivate.mountCrostiniContainer = oldMount;
+        // Reset fileManagerPrivate.mountCrostini and remove mount.
+        chrome.fileManagerPrivate.mountCrostini = oldMount;
         chrome.fileManagerPrivate.removeMount('crostini');
         // Linux Files fake root is shown.
         return test.waitForElement(
@@ -76,9 +76,9 @@ crostini.testMountCrostiniSuccess = (done) => {
 };
 
 crostini.testMountCrostiniError = (done) => {
-  const oldMount = chrome.fileManagerPrivate.mountCrostiniContainer;
-  // Override fileManagerPrivate.mountCrostiniContainer to return error.
-  chrome.fileManagerPrivate.mountCrostiniContainer = (callback) => {
+  const oldMount = chrome.fileManagerPrivate.mountCrostini;
+  // Override fileManagerPrivate.mountCrostini to return error.
+  chrome.fileManagerPrivate.mountCrostini = (callback) => {
     chrome.runtime.lastError = {message: 'test message'};
     callback();
     delete chrome.runtime.lastError;
@@ -100,14 +100,14 @@ crostini.testMountCrostiniError = (done) => {
         return test.waitForElementLost('.cr-dialog-container.shown');
       })
       .then(() => {
-        // Reset chrome.fileManagerPrivate.mountCrostiniContainer.
-        chrome.fileManagerPrivate.mountCrostiniContainer = oldMount;
+        // Reset chrome.fileManagerPrivate.mountCrostini.
+        chrome.fileManagerPrivate.mountCrostini = oldMount;
         done();
       });
 };
 
 crostini.testCrostiniMountOnDrag = (done) => {
-  chrome.fileManagerPrivate.mountCrostiniContainerDelay_ = 0;
+  chrome.fileManagerPrivate.mountCrostiniDelay_ = 0;
   test.setupAndWaitUntilReady()
       .then(() => {
         return test.waitForElement(
@@ -197,7 +197,7 @@ crostini.testErrorOpeningDownloadsWithCrostiniApp = (done) => {
 
 crostini.testSharePathCrostiniSuccess = (done) => {
   let sharePathCalled = false;
-  chrome.fileManagerPrivate.sharePathWithCrostiniContainer = (callback) => {
+  chrome.fileManagerPrivate.sharePathWithCrostini = (callback) => {
     sharePathCalled = true;
   };
   test.setupAndWaitUntilReady()
@@ -221,7 +221,7 @@ crostini.testSharePathCrostiniSuccess = (done) => {
         return test.waitForElement('#file-context-menu[hidden]');
       })
       .then(() => {
-        // Check sharePathWithCrostiniContainer is called.
+        // Check sharePathWithCrostini is called.
         assertTrue(sharePathCalled);
         done();
       });

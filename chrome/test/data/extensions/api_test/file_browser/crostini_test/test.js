@@ -29,19 +29,19 @@ chrome.test.runTests([
           chrome.test.assertTrue(enabled);
         }));
   },
-  function testMountCrostiniContainer() {
-    chrome.fileManagerPrivate.mountCrostiniContainer(
+  function testMountCrostini() {
+    chrome.fileManagerPrivate.mountCrostini(
         chrome.test.callbackPass());
   },
-  function testSharePathWithCrostiniContainerSuccess() {
+  function testSharePathWithCrostiniSuccess() {
     getEntry('downloads', 'share_dir').then((entry) => {
-      chrome.fileManagerPrivate.sharePathWithCrostiniContainer(
+      chrome.fileManagerPrivate.sharePathWithCrostini(
           entry, chrome.test.callbackPass());
     });
   },
-  function testSharePathWithCrostiniContainerNotDownloads() {
+  function testSharePathWithCrostiniNotDownloads() {
     getEntry('testing', 'test_dir').then((entry) => {
-      chrome.fileManagerPrivate.sharePathWithCrostiniContainer(
+      chrome.fileManagerPrivate.sharePathWithCrostini(
           entry,
           chrome.test.callbackFail(
               'Share with Linux only allowed for directories within Downloads.'));

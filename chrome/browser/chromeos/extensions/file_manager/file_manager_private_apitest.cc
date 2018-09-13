@@ -570,9 +570,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, CrostiniIncognito) {
       ->set_skip_restart_for_testing();
   ExpectCrostiniMount();
 
-  scoped_refptr<extensions::FileManagerPrivateMountCrostiniContainerFunction>
-      function(
-          new extensions::FileManagerPrivateMountCrostiniContainerFunction());
+  scoped_refptr<extensions::FileManagerPrivateMountCrostiniFunction> function(
+      new extensions::FileManagerPrivateMountCrostiniFunction());
   // Use incognito profile.
   function->set_browser_context(browser()->profile()->GetOffTheRecordProfile());
 
