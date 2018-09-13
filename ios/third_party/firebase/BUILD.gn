@@ -35,7 +35,8 @@ config("firebase_config") {
     "FirebaseCore.framework",
     "FirebaseCoreDiagnostics.framework",
     "FirebaseInstanceID.framework",
-    "FirebaseNanoPB.framework",
+    "GoogleAppMeasurement.framework",
+    "GoogleUtilities.framework",
     "nanopb.framework",
   ]
 }
