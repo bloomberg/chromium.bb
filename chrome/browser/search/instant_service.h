@@ -127,6 +127,8 @@ class InstantService : public KeyedService,
   ThemeBackgroundInfo* GetThemeInfoForTesting() { return theme_info_.get(); }
 
  private:
+  class SearchProviderObserver;
+
   friend class InstantExtendedTest;
   friend class InstantUnitTestBase;
 
@@ -143,6 +145,10 @@ class InstantService : public KeyedService,
 
   // Called when a renderer process is terminated.
   void OnRendererProcessTerminated(int process_id);
+
+  // Called when the search provider changes. Disables custom links if the
+  // search provider is not Google.
+  void OnSearchProviderChanged(bool is_google);
 
   // ntp_tiles::MostVisitedSites::Observer implementation.
   void OnURLsAvailable(
@@ -182,6 +188,9 @@ class InstantService : public KeyedService,
 
   // Data source for NTP tiles (aka Most Visited tiles). May be null.
   std::unique_ptr<ntp_tiles::MostVisitedSites> most_visited_sites_;
+
+  // Keeps track of any changes in search engine provider. May be null.
+  std::unique_ptr<SearchProviderObserver> search_provider_observer_;
 
   base::WeakPtrFactory<InstantService> weak_ptr_factory_;
 
