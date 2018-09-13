@@ -51,9 +51,10 @@ class V8LazyEventListener final : public V8AbstractEventHandler {
                                      const String& source_url,
                                      const TextPosition& position,
                                      Node* node,
-                                     v8::Isolate* isolate) {
-    return new V8LazyEventListener(isolate, function_name, code, source_url,
-                                   position, node);
+                                     v8::Isolate* isolate,
+                                     DOMWrapperWorld& world) {
+    return new V8LazyEventListener(isolate, world, function_name, code,
+                                   source_url, position, node);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -68,6 +69,7 @@ class V8LazyEventListener final : public V8AbstractEventHandler {
 
  private:
   V8LazyEventListener(v8::Isolate*,
+                      DOMWrapperWorld&,
                       const AtomicString& function_name,
                       const String& code,
                       const String source_url,
