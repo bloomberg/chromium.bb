@@ -38,7 +38,7 @@ void WaitForLocalDBEntryToBeInitialized(
   internal::LocalSiteCharacteristicsDataImpl* impl =
       GetLocalSiteCharacteristicsDataImplForWC(web_contents);
   DCHECK(impl);
-  while (!impl->site_characteristics_for_testing().IsInitialized())
+  while (!impl->fully_initialized_for_testing())
     run_pending_tasks.Run();
 }
 

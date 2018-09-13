@@ -135,6 +135,8 @@ class LocalSiteCharacteristicsDataImpl
     ClearObservationsAndInvalidateReadOperation();
   }
 
+  bool fully_initialized_for_testing() const { return fully_initialized_; }
+
  protected:
   friend class base::RefCounted<LocalSiteCharacteristicsDataImpl>;
   friend class resource_coordinator::LocalSiteCharacteristicsDataStore;
@@ -180,19 +182,6 @@ class LocalSiteCharacteristicsDataImpl
   static void IncrementFeatureObservationDuration(
       SiteCharacteristicsFeatureProto* feature_proto,
       base::TimeDelta extra_observation_duration);
-
-  // Initialize a SiteCharacteristicsFeatureProto object with its default
-  // values.
-  static void InitSiteCharacteristicsFeatureProtoWithDefaultValues(
-      SiteCharacteristicsFeatureProto* proto);
-
-  // Initialize this object with default values. If
-  // |only_init_uninitialized_fields| is set to true then only the fields that
-  // haven't yet been initialized will be initialized, otherwise everything will
-  // be overriden with default values.
-  // NOTE: Do not call this directly while the site is loaded as this will not
-  // properly update the last_loaded time, instead call |ClearObservations|.
-  void InitWithDefaultValues(bool only_init_uninitialized_fields);
 
   // Clear all the past observations about this site and invalidate the pending
   // read observations from the database.

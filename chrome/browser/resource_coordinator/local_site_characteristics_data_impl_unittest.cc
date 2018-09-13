@@ -152,9 +152,6 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
   auto local_site_data =
       GetDataImpl(kDummyOrigin, &destroy_delegate_, &database_);
 
-  EXPECT_TRUE(
-      local_site_data->site_characteristics_for_testing().IsInitialized());
-
   local_site_data->NotifySiteLoaded();
   local_site_data->NotifyLoadedSiteBackgrounded();
 
@@ -331,7 +328,6 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   SiteCharacteristicsFeatureProto unused_feature_proto;
   unused_feature_proto.set_observation_duration(
       kIntervalInternalRepresentation);
-  unused_feature_proto.set_use_timestamp(kZeroIntervalInternalRepresentation);
 
   expected_proto.mutable_updates_favicon_in_background()->CopyFrom(
       unused_feature_proto);
@@ -345,15 +341,10 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   // loaded time in this case (as this feature has been used right before
   // unloading).
   SiteCharacteristicsFeatureProto used_feature_proto;
-  used_feature_proto.set_observation_duration(
-      kZeroIntervalInternalRepresentation);
   used_feature_proto.set_use_timestamp(expected_last_loaded_time);
   expected_proto.mutable_uses_audio_in_background()->CopyFrom(
       used_feature_proto);
 
-  EXPECT_TRUE(expected_proto.IsInitialized());
-  EXPECT_TRUE(
-      local_site_data->site_characteristics_for_testing().IsInitialized());
   EXPECT_EQ(
       expected_proto.SerializeAsString(),
       local_site_data->site_characteristics_for_testing().SerializeAsString());
@@ -429,16 +420,11 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   // This protobuf should have a valid |last_loaded| field and valid observation
   // durations for each features, but the |use_timestamp| field shouldn't have
   // been initialized for the features that haven't been used.
-  EXPECT_FALSE(
-      local_site_data->site_characteristics_for_testing().IsInitialized());
   EXPECT_TRUE(
       local_site_data->site_characteristics_for_testing().has_last_loaded());
   EXPECT_TRUE(local_site_data->site_characteristics_for_testing()
                   .uses_audio_in_background()
-                  .IsInitialized());
-  EXPECT_FALSE(local_site_data->site_characteristics_for_testing()
-                   .uses_notifications_in_background()
-                   .IsInitialized());
+                  .has_use_timestamp());
   EXPECT_FALSE(local_site_data->site_characteristics_for_testing()
                    .uses_notifications_in_background()
                    .has_use_timestamp());
@@ -495,8 +481,6 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   EXPECT_EQ(3U, local_site_data->private_footprint_kb_estimate().num_datums());
   EXPECT_EQ(1125, local_site_data->private_footprint_kb_estimate().value());
 
-  EXPECT_TRUE(
-      local_site_data->site_characteristics_for_testing().IsInitialized());
 
   // Verify that the in-memory data is flushed to the protobuffer on write.
   EXPECT_CALL(mock_db,
