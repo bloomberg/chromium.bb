@@ -447,14 +447,16 @@ void ExtensionActionRunner::UpdatePageAccessSettings(const Extension* extension,
 
   switch (new_access) {
     case PageAccess::RUN_ON_CLICK:
-      if (current_access == PageAccess::RUN_ON_ALL_SITES)
-        modifier.SetWithholdHostPermissions(true);
+      // Note: SetWithholdHostPermissions() is a no-op if host permissions are
+      // already being withheld.
+      modifier.SetWithholdHostPermissions(true);
       if (modifier.HasGrantedHostPermission(url))
         modifier.RemoveGrantedHostPermission(url);
       break;
     case PageAccess::RUN_ON_SITE:
-      if (current_access == PageAccess::RUN_ON_ALL_SITES)
-        modifier.SetWithholdHostPermissions(true);
+      // Note: SetWithholdHostPermissions() is a no-op if host permissions are
+      // already being withheld.
+      modifier.SetWithholdHostPermissions(true);
       if (!modifier.HasGrantedHostPermission(url))
         modifier.GrantHostPermission(url);
       break;
