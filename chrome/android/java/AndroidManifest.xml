@@ -644,6 +644,7 @@ by a child template that "extends" this file.
             android:label="@string/webapp_activity_title"
             android:launchMode="singleTop"
             android:documentLaunchMode="intoExisting"
+            android:exported="false"
             android:persistableMode="persistNever"
             {{ self.supports_video_persistence() }}
             {{ self.chrome_activity_common() }}
@@ -662,6 +663,7 @@ by a child template that "extends" this file.
             android:icon="@mipmap/app_shortcut_icon"
             android:label="@string/webapp_activity_title"
             android:launchMode="singleTask"
+            android:exported="false"
             android:persistableMode="persistNever"
             android:taskAffinity="{{ manifest_package }}.webapps.WebappActivity{{ i }}"
             {{ self.supports_video_persistence() }}
@@ -682,6 +684,7 @@ by a child template that "extends" this file.
             android:label="@string/webapp_activity_title"
             android:launchMode="singleTop"
             android:documentLaunchMode="intoExisting"
+            android:exported="false"
             android:persistableMode="persistNever"
             {{ self.supports_video_persistence() }}
             {{ self.chrome_activity_common() }}
@@ -695,6 +698,7 @@ by a child template that "extends" this file.
             android:icon="@mipmap/app_shortcut_icon"
             android:label="@string/webapp_activity_title"
             android:launchMode="singleTask"
+            android:exported="false"
             android:persistableMode="persistNever"
             android:taskAffinity="{{ manifest_package }}.webapps.WebApkActivity{{ i }}"
             {{ self.supports_video_persistence() }}
