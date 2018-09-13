@@ -427,7 +427,7 @@ public final class ChildProcessLauncherHelperImpl {
         // access it afterwards.
         if (connection == null) return;
 
-        int bindingCounts[] = connection.bindingStateCountsCurrentOrWhenDied();
+        int bindingCounts[] = connection.remainingBindingStateCountsCurrentOrWhenDied();
         nativeSetTerminationInfo(terminationInfoPtr, connection.bindingStateCurrentOrWhenDied(),
                 connection.isKilledByUs(), bindingCounts[ChildBindingState.STRONG],
                 bindingCounts[ChildBindingState.MODERATE], bindingCounts[ChildBindingState.WAIVED]);
