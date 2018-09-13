@@ -630,6 +630,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (chromeos::DemoSession::IsDeviceInDemoMode())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE;
 
+  if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
+
   if (chromeos::switches::IsAssistantEnabled()) {
     const std::string kAllowedLocales[] = {ULOC_US, ULOC_UK, ULOC_CANADA,
                                            ULOC_CANADA_FRENCH};

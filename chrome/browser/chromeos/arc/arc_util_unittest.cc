@@ -653,6 +653,20 @@ TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_DemoMode) {
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE,
             IsAssistantAllowedForProfile(profile()));
+
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kNone);
+}
+
+TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_PublicSession) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--arc-availability=officially-supported",
+       "--enable-voice-interaction"});
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmail(profile()->GetProfileUserName()),
+                    user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION,
+            IsAssistantAllowedForProfile(profile()));
 }
 
 // Test the AreArcAllOptInPreferencesIgnorableForProfile() function.

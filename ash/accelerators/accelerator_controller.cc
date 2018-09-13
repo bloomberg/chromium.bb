@@ -107,10 +107,7 @@ using message_center::Notification;
 using message_center::SystemNotificationWarningLevel;
 
 // Toast id and duration for voice interaction shortcuts
-const char kSecondaryUserToastId[] = "voice_interaction_secondary_user";
-const char kUnsupportedLocaleToastId[] = "voice_interaction_locale_unsupported";
-const char kPolicyDisabledToastId[] = "voice_interaction_policy_disabled";
-const char kDemoModeToastId[] = "demo_mode";
+const char kVoiceInteractionErrorToastId[] = "voice_interaction_error";
 const int kToastDurationMs = 2500;
 
 // Ensures that there are no word breaks at the "+"s in the shortcut texts such
@@ -684,7 +681,7 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
   switch (Shell::Get()->voice_interaction_controller()->allowed_state()) {
     case mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
       // Show a toast if the active user is not primary.
-      ShowToast(kSecondaryUserToastId,
+      ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_SECONDARY_USER_TOAST_MESSAGE));
       return;
@@ -692,20 +689,27 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       // Show a toast if voice interaction is disabled due to unsupported
       // locales.
       ShowToast(
-          kUnsupportedLocaleToastId,
+          kVoiceInteractionErrorToastId,
           l10n_util::GetStringUTF16(
               IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY:
       // Show a toast if voice interaction is disabled due to enterprise policy.
-      ShowToast(kPolicyDisabledToastId,
+      ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_BY_POLICY_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE:
       // Show a toast if voice interaction is disabled due to being in Demo
       // Mode.
-      ShowToast(kDemoModeToastId,
+      ShowToast(kVoiceInteractionErrorToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
+      return;
+    case mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION:
+      // Show a toast if voice interaction is disabled due to being in Demo
+      // Mode.
+      ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
       return;
