@@ -267,7 +267,9 @@ bool QuicChromiumPacketWriter::IsBatchMode() const {
   return false;
 }
 
-char* QuicChromiumPacketWriter::GetNextWriteLocation() const {
+char* QuicChromiumPacketWriter::GetNextWriteLocation(
+    const quic::QuicIpAddress& self_address,
+    const quic::QuicSocketAddress& peer_address) {
   return nullptr;
 }
 

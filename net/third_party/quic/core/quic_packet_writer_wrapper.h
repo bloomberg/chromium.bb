@@ -37,7 +37,8 @@ class QuicPacketWriterWrapper : public QuicPacketWriter {
       const QuicSocketAddress& peer_address) const override;
   bool SupportsReleaseTime() const override;
   bool IsBatchMode() const override;
-  char* GetNextWriteLocation() const override;
+  char* GetNextWriteLocation(const QuicIpAddress& self_address,
+                             const QuicSocketAddress& peer_address) override;
   WriteResult Flush() override;
 
   // Takes ownership of |writer|.

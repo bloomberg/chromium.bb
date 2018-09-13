@@ -628,7 +628,7 @@ MockPacketWriter::MockPacketWriter() {
   ON_CALL(*this, GetMaxPacketSize(_))
       .WillByDefault(testing::Return(kMaxPacketSize));
   ON_CALL(*this, IsBatchMode()).WillByDefault(testing::Return(false));
-  ON_CALL(*this, GetNextWriteLocation())
+  ON_CALL(*this, GetNextWriteLocation(_, _))
       .WillByDefault(testing::Return(nullptr));
   ON_CALL(*this, Flush())
       .WillByDefault(testing::Return(WriteResult(WRITE_STATUS_OK, 0)));

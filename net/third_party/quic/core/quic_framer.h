@@ -731,6 +731,12 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns true if |header| indicates a version negotiation packet.
   bool IsVersionNegotiation(const QuicPacketHeader& header) const;
 
+  // Calculates and returns type byte of stream frame.
+  uint8_t GetStreamFrameTypeByte(const QuicStreamFrame& frame,
+                                 bool last_frame_in_packet) const;
+  uint8_t GetIetfStreamFrameTypeByte(const QuicStreamFrame& frame,
+                                     bool last_frame_in_packet) const;
+
   void set_error(QuicErrorCode error) { error_ = error; }
 
   void set_detailed_error(const char* error) { detailed_error_ = error; }

@@ -29,10 +29,10 @@ class SimpleDataProducer : public QuicStreamFrameDataProducer {
                       QuicByteCount data_length);
 
   // QuicStreamFrameDataProducer
-  bool WriteStreamData(QuicStreamId id,
-                       QuicStreamOffset offset,
-                       QuicByteCount data_length,
-                       QuicDataWriter* writer) override;
+  WriteStreamDataResult WriteStreamData(QuicStreamId id,
+                                        QuicStreamOffset offset,
+                                        QuicByteCount data_length,
+                                        QuicDataWriter* writer) override;
 
  private:
   using SendBufferMap =

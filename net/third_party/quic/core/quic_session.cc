@@ -14,6 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_map_util.h"
+#include "net/third_party/quic/platform/api/quic_stack_trace.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
@@ -954,8 +955,10 @@ size_t QuicSession::GetNumAvailableStreams() const {
 }
 
 void QuicSession::MarkConnectionLevelWriteBlocked(QuicStreamId id) {
-  QUIC_BUG_IF(GetOrCreateStream(id) == nullptr)
-      << "Marking unknown stream " << id << " blocked.";
+  if (GetOrCreateStream(id) == nullptr) {
+    QUIC_BUG << "Marking unknown stream " << id << " blocked.";
+    QUIC_LOG_FIRST_N(ERROR, 2) << QuicStackTrace();
+  }
 
   write_blocked_streams_.AddStream(id);
 }
@@ -1166,18 +1169,21 @@ bool QuicSession::HasPendingCryptoData() const {
   return GetStream(kCryptoStreamId)->IsWaitingForAcks();
 }
 
-bool QuicSession::WriteStreamData(QuicStreamId id,
-                                  QuicStreamOffset offset,
-                                  QuicByteCount data_length,
-                                  QuicDataWriter* writer) {
+WriteStreamDataResult QuicSession::WriteStreamData(QuicStreamId id,
+                                                   QuicStreamOffset offset,
+                                                   QuicByteCount data_length,
+                                                   QuicDataWriter* writer) {
   QuicStream* stream = GetStream(id);
   if (stream == nullptr) {
     // This causes the connection to be closed because of failed to serialize
     // packet.
     QUIC_BUG << "Stream " << id << " does not exist when trying to write data.";
-    return false;
+    return STREAM_MISSING;
   }
-  return stream->WriteStreamData(offset, data_length, writer);
+  if (stream->WriteStreamData(offset, data_length, writer)) {
+    return WRITE_SUCCESS;
+  }
+  return WRITE_FAILED;
 }
 
 QuicUint128 QuicSession::GetStatelessResetToken() const {

@@ -82,12 +82,15 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
   }
 
   // QuicStreamFrameDataProducer
-  bool WriteStreamData(QuicStreamId id,
-                       QuicStreamOffset offset,
-                       QuicByteCount data_length,
-                       QuicDataWriter* writer) override {
+  WriteStreamDataResult WriteStreamData(QuicStreamId id,
+                                        QuicStreamOffset offset,
+                                        QuicByteCount data_length,
+                                        QuicDataWriter* writer) override {
     DCHECK_EQ(kCryptoStreamId, id);
-    return send_buffer_.WriteStreamData(offset, data_length, writer);
+    if (send_buffer_.WriteStreamData(offset, data_length, writer)) {
+      return WRITE_SUCCESS;
+    }
+    return WRITE_FAILED;
   }
 
   std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets() {

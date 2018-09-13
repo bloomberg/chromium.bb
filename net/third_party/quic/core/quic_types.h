@@ -518,6 +518,13 @@ struct QUIC_EXPORT_PRIVATE MessageResult {
   QuicMessageId message_id;
 };
 
+enum WriteStreamDataResult {
+  WRITE_SUCCESS,
+  STREAM_MISSING,  // Trying to write data of a nonexistent stream (e.g.
+                   // closed).
+  WRITE_FAILED,    // Trying to write nonexistent data of a stream
+};
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_TYPES_H_

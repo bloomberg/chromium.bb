@@ -190,7 +190,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   // Utility functions to do actual framing/deframing.
-  bool TryStreamFrame(char* packet_buffer,
+  void TryStreamFrame(char* packet_buffer,
                       size_t packet_buffer_size,
                       const char* xmit_packet_data,
                       size_t xmit_packet_data_size,
@@ -235,12 +235,11 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
       // Offset not in frame, so it better come out 0.
       EXPECT_EQ(sink_stream_frame.offset, 0u);
     }
-    EXPECT_NE(sink_stream_frame.data_buffer, nullptr);
-    EXPECT_NE(source_stream_frame.data_buffer, nullptr);
+    ASSERT_NE(sink_stream_frame.data_buffer, nullptr);
+    ASSERT_NE(source_stream_frame.data_buffer, nullptr);
     EXPECT_EQ(
         strcmp(sink_stream_frame.data_buffer, source_stream_frame.data_buffer),
         0);
-    return true;
   }
 
   // Overall ack frame encode/decode/compare function
@@ -491,66 +490,56 @@ struct stream_frame_variant {
     {kStreamId0, kOffset0, true, false, IETF_STREAM3},
     {kStreamId0, kOffset0, false, false, IETF_STREAM2},
 
-    {kStreamId8, kOffset8, true, true, IETF_STREAM7},
-    {kStreamId8, kOffset8, false, true, IETF_STREAM6},
-    {kStreamId8, kOffset4, true, true, IETF_STREAM7},
-    {kStreamId8, kOffset4, false, true, IETF_STREAM6},
-    {kStreamId8, kOffset2, true, true, IETF_STREAM7},
-    {kStreamId8, kOffset2, false, true, IETF_STREAM6},
-    {kStreamId8, kOffset1, true, true, IETF_STREAM7},
-    {kStreamId8, kOffset1, false, true, IETF_STREAM6},
-    {kStreamId8, kOffset0, true, true, IETF_STREAM3},
-    {kStreamId8, kOffset0, false, true, IETF_STREAM2},
-    {kStreamId4, kOffset8, true, true, IETF_STREAM7},
-    {kStreamId4, kOffset8, false, true, IETF_STREAM6},
-    {kStreamId4, kOffset4, true, true, IETF_STREAM7},
-    {kStreamId4, kOffset4, false, true, IETF_STREAM6},
-    {kStreamId4, kOffset2, true, true, IETF_STREAM7},
-    {kStreamId4, kOffset2, false, true, IETF_STREAM6},
-    {kStreamId4, kOffset1, true, true, IETF_STREAM7},
-    {kStreamId4, kOffset1, false, true, IETF_STREAM6},
-    {kStreamId4, kOffset0, true, true, IETF_STREAM3},
-    {kStreamId4, kOffset0, false, true, IETF_STREAM2},
-    {kStreamId2, kOffset8, true, true, IETF_STREAM7},
-    {kStreamId2, kOffset8, false, true, IETF_STREAM6},
-    {kStreamId2, kOffset4, true, true, IETF_STREAM7},
-    {kStreamId2, kOffset4, false, true, IETF_STREAM6},
-    {kStreamId2, kOffset2, true, true, IETF_STREAM7},
-    {kStreamId2, kOffset2, false, true, IETF_STREAM6},
-    {kStreamId2, kOffset1, true, true, IETF_STREAM7},
-    {kStreamId2, kOffset1, false, true, IETF_STREAM6},
-    {kStreamId2, kOffset0, true, true, IETF_STREAM3},
-    {kStreamId2, kOffset0, false, true, IETF_STREAM2},
-    {kStreamId1, kOffset8, true, true, IETF_STREAM7},
-    {kStreamId1, kOffset8, false, true, IETF_STREAM6},
-    {kStreamId1, kOffset4, true, true, IETF_STREAM7},
-    {kStreamId1, kOffset4, false, true, IETF_STREAM6},
-    {kStreamId1, kOffset2, true, true, IETF_STREAM7},
-    {kStreamId1, kOffset2, false, true, IETF_STREAM6},
-    {kStreamId1, kOffset1, true, true, IETF_STREAM7},
-    {kStreamId1, kOffset1, false, true, IETF_STREAM6},
-    {kStreamId1, kOffset0, true, true, IETF_STREAM3},
-    {kStreamId1, kOffset0, false, true, IETF_STREAM2},
-    {kStreamId0, kOffset8, true, true, IETF_STREAM7},
-    {kStreamId0, kOffset8, false, true, IETF_STREAM6},
-    {kStreamId0, kOffset4, true, true, IETF_STREAM7},
-    {kStreamId0, kOffset4, false, true, IETF_STREAM6},
-    {kStreamId0, kOffset2, true, true, IETF_STREAM7},
-    {kStreamId0, kOffset2, false, true, IETF_STREAM6},
-    {kStreamId0, kOffset1, true, true, IETF_STREAM7},
-    {kStreamId0, kOffset1, false, true, IETF_STREAM6},
-    {kStreamId0, kOffset0, true, true, IETF_STREAM3},
-    {kStreamId0, kOffset0, false, true, IETF_STREAM2},
-
-    // try some cases where the offset is _not_ present; we will give
-    // the framer a non-0 offset; however, if we say that there is to be
-    // no offset, the de-framer should come up with 0...
-    {kStreamId8, kOffset8, true, true, IETF_STREAM3},
-    {kStreamId8, kOffset8, false, true, IETF_STREAM2},
-    {kStreamId8, kOffset8, true, false, IETF_STREAM3},
-    {kStreamId8, kOffset8, false, false, IETF_STREAM2},
-
-    {0, 0, false, false, IETF_STREAM6},
+    {kStreamId8, kOffset8, true, true, IETF_STREAM5},
+    {kStreamId8, kOffset8, false, true, IETF_STREAM4},
+    {kStreamId8, kOffset4, true, true, IETF_STREAM5},
+    {kStreamId8, kOffset4, false, true, IETF_STREAM4},
+    {kStreamId8, kOffset2, true, true, IETF_STREAM5},
+    {kStreamId8, kOffset2, false, true, IETF_STREAM4},
+    {kStreamId8, kOffset1, true, true, IETF_STREAM5},
+    {kStreamId8, kOffset1, false, true, IETF_STREAM4},
+    {kStreamId8, kOffset0, true, true, IETF_STREAM1},
+    {kStreamId8, kOffset0, false, true, IETF_STREAM0},
+    {kStreamId4, kOffset8, true, true, IETF_STREAM5},
+    {kStreamId4, kOffset8, false, true, IETF_STREAM4},
+    {kStreamId4, kOffset4, true, true, IETF_STREAM5},
+    {kStreamId4, kOffset4, false, true, IETF_STREAM4},
+    {kStreamId4, kOffset2, true, true, IETF_STREAM5},
+    {kStreamId4, kOffset2, false, true, IETF_STREAM4},
+    {kStreamId4, kOffset1, true, true, IETF_STREAM5},
+    {kStreamId4, kOffset1, false, true, IETF_STREAM4},
+    {kStreamId4, kOffset0, true, true, IETF_STREAM1},
+    {kStreamId4, kOffset0, false, true, IETF_STREAM0},
+    {kStreamId2, kOffset8, true, true, IETF_STREAM5},
+    {kStreamId2, kOffset8, false, true, IETF_STREAM4},
+    {kStreamId2, kOffset4, true, true, IETF_STREAM5},
+    {kStreamId2, kOffset4, false, true, IETF_STREAM4},
+    {kStreamId2, kOffset2, true, true, IETF_STREAM5},
+    {kStreamId2, kOffset2, false, true, IETF_STREAM4},
+    {kStreamId2, kOffset1, true, true, IETF_STREAM5},
+    {kStreamId2, kOffset1, false, true, IETF_STREAM4},
+    {kStreamId2, kOffset0, true, true, IETF_STREAM1},
+    {kStreamId2, kOffset0, false, true, IETF_STREAM0},
+    {kStreamId1, kOffset8, true, true, IETF_STREAM5},
+    {kStreamId1, kOffset8, false, true, IETF_STREAM4},
+    {kStreamId1, kOffset4, true, true, IETF_STREAM5},
+    {kStreamId1, kOffset4, false, true, IETF_STREAM4},
+    {kStreamId1, kOffset2, true, true, IETF_STREAM5},
+    {kStreamId1, kOffset2, false, true, IETF_STREAM4},
+    {kStreamId1, kOffset1, true, true, IETF_STREAM5},
+    {kStreamId1, kOffset1, false, true, IETF_STREAM4},
+    {kStreamId1, kOffset0, true, true, IETF_STREAM1},
+    {kStreamId1, kOffset0, false, true, IETF_STREAM0},
+    {kStreamId0, kOffset8, true, true, IETF_STREAM5},
+    {kStreamId0, kOffset8, false, true, IETF_STREAM4},
+    {kStreamId0, kOffset4, true, true, IETF_STREAM5},
+    {kStreamId0, kOffset4, false, true, IETF_STREAM4},
+    {kStreamId0, kOffset2, true, true, IETF_STREAM5},
+    {kStreamId0, kOffset2, false, true, IETF_STREAM4},
+    {kStreamId0, kOffset1, true, true, IETF_STREAM5},
+    {kStreamId0, kOffset1, false, true, IETF_STREAM4},
+    {kStreamId0, kOffset0, true, true, IETF_STREAM1},
+    {kStreamId0, kOffset0, false, true, IETF_STREAM0},
 };
 
 TEST_F(QuicIetfFramerTest, StreamFrame) {
@@ -561,14 +550,13 @@ TEST_F(QuicIetfFramerTest, StreamFrame) {
       "input and output are the same!";
 
   size_t transmit_packet_data_len = strlen(transmit_packet_data) + 1;
-  struct stream_frame_variant* variant = stream_frame_to_test;
-  while (variant->stream_id != 0) {
-    EXPECT_TRUE(TryStreamFrame(
-        packet_buffer, sizeof(packet_buffer), transmit_packet_data,
-        transmit_packet_data_len, variant->stream_id, variant->offset,
-        variant->fin_bit, variant->last_frame_bit,
-        static_cast<QuicIetfFrameType>(variant->frame_type)));
-    variant++;
+  for (size_t i = 0; i < QUIC_ARRAYSIZE(stream_frame_to_test); ++i) {
+    SCOPED_TRACE(i);
+    struct stream_frame_variant* variant = &stream_frame_to_test[i];
+    TryStreamFrame(packet_buffer, sizeof(packet_buffer), transmit_packet_data,
+                   transmit_packet_data_len, variant->stream_id,
+                   variant->offset, variant->fin_bit, variant->last_frame_bit,
+                   static_cast<QuicIetfFrameType>(variant->frame_type));
   }
 }
 

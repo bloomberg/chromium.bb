@@ -3259,35 +3259,17 @@ size_t QuicFramer::ComputeFrameLength(
 }
 
 bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
-                                bool no_stream_frame_length,
+                                bool last_frame_in_packet,
                                 QuicDataWriter* writer) {
   if (version_.transport_version == QUIC_VERSION_99) {
-    return AppendIetfTypeByte(frame, no_stream_frame_length, writer);
+    return AppendIetfTypeByte(frame, last_frame_in_packet, writer);
   }
   uint8_t type_byte = 0;
   switch (frame.type) {
-    case STREAM_FRAME: {
-      // Fin bit.
-      type_byte |= frame.stream_frame.fin ? kQuicStreamFinMask : 0;
-
-      // Data Length bit.
-      type_byte <<= kQuicStreamDataLengthShift;
-      type_byte |= no_stream_frame_length ? 0 : kQuicStreamDataLengthMask;
-
-      // Offset 3 bits.
-      type_byte <<= kQuicStreamShift;
-      const size_t offset_len = GetStreamOffsetSize(version_.transport_version,
-                                                    frame.stream_frame.offset);
-      if (offset_len > 0) {
-        type_byte |= offset_len - 1;
-      }
-
-      // stream id 2 bits.
-      type_byte <<= kQuicStreamIdShift;
-      type_byte |= GetStreamIdSize(frame.stream_frame.stream_id) - 1;
-      type_byte |= kQuicFrameTypeStreamMask;  // Set Stream Frame Type to 1.
+    case STREAM_FRAME:
+      type_byte =
+          GetStreamFrameTypeByte(frame.stream_frame, last_frame_in_packet);
       break;
-    }
     case ACK_FRAME:
       return true;
     case MTU_DISCOVERY_FRAME:
@@ -3375,16 +3357,8 @@ bool QuicFramer::AppendIetfTypeByte(const QuicFrame& frame,
       type_byte = IETF_PING;
       break;
     case STREAM_FRAME:
-      type_byte = IETF_STREAM;
-      if (!last_frame_in_packet) {
-        type_byte |= IETF_STREAM_FRAME_LEN_BIT;
-      }
-      if (frame.stream_frame.offset != 0) {
-        type_byte |= IETF_STREAM_FRAME_OFF_BIT;
-      }
-      if (frame.stream_frame.fin) {
-        type_byte |= IETF_STREAM_FRAME_FIN_BIT;
-      }
+      type_byte =
+          GetStreamFrameTypeByte(frame.stream_frame, last_frame_in_packet);
       break;
     case ACK_FRAME:
       // Do nothing here, AppendIetfAckFrameAndTypeByte() will put the type byte
@@ -3499,8 +3473,9 @@ bool QuicFramer::AppendStreamFrame(const QuicStreamFrame& frame,
     if (frame.data_length == 0) {
       return true;
     }
-    if (!data_producer_->WriteStreamData(frame.stream_id, frame.offset,
-                                         frame.data_length, writer)) {
+    if (data_producer_->WriteStreamData(frame.stream_id, frame.offset,
+                                        frame.data_length,
+                                        writer) != WRITE_SUCCESS) {
       QUIC_BUG << "Writing frame data failed.";
       return false;
     }
@@ -3578,8 +3553,9 @@ bool QuicFramer::AppendIetfStreamFrame(const QuicStreamFrame& frame,
   } else {
     DCHECK_EQ(nullptr, frame.data_buffer);
 
-    if (!data_producer_->WriteStreamData(frame.stream_id, frame.offset,
-                                         frame.data_length, writer)) {
+    if (data_producer_->WriteStreamData(frame.stream_id, frame.offset,
+                                        frame.data_length,
+                                        writer) != WRITE_SUCCESS) {
       set_detailed_error("Writing frame data failed.");
       return false;
     }
@@ -4062,7 +4038,8 @@ bool QuicFramer::StartsWithChlo(QuicStreamId id,
   }
   char buf[sizeof(kCHLO)];
   QuicDataWriter writer(sizeof(kCHLO), buf, endianness());
-  if (!data_producer_->WriteStreamData(id, offset, sizeof(kCHLO), &writer)) {
+  if (data_producer_->WriteStreamData(id, offset, sizeof(kCHLO), &writer) !=
+      WRITE_SUCCESS) {
     QUIC_BUG << "Failed to write data for stream " << id << " with offset "
              << offset << " data_length = " << sizeof(kCHLO);
     return false;
@@ -4444,6 +4421,52 @@ bool QuicFramer::ProcessNewConnectionIdFrame(QuicDataReader* reader,
     return false;
   }
   return true;
+}
+
+uint8_t QuicFramer::GetStreamFrameTypeByte(const QuicStreamFrame& frame,
+                                           bool last_frame_in_packet) const {
+  if (version_.transport_version == QUIC_VERSION_99) {
+    return GetIetfStreamFrameTypeByte(frame, last_frame_in_packet);
+  }
+  uint8_t type_byte = 0;
+  // Fin bit.
+  type_byte |= frame.fin ? kQuicStreamFinMask : 0;
+
+  // Data Length bit.
+  type_byte <<= kQuicStreamDataLengthShift;
+  type_byte |= last_frame_in_packet ? 0 : kQuicStreamDataLengthMask;
+
+  // Offset 3 bits.
+  type_byte <<= kQuicStreamShift;
+  const size_t offset_len =
+      GetStreamOffsetSize(version_.transport_version, frame.offset);
+  if (offset_len > 0) {
+    type_byte |= offset_len - 1;
+  }
+
+  // stream id 2 bits.
+  type_byte <<= kQuicStreamIdShift;
+  type_byte |= GetStreamIdSize(frame.stream_id) - 1;
+  type_byte |= kQuicFrameTypeStreamMask;  // Set Stream Frame Type to 1.
+
+  return type_byte;
+}
+
+uint8_t QuicFramer::GetIetfStreamFrameTypeByte(
+    const QuicStreamFrame& frame,
+    bool last_frame_in_packet) const {
+  DCHECK_EQ(QUIC_VERSION_99, version_.transport_version);
+  uint8_t type_byte = IETF_STREAM;
+  if (!last_frame_in_packet) {
+    type_byte |= IETF_STREAM_FRAME_LEN_BIT;
+  }
+  if (frame.offset != 0) {
+    type_byte |= IETF_STREAM_FRAME_OFF_BIT;
+  }
+  if (frame.fin) {
+    type_byte |= IETF_STREAM_FRAME_FIN_BIT;
+  }
+  return type_byte;
 }
 
 #undef ENDPOINT  // undef for jumbo builds
