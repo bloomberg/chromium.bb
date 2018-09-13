@@ -318,8 +318,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     ReportResourceProviderCreationFailure();
 
   if (resource_provider && IsAccelerated() && !layer_) {
-    layer_ = cc::TextureLayer::CreateForMailbox(
-        this, cc::TextureLayer::kMaxResourcesWaitingCanvasWebGL);
+    layer_ = cc::TextureLayer::CreateForMailbox(this);
     layer_->SetIsDrawable(true);
     layer_->SetContentsOpaque(ColorParams().GetOpacityMode() == kOpaque);
     layer_->SetBlendBackgroundColor(ColorParams().GetOpacityMode() != kOpaque);

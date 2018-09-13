@@ -26,8 +26,7 @@ namespace blink {
 
 ImageLayerBridge::ImageLayerBridge(OpacityMode opacity_mode)
     : opacity_mode_(opacity_mode) {
-  layer_ = cc::TextureLayer::CreateForMailbox(
-      this, cc::TextureLayer::kMaxResourcesWaitingCanvasWebGL);
+  layer_ = cc::TextureLayer::CreateForMailbox(this);
   layer_->SetIsDrawable(true);
   layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
   if (opacity_mode_ == kOpaque) {
