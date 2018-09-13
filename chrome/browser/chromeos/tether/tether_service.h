@@ -182,6 +182,7 @@ class TetherService
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestCellularIsAvailable);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestDisabled);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestEnabled);
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestEnabled_MultiDeviceFlags);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestBluetoothNotification);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestBluetoothNotPresent);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestMetricsFalsePositives);

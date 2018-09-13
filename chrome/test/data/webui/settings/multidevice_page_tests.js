@@ -12,12 +12,19 @@ class TestMultideviceBrowserProxy extends TestBrowserProxy {
     super([
       'showMultiDeviceSetupDialog',
       'getPageContentData',
+      'setFeatureEnabledState',
     ]);
   }
 
   /** @override */
   showMultiDeviceSetupDialog() {
     this.methodCalled('showMultiDeviceSetupDialog');
+  }
+
+  /** @override */
+  setFeatureEnabledState(feature, enabled, opt_authToken) {
+    this.methodCalled(
+        'setFeatureEnabledState', [feature, enabled, opt_authToken]);
   }
 }
 
@@ -52,6 +59,48 @@ suite('Multidevice', function() {
     multidevicePage.pageContentData = Object.assign(
         {}, multidevicePage.pageContentData, {betterTogetherState: newState});
     Polymer.dom.flush();
+  }
+
+  function setSmartLockState(newState) {
+    multidevicePage.pageContentData = Object.assign(
+        {}, multidevicePage.pageContentData, {smartLockState: newState});
+    Polymer.dom.flush();
+  }
+
+  /**
+   * @param {!settings.MultiDeviceFeature} feature The feature to change.
+   * @param {boolean} enabled Whether to enable or disable the feature.
+   * @param {boolean} authRequired Whether authentication is required for the
+   *     change.
+   * @return {!Promise} Promise which resolves when the state change has been
+   *     verified.
+   * @private
+   */
+  function simulateFeatureStateChangeRequest(feature, enabled, authRequired) {
+    // When the user requets a feature state change, an event with the relevant
+    // details is handled.
+    multidevicePage.fire(
+        'feature-toggle-clicked', {feature: feature, enabled: enabled});
+    Polymer.dom.flush();
+
+    if (authRequired) {
+      assertTrue(multidevicePage.showPasswordPromptDialog_);
+      // Simulate the user entering a valid password, then closing the dialog.
+      multidevicePage.fire('auth-token-changed', {value: 'validAuthToken'});
+      multidevicePage.fire('close');
+      Polymer.dom.flush();
+    } else {
+      assertFalse(multidevicePage.showPasswordPromptDialog_);
+    }
+
+    return browserProxy.whenCalled('setFeatureEnabledState').then(params => {
+      assertEquals(feature, params[0]);
+      assertEquals(enabled, params[1]);
+
+      // Reset the resolver so that setFeatureEnabledState() can be called
+      // multiple times in a test.
+      browserProxy.resetResolver('setFeatureEnabledState');
+    });
   }
 
   suiteSetup(function() {
@@ -160,5 +209,71 @@ suite('Multidevice', function() {
     // Reallow suite.
     setSuiteState(settings.MultiDeviceFeatureState.DISABLED_BY_USER);
     assertFalse(!!multidevicePage.$$('cr-policy-indicator'));
+  });
+
+  test('Disabling features never requires authentication', () => {
+    const Feature = settings.MultiDeviceFeature;
+
+    const disableFeatureFn = feature => {
+      return simulateFeatureStateChangeRequest(
+          feature, false /* enabled */, false /* authRequired */);
+    };
+
+    return disableFeatureFn(Feature.BETTER_TOGETHER_SUITE)
+        .then(() => {
+          return disableFeatureFn(Feature.INSTANT_TETHERING);
+        })
+        .then(() => {
+          return disableFeatureFn(Feature.MESSAGES);
+        })
+        .then(() => {
+          return disableFeatureFn(Feature.SMART_LOCK);
+        });
+  });
+
+  test('Enabling some features requires authentication; others do not', () => {
+    const Feature = settings.MultiDeviceFeature;
+    const FeatureState = settings.MultiDeviceFeatureState;
+
+    const enableFeatureWithoutAuthFn = feature => {
+      return simulateFeatureStateChangeRequest(
+          feature, true /* enabled */, false /* authRequired */);
+    };
+    const enableFeatureWithAuthFn = feature => {
+      return simulateFeatureStateChangeRequest(
+          feature, true /* enabled */, true /* authRequired */);
+    };
+
+    // Start out with SmartLock being disabled by the user. This means that
+    // the first attempt to enable BETTER_TOGETHER_SUITE below will not
+    // require authentication.
+    setSmartLockState(FeatureState.DISABLED_BY_USER);
+
+    // INSTANT_TETHERING requires no authentication.
+    return enableFeatureWithoutAuthFn(Feature.INSTANT_TETHERING)
+        .then(() => {
+          // MESSAGES requires no authentication.
+          return enableFeatureWithoutAuthFn(Feature.MESSAGES);
+        })
+        .then(() => {
+          // BETTER_TOGETHER_SUITE requires no authentication normally.
+          return enableFeatureWithoutAuthFn(Feature.BETTER_TOGETHER_SUITE);
+        })
+        .then(() => {
+          // BETTER_TOGETHER_SUITE requires authentication when SmartLock's
+          // state is UNAVAILABLE_SUITE_DISABLED.
+          setSmartLockState(FeatureState.UNAVAILABLE_SUITE_DISABLED);
+          return enableFeatureWithAuthFn(Feature.BETTER_TOGETHER_SUITE);
+        })
+        .then(() => {
+          // BETTER_TOGETHER_SUITE requires authentication when SmartLock's
+          // state is UNAVAILABLE_INSUFFICIENT_SECURITY.
+          setSmartLockState(FeatureState.UNAVAILABLE_INSUFFICIENT_SECURITY);
+          return enableFeatureWithAuthFn(Feature.BETTER_TOGETHER_SUITE);
+        })
+        .then(() => {
+          // SMART_LOCK always requires authentication.
+          return enableFeatureWithAuthFn(Feature.SMART_LOCK);
+        });
   });
 });
