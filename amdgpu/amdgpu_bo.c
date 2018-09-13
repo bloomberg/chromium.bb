@@ -69,9 +69,9 @@ static int amdgpu_bo_create(amdgpu_device_handle dev,
 	return 0;
 }
 
-int amdgpu_bo_alloc(amdgpu_device_handle dev,
-		    struct amdgpu_bo_alloc_request *alloc_buffer,
-		    amdgpu_bo_handle *buf_handle)
+drm_public int amdgpu_bo_alloc(amdgpu_device_handle dev,
+			       struct amdgpu_bo_alloc_request *alloc_buffer,
+			       amdgpu_bo_handle *buf_handle)
 {
 	union drm_amdgpu_gem_create args;
 	int r;
@@ -107,8 +107,8 @@ out:
 	return r;
 }
 
-int amdgpu_bo_set_metadata(amdgpu_bo_handle bo,
-			   struct amdgpu_bo_metadata *info)
+drm_public int amdgpu_bo_set_metadata(amdgpu_bo_handle bo,
+				      struct amdgpu_bo_metadata *info)
 {
 	struct drm_amdgpu_gem_metadata args = {};
 
@@ -130,8 +130,8 @@ int amdgpu_bo_set_metadata(amdgpu_bo_handle bo,
 				   &args, sizeof(args));
 }
 
-int amdgpu_bo_query_info(amdgpu_bo_handle bo,
-			 struct amdgpu_bo_info *info)
+drm_public int amdgpu_bo_query_info(amdgpu_bo_handle bo,
+				    struct amdgpu_bo_info *info)
 {
 	struct drm_amdgpu_gem_metadata metadata = {};
 	struct drm_amdgpu_gem_create_in bo_info = {};
@@ -227,9 +227,9 @@ static int amdgpu_bo_export_flink(amdgpu_bo_handle bo)
 	return r;
 }
 
-int amdgpu_bo_export(amdgpu_bo_handle bo,
-		     enum amdgpu_bo_handle_type type,
-		     uint32_t *shared_handle)
+drm_public int amdgpu_bo_export(amdgpu_bo_handle bo,
+				enum amdgpu_bo_handle_type type,
+				uint32_t *shared_handle)
 {
 	int r;
 
@@ -255,9 +255,9 @@ int amdgpu_bo_export(amdgpu_bo_handle bo,
 	return -EINVAL;
 }
 
-int amdgpu_bo_import(amdgpu_device_handle dev,
-		     enum amdgpu_bo_handle_type type,
-		     uint32_t shared_handle,
+drm_public int amdgpu_bo_import(amdgpu_device_handle dev,
+				enum amdgpu_bo_handle_type type,
+				uint32_t shared_handle,
 		     struct amdgpu_bo_import_result *output)
 {
 	struct drm_gem_open open_arg = {};
@@ -401,7 +401,7 @@ unlock:
 	return r;
 }
 
-int amdgpu_bo_free(amdgpu_bo_handle buf_handle)
+drm_public int amdgpu_bo_free(amdgpu_bo_handle buf_handle)
 {
 	struct amdgpu_device *dev;
 	struct amdgpu_bo *bo = buf_handle;
@@ -433,12 +433,12 @@ int amdgpu_bo_free(amdgpu_bo_handle buf_handle)
 	return 0;
 }
 
-void amdgpu_bo_inc_ref(amdgpu_bo_handle bo)
+drm_public void amdgpu_bo_inc_ref(amdgpu_bo_handle bo)
 {
 	atomic_inc(&bo->refcount);
 }
 
-int amdgpu_bo_cpu_map(amdgpu_bo_handle bo, void **cpu)
+drm_public int amdgpu_bo_cpu_map(amdgpu_bo_handle bo, void **cpu)
 {
 	union drm_amdgpu_gem_mmap args;
 	void *ptr;
@@ -486,7 +486,7 @@ int amdgpu_bo_cpu_map(amdgpu_bo_handle bo, void **cpu)
 	return 0;
 }
 
-int amdgpu_bo_cpu_unmap(amdgpu_bo_handle bo)
+drm_public int amdgpu_bo_cpu_unmap(amdgpu_bo_handle bo)
 {
 	int r;
 
@@ -512,7 +512,7 @@ int amdgpu_bo_cpu_unmap(amdgpu_bo_handle bo)
 	return r;
 }
 
-int amdgpu_query_buffer_size_alignment(amdgpu_device_handle dev,
+drm_public int amdgpu_query_buffer_size_alignment(amdgpu_device_handle dev,
 				struct amdgpu_buffer_size_alignments *info)
 {
 	info->size_local = dev->dev_info.pte_fragment_size;
@@ -520,8 +520,8 @@ int amdgpu_query_buffer_size_alignment(amdgpu_device_handle dev,
 	return 0;
 }
 
-int amdgpu_bo_wait_for_idle(amdgpu_bo_handle bo,
-			    uint64_t timeout_ns,
+drm_public int amdgpu_bo_wait_for_idle(amdgpu_bo_handle bo,
+				       uint64_t timeout_ns,
 			    bool *busy)
 {
 	union drm_amdgpu_gem_wait_idle args;
@@ -543,11 +543,11 @@ int amdgpu_bo_wait_for_idle(amdgpu_bo_handle bo,
 	}
 }
 
-int amdgpu_find_bo_by_cpu_mapping(amdgpu_device_handle dev,
-				  void *cpu,
-				  uint64_t size,
-				  amdgpu_bo_handle *buf_handle,
-				  uint64_t *offset_in_bo)
+drm_public int amdgpu_find_bo_by_cpu_mapping(amdgpu_device_handle dev,
+					     void *cpu,
+					     uint64_t size,
+					     amdgpu_bo_handle *buf_handle,
+					     uint64_t *offset_in_bo)
 {
 	struct amdgpu_bo *bo;
 	uint32_t i;
@@ -585,10 +585,10 @@ int amdgpu_find_bo_by_cpu_mapping(amdgpu_device_handle dev,
 	return r;
 }
 
-int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
-				    void *cpu,
-				    uint64_t size,
-				    amdgpu_bo_handle *buf_handle)
+drm_public int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
+					      void *cpu,
+					      uint64_t size,
+					      amdgpu_bo_handle *buf_handle)
 {
 	int r;
 	struct drm_amdgpu_gem_userptr args;
@@ -618,11 +618,11 @@ out:
 	return r;
 }
 
-int amdgpu_bo_list_create(amdgpu_device_handle dev,
-			  uint32_t number_of_resources,
-			  amdgpu_bo_handle *resources,
-			  uint8_t *resource_prios,
-			  amdgpu_bo_list_handle *result)
+drm_public int amdgpu_bo_list_create(amdgpu_device_handle dev,
+				     uint32_t number_of_resources,
+				     amdgpu_bo_handle *resources,
+				     uint8_t *resource_prios,
+				     amdgpu_bo_list_handle *result)
 {
 	struct drm_amdgpu_bo_list_entry *list;
 	union drm_amdgpu_bo_list args;
@@ -673,7 +673,7 @@ int amdgpu_bo_list_create(amdgpu_device_handle dev,
 	return 0;
 }
 
-int amdgpu_bo_list_destroy(amdgpu_bo_list_handle list)
+drm_public int amdgpu_bo_list_destroy(amdgpu_bo_list_handle list)
 {
 	union drm_amdgpu_bo_list args;
 	int r;
@@ -691,10 +691,10 @@ int amdgpu_bo_list_destroy(amdgpu_bo_list_handle list)
 	return r;
 }
 
-int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
-			  uint32_t number_of_resources,
-			  amdgpu_bo_handle *resources,
-			  uint8_t *resource_prios)
+drm_public int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
+				     uint32_t number_of_resources,
+				     amdgpu_bo_handle *resources,
+				     uint8_t *resource_prios)
 {
 	struct drm_amdgpu_bo_list_entry *list;
 	union drm_amdgpu_bo_list args;
@@ -732,12 +732,12 @@ int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
 	return r;
 }
 
-int amdgpu_bo_va_op(amdgpu_bo_handle bo,
-		     uint64_t offset,
-		     uint64_t size,
-		     uint64_t addr,
-		     uint64_t flags,
-		     uint32_t ops)
+drm_public int amdgpu_bo_va_op(amdgpu_bo_handle bo,
+			       uint64_t offset,
+			       uint64_t size,
+			       uint64_t addr,
+			       uint64_t flags,
+			       uint32_t ops)
 {
 	amdgpu_device_handle dev = bo->dev;
 
@@ -749,13 +749,13 @@ int amdgpu_bo_va_op(amdgpu_bo_handle bo,
 				   AMDGPU_VM_PAGE_EXECUTABLE, ops);
 }
 
-int amdgpu_bo_va_op_raw(amdgpu_device_handle dev,
-			amdgpu_bo_handle bo,
-			uint64_t offset,
-			uint64_t size,
-			uint64_t addr,
-			uint64_t flags,
-			uint32_t ops)
+drm_public int amdgpu_bo_va_op_raw(amdgpu_device_handle dev,
+				   amdgpu_bo_handle bo,
+				   uint64_t offset,
+				   uint64_t size,
+				   uint64_t addr,
+				   uint64_t flags,
+				   uint32_t ops)
 {
 	struct drm_amdgpu_gem_va va;
 	int r;

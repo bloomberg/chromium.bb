@@ -133,17 +133,17 @@ static void amdgpu_device_free_internal(amdgpu_device_handle dev)
  *    // incremented. dst is freed if its reference counter is 0.
  */
 static void amdgpu_device_reference(struct amdgpu_device **dst,
-			     struct amdgpu_device *src)
+				    struct amdgpu_device *src)
 {
 	if (update_references(&(*dst)->refcount, &src->refcount))
 		amdgpu_device_free_internal(*dst);
 	*dst = src;
 }
 
-int amdgpu_device_initialize(int fd,
-			     uint32_t *major_version,
-			     uint32_t *minor_version,
-			     amdgpu_device_handle *device_handle)
+drm_public int amdgpu_device_initialize(int fd,
+					uint32_t *major_version,
+					uint32_t *minor_version,
+					amdgpu_device_handle *device_handle)
 {
 	struct amdgpu_device *dev;
 	drmVersionPtr version;
@@ -279,19 +279,20 @@ cleanup:
 	return r;
 }
 
-int amdgpu_device_deinitialize(amdgpu_device_handle dev)
+drm_public int amdgpu_device_deinitialize(amdgpu_device_handle dev)
 {
 	amdgpu_device_reference(&dev, NULL);
 	return 0;
 }
 
-const char *amdgpu_get_marketing_name(amdgpu_device_handle dev)
+drm_public const char *amdgpu_get_marketing_name(amdgpu_device_handle dev)
 {
 	return dev->marketing_name;
 }
 
-int amdgpu_query_sw_info(amdgpu_device_handle dev, enum amdgpu_sw_info info,
-			 void *value)
+drm_public int amdgpu_query_sw_info(amdgpu_device_handle dev,
+				    enum amdgpu_sw_info info,
+				    void *value)
 {
 	uint32_t *val32 = (uint32_t*)value;
 

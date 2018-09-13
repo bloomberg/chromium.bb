@@ -26,7 +26,7 @@
 #include "xf86drm.h"
 #include "amdgpu_internal.h"
 
-int amdgpu_vm_reserve_vmid(amdgpu_device_handle dev, uint32_t flags)
+drm_public int amdgpu_vm_reserve_vmid(amdgpu_device_handle dev, uint32_t flags)
 {
 	union drm_amdgpu_vm vm;
 
@@ -37,7 +37,8 @@ int amdgpu_vm_reserve_vmid(amdgpu_device_handle dev, uint32_t flags)
 				   &vm, sizeof(vm));
 }
 
-int amdgpu_vm_unreserve_vmid(amdgpu_device_handle dev, uint32_t flags)
+drm_public int amdgpu_vm_unreserve_vmid(amdgpu_device_handle dev,
+					uint32_t flags)
 {
 	union drm_amdgpu_vm vm;
 

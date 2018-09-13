@@ -29,9 +29,9 @@
 #include "amdgpu_internal.h"
 #include "util_math.h"
 
-int amdgpu_va_range_query(amdgpu_device_handle dev,
-			  enum amdgpu_gpu_va_range type,
-			  uint64_t *start, uint64_t *end)
+drm_public int amdgpu_va_range_query(amdgpu_device_handle dev,
+				     enum amdgpu_gpu_va_range type,
+				     uint64_t *start, uint64_t *end)
 {
 	if (type != amdgpu_gpu_va_range_general)
 		return -EINVAL;
@@ -186,14 +186,14 @@ out:
 	pthread_mutex_unlock(&mgr->bo_va_mutex);
 }
 
-int amdgpu_va_range_alloc(amdgpu_device_handle dev,
-			  enum amdgpu_gpu_va_range va_range_type,
-			  uint64_t size,
-			  uint64_t va_base_alignment,
-			  uint64_t va_base_required,
-			  uint64_t *va_base_allocated,
-			  amdgpu_va_handle *va_range_handle,
-			  uint64_t flags)
+drm_public int amdgpu_va_range_alloc(amdgpu_device_handle dev,
+				     enum amdgpu_gpu_va_range va_range_type,
+				     uint64_t size,
+				     uint64_t va_base_alignment,
+				     uint64_t va_base_required,
+				     uint64_t *va_base_allocated,
+				     amdgpu_va_handle *va_range_handle,
+				     uint64_t flags)
 {
 	struct amdgpu_bo_va_mgr *vamgr;
 
@@ -250,7 +250,7 @@ int amdgpu_va_range_alloc(amdgpu_device_handle dev,
 	return 0;
 }
 
-int amdgpu_va_range_free(amdgpu_va_handle va_range_handle)
+drm_public int amdgpu_va_range_free(amdgpu_va_handle va_range_handle)
 {
 	if(!va_range_handle || !va_range_handle->address)
 		return 0;

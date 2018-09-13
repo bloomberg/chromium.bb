@@ -30,8 +30,8 @@
 #include "amdgpu_internal.h"
 #include "xf86drm.h"
 
-int amdgpu_query_info(amdgpu_device_handle dev, unsigned info_id,
-		      unsigned size, void *value)
+drm_public int amdgpu_query_info(amdgpu_device_handle dev, unsigned info_id,
+				 unsigned size, void *value)
 {
 	struct drm_amdgpu_info request;
 
@@ -44,8 +44,8 @@ int amdgpu_query_info(amdgpu_device_handle dev, unsigned info_id,
 			       sizeof(struct drm_amdgpu_info));
 }
 
-int amdgpu_query_crtc_from_id(amdgpu_device_handle dev, unsigned id,
-			      int32_t *result)
+drm_public int amdgpu_query_crtc_from_id(amdgpu_device_handle dev, unsigned id,
+					 int32_t *result)
 {
 	struct drm_amdgpu_info request;
 
@@ -59,9 +59,9 @@ int amdgpu_query_crtc_from_id(amdgpu_device_handle dev, unsigned id,
 			       sizeof(struct drm_amdgpu_info));
 }
 
-int amdgpu_read_mm_registers(amdgpu_device_handle dev, unsigned dword_offset,
-			     unsigned count, uint32_t instance, uint32_t flags,
-			     uint32_t *values)
+drm_public int amdgpu_read_mm_registers(amdgpu_device_handle dev,
+		unsigned dword_offset, unsigned count, uint32_t instance,
+		uint32_t flags, uint32_t *values)
 {
 	struct drm_amdgpu_info request;
 
@@ -78,8 +78,9 @@ int amdgpu_read_mm_registers(amdgpu_device_handle dev, unsigned dword_offset,
 			       sizeof(struct drm_amdgpu_info));
 }
 
-int amdgpu_query_hw_ip_count(amdgpu_device_handle dev, unsigned type,
-			     uint32_t *count)
+drm_public int amdgpu_query_hw_ip_count(amdgpu_device_handle dev,
+					unsigned type,
+					uint32_t *count)
 {
 	struct drm_amdgpu_info request;
 
@@ -93,9 +94,9 @@ int amdgpu_query_hw_ip_count(amdgpu_device_handle dev, unsigned type,
 			       sizeof(struct drm_amdgpu_info));
 }
 
-int amdgpu_query_hw_ip_info(amdgpu_device_handle dev, unsigned type,
-			    unsigned ip_instance,
-			    struct drm_amdgpu_info_hw_ip *info)
+drm_public int amdgpu_query_hw_ip_info(amdgpu_device_handle dev, unsigned type,
+				       unsigned ip_instance,
+				       struct drm_amdgpu_info_hw_ip *info)
 {
 	struct drm_amdgpu_info request;
 
@@ -110,9 +111,9 @@ int amdgpu_query_hw_ip_info(amdgpu_device_handle dev, unsigned type,
 			       sizeof(struct drm_amdgpu_info));
 }
 
-int amdgpu_query_firmware_version(amdgpu_device_handle dev, unsigned fw_type,
-				  unsigned ip_instance, unsigned index,
-				  uint32_t *version, uint32_t *feature)
+drm_public int amdgpu_query_firmware_version(amdgpu_device_handle dev,
+		unsigned fw_type, unsigned ip_instance, unsigned index,
+		uint32_t *version, uint32_t *feature)
 {
 	struct drm_amdgpu_info request;
 	struct drm_amdgpu_info_firmware firmware = {};
@@ -227,8 +228,8 @@ drm_private int amdgpu_query_gpu_info_init(amdgpu_device_handle dev)
 	return 0;
 }
 
-int amdgpu_query_gpu_info(amdgpu_device_handle dev,
-			struct amdgpu_gpu_info *info)
+drm_public int amdgpu_query_gpu_info(amdgpu_device_handle dev,
+				     struct amdgpu_gpu_info *info)
 {
 	if (!dev || !info)
 		return -EINVAL;
@@ -239,10 +240,10 @@ int amdgpu_query_gpu_info(amdgpu_device_handle dev,
 	return 0;
 }
 
-int amdgpu_query_heap_info(amdgpu_device_handle dev,
-			uint32_t heap,
-			uint32_t flags,
-			struct amdgpu_heap_info *info)
+drm_public int amdgpu_query_heap_info(amdgpu_device_handle dev,
+				      uint32_t heap,
+				      uint32_t flags,
+				      struct amdgpu_heap_info *info)
 {
 	struct drm_amdgpu_info_vram_gtt vram_gtt_info = {};
 	int r;
@@ -291,8 +292,8 @@ int amdgpu_query_heap_info(amdgpu_device_handle dev,
 	return 0;
 }
 
-int amdgpu_query_gds_info(amdgpu_device_handle dev,
-			struct amdgpu_gds_resource_info *gds_info)
+drm_public int amdgpu_query_gds_info(amdgpu_device_handle dev,
+				     struct amdgpu_gds_resource_info *gds_info)
 {
 	struct drm_amdgpu_info_gds gds_config = {};
         int r;
@@ -316,8 +317,8 @@ int amdgpu_query_gds_info(amdgpu_device_handle dev,
 	return 0;
 }
 
-int amdgpu_query_sensor_info(amdgpu_device_handle dev, unsigned sensor_type,
-			     unsigned size, void *value)
+drm_public int amdgpu_query_sensor_info(amdgpu_device_handle dev, unsigned sensor_type,
+					unsigned size, void *value)
 {
 	struct drm_amdgpu_info request;
 
