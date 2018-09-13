@@ -35,6 +35,7 @@ namespace policy {
 class DeviceManagementRequestJob;
 class DeviceManagementService;
 class SigningService;
+class DMAuth;
 
 // Implements the core logic required to talk to the device management service.
 // Also keeps track of the current state of the association with the service,
@@ -132,7 +133,7 @@ class POLICY_EXPORT CloudPolicyClient {
       enterprise_management::DeviceRegisterRequest::Flavor flavor,
       enterprise_management::DeviceRegisterRequest::Lifetime lifetime,
       enterprise_management::LicenseType::LicenseTypeEnum license_type,
-      const std::string& auth_token,
+      std::unique_ptr<DMAuth> auth,
       const std::string& client_id,
       const std::string& requisition,
       const std::string& current_state_key);
@@ -182,7 +183,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // Requests OAuth2 auth codes for the device robot account. The client being
   // registered is a prerequisite to this operation and this call will CHECK if
   // the client is not in registered state.
-  virtual void FetchRobotAuthCodes(const std::string& auth_token);
+  virtual void FetchRobotAuthCodes(std::unique_ptr<DMAuth> auth);
 
   // Sends an unregistration request to the server.
   virtual void Unregister();
@@ -251,25 +252,24 @@ class POLICY_EXPORT CloudPolicyClient {
       RemoteCommandCallback callback);
 
   // Sends a device attribute update permission request to the server, uses
-  // OAuth2 token |auth_token| to identify user who requests a permission to
-  // name a device, calls a |callback| from the enrollment screen to indicate
-  // whether the device naming prompt should be shown.
-  void GetDeviceAttributeUpdatePermission(const std::string& auth_token,
+  // |auth| to identify user who requests a permission to name a device, calls
+  // a |callback| from the enrollment screen to indicate whether the device
+  // naming prompt should be shown.
+  void GetDeviceAttributeUpdatePermission(std::unique_ptr<DMAuth> auth,
                                           const StatusCallback& callback);
 
   // Sends a device naming information (Asset Id and Location) to the
-  // device management server, uses OAuth2 token |auth_token| to identify user
-  // who names a device, the |callback| will be called when the operation
-  // completes.
-  void UpdateDeviceAttributes(const std::string& auth_token,
+  // device management server, uses |auth| to identify user who names a device,
+  // the |callback| will be called when the operation completes.
+  void UpdateDeviceAttributes(std::unique_ptr<DMAuth> auth,
                               const std::string& asset_id,
                               const std::string& location,
                               const StatusCallback& callback);
 
-  // Requests a list of licenses available for enrollment. Uses OAuth2 token
-  // |auth_token| to identify user who issues the request, the |callback| will
+  // Requests a list of licenses available for enrollment. Uses |auth| to
+  // identify user who issues the request, the |callback| will
   // be called when the operation completes.
-  void RequestAvailableLicenses(const std::string& auth_token,
+  void RequestAvailableLicenses(std::unique_ptr<DMAuth> auth,
                                 const LicenseRequestCallback& callback);
 
   // Sends a GCM id update request to the DM server. The server will
