@@ -35,6 +35,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -529,7 +530,18 @@ int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
 
 bool AutofillPopupSuggestionView::ShouldUseCustomFontWeightForPrimaryInfo(
     gfx::Font::Weight* font_weight) const {
-  return autofill::ShouldUseCustomFontWeightForPrimaryInfo(font_weight);
+  switch (autofill::GetForcedFontWeight()) {
+    case ForcedFontWeight::kDefault:
+      return false;
+
+    case ForcedFontWeight::kMedium:
+      *font_weight = views::TypographyProvider::MediumWeightForUI();
+      return true;
+
+    case ForcedFontWeight::kBold:
+      *font_weight = gfx::Font::Weight::BOLD;
+      return true;
+  }
 }
 
 AutofillPopupSuggestionView::AutofillPopupSuggestionView(
