@@ -50,10 +50,10 @@ PASS PaymentAddress interface: attribute region
 FAIL PaymentAddress interface: attribute regionCode assert_true: The prototype object must have a property "regionCode" expected true got false
 PASS PaymentAddress interface: attribute sortingCode
 PASS PaymentAddress interface: attribute addressLine
-FAIL PaymentResponse interface: existence and properties of interface object assert_equals: prototype of PaymentResponse is not EventTarget expected function "function EventTarget() { [native code] }" but got function "function () { [native code] }"
+PASS PaymentResponse interface: existence and properties of interface object
 PASS PaymentResponse interface object length
 PASS PaymentResponse interface object name
-FAIL PaymentResponse interface: existence and properties of interface prototype object assert_equals: prototype of PaymentResponse.prototype is not EventTarget.prototype expected object "[object EventTarget]" but got object "[object Object]"
+PASS PaymentResponse interface: existence and properties of interface prototype object
 PASS PaymentResponse interface: existence and properties of interface prototype object's "constructor" property
 PASS PaymentResponse interface: existence and properties of interface prototype object's @@unscopables property
 PASS PaymentResponse interface: operation toJSON()
@@ -67,7 +67,7 @@ PASS PaymentResponse interface: attribute payerEmail
 PASS PaymentResponse interface: attribute payerPhone
 PASS PaymentResponse interface: operation complete(PaymentComplete)
 PASS PaymentResponse interface: operation retry(PaymentValidationErrors)
-FAIL PaymentResponse interface: attribute onpayerdetailchange assert_true: The prototype object must have a property "onpayerdetailchange" expected true got false
+PASS PaymentResponse interface: attribute onpayerdetailchange
 FAIL MerchantValidationEvent interface: existence and properties of interface object assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
 FAIL MerchantValidationEvent interface object length assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing
 FAIL MerchantValidationEvent interface object name assert_own_property: self does not have own property "MerchantValidationEvent" expected property "MerchantValidationEvent" missing

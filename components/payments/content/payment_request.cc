@@ -351,6 +351,10 @@ void PaymentRequest::OnShippingAddressSelected(
   client_->OnShippingAddressChange(std::move(address));
 }
 
+void PaymentRequest::OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) {
+  client_->OnPayerDetailChange(std::move(payer_info));
+}
+
 void PaymentRequest::UserCancelled() {
   // If |client_| is not bound, then the object is already being destroyed as
   // a result of a renderer event.

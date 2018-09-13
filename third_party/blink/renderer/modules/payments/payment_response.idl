@@ -15,8 +15,9 @@ enum PaymentComplete {
 [
     RuntimeEnabled=PaymentRequest,
     SecureContext,
-    Exposed=Window
-] interface PaymentResponse {
+    Exposed=Window,
+    ActiveScriptWrappable
+] interface PaymentResponse : EventTarget {
     serializer = {attribute};
 
     readonly attribute DOMString requestId;
@@ -30,4 +31,6 @@ enum PaymentComplete {
 
     [CallWith=ScriptState, NewObject] Promise<void> complete(optional PaymentComplete paymentResult = "unknown");
     [CallWith=ScriptState, NewObject, RuntimeEnabled=PaymentRetry] Promise<void> retry(PaymentValidationErrors errorFields);
+
+    [RuntimeEnabled=PaymentRetry] attribute EventHandler onpayerdetailchange;
 };

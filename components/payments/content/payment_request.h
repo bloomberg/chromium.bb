@@ -80,6 +80,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   void OnPaymentResponseAvailable(mojom::PaymentResponsePtr response) override;
   void OnShippingOptionIdSelected(std::string shipping_option_id) override;
   void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override;
+  void OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) override;
 
   // Called when the user explicitly cancelled the flow. Will send a message
   // to the renderer which will indirectly destroy this object (through

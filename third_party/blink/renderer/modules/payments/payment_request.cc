@@ -1164,6 +1164,20 @@ void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
   }
 }
 
+void PaymentRequest::OnPayerDetailChange(
+    payments::mojom::blink::PayerDetailPtr detail) {
+  DCHECK(payment_response_);
+  DCHECK(GetPendingAcceptPromiseResolver());
+  DCHECK(!complete_resolver_);
+
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
+      GetExecutionContext(), EventTypeNames::payerdetailchange);
+  event->SetTarget(payment_response_);
+  event->SetPaymentDetailsUpdater(this);
+  payment_response_->UpdatePayerDetail(std::move(detail));
+  payment_response_->DispatchEvent(*event);
+}
+
 void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
   DCHECK(GetPendingAcceptPromiseResolver());
   DCHECK(!complete_resolver_);
@@ -1196,12 +1210,13 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
     }
   }
 
-  if ((options_.requestPayerName() && response->payer_name.IsEmpty()) ||
-      (options_.requestPayerEmail() && response->payer_email.IsEmpty()) ||
-      (options_.requestPayerPhone() && response->payer_phone.IsEmpty()) ||
-      (!options_.requestPayerName() && !response->payer_name.IsNull()) ||
-      (!options_.requestPayerEmail() && !response->payer_email.IsNull()) ||
-      (!options_.requestPayerPhone() && !response->payer_phone.IsNull())) {
+  DCHECK(response->payer);
+  if ((options_.requestPayerName() && response->payer->name.IsEmpty()) ||
+      (options_.requestPayerEmail() && response->payer->email.IsEmpty()) ||
+      (options_.requestPayerPhone() && response->payer->phone.IsEmpty()) ||
+      (!options_.requestPayerName() && !response->payer->name.IsNull()) ||
+      (!options_.requestPayerEmail() && !response->payer->email.IsNull()) ||
+      (!options_.requestPayerPhone() && !response->payer->phone.IsNull())) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kSyntaxError));
     ClearResolversAndCloseMojoConnection();
     return;
@@ -1219,8 +1234,9 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
     // connection to display a success or failure message to the user.
     retry_resolver_.Clear();
   } else if (accept_resolver_) {
-    payment_response_ = new PaymentResponse(std::move(response),
-                                            shipping_address_.Get(), this, id_);
+    payment_response_ =
+        new PaymentResponse(GetExecutionContext(), std::move(response),
+                            shipping_address_.Get(), this, id_);
     accept_resolver_->Resolve(payment_response_);
 
     // Do not close the mojo connection here. The merchant website should call

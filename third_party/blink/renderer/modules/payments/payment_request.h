@@ -116,6 +116,7 @@ class MODULES_EXPORT PaymentRequest final
   void OnShippingAddressChange(
       payments::mojom::blink::PaymentAddressPtr) override;
   void OnShippingOptionChange(const String& shipping_option_id) override;
+  void OnPayerDetailChange(payments::mojom::blink::PayerDetailPtr) override;
   void OnPaymentResponse(payments::mojom::blink::PaymentResponsePtr) override;
   void OnError(payments::mojom::blink::PaymentErrorReason) override;
   void OnComplete() override;
