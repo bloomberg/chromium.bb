@@ -846,6 +846,10 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
   // temporarily children of the TopContainerView while they're all painting to
   // their layers.
   browser_view()->top_container()->AddChildViewAt(caption_button_container_, 0);
+  if (hosted_app_button_container_) {
+    browser_view()->top_container()->AddChildViewAt(
+        hosted_app_button_container_, 0);
+  }
   if (back_button_)
     browser_view()->top_container()->AddChildViewAt(back_button_, 0);
 
@@ -854,8 +858,10 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
 
 void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
   AddChildViewAt(caption_button_container_, 0);
+  if (hosted_app_button_container_)
+    AddChildViewAt(hosted_app_button_container_, 0);
   if (back_button_)
-    AddChildView(back_button_);
+    AddChildViewAt(back_button_, 0);
   Layout();
 }
 

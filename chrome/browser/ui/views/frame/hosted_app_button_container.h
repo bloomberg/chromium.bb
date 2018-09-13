@@ -81,6 +81,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   friend class HostedAppNonClientFrameViewAshTest;
   friend class HostedAppGlassBrowserFrameViewTest;
   friend class ImmersiveModeControllerAshHostedAppBrowserTest;
+  friend class HostedAppAshInteractiveUITest;
 
   // Duration to wait before starting the opening animation.
   static constexpr base::TimeDelta kTitlebarAnimationDelay =
