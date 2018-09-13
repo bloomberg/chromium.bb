@@ -137,7 +137,7 @@ void VotesUploader::SendVotesOnSave(
     // values. Fill username field value with username to allow AutofillManager
     // to detect username autofill type.
     form_data.fields[0].value = pending_credentials->username_value;
-    SendSignInVote(form_data);
+    SendSignInVote(form_data, submitted_form.submission_event);
   }
 
   if (pending_credentials->times_used == 1 ||
@@ -227,6 +227,7 @@ bool VotesUploader::UploadPasswordVote(
   // re-uses credentials, a vote about the saved form is sent. If the user saves
   // credentials, the observed and pending forms are the same.
   FormStructure form_structure(form_to_upload.form_data);
+  form_structure.set_submission_event(submitted_form.submission_event);
   if (!autofill_manager->ShouldUploadForm(form_structure)) {
     UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", false);
     return false;
@@ -318,6 +319,7 @@ void VotesUploader::UploadFirstLoginVotes(
     return;
 
   FormStructure form_structure(form_to_upload.form_data);
+  form_structure.set_submission_event(form_to_upload.submission_event);
   if (!autofill_manager->ShouldUploadForm(form_structure))
     return;
 
@@ -349,11 +351,14 @@ void VotesUploader::UploadFirstLoginVotes(
       std::string(), true /* observed_submission */);
 }
 
-void VotesUploader::SendSignInVote(const FormData& form_data) {
+void VotesUploader::SendSignInVote(
+    const FormData& form_data,
+    const PasswordForm::SubmissionIndicatorEvent& submission_event) {
   AutofillManager* autofill_manager = client_->GetAutofillManagerForMainFrame();
   if (!autofill_manager)
     return;
   std::unique_ptr<FormStructure> form_structure(new FormStructure(form_data));
+  form_structure->set_submission_event(submission_event);
   form_structure->set_is_signin_upload(true);
   DCHECK(form_structure->ShouldBeUploaded());
   DCHECK_EQ(2u, form_structure->field_count());

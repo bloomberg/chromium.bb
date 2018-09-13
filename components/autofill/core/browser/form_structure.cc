@@ -329,6 +329,7 @@ void EncodePasswordAttributesVote(
 
 FormStructure::FormStructure(const FormData& form)
     : form_name_(form.name),
+      submission_event_(PasswordForm::SubmissionIndicatorEvent::NONE),
       source_url_(form.origin),
       target_url_(form.action),
       main_frame_origin_(form.main_frame_origin),
@@ -439,6 +440,13 @@ bool FormStructure::EncodeUploadRequest(
   upload->set_autofill_used(form_was_autofilled);
   upload->set_data_present(EncodeFieldTypes(available_field_types));
   upload->set_passwords_revealed(passwords_were_revealed_);
+  if (submission_event_ != PasswordForm::SubmissionIndicatorEvent::NONE) {
+    DCHECK(submission_event_ != PasswordForm::SubmissionIndicatorEvent::
+                                    SUBMISSION_INDICATOR_EVENT_COUNT);
+    upload->set_submission_event(
+        static_cast<AutofillUploadContents_SubmissionIndicatorEvent>(
+            submission_event_));
+  }
   if (password_attributes_vote_) {
     EncodePasswordAttributesVote(*password_attributes_vote_,
                                  password_length_vote_, upload);
