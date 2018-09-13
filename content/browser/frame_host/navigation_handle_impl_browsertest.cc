@@ -2076,15 +2076,17 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
     // Add the suffix to all existing histogram names, and append the results to
     // |names|.
     std::vector<std::string> names{"Navigation.StartToCommit"};
-    auto add_suffix = [&names](std::string suffix) {
+    auto add_suffix = [&names](std::vector<std::string> suffixes) {
       size_t original_size = names.size();
       for (size_t i = 0; i < original_size; i++) {
-        names.push_back(names[i] + suffix);
+        for (const std::string& suffix : suffixes)
+          names.push_back(names[i] + suffix);
       }
     };
-    add_suffix(kProcessSuffixes.at(process_type));
-    add_suffix(kFrameSuffixes.at(frame_type));
-    add_suffix(kTransitionSuffixes.at(transition_type));
+    add_suffix({kProcessSuffixes.at(process_type)});
+    add_suffix({kFrameSuffixes.at(frame_type)});
+    add_suffix({kTransitionSuffixes.at(transition_type),
+                ".ForegroundProcessPriority"});
 
     // Check that all generated histogram names are logged exactly once.
     for (const auto& name : names) {
