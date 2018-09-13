@@ -446,7 +446,8 @@ enum HdcpVersion : uint32_t {
   kHdcpVersion1_4,
   kHdcpVersion2_0,
   kHdcpVersion2_1,
-  kHdcpVersion2_2
+  kHdcpVersion2_2,
+  kHdcpVersion2_3
 };
 CHECK_TYPE(HdcpVersion, 4, 4);
 
