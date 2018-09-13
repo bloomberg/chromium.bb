@@ -182,9 +182,11 @@ class WiredDisplayMediaRouteProviderTest : public testing::Test {
   void TearDown() override {
     provider_.reset();
     display::Screen::SetScreenInstance(nullptr);
+    test_thread_bundle_.RunUntilIdle();
   }
 
  protected:
+  content::TestBrowserThreadBundle test_thread_bundle_;
   // A mojo pointer to |provider_|.
   mojom::MediaRouteProviderPtr provider_pointer_;
   std::unique_ptr<TestWiredDisplayMediaRouteProvider> provider_;
@@ -203,7 +205,6 @@ class WiredDisplayMediaRouteProviderTest : public testing::Test {
   MockReceiverCreator receiver_creator_;
 
  private:
-  content::TestBrowserThreadBundle test_thread_bundle_;
   TestingProfile profile_;
   display::test::TestScreen test_screen_;
 };

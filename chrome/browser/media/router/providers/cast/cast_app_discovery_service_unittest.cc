@@ -12,6 +12,7 @@
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,6 +66,7 @@ class CastAppDiscoveryServiceTest : public testing::Test {
   }
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::SimpleTestTickClock clock_;
   cast_channel::MockCastSocketService socket_service_;
