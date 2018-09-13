@@ -754,6 +754,8 @@ void RasterImplementation::BeginQueryEXT(GLenum target, GLuint id) {
                      << ")");
 
   switch (target) {
+    case GL_COMMANDS_ISSUED_CHROMIUM:
+      break;
     case GL_COMMANDS_COMPLETED_CHROMIUM:
       if (!capabilities_.sync_query) {
         SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT",
