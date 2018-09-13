@@ -1115,7 +1115,7 @@ void UserSessionManager::InitDemoSessionIfNeeded(base::OnceClosure callback) {
     std::move(callback).Run();
     return;
   }
-
+  should_launch_browser_ = false;
   demo_session->EnsureOfflineResourcesLoaded(std::move(callback));
 }
 
