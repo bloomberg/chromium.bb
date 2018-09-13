@@ -175,10 +175,6 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string,
   return true;
 }
 
-bool ExecuteCodeFunction::HasPermission() {
-  return true;
-}
-
 ExtensionFunction::ResponseAction ExecuteCodeFunction::Run() {
   InitResult init_result = Init();
   EXTENSION_FUNCTION_VALIDATE(init_result != VALIDATION_FAILURE);
