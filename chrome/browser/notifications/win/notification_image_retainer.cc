@@ -82,8 +82,8 @@ FilePath NotificationImageRetainer::RegisterTemporaryImage(
   // To minimize the risk of collisions, separate each request by subdirectory
   // generated from hashes of the profile and the origin. Each file within the
   // subdirectory will also be given a unique filename.
-  base::string16 directory = base::UintToString16(base::Hash(
-      base::UTF8ToUTF16(profile_id) + base::UTF8ToUTF16(origin.spec())));
+  base::string16 directory =
+      base::UintToString16(base::Hash(profile_id + origin.spec()));
   FilePath temp_file =
       WriteDataToTmpFile(image_directory_, directory, image.As1xPNGBytes());
 
