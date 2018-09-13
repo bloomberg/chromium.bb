@@ -109,8 +109,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   const WorkletAnimationId& GetWorkletAnimationId() const override {
     return id_;
   }
-  bool IsActiveOnMainThread() const override;
-  bool IsActiveOnCompositorThread() const override;
+  bool IsActiveAnimation() const override;
 
   void UpdateInputState(CompositorMutatorInputState* input_state) override;
   void SetOutputState(

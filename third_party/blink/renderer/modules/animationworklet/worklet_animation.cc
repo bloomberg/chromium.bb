@@ -547,16 +547,17 @@ KeyframeEffect* WorkletAnimation::GetEffect() const {
   return effects_.at(0);
 }
 
-bool WorkletAnimation::IsActiveOnMainThread() const {
-  return IsActive(play_state_) && running_on_main_thread_;
-}
-
-bool WorkletAnimation::IsActiveOnCompositorThread() const {
-  return IsActive(play_state_) && !running_on_main_thread_;
+bool WorkletAnimation::IsActiveAnimation() const {
+  return IsActive(play_state_);
 }
 
 void WorkletAnimation::UpdateInputState(
     CompositorMutatorInputState* input_state) {
+  if (!running_on_main_thread_) {
+    input_state->Peek(id_);
+    return;
+  }
+
   bool was_active = IsActive(last_play_state_);
   bool is_active = IsActive(play_state_);
 

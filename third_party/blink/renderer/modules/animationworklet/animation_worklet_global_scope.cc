@@ -119,6 +119,15 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
                     animation.current_time, result.get());
   }
 
+  for (const auto& worklet_animation_id : mutator_input.peeked_animations) {
+    int id = worklet_animation_id.animation_id;
+    Animator* animator = animators_.at(id);
+
+    result->animations.emplace_back(
+        worklet_animation_id,
+        animator ? animator->GetLastLocalTime() : base::nullopt);
+  }
+
   return result;
 }
 
