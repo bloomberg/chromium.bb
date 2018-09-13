@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.os.Build;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetModel.PropertyKey;
 import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
@@ -45,21 +47,35 @@ class AccessorySheetViewBinder
                     && model.getActiveTabIndex() != AccessorySheetModel.NO_ACTIVE_TAB) {
                 announceOpenedTab(inflatedView, model.getTabList().get(model.getActiveTabIndex()));
             }
+            requestLayout(inflatedView);
             return;
         }
         if (propertyKey == PropertyKey.HEIGHT) {
             ViewGroup.LayoutParams p = inflatedView.getLayoutParams();
             p.height = model.getHeight();
             inflatedView.setLayoutParams(p);
+            requestLayout(inflatedView);
             return;
         }
         if (propertyKey == PropertyKey.ACTIVE_TAB_INDEX) {
             if (model.getActiveTabIndex() != AccessorySheetModel.NO_ACTIVE_TAB) {
                 inflatedView.setCurrentItem(model.getActiveTabIndex());
             }
+            requestLayout(inflatedView);
             return;
         }
         assert false : "Every possible property update needs to be handled!";
+    }
+
+    private static void requestLayout(ViewPager viewPager) {
+         // Layout requests happen automatically since Kitkat and redundant requests cause warnings.
+        if (viewPager == null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) return;
+        viewPager.post(() -> {
+            ViewParent parent = viewPager.getParent();
+            if (parent != null) {
+                parent.requestLayout();
+            }
+        });
     }
 
     static void announceOpenedTab(View announcer, KeyboardAccessoryData.Tab tab) {
