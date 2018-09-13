@@ -239,6 +239,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   bool MayRenderWidgetForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) override;
   bool ShouldContributePriorityToProcess() override;
+  void RequestSetBounds(const gfx::Rect& bounds) override;
 
   // IPC message handlers.
   void OnShowView(int route_id,
@@ -249,7 +250,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnShowFullscreenWidget(int route_id);
   void OnUpdateTargetURL(const GURL& url);
   void OnClose();
-  void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnDocumentAvailableInMainFrame(bool uses_temporary_zoom_level);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnPasteFromSelectionClipboard();
