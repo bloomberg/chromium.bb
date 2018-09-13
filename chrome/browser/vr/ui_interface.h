@@ -82,10 +82,11 @@ class UiInterface {
   virtual bool IsContentVisibleAndOpaque() = 0;
   virtual void SetContentUsesQuadLayer(bool uses_quad_buffers) = 0;
   virtual gfx::Transform GetContentWorldSpaceTransform() = 0;
-  virtual bool OnBeginFrame(const base::TimeTicks&, const gfx::Transform&) = 0;
+  virtual bool OnBeginFrame(base::TimeTicks current_time,
+                            const gfx::Transform& head_pose) = 0;
   virtual bool SceneHasDirtyTextures() const = 0;
   virtual void UpdateSceneTextures() = 0;
-  virtual void Draw(const RenderInfo&) = 0;
+  virtual void Draw(const RenderInfo& render_info) = 0;
   virtual void DrawContent(const float (&uv_transform)[16],
                            float xborder,
                            float yborder) = 0;

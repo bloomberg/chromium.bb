@@ -24,7 +24,7 @@ class VR_EXPORT BaseGraphicsDelegate : public GraphicsDelegate {
 
   // GraphicsDelegate implementation.
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface) override;
-  bool RunInSkiaContext(SkiaContextCallback callback) override;
+  bool RunInSkiaContext(base::OnceClosure callback) override;
 
  protected:
   void SwapSurfaceBuffers();

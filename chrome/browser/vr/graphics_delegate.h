@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VR_GRAPHICS_DELEGATE_H_
 #define CHROME_BROWSER_VR_GRAPHICS_DELEGATE_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "chrome/browser/vr/fov_rectangle.h"
 #include "chrome/browser/vr/frame_type.h"
 #include "chrome/browser/vr/gl_texture_location.h"
@@ -30,7 +30,6 @@ struct RenderInfo;
 class VR_EXPORT GraphicsDelegate {
  public:
   using Transform = float[16];
-  using SkiaContextCallback = base::OnceCallback<void()>;
   using TexturesInitializedCallback = base::OnceCallback<
       void(GlTextureLocation, unsigned int, unsigned int, unsigned int)>;
   virtual ~GraphicsDelegate() {}
@@ -62,7 +61,7 @@ class VR_EXPORT GraphicsDelegate {
 
   // These methods return true when succeeded.
   virtual bool Initialize(const scoped_refptr<gl::GLSurface>& surface) = 0;
-  virtual bool RunInSkiaContext(SkiaContextCallback callback) = 0;
+  virtual bool RunInSkiaContext(base::OnceClosure callback) = 0;
 };
 
 }  // namespace vr
