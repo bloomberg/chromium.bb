@@ -157,10 +157,13 @@ size_t QuantizeMemorySize(size_t size) {
 
 MemoryInfo::MemoryInfo(Precision precision) {
   // With the experimental PreciseMemoryInfoEnabled flag on, we will not
-  // bucketize or cache values.
+  // bucketize or cache values, regardless of the value of |precision|. When the
+  // flag is off then our cache is used and |precision| determines the
+  // granularity of the values and the timer of the cache we use.
   if (RuntimeEnabledFeatures::PreciseMemoryInfoEnabled())
     GetHeapSize(info_);
-  HeapSizeCache::ForCurrentThread().GetCachedHeapSize(info_, precision);
+  else
+    HeapSizeCache::ForCurrentThread().GetCachedHeapSize(info_, precision);
 }
 
 }  // namespace blink

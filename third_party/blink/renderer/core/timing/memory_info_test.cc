@@ -32,6 +32,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -202,6 +203,32 @@ TEST_F(MemoryInfoTest, Precise) {
     // Update |precise_memory| to be the newest MemoryInfo thus far.
     precise_memory = new_precise_memory;
   }
+}
+
+TEST_F(MemoryInfoTest, FlagEnabled) {
+  ScopedPreciseMemoryInfoForTest precise_memory_info(true);
+  V8TestingScope scope;
+  v8::Isolate* isolate = scope.GetIsolate();
+  std::vector<v8::Local<v8::ArrayBuffer>> objects;
+
+  // Using MemoryInfo::Precision::Bucketized to ensure that the runtime-enabled
+  // flag overrides the Precision passed onto the method.
+  MemoryInfo* precise_memory =
+      MemoryInfo::Create(MemoryInfo::Precision::Bucketized);
+  // Check that the precise values are monotone and not heavily rounded.
+  CheckValues(precise_memory, MemoryInfo::Precision::Precise);
+
+  // Allocate an object in heap and keep it in a vector to make sure that it
+  // does not get accidentally GC'd. This single ArrayBuffer should be enough to
+  // be noticed by the used heap size immediately since the
+  // PreciseMemoryInfoEnabled flag is on.
+  objects.push_back(v8::ArrayBuffer::New(isolate, 100));
+  MemoryInfo* precise_memory2 =
+      MemoryInfo::Create(MemoryInfo::Precision::Bucketized);
+  CheckValues(precise_memory2, MemoryInfo::Precision::Precise);
+  // The old precise JS heap size value must NOT be equal to the new value.
+  EXPECT_NE(precise_memory2->usedJSHeapSize(),
+            precise_memory->usedJSHeapSize());
 }
 
 }  // namespace blink
