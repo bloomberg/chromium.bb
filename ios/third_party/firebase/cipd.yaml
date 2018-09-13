@@ -11,8 +11,8 @@
 #   cipd auth-login
 #
 # Create CIPD package with:
-#   cipd create --pkg-def cipd.yaml -tag version:5.0.1
-# where "5.0.1" is the version number for the current version of Firebase SDK.
+#   cipd create --pkg-def cipd.yaml -tag version:5.8.0
+# where "5.8.0" is the version number for the current version of Firebase SDK.
 #
 #
 package: chromium/third_party/firebase_ios
