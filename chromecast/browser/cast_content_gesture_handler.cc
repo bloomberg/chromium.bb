@@ -53,6 +53,8 @@ GestureType CastContentGestureHandler::GestureForSwipeOrigin(
     case CastSideSwipeOrigin::TOP:
       return enable_top_drag_gesture_ ? GestureType::TOP_DRAG
                                       : GestureType::NO_GESTURE;
+    case CastSideSwipeOrigin::RIGHT:
+      return GestureType::RIGHT_DRAG;
     default:
       return GestureType::NO_GESTURE;
   }
