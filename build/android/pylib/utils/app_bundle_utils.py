@@ -13,7 +13,8 @@ from util import md5_check
 import bundletool
 
 def GenerateBundleApks(bundle_path, bundle_apks_path, aapt2_path,
-                       keystore_path, keystore_password, keystore_alias):
+                       keystore_path, keystore_password, keystore_alias,
+                       universal):
   """Generate an .apks archive from a an app bundle if needed.
 
   Args:
@@ -24,6 +25,8 @@ def GenerateBundleApks(bundle_path, bundle_apks_path, aapt2_path,
     keystore_path: Path to keystore.
     keystore_password: Keystore password, as a string.
     keystore_alias: Keystore signing key alias.
+    universal: Whether to create a single APK that contains the contents of all
+      modules.
   """
   # NOTE: BUNDLETOOL_JAR_PATH is added to input_strings, rather than
   # input_paths, to speed up MD5 computations by about 400ms (the .jar file
@@ -57,6 +60,8 @@ def GenerateBundleApks(bundle_path, bundle_apks_path, aapt2_path,
           '--ks-key-alias=%s' % keystore_alias,
           '--overwrite',
       ]
+      if universal:
+        cmd_args += ['--universal']
       build_utils.CheckOutput(cmd_args)
 
   md5_check.CallAndRecordIfStale(

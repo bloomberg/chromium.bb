@@ -94,11 +94,13 @@ BundleGenerationInfo = collections.namedtuple(
     'keystore_alias')
 
 
-def _GenerateBundleApks(info):
+def _GenerateBundleApks(info, universal=False):
   """Generate an .apks archive from a bundle on demand.
 
   Args:
     info: A BundleGenerationInfo instance.
+    universal: Whether to create a single APK that contains the contents of all
+      modules.
   Returns:
     Path of output .apks archive.
   """
@@ -108,7 +110,8 @@ def _GenerateBundleApks(info):
       info.aapt2_path,
       info.keystore_path,
       info.keystore_password,
-      info.keystore_alias)
+      info.keystore_alias,
+      universal)
   return info.bundle_apks_path
 
 
@@ -1316,9 +1319,14 @@ class _BuildBundleApks(_Command):
   def _RegisterExtraArgs(self, group):
     group.add_argument('--output-apks',
                        help='Destination path for .apks archive copy.')
+    group.add_argument('--universal', action='store_true',
+                       help='Build .apks archive containing single APK with '
+                            'contents of all splits. NOTE: Won\'t add modules '
+                            'with <dist:fusing dist:include="false"/> flag.')
 
   def Run(self):
-    bundle_apks_path = _GenerateBundleApks(self.bundle_generation_info)
+    bundle_apks_path = _GenerateBundleApks(self.bundle_generation_info,
+                                           self.args.universal)
     if self.args.output_apks:
       try:
         shutil.copyfile(bundle_apks_path, self.args.output_apks)
