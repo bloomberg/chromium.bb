@@ -59,6 +59,8 @@ EventListener* CreateAttributeEventListener(Node* node,
   String source_url;
 
   v8::Isolate* isolate = ToIsolate(&node->GetDocument());
+  v8::HandleScope scope(isolate);
+
   if (LocalFrame* frame = node->GetDocument().GetFrame()) {
     ScriptController& script_controller = frame->GetScriptController();
     if (!node->GetDocument().CanExecuteScripts(kAboutToExecuteScript))
@@ -67,8 +69,15 @@ EventListener* CreateAttributeEventListener(Node* node,
     source_url = node->GetDocument().Url().GetString();
   }
 
-  return V8LazyEventListener::Create(name.LocalName(), value, source_url,
-                                     position, node, isolate);
+  // |v8_context| can be an empty handle when this listener is added as content
+  // attribute like <hoge onclick="fuga"></hoge> because there is no JS context
+  // when parsing HTML. In that case we should assume the main world.
+  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+
+  return V8LazyEventListener::Create(
+      name.LocalName(), value, source_url, position, node, isolate,
+      v8_context.IsEmpty() ? DOMWrapperWorld::MainWorld()
+                           : ScriptState::From(v8_context)->World());
 }
 
 EventListener* CreateAttributeEventListener(LocalFrame* frame,
@@ -86,8 +95,18 @@ EventListener* CreateAttributeEventListener(LocalFrame* frame,
   TextPosition position = frame->GetScriptController().EventHandlerPosition();
   String source_url = frame->GetDocument()->Url().GetString();
 
-  return V8LazyEventListener::Create(name.LocalName(), value, source_url,
-                                     position, nullptr, ToIsolate(frame));
+  v8::Isolate* isolate = ToIsolate(frame);
+  v8::HandleScope scope(isolate);
+
+  // |v8_context| can be an empty handle when this listener is added as content
+  // attribute like <hoge onclick="fuga"></hoge> because there is no JS context
+  // when parsing HTML. In that case we should assume the main world.
+  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+
+  return V8LazyEventListener::Create(
+      name.LocalName(), value, source_url, position, nullptr, isolate,
+      v8_context.IsEmpty() ? DOMWrapperWorld::MainWorld()
+                           : ScriptState::From(v8_context)->World());
 }
 
 v8::Local<v8::Object> EventListenerHandler(ExecutionContext* execution_context,

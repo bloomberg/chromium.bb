@@ -52,14 +52,14 @@
 
 namespace blink {
 
-V8LazyEventListener::V8LazyEventListener(
-    v8::Isolate* isolate,
-    const AtomicString& function_name,
-    const String& code,
-    const String source_url,
-    const TextPosition& position,
-    Node* node)
-    : V8AbstractEventHandler(isolate, true, DOMWrapperWorld::MainWorld()),
+V8LazyEventListener::V8LazyEventListener(v8::Isolate* isolate,
+                                         DOMWrapperWorld& world,
+                                         const AtomicString& function_name,
+                                         const String& code,
+                                         const String source_url,
+                                         const TextPosition& position,
+                                         Node* node)
+    : V8AbstractEventHandler(isolate, true, world),
       was_compilation_failed_(false),
       function_name_(function_name),
       code_(code),
