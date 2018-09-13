@@ -88,7 +88,7 @@ static struct omap_device * omap_device_new_impl(int fd)
 	return dev;
 }
 
-struct omap_device * omap_device_new(int fd)
+drm_public struct omap_device * omap_device_new(int fd)
 {
 	struct omap_device *dev = NULL;
 
@@ -111,13 +111,13 @@ struct omap_device * omap_device_new(int fd)
 	return dev;
 }
 
-struct omap_device * omap_device_ref(struct omap_device *dev)
+drm_public struct omap_device * omap_device_ref(struct omap_device *dev)
 {
 	atomic_inc(&dev->refcnt);
 	return dev;
 }
 
-void omap_device_del(struct omap_device *dev)
+drm_public void omap_device_del(struct omap_device *dev)
 {
 	if (!atomic_dec_and_test(&dev->refcnt))
 		return;
@@ -129,7 +129,7 @@ void omap_device_del(struct omap_device *dev)
 }
 
 int
-omap_get_param(struct omap_device *dev, uint64_t param, uint64_t *value)
+drm_public omap_get_param(struct omap_device *dev, uint64_t param, uint64_t *value)
 {
 	struct drm_omap_param req = {
 			.param = param,
@@ -147,7 +147,7 @@ omap_get_param(struct omap_device *dev, uint64_t param, uint64_t *value)
 }
 
 int
-omap_set_param(struct omap_device *dev, uint64_t param, uint64_t value)
+drm_public omap_set_param(struct omap_device *dev, uint64_t param, uint64_t value)
 {
 	struct drm_omap_param req = {
 			.param = param,
@@ -227,7 +227,7 @@ fail:
 
 /* allocate a new (un-tiled) buffer object */
 struct omap_bo *
-omap_bo_new(struct omap_device *dev, uint32_t size, uint32_t flags)
+drm_public omap_bo_new(struct omap_device *dev, uint32_t size, uint32_t flags)
 {
 	union omap_gem_size gsize = {
 			.bytes = size,
@@ -240,7 +240,7 @@ omap_bo_new(struct omap_device *dev, uint32_t size, uint32_t flags)
 
 /* allocate a new buffer object */
 struct omap_bo *
-omap_bo_new_tiled(struct omap_device *dev, uint32_t width,
+drm_public omap_bo_new_tiled(struct omap_device *dev, uint32_t width,
 		  uint32_t height, uint32_t flags)
 {
 	union omap_gem_size gsize = {
@@ -255,7 +255,7 @@ omap_bo_new_tiled(struct omap_device *dev, uint32_t width,
 	return omap_bo_new_impl(dev, gsize, flags);
 }
 
-struct omap_bo *omap_bo_ref(struct omap_bo *bo)
+drm_public struct omap_bo *omap_bo_ref(struct omap_bo *bo)
 {
 	atomic_inc(&bo->refcnt);
 	return bo;
@@ -282,7 +282,7 @@ static int get_buffer_info(struct omap_bo *bo)
 
 /* import a buffer object from DRI2 name */
 struct omap_bo *
-omap_bo_from_name(struct omap_device *dev, uint32_t name)
+drm_public omap_bo_from_name(struct omap_device *dev, uint32_t name)
 {
 	struct omap_bo *bo = NULL;
 	struct drm_gem_open req = {
@@ -316,7 +316,7 @@ fail:
  * with it (even if it is still using the 'struct omap_bo *')
  */
 struct omap_bo *
-omap_bo_from_dmabuf(struct omap_device *dev, int fd)
+drm_public omap_bo_from_dmabuf(struct omap_device *dev, int fd)
 {
 	struct omap_bo *bo = NULL;
 	struct drm_prime_handle req = {
@@ -347,7 +347,7 @@ fail:
 }
 
 /* destroy a buffer object */
-void omap_bo_del(struct omap_bo *bo)
+drm_public void omap_bo_del(struct omap_bo *bo)
 {
 	if (!bo) {
 		return;
@@ -380,7 +380,7 @@ void omap_bo_del(struct omap_bo *bo)
 }
 
 /* get the global flink/DRI2 buffer name */
-int omap_bo_get_name(struct omap_bo *bo, uint32_t *name)
+drm_public int omap_bo_get_name(struct omap_bo *bo, uint32_t *name)
 {
 	if (!bo->name) {
 		struct drm_gem_flink req = {
@@ -401,7 +401,7 @@ int omap_bo_get_name(struct omap_bo *bo, uint32_t *name)
 	return 0;
 }
 
-uint32_t omap_bo_handle(struct omap_bo *bo)
+drm_public uint32_t omap_bo_handle(struct omap_bo *bo)
 {
 	return bo->handle;
 }
@@ -409,7 +409,7 @@ uint32_t omap_bo_handle(struct omap_bo *bo)
 /* caller owns the dmabuf fd that is returned and is responsible
  * to close() it when done
  */
-int omap_bo_dmabuf(struct omap_bo *bo)
+drm_public int omap_bo_dmabuf(struct omap_bo *bo)
 {
 	if (bo->fd < 0) {
 		struct drm_prime_handle req = {
@@ -428,7 +428,7 @@ int omap_bo_dmabuf(struct omap_bo *bo)
 	return dup(bo->fd);
 }
 
-uint32_t omap_bo_size(struct omap_bo *bo)
+drm_public uint32_t omap_bo_size(struct omap_bo *bo)
 {
 	if (!bo->size) {
 		get_buffer_info(bo);
@@ -436,7 +436,7 @@ uint32_t omap_bo_size(struct omap_bo *bo)
 	return bo->size;
 }
 
-void *omap_bo_map(struct omap_bo *bo)
+drm_public void *omap_bo_map(struct omap_bo *bo)
 {
 	if (!bo->map) {
 		if (!bo->offset) {
@@ -452,7 +452,7 @@ void *omap_bo_map(struct omap_bo *bo)
 	return bo->map;
 }
 
-int omap_bo_cpu_prep(struct omap_bo *bo, enum omap_gem_op op)
+drm_public int omap_bo_cpu_prep(struct omap_bo *bo, enum omap_gem_op op)
 {
 	struct drm_omap_gem_cpu_prep req = {
 			.handle = bo->handle,
@@ -462,7 +462,7 @@ int omap_bo_cpu_prep(struct omap_bo *bo, enum omap_gem_op op)
 			DRM_OMAP_GEM_CPU_PREP, &req, sizeof(req));
 }
 
-int omap_bo_cpu_fini(struct omap_bo *bo, enum omap_gem_op op)
+drm_public int omap_bo_cpu_fini(struct omap_bo *bo, enum omap_gem_op op)
 {
 	struct drm_omap_gem_cpu_fini req = {
 			.handle = bo->handle,
