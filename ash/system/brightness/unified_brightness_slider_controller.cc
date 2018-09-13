@@ -44,9 +44,17 @@ void UnifiedBrightnessSliderController::SliderValueChanged(
     return;
 
   double percent = value * 100.;
-  if (percent < tray::kMinBrightnessPercent)
+  // If previous percentage and current percentage are both below the minimum,
+  // we don't update the actual brightness.
+  if (percent < tray::kMinBrightnessPercent &&
+      previous_percent_ < tray::kMinBrightnessPercent) {
     return;
+  }
+  // We have to store previous manually set value because |old_value| might be
+  // set by UnifiedSystemTrayModel::Observer.
+  previous_percent_ = percent;
 
+  percent = std::max(tray::kMinBrightnessPercent, percent);
   brightness_control_delegate->SetBrightnessPercent(percent, true);
 }
 
