@@ -171,7 +171,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
 }
 
 base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
-    Resource::Type type,
+    ResourceType type,
     const ResourceRequest& resource_request,
     const KURL& url,
     const ResourceLoaderOptions& options,
@@ -208,12 +208,12 @@ void BaseFetchContext::AddErrorConsoleMessage(const String& message,
 
 bool BaseFetchContext::IsAdResource(
     const KURL& resource_url,
-    Resource::Type type,
+    ResourceType type,
     WebURLRequest::RequestContext request_context) const {
   SubresourceFilter* filter = GetSubresourceFilter();
 
   // We do not need main document tagging currently so skipping main resources.
-  if (filter && type != Resource::kMainResource) {
+  if (filter && type != ResourceType::kMainResource) {
     return filter->IsAdResource(resource_url, request_context);
   }
 
@@ -278,7 +278,7 @@ BaseFetchContext::CheckCSPForRequestInternal(
 
 base::Optional<ResourceRequestBlockedReason>
 BaseFetchContext::CanRequestInternal(
-    Resource::Type type,
+    ResourceType type,
     const ResourceRequest& resource_request,
     const KURL& url,
     const ResourceLoaderOptions& options,
@@ -318,7 +318,7 @@ BaseFetchContext::CanRequestInternal(
   // User Agent CSS stylesheets should only support loading images and should be
   // restricted to data urls.
   if (options.initiator_info.name == FetchInitiatorTypeNames::uacss) {
-    if (type == Resource::kImage && url.ProtocolIsData()) {
+    if (type == ResourceType::kImage && url.ProtocolIsData()) {
       return base::nullopt;
     }
     return ResourceRequestBlockedReason::kOther;
@@ -337,7 +337,7 @@ BaseFetchContext::CanRequestInternal(
     return ResourceRequestBlockedReason::kCSP;
   }
 
-  if (type == Resource::kScript || type == Resource::kImportResource) {
+  if (type == ResourceType::kScript || type == ResourceType::kImportResource) {
     if (!AllowScriptFromSource(url)) {
       // TODO(estark): Use a different ResourceRequestBlockedReason here, since
       // this check has nothing to do with CSP. https://crbug.com/600795
@@ -347,7 +347,7 @@ BaseFetchContext::CanRequestInternal(
 
   // SVG Images have unique security rules that prevent all subresource requests
   // except for data urls.
-  if (type != Resource::kMainResource && IsSVGImageChromeClient() &&
+  if (type != ResourceType::kMainResource && IsSVGImageChromeClient() &&
       !url.ProtocolIsData())
     return ResourceRequestBlockedReason::kOrigin;
 
@@ -397,8 +397,8 @@ BaseFetchContext::CanRequestInternal(
 
   // Let the client have the final say into whether or not the load should
   // proceed.
-  if (GetSubresourceFilter() && type != Resource::kMainResource &&
-      type != Resource::kImportResource) {
+  if (GetSubresourceFilter() && type != ResourceType::kMainResource &&
+      type != ResourceType::kImportResource) {
     if (!GetSubresourceFilter()->AllowLoad(url, request_context,
                                            reporting_policy)) {
       return ResourceRequestBlockedReason::kSubresourceFilter;

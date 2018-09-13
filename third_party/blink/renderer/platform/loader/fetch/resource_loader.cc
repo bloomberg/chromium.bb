@@ -308,8 +308,8 @@ bool ResourceLoader::ShouldFetchCodeCache() {
     return false;
   // If the resource type is script or MainResource (for inline scripts) fetch
   // code cache. For others we need not fetch code cache.
-  if (resource_->GetType() != Resource::Type::kScript &&
-      resource_->GetType() != Resource::Type::kMainResource)
+  if (resource_->GetType() != ResourceType::kScript &&
+      resource_->GetType() != ResourceType::kMainResource)
     return false;
   return true;
 }
@@ -330,7 +330,7 @@ void ResourceLoader::Start() {
   if (resource_->Options().synchronous_policy == kRequestSynchronously ||
       (request.GetFrameType() ==
            network::mojom::RequestContextFrameType::kTopLevel &&
-       resource_->GetType() == Resource::kMainResource) ||
+       resource_->GetType() == ResourceType::kMainResource) ||
       !request.Url().ProtocolIsInHTTPFamily()) {
     throttle_option =
         ResourceLoadScheduler::ThrottleOption::kCanNotBeStoppedOrThrottled;
@@ -498,7 +498,7 @@ bool ResourceLoader::WillFollowRedirect(
           static_cast<ReferrerPolicy>(new_referrer_policy),
           !passed_redirect_response.WasFetchedViaServiceWorker());
 
-  Resource::Type resource_type = resource_->GetType();
+  ResourceType resource_type = resource_->GetType();
 
   const ResourceRequest& initial_request = resource_->GetResourceRequest();
   // The following parameters never change during the lifetime of a request.
@@ -574,7 +574,7 @@ bool ResourceLoader::WillFollowRedirect(
             SecurityOrigin::CreateUniqueOpaque();
       }
     }
-    if (resource_type == Resource::kImage &&
+    if (resource_type == ResourceType::kImage &&
         fetcher_->ShouldDeferImageLoad(new_url)) {
       CancelForRedirectAccessCheckError(new_url,
                                         ResourceRequestBlockedReason::kOther);
@@ -720,7 +720,7 @@ void ResourceLoader::DidReceiveResponse(
     return;
   }
 
-  Resource::Type resource_type = resource_->GetType();
+  ResourceType resource_type = resource_->GetType();
 
   const ResourceRequest& initial_request = resource_->GetResourceRequest();
   // The following parameters never change during the lifetime of a request.

@@ -15,13 +15,13 @@ class ResourceFetcher;
 
 class LinkFetchResource final : public Resource {
  public:
-  static Resource* Fetch(Resource::Type, FetchParameters&, ResourceFetcher*);
+  static Resource* Fetch(ResourceType, FetchParameters&, ResourceFetcher*);
   ~LinkFetchResource() override;
 
  private:
   class LinkResourceFactory : public NonTextResourceFactory {
    public:
-    explicit LinkResourceFactory(Resource::Type type)
+    explicit LinkResourceFactory(ResourceType type)
         : NonTextResourceFactory(type) {}
 
     Resource* Create(const ResourceRequest& request,
@@ -29,7 +29,9 @@ class LinkFetchResource final : public Resource {
       return new LinkFetchResource(request, GetType(), options);
     }
   };
-  LinkFetchResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
+  LinkFetchResource(const ResourceRequest&,
+                    ResourceType,
+                    const ResourceLoaderOptions&);
 };
 
 }  // namespace blink

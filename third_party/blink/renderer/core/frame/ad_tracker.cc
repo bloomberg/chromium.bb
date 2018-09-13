@@ -93,14 +93,14 @@ void AdTracker::WillSendRequest(ExecutionContext* execution_context,
                                 ResourceRequest& request,
                                 const ResourceResponse& redirect_response,
                                 const FetchInitiatorInfo& initiator_info,
-                                Resource::Type resource_type) {
+                                ResourceType resource_type) {
   // If the resource is not already marked as an ad, check if any executing
   // script is an ad. If yes, mark this as an ad.
   if (!request.IsAdResource() && IsAdScriptInStack())
     request.SetIsAdResource();
 
   // If it is a script marked as an ad, append it to the known ad scripts set.
-  if (resource_type == Resource::kScript && request.IsAdResource()) {
+  if (resource_type == ResourceType::kScript && request.IsAdResource()) {
     AppendToKnownAdScripts(*execution_context, request.Url().GetString());
   }
 }

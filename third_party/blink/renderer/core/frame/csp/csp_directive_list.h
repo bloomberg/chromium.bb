@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
 #include "third_party/blink/renderer/core/frame/csp/string_list_directive.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -25,6 +24,7 @@
 namespace blink {
 
 class ContentSecurityPolicy;
+enum class ResourceType : uint8_t;
 
 typedef HeapVector<Member<SourceListDirective>> SourceListDirectiveVector;
 
@@ -178,7 +178,7 @@ class CORE_EXPORT CSPDirectiveList
   bool HasPluginTypes() const { return !!plugin_types_; }
   const String& PluginTypesText() const;
 
-  bool ShouldSendCSPHeader(Resource::Type) const;
+  bool ShouldSendCSPHeader(ResourceType) const;
 
   // The algorithm is described here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy

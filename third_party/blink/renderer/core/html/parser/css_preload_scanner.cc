@@ -234,7 +234,7 @@ void CSSPreloadScanner::EmitRule(const SegmentedString& source) {
         TextPosition(source.CurrentLine(), source.CurrentColumn());
     auto request = PreloadRequest::CreateIfNeeded(
         FetchInitiatorTypeNames::css, position, url,
-        *predicted_base_element_url_, Resource::kCSSStyleSheet,
+        *predicted_base_element_url_, ResourceType::kCSSStyleSheet,
         referrer_policy_, PreloadRequest::kBaseUrlIsReferrer,
         ResourceFetcher::kImageNotImageSet);
     if (request) {

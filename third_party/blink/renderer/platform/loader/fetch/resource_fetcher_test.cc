@@ -134,7 +134,8 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
 
   // Start by calling StartLoad() directly, rather than via RequestResource().
   // This shouldn't crash.
-  fetcher->StartLoad(RawResource::CreateForTest(secure_url, Resource::kRaw));
+  fetcher->StartLoad(
+      RawResource::CreateForTest(secure_url, ResourceType::kRaw));
 }
 
 TEST_F(ResourceFetcherTest, UseExistingResource) {
@@ -165,7 +166,7 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
       SecurityOrigin::CreateUniqueOpaque();
   Context()->SetSecurityOrigin(source_origin);
   KURL url("http://127.0.0.1:8000/foo.html");
-  Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
+  Resource* resource = RawResource::CreateForTest(url, ResourceType::kRaw);
   AddResourceToMemoryCache(resource, source_origin);
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
@@ -196,7 +197,7 @@ TEST_F(ResourceFetcherTest, Vary) {
   Context()->SetSecurityOrigin(source_origin);
 
   KURL url("http://127.0.0.1:8000/foo.html");
-  Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
+  Resource* resource = RawResource::CreateForTest(url, ResourceType::kRaw);
   AddResourceToMemoryCache(resource, source_origin);
 
   ResourceResponse response(url);
@@ -232,7 +233,7 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
   Resource* resource = RawResource::FetchMainResource(
       fetch_params, fetcher, nullptr, SubstituteData());
   resource->ResponseReceived(response, nullptr);
-  EXPECT_EQ(resource->GetType(), Resource::kMainResource);
+  EXPECT_EQ(resource->GetType(), ResourceType::kMainResource);
 
   ResourceTimingInfo* navigation_timing_info =
       fetcher->GetNavigationTimingInfo();
@@ -262,7 +263,7 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
 
   KURL url("http://127.0.0.1:8000/foo.html");
-  Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
+  Resource* resource = RawResource::CreateForTest(url, ResourceType::kRaw);
   AddResourceToMemoryCache(resource, source_origin);
 
   ResourceResponse response(url);
@@ -771,7 +772,7 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
   Context()->SetSecurityOrigin(source_origin);
 
   KURL url("http://127.0.0.1:8000/foo.html");
-  Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
+  Resource* resource = RawResource::CreateForTest(url, ResourceType::kRaw);
   AddResourceToMemoryCache(resource, source_origin);
 
   ResourceResponse response(url);

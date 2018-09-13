@@ -63,7 +63,7 @@ class MockFetchContext : public FetchContext {
       unsigned long identifier,
       ResourceRequest& request,
       const ResourceResponse& redirect_response,
-      Resource::Type,
+      ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override {
     will_send_request_ = request;
   }
@@ -71,7 +71,7 @@ class MockFetchContext : public FetchContext {
     return true;
   }
   base::Optional<ResourceRequestBlockedReason> CanRequest(
-      Resource::Type,
+      ResourceType,
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
@@ -87,7 +87,7 @@ class MockFetchContext : public FetchContext {
       ResourceRequest::RedirectStatus redirect_status) const override {
     return base::nullopt;
   }
-  bool ShouldLoadNewResource(Resource::Type) const override {
+  bool ShouldLoadNewResource(ResourceType) const override {
     return load_policy_ == kShouldLoadNewResource;
   }
   bool IsLoadComplete() const override { return complete_; }

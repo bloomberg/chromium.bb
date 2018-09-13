@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class Resource;
 class SubresourceFilter;
 class WebURLLoader;
 class WebURLLoaderFactory;
@@ -24,6 +25,7 @@ class WorkerClients;
 class WorkerContentSettingsClient;
 class WorkerSettings;
 class WorkerOrWorkletGlobalScope;
+enum class ResourceType : uint8_t;
 
 CORE_EXPORT void ProvideWorkerFetchContextToWorker(
     WorkerClients*,
@@ -48,7 +50,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
                                ResourceRequestBlockedReason,
-                               Resource::Type) const override;
+                               ResourceType) const override;
   bool ShouldBypassMainWorldCSP() const override;
   bool IsSVGImageChromeClient() const override;
   void CountUsage(WebFeature) const override;
@@ -64,7 +66,7 @@ class WorkerFetchContext final : public BaseFetchContext {
       SecurityViolationReportingPolicy) const override;
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                  const KURL&) const override;
-  bool ShouldLoadNewResource(Resource::Type) const override { return true; }
+  bool ShouldLoadNewResource(ResourceType) const override { return true; }
   const KURL& Url() const override;
   const SecurityOrigin* GetParentSecurityOrigin() const override;
   base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override;
@@ -86,7 +88,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   void DispatchWillSendRequest(unsigned long,
                                ResourceRequest&,
                                const ResourceResponse&,
-                               Resource::Type,
+                               ResourceType,
                                const FetchInitiatorInfo&) override;
   void DispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceResponse&,
@@ -110,7 +112,7 @@ class WorkerFetchContext final : public BaseFetchContext {
                        int64_t encoded_data_length,
                        bool isInternalRequest) override;
   void AddResourceTiming(const ResourceTimingInfo&) override;
-  void PopulateResourceRequest(Resource::Type,
+  void PopulateResourceRequest(ResourceType,
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;

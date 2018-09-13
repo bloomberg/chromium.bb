@@ -120,17 +120,17 @@ const base::Feature kAllowClientHintsToThirdParty{
 
 enum class RequestMethod { kIsPost, kIsNotPost };
 enum class RequestType { kIsConditional, kIsNotConditional };
-enum class ResourceType { kIsMainResource, kIsNotMainResource };
+enum class MainResourceType { kIsMainResource, kIsNotMainResource };
 
 void MaybeRecordCTPolicyComplianceUseCounter(
     LocalFrame* frame,
-    Resource::Type resource_type,
+    ResourceType resource_type,
     ResourceResponse::CTPolicyCompliance compliance,
     DocumentLoader* loader) {
   if (compliance != ResourceResponse::kCTPolicyDoesNotComply)
     return;
   // Exclude main-frame navigation requests; those are tracked elsewhere.
-  if (!frame->Tree().Parent() && resource_type == Resource::kMainResource)
+  if (!frame->Tree().Parent() && resource_type == ResourceType::kMainResource)
     return;
   if (loader) {
     loader->GetUseCounter().Count(
@@ -143,9 +143,9 @@ void MaybeRecordCTPolicyComplianceUseCounter(
 }
 
 void RecordLegacySymantecCertUseCounter(LocalFrame* frame,
-                                        Resource::Type resource_type) {
+                                        ResourceType resource_type) {
   // Main resources are counted in DocumentLoader.
-  if (resource_type == Resource::kMainResource) {
+  if (resource_type == ResourceType::kMainResource) {
     return;
   }
   UseCounter::Count(frame, WebFeature::kLegacySymantecCertInSubresource);
@@ -157,7 +157,7 @@ void RecordLegacySymantecCertUseCounter(LocalFrame* frame,
 // conversion logic into a separate function.
 mojom::FetchCacheMode DetermineCacheMode(RequestMethod method,
                                          RequestType request_type,
-                                         ResourceType resource_type,
+                                         MainResourceType resource_type,
                                          WebFrameLoadType load_type) {
   switch (load_type) {
     case WebFrameLoadType::kStandard:
@@ -172,7 +172,7 @@ mojom::FetchCacheMode DetermineCacheMode(RequestMethod method,
                  ? mojom::FetchCacheMode::kOnlyIfCached
                  : mojom::FetchCacheMode::kForceCache;
     case WebFrameLoadType::kReload:
-      return resource_type == ResourceType::kIsMainResource
+      return resource_type == MainResourceType::kIsMainResource
                  ? mojom::FetchCacheMode::kValidateCache
                  : mojom::FetchCacheMode::kDefault;
     case WebFrameLoadType::kReloadBypassingCache:
@@ -188,7 +188,7 @@ mojom::FetchCacheMode DetermineCacheMode(RequestMethod method,
 // TODO(toyoshim): Remove |resourceType| to realize the design described above.
 // See also comments in resourceRequestCachePolicy().
 mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
-                                              ResourceType resource_type) {
+                                              MainResourceType resource_type) {
   if (!frame)
     return mojom::FetchCacheMode::kDefault;
   if (!frame->IsLocalFrame())
@@ -198,7 +198,7 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
   // TODO(toyoshim): We should be able to remove following parents' policy check
   // if each frame has a relevant WebFrameLoadType for reload and history
   // navigations.
-  if (resource_type == ResourceType::kIsNotMainResource &&
+  if (resource_type == MainResourceType::kIsNotMainResource &&
       ToLocalFrame(frame)->GetDocument()->LoadEventFinished()) {
     return mojom::FetchCacheMode::kDefault;
   }
@@ -219,7 +219,7 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
   // kIsNotMainResource to obtain a representative policy for the frame.
   return DetermineCacheMode(RequestMethod::kIsNotPost,
                             RequestType::kIsNotConditional,
-                            ResourceType::kIsNotMainResource, load_type);
+                            MainResourceType::kIsNotMainResource, load_type);
 }
 
 }  // namespace
@@ -449,19 +449,19 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
 // instance.
 mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
     const ResourceRequest& request,
-    Resource::Type type,
+    ResourceType type,
     FetchParameters::DeferOption defer) const {
   if (IsDetached())
     return mojom::FetchCacheMode::kDefault;
 
   DCHECK(GetFrame());
-  if (type == Resource::kMainResource) {
+  if (type == ResourceType::kMainResource) {
     const auto cache_mode = DetermineCacheMode(
         request.HttpMethod() == HTTPNames::POST ? RequestMethod::kIsPost
                                                 : RequestMethod::kIsNotPost,
         request.IsConditional() ? RequestType::kIsConditional
                                 : RequestType::kIsNotConditional,
-        ResourceType::kIsMainResource, MasterDocumentLoader()->LoadType());
+        MainResourceType::kIsMainResource, MasterDocumentLoader()->LoadType());
     // Follows the parent frame's policy.
     // TODO(toyoshim): Probably, WebFrameLoadType for each frame should have a
     // right type for reload or history navigations, and should not need to
@@ -471,11 +471,11 @@ mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
     if (cache_mode != mojom::FetchCacheMode::kDefault)
       return cache_mode;
     return DetermineFrameCacheMode(GetFrame()->Tree().Parent(),
-                                   ResourceType::kIsMainResource);
+                                   MainResourceType::kIsMainResource);
   }
 
   const auto cache_mode =
-      DetermineFrameCacheMode(GetFrame(), ResourceType::kIsNotMainResource);
+      DetermineFrameCacheMode(GetFrame(), MainResourceType::kIsNotMainResource);
 
   // TODO(toyoshim): Revisit to consider if this clause can be merged to
   // determineWebCachePolicy or determineFrameCacheMode.
@@ -544,7 +544,7 @@ void FrameFetchContext::DispatchWillSendRequest(
     unsigned long identifier,
     ResourceRequest& request,
     const ResourceResponse& redirect_response,
-    Resource::Type resource_type,
+    ResourceType resource_type,
     const FetchInitiatorInfo& initiator_info) {
   if (IsDetached())
     return;
@@ -619,7 +619,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   // Further, the navigation response should be from a top level frame (i.e.,
   // main frame) or the origin of the response should match the origin of the
   // top level frame.
-  if ((resource->GetType() == Resource::kMainResource) &&
+  if ((resource->GetType() == ResourceType::kMainResource) &&
       (IsMainFrame() || IsFirstPartyOrigin(response.Url()))) {
     ParseAndPersistClientHints(response);
   }
@@ -756,7 +756,7 @@ void FrameFetchContext::DispatchDidLoadResourceFromMemoryCache(
       resource_request, resource_response);
 }
 
-bool FrameFetchContext::ShouldLoadNewResource(Resource::Type type) const {
+bool FrameFetchContext::ShouldLoadNewResource(ResourceType type) const {
   if (!document_loader_)
     return true;
 
@@ -764,14 +764,14 @@ bool FrameFetchContext::ShouldLoadNewResource(Resource::Type type) const {
     return false;
 
   FrameLoader& loader = document_loader_->GetFrame()->Loader();
-  if (type == Resource::kMainResource)
+  if (type == ResourceType::kMainResource)
     return document_loader_ == loader.GetProvisionalDocumentLoader();
   return document_loader_ == loader.GetDocumentLoader();
 }
 
 void FrameFetchContext::RecordLoadingActivity(
     const ResourceRequest& request,
-    Resource::Type type,
+    ResourceType type,
     const AtomicString& fetch_initiator_name) {
   if (!document_loader_ || document_loader_->Fetcher()->Archive() ||
       !request.Url().IsValid())
@@ -1024,7 +1024,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 }
 
 void FrameFetchContext::PopulateResourceRequest(
-    Resource::Type type,
+    ResourceType type,
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
@@ -1123,7 +1123,7 @@ void FrameFetchContext::DispatchDidBlockRequest(
     const ResourceRequest& resource_request,
     const FetchInitiatorInfo& fetch_initiator_info,
     ResourceRequestBlockedReason blocked_reason,
-    Resource::Type resource_type) const {
+    ResourceType resource_type) const {
   if (IsDetached())
     return;
   probe::didBlockRequest(GetFrame()->GetDocument(), resource_request,
@@ -1530,7 +1530,7 @@ void FrameFetchContext::DispatchNetworkQuiet() {
 }
 
 base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
-    Resource::Type type,
+    ResourceType type,
     const ResourceRequest& resource_request,
     const KURL& url,
     const ResourceLoaderOptions& options,

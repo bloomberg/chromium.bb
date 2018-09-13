@@ -436,7 +436,8 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithStaleRedirect) {
 TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   ResourceRequest request1{KURL(kResourceURL)};
   request1.SetHTTPMethod(HTTPNames::POST);
-  RawResource* resource1 = RawResource::CreateForTest(request1, Resource::kRaw);
+  RawResource* resource1 =
+      RawResource::CreateForTest(request1, ResourceType::kRaw);
   resource1->SetStatus(ResourceStatus::kPending);
   AddResourceToMemoryCache(resource1);
 
@@ -453,7 +454,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectNotImplicitlyFresh) {
   KURL redirect_target_url(kRedirectTargetUrlString);
 
   RawResource* first_resource =
-      RawResource::CreateForTest(redirect_url, Resource::kRaw);
+      RawResource::CreateForTest(redirect_url, ResourceType::kRaw);
 
   ResourceResponse fresh302_response(redirect_url);
   fresh302_response.SetHTTPStatusCode(302);

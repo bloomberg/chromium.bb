@@ -1659,7 +1659,7 @@ bool ContentSecurityPolicy::ExperimentalFeaturesEnabled() const {
       ExperimentalContentSecurityPolicyFeaturesEnabled();
 }
 
-bool ContentSecurityPolicy::ShouldSendCSPHeader(Resource::Type type) const {
+bool ContentSecurityPolicy::ShouldSendCSPHeader(ResourceType type) const {
   for (const auto& policy : policies_) {
     if (policy->ShouldSendCSPHeader(type))
       return true;

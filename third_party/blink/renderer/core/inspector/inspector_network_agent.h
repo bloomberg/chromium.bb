@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Network.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace network {
@@ -67,6 +66,7 @@ class ThreadableLoaderClient;
 class XHRReplayData;
 class XMLHttpRequest;
 class WorkerGlobalScope;
+enum class ResourceType : uint8_t;
 
 class CORE_EXPORT InspectorNetworkAgent final
     : public InspectorBaseAgent<protocol::Network::Metainfo> {
@@ -87,7 +87,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                        DocumentLoader*,
                        const FetchInitiatorInfo&,
                        ResourceRequestBlockedReason,
-                       Resource::Type);
+                       ResourceType);
   void DidChangeResourcePriority(DocumentLoader*,
                                  unsigned long identifier,
                                  ResourceLoadPriority);
@@ -97,7 +97,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                        ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
-                       Resource::Type);
+                       ResourceType);
   void MarkResourceAsCached(DocumentLoader*, unsigned long identifier);
   void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,

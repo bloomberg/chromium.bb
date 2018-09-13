@@ -87,7 +87,7 @@ FontResource* FontResource::Fetch(FetchParameters& params,
 
 FontResource::FontResource(const ResourceRequest& resource_request,
                            const ResourceLoaderOptions& options)
-    : Resource(resource_request, kFont, options),
+    : Resource(resource_request, ResourceType::kFont, options),
       load_limit_state_(kLoadNotStarted),
       cors_failed_(false) {}
 

@@ -308,19 +308,19 @@ MemoryCache::Statistics MemoryCache::GetStatistics() const {
       Resource* resource = resource_iter.value->GetResource();
       DCHECK(resource);
       switch (resource->GetType()) {
-        case Resource::kImage:
+        case ResourceType::kImage:
           stats.images.AddResource(resource);
           break;
-        case Resource::kCSSStyleSheet:
+        case ResourceType::kCSSStyleSheet:
           stats.css_style_sheets.AddResource(resource);
           break;
-        case Resource::kScript:
+        case ResourceType::kScript:
           stats.scripts.AddResource(resource);
           break;
-        case Resource::kXSLStyleSheet:
+        case ResourceType::kXSLStyleSheet:
           stats.xsl_style_sheets.AddResource(resource);
           break;
-        case Resource::kFont:
+        case ResourceType::kFont:
           stats.fonts.AddResource(resource);
           break;
         default:

@@ -49,6 +49,8 @@ class LinkHeader;
 class LocalFrame;
 class NetworkHintsInterface;
 class PrerenderHandle;
+class Resource;
+enum class ResourceType : uint8_t;
 struct ViewportDescriptionWrapper;
 
 // The parameter object for LinkLoader::LoadLink().
@@ -139,7 +141,7 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
                                   CanLoadResources,
                                   MediaPreloadPolicy,
                                   ViewportDescriptionWrapper*);
-  static base::Optional<Resource::Type> GetResourceTypeFromAsAttribute(
+  static base::Optional<ResourceType> GetResourceTypeFromAsAttribute(
       const String& as);
 
   Resource* GetResourceForTesting();

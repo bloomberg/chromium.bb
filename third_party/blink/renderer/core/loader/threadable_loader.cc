@@ -1018,7 +1018,7 @@ void ThreadableLoader::DispatchDidFail(const ResourceError& error) {
   if (!out_of_blink_cors_ && error.CORSErrorStatus()) {
     String message = CORS::GetErrorString(
         *error.CORSErrorStatus(), initial_request_url_, last_request_url_,
-        *GetSecurityOrigin(), Resource::kRaw,
+        *GetSecurityOrigin(), ResourceType::kRaw,
         resource_loader_options_.initiator_info.name);
     execution_context_->AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kErrorMessageLevel, std::move(message)));

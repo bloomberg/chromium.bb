@@ -33,7 +33,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
   base::Optional<ResourceRequestBlockedReason> CanRequest(
-      Resource::Type,
+      ResourceType,
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
@@ -64,7 +64,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   void AddWarningConsoleMessage(const String&, LogSource) const override;
   void AddErrorConsoleMessage(const String&, LogSource) const override;
   bool IsAdResource(const KURL&,
-                    Resource::Type,
+                    ResourceType,
                     WebURLRequest::RequestContext) const override;
 
  protected:
@@ -78,7 +78,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual void DispatchDidBlockRequest(const ResourceRequest&,
                                        const FetchInitiatorInfo&,
                                        ResourceRequestBlockedReason,
-                                       Resource::Type) const = 0;
+                                       ResourceType) const = 0;
   virtual bool ShouldBypassMainWorldCSP() const = 0;
   virtual bool IsSVGImageChromeClient() const = 0;
   virtual bool ShouldBlockFetchByMixedContentCheck(
@@ -102,7 +102,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   // Utility methods that are used in default implement for CanRequest,
   // CanFollowRedirect and AllowResponse.
   base::Optional<ResourceRequestBlockedReason> CanRequestInternal(
-      Resource::Type,
+      ResourceType,
       const ResourceRequest&,
       const KURL&,
       const ResourceLoaderOptions&,
