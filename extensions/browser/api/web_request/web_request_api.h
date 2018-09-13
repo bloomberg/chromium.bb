@@ -24,8 +24,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
-#include "extensions/browser/api/declarative/rules_registry_service.h"
-#include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
@@ -74,11 +72,9 @@ class WebRequestRulesRegistry;
 // work is done by ExtensionWebRequestEventRouter below. This class observes
 // extensions::EventRouter to deal with event listeners. There is one instance
 // per BrowserContext which is shared with incognito.
-class WebRequestAPI
-    : public BrowserContextKeyedAPI,
-      public EventRouter::Observer,
-      public declarative_net_request::RulesMonitorService::Observer,
-      public RulesRegistryService::Observer {
+class WebRequestAPI : public BrowserContextKeyedAPI,
+                      public EventRouter::Observer,
+                      public ExtensionRegistryObserver {
  public:
   // A callback used to asynchronously respond to an intercepted authentication
   // request when the Network Service is enabled. If |should_cancel| is true
@@ -184,7 +180,6 @@ class WebRequestAPI
   void Shutdown() override;
 
   // EventRouter::Observer overrides:
-  void OnListenerAdded(const EventListenerInfo& details) override;
   void OnListenerRemoved(const EventListenerInfo& details) override;
 
   // If any WebRequest event listeners are currently active for this
@@ -222,6 +217,8 @@ class WebRequestAPI
       network::mojom::WebSocketRequest* request,
       network::mojom::AuthenticationHandlerPtr* auth_handler);
 
+  void ForceProxyForTesting();
+
  private:
   friend class BrowserContextKeyedAPIFactory<WebRequestAPI>;
 
@@ -238,15 +235,16 @@ class WebRequestAPI
   // URLLoaderFactories if so.
   void UpdateMayHaveProxies();
 
-  // RulesMonitorService::Observer implementation.
-  void OnRulesetLoaded() override;
+  // ExtensionRegistryObserver implementation.
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionReason reason) override;
 
-  // RulesRegistryService::Observer implementation.
-  void OnUpdateRules() override;
-
-  // A count of active event listeners registered in this BrowserContext. This
-  // is eventually consistent with the state of
-  int listener_count_ = 0;
+  // A count of active extensions for this BrowserContext that use web request
+  // permissions.
+  int web_request_extension_count_ = 0;
 
   content::BrowserContext* const browser_context_;
   InfoMap* const info_map_;
@@ -256,12 +254,6 @@ class WebRequestAPI
   // Stores the last result of |MayHaveProxies()|, so it can be used in
   // |UpdateMayHaveProxies()|.
   bool may_have_proxies_;
-
-  ScopedObserver<declarative_net_request::RulesMonitorService,
-                 declarative_net_request::RulesMonitorService::Observer>
-      rules_monitor_observer_;
-  ScopedObserver<RulesRegistryService, RulesRegistryService::Observer>
-      rules_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestAPI);
 };
