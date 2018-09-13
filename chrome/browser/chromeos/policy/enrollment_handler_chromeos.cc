@@ -251,6 +251,14 @@ void EnrollmentHandlerChromeOS::StartEnrollmentWithLicense(
 
 void EnrollmentHandlerChromeOS::StartEnrollment() {
   CHECK_EQ(STEP_PENDING, enrollment_step_);
+
+  if (enrollment_config_.skip_state_keys_request()) {
+    VLOG(1) << "Skipping state keys request.";
+    SetStep(STEP_LOADING_STORE);
+    StartRegistration();
+    return;
+  }
+
   SetStep(STEP_STATE_KEYS);
 
   if (client_->machine_id().empty()) {
