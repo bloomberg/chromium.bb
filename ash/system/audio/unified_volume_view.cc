@@ -181,7 +181,7 @@ void UnifiedVolumeView::OnActiveInputNodeChanged() {
 }
 
 void UnifiedVolumeView::ChildVisibilityChanged(views::View* child) {
-  Update(true /* by_user */);
+  Layout();
 }
 
 }  // namespace ash
