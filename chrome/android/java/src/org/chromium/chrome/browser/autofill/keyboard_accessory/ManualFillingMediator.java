@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.view.View;
@@ -373,8 +374,17 @@ class ManualFillingMediator
         int accessorySheetSuggestionHeight = mActivity.getResources().getDimensionPixelSize(
                 org.chromium.chrome.R.dimen.keyboard_accessory_suggestion_height);
         // Ensure that the minimum height is always sufficient to display a suggestion.
-        return Math.max(accessorySheetSuggestionHeight,
-                mWindowAndroid.getKeyboardDelegate().calculateKeyboardHeight(mActivity, rootView));
+
+        int calculcatedHeight =
+                mWindowAndroid.getKeyboardDelegate().calculateKeyboardHeight(mActivity, rootView);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            // Before Lollipop: The nav bars seem to be ignored while estimating the height.
+            // During Lollipop: The nav bars (esp. the accessory bar) are counted extra.
+            // After Lollipop: The height is already exact.
+            calculcatedHeight -= accessorySheetSuggestionHeight;
+        }
+        return Math.max(accessorySheetSuggestionHeight, calculcatedHeight);
     }
 
     private @Px int calculateAccessoryBarHeight() {
