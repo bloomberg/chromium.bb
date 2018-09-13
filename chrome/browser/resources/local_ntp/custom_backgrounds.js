@@ -165,6 +165,13 @@ customBackgrounds.NOTIFICATION_TIMEOUT = 10000;
  */
 customBackgrounds.selectedTile = null;
 
+/**
+ * Number of tiles that will be preloaded.
+ * @type {number}
+ * @const
+ */
+customBackgrounds.FIRST_N_TILES = 9;
+
 /* Type of collection that is being browsed, needed in order
  * to return from the image dialog.
  * @type {int}
@@ -612,6 +619,9 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     imageData = photos;
   }
 
+  let preLoadTiles = [];
+  let postLoadTiles = [];
+
   for (var i = 0; i < imageData.length; ++i) {
     let tileBackground = document.createElement('div');
     tileBackground.classList.add(
@@ -626,31 +636,23 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     if (sourceIsChromeBackgrounds) {
       // TODO(crbug.com/854028): Remove this hardcoded check when wallpaper
       // previews are supported.
-      if (imageData[i].collectionId == 'solidcolors') {
-        var imageWithOverlay = [
-          customBackgrounds.CUSTOM_BACKGROUND_OVERLAY,
-          'url(' + imageData[i].thumbnailImageUrl + ')'
-        ].join(',').trim();
-        tile.style.backgroundImage = imageWithOverlay;
+      if (imageData[i].collectionId === 'solidcolors') {
         tile.dataset.attributionLine1 = '';
         tile.dataset.attributionLine2 = '';
         tile.dataset.attributionActionUrl = '';
       } else {
-        tile.style.backgroundImage =
-            'url(' + imageData[i].thumbnailImageUrl + ')';
         tile.dataset.attributionLine1 =
-          (imageData[i].attributions[0] != undefined ?
+          (imageData[i].attributions[0] !== undefined ?
                imageData[i].attributions[0] :
                '');
         tile.dataset.attributionLine2 =
-          (imageData[i].attributions[1] != undefined ?
+          (imageData[i].attributions[1] !== undefined ?
                imageData[i].attributions[1] :
                '');
         tile.dataset.attributionActionUrl = imageData[i].attributionActionUrl;
       }
       tile.setAttribute('aria-label', imageData[i].attributions[0]);
       tile.dataset.url = imageData[i].imageUrl;
-      fadeInImageTile(tile, imageData[i].thumbnailImageUrl);
     } else {
       tile.style.backgroundImage =
           'url(' + imageData[i].thumbnailPhotoUrl + ')';
@@ -659,12 +661,19 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       tile.dataset.attributionLine2 = '';
       tile.dataset.attributionActionUrl = '';
       tile.setAttribute('aria-label', configData.translatedStrings.photoLabel);
-      fadeInImageTile(tile, imageData[i].thumbnailPhotoUrl);
     }
 
     tile.id = 'img_tile_' + i;
     tile.dataset.tile_num = i;
     tile.tabIndex = -1;
+
+    //TODO(crbug.com/876814): Dynamically determine N based on the current
+    // window size
+    // Load the first FIRST_N_TILES tiles.
+    if (i < customBackgrounds.FIRST_N_TILES)
+      preLoadTiles.push(tile);
+    else
+      postLoadTiles.push(tile);
 
     let tileInteraction = function(tile) {
       if (customBackgrounds.selectedTile) {
@@ -738,13 +747,58 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     tileBackground.appendChild(tile);
     tileContainer.appendChild(tileBackground);
   }
+  let tileGetsLoaded = 0;
+  for (let tile of preLoadTiles) {
+    loadTile(tile, imageData, () => {
+      // After the |FIRST_N_TILES| finish loading, the rest of the tiles start
+      // loading.
+      if (++tileGetsLoaded === preLoadTiles.length) {
+        postLoadTiles.forEach((tile) => loadTile(tile, imageData));
+      }
+    });
+  }
+
   $(customBackgrounds.IDS.TILES).focus();
 };
 
-let fadeInImageTile = (tile, imageUrl) => {
+/**
+ * Add background image src to the tile and add animation for the tile once it
+ * successfully loaded.
+ * @param {Object} tile the tile that needs to be loaded.
+ * @param {object} imageData the source imageData.
+ * @param {?Function} countLoad If not null, called after the tile finishes
+ * loading.
+ */
+let loadTile = function(tile, imageData, countLoad) {
+  if (imageData[tile.dataset.tile_num].collectionId === 'solidcolors') {
+    tile.style.backgroundImage = [customBackgrounds.CUSTOM_BACKGROUND_OVERLAY,
+      'url(' + imageData[tile.dataset.tile_num].thumbnailImageUrl + ')'].join(
+        ',').trim();
+  } else {
+    tile.style.backgroundImage = 'url('
+        + imageData[tile.dataset.tile_num].thumbnailImageUrl + ')' || 'url('
+        + imageData[tile.dataset.tile_num].thumbnailPhotoUrl + ')';
+  }
+  fadeInImageTile(tile, imageData[tile.dataset.tile_num].thumbnailImageUrl
+      || imageData[tile.dataset.tile_num].thumbnailPhotoUrl, countLoad);
+};
+
+/**
+ * Fade in effect for both collection and image tile. Once the image
+ * successfully loads, we can assume the background image with the same source
+ * has also loaded. Then, we set opacity for the tile to start the animation.
+ * @param {Object} tile The tile to add the fade in animation to.
+ * @param {string} imageUrl the image url for the tile
+ * @param {?Function} countLoad If not null, called after the tile finishes
+ * loading.
+ */
+let fadeInImageTile = function(tile, imageUrl, countLoad) {
   let image = new Image();
   image.onload = () => {
     tile.style.opacity = '1';
+    if (countLoad) {
+      countLoad();
+    }
   };
   image.src = imageUrl;
 };
