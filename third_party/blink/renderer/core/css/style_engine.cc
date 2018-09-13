@@ -314,6 +314,14 @@ void StyleEngine::AdoptedStyleSheetsWillChange(TreeScope& tree_scope,
   SetNeedsActiveStyleUpdate(tree_scope);
 }
 
+void StyleEngine::AddedCustomElementDefaultStyle(CSSStyleSheet* default_style) {
+  if (!RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() ||
+      GetDocument().IsDetached())
+    return;
+  custom_element_default_style_sheets_.insert(default_style);
+  global_rule_set_->MarkDirty();
+}
+
 void StyleEngine::MediaQueriesChangedInScope(TreeScope& tree_scope) {
   if (ScopedStyleResolver* resolver = tree_scope.GetScopedStyleResolver())
     resolver->SetNeedsAppendAllSheets();
@@ -1568,6 +1576,7 @@ void StyleEngine::Trace(blink::Visitor* visitor) {
   visitor->Trace(injected_user_style_sheets_);
   visitor->Trace(injected_author_style_sheets_);
   visitor->Trace(active_user_style_sheets_);
+  visitor->Trace(custom_element_default_style_sheets_);
   visitor->Trace(keyframes_rule_map_);
   visitor->Trace(inspector_style_sheet_);
   visitor->Trace(document_style_sheet_collection_);

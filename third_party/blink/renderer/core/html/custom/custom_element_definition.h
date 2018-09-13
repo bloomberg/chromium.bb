@@ -116,6 +116,8 @@ class CORE_EXPORT CustomElementDefinition
                           CSSStyleSheet*,
                           const HashSet<AtomicString>& observed_attributes);
 
+  void AddDefaultStyle(Element*);
+
   virtual bool RunConstructor(Element*) = 0;
 
   static void CheckConstructorResult(Element*,
@@ -128,6 +130,7 @@ class CORE_EXPORT CustomElementDefinition
   ConstructionStack construction_stack_;
   HashSet<AtomicString> observed_attributes_;
   bool has_style_attribute_changed_callback_;
+  bool added_default_style_sheet_ = false;
 
   const Member<CSSStyleSheet> default_style_sheet_;
 

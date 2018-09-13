@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
-
+#include "third_party/blink/renderer/core/css/css_import_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
@@ -212,6 +215,22 @@ void CustomElementDefinition::Upgrade(Element* element) {
   }
 
   element->SetCustomElementDefinition(this);
+  AddDefaultStyle(element);
+}
+
+void CustomElementDefinition::AddDefaultStyle(Element* element) {
+  if (!RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled())
+    return;
+  if (CSSStyleSheet* default_style = DefaultStyleSheet()) {
+    if (!added_default_style_sheet_) {
+      element->GetDocument().GetStyleEngine().AddedCustomElementDefaultStyle(
+          default_style);
+      added_default_style_sheet_ = true;
+    }
+    element->SetNeedsStyleRecalc(
+        kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                               StyleChangeReason::kActiveStylesheetsUpdate));
+  }
 }
 
 bool CustomElementDefinition::HasAttributeChangedCallback(
