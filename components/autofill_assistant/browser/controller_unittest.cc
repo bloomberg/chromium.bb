@@ -21,6 +21,7 @@ namespace autofill_assistant {
 
 using ::testing::_;
 using ::testing::ElementsAre;
+using ::testing::UnorderedElementsAre;
 using ::testing::Eq;
 using ::testing::NiceMock;
 using ::testing::SizeIs;
@@ -125,8 +126,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   Controller* controller_;
 };
 
-// Temporarily disabled because of http://crbug/882901
-TEST_F(ControllerTest, DISABLED_FetchAndRunScripts) {
+TEST_F(ControllerTest, FetchAndRunScripts) {
   // Going to the URL triggers a whole flow:
   // 1. loading scripts
   SupportsScriptResponseProto script_response;
@@ -139,8 +139,11 @@ TEST_F(ControllerTest, DISABLED_FetchAndRunScripts) {
   // 4. script1 is chosen
   EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(2)))
       .WillOnce([this](const std::vector<ScriptHandle>& scripts) {
-        EXPECT_EQ("script1", scripts[0].path);
-        EXPECT_EQ("script2", scripts[1].path);
+        std::vector<std::string> paths;
+        for (const auto& script : scripts) {
+          paths.emplace_back(script.path);
+        }
+        EXPECT_THAT(paths, UnorderedElementsAre("script1", "script2"));
         GetUiDelegate()->OnScriptSelected("script1");
       });
 
@@ -160,8 +163,7 @@ TEST_F(ControllerTest, DISABLED_FetchAndRunScripts) {
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
 
-// Temporarily disabled because of http://crbug/882901
-TEST_F(ControllerTest, DISABLED_RefreshScriptWhenDomainChanges) {
+TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
   EXPECT_CALL(*mock_service_,
               OnGetScriptsForUrl(Eq(GURL("http://a.example.com/path1")), _))
       .WillOnce(RunOnceCallback<1>(true, ""));
