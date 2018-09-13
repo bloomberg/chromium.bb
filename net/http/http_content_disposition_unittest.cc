@@ -49,6 +49,9 @@ TEST(HttpContentDispositionTest, Filename) {
      "abc.jpg\"", "", L"\U00010330\U00010331abc.jpg"},
     {"attachment; filename=\"%EC%98%88%EC%88%A0 \n"
      "%EC%98%88%EC%88%A0.jpg\"", "", L"\xc608\xc220  \xc608\xc220.jpg"},
+    // Characters that are not supposed to be displayed should still be decoded.
+    {"attachment; filename=%E5%B2%A1%E3%80%80%E5%B2%A1.txt", "",
+     L"\u5ca1\u3000\u5ca1.txt"},
     // RFC 2047 with various charsets and Q/B encodings
     {"attachment; filename=\"=?EUC-JP?Q?=B7=DD=BD="
      "D13=2Epng?=\"", "", L"\x82b8\x8853" L"3.png"},
@@ -124,6 +127,8 @@ TEST(HttpContentDispositionTest, Filename) {
       L"foo.html"},
     {"attachment; filename*=utf-8'en'foo.html", "",
       L"foo.html"},
+    {"attachment; filename*=utf-8'en'%E5%B2%A1%E3%80%80%E5%B2%A1.txt", "",
+     L"\u5ca1\u3000\u5ca1.txt"},
     // charset cannot be omitted.
     {"attachment; filename*='es'f\xfa.html'", "", L""},
     // Non-ASCII bytes are not allowed.
