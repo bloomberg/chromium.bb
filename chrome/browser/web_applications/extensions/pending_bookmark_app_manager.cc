@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/install_result_code.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_shortcut_installation_task.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -179,7 +180,9 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
         // installed but from a different source.
         std::move(front->callback)
             .Run(front->task->app_info().url,
-                 opt.value() ? extension_id : base::nullopt);
+                 opt.value()
+                     ? web_app::InstallResultCode::kAlreadyInstalled
+                     : web_app::InstallResultCode::kPreviouslyUninstalled);
         continue;
       }
     }
@@ -234,8 +237,9 @@ void PendingBookmarkAppManager::CurrentInstallationFinished(
       base::BindOnce(&PendingBookmarkAppManager::MaybeStartNextInstallation,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  // An empty app_id means that the installation failed.
+  auto install_result_code = web_app::InstallResultCode::kFailedUnknownReason;
   if (app_id) {
+    install_result_code = web_app::InstallResultCode::kSuccess;
     extension_ids_map_.Insert(current_task_and_callback_->task->app_info().url,
                               app_id.value());
   }
@@ -243,7 +247,7 @@ void PendingBookmarkAppManager::CurrentInstallationFinished(
   std::unique_ptr<TaskAndCallback> task_and_callback;
   task_and_callback.swap(current_task_and_callback_);
   std::move(task_and_callback->callback)
-      .Run(task_and_callback->task->app_info().url, app_id);
+      .Run(task_and_callback->task->app_info().url, install_result_code);
 }
 
 void PendingBookmarkAppManager::DidFinishLoad(

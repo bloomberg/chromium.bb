@@ -12,10 +12,11 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "url/gurl.h"
 
 namespace web_app {
+
+enum class InstallResultCode;
 
 // PendingAppManager installs, uninstalls, and updates apps.
 //
@@ -26,11 +27,10 @@ namespace web_app {
 class PendingAppManager {
  public:
   using OnceInstallCallback =
-      base::OnceCallback<void(const GURL& app_url,
-                              const base::Optional<std::string>&)>;
+      base::OnceCallback<void(const GURL& app_url, InstallResultCode code)>;
   using RepeatingInstallCallback =
       base::RepeatingCallback<void(const GURL& app_url,
-                                   const base::Optional<std::string>&)>;
+                                   InstallResultCode code)>;
   using UninstallCallback =
       base::RepeatingCallback<void(const GURL& app_url, bool succeeded)>;
 
