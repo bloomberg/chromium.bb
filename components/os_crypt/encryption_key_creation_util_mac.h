@@ -29,20 +29,19 @@ class COMPONENT_EXPORT(OS_CRYPT) EncryptionKeyCreationUtilMac
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~EncryptionKeyCreationUtilMac() override;
 
-  // This method doesn't need to be called on the main thread.
+  // os_crypt::EncryptionKeyCreationUtil
   bool KeyAlreadyCreated() override;
-
-  // This method doesn't need to be called on the main thread.
   bool ShouldPreventOverwriting() override;
-
-  // This asynchronously updates the preference on the main thread that the key
-  // was created. This method is called when key is added to the Keychain, or
-  // the first time the key is successfully retrieved from the Keychain and the
-  // preference hasn't been set yet. This method doesn't need to be called on
-  // the main thread.
+  void OnKeyWasFound() override;
   void OnKeyWasStored() override;
+  void OnOverwritingPrevented() override;
+  void OnKeychainLookupFailed() override;
 
  private:
+  // Asynchronously updates the preference on the main thread that the
+  // encryption key was created.
+  void UpdateKeyCreationPreference();
+
   PrefService* local_state_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   volatile bool key_already_created_;

@@ -22829,6 +22829,14 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Gesture predicted but didn't occur"/>
 </enum>
 
+<enum name="GetEncryptionKeyAction">
+  <int value="0" label="Key is successfully found - not first time"/>
+  <int value="1" label="Key is successfully found for the first time"/>
+  <int value="2" label="Overwriting of the key is prevented"/>
+  <int value="3" label="Key is added to the Keychain"/>
+  <int value="4" label="Other error"/>
+</enum>
+
 <enum name="GetOutputDeviceInfoCacheHit">
   <int value="0" label="Miss: no cached sink found">
     Output parmeters for a device are requested, and there is no corresponding

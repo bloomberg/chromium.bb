@@ -12,21 +12,20 @@
 namespace os_crypt {
 
 // A key creation utility for iOS which does nothing as there is no feature
-// for preventing key overwrites for iOS.
+// for preventing key overwrites for iOS. This class is a stub.
 class COMPONENT_EXPORT(OS_CRYPT) EncryptionKeyCreationUtilIOS
     : public EncryptionKeyCreationUtil {
  public:
   EncryptionKeyCreationUtilIOS();
   ~EncryptionKeyCreationUtilIOS() override;
 
-  // Returns false.
+  // os_crypt::EncryptionKeyCreationUtil
   bool KeyAlreadyCreated() override;
-
-  // Returns false.
   bool ShouldPreventOverwriting() override;
-
-  // Does nothing.
+  void OnKeyWasFound() override;
   void OnKeyWasStored() override;
+  void OnOverwritingPrevented() override;
+  void OnKeychainLookupFailed() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EncryptionKeyCreationUtilIOS);

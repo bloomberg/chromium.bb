@@ -77,7 +77,7 @@ std::string KeychainPassword::GetPassword() const {
         std::string(static_cast<char*>(password_data), password_length);
     keychain_.ItemFreeContent(password_data);
     if (prevent_overwriting_enabled) {
-      key_creation_util_->OnKeyWasStored();
+      key_creation_util_->OnKeyWasFound();
     }
     return password;
   }
@@ -85,6 +85,7 @@ std::string KeychainPassword::GetPassword() const {
   if (error == errSecItemNotFound) {
     if (prevent_overwriting_enabled &&
         key_creation_util_->KeyAlreadyCreated()) {
+      key_creation_util_->OnOverwritingPrevented();
       return std::string();
     }
     std::string password =
@@ -95,6 +96,7 @@ std::string KeychainPassword::GetPassword() const {
     return password;
   }
 
+  key_creation_util_->OnKeychainLookupFailed();
   OSSTATUS_DLOG(ERROR, error) << "Keychain lookup failed";
   return std::string();
 }

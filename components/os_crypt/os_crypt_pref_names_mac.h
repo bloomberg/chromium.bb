@@ -22,6 +22,11 @@ namespace prefs {
 // should be temporarily unavailable instead of generating a new key.
 COMPONENT_EXPORT(OS_CRYPT) extern const char kKeyCreated[];
 
+// The number of times Chrome prevented overwriting the encryption key in a row.
+// Initial value is zero and is reset back to zero once the key is successfully
+// retrieved from the Keychain.
+COMPONENT_EXPORT(OS_CRYPT) extern const char kKeyOverwritingPreventions[];
+
 }  // namespace prefs
 }  // namespace os_crypt
 
