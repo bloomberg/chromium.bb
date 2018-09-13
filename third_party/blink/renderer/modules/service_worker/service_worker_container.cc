@@ -31,6 +31,8 @@
 
 #include <memory>
 #include <utility>
+
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -108,7 +110,7 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
 
  private:
   Persistent<ScriptPromiseResolver> resolver_;
-  WTF_MAKE_NONCOPYABLE(GetRegistrationCallback);
+  DISALLOW_COPY_AND_ASSIGN(GetRegistrationCallback);
 };
 
 }  // namespace
@@ -134,7 +136,7 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
 
  private:
   Persistent<ReadyProperty> ready_;
-  WTF_MAKE_NONCOPYABLE(GetRegistrationForReadyCallback);
+  DISALLOW_COPY_AND_ASSIGN(GetRegistrationForReadyCallback);
 };
 
 ServiceWorkerContainer* ServiceWorkerContainer::Create(

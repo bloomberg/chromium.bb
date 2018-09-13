@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
@@ -47,7 +48,7 @@ class ClientArray {
   }
 
  private:
-  WTF_MAKE_NONCOPYABLE(ClientArray);
+  DISALLOW_COPY_AND_ASSIGN(ClientArray);
   ClientArray() = delete;
 };
 
@@ -91,7 +92,7 @@ class GetCallback : public WebServiceWorkerClientCallbacks {
 
  private:
   Persistent<ScriptPromiseResolver> resolver_;
-  WTF_MAKE_NONCOPYABLE(GetCallback);
+  DISALLOW_COPY_AND_ASSIGN(GetCallback);
 };
 
 }  // namespace

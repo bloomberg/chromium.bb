@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_CONTAINER_CLIENT_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -25,7 +27,6 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
       public Supplement<WorkerClients>,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
-  WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 
  public:
   static const char kSupplementName[];
@@ -51,6 +52,8 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
 
  private:
   std::unique_ptr<WebServiceWorkerProvider> provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContainerClient);
 };
 
 MODULES_EXPORT void ProvideServiceWorkerContainerClientToWorker(
