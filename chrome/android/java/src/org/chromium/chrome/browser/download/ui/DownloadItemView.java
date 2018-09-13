@@ -19,14 +19,12 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
@@ -78,8 +76,6 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
     private final int mMargin;
     private final int mMarginSubsection;
-    private final int mIconBackgroundColor;
-    private final int mIconBackgroundColorSelected;
     private final ColorStateList mIconForegroundColorList;
     private final ColorStateList mCheckedIconForegroundColorList;
     private final int mIconBackgroundResId;
@@ -115,20 +111,11 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mMargin = context.getResources().getDimensionPixelSize(R.dimen.list_item_default_margin);
         mMarginSubsection =
                 context.getResources().getDimensionPixelSize(R.dimen.list_item_subsection_margin);
-        mIconBackgroundColor = DownloadUtils.getIconBackgroundColor(context);
-        mIconBackgroundColorSelected =
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_grey_600);
         mIconSize = getResources().getDimensionPixelSize(R.dimen.list_item_start_icon_width);
         mCheckedIconForegroundColorList = DownloadUtils.getIconForegroundColorList(context);
-
         mIconBackgroundResId = R.drawable.list_item_icon_modern_bg;
-
-        if (FeatureUtilities.isChromeModernDesignEnabled()) {
-            mIconForegroundColorList =
-                    AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
-        } else {
-            mIconForegroundColorList = DownloadUtils.getIconForegroundColorList(context);
-        }
+        mIconForegroundColorList =
+                AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
     }
 
     // ListMenuButton.Delegate implementation.
@@ -352,36 +339,24 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     protected void updateView() {
         if (isChecked()) {
-            if (FeatureUtilities.isChromeModernDesignEnabled()) {
-                mIconView.setBackgroundResource(mIconBackgroundResId);
-                mIconView.getBackground().setLevel(
-                        getResources().getInteger(R.integer.list_item_level_selected));
-            } else {
-                mIconView.setBackgroundColor(mIconBackgroundColorSelected);
-            }
+            mIconView.setBackgroundResource(mIconBackgroundResId);
+            mIconView.getBackground().setLevel(
+                    getResources().getInteger(R.integer.list_item_level_selected));
             mIconView.setImageDrawable(mCheckDrawable);
             mIconView.setTint(mCheckedIconForegroundColorList);
             mCheckDrawable.start();
         } else if (mThumbnailBitmap != null) {
             assert !mThumbnailBitmap.isRecycled();
             mIconView.setBackground(null);
-            if (FeatureUtilities.isChromeModernDesignEnabled()) {
-                mIconView.setImageDrawable(ViewUtils.createRoundedBitmapDrawable(
-                        Bitmap.createScaledBitmap(mThumbnailBitmap, mIconSize, mIconSize, false),
-                        getResources().getDimensionPixelSize(
-                                R.dimen.list_item_start_icon_corner_radius)));
-            } else {
-                mIconView.setImageBitmap(mThumbnailBitmap);
-            }
+            mIconView.setImageDrawable(ViewUtils.createRoundedBitmapDrawable(
+                    Bitmap.createScaledBitmap(mThumbnailBitmap, mIconSize, mIconSize, false),
+                    getResources().getDimensionPixelSize(
+                            R.dimen.list_item_start_icon_corner_radius)));
             mIconView.setTint(null);
         } else {
-            if (FeatureUtilities.isChromeModernDesignEnabled()) {
-                mIconView.setBackgroundResource(mIconBackgroundResId);
-                mIconView.getBackground().setLevel(
-                        getResources().getInteger(R.integer.list_item_level_default));
-            } else {
-                mIconView.setBackgroundColor(mIconBackgroundColor);
-            }
+            mIconView.setBackgroundResource(mIconBackgroundResId);
+            mIconView.getBackground().setLevel(
+                    getResources().getInteger(R.integer.list_item_level_default));
             mIconView.setImageResource(mIconResId);
             mIconView.setTint(mIconForegroundColorList);
         }
