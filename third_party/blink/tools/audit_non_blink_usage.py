@@ -80,6 +80,9 @@ _CONFIG = [
             # //base/memory/ptr_util.h.
             'base::WrapUnique',
 
+            # //base/allocator/partition_allocator/oom_callback.h.
+            'base::SetPartitionAllocOomCallback',
+
             # //base/metrics/field_trial_params.h.
             'base::GetFieldTrialParamValueByFeature',
             'base::GetFieldTrialParamByFeatureAsBool',

@@ -8,7 +8,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "base/allocator/partition_allocator/oom_callback.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/memory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -81,6 +83,7 @@ uint64_t BlinkMemoryWorkloadCalculator() {
   size_t partition_alloc_size = WTF::Partitions::TotalSizeOfCommittedPages();
   return v8_size + blink_gc_size + partition_alloc_size;
 }
+
 }  // namespace
 
 // static
@@ -98,7 +101,10 @@ CrashMemoryMetricsReporterImpl& CrashMemoryMetricsReporterImpl::Instance() {
 }
 
 CrashMemoryMetricsReporterImpl::CrashMemoryMetricsReporterImpl()
-    : binding_(this) {}
+    : binding_(this) {
+  base::SetPartitionAllocOomCallback(
+      CrashMemoryMetricsReporterImpl::OnOOMCallback);
+}
 
 CrashMemoryMetricsReporterImpl::~CrashMemoryMetricsReporterImpl() = default;
 
@@ -118,16 +124,21 @@ void CrashMemoryMetricsReporterImpl::WriteIntoSharedMemory(
   memcpy(metrics_shared, &metrics, sizeof(OomInterventionMetrics));
 }
 
-void CrashMemoryMetricsReporterImpl::OnVirtualMemoryOOMCallback(
-    bool virtual_memory_oom) {
+void CrashMemoryMetricsReporterImpl::OnOOMCallback() {
+  // TODO(yuzus: Support allocation failures on other threads as well.
+  if (!IsMainThread())
+    return;
   // If shared_metrics_mapping_ is not set, it means OnNoMemory happened before
   // initializing render process host sets the shared memory.
-  if (!shared_metrics_mapping_.IsValid())
+  if (!CrashMemoryMetricsReporterImpl::Instance()
+           .shared_metrics_mapping_.IsValid())
     return;
   // Else, we can send the virtual_memory_oom_oom bool.
   OomInterventionMetrics metrics;
+  // TODO(yuzus): Report this UMA on all the platforms. Currently this is only
+  // reported on Android.
   metrics.virtual_memory_oom = 1;  // true
-  WriteIntoSharedMemory(metrics);
+  CrashMemoryMetricsReporterImpl::Instance().WriteIntoSharedMemory(metrics);
 }
 
 OomInterventionMetrics

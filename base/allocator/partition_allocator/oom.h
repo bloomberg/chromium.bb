@@ -5,6 +5,7 @@
 #ifndef BASE_ALLOCATOR_OOM_H
 #define BASE_ALLOCATOR_OOM_H
 
+#include "base/allocator/partition_allocator/oom_callback.h"
 #include "base/logging.h"
 
 #if defined(OS_WIN)
@@ -23,14 +24,16 @@
 #define OOM_CRASH()                                                     \
   do {                                                                  \
     OOM_CRASH_PREVENT_ICF();                                            \
+    base::internal::RunPartitionAllocOomCallback();                     \
     ::RaiseException(0xE0000008, EXCEPTION_NONCONTINUABLE, 0, nullptr); \
     IMMEDIATE_CRASH();                                                  \
   } while (0)
 #else
-#define OOM_CRASH()          \
-  do {                       \
-    OOM_CRASH_PREVENT_ICF(); \
-    IMMEDIATE_CRASH();       \
+#define OOM_CRASH()                                 \
+  do {                                              \
+    base::internal::RunPartitionAllocOomCallback(); \
+    OOM_CRASH_PREVENT_ICF();                        \
+    IMMEDIATE_CRASH();                              \
   } while (0)
 #endif
 
