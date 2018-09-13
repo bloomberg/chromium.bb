@@ -484,7 +484,7 @@ void CrossProcessFrameConnector::SetVisibilityForChildViews(
 
 void CrossProcessFrameConnector::SetScreenSpaceRect(
     const gfx::Rect& screen_space_rect) {
-  gfx::Rect old_rect = screen_space_rect;
+  gfx::Rect old_rect = screen_space_rect_in_pixels_;
   FrameConnectorDelegate::SetScreenSpaceRect(screen_space_rect);
 
   if (view_) {
