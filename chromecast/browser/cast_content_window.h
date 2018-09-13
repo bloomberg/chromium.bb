@@ -63,6 +63,11 @@ enum class VisibilityPriority {
 
   // The activity should not be visible.
   HIDDEN = 5,
+
+  // The activity should not be visible, but the activity will consider itself
+  // to be visible. This is useful for opaque overlays while the activity is
+  // still active.
+  HIDDEN_STICKY = 6,
 };
 
 enum class GestureType {
