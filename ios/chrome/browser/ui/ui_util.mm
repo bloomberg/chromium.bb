@@ -53,8 +53,9 @@ CGFloat CurrentScreenWidth() {
 
 bool IsIPhoneX() {
   UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
+  CGFloat height = CGRectGetHeight([[UIScreen mainScreen] nativeBounds]);
   return (idiom == UIUserInterfaceIdiomPhone &&
-          CGRectGetHeight([[UIScreen mainScreen] nativeBounds]) == 2436);
+          (height == 2436 || height == 2688 || height == 1792));
 }
 
 bool IsRefreshInfobarEnabled() {
