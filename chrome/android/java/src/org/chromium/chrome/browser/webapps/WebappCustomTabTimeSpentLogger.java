@@ -7,15 +7,21 @@ package org.chromium.chrome.browser.webapps;
 import android.os.SystemClock;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.LaunchSourceType;
 
 import java.util.concurrent.TimeUnit;
 
-/** Logs to UMA the amount of time user spends in a CCT for CCTs launched from webapps. */
+/**
+ * Logs to UMA the amount of time user spends in a CCT for CCTs launched from webapps.
+ *
+ * TODO(https://crbug.com/883402): Rename this to CustomTabTimeSpentLogger and refactor into the
+ * customtabs package.
+ */
 public class WebappCustomTabTimeSpentLogger {
     private long mStartTime;
-    private @WebappActivity.ActivityType int mActivityType;
+    private @LaunchSourceType int mActivityType;
 
-    private WebappCustomTabTimeSpentLogger(@WebappActivity.ActivityType int activityType) {
+    private WebappCustomTabTimeSpentLogger(@LaunchSourceType int activityType) {
         mActivityType = activityType;
         mStartTime = SystemClock.elapsedRealtime();
     }
@@ -26,7 +32,7 @@ public class WebappCustomTabTimeSpentLogger {
      * @return {@link WebappCustomTabTimeSpentLogger} instance.
      */
     public static WebappCustomTabTimeSpentLogger createInstanceAndStartTimer(
-            @WebappActivity.ActivityType int activityType) {
+            @LaunchSourceType int activityType) {
         return new WebappCustomTabTimeSpentLogger(activityType);
     }
 
@@ -37,14 +43,17 @@ public class WebappCustomTabTimeSpentLogger {
         long timeSpent = SystemClock.elapsedRealtime() - mStartTime;
         String umaSuffix;
         switch (mActivityType) {
-            case WebappActivity.ActivityType.WEBAPP:
+            case LaunchSourceType.WEBAPP:
                 umaSuffix = ".Webapp";
                 break;
-            case WebappActivity.ActivityType.WEBAPK:
+            case LaunchSourceType.WEBAPK:
                 umaSuffix = ".WebApk";
                 break;
-            case WebappActivity.ActivityType.TWA:
+            case LaunchSourceType.TWA:
                 umaSuffix = ".TWA";
+                break;
+            case LaunchSourceType.MEDIA_LAUNCHER_ACTIVITY:
+                umaSuffix = ".MediaLauncherActivity";
                 break;
             default:
                 umaSuffix = ".Other";

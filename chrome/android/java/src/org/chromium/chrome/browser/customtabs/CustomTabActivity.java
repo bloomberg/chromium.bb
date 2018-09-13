@@ -101,7 +101,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappCustomTabTimeSpentLogger;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -720,8 +719,8 @@ public class CustomTabActivity extends ChromeActivity {
         Tab tab = new Tab(assignedTabId, parentTabId, mIntentDataProvider.isIncognito(),
                 getWindowAndroid(), TabLaunchType.FROM_EXTERNAL_APP, null, null);
         if (getIntent().getIntExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE,
-                    WebappActivity.ActivityType.OTHER)
-                == WebappActivity.ActivityType.WEBAPK) {
+                    CustomTabIntentDataProvider.LaunchSourceType.OTHER)
+                == CustomTabIntentDataProvider.LaunchSourceType.WEBAPK) {
             String webapkPackageName = getIntent().getStringExtra(Browser.EXTRA_APPLICATION_ID);
             tab.setAppAssociatedWith(webapkPackageName);
         } else {
@@ -873,7 +872,7 @@ public class CustomTabActivity extends ChromeActivity {
         mIsInitialResume = false;
         mWebappTimeSpentLogger = WebappCustomTabTimeSpentLogger.createInstanceAndStartTimer(
                 getIntent().getIntExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE,
-                        WebappActivity.ActivityType.OTHER));
+                        CustomTabIntentDataProvider.LaunchSourceType.OTHER));
 
         if (mModuleActivityDelegate != null) {
             resumeModule();
