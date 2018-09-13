@@ -189,12 +189,13 @@ Place platform-specific #includes in their own section below the "normal"
     `uint64_t`, and so on are not necessarily the same. Use the right type for
     your purpose.
 
-  * When casting to and from different types, use `static_cast<>()` when you know
-    the conversion is safe. Use `checked_cast<>()` (from
-    `base/numerics/safe_conversions.h`) when you need to enforce via `CHECK()` that
-    the source value is in-range for the destination type. Use
-    `saturated_cast<>()` (from the same file) if you instead wish to clamp
-    out-of-range values.
+  * Follow [Google C++ casting
+    conventions](https://google.github.io/styleguide/cppguide.html#Casting)
+    to convert arithmetic types when you know the conversion is safe. Use
+    `checked_cast<>()` (from `base/numerics/safe_conversions.h`) when you
+    need to enforce via `CHECK()` that the source value is in-range for the
+    destination type. Use `saturated_cast<>()` (from the same file) if you
+    instead wish to clamp out-of-range values.
 
   * Do not use unsigned types to mean "this value should never be < 0". For
     that, use assertions or run-time checks (as appropriate).
