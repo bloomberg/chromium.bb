@@ -20,6 +20,7 @@ action("create_test_main") {
     "../main.html",
     "check_select.js",
     "crostini.js",
+    "js/strings.js",
     "quick_view.js",
     "uma.js",
   ]
