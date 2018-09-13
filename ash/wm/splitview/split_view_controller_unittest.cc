@@ -1946,7 +1946,12 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   ASSERT_TRUE(resizer.get());
   DragWindowTo(resizer.get(), gfx::Point(0, 300));
   EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kPreviewAreaLeft);
-  CompleteDrag(std::move(resizer));
+  resizer->CompleteDrag();
+  EXPECT_EQ(window1->GetProperty(ash::kTabDroppedWindowStateTypeKey),
+            mojom::WindowStateType::LEFT_SNAPPED);
+  EXPECT_NE(split_view_controller()->left_window(), window1.get());
+  SetIsInTabDragging(window1.get(), false);
+  resizer.reset();
   EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
   EXPECT_EQ(split_view_controller()->state(),
@@ -2006,7 +2011,12 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
             split_view_controller()->GetSnappedWindowBoundsInScreen(
                 window2.get(), SplitViewController::RIGHT));
 
-  CompleteDrag(std::move(resizer));
+  resizer->CompleteDrag();
+  EXPECT_EQ(window1->GetProperty(kTabDroppedWindowStateTypeKey),
+            mojom::WindowStateType::LEFT_SNAPPED);
+  EXPECT_NE(split_view_controller()->left_window(), window1.get());
+  SetIsInTabDragging(window1.get(), false);
+  resizer.reset();
   EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
   EXPECT_EQ(split_view_controller()->right_window(), window2.get());

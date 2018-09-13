@@ -100,14 +100,12 @@ mojom::SplitViewState ToMojomSplitViewState(SplitViewController::State state) {
   }
 }
 
-mojom::WindowStateType GetStateTypeFromSnapPostion(
+mojom::WindowStateType GetStateTypeFromSnapPosition(
     SplitViewController::SnapPosition snap_position) {
-  DCHECK(snap_position != SplitViewController::NONE);
   if (snap_position == SplitViewController::LEFT)
     return mojom::WindowStateType::LEFT_SNAPPED;
   if (snap_position == SplitViewController::RIGHT)
     return mojom::WindowStateType::RIGHT_SNAPPED;
-  NOTREACHED();
   return mojom::WindowStateType::DEFAULT;
 }
 
@@ -322,7 +320,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
   }
 
   if (wm::GetWindowState(window)->GetStateType() ==
-      GetStateTypeFromSnapPostion(snap_position)) {
+      GetStateTypeFromSnapPosition(snap_position)) {
     OnWindowSnapped(window);
   } else {
     // Otherwise, try to snap it first. It will be activated later after the
@@ -597,6 +595,9 @@ void SplitViewController::OnWindowDragEnded(
     split_view_divider_->OnWindowDragEnded();
 
   if (wm::IsDraggingTabs(dragged_window)) {
+    dragged_window->SetProperty(
+        kTabDroppedWindowStateTypeKey,
+        GetStateTypeFromSnapPosition(desired_snap_position));
     dragged_window_observer_.reset(new TabDraggedWindowObserver(
         this, dragged_window, desired_snap_position, last_location_in_screen));
   } else {
