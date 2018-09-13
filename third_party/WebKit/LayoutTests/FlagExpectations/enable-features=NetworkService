@@ -27,6 +27,5 @@ crbug.com/850689 http/tests/inspector-protocol/network/interception-set-cookie.j
 # enabled this fails in both content_shell and chrome.
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
 
-# PlzWorker: These are tentatively failing because of unimplemented code.
+# PlzWorker: This is tentatively failing because of unimplemented code.
 crbug.com/715632 external/wpt/fetch/sec-metadata/sharedworker.tentative.https.sub.html [ Failure ]
-crbug.com/715632 fast/workers/shared-worker-load-error.html [ Timeout ]

@@ -56,7 +56,8 @@ using StartLoaderCallback =
                             network::mojom::URLLoaderFactoryAssociatedPtrInfo,
                             std::unique_ptr<URLLoaderFactoryBundleInfo>,
                             blink::mojom::SharedWorkerMainScriptLoadParamsPtr,
-                            base::Optional<SubresourceLoaderParams>)>;
+                            base::Optional<SubresourceLoaderParams>,
+                            bool)>;
 
 std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
     int process_id,
@@ -107,7 +108,8 @@ void DidCreateScriptLoaderOnIO(
         main_script_loader_factory,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
     blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
-    base::Optional<SubresourceLoaderParams> subresource_loader_params) {
+    base::Optional<SubresourceLoaderParams> subresource_loader_params,
+    bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -116,7 +118,7 @@ void DidCreateScriptLoaderOnIO(
                      std::move(main_script_loader_factory),
                      std::move(subresource_loader_factories),
                      std::move(main_script_load_params),
-                     std::move(subresource_loader_params)));
+                     std::move(subresource_loader_params), success));
 }
 
 void CreateScriptLoaderOnIO(
@@ -213,7 +215,8 @@ void CreateScriptLoaderOnIO(
                             std::move(main_script_loader_factory),
                             std::move(subresource_loader_factories),
                             nullptr /* main_script_load_params */,
-                            base::nullopt /* subresource_loader_params */);
+                            base::nullopt /* subresource_loader_params */,
+                            true /* success */);
 }
 
 }  // namespace
@@ -447,7 +450,7 @@ void SharedWorkerServiceImpl::CreateWorker(
             blob_url_loader_factory ? blob_url_loader_factory->Clone()
                                     : nullptr,
             std::move(resource_request), process_id,
-            base::BindOnce(&SharedWorkerServiceImpl::StartWorker,
+            base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,
                            weak_factory_.GetWeakPtr(), std::move(instance),
                            weak_host, std::move(client), process_id, frame_id,
                            message_port)));
@@ -462,6 +465,41 @@ void SharedWorkerServiceImpl::CreateWorker(
               nullptr /* subresource_loader_factories */,
               nullptr /* main_script_load_params */,
               base::nullopt /* subresource_loader_params */);
+}
+
+void SharedWorkerServiceImpl::DidCreateScriptLoader(
+    std::unique_ptr<SharedWorkerInstance> instance,
+    base::WeakPtr<SharedWorkerHost> host,
+    mojom::SharedWorkerClientPtr client,
+    int process_id,
+    int frame_id,
+    const blink::MessagePortChannel& message_port,
+    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+        service_worker_provider_info,
+    network::mojom::URLLoaderFactoryAssociatedPtrInfo
+        main_script_loader_factory,
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+    blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+    base::Optional<SubresourceLoaderParams> subresource_loader_params,
+    bool success) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+
+  // NetworkService (PlzWorker):
+  // If the script fetcher fails to load shared worker's main script, notify the
+  // client of the failure and abort shared worker startup.
+  if (!success) {
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    client->OnScriptLoadFailed();
+    return;
+  }
+
+  StartWorker(
+      std::move(instance), std::move(host), std::move(client), process_id,
+      frame_id, message_port, std::move(service_worker_provider_info),
+      std::move(main_script_loader_factory),
+      std::move(subresource_loader_factories),
+      std::move(main_script_load_params), std::move(subresource_loader_params));
 }
 
 void SharedWorkerServiceImpl::StartWorker(
