@@ -362,7 +362,7 @@ void AppListView::Initialize(const InitParams& params) {
   AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
   parent_window_ = params.parent;
 
-  InitializeFullscreen(params.parent, params.parent_container_id);
+  InitializeFullscreen(params.parent);
 
   InitChildWidgets();
   AddChildView(overlay_view_);
@@ -557,8 +557,7 @@ void AppListView::InitChildWidgets() {
   app_list_main_view_->contents_view()->Layout();
 }
 
-void AppListView::InitializeFullscreen(gfx::NativeView parent,
-                                       int parent_container_id) {
+void AppListView::InitializeFullscreen(gfx::NativeView parent) {
   const display::Display display_nearest_view = GetDisplayNearestView();
   const gfx::Rect display_work_area_bounds = display_nearest_view.work_area();
 

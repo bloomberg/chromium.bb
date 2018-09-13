@@ -83,17 +83,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   static constexpr int kScrollIgnoreTimeMs = 500;
 
   struct InitParams {
-    // Used in classic ash for both bubble and fullscreen style.
     gfx::NativeView parent = nullptr;
-    // Window container id. Used in mash for both bubble and fullscreen style.
-    // TODO(jamescook): Remove when the app list moves into the ash process.
-    int parent_container_id = -1;
-    // Used for both bubble and fullscreen style.
     int initial_apps_page = 0;
-    // Used for fullscreen style.
     bool is_tablet_mode = false;
-    // Whether the shelf alignment is on the side of the display. Used for
-    // fullscreen style.
+    // Whether the shelf alignment is on the side of the display.
     bool is_side_shelf = false;
   };
 
@@ -266,7 +259,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void InitChildWidgets();
 
   // Initializes the widget for fullscreen mode.
-  void InitializeFullscreen(gfx::NativeView parent, int parent_container_id);
+  void InitializeFullscreen(gfx::NativeView parent);
 
   // Closes the AppListView when a click or tap event propogates to the
   // AppListView.
