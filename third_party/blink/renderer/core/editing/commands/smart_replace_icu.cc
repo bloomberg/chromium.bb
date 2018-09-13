@@ -39,7 +39,7 @@
 namespace blink {
 
 static void AddAllCodePoints(USet* smart_set, const String& string) {
-  for (size_t i = 0; i < string.length(); i++)
+  for (wtf_size_t i = 0; i < string.length(); i++)
     uset_add(smart_set, string[i]);
 }
 

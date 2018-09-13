@@ -333,9 +333,9 @@ void TextIteratorTextNodeHandler::HandleTextNodeWhole(const Text* node) {
 }
 
 // Restore the collapsed space for copy & paste. See http://crbug.com/318925
-size_t TextIteratorTextNodeHandler::RestoreCollapsedTrailingSpace(
+wtf_size_t TextIteratorTextNodeHandler::RestoreCollapsedTrailingSpace(
     InlineTextBox* next_text_box,
-    size_t subrun_end) {
+    wtf_size_t subrun_end) {
   if (next_text_box || !text_box_->Root().NextRootBox() ||
       text_box_->Root().LastChild() != text_box_)
     return subrun_end;
@@ -445,7 +445,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
           }
           offset_ = text_start_offset + run_start + 1;
         } else {
-          size_t subrun_end = str.find('\n', run_start);
+          wtf_size_t subrun_end = str.find('\n', run_start);
           if (subrun_end == kNotFound || subrun_end > run_end) {
             subrun_end = run_end;
             subrun_end =

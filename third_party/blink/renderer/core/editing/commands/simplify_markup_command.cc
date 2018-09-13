@@ -97,7 +97,7 @@ void SimplifyMarkupCommand::DoApply(EditingState* editing_state) {
   }
 
   // we perform all the DOM mutations at once.
-  for (size_t i = 0; i < nodes_to_remove.size(); ++i) {
+  for (wtf_size_t i = 0; i < nodes_to_remove.size(); ++i) {
     // FIXME: We can do better by directly moving children from
     // nodesToRemove[i].
     int num_pruned_ancestors =
@@ -116,9 +116,9 @@ void SimplifyMarkupCommand::DoApply(EditingState* editing_state) {
 
 int SimplifyMarkupCommand::PruneSubsequentAncestorsToRemove(
     HeapVector<Member<ContainerNode>>& nodes_to_remove,
-    size_t start_node_index,
+    wtf_size_t start_node_index,
     EditingState* editing_state) {
-  size_t past_last_node_to_remove = start_node_index + 1;
+  wtf_size_t past_last_node_to_remove = start_node_index + 1;
   for (; past_last_node_to_remove < nodes_to_remove.size();
        ++past_last_node_to_remove) {
     if (nodes_to_remove[past_last_node_to_remove - 1]->parentNode() !=

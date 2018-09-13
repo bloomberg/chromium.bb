@@ -53,18 +53,18 @@ class GranularityStrategyTest : public PageTestBase {
   void SetupTextSpan(String str1,
                      String str2,
                      String str3,
-                     size_t sel_begin,
-                     size_t sel_end);
+                     wtf_size_t sel_begin,
+                     wtf_size_t sel_end);
   void SetupVerticalAlign(String str1,
                           String str2,
                           String str3,
-                          size_t sel_begin,
-                          size_t sel_end);
+                          wtf_size_t sel_begin,
+                          wtf_size_t sel_end);
   void SetupFontSize(String str1,
                      String str2,
                      String str3,
-                     size_t sel_begin,
-                     size_t sel_end);
+                     wtf_size_t sel_begin,
+                     wtf_size_t sel_end);
 
   void TestDirectionExpand();
   void TestDirectionShrink();
@@ -106,9 +106,9 @@ void GranularityStrategyTest::ParseText(const TextNodeVector& text_nodes) {
   bool word_started = false;
   int word_start_index = 0;
   for (auto& text : text_nodes) {
-    int word_start_index_offset = letter_pos_.size();
+    wtf_size_t word_start_index_offset = letter_pos_.size();
     String str = text->wholeText();
-    for (size_t i = 0; i < str.length(); i++) {
+    for (wtf_size_t i = 0; i < str.length(); i++) {
       letter_pos_.push_back(VisiblePositionToContentsPoint(
           CreateVisiblePosition(Position(text, i))));
       char c = str[i];
@@ -215,8 +215,8 @@ Text* GranularityStrategyTest::SetupRotate(String str) {
 void GranularityStrategyTest::SetupTextSpan(String str1,
                                             String str2,
                                             String str3,
-                                            size_t sel_begin,
-                                            size_t sel_end) {
+                                            wtf_size_t sel_begin,
+                                            wtf_size_t sel_end) {
   Text* text1 = GetDocument().createTextNode(str1);
   Text* text2 = GetDocument().createTextNode(str2);
   Text* text3 = GetDocument().createTextNode(str3);
@@ -261,8 +261,8 @@ void GranularityStrategyTest::SetupTextSpan(String str1,
 void GranularityStrategyTest::SetupVerticalAlign(String str1,
                                                  String str2,
                                                  String str3,
-                                                 size_t sel_begin,
-                                                 size_t sel_end) {
+                                                 wtf_size_t sel_begin,
+                                                 wtf_size_t sel_end) {
   SetInnerHTML(
       "<html>"
       "<head>"
@@ -283,8 +283,8 @@ void GranularityStrategyTest::SetupVerticalAlign(String str1,
 void GranularityStrategyTest::SetupFontSize(String str1,
                                             String str2,
                                             String str3,
-                                            size_t sel_begin,
-                                            size_t sel_end) {
+                                            wtf_size_t sel_begin,
+                                            wtf_size_t sel_end) {
   SetInnerHTML(
       "<html>"
       "<head>"

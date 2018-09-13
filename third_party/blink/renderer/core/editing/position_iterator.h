@@ -82,7 +82,7 @@ class PositionIteratorAlgorithm {
   // m_anchorNode;
   Member<Node> node_after_position_in_anchor_;
   int offset_in_anchor_;
-  size_t depth_to_anchor_node_;
+  wtf_size_t depth_to_anchor_node_;
   // If |m_nodeAfterPositionInAnchor| is not null,
   // m_offsetsInAnchorNode[m_depthToAnchorNode] ==
   //    Strategy::index(m_nodeAfterPositionInAnchor).

@@ -583,7 +583,7 @@ void ReplaceSelectionCommand::RemoveRedundantStylesAndKeepStyleSpanInline(
                            EditingStyle::kDoNotExtractMatchingStyle)) {
           // e.g. <font size="3" style="font-size: 20px;"> is converted to <font
           // style="font-size: 20px;">
-          for (size_t i = 0; i < attributes.size(); i++)
+          for (wtf_size_t i = 0; i < attributes.size(); i++)
             RemoveElementAttribute(html_element, attributes[i]);
         }
       }

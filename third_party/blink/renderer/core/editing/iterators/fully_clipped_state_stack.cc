@@ -83,8 +83,8 @@ void FullyClippedStateStackAlgorithm<Strategy>::SetUpFullyClippedStack(
 
   // Call pushFullyClippedState on each node starting with the earliest
   // ancestor.
-  size_t ancestry_size = ancestry.size();
-  for (size_t i = 0; i < ancestry_size; ++i)
+  wtf_size_t ancestry_size = ancestry.size();
+  for (wtf_size_t i = 0; i < ancestry_size; ++i)
     PushFullyClippedState(ancestry[ancestry_size - i - 1]);
   PushFullyClippedState(node);
 

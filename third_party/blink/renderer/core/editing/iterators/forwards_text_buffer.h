@@ -18,7 +18,7 @@ class CORE_EXPORT ForwardsTextBuffer final : public TextBufferBase {
   const UChar* Data() const override;
 
  private:
-  UChar* CalcDestination(size_t length) override;
+  UChar* CalcDestination(wtf_size_t length) override;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardsTextBuffer);
 };
