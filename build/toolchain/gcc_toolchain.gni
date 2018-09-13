@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/android/config.gni")
 import("//build/config/clang/clang.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/v8_target_cpu.gni")
 import("//build/toolchain/cc_wrapper.gni")
@@ -16,6 +16,24 @@ if (is_nacl) {
   # variables defined in nacl/config.gni referenced here should be protected by
   # is_nacl conditions.
   import("//build/config/nacl/config.gni")
+}
+
+declare_args() {
+  # Enables whitelist generation for IDR_ grit defines seen by the compiler.
+  # Currently works only on Android and enabled by default for release builds.
+  # Requires debug info, so disabled for symbol_level=0 & strip_debug_info=true.
+  enable_resource_whitelist_generation =
+      is_android && !is_debug &&
+      # Always enable for official builds, but enable for release builds by
+      # default only when other args allow.
+      (is_official_build ||
+       (!strip_debug_info && symbol_level > 0 && !is_component_build))
+}
+
+# When the arg is set via args.gn, it applies to all toolchains. In order to not
+# hit the assert in grit_rule.gni, explicitly disable for host toolchains.
+if (is_linux && target_os == "android") {
+  enable_resource_whitelist_generation = false
 }
 
 # Path to the Clang static analysis wrapper script.

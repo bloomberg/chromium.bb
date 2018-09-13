@@ -1819,7 +1819,8 @@
                   'use_partition_alloc=false enable_reporting=true '
                   'include_transport_security_state_preload_list=false '
                   'use_crash_key_stubs=true '
-                  'clang_use_default_sample_profile=false'),
+                  'clang_use_default_sample_profile=false '
+                  'enable_resource_whitelist_generation=false'),
     },
 
     'cros_chrome_sdk': {
