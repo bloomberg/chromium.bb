@@ -21,7 +21,7 @@ class ScriptWrappable;
 
 class CORE_EXPORT V8TreatNonObjectAsNullVoidFunction final : public CallbackFunctionBase {
  public:
-  static V8TreatNonObjectAsNullVoidFunction* Create(v8::Local<v8::Function> callback_function) {
+  static V8TreatNonObjectAsNullVoidFunction* Create(v8::Local<v8::Object> callback_function) {
     return new V8TreatNonObjectAsNullVoidFunction(callback_function);
   }
 
@@ -39,7 +39,7 @@ class CORE_EXPORT V8TreatNonObjectAsNullVoidFunction final : public CallbackFunc
   void InvokeAndReportException(ScriptWrappable* callback_this_value);
 
  private:
-  explicit V8TreatNonObjectAsNullVoidFunction(v8::Local<v8::Function> callback_function)
+  explicit V8TreatNonObjectAsNullVoidFunction(v8::Local<v8::Object> callback_function)
       : CallbackFunctionBase(callback_function) {}
 };
 
