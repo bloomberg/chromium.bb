@@ -420,8 +420,6 @@ bool ShowWidgetMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ShowWidgetMessageFilter::Wait() {
-  initial_rect_ = gfx::Rect();
-  routing_id_ = MSG_ROUTING_NONE;
   message_loop_runner_->Run();
 }
 
