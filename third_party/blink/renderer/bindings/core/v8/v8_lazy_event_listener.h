@@ -47,14 +47,13 @@ class Node;
 class V8LazyEventListener final : public V8AbstractEventHandler {
  public:
   static V8LazyEventListener* Create(const AtomicString& function_name,
-                                     const AtomicString& event_parameter_name,
                                      const String& code,
                                      const String& source_url,
                                      const TextPosition& position,
                                      Node* node,
                                      v8::Isolate* isolate) {
-    return new V8LazyEventListener(isolate, function_name, event_parameter_name,
-                                   code, source_url, position, node);
+    return new V8LazyEventListener(isolate, function_name, code, source_url,
+                                   position, node);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -70,7 +69,6 @@ class V8LazyEventListener final : public V8AbstractEventHandler {
  private:
   V8LazyEventListener(v8::Isolate*,
                       const AtomicString& function_name,
-                      const AtomicString& event_parameter_name,
                       const String& code,
                       const String source_url,
                       const TextPosition&,
@@ -92,7 +90,6 @@ class V8LazyEventListener final : public V8AbstractEventHandler {
 
   bool was_compilation_failed_;
   AtomicString function_name_;
-  AtomicString event_parameter_name_;
   String code_;
   String source_url_;
   Member<Node> node_;

@@ -533,17 +533,14 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     }
     AnimationAttributeChanged();
   } else if (name == SVGNames::onbeginAttr) {
-    SetAttributeEventListener(
-        EventTypeNames::beginEvent,
-        CreateAttributeEventListener(this, name, value, EventParameterName()));
+    SetAttributeEventListener(EventTypeNames::beginEvent,
+                              CreateAttributeEventListener(this, name, value));
   } else if (name == SVGNames::onendAttr) {
-    SetAttributeEventListener(
-        EventTypeNames::endEvent,
-        CreateAttributeEventListener(this, name, value, EventParameterName()));
+    SetAttributeEventListener(EventTypeNames::endEvent,
+                              CreateAttributeEventListener(this, name, value));
   } else if (name == SVGNames::onrepeatAttr) {
-    SetAttributeEventListener(
-        EventTypeNames::repeatEvent,
-        CreateAttributeEventListener(this, name, value, EventParameterName()));
+    SetAttributeEventListener(EventTypeNames::repeatEvent,
+                              CreateAttributeEventListener(this, name, value));
   } else if (name == SVGNames::restartAttr) {
     if (value == "never")
       restart_ = kRestartNever;
