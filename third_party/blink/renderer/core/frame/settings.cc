@@ -88,7 +88,7 @@ void Settings::SetTextAutosizingEnabled(bool text_autosizing_enabled) {
   Invalidate(SettingsDelegate::kTextAutosizingChange);
 }
 
-// FIXME: Move to Settings.in once make_settings can understand IntSize.
+// TODO: Move to Settings.json5 once make_settings can understand IntSize.
 void Settings::SetTextAutosizingWindowSizeOverride(
     const IntSize& text_autosizing_window_size_override) {
   if (text_autosizing_window_size_override_ ==

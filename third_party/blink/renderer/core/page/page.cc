@@ -158,7 +158,7 @@ Page::Page(PageClients& page_clients)
       drag_controller_(DragController::Create(this)),
       focus_controller_(FocusController::Create(this)),
       context_menu_controller_(ContextMenuController::Create(this)),
-      page_scale_constraints_set_(PageScaleConstraintsSet::Create()),
+      page_scale_constraints_set_(PageScaleConstraintsSet::Create(this)),
       pointer_lock_controller_(PointerLockController::Create(this)),
       browser_controls_(BrowserControls::Create(*this)),
       console_message_storage_(new ConsoleMessageStorage()),
@@ -711,6 +711,7 @@ void Page::Trace(blink::Visitor* visitor) {
   visitor->Trace(drag_controller_);
   visitor->Trace(focus_controller_);
   visitor->Trace(context_menu_controller_);
+  visitor->Trace(page_scale_constraints_set_);
   visitor->Trace(pointer_lock_controller_);
   visitor->Trace(scrolling_coordinator_);
   visitor->Trace(browser_controls_);

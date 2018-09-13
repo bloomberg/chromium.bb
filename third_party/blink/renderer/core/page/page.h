@@ -353,7 +353,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   const Member<DragController> drag_controller_;
   const Member<FocusController> focus_controller_;
   const Member<ContextMenuController> context_menu_controller_;
-  const std::unique_ptr<PageScaleConstraintsSet> page_scale_constraints_set_;
+  const Member<PageScaleConstraintsSet> page_scale_constraints_set_;
   const Member<PointerLockController> pointer_lock_controller_;
   Member<ScrollingCoordinator> scrolling_coordinator_;
   const Member<BrowserControls> browser_controls_;
