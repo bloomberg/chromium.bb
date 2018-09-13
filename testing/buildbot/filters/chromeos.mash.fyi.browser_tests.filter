@@ -38,6 +38,7 @@
 -BrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
 
 # Touch gestures don't work in webcontents. https://crbug.com/866991.
+-TopControlsSlideControllerTest.TestScrollingMaximizedPageBeforeGoingToTabletMode
 -TopControlsSlideControllerTest.TestScrollingPage
 -TopControlsSlideControllerTest.TestScrollingPageAndSwitchingToNTP
 -TopControlsSlideControllerTest.TestClosingATab
