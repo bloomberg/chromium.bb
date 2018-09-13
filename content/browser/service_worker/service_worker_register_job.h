@@ -109,7 +109,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
 
   // This method is only called when ServiceWorkerImportedScriptUpdateCheck is
   // enabled.
-  void OnUpdateCheckFinished(bool script_chnaged);
+  void OnUpdateCheckFinished(bool script_changed);
 
   void RegisterAndContinue();
   void ContinueWithUninstallingRegistration(
