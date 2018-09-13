@@ -1753,6 +1753,8 @@ jumbo_split_static_library("ui") {
       "ash/cast_config_client_media_router.h",
       "ash/chrome_browser_main_extra_parts_ash.cc",
       "ash/chrome_browser_main_extra_parts_ash.h",
+      "ash/chrome_keyboard_controller_observer.cc",
+      "ash/chrome_keyboard_controller_observer.h",
       "ash/chrome_keyboard_ui.cc",
       "ash/chrome_keyboard_ui.h",
       "ash/chrome_keyboard_web_contents.cc",

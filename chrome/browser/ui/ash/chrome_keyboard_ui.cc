@@ -13,38 +13,28 @@
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "base/values.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_observer.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_web_contents.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/bindings_policy.h"
-#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
-#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
-#include "extensions/browser/event_router.h"
-#include "extensions/common/api/virtual_keyboard_private.h"
-#include "extensions/common/extension_messages.h"
-#include "ipc/ipc_message_macros.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
-#include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_resource_util.h"
 #include "ui/wm/core/shadow_types.h"
-
-namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 
 namespace {
 
@@ -54,65 +44,6 @@ GURL& GetOverrideVirtualKeyboardUrl() {
   static base::NoDestructor<GURL> url;
   return *url;
 }
-
-class AshKeyboardControllerObserver
-    : public keyboard::KeyboardControllerObserver {
- public:
-  explicit AshKeyboardControllerObserver(content::BrowserContext* context)
-      : context_(context) {}
-  ~AshKeyboardControllerObserver() override = default;
-
-  // KeyboardControllerObserver:
-  void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override {
-    extensions::EventRouter* router = extensions::EventRouter::Get(context_);
-
-    if (!router->HasEventListener(
-            virtual_keyboard_private::OnBoundsChanged::kEventName)) {
-      return;
-    }
-
-    auto event_args = std::make_unique<base::ListValue>();
-    auto new_bounds = std::make_unique<base::DictionaryValue>();
-    new_bounds->SetInteger("left", bounds.x());
-    new_bounds->SetInteger("top", bounds.y());
-    new_bounds->SetInteger("width", bounds.width());
-    new_bounds->SetInteger("height", bounds.height());
-    event_args->Append(std::move(new_bounds));
-
-    auto event = std::make_unique<extensions::Event>(
-        extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_BOUNDS_CHANGED,
-        virtual_keyboard_private::OnBoundsChanged::kEventName,
-        std::move(event_args), context_);
-    router->BroadcastEvent(std::move(event));
-  }
-
-  void OnKeyboardDisabled() override {
-    extensions::EventRouter* router = extensions::EventRouter::Get(context_);
-
-    if (!router->HasEventListener(
-            virtual_keyboard_private::OnKeyboardClosed::kEventName)) {
-      return;
-    }
-
-    auto event = std::make_unique<extensions::Event>(
-        extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_KEYBOARD_CLOSED,
-        virtual_keyboard_private::OnKeyboardClosed::kEventName,
-        std::make_unique<base::ListValue>(), context_);
-    router->BroadcastEvent(std::move(event));
-  }
-
-  void OnKeyboardConfigChanged() override {
-    extensions::VirtualKeyboardAPI* api =
-        extensions::BrowserContextKeyedAPIFactory<
-            extensions::VirtualKeyboardAPI>::Get(context_);
-    api->delegate()->OnKeyboardConfigChanged();
-  }
-
- private:
-  content::BrowserContext* const context_;
-
-  DISALLOW_COPY_AND_ASSIGN(AshKeyboardControllerObserver);
-};
 
 }  // namespace
 
@@ -249,13 +180,14 @@ void ChromeKeyboardUI::SetController(keyboard::KeyboardController* controller) {
   // During KeyboardController destruction, controller can be set to null.
   if (!controller) {
     DCHECK(keyboard_controller());
-    keyboard_controller()->RemoveObserver(observer_.get());
+    keyboard_controller_observer_.reset();
     KeyboardUI::SetController(nullptr);
     return;
   }
   KeyboardUI::SetController(controller);
-  observer_ = std::make_unique<AshKeyboardControllerObserver>(browser_context_);
-  keyboard_controller()->AddObserver(observer_.get());
+  keyboard_controller_observer_ =
+      std::make_unique<ChromeKeyboardControllerObserver>(browser_context_,
+                                                         controller);
 }
 
 void ChromeKeyboardUI::ReloadKeyboardIfNeeded() {
