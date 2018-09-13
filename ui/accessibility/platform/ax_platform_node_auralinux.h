@@ -27,24 +27,24 @@
 namespace ui {
 
 // Implements accessibility on Aura Linux using ATK.
-class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
+class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
  public:
   AXPlatformNodeAuraLinux();
   ~AXPlatformNodeAuraLinux() override;
 
   // Set or get the root-level Application object that's the parent of all
   // top-level windows.
-  AX_EXPORT static void SetApplication(AXPlatformNode* application);
+  static void SetApplication(AXPlatformNode* application);
   static AXPlatformNode* application() { return application_; }
 
   static void EnsureGTypeInit();
 
   // Do asynchronous static initialization.
-  AX_EXPORT static void StaticInitialize();
+  static void StaticInitialize();
 
-  AX_EXPORT void DataChanged();
+  void DataChanged();
   void Destroy() override;
-  AX_EXPORT void AddAccessibilityTreeProperties(base::DictionaryValue* dict);
+  void AddAccessibilityTreeProperties(base::DictionaryValue* dict);
 
   AtkRole GetAtkRole();
   void GetAtkState(AtkStateSet* state_set);
@@ -77,6 +77,7 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // Event helpers
   void OnCheckedStateChanged();
+  void OnExpandedStateChanged(bool is_expanded);
   void OnFocused();
   void OnSelected();
 
@@ -92,7 +93,7 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   std::string GetTextForATK();
 
-  AX_EXPORT void UpdateHypertext();
+  void UpdateHypertext();
 
  protected:
   AXHypertext hypertext_;
