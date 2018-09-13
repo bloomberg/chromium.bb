@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 
 namespace url_pattern_index {
 
@@ -26,8 +27,13 @@ namespace url_pattern_index {
 // Template parameters:
 //  * N - the size of N-grams.
 //  * NGramType - the integer type used to encode N-grams.
+//  * CasePolicy - whether or not to lower-case the N-grams. Assumes ASCII.
 //  * IsSeparator - the type of a bool(char) functor.
-template <size_t N, typename NGramType, typename IsSeparator>
+enum class NGramCaseExtraction { kCaseSensitive, kLowerCase };
+template <size_t N,
+          typename NGramType,
+          NGramCaseExtraction CasePolicy,
+          typename IsSeparator>
 class NGramExtractor {
  public:
   // An STL compatible input iterator over N-grams contained in a string.
@@ -64,6 +70,15 @@ class NGramExtractor {
     }
 
    private:
+    char ExtractHeadByte() {
+      char head_byte = *head_;
+      switch (CasePolicy) {
+        case NGramCaseExtraction::kCaseSensitive:
+          return head_byte;
+        case NGramCaseExtraction::kLowerCase:
+          return base::ToLowerASCII(head_byte);
+      }
+    }
     // Consumes characters starting with the one pointed to by |head_|, as many
     // of them as needed to extend |ngram_| from its |current_length| to a
     // length of N. Leaves |head_| pointing to the last character consumed.
@@ -73,7 +88,7 @@ class NGramExtractor {
           current_length = 0;
           ngram_ = 0;
         } else {
-          ngram_ = ngram_ << 8 | static_cast<NGramType>(*head_);
+          ngram_ = ngram_ << 8 | static_cast<NGramType>(ExtractHeadByte());
           if (++current_length == N)
             break;
         }
@@ -116,16 +131,21 @@ class NGramExtractor {
 //
 // Typical usage:
 //   const char* str = "no*abacaba*abcd";
-//   auto extractor = CreateNGramExtractor<5, uint64_t>(
-//     str, [](char c) { return c == '*'; });
+//   auto extractor =
+//     CreateNGramExtractor<5, uint64_t, NGrameCaseExtraction::kLowercase>(
+//       str, [](char c) { return c == '*'; });
 //   for (uint64_t ngram : extractor) {
 //     ... process the |ngram| ...
 //   }
-template <size_t N, typename NGramType, typename IsSeparator>
-NGramExtractor<N, NGramType, IsSeparator> CreateNGramExtractor(
+template <size_t N,
+          typename NGramType,
+          NGramCaseExtraction CasePolicy,
+          typename IsSeparator>
+NGramExtractor<N, NGramType, CasePolicy, IsSeparator> CreateNGramExtractor(
     base::StringPiece string,
     IsSeparator is_separator) {
-  return NGramExtractor<N, NGramType, IsSeparator>(string, is_separator);
+  return NGramExtractor<N, NGramType, CasePolicy, IsSeparator>(string,
+                                                               is_separator);
 }
 
 }  // namespace url_pattern_index

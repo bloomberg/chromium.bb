@@ -450,11 +450,12 @@ NGram UrlPatternIndexBuilder::GetMostDistinctiveNGram(
   size_t min_list_size = std::numeric_limits<size_t>::max();
   NGram best_ngram = 0;
 
-  // To support case-insensitive matching, lower case the n-grams for |pattern|.
+  // To support case-insensitive matching, make sure the n-grams for |pattern|
+  // are lower-cased.
   DCHECK(base::IsStringASCII(pattern));
-  const std::string lower_case_pattern = base::ToLowerASCII(pattern);
-  auto ngrams = CreateNGramExtractor<kNGramSize, NGram>(
-      lower_case_pattern, [](char c) { return c == '*' || c == '^'; });
+  auto ngrams =
+      CreateNGramExtractor<kNGramSize, NGram, NGramCaseExtraction::kLowerCase>(
+          pattern, [](char c) { return c == '*' || c == '^'; });
 
   for (uint64_t ngram : ngrams) {
     const MutableUrlRuleList* rules = ngram_index_.Get(ngram);
@@ -657,10 +658,11 @@ const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
 
   NGramHashTableProber prober;
 
-  // |hash_table| contains lower-cased n-grams. Use lower-cased url to find
-  // prospective matches.
-  auto ngrams = CreateNGramExtractor<kNGramSize, uint64_t>(
-      url.lower_case_spec(), [](char) { return false; });
+  // |hash_table| contains lower-cased n-grams. Use lower-cased extraction to
+  // find prospective matches.
+  auto ngrams = CreateNGramExtractor<kNGramSize, uint64_t,
+                                     NGramCaseExtraction::kLowerCase>(
+      url.spec(), [](char) { return false; });
 
   auto get_max_priority_rule = [](const flat::UrlRule* lhs,
                                   const flat::UrlRule* rhs) {
