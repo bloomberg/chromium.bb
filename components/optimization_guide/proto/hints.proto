@@ -154,9 +154,9 @@ message BloomFilter {
   // Specifies the number of hash functions to use in the Bloom filter.
   // This essentially means how many bits will be set in the bit array
   // for a string member of the Bloom filter.
-  optional int32 num_hash_functions = 1;
+  optional uint32 num_hash_functions = 1;
   // The number of bits in the Bloom filter's bit array.
-  optional int32 num_bits = 2;
+  optional uint32 num_bits = 2;
   // The bit array data of the Bloom filter provided via a byte vector.
   // The number of bytes provided must be large enough to hold the
   // specified number of bits (num_bits).

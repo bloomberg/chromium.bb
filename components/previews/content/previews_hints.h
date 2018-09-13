@@ -66,7 +66,14 @@ class PreviewsHints {
                                   HintLoadedCallback callback) const;
 
  private:
+  friend class PreviewsHintsTest;
+
   PreviewsHints();
+
+  // Parses optimization filters from |config| and populates corresponding
+  // supported blacklists in this object.
+  void ParseOptimizationFilters(
+      const optimization_guide::proto::Configuration& config);
 
   // The URLMatcher used to match whether a URL has any hints associated with
   // it.

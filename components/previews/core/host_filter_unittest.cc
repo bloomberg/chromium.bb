@@ -14,9 +14,8 @@ namespace previews {
 namespace {
 
 std::unique_ptr<BloomFilter> CreateBloomFilter() {
-  ByteVector data(1024, 0);
   std::unique_ptr<BloomFilter> filter = std::make_unique<BloomFilter>(
-      8191 /* num_bits */, data, 7 /* num_hash_functions */);
+      7 /* num_hash_functions */, 8191 /* num_bits */);
   return filter;
 }
 

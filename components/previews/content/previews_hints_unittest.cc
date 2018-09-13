@@ -4,6 +4,8 @@
 
 #include "components/previews/content/previews_hints.h"
 
+#include "base/files/scoped_temp_dir.h"
+#include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -23,10 +25,32 @@ class TestHostFilter : public previews::HostFilter {
   std::string single_host_match_;
 };
 
+class PreviewsHintsTest : public testing::Test {
+ public:
+  explicit PreviewsHintsTest() : previews_hints_(nullptr) {}
+
+  ~PreviewsHintsTest() override {}
+
+  void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
+
+  void ParseConfig(const optimization_guide::proto::Configuration& config) {
+    optimization_guide::ComponentInfo info(
+        base::Version("1.0"),
+        temp_dir_.GetPath().Append(FILE_PATH_LITERAL("somefile.pb")));
+    previews_hints_ = PreviewsHints::CreateFromConfig(config, info);
+  }
+
+  PreviewsHints* previews_hints() { return previews_hints_.get(); }
+
+ private:
+  base::ScopedTempDir temp_dir_;
+  std::unique_ptr<PreviewsHints> previews_hints_;
+};
+
 // NOTE: most of the PreviewsHints tests are still included in the tests for
 // PreviewsOptimizationGuide.
 
-TEST(PreviewsHintsTest, FindPageHintForSubstringPagePattern) {
+TEST_F(PreviewsHintsTest, FindPageHintForSubstringPagePattern) {
   optimization_guide::proto::Hint hint1;
 
   // Page hint for "/one/"
@@ -73,7 +97,7 @@ TEST(PreviewsHintsTest, FindPageHintForSubstringPagePattern) {
                             GURL("https://www.foo.org/bar/three.jpg"), hint1));
 }
 
-TEST(PreviewsHintsTest, IsBlacklisted) {
+TEST_F(PreviewsHintsTest, IsBlacklisted) {
   std::unique_ptr<PreviewsHints> previews_hints =
       PreviewsHints::CreateForTesting(
           std::make_unique<TestHostFilter>("black.com"));
@@ -84,6 +108,34 @@ TEST(PreviewsHintsTest, IsBlacklisted) {
                                             PreviewsType::LITE_PAGE_REDIRECT));
   EXPECT_FALSE(previews_hints->IsBlacklisted(GURL("https://nonblack.com"),
                                              PreviewsType::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(PreviewsHintsTest, IsBlacklistedFromConfig) {
+  BloomFilter blacklist_bloom_filter(7, 511);
+  blacklist_bloom_filter.Add("black.com");
+  std::string blacklist_data((char*)&blacklist_bloom_filter.bytes()[0],
+                             blacklist_bloom_filter.bytes().size());
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::OptimizationFilter* blacklist_proto =
+      config.add_optimization_blacklists();
+  blacklist_proto->set_optimization_type(
+      optimization_guide::proto::LITE_PAGE_REDIRECT);
+  std::unique_ptr<optimization_guide::proto::BloomFilter> bloom_filter_proto =
+      std::make_unique<optimization_guide::proto::BloomFilter>();
+  bloom_filter_proto->set_num_hash_functions(7);
+  bloom_filter_proto->set_num_bits(511);
+  bloom_filter_proto->set_data(blacklist_data);
+  blacklist_proto->set_allocated_bloom_filter(bloom_filter_proto.release());
+  ParseConfig(config);
+
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
+                                               PreviewsType::LOFI));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://joe.black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(
+      GURL("https://nonblack.com"), PreviewsType::LITE_PAGE_REDIRECT));
 }
 
 }  // namespace previews
