@@ -372,6 +372,27 @@ void LayerTreeHost::FinishCommitOnImplThread(
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   property_trees_.ResetAllChangeTracking();
+
+  // Dump property trees and layers if run with:
+  //   --vmodule=layer_tree_host=3
+  if (VLOG_IS_ON(3)) {
+    VLOG(3) << "After finishing commit on impl, the sync tree:";
+    // Because the property tree and layer list output can be verbose, the VLOG
+    // output is split by line to avoid line buffer limits on android.
+    VLOG(3) << "property trees:";
+    std::string property_trees;
+    base::JSONWriter::WriteWithOptions(
+        *sync_tree->property_trees()->AsTracedValue()->ToBaseValue(),
+        base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
+    std::stringstream property_trees_stream(property_trees);
+    for (std::string line; std::getline(property_trees_stream, line);)
+      VLOG(3) << line;
+
+    VLOG(3) << "layers:";
+    std::stringstream layers_stream(host_impl->LayerListAsJson());
+    for (std::string line; std::getline(layers_stream, line);)
+      VLOG(3) << line;
+  }
 }
 
 void LayerTreeHost::ImageDecodesFinished(
@@ -751,75 +772,75 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     TRACE_EVENT_INSTANT1("cc", "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
                          TRACE_EVENT_SCOPE_THREAD, "property_trees",
                          property_trees_.AsTracedValue());
-    } else {
-      TRACE_EVENT_INSTANT1("cc",
-                           "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
-                           TRACE_EVENT_SCOPE_THREAD, "property_trees",
-                           property_trees_.AsTracedValue());
-      // The HUD layer is managed outside the layer list sent to LayerTreeHost
-      // and needs to have its property tree state set.
-      if (hud_layer_ && root_layer_.get()) {
-        hud_layer_->SetTransformTreeIndex(root_layer_->transform_tree_index());
-        hud_layer_->SetEffectTreeIndex(root_layer_->effect_tree_index());
-        hud_layer_->SetClipTreeIndex(root_layer_->clip_tree_index());
-        hud_layer_->SetScrollTreeIndex(root_layer_->scroll_tree_index());
-        hud_layer_->set_property_tree_sequence_number(
-            root_layer_->property_tree_sequence_number());
-      }
+  } else {
+    TRACE_EVENT_INSTANT1("cc",
+                         "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
+                         TRACE_EVENT_SCOPE_THREAD, "property_trees",
+                         property_trees_.AsTracedValue());
+    // The HUD layer is managed outside the layer list sent to LayerTreeHost
+    // and needs to have its property tree state set.
+    if (hud_layer_ && root_layer_.get()) {
+      hud_layer_->SetTransformTreeIndex(root_layer_->transform_tree_index());
+      hud_layer_->SetEffectTreeIndex(root_layer_->effect_tree_index());
+      hud_layer_->SetClipTreeIndex(root_layer_->clip_tree_index());
+      hud_layer_->SetScrollTreeIndex(root_layer_->scroll_tree_index());
+      hud_layer_->set_property_tree_sequence_number(
+          root_layer_->property_tree_sequence_number());
     }
+  }
 
 #if DCHECK_IS_ON()
-    // Ensure property tree nodes were created for all layers. When using layer
-    // lists, this can fail if blink doesn't setup layers or nodes correctly in
-    // |PaintArtifactCompositor|. When not using layer lists, this can fail if
-    // |PropertyTreeBuilder::BuildPropertyTrees| fails to create property tree
-    // nodes.
-    for (auto* layer : *this) {
-      DCHECK(property_trees_.effect_tree.Node(layer->effect_tree_index()));
-      DCHECK(
-          property_trees_.transform_tree.Node(layer->transform_tree_index()));
-      DCHECK(property_trees_.clip_tree.Node(layer->clip_tree_index()));
-      DCHECK(property_trees_.scroll_tree.Node(layer->scroll_tree_index()));
-    }
+  // Ensure property tree nodes were created for all layers. When using layer
+  // lists, this can fail if blink doesn't setup layers or nodes correctly in
+  // |PaintArtifactCompositor|. When not using layer lists, this can fail if
+  // |PropertyTreeBuilder::BuildPropertyTrees| fails to create property tree
+  // nodes.
+  for (auto* layer : *this) {
+    DCHECK(property_trees_.effect_tree.Node(layer->effect_tree_index()));
+    DCHECK(property_trees_.transform_tree.Node(layer->transform_tree_index()));
+    DCHECK(property_trees_.clip_tree.Node(layer->clip_tree_index()));
+    DCHECK(property_trees_.scroll_tree.Node(layer->scroll_tree_index()));
+  }
 #endif
 
-    draw_property_utils::UpdatePropertyTrees(this, &property_trees_);
+  draw_property_utils::UpdatePropertyTrees(this, &property_trees_);
 
-    LayerList update_layer_list;
-    draw_property_utils::FindLayersThatNeedUpdates(this, &property_trees_,
-                                                   &update_layer_list);
+  LayerList update_layer_list;
+  draw_property_utils::FindLayersThatNeedUpdates(this, &property_trees_,
+                                                 &update_layer_list);
 
-    // Dump property trees useful for debugging --blink-gen-property-trees
-    // flag. We care only about the renderer compositor.
-    if (VLOG_IS_ON(3) && GetClientNameForMetrics() == std::string("Renderer")) {
-      VLOG(3) << "CC Property Trees:";
-      std::string out;
-      base::JSONWriter::WriteWithOptions(
-          *property_trees_.AsTracedValue()->ToBaseValue(),
-          base::JSONWriter::OPTIONS_PRETTY_PRINT, &out);
-      std::stringstream ss(out);
-      while (!ss.eof()) {
-        std::string line;
-        std::getline(ss, line);
-        VLOG(3) << line;
-      }
+  // Dump property trees and layers if run with:
+  //   --vmodule=layer_tree_host=3
+  // This only prints output for the renderer.
+  if (VLOG_IS_ON(3) && GetClientNameForMetrics() == std::string("Renderer")) {
+    VLOG(3) << "After updating layers on the main thread:";
+    // Because the property tree and layer list output can be verbose, the VLOG
+    // output is split by line to avoid line buffer limits on android.
+    VLOG(3) << "property trees:";
+    std::string property_trees;
+    base::JSONWriter::WriteWithOptions(
+        *property_trees_.AsTracedValue()->ToBaseValue(),
+        base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
+    std::stringstream property_trees_stream(property_trees);
+    for (std::string line; std::getline(property_trees_stream, line);)
+      VLOG(3) << line;
 
-      VLOG(3) << "CC Layer List:";
-      for (auto* layer : *this) {
-        VLOG(3) << "layer id " << layer->id();
-        VLOG(3) << "  element_id: " << layer->element_id();
-        VLOG(3) << "  bounds: " << layer->bounds().ToString();
-        VLOG(3) << "  opacity: " << layer->opacity();
-        VLOG(3) << "  position: " << layer->position().ToString();
-        VLOG(3) << "  draws_content: " << layer->DrawsContent();
-        VLOG(3) << "  scrollable: " << layer->scrollable();
-        VLOG(3) << "  contents_opaque: " << layer->contents_opaque();
-        VLOG(3) << "  transform_tree_index: " << layer->transform_tree_index();
-        VLOG(3) << "  clip_tree_index: " << layer->clip_tree_index();
-        VLOG(3) << "  effect_tree_index: " << layer->effect_tree_index();
-        VLOG(3) << "  scroll_tree_index: " << layer->scroll_tree_index();
-      }
+    VLOG(3) << "layers:";
+    for (auto* layer : *this) {
+      VLOG(3) << "  layer id " << layer->id();
+      VLOG(3) << "    element_id: " << layer->element_id();
+      VLOG(3) << "    bounds: " << layer->bounds().ToString();
+      VLOG(3) << "    opacity: " << layer->opacity();
+      VLOG(3) << "    position: " << layer->position().ToString();
+      VLOG(3) << "    draws_content: " << layer->DrawsContent();
+      VLOG(3) << "    scrollable: " << layer->scrollable();
+      VLOG(3) << "    contents_opaque: " << layer->contents_opaque();
+      VLOG(3) << "    transform_tree_index: " << layer->transform_tree_index();
+      VLOG(3) << "    clip_tree_index: " << layer->clip_tree_index();
+      VLOG(3) << "    effect_tree_index: " << layer->effect_tree_index();
+      VLOG(3) << "    scroll_tree_index: " << layer->scroll_tree_index();
     }
+  }
 
   bool painted_content_has_slow_paths = false;
   bool painted_content_has_non_aa_paint = false;
