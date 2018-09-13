@@ -2299,7 +2299,6 @@
                          'vabr+watchlistpasswordmanager@chromium.org',
                          'vasilii+watchlistpasswordmanager@chromium.org'],
     'payments': ['rouslan+payments@chromium.org',
-                 'sebsg+paymentswatch@chromium.org',
                  'gogerald+paymentswatch@chromium.org',
                  'mahmadi+paymentswatch@chromium.org',
                  'anthonyvd+paymentswatch@chromium.org'],
