@@ -1197,11 +1197,6 @@ const char kSupervisedUsers[] = "profile.managed_users";
 const char kMessageCenterDisabledExtensionIds[] =
     "message_center.disabled_extension_ids";
 
-// List pref containing the system component ids which are not allowed to send
-// notifications to the message center.
-const char kMessageCenterDisabledSystemComponentIds[] =
-    "message_center.disabled_system_component_ids";
-
 // Boolean pref that determines whether the user can enter fullscreen mode.
 // Disabling fullscreen mode also makes kiosk mode unavailable on desktop
 // platforms.
