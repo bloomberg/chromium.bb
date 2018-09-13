@@ -15,11 +15,27 @@ static_library("storage") {
     "image_store_types.h",
   ]
   deps = [
-    "//components/image_fetcher/core/storage/proto",
+    "proto",
     "//components/leveldb_proto",
     "//net",
   ]
   public_deps = [
     "//base",
+  ]
+}
+
+source_set("storage_unit_tests") {
+  testonly = true
+  sources = [
+    "image_metadata_store_leveldb_unittest.cc",
+  ]
+  deps = [
+    ":storage",
+    "proto",
+    "//base",
+    "//base/test:test_support",
+    "//components/leveldb_proto:test_support",
+    "//testing/gmock",
+    "//testing/gtest:gtest",
   ]
 }
