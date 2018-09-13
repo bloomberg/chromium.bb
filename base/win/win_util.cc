@@ -121,6 +121,29 @@ bool SetProcessDpiAwarenessWrapper(PROCESS_DPI_AWARENESS value) {
   return false;
 }
 
+// Enable V2 per-monitor high-DPI support for the process. This will cause
+// Windows to scale dialogs, comctl32 controls, context menus, and non-client
+// area owned by this process on a per-monitor basis. If per-monitor V2 is not
+// available (i.e., prior to Windows 10 1703) or fails, returns false.
+// https://docs.microsoft.com/en-us/windows/desktop/hidpi/dpi-awareness-context
+bool EnablePerMonitorV2() {
+  decltype(
+      &::SetProcessDpiAwarenessContext) set_process_dpi_awareness_context_func =
+      reinterpret_cast<decltype(&::SetProcessDpiAwarenessContext)>(
+          ::GetProcAddress(::GetModuleHandle(L"user32.dll"),
+                           "SetProcessDpiAwarenessContext"));
+  if (set_process_dpi_awareness_context_func) {
+    return set_process_dpi_awareness_context_func(
+        DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+  }
+
+  DCHECK_LT(GetVersion(), VERSION_WIN10_RS2)
+      << "SetProcessDpiAwarenessContext should be available on all platforms"
+         " >= Windows 10 Redstone 2";
+
+  return false;
+}
+
 bool* GetDomainEnrollmentStateStorage() {
   static bool state = IsOS(OS_DOMAINMEMBER);
   return &state;
@@ -685,9 +708,13 @@ bool IsProcessPerMonitorDpiAware() {
 }
 
 void EnableHighDPISupport() {
-  // Enable per-monitor DPI for Win10 or above instead of Win8.1 since Win8.1
-  // does not have EnableChildWindowDpiMessage, necessary for correct non-client
-  // area scaling across monitors.
+  // Enable per-monitor V2 if it is available (Win10 1703 or later).
+  if (EnablePerMonitorV2())
+    return;
+
+  // Fall back to per-monitor DPI for older versions of Win10 instead of Win8.1
+  // since Win8.1 does not have EnableChildWindowDpiMessage, necessary for
+  // correct non-client area scaling across monitors.
   PROCESS_DPI_AWARENESS process_dpi_awareness =
       GetVersion() >= VERSION_WIN10 ? PROCESS_PER_MONITOR_DPI_AWARE
                                     : PROCESS_SYSTEM_DPI_AWARE;
