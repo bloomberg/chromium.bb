@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_MUTATOR_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_MUTATOR_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_WORKLET_MUTATOR_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_WORKLET_MUTATOR_IMPL_H_
 
 #include <memory>
 
@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_animator.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator.h"
+#include "third_party/blink/renderer/platform/graphics/mutator_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -20,6 +21,7 @@
 namespace blink {
 
 class CompositorMutatorClient;
+class MainThreadMutatorClient;
 class WaitableEvent;
 
 // Fans out requests from the compositor to all of the registered
@@ -30,19 +32,22 @@ class WaitableEvent;
 //
 // Unless otherwise noted, this should be accessed only on the compositor
 // thread.
-class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
+class PLATFORM_EXPORT WorkletMutatorImpl final : public CompositorMutator {
  public:
   // There are three outputs for the two interface surfaces of the created
   // class blob. The returned owning pointer to the Client, which
   // also owns the rest of the structure. |mutatee| and |mutatee_runner| form a
-  // pair for referencing the CompositorMutatorImpl. i.e. Put tasks on the
+  // pair for referencing the WorkletMutatorImpl. i.e. Put tasks on the
   // TaskRunner using the WeakPtr to get to the methods.
-  static std::unique_ptr<CompositorMutatorClient> CreateClient(
-      base::WeakPtr<CompositorMutatorImpl>* mutatee,
+  static std::unique_ptr<CompositorMutatorClient> CreateCompositorThreadClient(
+      base::WeakPtr<WorkletMutatorImpl>* mutatee,
+      scoped_refptr<base::SingleThreadTaskRunner>* mutatee_runner);
+  static std::unique_ptr<MainThreadMutatorClient> CreateMainThreadClient(
+      base::WeakPtr<WorkletMutatorImpl>* mutatee,
       scoped_refptr<base::SingleThreadTaskRunner>* mutatee_runner);
 
-  CompositorMutatorImpl();
-  ~CompositorMutatorImpl() override;
+  explicit WorkletMutatorImpl(bool main_thread_task_runner);
+  ~WorkletMutatorImpl() override;
 
   // CompositorMutator implementation.
   void Mutate(std::unique_ptr<CompositorMutatorInputState>) override;
@@ -57,7 +62,7 @@ class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
 
   void UnregisterCompositorAnimator(CrossThreadPersistent<CompositorAnimator>);
 
-  void SetClient(CompositorMutatorClient* client) { client_ = client; }
+  void SetClient(MutatorClient* client) { client_ = client; }
 
  private:
   using CompositorAnimatorToTaskRunnerMap =
@@ -65,7 +70,6 @@ class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
               scoped_refptr<base::SingleThreadTaskRunner>>;
 
   class AutoSignal {
-
    public:
     explicit AutoSignal(WaitableEvent*);
     ~AutoSignal();
@@ -84,17 +88,23 @@ class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
     return mutator_queue_;
   }
 
+  template <typename ClientType>
+  static std::unique_ptr<ClientType> CreateClient(
+      base::WeakPtr<WorkletMutatorImpl>* weak_interface,
+      scoped_refptr<base::SingleThreadTaskRunner>* queue,
+      bool create_main_thread_client);
+
   scoped_refptr<base::SingleThreadTaskRunner> mutator_queue_;
 
-  // The CompositorMutatorClient owns (std::unique_ptr) us, so this pointer is
+  // The MutatorClient owns (std::unique_ptr) us, so this pointer is
   // valid as long as this class exists.
-  CompositorMutatorClient* client_;
+  MutatorClient* client_;
 
-  base::WeakPtrFactory<CompositorMutatorImpl> weak_factory_;
+  base::WeakPtrFactory<WorkletMutatorImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(CompositorMutatorImpl);
+  DISALLOW_COPY_AND_ASSIGN(WorkletMutatorImpl);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_MUTATOR_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_WORKLET_MUTATOR_IMPL_H_

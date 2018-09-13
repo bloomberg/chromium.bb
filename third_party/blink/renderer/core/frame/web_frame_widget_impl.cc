@@ -82,7 +82,7 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
+#include "third_party/blink/renderer/platform/graphics/worklet_mutator_impl.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
 namespace blink {
@@ -570,12 +570,12 @@ void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
   Client()->IntrinsicSizingInfoChanged(web_sizing_info);
 }
 
-base::WeakPtr<CompositorMutatorImpl>
-WebFrameWidgetImpl::EnsureCompositorMutator(
+base::WeakPtr<WorkletMutatorImpl> WebFrameWidgetImpl::EnsureCompositorMutator(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
   if (!mutator_task_runner_) {
     layer_tree_view_->SetMutatorClient(
-        CompositorMutatorImpl::CreateClient(&mutator_, &mutator_task_runner_));
+        WorkletMutatorImpl::CreateCompositorThreadClient(
+            &mutator_, &mutator_task_runner_));
   }
 
   DCHECK(mutator_task_runner_);

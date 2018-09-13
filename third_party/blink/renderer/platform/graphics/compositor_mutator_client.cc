@@ -6,12 +6,12 @@
 
 #include <memory>
 #include "base/trace_event/trace_event.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
+#include "third_party/blink/renderer/platform/graphics/worklet_mutator_impl.h"
 
 namespace blink {
 
 CompositorMutatorClient::CompositorMutatorClient(
-    std::unique_ptr<CompositorMutatorImpl> mutator)
+    std::unique_ptr<WorkletMutatorImpl> mutator)
     : mutator_(std::move(mutator)) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc"),
                "CompositorMutatorClient::CompositorMutatorClient");

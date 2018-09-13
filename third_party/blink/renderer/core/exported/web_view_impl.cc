@@ -146,9 +146,9 @@
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/worklet_mutator_impl.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -3370,11 +3370,12 @@ void WebViewImpl::ForceNextDrawingBufferCreationToFail() {
   DrawingBuffer::ForceNextDrawingBufferCreationToFail();
 }
 
-base::WeakPtr<CompositorMutatorImpl> WebViewImpl::EnsureCompositorMutator(
+base::WeakPtr<WorkletMutatorImpl> WebViewImpl::EnsureCompositorMutator(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
   if (!mutator_task_runner_) {
     layer_tree_view_->SetMutatorClient(
-        CompositorMutatorImpl::CreateClient(&mutator_, &mutator_task_runner_));
+        WorkletMutatorImpl::CreateCompositorThreadClient(
+            &mutator_, &mutator_task_runner_));
   }
 
   DCHECK(mutator_task_runner_);

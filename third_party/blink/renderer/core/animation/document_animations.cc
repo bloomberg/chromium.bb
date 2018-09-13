@@ -93,7 +93,7 @@ void DocumentAnimations::UpdateAnimations(
     }
   }
 
-  document.GetWorkletAnimationController().UpdateAnimationCompositingStates();
+  document.GetWorkletAnimationController().UpdateAnimationStates();
 
   document.Timeline().ScheduleNextService();
 }
