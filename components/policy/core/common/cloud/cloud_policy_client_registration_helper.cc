@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -273,8 +274,9 @@ void CloudPolicyClientRegistrationHelper::OnGetUserInfoSuccess(
       registration_type_,
       enterprise_management::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
       enterprise_management::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-      enterprise_management::LicenseType::UNDEFINED, oauth_access_token_,
-      std::string(), std::string(), std::string());
+      enterprise_management::LicenseType::UNDEFINED,
+      DMAuth::FromOAuthToken(oauth_access_token_), std::string(), std::string(),
+      std::string());
 }
 
 void CloudPolicyClientRegistrationHelper::OnPolicyFetched(

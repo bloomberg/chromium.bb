@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -413,18 +414,21 @@ void DeviceManagementRequestJobImpl::ConfigureRequest(
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
       net::LOAD_DISABLE_CACHE | (bypass_proxy_ ? net::LOAD_BYPASS_PROXY : 0);
-  if (!gaia_token_.empty()) {
-    resource_request->headers.SetHeader(
-        kAuthHeader, std::string(kServiceTokenAuthHeaderPrefix) + gaia_token_);
-  }
-  if (!dm_token_.empty()) {
-    resource_request->headers.SetHeader(
-        kAuthHeader, std::string(kDMTokenAuthHeaderPrefix) + dm_token_);
-  }
-  if (!enrollment_token_.empty()) {
+  CHECK(auth_data_);
+  if (!auth_data_->gaia_token().empty()) {
     resource_request->headers.SetHeader(
         kAuthHeader,
-        std::string(kEnrollmentTokenAuthHeaderPrefix) + enrollment_token_);
+        std::string(kServiceTokenAuthHeaderPrefix) + auth_data_->gaia_token());
+  }
+  if (!auth_data_->dm_token().empty()) {
+    resource_request->headers.SetHeader(
+        kAuthHeader,
+        std::string(kDMTokenAuthHeaderPrefix) + auth_data_->dm_token());
+  }
+  if (!auth_data_->enrollment_token().empty()) {
+    resource_request->headers.SetHeader(
+        kAuthHeader, std::string(kEnrollmentTokenAuthHeaderPrefix) +
+                         auth_data_->enrollment_token());
   }
 }
 
@@ -493,24 +497,14 @@ void DeviceManagementRequestJobImpl::ReportError(DeviceManagementStatus code) {
 
 DeviceManagementRequestJob::~DeviceManagementRequestJob() {}
 
-void DeviceManagementRequestJob::SetGaiaToken(const std::string& gaia_token) {
-  gaia_token_ = gaia_token;
-}
-
-void DeviceManagementRequestJob::SetOAuthToken(const std::string& oauth_token) {
-  AddParameter(dm_protocol::kParamOAuthToken, oauth_token);
-}
-
-void DeviceManagementRequestJob::SetDMToken(const std::string& dm_token) {
-  dm_token_ = dm_token;
+void DeviceManagementRequestJob::SetAuthData(std::unique_ptr<DMAuth> auth) {
+  auth_data_ = std::move(auth);
+  if (auth_data_->has_oauth_token())
+    AddParameter(dm_protocol::kParamOAuthToken, auth_data_->oauth_token());
 }
 
 void DeviceManagementRequestJob::SetClientID(const std::string& client_id) {
   AddParameter(dm_protocol::kParamDeviceID, client_id);
-}
-
-void DeviceManagementRequestJob::SetEnrollmentToken(const std::string& token) {
-  enrollment_token_ = token;
 }
 
 void DeviceManagementRequestJob::SetCritical(bool critical) {

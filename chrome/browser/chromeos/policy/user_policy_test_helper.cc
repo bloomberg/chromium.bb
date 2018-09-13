@@ -24,6 +24,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -105,8 +106,9 @@ void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
       registration_type,
       enterprise_management::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
       enterprise_management::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-      enterprise_management::LicenseType::UNDEFINED, "bogus", std::string(),
-      std::string(), std::string());
+      enterprise_management::LicenseType::UNDEFINED,
+      DMAuth::FromOAuthToken("bogus"), std::string(), std::string(),
+      std::string());
 
   policy::ProfilePolicyConnector* const profile_connector =
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
