@@ -129,6 +129,25 @@ std::unique_ptr<Cronet_Error> CreateCronet_Error(
   return error;
 }
 
+#if DCHECK_IS_ON()
+// Runnable used to verify that Executor calls Cronet_Runnable_Destroy().
+class VerifyDestructionRunnable : public Cronet_Runnable {
+ public:
+  VerifyDestructionRunnable(base::WaitableEvent* destroyed)
+      : destroyed_(destroyed) {}
+  // Signal event indicating Runnable was properly Destroyed.
+  ~VerifyDestructionRunnable() override { destroyed_->Signal(); }
+
+  void Run() override {}
+
+ private:
+  // Event indicating destructor is called.
+  base::WaitableEvent* const destroyed_;
+
+  DISALLOW_COPY_AND_ASSIGN(VerifyDestructionRunnable);
+};
+#endif  // DCHECK_IS_ON()
+
 }  // namespace
 
 namespace cronet {
@@ -291,6 +310,10 @@ Cronet_RESULT Cronet_UrlRequestImpl::Start() {
     return engine_->CheckResult(
         Cronet_RESULT_ILLEGAL_STATE_REQUEST_NOT_INITIALIZED);
   }
+#if DCHECK_IS_ON()
+  Cronet_Executor_Execute(executor_,
+                          new VerifyDestructionRunnable(&runnable_destroyed_));
+#endif  // DCHECK_IS_ON()
   request_->Start();
   started_ = true;
   return engine_->CheckResult(Cronet_RESULT_SUCCESS);
@@ -408,6 +431,14 @@ void Cronet_UrlRequestImpl::InvokeCallbackOnRedirectReceived() {
 void Cronet_UrlRequestImpl::InvokeCallbackOnResponseStarted() {
   if (IsDone())
     return;
+#if DCHECK_IS_ON()
+  // Verify that Executor calls Cronet_Runnable_Destroy().
+  if (!runnable_destroyed_.TimedWait(base::TimeDelta::FromSeconds(5))) {
+    LOG(ERROR) << "Cronet Executor didn't call Cronet_Runnable_Destroy() in "
+                  "5s; still waiting.";
+    runnable_destroyed_.Wait();
+  }
+#endif  // DCHECK_IS_ON()
   Cronet_UrlRequestCallback_OnResponseStarted(callback_, this,
                                               response_info_.get());
 }
