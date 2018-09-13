@@ -58,7 +58,7 @@ class CORE_EXPORT NGConstraintSpace final
   static scoped_refptr<NGConstraintSpace> CreateFromLayoutObject(
       const LayoutBox&);
 
-  const NGExclusionSpace& ExclusionSpace() const { return *exclusion_space_; }
+  const NGExclusionSpace& ExclusionSpace() const { return exclusion_space_; }
 
   TextDirection Direction() const {
     return static_cast<TextDirection>(direction_);
@@ -294,7 +294,7 @@ class CORE_EXPORT NGConstraintSpace final
   NGBfcOffset bfc_offset_;
   base::Optional<LayoutUnit> floats_bfc_block_offset_;
 
-  const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
+  const NGExclusionSpace exclusion_space_;
   LayoutUnit clearance_offset_;
 
   Vector<NGBaselineRequest> baseline_requests_;

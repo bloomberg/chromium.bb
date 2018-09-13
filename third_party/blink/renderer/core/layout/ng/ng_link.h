@@ -27,6 +27,9 @@ class CORE_EXPORT NGLink {
   NGLink(NGLink&& o) noexcept
       : fragment_(std::move(o.fragment_)), offset_(o.offset_) {}
   ~NGLink() = default;
+  NGLink(const NGLink&) = default;
+  NGLink& operator=(const NGLink&) = default;
+  NGLink& operator=(NGLink&&) = default;
 
   // Returns the offset relative to the parent fragment's content-box.
   NGPhysicalOffset Offset() const { return offset_; }
@@ -46,8 +49,6 @@ class CORE_EXPORT NGLink {
   friend class NGFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;
   friend class NGLayoutResult;
-
-  DISALLOW_COPY_AND_ASSIGN(NGLink);
 };
 
 }  // namespace blink

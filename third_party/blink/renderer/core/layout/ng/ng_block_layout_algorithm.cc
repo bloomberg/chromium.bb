@@ -158,7 +158,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
                                                NGBlockBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, break_token),
       is_resuming_(break_token && !break_token->IsBreakBefore()),
-      exclusion_space_(new NGExclusionSpace(space.ExclusionSpace())) {}
+      exclusion_space_(space.ExclusionSpace()) {}
 
 // Define the destructor here, so that we can forward-declare more in the
 // header.
@@ -537,9 +537,8 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // If the current layout is a new formatting context, we need to encapsulate
   // all of our floats.
   if (ConstraintSpace().IsNewFormattingContext()) {
-    intrinsic_block_size_ =
-        std::max(intrinsic_block_size_,
-                 exclusion_space_->ClearanceOffset(EClear::kBoth));
+    intrinsic_block_size_ = std::max(
+        intrinsic_block_size_, exclusion_space_.ClearanceOffset(EClear::kBoth));
   }
 
   // The end margin strut of an in-flow fragment contributes to the size of the
@@ -671,7 +670,6 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   // An exclusion space is confined to nodes within the same formatting context.
   if (!ConstraintSpace().IsNewFormattingContext()) {
-    DCHECK(exclusion_space_);
     container_builder_.SetExclusionSpace(std::move(exclusion_space_));
   }
 
@@ -966,7 +964,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     bool abort_if_cleared) {
   // The origin offset is where we should start looking for layout
   // opportunities. It needs to be adjusted by the child's clearance.
-  AdjustToClearance(exclusion_space_->ClearanceOffset(child.Style().Clear()),
+  AdjustToClearance(exclusion_space_.ClearanceOffset(child.Style().Clear()),
                     &origin_offset);
   DCHECK(container_builder_.BfcBlockOffset());
 
@@ -985,7 +983,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
           .ClampNegativeToZero();
 
   LayoutOpportunityVector opportunities =
-      exclusion_space_->AllLayoutOpportunities(origin_offset, inline_size);
+      exclusion_space_.AllLayoutOpportunities(origin_offset, inline_size);
 
   // We should always have at least one opportunity.
   DCHECK_GT(opportunities.size(), 0u);
@@ -1037,7 +1035,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
 
     // Since this child establishes a new formatting context, no exclusion space
     // should be returned.
-    DCHECK(!layout_result->ExclusionSpace());
+    DCHECK(layout_result->ExclusionSpace().IsEmpty());
 
     DCHECK(layout_result->PhysicalFragment());
     NGFragment fragment(ConstraintSpace().GetWritingMode(),
@@ -1233,9 +1231,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   }
 
   // It is now safe to update our version of the exclusion space.
-  DCHECK(layout_result->ExclusionSpace());
-  exclusion_space_ =
-      std::make_unique<NGExclusionSpace>(*layout_result->ExclusionSpace());
+  exclusion_space_ = layout_result->ExclusionSpace();
 
   // If we don't know our BFC block offset yet, and the child stumbled into
   // something that needs it (unable to position floats when the BFC block
@@ -1843,7 +1839,7 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   } else {
     const ComputedStyle& child_style = child.Style();
     LayoutUnit child_clearance_offset =
-        exclusion_space_->ClearanceOffset(child_style.Clear());
+        exclusion_space_.ClearanceOffset(child_style.Clear());
     clearance_offset = std::max(clearance_offset, child_clearance_offset);
     space_builder.SetIsShrinkToFit(ShouldShrinkToFit(Style(), child_style));
     space_builder.SetTextDirection(child_style.Direction());
@@ -1860,7 +1856,7 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     space_builder.SetShouldForceClearance(true);
 
   if (!is_new_fc) {
-    space_builder.SetExclusionSpace(*exclusion_space_);
+    space_builder.SetExclusionSpace(exclusion_space_);
     space_builder.SetAdjoiningFloatTypes(
         container_builder_.AdjoiningFloatTypes());
   }
@@ -2052,7 +2048,7 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
   const auto positioned_floats =
       PositionFloats(child_available_size_, child_percentage_size_,
                      origin_bfc_offset, bfc_block_offset, unpositioned_floats_,
-                     ConstraintSpace(), exclusion_space_.get());
+                     ConstraintSpace(), &exclusion_space_);
 
   AddPositionedFloats(positioned_floats);
 

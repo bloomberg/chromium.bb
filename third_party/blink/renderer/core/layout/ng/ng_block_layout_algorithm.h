@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -299,7 +300,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   bool has_processed_first_child_ = false;
 
-  std::unique_ptr<NGExclusionSpace> exclusion_space_;
+  NGExclusionSpace exclusion_space_;
   NGUnpositionedFloatVector unpositioned_floats_;
 };
 

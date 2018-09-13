@@ -20,27 +20,21 @@ namespace blink {
 
 typedef Vector<NGLayoutOpportunity, 8> LayoutOpportunityVector;
 
-// The exclusion space represents all of the exclusions within a block
-// formatting context.
-//
-// The space is mutated simply by adding exclusions, and various information
-// can be queried based on the exclusions.
-class CORE_EXPORT NGExclusionSpace {
-  USING_FAST_MALLOC(NGExclusionSpace);
+// This class is an implementation detail. For use of the exclusion space,
+// see NGExclusionSpace below. NGExclusionSpace was designed to be cheap
+// to construct and cheap to copy if empty.
+class CORE_EXPORT NGExclusionSpaceInternal {
+  USING_FAST_MALLOC(NGExclusionSpaceInternal);
 
  public:
-  NGExclusionSpace();
-  NGExclusionSpace(const NGExclusionSpace&);
-  NGExclusionSpace(NGExclusionSpace&&) noexcept;
-  NGExclusionSpace& operator=(const NGExclusionSpace&);
-  ~NGExclusionSpace(){};
+  NGExclusionSpaceInternal();
+  NGExclusionSpaceInternal(const NGExclusionSpaceInternal&);
+  NGExclusionSpaceInternal(NGExclusionSpaceInternal&&) noexcept;
+  NGExclusionSpaceInternal& operator=(const NGExclusionSpaceInternal&);
+  ~NGExclusionSpaceInternal(){};
 
   void Add(scoped_refptr<const NGExclusion> exclusion);
 
-  // Returns a layout opportunity, within the BFC.
-  // The area to search for layout opportunities is defined by the given offset,
-  // and available_inline_size. The layout opportunity must be greater than the
-  // given minimum_size.
   NGLayoutOpportunity FindLayoutOpportunity(
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size,
@@ -75,7 +69,6 @@ class CORE_EXPORT NGExclusionSpace {
                                                        available_inline_size);
   }
 
-  // Returns the clearance offset based on the provided {@code clear_type}.
   LayoutUnit ClearanceOffset(EClear clear_type) const {
     if (clear_type == EClear::kNone)
       return LayoutUnit::Min();
@@ -83,15 +76,14 @@ class CORE_EXPORT NGExclusionSpace {
     return GetDerivedGeometry().ClearanceOffset(clear_type);
   }
 
-  // Returns the block start offset of the last float added.
   LayoutUnit LastFloatBlockStart() const {
     return GetDerivedGeometry().LastFloatBlockStart();
   }
 
   bool IsEmpty() const { return !num_exclusions_; }
 
-  bool operator==(const NGExclusionSpace& other) const;
-  bool operator!=(const NGExclusionSpace& other) const {
+  bool operator==(const NGExclusionSpaceInternal& other) const;
+  bool operator!=(const NGExclusionSpaceInternal& other) const {
     return !(*this == other);
   }
 
@@ -183,8 +175,8 @@ class CORE_EXPORT NGExclusionSpace {
 
  private:
   // In order to reduce the amount of Vector copies, instances of a
-  // NGExclusionSpace can share the same exclusions_ Vector. See the copy
-  // constructor.
+  // NGExclusionSpaceInternal can share the same exclusions_ Vector. See the
+  // copy constructor.
   //
   // We implement a copy-on-write behaviour when adding an exclusion (if
   // exclusions_.size(), and num_exclusions_ differs).
@@ -288,6 +280,102 @@ class CORE_EXPORT NGExclusionSpace {
 
   // See DerivedGeometry struct description.
   mutable std::unique_ptr<DerivedGeometry> derived_geometry_;
+};
+
+// The exclusion space represents all of the exclusions within a block
+// formatting context.
+//
+// The space is mutated simply by adding exclusions, and various information
+// can be queried based on the exclusions.
+class CORE_EXPORT NGExclusionSpace {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+ public:
+  NGExclusionSpace() = default;
+  NGExclusionSpace(const NGExclusionSpace& other)
+      : exclusion_space_(other.exclusion_space_ ? new NGExclusionSpaceInternal(
+                                                      *other.exclusion_space_)
+                                                : nullptr) {}
+  NGExclusionSpace(NGExclusionSpace&& other) noexcept
+      : exclusion_space_(std::move(other.exclusion_space_)) {}
+
+  NGExclusionSpace& operator=(const NGExclusionSpace& other) {
+    exclusion_space_ = other.exclusion_space_
+                           ? std::make_unique<NGExclusionSpaceInternal>(
+                                 *other.exclusion_space_)
+                           : nullptr;
+    return *this;
+  }
+
+  void Add(scoped_refptr<const NGExclusion> exclusion) {
+    if (!exclusion_space_)
+      exclusion_space_ = std::make_unique<NGExclusionSpaceInternal>();
+    exclusion_space_->Add(exclusion);
+  }
+
+  // Returns a layout opportunity, within the BFC.
+  // The area to search for layout opportunities is defined by the given offset,
+  // and available_inline_size. The layout opportunity must be greater than the
+  // given minimum_size.
+  NGLayoutOpportunity FindLayoutOpportunity(
+      const NGBfcOffset& offset,
+      const LayoutUnit available_inline_size,
+      const NGLogicalSize& minimum_size) const {
+    if (!exclusion_space_) {
+      NGBfcOffset end_offset(
+          offset.line_offset + available_inline_size.ClampNegativeToZero(),
+          LayoutUnit::Max());
+      return NGLayoutOpportunity(NGBfcRect(offset, end_offset), nullptr);
+    }
+    return exclusion_space_->FindLayoutOpportunity(
+        offset, available_inline_size, minimum_size);
+  }
+
+  LayoutOpportunityVector AllLayoutOpportunities(
+      const NGBfcOffset& offset,
+      const LayoutUnit available_inline_size) const {
+    if (!exclusion_space_) {
+      NGBfcOffset end_offset(
+          offset.line_offset + available_inline_size.ClampNegativeToZero(),
+          LayoutUnit::Max());
+      return LayoutOpportunityVector(
+          {NGLayoutOpportunity(NGBfcRect(offset, end_offset), nullptr)});
+    }
+    return exclusion_space_->AllLayoutOpportunities(offset,
+                                                    available_inline_size);
+  }
+
+  // Returns the clearance offset based on the provided {@code clear_type}.
+  LayoutUnit ClearanceOffset(EClear clear_type) const {
+    if (!exclusion_space_)
+      return LayoutUnit::Min();
+    return exclusion_space_->ClearanceOffset(clear_type);
+  }
+
+  // Returns the block start offset of the last float added.
+  LayoutUnit LastFloatBlockStart() const {
+    if (!exclusion_space_)
+      return LayoutUnit::Min();
+    return exclusion_space_->LastFloatBlockStart();
+  }
+
+  bool IsEmpty() const {
+    return !exclusion_space_ || exclusion_space_->IsEmpty();
+  }
+
+  bool operator==(const NGExclusionSpace& other) const {
+    if (exclusion_space_ == other.exclusion_space_)
+      return true;
+    if (exclusion_space_ && other.exclusion_space_)
+      return *exclusion_space_ == *other.exclusion_space_;
+    return false;
+  }
+  bool operator!=(const NGExclusionSpace& other) const {
+    return !(*this == other);
+  }
+
+ private:
+  std::unique_ptr<NGExclusionSpaceInternal> exclusion_space_;
 };
 
 }  // namespace blink

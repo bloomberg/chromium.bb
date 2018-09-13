@@ -99,7 +99,7 @@ bool Intersects(const NGLayoutOpportunity& opportunity,
 //
 // If the shelf is at -Infinity or +Infinity at either end, the given area
 // always intersects.
-bool Intersects(const NGExclusionSpace::NGShelf& shelf,
+bool Intersects(const NGExclusionSpaceInternal::NGShelf& shelf,
                 const NGBfcOffset& offset,
                 const LayoutUnit inline_size) {
   if (shelf.line_right >= offset.line_offset &&
@@ -138,7 +138,7 @@ NGLayoutOpportunity CreateLayoutOpportunity(const NGLayoutOpportunity& other,
 // Creates a new layout opportunity. The given shelf *must* intersect with the
 // given area (defined by offset and inline_size).
 NGLayoutOpportunity CreateLayoutOpportunity(
-    const NGExclusionSpace::NGShelf& shelf,
+    const NGExclusionSpaceInternal::NGShelf& shelf,
     const NGBfcOffset& offset,
     const LayoutUnit inline_size) {
   DCHECK(Intersects(shelf, offset, inline_size));
@@ -162,13 +162,14 @@ NGLayoutOpportunity CreateLayoutOpportunity(
 
 }  // namespace
 
-NGExclusionSpace::NGExclusionSpace()
+NGExclusionSpaceInternal::NGExclusionSpaceInternal()
     : exclusions_(RefVector<scoped_refptr<const NGExclusion>>::Create()),
       num_exclusions_(0),
       both_clear_offset_(LayoutUnit::Min()),
       derived_geometry_(nullptr) {}
 
-NGExclusionSpace::NGExclusionSpace(const NGExclusionSpace& other)
+NGExclusionSpaceInternal::NGExclusionSpaceInternal(
+    const NGExclusionSpaceInternal& other)
     : exclusions_(other.exclusions_),
       num_exclusions_(other.num_exclusions_),
       both_clear_offset_(other.both_clear_offset_),
@@ -178,13 +179,15 @@ NGExclusionSpace::NGExclusionSpace(const NGExclusionSpace& other)
   other.derived_geometry_ = nullptr;
 }
 
-NGExclusionSpace::NGExclusionSpace(NGExclusionSpace&& other)
+NGExclusionSpaceInternal::NGExclusionSpaceInternal(
+    NGExclusionSpaceInternal&& other)
     : exclusions_(std::move(other.exclusions_)),
       num_exclusions_(other.num_exclusions_),
       both_clear_offset_(other.both_clear_offset_),
       derived_geometry_(std::move(other.derived_geometry_)) {}
 
-NGExclusionSpace& NGExclusionSpace::operator=(const NGExclusionSpace& other) {
+NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
+    const NGExclusionSpaceInternal& other) {
   exclusions_ = other.exclusions_;
   num_exclusions_ = other.num_exclusions_;
   both_clear_offset_ = other.both_clear_offset_;
@@ -193,7 +196,7 @@ NGExclusionSpace& NGExclusionSpace::operator=(const NGExclusionSpace& other) {
   return *this;
 }
 
-NGExclusionSpace::DerivedGeometry::DerivedGeometry()
+NGExclusionSpaceInternal::DerivedGeometry::DerivedGeometry()
     : last_float_block_start_(LayoutUnit::Min()),
       left_float_clear_offset_(LayoutUnit::Min()),
       right_float_clear_offset_(LayoutUnit::Min()) {
@@ -201,7 +204,7 @@ NGExclusionSpace::DerivedGeometry::DerivedGeometry()
   shelves_.emplace_back(/* block_offset */ LayoutUnit::Min());
 }
 
-void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
+void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
   DCHECK_LE(num_exclusions_, exclusions_->size());
 
   // Perform a copy-on-write if the number of exclusions has gone out of sync.
@@ -227,7 +230,8 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
   num_exclusions_++;
 }
 
-void NGExclusionSpace::DerivedGeometry::Add(const NGExclusion& exclusion) {
+void NGExclusionSpaceInternal::DerivedGeometry::Add(
+    const NGExclusion& exclusion) {
   last_float_block_start_ =
       std::max(last_float_block_start_, exclusion.rect.BlockStartOffset());
 
@@ -484,7 +488,8 @@ void NGExclusionSpace::DerivedGeometry::Add(const NGExclusion& exclusion) {
 #endif
 }
 
-NGLayoutOpportunity NGExclusionSpace::DerivedGeometry::FindLayoutOpportunity(
+NGLayoutOpportunity
+NGExclusionSpaceInternal::DerivedGeometry::FindLayoutOpportunity(
     const NGBfcOffset& offset,
     const LayoutUnit available_inline_size,
     const NGLogicalSize& minimum_size) const {
@@ -511,7 +516,7 @@ NGLayoutOpportunity NGExclusionSpace::DerivedGeometry::FindLayoutOpportunity(
 }
 
 LayoutOpportunityVector
-NGExclusionSpace::DerivedGeometry::AllLayoutOpportunities(
+NGExclusionSpaceInternal::DerivedGeometry::AllLayoutOpportunities(
     const NGBfcOffset& offset,
     const LayoutUnit available_inline_size) const {
   LayoutOpportunityVector opportunities;
@@ -567,7 +572,7 @@ NGExclusionSpace::DerivedGeometry::AllLayoutOpportunities(
   return opportunities;
 }
 
-LayoutUnit NGExclusionSpace::DerivedGeometry::ClearanceOffset(
+LayoutUnit NGExclusionSpaceInternal::DerivedGeometry::ClearanceOffset(
     EClear clear_type) const {
   switch (clear_type) {
     case EClear::kNone:
@@ -585,8 +590,8 @@ LayoutUnit NGExclusionSpace::DerivedGeometry::ClearanceOffset(
   return LayoutUnit::Min();
 }
 
-const NGExclusionSpace::DerivedGeometry& NGExclusionSpace::GetDerivedGeometry()
-    const {
+const NGExclusionSpaceInternal::DerivedGeometry&
+NGExclusionSpaceInternal::GetDerivedGeometry() const {
   // Re-build the geometry if it isn't present.
   if (!derived_geometry_) {
     derived_geometry_ = std::make_unique<DerivedGeometry>();
@@ -598,7 +603,8 @@ const NGExclusionSpace::DerivedGeometry& NGExclusionSpace::GetDerivedGeometry()
   return *derived_geometry_;
 }
 
-bool NGExclusionSpace::operator==(const NGExclusionSpace& other) const {
+bool NGExclusionSpaceInternal::operator==(
+    const NGExclusionSpaceInternal& other) const {
   if (num_exclusions_ == 0 && other.num_exclusions_ == 0)
     return true;
   return num_exclusions_ == other.num_exclusions_ &&

@@ -48,7 +48,7 @@ NGConstraintSpace::NGConstraintSpace(
       margin_strut_(margin_strut),
       bfc_offset_(bfc_offset),
       floats_bfc_block_offset_(floats_bfc_block_offset),
-      exclusion_space_(std::make_unique<NGExclusionSpace>(exclusion_space)),
+      exclusion_space_(exclusion_space),
       clearance_offset_(clearance_offset) {
   baseline_requests_.swap(baseline_requests);
 }
@@ -184,10 +184,6 @@ NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
 }
 
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
-  if (exclusion_space_ && other.exclusion_space_ &&
-      *exclusion_space_ != *other.exclusion_space_)
-    return false;
-
   return available_size_ == other.available_size_ &&
          percentage_resolution_size_ == other.percentage_resolution_size_ &&
          parent_percentage_resolution_inline_size_ ==
@@ -206,6 +202,7 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
          margin_strut_ == other.margin_strut_ &&
          bfc_offset_ == other.bfc_offset_ &&
          floats_bfc_block_offset_ == other.floats_bfc_block_offset_ &&
+         exclusion_space_ == other.exclusion_space_ &&
          clearance_offset_ == other.clearance_offset_ &&
          baseline_requests_ == other.baseline_requests_;
 }
