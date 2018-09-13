@@ -17,76 +17,74 @@
 
 namespace drive {
 
-bool ConvertChangeResourceToResourceEntry(
+void ConvertChangeResourceToResourceEntry(
     const google_apis::ChangeResource& input,
     ResourceEntry* out_entry,
     std::string* out_parent_resource_id) {
   DCHECK(out_entry);
   DCHECK(out_parent_resource_id);
 
-  ResourceEntry converted;
-  std::string parent_resource_id;
+  out_entry->Clear();
+  out_parent_resource_id->clear();
+
   if (input.type() == google_apis::ChangeResource::TEAM_DRIVE) {
     if (input.team_drive()) {
-      ConvertTeamDriveResourceToResourceEntry(*input.team_drive(), &converted);
+      ConvertTeamDriveResourceToResourceEntry(*input.team_drive(), out_entry);
     } else {
       // resource_id is same as the Team Drive ID.
       // Both team_drive_id() and team_drive().id() holds the same ID, but the
       // latter doesn't exist for deleted items.
-      converted.set_resource_id(input.team_drive_id());
-      converted.mutable_file_info()->set_is_directory(true);
-      converted.mutable_file_info()->set_is_team_drive_root(true);
-      converted.set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
+      out_entry->set_resource_id(input.team_drive_id());
+      out_entry->mutable_file_info()->set_is_directory(true);
+      out_entry->mutable_file_info()->set_is_team_drive_root(true);
+      out_entry->set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
     }
   } else {
-    if (input.file() && !ConvertFileResourceToResourceEntry(
-                            *input.file(), &converted, &parent_resource_id))
-      return false;
-    converted.set_resource_id(input.file_id());
+    if (input.file()) {
+      ConvertFileResourceToResourceEntry(*input.file(), out_entry,
+                                         out_parent_resource_id);
+    }
+    out_entry->set_resource_id(input.file_id());
   }
-  converted.set_deleted(converted.deleted() || input.is_deleted());
-  converted.set_modification_date(input.modification_date().ToInternalValue());
-
-  out_entry->Swap(&converted);
-  swap(*out_parent_resource_id, parent_resource_id);
-  return true;
+  out_entry->set_deleted(out_entry->deleted() || input.is_deleted());
+  out_entry->set_modification_date(input.modification_date().ToInternalValue());
 }
 
-bool ConvertFileResourceToResourceEntry(
-    const google_apis::FileResource& input,
-    ResourceEntry* out_entry,
-    std::string* out_parent_resource_id) {
+void ConvertFileResourceToResourceEntry(const google_apis::FileResource& input,
+                                        ResourceEntry* out_entry,
+                                        std::string* out_parent_resource_id) {
   DCHECK(out_entry);
   DCHECK(out_parent_resource_id);
-  ResourceEntry converted;
+
+  out_entry->Clear();
+  out_parent_resource_id->clear();
 
   // For regular files, the 'filename' and 'title' attribute in the metadata
   // may be different (e.g. due to rename). To be consistent with the web
   // interface and other client to use the 'title' attribute, instead of
   // 'filename', as the file name in the local snapshot.
-  converted.set_title(input.title());
-  converted.set_base_name(util::NormalizeFileName(converted.title()));
-  converted.set_resource_id(input.file_id());
+  out_entry->set_title(input.title());
+  out_entry->set_base_name(util::NormalizeFileName(out_entry->title()));
+  out_entry->set_resource_id(input.file_id());
 
   // Gets parent Resource ID. On drive.google.com, a file can have multiple
   // parents or no parent, but we are forcing a tree-shaped structure (i.e. no
   // multi-parent or zero-parent entries). Therefore the first found "parent" is
   // used for the entry. Tracked in http://crbug.com/158904.
-  std::string parent_resource_id;
   if (!input.parents().empty())
-    parent_resource_id = input.parents()[0].file_id();
+    out_parent_resource_id->assign(input.parents()[0].file_id());
 
-  converted.set_deleted(input.labels().is_trashed());
-  converted.set_starred(input.labels().is_starred());
-  converted.set_shared_with_me(!input.shared_with_me_date().is_null());
-  converted.set_shared(input.shared());
+  out_entry->set_deleted(input.labels().is_trashed());
+  out_entry->set_starred(input.labels().is_starred());
+  out_entry->set_shared_with_me(!input.shared_with_me_date().is_null());
+  out_entry->set_shared(input.shared());
   if (!input.alternate_link().is_empty())
-    converted.set_alternate_url(input.alternate_link().spec());
+    out_entry->set_alternate_url(input.alternate_link().spec());
 
-  PlatformFileInfoProto* file_info = converted.mutable_file_info();
+  PlatformFileInfoProto* file_info = out_entry->mutable_file_info();
 
   file_info->set_last_modified(input.modified_date().ToInternalValue());
-  converted.set_last_modified_by_me(
+  out_entry->set_last_modified_by_me(
       input.modified_by_me_date().ToInternalValue());
   // If the file has never been viewed (last_viewed_by_me_date().is_null() ==
   // true), then we will set the last_accessed field in the protocol buffer to
@@ -98,21 +96,21 @@ bool ConvertFileResourceToResourceEntry(
   // Set the capabilities.
   const google_apis::FileResourceCapabilities& capabilities =
       input.capabilities();
-  converted.mutable_capabilities_info()->set_can_copy(capabilities.can_copy());
-  converted.mutable_capabilities_info()->set_can_delete(
+  out_entry->mutable_capabilities_info()->set_can_copy(capabilities.can_copy());
+  out_entry->mutable_capabilities_info()->set_can_delete(
       capabilities.can_delete());
-  converted.mutable_capabilities_info()->set_can_rename(
+  out_entry->mutable_capabilities_info()->set_can_rename(
       capabilities.can_rename());
-  converted.mutable_capabilities_info()->set_can_add_children(
+  out_entry->mutable_capabilities_info()->set_can_add_children(
       capabilities.can_add_children());
-  converted.mutable_capabilities_info()->set_can_share(
+  out_entry->mutable_capabilities_info()->set_can_share(
       capabilities.can_share());
 
   if (input.IsDirectory()) {
     file_info->set_is_directory(true);
   } else {
     FileSpecificInfo* file_specific_info =
-        converted.mutable_file_specific_info();
+        out_entry->mutable_file_specific_info();
     if (!input.IsHostedDocument()) {
       file_info->set_size(input.file_size());
       file_specific_info->set_md5(input.md5_checksum());
@@ -125,8 +123,8 @@ bool ConvertFileResourceToResourceEntry(
       const std::string document_extension =
           drive::util::GetHostedDocumentExtension(input.mime_type());
       file_specific_info->set_document_extension(document_extension);
-      converted.set_base_name(
-          util::NormalizeFileName(converted.title() + document_extension));
+      out_entry->set_base_name(
+          util::NormalizeFileName(out_entry->title() + document_extension));
 
       // We don't know the size of hosted docs and it does not matter since
       // it has no effect on the quota.
@@ -148,10 +146,6 @@ bool ConvertFileResourceToResourceEntry(
     if (image_rotation != -1)
       file_specific_info->set_image_rotation(image_rotation);
   }
-
-  out_entry->Swap(&converted);
-  swap(*out_parent_resource_id, parent_resource_id);
-  return true;
 }
 
 void ConvertTeamDriveResourceToResourceEntry(

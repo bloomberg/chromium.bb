@@ -30,9 +30,8 @@ FileError FinishRevert(ResourceMetadata* metadata,
   FileError error = GDataToFileError(status);
   switch (error) {
     case FILE_ERROR_OK:
-      if (!ConvertFileResourceToResourceEntry(*file_resource, &entry,
-                                              &parent_resource_id))
-        return FILE_ERROR_NOT_A_FILE;
+      ConvertFileResourceToResourceEntry(*file_resource, &entry,
+                                         &parent_resource_id);
       break;
 
     case FILE_ERROR_NOT_FOUND:
