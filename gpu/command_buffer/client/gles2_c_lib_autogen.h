@@ -1833,6 +1833,9 @@ GLES2FramebufferTextureMultiviewLayeredANGLE(GLenum target,
   gles2::GetGLContext()->FramebufferTextureMultiviewLayeredANGLE(
       target, attachment, texture, level, baseViewIndex, numViews);
 }
+void GL_APIENTRY GLES2MaxShaderCompilerThreadsKHR(GLuint count) {
+  gles2::GetGLContext()->MaxShaderCompilerThreadsKHR(count);
+}
 
 namespace gles2 {
 
@@ -3210,6 +3213,10 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glFramebufferTextureMultiviewLayeredANGLE",
         reinterpret_cast<GLES2FunctionPointer>(
             glFramebufferTextureMultiviewLayeredANGLE),
+    },
+    {
+        "glMaxShaderCompilerThreadsKHR",
+        reinterpret_cast<GLES2FunctionPointer>(glMaxShaderCompilerThreadsKHR),
     },
     {
         nullptr, nullptr,

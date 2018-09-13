@@ -1505,6 +1505,17 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_ANGLE_multiview");
     feature_flags_.angle_multiview = true;
   }
+
+  if (is_passthrough_cmd_decoder_ &&
+      gfx::HasExtension(extensions, "GL_KHR_parallel_shader_compile")) {
+    AddExtensionString("GL_KHR_parallel_shader_compile");
+    feature_flags_.khr_parallel_shader_compile = true;
+    validators_.g_l_state.AddValue(GL_MAX_SHADER_COMPILER_THREADS_KHR);
+    // TODO(jie.a.chen@intel.com): Make the query as cheap as possible.
+    // https://crbug.com/881152
+    validators_.shader_parameter.AddValue(GL_COMPLETION_STATUS_KHR);
+    validators_.program_parameter.AddValue(GL_COMPLETION_STATUS_KHR);
+  }
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

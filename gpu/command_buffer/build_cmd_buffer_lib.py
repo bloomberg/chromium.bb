@@ -7361,7 +7361,7 @@ extern const NameToFunc g_gles2_function_table[] = {
         if m:
           name = m.group(1)
           value = m.group(2)
-          if len(value) <= 10:
+          if len(value) <= 10 and value.startswith('0x'):
             if not value in define_dict:
               define_dict[value] = name
             # check our own _CHROMIUM macro conflicts with khronos GL headers.

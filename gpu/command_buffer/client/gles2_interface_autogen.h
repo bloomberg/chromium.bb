@@ -958,4 +958,5 @@ virtual void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
                                                      GLint level,
                                                      GLint baseViewIndex,
                                                      GLsizei numViews) = 0;
+virtual void MaxShaderCompilerThreadsKHR(GLuint count) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

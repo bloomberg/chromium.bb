@@ -347,7 +347,8 @@
   OP(WaitGpuFenceCHROMIUM)                                 /* 588 */ \
   OP(DestroyGpuFenceCHROMIUM)                              /* 589 */ \
   OP(SetReadbackBufferShadowAllocationINTERNAL)            /* 590 */ \
-  OP(FramebufferTextureMultiviewLayeredANGLE)              /* 591 */
+  OP(FramebufferTextureMultiviewLayeredANGLE)              /* 591 */ \
+  OP(MaxShaderCompilerThreadsKHR)                          /* 592 */
 
 enum CommandId {
   kOneBeforeStartPoint =

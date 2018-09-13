@@ -1329,10 +1329,15 @@ GL_FUNCTIONS = [
                { 'name': 'glMatrixLoadIdentityCHROMIUM',
                  'extensions': ['GL_CHROMIUM_path_rendering'] }],
   'arguments': 'GLenum matrixMode' },
+{'return_type': 'void',
+ 'known_as': 'glMaxShaderCompilerThreadsKHR',
+  'versions': [{ 'name': 'glMaxShaderCompilerThreadsKHR',
+                 'extensions': ['GL_KHR_parallel_shader_compile'] }],
+  'arguments': 'GLuint count', },
 { 'return_type': 'void',
   'names': ['glMemoryBarrierByRegion'],
   'arguments': 'GLbitfield barriers', },
-{ 'return_type': 'void',
+{'return_type': 'void',
   'known_as': 'glMemoryBarrierEXT',
   'versions': [{ 'name': 'glMemoryBarrier',
                  'extensions': ['GL_ARB_shader_image_load_store'] },
@@ -3454,7 +3459,7 @@ def GenerateEnumUtils(out_file, input_filenames):
       if m:
         name = m.group(1)
         value = m.group(2)
-        if len(value) <= 10:
+        if len(value) <= 10 and value.startswith('0x'):
           if not value in dict:
             dict[value] = name
           # check our own _CHROMIUM macro conflicts with khronos GL headers.

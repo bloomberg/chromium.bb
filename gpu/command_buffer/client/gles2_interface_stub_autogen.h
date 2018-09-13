@@ -927,4 +927,5 @@ void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
                                              GLint level,
                                              GLint baseViewIndex,
                                              GLsizei numViews) override;
+void MaxShaderCompilerThreadsKHR(GLuint count) override;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_AUTOGEN_H_

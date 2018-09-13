@@ -4861,5 +4861,11 @@ GLES2DecoderPassthroughImpl::DoSetReadbackBufferShadowAllocationINTERNAL(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoMaxShaderCompilerThreadsKHR(
+    GLuint count) {
+  api()->glMaxShaderCompilerThreadsKHRFn(count);
+  return error::kNoError;
+}
+
 }  // namespace gles2
 }  // namespace gpu
