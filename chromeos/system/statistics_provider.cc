@@ -177,6 +177,7 @@ bool GetInitialLocaleFromRegionalData(const base::DictionaryValue* region_dict,
 
 // Key values for GetMachineStatistic()/GetMachineFlag() calls.
 const char kActivateDateKey[] = "ActivateDate";
+const char kBlockDevModeKey[] = "block_devmode";
 const char kCheckEnrollmentKey[] = "check_enrollment";
 const char kShouldSendRlzPingKey[] = "should_send_rlz_ping";
 const char kShouldSendRlzPingValueFalse[] = "0";

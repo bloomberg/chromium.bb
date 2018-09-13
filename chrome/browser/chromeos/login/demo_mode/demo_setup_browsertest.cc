@@ -35,6 +35,8 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/system/fake_statistics_provider.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_util.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "content/public/test/browser_test_utils.h"
@@ -913,6 +915,164 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcUnsupportedTest, DoNotInvokeWithTaps) {
   InvokeDemoModeWithTaps();
 
   EXPECT_FALSE(IsConfirmationDialogShown());
+}
+
+// Demo setup tests related to Force Re-Enrollment.
+class DemoSetupFRETest : public DemoSetupTest {
+ protected:
+  DemoSetupFRETest() {
+    statistics_provider_.SetMachineStatistic(system::kSerialNumberKeyForTest,
+                                             "testserialnumber");
+  }
+  ~DemoSetupFRETest() override = default;
+
+  void SetUpOnMainThread() override { DemoSetupTest::SetUpOnMainThread(); }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DemoSetupTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(
+        switches::kEnterpriseEnableForcedReEnrollment,
+        chromeos::AutoEnrollmentController::kForcedReEnrollmentAlways);
+  }
+
+  system::ScopedFakeStatisticsProvider statistics_provider_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DemoSetupFRETest);
+};
+
+IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceFromFactory) {
+  // Simulating brand new device - "active_date", "check_enrollment",
+  // "block_devmode" flags do not exist in VPD.
+
+  // Simulate offline setup success.
+  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+      &MockDemoModeOfflineEnrollmentHelperCreator<
+          DemoModeSetupResult::SUCCESS>);
+  SimulateNetworkDisconnected();
+
+  auto* const wizard_controller = WizardController::default_controller();
+  wizard_controller->SimulateDemoModeSetupForTesting();
+  // It needs to be done after demo setup controller was created (demo setup
+  // flow was started).
+  SimulateOfflineEnvironment();
+  // Enrollment type is set in the part of the flow that is skipped, That is
+  // why we need to set it here.
+  wizard_controller->demo_setup_controller()->set_demo_config(
+      DemoSession::DemoModeConfig::kOffline);
+  wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  // TODO(agawronska): Progress dialog transition is async - extra work is
+  // needed to be able to check it reliably.
+
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, NonEnterpriseDevice) {
+  // Simulating device that was never set for enterprise:
+  // * "active_date" is set
+  // * "check_enrollment" and "block_devmode" flags are set to false.
+  statistics_provider_.SetMachineStatistic(system::kActivateDateKey, "2018-01");
+  statistics_provider_.SetMachineStatistic(system::kCheckEnrollmentKey, "0");
+  statistics_provider_.SetMachineStatistic(system::kBlockDevModeKey, "0");
+
+  // Simulate offline setup success.
+  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+      &MockDemoModeOfflineEnrollmentHelperCreator<
+          DemoModeSetupResult::SUCCESS>);
+  SimulateNetworkDisconnected();
+
+  auto* const wizard_controller = WizardController::default_controller();
+  wizard_controller->SimulateDemoModeSetupForTesting();
+  // It needs to be done after demo setup controller was created (demo setup
+  // flow was started).
+  SimulateOfflineEnvironment();
+  // Enrollment type is set in the part of the flow that is skipped, That is
+  // why we need to set it here.
+  wizard_controller->demo_setup_controller()->set_demo_config(
+      DemoSession::DemoModeConfig::kOffline);
+  wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  // TODO(agawronska): Progress dialog transition is async - extra work is
+  // needed to be able to check it reliably.
+
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, LegacyDemoModeDevice) {
+  // Simulating device enrolled into legacy demo mode:
+  // * "active_date" and "check_enrollment" are set
+  // * "block_devmode" is set to false, because legacy demo mode does not have
+  // FRE.
+  statistics_provider_.SetMachineStatistic(system::kActivateDateKey, "2018-01");
+  statistics_provider_.SetMachineStatistic(system::kCheckEnrollmentKey, "1");
+  statistics_provider_.SetMachineStatistic(system::kBlockDevModeKey, "0");
+
+  // Simulate offline setup success.
+  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+      &MockDemoModeOfflineEnrollmentHelperCreator<
+          DemoModeSetupResult::SUCCESS>);
+  SimulateNetworkDisconnected();
+
+  auto* const wizard_controller = WizardController::default_controller();
+  wizard_controller->SimulateDemoModeSetupForTesting();
+  // It needs to be done after demo setup controller was created (demo setup
+  // flow was started).
+  SimulateOfflineEnvironment();
+  // Enrollment type is set in the part of the flow that is skipped, That is
+  // why we need to set it here.
+  wizard_controller->demo_setup_controller()->set_demo_config(
+      DemoSession::DemoModeConfig::kOffline);
+  wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  // TODO(agawronska): Progress dialog transition is async - extra work is
+  // needed to be able to check it reliably.
+
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
+
+IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceWithFRE) {
+  // Simulating device that requires FRE. "check_enrollment", "block_devmode"
+  // and "ActivateDate" flags are set.
+  statistics_provider_.SetMachineStatistic(system::kActivateDateKey, "2018-01");
+  statistics_provider_.SetMachineStatistic(system::kCheckEnrollmentKey, "1");
+  statistics_provider_.SetMachineStatistic(system::kBlockDevModeKey, "1");
+
+  // Simulate offline setup success.
+  EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
+      &MockDemoModeOfflineEnrollmentHelperCreator<
+          DemoModeSetupResult::SUCCESS>);
+  SimulateNetworkDisconnected();
+
+  auto* const wizard_controller = WizardController::default_controller();
+  wizard_controller->SimulateDemoModeSetupForTesting();
+  // It needs to be done after demo setup controller was created (demo setup
+  // flow was started).
+  SimulateOfflineEnvironment();
+  // Enrollment type is set in the part of the flow that is skipped, That is
+  // why we need to set it here.
+  wizard_controller->demo_setup_controller()->set_demo_config(
+      DemoSession::DemoModeConfig::kOffline);
+  wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+  // TODO(agawronska): Progress dialog transition is async - extra work is
+  // needed to be able to check it reliably.
+  WaitForScreenDialog(OobeScreen::SCREEN_OOBE_DEMO_SETUP,
+                      DemoSetupDialog::kError);
+
+  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
 }  // namespace chromeos
