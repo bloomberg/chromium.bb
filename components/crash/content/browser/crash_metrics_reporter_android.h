@@ -47,9 +47,9 @@ class CrashMetricsReporter {
     kRendererForegroundInvisibleWithStrongBindingOom = 12,
     kRendererForegroundInvisibleWithModerateBindingKilled = 13,
     kRendererForegroundInvisibleWithModerateBindingOom = 14,
-    kRendererForegroundVisibleVirtualMemoryOom = 15,
-    kRendererVirtualMemoryOomAll = 16,
-    kMaxValue = kRendererVirtualMemoryOomAll
+    kRendererForegroundVisibleAllocationFailure = 15,
+    kRendererAllocationFailureAll = 16,
+    kMaxValue = kRendererAllocationFailureAll
   };
   using ReportedCrashTypeSet = base::flat_set<ProcessedCrashCounts>;
 

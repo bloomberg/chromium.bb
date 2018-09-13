@@ -133,11 +133,11 @@ void CrashMemoryMetricsReporterImpl::OnOOMCallback() {
   if (!CrashMemoryMetricsReporterImpl::Instance()
            .shared_metrics_mapping_.IsValid())
     return;
-  // Else, we can send the virtual_memory_oom_oom bool.
+  // Else, we can send the allocation_failed bool.
   OomInterventionMetrics metrics;
   // TODO(yuzus): Report this UMA on all the platforms. Currently this is only
   // reported on Android.
-  metrics.virtual_memory_oom = 1;  // true
+  metrics.allocation_failed = 1;  // true
   CrashMemoryMetricsReporterImpl::Instance().WriteIntoSharedMemory(metrics);
 }
 
@@ -155,7 +155,7 @@ CrashMemoryMetricsReporterImpl::GetCurrentMemoryMetrics() {
     metrics.current_swap_kb = swap / 1024;
     metrics.current_vm_size_kb = vm_size / 1024;
   }
-  metrics.virtual_memory_oom = 0;  // false
+  metrics.allocation_failed = 0;  // false
   return metrics;
 }
 

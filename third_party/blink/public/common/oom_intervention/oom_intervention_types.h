@@ -26,7 +26,7 @@ struct OomInterventionMetrics {
   // Indicates whether the crash was because of virtual address space OOM.
   // This holds only 0 or 1 as a value but because of the reason stated above,
   // uses uint64_t instead of boolean.
-  uint64_t virtual_memory_oom;
+  uint64_t allocation_failed;
 };
 
 }  // namespace blink
