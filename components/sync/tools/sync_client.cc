@@ -51,7 +51,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/test/test_shared_url_loader_factory.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
@@ -394,13 +394,14 @@ int SyncClientMain(int argc, char* argv[]) {
   const char kUserAgent[] = "sync_client";
   // TODO(akalin): Replace this with just the context getter once
   // HttpPostProviderFactory is removed.
-  auto url_loader_factory =
-      base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
+  auto url_loader_factory_owner =
+      std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
+          context_getter);
   CancelationSignal factory_cancelation_signal;
-  std::unique_ptr<HttpPostProviderFactory> post_factory(
-      new HttpBridgeFactory(url_loader_factory->Clone(),
-                            base::BindRepeating(&StubNetworkTimeUpdateCallback),
-                            &factory_cancelation_signal));
+  std::unique_ptr<HttpPostProviderFactory> post_factory(new HttpBridgeFactory(
+      url_loader_factory_owner->GetURLLoaderFactory()->Clone(),
+      base::BindRepeating(&StubNetworkTimeUpdateCallback),
+      &factory_cancelation_signal));
   post_factory->Init(kUserAgent, BindToTrackerCallback());
   // Used only when committing bookmarks, so it's okay to leave this as null.
   ExtensionsActivity* extensions_activity = nullptr;
