@@ -671,11 +671,25 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
   if (sync_startup_tracker_)
     return;
 
-  if (!service->IsEngineInitialized()) {
+  if (!service->IsEngineInitialized() ||
+      service->HasDisableReason(
+          syncer::SyncService::DISABLE_REASON_USER_CHOICE)) {
     // Requesting the sync service to start may trigger call to PushSyncPrefs.
     // Setting up the startup tracker beforehand correctly signals the
     // re-entrant call to early exit.
-    sync_startup_tracker_.reset(new SyncStartupTracker(profile_, this));
+    sync_startup_tracker_ =
+        std::make_unique<SyncStartupTracker>(profile_, this);
+    // RequestStart() does two things:
+    // 1) If DISABLE_REASON_USER_CHOICE is set (meaning that Sync was reset via
+    //    the dashboard), clears it.
+    // 2) Pokes the sync service to start *immediately*, i.e. bypass deferred
+    //    startup.
+    // It's possible that both of these are already the case, i.e. the engine is
+    // already in the process of initializing, in which case RequestStart() will
+    // effectively do nothing. It's also possible that the sync service is
+    // already running in standalone transport mode and so the engine is already
+    // initialized. In that case, this will trigger the service to switch to
+    // full Sync-the-feature mode.
     service->RequestStart();
 
     // See if it's even possible to bring up the sync engine - if not
