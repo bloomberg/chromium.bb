@@ -2127,6 +2127,7 @@ jumbo_source_set("unit_tests") {
     "paint/pre_paint_tree_walk_test.cc",
     "paint/stub_chrome_client_for_spv2.h",
     "paint/table_painter_test.cc",
+    "paint/text_paint_timing_detector_test.cc",
     "paint/text_painter_test.cc",
     "paint/text_selection_repaint_test.cc",
     "paint/video_painter_test.cc",

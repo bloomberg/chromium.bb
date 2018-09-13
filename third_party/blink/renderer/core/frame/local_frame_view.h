@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
+#include "third_party/blink/renderer/core/paint/paint_tracker.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -673,6 +674,7 @@ class CORE_EXPORT LocalFrameView final
 
   void ScrollAndFocusFragmentAnchor();
   JankTracker& GetJankTracker() { return *jank_tracker_; }
+  PaintTracker& GetPaintTracker() { return *paint_tracker_; }
 
  protected:
   void NotifyFrameRectsChangedIfNeeded();
@@ -974,6 +976,7 @@ class CORE_EXPORT LocalFrameView final
 
   UniqueObjectId unique_id_;
   std::unique_ptr<JankTracker> jank_tracker_;
+  Member<PaintTracker> paint_tracker_;
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };
