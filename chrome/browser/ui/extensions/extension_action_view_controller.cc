@@ -393,7 +393,7 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
 
   if (toolbar_actions_bar_ &&
       !toolbar_actions_bar_->IsActionVisibleOnMainBar(this)) {
-    platform_delegate_->CloseOverflowMenu();
+    toolbar_actions_bar_->CloseOverflowMenuIfOpen();
     toolbar_actions_bar_->PopOutAction(
         this,
         show_action == SHOW_POPUP_AND_INSPECT,

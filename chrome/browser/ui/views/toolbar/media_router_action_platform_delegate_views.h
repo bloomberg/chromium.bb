@@ -15,9 +15,6 @@ class MediaRouterActionPlatformDelegateViews :
   explicit MediaRouterActionPlatformDelegateViews(Browser* browser);
   ~MediaRouterActionPlatformDelegateViews() override;
 
-  // MediaRouterActionPlatformDelegate:
-  bool CloseOverflowMenuIfOpen() override;
-
  private:
   // The corresponding browser.
   Browser* const browser_;

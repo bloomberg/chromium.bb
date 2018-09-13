@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -99,18 +98,6 @@ void ExtensionActionPlatformDelegateCocoa::ShowPopup(
   gfx::Point viewsScreenPoint = gfx::ScreenPointFromNSPoint(pointScreen);
   ExtensionPopupViewsMac::ShowPopup(std::move(host), containingWindow,
                                     viewsScreenPoint, popupShowAction);
-}
-
-void ExtensionActionPlatformDelegateCocoa::CloseOverflowMenu() {
-  // If this was triggered by an action overflowed to the app menu, then the app
-  // menu will be open. Close it before opening the popup.
-  AppMenuController* appMenuController =
-      [[[BrowserWindowController
-          browserWindowControllerForWindow:
-              controller_->browser()->window()->GetNativeWindow()]
-          toolbarController] appMenuController];
-  if ([appMenuController isMenuOpen])
-    [appMenuController cancel];
 }
 
 void ExtensionActionPlatformDelegateCocoa::ShowContextMenu() {

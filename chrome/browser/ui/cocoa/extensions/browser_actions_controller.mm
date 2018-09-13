@@ -178,7 +178,7 @@ class ToolbarActionsBarBridge : public ToolbarActionsBarDelegate {
   void StopAnimating() override;
   void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
-  void CloseOverflowMenuIfOpen() override;
+  bool CloseOverflowMenuIfOpen() override;
 
   // The owning BrowserActionsController; weak.
   BrowserActionsController* controller_;
@@ -245,11 +245,14 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   [controller_ createMessageBubble:std::move(bubble)];
 }
 
-void ToolbarActionsBarBridge::CloseOverflowMenuIfOpen() {
+bool ToolbarActionsBarBridge::CloseOverflowMenuIfOpen() {
   AppMenuController* appMenuController =
       [[controller_ toolbarController] appMenuController];
-  if ([appMenuController isMenuOpen])
-    [appMenuController cancel];
+  if (![appMenuController isMenuOpen])
+    return false;
+
+  [appMenuController cancel];
+  return true;
 }
 
 }  // namespace

@@ -15,9 +15,6 @@ class MediaRouterActionPlatformDelegateCocoa :
   explicit MediaRouterActionPlatformDelegateCocoa(Browser* browser);
   ~MediaRouterActionPlatformDelegateCocoa() override;
 
-  // MediaRouterActionPlatformDelegate:
-  bool CloseOverflowMenuIfOpen() override;
-
  private:
   // The corresponding browser.
   Browser* browser_;

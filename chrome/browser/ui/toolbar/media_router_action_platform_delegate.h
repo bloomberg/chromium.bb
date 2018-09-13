@@ -11,6 +11,7 @@
 
 class Browser;
 
+// TODO(karandeepb): Delete this class.
 class MediaRouterActionPlatformDelegate {
  public:
   MediaRouterActionPlatformDelegate() {}
@@ -26,10 +27,6 @@ class MediaRouterActionPlatformDelegate {
   static std::unique_ptr<MediaRouterActionPlatformDelegate> CreateCocoa(
       Browser* browser);
 #endif
-
-  // Closes the overflow menu, if it was open. Returns whether or not the
-  // overflow menu was closed.
-  virtual bool CloseOverflowMenuIfOpen() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_MEDIA_ROUTER_ACTION_PLATFORM_DELEGATE_H_

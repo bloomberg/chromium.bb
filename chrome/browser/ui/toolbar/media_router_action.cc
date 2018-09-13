@@ -180,10 +180,13 @@ bool MediaRouterAction::ExecuteAction(bool by_user) {
 
   GetMediaRouterDialogController()->ShowMediaRouterDialog();
   if (GetPlatformDelegate()) {
+    // TODO(karandeepb): Instead of checking the return value of
+    // CloseOverflowMenuIfOpen, just check
+    // ToolbarActionsBar::IsActionVisibleOnMainBar.
     media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
-        GetPlatformDelegate()->CloseOverflowMenuIfOpen() ?
-        media_router::MediaRouterDialogOpenOrigin::OVERFLOW_MENU :
-        media_router::MediaRouterDialogOpenOrigin::TOOLBAR);
+        toolbar_actions_bar_->CloseOverflowMenuIfOpen()
+            ? media_router::MediaRouterDialogOpenOrigin::OVERFLOW_MENU
+            : media_router::MediaRouterDialogOpenOrigin::TOOLBAR);
   }
   return true;
 }

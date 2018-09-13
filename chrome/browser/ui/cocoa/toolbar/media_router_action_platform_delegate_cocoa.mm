@@ -6,11 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "ui/base/ui_features.h"
 
 // static
@@ -35,19 +30,4 @@ MediaRouterActionPlatformDelegateCocoa::MediaRouterActionPlatformDelegateCocoa(
 
 MediaRouterActionPlatformDelegateCocoa::
     ~MediaRouterActionPlatformDelegateCocoa() {
-}
-
-bool MediaRouterActionPlatformDelegateCocoa::CloseOverflowMenuIfOpen() {
-  // TODO(apacible): This should be factored to share code with extension
-  // actions.
-  AppMenuController* appMenuController =
-      [[[BrowserWindowController
-          browserWindowControllerForWindow:
-              browser_->window()->GetNativeWindow()]
-          toolbarController] appMenuController];
-  if (![appMenuController isMenuOpen])
-    return false;
-
-  [appMenuController cancel];
-  return true;
 }

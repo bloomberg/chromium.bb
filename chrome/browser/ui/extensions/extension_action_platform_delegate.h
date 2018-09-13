@@ -42,9 +42,6 @@ class ExtensionActionPlatformDelegate {
       bool grant_tab_permissions,
       ExtensionActionViewController::PopupShowAction show_action) = 0;
 
-  // Closes the overflow menu, if it was open.
-  virtual void CloseOverflowMenu() = 0;
-
   // Shows the context menu for the extension.
   virtual void ShowContextMenu() = 0;
 };
