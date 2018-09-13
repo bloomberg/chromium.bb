@@ -294,7 +294,8 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
               << " difference=" << playback_start_pts_ - data->timestamp();
     } else {
       LOG_IF(INFO, (!locked->started_ &&
-                    (data->timestamp() - playback_start_pts_) < 100000))
+                    (data->timestamp() - playback_start_pts_) < 100000 &&
+                    locked->playback_start_timestamp_ != INT64_MIN))
           << "Queueing pts diff=" << data->timestamp() - playback_start_pts_
           << " current buffered data=" << GetCurrentBufferedDataInUs() / 1000;
 
@@ -308,8 +309,10 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
       // TODO(almasrymina): this needs to be called outside the lock.
       // POST_TASK_TO_CALLER_THREAD should also probably DCHECK that the lock
       // is not held before executing.
-      if (!locked->started_ && GetCurrentBufferedDataInUs() >=
-                                   kAudioReadyForPlaybackThresholdMs * 1000) {
+      if (!locked->started_ &&
+          GetCurrentBufferedDataInUs() >=
+              kAudioReadyForPlaybackThresholdMs * 1000 &&
+          locked->playback_start_timestamp_ != INT64_MIN) {
         POST_TASK_TO_CALLER_THREAD(PostAudioReadyForPlayback);
       }
     }

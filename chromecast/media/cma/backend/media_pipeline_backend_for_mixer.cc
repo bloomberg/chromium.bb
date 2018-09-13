@@ -77,7 +77,6 @@ bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
 
   video_ready_to_play_ = !video_decoder_;
   audio_ready_to_play_ = !audio_decoder_;
-  first_resume_processed_ = false;
 
   start_playback_timestamp_us_ = INT64_MIN;
   start_playback_pts_us_ = start_pts;
@@ -93,11 +92,9 @@ bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
   if (video_decoder_ && !video_decoder_->Start(start_playback_pts_us_, true))
     return false;
 
-  if (av_sync_) {
-    state_ = kStatePaused;
-  } else {
-    state_ = kStatePlaying;
-  }
+  state_ = kStatePlaying;
+  playback_started_ = !av_sync_;
+
   return true;
 }
 
@@ -116,12 +113,12 @@ void MediaPipelineBackendForMixer::Stop() {
 }
 
 bool MediaPipelineBackendForMixer::Pause() {
-  if (av_sync_ && !first_resume_processed_) {
-    DCHECK_EQ(kStatePaused, state_);
+  DCHECK_EQ(kStatePlaying, state_);
+  if (!playback_started_) {
+    state_ = kStatePaused;
+    LOG(INFO) << "Pause received while playback has not started yet.";
     return true;
   }
-
-  DCHECK_EQ(kStatePlaying, state_);
 
   if (audio_decoder_ && !audio_decoder_->Pause()) {
     return false;
@@ -139,10 +136,10 @@ bool MediaPipelineBackendForMixer::Pause() {
 
 bool MediaPipelineBackendForMixer::Resume() {
   DCHECK_EQ(kStatePaused, state_);
-  if (av_sync_ && !first_resume_processed_) {
 
-    LOG(INFO) << "First resume received.";
-    first_resume_processed_ = true;
+  if (!playback_started_) {
+    LOG(INFO) << "Resume received while playback has not started yet.";
+    state_ = kStatePlaying;
     TryStartPlayback();
     return true;
   }
@@ -276,13 +273,13 @@ void MediaPipelineBackendForMixer::OnAudioReadyForPlayback() {
 
 void MediaPipelineBackendForMixer::TryStartPlayback() {
   DCHECK(av_sync_);
-  DCHECK(state_ == kStatePaused);
   DCHECK(!IsIgnorePtsMode());
   DCHECK(video_decoder_);
   DCHECK(audio_decoder_);
+  DCHECK(!playback_started_);
 
   if (!audio_ready_to_play_ || !video_ready_to_play_ ||
-      !first_resume_processed_) {
+      state_ != kStatePlaying) {
     return;
   }
 
@@ -293,7 +290,7 @@ void MediaPipelineBackendForMixer::TryStartPlayback() {
   video_decoder_->SetPts(start_playback_timestamp_us_, start_playback_pts_us_);
   audio_decoder_->StartPlaybackAt(start_playback_timestamp_us_);
   av_sync_->NotifyStart(start_playback_timestamp_us_, start_playback_pts_us_);
-  state_ = kStatePlaying;
+  playback_started_ = true;
 }
 
 }  // namespace media
