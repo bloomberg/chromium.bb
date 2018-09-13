@@ -114,17 +114,6 @@ TEST_F(SessionDataTypeControllerTest, StartModels) {
   EXPECT_TRUE(LoadResult());
 }
 
-TEST_F(SessionDataTypeControllerTest, StartModelsDelayedByLocalDevice) {
-  local_device()->SetInitialized(false);
-  Start();
-  EXPECT_FALSE(load_finished());
-  EXPECT_EQ(syncer::DataTypeController::MODEL_STARTING, controller()->state());
-
-  local_device()->SetInitialized(true);
-  EXPECT_EQ(syncer::DataTypeController::MODEL_LOADED, controller()->state());
-  EXPECT_TRUE(LoadResult());
-}
-
 }  // namespace
 
 }  // namespace sync_sessions

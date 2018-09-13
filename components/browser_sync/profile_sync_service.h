@@ -325,6 +325,7 @@ class ProfileSyncService : public syncer::SyncService,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
       const std::string& cache_guid,
+      const std::string& session_name,
       bool success) override;
   void OnSyncCycleCompleted(const syncer::SyncCycleSnapshot& snapshot) override;
   void OnProtocolEvent(const syncer::ProtocolEvent& event) override;

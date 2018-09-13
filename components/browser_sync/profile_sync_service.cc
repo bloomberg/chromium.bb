@@ -1003,6 +1003,7 @@ void ProfileSyncService::OnEngineInitialized(
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
     const std::string& cache_guid,
+    const std::string& session_name,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1026,7 +1027,7 @@ void ProfileSyncService::OnEngineInitialized(
   sync_js_controller_.AttachJsBackend(js_backend);
 
   // Initialize local device info.
-  local_device_->Initialize(cache_guid,
+  local_device_->Initialize(cache_guid, session_name,
                             signin_scoped_device_id_callback_.Run());
 
   if (protocol_event_observers_.might_have_observers()) {

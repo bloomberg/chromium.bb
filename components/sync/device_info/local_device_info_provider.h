@@ -23,9 +23,9 @@ class LocalDeviceInfoProvider {
   virtual ~LocalDeviceInfoProvider() {}
 
   // Returns sync's representation of the local device info, or nullptr if the
-  // device info is unavailable. The returned object is fully owned by
-  // LocalDeviceInfoProvider; it must not be freed by the caller and should not
-  // be stored.
+  // device info is unavailable (e.g. Initialize() hasn't been called). The
+  // returned object is fully owned by LocalDeviceInfoProvider; it must not be
+  // freed by the caller and should not be stored.
   virtual const DeviceInfo* GetLocalDeviceInfo() const = 0;
 
   // Constructs a user agent string (ASCII) suitable for use by the syncapi
@@ -38,8 +38,9 @@ class LocalDeviceInfoProvider {
   // initialized yet.
   virtual std::string GetLocalSyncCacheGUID() const = 0;
 
-  // Starts initializing local device info.
+  // Initializes the local device info.
   virtual void Initialize(const std::string& cache_guid,
+                          const std::string& session_name,
                           const std::string& signin_scoped_device_id) = 0;
 
   // Registers a callback to be called when local device info becomes available.
