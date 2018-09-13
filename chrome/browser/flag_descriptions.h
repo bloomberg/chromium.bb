@@ -55,6 +55,9 @@ extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
 extern const char kAndroidMessagesIntegrationName[];
 extern const char kAndroidMessagesIntegrationDescription[];
 
+extern const char kAndroidMessagesProdEndpointName[];
+extern const char kAndroidMessagesProdEndpointDescription[];
+
 extern const char kAppBannersName[];
 extern const char kAppBannersDescription[];
 

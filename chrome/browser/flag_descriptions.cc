@@ -47,6 +47,12 @@ const char kAndroidMessagesIntegrationName[] = "Android Messages integration";
 const char kAndroidMessagesIntegrationDescription[] =
     "Enables Chrome OS integration with Android messages.";
 
+const char kAndroidMessagesProdEndpointName[] =
+    "Use Android Messages prod endpoint";
+const char kAndroidMessagesProdEndpointDescription[] =
+    "For Android Messages integration, point to the prod endpoint instead of "
+    "sandbox.";
+
 const char kAppBannersName[] = "App Banners";
 const char kAppBannersDescription[] =
     "Enable the display of Progressive Web App banners, which prompt a user to "
