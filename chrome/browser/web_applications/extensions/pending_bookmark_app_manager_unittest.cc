@@ -43,25 +43,25 @@ const char kWrongUrl[] = "https://foobar.example";
 web_app::PendingAppManager::AppInfo GetFooAppInfo() {
   return web_app::PendingAppManager::AppInfo(
       GURL(kFooWebAppUrl), web_app::PendingAppManager::LaunchContainer::kTab,
-      web_app::PendingAppManager::InstallSource::kPolicyInstalled);
+      web_app::PendingAppManager::InstallSource::kExternalPolicy);
 }
 
 web_app::PendingAppManager::AppInfo GetBarAppInfo() {
   return web_app::PendingAppManager::AppInfo(
       GURL(kBarWebAppUrl), web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kPolicyInstalled);
+      web_app::PendingAppManager::InstallSource::kExternalPolicy);
 }
 
 web_app::PendingAppManager::AppInfo GetQuxAppInfo() {
   return web_app::PendingAppManager::AppInfo(
       GURL(kQuxWebAppUrl), web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kPolicyInstalled);
+      web_app::PendingAppManager::InstallSource::kExternalPolicy);
 }
 
 web_app::PendingAppManager::AppInfo GetXyzAppInfo() {
   return web_app::PendingAppManager::AppInfo(
       GURL(kXyzWebAppUrl), web_app::PendingAppManager::LaunchContainer::kWindow,
-      web_app::PendingAppManager::InstallSource::kPolicyInstalled);
+      web_app::PendingAppManager::InstallSource::kExternalPolicy);
 }
 
 scoped_refptr<Extension> CreateDummyExtension(const std::string& id) {

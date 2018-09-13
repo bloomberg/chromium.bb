@@ -29,7 +29,7 @@ BookmarkAppShortcutInstallationTask::BookmarkAppShortcutInstallationTask(
           web_app::PendingAppManager::AppInfo(
               GURL(),
               web_app::PendingAppManager::LaunchContainer::kTab,
-              web_app::PendingAppManager::InstallSource::kDefaultInstalled)) {}
+              web_app::PendingAppManager::InstallSource::kInternal)) {}
 
 BookmarkAppShortcutInstallationTask::~BookmarkAppShortcutInstallationTask() =
     default;
