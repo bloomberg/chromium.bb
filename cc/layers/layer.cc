@@ -1196,12 +1196,11 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTouchActionRegion(inputs_.touch_action_region);
   // TODO(sunxd): Pass the correct region for wheel event handlers, see
   // https://crbug.com/841364.
-  if (layer_tree_host()->event_listener_properties(
-          EventListenerClass::kMouseWheel) ==
-          EventListenerProperties::kBlocking ||
+  EventListenerProperties mouse_wheel_props =
       layer_tree_host()->event_listener_properties(
-          EventListenerClass::kMouseWheel) ==
-          EventListenerProperties::kBlockingAndPassive) {
+          EventListenerClass::kMouseWheel);
+  if (mouse_wheel_props == EventListenerProperties::kBlocking ||
+      mouse_wheel_props == EventListenerProperties::kBlockingAndPassive) {
     layer->SetWheelEventHandlerRegion(Region(gfx::Rect(bounds())));
   } else {
     layer->SetWheelEventHandlerRegion(Region());
