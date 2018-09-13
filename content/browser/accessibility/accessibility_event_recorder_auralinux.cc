@@ -30,6 +30,7 @@ class AccessibilityEventRecorderAuraLinux : public AccessibilityEventRecorder {
                     const GValue* params);
 
  private:
+  void AddGlobalListener(const char* event_name);
   void AddGlobalListeners();
   void RemoveGlobalListeners();
   bool IncludeState(AtkStateType state_type);
@@ -69,18 +70,23 @@ AccessibilityEventRecorderAuraLinux::AccessibilityEventRecorderAuraLinux(
 
 AccessibilityEventRecorderAuraLinux::~AccessibilityEventRecorderAuraLinux() {}
 
+void AccessibilityEventRecorderAuraLinux::AddGlobalListener(
+    const char* event_name) {
+  unsigned id = atk_add_global_event_listener(OnEventReceived, event_name);
+  if (!id)
+    LOG(FATAL) << "atk_add_global_event_listener failed for " << event_name;
+
+  listener_ids_.push_back(id);
+}
+
 void AccessibilityEventRecorderAuraLinux::AddGlobalListeners() {
-  static constexpr size_t kArraySize = 2;
-  constexpr std::array<const char*, kArraySize> events{
-      {"ATK:AtkObject:state-change", "ATK:AtkObject:focus-event"}};
+  GObject* gobject = G_OBJECT(g_object_new(G_TYPE_OBJECT, nullptr, nullptr));
+  g_object_unref(atk_no_op_object_new(gobject));
+  g_object_unref(gobject);
 
-  for (size_t i = 0; i < kArraySize; i++) {
-    unsigned int id = atk_add_global_event_listener(OnEventReceived, events[i]);
-    if (!id)
-      LOG(FATAL) << "atk_add_global_event_listener failed for " << events[i];
-
-    listener_ids_.push_back(id);
-  }
+  AddGlobalListener("ATK:AtkObject:state-change");
+  AddGlobalListener("ATK:AtkObject:focus-event");
+  AddGlobalListener("ATK:AtkObject:property-change");
 }
 
 void AccessibilityEventRecorderAuraLinux::RemoveGlobalListeners() {
@@ -117,10 +123,24 @@ void AccessibilityEventRecorderAuraLinux::ProcessEvent(const char* event,
     return;
   }
 
-  std::string log = base::ToUpperASCII(event);
-  if (std::string(event).find("state-change") != std::string::npos) {
-    log += ":" + base::ToUpperASCII(g_value_get_string(&params[1]));
-    log += base::StringPrintf(":%s", g_strdup_value_contents(&params[2]));
+  std::string log;
+  if (std::string(event).find("property-change") != std::string::npos) {
+    DCHECK_GE(n_params, 2u);
+    AtkPropertyValues* property_values =
+        static_cast<AtkPropertyValues*>(g_value_get_pointer(&params[1]));
+
+    if (g_strcmp0(property_values->property_name, "accessible-value"))
+      return;
+
+    log += "VALUE-CHANGED:";
+    log +=
+        base::NumberToString(g_value_get_double(&property_values->new_value));
+  } else {
+    log += base::ToUpperASCII(event);
+    if (std::string(event).find("state-change") != std::string::npos) {
+      log += ":" + base::ToUpperASCII(g_value_get_string(&params[1]));
+      log += base::StringPrintf(":%s", g_strdup_value_contents(&params[2]));
+    }
   }
 
   AtkObject* obj = ATK_OBJECT(g_value_get_object(&params[0]));

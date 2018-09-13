@@ -80,6 +80,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnExpandedStateChanged(bool is_expanded);
   void OnFocused();
   void OnSelected();
+  void OnValueChanged();
 
   bool SelectionAndFocusAreTheSame();
 

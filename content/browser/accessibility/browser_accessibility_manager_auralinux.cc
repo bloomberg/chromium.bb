@@ -116,6 +116,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case Event::SELECTED_CHANGED:
       FireSelectedEvent(node);
       break;
+    case Event::VALUE_CHANGED:
+      FireEvent(node, ax::mojom::Event::kValueChanged);
+      break;
     default:
       // Need to implement.
       break;
