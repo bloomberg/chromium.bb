@@ -61,6 +61,8 @@ TextLog.LogType = {
   SPEECH: 'speech',
   EARCON: 'earcon',
   BRAILLE: 'braille',
+  SPEECH_RULE: 'speechRule',
+  BRAILLE_RULE: 'brailleRule',
   EVENT: 'event',
 };
 

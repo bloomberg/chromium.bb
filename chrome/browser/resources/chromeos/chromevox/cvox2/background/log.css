@@ -51,6 +51,12 @@ h1 {
   margin: 2px;
 }
 
+#logList pre {
+  font-family: monospace;
+  line-height: 20px;
+  margin-left: 205px;
+}
+
 /* Log tags */
 
 .log-type-tag {
@@ -61,7 +67,7 @@ h1 {
   margin-inline-end: 5px;
   margin-top: 2px;
   padding: 0 4px 2px 4px;
-  width: 50px;
+  width: 75px;
 }
 
 .log-time-tag {
