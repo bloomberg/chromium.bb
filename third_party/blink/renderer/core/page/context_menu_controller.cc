@@ -382,6 +382,15 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     WebRange range =
         selected_frame->GetInputMethodController().GetSelectionOffsets();
     data.selection_start_offset = range.StartOffset();
+    // TODO(crbug.com/850954): Remove redundant log after we identified the
+    // issue.
+    DCHECK_GE(data.selection_start_offset, 0)
+        << "Log issue against https://crbug.com/850954\n"
+        << "data.selection_start_offset: " << data.selection_start_offset
+        << "\nrange: [" << range.StartOffset() << ", " << range.EndOffset()
+        << "]\nVisibleSelection: "
+        << selected_frame->Selection()
+               .ComputeVisibleSelectionInDOMTreeDeprecated();
   }
 
   if (result.IsContentEditable()) {
