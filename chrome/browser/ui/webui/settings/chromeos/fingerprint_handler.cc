@@ -62,9 +62,6 @@ FingerprintHandler::FingerprintHandler(Profile* profile)
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->BindInterface(device::mojom::kServiceName, &fp_service_);
-  device::mojom::FingerprintObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
-  fp_service_->AddFingerprintObserver(std::move(observer));
   user_id_ = ProfileHelper::Get()->GetUserIdHashFromProfile(profile);
 }
 
@@ -114,10 +111,15 @@ void FingerprintHandler::OnJavascriptAllowed() {
   // SessionManager may not exist in some tests.
   if (SessionManager::Get())
     session_observer_.Add(SessionManager::Get());
+
+  device::mojom::FingerprintObserverPtr observer;
+  binding_.Bind(mojo::MakeRequest(&observer));
+  fp_service_->AddFingerprintObserver(std::move(observer));
 }
 
 void FingerprintHandler::OnJavascriptDisallowed() {
   session_observer_.RemoveAll();
+  binding_.Close();
 }
 
 void FingerprintHandler::OnRestarted() {}
@@ -125,6 +127,10 @@ void FingerprintHandler::OnRestarted() {}
 void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
                                           bool enroll_session_complete,
                                           int percent_complete) {
+  VLOG(1) << "Receive fingerprint enroll scan result. scan_result="
+          << scan_result
+          << ", enroll_session_complete=" << enroll_session_complete
+          << ", percent_complete=" << percent_complete;
   auto scan_attempt = std::make_unique<base::DictionaryValue>();
   scan_attempt->SetInteger("result", scan_result);
   scan_attempt->SetBoolean("isComplete", enroll_session_complete);
@@ -136,6 +142,8 @@ void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
 void FingerprintHandler::OnAuthScanDone(
     uint32_t scan_result,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {
+  VLOG(1) << "Receive fingerprint auth scan result. scan_result="
+          << scan_result;
   if (SessionManager::Get()->session_state() == SessionState::LOCKED)
     return;
 
@@ -162,7 +170,9 @@ void FingerprintHandler::OnAuthScanDone(
   FireWebUIListener("on-fingerprint-attempt-received", *fingerprint_attempt);
 }
 
-void FingerprintHandler::OnSessionFailed() {}
+void FingerprintHandler::OnSessionFailed() {
+  LOG(ERROR) << "Fingerprint session failed.";
+}
 
 void FingerprintHandler::OnSessionStateChanged() {
   SessionState state = SessionManager::Get()->session_state();

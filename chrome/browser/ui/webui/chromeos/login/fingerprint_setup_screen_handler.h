@@ -52,11 +52,16 @@ class FingerprintSetupScreenHandler
   // JS callbacks.
   void HandleStartEnroll(const base::ListValue* args);
 
+  void OnCancelCurrentEnrollSession(bool success);
+
   FingerprintSetupScreen* screen_ = nullptr;
 
   device::mojom::FingerprintPtr fp_service_;
   mojo::Binding<device::mojom::FingerprintObserver> binding_{this};
   int enrolled_finger_count_ = 0;
+  bool enroll_session_started_ = false;
+
+  base::WeakPtrFactory<FingerprintSetupScreenHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintSetupScreenHandler);
 };
