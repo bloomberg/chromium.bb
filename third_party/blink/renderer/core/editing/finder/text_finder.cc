@@ -656,7 +656,7 @@ void TextFinder::UpdateFindMatchRects() {
     find_match_rects_are_valid_ = false;
   }
 
-  size_t dead_matches = 0;
+  wtf_size_t dead_matches = 0;
   for (FindMatch& match : find_matches_cache_) {
     if (!match.range_->BoundaryPointsValid() ||
         !match.range_->startContainer()->isConnected())
@@ -719,7 +719,7 @@ int TextFinder::NearestFindMatch(const FloatPoint& point,
 
   int nearest = -1;
   float nearest_distance_squared = FLT_MAX;
-  for (size_t i = 0; i < find_matches_cache_.size(); ++i) {
+  for (wtf_size_t i = 0; i < find_matches_cache_.size(); ++i) {
     DCHECK(!find_matches_cache_[i].rect_.IsEmpty());
     FloatSize offset = point - find_matches_cache_[i].rect_.Center();
     float width = offset.Width();

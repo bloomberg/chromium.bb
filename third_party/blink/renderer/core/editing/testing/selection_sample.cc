@@ -237,7 +237,7 @@ class Serializer final {
     if (attribute.Value().IsEmpty())
       return;
     builder_.Append("=\"");
-    for (size_t i = 0; i < attribute.Value().length(); ++i) {
+    for (wtf_size_t i = 0; i < attribute.Value().length(); ++i) {
       const UChar char_code = attribute.Value()[i];
       if (char_code == '"') {
         builder_.Append("&quot;");

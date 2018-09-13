@@ -124,7 +124,7 @@ void InvalidatePaintForNode(const Node& node) {
 Member<DocumentMarkerList>& DocumentMarkerController::ListForType(
     MarkerLists* marker_lists,
     DocumentMarker::MarkerType type) {
-  const size_t marker_list_index = MarkerTypeToMarkerIndex(type);
+  const wtf_size_t marker_list_index = MarkerTypeToMarkerIndex(type);
   return (*marker_lists)[marker_list_index];
 }
 

@@ -116,14 +116,14 @@ void TextSearcherICU::SetPattern(const StringView& pattern,
   SetPattern(pattern.Characters16(), pattern.length());
 }
 
-void TextSearcherICU::SetText(const UChar* text, size_t length) {
+void TextSearcherICU::SetText(const UChar* text, wtf_size_t length) {
   UErrorCode status = U_ZERO_ERROR;
   usearch_setText(searcher_, text, length, &status);
   DCHECK_EQ(status, U_ZERO_ERROR);
   text_length_ = length;
 }
 
-void TextSearcherICU::SetOffset(size_t offset) {
+void TextSearcherICU::SetOffset(wtf_size_t offset) {
   UErrorCode status = U_ZERO_ERROR;
   usearch_setOffset(searcher_, offset, &status);
   DCHECK_EQ(status, U_ZERO_ERROR);
@@ -136,19 +136,20 @@ bool TextSearcherICU::NextMatchResult(MatchResultICU& result) {
 
   // TODO(iceman): It is possible to use |usearch_getText| function
   // to retrieve text length and not store it explicitly.
-  if (!(match_start >= 0 && static_cast<size_t>(match_start) < text_length_)) {
+  if (!(match_start >= 0 &&
+        static_cast<wtf_size_t>(match_start) < text_length_)) {
     DCHECK_EQ(match_start, USEARCH_DONE);
     result.start = 0;
     result.length = 0;
     return false;
   }
 
-  result.start = static_cast<size_t>(match_start);
+  result.start = static_cast<wtf_size_t>(match_start);
   result.length = usearch_getMatchedLength(searcher_);
   return true;
 }
 
-void TextSearcherICU::SetPattern(const UChar* pattern, size_t length) {
+void TextSearcherICU::SetPattern(const UChar* pattern, wtf_size_t length) {
   UErrorCode status = U_ZERO_ERROR;
   usearch_setPattern(searcher_, pattern, length, &status);
   DCHECK_EQ(status, U_ZERO_ERROR);

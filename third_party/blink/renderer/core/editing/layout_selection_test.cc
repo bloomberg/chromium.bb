@@ -76,7 +76,7 @@ class LayoutSelectionTest : public EditingTestBase {
   static void PrintSelectionInfo(const FrameSelection& selection,
                                  std::ostream& ostream,
                                  const Node& node,
-                                 size_t depth) {
+                                 wtf_size_t depth) {
     if (const Text* text = ToTextOrNull(node))
       PrintText(ostream, *text);
     else if (const Element* element = ToElementOrNull(node))
@@ -100,7 +100,7 @@ class LayoutSelectionTest : public EditingTestBase {
   static void PrintDOMTreeInternal(const FrameSelection& selection,
                                    std::ostream& ostream,
                                    const Node& node,
-                                   size_t depth) {
+                                   wtf_size_t depth) {
     ostream << RepeatString("  ", depth).Utf8().data();
     if (IsHTMLStyleElement(node)) {
       ostream << "<style> ";

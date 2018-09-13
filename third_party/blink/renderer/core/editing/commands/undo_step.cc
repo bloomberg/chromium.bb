@@ -55,8 +55,8 @@ void UndoStep::Unapply() {
   document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   {
-    size_t size = commands_.size();
-    for (size_t i = size; i; --i)
+    wtf_size_t size = commands_.size();
+    for (wtf_size_t i = size; i; --i)
       commands_[i - 1]->DoUnapply();
   }
 

@@ -269,7 +269,7 @@ static void AddMarker(Document* document,
     return;
 
   String description;
-  for (size_t i = 0; i < descriptions.size(); ++i) {
+  for (wtf_size_t i = 0; i < descriptions.size(); ++i) {
     if (i != 0)
       description.append('\n');
     description.append(descriptions[i]);
@@ -593,7 +593,7 @@ bool SpellChecker::SelectionStartHasMarkerFor(
   unsigned end_offset = static_cast<unsigned>(from + length);
   DocumentMarkerVector markers =
       GetFrame().GetDocument()->Markers().MarkersFor(ToText(*node));
-  for (size_t i = 0; i < markers.size(); ++i) {
+  for (wtf_size_t i = 0; i < markers.size(); ++i) {
     DocumentMarker* marker = markers[i];
     if (marker->StartOffset() <= start_offset &&
         end_offset <= marker->EndOffset() && marker->GetType() == marker_type)

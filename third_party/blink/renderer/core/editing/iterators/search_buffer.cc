@@ -41,9 +41,9 @@ namespace blink {
 
 namespace {
 
-const size_t kMinimumSearchBufferSize = 8192;
+const wtf_size_t kMinimumSearchBufferSize = 8192;
 
-UChar32 GetCodePointAt(const UChar* str, size_t index, size_t length) {
+UChar32 GetCodePointAt(const UChar* str, wtf_size_t index, wtf_size_t length) {
   UChar32 c;
   U16_GET(str, 0, index, length, c);
   return c;
@@ -67,7 +67,7 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
   // writing.
   FoldQuoteMarksAndSoftHyphens(target_.data(), target_.size());
 
-  size_t target_length = target_.size();
+  wtf_size_t target_length = target_.size();
   buffer_.ReserveInitialCapacity(
       std::max(target_length * 8, kMinimumSearchBufferSize));
   overlap_ = buffer_.capacity() / 4;
@@ -97,7 +97,8 @@ inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
 inline SearchBuffer::~SearchBuffer() = default;
 
 template <typename CharType>
-inline void SearchBuffer::Append(const CharType* characters, size_t length) {
+inline void SearchBuffer::Append(const CharType* characters,
+                                 wtf_size_t length) {
   DCHECK(length);
 
   if (at_break_) {
@@ -111,8 +112,8 @@ inline void SearchBuffer::Append(const CharType* characters, size_t length) {
     buffer_.Shrink(overlap_);
   }
 
-  size_t old_length = buffer_.size();
-  size_t usable_length = std::min(buffer_.capacity() - old_length, length);
+  wtf_size_t old_length = buffer_.size();
+  wtf_size_t usable_length = std::min(buffer_.capacity() - old_length, length);
   DCHECK(usable_length);
   buffer_.resize(old_length + usable_length);
   UChar* destination = buffer_.data() + old_length;
@@ -126,7 +127,7 @@ inline bool SearchBuffer::NeedsMoreContext() const {
 }
 
 inline void SearchBuffer::PrependContext(const UChar* characters,
-                                         size_t length) {
+                                         wtf_size_t length) {
   DCHECK(needs_more_context_);
   DCHECK_EQ(prefix_length_, buffer_.size());
 
@@ -135,15 +136,15 @@ inline void SearchBuffer::PrependContext(const UChar* characters,
 
   at_break_ = false;
 
-  size_t word_boundary_context_start = length;
+  wtf_size_t word_boundary_context_start = length;
   if (word_boundary_context_start) {
     U16_BACK_1(characters, 0, word_boundary_context_start);
     word_boundary_context_start =
         StartOfLastWordBoundaryContext(characters, word_boundary_context_start);
   }
 
-  size_t usable_length = std::min(buffer_.capacity() - prefix_length_,
-                                  length - word_boundary_context_start);
+  wtf_size_t usable_length = std::min(buffer_.capacity() - prefix_length_,
+                                      length - word_boundary_context_start);
   buffer_.push_front(characters + length - usable_length, usable_length);
   prefix_length_ += usable_length;
 
@@ -160,7 +161,7 @@ inline void SearchBuffer::ReachedBreak() {
 }
 
 inline bool SearchBuffer::IsBadMatch(const UChar* match,
-                                     size_t match_length) const {
+                                     wtf_size_t match_length) const {
   // This function implements the kana workaround. If usearch treats
   // it as a match, but we do not want to, then it's a "bad match".
   if (!target_requires_kana_workaround_)
@@ -175,7 +176,8 @@ inline bool SearchBuffer::IsBadMatch(const UChar* match,
       normalized_match_.begin(), normalized_match_.size());
 }
 
-inline bool SearchBuffer::IsWordStartMatch(size_t start, size_t length) const {
+inline bool SearchBuffer::IsWordStartMatch(wtf_size_t start,
+                                           wtf_size_t length) const {
   DCHECK(options_ & kWholeWord);
 
   if (!start)
@@ -191,7 +193,7 @@ inline bool SearchBuffer::IsWordStartMatch(size_t start, size_t length) const {
   if (Character::IsCJKIdeographOrSymbol(first_character))
     return true;
 
-  size_t word_break_search_start = start + length;
+  wtf_size_t word_break_search_start = start + length;
   while (word_break_search_start > start) {
     word_break_search_start = FindNextWordBackward(
         buffer_.data(), buffer_.size(), word_break_search_start);
@@ -205,8 +207,8 @@ inline bool SearchBuffer::IsWordStartMatch(size_t start, size_t length) const {
   return true;
 }
 
-inline size_t SearchBuffer::Search(size_t& start) {
-  size_t size = buffer_.size();
+inline wtf_size_t SearchBuffer::Search(wtf_size_t& start) {
+  wtf_size_t size = buffer_.size();
   if (at_break_) {
     if (!size)
       return 0;
@@ -228,7 +230,7 @@ nextMatch:
   // The same match may appear later, matching more characters,
   // possibly including a combining character that's not yet in the buffer.
   if (!at_break_ && match.start >= size - overlap_) {
-    size_t overlap = overlap_;
+    wtf_size_t overlap = overlap_;
     if (options_ & kWholeWord) {
       // Ensure that there is sufficient context before matchStart the next time
       // around for determining if it is at a word boundary.
@@ -255,10 +257,10 @@ nextMatch:
     goto nextMatch;
   }
 
-  size_t new_size = size - (match.start + 1);
+  wtf_size_t new_size = size - (match.start + 1);
   memmove(buffer_.data(), buffer_.data() + match.start + 1,
           new_size * sizeof(UChar));
-  prefix_length_ -= std::min<size_t>(prefix_length_, match.start + 1);
+  prefix_length_ -= std::min<wtf_size_t>(prefix_length_, match.start + 1);
   buffer_.Shrink(new_size);
 
   start = size - match.start;
@@ -271,8 +273,8 @@ static bool IsValidUTF16(const String& s) {
   if (s.Is8Bit())
     return true;
   const UChar* ustr = s.Characters16();
-  size_t length = s.length();
-  size_t position = 0;
+  wtf_size_t length = s.length();
+  wtf_size_t position = 0;
   while (position < length) {
     UChar32 character;
     U16_NEXT(ustr, position, length, character);
@@ -283,12 +285,13 @@ static bool IsValidUTF16(const String& s) {
 }
 
 template <typename Strategy>
-static size_t FindPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it,
-                                    const String& target,
-                                    FindOptions options,
-                                    size_t& match_start) {
+static wtf_size_t FindPlainTextInternal(
+    CharacterIteratorAlgorithm<Strategy>& it,
+    const String& target,
+    FindOptions options,
+    wtf_size_t& match_start) {
   match_start = 0;
-  size_t match_length = 0;
+  wtf_size_t match_length = 0;
 
   if (!IsValidUTF16(target))
     return 0;
@@ -317,10 +320,10 @@ static size_t FindPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it,
     buffer.Append(characters.Data(), characters.Size());
     it.Advance(buffer.NumberOfCharactersJustAppended());
   tryAgain:
-    size_t match_start_offset;
-    if (size_t new_match_length = buffer.Search(match_start_offset)) {
+    wtf_size_t match_start_offset;
+    if (wtf_size_t new_match_length = buffer.Search(match_start_offset)) {
       // Note that we found a match, and where we found it.
-      size_t last_character_in_buffer_offset = it.CharacterOffset();
+      wtf_size_t last_character_in_buffer_offset = it.CharacterOffset();
       DCHECK_GE(last_character_in_buffer_offset, match_start_offset);
       match_start = last_character_in_buffer_offset - match_start_offset;
       match_length = new_match_length;
@@ -359,8 +362,8 @@ static EphemeralRangeTemplate<Strategy> FindPlainTextAlgorithm(
           .Build();
 
   // FIXME: Reduce the code duplication with above (but how?).
-  size_t match_start;
-  size_t match_length;
+  wtf_size_t match_start;
+  wtf_size_t match_length;
   {
     const TextIteratorBehavior& behavior =
         TextIteratorBehavior::Builder(iterator_flags_for_find_plain_text)

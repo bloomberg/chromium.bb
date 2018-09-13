@@ -100,7 +100,7 @@ static const Vector<const CSSProperty*>& AllEditingProperties() {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
         kStaticEditingProperties, arraysize(kStaticEditingProperties),
         properties);
-    for (size_t index = 0; index < properties.size(); index++) {
+    for (wtf_size_t index = 0; index < properties.size(); index++) {
       if (properties[index]->IDEquals(CSSPropertyTextDecoration)) {
         properties.EraseAt(index);
         break;
@@ -116,7 +116,7 @@ static const Vector<const CSSProperty*>& InheritableEditingProperties() {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
         kStaticEditingProperties, arraysize(kStaticEditingProperties),
         properties);
-    for (size_t index = 0; index < properties.size();) {
+    for (wtf_size_t index = 0; index < properties.size();) {
       if (!properties[index]->IsInherited()) {
         properties.EraseAt(index);
         continue;
@@ -138,7 +138,7 @@ static MutableCSSPropertyValueSet* CopyEditingProperties(
 
 static inline bool IsEditingProperty(CSSPropertyID id) {
   static const Vector<const CSSProperty*>& properties = AllEditingProperties();
-  for (size_t index = 0; index < properties.size(); index++) {
+  for (wtf_size_t index = 0; index < properties.size(); index++) {
     if (properties[index]->IDEquals(id))
       return true;
   }
@@ -1007,7 +1007,7 @@ bool EditingStyle::ConflictsWithImplicitStyleOfElement(
 
   const HeapVector<Member<HTMLElementEquivalent>>& html_element_equivalents =
       HtmlElementEquivalents();
-  for (size_t i = 0; i < html_element_equivalents.size(); ++i) {
+  for (wtf_size_t i = 0; i < html_element_equivalents.size(); ++i) {
     const HTMLElementEquivalent* equivalent = html_element_equivalents[i].Get();
     if (equivalent->Matches(element) &&
         equivalent->PropertyExistsInStyle(mutable_style_.Get()) &&
@@ -1121,7 +1121,7 @@ bool EditingStyle::ElementIsStyledSpanOrHTMLEquivalent(
   } else {
     const HeapVector<Member<HTMLElementEquivalent>>& html_element_equivalents =
         HtmlElementEquivalents();
-    size_t i;
+    wtf_size_t i;
     for (i = 0; i < html_element_equivalents.size(); ++i) {
       if (html_element_equivalents[i]->Matches(element)) {
         element_is_span_or_element_equivalent = true;
@@ -1721,7 +1721,7 @@ static void DiffTextDecorations(MutableCSSPropertyValueSet* style,
   const CSSValueList* values_in_ref_text_decoration =
       ToCSSValueList(ref_text_decoration);
 
-  for (size_t i = 0; i < values_in_ref_text_decoration->length(); i++)
+  for (wtf_size_t i = 0; i < values_in_ref_text_decoration->length(); i++)
     new_text_decoration->RemoveAll(values_in_ref_text_decoration->Item(i));
 
   SetTextDecorationProperty(style, new_text_decoration, property_id,
