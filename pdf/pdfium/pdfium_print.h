@@ -15,6 +15,11 @@ struct PP_PdfPrintSettings_Dev;
 struct PP_PrintSettings_Dev;
 struct PP_PrintPageNumberRange_Dev;
 
+namespace gfx {
+class Rect;
+class Size;
+}  // namespace gfx
+
 namespace chrome_pdf {
 
 class PDFiumEngine;
@@ -48,6 +53,10 @@ class PDFiumPrint {
   // the orientation of all pages of the doc are uniform.  Pages of square size
   // will not be rotated.
   static bool IsSourcePdfLandscape(FPDF_DOCUMENT doc);
+
+  static void FitContentsToPrintableArea(FPDF_DOCUMENT doc,
+                                         const gfx::Size& page_size,
+                                         const gfx::Rect& printable_area);
 
  private:
   FPDF_DOCUMENT CreateSinglePageRasterPdf(

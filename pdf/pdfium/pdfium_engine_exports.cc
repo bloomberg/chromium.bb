@@ -16,6 +16,7 @@
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_ppo.h"
 #include "third_party/pdfium/public/fpdfview.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 using printing::ConvertUnitDouble;
@@ -121,7 +122,8 @@ ScopedFPDFDocument CreatePdfDoc(
 
 std::vector<uint8_t> CreateNupPdfDocument(FPDF_DOCUMENT doc,
                                           size_t pages_per_sheet,
-                                          const gfx::Size& page_size) {
+                                          const gfx::Size& page_size,
+                                          const gfx::Rect& printable_area) {
   int page_size_width = page_size.width();
   int page_size_height = page_size.height();
 
@@ -139,11 +141,22 @@ std::vector<uint8_t> CreateNupPdfDocument(FPDF_DOCUMENT doc,
   if (!output_doc_nup)
     return std::vector<uint8_t>();
 
+  PDFiumPrint::FitContentsToPrintableArea(output_doc_nup.get(), page_size,
+                                          printable_area);
+
   PDFiumMemBufferFileWrite output_file_write;
   if (!FPDF_SaveAsCopy(output_doc_nup.get(), &output_file_write, 0))
     return std::vector<uint8_t>();
 
   return output_file_write.TakeBuffer();
+}
+
+bool IsValidPrintableArea(const gfx::Size& page_size,
+                          const gfx::Rect& printable_area) {
+  return !printable_area.IsEmpty() && printable_area.x() >= 0 &&
+         printable_area.y() >= 0 &&
+         printable_area.right() <= page_size.width() &&
+         printable_area.bottom() <= page_size.height();
 }
 
 }  // namespace
@@ -302,23 +315,33 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
 std::vector<uint8_t> PDFiumEngineExports::ConvertPdfPagesToNupPdf(
     std::vector<base::span<const uint8_t>> input_buffers,
     size_t pages_per_sheet,
-    const gfx::Size& page_size) {
+    const gfx::Size& page_size,
+    const gfx::Rect& printable_area) {
+  if (!IsValidPrintableArea(page_size, printable_area))
+    return std::vector<uint8_t>();
+
   ScopedFPDFDocument doc = CreatePdfDoc(std::move(input_buffers));
   if (!doc)
     return std::vector<uint8_t>();
 
-  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size);
+  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size,
+                              printable_area);
 }
 
 std::vector<uint8_t> PDFiumEngineExports::ConvertPdfDocumentToNupPdf(
     base::span<const uint8_t> input_buffer,
     size_t pages_per_sheet,
-    const gfx::Size& page_size) {
+    const gfx::Size& page_size,
+    const gfx::Rect& printable_area) {
+  if (!IsValidPrintableArea(page_size, printable_area))
+    return std::vector<uint8_t>();
+
   ScopedFPDFDocument doc = LoadPdfData(input_buffer);
   if (!doc)
     return std::vector<uint8_t>();
 
-  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size);
+  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size,
+                              printable_area);
 }
 
 bool PDFiumEngineExports::GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,

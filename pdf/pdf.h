@@ -21,6 +21,7 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
 #endif
 
 namespace gfx {
+class Rect;
 class Size;
 }
 
@@ -132,6 +133,8 @@ bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
 //     document is used.
 // |pages_per_sheet| is the number of pages to put on one sheet.
 // |page_size| is the output page size, measured in PDF "user space" units.
+// |printable_area| is the output page printable area, measured in PDF
+//     "user space" units.  Should be smaller than |page_size|.
 //
 // |page_size| is the print media size.  The page size of the output N-up PDF is
 // determined by the |pages_per_sheet|, the orientation of the PDF pages
@@ -145,13 +148,16 @@ bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
 std::vector<uint8_t> ConvertPdfPagesToNupPdf(
     std::vector<base::span<const uint8_t>> input_buffers,
     size_t pages_per_sheet,
-    const gfx::Size& page_size);
+    const gfx::Size& page_size,
+    const gfx::Rect& printable_area);
 
 // Convert a PDF document to a N-up PDF document.
 // |input_buffer| is the buffer that contains the entire PDF document to be
 //     converted to a N-up PDF document.
 // |pages_per_sheet| is the number of pages to put on one sheet.
 // |page_size| is the output page size, measured in PDF "user space" units.
+// |printable_area| is the output page printable area, measured in PDF
+//     "user space" units.  Should be smaller than |page_size|.
 //
 // Refer to the description of ConvertPdfPagesToNupPdf to understand how the
 // output page size will be calculated.
@@ -159,7 +165,8 @@ std::vector<uint8_t> ConvertPdfPagesToNupPdf(
 std::vector<uint8_t> ConvertPdfDocumentToNupPdf(
     base::span<const uint8_t> input_buffer,
     size_t pages_per_sheet,
-    const gfx::Size& page_size);
+    const gfx::Size& page_size,
+    const gfx::Rect& printable_area);
 
 }  // namespace chrome_pdf
 

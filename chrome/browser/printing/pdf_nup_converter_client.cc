@@ -23,10 +23,11 @@ void PdfNupConverterClient::DoNupPdfConvert(
     int document_cookie,
     uint32_t pages_per_sheet,
     const gfx::Size& page_size,
+    const gfx::Rect& printable_area,
     std::vector<base::ReadOnlySharedMemoryRegion> pdf_page_regions,
     mojom::PdfNupConverter::NupPageConvertCallback callback) {
   auto& nup_converter = GetPdfNupConverterRequest(document_cookie);
-  nup_converter->NupPageConvert(pages_per_sheet, page_size,
+  nup_converter->NupPageConvert(pages_per_sheet, page_size, printable_area,
                                 std::move(pdf_page_regions),
                                 std::move(callback));
 }
@@ -35,11 +36,12 @@ void PdfNupConverterClient::DoNupPdfDocumentConvert(
     int document_cookie,
     uint32_t pages_per_sheet,
     const gfx::Size& page_size,
+    const gfx::Rect& printable_area,
     base::ReadOnlySharedMemoryRegion src_pdf_document,
     mojom::PdfNupConverter::NupDocumentConvertCallback callback) {
   auto& nup_converter = GetPdfNupConverterRequest(document_cookie);
   nup_converter->NupDocumentConvert(
-      pages_per_sheet, page_size, std::move(src_pdf_document),
+      pages_per_sheet, page_size, printable_area, std::move(src_pdf_document),
       base::BindOnce(&PdfNupConverterClient::OnDidNupPdfDocumentConvert,
                      base::Unretained(this), document_cookie,
                      std::move(callback)));

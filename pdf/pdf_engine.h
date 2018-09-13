@@ -42,6 +42,7 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
 struct PP_PdfPrintSettings_Dev;
 
 namespace gfx {
+class Rect;
 class Size;
 }
 
@@ -474,13 +475,15 @@ class PDFEngineExports {
   virtual std::vector<uint8_t> ConvertPdfPagesToNupPdf(
       std::vector<base::span<const uint8_t>> input_buffers,
       size_t pages_per_sheet,
-      const gfx::Size& page_size) = 0;
+      const gfx::Size& page_size,
+      const gfx::Rect& printable_area) = 0;
 
   // See the definition of ConvertPdfDocumentToNupPdf in pdf.cc for details.
   virtual std::vector<uint8_t> ConvertPdfDocumentToNupPdf(
       base::span<const uint8_t> input_buffer,
       size_t pages_per_sheet,
-      const gfx::Size& page_size) = 0;
+      const gfx::Size& page_size,
+      const gfx::Rect& printable_area) = 0;
 
   virtual bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                              int* page_count,

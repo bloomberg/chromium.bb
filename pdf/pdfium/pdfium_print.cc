@@ -22,6 +22,7 @@
 #include "third_party/pdfium/public/fpdf_transformpage.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
@@ -226,6 +227,19 @@ bool PDFiumPrint::IsSourcePdfLandscape(FPDF_DOCUMENT doc) {
   bool is_source_landscape =
       FPDF_GetPageWidth(pdf_page.get()) > FPDF_GetPageHeight(pdf_page.get());
   return is_source_landscape;
+}
+
+void PDFiumPrint::FitContentsToPrintableArea(FPDF_DOCUMENT doc,
+                                             const gfx::Size& page_size,
+                                             const gfx::Rect& printable_area) {
+  PP_PrintSettings_Dev print_settings;
+  print_settings.paper_size = pp::Size(page_size.width(), page_size.height());
+  print_settings.printable_area =
+      pp::Rect(printable_area.x(), printable_area.y(), printable_area.width(),
+               printable_area.height());
+  print_settings.print_scaling_option =
+      PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA;
+  FitContentsToPrintableAreaIfRequired(doc, 1.0, print_settings);
 }
 
 pp::Buffer_Dev PDFiumPrint::PrintPagesAsRasterPDF(

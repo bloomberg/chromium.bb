@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 class PrintPreviewHandler;
@@ -64,6 +65,8 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   bool print_selection_only() const { return print_selection_only_; }
 
   int pages_per_sheet() const { return pages_per_sheet_; }
+
+  const gfx::Rect& printable_area() const { return printable_area_; }
 
   const gfx::Size& page_size() const { return page_size_; }
 
@@ -249,6 +252,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // Physical size of the page, including non-printable margins.
   gfx::Size page_size_;
+
+  // The printable area of the printed document pages.
+  gfx::Rect printable_area_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };
