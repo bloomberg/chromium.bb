@@ -22,6 +22,7 @@
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <sys/stat.h>
 #include <unistd.h>
+#include <unordered_set>
 #endif
 
 namespace base {
@@ -152,6 +153,10 @@ class BASE_EXPORT FileEnumerator {
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // The files in the current directory
   std::vector<FileInfo> directory_entries_;
+
+  // Set of visited directories. Used to prevent infinite looping along
+  // circular symlinks.
+  std::unordered_set<ino_t> visited_directories_;
 
   // The next entry to use from the directory_entries_ vector
   size_t current_directory_entry_;
