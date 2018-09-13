@@ -159,6 +159,7 @@ The subcomponents of omnibox bugs include:
 | Subcomponent | Description |
 | --- | --- |
 | UI>Browser>Omnibox>AiS | Answers in Suggest. |
+| UI>Browser>Omnibox>DocumentSuggest | Documents provided by Google Drive |
 | UI>Browser>Omnibox>SecurityIndicators | Secure/insecure icons; triaged by another team. |
 | UI>Browser>Omnibox>TabToSearch | Custom search engines, omnibox extensions, etc. (including adding, triggering, ranking, etc. for them). |
 | UI>Browser>Omnibox>ZeroSuggest | Suggestions displayed on omnibox focus (both contextual and non-contextual). |
