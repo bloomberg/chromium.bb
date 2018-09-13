@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_item_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/system_tray.h"
