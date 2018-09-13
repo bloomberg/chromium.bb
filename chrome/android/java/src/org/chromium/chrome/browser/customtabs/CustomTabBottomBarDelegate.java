@@ -206,6 +206,7 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
      */
     private ViewGroup getBottomBarView() {
         if (mBottomBarView == null) {
+            assert isViewReady() : "The required view stub couldn't be found! (Called too early?)";
             ViewStub bottomBarStub = ((ViewStub) mActivity.findViewById(R.id.bottombar_stub));
             mBottomBarView = (ViewGroup) bottomBarStub.inflate();
         }
@@ -301,6 +302,14 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
         return mBottomBarContentView != null || mDataProvider.shouldShowBottomBar();
     }
 
+    /**
+     * Returns whether the view was or can be inflated.
+     * @return True if the ViewStub is present or was inflated. False otherwise.
+     */
+    private boolean isViewReady() {
+        return mBottomBarView != null || mActivity.findViewById(R.id.bottombar_stub) != null;
+    }
+
     // FullscreenListener methods
     @Override
     public void onControlsOffsetChanged(float topOffset, float bottomOffset,
@@ -320,6 +329,7 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
 
     @Override
     public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+        if (!isViewReady()) return;
         getBottomBarView().setTranslationY(mFullscreenManager.getBottomControlOffset());
     }
 
