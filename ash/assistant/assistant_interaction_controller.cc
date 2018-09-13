@@ -353,6 +353,12 @@ void AssistantInteractionController::OnSpeechRecognitionEndOfUtterance() {
 
 void AssistantInteractionController::OnSpeechRecognitionFinalResult(
     const std::string& final_result) {
+  // We sometimes receive this event with an empty payload when the interaction
+  // is resolving due to mic timeout. In such cases, we should not commit the
+  // pending query as the interaction will be discarded.
+  if (final_result.empty())
+    return;
+
   assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantVoiceQuery>(final_result));
   assistant_interaction_model_.CommitPendingQuery();
