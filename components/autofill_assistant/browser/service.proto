@@ -113,7 +113,45 @@ message ActionProto {
     WaitForDomProto wait_for_dom = 19;
     UseCreditCardProto use_card = 28;
     UseAddressProto use_address = 29;
+    UploadDomProto upload_dom = 18;
   }
+}
+
+message NodeProto {
+  // Note: these use the same constant value as the DOM spec,
+  // except for UNKNOWN.
+  // https://developer.mozilla.org/en/docs/Web/API/Node/nodeType
+  enum Type {
+    UNKNOWN = 0;
+    ELEMENT = 1;
+    TEXT = 3;
+    DOCUMENT = 9;
+  }
+
+  message Attribute {
+    optional string name = 1;
+    optional string value = 2;
+  }
+
+  optional Type type = 1;
+
+  // For ELEMENT nodes: the <TAG> name, *always* in UPPERCASE.
+  // For TEXT nodes: the text content.
+  optional string value = 2;
+  repeated Attribute attribute = 3;
+
+  // Children in the order of their indices.
+  repeated NodeProto child = 7;
+}
+
+message TreeProto {
+  optional NodeProto root = 1;
+  optional string url = 5;
+}
+
+message PageContentProto {
+  optional TreeProto dom_tree = 1;
+  optional string url = 3;
 }
 
 message ProcessedActionProto {
@@ -121,6 +159,8 @@ message ProcessedActionProto {
   optional ActionProto action = 1;
 
   optional ProcessedActionStatus status = 2;
+
+  optional PageContentProto page_content = 3;
 }
 
 enum ProcessedActionStatus {
@@ -194,4 +234,12 @@ message WaitForDomProto {
   // If true, wait for the given element to be absent, otherwise wait for
   // existence.
   optional bool check_for_absence = 3;
+}
+
+// Volatile upload of a portion of the dom for backend analysis, does not store
+// anything.
+message UploadDomProto {
+  // The element that should be a root of uploaded DOM. If empty then the whole
+  // page is returned.
+  optional ElementReferenceProto tree_root = 1;
 }

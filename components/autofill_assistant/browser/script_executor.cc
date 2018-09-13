@@ -128,9 +128,8 @@ void ScriptExecutor::ProcessNextAction() {
 }
 
 void ScriptExecutor::ProcessAction(std::unique_ptr<Action> action) {
-  action->ProcessAction(
-      this, base::BindOnce(&ScriptExecutor::OnProcessedAction,
-                           weak_ptr_factory_.GetWeakPtr(), std::move(action)));
+  action->ProcessAction(this, base::BindOnce(&ScriptExecutor::OnProcessedAction,
+                                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScriptExecutor::GetNextActions() {
@@ -140,14 +139,11 @@ void ScriptExecutor::GetNextActions() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ScriptExecutor::OnProcessedAction(std::unique_ptr<Action> action,
-                                       bool success) {
-  processed_actions_.emplace_back();
-  ProcessedActionProto* proto = &processed_actions_.back();
-  proto->mutable_action()->MergeFrom(action->proto());
-  proto->set_status(success ? ProcessedActionStatus::ACTION_APPLIED
-                            : ProcessedActionStatus::OTHER_ACTION_STATUS);
-  if (!success) {
+void ScriptExecutor::OnProcessedAction(
+    std::unique_ptr<ProcessedActionProto> processed_action_proto) {
+  processed_actions_.emplace_back(*processed_action_proto);
+  if (processed_actions_.back().status() !=
+      ProcessedActionStatus::ACTION_APPLIED) {
     // Report error immediately, interrupting action processing.
     GetNextActions();
     return;

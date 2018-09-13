@@ -56,7 +56,7 @@ class ScriptExecutor : public ActionDelegate {
   void ProcessNextAction();
   void ProcessAction(std::unique_ptr<Action> action);
   void GetNextActions();
-  void OnProcessedAction(std::unique_ptr<Action> action, bool status);
+  void OnProcessedAction(std::unique_ptr<ProcessedActionProto> action);
 
   std::string script_path_;
   ScriptExecutorDelegate* delegate_;

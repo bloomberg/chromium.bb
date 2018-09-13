@@ -6,13 +6,14 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 
 namespace autofill_assistant {
 
 SelectOptionAction::SelectOptionAction(const ActionProto& proto)
-    : Action(proto) {
+    : Action(proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_select_option());
 }
 
@@ -20,6 +21,7 @@ SelectOptionAction::~SelectOptionAction() {}
 
 void SelectOptionAction::ProcessAction(ActionDelegate* delegate,
                                        ProcessActionCallback callback) {
+  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   const SelectOptionProto& select_option = proto_.select_option();
 
   // A non prefilled |select_option| is not supported.
@@ -30,8 +32,16 @@ void SelectOptionAction::ProcessAction(ActionDelegate* delegate,
   }
   DCHECK(!selectors.empty());
 
-  delegate->SelectOption(selectors, select_option.selected_option(),
-                         std::move(callback));
+  delegate->SelectOption(
+      selectors, select_option.selected_option(),
+      base::BindOnce(&::autofill_assistant::SelectOptionAction::OnSelectOption,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void SelectOptionAction::OnSelectOption(ProcessActionCallback callback,
+                                        bool status) {
+  UpdateProcessedAction(status);
+  std::move(callback).Run(std::move(processed_action_proto_));
 }
 
 }  // namespace autofill_assistant.

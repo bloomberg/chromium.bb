@@ -24,6 +24,8 @@ jumbo_static_library("browser") {
     "actions/select_option_action.h",
     "actions/tell_action.cc",
     "actions/tell_action.h",
+    "actions/upload_dom_action.cc",
+    "actions/upload_dom_action.h",
     "actions/wait_for_dom_action.cc",
     "actions/wait_for_dom_action.h",
     "client.h",

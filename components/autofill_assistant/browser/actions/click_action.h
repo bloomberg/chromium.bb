@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 namespace autofill_assistant {
 // An action to perform a mouse left button click on a given element on Web.
@@ -24,7 +25,10 @@ class ClickAction : public Action {
                      ProcessActionCallback callback) override;
 
  private:
+  void OnClick(ProcessActionCallback callback, bool status);
+
   std::vector<std::string> target_element_selectors_;
+  base::WeakPtrFactory<ClickAction> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickAction);
 };
