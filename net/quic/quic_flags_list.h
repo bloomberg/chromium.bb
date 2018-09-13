@@ -60,10 +60,6 @@ QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)
 // reordering window for every spurious retransmit.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
 
-// Allows the 3RTO QUIC connection option to close a QUIC connection after
-// 3RTOs if there are no open streams.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_3rtos, false)
-
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
 
@@ -197,7 +193,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_notify_debug_visitor_on_connectivity_probing_sent,
-    false)
+    true)
 
 // If true, disable QUIC version 35.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_35, false)
@@ -222,7 +218,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_flexible_app_limited, false)
 // if the stream id referenced indicates a static stream."
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_check_stream_nonstatic_on_header_list,
-          false)
+          true)
 
 // If true, calling StopReading() on a level-triggered QUIC stream sequencer
 // will cause the sequencer to discard future data.

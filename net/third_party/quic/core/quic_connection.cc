@@ -2218,7 +2218,7 @@ void QuicConnection::OnWriteError(int error_code) {
 }
 
 char* QuicConnection::GetPacketBuffer() {
-  return writer_->GetNextWriteLocation();
+  return writer_->GetNextWriteLocation(self_address().host(), peer_address());
 }
 
 void QuicConnection::OnSerializedPacket(SerializedPacket* serialized_packet) {

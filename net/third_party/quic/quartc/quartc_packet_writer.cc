@@ -56,7 +56,9 @@ bool QuartcPacketWriter::IsBatchMode() const {
   return false;
 }
 
-char* QuartcPacketWriter::GetNextWriteLocation() const {
+char* QuartcPacketWriter::GetNextWriteLocation(
+    const QuicIpAddress& self_address,
+    const QuicSocketAddress& peer_address) {
   return nullptr;
 }
 

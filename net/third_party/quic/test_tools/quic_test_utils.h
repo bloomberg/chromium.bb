@@ -23,6 +23,7 @@
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_connection_close_delegate_interface.h"
 #include "net/third_party/quic/core/quic_framer.h"
+#include "net/third_party/quic/core/quic_packet_writer.h"
 #include "net/third_party/quic/core/quic_sent_packet_manager.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
@@ -806,7 +807,9 @@ class MockPacketWriter : public QuicPacketWriter {
                      QuicByteCount(const QuicSocketAddress& peer_address));
   MOCK_CONST_METHOD0(SupportsReleaseTime, bool());
   MOCK_CONST_METHOD0(IsBatchMode, bool());
-  MOCK_CONST_METHOD0(GetNextWriteLocation, char*());
+  MOCK_METHOD2(GetNextWriteLocation,
+               char*(const QuicIpAddress& self_address,
+                     const QuicSocketAddress& peer_address));
   MOCK_METHOD0(Flush, WriteResult());
 };
 
