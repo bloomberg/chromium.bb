@@ -288,7 +288,8 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
     : bounds(first_paint_chunk.bounds),
       rect_known_to_be_opaque(
           first_paint_chunk.known_to_be_opaque ? bounds : FloatRect()),
-      property_tree_state(first_paint_chunk.properties.GetPropertyTreeState()),
+      property_tree_state(
+          first_paint_chunk.properties.GetPropertyTreeState().Unalias()),
       requires_own_layer(chunk_requires_own_layer) {
   paint_chunk_indices.push_back(chunk_index);
 }
@@ -313,8 +314,10 @@ bool PaintArtifactCompositor::PendingLayer::CanMerge(
     const PendingLayer& guest) const {
   if (requires_own_layer || guest.requires_own_layer)
     return false;
-  if (property_tree_state.Effect() != guest.property_tree_state.Effect())
+  if (property_tree_state.Effect()->Unalias() !=
+      guest.property_tree_state.Effect()->Unalias()) {
     return false;
+  }
   return CanUpcastTo(guest.property_tree_state, property_tree_state);
 }
 
@@ -368,21 +371,27 @@ static bool IsBackfaceHidden(const TransformPaintPropertyNode* node) {
 //    transform space.
 static bool CanUpcastTo(const PropertyTreeState& guest,
                         const PropertyTreeState& home) {
-  DCHECK_EQ(home.Effect(), guest.Effect());
+  DCHECK_EQ(home.Effect()->Unalias(), guest.Effect()->Unalias());
 
   if (IsBackfaceHidden(home.Transform()) != IsBackfaceHidden(guest.Transform()))
     return false;
 
-  for (const ClipPaintPropertyNode* current_clip = guest.Clip();
-       current_clip != home.Clip(); current_clip = current_clip->Parent()) {
+  auto* home_clip = home.Clip()->Unalias();
+  for (const ClipPaintPropertyNode* current_clip = guest.Clip()->Unalias();
+       current_clip != home_clip;
+       current_clip = current_clip->Parent() ? current_clip->Parent()->Unalias()
+                                             : nullptr) {
     if (!current_clip || current_clip->HasDirectCompositingReasons())
       return false;
-    if (!IsNonCompositingAncestorOf(home.Transform(),
-                                    current_clip->LocalTransformSpace()))
+    if (!IsNonCompositingAncestorOf(
+            home.Transform()->Unalias(),
+            current_clip->LocalTransformSpace()->Unalias())) {
       return false;
+    }
   }
 
-  return IsNonCompositingAncestorOf(home.Transform(), guest.Transform());
+  return IsNonCompositingAncestorOf(home.Transform()->Unalias(),
+                                    guest.Transform()->Unalias());
 }
 
 // Returns nullptr if 'ancestor' is not a strict ancestor of 'node'.
@@ -413,10 +422,11 @@ bool PaintArtifactCompositor::MightOverlap(const PendingLayer& layer_a,
 bool PaintArtifactCompositor::CanDecompositeEffect(
     const EffectPaintPropertyNode* effect,
     const PendingLayer& layer) {
+  effect = effect->Unalias();
   // If the effect associated with the layer is deeper than than the effect
   // we are attempting to decomposite, than implies some previous decision
   // did not allow to decomposite intermediate effects.
-  if (layer.property_tree_state.Effect() != effect)
+  if (layer.property_tree_state.Effect()->Unalias() != effect)
     return false;
   if (layer.requires_own_layer)
     return false;
@@ -475,7 +485,8 @@ void PaintArtifactCompositor::LayerizeGroup(
     Vector<PaintChunk>::const_iterator& chunk_it) {
   // Skip paint chunks that are effectively invisible due to opacity and don't
   // have a direct compositing reason.
-  if (SkipGroupIfEffectivelyInvisible(paint_artifact, current_group, chunk_it))
+  if (SkipGroupIfEffectivelyInvisible(paint_artifact, *current_group.Unalias(),
+                                      chunk_it))
     return;
 
   size_t first_layer_in_current_group = pending_layers.size();
@@ -502,7 +513,7 @@ void PaintArtifactCompositor::LayerizeGroup(
     // A. The next chunk belongs to the current group but no subgroup.
     // B. The next chunk does not belong to the current group.
     // C. The next chunk belongs to some subgroup of the current group.
-    const auto* chunk_effect = chunk_it->properties.Effect();
+    const auto* chunk_effect = chunk_it->properties.Effect()->Unalias();
     if (chunk_effect == &current_group) {
       // Case A: The next chunk belongs to the current group but no subgroup.
       const auto& last_display_item =

@@ -41,8 +41,9 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityEffect(
     const EffectPaintPropertyNode& parent,
     float opacity,
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
-  return CreateOpacityEffect(parent, parent.LocalTransformSpace(),
-                             parent.OutputClip(), opacity, compositing_reasons);
+  return CreateOpacityEffect(parent, parent.Unalias()->LocalTransformSpace(),
+                             parent.Unalias()->OutputClip(), opacity,
+                             compositing_reasons);
 }
 
 inline scoped_refptr<EffectPaintPropertyNode> CreateFilterEffect(
@@ -66,9 +67,9 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateFilterEffect(
     CompositorFilterOperations filter,
     const FloatPoint& paint_offset = FloatPoint(),
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
-  return CreateFilterEffect(parent, parent.LocalTransformSpace(),
-                            parent.OutputClip(), filter, paint_offset,
-                            compositing_reasons);
+  return CreateFilterEffect(parent, parent.Unalias()->LocalTransformSpace(),
+                            parent.Unalias()->OutputClip(), filter,
+                            paint_offset, compositing_reasons);
 }
 
 inline scoped_refptr<ClipPaintPropertyNode> CreateClip(

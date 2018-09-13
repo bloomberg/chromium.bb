@@ -9,6 +9,11 @@
 
 namespace blink {
 
+template <typename NodeType>
+const NodeType* SafeUnalias(const NodeType* node) {
+  return node ? node->Unalias() : nullptr;
+}
+
 const TransformationMatrix& GeometryMapper::SourceToDestinationProjection(
     const TransformPaintPropertyNode* source,
     const TransformPaintPropertyNode* destination) {
@@ -66,6 +71,9 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   DCHECK(source && destination);
   DEFINE_STATIC_LOCAL(TransformationMatrix, identity, (TransformationMatrix()));
   DEFINE_STATIC_LOCAL(TransformationMatrix, temp, (TransformationMatrix()));
+
+  source = source->Unalias();
+  destination = destination->Unalias();
 
   if (source == destination) {
     success = true;
@@ -145,8 +153,9 @@ bool GeometryMapper::PointVisibleInAncestorSpace(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,
     const FloatPoint& local_point) {
-  for (const auto* clip = local_state.Clip();
-       clip && clip != ancestor_state.Clip(); clip = clip->Parent()) {
+  auto* ancestor_clip = ancestor_state.Clip()->Unalias();
+  for (const auto* clip = local_state.Clip()->Unalias();
+       clip && clip != ancestor_clip; clip = SafeUnalias(clip->Parent())) {
     FloatPoint mapped_point =
         SourceToDestinationProjection(local_state.Transform(),
                                       clip->LocalTransformSpace())
@@ -175,7 +184,8 @@ bool GeometryMapper::LocalToAncestorVisualRectInternal(
     return true;
   }
 
-  if (local_state.Effect() != ancestor_state.Effect()) {
+  if (SafeUnalias(local_state.Effect()) !=
+      SafeUnalias(ancestor_state.Effect())) {
     return SlowLocalToAncestorVisualRectWithEffects(
         local_state, ancestor_state, rect_to_map, clip_behavior,
         inclusive_behavior, success);
@@ -236,8 +246,10 @@ bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
   PropertyTreeState last_transform_and_clip_state(local_state.Transform(),
                                                   local_state.Clip(), nullptr);
 
-  for (const auto* effect = local_state.Effect();
-       effect && effect != ancestor_state.Effect(); effect = effect->Parent()) {
+  auto* ancestor_effect = ancestor_state.Effect()->Unalias();
+  for (const auto* effect = local_state.Effect()->Unalias();
+       effect && effect != ancestor_effect;
+       effect = SafeUnalias(effect->Parent())) {
     if (!effect->HasFilterThatMovesPixels())
       continue;
 
@@ -272,7 +284,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,
     OverlayScrollbarClipBehavior clip_behavior) {
-  if (local_state.Clip() == ancestor_state.Clip())
+  if (local_state.Clip()->Unalias() == ancestor_state.Clip()->Unalias())
     return FloatClipRect();
 
   bool success = false;
@@ -282,7 +294,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
   DCHECK(success);
 
   // Many effects (e.g. filters, clip-paths) can make a clip rect not tight.
-  if (local_state.Effect() != ancestor_state.Effect())
+  if (SafeUnalias(local_state.Effect()) != SafeUnalias(ancestor_state.Effect()))
     result.ClearIsTight();
 
   return result;
@@ -290,6 +302,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
 
 static FloatClipRect GetClipRect(const ClipPaintPropertyNode* clip_node,
                                  OverlayScrollbarClipBehavior clip_behavior) {
+  clip_node = clip_node->Unalias();
   FloatClipRect clip_rect(
       UNLIKELY(clip_behavior == kExcludeOverlayScrollbarSizeForHitTesting)
           ? clip_node->ClipRectExcludingOverlayScrollbars()
@@ -306,12 +319,14 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
     OverlayScrollbarClipBehavior clip_behavior,
     InclusiveIntersectOrNot inclusive_behavior,
     bool& success) {
+  descendant = descendant->Unalias();
+  ancestor_clip = ancestor_clip->Unalias();
   if (descendant == ancestor_clip) {
     success = true;
     return FloatClipRect();
   }
-
-  if (descendant->Parent() == ancestor_clip &&
+  ancestor_transform = ancestor_transform->Unalias();
+  if (SafeUnalias(descendant->Parent()) == ancestor_clip &&
       descendant->LocalTransformSpace() == ancestor_transform) {
     success = true;
     return GetClipRect(descendant, clip_behavior);
@@ -337,7 +352,7 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
     }
 
     intermediate_nodes.push_back(clip_node);
-    clip_node = clip_node->Parent();
+    clip_node = SafeUnalias(clip_node->Parent());
   }
   if (!clip_node) {
     success = false;
