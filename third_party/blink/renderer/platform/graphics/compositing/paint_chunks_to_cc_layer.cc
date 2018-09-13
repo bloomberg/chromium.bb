@@ -42,7 +42,7 @@ class ConversionContext {
         layer_offset_(layer_offset),
         current_transform_(Unalias(layer_state.Transform())),
         current_clip_(Unalias(layer_state.Clip())),
-        current_effect_(layer_state.Effect()),
+        current_effect_(Unalias(layer_state.Effect())),
         chunk_to_layer_mapper_(layer_state_,
                                layer_offset_,
                                visual_rect_subpixel_offset),
@@ -419,12 +419,13 @@ void ConversionContext::StartClip(
 
 void ConversionContext::SwitchToEffect(
     const EffectPaintPropertyNode* target_effect) {
+  target_effect = Unalias(target_effect);
   if (target_effect == current_effect_)
     return;
 
   // Step 1: Exit all effects until the lowest common ancestor is found.
   const EffectPaintPropertyNode* lca_effect =
-      &LowestCommonAncestor(*target_effect, *current_effect_);
+      LowestCommonAncestor(*target_effect, *current_effect_).Unalias();
   while (current_effect_ != lca_effect) {
     // This EndClips() and the later EndEffect() pop to the parent effect.
     EndClips();
@@ -444,7 +445,7 @@ void ConversionContext::SwitchToEffect(
   // effect. At this point the current effect must be an ancestor of the target.
   Vector<const EffectPaintPropertyNode*, 1u> pending_effects;
   for (const EffectPaintPropertyNode* effect = target_effect;
-       effect != current_effect_; effect = effect->Parent()) {
+       effect != current_effect_; effect = Unalias(effect->Parent())) {
     // This should never happen unless the DCHECK in step 1 failed.
     if (!effect)
       break;
@@ -454,12 +455,14 @@ void ConversionContext::SwitchToEffect(
   // Step 3: Now apply the list of effects in top-down order.
   for (size_t i = pending_effects.size(); i--;) {
     const EffectPaintPropertyNode* sub_effect = pending_effects[i];
-    DCHECK_EQ(current_effect_, sub_effect->Parent());
+    DCHECK_EQ(current_effect_, Unalias(sub_effect->Parent()));
     StartEffect(sub_effect);
   }
 }
 
 void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
+  DCHECK_EQ(effect, Unalias(effect));
+
   // Before each effect can be applied, we must enter its output clip first,
   // or exit all clips if it doesn't have one.
   if (effect->OutputClip())
@@ -560,7 +563,7 @@ void ConversionContext::UpdateEffectBounds(
 void ConversionContext::EndEffect() {
   const auto& previous_state = state_stack_.back();
   DCHECK_EQ(previous_state.type, StateEntry::kEffect);
-  DCHECK_EQ(current_effect_->Parent(), previous_state.effect);
+  DCHECK(Unalias(current_effect_->Parent()) == previous_state.effect);
   DCHECK_EQ(current_clip_, previous_state.clip);
 
   DCHECK(effect_bounds_stack_.size());

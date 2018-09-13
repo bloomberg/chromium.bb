@@ -69,8 +69,13 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   static scoped_refptr<EffectPaintPropertyNode> Create(
       const EffectPaintPropertyNode& parent,
       State&& state) {
-    return base::AdoptRef(
-        new EffectPaintPropertyNode(&parent, std::move(state)));
+    return base::AdoptRef(new EffectPaintPropertyNode(
+        &parent, std::move(state), false /* is_parent_alias */));
+  }
+  static scoped_refptr<EffectPaintPropertyNode> CreateAlias(
+      const EffectPaintPropertyNode& parent) {
+    return base::AdoptRef(new EffectPaintPropertyNode(
+        &parent, State{}, true /* is_parent_alias */));
   }
 
   bool Update(const EffectPaintPropertyNode& parent, State&& state) {
@@ -78,6 +83,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     if (state == state_)
       return parent_changed;
 
+    DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
     SetChanged();
     state_ = std::move(state);
     return true;
@@ -95,37 +101,58 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
                const TransformPaintPropertyNode* transform_not_to_check) const;
 
   const TransformPaintPropertyNode* LocalTransformSpace() const {
+    DCHECK(!Parent() || !IsParentAlias());
     return state_.local_transform_space.get();
   }
   const ClipPaintPropertyNode* OutputClip() const {
+    DCHECK(!Parent() || !IsParentAlias());
     return state_.output_clip.get();
   }
 
-  SkBlendMode BlendMode() const { return state_.blend_mode; }
-  float Opacity() const { return state_.opacity; }
-  const CompositorFilterOperations& Filter() const { return state_.filter; }
-  ColorFilter GetColorFilter() const { return state_.color_filter; }
+  SkBlendMode BlendMode() const {
+    DCHECK(!Parent() || !IsParentAlias());
+    return state_.blend_mode;
+  }
+  float Opacity() const {
+    DCHECK(!Parent() || !IsParentAlias());
+    return state_.opacity;
+  }
+  const CompositorFilterOperations& Filter() const {
+    DCHECK(!Parent() || !IsParentAlias());
+    return state_.filter;
+  }
+  ColorFilter GetColorFilter() const {
+    DCHECK(!Parent() || !IsParentAlias());
+    return state_.color_filter;
+  }
 
   bool HasFilterThatMovesPixels() const {
+    DCHECK(!Parent() || !IsParentAlias());
     return state_.filter.HasFilterThatMovesPixels();
   }
 
-  FloatPoint PaintOffset() const { return state_.paint_offset; }
+  FloatPoint PaintOffset() const {
+    DCHECK(!Parent() || !IsParentAlias());
+    return state_.paint_offset;
+  }
 
   // Returns a rect covering the pixels that can be affected by pixels in
   // |inputRect|. The rects are in the space of localTransformSpace.
   FloatRect MapRect(const FloatRect& input_rect) const;
 
   bool HasDirectCompositingReasons() const {
+    DCHECK(!Parent() || !IsParentAlias());
     return state_.direct_compositing_reasons != CompositingReason::kNone;
   }
 
   bool RequiresCompositingForAnimation() const {
+    DCHECK(!Parent() || !IsParentAlias());
     return state_.direct_compositing_reasons &
            CompositingReason::kComboActiveAnimation;
   }
 
   const CompositorElementId& GetCompositorElementId() const {
+    DCHECK(!Parent() || !IsParentAlias());
     return state_.compositor_element_id;
   }
 
@@ -133,13 +160,15 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // an effect node before it has been updated, to later detect changes.
   scoped_refptr<EffectPaintPropertyNode> Clone() const {
-    return base::AdoptRef(new EffectPaintPropertyNode(Parent(), State(state_)));
+    return base::AdoptRef(
+        new EffectPaintPropertyNode(Parent(), State(state_), IsParentAlias()));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if an effect node has changed.
   bool operator==(const EffectPaintPropertyNode& o) const {
-    return Parent() == o.Parent() && state_ == o.state_;
+    return Parent() == o.Parent() && state_ == o.state_ &&
+           IsParentAlias() == o.IsParentAlias();
   }
 #endif
 
@@ -149,8 +178,10 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   size_t TreeMemoryUsageInBytes() const;
 
  private:
-  EffectPaintPropertyNode(const EffectPaintPropertyNode* parent, State&& state)
-      : PaintPropertyNode(parent), state_(std::move(state)) {}
+  EffectPaintPropertyNode(const EffectPaintPropertyNode* parent,
+                          State&& state,
+                          bool is_parent_alias)
+      : PaintPropertyNode(parent, is_parent_alias), state_(std::move(state)) {}
 
   State state_;
 };

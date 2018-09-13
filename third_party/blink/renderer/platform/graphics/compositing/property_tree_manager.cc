@@ -161,6 +161,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   if (!transform_node)
     return kSecondaryRootNodeId;
 
+  transform_node = transform_node->Unalias();
   auto it = transform_node_map_.find(transform_node);
   if (it != transform_node_map_.end())
     return it->value;
@@ -279,6 +280,7 @@ int PropertyTreeManager::EnsureCompositorClipNode(
   if (!clip_node)
     return kSecondaryRootNodeId;
 
+  clip_node = clip_node->Unalias();
   auto it = clip_node_map_.find(clip_node);
   if (it != clip_node_map_.end())
     return it->value;
@@ -479,7 +481,8 @@ int PropertyTreeManager::SwitchToEffectNodeWithSynthesizedClip(
   // At last, the caller invokes Finalize() to close the unclosed synthetic
   // effect. Another mask layer L_C1_2 is generated, along with its internal
   // effect node for blending.
-  const auto& ancestor = LowestCommonAncestor(*current_effect_, next_effect);
+  const auto& ancestor =
+      *LowestCommonAncestor(*current_effect_, next_effect).Unalias();
   while (current_effect_ != &ancestor)
     CloseCcEffect();
 
@@ -510,6 +513,7 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const ClipPaintPropertyNode* target_clip,
     SkBlendMode delegated_blend,
     bool effect_is_newly_built) {
+  target_clip = target_clip->Unalias();
   if (delegated_blend != SkBlendMode::kSrcOver) {
     // Exit all synthetic effect node for rounded clip if the next child has
     // exotic blending mode because it has to access the backdrop of enclosing
@@ -524,7 +528,8 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
   } else {
     // Exit synthetic effects until there are no more synthesized clips below
     // our lowest common ancestor.
-    const auto& lca = LowestCommonAncestor(*current_clip_, *target_clip);
+    const auto& lca =
+        *LowestCommonAncestor(*current_clip_, *target_clip).Unalias();
     while (current_clip_ != &lca) {
       DCHECK(IsCurrentCcEffectSynthetic());
       const auto* pre_exit_clip = current_clip_;
@@ -549,7 +554,8 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
   DCHECK(current_clip_->IsAncestorOf(*target_clip));
 
   Vector<const ClipPaintPropertyNode*> pending_clips;
-  for (; target_clip != current_clip_; target_clip = target_clip->Parent()) {
+  for (; target_clip != current_clip_;
+       target_clip = target_clip->Parent()->Unalias()) {
     DCHECK(target_clip);
     bool should_synthesize =
         target_clip->ClipRect().IsRounded() || target_clip->ClipPath();
@@ -590,12 +596,13 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
 
 bool PropertyTreeManager::BuildEffectNodesRecursively(
     const EffectPaintPropertyNode* next_effect) {
+  next_effect = next_effect ? next_effect->Unalias() : nullptr;
   if (next_effect == current_effect_)
     return false;
   DCHECK(next_effect);
 
   bool newly_built = BuildEffectNodesRecursively(next_effect->Parent());
-  DCHECK_EQ(next_effect->Parent(), current_effect_);
+  DCHECK_EQ(next_effect->Parent()->Unalias(), current_effect_);
 
 #if DCHECK_IS_ON()
   DCHECK(!effect_nodes_converted_.Contains(next_effect))
@@ -675,7 +682,7 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   current_effect_type_ = CcEffectType::kEffect;
   current_effect_ = next_effect;
   if (next_effect->OutputClip())
-    current_clip_ = next_effect->OutputClip();
+    current_clip_ = next_effect->OutputClip()->Unalias();
 
   return true;
 }

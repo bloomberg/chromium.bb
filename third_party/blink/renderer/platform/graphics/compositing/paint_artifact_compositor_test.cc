@@ -354,6 +354,46 @@ TEST_P(PaintArtifactCompositorTest, OneTransform) {
   }
 }
 
+TEST_P(PaintArtifactCompositorTest, OneTransformWithAlias) {
+  // A 90 degree clockwise rotation about (100, 100).
+  auto real_transform = CreateTransform(t0(), TransformationMatrix().Rotate(90),
+                                        FloatPoint3D(100, 100, 0),
+                                        CompositingReason::k3DTransform);
+  auto transform = TransformPaintPropertyNode::CreateAlias(*real_transform);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(*transform, c0(), e0())
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kGray);
+  artifact.Chunk(*transform, c0(), e0())
+      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  ASSERT_EQ(2u, ContentLayerCount());
+  {
+    const cc::Layer* layer = ContentLayerAt(0);
+
+    Vector<RectWithColor> rects_with_color;
+    rects_with_color.push_back(
+        RectWithColor(FloatRect(0, 0, 100, 100), Color::kWhite));
+    rects_with_color.push_back(
+        RectWithColor(FloatRect(100, 100, 200, 100), Color::kBlack));
+
+    EXPECT_THAT(layer->GetPicture(),
+                Pointee(DrawsRectangles(rects_with_color)));
+    gfx::RectF mapped_rect(0, 0, 100, 100);
+    layer->ScreenSpaceTransform().TransformRect(&mapped_rect);
+    EXPECT_EQ(gfx::RectF(100, 0, 100, 100), mapped_rect);
+  }
+  {
+    const cc::Layer* layer = ContentLayerAt(1);
+    EXPECT_THAT(
+        layer->GetPicture(),
+        Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kGray)));
+    EXPECT_EQ(gfx::Transform(), layer->ScreenSpaceTransform());
+  }
+}
+
 TEST_P(PaintArtifactCompositorTest, TransformCombining) {
   // A translation by (5, 5) within a 2x scale about (10, 10).
   auto transform1 =
@@ -480,6 +520,59 @@ TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransform) {
   }
 }
 
+TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransformWithAlias) {
+  for (bool transform_is_flattened : {true, false}) {
+    SCOPED_TRACE(transform_is_flattened);
+
+    // The flattens_inherited_transform bit corresponds to whether the _parent_
+    // transform node flattens the transform. This is because Blink's notion of
+    // flattening determines whether content within the node's local transform
+    // is flattened, while cc's notion applies in the parent's coordinate space.
+    auto real_transform1 = CreateTransform(t0(), TransformationMatrix());
+    auto transform1 = TransformPaintPropertyNode::CreateAlias(*real_transform1);
+    auto real_transform2 =
+        CreateTransform(*transform1, TransformationMatrix().Rotate3d(0, 45, 0));
+    auto transform2 = TransformPaintPropertyNode::CreateAlias(*real_transform2);
+    TransformPaintPropertyNode::State transform3_state;
+    transform3_state.matrix = TransformationMatrix().Rotate3d(0, 45, 0);
+    transform3_state.flattens_inherited_transform = transform_is_flattened;
+    auto real_transform3 = TransformPaintPropertyNode::Create(
+        *transform2, std::move(transform3_state));
+    auto transform3 = TransformPaintPropertyNode::CreateAlias(*real_transform3);
+
+    TestPaintArtifact artifact;
+    artifact.Chunk(*transform3, c0(), e0())
+        .RectDrawing(FloatRect(0, 0, 300, 200), Color::kWhite);
+    Update(artifact.Build());
+
+    ASSERT_EQ(1u, ContentLayerCount());
+    const cc::Layer* layer = ContentLayerAt(0);
+    EXPECT_THAT(
+        layer->GetPicture(),
+        Pointee(DrawsRectangle(FloatRect(0, 0, 300, 200), Color::kWhite)));
+
+    // The leaf transform node should flatten its inherited transform node
+    // if and only if the intermediate rotation transform in the Blink tree
+    // flattens.
+    const cc::TransformNode* transform_node3 =
+        GetPropertyTrees().transform_tree.Node(layer->transform_tree_index());
+    EXPECT_EQ(transform_is_flattened,
+              transform_node3->flattens_inherited_transform);
+
+    // Given this, we should expect the correct screen space transform for
+    // each case. If the transform was flattened, we should see it getting
+    // an effective horizontal scale of 1/sqrt(2) each time, thus it gets
+    // half as wide. If the transform was not flattened, we should see an
+    // empty rectangle (as the total 90 degree rotation makes it
+    // perpendicular to the viewport).
+    gfx::RectF rect(0, 0, 100, 100);
+    layer->ScreenSpaceTransform().TransformRect(&rect);
+    if (transform_is_flattened)
+      EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 100), rect);
+    else
+      EXPECT_TRUE(rect.IsEmpty());
+  }
+}
 TEST_P(PaintArtifactCompositorTest, SortingContextID) {
   // Has no 3D rendering context.
   auto transform1 = CreateTransform(t0(), TransformationMatrix());
@@ -580,11 +673,99 @@ TEST_P(PaintArtifactCompositorTest, OneClip) {
   EXPECT_EQ(gfx::RectF(100, 100, 300, 200), clip_node->clip);
 }
 
+TEST_P(PaintArtifactCompositorTest, OneClipWithAlias) {
+  auto real_clip =
+      CreateClip(c0(), &t0(), FloatRoundedRect(100, 100, 300, 200));
+  auto clip = ClipPaintPropertyNode::CreateAlias(*real_clip);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *clip, e0())
+      .RectDrawing(FloatRect(220, 80, 300, 200), Color::kBlack);
+  Update(artifact.Build());
+
+  ASSERT_EQ(1u, ContentLayerCount());
+  const cc::Layer* layer = ContentLayerAt(0);
+  // The layer is clipped.
+  EXPECT_EQ(gfx::Size(180, 180), layer->bounds());
+  EXPECT_EQ(gfx::Vector2dF(220, 100), layer->offset_to_transform_parent());
+  EXPECT_THAT(
+      layer->GetPicture(),
+      Pointee(DrawsRectangle(FloatRect(0, 0, 300, 180), Color::kBlack)));
+  EXPECT_EQ(Translation(220, 100), layer->ScreenSpaceTransform());
+
+  const cc::ClipNode* clip_node =
+      GetPropertyTrees().clip_tree.Node(layer->clip_tree_index());
+  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, clip_node->clip_type);
+  EXPECT_EQ(gfx::RectF(100, 100, 300, 200), clip_node->clip);
+}
+
 TEST_P(PaintArtifactCompositorTest, NestedClips) {
   auto clip1 = CreateClip(c0(), &t0(), FloatRoundedRect(100, 100, 700, 700),
                           CompositingReason::kOverflowScrollingTouch);
   auto clip2 = CreateClip(*clip1, &t0(), FloatRoundedRect(200, 200, 700, 700),
                           CompositingReason::kOverflowScrollingTouch);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *clip1, e0())
+      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kWhite);
+  artifact.Chunk(t0(), *clip2, e0())
+      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kLightGray);
+  artifact.Chunk(t0(), *clip1, e0())
+      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kDarkGray);
+  artifact.Chunk(t0(), *clip2, e0())
+      .RectDrawing(FloatRect(300, 350, 100, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  ASSERT_EQ(4u, ContentLayerCount());
+
+  const cc::Layer* white_layer = ContentLayerAt(0);
+  EXPECT_THAT(
+      white_layer->GetPicture(),
+      Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kWhite)));
+  EXPECT_EQ(Translation(300, 350), white_layer->ScreenSpaceTransform());
+
+  const cc::Layer* light_gray_layer = ContentLayerAt(1);
+  EXPECT_THAT(
+      light_gray_layer->GetPicture(),
+      Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kLightGray)));
+  EXPECT_EQ(Translation(300, 350), light_gray_layer->ScreenSpaceTransform());
+
+  const cc::Layer* dark_gray_layer = ContentLayerAt(2);
+  EXPECT_THAT(
+      dark_gray_layer->GetPicture(),
+      Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kDarkGray)));
+  EXPECT_EQ(Translation(300, 350), dark_gray_layer->ScreenSpaceTransform());
+
+  const cc::Layer* black_layer = ContentLayerAt(3);
+  EXPECT_THAT(
+      black_layer->GetPicture(),
+      Pointee(DrawsRectangle(FloatRect(0, 0, 100, 100), Color::kBlack)));
+  EXPECT_EQ(Translation(300, 350), black_layer->ScreenSpaceTransform());
+
+  EXPECT_EQ(white_layer->clip_tree_index(), dark_gray_layer->clip_tree_index());
+  const cc::ClipNode* outer_clip =
+      GetPropertyTrees().clip_tree.Node(white_layer->clip_tree_index());
+  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, outer_clip->clip_type);
+  EXPECT_EQ(gfx::RectF(100, 100, 700, 700), outer_clip->clip);
+
+  EXPECT_EQ(light_gray_layer->clip_tree_index(),
+            black_layer->clip_tree_index());
+  const cc::ClipNode* inner_clip =
+      GetPropertyTrees().clip_tree.Node(black_layer->clip_tree_index());
+  EXPECT_EQ(cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP, inner_clip->clip_type);
+  EXPECT_EQ(gfx::RectF(200, 200, 700, 700), inner_clip->clip);
+  EXPECT_EQ(outer_clip->id, inner_clip->parent_id);
+}
+
+TEST_P(PaintArtifactCompositorTest, NestedClipsWithAlias) {
+  auto real_clip1 =
+      CreateClip(c0(), &t0(), FloatRoundedRect(100, 100, 700, 700),
+                 CompositingReason::kOverflowScrollingTouch);
+  auto clip1 = ClipPaintPropertyNode::CreateAlias(*real_clip1);
+  auto real_clip2 =
+      CreateClip(*clip1, &t0(), FloatRoundedRect(200, 200, 700, 700),
+                 CompositingReason::kOverflowScrollingTouch);
+  auto clip2 = ClipPaintPropertyNode::CreateAlias(*real_clip2);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip1, e0())
@@ -671,12 +852,16 @@ TEST_P(PaintArtifactCompositorTest, DeeplyNestedClips) {
   }
 }
 
-TEST_P(PaintArtifactCompositorTest, SiblingClips) {
-  auto common_clip = CreateClip(c0(), &t0(), FloatRoundedRect(0, 0, 800, 600));
-  auto clip1 =
+TEST_P(PaintArtifactCompositorTest, SiblingClipsWithAlias) {
+  auto real_common_clip =
+      CreateClip(c0(), &t0(), FloatRoundedRect(0, 0, 800, 600));
+  auto common_clip = ClipPaintPropertyNode::CreateAlias(*real_common_clip);
+  auto real_clip1 =
       CreateClip(*common_clip, &t0(), FloatRoundedRect(0, 0, 400, 600));
-  auto clip2 =
+  auto clip1 = ClipPaintPropertyNode::CreateAlias(*real_clip1);
+  auto real_clip2 =
       CreateClip(*common_clip, &t0(), FloatRoundedRect(400, 0, 400, 600));
+  auto clip2 = ClipPaintPropertyNode::CreateAlias(*real_clip2);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), *clip1, e0())
@@ -738,17 +923,21 @@ TEST_P(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
   EXPECT_EQ(Translation(50, 60), layer->ScreenSpaceTransform());
 }
 
-TEST_P(PaintArtifactCompositorTest, EffectTreeConversion) {
+TEST_P(PaintArtifactCompositorTest, EffectTreeConversionWithAlias) {
   EffectPaintPropertyNode::State effect1_state;
   effect1_state.local_transform_space = &t0();
   effect1_state.output_clip = &c0();
   effect1_state.opacity = 0.5;
   effect1_state.direct_compositing_reasons = CompositingReason::kAll;
   effect1_state.compositor_element_id = CompositorElementId(2);
-  auto effect1 =
+  auto real_effect1 =
       EffectPaintPropertyNode::Create(e0(), std::move(effect1_state));
-  auto effect2 = CreateOpacityEffect(*effect1, 0.3, CompositingReason::kAll);
-  auto effect3 = CreateOpacityEffect(e0(), 0.2, CompositingReason::kAll);
+  auto effect1 = EffectPaintPropertyNode::CreateAlias(*real_effect1);
+  auto real_effect2 =
+      CreateOpacityEffect(*effect1, 0.3, CompositingReason::kAll);
+  auto effect2 = EffectPaintPropertyNode::CreateAlias(*real_effect2);
+  auto real_effect3 = CreateOpacityEffect(e0(), 0.2, CompositingReason::kAll);
+  auto effect3 = EffectPaintPropertyNode::CreateAlias(*real_effect3);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *effect2)
@@ -1311,16 +1500,52 @@ TEST_P(PaintArtifactCompositorTest, MergeOpacity) {
   }
 }
 
-TEST_P(PaintArtifactCompositorTest, MergeNested) {
+TEST_P(PaintArtifactCompositorTest, MergeOpacityWithAlias) {
+  float opacity = 2.0 / 255.0;
+  auto real_effect = CreateOpacityEffect(e0(), opacity);
+  auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
+
+  TestPaintArtifact test_artifact;
+  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
+  test_artifact.Chunk(t0(), c0(), *effect)
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 200, 300), Color::kGray);
+
+  auto artifact = test_artifact.Build();
+  ASSERT_EQ(3u, artifact->PaintChunks().size());
+  Update(artifact);
+  ASSERT_EQ(1u, ContentLayerCount());
+  {
+    Vector<RectWithColor> rects_with_color;
+    rects_with_color.push_back(
+        RectWithColor(FloatRect(0, 0, 100, 100), Color::kWhite));
+    // Transform is applied to this PaintChunk.
+    rects_with_color.push_back(
+        RectWithColor(FloatRect(0, 0, 100, 100),
+                      Color(Color::kBlack).CombineWithAlpha(opacity).Rgb()));
+    rects_with_color.push_back(
+        RectWithColor(FloatRect(0, 0, 200, 300), Color::kGray));
+
+    const cc::Layer* layer = ContentLayerAt(0);
+    EXPECT_THAT(layer->GetPicture(),
+                Pointee(DrawsRectangles(rects_with_color)));
+  }
+}
+
+TEST_P(PaintArtifactCompositorTest, MergeNestedWithAlias) {
   // Tests merging of an opacity effect, inside of a clip, inside of a
   // transform.
-  auto transform =
+  auto real_transform =
       CreateTransform(t0(), TransformationMatrix().Translate(50, 50),
                       FloatPoint3D(100, 100, 0));
-  auto clip =
+  auto transform = TransformPaintPropertyNode::CreateAlias(*real_transform);
+  auto real_clip =
       CreateClip(c0(), transform.get(), FloatRoundedRect(10, 20, 50, 60));
+  auto clip = ClipPaintPropertyNode::CreateAlias(*real_clip);
   float opacity = 2.0 / 255.0;
-  auto effect = CreateOpacityEffect(e0(), transform.get(), clip.get(), opacity);
+  auto real_effect =
+      CreateOpacityEffect(e0(), transform.get(), clip.get(), opacity);
+  auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
@@ -1757,6 +1982,18 @@ TEST_P(PaintArtifactCompositorTest, EffectWithElementId) {
   Update(artifact.Build());
 
   EXPECT_EQ(2, ElementIdToEffectNodeIndex(effect->GetCompositorElementId()));
+}
+
+TEST_P(PaintArtifactCompositorTest, EffectWithElementIdWithAlias) {
+  auto real_effect = CreateSampleEffectNodeWithElementId();
+  auto effect = EffectPaintPropertyNode::CreateAlias(*real_effect);
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), c0(), *effect)
+      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  EXPECT_EQ(2,
+            ElementIdToEffectNodeIndex(real_effect->GetCompositorElementId()));
 }
 
 TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMask) {

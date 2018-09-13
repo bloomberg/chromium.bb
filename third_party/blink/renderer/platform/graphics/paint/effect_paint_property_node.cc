@@ -11,8 +11,10 @@ namespace blink {
 const EffectPaintPropertyNode& EffectPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(EffectPaintPropertyNode, root,
                     base::AdoptRef(new EffectPaintPropertyNode(
-                        nullptr, State{&TransformPaintPropertyNode::Root(),
-                                       &ClipPaintPropertyNode::Root()})));
+                        nullptr,
+                        State{&TransformPaintPropertyNode::Root(),
+                              &ClipPaintPropertyNode::Root()},
+                        true /* is_parent_alias */)));
   return *root;
 }
 
@@ -27,14 +29,23 @@ FloatRect EffectPaintPropertyNode::MapRect(const FloatRect& input_rect) const {
 bool EffectPaintPropertyNode::Changed(
     const PropertyTreeState& relative_to_state,
     const TransformPaintPropertyNode* transform_not_to_check) const {
-  for (const auto* node = this; node && node != relative_to_state.Effect();
-       node = node->Parent()) {
+  auto* relative_effect = relative_to_state.Effect()
+                              ? relative_to_state.Effect()->Unalias()
+                              : nullptr;
+  if (transform_not_to_check)
+    transform_not_to_check = transform_not_to_check->Unalias();
+  for (const auto* node = Unalias(); node && node != relative_effect;
+       node = node->Parent() ? node->Parent()->Unalias() : nullptr) {
     if (node->NodeChanged())
       return true;
+    auto* local_transform = node->LocalTransformSpace()
+                                ? node->LocalTransformSpace()->Unalias()
+                                : nullptr;
     if (node->HasFilterThatMovesPixels() &&
-        node->LocalTransformSpace() != transform_not_to_check &&
-        node->LocalTransformSpace()->Changed(*relative_to_state.Transform()))
+        local_transform != transform_not_to_check &&
+        local_transform->Changed(*relative_to_state.Transform()->Unalias())) {
       return true;
+    }
     // We don't check for change of OutputClip here to avoid N^3 complexity.
     // The caller should check for clip change in other ways.
   }
