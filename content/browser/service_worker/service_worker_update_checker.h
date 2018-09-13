@@ -6,23 +6,37 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UPDATE_CHECKER_H_
 
 #include "base/callback.h"
+#include "content/browser/service_worker/service_worker_database.h"
+#include "content/browser/service_worker/service_worker_single_script_update_checker.h"
 
 namespace content {
-
-class ServiceWorkerRegistration;
 
 class ServiceWorkerUpdateChecker {
  public:
   using UpdateStatusCallback = base::OnceCallback<void(bool)>;
 
   ServiceWorkerUpdateChecker(
-      scoped_refptr<ServiceWorkerRegistration> registration);
+      std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare);
   ~ServiceWorkerUpdateChecker();
 
   // |callback| is always triggered when Start() finishes. If the scripts are
   // found to have any changes, the argument of |callback| is true and otherwise
   // false.
   void Start(UpdateStatusCallback callback);
+
+  void OnOneUpdateCheckFinished(bool is_script_changed);
+
+ private:
+  void CheckOneScript();
+
+  std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare_;
+  size_t scripts_compared_ = 0;
+
+  std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> running_checker_;
+
+  UpdateStatusCallback callback_;
+
+  base::WeakPtrFactory<ServiceWorkerUpdateChecker> weak_factory_;
 };
 
 }  // namespace content
