@@ -492,10 +492,8 @@ void XRSession::OnFrame(
       // If using a background image, the caller must provide its pixel size
       // also. The source size can differ from the current drawing buffer size.
       DCHECK(background_size);
-      // TODO(https://crbug.com/837509): Remove this static_cast.
-      XRWebGLLayer* webgl_layer = static_cast<XRWebGLLayer*>(frame_base_layer);
-      webgl_layer->OverwriteColorBufferFromMailboxTexture(
-          background_mailbox_holder.value(), background_size.value());
+      frame_base_layer->HandleBackgroundImage(background_mailbox_holder.value(),
+                                              background_size.value());
     }
 
     // Resolve the queued requestAnimationFrame callbacks. All XR rendering will
