@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -399,6 +400,13 @@ class MachineLevelUserCloudPolicyEnrollmentTest
 
     histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 0);
   }
+
+#if !defined(GOOGLE_CHROME_BUILD)
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
+    command_line->AppendSwitch(::switches::kEnableMachineLevelUserCloudPolicy);
+  }
+#endif
 
   void TearDownInProcessBrowserTestFixture() override {
     // Test body is skipped if enrollment failed as Chrome quit early.

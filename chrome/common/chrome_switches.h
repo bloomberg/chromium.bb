@@ -309,6 +309,11 @@ extern const char kEnableInputImeAPI[];
 extern const char kEnableNewAppMenuIcon[];
 #endif
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \
+    !defined(GOOGLE_CHROME_BUILD)
+extern const char kEnableMachineLevelUserCloudPolicy[];
+#endif
+
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 extern const char kUseSystemDefaultPrinter[];
 #endif

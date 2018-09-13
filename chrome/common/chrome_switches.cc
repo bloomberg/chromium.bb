@@ -991,6 +991,14 @@ const char kEnableInputImeAPI[] = "enable-input-ime-api";
 const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 #endif
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \
+    !defined(GOOGLE_CHROME_BUILD)
+// Enables Machine level user cloud policy on Chromium build. This policy is
+// always enabled on the branded builds.
+const char kEnableMachineLevelUserCloudPolicy[] =
+    "enable-machine-level-user-cloud-policy";
+#endif
+
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 // Uses the system default printer as the initially selected destination in
 // print preview, instead of the most recently used destination.
