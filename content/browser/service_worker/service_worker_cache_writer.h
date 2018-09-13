@@ -82,9 +82,9 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   bool is_pausing() const { return state_ == STATE_PAUSING; }
 
   // Resumes a cache writer which were paused when a block of data from the
-  // network wasn't identical to the data in the storage. This method is valid
-  // only when |pause_when_not_identical| is true in the constructor and
-  // |state_| is STATE_PAUSING.
+  // network wasn't identical to the data in the storage. It is valid to call
+  // this method only when |pause_when_not_identical| is true in the constructor
+  // and |state_| is STATE_PAUSING.
   net::Error Resume(OnWriteCompleteCallback callback);
 
  private:
