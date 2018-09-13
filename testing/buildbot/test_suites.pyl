@@ -1844,6 +1844,41 @@
     },
   },
 
+  'network_service_chromeos_fyi_gtests': {
+    'network_service_browser_tests': {
+      'args': [
+        '--enable-features=NetworkService',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter;../../testing/buildbot/filters/mojo.fyi.chromeos.network_browser_tests.filter',
+      ],
+      'swarming': {
+        'shards': 10,
+      },
+      'test': 'browser_tests',
+    },
+    'network_service_components_browsertests': {
+      'args': [
+        '--enable-features=NetworkService',
+      ],
+      'test': 'components_browsertests',
+    },
+    'network_service_content_browsertests': {
+      'args': [
+        '--enable-features=NetworkService',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
+      ],
+      'swarming': {
+        'shards': 2,
+      },
+      'test': 'content_browsertests',
+    },
+    'network_service_extensions_browsertests': {
+      'args': [
+        '--enable-features=NetworkService',
+      ],
+      'test': 'extensions_browsertests',
+    },
+  },
+
   'network_service_gtests': {
     'network_service_browser_tests': {
       'args': [
@@ -2721,6 +2756,7 @@
     'aura_gtests',
     'mash_fyi_chromium_gtests',
     'mojo_chromiumos_specific_gtests',
+    'network_service_chromeos_fyi_gtests',
     'viz_gtests',
     'viz_non_android_fyi_gtests',
   ],
