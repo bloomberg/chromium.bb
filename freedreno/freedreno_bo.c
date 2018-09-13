@@ -103,7 +103,7 @@ bo_new(struct fd_device *dev, uint32_t size, uint32_t flags,
 	return bo;
 }
 
-struct fd_bo *
+drm_public struct fd_bo *
 fd_bo_new(struct fd_device *dev, uint32_t size, uint32_t flags)
 {
 	struct fd_bo *bo = bo_new(dev, size, flags, &dev->bo_cache);
@@ -126,7 +126,7 @@ fd_bo_new_ring(struct fd_device *dev, uint32_t size, uint32_t flags)
 	return bo;
 }
 
-struct fd_bo *
+drm_public struct fd_bo *
 fd_bo_from_handle(struct fd_device *dev, uint32_t handle, uint32_t size)
 {
 	struct fd_bo *bo = NULL;
@@ -147,7 +147,7 @@ out_unlock:
 	return bo;
 }
 
-struct fd_bo *
+drm_public struct fd_bo *
 fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 {
 	int ret, size;
@@ -179,7 +179,7 @@ out_unlock:
 	return bo;
 }
 
-struct fd_bo * fd_bo_from_name(struct fd_device *dev, uint32_t name)
+drm_public struct fd_bo * fd_bo_from_name(struct fd_device *dev, uint32_t name)
 {
 	struct drm_gem_open req = {
 			.name = name,
@@ -214,23 +214,23 @@ out_unlock:
 	return bo;
 }
 
-uint64_t fd_bo_get_iova(struct fd_bo *bo)
+drm_public uint64_t fd_bo_get_iova(struct fd_bo *bo)
 {
 	return bo->funcs->iova(bo);
 }
 
-void fd_bo_put_iova(struct fd_bo *bo)
+drm_public void fd_bo_put_iova(struct fd_bo *bo)
 {
 	/* currently a no-op */
 }
 
-struct fd_bo * fd_bo_ref(struct fd_bo *bo)
+drm_public struct fd_bo * fd_bo_ref(struct fd_bo *bo)
 {
 	atomic_inc(&bo->refcnt);
 	return bo;
 }
 
-void fd_bo_del(struct fd_bo *bo)
+drm_public void fd_bo_del(struct fd_bo *bo)
 {
 	struct fd_device *dev = bo->dev;
 
@@ -275,7 +275,7 @@ drm_private void bo_del(struct fd_bo *bo)
 	bo->funcs->destroy(bo);
 }
 
-int fd_bo_get_name(struct fd_bo *bo, uint32_t *name)
+drm_public int fd_bo_get_name(struct fd_bo *bo, uint32_t *name)
 {
 	if (!bo->name) {
 		struct drm_gem_flink req = {
@@ -299,12 +299,12 @@ int fd_bo_get_name(struct fd_bo *bo, uint32_t *name)
 	return 0;
 }
 
-uint32_t fd_bo_handle(struct fd_bo *bo)
+drm_public uint32_t fd_bo_handle(struct fd_bo *bo)
 {
 	return bo->handle;
 }
 
-int fd_bo_dmabuf(struct fd_bo *bo)
+drm_public int fd_bo_dmabuf(struct fd_bo *bo)
 {
 	int ret, prime_fd;
 
@@ -320,12 +320,12 @@ int fd_bo_dmabuf(struct fd_bo *bo)
 	return prime_fd;
 }
 
-uint32_t fd_bo_size(struct fd_bo *bo)
+drm_public uint32_t fd_bo_size(struct fd_bo *bo)
 {
 	return bo->size;
 }
 
-void * fd_bo_map(struct fd_bo *bo)
+drm_public void * fd_bo_map(struct fd_bo *bo)
 {
 	if (!bo->map) {
 		uint64_t offset;
@@ -347,18 +347,18 @@ void * fd_bo_map(struct fd_bo *bo)
 }
 
 /* a bit odd to take the pipe as an arg, but it's a, umm, quirk of kgsl.. */
-int fd_bo_cpu_prep(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op)
+drm_public int fd_bo_cpu_prep(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op)
 {
 	return bo->funcs->cpu_prep(bo, pipe, op);
 }
 
-void fd_bo_cpu_fini(struct fd_bo *bo)
+drm_public void fd_bo_cpu_fini(struct fd_bo *bo)
 {
 	bo->funcs->cpu_fini(bo);
 }
 
 #if !HAVE_FREEDRENO_KGSL
-struct fd_bo * fd_bo_from_fbdev(struct fd_pipe *pipe, int fbfd, uint32_t size)
+drm_public struct fd_bo * fd_bo_from_fbdev(struct fd_pipe *pipe, int fbfd, uint32_t size)
 {
     return NULL;
 }

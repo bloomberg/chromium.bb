@@ -52,13 +52,13 @@ ringbuffer_new(struct fd_pipe *pipe, uint32_t size,
 	return ring;
 }
 
-struct fd_ringbuffer *
+drm_public struct fd_ringbuffer *
 fd_ringbuffer_new(struct fd_pipe *pipe, uint32_t size)
 {
 	return ringbuffer_new(pipe, size, 0);
 }
 
-struct fd_ringbuffer *
+drm_public struct fd_ringbuffer *
 fd_ringbuffer_new_object(struct fd_pipe *pipe, uint32_t size)
 {
 	/* we can't really support "growable" rb's in general for
@@ -69,7 +69,7 @@ fd_ringbuffer_new_object(struct fd_pipe *pipe, uint32_t size)
 	return ringbuffer_new(pipe, size, FD_RINGBUFFER_OBJECT);
 }
 
-void fd_ringbuffer_del(struct fd_ringbuffer *ring)
+drm_public void fd_ringbuffer_del(struct fd_ringbuffer *ring)
 {
 	if (!(ring->flags & FD_RINGBUFFER_OBJECT))
 		fd_ringbuffer_reset(ring);
@@ -80,7 +80,7 @@ void fd_ringbuffer_del(struct fd_ringbuffer *ring)
  * the IB source) as it's parent before emitting reloc's, to ensure
  * the bookkeeping works out properly.
  */
-void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
+drm_public void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
 					 struct fd_ringbuffer *parent)
 {
 	/* state objects should not be parented! */
@@ -88,7 +88,7 @@ void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
 	ring->parent = parent;
 }
 
-void fd_ringbuffer_reset(struct fd_ringbuffer *ring)
+drm_public void fd_ringbuffer_reset(struct fd_ringbuffer *ring)
 {
 	uint32_t *start = ring->start;
 	if (ring->pipe->id == FD_PIPE_2D)
@@ -98,18 +98,18 @@ void fd_ringbuffer_reset(struct fd_ringbuffer *ring)
 		ring->funcs->reset(ring);
 }
 
-int fd_ringbuffer_flush(struct fd_ringbuffer *ring)
+drm_public int fd_ringbuffer_flush(struct fd_ringbuffer *ring)
 {
 	return ring->funcs->flush(ring, ring->last_start, -1, NULL);
 }
 
-int fd_ringbuffer_flush2(struct fd_ringbuffer *ring, int in_fence_fd,
+drm_public int fd_ringbuffer_flush2(struct fd_ringbuffer *ring, int in_fence_fd,
 		int *out_fence_fd)
 {
 	return ring->funcs->flush(ring, ring->last_start, in_fence_fd, out_fence_fd);
 }
 
-void fd_ringbuffer_grow(struct fd_ringbuffer *ring, uint32_t ndwords)
+drm_public void fd_ringbuffer_grow(struct fd_ringbuffer *ring, uint32_t ndwords)
 {
 	assert(ring->funcs->grow);     /* unsupported on kgsl */
 
@@ -125,25 +125,25 @@ void fd_ringbuffer_grow(struct fd_ringbuffer *ring, uint32_t ndwords)
 	ring->cur = ring->last_start = ring->start;
 }
 
-uint32_t fd_ringbuffer_timestamp(struct fd_ringbuffer *ring)
+drm_public uint32_t fd_ringbuffer_timestamp(struct fd_ringbuffer *ring)
 {
 	return ring->last_timestamp;
 }
 
-void fd_ringbuffer_reloc(struct fd_ringbuffer *ring,
+drm_public void fd_ringbuffer_reloc(struct fd_ringbuffer *ring,
 				    const struct fd_reloc *reloc)
 {
 	assert(ring->pipe->gpu_id < 500);
 	ring->funcs->emit_reloc(ring, reloc);
 }
 
-void fd_ringbuffer_reloc2(struct fd_ringbuffer *ring,
+drm_public void fd_ringbuffer_reloc2(struct fd_ringbuffer *ring,
 				     const struct fd_reloc *reloc)
 {
 	ring->funcs->emit_reloc(ring, reloc);
 }
 
-void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
+drm_public void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 		struct fd_ringmarker *target, struct fd_ringmarker *end)
 {
 	uint32_t submit_offset, size;
@@ -158,14 +158,14 @@ void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 	ring->funcs->emit_reloc_ring(ring, target->ring, 0, submit_offset, size);
 }
 
-uint32_t fd_ringbuffer_cmd_count(struct fd_ringbuffer *ring)
+drm_public uint32_t fd_ringbuffer_cmd_count(struct fd_ringbuffer *ring)
 {
 	if (!ring->funcs->cmd_count)
 		return 1;
 	return ring->funcs->cmd_count(ring);
 }
 
-uint32_t
+drm_public uint32_t
 fd_ringbuffer_emit_reloc_ring_full(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *target, uint32_t cmd_idx)
 {
@@ -173,7 +173,7 @@ fd_ringbuffer_emit_reloc_ring_full(struct fd_ringbuffer *ring,
 	return ring->funcs->emit_reloc_ring(ring, target, cmd_idx, 0, size);
 }
 
-uint32_t
+drm_public uint32_t
 fd_ringbuffer_size(struct fd_ringbuffer *ring)
 {
 	/* only really needed for stateobj ringbuffers, and won't really
@@ -188,7 +188,7 @@ fd_ringbuffer_size(struct fd_ringbuffer *ring)
  * Deprecated ringmarker API:
  */
 
-struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)
+drm_public struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)
 {
 	struct fd_ringmarker *marker = NULL;
 
@@ -205,23 +205,23 @@ struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)
 	return marker;
 }
 
-void fd_ringmarker_del(struct fd_ringmarker *marker)
+drm_public void fd_ringmarker_del(struct fd_ringmarker *marker)
 {
 	free(marker);
 }
 
-void fd_ringmarker_mark(struct fd_ringmarker *marker)
+drm_public void fd_ringmarker_mark(struct fd_ringmarker *marker)
 {
 	marker->cur = marker->ring->cur;
 }
 
-uint32_t fd_ringmarker_dwords(struct fd_ringmarker *start,
+drm_public uint32_t fd_ringmarker_dwords(struct fd_ringmarker *start,
 					 struct fd_ringmarker *end)
 {
 	return end->cur - start->cur;
 }
 
-int fd_ringmarker_flush(struct fd_ringmarker *marker)
+drm_public int fd_ringmarker_flush(struct fd_ringmarker *marker)
 {
 	struct fd_ringbuffer *ring = marker->ring;
 	return ring->funcs->flush(ring, marker->cur, -1, NULL);
