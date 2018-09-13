@@ -281,7 +281,7 @@ static const struct radeon_bo_funcs bo_gem_funcs = {
     .bo_is_referenced_by_cs = NULL,
 };
 
-struct radeon_bo_manager *radeon_bo_manager_gem_ctor(int fd)
+drm_public struct radeon_bo_manager *radeon_bo_manager_gem_ctor(int fd)
 {
     struct bo_manager_gem *bomg;
 
@@ -294,7 +294,7 @@ struct radeon_bo_manager *radeon_bo_manager_gem_ctor(int fd)
     return (struct radeon_bo_manager*)bomg;
 }
 
-void radeon_bo_manager_gem_dtor(struct radeon_bo_manager *bom)
+drm_public void radeon_bo_manager_gem_dtor(struct radeon_bo_manager *bom)
 {
     struct bo_manager_gem *bomg = (struct bo_manager_gem*)bom;
 
@@ -304,21 +304,21 @@ void radeon_bo_manager_gem_dtor(struct radeon_bo_manager *bom)
     free(bomg);
 }
 
-uint32_t
+drm_public uint32_t
 radeon_gem_name_bo(struct radeon_bo *bo)
 {
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
     return bo_gem->name;
 }
 
-void *
+drm_public void *
 radeon_gem_get_reloc_in_cs(struct radeon_bo *bo)
 {
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
     return &bo_gem->reloc_in_cs;
 }
 
-int
+drm_public int
 radeon_gem_get_kernel_name(struct radeon_bo *bo, uint32_t *name)
 {
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
@@ -340,7 +340,7 @@ radeon_gem_get_kernel_name(struct radeon_bo *bo, uint32_t *name)
     return 0;
 }
 
-int
+drm_public int
 radeon_gem_set_domain(struct radeon_bo *bo, uint32_t read_domains, uint32_t write_domain)
 {
     struct radeon_bo_int *boi = (struct radeon_bo_int *)bo;
@@ -358,7 +358,7 @@ radeon_gem_set_domain(struct radeon_bo *bo, uint32_t read_domains, uint32_t writ
     return r;
 }
 
-int radeon_gem_prime_share_bo(struct radeon_bo *bo, int *handle)
+drm_public int radeon_gem_prime_share_bo(struct radeon_bo *bo, int *handle)
 {
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
     int ret;
@@ -367,7 +367,7 @@ int radeon_gem_prime_share_bo(struct radeon_bo *bo, int *handle)
     return ret;
 }
 
-struct radeon_bo *
+drm_public struct radeon_bo *
 radeon_gem_bo_open_prime(struct radeon_bo_manager *bom, int fd_handle, uint32_t size)
 {
     struct radeon_bo_gem *bo;
