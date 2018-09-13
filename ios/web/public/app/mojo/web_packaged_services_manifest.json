@@ -10,7 +10,8 @@
   "display_name": "Web Packaged Services",
   "options" : {
     "instance_sharing" : "shared_instance_across_users",
-    "can_connect_to_other_services_as_any_user": true
+    "can_connect_to_other_services_as_any_user": true,
+    "can_create_other_service_instances": true
   },
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -20,10 +21,7 @@
         ]
       },
       "requires": {
-        "web_browser": [],
-        "service_manager": [
-          "service_manager:client_process"
-        ]
+        "web_browser": []
       }
     }
   }
