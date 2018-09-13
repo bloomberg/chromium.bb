@@ -157,7 +157,7 @@ void DestroyUnserializedContext(uintptr_t context) {
   delete reinterpret_cast<internal::UnserializedMessageContext*>(context);
 }
 
-ScopedMessageHandle CreateUnserializedMessageObject(
+Message CreateUnserializedMessage(
     std::unique_ptr<internal::UnserializedMessageContext> context) {
   ScopedMessageHandle handle;
   MojoResult rv = mojo::CreateMessage(&handle);
@@ -168,7 +168,8 @@ ScopedMessageHandle CreateUnserializedMessageObject(
       handle->value(), reinterpret_cast<uintptr_t>(context.release()),
       &SerializeUnserializedContext, &DestroyUnserializedContext, nullptr);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
-  return handle;
+
+  return Message::CreateFromMessageHandle(&handle);
 }
 
 }  // namespace
@@ -192,7 +193,7 @@ Message::Message(Message&& other)
 }
 
 Message::Message(std::unique_ptr<internal::UnserializedMessageContext> context)
-    : Message(CreateUnserializedMessageObject(std::move(context))) {}
+    : Message(CreateUnserializedMessage(std::move(context))) {}
 
 Message::Message(uint32_t name,
                  uint32_t flags,
@@ -206,53 +207,53 @@ Message::Message(uint32_t name,
   serialized_ = true;
 }
 
-Message::Message(ScopedMessageHandle handle) {
+// static
+Message Message::CreateFromMessageHandle(ScopedMessageHandle* message_handle) {
+  DCHECK(message_handle);
+  const MessageHandle& handle = message_handle->get();
   DCHECK(handle.is_valid());
 
   uintptr_t context_value = 0;
   MojoResult get_context_result =
-      MojoGetMessageContext(handle->value(), nullptr, &context_value);
+      MojoGetMessageContext(handle.value(), nullptr, &context_value);
   if (get_context_result == MOJO_RESULT_NOT_FOUND) {
     // It's a serialized message. Extract handles if possible.
     uint32_t num_bytes;
     void* buffer;
     uint32_t num_handles = 0;
-    MojoResult rv = MojoGetMessageData(handle->value(), nullptr, &buffer,
+    std::vector<ScopedHandle> handles;
+    MojoResult rv = MojoGetMessageData(handle.value(), nullptr, &buffer,
                                        &num_bytes, nullptr, &num_handles);
     if (rv == MOJO_RESULT_RESOURCE_EXHAUSTED) {
-      handles_.resize(num_handles);
-      rv = MojoGetMessageData(handle->value(), nullptr, &buffer, &num_bytes,
-                              reinterpret_cast<MojoHandle*>(handles_.data()),
+      handles.resize(num_handles);
+      rv = MojoGetMessageData(handle.value(), nullptr, &buffer, &num_bytes,
+                              reinterpret_cast<MojoHandle*>(handles.data()),
                               &num_handles);
-    } else {
-      // No handles, so it's safe to retransmit this message if the caller
-      // really wants to.
-      transferable_ = true;
     }
 
     if (rv != MOJO_RESULT_OK) {
-      // Failed to deserialize handles. Leave the Message uninitialized.
-      return;
+      // Failed to deserialize handles. Return a null message and leave the
+      // |*message_handle| intact.
+      return Message();
     }
 
-    payload_buffer_ = internal::Buffer(buffer, num_bytes, num_bytes);
-    serialized_ = true;
-  } else {
-    DCHECK_EQ(MOJO_RESULT_OK, get_context_result);
-    auto* context =
-        reinterpret_cast<internal::UnserializedMessageContext*>(context_value);
-    // Dummy data address so common header accessors still behave properly. The
-    // choice is V1 reflects unserialized message capabilities: we may or may
-    // not need to support request IDs (which require at least V1), but we never
-    // (for now, anyway) need to support associated interface handles (V2).
-    payload_buffer_ =
-        internal::Buffer(context->header(), sizeof(internal::MessageHeaderV1),
-                         sizeof(internal::MessageHeaderV1));
-    transferable_ = true;
-    serialized_ = false;
+    return Message(std::move(*message_handle), std::move(handles),
+                   internal::Buffer(buffer, num_bytes, num_bytes),
+                   true /* serialized */);
   }
 
-  handle_ = std::move(handle);
+  DCHECK_EQ(MOJO_RESULT_OK, get_context_result);
+  auto* context =
+      reinterpret_cast<internal::UnserializedMessageContext*>(context_value);
+  // Dummy data address so common header accessors still behave properly. The
+  // choice is V1 reflects unserialized message capabilities: we may or may
+  // not need to support request IDs (which require at least V1), but we never
+  // (for now, anyway) need to support associated interface handles (V2).
+  internal::Buffer payload_buffer(context->header(),
+                                  sizeof(internal::MessageHeaderV1),
+                                  sizeof(internal::MessageHeaderV1));
+  return Message(std::move(*message_handle), {}, std::move(payload_buffer),
+                 false /* serialized */);
 }
 
 Message::~Message() = default;
@@ -430,7 +431,8 @@ void Message::SerializeIfNecessary() {
     return;
 
   // Reconstruct this Message instance from the serialized message's handle.
-  *this = Message(std::move(handle_));
+  ScopedMessageHandle handle = std::move(handle_);
+  *this = CreateFromMessageHandle(&handle);
 }
 
 std::unique_ptr<internal::UnserializedMessageContext>
@@ -454,6 +456,16 @@ Message::TakeUnserializedContext(
   DCHECK_EQ(MOJO_RESULT_OK, rv);
   return base::WrapUnique(context);
 }
+
+Message::Message(ScopedMessageHandle message_handle,
+                 std::vector<ScopedHandle> attached_handles,
+                 internal::Buffer payload_buffer,
+                 bool serialized)
+    : handle_(std::move(message_handle)),
+      payload_buffer_(std::move(payload_buffer)),
+      handles_(std::move(attached_handles)),
+      transferable_(!serialized || handles_.empty()),
+      serialized_(serialized) {}
 
 bool MessageReceiver::PrefersSerializedMessages() {
   return false;
@@ -489,17 +501,6 @@ void SyncMessageResponseContext::ReportBadMessage(const std::string& error) {
 ReportBadMessageCallback SyncMessageResponseContext::GetBadMessageCallback() {
   DCHECK(!response_.IsNull());
   return base::BindOnce(&DoNotifyBadMessage, std::move(response_));
-}
-
-MojoResult ReadMessage(MessagePipeHandle handle, Message* message) {
-  ScopedMessageHandle message_handle;
-  MojoResult rv =
-      ReadMessageNew(handle, &message_handle, MOJO_READ_MESSAGE_FLAG_NONE);
-  if (rv != MOJO_RESULT_OK)
-    return rv;
-
-  *message = Message(std::move(message_handle));
-  return MOJO_RESULT_OK;
 }
 
 void ReportBadMessage(const std::string& error) {
