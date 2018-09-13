@@ -56,14 +56,6 @@ test(function() {
 
 test(function() {
   let effect = CreateKeyframeEffect(document.querySelector('#element'));
-  let effect2 = CreateKeyframeEffect(document.querySelector('#element2'));
-  let constructorFunc = function() { new WorkletAnimation(
-      'my-animation', [ effect, effect2 ]); };
-  assert_throws('NotSupportedError', constructorFunc);
-}, 'Multiple effects are not currently supported');
-
-test(function() {
-  let effect = CreateKeyframeEffect(document.querySelector('#element'));
   let scroller = document.querySelector('.scroller');
   let scrollTimeline = new ScrollTimeline(
       { scrollSource: scroller, timeRange: 100, orientation: 'inline' });
