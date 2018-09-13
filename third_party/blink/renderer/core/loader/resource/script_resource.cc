@@ -140,11 +140,9 @@ void ScriptResource::DestroyDecodedDataForFailedRevalidation() {
 }
 
 AccessControlStatus ScriptResource::CalculateAccessControlStatus() const {
-  if (GetResponse().IsCORSSameOrigin())
-    return kSharableCrossOrigin;
-  if (GetResponse().WasFetchedViaServiceWorker())
-    return kOpaqueResource;
-  return kNotSharableCrossOrigin;
+  DCHECK_NE(GetResponse().GetType(), network::mojom::FetchResponseType::kError);
+  return GetResponse().IsCORSSameOrigin() ? kSharableCrossOrigin
+                                          : kOpaqueResource;
 }
 
 bool ScriptResource::CanUseCacheValidator() const {
