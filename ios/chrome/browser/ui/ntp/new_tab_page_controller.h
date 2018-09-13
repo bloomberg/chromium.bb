@@ -83,6 +83,10 @@ class ChromeBrowserState;
 // bar hint text.
 - (BOOL)wantsLocationBarHintText;
 
+// Animates the NTP fakebox to the focused position and focuses the real
+// omnibox.
+- (void)focusFakebox;
+
 @end
 
 #pragma mark - Testing

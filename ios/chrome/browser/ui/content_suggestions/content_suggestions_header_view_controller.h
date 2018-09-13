@@ -69,6 +69,10 @@ class ReadingListModel;
 // Return the toolbar view;
 - (UIView*)toolBarView;
 
+// Animates the NTP fakebox to the focused position and focuses the real
+// omnibox.
+- (void)focusFakebox;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_HEADER_VIEW_CONTROLLER_H_

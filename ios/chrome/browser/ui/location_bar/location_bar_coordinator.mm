@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -27,6 +28,7 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_mediator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_coordinator.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
@@ -206,7 +208,7 @@ const int kLocationAuthorizationStatusCount = 4;
   if (immediately) {
     [self loadURLForQuery:sanitizedQuery];
   } else {
-    [self focusOmnibox];
+    [self.omniboxCoordinator focusOmnibox];
     [self.omniboxCoordinator
         insertTextToOmnibox:base::SysUTF16ToNSString(sanitizedQuery)];
   }
@@ -251,8 +253,19 @@ const int kLocationAuthorizationStatusCount = 4;
   [self focusOmnibox];
 }
 
-- (void)focusOmnibox {
+- (void)focusOmniboxFromFakebox {
   [self.omniboxCoordinator focusOmnibox];
+}
+
+- (void)focusOmnibox {
+  // When the NTP and fakebox are visible, make the fakebox animates into place
+  // before focusing the omnibox.
+  if (IsVisibleUrlNewTabPage([self webState]) &&
+      !self.browserState->IsOffTheRecord()) {
+    [self.viewController.dispatcher focusFakebox];
+  } else {
+    [self.omniboxCoordinator focusOmnibox];
+  }
 }
 
 - (void)cancelOmniboxEdit {

@@ -5100,6 +5100,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                    completion:nil];
 }
 
+- (void)focusFakebox {
+  id nativeController = [self nativeControllerForTab:[_model currentTab]];
+  DCHECK([nativeController isKindOfClass:[NewTabPageController class]]);
+  [nativeController focusFakebox];
+}
+
 #pragma mark - ToolbarOwner (Public)
 
 - (CGRect)toolbarFrame {

@@ -333,7 +333,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   self.searchHintLabel.isAccessibilityElement = NO;
   self.accessibilityButton = [[UIButton alloc] init];
   [self.accessibilityButton addTarget:self
-                               action:@selector(fakeOmniboxTapped)
+                               action:@selector(focusFakebox)
                      forControlEvents:UIControlEventTouchUpInside];
   // Because the visual fakebox background is implemented within
   // ContentSuggestionsHeaderView, KVO the highlight events of
@@ -381,7 +381,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
       l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
   [self.headerView addToolbarView:fakeTapButton];
   [fakeTapButton addTarget:self
-                    action:@selector(fakeOmniboxTapped)
+                    action:@selector(focusFakebox)
           forControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -416,11 +416,11 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   [self.dispatcher preloadVoiceSearch];
 }
 
-- (void)fakeOmniboxTapped {
+- (void)focusFakebox {
   if (IsUIRefreshPhase1Enabled()) {
     [self shiftTilesUp];
   } else {
-    [self.dispatcher focusFakebox];
+    [self.dispatcher fakeboxFocused];
   }
 }
 
@@ -492,7 +492,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 - (void)shiftTilesUp {
   void (^completionBlock)() = ^{
     if (IsUIRefreshPhase1Enabled()) {
-      [self.dispatcher focusFakebox];
+      [self.dispatcher fakeboxFocused];
     }
     if ((IsUIRefreshPhase1Enabled() && IsSplitToolbarMode()) ||
         (!IsUIRefreshPhase1Enabled() &&
