@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -16,13 +17,11 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_observer.h"
+#include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
-namespace views_bridge_mac {
-namespace mojom {
-class BridgedNativeWidget;
-}  // namespace mojom
-}  // namespace views_bridge_mac
+@class NativeWidgetMacNSWindow;
+@class NSView;
 
 namespace ui {
 class RecyclableCompositorMac;
@@ -67,6 +66,11 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
     return native_widget_mac_;
   }
 
+  // A NSWindow that is guaranteed to exist in this process. If the bridge
+  // object for this host is in this process, then this points to the bridge's
+  // NSWindow. Otherwise, it mirrors the id and bounds of the child window.
+  NativeWidgetMacNSWindow* GetLocalNSWindow() const;
+
   // The mojo interface through which to communicate with the underlying
   // NSWindow and NSView.
   views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
@@ -77,6 +81,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   BridgedNativeWidgetImpl* bridge_impl() const { return bridge_impl_.get(); }
 
   TooltipManager* tooltip_manager() { return tooltip_manager_.get(); }
+
+  // Create and set the bridge object to be in this process.
+  void CreateLocalBridge(base::scoped_nsobject<NativeWidgetMacNSWindow> window,
+                         NSView* parent);
 
   void InitWindow(const Widget::InitParams& params);
 
@@ -267,6 +275,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // we will instantiate a mojo BridgedNativeWidgetImpl interface to a Cocoa
   // instance that may be in another process.
   std::unique_ptr<BridgedNativeWidgetImpl> bridge_impl_;
+
+  // Window that is guaranteed to exist in this process (see GetLocalNSWindow).
+  base::scoped_nsobject<NativeWidgetMacNSWindow> local_window_;
 
   std::unique_ptr<TooltipManager> tooltip_manager_;
   std::unique_ptr<ui::InputMethod> input_method_;

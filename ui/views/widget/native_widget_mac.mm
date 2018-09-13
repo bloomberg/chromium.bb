@@ -111,7 +111,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   name_ = params.name;
   base::scoped_nsobject<NativeWidgetMacNSWindow> window(
       [CreateNSWindow(params) retain]);
-  bridge_impl()->SetWindow(window);
+  bridge_host_->CreateLocalBridge(std::move(window), params.parent);
   bridge_host_->InitWindow(params);
 
   // Only set always-on-top here if it is true since setting it may affect how
@@ -174,7 +174,7 @@ gfx::NativeView NativeWidgetMac::GetNativeView() const {
 }
 
 gfx::NativeWindow NativeWidgetMac::GetNativeWindow() const {
-  return bridge_impl() ? bridge_impl()->ns_window() : nil;
+  return bridge_host_ ? bridge_host_->GetLocalNSWindow() : nil;
 }
 
 Widget* NativeWidgetMac::GetTopLevelWidget() {

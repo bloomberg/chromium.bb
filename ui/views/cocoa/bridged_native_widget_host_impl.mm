@@ -74,9 +74,7 @@ BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromId(
 
 BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
     NativeWidgetMac* parent)
-    : id_(++g_last_bridged_native_widget_id),
-      native_widget_mac_(parent),
-      bridge_impl_(new BridgedNativeWidgetImpl(id_, this, this)) {
+    : id_(++g_last_bridged_native_widget_id), native_widget_mac_(parent) {
   DCHECK(GetIdToWidgetHostImplMap().find(id_) ==
          GetIdToWidgetHostImplMap().end());
   GetIdToWidgetHostImplMap().insert(std::make_pair(id_, this));
@@ -100,9 +98,25 @@ BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   DestroyCompositor();
 }
 
+NativeWidgetMacNSWindow* BridgedNativeWidgetHostImpl::GetLocalNSWindow() const {
+  return local_window_.get();
+}
+
 views_bridge_mac::mojom::BridgedNativeWidget*
 BridgedNativeWidgetHostImpl::bridge() const {
-  return bridge_impl_.get();
+  if (bridge_impl_)
+    return bridge_impl_.get();
+  return nullptr;
+}
+
+void BridgedNativeWidgetHostImpl::CreateLocalBridge(
+    base::scoped_nsobject<NativeWidgetMacNSWindow> window,
+    NSView* parent) {
+  local_window_ = window;
+  bridge_impl_ = std::make_unique<BridgedNativeWidgetImpl>(id_, this, this);
+  bridge_impl_->SetWindow(window);
+  if (parent)
+    bridge_impl_->SetParent(parent);
 }
 
 void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
@@ -111,8 +125,6 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
   DCHECK_NE(params.type, Widget::InitParams::TYPE_TOOLTIP);
   widget_type_ = params.type;
   tooltip_manager_.reset(new TooltipManagerMac(bridge()));
-
-  bridge_impl_->SetParent(params.parent);
 
   // Initialize the window.
   {
