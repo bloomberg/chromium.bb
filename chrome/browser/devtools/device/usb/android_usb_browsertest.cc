@@ -739,8 +739,9 @@ IN_PROC_BROWSER_TEST_F(AndroidNoConfigUsbTest, TestDeviceNoConfig) {
   runner_->Run();
 }
 
+// Test is flaky. See: http://crbug.com/883680
 IN_PROC_BROWSER_TEST_F(AndroidUsbCountTest,
-                       TestNoMultipleCallsRemoveInCallback) {
+                       DISABLED_TestNoMultipleCallsRemoveInCallback) {
   MockCountListener listener(adb_bridge_);
   adb_bridge_->AddDeviceCountListener(&listener);
   runner_->Run();
