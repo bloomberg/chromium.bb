@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -240,6 +241,14 @@ void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
 
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
                             platform, Platform::SIZE);
+
+  if (app_type == apps::mojom::AppType::kArc &&
+      (close_reason == IntentPickerCloseReason::PREFERRED_APP_FOUND ||
+       close_reason == IntentPickerCloseReason::OPEN_APP)) {
+    UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
+                              arc::UserInteractionType::APP_STARTED_FROM_LINK,
+                              arc::UserInteractionType::SIZE);
+  }
 }
 
 // static
