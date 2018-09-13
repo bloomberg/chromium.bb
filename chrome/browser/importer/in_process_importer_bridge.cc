@@ -172,13 +172,6 @@ void InProcessImporterBridge::AddHomePage(const GURL& home_page) {
   writer_->AddHomepage(home_page);
 }
 
-#if defined(OS_WIN)
-void InProcessImporterBridge::AddIE7PasswordInfo(
-    const importer::ImporterIE7PasswordInfo&) {
-  // TODO(crbug.com/456119): delete AddIE7PasswordInfo
-}
-#endif  // OS_WIN
-
 void InProcessImporterBridge::SetFavicons(
     const favicon_base::FaviconUsageDataList& favicons) {
   writer_->AddFavicons(favicons);
