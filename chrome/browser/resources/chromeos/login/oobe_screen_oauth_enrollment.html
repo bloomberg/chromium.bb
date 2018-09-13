@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://oobe/custom_elements.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="stylesheet" href="enterprise_card.css">
 <link rel="stylesheet" href="gaia_card_parameters.css">
 
 <div id="oauth-enrollment" class="step no-logo hidden" hidden>
@@ -61,11 +62,13 @@
     <div id="oauth-enroll-step-success" role="alert">
       <enterprise-card id="oauth-enroll-success-card">
         <enterprise-header slot="header"
-            i18n-values="header-title:oauthEnrollSuccessTitle;
-                header-comment:oauthEnrollSuccess">
+            i18n-values="header-title:oauthEnrollSuccessTitle">
           <hd-iron-icon slot="enterprise-icon"
               icon1x="enterprise-header-32:briefcase"
               icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
+          <div slot="header-comment" class="header-comment"
+               i18n-content="oauthEnrollSuccess">
+          </div>
         </enterprise-header >
         <div slot="content" class="layout vertical center">
           <img srcset="images/enrollment_success_illustration_1x.png 1x,
@@ -82,16 +85,20 @@
       <div id="oauth-enroll-step-abe-success" role="alert">
         <enterprise-card id="oauth-enroll-abe-success-card">
             <enterprise-header slot="header"
-               i18n-values="header-title:oauthEnrollSuccessTitle;
-                   header-comment:oauthEnrollSuccess">
+               i18n-values="header-title:oauthEnrollSuccessTitle">
               <hd-iron-icon slot="enterprise-icon"
                   icon1x="enterprise-header-32:briefcase"
                   icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
+              <div slot="header-comment" class="header-comment"
+                   id="oauth-enroll-abe-success-comment-no-domain"
+                   i18n-content="oauthEnrollSuccess"></div>
+              <div slot="header-comment" class="header-comment"
+                     id="oauth-enroll-abe-success-comment-domain" hidden></div>
             </enterprise-header >
-            <div class="layout vertical center">
-                <img srcset="images/enrollment_success_illustration_1x.png 1x,
-                         images/enrollment_success_illustration_2x.png 2x"
-                     i18n-values="alt:enrollmentSuccessIllustrationTitle">
+            <div slot="content" class="layout vertical center">
+              <img srcset="images/enrollment_success_illustration_1x.png 1x,
+                    images/enrollment_success_illustration_2x.png 2x"
+                   i18n-values="alt:enrollmentSuccessIllustrationTitle">
             </div>
           <div slot="footer"
               class="footer horizontal-reverse justified layout center">
@@ -104,11 +111,13 @@
     <div id="oauth-enroll-step-attribute-prompt">
         <enterprise-card id="oauth-enroll-attribute-prompt-card">
             <enterprise-header slot="header"
-               i18n-values="header-title:oauthEnrollScreenTitle;
-                   header-comment:oauthEnrollDeviceInformation">
+               i18n-values="header-title:oauthEnrollScreenTitle">
               <hd-iron-icon slot="enterprise-icon"
                   icon1x="enterprise-header-32:briefcase"
                   icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
+              <div slot="header-comment" class="header-comment"
+                   i18n-content="oauthEnrollDeviceInformation">
+              </div>
             </enterprise-header >
             <div slot="content" class="layout vertical start">
                 <div class="oauth-enroll-step-message">

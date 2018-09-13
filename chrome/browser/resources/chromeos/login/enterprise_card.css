@@ -28,6 +28,13 @@
   padding: 64px 64px 0 64px;
 }
 
+.header-comment {
+  color: #333;
+  font-size: 13px;
+  line-height: 20px;
+  min-height: 40px;
+}
+
 .content-container {
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.17);
   padding: 0 64px 0 64px;
