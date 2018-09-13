@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "content/public/browser/web_ui.h"
@@ -35,8 +36,11 @@ void OnRetrySetHostNowResult(bool success) {
 }  // namespace
 
 MultideviceHandler::MultideviceHandler(
-    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client)
+    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+    std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
+        android_sms_app_helper)
     : multidevice_setup_client_(multidevice_setup_client),
+      android_sms_app_helper_(std::move(android_sms_app_helper)),
       multidevice_setup_observer_(this),
       callback_weak_ptr_factory_(this) {}
 
@@ -62,6 +66,10 @@ void MultideviceHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "retryPendingHostSetup",
       base::BindRepeating(&MultideviceHandler::HandleRetryPendingHostSetup,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setUpAndroidSms",
+      base::BindRepeating(&MultideviceHandler::HandleSetUpAndroidSms,
                           base::Unretained(this)));
 }
 
@@ -156,6 +164,12 @@ void MultideviceHandler::HandleRetryPendingHostSetup(
   DCHECK(args->empty());
   multidevice_setup_client_->RetrySetHostNow(
       base::BindOnce(&OnRetrySetHostNowResult));
+}
+
+void MultideviceHandler::HandleSetUpAndroidSms(const base::ListValue* args) {
+  PA_LOG(WARNING) << "HandlingSetupSms";
+  DCHECK(args->empty());
+  android_sms_app_helper_->LaunchAndroidSmsApp();
 }
 
 void MultideviceHandler::OnSetFeatureStateEnabledResult(

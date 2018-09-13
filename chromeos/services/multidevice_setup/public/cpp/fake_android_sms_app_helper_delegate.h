@@ -16,12 +16,15 @@ class FakeAndroidSmsAppHelperDelegate : public AndroidSmsAppHelperDelegate {
   FakeAndroidSmsAppHelperDelegate();
   ~FakeAndroidSmsAppHelperDelegate() override;
   bool HasInstalledApp();
+  bool HasLaunchedApp();
 
   // AndroidSmsAppHelperDelegate:
   void InstallAndroidSmsApp() override;
+  bool LaunchAndroidSmsApp() override;
 
  private:
   bool has_installed_ = false;
+  bool has_launched_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAndroidSmsAppHelperDelegate);
 };

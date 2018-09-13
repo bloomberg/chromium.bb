@@ -15,6 +15,10 @@
 
 namespace chromeos {
 
+namespace multidevice_setup {
+class AndroidSmsAppHelperDelegate;
+}  // namespace multidevice_setup
+
 namespace settings {
 
 // Chrome "Multidevice" (a.k.a. "Connected Devices") settings page UI handler.
@@ -23,7 +27,9 @@ class MultideviceHandler
       public multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
   explicit MultideviceHandler(
-      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
+          android_sms_app_helper);
   ~MultideviceHandler() override;
 
  protected:
@@ -52,6 +58,7 @@ class MultideviceHandler
   void HandleSetFeatureEnabledState(const base::ListValue* args);
   void HandleRemoveHostDevice(const base::ListValue* args);
   void HandleRetryPendingHostSetup(const base::ListValue* args);
+  void HandleSetUpAndroidSms(const base::ListValue* args);
 
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
                                       bool success);
@@ -62,6 +69,8 @@ class MultideviceHandler
   std::unique_ptr<base::DictionaryValue> GeneratePageContentDataDictionary();
 
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
+  std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
+      android_sms_app_helper_;
 
   ScopedObserver<multidevice_setup::MultiDeviceSetupClient,
                  multidevice_setup::MultiDeviceSetupClient::Observer>

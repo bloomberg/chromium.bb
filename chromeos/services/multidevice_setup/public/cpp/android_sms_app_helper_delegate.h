@@ -17,6 +17,9 @@ class AndroidSmsAppHelperDelegate {
 
   // Installs the Messages for Web PWA. Handles retries and errors internally.
   virtual void InstallAndroidSmsApp() = 0;
+  // Launches the Messages for Web PWA if it's installed. Returns true if the
+  // app was launched successfully, false otherwise.
+  virtual bool LaunchAndroidSmsApp() = 0;
 
  protected:
   AndroidSmsAppHelperDelegate() = default;

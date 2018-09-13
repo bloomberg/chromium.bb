@@ -23,6 +23,15 @@ bool FakeAndroidSmsAppHelperDelegate::HasInstalledApp() {
   return has_installed_;
 }
 
+bool FakeAndroidSmsAppHelperDelegate::LaunchAndroidSmsApp() {
+  has_launched_ = true;
+  return true;
+}
+
+bool FakeAndroidSmsAppHelperDelegate::HasLaunchedApp() {
+  return has_launched_;
+}
+
 }  // namespace multidevice_setup
 
 }  // namespace chromeos
