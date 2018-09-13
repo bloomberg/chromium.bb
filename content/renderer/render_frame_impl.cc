@@ -5237,7 +5237,14 @@ bool RenderFrameImpl::AllowContentInitiatedDataUrlNavigations(
 
 void RenderFrameImpl::PostAccessibilityEvent(const blink::WebAXObject& obj,
                                              ax::mojom::Event event) {
-  HandleWebAccessibilityEvent(obj, event);
+  if (render_accessibility_)
+    render_accessibility_->HandleWebAccessibilityEvent(obj, event);
+}
+
+void RenderFrameImpl::MarkWebAXObjectDirty(const blink::WebAXObject& obj,
+                                           bool subtree) {
+  if (render_accessibility_)
+    render_accessibility_->MarkWebAXObjectDirty(obj, subtree);
 }
 
 void RenderFrameImpl::HandleAccessibilityFindInPageResult(
@@ -5857,12 +5864,6 @@ void RenderFrameImpl::DidStopLoading() {
 
 void RenderFrameImpl::DidChangeLoadProgress(double load_progress) {
   Send(new FrameHostMsg_DidChangeLoadProgress(routing_id_, load_progress));
-}
-
-void RenderFrameImpl::HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
-                                                  ax::mojom::Event event) {
-  if (render_accessibility_)
-    render_accessibility_->HandleWebAccessibilityEvent(obj, event);
 }
 
 void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {

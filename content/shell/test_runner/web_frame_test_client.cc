@@ -218,15 +218,6 @@ bool WebFrameTestClient::RunModalBeforeUnloadDialog(bool is_reload) {
 
 void WebFrameTestClient::PostAccessibilityEvent(const blink::WebAXObject& obj,
                                                 ax::mojom::Event event) {
-  // Only hook the accessibility events occured during the test run.
-  // This check prevents false positives in BlinkLeakDetector.
-  // The pending tasks in browser/renderer message queue may trigger
-  // accessibility events,
-  // and AccessibilityController will hold on to their target nodes if we don't
-  // ignore them here.
-  if (!test_runner()->TestIsRunning())
-    return;
-
   const char* event_name = nullptr;
   switch (event) {
     case ax::mojom::Event::kActiveDescendantChanged:
@@ -314,6 +305,26 @@ void WebFrameTestClient::PostAccessibilityEvent(const blink::WebAXObject& obj,
       event_name = "Unknown";
       break;
   }
+
+  HandleWebAccessibilityEvent(obj, event_name);
+}
+
+void WebFrameTestClient::MarkWebAXObjectDirty(const blink::WebAXObject& obj,
+                                              bool subtree) {
+  HandleWebAccessibilityEvent(obj, "MarkDirty");
+}
+
+void WebFrameTestClient::HandleWebAccessibilityEvent(
+    const blink::WebAXObject& obj,
+    const char* event_name) {
+  // Only hook the accessibility events that occurred during the test run.
+  // This check prevents false positives in BlinkLeakDetector.
+  // The pending tasks in browser/renderer message queue may trigger
+  // accessibility events,
+  // and AccessibilityController will hold on to their target nodes if we don't
+  // ignore them here.
+  if (!test_runner()->TestIsRunning())
+    return;
 
   AccessibilityController* accessibility_controller =
       web_view_test_proxy_base_->accessibility_controller();

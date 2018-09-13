@@ -107,6 +107,8 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl,
       const blink::WebLocalFrameClient::NavigationPolicyInfo& info) override;
   void PostAccessibilityEvent(const blink::WebAXObject& object,
                               ax::mojom::Event event) override;
+  void MarkWebAXObjectDirty(const blink::WebAXObject& object,
+                            bool subtree) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;

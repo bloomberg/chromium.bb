@@ -206,6 +206,20 @@ void RenderAccessibilityImpl::HandleWebAccessibilityEvent(
   HandleAXEvent(obj, event);
 }
 
+void RenderAccessibilityImpl::MarkWebAXObjectDirty(
+    const blink::WebAXObject& obj,
+    bool subtree) {
+  DirtyObject dirty_object;
+  dirty_object.obj = obj;
+  dirty_object.event_from = GetEventFrom();
+  dirty_objects_.push_back(dirty_object);
+
+  if (subtree)
+    serializer_.InvalidateSubtree(obj);
+
+  ScheduleSendAccessibilityEventsIfNeeded();
+}
+
 void RenderAccessibilityImpl::HandleAccessibilityFindInPageResult(
     int identifier,
     int match_index,
@@ -293,16 +307,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
   ui::AXEvent acc_event;
   acc_event.id = obj.AxID();
   acc_event.event_type = event;
-
-  if (blink::WebUserGestureIndicator::IsProcessingUserGesture(
-          render_frame_->GetWebFrame())) {
-    acc_event.event_from = ax::mojom::EventFrom::kUser;
-  } else if (during_action_) {
-    acc_event.event_from = ax::mojom::EventFrom::kAction;
-  } else {
-    acc_event.event_from = ax::mojom::EventFrom::kPage;
-  }
-
+  acc_event.event_from = GetEventFrom();
   acc_event.action_request_id = action_request_id;
 
   // Discard duplicate accessibility events.
@@ -314,6 +319,10 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
   }
   pending_events_.push_back(acc_event);
 
+  ScheduleSendAccessibilityEventsIfNeeded();
+}
+
+void RenderAccessibilityImpl::ScheduleSendAccessibilityEventsIfNeeded() {
   // Don't send accessibility events for frames that are not in the frame tree
   // yet (i.e., provisional frames used for remote-to-local navigations, which
   // haven't committed yet).  Doing so might trigger layout, which may not work
@@ -332,6 +341,18 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
                        &RenderAccessibilityImpl::SendPendingAccessibilityEvents,
                        weak_factory_.GetWeakPtr()));
   }
+}
+
+ax::mojom::EventFrom RenderAccessibilityImpl::GetEventFrom() {
+  if (blink::WebUserGestureIndicator::IsProcessingUserGesture(
+          render_frame_->GetWebFrame())) {
+    return ax::mojom::EventFrom::kUser;
+  }
+
+  if (during_action_)
+    return ax::mojom::EventFrom::kAction;
+
+  return ax::mojom::EventFrom::kPage;
 }
 
 int RenderAccessibilityImpl::GenerateAXID() {
@@ -409,7 +430,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   AccessibilityHostMsg_EventBundleParams bundle;
 
   // Keep track of nodes in the tree that need to be updated.
-  std::vector<DirtyObject> dirty_objects;
+  std::vector<DirtyObject> dirty_objects = dirty_objects_;
+  dirty_objects_.clear();
 
   // If there's a layout complete message, we need to send location changes.
   bool had_layout_complete_messages = false;

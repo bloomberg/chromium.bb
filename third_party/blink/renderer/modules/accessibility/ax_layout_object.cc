@@ -2453,8 +2453,10 @@ void AXLayoutObject::HandleActiveDescendantChanged() {
       // the user navigates through the items.
       AXObjectCache().HandleAriaSelectedChanged(active_descendant->GetNode());
     }
-    AXObjectCache().PostNotification(
-        GetLayoutObject(), ax::mojom::Event::kActiveDescendantChanged);
+
+    // Mark this node dirty. AXEventGenerator will automatically infer
+    // that the active descendant changed.
+    AXObjectCache().MarkAXObjectDirty(this, false);
   }
 }
 

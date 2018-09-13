@@ -42,6 +42,8 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   bool RunModalBeforeUnloadDialog(bool is_reload) override;
   void PostAccessibilityEvent(const blink::WebAXObject& object,
                               ax::mojom::Event event) override;
+  void MarkWebAXObjectDirty(const blink::WebAXObject& obj,
+                            bool subtree) override;
   void DidChangeSelection(bool is_selection_empty) override;
   void DidChangeContents() override;
   blink::WebPlugin* CreatePlugin(const blink::WebPluginParams& params) override;
@@ -95,6 +97,8 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   TestRunner* test_runner();
   void ChooseFiles(blink::WebFileChooserCompletion* completion,
                    std::vector<std::string> paths);
+  void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
+                                   const char* event_name);
 
   // Borrowed pointers to other parts of Layout Tests state.
   WebTestDelegate* delegate_;

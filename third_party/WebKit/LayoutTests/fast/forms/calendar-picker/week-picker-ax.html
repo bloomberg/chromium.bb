@@ -9,18 +9,18 @@
 <input type="week" id="week1" value="2000-W13">
 
 <script>
-description('Tests if typing an arrow key dispatches |Focus| and |ActiveDescendantChanged| a11y events.');
+description('Tests if typing an arrow key dispatches |Focus| and |MarkDirty| a11y events.');
 
 accessibilityController.setNotificationListener(function(axnode, type) {
     if (type == 'Focus') {
         debug('Focused');
-    } else if (type == 'ActiveDescendantChanged') {
-        testPassed('Received ActiveDescendantChanged');
-        if (++activeDescendantCounter == 2)
+    } else if (type == 'MarkDirty') {
+        testPassed('Received MarkDirty');
+        if (++markDirtyCounter == 2)
             finishJSTest();
     }
 });
-var activeDescendantCounter = 0;
+var markDirtyCounter = 0;
 var week1 = document.getElementById('week1');
 openPicker(week1, test1);
 
