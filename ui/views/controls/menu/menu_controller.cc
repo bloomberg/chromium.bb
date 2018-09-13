@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -61,7 +60,6 @@
 
 using base::TimeDelta;
 using ui::OSExchangeData;
-using MD = ui::MaterialDesignController;
 
 namespace views {
 
@@ -1788,15 +1786,7 @@ bool MenuController::DoesSubmenuContainLocation(SubmenuView* submenu,
                                                 const gfx::Point& screen_loc) {
   gfx::Point view_loc = screen_loc;
   View::ConvertPointFromScreen(submenu, &view_loc);
-  MenuScrollViewContainer* container = submenu->GetScrollViewContainer();
-  // When the menu has a Bubble border, that area is largely transparent. This
-  // will exclude that region from hit-testing.
-  gfx::Rect content_rect =
-      container->HasBubbleBorder()
-          ? container->ConvertRectToParent(container->GetContentsBounds())
-          : container->bounds();
   gfx::Rect vis_rect = submenu->GetVisibleBounds();
-  vis_rect.Intersect(content_rect);
   return vis_rect.Contains(view_loc);
 }
 
@@ -2043,17 +2033,6 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
   const gfx::Rect& monitor_bounds = state_.monitor_bounds;
   const gfx::Rect& anchor_bounds = state_.initial_bounds;
 
-  const MenuConfig& menu_config = MenuConfig::instance();
-  // Shadow insets are built into MenuScrollView's preferred size so it must be
-  // compensated for when determining the bounds of menus with a bubble border.
-  const gfx::Insets border_and_shadow_insets =
-      (MD::IsRefreshUi() && !menu_config.use_outer_border)
-          ? BubbleBorder::GetBorderAndShadowInsets(
-                menu_config.ShadowElevationForMenu(this))
-          : gfx::Insets();
-
-  menu_bounds.Inset(border_and_shadow_insets);
-
   // For comboboxes, ensure the menu is at least as wide as the anchor.
   if (is_combobox_)
     menu_bounds.set_width(std::max(menu_bounds.width(), anchor_bounds.width()));
@@ -2070,6 +2049,8 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
 
   // Assume we can honor prefer_leading.
   *is_leading = prefer_leading;
+
+  const MenuConfig& menu_config = MenuConfig::instance();
 
   if (item->GetParentMenuItem()) {
     // Not the first menu; position it relative to the bounds of its parent menu
@@ -2145,10 +2126,8 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     }
 
     // Everything beyond this point requires monitor bounds to be non-empty.
-    if (monitor_bounds.IsEmpty()) {
-      menu_bounds.Inset(-border_and_shadow_insets);
+    if (monitor_bounds.IsEmpty())
       return menu_bounds;
-    }
 
     // If the menu position is below or above the anchor bounds, force it to fit
     // on the screen. Otherwise, try to fit the menu in the following locations:
@@ -2195,7 +2174,6 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       base::ClampToRange(menu_bounds.y(), monitor_bounds.y(),
                          monitor_bounds.bottom() - menu_bounds.height()));
 
-  menu_bounds.Inset(-border_and_shadow_insets);
   return menu_bounds;
 }
 
@@ -2218,7 +2196,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
   // compensated for when determining the bounds of touchable menus.
   const gfx::Insets border_and_shadow_insets =
       BubbleBorder::GetBorderAndShadowInsets(
-          menu_config.ShadowElevationForMenu(this));
+          menu_config.touchable_menu_shadow_elevation);
 
   const gfx::Rect& monitor_bounds = state_.monitor_bounds;
 
@@ -2288,7 +2266,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
           border_and_shadow_insets.bottom() -
           menu_config.touchable_anchor_offset;
       // Align the right of the container with the right of the anchor.
-      if (x + menu_size.width() > monitor_bounds.right()) {
+      if (x + menu_size.width() > monitor_bounds.width()) {
         x = anchor_bounds.right() - menu_size.width() +
             border_and_shadow_insets.right();
       }
@@ -2310,7 +2288,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
             menu_config.touchable_anchor_offset;
       }
       // Align the bottom of the menu to the bottom of the anchor.
-      if (y + menu_size.height() > monitor_bounds.bottom()) {
+      if (y + menu_size.height() > monitor_bounds.height()) {
         y = anchor_bounds.bottom() - menu_size.height() +
             border_and_shadow_insets.bottom();
       }
@@ -2320,13 +2298,13 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
       x = anchor_bounds.right() - border_and_shadow_insets.left() +
           menu_config.touchable_anchor_offset;
       y = anchor_bounds.y() - border_and_shadow_insets.top();
-      if (x + menu_size.width() > monitor_bounds.right()) {
+      if (x + menu_size.width() > monitor_bounds.width()) {
         // Align the right of the menu with the left of the anchor.
         x = anchor_bounds.x() - menu_size.width() +
             border_and_shadow_insets.right() -
             menu_config.touchable_anchor_offset;
       }
-      if (y + menu_size.height() > monitor_bounds.bottom()) {
+      if (y + menu_size.height() > monitor_bounds.height()) {
         // Align the bottom of the menu with the bottom of the anchor.
         y = anchor_bounds.bottom() - menu_size.height() +
             border_and_shadow_insets.bottom();
