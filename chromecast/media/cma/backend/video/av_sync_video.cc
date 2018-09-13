@@ -26,6 +26,10 @@ namespace media {
 
 namespace {
 
+// Threshold where the audio and video pts are far enough apart such that we
+// want to do a hard correction.
+const int kHardCorrectionThresholdUs = 100000;
+
 // Length of time after which data is forgotten from our linear regression
 // models.
 const int kLinearRegressionDataLifetimeUs =
@@ -120,6 +124,18 @@ void AvSyncVideo::UpkeepAvSync() {
     VLOG(4) << "Linear regression samples too little."
             << " video_pts_->num_samples()=" << video_pts_->num_samples()
             << " audio_pts_->num_samples()=" << audio_pts_->num_samples();
+    return;
+  }
+
+  int64_t timestamp_for_0_vpts = new_vpts_timestamp - new_raw_vpts;
+  int64_t timestamp_for_0_apts = new_apts_timestamp - new_raw_apts;
+
+  // Positive difference means it looks like the audio started playing before
+  // the video, which means the audio is ahead the video.
+  int64_t raw_difference = timestamp_for_0_vpts - timestamp_for_0_apts;
+
+  if (abs(raw_difference) > kHardCorrectionThresholdUs) {
+    HardCorrection(now, new_raw_vpts, new_vpts_timestamp, raw_difference);
     return;
   }
 
@@ -238,6 +254,22 @@ void AvSyncVideo::FlushVideoPts() {
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
 }
 
+void AvSyncVideo::HardCorrection(int64_t now,
+                                 int64_t new_raw_vpts,
+                                 int64_t new_vpts_timestamp,
+                                 int64_t raw_difference) {
+  backend_->audio_decoder()->RestartPlaybackAt(new_vpts_timestamp,
+                                               new_raw_vpts);
+
+  audio_pts_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
+
+  LOG(INFO) << "Hard correction."
+            << " raw_difference=" << raw_difference
+            << " new_raw_vpts=" << new_raw_vpts
+            << " current_audio_playback_rate_=" << current_audio_playback_rate_;
+}
+
 // We calculate the desired audio playback rate, and set the rate to that if
 // it's different from the current rate. The desired rate of audio playback is
 // that one which will bring us to 0 sync difference in kReSyncDurationUs.
@@ -276,9 +308,16 @@ void AvSyncVideo::AudioRateUpkeep(int64_t now,
 
 void AvSyncVideo::GatherPlaybackStatistics() {
   DCHECK(backend_);
-  if (!backend_->video_decoder()) {
+  if (!backend_->video_decoder() || av_sync_difference_count_ == 0) {
     return;
   }
+
+  double average_av_sync_difference =
+      static_cast<double>(av_sync_difference_sum_) /
+      static_cast<double>(av_sync_difference_count_);
+
+  av_sync_difference_sum_ = 0;
+  av_sync_difference_count_ = 0;
 
   int64_t frame_rate_difference =
       (backend_->video_decoder()->GetCurrentContentRefreshRate() -
@@ -311,15 +350,6 @@ void AvSyncVideo::GatherPlaybackStatistics() {
   int64_t unexpected_repeated_frames =
       (repeated_frames - last_repeated_frames_) - expected_repeated_frames;
 
-  double average_av_sync_difference = 0.0;
-
-  if (av_sync_difference_count_ != 0) {
-    average_av_sync_difference = static_cast<double>(av_sync_difference_sum_) /
-                                 static_cast<double>(av_sync_difference_count_);
-  }
-  av_sync_difference_sum_ = 0;
-  av_sync_difference_count_ = 0;
-
   int64_t accurate_vpts = 0;
   int64_t accurate_vpts_timestamp = 0;
   backend_->video_decoder()->GetCurrentPts(&accurate_vpts_timestamp,
@@ -331,8 +361,7 @@ void AvSyncVideo::GatherPlaybackStatistics() {
                                            &accurate_apts);
 
   LOG(INFO) << "Playback diagnostics:"
-            << " average_av_sync_difference="
-            << average_av_sync_difference / 1000
+            << " average_av_sync_difference=" << average_av_sync_difference
             << " content fps=" << GetContentFrameRate()
             << " unexpected_dropped_frames=" << unexpected_dropped_frames
             << " unexpected_repeated_frames=" << unexpected_repeated_frames;
