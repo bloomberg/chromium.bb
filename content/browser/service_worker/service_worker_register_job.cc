@@ -295,8 +295,11 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
   // may be able to complete the update job right here.
 
   if (blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()) {
-    update_checker_ =
-        std::make_unique<ServiceWorkerUpdateChecker>(registration());
+    ServiceWorkerVersion* version_to_update =
+        registration()->GetNewestVersion();
+    std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+    version_to_update->script_cache_map()->GetResources(&resources);
+    update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(resources);
     update_checker_->Start(
         base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
                        weak_factory_.GetWeakPtr()));
