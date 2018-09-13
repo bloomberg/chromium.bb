@@ -193,7 +193,9 @@ void UnifiedMessageCenterView::LayoutInternal(bool force) {
     scroller_->SetBoundsRect(GetContentsBounds());
 
   bool was_visible = stacking_counter_->visible();
-  stacking_counter_->SetCount(message_list_view_->GetCountAboveVisibleRect());
+  int y_offset = was_visible ? 0 : kStackingNotificationCounterHeight;
+  stacking_counter_->SetCount(
+      message_list_view_->GetCountAboveVisibleRect(y_offset));
 
   // Only do the actual layout if counter visibility is changed or forced.
   if (was_visible != stacking_counter_->visible() || force) {

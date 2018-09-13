@@ -342,7 +342,7 @@ void MessageListView::SetBorderPadding() {
       gfx::Insets(message_center::kMarginBetweenItemsInList)));
 }
 
-int MessageListView::GetCountAboveVisibleRect() const {
+int MessageListView::GetCountAboveVisibleRect(int y_offset) const {
   DCHECK(scroller_);
 
   int height = 0;
@@ -357,7 +357,7 @@ int MessageListView::GetCountAboveVisibleRect() const {
     height += child->bounds().height() + padding;
     padding = GetMarginBetweenItems();
 
-    if (height >= scroller_->GetVisibleRect().y())
+    if (height >= scroller_->GetVisibleRect().y() + y_offset)
       return i;
   }
   return child_count();

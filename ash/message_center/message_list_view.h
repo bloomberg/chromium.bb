@@ -75,7 +75,7 @@ class ASH_EXPORT MessageListView
   void SetBorderPadding();
 
   // Get the number of notifications above ScrollView's visible rect.
-  int GetCountAboveVisibleRect() const;
+  int GetCountAboveVisibleRect(int y_offset) const;
 
   // Get the distance from the bottom of ScrollView's visible rect to the bottom
   // of the notification list.
