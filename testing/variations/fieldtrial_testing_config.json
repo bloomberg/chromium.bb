@@ -873,6 +873,29 @@
             ]
         }
     ],
+    "BlobDataPipeTuning": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Capacity_512kb_Chunk_64kb",
+                    "params": {
+                        "capacity_bytes": "524288",
+                        "chunk_bytes": "65536"
+                    },
+                    "enable_features": [
+                        "BlobDataPipeTuning"
+                    ]
+                }
+            ]
+        }
+    ],
     "BlockTabUnders": [
         {
             "platforms": [

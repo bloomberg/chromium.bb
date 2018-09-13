@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
@@ -185,7 +186,7 @@ class DataPipeAndDataBytesConsumer final : public BytesConsumer {
       if (!data_pipe_consumer_) {
         network::mojom::blink::DataPipeGetterPtr* data_pipe_getter =
             iter_->data_pipe_getter_->GetPtr();
-        mojo::DataPipe data_pipe;
+        mojo::DataPipe data_pipe(BlobUtils::GetDataPipeCapacity());
         (*data_pipe_getter)
             ->Read(
                 std::move(data_pipe.producer_handle),

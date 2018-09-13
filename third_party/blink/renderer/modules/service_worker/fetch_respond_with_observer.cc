@@ -9,6 +9,7 @@
 
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -287,25 +288,23 @@ void FetchRespondWithObserver::OnResponseFulfilled(
       return;
     }
     // Handle the stream response body.
-    mojo::ScopedDataPipeProducerHandle producer;
-    mojo::ScopedDataPipeConsumerHandle consumer;
-    MojoResult result = mojo::CreateDataPipe(nullptr, &producer, &consumer);
-    if (result != MOJO_RESULT_OK) {
+    mojo::DataPipe pipe(BlobUtils::GetDataPipeCapacity());
+    if (!pipe.consumer_handle.is_valid()) {
       OnResponseRejected(ServiceWorkerResponseError::kDataPipeCreationFailed);
       return;
     }
-    DCHECK(producer.is_valid());
-    DCHECK(consumer.is_valid());
+    DCHECK(pipe.producer_handle.is_valid());
 
     std::unique_ptr<WebServiceWorkerStreamHandle> body_stream_handle =
-        std::make_unique<WebServiceWorkerStreamHandle>(std::move(consumer));
+        std::make_unique<WebServiceWorkerStreamHandle>(
+            std::move(pipe.consumer_handle));
     ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
         ->RespondToFetchEventWithResponseStream(event_id_, web_response,
                                                 body_stream_handle.get(),
                                                 event_dispatch_time_);
 
     buffer->StartLoading(FetchDataLoader::CreateLoaderAsDataPipe(
-                             std::move(producer), task_runner_),
+                             std::move(pipe.producer_handle), task_runner_),
                          new FetchLoaderClient(std::move(body_stream_handle)),
                          exception_state);
     if (exception_state.HadException()) {
