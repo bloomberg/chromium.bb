@@ -14,6 +14,7 @@ suite('metrics reporting', function() {
     settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
     PolymerTest.clearBody();
     page = document.createElement('settings-privacy-page');
+    document.body.appendChild(page);
   });
 
   teardown(function() {

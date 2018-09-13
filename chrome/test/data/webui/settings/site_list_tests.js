@@ -743,22 +743,26 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          assertFalse(testElement.$.category.hidden);
+          return test_util.waitForRender(testElement);
         })
         .then(function() {
+          assertFalse(testElement.$.category.hidden);
           assertNotEquals(0, testElement.$.listContainer.offsetHeight);
         });
   });
 
-  test('Block list closed when Allow list is not empty', function() {
+  test('Block list open when Allow list is not empty', function() {
     // Prefs: Items in both Block and Allow list.
     const contentType = settings.ContentSettingsTypes.GEOLOCATION;
     setUpCategory(contentType, settings.ContentSetting.BLOCK, prefsGeolocation);
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
+          return test_util.waitForRender(testElement);
+        })
+        .then(function() {
           assertFalse(testElement.$.category.hidden);
-          assertEquals(0, testElement.$.listContainer.offsetHeight);
+          assertNotEquals(0, testElement.$.listContainer.offsetHeight);
         });
   });
 
@@ -769,9 +773,10 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          assertFalse(testElement.$.category.hidden);
+          return test_util.waitForRender(testElement);
         })
         .then(function() {
+          assertFalse(testElement.$.category.hidden);
           assertNotEquals(0, testElement.$.listContainer.offsetHeight);
         });
   });
@@ -783,9 +788,10 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          assertFalse(testElement.$.category.hidden);
+          return test_util.waitForRender(testElement);
         })
         .then(function() {
+          assertFalse(testElement.$.category.hidden);
           assertNotEquals(0, testElement.$.listContainer.offsetHeight);
         });
   });

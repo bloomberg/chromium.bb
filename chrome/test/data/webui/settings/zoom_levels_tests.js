@@ -56,7 +56,9 @@ suite('ZoomLevels', function() {
     PolymerTest.clearBody();
     testElement = document.createElement('zoom-levels');
     document.body.appendChild(testElement);
-    return browserProxy.whenCalled('fetchZoomLevels');
+    return browserProxy.whenCalled('fetchZoomLevels').then(() => {
+      return test_util.waitForRender(testElement);
+    });
   }
 
   /**

@@ -19,14 +19,11 @@
 -CrSettingsPeoplePageSyncAccountControlTest.All
 -CrSettingsPeoplePageSyncPageTest.All
 -CrSettingsPeoplePageTest.All
--CrSettingsSiteListTest.SiteList
--CrSettingsZoomLevelsTest.All
 -MediaRouterElementsBrowserTest.MediaRouterContainerCastModeList
 -MediaRouterElementsBrowserTest.MediaRouterContainerFilterPart1
 -MediaRouterElementsBrowserTest.MediaRouterContainerFirstRunFlow
 -MediaRouterElementsBrowserTest.MediaRouterContainerSinkList
 -MediaRouterElementsBrowserTest.MediaRouterRouteDetails
--SettingsAdvancedPageBrowserTest.Load
 
 # Mac only failure. See crbug.com/876990
 -CrSettingsPrivacyPageTest.All
@@ -34,7 +31,6 @@
 # Tests that fail only on official builds.
 -CrSettingsChromeCleanupPageTest.All
 -CrSettingsIncompatibleApplicationsPageTest.All
--CrSettingsMetricsReportingTest.All
 
 # Most of the a11y tests are failing because they use /deep/. Should be
 # addressed as part of crbug.com/860069
@@ -190,6 +186,7 @@ CrSettingsImportDataDialogTest.*
 CrSettingsLanguagesPageTest.InputMethods
 CrSettingsLanguagesTest.*
 CrSettingsMainPageTest.*
+CrSettingsMetricsReportingTest.*
 CrSettingsMultideviceFeatureItemTest.*
 CrSettingsMultideviceFeatureToggleTest.*
 CrSettingsMultidevicePageTest.*
@@ -219,8 +216,7 @@ CrSettingsSiteDataTest.*
 CrSettingsSiteDetailsPermissionTest.*
 CrSettingsSiteDetailsTest.*
 CrSettingsSiteEntryTest.*
-CrSettingsSiteListTest.AddExceptionDialog
-CrSettingsSiteListTest.EditExceptionDialog
+CrSettingsSiteListTest.*
 CrSettingsSliderTest.*
 CrSettingsSmbPageTest.*
 CrSettingsStartupUrlsPageTest.*
@@ -230,6 +226,7 @@ CrSettingsSystemPageTest.*
 CrSettingsTextareaTest.*
 CrSettingsToggleButtonTest.*
 CrSettingsUsbDevicesTest.*
+CrSettingsZoomLevelsTest.*
 DiscardsTest.*
 DownloadsItemTest.*
 DownloadsManagerTest.*
@@ -321,6 +318,7 @@ PrintPreviewSettingsSelectTest.*
 PrintPreviewSystemDialogBrowserTest.*
 RestrictedFileSystemExtensionApiTest.*
 SandboxStatusUITest.*
+SettingsAdvancedPageBrowserTest.*
 SettingsAnimationBrowserTest.*
 SettingsAutofillSectionBrowserTest.*
 SettingsBasicPageBrowserTest.*
