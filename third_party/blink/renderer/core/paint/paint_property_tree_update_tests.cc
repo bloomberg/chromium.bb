@@ -1310,7 +1310,7 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
   GetDocument().View()->Resize(300, 300);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  auto doc_snap_container_data = DocScroll()->SnapContainerData();
+  auto doc_snap_container_data = DocScroll()->GetSnapContainerData();
   ASSERT_TRUE(doc_snap_container_data);
   EXPECT_EQ(doc_snap_container_data->scroll_snap_type().axis, SnapAxis::kBoth);
   EXPECT_EQ(doc_snap_container_data->scroll_snap_type().strictness,
