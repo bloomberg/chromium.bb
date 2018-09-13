@@ -2,7 +2,7 @@
   "comments": [
     "Runs tests on @3x, @2x, 64-bit, 32-bit, phone, tablet, iOS 10, and iOS 9."
   ],
-  "xcode build version": "10l232m",
+  "xcode build version": "10a254a",
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "goma_dir=\"$(goma_dir)\"",
