@@ -140,9 +140,6 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   bool IsLazyloadPossiblyDeferred() const {
     return is_lazyload_possibly_deferred_;
   }
-  void SetIsLazyloadPossiblyDeferred(bool is_lazyload_possibly_deferred) {
-    is_lazyload_possibly_deferred_ = is_lazyload_possibly_deferred;
-  }
 
   virtual void Trace(blink::Visitor* visitor) {}
 
