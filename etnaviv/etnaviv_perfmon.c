@@ -121,7 +121,7 @@ static void etna_perfmon_free_domains(struct etna_perfmon *pm)
 	}
 }
 
-struct etna_perfmon *etna_perfmon_create(struct etna_pipe *pipe)
+drm_public struct etna_perfmon *etna_perfmon_create(struct etna_pipe *pipe)
 {
 	struct etna_perfmon *pm;
 	int ret;
@@ -147,7 +147,7 @@ fail:
 	return NULL;
 }
 
-void etna_perfmon_del(struct etna_perfmon *pm)
+drm_public void etna_perfmon_del(struct etna_perfmon *pm)
 {
 	if (!pm)
 		return;
@@ -156,7 +156,7 @@ void etna_perfmon_del(struct etna_perfmon *pm)
 	free(pm);
 }
 
-struct etna_perfmon_domain *etna_perfmon_get_dom_by_name(struct etna_perfmon *pm, const char *name)
+drm_public struct etna_perfmon_domain *etna_perfmon_get_dom_by_name(struct etna_perfmon *pm, const char *name)
 {
 	struct etna_perfmon_domain *dom;
 
@@ -170,7 +170,7 @@ struct etna_perfmon_domain *etna_perfmon_get_dom_by_name(struct etna_perfmon *pm
 	return NULL;
 }
 
-struct etna_perfmon_signal *etna_perfmon_get_sig_by_name(struct etna_perfmon_domain *dom, const char *name)
+drm_public struct etna_perfmon_signal *etna_perfmon_get_sig_by_name(struct etna_perfmon_domain *dom, const char *name)
 {
 	struct etna_perfmon_signal *signal;
 

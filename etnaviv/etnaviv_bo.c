@@ -104,7 +104,7 @@ static struct etna_bo *bo_from_handle(struct etna_device *dev,
 }
 
 /* allocate a new (un-tiled) buffer object */
-struct etna_bo *etna_bo_new(struct etna_device *dev, uint32_t size,
+drm_public struct etna_bo *etna_bo_new(struct etna_device *dev, uint32_t size,
 		uint32_t flags)
 {
 	struct etna_bo *bo;
@@ -131,7 +131,7 @@ struct etna_bo *etna_bo_new(struct etna_device *dev, uint32_t size,
 	return bo;
 }
 
-struct etna_bo *etna_bo_ref(struct etna_bo *bo)
+drm_public struct etna_bo *etna_bo_ref(struct etna_bo *bo)
 {
 	atomic_inc(&bo->refcnt);
 
@@ -159,7 +159,8 @@ static int get_buffer_info(struct etna_bo *bo)
 }
 
 /* import a buffer object from DRI2 name */
-struct etna_bo *etna_bo_from_name(struct etna_device *dev, uint32_t name)
+drm_public struct etna_bo *etna_bo_from_name(struct etna_device *dev,
+		uint32_t name)
 {
 	struct etna_bo *bo;
 	struct drm_gem_open req = {
@@ -196,7 +197,7 @@ out_unlock:
  * fd so caller should close() the fd when it is otherwise done
  * with it (even if it is still using the 'struct etna_bo *')
  */
-struct etna_bo *etna_bo_from_dmabuf(struct etna_device *dev, int fd)
+drm_public struct etna_bo *etna_bo_from_dmabuf(struct etna_device *dev, int fd)
 {
 	struct etna_bo *bo;
 	int ret, size;
@@ -231,7 +232,7 @@ out_unlock:
 }
 
 /* destroy a buffer object */
-void etna_bo_del(struct etna_bo *bo)
+drm_public void etna_bo_del(struct etna_bo *bo)
 {
 	struct etna_device *dev = bo->dev;
 
@@ -253,7 +254,7 @@ out:
 }
 
 /* get the global flink/DRI2 buffer name */
-int etna_bo_get_name(struct etna_bo *bo, uint32_t *name)
+drm_public int etna_bo_get_name(struct etna_bo *bo, uint32_t *name)
 {
 	if (!bo->name) {
 		struct drm_gem_flink req = {
@@ -277,7 +278,7 @@ int etna_bo_get_name(struct etna_bo *bo, uint32_t *name)
 	return 0;
 }
 
-uint32_t etna_bo_handle(struct etna_bo *bo)
+drm_public uint32_t etna_bo_handle(struct etna_bo *bo)
 {
 	return bo->handle;
 }
@@ -285,7 +286,7 @@ uint32_t etna_bo_handle(struct etna_bo *bo)
 /* caller owns the dmabuf fd that is returned and is responsible
  * to close() it when done
  */
-int etna_bo_dmabuf(struct etna_bo *bo)
+drm_public int etna_bo_dmabuf(struct etna_bo *bo)
 {
 	int ret, prime_fd;
 
@@ -301,12 +302,12 @@ int etna_bo_dmabuf(struct etna_bo *bo)
 	return prime_fd;
 }
 
-uint32_t etna_bo_size(struct etna_bo *bo)
+drm_public uint32_t etna_bo_size(struct etna_bo *bo)
 {
 	return bo->size;
 }
 
-void *etna_bo_map(struct etna_bo *bo)
+drm_public void *etna_bo_map(struct etna_bo *bo)
 {
 	if (!bo->map) {
 		if (!bo->offset) {
@@ -324,7 +325,7 @@ void *etna_bo_map(struct etna_bo *bo)
 	return bo->map;
 }
 
-int etna_bo_cpu_prep(struct etna_bo *bo, uint32_t op)
+drm_public int etna_bo_cpu_prep(struct etna_bo *bo, uint32_t op)
 {
 	struct drm_etnaviv_gem_cpu_prep req = {
 		.handle = bo->handle,
@@ -337,7 +338,7 @@ int etna_bo_cpu_prep(struct etna_bo *bo, uint32_t op)
 			&req, sizeof(req));
 }
 
-void etna_bo_cpu_fini(struct etna_bo *bo)
+drm_public void etna_bo_cpu_fini(struct etna_bo *bo)
 {
 	struct drm_etnaviv_gem_cpu_fini req = {
 		.handle = bo->handle,

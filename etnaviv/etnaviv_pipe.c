@@ -26,12 +26,12 @@
 
 #include "etnaviv_priv.h"
 
-int etna_pipe_wait(struct etna_pipe *pipe, uint32_t timestamp, uint32_t ms)
+drm_public int etna_pipe_wait(struct etna_pipe *pipe, uint32_t timestamp, uint32_t ms)
 {
 	return etna_pipe_wait_ns(pipe, timestamp, ms * 1000000);
 }
 
-int etna_pipe_wait_ns(struct etna_pipe *pipe, uint32_t timestamp, uint64_t ns)
+drm_public int etna_pipe_wait_ns(struct etna_pipe *pipe, uint32_t timestamp, uint64_t ns)
 {
 	struct etna_device *dev = pipe->gpu->dev;
 	int ret;
@@ -55,12 +55,12 @@ int etna_pipe_wait_ns(struct etna_pipe *pipe, uint32_t timestamp, uint64_t ns)
 	return 0;
 }
 
-void etna_pipe_del(struct etna_pipe *pipe)
+drm_public void etna_pipe_del(struct etna_pipe *pipe)
 {
 	free(pipe);
 }
 
-struct etna_pipe *etna_pipe_new(struct etna_gpu *gpu, enum etna_pipe_id id)
+drm_public struct etna_pipe *etna_pipe_new(struct etna_gpu *gpu, enum etna_pipe_id id)
 {
 	struct etna_pipe *pipe;
 
