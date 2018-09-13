@@ -118,6 +118,7 @@ void SuggestionChipView::InitLayout(const Params& params) {
   text_view_->SetAutoColorReadabilityEnabled(false);
   text_view_->SetEnabledColor(assistant_style_ ? kAssistantTextColor
                                                : kAppListTextColor);
+  text_view_->SetSubpixelRenderingEnabled(false);
   text_view_->SetFontList(
       assistant_style_
           ? ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1)
