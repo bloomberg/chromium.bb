@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -127,7 +128,8 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
     }
     // With NO_ASSETS, there should be further insets, but the same logic is
     // used to position the bubble origin according to |anchor_rect|.
-    DCHECK(shadow_ != NO_ASSETS || shadow_insets.IsEmpty());
+    DCHECK((shadow_ != NO_ASSETS && shadow_ != NO_SHADOW) ||
+           shadow_insets.IsEmpty());
     contents_bounds.Inset(-shadow_insets);
     // |arrow_offset_| is used to adjust bubbles that would normally be
     // partially offscreen.
@@ -177,6 +179,9 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   if (shadow_ == NO_ASSETS)
     return PaintNoAssets(view, canvas);
 
+  if (shadow_ == NO_SHADOW)
+    return PaintNoShadow(view, canvas);
+
   gfx::ScopedCanvas scoped(canvas);
 
   SkRRect r_rect = GetClientRect(view);
@@ -188,9 +193,11 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 }
 
 gfx::Insets BubbleBorder::GetInsets() const {
-  return (shadow_ == NO_ASSETS)
-             ? gfx::Insets()
-             : GetBorderAndShadowInsets(md_shadow_elevation_);
+  if (shadow_ == NO_ASSETS)
+    return gfx::Insets();
+  if (shadow_ == NO_SHADOW)
+    return gfx::Insets(kBorderThicknessDip);
+  return GetBorderAndShadowInsets(md_shadow_elevation_);
 }
 
 gfx::Size BubbleBorder::GetMinimumSize() const {
@@ -247,8 +254,8 @@ const cc::PaintFlags& BubbleBorder::GetBorderAndShadowFlags(
     return flag_map->find(key)->second;
 
   cc::PaintFlags flags;
-  constexpr SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x26);
-  flags.setColor(kBorderColor);
+  constexpr SkColor kBlurredBorderColor = SkColorSetA(SK_ColorBLACK, 0x26);
+  flags.setColor(kBlurredBorderColor);
   flags.setAntiAlias(true);
   flags.setLooper(
       gfx::CreateShadowDrawLooper(GetShadowValues(elevation, color)));
@@ -278,6 +285,18 @@ void BubbleBorder::PaintNoAssets(const View& view, gfx::Canvas* canvas) {
   canvas->sk_canvas()->clipRRect(GetClientRect(view), SkClipOp::kDifference,
                                  true /*doAntiAlias*/);
   canvas->sk_canvas()->drawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
+}
+
+void BubbleBorder::PaintNoShadow(const View& view, gfx::Canvas* canvas) {
+  gfx::RectF bounds(view.GetLocalBounds());
+  bounds.Inset(gfx::InsetsF(kBorderThicknessDip / 2.0f));
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kBorderThicknessDip);
+  constexpr SkColor kBorderColor = gfx::kGoogleGrey600;
+  flags.setColor(kBorderColor);
+  canvas->DrawRoundRect(bounds, GetBorderCornerRadius(), flags);
 }
 
 void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {

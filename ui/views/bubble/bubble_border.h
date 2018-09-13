@@ -229,6 +229,9 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   // to make the window shape based on insets and GetBorderCornerRadius().
   void PaintNoAssets(const View& view, gfx::Canvas* canvas);
 
+  // Paint for the NO_SHADOW shadow type. This paints a simple line border.
+  void PaintNoShadow(const View& view, gfx::Canvas* canvas);
+
   Arrow arrow_;
   int arrow_offset_;
   // Corner radius for the bubble border. If supplied the border will use

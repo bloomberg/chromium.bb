@@ -314,6 +314,9 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
     const int kStrokeWidth =
         shadow == BubbleBorder::NO_ASSETS ? 0 : BubbleBorder::kStroke;
 
+    const int kBorderedContentHeight =
+        kContentSize.height() + (2 * kStrokeWidth);
+
     const int kTopHorizArrowY = kAnchor.bottom() + kStrokeWidth - kInsets.top();
     const int kBottomHorizArrowY = kAnchor.y() - kTotalSize.height();
     const int kLeftVertArrowX = kAnchor.x() + kAnchor.width();
@@ -338,9 +341,9 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
         // Vertical arrow tests.
         {BubbleBorder::LEFT_TOP, kLeftVertArrowX, kAnchor.y() + kStrokeWidth},
         {BubbleBorder::LEFT_CENTER,
-         kLeftVertArrowX - (kInsets.right() - kStrokeWidth),
-         kAnchor.CenterPoint().y() - (kTotalSize.height() / 2) +
-             (2 * kStrokeWidth)},
+         kLeftVertArrowX - (kInsets.left() - kStrokeWidth),
+         kAnchor.CenterPoint().y() - (kBorderedContentHeight / 2) -
+             (kInsets.top() - kStrokeWidth)},
         {BubbleBorder::RIGHT_BOTTOM, kRightVertArrowX,
          kAnchor.y() + kAnchor.height() - kTotalSize.height() - kStrokeWidth},
 
