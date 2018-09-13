@@ -847,12 +847,18 @@ Panel.closeMenusAndRestoreFocus = function() {
     // Watch for a blur on the panel.
     var pendingCallback = Panel.pendingCallback_;
     Panel.pendingCallback_ = null;
-    var onBlur = function(evt) {
-      if (evt.target.docUrl != location.href)
+    var onFocus = function(evt) {
+      if (evt.target.docUrl == location.href)
         return;
 
       desktop.removeEventListener(
-          chrome.automation.EventType.BLUR, onBlur, true);
+          chrome.automation.EventType.FOCUS, onFocus, true);
+
+      // Clears focus on the page by focusing the root explicitly. This makes
+      // sure we don't get future focus events as a result of giving this entire
+      // page focus and that would have interfered with with our desired range.
+      if (evt.target.root)
+        evt.target.root.focus();
 
       setTimeout(function() {
         if (pendingCallback)
@@ -860,7 +866,7 @@ Panel.closeMenusAndRestoreFocus = function() {
       }, 0);
     };
 
-    desktop.addEventListener(chrome.automation.EventType.BLUR, onBlur, true);
+    desktop.addEventListener(chrome.automation.EventType.FOCUS, onFocus, true);
 
     // Make sure all menus are cleared to avoid bogous output when we re-open.
     Panel.clearMenus();
