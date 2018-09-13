@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/wm/workspace/multi_window_resize_controller.h"
 #include "base/macros.h"
+#include "ui/events/event_handler.h"
 
 namespace aura {
 class Window;
@@ -25,17 +26,16 @@ namespace wm {
 class WindowState;
 }
 
-// ui::EventHandler like class installed on the window associated with
-// WorkspaceLayoutManager. This handles various events happening on child
-// windows and takes appropriate action. It is expected the environment specific
-// file calls OnMouseEvent()/OnGestureEvent() as appropriate.
-class ASH_EXPORT WorkspaceEventHandler {
+// Handles events on workspace windows, such as double-click on the resize edge
+// to maximize in one dimension.
+class ASH_EXPORT WorkspaceEventHandler : public ui::EventHandler {
  public:
-  WorkspaceEventHandler();
-  virtual ~WorkspaceEventHandler();
+  explicit WorkspaceEventHandler(aura::Window* workspace_window);
+  ~WorkspaceEventHandler() override;
 
-  void OnMouseEvent(ui::MouseEvent* event, aura::Window* target);
-  void OnGestureEvent(ui::GestureEvent* event, aura::Window* target);
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   friend class WorkspaceEventHandlerTestHelper;
@@ -46,6 +46,8 @@ class ASH_EXPORT WorkspaceEventHandler {
   // workspace.
   void HandleVerticalResizeDoubleClick(wm::WindowState* window_state,
                                        ui::MouseEvent* event);
+
+  aura::Window* workspace_window_;
 
   MultiWindowResizeController multi_window_resize_controller_;
 

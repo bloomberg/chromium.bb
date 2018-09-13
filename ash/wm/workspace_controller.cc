@@ -16,7 +16,7 @@
 #include "ash/wm/wm_window_animations.h"
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/backdrop_delegate.h"
-#include "ash/wm/workspace/workspace_event_handler_classic.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -37,7 +37,7 @@ const int kInitialAnimationDurationMS = 200;
 
 WorkspaceController::WorkspaceController(aura::Window* viewport)
     : viewport_(viewport),
-      event_handler_(std::make_unique<WorkspaceEventHandlerClassic>(viewport)),
+      event_handler_(std::make_unique<WorkspaceEventHandler>(viewport)),
       layout_manager_(new WorkspaceLayoutManager(viewport)) {
   viewport_->AddObserver(this);
   ::wm::SetWindowVisibilityAnimationTransition(viewport_, ::wm::ANIMATE_NONE);
