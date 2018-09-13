@@ -207,4 +207,14 @@ void CastDialogSinkButton::OnEnabledChanged() {
   title()->Layout();
 }
 
+void CastDialogSinkButton::RequestFocus() {
+  if (enabled()) {
+    HoverButton::RequestFocus();
+  } else {
+    // The sink button is disabled, but the icon within it may be enabled and
+    // want focus.
+    icon_view()->RequestFocus();
+  }
+}
+
 }  // namespace media_router
