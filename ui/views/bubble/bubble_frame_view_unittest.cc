@@ -84,7 +84,7 @@ class TestBubbleFrameView : public BubbleFrameView {
       : BubbleFrameView(gfx::Insets(), gfx::Insets(kMargin)),
         available_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
     SetBubbleBorder(std::make_unique<BubbleBorder>(
-        kArrow, BubbleBorder::NO_SHADOW, kColor));
+        kArrow, BubbleBorder::BIG_SHADOW, kColor));
     widget_ = std::make_unique<Widget>();
     widget_delegate_ =
         std::make_unique<TestBubbleFrameViewWidgetDelegate>(widget_.get());
