@@ -32,8 +32,7 @@ void WorkletAnimationController::AttachAnimation(
     WorkletAnimationBase& animation) {
   DCHECK(IsMainThread());
   DCHECK(!pending_animations_.Contains(&animation));
-  DCHECK(!compositor_animations_.Contains(GetId(animation)));
-  DCHECK(!main_thread_animations_.Contains(GetId(animation)));
+  DCHECK(!animations_.Contains(GetId(animation)));
   pending_animations_.insert(&animation);
 
   DCHECK_EQ(document_, animation.GetDocument());
@@ -45,8 +44,7 @@ void WorkletAnimationController::DetachAnimation(
     WorkletAnimationBase& animation) {
   DCHECK(IsMainThread());
   pending_animations_.erase(&animation);
-  compositor_animations_.erase(GetId(animation));
-  main_thread_animations_.erase(GetId(animation));
+  animations_.erase(GetId(animation));
 }
 
 void WorkletAnimationController::InvalidateAnimation(
@@ -63,13 +61,10 @@ void WorkletAnimationController::UpdateAnimationStates() {
   animations.swap(pending_animations_);
   for (const auto& animation : animations) {
     animation->UpdateCompositingState();
-    if (animation->IsActiveOnCompositorThread()) {
-      compositor_animations_.insert(GetId(*animation), animation);
-    } else if (animation->IsActiveOnMainThread()) {
-      main_thread_animations_.insert(GetId(*animation), animation);
-    }
+    if (animation->IsActiveAnimation())
+      animations_.insert(GetId(*animation), animation);
   }
-  if (!main_thread_animations_.IsEmpty() && document_->View())
+  if (!animations_.IsEmpty() && document_->View())
     document_->View()->ScheduleAnimation();
 }
 
@@ -89,7 +84,7 @@ void WorkletAnimationController::UpdateAnimationTimings(
 void WorkletAnimationController::ScrollSourceCompositingStateChanged(
     Node* node) {
   DCHECK(ScrollTimeline::HasActiveScrollTimeline(node));
-  for (const auto& animation : compositor_animations_.Values()) {
+  for (const auto& animation : animations_.Values()) {
     if (animation->GetTimeline()->IsScrollTimeline() &&
         ToScrollTimeline(animation->GetTimeline())->scrollSource() == node) {
       InvalidateAnimation(*animation);
@@ -121,7 +116,7 @@ void WorkletAnimationController::SetMutationUpdate(
 
   for (auto& to_update : output_state->animations) {
     int id = to_update.worklet_animation_id.animation_id;
-    if (auto* animation = main_thread_animations_.at(id))
+    if (auto* animation = animations_.at(id))
       animation->SetOutputState(to_update);
   }
 }
@@ -138,11 +133,7 @@ WorkletAnimationController::CollectAnimationStates() {
   std::unique_ptr<CompositorMutatorInputState> result =
       std::make_unique<CompositorMutatorInputState>();
 
-  // TODO(yigu): Main thread only animates slow properties on the worklet. Fast
-  // properties are run via the compositor therefore we don't need to "run" them
-  // via the main thread here. Rather, we should "peek" the updated value. See
-  // http://crbug.com/881868.
-  for (auto& animation : main_thread_animations_.Values())
+  for (auto& animation : animations_.Values())
     animation->UpdateInputState(result.get());
 
   return result;
@@ -150,18 +141,13 @@ WorkletAnimationController::CollectAnimationStates() {
 
 void WorkletAnimationController::ApplyAnimationTimings(
     TimingUpdateReason reason) {
-  for (const auto& animation : compositor_animations_.Values()) {
+  for (const auto& animation : animations_.Values())
     animation->Update(reason);
-  }
-  for (const auto& animation : main_thread_animations_.Values()) {
-    animation->Update(reason);
-  }
 }
 
 void WorkletAnimationController::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_animations_);
-  visitor->Trace(compositor_animations_);
-  visitor->Trace(main_thread_animations_);
+  visitor->Trace(animations_);
   visitor->Trace(document_);
 }
 

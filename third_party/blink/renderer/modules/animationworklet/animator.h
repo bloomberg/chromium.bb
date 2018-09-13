@@ -36,6 +36,9 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   bool Animate(ScriptState*,
                double current_time,
                CompositorMutatorOutputState::AnimationState*);
+  base::Optional<TimeDelta> GetLastLocalTime() const {
+    return effect_->local_time();
+  }
 
  private:
   // This object keeps the definition object, and animator instance alive.

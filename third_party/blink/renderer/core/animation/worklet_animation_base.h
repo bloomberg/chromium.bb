@@ -30,8 +30,7 @@ class CORE_EXPORT WorkletAnimationBase : public ScriptWrappable {
   virtual Document* GetDocument() const = 0;
   virtual KeyframeEffect* GetEffect() const = 0;
   virtual const WorkletAnimationId& GetWorkletAnimationId() const = 0;
-  virtual bool IsActiveOnMainThread() const = 0;
-  virtual bool IsActiveOnCompositorThread() const = 0;
+  virtual bool IsActiveAnimation() const = 0;
   virtual void UpdateInputState(CompositorMutatorInputState*) = 0;
   virtual void SetOutputState(
       const AnimationWorkletOutput::AnimationState&) = 0;

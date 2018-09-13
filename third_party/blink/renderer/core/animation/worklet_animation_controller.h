@@ -64,8 +64,7 @@ class CORE_EXPORT WorkletAnimationController
   void ApplyAnimationTimings(TimingUpdateReason reason);
 
   HeapHashSet<Member<WorkletAnimationBase>> pending_animations_;
-  HeapHashMap<int, Member<WorkletAnimationBase>> compositor_animations_;
-  HeapHashMap<int, Member<WorkletAnimationBase>> main_thread_animations_;
+  HeapHashMap<int, Member<WorkletAnimationBase>> animations_;
 
   // TODO(yigu): The following proxy is needed for platform/ to access this
   // class. We should bypass it eventually.
