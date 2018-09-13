@@ -34,10 +34,8 @@ class ImageMetadataStore {
   // Deletes the image metadata for the |key|.
   virtual void DeleteImageMetadata(const std::string& key) = 0;
 
-  // Returns true if metadata is stored for |key|. Updates |last_used_time| for
-  // the given |key| if it exists.
-  virtual void CheckExistsAndUpdate(const std::string& key,
-                                    ImageStoreOperationCallback callback) = 0;
+  // Updates |last_used_time| for the given |key| if it exists.
+  virtual void UpdateImageMetadata(const std::string& key) = 0;
 
   // Returns all the keys this store has.
   virtual void GetAllKeys(KeysCallback callback) = 0;

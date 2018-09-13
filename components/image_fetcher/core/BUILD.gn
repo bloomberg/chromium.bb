@@ -15,7 +15,7 @@ static_library("core") {
     "request_metadata.h",
   ]
   deps = [
-    "//components/image_fetcher/core/storage",
+    "storage",
   ]
   public_deps = [
     "//base",
@@ -53,6 +53,7 @@ source_set("unit_tests") {
   deps = [
     ":core",
     ":test_support",
+    "storage:storage_unit_tests",
     "//net",
     "//net:test_support",
     "//testing/gmock",
