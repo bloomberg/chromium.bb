@@ -297,7 +297,16 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageWithHandles, MessageTest, h) {
   MojoTestBase::WriteMessage(handles[3], kTestMessageWithContext4);
 }
 
-TEST_F(MessageTest, SerializeSimpleMessageWithHandlesWithContext) {
+// Flaky on Fuchsia only. http://crbug.com/883624
+#if defined(OS_FUCHSIA)
+#define MAYBE_SerializeSimpleMessageWithHandlesWithContext \
+  DISABLED_SerializeSimpleMessageWithHandlesWithContext
+#else
+#define MAYBE_SerializeSimpleMessageWithHandlesWithContext \
+  SerializeSimpleMessageWithHandlesWithContext
+#endif
+
+TEST_F(MessageTest, MAYBE_SerializeSimpleMessageWithHandlesWithContext) {
   RunTestClient("ReceiveMessageWithHandles", [&](MojoHandle h) {
     auto message = std::make_unique<SimpleMessage>(kTestMessageWithContext1);
     mojo::MessagePipe pipes[4];
