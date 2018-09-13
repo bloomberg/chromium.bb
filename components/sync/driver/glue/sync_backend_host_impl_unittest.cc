@@ -215,9 +215,9 @@ class SyncEngineTest : public testing::Test {
     host_.SetExpectSuccess(expect_success);
     SyncEngine::HttpPostProviderFactoryGetter
         http_post_provider_factory_getter =
-            base::Bind(&NetworkResources::GetHttpPostProviderFactory,
-                       base::Unretained(network_resources_.get()), nullptr,
-                       base::DoNothing());
+            base::BindOnce(&NetworkResources::GetHttpPostProviderFactory,
+                           base::Unretained(network_resources_.get()), nullptr,
+                           base::DoNothing());
 
     SyncEngine::InitParams params;
     params.sync_task_runner = sync_thread_.task_runner();
@@ -227,7 +227,7 @@ class SyncEngineTest : public testing::Test {
                                   base::Unretained(&sync_client_)));
     params.encryption_observer_proxy =
         std::make_unique<NullEncryptionObserver>();
-    params.http_factory_getter = http_post_provider_factory_getter;
+    params.http_factory_getter = std::move(http_post_provider_factory_getter);
     params.credentials = credentials_;
     params.sync_manager_factory = std::move(fake_manager_factory_);
     params.delete_sync_data_folder = true;

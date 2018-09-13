@@ -45,7 +45,7 @@ class SyncEngine : public ModelTypeConfigurer {
  public:
   using Status = SyncStatus;
   using HttpPostProviderFactoryGetter =
-      base::Callback<std::unique_ptr<HttpPostProviderFactory>(
+      base::OnceCallback<std::unique_ptr<HttpPostProviderFactory>(
           CancelationSignal*)>;
 
   // Utility struct for holding initialization options.
