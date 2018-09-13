@@ -33,6 +33,10 @@
 #include "chrome/install_static/install_util.h"
 #endif
 
+#if !defined(GOOGLE_CHROME_BUILD)
+#include "chrome/common/chrome_switches.h"
+#endif
+
 namespace policy {
 
 namespace {
@@ -41,6 +45,18 @@ void RecordEnrollmentResult(
     MachineLevelUserCloudPolicyEnrollmentResult result) {
   UMA_HISTOGRAM_ENUMERATION(
       "Enterprise.MachineLevelUserCloudPolicyEnrollment.Result", result);
+}
+
+// The MachineLevelUserCloudPolicy is only enabled on Chrome by default.
+// However, it can be enabled on Chromium by command line switch for test and
+// development purpose.
+bool IsMachineLevelUserCloudPolicyEnabled() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return true;
+#else
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMachineLevelUserCloudPolicy);
+#endif
 }
 
 }  // namespace
@@ -57,6 +73,9 @@ MachineLevelUserCloudPolicyController::
 // static
 std::unique_ptr<MachineLevelUserCloudPolicyManager>
 MachineLevelUserCloudPolicyController::CreatePolicyManager() {
+  if (!IsMachineLevelUserCloudPolicyEnabled())
+    return nullptr;
+
   std::string enrollment_token =
       BrowserDMTokenStorage::Get()->RetrieveEnrollmentToken();
   std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
@@ -90,6 +109,9 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager() {
 void MachineLevelUserCloudPolicyController::Init(
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  if (!IsMachineLevelUserCloudPolicyEnabled())
+    return;
+
   MachineLevelUserCloudPolicyManager* policy_manager =
       g_browser_process->browser_policy_connector()
           ->machine_level_user_cloud_policy_manager();
