@@ -87,7 +87,7 @@ class PageTimingMetricsSender {
 
   // The page's resources that are currently loading,  or were completed after
   // the last timing update.
-  base::small_map<std::map<int, PageResourceDataUse>, 16>
+  base::small_map<std::map<int, std::unique_ptr<PageResourceDataUse>>, 16>
       page_resource_data_use_;
 
   // Set of all resources that have completed or received a transfer
