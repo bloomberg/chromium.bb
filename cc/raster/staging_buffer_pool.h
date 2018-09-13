@@ -22,6 +22,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "gpu/command_buffer/common/gl2_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -51,12 +52,27 @@ struct StagingBuffer {
 
   const gfx::Size size;
   const viz::ResourceFormat format;
-  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
   base::TimeTicks last_usage;
-  unsigned texture_id;
-  unsigned image_id;
-  unsigned query_id;
-  uint64_t content_id;
+
+  // The following fields are initialized by OneCopyRasterBufferProvider.
+  // Storage for the staging buffer.  This can be a GPU native or shared memory
+  // GpuMemoryBuffer.
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
+
+  // Id for image used to import the GpuMemoryBuffer to command buffer.
+  GLuint image_id = 0;
+
+  // Id for texture that's bound to the GpuMemoryBuffer image.
+  GLuint texture_id = 0;
+
+  // Id of command buffer query that tracks use of this staging buffer by the
+  // GPU.  In general, GPU synchronization is necessary for native
+  // GpuMemoryBuffers.
+  GLuint query_id = 0;
+
+  // Id of the content that's rastered into this staging buffer.  Used to
+  // retrieve staging buffer with known content for reuse for partial raster.
+  uint64_t content_id = 0;
 };
 
 class CC_EXPORT StagingBufferPool

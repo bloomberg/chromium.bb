@@ -10,6 +10,7 @@ include_rules = [
   "+gpu/command_buffer/client/raster_implementation_gles.h",
   "+gpu/command_buffer/common/capabilities.h",
   "+gpu/command_buffer/common/discardable_handle.h",
+  "+gpu/command_buffer/common/gl2_types.h",
   "+gpu/command_buffer/common/gpu_memory_allocation.h",
   "+gpu/command_buffer/common/gpu_memory_buffer_support.h",
   "+gpu/command_buffer/common/mailbox.h",
