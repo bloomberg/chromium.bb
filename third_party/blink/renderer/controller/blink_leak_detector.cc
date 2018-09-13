@@ -95,6 +95,12 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
   // clean-up tasks to the next event loop. E.g. the third GC is necessary for
   // cleaning up Document after the worker object has been reclaimed.
 
+  V8GCController::CollectAllGarbageForTesting(
+      V8PerIsolateData::MainThreadIsolate(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  CoreInitializer::GetInstance().CollectAllGarbageForAnimationWorklet();
+  // Note: Oilpan precise GC is scheduled at the end of the event loop.
+
   // Inspect counters on the next event loop.
   if (--number_of_gc_needed_ > 0) {
     delayed_gc_timer_.StartOneShot(TimeDelta(), FROM_HERE);
@@ -112,12 +118,6 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
   } else {
     ReportResult();
   }
-
-  V8GCController::CollectAllGarbageForTesting(
-      V8PerIsolateData::MainThreadIsolate(),
-      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-  CoreInitializer::GetInstance().CollectAllGarbageForAnimationWorklet();
-  // Note: Oilpan precise GC is scheduled at the end of the event loop.
 }
 
 void BlinkLeakDetector::ReportResult() {
