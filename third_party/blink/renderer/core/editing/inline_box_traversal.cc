@@ -424,7 +424,7 @@ AbstractInlineBox FindBoundaryOfBidiRunIgnoringLineBreak(
 AbstractInlineBox FindBoundaryOfEntireBidiRunInternal(
     const AbstractInlineBox& start,
     unsigned bidi_level,
-    std::function<AbstractInlineBox(const AbstractInlineBox&)> forward) {
+    AbstractInlineBox (*forward)(const AbstractInlineBox&)) {
   DCHECK(start.IsNotNull());
   AbstractInlineBox last_runner = start;
   for (AbstractInlineBox runner = forward(start); runner.IsNotNull();
