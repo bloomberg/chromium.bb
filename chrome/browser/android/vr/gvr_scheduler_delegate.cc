@@ -412,6 +412,7 @@ void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
                                      base::TimeTicks current_time) {
   // TODO(acondor): Move this logic to BrowserRenderer::Draw.
   TRACE_EVENT1("gpu", "Vr.DrawFrame", "frame", frame_index);
+  DCHECK(browser_renderer_);
   bool is_webxr_frame = frame_index >= 0;
   if (!webxr_delayed_gvr_submit_.IsCancelled()) {
     // The last submit to GVR didn't complete, we have an acquired frame. This
@@ -422,7 +423,6 @@ void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
     webxr_delayed_gvr_submit_.Cancel();
     browser_renderer_->DrawBrowserFrame(current_time);
   }
-  DCHECK(browser_renderer_);
 
   if (webxr_mode() && !ShouldDrawWebVr()) {
     // We're in a WebVR session, but don't want to draw WebVR frames, i.e.
@@ -613,7 +613,7 @@ void GvrSchedulerDelegate::DrawFrameSubmitNow(FrameType frame_type,
   TRACE_EVENT1("gpu", "Vr.SubmitFrameNow", "frame_type", frame_type);
   {
     std::unique_ptr<ScopedGpuTrace> browser_gpu_trace;
-    if (gl::GLFence::IsGpuFenceSupported() && frame_type == kWebXrFrame) {
+    if (gl::GLFence::IsGpuFenceSupported() && frame_type == kUiFrame) {
       // This fence instance is created for the tracing side effect. Insert it
       // before GVR submit. Then replace the previous instance below after GVR
       // submit completes, at which point the previous fence (if any) should be
@@ -1150,16 +1150,14 @@ void GvrSchedulerDelegate::UpdateLayerBounds(int16_t frame_index,
                                              const gfx::Size& source_size) {
   if (!ValidateRect(left_bounds) || !ValidateRect(right_bounds)) {
     mojo::ReportBadMessage("UpdateLayerBounds called with invalid bounds");
-    presentation_binding_.Close();
-    frame_data_binding_.Close();
+    ClosePresentationBindings();
     return;
   }
 
   if (frame_index >= 0 && !webxr_.HaveAnimatingFrame()) {
     // The optional UpdateLayerBounds call must happen before SubmitFrame.
     mojo::ReportBadMessage("UpdateLayerBounds called without animating frame");
-    presentation_binding_.Close();
-    frame_data_binding_.Close();
+    ClosePresentationBindings();
     return;
   }
 
@@ -1189,8 +1187,7 @@ bool GvrSchedulerDelegate::IsSubmitFrameExpected(int16_t frame_index) {
     DVLOG(1) << __func__ << ": wrong frame index, got " << frame_index
              << ", expected " << animating_frame->index;
     mojo::ReportBadMessage("SubmitFrame called with wrong frame index");
-    presentation_binding_.Close();
-    frame_data_binding_.Close();
+    ClosePresentationBindings();
     return false;
   }
 
