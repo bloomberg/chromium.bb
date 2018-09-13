@@ -234,6 +234,12 @@ void LayoutNGMixin<Base>::SetCachedLayoutResult(
 }
 
 template <typename Base>
+void LayoutNGMixin<Base>::ClearCachedLayoutResult() {
+  cached_result_.reset();
+  Base::cached_constraint_space_.reset();
+}
+
+template <typename Base>
 scoped_refptr<const NGLayoutResult>
 LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
   return cached_result_;

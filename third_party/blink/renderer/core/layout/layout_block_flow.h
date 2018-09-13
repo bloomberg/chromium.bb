@@ -459,6 +459,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   virtual void SetCachedLayoutResult(const NGConstraintSpace&,
                                      const NGBreakToken*,
                                      const NGLayoutResult&);
+  virtual void ClearCachedLayoutResult();
   virtual void WillCollectInlines() {}
   virtual void SetPaintFragment(const NGBreakToken*,
                                 scoped_refptr<const NGPhysicalFragment>,
