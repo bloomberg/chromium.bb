@@ -3328,19 +3328,12 @@ public class Tab
      */
     public void onTabModalDialogStateChanged(boolean isShowing) {
         mIsShowingTabModalDialog = isShowing;
-        // Also need to update browser control state after dismissal to refresh the constraints.
-        if (isShowing && areRendererInputEventsIgnored()) {
-            mControlsOffsetHelper.showAndroidControls(true);
-        } else {
-            updateBrowserControlsState(BrowserControlsState.SHOWN,
-                    !mControlsOffsetHelper.isControlsOffsetOverridden());
-        }
     }
 
     /**
      * @return Whether input events from the renderer are ignored on the browser side.
      */
-    boolean areRendererInputEventsIgnored() {
+    public boolean areRendererInputEventsIgnored() {
         return nativeAreRendererInputEventsIgnored(mNativeTabAndroid);
     }
 
