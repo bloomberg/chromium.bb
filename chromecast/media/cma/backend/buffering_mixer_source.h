@@ -229,7 +229,6 @@ class BufferingMixerSource : public MixerInput::Source,
   int64_t DataToFrames(int64_t size);
   void CheckAndStartPlaybackIfNecessary(int num_frames,
                                         int64_t playback_absolute_timestamp);
-
   Delegate* const delegate_;
   const int num_channels_;
   const int input_samples_per_second_;
@@ -252,6 +251,8 @@ class BufferingMixerSource : public MixerInput::Source,
   int64_t playback_start_pts_;
 
   LockedMembers locked_members_;
+
+  int remaining_silence_frames_ = 0;
 
   base::WeakPtr<BufferingMixerSource> weak_this_;
   base::WeakPtrFactory<BufferingMixerSource> weak_factory_;
