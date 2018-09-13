@@ -368,7 +368,7 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
 // CanvasResourceProvider base class implementation
 //==============================================================================
 
-enum ResourceType {
+enum CanvasResourceType {
   kTextureGpuMemoryBufferResourceType,
   kRamGpuMemoryBufferResourceType,
   kSharedBitmapResourceType,
@@ -376,23 +376,23 @@ enum ResourceType {
   kBitmapResourceType,
 };
 
-constexpr ResourceType kSoftwareCompositedFallbackList[] = {
+constexpr CanvasResourceType kSoftwareCompositedFallbackList[] = {
     kRamGpuMemoryBufferResourceType, kSharedBitmapResourceType,
     // Fallback to no direct compositing support
     kBitmapResourceType,
 };
 
-constexpr ResourceType kSoftwareFallbackList[] = {
+constexpr CanvasResourceType kSoftwareFallbackList[] = {
     kBitmapResourceType,
 };
 
-constexpr ResourceType kAcceleratedFallbackList[] = {
+constexpr CanvasResourceType kAcceleratedFallbackList[] = {
     kTextureResourceType,
     // Fallback to software
     kBitmapResourceType,
 };
 
-constexpr ResourceType kAcceleratedCompositedFallbackList[] = {
+constexpr CanvasResourceType kAcceleratedCompositedFallbackList[] = {
     kTextureGpuMemoryBufferResourceType, kTextureResourceType,
     // Fallback to software composited
     kRamGpuMemoryBufferResourceType, kSharedBitmapResourceType,
@@ -409,7 +409,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     PresentationMode presentation_mode,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
     bool is_origin_top_left) {
-  const ResourceType* resource_type_fallback_list = nullptr;
+  const CanvasResourceType* resource_type_fallback_list = nullptr;
   size_t list_length = 0;
 
   switch (usage) {
