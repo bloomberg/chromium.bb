@@ -60,6 +60,12 @@ class WebController {
                             const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback);
 
+  // Select the option given by |selectors| and the value of the option to be
+  // picked.
+  virtual void SelectOption(const std::vector<std::string>& selectors,
+                            const std::string& selected_option,
+                            base::OnceCallback<void(bool)> callback);
+
  private:
   void OnFindElementForClick(base::OnceCallback<void(bool)> callback,
                              std::string object_id);

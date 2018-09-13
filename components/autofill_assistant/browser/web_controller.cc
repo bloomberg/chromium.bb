@@ -309,4 +309,13 @@ void WebController::FillCardForm(const std::string& guid,
   std::move(callback).Run(true);
 }
 
+// Select the option given by |selectors| and the value of the option to be
+// picked.
+void WebController::SelectOption(const std::vector<std::string>& selectors,
+                                 const std::string& selected_option,
+                                 base::OnceCallback<void(bool)> callback) {
+  // TODO(crbug.com/806868): Implement select option operation.
+  std::move(callback).Run(true);
+}
+
 }  // namespace autofill_assistant.

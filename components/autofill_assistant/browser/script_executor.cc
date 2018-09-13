@@ -72,6 +72,13 @@ void ScriptExecutor::FillCardForm(const std::string& guid,
                                               std::move(callback));
 }
 
+void ScriptExecutor::SelectOption(const std::vector<std::string>& selectors,
+                                  const std::string& selected_option,
+                                  base::OnceCallback<void(bool)> callback) {
+  delegate_->GetWebController()->SelectOption(selectors, selected_option,
+                                              std::move(callback));
+}
+
 ClientMemory* ScriptExecutor::GetClientMemory() {
   return delegate_->GetClientMemory();
 }
