@@ -169,6 +169,7 @@ constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 constexpr int kUnifiedMenuVerticalPadding = 8;
 constexpr int kUnifiedNotificationCenterSpacing = 16;
 constexpr int kUnifiedTrayCornerRadius = 20;
+constexpr int kUnifiedTrayContentPadding = 5;
 constexpr int kUnifiedTopShortcutSpacing = 16;
 constexpr int kUnifiedNotificationHiddenLineHeight = 20;
 constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16);

@@ -4,6 +4,7 @@
 
 #include "ash/system/date/date_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -312,10 +313,12 @@ void TimeView::Refresh() {
 }
 
 void TimeView::SetBorderFromLayout(ClockLayout clock_layout) {
-  if (clock_layout == ClockLayout::HORIZONTAL_CLOCK)
+  if (!features::IsSystemTrayUnifiedEnabled() &&
+      clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
     SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kTrayImageItemPadding)));
-  else
+  } else {
     SetBorder(views::NullBorder());
+  }
 }
 
 void TimeView::SetupLabels() {
