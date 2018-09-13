@@ -1,4 +1,5 @@
 AM_CFLAGS = \
+	-fvisibility=hidden \
 	-I $(top_srcdir)/include/drm \
 	-I $(top_srcdir)/amdgpu \
 	-I $(top_srcdir) \

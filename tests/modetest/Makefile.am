@@ -3,6 +3,7 @@ include Makefile.sources
 AM_CFLAGS = $(filter-out -Wpointer-arith, $(WARN_CFLAGS))
 
 AM_CFLAGS += \
+	-fvisibility=hidden \
 	-pthread \
 	-I$(top_srcdir)/include/drm \
 	-I$(top_srcdir)/tests \

@@ -4,7 +4,8 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = \
 	@PTHREADSTUBS_CFLAGS@ \
-	$(WARN_CFLAGS)
+	$(WARN_CFLAGS) \
+	-fvisibility=hidden
 
 libdrm_tegra_ladir = $(libdir)
 libdrm_tegra_la_LTLIBRARIES = libdrm_tegra.la
