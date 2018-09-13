@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -1156,7 +1157,7 @@ TEST_P(FrameThrottlingTest, AllowOneAnimationFrame) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result =
       local_frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode("window.didRaf;"));
+          ScriptSourceCode("window.didRaf;"), KURL(), kNotSharableCrossOrigin);
   EXPECT_TRUE(result->IsTrue());
 }
 

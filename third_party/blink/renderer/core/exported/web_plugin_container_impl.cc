@@ -102,6 +102,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -562,7 +563,8 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
   v8::HandleScope handle_scope(ToIsolate(frame));
   v8::Local<v8::Value> result =
       frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl));
+          ScriptSourceCode(script, ScriptSourceLocationType::kJavascriptUrl),
+          KURL(), kNotSharableCrossOrigin);
 
   // Failure is reported as a null string.
   if (result.IsEmpty() || !result->IsString())

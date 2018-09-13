@@ -173,7 +173,8 @@ void ScheduledAction::Execute(LocalFrame* frame) {
     frame->GetScriptController().ExecuteScriptAndReturnValue(
         script_state_->GetContext(),
         ScriptSourceCode(code_,
-                         ScriptSourceLocationType::kEvalForScheduledAction));
+                         ScriptSourceLocationType::kEvalForScheduledAction),
+        KURL(), kNotSharableCrossOrigin);
   }
 
   // The frame might be invalid at this point because JavaScript could have

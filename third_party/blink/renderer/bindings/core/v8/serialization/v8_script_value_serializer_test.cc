@@ -106,7 +106,8 @@ v8::Local<v8::Value> RoundTrip(
 v8::Local<v8::Value> Eval(const String& source, V8TestingScope& scope) {
   return scope.GetFrame()
       .GetScriptController()
-      .ExecuteScriptInMainWorldAndReturnValue(source);
+      .ExecuteScriptInMainWorldAndReturnValue(source, KURL(),
+                                              kNotSharableCrossOrigin);
 }
 
 String ToJSON(v8::Local<v8::Object> object, const V8TestingScope& scope) {

@@ -88,8 +88,8 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     v8::Local<v8::Context> context,
     const ScriptSourceCode& source,
     const KURL& base_url,
-    const ScriptFetchOptions& fetch_options,
-    AccessControlStatus access_control_status) {
+    AccessControlStatus access_control_status,
+    const ScriptFetchOptions& fetch_options) {
   TRACE_EVENT1(
       "devtools.timeline", "EvaluateScript", "data",
       InspectorEvaluateScriptEvent::Data(GetFrame(), source.Url().GetString(),
@@ -253,7 +253,7 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(const KURL& url,
   // [spec text]
   v8::Local<v8::Value> result = EvaluateScriptInMainWorld(
       ScriptSourceCode(script_source, ScriptSourceLocationType::kJavascriptUrl),
-      base_url, ScriptFetchOptions(), kNotSharableCrossOrigin,
+      base_url, kNotSharableCrossOrigin, ScriptFetchOptions(),
       kDoNotExecuteScriptWhenScriptsDisabled);
 
   // If executing script caused this frame to be removed from the page, we
@@ -285,35 +285,36 @@ void ScriptController::ExecuteScriptInMainWorld(
     ExecuteScriptPolicy policy) {
   v8::HandleScope handle_scope(GetIsolate());
   EvaluateScriptInMainWorld(ScriptSourceCode(script, source_location_type),
-                            KURL(), ScriptFetchOptions(),
-                            kNotSharableCrossOrigin, policy);
+                            KURL(), kNotSharableCrossOrigin,
+                            ScriptFetchOptions(), policy);
 }
 
 void ScriptController::ExecuteScriptInMainWorld(
     const ScriptSourceCode& source_code,
     const KURL& base_url,
-    const ScriptFetchOptions& fetch_options,
-    AccessControlStatus access_control_status) {
+    AccessControlStatus access_control_status,
+    const ScriptFetchOptions& fetch_options) {
   v8::HandleScope handle_scope(GetIsolate());
-  EvaluateScriptInMainWorld(source_code, base_url, fetch_options,
-                            access_control_status,
+  EvaluateScriptInMainWorld(source_code, base_url, access_control_status,
+                            fetch_options,
                             kDoNotExecuteScriptWhenScriptsDisabled);
 }
 
 v8::Local<v8::Value> ScriptController::ExecuteScriptInMainWorldAndReturnValue(
     const ScriptSourceCode& source_code,
     const KURL& base_url,
+    AccessControlStatus access_control_status,
     const ScriptFetchOptions& fetch_options,
     ExecuteScriptPolicy policy) {
-  return EvaluateScriptInMainWorld(source_code, base_url, fetch_options,
-                                   kNotSharableCrossOrigin, policy);
+  return EvaluateScriptInMainWorld(source_code, base_url, access_control_status,
+                                   fetch_options, policy);
 }
 
 v8::Local<v8::Value> ScriptController::EvaluateScriptInMainWorld(
     const ScriptSourceCode& source_code,
     const KURL& base_url,
-    const ScriptFetchOptions& fetch_options,
     AccessControlStatus access_control_status,
+    const ScriptFetchOptions& fetch_options,
     ExecuteScriptPolicy policy) {
   if (policy == kDoNotExecuteScriptWhenScriptsDisabled &&
       !GetFrame()->GetDocument()->CanExecuteScripts(kAboutToExecuteScript))
@@ -331,8 +332,8 @@ v8::Local<v8::Value> ScriptController::EvaluateScriptInMainWorld(
     GetFrame()->Loader().DidAccessInitialDocument();
 
   v8::Local<v8::Value> object = ExecuteScriptAndReturnValue(
-      script_state->GetContext(), source_code, base_url, fetch_options,
-      access_control_status);
+      script_state->GetContext(), source_code, base_url, access_control_status,
+      fetch_options);
 
   if (object.IsEmpty())
     return v8::Local<v8::Value>();
@@ -342,7 +343,9 @@ v8::Local<v8::Value> ScriptController::EvaluateScriptInMainWorld(
 
 v8::Local<v8::Value> ScriptController::ExecuteScriptInIsolatedWorld(
     int world_id,
-    const ScriptSourceCode& source) {
+    const ScriptSourceCode& source,
+    const KURL& base_url,
+    AccessControlStatus access_control_status) {
   DCHECK_GT(world_id, 0);
 
   scoped_refptr<DOMWrapperWorld> world =
@@ -354,8 +357,8 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptInIsolatedWorld(
       isolated_world_window_proxy->ContextIfInitialized();
   v8::Context::Scope scope(context);
 
-  v8::Local<v8::Value> evaluation_result =
-      ExecuteScriptAndReturnValue(context, source);
+  v8::Local<v8::Value> evaluation_result = ExecuteScriptAndReturnValue(
+      context, source, base_url, access_control_status);
   if (!evaluation_result.IsEmpty())
     return evaluation_result;
   return v8::Local<v8::Value>::New(GetIsolate(), v8::Undefined(GetIsolate()));
