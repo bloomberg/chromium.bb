@@ -97,10 +97,10 @@
 -RoundedOmniboxPopupContentsViewTest.ClickOmnibox*
 
 # RenderFrameMetadata observation not supported: https://crbug.com/820974
+-ChromeMimeHandlerViewBrowserPluginScrollTest.OverscrollControllerSeesConsumedScrollsInGuest
 -WebViewFocusBrowserPluginSpecificTest.*
 -WebViewScrollBubbling/WebViewGuestScrollTest.ScrollLatchingPreservedInGuests/*
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.*
--WebViewScrollGuestContentBrowserPluginSpecificTest.OverscrollControllerSeesConsumedScrollsInGuest
 -WebViewScrollBubbling/WebViewGuestScrollTest.TestGuestWheelScrollsBubble/*
 
 # FATAL:hit_test_region_observer.cc(164)] Check failed: frame_sink_id.is_valid().

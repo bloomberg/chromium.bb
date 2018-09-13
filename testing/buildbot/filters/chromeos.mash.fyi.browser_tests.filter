@@ -262,10 +262,10 @@
 -PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
 
 # RenderFrameMetadata observation not supported: https://crbug.com/820974
+-ChromeMimeHandlerViewBrowserPluginScrollTest.OverscrollControllerSeesConsumedScrollsInGuest
 -WebViewFocusBrowserPluginSpecificTest.*
 -WebViewScrollBubbling/WebViewGuestScrollTest.ScrollLatchingPreservedInGuests/*
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.*
--WebViewScrollGuestContentBrowserPluginSpecificTest.OverscrollControllerSeesConsumedScrollsInGuest
 -WebViewScrollBubbling/WebViewGuestScrollTest.TestGuestWheelScrollsBubble/*
 
 # https://crbug.com/843760: webm in <object> triggers RegisterFrameSinkId crash
