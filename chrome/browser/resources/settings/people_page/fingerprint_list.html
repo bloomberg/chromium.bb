@@ -55,7 +55,9 @@
             <cr-input value="{{item}}" on-change="onFingerprintLabelChanged_">
             </cr-input>
             <paper-icon-button-light class="icon-delete-gray">
-              <button on-click="onFingerprintDeleteTapped_"></button>
+              <button on-click="onFingerprintDeleteTapped_"
+                  aria-label$="[[getButtonAriaLabel_(item)]]">
+              </button>
             </paper-icon-button-light>
           </div>
         </template>

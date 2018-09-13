@@ -181,5 +181,14 @@ Polymer({
       this.onSetupFingerprintDialogClose_();
     }
   },
+
+  /**
+   * @param {string} item
+   * @return {string}
+   * @private
+   */
+  getButtonAriaLabel_: function(item) {
+    return this.i18n('lockScreenDeleteFingerprintLabel', item);
+  },
 });
 })();
