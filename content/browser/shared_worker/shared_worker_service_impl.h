@@ -83,6 +83,21 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       int frame_id,
       const blink::MessagePortChannel& message_port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+  void DidCreateScriptLoader(
+      std::unique_ptr<SharedWorkerInstance> instance,
+      base::WeakPtr<SharedWorkerHost> host,
+      mojom::SharedWorkerClientPtr client,
+      int process_id,
+      int frame_id,
+      const blink::MessagePortChannel& message_port,
+      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+          service_worker_provider_info,
+      network::mojom::URLLoaderFactoryAssociatedPtrInfo
+          main_script_loader_factory,
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+      blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+      base::Optional<SubresourceLoaderParams> subresource_loader_params,
+      bool success);
   void StartWorker(
       std::unique_ptr<SharedWorkerInstance> instance,
       base::WeakPtr<SharedWorkerHost> host,

@@ -123,7 +123,8 @@ void SharedWorkerScriptFetcher::OnReceiveResponse(
       script_loader_factory_->TakeSubresourceLoaderParams();
 
   std::move(callback_).Run(std::move(main_script_load_params),
-                           std::move(subresource_loader_params));
+                           std::move(subresource_loader_params),
+                           true /* success */);
   delete this;
 }
 
@@ -161,10 +162,11 @@ void SharedWorkerScriptFetcher::OnStartLoadingResponseBody(
 
 void SharedWorkerScriptFetcher::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  // TODO(nhiroki): Handle the case where loading fails before receiving a
-  // response head. In that case, we should run |callback_| with an error code.
-  // (https://crbug.com/715632).
-  NOTIMPLEMENTED();
+  // We can reach here only when loading fails before receiving a response head.
+  DCHECK_NE(net::OK, status.error_code);
+  std::move(callback_).Run(nullptr /* main_script_load_params */,
+                           base::nullopt /* subresource_loader_params */,
+                           false /* success */);
   delete this;
 }
 

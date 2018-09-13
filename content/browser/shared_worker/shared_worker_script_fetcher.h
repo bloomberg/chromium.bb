@@ -36,7 +36,8 @@ class SharedWorkerScriptFetcher : public network::mojom::URLLoaderClient {
  public:
   using CreateAndStartCallback =
       base::OnceCallback<void(blink::mojom::SharedWorkerMainScriptLoadParamsPtr,
-                              base::Optional<SubresourceLoaderParams>)>;
+                              base::Optional<SubresourceLoaderParams>,
+                              bool /* success */)>;
 
   // Called on the IO thread, and calls |callback| on the IO thread when
   // OnReceiveResponse is called on |this|.
