@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/interfaces/pref_connector.mojom.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "ash/session/multiprofiles_intro_dialog.h"
@@ -26,6 +27,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -286,6 +288,8 @@ void SessionController::SetSessionInfo(mojom::SessionInfoPtr info) {
   can_lock_ = info->can_lock_screen;
   should_lock_screen_automatically_ = info->should_lock_screen_automatically;
   is_running_in_app_mode_ = info->is_running_in_app_mode;
+  if (info->is_demo_session)
+    SetIsDemoSession();
   add_user_session_policy_ = info->add_user_session_policy;
   SetSessionState(info->state);
 }
@@ -485,6 +489,14 @@ void SessionController::ProvideUserPrefServiceForTest(
     const AccountId& account_id,
     std::unique_ptr<PrefService> pref_service) {
   OnProfilePrefServiceInitialized(account_id, std::move(pref_service));
+}
+
+void SessionController::SetIsDemoSession() {
+  if (is_demo_session_)
+    return;
+
+  is_demo_session_ = true;
+  Shell::Get()->metrics()->StartDemoSessionMetricsRecording();
 }
 
 void SessionController::SetSessionState(SessionState state) {

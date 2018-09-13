@@ -101,6 +101,10 @@ struct SessionInfo {
   // fullscreen web content or running a single [forced] Chrome or ARC app.
   bool is_running_in_app_mode;
 
+  // Whether the session is a demo session, which is an ephemeral session for
+  // Demo Mode.
+  bool is_demo_session;
+
   // Sets whether adding a user session to ash is allowed.
   AddUserSessionPolicy add_user_session_policy;
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -574,6 +575,8 @@ void SessionControllerClient::SendSessionInfoIfChanged() {
   info->can_lock_screen = CanLockScreen();
   info->should_lock_screen_automatically = ShouldLockScreenAutomatically();
   info->is_running_in_app_mode = chrome::IsRunningInAppMode();
+  info->is_demo_session =
+      chromeos::DemoSession::Get() && chromeos::DemoSession::Get()->started();
   info->add_user_session_policy = GetAddUserSessionPolicy();
   info->state = session_manager->session_state();
 

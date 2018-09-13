@@ -115,6 +115,12 @@ const char kGoogleKeepAppId[] = "hmjkmjkepdijhoojdojkdfohbdgmmhki";
 const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
 const char kGeniusAppId[] = "ljoammodoonkhnehlncldjelhidljdpi";
 
+#if defined(OS_CHROMEOS)
+const char kHighlightsAppId[] = "lpmakjfjcconjeehbidjclhdlpjmfjjj";
+const char kHighlightsAlt1AppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
+const char kHighlightsAlt2AppId[] = "elhbopodaklenjkeihkdhhfaghalllba";
+#endif
+
 const char kProdHangoutsExtensionId[] = "nckgahadagoaajjgafhacjanaoiihapd";
 const char* const kHangoutsExtensionIds[6] = {
     kProdHangoutsExtensionId,
