@@ -141,7 +141,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      * Shows the Android browser controls view.
      * @param animate Whether a slide-in animation should be run.
      */
-    void showAndroidControls(boolean animate) {
+    public void showAndroidControls(boolean animate) {
         if (mTab.getFullscreenManager() == null) return;
 
         if (animate) {
