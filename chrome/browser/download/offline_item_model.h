@@ -7,23 +7,40 @@
 
 #include "components/offline_items_collection/core/offline_item.h"
 
+class OfflineItemModelManager;
+
 // This class is an abstraction for common UI tasks and properties associated
-// with an OfflineItem.
+// with an OfflineItem. This item is short lived, all the state needs be stored
+// in OfflineItemModelData.
 class OfflineItemModel {
  public:
   // Constructs a OfflineItemModel.
-  explicit OfflineItemModel(
-      const offline_items_collection::OfflineItem& offline_item);
+  OfflineItemModel(OfflineItemModelManager* manager,
+                   const offline_items_collection::OfflineItem& offline_item);
   ~OfflineItemModel();
 
-  bool was_ui_notified() const { return was_ui_notified_; }
+  // Get the number of bytes that has completed so far.
+  int64_t GetCompletedBytes() const;
 
-  void set_was_ui_notified(bool was_ui_notified) {
-    was_ui_notified_ = was_ui_notified;
-  }
+  // Get the total number of bytes for this download. Should return 0 if the
+  // total size of the download is not known.
+  int64_t GetTotalBytes() const;
+
+  // Rough percent complete. Returns -1 if the progress is unknown.
+  int PercentComplete() const;
+
+  // Returns |true| if the UI has been notified about this download. By default,
+  // this value is |false| and should be changed explicitly using
+  // SetWasUINotified().
+  bool WasUINotified() const;
+
+  // Change what's returned by WasUINotified().
+  void SetWasUINotified(bool should_notify);
 
  private:
-  bool was_ui_notified_;
+  OfflineItemModelManager* manager_;
+
+  offline_items_collection::OfflineItem offline_item_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineItemModel);
 };

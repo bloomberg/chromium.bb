@@ -8,16 +8,15 @@ OfflineItemModelManager::OfflineItemModelManager() = default;
 
 OfflineItemModelManager::~OfflineItemModelManager() = default;
 
-OfflineItemModel* OfflineItemModelManager::GetOrCreateOfflineItemModel(
-    const OfflineItem& offline_item) {
-  auto it = offline_item_models_.find(offline_item.id);
-  if (it != offline_item_models_.end())
+OfflineItemModelData* OfflineItemModelManager::GetOrCreateOfflineItemModelData(
+    const ContentId& id) {
+  auto it = offline_item_model_data_.find(id);
+  if (it != offline_item_model_data_.end())
     return it->second.get();
-  offline_item_models_[offline_item.id] =
-      std::make_unique<OfflineItemModel>(offline_item);
-  return offline_item_models_[offline_item.id].get();
+  offline_item_model_data_[id] = std::make_unique<OfflineItemModelData>();
+  return offline_item_model_data_[id].get();
 }
 
-void OfflineItemModelManager::RemoveOfflineItemModel(const ContentId& id) {
-  offline_item_models_.erase(id);
+void OfflineItemModelManager::RemoveOfflineItemModelData(const ContentId& id) {
+  offline_item_model_data_.erase(id);
 }

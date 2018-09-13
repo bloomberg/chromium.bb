@@ -441,6 +441,7 @@ jumbo_split_static_library("browser") {
     "download/image_thumbnail_request.h",
     "download/offline_item_model.cc",
     "download/offline_item_model.h",
+    "download/offline_item_model_data.h",
     "download/offline_item_model_manager.cc",
     "download/offline_item_model_manager.h",
     "download/offline_item_model_manager_factory.cc",
