@@ -29,10 +29,12 @@ namespace tether {
 //
 // Note: TetherHostFetcherImpl, and the Tether feature as a whole, is currently
 // in the middle of a migration from using RemoteDeviceProvider to
-// DeviceSyncClient. Its constructor accepts both objects, but expects only of
-// them to be valid, and the other null (this is controlled at a higher level by
-// features::kMultiDeviceApi). Once Tether has fully migrated to DeviceSync Mojo
-// Service, RemoteDeviceProvider will be ripped out of this class. See
+// DeviceSyncClient and eventually to MultiDeviceSetupClient. Its constructor
+// accepts all three objects, but expects only of one of them to be valid, and
+// the others null. (This is controlled at a higher level by
+// features::kMultiDeviceApi and features::kEnableUnifiedMultiDeviceSetup.).
+// Once Tether has been fully migrated, RemoteDeviceProvider and eventually
+// DeviceSyncClient will be ripped out of this class. See
 // https://crbug.com/848956.
 class TetherHostFetcherImpl
     : public TetherHostFetcher,
