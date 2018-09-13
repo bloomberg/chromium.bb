@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_file_system.h"
 
 #include <sys/statvfs.h>
+#include <sys/xattr.h>
 
 #include <algorithm>
 #include <utility>
 
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -36,6 +38,7 @@
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/event_logger.h"
+#include "components/drive/file_system_core_util.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
@@ -92,6 +95,22 @@ size_t GetFileNameMaxLengthAsync(const std::string& path) {
     return 255;
   }
   return stat.f_namemax;
+}
+
+bool GetFileExtendedAttribute(const base::FilePath& path,
+                              const char* name,
+                              std::vector<char>* value) {
+  ssize_t len = getxattr(path.value().c_str(), name, nullptr, 0);
+  if (len < 0) {
+    PLOG_IF(ERROR, errno != ENODATA) << "getxattr: " << path;
+    return false;
+  }
+  value->resize(len);
+  if (getxattr(path.value().c_str(), name, value->data(), len) != len) {
+    PLOG(ERROR) << "getxattr: " << path;
+    return false;
+  }
+  return true;
 }
 
 // Returns EventRouter for the |profile_id| if available.
@@ -927,21 +946,80 @@ bool FileManagerPrivateSearchFilesByHashesFunction::RunAsync() {
   }
   set_log_on_completion(true);
 
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(GetProfile());
-  if (!file_system) {
-    // |file_system| is NULL if Drive is disabled.
+  drive::DriveIntegrationService* integration_service =
+      drive::util::GetIntegrationServiceByProfile(GetProfile());
+  if (!integration_service) {
+    // |integration_service| is NULL if Drive is disabled or not mounted.
     return false;
   }
 
   std::set<std::string> hashes(params->hash_list.begin(),
                                params->hash_list.end());
-  file_system->SearchByHashes(
-      hashes,
-      base::Bind(
-          &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes,
-          this, hashes));
+
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (file_system) {
+    file_system->SearchByHashes(
+        hashes,
+        base::BindOnce(
+            &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes,
+            this, hashes));
+  } else {
+    // |file_system| is NULL if the backend is DriveFs. It doesn't provide
+    // dedicated backup solution yet, so for now just walk the files and check
+    // MD5 extended attribute.
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(
+            &FileManagerPrivateSearchFilesByHashesFunction::SearchByAttribute,
+            this, hashes,
+            integration_service->GetMountPointPath().Append(
+                drive::util::kDriveMyDriveRootDirName),
+            drive::util::GetDriveMountPointPath(GetProfile())),
+        base::BindOnce(
+            &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByAttribute,
+            this, hashes));
+  }
+
   return true;
+}
+
+std::vector<drive::HashAndFilePath>
+FileManagerPrivateSearchFilesByHashesFunction::SearchByAttribute(
+    const std::set<std::string>& hashes,
+    const base::FilePath& dir,
+    const base::FilePath& prefix) {
+  std::vector<drive::HashAndFilePath> results;
+
+  if (hashes.empty())
+    return results;
+
+  std::set<std::string> remaining = hashes;
+  std::vector<char> attribute;
+  base::FileEnumerator enumerator(dir, true, base::FileEnumerator::FILES);
+  for (base::FilePath path = enumerator.Next(); !path.empty();
+       path = enumerator.Next()) {
+    if (GetFileExtendedAttribute(path, "user.drive.md5", &attribute)) {
+      std::string md5(attribute.begin(), attribute.end());
+
+      if (remaining.erase(md5)) {
+        base::FilePath drive_path = prefix;
+        bool success = dir.AppendRelativePath(path, &drive_path);
+        DCHECK(success);
+        results.push_back({md5, drive_path});
+        if (remaining.empty())
+          break;
+      }
+    }
+  }
+
+  return results;
+}
+
+void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByAttribute(
+    const std::set<std::string>& hashes,
+    const std::vector<drive::HashAndFilePath>& results) {
+  OnSearchByHashes(hashes, drive::FileError::FILE_ERROR_OK, results);
 }
 
 void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(

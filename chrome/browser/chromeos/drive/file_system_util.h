@@ -21,10 +21,15 @@ class FileSystemURL;
 namespace drive {
 
 class DriveAppRegistry;
+class DriveIntegrationService;
 class DriveServiceInterface;
 class FileSystemInterface;
 
 namespace util {
+
+// Returns DriveIntegrationService instance, if Drive is enabled.
+// Otherwise, nullptr.
+DriveIntegrationService* GetIntegrationServiceByProfile(Profile*);
 
 // Returns the Drive mount point path, which looks like "/special/drive-<hash>".
 base::FilePath GetDriveMountPointPath(Profile* profile);

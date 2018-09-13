@@ -325,6 +325,7 @@ class FileManagerPrivateInternalComputeChecksumFunction
 };
 
 // Implements the chrome.fileManagerPrivate.searchFilesByHashes method.
+// TODO(b/883628): Write some tests maybe?
 class FileManagerPrivateSearchFilesByHashesFunction
     : public LoggedAsyncExtensionFunction {
  public:
@@ -337,6 +338,14 @@ class FileManagerPrivateSearchFilesByHashesFunction
  private:
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
+
+  // Fallback to walking the filesystem and checking file attributes.
+  std::vector<drive::HashAndFilePath> SearchByAttribute(
+      const std::set<std::string>& hashes,
+      const base::FilePath& dir,
+      const base::FilePath& prefix);
+  void OnSearchByAttribute(const std::set<std::string>& hashes,
+                           const std::vector<drive::HashAndFilePath>& results);
 
   // Sends a response with |results| to the extension.
   void OnSearchByHashes(const std::set<std::string>& hashes,
