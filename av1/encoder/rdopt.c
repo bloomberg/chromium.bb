@@ -8668,7 +8668,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   }
   base_mbmi = *mbmi;
 
-  int switchable_rate =
+  const int switchable_rate =
       av1_is_interp_needed(xd) ? av1_get_switchable_rate(cm, x, xd) : 0;
   int64_t best_rd = INT64_MAX;
   for (int mode_index = (int)SIMPLE_TRANSLATION;
@@ -8865,26 +8865,16 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       int mode_rate = rd_stats->rate;
       const int64_t tmp_mode_rd = RDCOST(x->rdmult, rd_stats->rate, 0);
       if (ref_best_rd < INT64_MAX && tmp_mode_rd > ref_best_rd) {
-        mbmi->ref_frame[1] = ref_frame_1;
+        if (mode_index == 0) return INT64_MAX;
         continue;
       }
       if (!txfm_search(cpi, x, bsize, mi_row, mi_col, rd_stats, rd_stats_y,
                        rd_stats_uv, mode_rate, ref_best_rd)) {
-        if (rd_stats_y->rate == INT_MAX) {
-          if (mbmi->motion_mode != SIMPLE_TRANSLATION ||
-              mbmi->ref_frame[1] == INTRA_FRAME) {
-            mbmi->ref_frame[1] = ref_frame_1;
-            continue;
-          } else {
-            restore_dst_buf(xd, *orig_dst, num_planes);
-            mbmi->ref_frame[1] = ref_frame_1;
-            return INT64_MAX;
-          }
+        if (rd_stats_y->rate == INT_MAX && mode_index == 0) {
+          return INT64_MAX;
         }
-        mbmi->ref_frame[1] = ref_frame_1;
         continue;
       }
-
       if (!skip_txfm_sb) {
         const int64_t curr_rd =
             RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
@@ -8916,12 +8906,9 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     }
 
     tmp_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-    if (mbmi->motion_mode == SIMPLE_TRANSLATION &&
-        mbmi->ref_frame[1] != INTRA_FRAME)
+    if (mode_index == 0)
       args->simple_rd[this_mode][mbmi->ref_mv_idx][mbmi->ref_frame[0]] = tmp_rd;
-    if ((mbmi->motion_mode == SIMPLE_TRANSLATION &&
-         mbmi->ref_frame[1] != INTRA_FRAME) ||
-        (tmp_rd < best_rd)) {
+    if ((mode_index == 0) || (tmp_rd < best_rd)) {
       best_mbmi = *mbmi;
       best_rd = tmp_rd;
       best_rd_stats = *rd_stats;
