@@ -15,18 +15,20 @@
 namespace blink {
 
 PaymentResponse::PaymentResponse(
+    ExecutionContext* execution_context,
     payments::mojom::blink::PaymentResponsePtr response,
     PaymentAddress* shipping_address,
     PaymentStateResolver* payment_state_resolver,
     const String& requestId)
-    : requestId_(requestId),
+    : ContextLifecycleObserver(execution_context),
+      requestId_(requestId),
       method_name_(response->method_name),
       stringified_details_(response->stringified_details),
       shipping_address_(shipping_address),
       shipping_option_(response->shipping_option),
-      payer_name_(response->payer_name),
-      payer_email_(response->payer_email),
-      payer_phone_(response->payer_phone),
+      payer_name_(response->payer->name),
+      payer_email_(response->payer->email),
+      payer_phone_(response->payer->phone),
       payment_state_resolver_(payment_state_resolver) {
   DCHECK(payment_state_resolver_);
 }
@@ -37,13 +39,22 @@ void PaymentResponse::Update(
     payments::mojom::blink::PaymentResponsePtr response,
     PaymentAddress* shipping_address) {
   DCHECK(response);
+  DCHECK(response->payer);
   method_name_ = response->method_name;
   stringified_details_ = response->stringified_details;
   shipping_address_ = shipping_address;
   shipping_option_ = response->shipping_option;
-  payer_name_ = response->payer_name;
-  payer_email_ = response->payer_email;
-  payer_phone_ = response->payer_phone;
+  payer_name_ = response->payer->name;
+  payer_email_ = response->payer->email;
+  payer_phone_ = response->payer->phone;
+}
+
+void PaymentResponse::UpdatePayerDetail(
+    payments::mojom::blink::PayerDetailPtr detail) {
+  DCHECK(detail);
+  payer_name_ = detail->name;
+  payer_email_ = detail->email;
+  payer_phone_ = detail->phone;
 }
 
 ScriptValue PaymentResponse::toJSONForBinding(ScriptState* script_state) const {
@@ -91,10 +102,23 @@ ScriptPromise PaymentResponse::retry(
   return payment_state_resolver_->Retry(script_state, error_fields);
 }
 
+bool PaymentResponse::HasPendingActivity() const {
+  return !!payment_state_resolver_;
+}
+
+const AtomicString& PaymentResponse::InterfaceName() const {
+  return EventTypeNames::payerdetailchange;
+}
+
+ExecutionContext* PaymentResponse::GetExecutionContext() const {
+  return ContextLifecycleObserver::GetExecutionContext();
+}
+
 void PaymentResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(shipping_address_);
   visitor->Trace(payment_state_resolver_);
-  ScriptWrappable::Trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

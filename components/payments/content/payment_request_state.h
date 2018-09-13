@@ -69,6 +69,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
     virtual void OnShippingAddressSelected(
         mojom::PaymentAddressPtr address) = 0;
 
+    virtual void OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) = 0;
+
    protected:
     virtual ~Delegate() {}
   };

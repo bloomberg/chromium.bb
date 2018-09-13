@@ -61,6 +61,7 @@ class PaymentRequestStateTest : public testing::Test,
   void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override {
     selected_shipping_address_ = std::move(address);
   }
+  void OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) override {}
 
   void RecreateStateWithOptionsAndDetails(
       mojom::PaymentOptionsPtr options,

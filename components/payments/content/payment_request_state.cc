@@ -378,6 +378,10 @@ void PaymentRequestState::SetSelectedContactProfile(
   invalid_contact_profile_ = nullptr;
 
   UpdateIsReadyToPayAndNotifyObservers();
+
+  if (IsPaymentAppInvoked()) {
+    delegate_->OnPayerInfoSelected(response_helper_->GeneratePayerDetail());
+  }
 }
 
 void PaymentRequestState::SetSelectedInstrument(PaymentInstrument* instrument) {

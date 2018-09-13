@@ -194,6 +194,7 @@
     "pageshow",
     "paste",
     "pause",
+    "payerdetailchange",
     "paymentrequest",
     "periodicsync",
     "pictureinpicturecontrolclick",
