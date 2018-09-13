@@ -48,10 +48,6 @@ using content::BrowserThread;
 namespace drive {
 namespace util {
 
-namespace {
-
-// Returns DriveIntegrationService instance, if Drive is enabled.
-// Otherwise, NULL.
 DriveIntegrationService* GetIntegrationServiceByProfile(Profile* profile) {
   DriveIntegrationService* service =
       DriveIntegrationServiceFactory::FindForProfile(profile);
@@ -59,8 +55,6 @@ DriveIntegrationService* GetIntegrationServiceByProfile(Profile* profile) {
     return nullptr;
   return service;
 }
-
-}  // namespace
 
 base::FilePath GetDriveMountPointPath(Profile* profile) {
   std::string id = chromeos::ProfileHelper::GetUserIdHashFromProfile(profile);
