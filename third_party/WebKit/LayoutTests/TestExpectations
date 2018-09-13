@@ -2779,6 +2779,7 @@ crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentat
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-contain/contain-layout-008.html [ Failure ]
 crbug.com/626703 external/wpt/presentation-api/controlling-ua/reconnectToPresentation_notfound_error-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/presentation-api/controlling-ua/reconnectToMultiplePresentations_success-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/presentation-api/controlling-ua/startMultiplePresentations_success-manual.https.html [ Skip ]
