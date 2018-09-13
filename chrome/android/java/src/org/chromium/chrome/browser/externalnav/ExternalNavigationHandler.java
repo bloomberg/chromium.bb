@@ -27,12 +27,12 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.LaunchSourceType;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.webapps.WebappActivity.ActivityType;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.PageTransition;
@@ -770,8 +770,10 @@ public class ExternalNavigationHandler {
         }
 
         int launchSource = IntentUtils.safeGetIntExtra(
-                tab.getActivity().getIntent(), EXTRA_BROWSER_LAUNCH_SOURCE, ActivityType.OTHER);
-        if (launchSource != ActivityType.WEBAPK && launchSource != ActivityType.TWA) return false;
+                tab.getActivity().getIntent(), EXTRA_BROWSER_LAUNCH_SOURCE, LaunchSourceType.OTHER);
+        if (launchSource != LaunchSourceType.WEBAPK && launchSource != LaunchSourceType.TWA) {
+            return false;
+        }
 
         String appId = IntentUtils.safeGetStringExtra(
                 tab.getActivity().getIntent(), Browser.EXTRA_APPLICATION_ID);

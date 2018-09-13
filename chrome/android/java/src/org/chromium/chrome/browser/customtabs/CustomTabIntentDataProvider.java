@@ -68,6 +68,17 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         int OFFLINE_PAGE = 6;
     }
 
+    @IntDef({LaunchSourceType.OTHER, LaunchSourceType.WEBAPP, LaunchSourceType.WEBAPK,
+            LaunchSourceType.TWA, LaunchSourceType.MEDIA_LAUNCHER_ACTIVITY})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface LaunchSourceType {
+        int OTHER = -1;
+        int WEBAPP = 0;
+        int WEBAPK = 1;
+        int TWA = 2;
+        int MEDIA_LAUNCHER_ACTIVITY = 3;
+    }
+
     /**
      * Extra that indicates whether or not the Custom Tab is being launched by an Intent fired by
      * Chrome itself.
@@ -133,6 +144,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private final int mTitleVisibilityState;
     private final String mMediaViewerUrl;
     private final boolean mEnableEmbeddedMediaExperience;
+    private final boolean mIsFromMediaLauncherActivity;
     private final int mInitialBackgroundColor;
     private final boolean mDisableStar;
     private final boolean mDisableDownload;
@@ -248,6 +260,10 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         mEnableEmbeddedMediaExperience = isTrustedIntent()
                 && IntentUtils.safeGetBooleanExtra(
                            intent, EXTRA_ENABLE_EMBEDDED_MEDIA_EXPERIENCE, false);
+        mIsFromMediaLauncherActivity = isTrustedIntent()
+                && (IntentUtils.safeGetIntExtra(
+                            intent, EXTRA_BROWSER_LAUNCH_SOURCE, LaunchSourceType.OTHER)
+                           == LaunchSourceType.MEDIA_LAUNCHER_ACTIVITY);
         mDisableStar = IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_STAR_BUTTON, false);
         mDisableDownload =
                 IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_DOWNLOAD_BUTTON, false);
@@ -616,6 +632,13 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      */
     boolean shouldEnableEmbeddedMediaExperience() {
         return mEnableEmbeddedMediaExperience;
+    }
+
+    /**
+     * @return See {@link #EXTRA_IS_FROM_MEDIA_LAUNCHER_ACTIVITY}
+     */
+    boolean isFromMediaLauncherActivity() {
+        return mIsFromMediaLauncherActivity;
     }
 
     /**
