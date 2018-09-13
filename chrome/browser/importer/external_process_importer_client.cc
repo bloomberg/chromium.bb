@@ -252,17 +252,6 @@ void ExternalProcessImporterClient::OnAutofillFormDataImportGroup(
     bridge_->SetAutofillFormData(autofill_form_data_);
 }
 
-void ExternalProcessImporterClient::OnIE7PasswordReceived(
-    const importer::ImporterIE7PasswordInfo& importer_password_info) {
-#if defined(OS_WIN)
-  if (cancelled_)
-    return;
-  bridge_->AddIE7PasswordInfo(importer_password_info);
-#else
-  NOTREACHED();
-#endif
-}
-
 ExternalProcessImporterClient::~ExternalProcessImporterClient() {}
 
 void ExternalProcessImporterClient::Cleanup() {

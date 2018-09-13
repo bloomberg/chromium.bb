@@ -22,10 +22,6 @@ class MockImporterBridge : public ImporterBridge {
                void(const std::vector<ImportedBookmarkEntry>&,
                     const base::string16&));
   MOCK_METHOD1(AddHomePage, void(const GURL&));
-#if defined(OS_WIN)
-  MOCK_METHOD1(AddIE7PasswordInfo,
-               void(const importer::ImporterIE7PasswordInfo&));
-#endif
   MOCK_METHOD1(SetFavicons, void(const favicon_base::FaviconUsageDataList&));
   MOCK_METHOD2(SetHistoryItems,
                void(const std::vector<ImporterURLRow>&, importer::VisitSource));

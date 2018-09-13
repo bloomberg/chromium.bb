@@ -63,13 +63,6 @@ void ExternalProcessImporterBridge::AddHomePage(const GURL& home_page) {
   (*observer_)->OnHomePageImportReady(home_page);
 }
 
-#if defined(OS_WIN)
-void ExternalProcessImporterBridge::AddIE7PasswordInfo(
-    const importer::ImporterIE7PasswordInfo& password_info) {
-  (*observer_)->OnIE7PasswordReceived(password_info);
-}
-#endif
-
 void ExternalProcessImporterBridge::SetFavicons(
     const favicon_base::FaviconUsageDataList& favicons) {
   (*observer_)->OnFaviconsImportStart(favicons.size());

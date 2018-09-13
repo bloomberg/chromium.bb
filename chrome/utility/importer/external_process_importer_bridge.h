@@ -20,9 +20,6 @@ class GURL;
 struct ImportedBookmarkEntry;
 
 namespace importer {
-#if defined(OS_WIN)
-struct ImporterIE7PasswordInfo;
-#endif
 struct ImporterURLRow;
 struct SearchEngineInfo;
 }
@@ -49,11 +46,6 @@ class ExternalProcessImporterBridge : public ImporterBridge {
                     const base::string16& first_folder_name) override;
 
   void AddHomePage(const GURL& home_page) override;
-
-#if defined(OS_WIN)
-  void AddIE7PasswordInfo(
-      const importer::ImporterIE7PasswordInfo& password_info) override;
-#endif
 
   void SetFavicons(const favicon_base::FaviconUsageDataList& favicons) override;
 
