@@ -34,6 +34,10 @@ constexpr gfx::Point kOngoingTopGesturePoint1(100, 70);
 constexpr gfx::Point kOngoingTopGesturePoint2(100, 75);
 constexpr gfx::Point kTopGestureEndPoint(100, 90);
 
+constexpr gfx::Point kRightSidePoint(500, 50);
+constexpr gfx::Point kOngoingRightGesturePoint1(400, 50);
+constexpr gfx::Point kRightGestureEndPoint(200, 60);
+
 }  // namespace
 
 class MockCastContentWindowDelegate : public CastContentWindow::Delegate {
@@ -227,6 +231,29 @@ TEST_F(CastContentGestureHandlerTest, VerifySimpleTopSuccess) {
                               kOngoingTopGesturePoint1);
   dispatcher_.HandleSideSwipe(CastSideSwipeEvent::END,
                               CastSideSwipeOrigin::LEFT, kTopGestureEndPoint);
+}
+
+// Verify simple right-to-left drag.
+TEST_F(CastContentGestureHandlerTest, VerifySimpleRightSuccess) {
+  EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::RIGHT_DRAG)))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::GO_BACK)))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(delegate_, CanHandleGesture(Eq(GestureType::TOP_DRAG)))
+      .WillRepeatedly(Return(false));
+
+  EXPECT_CALL(delegate_, GestureProgress(Eq(GestureType::RIGHT_DRAG),
+                                         Eq(kOngoingRightGesturePoint1)));
+  EXPECT_CALL(delegate_, ConsumeGesture(Eq(GestureType::RIGHT_DRAG)))
+      .WillRepeatedly(Return(true));
+  dispatcher_.CanHandleSwipe(CastSideSwipeOrigin::RIGHT);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::BEGIN,
+                              CastSideSwipeOrigin::RIGHT, kRightSidePoint);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::CONTINUE,
+                              CastSideSwipeOrigin::RIGHT,
+                              kOngoingRightGesturePoint1);
+  dispatcher_.HandleSideSwipe(CastSideSwipeEvent::END,
+                              CastSideSwipeOrigin::LEFT, kRightGestureEndPoint);
 }
 }  // namespace shell
 }  // namespace chromecast

@@ -71,6 +71,7 @@ enum class GestureType {
   TAP = 2,
   TAP_DOWN = 3,
   TOP_DRAG = 4,
+  RIGHT_DRAG = 5,
 };
 
 // Class that represents the "window" a WebContents is displayed in cast_shell.
