@@ -235,7 +235,6 @@
 
       Aviso: não é recomendado que o controle da versão do <ph name="PRODUCT_OS_NAME" /> seja delegado a um aplicativo de quiosque, pois ele pode impedir que o dispositivo receba atualizações de software e correções de segurança críticas. Delegar o controle da versão do <ph name="PRODUCT_OS_NAME" /> pode colocar os usuários em risco.</translation>
 <translation id="1675002386741412210">Com suporte em:</translation>
-<translation id="1679420586049708690">Sessão pública para login automático</translation>
 <translation id="1689963000958717134">Permite que a configuração de rede seja aplicada a todos os usuários de dispositivos <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Definir a restrição para busca do termo-semente "Variações"</translation>
 <translation id="172374442286684480">Permitir que todos os sites definam dados locais</translation>
@@ -373,12 +372,6 @@
 <translation id="2082205219176343977">Configurar a versão mínima permitida do Chrome para o dispositivo.</translation>
 <translation id="209586405398070749">Canal Stable</translation>
 <translation id="2098658257603918882">Ativar relato de uso e dados relacionados a falhas</translation>
-<translation id="2098916259427011890">Esta política controla a permissão de fornecimento das informações sobre versão, como a versão, a plataforma e a arquitetura do SO, a versão do <ph name="PRODUCT_NAME" /> e o canal do <ph name="PRODUCT_NAME" />.
-
-      Quando esta política não for configurada ou for definida como verdadeira, as informações sobre versão serão coletadas.
-      Quando esta política for definida como falsa, as informações sobre versão não serão coletadas.
-
-      Esta política só é eficaz quando a Chrome Reporting Extension está ativada e quando a máquina está inscrita na política MachineLevelUserCloudPolicyEnrollmentToken.</translation>
 <translation id="2111016292707172233">Ativa a disponibilidade de "Tocar para pesquisar" na visualização de conteúdo do <ph name="PRODUCT_NAME" />.
 
       Se ativar esta configuração, o recurso "Tocar para pesquisar" ficará disponível para o usuário e ele poderá optar por ativá-lo ou desativá-lo.
@@ -474,27 +467,6 @@
           Quando esta política não está definida, nenhuma caixa de diálogo de advertência é mostrada.
 
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem iguais ou inferiores ao período de inatividade.</translation>
-<translation id="2289578386193672044">Especifica uma lista de apps e extensões que são instalados silenciosamente,
-          sem a interação do usuário, e que não podem ser desinstalados nem
-          desativados pelo usuário. Todas as permissões solicitadas pelos
-          apps/extensões são concedidas implicitamente, sem a interação do usuário,
-          incluindo as permissões adicionais solicitadas por versões futuras
-          do app/extensão. Além disso, as permissões são concedidas para as
-          APIs de extensão enterprise.deviceAttributes e enterprise.platformKeys.
-          Essas duas APIs não estão disponíveis para os apps/extensões que
-          não são de instalação forçada.
-
-          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> possivelmente conflitante. Se um app ou uma extensão que foi instalado à força for removido dessa lista, ele será desinstalado automaticamente pelo <ph name="PRODUCT_NAME" />.
-
-          Para instâncias do Windows que não ingressaram em um domínio <ph name="MS_AD_NAME" />, a instalação forçada limita-se aos apps e extensões listados na Chrome Web Store.
-
-          O código-fonte de qualquer extensão pode ser alterado pelos usuários por meio das Ferramentas para Desenvolvedores (possivelmente tornando a extensão defeituosa). Caso isso seja uma preocupação, a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> deverá ser definida.
-
-          Cada item da lista da política é uma string que contém um código de extensão e, opcionalmente, um URL de "atualização" separado por ponto e vírgula (<ph name="SEMICOLON" />). O código da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de desenvolvedor. Se especificado, o URL de "atualização" deve apontar para um documento XML de manifesto da atualização, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Por padrão, é utilizado o URL de atualização da Chrome Web Store (que atualmente é "https://clients2.google.com/service/update2/crx"). O URL de "atualização" definido nesta política é utilizado somente para a instalação inicial. As atualizações subsequentes da extensão empregam o URL de atualização indicado no manifesto da extensão. A especificação explícita do URL de "atualização" era obrigatória até a versão 67 do <ph name="PRODUCT_NAME" />.
-
-          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala o app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> a partir do URL de "atualização" padrão da Chrome Web Store. Para ver mais informações sobre hospedagem de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Se esta política não for definida, nenhum app ou extensão será instalado automaticamente, e o usuário poderá desinstalar qualquer app ou extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343">O <ph name="PRODUCT_NAME" /> pode usar um serviço da web do Google para ajudar a resolver erros de ortografia. Se esta configuração for ativada, esse serviço será sempre usado. Se esta configuração for desativada, esse serviço nunca será usado.
 
       A verificação ortográfica ainda poderá ser realizada utilizando-se um dicionário baixado; esta política só controla o uso do serviço on-line.
@@ -522,15 +494,6 @@
 <translation id="2309390639296060546">Configuração padrão de geolocalização</translation>
 <translation id="2312134445771258233">Permite configurar as páginas que são carregadas na inicialização. O conteúdo da lista "URLs que devem ser abertos na inicialização" é ignorado, a menos que você selecione "Abrir uma lista de URLs" em "Ação na inicialização".</translation>
 <translation id="2327252517317514801">Definir os domínios autorizados a acessar o G Suite</translation>
-<translation id="2372547058085956601">O período de espera para login automático na sessão pública.
-
-      Se a política |DeviceLocalAccountAutoLoginId| não for definida, não terá efeito algum. Caso contrário:
-
-      Se esta política for definida, ela determinará quanto tempo deve transcorrer sem atividade do usuário até que ocorra o login automático na sessão pública especificada pela política |DeviceLocalAccountAutoLoginId|.
-
-      Se esta política não for definida, o valor de 0 milissegundos será usado como tempo limite.
-
-      Esta política é especificada em milissegundos.</translation>
 <translation id="237494535617297575">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="2386362615870139244">Permitir bloqueios de ativação da tela</translation>
 <translation id="2411817661175306360">O aviso de proteção de senha está desativado</translation>
@@ -1098,7 +1061,6 @@
       Se você não definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório padrão (específico da plataforma).
 
       Consulte http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.</translation>
-<translation id="3907986150060929099">Definir as localidades recomendadas para uma sessão pública</translation>
 <translation id="3911737181201537215">Esta política não tem nenhum efeito sobre o registro feito pelo Android.</translation>
 <translation id="391531815696899618">Desativa a sincronização do Google Drive no aplicativo Files do <ph name="PRODUCT_OS_NAME" /> quando definida como "true". Nesse caso, nenhum dado é transferido por upload para o Google Drive.
 
@@ -1164,12 +1126,6 @@
       Caso contrário, ela poderá ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando definida, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS maiores que a especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="4121350739760194865">Evitar que promoções de aplicativos apareçam na página nova guia</translation>
 <translation id="412697421478384751">Permitir que os usuários definam PINs fracos para a tela de bloqueio</translation>
-<translation id="4129183564590133854">Esta política controla a permissão de fornecimento das informações que podem ser usadas para identificar o usuário, como login no SO, login de perfil do <ph name="PRODUCT_NAME" />, nome do perfil do <ph name="PRODUCT_NAME" />, caminho do perfil do <ph name="PRODUCT_NAME" /> e caminho executável do <ph name="PRODUCT_NAME" />.
-
-      Quando esta política não for configurada ou for definida como verdadeira, as informações que podem ser usadas para identificar usuários serão coletadas.
-      Quando esta política for definida como falsa, as informações que podem ser usadas para identificar usuários não serão coletadas.
-
-      Esta política só é eficaz quando a Chrome Reporting Extension está ativada e quando a máquina está inscrita na política MachineLevelUserCloudPolicyEnrollmentToken.</translation>
 <translation id="4138655880188755661">Limite de tempo</translation>
 <translation id="4157003184375321727">Informar a versão do sistema operacional e do firmware</translation>
 <translation id="4157594634940419685">Permitir acesso a impressoras CUPS nativas</translation>
@@ -1469,12 +1425,6 @@
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>
 <translation id="5058573563327660283">Selecionar a estratégia usada para liberar espaço em disco durante a limpeza automática (obsoleta)</translation>
-<translation id="5058771123777243130">Esta política controla a permissão de fornecimento dos dados da política e do horário de busca dela.
-
-      Quando esta política não for configurada ou for definida como verdadeira, os dados e o horário de busca da política serão coletados.
-      Quando esta política for definida como falsa, os dados e o horário de busca da política não serão coletados.
-
-      Esta política só é eficaz quando a Chrome Reporting Extension está ativada e quando a máquina está inscrita na política MachineLevelUserCloudPolicyEnrollmentToken.</translation>
 <translation id="5067143124345820993">Lista de permissões de login de usuário</translation>
 <translation id="5068140065960598044">A política de nuvem do <ph name="PRODUCT_NAME" /> modifica a política do computador.</translation>
 <translation id="5085647276663819155">Desativar visualização da impressão</translation>
@@ -1619,11 +1569,6 @@
       Se a lista estiver vazia, não haverá uma fase de testes, e as atualizações serão aplicadas de acordo com outras políticas do dispositivo.
 
       Esta política não se aplica a trocas de canais.</translation>
-<translation id="5523812257194833591">Uma sessão pública para o login automático após um intervalo.
-
-      Se esta política for definida, automaticamente ocorrerá o login na sessão especificada após haver transcorrido um período sem interação do usuário na tela de login. A sessão pública já deve estar configurada (consulte |DeviceLocalAccounts|).
-
-      Se esta política não for definida, não ocorrerá login automático.</translation>
 <translation id="5526701598901867718">Todos (não seguro)</translation>
 <translation id="5529037166721644841">Especifica o período em milissegundos em que o serviço de gerenciamento de dispositivos é consultado para o recebimento de informações sobre a política do dispositivo.
 
@@ -2030,12 +1975,6 @@
       Esta configuração controla a apresentação das páginas de boas-vindas que ajudam os usuários a fazer login no <ph name="PRODUCT_NAME" />, a escolhê-lo como navegador padrão ou informam sobre os recursos do produto.</translation>
 <translation id="6766216162565713893">Permitir que os sites peçam ao usuário para conceder acesso a um dispositivo Bluetooth próximo</translation>
 <translation id="6770454900105963262">Denunciar informações sobre sessões de quiosque ativas</translation>
-<translation id="6773056206551814546">Esta política controla a permissão de fornecimento das informações que podem ser usadas para identificar as máquinas, como endereços da rede e nome da máquina.
-
-      Quando esta política não for configurada ou for definida como verdadeira, as informações que podem ser usadas para identificar máquinas serão coletadas.
-      Quando esta política for definida como falsa, as informações que podem ser usadas para identificar máquinas não serão coletadas.
-
-      Esta política só é eficaz quando a Chrome Reporting Extension está ativada e quando a máquina está inscrita na política MachineLevelUserCloudPolicyEnrollmentToken.</translation>
 <translation id="6786747875388722282">Extensões</translation>
 <translation id="6786967369487349613">Configurar o diretório do perfil de roaming</translation>
 <translation id="6810445994095397827">Bloquear o JavaScript nestes sites</translation>
@@ -2464,22 +2403,6 @@
 <translation id="7750991880413385988">Abrir a página Nova guia</translation>
 <translation id="7754704193130578113">Perguntar onde salvar cada arquivo antes de fazer download</translation>
 <translation id="7761446981238915769">Configurar a lista de apps instalados na tela de login</translation>
-<translation id="7761526206824804472">Define uma ou mais localidades recomendadas para uma sessão pública, permitindo que os usuários escolham com facilidade uma dessas localidades.
-
-      O usuário pode escolher uma localidade e um layout de teclado antes de iniciar uma sessão pública. Por padrão, todas as localidades compatíveis com <ph name="PRODUCT_OS_NAME" /> são listadas em ordem alfabética. Você pode usar esta política para mover um conjunto de localidades recomendadas para o topo da lista.
-
-      Se esta política não for configurada, a localidade da interface do usuário atual será pré-selecionada.
-
-      Se esta política for configurada, as localidades recomendadas serão movidas para o topo da lista e ficarão visualmente separadas de todas as outras localidades. As localidades recomendadas serão listadas na ordem em que aparecem na política. A primeira localidade recomendada será pré-selecionada.
-
-      Se houver mais de uma localidade recomendada, presume-se que os usuários desejarão selecionar uma das localidades. A seleção da localidade e do layout do teclado será oferecida com destaque no início de uma sessão pública. Caso contrário, presume-se que a maioria dos usuários desejará usar a localidade pré-selecionada. A seleção da localidade e do layout do teclado será oferecida com menos destaque no início de uma sessão pública. 
-
-      Quando esta política é configurada, e o login automático está ativado (consulte as políticas |DeviceLocalAccountAutoLoginId| e |DeviceLocalAccountAutoLoginDelay|), a sessão pública iniciada automaticamente usa a primeira localidade recomendada e o layout de teclado mais usado nessa localidade.
-
-      O layout do teclado pré-selecionado é sempre o layout mais usado na localidade pré-selecionada.
-
-      Esta política só pode ser configurada como recomendada. Você pode usá-la para mover um conjunto de localidades recomendadas para o topo, mas os usuários têm permissão para escolher qualquer localidade compatível com o <ph name="PRODUCT_OS_NAME" /> para a sessão deles.
-      </translation>
 <translation id="7763479091692861127"> Os tipos de conexão que podem ser usados para atualizações do sistema operacional. As atualizações do sistema operacional podem colocar grande pressão sobre a conexão, devido a seu tamanho, e poderão incorrer em custos adicionais. Portanto, por padrão, não são ativadas para tipos de conexão considerados dispendiosos, o que inclui WiMax, Bluetooth, WiMax e Cellular, no momento.
 
       Os identificadores de tipos de conexão reconhecidos são "ethernet", "wifi", "WiMAX", "bluetooth" e "celular".</translation>
@@ -2962,7 +2885,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
       OBSERVAÇÃO: até a versão 45, esta política era suportada somente no modo quiosque.</translation>
 <translation id="8970205333161758602">Remover a solicitação de recusa do <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="8971221018777092728">Timer de login automático na sessão pública</translation>
 <translation id="8976248126101463034">Permitir autenticação gnubby para hosts de acesso remoto</translation>
 <translation id="8976531594979650914">Usar a impressora padrão do sistema como padrão</translation>
 <translation id="8992176907758534924">Não permitir que nenhum site exiba imagens</translation>
@@ -3044,9 +2966,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Quando esta política é definida como ClientCertificate (valor 1), a autenticação do certificado do cliente é usada para usuários recém-adicionados que fazem login via SAML. Nenhuma senha é usada para esses usuários, e os dados locais deles armazenados em cache são protegidos usando chaves criptográficas correspondentes. Por exemplo, essa configuração permite configurar cartões inteligentes com base na autenticação do usuário (apps de middleware de cartão inteligente precisam ser instalados pela política DeviceLoginScreenAppInstallList).
 
       Esta política afeta apenas os usuários que autenticam usando SAML.</translation>
-<translation id="9211439035693857287">Configurar as políticas relacionadas à Chrome Reporting Extension.
-
-      Estas políticas só são eficazes quando a Chrome Reporting Extension está ativada e quando a máquina está inscrita na política MachineLevelUserCloudPolicyEnrollmentToken.</translation>
 <translation id="9213347477683611358">Configura a imagem de plano de fundo do dispositivo que é exibida na tela de login se nenhum usuário está conectado ao dispositivo. A política é definida pela especificação do URL no qual o dispositivo Chrome OS pode fazer o download da imagem de plano de fundo e de um hash criptográfico usado para verificar a integridade do download. A imagem deve estar no formato JPEG, e seu tamanho não deve ultrapassar 16 MB. O URL deve ser acessado sem nenhuma autenticação. A imagem de plano de fundo é transferida por download e armazenada em cash. Sempre que o URL ou o hash muda, o download é feito novamente.
 
       A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, por exemplo,

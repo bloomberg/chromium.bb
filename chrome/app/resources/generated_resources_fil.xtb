@@ -888,7 +888,6 @@
 <translation id="230927227160767054">Nais ng pahinang ito na mag-install ng tagapangasiwa ng serbisyo.</translation>
 <translation id="2309620859903500144">Na-block ang site na ito sa pag-access sa iyong sensor ng paggalaw o liwanag.</translation>
 <translation id="2315414688463285945">Nagkaroon ng error sa pag-configure ng mga Linux file. Pakisubukang muli.</translation>
-<translation id="2315821125498993513">Hindi makakonekta sa telepono. <ph name="LINK_BEGIN" />Matuto pa.<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">Hindi, salamat</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% ang natapos</translation>
 <translation id="2318143611928805047">Sukat ng papel</translation>
@@ -1224,7 +1223,6 @@
 <translation id="2806891468525657116">Mayroon nang ganitong shortcut</translation>
 <translation id="2807517655263062534">Dito lalabas ang mga file na iyong ida-download</translation>
 <translation id="2809586584051668049">at <ph name="NUMBER_ADDITIONAL_DISABLED" /> pa</translation>
-<translation id="281133045296806353">Lumikha ng bagong window sa umiiral nang session ng browser.</translation>
 <translation id="2812944337881233323">Subukang mag-sign out at muling mag-sign in</translation>
 <translation id="2812989263793994277">Huwag magpakita ng anumang mga larawan</translation>
 <translation id="2814489978934728345">Ihinto ang pagkarga sa pahinang ito</translation>
@@ -3713,7 +3711,6 @@
 <translation id="6582421931165117398">Upang maprotektahan ang iyong personal na impormasyon, palitan na ang password mo. Bago mo palitan ang iyong password, hihilingin sa iyong mag-sign in.</translation>
 <translation id="6583851739559471707">Naka-block sa mga site na malamang na magpakita ng mga nakakasagabal na ad (inirerekomenda)</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
-<translation id="6585283250473596934">Pumapasok sa pampublikong session.</translation>
 <translation id="6586451623538375658">Palitan ang pangunahing button ng mouse</translation>
 <translation id="6589660129740381104">Para matulungan kang pamahalaan ang iyong karanasan sa <ph name="IDS_SHORT_PRODUCT_NAME" /> sa mas madaling paraan, nasa iisang kontrol na ang mga feature na nauugnay sa pag-sync at pag-personalize. Kapag na-on mo ito, maaaring magbago ang iyong mga kasalukuyang setting.</translation>
 <translation id="6589706261477377614">Dagdagan ang brightness ng key</translation>
@@ -5145,7 +5142,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8755376271068075440">&amp;Mas Malaki</translation>
 <translation id="8756969031206844760">I-update ang password?</translation>
 <translation id="8757090071857742562">Hindi ma-cast ang desktop.  Tingnan kung nakumpirma mo ang prompt upang simulan ang pagbabahagi ng iyong screen.</translation>
-<translation id="8757640015637159332">Pumasok sa pampublikong session</translation>
 <translation id="8757742102600829832">Pumili ng Chromebox na kokonektahan</translation>
 <translation id="8757803915342932642">Device sa Mga Google Cloud Device</translation>
 <translation id="8758418656925882523">I-enable ang pagdidikta (magsalita para mag-type)</translation>

@@ -203,6 +203,7 @@
 <translation id="1522425503138261032">Tillåt alla webbplatser att spåra användarnas fysiska plats</translation>
 <translation id="152657506688053119">Lista över alternativa webbadresser för standardsökleverantören.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
+<translation id="1541170838458414064">Begränsa pappersformat för utskrift</translation>
 <translation id="1553684822621013552">När den här principen är inställd på sant aktiveras ARC för användaren
       (givet att övriga principinställningar tillåter det – ACR är fortfarande
       otillgängligt om antingen tillfälligt läge eller multiinloggning är aktiverat
@@ -240,7 +241,6 @@
 
       Obs! Att delegera kontrollen över vilken version av <ph name="PRODUCT_OS_NAME" /> som används till en kioskapp rekommenderas inte, eftersom det kan leda till att uppdateringar av programvaran och viktiga säkerhetskorrigeringar inte längre görs på enheten. Om du delegerar valet av <ph name="PRODUCT_OS_NAME" />-version kan användarnas säkerhet äventyras.</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
-<translation id="1679420586049708690">Offentlig session för automatisk inloggning</translation>
 <translation id="1689963000958717134">Tillåter att en pushad nätverkskonfiguration används för alla användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Ange begränsning av hämtningen av startvärdet för Variations</translation>
 <translation id="172374442286684480">Tillåt alla webbplatser att ange lokala data</translation>
@@ -417,6 +417,8 @@
       Om principen inte har ställts in används standardvärdet 0 grader.
       Användarna kan ändra det när som helst och standardvärdet tillämpas
       i så fall inte på nytt vid omstart.</translation>
+<translation id="214901426630414675">Begränsa dubbelsidig utskrift</translation>
+<translation id="2149330464730004005">Aktivera färgutskrift</translation>
 <translation id="2156132677421487971">Konfigurera principer för <ph name="PRODUCT_NAME" />, en funktion med vars hjälp användare kan skicka innehåll på flikar, webbplatser och skrivbordet från webbläsaren till fjärrskärmar och ljudsystem.</translation>
 <translation id="2166472654199325139">Filtrera inte bort webbplatser med barnförbjudet innehåll</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
@@ -479,26 +481,6 @@
           När policyn inte har angetts visas inget varningsmeddelande.
 
           Värdet för policyn ska anges i millisekunder. Värdena måste vara lägre än eller desamma som inaktivitetstiden.</translation>
-<translation id="2289578386193672044">Anger en lista med appar och tillägg som installeras tyst, utan att
-          användaren gör något, och som användaren inte kan avinstallera
-          eller inaktivera. Alla behörigheter som appen eller tilläggen behöver
-          beviljas implicit utan att användaren blir tillfrågad. Det gäller även nya
-          behörigheter som tillkommer i framtida versioner av appen eller tillägget.
-          Dessutom beviljas behörighet för tilläggs-API:erna
-          enterprise.deviceAttributes och enterprise.platformKeys. (Dessa API:er
-          är inte tillgängliga för appar eller tillägg som inte tvångsinstallerats.)
-
-          Den här principen har företräde framför <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> vid en eventuell konflikt. Om en app eller ett tillägg som tidigare har tvångsinstallerats tas bort från den här listan avinstalleras den/det automatiskt i <ph name="PRODUCT_NAME" />.
-
-          På Windows-domäner som inte har anslutits till en <ph name="MS_AD_NAME" />-domän kan bara appar och tillägg som finns på Chrome Web Store tvångsinstalleras.
-
-          Observera att användarna kan ändra i källkoden till vilket tillägg som helst med hjälp av verktygen för utvecklare (vilket kan leda till att tillägget slutar fungera). Om detta är ett problem bör principen <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> ställas in.
-
-          Varje listpost i principen är en sträng med ett tilläggs-id och eventuellt en ”uppdateringsadress” med semikolon (<ph name="SEMICOLON" />) som avgränsare. Tilläggs-id:t är den sträng med 32 tecken som visas exempelvis på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläget. Om en ”uppdateringsadress” anges ska den peka på ett uppdateringsmanifest i XML-format enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard används uppdateringsadressen på Chrome Web Store (som för närvarande är https://clients2.google.com/service/update2/crx). Observera att den ”uppdateringsadress” som anges i den här principen bara används vid den första installationen. För senare uppdateringar av tillägget används uppdateringsadressen i tilläggets manifestfil. Observera även att det var obligatoriskt att ange ”uppdateringsadressen” explicit i version 67 och äldre versioner av <ph name="PRODUCT_NAME" />.
-
-          Med <ph name="EXTENSION_POLICY_EXAMPLE" /> installeras t.ex. appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> från den vanliga ”uppdateringsadressen” på Chrome Web Store. Mer information om att stå värd för tillägg finns här: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Om den här principen lämnas utan inställning installeras inga appar eller tillägg automatiskt och användaren får avinstallera alla appar och tillägg i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> kan använda en webbtjänst från Google för att åtgärda stavfel. Om inställningen aktiveras används alltid den här tjänsten. Om den inaktiveras används tjänsten aldrig.
 
       Du kan fortfarande göra en stavningskontroll med hjälp av en ordlista som du laddar ned. Policyn styr endast användningen av onlinetjänsten.
@@ -528,15 +510,6 @@
 
       Innehållet på listan "Webbadresser att öppna vid start" ignoreras om du inte väljer "Öppna följande sidor" i "Vid start".</translation>
 <translation id="2327252517317514801">Ange vilka domäner som ska ha tillgång till G Suite</translation>
-<translation id="2372547058085956601">Fördröjningen av den automatiska inloggningen till en offentlig session.
-
-      Om policyn |DeviceLocalAccountAutoLoginId| inte har angetts har inte policyn någon effekt. I annat fall:
-
-      Om den här policyn har angetts avgörs hur lång tid utan användaraktivitet som ska gå innan den automatiska inloggningen till den offentliga sessionen som angetts av policyn |DeviceLocalAccountAutoLoginId| sker.
-
-      Om policyn inte har angetts används 0 millisekunder som tidsgräns.
-
-      Policyn anges i millisekunder.</translation>
 <translation id="237494535617297575">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
@@ -615,6 +588,7 @@
 <translation id="2529880111512635313">Konfigurera listan med appar och tillägg som måste installeras</translation>
 <translation id="253135976343875019">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2536525645274582300">Användaren bestämmer om Googles platstjänster ska aktiveras</translation>
+<translation id="2550593661567988768">Endast enkelsidig utskrift</translation>
 <translation id="2552966063069741410">Tidszon</translation>
 <translation id="2562339630163277285">Principen anger webbadressen till sökmotorn som används för att visa direktresultat. Webbadressen ska innehålla strängen <ph name="SEARCH_TERM_MARKER" />, som ersätts av den text användaren skrivit hittills när sökningen körs.
 
@@ -748,9 +722,12 @@
       Om du inaktiverar den här inställningen eller inte anger något värde används den senast använda skrivaren som standardval för Förhandsgranskning.
 
       Om du aktiverar den här inställningen används operativsystemets standardskrivare som standardval för Förhandsgranskning.</translation>
+<translation id="2856674246949497058">Återställ till målversionen om operativsystemet är nyare än målversionen. Utför powerwash i samband med detta.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
+<translation id="2873651257716068683">Åsidosätter standardpappersformatet för utskrift. Om pappersformatet inte är tillgängligt ignoreras principen.</translation>
 <translation id="2874209944580848064">Tänk på detta för <ph name="PRODUCT_OS_NAME" />-enheter som stöder Android-appar:</translation>
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
+<translation id="2892414556511568464">Begränsar dubbelsidig utskrift. Om principen har lämnats utan inställning eller är inställd på en tom lista används ingen begränsning.</translation>
 <translation id="2893546967669465276">Skicka systemloggar till hanteringsservern</translation>
 <translation id="2899002520262095963">Android-appar kan använda nätverkskonfigurationer och CA-certifikat som har angetts via den här principen men saknar tillgång till vissa konfigurationsalternativ.</translation>
 <translation id="290002216614278247">Den här principen låter dig låsa användarens session utifrån klientenhetens klocka eller en daglig användningskvot.
@@ -840,6 +817,7 @@
 
       Servrar uppmanas att migrera till ECDHE-krypteringssviter. Om dessa inte är tillgängliga ska en krypteringssvit med RSA-nyckelutbyte aktiveras.</translation>
 <translation id="316778957754360075">Den här inställningen finns inte med i version 29 av <ph name="PRODUCT_NAME" /> och senare. Det rekommenderade sättet att konfigurera tillägg/appsamlingar som värdlagras hos företaget är att ta med platsen där CRX-paketen finns på listan ExtensionInstallSources och infoga direkta nedladdningslänkar till paketen på en webbsida. Det går att skapa ett startprogram för den aktuella webbsidan med hjälp av principen ExtensionInstallForcelist.</translation>
+<translation id="3171369832001535378">Mall för enhetens värdnamn i nätverket</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-appar kan inte ges tillgång till företagsnycklar. Den här principen gäller inte dem.</translation>
 <translation id="3201273385265130876">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar proxyinställningarna.
@@ -952,6 +930,7 @@
 
         Värdet för principen är en registreringstoken som kan hämtas från Google Administratörskonsol.</translation>
 <translation id="3496296378755072552">Lösenordshanteraren</translation>
+<translation id="3502555714327823858">Tillåt alla inställningar för dubbelsidig utskrift</translation>
 <translation id="350443680860256679">Konfigurera ARC</translation>
 <translation id="3504791027627803580">Anger webbadressen till sökmotorn som används vid bildsökning. Sökförfrågningar skickas via GET-metoden. Om policyn DefaultSearchProviderImageURLPostParams har angetts kommer POST-metoden att användas vid bildsökningar i stället.
 
@@ -961,6 +940,7 @@
 <translation id="350797926066071931">Aktivera Översätt</translation>
 <translation id="3512226956150568738">Om klientmodellen hade stöd för ARC redan innan det blev nödvändigt att migrera till ext4 för att köra ARC och om principen ArcEnabled är inställd på sant fungerar det här alternativet som AskUser (värde 3). I alla andra fall (om enhetsmodellen inte hade stöd för ARC tidigare eller om principen ArcEnabled är inställd på falskt) är det här värdet likvärdigt med DisallowArc (värde 0).</translation>
 <translation id="3524204464536655762">Tillåt inte att någon webbplats begär åtkomst till USB-enheter via WebUSB API</translation>
+<translation id="3526752951628474302">Endast utskrift i svartvitt</translation>
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
 <translation id="3545457887306538845">Gör det möjligt att styra var utvecklarverktygen får användas.
 
@@ -984,6 +964,7 @@
 <translation id="3577251398714997599">Annonsinställningar för webbplatser med påträngande annonser</translation>
 <translation id="3591584750136265240">Konfigurera vad som ska göras vid inloggningsautentisering</translation>
 <translation id="3627678165642179114">Aktivera eller inaktivera webbtjänsten för stavningskontroll</translation>
+<translation id="3628480121685794414">Aktivera enkelsidig utskrift</translation>
 <translation id="3646859102161347133">Ange typen av skärmförstorare</translation>
 <translation id="3653237928288822292">Ikon för standardsökleverantör</translation>
 <translation id="3660562134618097814">Överför SAML-cookies från identitetsleverantörer vid inloggning</translation>
@@ -1085,6 +1066,7 @@
       Om principen är inställd på falskt rapporteras ingen information om
       kiosksessionen. Om principen är inställd på sant eller inte har angetts
       rapporteras information om kiosksessionen.</translation>
+<translation id="3858658082795336534">Standardinställning för dubbelsidig utskrift</translation>
 <translation id="3859780406608282662">Lägg till en parameter för att hämta ett slumpfrö i <ph name="PRODUCT_OS_NAME" />.
 
       Om den har specificerats kommer en frågeparameter som kallas begränsad att läggas till webbadressen som används för att hämta ett slumpfrö. Parametervärdet kommer att vara det värde som specificerats i denna policy.
@@ -1125,7 +1107,6 @@
       Om principen inte anges används standardkatalogen för nedladdning (för den aktuella plattformen) i <ph name="PRODUCT_NAME" />.
 
       En lista med variabler som kan användas finns på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
-<translation id="3907986150060929099">Anger de rekommenderade språkkoderna för en offentlig session</translation>
 <translation id="3911737181201537215">Den här principen har ingen inverkan på loggningen i Android.</translation>
 <translation id="391531815696899618">När inställningen här är Sant inaktiveras Google Drive-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />. Då överförs ingen data till Google Drive.
 
@@ -1620,6 +1601,7 @@
 <translation id="5366977351895725771">Om "false" anges inaktiveras alternativet att skapa kontrollerade användare för den här användaren. Eventuella befintliga kontrollerade användare är fortfarande tillgängliga.
 
           Om "true" anges eller ingen konfiguration utförs kan den här användaren skapa och hantera kontrollerade användare.</translation>
+<translation id="5369937289900051171">Endast utskrift i färg</translation>
 <translation id="5370279767682621504">Aktivera stöd för HTTP/0.9 på portar som inte har angetts som standard</translation>
 <translation id="5378985487213287085">Policyn gör att du kan ange om webbplatser får visa meddelanden på skrivbordet. Meddelanden på skrivbordet kan vara tillåtet som standard, otillåtet som standard eller så kan användaren tillfrågas varje gång en webbplats försöker visa meddelanden på skrivbordet.
 
@@ -1645,6 +1627,7 @@
 
       Om policyn inte är inställd kan användaren tillfrågas om importen ska göras eller inte, eller så kan importen göras automatiskt.</translation>
 <translation id="5423197884968724595">Begränsningsnamn för Android WebView:</translation>
+<translation id="5424147596523390018">Tillåt alla färginställningar</translation>
 <translation id="5442026853063570579">Den här principen styr även åtkomsten till Androids utvecklaralternativ. Om DeveloperToolsDisallowed (värde 2) anges för principen kan användarna inte öppna utvecklaralternativen. Om ett annat värde anges eller värdet lämnas tomt kan användarna öppna utvecklaralternativen genom att trycka sju gånger på versionsnumret i appen Inställningar i Android.</translation>
 <translation id="5447306928176905178">Aktivera minnesrapportering (heap-storlek för JavaScript) på sidan (föråldrad)</translation>
 <translation id="5457065417344056871">Använda gästläget i webbläsaren</translation>
@@ -1671,11 +1654,6 @@
       Om listan är tom görs ingen lansering i etapper och uppdateringarna tillämpas utifrån andra enhetsprinciper.
 
       Principen gäller inte för kanalbyten.</translation>
-<translation id="5523812257194833591">En offentlig session för att logga in automatiskt efter en fördröjning.
-
-      Om policyn har angetts kommer den angivna sessionen automatiskt att loggas in efter att en viss tid har förflutit på inloggningsskärmen utan åtgärder från användaren. Den offentliga sessionen måste redan vara konfigurerad (se |DeviceLocalAccounts|).
-
-      Om policyn inte har angetts sker ingen automatisk inloggning.</translation>
 <translation id="5526701598901867718">Alla (osäker)</translation>
 <translation id="5529037166721644841">Anger en tid i millisekunder för hur ofta enhetshanteringstjänsten tillfrågas om användarpolicyinformation.
 
@@ -1712,6 +1690,7 @@
 <translation id="5586942249556966598">Gör ingenting</translation>
 <translation id="5630352020869108293">Återställ den senaste sessionen</translation>
 <translation id="5645779841392247734">Tillåt cookies på dessa webbplatser</translation>
+<translation id="5689430183304951538">Standardinställning för pappersformat vid utskrift</translation>
 <translation id="5693469654327063861">Tillåt datamigrering</translation>
 <translation id="5694594914843889579">När den här principen är inställd på sant är inte extern lagring tillgängligt i filsökaren.
 
@@ -1741,6 +1720,7 @@
           Om policyn inte är inställd används standardtiden.
 
           Policyns värde anges i millisekunder.</translation>
+<translation id="5783009211970309878">Skriv ut sidhuvud och sidfot</translation>
 <translation id="5809728392451418079">Ange visningsnamnet för lokala konton på enheten</translation>
 <translation id="5814301096961727113">Ange standardtillståndet för talad feedback på inloggningsskärmen</translation>
 <translation id="5815129011704381141">Starta om automatiskt efter uppdatering</translation>
@@ -1758,6 +1738,7 @@
       Om policyn är inaktiverad kan sidor inte öppnas i inkognitoläge.
 
       Om tvingat läge är valt kan sidor BARA öppnas i inkognitoläge.</translation>
+<translation id="582857022372205358">Aktivera liggande dubbelsidig utskrift</translation>
 <translation id="583091600226586337">
       Om principen har aktiverats blir användaren tillfrågad var filen ska sparas innan nedladdningen börjar.
       Om principen har inaktiverats påbörjas nedladdningen genast och användaren blir inte tillfrågad om var den ska sparas.
@@ -1793,6 +1774,7 @@
 
           Om inställningen är inaktiverad eller inte konfigurerad kommer gnubby-autentiseringsbegäranden inte att skickas via proxy.</translation>
 <translation id="5898486742390981550">När flera användare är inloggade är det bara den primära användaren som kan använda Android-appar.</translation>
+<translation id="5901427587865226597">Endast dubbelsidig utskrift</translation>
 <translation id="5906199912611534122">Gör det möjligt att aktivera eller inaktivera begränsad överföringshastighet i nätverket.
       Detta gäller alla användare och alla gränssnitt på enheten. När principen
       har ställts in används begränsningen tills den inaktiveras via principen.
@@ -1901,6 +1883,7 @@
 
           Policyvärdet ska anges i millisekunder. Värdena har skurits ned så att de är mindre än fördröjningen innan viloläget.</translation>
 <translation id="6097601282776163274">Aktivera insamling av anonymiserad data kopplad till webbadresser</translation>
+<translation id="6099853574908182288">Standardinställning för färgutskrift</translation>
 <translation id="6111936128861357925">Tillåt påskäggsspelet med dinosaurier</translation>
 <translation id="6114416803310251055">föråldrad</translation>
 <translation id="6133088669883929098">Tillåt alla webbplatser att använda nyckelgenerering</translation>
@@ -1915,6 +1898,7 @@
 
           Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultPluginsSetting, om den har ställts in, eller från användarens egna inställningar.</translation>
 <translation id="6190022522129724693">Standardinställning för popup-fönster</translation>
+<translation id="6190367314942602985">Rapportera information som identifierar användaren</translation>
 <translation id="6197453924249895891">Ger företagsnycklar åtkomst till tillägg.
 
       Nycklar som genereras med API:et chrome.enterprise.platformKeys i ett hanterat konto har utformats för företagsanvändning. Nycklar som importeras eller genereras på annat sätt har inte utformats för företagsanvändning.
@@ -1924,6 +1908,8 @@
       Ett tillägg kan som standard inte använda en nyckel som har utformats för företagsanvändning, vilket motsvarar värdet falskt för inställningen allowCorporateKeyUsage för tillägget.
 
       Ett tillägg kan endast använda en plattformsnyckel för företagsanvändning för att signera arbiträr data om värdet sant har angetts för inställningen allowCorporateKeyUsage. Sådan behörighet ska endast beviljas tillägg som är tillförlitliga nog att utgöra ett skydd mot hackare.</translation>
+<translation id="6208896993204286313">Rapportera information om <ph name="PRODUCT_NAME" />-princip</translation>
+<translation id="6210259502936598222">Rapportera information om version av <ph name="PRODUCT_NAME" /> och operativsystemet</translation>
 <translation id="6211428344788340116">Rapportera aktivitetstider för enhet.
 
       Om ingen inställning görs eller om principen anges som True kommer information om tidsperioder när en användare varit aktiv på enheten att skickas från registrerade enheter. Om principen anges som False kommer enhetens aktivitetstider inte att registreras eller skickas.</translation>
@@ -1941,6 +1927,7 @@
           Om du aktiverar den här inställningen och en port som inte är standard anges (en annan port än 80 eller 443) tas den med när Kerberos SPN genereras.
 
           Om du inaktiverar inställningen eller inte anger den tas ingen port med när Kerberos SPN genereras.</translation>
+<translation id="6261643884958898336">Rapportera information som identifierar enheten</translation>
 <translation id="6281043242780654992">Konfigurerar principer för Native Messaging. Om en värd för Native Messaging står på svarta listan är den förbjuden såvida den inte står på vitlistan.</translation>
 <translation id="6282799760374509080">Tillåta eller neka ljudinspelning</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1971,6 +1958,7 @@
           Med alternativet Identifiera proxyserver automatiskt får Android-apparna tillgång till skriptadressen http://wpad/wpad.dat. Ingen annan del av protokollet för automatisk proxyidentifiering används. 
 
           Med alternativet PAC-proxyskript får Android-apparna tillgång till skriptadressen.</translation>
+<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Tillåt att webbplatser navigerar och öppnar popup-fönster samtidigt</translation>
 <translation id="6447948611083700881">Säkerhetskopiering och återställning har inaktiverats</translation>
 <translation id="645425387487868471">Aktivera tvingad inloggning för <ph name="PRODUCT_NAME" /></translation>
@@ -2017,6 +2005,7 @@
 <translation id="6628646143828354685">Principen innebär att du kan ange om webbplatser får tillgång till Bluetooth-enheter i närheten. Åtkomsten kan blockeras helt eller så kan användaren bli tillfrågad varje gång en webbplats begär att få tillgång till Bluetooth-enheter i närheten.
 
           Om policyn inte anges används 3 och användaren kan ändra inställningen.</translation>
+<translation id="663685822663765995">Begränsa färgutskrift</translation>
 <translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
 <translation id="6647965994887675196">Om "true" anges kan kontrollerade användare skapas och användas.
 
@@ -2044,6 +2033,7 @@
 
           Webbadressmönstren i den här principen får inte överlappa dem som konfigurerats via WebUsbAskForUrls. Det är inte definierat vilken av principerna som ska ha företräde om en webbadress matchar båda.</translation>
 <translation id="6689792153960219308">Rapportera maskinvarustatus</translation>
+<translation id="6698632841807204978">Aktivera utskrift i svartvitt</translation>
 <translation id="6699880231565102694">Aktivera tvåfaktorsautentisering för fjärråtkomstvärdar</translation>
 <translation id="6724842112053619797">Om du aktiverar den här inställningen skrivs även inställningar för <ph name="PRODUCT_NAME" />-profiler (exempelvis bokmärken, autofylluppgifter och lösenord) till en fil som lagras i användarprofilmappen för roaming eller en plats som anges av administratören i principen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Molnsynkronisering inaktiveras när principen aktiveras.
 
@@ -2186,6 +2176,7 @@
 <translation id="6923366716660828830">Policyn anger namnet på standardsökleverantören. Om värdet lämnas tomt eller inte anges används det värdnamn som angavs av sökadressen.
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="6926703471186170050">Aktivera stående dubbelsidig utskrift</translation>
 <translation id="6931242315485576290">Inaktivera synkronisering av data med Google</translation>
 <translation id="6936894225179401731">Policyn anger det maximala antalet anslutningar till proxyservern som kan göras samtidigt.
 
@@ -2392,6 +2383,7 @@
       Om inställningen inaktiveras eller inte konfigureras kan användare välja att fortsätta från den flaggade webbplatsen efter att varningen har visats.
 
       Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
+<translation id="737655323154569539">Begränsar pappersformatet för utskrift. Om principen har lämnats utan inställning eller är inställd på en tom lista används ingen begränsning.</translation>
 <translation id="7417728346887499628">Om principen är inaktiverad förhindras Chrome Cleanup från att genomsöka systemet efter oönskad programvara och genomföra rensning. Möjligheten att starta Chrome Cleanup manuellt via chrome://settings/cleanup inaktiveras.
 
       Om den är aktiverad eller inte inställd alls genomsöker Chrome Cleanup systemet efter oönskad programvara regelbundet. Om något upptäcks blir användaren tillfrågad om de vill ta bort det. Möjligheten att starta Chrome Cleanup manuellt via chrome://settings aktiveras.
@@ -2462,6 +2454,8 @@
 <translation id="7617319494457709698">Principen specificerar vilka tillägg som får använda <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funktionen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
 
           Om ett tillägg inte finns med på listan, eller om listan inte har fastställts misslyckas anslutningen till API:et och en felkod visas.</translation>
+<translation id="7618907117929117943">Återställ till målversionen om operativsystemet är nyare än målversionen och om det går att föra över konfigurationen på enhetsnivå (inklusive användaruppgifter i nätverket) vid återställningen, vilket också innebär att introduktionen vid första användningen (OOBE) hoppas över efter återställningen. Återställningen avbryts eller uteblir om detta inte går (därför att målversionen inte har stöd för att återställa data eller på grund av en ändring som inte är bakåtkompatibel).
+          Stöds i version 70 eller senare av <ph name="PRODUCT_OS_NAME" />. I äldre klienter än så innebär det här värdet att återställning inaktiveras.</translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
 <translation id="7632724434767231364">GSSAPI-biblioteksnamn</translation>
 <translation id="7635471475589566552">Policyn konfigurerar appens språkversion i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar språk.
@@ -2529,22 +2523,6 @@
 <translation id="7750991880413385988">Öppna sidan Ny flik</translation>
 <translation id="7754704193130578113">Fråga var filerna ska sparas före nedladdning</translation>
 <translation id="7761446981238915769">Konfigurera listan över installerade appar på inloggningsskärmen</translation>
-<translation id="7761526206824804472">Anger en eller flera rekommenderade språkkoder för en offentlig session så att användare enkelt kan använda någon av dessa språkkoder.
-
-      Användaren kan välja en språkkod och en tangentbordslayout innan en offentlig session startas. Som standard anges alla språkkoder som stöds av <ph name="PRODUCT_OS_NAME" /> i alfabetisk ordning. Du kan använda den här principen för att flytta flera rekommenderade språkkoder högst upp i listan.
-
-      Om principen inte är inställd kommer den aktuella språkkoden för gränssnittet att vara förvald.
-
-      Om principen är inställd kommer de rekommenderade språkkoderna att flyttas högst upp i listan och separeras visuellt från alla andra språkkoder. De rekommenderade språkkoderna anges i den ordning de visas i principen. Den första rekommenderade språkkoden är förvald.
-
-      Om det finns mer än en rekommenderad språkkod antas användarna kunna välja mellan dessa. Valet av språkkod och tangentbordslayout erbjuds på ett framträdande sätt när en offentlig session startas. I annat fall antas att de flesta användare använder den förvalda språkkoden. Valet av språkkod och tangentbordslayout erbjuds inte på ett lika framträdande sätt när en offentlig session startas.
-
-      När den här principen är inställd och automatisk inloggning aktiverad (mer information finns i principerna |DeviceLocalAccountAutoLoginId| och |DeviceLocalAccountAutoLoginDelay|) används den första rekommenderade språkkoden och den populäraste tangentbordslayouten som matchar språkkoden i den offentliga sessionen som startade automatiskt.
-
-      Den förvalda tangentbordslayouten är alltid den populäraste layouten som överensstämmer med den förvalda språkkoden.
-
-      Den här principen kan endast ställas in som rekommenderad. Du kan använda principen för att flytta flera rekommenderade språkkoder högst upp, men användare kan alltid välja en språkkod som stöds av <ph name="PRODUCT_OS_NAME" /> för sessionen.
-      </translation>
 <translation id="7763479091692861127"> De typer av anslutningar som är tillåtna att använda uppdateringar av operativsystem. Uppdateringar av operativsystem belastar anslutningen hårt på grund av dess storlek och kan medföra extra kostnader. Därför är de inte aktiverade som standard för anslutningstyper som anses vara dyra. Det gäller bland annat WiMax, Bluetooth och Cellular.
 
       Identifierarna för giltiga anslutningstyper är ”ethernet”, ”wifi”, ”wimax”, ”bluetooth” och ”cellular”.</translation>
@@ -2663,6 +2641,7 @@
       Om du inte aktiverar inställningen eller inte ställer in ett värde, förblir Autofyll under användarens kontroll. Det innebär att användaren kan konfigurera Autofyll-profiler och aktivera eller inaktivera Autofyll efter eget omdöme.</translation>
 <translation id="8044493735196713914">Rapportera omstartsläge för enhet</translation>
 <translation id="8050080920415773384">Integrerad utskrift</translation>
+<translation id="8053580360728293758">Åsidosätter standardinställningen för färgutskrift. Om alternativet inte är tillgängligt ignoreras principen.</translation>
 <translation id="8059164285174960932">Webbadress där fjärråtkomstklienter erhåller sin autentiseringstoken</translation>
 <translation id="8078366200175825572">Låter dig ange en lista med webbadressmönster som styr vilka webbplatser som inte får spara cookies.
 
@@ -2849,6 +2828,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Versionen kan vara ett exakt versionsnummer som 61.0.3163.120 eller ett versionsprefix som 61.0.  </translation>
 <translation id="8544375438507658205">HTML-standardrenderare för <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Tillåt att sms synkroniseras från mobilen till Chromebook.</translation>
+<translation id="8548832052135586762">Ställer in utskrift endast i färg, endast i svartvitt eller utan begränsning vad gäller färg. Om principen har lämnats utan inställning används ingen begränsning.</translation>
 <translation id="8549772397068118889">Varna när du besöker webbplatser utanför innehållspaket</translation>
 <translation id="8566842294717252664">Dölj webbutiken från sidan ny flik och startprogrammet för appar</translation>
 <translation id="8586528890725660268">Anger skrivare som inte får användas.
@@ -2961,6 +2941,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       Om du inte anger inställningen kan användarna välja om de vill använda funktionen eller inte.</translation>
 <translation id="8870318296973696995">Startsida</translation>
+<translation id="8876188741456358123">Åsidosätter standardinställningen för dubbelsidig utskrift. Om alternativet inte är tillgängligt ignoreras principen.</translation>
 <translation id="8882006618241293596">Blockera pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> på dessa webbplatser</translation>
 <translation id="890403179930035128">Aktivera alltid språk för stavningskontroll. Okända språk i listan ignoreras.
 
@@ -3041,7 +3022,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       OBS! Fram till och med version 45 stöddes den här principen enbart i kioskläge.</translation>
 <translation id="8970205333161758602">Visa inte avvisningsmeddelandet i <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="8971221018777092728">Timer för automatisk inloggning till offentlig session</translation>
 <translation id="8976248126101463034">Tillåt gnubby-autentisering för fjärråtkomstvärdar</translation>
 <translation id="8976531594979650914">Använd systemets standardskrivare som standard</translation>
 <translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
@@ -3056,6 +3036,8 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
 <translation id="9088433379343318874">Aktiverar den kontrollerade användarens innehållsleverantör</translation>
 <translation id="9088444059179765143">Konfigurera metod för automatisk tidszonsangivelse</translation>
+<translation id="9094064873808699479">Återställ till målversionen om operativsystemet är nyare än målversionen. Försök att föra över konfigurationen på enhetsnivå (inklusive användaruppgifter i nätverket) vid återställningen om det går, men gör återställningen med fullständig powerwash även om det inte går att återställa data (därför att målversionen inte har stöd för att återställa data eller på grund av en ändring som inte är bakåtkompatibel).
+          Stöds i version 70 eller senare av <ph name="PRODUCT_OS_NAME" />. I äldre klienter än så innebär det här värdet att återställning inaktiveras.</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
 <translation id="9098553063150791878">Princip för HTTP-autentisering</translation>
 <translation id="9105265795073104888">Bara ett urval av konfigurationsalternativen för proxyserver är tillgängliga för Android-appar. De kan men måste inte använda proxyn. Det går inte att göra inställningen obligatorisk för dem.</translation>
@@ -3114,6 +3096,13 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="9187743794267626640">Inaktivera montering av extern lagring</translation>
 <translation id="9197740283131855199">Procentsats med vilken fördröjningen av dämpningen av skärmen ska skalanpassas om användaren gör något efter dämpningen</translation>
 <translation id="9200828125069750521">Parametrar för bildwebbadresser som använder POST</translation>
+<translation id="920209539000507585">Gör så att alternativet Sidhuvud och sidfot alltid är aktiverat eller alltid är inaktiverat i dialogrutan för utskrift.
+
+      Om principen har lämnats utan inställning kan användaren välja om sidhuvud och sidfot ska skrivas ut.
+
+      Om principen är inställd på falskt är alternativet Sidhuvud och sidfot avmarkerat i dialogrutan för förhandsgranskning av utskrift och användaren kan inte ändra detta.
+
+      Om principen är inställd på sant är alternativet Sidhuvud och sidfot markerat i dialogrutan för förhandsgranskning av utskrift och användaren kan inte ändra detta.</translation>
 <translation id="9210953373038593554">Konfigurerar hur autentisering ska göras vid inloggning med SAML.
 
       När den här principen har lämnats utan inställning eller är inställd på Default (värde 0) hanterar webbläsaren SAML-inloggningarna utifrån andra faktorer. I det enklaste fallet bygger användarautentiseringen och skyddet av cachelagrad användardata på lösenord som användarna anger manuellt.

@@ -888,7 +888,6 @@
 <translation id="230927227160767054">Halaman ini ingin memasang penangan layanan.</translation>
 <translation id="2309620859903500144">Situs ini telah diblokir agar tidak dapat mengakses sensor gerakan atau sensor cahaya.</translation>
 <translation id="2315414688463285945">Terjadi error saat mengonfigurasi file Linux. Harap coba lagi.</translation>
-<translation id="2315821125498993513">Tidak dapat terhubung ke ponsel. <ph name="LINK_BEGIN" />Pelajari lebih lanjut.<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% selesai</translation>
 <translation id="2318143611928805047">Ukuran kertas</translation>
@@ -1224,7 +1223,6 @@
 <translation id="2806891468525657116">Pintasan sudah ada</translation>
 <translation id="2807517655263062534">File yang Anda download muncul di sini</translation>
 <translation id="2809586584051668049">dan <ph name="NUMBER_ADDITIONAL_DISABLED" /> lainnya</translation>
-<translation id="281133045296806353">Jendela baru dibuat pada sesi browser yang ada.</translation>
 <translation id="2812944337881233323">Coba keluar dan masuk lagi</translation>
 <translation id="2812989263793994277">Jangan tampilkan gambar apa pun</translation>
 <translation id="2814489978934728345">Berhenti membuka halaman ini</translation>
@@ -3713,7 +3711,6 @@
 <translation id="6582421931165117398">Untuk melindungi informasi pribadi, ubah sandi Anda sekarang. Sebelum dapat mengubah sandi, Anda akan diminta untuk login.</translation>
 <translation id="6583851739559471707">Diblokir di situs yang cenderung menampilkan iklan mengganggu (direkomendasikan)</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
-<translation id="6585283250473596934">Memasuki sesi publik.</translation>
 <translation id="6586451623538375658">Tukar tombol mouse utama</translation>
 <translation id="6589660129740381104">Untuk membantu Anda lebih mudah mengelola pengalaman saat menggunakan <ph name="IDS_SHORT_PRODUCT_NAME" />, fitur yang terkait dengan sinkronisasi dan personalisasi kini ada di 1 kontrol. Mengaktifkannya dapat mengubah setelan saat ini.</translation>
 <translation id="6589706261477377614">Tingkatkan kecerahan tombol</translation>
@@ -5144,7 +5141,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8755376271068075440">&amp;Lebih besar</translation>
 <translation id="8756969031206844760">Perbarui sandi?</translation>
 <translation id="8757090071857742562">Tidak dapat mentransmisi dekstop.  Periksa apakah Anda telah mengonfirmasi permintaan untuk mulai berbagi layar.</translation>
-<translation id="8757640015637159332">Masukkan sesi publik</translation>
 <translation id="8757742102600829832">Pilih Chromebox untuk disambungkan</translation>
 <translation id="8757803915342932642">Perangkat di Perangkat Google Cloud</translation>
 <translation id="8758418656925882523">Aktifkan dikte (ucapkan untuk mengetik)</translation>

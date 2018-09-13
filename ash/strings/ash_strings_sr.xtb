@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Уређај је укључен у пуњач мале снаге. Пуњење батерије можда неће бити поуздано.</translation>
 <translation id="2761704814324807722">Статусна трака, време <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Поново се повезујете са мрежом <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Изаберите да ли веб-сајтови могу да користе услуге локације или микрофон, камеру или друге функције уређаја</translation>
 <translation id="2792498699870441125">Alt + тастер за претрагу</translation>
 <translation id="2805756323405976993">Апликације</translation>
 <translation id="2808012452536866044">Better Together је пребачен на нови телефон</translation>
@@ -129,7 +130,6 @@
 <translation id="2992931425024192067">Приказуј сав садржај обавештења</translation>
 <translation id="2995447421581609334">Прегледајте уређаје за пребацивање.</translation>
 <translation id="2996462380875591307">Монтирана лупа екрана је омогућена. Притисните Ctrl + тастер за претрагу + D поново да бисте је искључили.</translation>
-<translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> је јавна сесија којом управља <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Моно звук</translation>
 <translation id="3009178788565917040">Излаз</translation>
 <translation id="3019353588588144572">Време које је преостало док се батерија у потпуности не напуни, <ph name="TIME_REMAINING" /></translation>
@@ -193,6 +193,7 @@
 <translation id="4200057768455216496">Притиснули сте пречицу за монтирану лупу екрана. Желите ли да је укључите?</translation>
 <translation id="4217571870635786043">Диктирање</translation>
 <translation id="4261870227682513959">Прегледајте подешавања обавештења. Обавештења су искључена</translation>
+<translation id="4269883910223712419">Администратор овог уређаја може:</translation>
 <translation id="4274921305979314545">Повежите Chromebook са телефоном</translation>
 <translation id="4279490309300973883">Пресликавање</translation>
 <translation id="4292681942966152062">Активира се <ph name="NETWORK_NAME" /></translation>
@@ -220,6 +221,7 @@
 <translation id="4734965478015604180">Хоризонтално</translation>
 <translation id="476166673298332917">Администратор овог уређаја има приступ свим активностима, укључујући лозинке и комуникацију.</translation>
 <translation id="4776917500594043016">Лозинка за <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Google помоћник није доступан у сесији демонстрације.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Прекини везу</translation>
 <translation id="4849058404725798627">Истакни објекат помоћу фокуса тастатуре</translation>
@@ -335,6 +337,7 @@
 <translation id="6751826523481687655">Праћење учинка је укључено</translation>
 <translation id="6785414152754474415">Батерија је <ph name="PERCENTAGE" />% пуна и још увек се пуни.</translation>
 <translation id="6803622936009808957">Није могуће пресликати екране зато што није пронађена ниједна подржана резолуција. Уместо тога, приказује се проширена радна површина.</translation>
+<translation id="6814658242098378692">Управљање апликацијама, додацима и темама</translation>
 <translation id="6820676911989879663">Направите паузу!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE" /></translation>
@@ -358,6 +361,7 @@
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Задњи микрофон</translation>
 <translation id="726276584504105859">Превуците овде да бисте користили подељени екран</translation>
+<translation id="7303365578352795231">Одговор се даје на другом уређају.</translation>
 <translation id="7348093485538360975">Тастатура на екрану</translation>
 <translation id="735745346212279324">Веза са VPN-ом је прекинута</translation>
 <translation id="7377169924702866686">Caps Lock је укључен.</translation>
@@ -390,6 +394,7 @@
 <translation id="7842211907556571265">Повезујете се са мрежом <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Упозорење: Експериментална функција</translation>
 <translation id="7846634333498149051">Тастатура</translation>
+<translation id="7886169021410746335">Прилагодите подешавања приватности</translation>
 <translation id="7886277072580235377">Интернет сесија ће бити обрисана када се одјавите. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Пошаљи имејл</translation>
 <translation id="7904094684485781019">Администратор за овај налог је забранио вишеструко пријављивање.</translation>

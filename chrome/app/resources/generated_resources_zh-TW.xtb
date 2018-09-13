@@ -888,7 +888,6 @@
 <translation id="230927227160767054">這個網頁想要安裝服務處理常式。</translation>
 <translation id="2309620859903500144">這個網站已遭封鎖，無法存取你的動作感應器或光源感應器。</translation>
 <translation id="2315414688463285945">設定 Linux 檔案時發生錯誤，請再試一次。</translation>
-<translation id="2315821125498993513">無法與手機連結。<ph name="LINK_BEGIN" />瞭解詳情。<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">不，謝謝</translation>
 <translation id="2317842250900878657">已完成 <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">紙張大小</translation>
@@ -1224,7 +1223,6 @@
 <translation id="2806891468525657116">捷徑已經存在</translation>
 <translation id="2807517655263062534">你下載的檔案會顯示在這裡</translation>
 <translation id="2809586584051668049">和另外 <ph name="NUMBER_ADDITIONAL_DISABLED" /> 個</translation>
-<translation id="281133045296806353">已在目前的瀏覽器工作階段開啟新視窗。</translation>
 <translation id="2812944337881233323">請嘗試登出，再重新登入</translation>
 <translation id="2812989263793994277">不顯示任何圖片</translation>
 <translation id="2814489978934728345">停止載入此網頁</translation>
@@ -3710,7 +3708,6 @@
 <translation id="6582421931165117398">為維護你的個人資訊安全，請立即變更密碼。系統會要求你先登入帳戶，才能變更密碼。</translation>
 <translation id="6583851739559471707">已針對經常顯示侵入式廣告的網站封鎖廣告 (建議)</translation>
 <translation id="6584878029876017575">Microsoft 永久簽署</translation>
-<translation id="6585283250473596934">正在進入公開工作階段</translation>
 <translation id="6586451623538375658">調換滑鼠主按鈕</translation>
 <translation id="6589660129740381104">現在可透過單一控制項存取同步處理與個人化相關功能，讓你更容易管理 <ph name="IDS_SHORT_PRODUCT_NAME" /> 體驗。開啟這項設定後，目前的設定可能會有所變更。</translation>
 <translation id="6589706261477377614">增加按鍵亮度</translation>
@@ -5140,7 +5137,6 @@
 <translation id="8755376271068075440">放大(&amp;L)</translation>
 <translation id="8756969031206844760">要更新密碼嗎？</translation>
 <translation id="8757090071857742562">無法投放桌面，請檢查您是否已確認要開始分享您的螢幕畫面。</translation>
-<translation id="8757640015637159332">進入公開工作階段</translation>
 <translation id="8757742102600829832">選擇要連接的 Chromebox</translation>
 <translation id="8757803915342932642">Google 雲端裝置中的裝置</translation>
 <translation id="8758418656925882523">啟用語音輸入 (說話即可輸入)</translation>

@@ -330,6 +330,8 @@ dators</translation>
 <translation id="8525306231823319788">Pilnekrāna režīms</translation>
 <translation id="8548209692293300397">Iepriekš bijāt pierakstījies kā <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Lai piekļūtu datoriem šajā kontā, <ph name="LINK_BEGIN" />pierakstieties pārlūkā Google Chrome<ph name="LINK_END" />, izmantojot šo kontu, un atkārtoti instalējiet Chrome attālo darbvirsmu.</translation>
 <translation id="8642984861538780905">viduvējs</translation>
+<translation id="8705151241155781642">• Pievienots Android 9.0 Pie atbalsts.
+• Atbalsts attālās darbvirsmas izšķirtspējas lieluma mainīšanai, lai tas atbilstu jūsu Android ierīces ekrānam.</translation>
 <translation id="8712909229180978490">Google diskā neredzu savus tiešsaistē saglabātos failus.</translation>
 <translation id="8743328882720071828">Vai atļausiet lietotājam <ph name="CLIENT_USERNAME" /> skatīt un pārvaldīt jūsu datoru?</translation>
 <translation id="8747048596626351634">Sesija avarēja, vai neizdevās to sākt. Ja attālajā datorā pastāv sesija ~/.chrome-remote-desktop-session, tai ir jāsāk ilgstošs priekšplāna process, piemēram, darbvirsmas vide vai logu pārvaldnieks.</translation>

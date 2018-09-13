@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
 <translation id="2761704814324807722">Durum tepsisi, saat: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> ile yeniden bağlantı kuruluyor</translation>
+<translation id="2790844815106384441">Web sitelerinin konum hizmetlerini veya cihazınızın mikrofonunu, kamerasını ya da diğer özelliklerini kullanıp kullanamayacağını seçme</translation>
 <translation id="2792498699870441125">Alt+Arama</translation>
 <translation id="2805756323405976993">Uygulamalar</translation>
 <translation id="2808012452536866044">Better Together yeni telefona geçirildi</translation>
@@ -129,7 +130,6 @@
 <translation id="2992931425024192067">Tüm bildirim içeriğini göster</translation>
 <translation id="2995447421581609334">Yayın cihazlarını göster.</translation>
 <translation id="2996462380875591307">Yerleştirilmiş Büyüteç etkinleştirildi. Kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
-<translation id="2999742336789313416"><ph name="DISPLAY_NAME" />, <ph name="DOMAIN" /> tarafından yönetilen herkese açık bir oturumdur</translation>
 <translation id="3000461861112256445">Mono ses</translation>
 <translation id="3009178788565917040">Çıkış</translation>
 <translation id="3019353588588144572">Pilin tam olarak şarj olması için kalan süre, <ph name="TIME_REMAINING" /></translation>
@@ -193,6 +193,7 @@
 <translation id="4200057768455216496">Yerleştirilmiş büyüteç kısayoluna bastınız. Bu özelliği açmak istiyor musunuz?</translation>
 <translation id="4217571870635786043">Dikte</translation>
 <translation id="4261870227682513959">Bildirim ayarlarını göster. Bildirimler kapalı</translation>
+<translation id="4269883910223712419">Bu cihazın yöneticisi şunları yapabilir:</translation>
 <translation id="4274921305979314545">Chromebook'unuzu telefonunuza bağlayın</translation>
 <translation id="4279490309300973883">Yansıtılıyor</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> etkinleştiriliyor</translation>
@@ -220,6 +221,7 @@
 <translation id="4734965478015604180">Yatay</translation>
 <translation id="476166673298332917">Bu cihazın yöneticisinin, şifreler ve iletişimler dahil olmak üzere tüm etkinliklere erişimi var.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> için şifre</translation>
+<translation id="4778095205580009397">Google Asistan, demo oturumunda kullanılamaz.</translation>
 <translation id="479989351350248267">ara</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
 <translation id="4849058404725798627">Klavye odağının olduğu nesneyi vurgula</translation>
@@ -336,6 +338,7 @@
 <translation id="6751826523481687655">Performans izleme açık</translation>
 <translation id="6785414152754474415">Pil %<ph name="PERCENTAGE" /> dolu ve şarj oluyor.</translation>
 <translation id="6803622936009808957">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor.</translation>
+<translation id="6814658242098378692">Uygulamaları, uzantıları ve temaları yönetme</translation>
 <translation id="6820676911989879663">Mola verin!</translation>
 <translation id="683971173229319003">Ara+L</translation>
 <translation id="6857811139397017780">Şunu etkinleştir: <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +362,7 @@
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> saniye içinde eski çözünürlüğe dönülüyor</translation>
 <translation id="7256634071279256947">Arka mikrofon</translation>
 <translation id="726276584504105859">Ekranı bölünmüş olarak kullanmak için burayı sürükleyin</translation>
+<translation id="7303365578352795231">Başka bir cihazda yanıtlanıyor.</translation>
 <translation id="7348093485538360975">Ekran klavyesi</translation>
 <translation id="735745346212279324">VPN bağlantısı kesildi</translation>
 <translation id="7377169924702866686">Caps Lock açık.</translation>
@@ -391,6 +395,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> ağına bağlanılıyor</translation>
 <translation id="7842569679327885685">Uyarı: Deneysel özellik</translation>
 <translation id="7846634333498149051">Klavye</translation>
+<translation id="7886169021410746335">Gizlilik ayarlarını yapma</translation>
 <translation id="7886277072580235377">Oturumu kapattığınızda internet oturumunuz temizlenecektir. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">E-posta gönder</translation>
 <translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>

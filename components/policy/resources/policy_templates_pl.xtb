@@ -238,7 +238,6 @@
 
       Ostrzeżenie: delegowanie kontroli nad tym, w jakiej wersji ma być używany system <ph name="PRODUCT_OS_NAME" />, do aplikacji kiosku nie jest zalecane, ponieważ w rezultacie urządzenie może nie otrzymywać aktualizacji oprogramowania ani bardzo ważnych poprawek zabezpieczeń. Delegowanie kontroli nad tym, w jakiej wersji ma być używany system <ph name="PRODUCT_OS_NAME" />, może narazić użytkowników na niebezpieczeństwo.</translation>
 <translation id="1675002386741412210">Obsługiwana przez:</translation>
-<translation id="1679420586049708690">Sesja publiczna dla automatycznego logowania</translation>
 <translation id="1689963000958717134">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla wszystkich użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Ustaw ograniczenie pobierania odmian</translation>
 <translation id="172374442286684480">Zezwalaj wszystkim witrynom na tworzenie danych lokalnych</translation>
@@ -376,12 +375,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2082205219176343977">Skonfiguruj minimalną dozwoloną wersję Chrome dla urządzenia.</translation>
 <translation id="209586405398070749">Wersja stabilna</translation>
 <translation id="2098658257603918882">Włącz przesyłanie raportów o użytkowaniu i danych dotyczących awarii</translation>
-<translation id="2098916259427011890">Ta zasada określa, czy mają być zgłaszane informacje o wersji, takie jak wersja, platforma i architektura systemu operacyjnego, wersja <ph name="PRODUCT_NAME" /> i kanał <ph name="PRODUCT_NAME" />.
-
-      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje o wersji są zbierane.
-      Gdy ta zasada ma wartość fałsz, informacje o wersji nie są zbierane.
-
-      Ta zasada jest stosowana tylko wtedy, gdy włączone są Rozszerzenie zgłaszające informacje o Chrome i Zarządzanie przez chmurę.</translation>
 <translation id="2111016292707172233">Pozwala korzystać z funkcji „Kliknij, by wyszukać” w widoku treści w <ph name="PRODUCT_NAME" />.
 
       Jeśli włączysz to ustawienie, funkcja „Kliknij, by wyszukać” będzie dostępna dla użytkownika i będzie on mógł ją włączyć lub wyłączyć.
@@ -478,27 +471,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
           Gdy ta zasada nie jest ustawiona, ostrzeżenie nie jest wyświetlane.
 
           Wartość dla zasady należy podać w milisekundach. Wartości są ograniczane, tak aby nie przekraczały wartości opóźnienia nieaktywności.</translation>
-<translation id="2289578386193672044">Określa listę aplikacji i rozszerzeń, które zostaną zainstalowane dyskretnie, bez interakcji
-          z użytkownikiem, a użytkownik nie będzie mógł ich odinstalować
-          ani wyłączyć. Aplikacje/rozszerzenia bez interakcji z użytkownikiem
-          otrzymają wszystkie uprawnienia, o które proszą, w tym wszelkie
-          dodatkowe uprawnienia, o które będą prosić przyszłe ich wersje.
-          Ponadto otrzymają uprawnienia do interfejsów API dla rozszerzeń
-          enterprise.deviceAttributes i enterprise.platformKeys. (Te dwa
-          interfejsy API nie są dostępne dla aplikacji/rozszerzeń, których
-          instalacja nie jest wymuszana).
-
-          Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt zasadą <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jeśli z tej listy zostaną usunięte aplikacja lub rozszerzenie, których instalacja została wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
-
-          W przypadku systemów Windows niepodłączonych do domeny <ph name="MS_AD_NAME" /> wymuszona instalacja jest ograniczona do aplikacji i rozszerzeń dostępnych w Chrome Web Store.
-
-          Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą Narzędzi dla programistów (potencjalnie zakłócając jego działanie). Jeśli jest to problemem, ustaw zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i opcjonalnie URL „aktualizacji” oddzielone średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem w dokumencie <ph name="LINK_TO_EXTENSION_DOC1" />. Domyślnie używany jest URL aktualizacji Chrome Web Store (obecnie to „https://clients2.google.com/service/update2/crx”). Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu. Pamiętaj też, że podanie adresu URL „aktualizacji” było obowiązkowe w <ph name="PRODUCT_NAME" /> do wersji 67 włącznie.
-
-          Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />
-
-          Jeśli ta zasada nie jest ustawiona, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> może sprawdzać pisownię, używając usługi internetowej Google. Jeśli to ustawienie zostanie włączone, usługa będzie zawsze używana. W przypadku wyłączenia tego ustawienia, usługa nie będzie nigdy wykorzystywana.
 
       Pisownię można nadal sprawdzać, korzystając z pobranego słownika. Ta zasada kontroluje tylko używanie usługi internetowej.
@@ -526,15 +498,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2309390639296060546">Domyślne ustawienie geolokalizacji</translation>
 <translation id="2312134445771258233">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu. Zawartość listy „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
 <translation id="2327252517317514801">Zdefiniuj domeny, które będą mogły uzyskiwać dostęp do G Suite</translation>
-<translation id="2372547058085956601">Opóźnienie automatycznego logowania się do sesji publicznej.
-
-      Jeśli zasada |DeviceLocalAccountAutoLoginId| nie jest ustawiona, ta zasada nie daje żadnych rezultatów. W przeciwnym razie:
-
-      Jeśli ta zasada jest ustawiona, określa czas nieaktywności użytkownika, który powinien upłynąć przed automatycznym zalogowaniem do sesji publicznej określonej przez zasadę |DeviceLocalAccountAutoLoginId|.
-
-      Jeśli ta zasada nie jest ustawiona, wartość limitu czasu będzie wynosić 0 milisekund.
-
-      Wartość tej zasady określa się w milisekundach.</translation>
 <translation id="237494535617297575">Umożliwia skonfigurowanie listy wzorców URL-i określających witryny, w których mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="2386362615870139244">Zezwalaj na blokowanie wybudzania ekranu</translation>
 <translation id="2411817661175306360">Ostrzeżenie dotyczące ochrony hasłem jest wyłączone</translation>
@@ -1102,7 +1065,6 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Jeśli zasada pozostanie nieustawiona, <ph name="PRODUCT_NAME" /> będzie używać katalogu domyślnego (zależnego od platformy).
 
       Listę zmiennych, których można użyć, znajdziesz na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables</translation>
-<translation id="3907986150060929099">Ustaw zalecane języki dla sesji publicznej</translation>
 <translation id="3911737181201537215">Ta zasada nie ma żadnego wpływu na zapisywanie w dzienniku przez Androida.</translation>
 <translation id="391531815696899618">Po ustawieniu wartości prawda wyłącza synchronizację Dysku Google w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" />. Żadne dane nie są przesyłane na Dysk Google.
 
@@ -1170,12 +1132,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       W przeciwnym razie zasada może mieć jedną z tych wartości: „tls1.2” lub „tls1.3”. Po jej ustawieniu <ph name="PRODUCT_NAME" /> nie używa wersji SSL/TLS wyższych niż określona. Nierozpoznana wartość jest ignorowana.</translation>
 <translation id="4121350739760194865">Zablokuj wyświetlanie promocji aplikacji na stronie Nowa karta</translation>
 <translation id="412697421478384751">Zezwalaj użytkownikom na ustawianie słabych kodów PIN blokady ekranu</translation>
-<translation id="4129183564590133854">Ta zasada określa, czy mają być zgłaszane informacje, na podstawie których można zidentyfikować użytkowników, takie jak login użytkownika systemu operacyjnego, login profilu <ph name="PRODUCT_NAME" />, nazwa profilu <ph name="PRODUCT_NAME" />, ścieżka profilu <ph name="PRODUCT_NAME" /> i ścieżka pliku wykonywalnego <ph name="PRODUCT_NAME" />.
-
-      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje, na podstawie których można zidentyfikować użytkowników, są zbierane.
-      Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować użytkowników, nie są zbierane.
-
-      Ta zasada jest stosowana tylko wtedy, gdy włączone są Rozszerzenie zgłaszające informacje o Chrome i Zarządzanie przez chmurę.</translation>
 <translation id="4138655880188755661">Limit czasu</translation>
 <translation id="4157003184375321727">Zgłoś wersje systemu operacyjnego i oprogramowania układowego</translation>
 <translation id="4157594634940419685">Zezwalaj na dostęp do natywnych drukarek CUPS</translation>
@@ -1479,12 +1435,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5052081091120171147">Po włączeniu tej zasady wymuszany jest import historii przeglądania z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia historia przeglądania nie jest importowana. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować historię lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="5056708224511062314">Lupa wyłączona</translation>
 <translation id="5058573563327660283">Wybierz strategię zwalniania miejsca na dysku podczas automatycznego czyszczenia (wycofana)</translation>
-<translation id="5058771123777243130">Ta zasada określa, czy zgłaszać informacje o zasadach i czas pobrania zasad.
-
-      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje o zasadach i czas pobrania zasad są zbierane.
-      Gdy zasada ma wartość fałsz, informacje o zasadach i czas pobrania zasad nie są zbierane.
-
-      Ta zasada jest stosowana tylko wtedy, gdy włączone są Rozszerzenie zgłaszające informacje o Chrome i Zarządzanie przez chmurę.</translation>
 <translation id="5067143124345820993">Biała lista loginów użytkowników</translation>
 <translation id="5068140065960598044">Zasady dotyczące chmury obowiązujące w <ph name="PRODUCT_NAME" /> zastępują zasady dotyczące komputera.</translation>
 <translation id="5085647276663819155">Wyłącz podgląd wydruku</translation>
@@ -1633,11 +1583,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Jeśli ta lista jest pusta, wdrażanie etapowe nie będzie stosowane, a aktualizacje będą instalowane zgodnie z innymi zasadami dotyczącymi urządzeń.
 
       Ta zasada nie ma zastosowania do przełączania kanałów.</translation>
-<translation id="5523812257194833591">Sesja publiczna, do której następuje automatyczne zalogowanie po opóźnieniu.
-
-      Jeśli ta zasada jest ustawiona, użytkownik zostanie automatycznie zalogowany do określonej sesji po upływie określonego czasu nieaktywności na ekranie logowania. Sesja publiczna musi zostać wcześniej skonfigurowana (zobacz zasadę |DeviceLocalAccounts|).
-
-      Jeśli ta zasada jest nieustawiona, automatyczne logowanie nie działa.</translation>
 <translation id="5526701598901867718">Wszystkie (niebezpieczne)</translation>
 <translation id="5529037166721644841">Określa, co ile milisekund do usługi zarządzania urządzeniami będzie wysyłane zapytanie o zasady dotyczące urządzeń.
 
@@ -2044,12 +1989,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       To ustawienie kontroluje wyświetlanie stron powitalnych pomagających użytkownikom zalogować się w <ph name="PRODUCT_NAME" />, ustawić domyślną przeglądarkę czy informować o innych funkcjach przeglądarki.</translation>
 <translation id="6766216162565713893">Zezwól, by strony prosiły użytkownika o przyznanie dostępu do urządzeń Bluetooth w pobliżu</translation>
 <translation id="6770454900105963262">Informuj o aktywnych sesjach kiosku</translation>
-<translation id="6773056206551814546">Ta zasada określa, czy mają być zgłaszane informacje umożliwiające identyfikację urządzeń, takie jak nazwa urządzenia i adresy sieciowe.
-
-      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje, na podstawie których można zidentyfikować urządzenia, są zbierane.
-      Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować urządzenia, nie są zbierane.
-
-      Ta zasada jest stosowana tylko wtedy, gdy włączone są Rozszerzenie zgłaszające informacje o Chrome i Zarządzanie przez chmurę.</translation>
 <translation id="6786747875388722282">Rozszerzenia</translation>
 <translation id="6786967369487349613">Ustaw katalog profilu przenośnego</translation>
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
@@ -2472,22 +2411,6 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7750991880413385988">Otwórz stronę nowej karty</translation>
 <translation id="7754704193130578113">Pytaj przed pobraniem, gdzie zapisać każdy plik</translation>
 <translation id="7761446981238915769">Skonfiguruj listę zainstalowanych aplikacji na ekranie logowania</translation>
-<translation id="7761526206824804472">Ustawia co najmniej jeden zalecany język na potrzeby sesji publicznych, ułatwiając użytkownikom wybieranie spośród ustawionych języków.
-
-      Użytkownik może wybrać język i układ klawiatury przed rozpoczęciem sesji publicznej. Domyślnie wszystkie języki obsługiwane w <ph name="PRODUCT_OS_NAME" /> są wymienione w kolejności alfabetycznej. Za pomocą tej zasady możesz przenieść zalecane języki na początek listy.
-
-      Jeśli nie ustawisz tej zasady, wstępnie wybrany będzie bieżący język interfejsu.
-
-      Jeśli ustawisz tę zasadę, zalecane języki zostaną przeniesione na początek listy i oddzielone od pozostałych. Kolejność zalecanych języków będzie taka jak w zapisie zasady. Wstępnie wybrany będzie pierwszy zalecany język z listy.
-
-      Jeśli ustawionych jest więcej zalecanych języków, zakłada się, że użytkownicy będą wybierać spośród nich. W takim wypadku przy rozpoczynaniu sesji publicznej wyraźnie dostępna będzie możliwość wyboru języka i układu klawiatury. W przeciwnym razie zakłada się, że większość użytkowników chce korzystać ze wstępnie wybranego języka. Możliwość wyboru języka i klawiatury będzie mniej wyeksponowana przy rozpoczynaniu sesji publicznej.
-
-      Gdy ustawisz tę zasadę i włączysz automatyczne logowanie (zapoznaj się z zasadami |DeviceLocalAccountAutoLoginId| oraz |DeviceLocalAccountAutoLoginDelay|), w automatycznie rozpoczynanych sesjach publicznych będzie używany pierwszy zalecany język i najpopularniejszy układ klawiatury, który do niego pasuje.
-
-      Wstępnie wybrany układ klawiatury zawsze odpowiada najpopularniejszemu układowi dla wstępnie wybranego języka.
-
-      Tę zasadę możesz ustawić tylko jako zalecaną. Za jej pomocą możesz przenieść zalecane języki na początek, ale użytkownicy zawsze mogą wybrać dla swojej sesji publicznej dowolny język obsługiwany w <ph name="PRODUCT_OS_NAME" />.
-      </translation>
 <translation id="7763479091692861127"> Typy połączeń, które mogą być używane do aktualizowania systemu operacyjnego. Z powodu swojego rozmiaru aktualizacje te silnie wykorzystują połączenie, co może skutkować dodatkowymi kosztami. Dlatego domyślnie są wyłączone w przypadku połączeń uznanych za „kosztowne”, czyli aktualnie dla WiMax, Bluetooth i komórek.
 
       Rozpoznawane identyfikatory typów połączeń to  „ethernet”, „wifi”, „wimax”, „bluetooth” i „cellular”.</translation>
@@ -2982,7 +2905,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 
       UWAGA: do momentu wprowadzenia wersji 45 ta zasada działała tylko w trybie kiosku.</translation>
 <translation id="8970205333161758602">Pomiń monit o odinstalowanie <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="8971221018777092728">Zegar automatycznego logowania do sesji publicznej</translation>
 <translation id="8976248126101463034">Zezwalaj na uwierzytelnianie Gnubby w przypadku hostów dostępu zdalnego</translation>
 <translation id="8976531594979650914">Użyj domyślnej drukarki systemowej</translation>
 <translation id="8992176907758534924">Nie zezwalaj na pokazywanie grafik w żadnej witrynie</translation>
@@ -3056,9 +2978,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Gdy zasada jest ustawiona na wartość Certyfikat klienta (wartość 1), dla nowo dodanych użytkowników logujących się za pomocą SAML jest używane uwierzytelnianie przy użyciu certyfikatu klienta. Nie są używane żadne hasła, a dane tych użytkowników w pamięci podręcznej są chronione za pomocą odpowiednich kluczy kryptograficznych. To ustawienie umożliwia na przykład skonfigurowanie uwierzytelniania przy użyciu kart inteligentnych (aplikacje pośredniczące dla kart inteligentnych muszą zostać zainstalowane za pomocą zasady DeviceLoginScreenAppInstallList).
 
       Ta zasada ma wpływ tylko na użytkowników uwierzytelniających się za pomocą SAML.</translation>
-<translation id="9211439035693857287">Konfigurowanie zasad związanych z Rozszerzeniem zgłaszającym informacje o Chrome.
-
-      Te zasady są stosowane tylko wtedy, gdy włączone są Rozszerzenie zgłaszające informacje o Chrome i Zarządzanie przez chmurę.</translation>
 <translation id="9213347477683611358">Skonfiguruj tapetę na poziomie urządzenia wyświetlaną na ekranie logowania, jeśli żaden użytkownik nie jest jeszcze zalogowany na urządzeniu. Aby ustawić tę zasadę, podaj adres URL, z którego urządzenie z Chrome OS może pobrać tapetę, a także skrót kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 16 MB. URL musi być dostępny bez żadnego uwierzytelniania. Po pobraniu tapeta jest zapisywana w pamięci podręcznej. Gdy URL lub skrót się zmieni, pobieranie jest powtarzane.
 
       Zasadę należy zdefiniować jako ciąg znaków w formacie JSON zawierający URL i skrót, zgodnie z tym schematem:

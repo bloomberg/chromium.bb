@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">आपके 'Google खाते' में सिंक किए गया आपका ब्राउज़िंग डेटा और गतिविधि</translation>
 <translation id="116280672541001035">उपयोग किया गया</translation>
 <translation id="1172593791219290334">शुरुआती पन्ना</translation>
+<translation id="1175310183703641346">आपके बुकमार्क, इतिहास, पासवर्ड वगैरह अब आपके Google खाते से समन्‍वयित नहीं किए जाएंगे</translation>
 <translation id="1178581264944972037">पॉज़ करें</translation>
 <translation id="1181037720776840403">निकालें</translation>
 <translation id="1197267115302279827">बुकमार्क ले जाएं</translation>
@@ -48,6 +49,7 @@
 <translation id="129553762522093515">हाल ही में बंद किए गए</translation>
 <translation id="1326317727527857210">अपने अन्य डिवाइस से अपने टैब पाने के लिए, Chrome में साइन इन करें.</translation>
 <translation id="1332501820983677155">Google Chrome सुविधा शॉर्टकट</translation>
+<translation id="1360432990279830238">साइन आउट करें और सिंक बंद करें?</translation>
 <translation id="136248372334525878">तेज़ी से लोड करने और ऑफ़लाइन पढ़ने के लिए पेज पहले से लोड करें</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> साइट जोड़ी गई</translation>
 <translation id="1373696734384179344">चयनित सामग्री डाउनलोड करने के लिए मेमोरी अपर्याप्‍त है.</translation>
@@ -158,6 +160,7 @@
 <translation id="2131665479022868825"><ph name="DATA" /> बचाया गया</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> बंद है</translation>
 <translation id="2139186145475833000">होम स्क्रीन में जोड़ें</translation>
+<translation id="2142289305367051020">ये रहे आपके पसंदीदा पेज</translation>
 <translation id="2146738493024040262">झटपट ऐप्लिकेशन खोलें</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2154484045852737596">कार्ड संपादित करें</translation>
@@ -348,6 +351,7 @@
 <translation id="3822502789641063741">साइट मेमोरी साफ़ करें?</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="3859306556332390985">आगे जाएं</translation>
+<translation id="3868004864571585162">कुकी, मीडिया लाइसेंस और साइट डेटा</translation>
 <translation id="3894427358181296146">फ़ोल्डर जोड़ें</translation>
 <translation id="3895926599014793903">बलपूर्वक ज़ूम सक्षम करें</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -810,6 +814,7 @@
 <translation id="7413229368719586778">शुरू होने की तारीख: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">पहले पूछें</translation>
 <translation id="7423538860840206698">क्लिपबोर्ड पढ़ने से ब्लॉक किया गया है</translation>
+<translation id="7431991332293347422">यह नियंत्रित करें कि खोज वगैरह को मनमुताबिक बनाने के लिए आपके ब्राउज़िंग इतिहास का इस्तेमाल कैसे किया जाए</translation>
 <translation id="7437998757836447326">Chrome से प्रस्थान करें</translation>
 <translation id="7444811645081526538">ज़्यादा श्रेणियां</translation>
 <translation id="7445411102860286510">साइटों को म्यूट किए गए वीडियो अपने आप चलाने की अनुमति दें (अनुशंसित)</translation>
@@ -878,6 +883,7 @@
 <translation id="7963646190083259054">विक्रेता:</translation>
 <translation id="7981313251711023384">ज़्यादा तेज़ी से ब्राउज़ करने और खोजने के लिए पेज पहले से लोड करें</translation>
 <translation id="79859296434321399">'बढ़ी हुई वास्तविकता' की सामग्री देखने के लिए, ARCore इंस्टॉल करें</translation>
+<translation id="7986741934819883144">कोई संपर्क चुनें</translation>
 <translation id="7987073022710626672">Chrome सेवा की शर्तें</translation>
 <translation id="7987764905897278458">Google की और भी स्मार्ट सुविधाएं पाएं</translation>
 <translation id="7998918019931843664">बंद टैब फिर से खोलें</translation>
@@ -906,6 +912,7 @@
 <translation id="8109613176066109935">अपने सभी डिवाइस पर अपने बुकमार्क पाने के लिए, 'सिंक करें' को चालू करें</translation>
 <translation id="8116925261070264013">आवाज़ बंद की गई</translation>
 <translation id="813082847718468539">साइट जानकारी देखें</translation>
+<translation id="8156139159503939589">आप किन भाषाओं में पढ़ सकते हैं?</translation>
 <translation id="8168435359814927499">सामग्री</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> फ़ाइलें बची हैं</translation>
 <translation id="8190358571722158785">1 दिन शेष</translation>
@@ -918,6 +925,7 @@
 <translation id="8260126382462817229">फिर से प्रवेश करके देखें</translation>
 <translation id="8261506727792406068">हटाएं</translation>
 <translation id="8266862848225348053">डाउनलोड सेव करने की जगह</translation>
+<translation id="8274165955039650276">डाउनलोड देखें</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> से समन्वयित हो रहा है</translation>
 <translation id="8310344678080805313">मानक टैब</translation>
 <translation id="8313455859591948645">शुरुआती पन्ने में बदलाव करें</translation>
@@ -934,6 +942,7 @@
 <translation id="8441146129660941386">पीछे जाएं</translation>
 <translation id="8445448999790540984">पासवर्ड निर्यात नहीं कर सकते</translation>
 <translation id="8447861592752582886">डिवाइस अनुमति निरस्त करें</translation>
+<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> के लिए सिंक करना बंद करें</translation>
 <translation id="8487700953926739672">ऑफ़लाइन उपलब्ध है</translation>
 <translation id="8489271220582375723">इतिहास पेज खोलें</translation>
 <translation id="8493948351860045254">स्‍थान खाली करें</translation>
@@ -973,6 +982,7 @@
 <translation id="8728487861892616501">इस ऐप्लिकेशन का उपयोग करके, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता सूचना<ph name="END_LINK2" /> और <ph name="BEGIN_LINK3" />Family Link से प्रबंधित होने वाले Google खातों के लिए निजता सूचना<ph name="END_LINK3" /> से सहमत होते हैं.</translation>
 <translation id="8730621377337864115">पूर्ण</translation>
 <translation id="8748850008226585750">छिपी हुई सामग्री</translation>
+<translation id="8751914237388039244">इमेज चुनें</translation>
 <translation id="8788968922598763114">अभी बंद किया हुआ टैब खोलें</translation>
 <translation id="8812260976093120287">कुछ वेबसाइटों पर, आप ऊपर समर्थित भुगतान ऐप्लिकेशन के ज़रिए अपने डिवाइस पर भुगतान कर सकते हैं.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome में खुलेगा. जारी रखकर, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता सूचना<ph name="END_LINK2" /> और <ph name="BEGIN_LINK3" />Family Link से प्रबंधित होने वाले Google खातों के लिए निजता सूचना<ph name="END_LINK3" /> से सहमत होते हैं.</translation>

@@ -149,6 +149,8 @@
 <translation id="7814458197256864873">Ko&amp;pēt</translation>
 <translation id="7879499977785298635">Nebloķēt</translation>
 <translation id="7907591526440419938">Atvērt failu</translation>
+<translation id="7969046989155602842">Komandtaustiņš</translation>
+<translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Pirms 1 stundas}zero{Pirms # stundām}one{Pirms # stundas}other{Pirms # stundām}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Atlikusi 1 s}zero{Atlikušas # s}one{Atlikusi # s}other{Atlikušas # s}}</translation>
 <translation id="815598010540052116">Ritināt lejup</translation>

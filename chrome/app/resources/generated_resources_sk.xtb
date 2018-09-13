@@ -889,7 +889,6 @@ dotyku</translation>
 <translation id="230927227160767054">Táto stránka chce nainštalovať obslužný nástroj služby.</translation>
 <translation id="2309620859903500144">Tento web má zablokovaný prístup k senzorom pohybu alebo svetla.</translation>
 <translation id="2315414688463285945">Pri konfigurovaní súborov systému Linux sa vyskytla chyba. Skúste to znova.</translation>
-<translation id="2315821125498993513">K telefónu sa nepodarilo pripojiť. <ph name="LINK_BEGIN" />Ďalšie informácie<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">Nie, ďakujem</translation>
 <translation id="2317842250900878657">Dokončené: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Veľkosť papiera</translation>
@@ -1224,7 +1223,6 @@ dotyku</translation>
 <translation id="2806891468525657116">Skratka už existuje</translation>
 <translation id="2807517655263062534">Tu sa zobrazia súbory, ktoré stiahnete</translation>
 <translation id="2809586584051668049">a ďalšie (počet: <ph name="NUMBER_ADDITIONAL_DISABLED" />)</translation>
-<translation id="281133045296806353">Vytvorené nové okno v existujúcej relácii prehliadača.</translation>
 <translation id="2812944337881233323">Skúste sa odhlásiť a znovu prihlásiť</translation>
 <translation id="2812989263793994277">Nezobraziť žiadne obrázky</translation>
 <translation id="2814489978934728345">Zastaviť otváranie tejto stránky</translation>
@@ -3713,7 +3711,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6582421931165117398">Zmeňte si ihneď heslo a ochráňte tak svoje osobné informácie. Skôr ako ho budete môcť zmeniť, zobrazí sa výzva na prihlásenie.</translation>
 <translation id="6583851739559471707">Blokované na weboch, ktoré zvyknú zobrazovať obťažujúce reklamy (odporúčané)</translation>
 <translation id="6584878029876017575">Podpisovanie s neobmedzenou platnosťou spoločnosti Microsoft</translation>
-<translation id="6585283250473596934">Vstupuje sa do verejnej relácie.</translation>
 <translation id="6586451623538375658">Zameniť primárne tlačidlo myši</translation>
 <translation id="6589660129740381104">S cieľom uľahčiť vám správu prostredia prehliadača <ph name="IDS_SHORT_PRODUCT_NAME" /> sme umiestnili funkcie súvisiace so synchronizáciou a prispôsobením pod jeden ovládací prvok. Jeho zapnutím môžete zmeniť svoje aktuálne nastavenia.</translation>
 <translation id="6589706261477377614">Zvýšiť jas klávesov</translation>
@@ -5144,7 +5141,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8755376271068075440">&amp;Väčší</translation>
 <translation id="8756969031206844760">Aktualizovať heslo?</translation>
 <translation id="8757090071857742562">Plochu sa nepodarilo prenášať. Skontrolujte, či ste potvrdili výzvu na zdieľanie obrazovky.</translation>
-<translation id="8757640015637159332">Vstúpiť do verejnej relácie</translation>
 <translation id="8757742102600829832">Výber zariadenia Chromebox, ku ktorému sa chcete pripojiť</translation>
 <translation id="8757803915342932642">Zariadenia Google Cloud – zariadenie</translation>
 <translation id="8758418656925882523">Povoliť diktovanie (písanie hlasom)</translation>

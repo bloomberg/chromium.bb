@@ -203,6 +203,7 @@
 <translation id="1522425503138261032">사이트에서 사용자 실제 위치를 추적하도록 허용</translation>
 <translation id="152657506688053119">기본 검색 공급자의 대체 URL 목록</translation>
 <translation id="1530812829012954197">호스트 브라우저에서 다음 URL 패턴을 항상 렌더링</translation>
+<translation id="1541170838458414064">인쇄 페이지 크기 제한</translation>
 <translation id="1553684822621013552">이 정책이 true로 설정된 경우 사용자에게 ARC가 사용 설정됩니다
       (추가 정책 설정 선택에 따라 다름 - 현재 사용자 세션에 임시 모드나
       멀티 로그인을 사용하도록 설정한 경우에는 여전히 ARC를
@@ -240,7 +241,6 @@
 
       경고: <ph name="PRODUCT_OS_NAME" /> 버전의 컨트롤을 키오스크 앱에 위임하면 기기가 소프트웨어 업데이트나 주요 보안 수정사항을 받지 못하게 될 수 있으므로 권장되지 않습니다. <ph name="PRODUCT_OS_NAME" /> 버전의 컨트롤을 위임하면 사용자가 위험에 처할 수 있습니다.</translation>
 <translation id="1675002386741412210">지원:</translation>
-<translation id="1679420586049708690">자동 로그인용 공개 세션</translation>
 <translation id="1689963000958717134"><ph name="PRODUCT_OS_NAME" /> 기기에 모든 사용자에게 적용되는 네트워크 구성을 사용하도록 허용합니다. 네트워크 구성은 <ph name="ONC_SPEC_URL" />에서 설명한 개방형 네트워크 구성에서 정의한 대로 JSON 형식의 문자열입니다.</translation>
 <translation id="1708496595873025510">버전 시드 가져오기 제한 설정</translation>
 <translation id="172374442286684480">모든 사이트에서 로컬 데이터 설정 허용</translation>
@@ -417,6 +417,8 @@
       이 정책이 설정되지 않은 경우, 기본값은 0도이며 사용자는
       이를 자유롭게 변경할 수 있습니다. 이 경우 재시작 시 기본값이
       다시 적용되지 않습니다.</translation>
+<translation id="214901426630414675">양면 인쇄 모드 제한</translation>
+<translation id="2149330464730004005">컬러 인쇄 제한</translation>
 <translation id="2156132677421487971">사용자가 탭, 사이트 또는 데스크톱의 콘텐츠를 브라우저에서 원격 디스플레이와 사운드 시스템으로 전송하도록 해 주는 기능인 <ph name="PRODUCT_NAME" />의 정책을 설정합니다.</translation>
 <translation id="2166472654199325139">사이트에 성인용 콘텐츠 필터링을 적용하지 않음</translation>
 <translation id="2168397434410358693">AC 전원으로 실행할 때 유휴 지연</translation>
@@ -479,27 +481,6 @@
           이 정책이 설정되어 있지 않으면 경고 대화상자가 표시되지 않습니다.
 
           정책 값은 밀리초 단위로 지정해야 하며, 유휴 지연 시간보다 작거나 같도록 값이 잘립니다.</translation>
-<translation id="2289578386193672044">사용자가 개입하지 않아도 자동으로 설치되고 사용자가 삭제하거나
-          사용 중지할 수 없는 앱 및 확장 프로그램의 목록을 지정합니다. 
-          앱/확장 프로그램의 향후 버전에서 요청하는 추가 권한을 포함하여
-          앱/확장 프로그램에서 요청하는 모든 권한은 사용자의 개입 없이
-          암묵적으로 허용됩니다. 또한 권한은 
-          enterprise.deviceAttributes 및 enterprise.platformKeys
-          확장 프로그램 API에 부여됩니다
-          (이 두 API는 강제 설치되지 않은
-          앱/확장 프로그램에는 사용할 수 없음).
-
-          이 정책은 잠재적으로 충돌할 수 있는 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 정책보다 우선합니다. 이전에 강제 설치된 앱 또는 확장 프로그램이 목록에서 삭제되면 <ph name="PRODUCT_NAME" />에 의해 자동으로 제거됩니다.
-
-          <ph name="MS_AD_NAME" /> 도메인에 가입되지 않은 Windows 인스턴스는 Chrome 웹 스토어에 포함된 앱/확장 프로그램으로만 강제 설치가 제한됩니다.
-
-          확장 프로그램의 소스 코드는 사용자가 개발자 도구를 통해 변경할 수 있습니다(확장 프로그램의 오작동을 야기할 수 있음). 이 부분이 걱정된다면 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 정책을 설정해야 합니다.
-
-          정책의 각 목록 항목은 확장 프로그램 ID 및 선택적으로 ‘업데이트’ URL을 세미콜론(<ph name="SEMICOLON" />)으로 구분해 놓은 문자열입니다. 확장 프로그램 ID는 개발자 모드일 때 <ph name="CHROME_EXTENSIONS_LINK" />에서 확인되는 것과 같은 32자의 문자열입니다. ‘업데이트’ URL은 지정된 경우 <ph name="LINK_TO_EXTENSION_DOC1" />에서 설명한 것처럼 업데이트 매니페스트 XML 문서로 연결되어야 합니다. 기본적으로 Chrome 웹 스토어의 업데이트 URL(현재 ‘https://clients2.google.com/service/update2/crx’)이 사용됩니다. 이 정책에서 설정된 ‘업데이트’ URL은 초기 설치용으로만 사용되며, 이후 확장 프로그램의 업데이트는 확장 프로그램의 매니페스트에 있는 업데이트 URL을 사용합니다. 또한 ‘업데이트’ URL을 명시적으로 지정하는 것은 <ph name="PRODUCT_NAME" /> 버전 67 이상에서 필수입니다.
-
-          예를 들어 <ph name="EXTENSION_POLICY_EXAMPLE" />은(는) 표준 Chrome 웹 스토어 ‘업데이트’ URL에서 <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> 앱을 설치합니다. 확장 프로그램 호스팅에 관한 정보는 <ph name="LINK_TO_EXTENSION_DOC2" /> 페이지를 참조하세요.
-
-          이 정책이 설정되지 않으면 어떠한 앱 또는 확장 프로그램도 자동 설치되지 않고 사용자는 <ph name="PRODUCT_NAME" />의 모든 앱 또는 확장 프로그램을 제거할 수 있습니다.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" />은(는) Google 웹 서비스를 사용하여 맞춤법 오류를 해결할 수 있습니다. 이 설정을 사용하면 해당 서비스를 항상 사용할 수 있습니다. 이 설정을 사용 중지하면 해당 서비스는 사용되지 않습니다.
 
       맞춤법 검사는 다운로드한 사전을 사용하여 계속 시행할 수 있으며, 이 정책은 온라인 서비스의 사용 여부만 제어합니다.
@@ -527,15 +508,6 @@
 <translation id="2309390639296060546">기본 위치정보 설정</translation>
 <translation id="2312134445771258233">시작 시 로드되는 페이지를 설정할 수 있습니다. '시작 시 동작'에서 'URL 목록 열기'를 선택하지 않으면 '시작 시 열리는 URL' 목록의 콘텐츠는 무시됩니다.</translation>
 <translation id="2327252517317514801">G Suite에 액세스할 수 있게 허용된 도메인 정의</translation>
-<translation id="2372547058085956601">공개 세션 자동 로그인 지연
-
-      |DeviceLocalAccountAutoLoginId| 정책을 설정하지 않은 경우 이 정책은 적용되지 않습니다. 또는:
-
-      이 정책을 설정하면 |DeviceLocalAccountAutoLoginId| 정책에서 지정한 공개 세션에 자동으로 로그인하기 전에 사용자 활동 없이 경과되어야 하는 시간이 결정됩니다.
-
-      이 정책을 설정하지 않으면 0밀리초가 시간 제한값으로 사용됩니다.
-
-      정책 값은 밀리초 단위로 지정됩니다.</translation>
 <translation id="237494535617297575">알림 표시가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultNotificationsSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -614,6 +586,7 @@
 <translation id="2529880111512635313">강제로 설치된 앱과 확장 프로그램 목록 구성</translation>
 <translation id="253135976343875019">AC 전원으로 실행할 때 유휴 경고 지연</translation>
 <translation id="2536525645274582300">사용자가 Google 위치 서비스를 사용할지 결정</translation>
+<translation id="2550593661567988768">단면 인쇄만</translation>
 <translation id="2552966063069741410">시간대</translation>
 <translation id="2562339630163277285">순간 검색결과를 제공하는 데 사용되는 검색 엔진의 URL을 지정합니다. URL에는 <ph name="SEARCH_TERM_MARKER" /> 문자열이 포함되어야 하며 이 문자열은 검색 시 사용자가 지금까지 입력한 내용으로 대체됩니다.
 
@@ -747,9 +720,12 @@
       이 설정을 사용 중지하거나 값을 저장하지 않으면 인쇄 미리보기에서 가장 최근에 사용한 프린터를 기본 선택으로 사용합니다.
 
       이 설정을 사용하면 인쇄 미리보기에서 OS 시스템 기본 프린터를 기본 선택으로 사용합니다.</translation>
+<translation id="2856674246949497058">OS 버전이 대상 버전보다 높은 경우 대상 버전으로 롤백하고 버전을 유지합니다. 이 과정 중에 파워워시를 실행합니다.</translation>
 <translation id="2872961005593481000">종료</translation>
+<translation id="2873651257716068683">기본 인쇄 페이지 크기를 덮어씁니다. 페이지 크기를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="2874209944580848064">Android 앱을 지원하는 <ph name="PRODUCT_OS_NAME" /> 기기 관련 주의사항:</translation>
 <translation id="2877225735001246144">Kerberos 인증을 협상할 때 CNAME 조회 사용 중지</translation>
+<translation id="2892414556511568464">양면 모드 인쇄를 제한합니다. 정책이 설정되어 있지 않거나 비어 있으면 제한이 없는 것으로 처리됩니다.</translation>
 <translation id="2893546967669465276">시스템 로그를 관리 서버로 전송합니다.</translation>
 <translation id="2899002520262095963">Android 앱은 이 정책을 통해 설정된 네트워크 구성 및 CA 인증서를 사용할 수 있지만 일부 구성 옵션에는 액세스할 권한이 없습니다.</translation>
 <translation id="290002216614278247">클라이언트 시간 또는 그날의 사용 할당량에 따라 사용자의 세션을 잠글 수 있습니다.
@@ -839,6 +815,7 @@
 
       서버는 ECDHE 암호화 기술로 이전하는 것이 좋습니다. ECDHE 암호화 기술을 사용할 수 없는 경우 RSA 키 교환을 사용한 암호화 기술이 사용되었는지 확인합니다.</translation>
 <translation id="316778957754360075">이 설정은 <ph name="PRODUCT_NAME" /> 버전 29를 기준으로 지원 중단되었습니다. 기관/단체에서 호스팅하는 확장 프로그램/앱 컬렉션을 설정하는 가장 좋은 방법은 CRX 패키지를 호스팅하는 사이트를 ExtensionInstallSources에 포함시키고 패키지에 대한 직접 다운로드 링크를 웹페이지에 제공하는 것입니다. 웹페이지 런처는 ExtensionInstallForcelist 정책을 사용하여 만들 수 있습니다.</translation>
+<translation id="3171369832001535378">기기 네트워크 호스트 이름 템플릿</translation>
 <translation id="3185009703220253572">버전 <ph name="SINCE_VERSION" /> 이상</translation>
 <translation id="3187220842205194486">Android 앱은 기업 키에 액세스할 수 없습니다. 이 정책은 Android 앱에 아무런 영향을 미치지 않습니다.</translation>
 <translation id="3201273385265130876"><ph name="PRODUCT_NAME" />이(가) 사용하는 프록시 서버를 지정하도록 하며 사용자가 프록시 설정을 변경하지 못하게 합니다.
@@ -918,9 +895,9 @@
 <translation id="3414260318408232239">이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 최소 버전인 TLS 1.0이 사용됩니다.
 
       정책을 설정하는 경우 'tls1', 'tls1.1', 'tls1.2' 중 하나로 설정할 수 있으며, 버전을 설정하면 <ph name="PRODUCT_NAME" />에서 지정된 버전보다 낮은 SSL/TLS 버전은 사용되지 않습니다. 인식할 수 없는 값은 무시됩니다.</translation>
-<translation id="3417418267404583991">이 정책을 true로 설정하거나 구성하지 않으면 <ph name="PRODUCT_OS_NAME" />은(는) 손님 로그인을 사용합니다. 손님 로그인은 익명 사용자 세션이며 비밀번호가 필요없습니다.
+<translation id="3417418267404583991">이 정책을 true로 설정하거나 구성하지 않으면 <ph name="PRODUCT_OS_NAME" />은(는) 게스트 로그인을 사용합니다. 게스트 로그인은 익명 사용자 세션이며 비밀번호가 필요없습니다.
 
-      이 정책을 false로 설정하면, <ph name="PRODUCT_OS_NAME" />은(는) 손님 세션을 시작하지 않습니다.</translation>
+      이 정책을 false로 설정하면, <ph name="PRODUCT_OS_NAME" />은(는) 게스트 세션을 시작하지 않습니다.</translation>
 <translation id="3418871497193485241">YouTube에서 최소 제한 모드를 사용하여 사용자가 이보다 낮은 수준의 제한 모드를
       선택하지 못하게 합니다.
 
@@ -951,6 +928,7 @@
 
         이 정책의 값은 Google 관리 콘솔에서 가져올 수 있는 등록 토큰입니다.</translation>
 <translation id="3496296378755072552">비밀번호 관리자</translation>
+<translation id="3502555714327823858">모든 양면 모드 허용</translation>
 <translation id="350443680860256679">ARC 설정</translation>
 <translation id="3504791027627803580">이미지 검색을 제공하는 데 사용되는 검색 엔진의 URL을 지정합니다. 검색 요청은 GET 메소드를 사용하여 전송됩니다. DefaultSearchProviderImageURLPostParams 정책이 설정되어 있으면 이미지 검색 요청에서 대신 POST 메소드를 사용합니다.
 
@@ -960,6 +938,7 @@
 <translation id="350797926066071931">Google 번역 사용</translation>
 <translation id="3512226956150568738">클라이언트 기기 모델에서 ARC를 실행하기 위해 ext4로 이전해야 했던 시점 전에 ARC를 이미 지원했으며 ArcEnabled 정책이 true로 설정된 경우, 이 옵션은 AskUser(값 3)로 작동합니다. 다른 모든 경우(기기 모델이 이전에 ARC를 지원하지 않았거나 ArcEnabled 정책이 false로 설정된 경우), 이 값은 DisallowArc(값 0)와 동일합니다.</translation>
 <translation id="3524204464536655762">어떤 사이트든지 WebUSB API를 통해 USB 기기의 액세스를 요청하도록 허용하지 않습니다.</translation>
+<translation id="3526752951628474302">단색 인쇄만</translation>
 <translation id="3528000905991875314">대체 오류 페이지 사용</translation>
 <translation id="3545457887306538845">Developer Tools 사용이 허용되는 위치를 제어할 수 있습니다.
 
@@ -983,6 +962,7 @@
 <translation id="3577251398714997599">방해가 되는 광고가 포함된 사이트의 광고 설정</translation>
 <translation id="3591584750136265240">로그인 인증 동작 설정</translation>
 <translation id="3627678165642179114">맞춤법 검사 웹 서비스 사용 또는 사용 중지</translation>
+<translation id="3628480121685794414">단면 인쇄 사용 설정</translation>
 <translation id="3646859102161347133">화면 돋보기 유형 설정</translation>
 <translation id="3653237928288822292">기본 검색 공급자 아이콘</translation>
 <translation id="3660562134618097814">로그인 중 SAML IdP 쿠키 전송</translation>
@@ -1078,6 +1058,7 @@
       정책이 'false'로 설정된 경우 키오스크 세션 정보가 보고되지
       않으며, 정책이 'true'로 설정되거나 설정되지 않은 경우 키오스크 세션 정보가
       보고됩니다.</translation>
+<translation id="3858658082795336534">기본 양면 인쇄 모드</translation>
 <translation id="3859780406608282662"><ph name="PRODUCT_OS_NAME" />에서 버전 시드 가져오기에 대한 매개변수를 추가합니다.
 
       지정하는 경우 버전 시드를 가져올 때 사용하는 URL에 'restrict'라는 검색어 매개변수가 추가됩니다. 매개변수 값은 이 정책에서 지정한 값입니다.
@@ -1118,7 +1099,6 @@
       이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 일반적인 기본 디렉토리(플랫폼별)를 사용합니다.
 
       사용할 수 있는 변수 목록을 확인하려면 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables 페이지를 참조하세요.</translation>
-<translation id="3907986150060929099">공개 세션에서 사용할 추천 언어를 설정합니다.</translation>
 <translation id="3911737181201537215">이 정책은 Android에 의해 수행된 로깅에 아무런 영향을 미치지 않습니다.</translation>
 <translation id="391531815696899618">True로 설정하면 <ph name="PRODUCT_OS_NAME" /> 파일 앱에서 Google 드라이브 동기화를 사용 중지합니다. 이런 경우 Google 드라이브에 데이터가 업로드되지 않습니다.
 
@@ -1609,6 +1589,7 @@
 <translation id="5366977351895725771">false로 설정하면 이 사용자에 의한 관리 대상 사용자 생성이 사용 중지됩니다. 기존 관리 대상 사용자는 계속 사용할 수 있습니다.
 
           true로 설정하거나 설정하지 않으면 이 사용자가 관리 대상 사용자를 생성하고 관리할 수 있습니다.</translation>
+<translation id="5369937289900051171">컬러 인쇄만</translation>
 <translation id="5370279767682621504">기본 포트가 아닌 포트에서 HTTP/0.9 지원 사용</translation>
 <translation id="5378985487213287085">웹사이트에서 데스크톱 알림을 표시하도록 허용할지 여부를 설정할 수 있습니다. 데스크톱 알림 표시는 기본적으로 허용 또는 거부하거나 웹사이트에서 데스크톱 알림을 표시할 때마다 사용자에게 확인하도록 할 수 있습니다.
 
@@ -1635,6 +1616,7 @@
 
       설정하지 않으면 검색엔진을 가져올지 여부를 사용자에게 확인하거나 자동으로 가져올 수 있습니다.</translation>
 <translation id="5423197884968724595">Android WebView 제한 이름:</translation>
+<translation id="5424147596523390018">모든 컬러 모드 허용</translation>
 <translation id="5442026853063570579">이 정책은 Android 개발자 옵션 액세스 권한도 제어합니다. 이 정책을 'DeveloperToolsDisallowed'(값 2)로 설정하는 경우 사용자는 개발자 옵션에 액세스할 수 없습니다. 이 정책을 다른 값으로 설정하거나 설정하지 않은 채로 두는 경우 사용자는 Android 설정 앱에서 빌드 번호를 7번 탭하여 개발자 옵션에 액세스할 수 있습니다.</translation>
 <translation id="5447306928176905178">메모리 정보(JS 더미 크기)를 페이지로 보고하기 사용(지원 중단됨)</translation>
 <translation id="5457065417344056871">브라우저에서 게스트 모드 사용</translation>
@@ -1661,11 +1643,6 @@
       목록이 비어 있다면 스테이징이 이루어지지 않으며 다른 기기 정책에 따라 업데이트가 적용됩니다.
 
       이 정책은 채널 전환에 적용되지 않습니다.</translation>
-<translation id="5523812257194833591">지연된 후 자동 로그인에 대한 공개 세션입니다.
-
-      이 정책이 설정되어 있으면, 로그인 화면에서 사용자 활동 없이 일정 시간이 경과한 뒤에 지정된 세션이 자동으로 로그인됩니다. 공개 세션은 이미 구성되어 있어야 합니다(|DeviceLocalAccounts| 참조).
-
-      이 정책이 설정되어 있지 않으면 자동 로그인할 수 없습니다.</translation>
 <translation id="5526701598901867718">모두(안전하지 않음)</translation>
 <translation id="5529037166721644841">사용자 정책 정보에 대해 기기 관리 서비스를 검색하는 시간(밀리초)을 지정합니다.
 
@@ -1702,6 +1679,7 @@
 <translation id="5586942249556966598">취소</translation>
 <translation id="5630352020869108293">마지막 세션 복원</translation>
 <translation id="5645779841392247734">이 사이트에서 쿠키 허용</translation>
+<translation id="5689430183304951538">기본 인쇄 페이지 크기</translation>
 <translation id="5693469654327063861">데이터 이전 허용</translation>
 <translation id="5694594914843889579">이 정책을 true로 설정하면 파일 브라우저에서 외부 저장소를 사용할 수 없습니다.
 
@@ -1731,6 +1709,7 @@
           이 정책이 설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
 
           정책 값은 밀리초 단위로 지정해야 합니다.</translation>
+<translation id="5783009211970309878">인쇄 머리글 및 바닥글</translation>
 <translation id="5809728392451418079">기기 로컬 계정용 표시 이름 설정</translation>
 <translation id="5814301096961727113">로그인 화면에서 음성 피드백의 기본 상태를 설정</translation>
 <translation id="5815129011704381141">업데이트 후 자동 재부팅</translation>
@@ -1748,6 +1727,7 @@
       '사용 안함'을 선택하면 시크릿 모드로 페이지를 열 수 없습니다.
 
       '강제'를 선택하면 시크릿 모드로만 페이지를 열 수 있습니다.</translation>
+<translation id="582857022372205358">짧은 쪽 양면 인쇄 사용 설정</translation>
 <translation id="583091600226586337">
       이 정책이 사용 설정되면 다운로드하기 전에 사용자에게 각 파일을 저장할 위치를 확인하는 메시지가 표시됩니다.
       정책이 사용 중지되면 다운로드가 즉시 시작되며 사용자에게 파일을 저장할 위치를 확인하는 메시지가 표시되지 않습니다.
@@ -1783,6 +1763,7 @@
 
           이 설정을 사용 중지하거나 구성하지 않으면 gnubby 인증 요청이 프록시되지 않습니다.</translation>
 <translation id="5898486742390981550">여러 사용자가 로그인한 경우 기본 사용자만 Android 앱을 사용할 수 있습니다.</translation>
+<translation id="5901427587865226597">양면 인쇄만</translation>
 <translation id="5906199912611534122">네트워크 조절을 사용 또는 사용 중지하도록 허용합니다.
       이 정책은 모든 사용자 및 기기의 모든 인터페이스에 적용됩니다. 한번 설정되면
       조절을 사용 중지하도록 정책이 변경될 때까지 조절이 계속됩니다.
@@ -1890,6 +1871,7 @@
 
           정책 값은 밀리초 단위로 지정해야 하며, 유휴 지연 시간보다 적도록 값이 잘립니다.</translation>
 <translation id="6097601282776163274">URL로 입력되며 익명으로 처리되는 데이터 수집 사용 설정</translation>
+<translation id="6099853574908182288">기본 컬러 인쇄 모드</translation>
 <translation id="6111936128861357925">공룡 부활절 달걀 게임 허용</translation>
 <translation id="6114416803310251055">사용중단됨</translation>
 <translation id="6133088669883929098">모든 사이트에서 키 생성 사용 허용</translation>
@@ -1904,6 +1886,7 @@
 
           이 정책을 설정하지 않으면 'DefaultPluginsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.</translation>
 <translation id="6190022522129724693">기본 팝업 설정</translation>
+<translation id="6190367314942602985">사용자 식별 정보 보고</translation>
 <translation id="6197453924249895891">회사 키에 대한 액세스 권한을 확장 프로그램에 부여합니다.
 
       키가 관리 계정에서 chrome.enterprise.platformKeys API를 사용하여 생성된 경우 회사용으로 지정됩니다. 가져오거나 다른 방식으로 생성된 키는 회사용으로 지정되지 않습니다.
@@ -1913,6 +1896,8 @@
       기본적으로 확장 프로그램은 회사용으로 지정된 키를 사용할 수 없으며, 이는 확장 프로그램에 대해 allowCorporateKeyUsage를 false로 설정하는 것과 동일합니다.
 
       확장 프로그램에 대해 allowCorporateKeyUsage를 true로 설정하는 경우에만 해당 확장 프로그램에서 회사용으로 표시된 플랫폼 키를 사용하여 임의의 데이터에 서명할 수 있습니다. 이 권한은 외부 해커가 침입하지 못하도록 확장 프로그램이 키에 대한 액세스를 안전하게 보호하는 것으로 신뢰되는 경우에만 부여되어야 합니다.</translation>
+<translation id="6208896993204286313"><ph name="PRODUCT_NAME" /> 정책 정보 보고</translation>
+<translation id="6210259502936598222">OS 및 <ph name="PRODUCT_NAME" /> 버전 정보 보고</translation>
 <translation id="6211428344788340116">기기 활동 시간을 보고합니다.
 
       이 정책을 설정하지 않거나 True로 설정하면 등록된 기기에서 사용자가 기기를 사용한 기간을 보고합니다. 정책을 False로 설정하면 기기 활동 시간이 기록되거나 보고되지 않습니다.</translation>
@@ -1930,6 +1915,7 @@
           이 설정을 사용하고 비표준 포트(예: 80 또는 443 이외의 포트)를 입력하면 생성된 Kerberos SPN에 포트가 포함됩니다.
 
           이 설정을 사용 중지하거나 설정하지 않으면 생성된 Kerberos SPN이 어떤 경우에도 포트를 포함하지 않습니다.</translation>
+<translation id="6261643884958898336">기기 식별 정보 보고</translation>
 <translation id="6281043242780654992">기본 메시지의 정책을 설정합니다. 차단된 기본 메시지 호스트는 허용 목록에 추가되지 않는 한 허용되지 않습니다.</translation>
 <translation id="6282799760374509080">오디오 캡처 허용 또는 거부</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -1960,6 +1946,7 @@
           프록시 서버를 자동 감지하도록 선택한 경우 Android 앱에 스크립트 URL 'http://wpad/wpad.dat'가 제공됩니다. 프록시 자동 감지 프로토콜의 다른 부분은 사용되지 않습니다.
 
           .pac 프록시 스크립트를 사용하도록 선택한 경우 Android 앱에 스크립트 URL이 제공됩니다.</translation>
+<translation id="6430366557948788869">Chrome 보고 확장 프로그램</translation>
 <translation id="6440051664870270040">사이트에서 동시에 팝업을 탐색하고 열도록 허용</translation>
 <translation id="6447948611083700881">백업 및 복원이 사용 중지됨</translation>
 <translation id="645425387487868471"><ph name="PRODUCT_NAME" /> 강제 로그인 사용</translation>
@@ -2006,6 +1993,7 @@
 <translation id="6628646143828354685">근처 블루투스 기기에 대한 웹사이트의 액세스 허용 여부를 설정할 수 있습니다. 액세스를 완전히 차단하거나 웹사이트에서 근처 블루투스 기기에 액세스하려고 할 때마다 사용자에게 확인을 요청할 수 있습니다.
 
           이 정책을 설정하지 않으면 '3'으로 설정되며 사용자가 변경할 수 있습니다.</translation>
+<translation id="663685822663765995">컬러 인쇄 모드 제한</translation>
 <translation id="6641981670621198190">3D 그래픽 API 지원 사용 중지</translation>
 <translation id="6647965994887675196">true로 설정하면 관리 대상 사용자를 생성하고 사용할 수 있습니다.
 
@@ -2021,9 +2009,9 @@
       이 정책이 설정되지 않았거나 목록이 비어있는 경우 <ph name="PRODUCT_NAME" />의 모든 스키마에 액세스할 수 있습니다.</translation>
 <translation id="6652197835259177259">로컬 관리 사용자 설정</translation>
 <translation id="6658245400435704251">업데이트를 처음 서버로 푸시한 시점부터 기기가 몇 초까지 임의로 업데이트의 다운로드를 지연시킬 수 있는지 지정합니다. 기기가 이 시간의 일부를 일반 시계 시간 기준으로, 그리고 나머지 시간을 업데이트 확인 횟수 기준으로 지연시킵니다. 모든 경우, 기기가 고착되어 업데이트 다운로드를 계속 기다리지 않도록 분산의 상한이 일정 시간으로 제한되어 있습니다.</translation>
-<translation id="6665599130599311250">이 정책이 false로 설정되어 있거나 설정되어 있지 않으면 관리 손님 세션은 https://support.google.com/chrome/a/answer/3017014에 설명된 대로 표준 '공개 세션'으로 작동합니다.
+<translation id="6665599130599311250">이 정책이 false로 설정되어 있거나 설정되어 있지 않으면 관리 게스트 세션은 https://support.google.com/chrome/a/answer/3017014에 설명된 대로 표준 '공개 세션'으로 작동합니다.
 
-      이 정책이 true로 설정되어 있으면 관리 손님 세션은 '관리 세션'으로 작동하여 일반 '공개 세션'에 적용된 여러 제한을 해제합니다.
+      이 정책이 true로 설정되어 있으면 관리 게스트 세션은 '관리 세션'으로 작동하여 일반 '공개 세션'에 적용된 여러 제한을 해제합니다.
 
       이 정책이 설정되어 있으면 사용자가 변경하거나 재정의할 수 없습니다.</translation>
 <translation id="6665670272107384733">빠른 잠금 해제를 사용하기 위해 사용자가 비밀번호를 얼마나 자주 입력해야 하는지 설정</translation>
@@ -2033,6 +2021,7 @@
 
           이 정책의 URL 패턴은 WebUsbAskForUrls를 통해 구성된 패턴과 충돌해서는 안 됩니다. URL이 두 정책과 모두 일치할 때 어떤 정책이 우선 적용되는지 지정되어 있지 않습니다.</translation>
 <translation id="6689792153960219308">하드웨어 상태 보고</translation>
+<translation id="6698632841807204978">단색 인쇄 사용 설정</translation>
 <translation id="6699880231565102694">원격 액세스 호스트를 위한 2단계 인증 사용</translation>
 <translation id="6724842112053619797">이 설정을 사용하면 북마크, 데이터 자동 완성, 비밀번호 등 <ph name="PRODUCT_NAME" /> 프로필에 저장된 설정이 로밍 사용자 프로필 폴더나 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 정책을 통해 관리자가 지정한 위치에 저장된 파일에도 작성됩니다. 이 정책을 사용하면 클라우드 동기화는 사용 중지됩니다.
 
@@ -2174,6 +2163,7 @@
 <translation id="6923366716660828830">기본 검색 공급자 이름을 지정합니다. 비워 두었거나 설정하지 않은 경우 검색 URL에서 지정한 호스트 이름이 사용됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
+<translation id="6926703471186170050">긴 쪽 양면 인쇄 사용 설정</translation>
 <translation id="6931242315485576290">Google과 데이터 동기화 사용 중지</translation>
 <translation id="6936894225179401731">프록시 서버에 동시 연결할 수 있는 최대 수를 지정합니다.
 
@@ -2381,6 +2371,7 @@
       이 설정을 사용 중지하거나 구성하지 않으면 사용자가 경고 페이지를 무시하고 신고된 사이트로 이동할 수 있습니다.
 
       세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing 페이지를 참조하세요.</translation>
+<translation id="737655323154569539">인쇄 페이지 크기를 제한합니다. 정책이 설정되어 있지 않거나 비어 있으면 제한이 없는 것으로 간주됩니다.</translation>
 <translation id="7417728346887499628">정책을 사용 중지하면 Chrome 정리도구가 시스템에 원치 않는 소프트웨어가 있는지 검사하지 않으며 정리를 실행하지 않습니다. chrome://settings/cleanup에서 Chrome 정리도구를 수동으로 실행할 수도 없습니다.
 
       정책을 사용 설정하거나 설정하지 않으면 Chrome 정리도구가 시스템에 원치 않는 소프트웨어가 있는지 정기적으로 검사하여 이러한 소프트웨어가 발견될 경우 사용자에게 삭제할 것인지 묻습니다. chrome://settings에서 Chrome 정리도구를 수동으로 실행할 수도 있습니다.
@@ -2451,6 +2442,8 @@
 <translation id="7617319494457709698">이 정책은 원격 인증에 <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> 기능 <ph name="CHALLENGE_USER_KEY_FUNCTION" />을(를) 사용하도록 허용된 확장 프로그램을 지정합니다. API를 사용하려면 확장 프로그램을 이 목록에 추가해야 합니다.
 
           확장 프로그램이 목록에 없거나 목록이 설정되지 않은 경우, API에 호출 시 오류 코드가 표시되며 호출에 실패합니다.</translation>
+<translation id="7618907117929117943">OS 버전이 대상 버전보다 높은 경우 대상 버전으로 롤백하고 버전을 유지합니다. 롤백을 통해 기기 수준 설정(네트워크 사용자 인증 정보 포함)을 이전할 수 있으며 롤백 후 OOBE를 건너뛸 수 있습니다. (대상 버전이 데이터 복원을 지원하지 않거나 하위 비호환 변경사항으로 인해) 이렇게 할 수 없는 경우 롤백을 하지 않거나 중단합니다.
+          <ph name="PRODUCT_OS_NAME" /> 버전 70 이상에서 지원됩니다. 이전 버전 클라이언트의 경우 이 값은 롤백을 사용할 수 없다는 의미입니다.</translation>
 <translation id="7625444193696794922">기기에서 사용해야 할 특정 배포 채널을 지정합니다.</translation>
 <translation id="7632724434767231364">GSSAPI 라이브러리 이름</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME" />에서 애플리케이션 언어를 설정하고 사용자가 언어를 변경할 수 없게 합니다.
@@ -2518,22 +2511,6 @@
 <translation id="7750991880413385988">새 탭 페이지 열기</translation>
 <translation id="7754704193130578113">다운로드 전에 각 파일의 저장 위치 확인</translation>
 <translation id="7761446981238915769">로그인 화면에서 설치된 앱 목록 구성</translation>
-<translation id="7761526206824804472">공개 세션에 한 개 이상의 추천 언어를 설정하여 사용자가 이 중 하나를 편리하게 선택할 수 있도록 합니다.
-
-      사용자는 공개 세션을 시작하기 전에 언어 및 키보드 레이아웃을 선택할 수 있습니다. 기본적으로 <ph name="PRODUCT_OS_NAME" />에서 지원하는 모든 언어가 알파벳 순서로 표시됩니다. 이 정책을 사용하여 추천 언어 모음을 목록 상단으로 이동할 수 있습니다.
-
-      이 정책을 설정하지 않으면 현재 UI 언어가 사전 선택됩니다.
-
-      이 정책을 설정하면 추천 언어가 목록 상단으로 이동하며 다른 언어와 시각적으로 구분되어 표시됩니다. 추천 언어는 정책에 표시된 순서대로 표시되며 첫 번째 추천 언어가 사전 선택됩니다.
-
-      추천 언어가 둘 이상인 경우 사용자가 추천 언어 중에 선택할 것이라고 가정, 공개 세션 시작 시 언어 및 키보드 레이아웃 선택 항목이 눈에 띄게 표시됩니다. 그 외의 경우 대부분의 사용자가 사전 선택된 언어를 사용할 것이라고 가정, 공개 세션 시작 시 언어 및 키보드 레이아웃 선택 항목이 눈에 덜 띄게 표시됩니다.
-
-      이 정책이 설정되어 있고 자동 로그인을 사용 설정한 경우(|DeviceLocalAccountAutoLoginId| 및 |DeviceLocalAccountAutoLoginDelay| 정책 참조) 자동으로 시작된 공개 세션에서는 첫 번째 추천 언어 및 이 언어와 일치하며 가장 널리 사용되는 키보드 레이아웃을 사용합니다.
-
-      사전 선택된 키보드 레이아웃은 사전 선택된 언어에 해당하는 가장 널리 사용되는 레이아웃으로 설정됩니다.
-
-      이 정책은 추천으로만 설정할 수 있습니다. 이 정책을 사용하여 추천 언어 모음을 상단으로 이동할 수 있지만, 사용자는 언제든지 자신의 세션에서 <ph name="PRODUCT_OS_NAME" />이(가) 지원하는 언어 중에 선택할 수 있습니다.
-      </translation>
 <translation id="7763479091692861127"> OS 업데이트에 사용할 수 있는 연결 유형입니다. OS 업데이트는 용량이 크고 부가 비용이 발생할 수 있기 때문에 잠재적으로 연결 네트워크에 부담이 됩니다. 따라서 비용이 부담스러운 연결 유형(예: WiMax, Bluetooth 및 Cellular)은 현재 기본적으로 사용하지 않도록 설정합니다.
 
       인식할 수 있는 연결 유형 식별자는 'ethernet', 'wifi', 'wimax', 'bluetooth' 및 'cellular'입니다.</translation>
@@ -2655,6 +2632,7 @@
       이 설정을 사용 설정하거나 값을 지정하지 않으면 사용자가 자동 완성을 제어할 수 있게 됩니다. 따라서 사용자가 자동 완성 프로필을 설정하고 원하는 대로 자동완성을 사용하거나 사용 중지할 수 있습니다.</translation>
 <translation id="8044493735196713914">기기 부팅 모드 보고</translation>
 <translation id="8050080920415773384">기본 인쇄</translation>
+<translation id="8053580360728293758">기본 컬러 인쇄 모드를 덮어씁니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="8059164285174960932">원격 액세스 클라이언트가 인증 토큰을 확보해야 하는 URL</translation>
 <translation id="8078366200175825572">쿠키 설정이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
@@ -2841,6 +2819,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       여기서 ‘버전’은 '61.0.3163.120'과 같은 정확한 버전이거나 '61.0'과 같은 버전 접두어일 수 있습니다.  </translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" />의 기본 HTML 렌더러</translation>
 <translation id="8544465954173828789">SMS 메시지가 휴대전화에서 Chromebook으로 동기화되도록 허용</translation>
+<translation id="8548832052135586762">컬러만, 단색만, 컬러 모드 제한 없음으로 인쇄를 설정합니다. 정책이 설정되어 있지 않으면 제한이 없는 것으로 처리됩니다.</translation>
 <translation id="8549772397068118889">콘텐츠 팩 외부 사이트를 방문할 때 표시되는 경고입니다.</translation>
 <translation id="8566842294717252664">새 탭 페이지 및 앱 런처에서 웹 스토어 숨기기</translation>
 <translation id="8586528890725660268">사용자가 사용할 수 없는 프린터를 지정합니다.
@@ -2951,6 +2930,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       이 정책을 설정하지 않는 경우 사용자가 이 기능의 사용 여부를 결정할 수 있습니다.</translation>
 <translation id="8870318296973696995">홈페이지</translation>
+<translation id="8876188741456358123">기본 양면 인쇄 모드를 덮어씁니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="8882006618241293596">이 사이트에서 <ph name="FLASH_PLUGIN_NAME" /> 플러그인 차단</translation>
 <translation id="890403179930035128">언어 맞춤법 검사를 강제 사용 설정합니다. 목록에서 인식할 수 없는 언어는 무시됩니다.
 
@@ -2961,7 +2941,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       SpellcheckEnabled 정책이 사용 중지로 설정되어 있으면 이 정책은 아무 효과가 없습니다.
 
       현재 지원되는 언어는 af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi입니다.</translation>
-<translation id="8906768759089290519">손님 모드 사용</translation>
+<translation id="8906768759089290519">게스트 모드 사용</translation>
 <translation id="8908294717014659003">미디어 캡쳐 장치에 대한 웹사이트의 액세스 허용 여부를 설정할 수 있습니다. 미디어 캡쳐 장치에 대해 액세스를 기본적으로 허용하거나 웹사이트가 액세스하려고 할 때마다 확인하도록 설정할 수도 있습니다.
 
           이 정책을 설정하지 않으면 'PromptOnAccess'가 사용되며 사용자가 변경할 수 있습니다.</translation>
@@ -3032,7 +3012,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       참고: 버전 45 이하에서는 키오스크 모드에서만 이 정책이 지원됩니다.</translation>
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> 종료 프롬프트를 표시하지 않음</translation>
-<translation id="8971221018777092728">공개 세션 자동 로그인 타이머</translation>
 <translation id="8976248126101463034">원격 액세스 호스트에 대한 gnubby 인증 허용</translation>
 <translation id="8976531594979650914">시스템 기본 프린터를 기본값으로 사용</translation>
 <translation id="8992176907758534924">모든 사이트에서 이미지 표시 허용 안함</translation>
@@ -3047,6 +3026,8 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="9084985621503260744">동영상 활동이 전원 관리에 영향을 미치는지 여부 지정</translation>
 <translation id="9088433379343318874">관리 대상 사용자 콘텐츠 제공업체 사용</translation>
 <translation id="9088444059179765143">자동 시간대 감지 방법 설정</translation>
+<translation id="9094064873808699479">OS 버전이 대상 버전보다 높은 경우 대상 버전으로 롤백하고 버전을 유지합니다. 가능한 경우 롤백 과정을 통해 기기 수준 설정(네트워크 사용자 인증 정보 포함)을 이전하려고 시도하지만, 대상 버전에서 데이터 복원을 지원하지 않거나 하위 비호환 변경사항으로 인해 데이터 복원이 불가능한 경우에도 전체 파워워시로 롤백합니다.
+          <ph name="PRODUCT_OS_NAME" /> 버전 70 이상에서 지원됩니다. 이전 버전 클라이언트의 경우 이 값은 롤백을 사용할 수 없다는 의미입니다.</translation>
 <translation id="9096086085182305205">인증 서버 허용목록</translation>
 <translation id="9098553063150791878">HTTP 인증 정책</translation>
 <translation id="9105265795073104888">프록시 설정 옵션 중 일부만 Android 앱에서 사용할 수 있습니다. Android 앱에서는 자발적으로 프록시를 사용하도록 선택할 수 있습니다. 강제로 Android 앱에서 프록시를 사용하도록 할 수 없습니다.</translation>
@@ -3105,6 +3086,13 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="9187743794267626640">외부 저장소 마운트 사용 중지</translation>
 <translation id="9197740283131855199">화면이 어두워진 후 사용자의 활동이 감지될 때 화면 어둡게 하기 지연 시간이 조정되는 비율</translation>
 <translation id="9200828125069750521">POST를 사용하는 이미지 URL용 매개변수</translation>
+<translation id="920209539000507585">인쇄 대화상자에서 '머리글과 바닥글'을 강제로 사용 설정 또는 중지합니다.
+
+      정책이 설정되어 있지 않으면 사용자가 머리글과 바닥글을 인쇄할지 여부를 결정할 수 있습니다.
+
+      정책이 False로 설정되어 있으면 인쇄 미리보기 대화상자에 '머리글 및 바닥글'이 선택되지 않으며 사용자는 이를 변경할 수 없습니다.
+
+      정책이 True로 설정되어 있으면 인쇄 미리보기 대화상자에 '머리글과 바닥글'이 선택되어 있으며 사용자가 이를 변경할 수 없습니다.</translation>
 <translation id="9210953373038593554">SAML 로그인 인증 유형을 구성합니다.
 
       이 정책이 설정되지 않거나 기본으로 설정되면(값 0) SAML 로그인의 동작은 다른 요인에 따라 브라우저에서 결정됩니다. 가장 기본적인 시나리오에서는 사용자 인증 및 캐시된 사용자 데이터의 보호가 사용자가 직접 입력한 비밀번호를 바탕으로 이루어집니다.

@@ -216,7 +216,6 @@ Se la norma non viene configurata o viene impostata su false, la chiave manifest
 
 Avviso. Non è consigliato delegare il controllo della versione di <ph name="PRODUCT_OS_NAME" /> a un'app kiosk, poiché potrebbe impedire al dispositivo di ricevere aggiornamenti software e correzioni di sicurezza fondamentali. Delegare il controllo della versione di <ph name="PRODUCT_OS_NAME" /> potrebbe mettere a rischio gli utenti.</translation>
 <translation id="1675002386741412210">Supportato su:</translation>
-<translation id="1679420586049708690">Sessione pubblica a cui accedere automaticamente</translation>
 <translation id="1689963000958717134">Consente di forzare l'applicazione della configurazione di rete per tutti gli utenti di un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="1708496595873025510">Imposta la limitazione sul recupero del numero di inizializzazione delle varianti</translation>
 <translation id="172374442286684480">Consenti a tutti i siti di impostare i dati locali</translation>
@@ -354,12 +353,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2082205219176343977">Configura la versione minima di Chrome consentita per il dispositivo.</translation>
 <translation id="209586405398070749">Canale stabile</translation>
 <translation id="2098658257603918882">Attiva rapporti sull'utilizzo e sui dati relativi agli arresti anomali</translation>
-<translation id="2098916259427011890">Questa norma consente di stabilire se segnalare o meno informazioni sulla versione, ad esempio la versione del sistema operativo, la piattaforma e l'architettura del sistema operativo, la versione di <ph name="PRODUCT_NAME" /> e il canale di <ph name="PRODUCT_NAME" />.
-
-      Se questa norma non viene impostata o viene impostata su True, le informazioni sulla versione vengono raccolte.
-      Se questa norma viene impostata su False, le informazioni sulla versione non vengono raccolte.
-
-      Questa norma viene applicata soltanto se vengono attivate le norme Estensione per la segnalazione di Chrome e Gestione della cloud.</translation>
 <translation id="2111016292707172233">Consente di attivare la disponibilità della funzione Tocca per cercare nella visualizzazione contenuti di <ph name="PRODUCT_NAME" />.
 
       Se attivi questa impostazione, la funzione Tocca per cercare sarà a disposizione degli utenti, che potranno scegliere se attivarla o disattivarla.
@@ -449,27 +442,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Quando questa norma non è impostata, non viene visualizzata alcuna finestra di dialogo di avviso.
 
           Il valore della norma deve essere specificato in millisecondi. I valori sono fissati in modo da essere minori o uguali al ritardo di inattività.</translation>
-<translation id="2289578386193672044">Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente,
-          senza l'interazione dell'utente, e che non possono essere disinstallate né
-          disattivate dall'utente. Tutte le autorizzazioni richieste dalle
-          app/estensioni vengono concesse implicitamente, senza interazione dell'utente,
-          comprese le eventuali autorizzazioni aggiuntive richieste dalle future versioni delle
-          app/estensioni. Inoltre, le autorizzazioni sono concesse per le
-          API delle estensioni enterprise.deviceAttributes ed
-          enterprise.platformKeys. (Queste due API non sono disponibili per le app/estensioni prive di
-          installazione forzata).
-
-          Questa norma ha precedenza su una norma <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />potenzialmente in conflitto. Se un'app o un'estensione con installazione forzata viene rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
-
-          Per le istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni elencate nel Chrome Web Store.
-
-          Tieni presente che il codice sorgente delle estensioni può essere modificato dagli utenti tramite Strumenti per sviluppatori (causando potenzialmente il malfunzionamento dell'estensione). Per evitare un problema di questo tipo, è consigliabile impostare la norma <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Ogni voce della norma è una stringa contenente un ID estensione e un URL di "aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attivata la modalità sviluppatore. L'URL di "aggiornamento", se specificato, deve indirizzare a un documento XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store (che attualmente è "https://clients2.google.com/service/update2/crx"). Nota che l'URL di "aggiornamento" impostato in questa norma viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione. Inoltre, specificare l'URL di "aggiornamento" in modo esplicito era obbligatorio nelle versioni di <ph name="PRODUCT_NAME" /> fino alla 67 inclusa.
-
-          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dall'URL di "aggiornamento" del Chrome Web Store standard. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Se questa norma non è impostata, le app e le estensioni non vengono installate automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> può utilizzare un servizio web Google per correggere gli errori di ortografia. Se questa impostazione è abilitata, il servizio viene sempre utilizzato. Se questa impostazione è disabilitata, il servizio non viene mai utilizzato.
 
       Il controllo ortografico può essere comunque effettuato utilizzando un dizionario scaricato; questa norma controlla soltanto l'utilizzo del servizio online.
@@ -497,15 +469,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2309390639296060546">Impostazione di geolocalizzazione predefinita</translation>
 <translation id="2312134445771258233">Consente di configurare le pagine che vengono caricate all'avvio. I contenuti dell'elenco "Pagine da aprire all'avvio" vengono ignorati a meno che non selezioni "Apri un elenco di URL" in "Azione all'avvio".</translation>
 <translation id="2327252517317514801">Definisci i domini autorizzati ad accedere a G Suite</translation>
-<translation id="2372547058085956601">Il ritardo prima dell'accesso automatico alla sessione pubblica.
-
-      Se non è impostata, la norma |DeviceLocalAccountAutoLoginId| non ha effetto. In caso contrario:
-
-      Se è impostata, questa norma determina quanto tempo deve trascorrere senza attività dell'utente prima che venga eseguito l'accesso automatico alla sessione pubblica specificata dalla norma |DeviceLocalAccountAutoLoginId|.
-
-      Se questa norma non è impostata, verrà utilizzato un timeout di 0 millisecondi.
-
-      Questa norma è specificata in millisecondi.</translation>
 <translation id="237494535617297575">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="2386362615870139244">Consenti Wakelock dello schermo</translation>
 <translation id="2411817661175306360">L'avviso di protezione tramite password non è attivo</translation>
@@ -1069,7 +1032,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa norma non viene impostata, verrà usata la normale directory predefinita (specifica della piattaforma) di <ph name="PRODUCT_NAME" />.
 
       Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.</translation>
-<translation id="3907986150060929099">Consente di impostare le impostazioni internazionali consigliate per una sessione pubblica</translation>
 <translation id="3911737181201537215">Questa norma non influisce sulla registrazione effettuata da Android.</translation>
 <translation id="391531815696899618">Consente di disattivare la sincronizzazione di Google Drive nell'app File di <ph name="PRODUCT_OS_NAME" /> quando è impostata su True. In tal caso, non vengono caricati dati in Google Drive.
 
@@ -1135,12 +1097,6 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
       . In caso contrario, potrebbe essere impostato uno dei seguenti valori: "tls1.2" o "tls1.3". Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> non utilizzerà versioni SSL/TLS successive a quella specificata. I valori non riconosciuti verranno ignorati.</translation>
 <translation id="4121350739760194865">Impedisci la visualizzazione delle promozioni di applicazioni nella pagina Nuova scheda</translation>
 <translation id="412697421478384751">Consenti agli utenti di impostare PIN non sicuri per la schermata di blocco</translation>
-<translation id="4129183564590133854">Questa norma consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare gli utenti, ad esempio i dati di accesso al sistema operativo, i dati di accesso del profilo <ph name="PRODUCT_NAME" />, il nome del profilo <ph name="PRODUCT_NAME" />, il percorso del profilo <ph name="PRODUCT_NAME" /> e il percorso eseguibile di <ph name="PRODUCT_NAME" />.
-
-      Se questa norma non viene impostata o viene impostata su True, le informazioni che possono essere usate per identificare gli utenti vengono raccolte.
-      Se questa norma viene impostata su False, le informazioni che possono essere usate per identificare gli utenti non vengono raccolte.
-
-      Questa norma viene applicata soltanto se vengono attivate le norme Estensione per la segnalazione di Chrome e Gestione della cloud.</translation>
 <translation id="4138655880188755661">Limite di tempo</translation>
 <translation id="4157003184375321727">Indica versione sistema operativo e firmware</translation>
 <translation id="4157594634940419685">Consenti l'accesso a stampanti CUPS native</translation>
@@ -1434,13 +1390,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="5052081091120171147">Se è attiva, questa norma impone l'importazione della cronologia di navigazione dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, la cronologia di navigazione non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5056708224511062314">Ingrandimento dello schermo disattivato</translation>
 <translation id="5058573563327660283">Seleziona la strategia da utilizzare per liberare spazio su disco durante la pulizia automatica (obsoleta)</translation>
-<translation id="5058771123777243130">Questa norma consente di stabilire se segnalare o meno i dati delle norme e data/ora del recupero delle norme.
-
-      Se questa norma non viene impostata o viene impostata su True, i dati delle norme e data/ora del recupero delle norme vengono raccolti.
-      Se questa norma viene impostata su False, i dati delle norme e data/ora del recupero delle norme non vengono raccolti.
-
-
-      Questa norma viene applicata soltanto se vengono attivate le norme Estensione per la segnalazione di Chrome e Gestione della cloud.</translation>
 <translation id="5067143124345820993">Whitelist di utenti con accesso</translation>
 <translation id="5068140065960598044">La norma cloud di <ph name="PRODUCT_NAME" /> prevale sulla norma della macchina.</translation>
 <translation id="5085647276663819155">Disattiva anteprima di stampa</translation>
@@ -1587,11 +1536,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se quest'elenco è vuoto, non verrà eseguita alcuna gestione temporanea e gli aggiornamenti verranno applicati in base alle altre norme del dispositivo.
 
       Questa norma non viene applicata agli switch del canale.</translation>
-<translation id="5523812257194833591">Una sessione pubblica a cui accedere automaticamente dopo un ritardo.
-
-      Se questa norma è impostata, verrà eseguito l'accesso automatico alla sessione specificata dopo che è trascorso un periodo di tempo senza interazioni dell'utente nella schermata di accesso. La sessione pubblica deve essere già configurata (vedi |DeviceLocalAccounts|).
-
-      Se questa norma non è impostata, non avverrà l'accesso automatico.</translation>
 <translation id="5526701598901867718">Tutto (non sicuro)</translation>
 <translation id="5529037166721644841">Consente di specificare in millisecondi il periodo di tempo per cui vengono richieste informazioni sulle norme relative al dispositivo al servizio di gestione del dispositivo.
 
@@ -1993,12 +1937,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Questa impostazione consente di gestire la presentazione delle pagine di benvenuto che consentono agli utenti di accedere a <ph name="PRODUCT_NAME" /> o sceglierlo come browser predefinito oppure che danno agli utenti informazioni sulle funzionalità del prodotto.</translation>
 <translation id="6766216162565713893">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo Bluetooth nelle vicinanze.</translation>
 <translation id="6770454900105963262">Segnala informazioni sulle sessioni kiosk attive</translation>
-<translation id="6773056206551814546">Questa norma consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare i computer, ad esempio il nome del computer e gli indirizzi di rete.
-
-      Se questa norma non viene impostata o viene impostata su True, le informazioni che possono essere usate per identificare i computer vengono raccolte.
-      Se questa norma viene impostata su False, le informazioni che possono essere usate per identificare i computer non vengono raccolte.
-
-      Questa norma viene applicata soltanto se vengono attivate le norme Estensione per la segnalazione di Chrome e Gestione della cloud.</translation>
 <translation id="6786747875388722282">Estensioni</translation>
 <translation id="6786967369487349613">Imposta la directory profilo di roaming</translation>
 <translation id="6810445994095397827">Blocca Javascript in questi siti</translation>
@@ -2418,22 +2356,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7750991880413385988">Apri pagina Nuova scheda</translation>
 <translation id="7754704193130578113">Chiedi dove salvare il file prima di scaricarlo</translation>
 <translation id="7761446981238915769">Configura l'elenco di app installate nella schermata di accesso</translation>
-<translation id="7761526206824804472">Consente di selezionare una o più impostazioni internazionali per una sessione pubblica, consentendo agli utenti di sceglierne facilmente una.
-
-      L'utente può scegliere un'impostazione internazionale e un layout tastiera prima di iniziare una sessione pubblica. Per impostazione predefinita, tutte le impostazioni internazionali supportate da <ph name="PRODUCT_OS_NAME" /> sono elencate in ordine alfabetico. È possibile utilizzare questa norma per spostare un set di impostazioni internazionali consigliate nella parte superiore dell'elenco.
-
-      Se questa norma non viene impostata, viene preselezionata l'impostazione internazionale corrente per l'interfaccia utente.
-
-      Se questa norma viene impostata, le impostazioni internazionali consigliate verranno spostate nella parte superiore dell'elenco e verranno separate visivamente dalle altre impostazioni internazionali. Le impostazioni internazionali consigliate saranno elencate nell'ordine in cui sono indicate nella norma. Viene preselezionata la prima impostazione internazionale consigliata.
-
-      Se sono presenti più impostazioni internazionali consigliate, si presuppone che gli utenti ne vogliano selezionare una. La selezione dell'impostazione internazionale e del layout tastiera verrà offerta in una posizione più visibile all'avvio di una sessione pubblica. In caso contrario, si presuppone che la maggior parte degli utenti desideri utilizzare l'impostazione internazionale preselezionata. La selezione dell'impostazione internazionale e del layout tastiera verrà offerta in una posizione meno visibile all'avvio di una sessione pubblica.
-
-      Quando questa norma è impostata ed è abilitato l'accesso automatico (vedere le norme |DeviceLocalAccountAutoLoginId| e |DeviceLocalAccountAutoLoginDelay|), la sessione pubblica avviata automaticamente utilizzerà la prima impostazione internazionale consigliata e il layout tastiera più popolare corrispondente a questa impostazione internazionale.
-
-      Il layout tastiera preselezionato sarà sempre il layout più popolare corrispondente all'impostazione internazionale preselezionata.
-
-      Questa norma può essere impostata solo come consigliata. È possibile utilizzare questa norma per spostare un set di impostazioni internazionali consigliate nella parte superiore, ma gli utenti possono sempre scegliere una qualsiasi impostazione internazionale supportata da <ph name="PRODUCT_OS_NAME" /> per la sessione.
-      </translation>
 <translation id="7763479091692861127"> I tipi di connessioni utilizzabili per aggiornamenti del sistema operativo. Gli aggiornamenti del sistema operativo possono mettere a dura prova la connessione a causa delle loro dimensioni e potrebbero generare costi aggiuntivi. Pertanto, per impostazione predefinita non sono abilitati per i tipi di connessione che sono considerati costosi, fra cui WiMax, Bluetooth e cellulare, al momento.
 
       Gli identificatori dei tipi di connessione riconosciuti sono "ethernet", "wifi", "wimax", "bluetooth" e "cellulare".</translation>
@@ -2892,7 +2814,6 @@ https://www.w3.org/TR/secure-contexts/
 
       NOTA. Fino alla versione 45, questa norma era supportata soltanto in modalità kiosk.</translation>
 <translation id="8970205333161758602">Eliminazione del messaggio di richiesta di turndown di <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="8971221018777092728">Timer accesso automatico a sessione pubblica</translation>
 <translation id="8976248126101463034">Consenti l'autenticazione Gnubby per gli host di accesso remoto</translation>
 <translation id="8976531594979650914">Usa stampante di sistema come predefinita</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
@@ -2974,9 +2895,6 @@ https://www.w3.org/TR/secure-contexts/
       Se questa norma è impostata su ClientCertificate (valore 1), l'autenticazione del certificato client viene utilizzata per gli utenti aggiunti di recente che accedono tramite SAML. Per questi utenti non vengono utilizzate password e i loro dati locali memorizzati nella cache vengono protetti mediante le chiavi crittografiche corrispondenti. Ad esempio, questa impostazione consente di configurare un'autenticazione dell'utente basata su smart card (considera che le app middleware per smart card devono essere installate tramite la norma DeviceLoginScreenAppInstallList).
 
       Questa norma riguarda solo gli utenti che eseguono l'autenticazione utilizzando SAML.</translation>
-<translation id="9211439035693857287">Consente di configurare le norme relative a Estensione per la segnalazione di Chrome.
-
-      Queste norme vengono applicate soltanto se vengono attivate le norme Estensione per la segnalazione di Chrome e Gestione della cloud.</translation>
 <translation id="9213347477683611358">Configura l'immagine di sfondo a livello del dispositivo che viene mostrata nella schermata di accesso nel caso in cui nessun utente abbia ancora effettuato l'accesso al dispositivo. Questa norma viene impostata specificando l'URL dal quale il dispositivo Chrome OS può scaricare l'immagine di sfondo e un hash crittografico la cui funzione è quella di verificare l'integrità del download. L'immagine deve essere in formato JPEG e non deve superare le dimensioni di 16 MB. L'URL specificato deve essere accessibile senza bisogno di autenticazione. L'immagine di sfondo viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL e l'hash vengono modificati.
 
       La norma deve essere specificata sotto forma di stringa in cui l'URL e l'hash vengono espressi in formato JSON, ad esempio,

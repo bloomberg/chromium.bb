@@ -226,7 +226,6 @@
 
       警告：我們不建議將對 <ph name="PRODUCT_OS_NAME" /> 版本的控制權委派給資訊站應用程式，因為這可能導致裝置無法接收軟體更新，且無法修正重大的安全性問題。委派 <ph name="PRODUCT_OS_NAME" /> 版本的控制權可能讓使用者面臨風險。</translation>
 <translation id="1675002386741412210">支援環境：</translation>
-<translation id="1679420586049708690">自動登入的公開工作階段</translation>
 <translation id="1689963000958717134">允許將網路設定按照使用者套用至已安裝 <ph name="PRODUCT_OS_NAME" /> 的裝置。該網路設定是由「開放網路設定」格式 (請參閱：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="1708496595873025510">設定變異版本種子的擷取限制</translation>
 <translation id="172374442286684480">允許所有網站設定本機資料</translation>
@@ -364,12 +363,6 @@
 <translation id="2082205219176343977">設定裝置的最低 Chrome 版本限制。</translation>
 <translation id="209586405398070749">穩定版</translation>
 <translation id="2098658257603918882">啟用使用量和當機相關資料的報告功能</translation>
-<translation id="2098916259427011890">這項政策可控管系統是否要回報版本資訊，例如作業系統版本、作業系統平台、作業系統架構、<ph name="PRODUCT_NAME" /> 版本和 <ph name="PRODUCT_NAME" /> 頻道。
-
-      如果將這項政策設為 True 或不予設定，系統會收集版本資訊。
-      如果將這項政策設為 False，系統就不會收集版本資訊。
-
-      只有在 Chrome 資訊回報擴充功能和雲端管理服務皆已啟用的情況下，這項政策才有作用。</translation>
 <translation id="2111016292707172233">在 <ph name="PRODUCT_NAME" /> 的內容畫面中啟用「輕觸搜尋」功能。
 
       如果你啟用這項設定，使用者即可使用「輕觸搜尋」功能，並可自行選擇開啟或關閉這項功能。
@@ -465,27 +458,6 @@
           如果未設定這項政策，系統不會顯示警告對話方塊。
 
           指定政策值時需以毫秒為單位。值必須小於或等於閒置延遲時間。</translation>
-<translation id="2289578386193672044">指定以無訊息方式安裝 (使用者無需操作) 的應用程式和
-          擴充功能清單 (使用者無法解除安裝或停用這些
-          應用程式和擴充功能)。系統會直接授予這些
-          應用程式/擴充功能要求的所有權限 (使用者無需操作)，
-          包括日後新版應用程式/擴充功能要求的任何其他權限。
-          此外，系統已將權限授予 enterprise.deviceAttributes
-          和 enterprise.platformKeys 擴充功能 API
-          (這兩個 API 不適用於非強制安裝的
-          應用程式/擴充功能)。
-
-          這項政策比可能發生衝突的 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 政策具備更高的優先順序。如果從清單中移除先前強制安裝的應用程式或擴充功能，<ph name="PRODUCT_NAME" /> 會自動解除安裝該應用程式/擴充功能。
-
-          如果 Windows 執行個體未加入 <ph name="MS_AD_NAME" /> 網域，系統只能強制安裝 Chrome 線上應用程式商店中的應用程式和擴充功能。
-
-          請注意，所有擴充功能的原始碼都可以使用開發人員工具變更 (可能會造成擴充功能無法正常運作)。如果你對此有所顧慮，建議你設定 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 政策。
-
-          這項政策的每個清單項目都是一條字串，其中包含以分號 (<ph name="SEMICOLON" />) 分隔的一個擴充功能 ID，和一個可自行選擇是否要指定的「更新」網址。擴充功能 ID 為 32 個字母的字串。如需查看範例，請在開發人員模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。「更新」網址 (如果有指定) 應指向更新資訊清單 XML 文件 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)。根據預設，系統會使用 Chrome 線上應用程式商店的更新網址 (目前為此網址為「https://clients2.google.com/service/update2/crx」)。請注意，這項政策中設定的「更新」網址僅適用於初次安裝，後續的擴充功能更新將會使用擴充功能資訊清單中指定的更新網址。另請注意，在 67 以下版本的 <ph name="PRODUCT_NAME" /> 中，你一定要明確指定「更新」網址。
-
-          舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE" /> 會透過標準 Chrome 線上應用程式商店「更新」網址安裝「<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />」應用程式。如需進一步瞭解如何代管擴充功能，請參閱 <ph name="LINK_TO_EXTENSION_DOC2" />。
-
-          如果未設定這項政策，則不會自動安裝任何應用程式或擴充功能，且使用者可以在 <ph name="PRODUCT_NAME" /> 中解除安裝任何應用程式或擴充功能。</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> 可以透過 Google 網路服務來解決拼字錯誤。如果你啟用這項設定，系統就會一律使用這項服務；如果你停用這項設定，則系統將絕不使用這項服務。
 
       你仍可使用下載的字典執行拼字檢查，這項政策僅可控制是否使用線上服務。
@@ -513,15 +485,6 @@
 <translation id="2309390639296060546">預設地理位置設定</translation>
 <translation id="2312134445771258233">允許你設定起始時載入的網頁。系統會略過 [起始時開啟的網址] 網頁清單內容，除非你在 [起始動作] 中選取 [開啟網址清單]。</translation>
 <translation id="2327252517317514801">定義可存取 G Suite 的網域</translation>
-<translation id="2372547058085956601">公開工作階段自動登入延遲時間。
-
-      如果未設定 |DeviceLocalAccountAutoLoginId| 政策，這項政策不會生效。否則：
-
-      如果設定這項政策，政策會指定系統在使用者活動持續停止後多少時間，才會將使用者自動登出公開工作階段，如 |DeviceLocalAccountAutoLoginId| 政策中所指定。
-
-      如果未設定這項政策，系統會以 0 毫秒當做逾時時間。
-
-      指定這項政策時需以毫秒為單位。</translation>
 <translation id="237494535617297575">允許你設定網址模式清單，指定可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="2386362615870139244">允許使用螢幕喚醒鎖</translation>
 <translation id="2411817661175306360">密碼保護警告已關閉</translation>
@@ -1091,7 +1054,6 @@
       如果不設定這項政策，<ph name="PRODUCT_NAME" /> 將使用一般的預設目錄 (依平台區分)。
 
       如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。</translation>
-<translation id="3907986150060929099">為公開工作階段設定建議的語言代碼</translation>
 <translation id="3911737181201537215">這項政策對 Android 應用程式執行的登入作業沒有影響。</translation>
 <translation id="391531815696899618">如果你設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會停用 Google 雲端硬碟同步功能。這種情形下，系統無法將資料上傳至 Google 雲端硬碟。
 
@@ -1157,12 +1119,6 @@
       這項政策可使用的設定值包括：「tls1.2」或「tls1.3」。設定後，<ph name="PRODUCT_NAME" /> 就不會使用高於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
 <translation id="4121350739760194865">阻止應用程式宣傳資訊在新分頁上顯示</translation>
 <translation id="412697421478384751">允許使用者設定強度不足的螢幕鎖定 PIN 碼</translation>
-<translation id="4129183564590133854">這項政策可控管系統是否要回報能用於辨識使用者身分的資訊，例如 OS 登入資訊、<ph name="PRODUCT_NAME" /> 設定檔登入資訊、<ph name="PRODUCT_NAME" /> 設定檔名稱、<ph name="PRODUCT_NAME" /> 設定檔路徑以及 <ph name="PRODUCT_NAME" /> 執行檔路徑。
-
-      如果將這項政策設為 True 或不予設定，系統會收集可用於辨識使用者身分的資訊。
-      如果將這項政策設為 False，系統就不會收集可用於辨識使用者身分的資訊。
-
-      只有在 Chrome 資訊回報擴充功能和雲端管理服務皆已啟用的情況下，這項政策才有作用。</translation>
 <translation id="4138655880188755661">時間限制</translation>
 <translation id="4157003184375321727">回報作業系統和韌體版本</translation>
 <translation id="4157594634940419685">允許存取原生 CUPS 印表機</translation>
@@ -1462,11 +1418,6 @@
 <translation id="5052081091120171147">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入瀏覽記錄 (也會影響匯入對話方塊的選項)。如果停用這項政策，則不會匯入瀏覽記錄。如果未設定這項政策，系統會自動匯入瀏覽記錄，或詢問使用者是否要匯入瀏覽記錄。</translation>
 <translation id="5056708224511062314">已停用螢幕放大鏡</translation>
 <translation id="5058573563327660283">選取自動清理時用來釋出磁碟空間的策略 (已不適用)</translation>
-<translation id="5058771123777243130">這項政策可控管系統是否要回報政策資料和政策擷取時間。
-
-      如果將這項政策設為 True 或不予設定，系統會收集政策資料和政策擷取時間。
-      如果將這項政策設為 False，系統就不會收集政策資料和政策擷取時間。
-      只有在 Chrome 資訊回報擴充功能和雲端管理服務皆已啟用的情況下，這項政策才有作用。</translation>
 <translation id="5067143124345820993">登入使用者許可清單</translation>
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> 雲端政策覆寫裝置政策。</translation>
 <translation id="5085647276663819155">停用列印預覽</translation>
@@ -1616,11 +1567,6 @@
       如果這份清單未包含任何內容，系統就不會分階段安裝更新，而會依其他裝置政策套用更新。
 
       版本切換不適用這項政策。</translation>
-<translation id="5523812257194833591">要在延遲時間過後自動登入的公開工作階段。
-
-      如果設定這項政策，系統會在使用者於登入畫面停止互動後的一段時間過後，自動登入指定的工作階段。你必須已設定公開工作階段 (請參閱 |DeviceLocalAccounts|)。
-
-      如果未設定這項政策，系統不會進行自動登入。</translation>
 <translation id="5526701598901867718">全部 (不安全)</translation>
 <translation id="5529037166721644841">指定向裝置管理服務查詢使用者政策資訊的時間 (以毫秒為單位)。
 
@@ -2027,12 +1973,6 @@
       這項設定將決定歡迎頁面顯示與否，歡迎頁面可協助使用者登入 <ph name="PRODUCT_NAME" />，並將其設為預設瀏覽器，或是讓使用者瞭解產品功能。</translation>
 <translation id="6766216162565713893">允許網站要求使用者授權存取附近的藍牙裝置</translation>
 <translation id="6770454900105963262">回報運作中資訊站工作階段相關資訊</translation>
-<translation id="6773056206551814546">這項政策可控管系統是否要回報能用於辨識裝置的資訊，例如裝置名稱和網路位址。
-
-      如果將這項政策設為 True 或不予設定，系統會收集可用於辨識裝置的資訊。
-      如果將這項政策設為 False，系統就不會收集可用於辨識裝置的資訊。
-
-      只有在 Chrome 資訊回報擴充功能和雲端管理服務皆已啟用的情況下，這項政策才有作用。</translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6786967369487349613">設定漫遊設定檔目錄</translation>
 <translation id="6810445994095397827">封鎖這些網站的 JavaScript</translation>
@@ -2461,22 +2401,6 @@
 <translation id="7750991880413385988">開啟新分頁</translation>
 <translation id="7754704193130578113">下載每個檔案前先詢問儲存位置</translation>
 <translation id="7761446981238915769">設定登入畫面中的已安裝應用程式清單</translation>
-<translation id="7761526206824804472">為公開工作階段設定一個或多個建議的語言代碼，方便讓使用者從中選擇自己偏好的設定。
-
-      使用者可以在啟動公開工作階段前選擇語言代碼和鍵盤配置。在預設狀態下，系統會依英文字母順序列出 <ph name="PRODUCT_OS_NAME" /> 支援的所有語言代碼。這項政策可讓您將一些建議的語言代碼移至清單頂端。
-
-      如果未設定這項政策，系統會預先選取目前的使用者介面語言代碼。
-
-      如果設定這項政策，建議的語言代碼會顯示在清單頂端，與其他所有語言代碼明顯區隔。系統會根據您在這項政策中指定的順序列出這些建議的語言代碼，並預先選取第一個語言代碼。
-
-      如果有多個建議的語言代碼，系統會假設使用者將從中擇一使用。啟動公開工作階段時，系統會以醒目方式顯示選取的語言代碼和鍵盤配置。否則，系統會假設使用者將使用預先選取的語言代碼，並於公開工作階段啟動時以較不醒目的方式顯示選取的語言代碼和鍵盤配置。
-
-      如果在自動登入功能已啟用的情況下設定這項政策 (請參閱 |DeviceLocalAccountAutoLoginId| 和 |DeviceLocalAccountAutoLoginDelay| 政策)，自動啟動的公開工作階段會使用第一個建議的語言代碼，以及與該語言代碼相符的最常用鍵盤配置。
-
-      預先選取的鍵盤配置一律是與預先選取的語言代碼相符的最常用配置。
-
-      這項政策只能設為建議性質。您可以使用這項政策讓一些建議的語言代碼顯示在頂端，但使用者一律可以為工作階段選擇 <ph name="PRODUCT_OS_NAME" /> 支援的任何語言代碼。
-      </translation>
 <translation id="7763479091692861127"> 允許用來進行作業系統更新的連線類型。由於作業系統更新檔案較大，可能會對連線流量造成沉重負荷，同時也可能讓使用者必須支付額外費用，因此當使用者使用較昂貴的連線類型 (目前包括 WiMax、藍牙和行動網路) 時，預設情況並不允許進行作業系統更新。
 
       系統可識別的連線類型識別碼包括「ethernet」、「wifi」、「wimax」、「bluetooth」和「cellular」。</translation>
@@ -2940,7 +2864,6 @@
 
       注意：對於 45 版本以下的版本，僅有在執行 Kiosk 模式時才支援這項政策。</translation>
 <translation id="8970205333161758602">隱藏停止支援 <ph name="PRODUCT_FRAME_NAME" />的提示</translation>
-<translation id="8971221018777092728">公開工作階段自動登入計時器</translation>
 <translation id="8976248126101463034">允許針對遠端存取主機進行 gnubby 驗證機制</translation>
 <translation id="8976531594979650914">使用系統預設印表機做為預設值</translation>
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
@@ -3022,9 +2945,6 @@
       如果將這項政策設為 ClientCertificate (值為 1)，則會依用戶端憑證驗證判斷是否要允許新使用者透過 SAML 登入。這類使用者不需要密碼，且其快取本機資料會受到對應加密金鑰的保護。舉例來說，如果使用這項設定，就能設定透過智慧型卡片驗證使用者 (請注意，你必須透過 DeviceLoginScreenAppInstallList 政策安裝智慧型卡片中介軟體應用程式)。
 
       這項政策只會影響透過 SAML 進行驗證的使用者。</translation>
-<translation id="9211439035693857287">設定與 Chrome 資訊回報擴充功能相關的政策。
-
-      只有在 Chrome 資訊回報擴充功能和雲端管理服務皆已啟用的情況下，這些政策才有作用。</translation>
 <translation id="9213347477683611358">設定還沒有任何使用者登入裝置時，登入畫面顯示的裝置層級桌布圖片。如要設定這項政策，請指定 Chrome 作業系統裝置可下載桌布圖片的網址，以及用於驗證下載完整性的加密編譯雜湊值。圖片必須為 JPEG 格式，且大小不得超過 16MB。網址則必須可供直接存取，不必經過任何驗證。系統會下載並快取桌布圖片，每當網址或雜湊值有所變更即重新下載。
 
       指定政策時，請使用 JSON 格式的字串來表示網址和雜湊值。範例如下：

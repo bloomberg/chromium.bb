@@ -888,7 +888,6 @@
 <translation id="230927227160767054">Ova stranica želi instalirati rukovatelja usluge.</translation>
 <translation id="2309620859903500144">Web-lokaciji je zabranjen pristup vašim senzorima pokreta ili svjetla.</translation>
 <translation id="2315414688463285945">Pogreška tijekom konfiguracije Linux datoteka. Pokušajte ponovo.</translation>
-<translation id="2315821125498993513">Povezivanje s telefonom nije uspjelo. <ph name="LINK_BEGIN" />Saznajte više.<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% dovršeno</translation>
 <translation id="2318143611928805047">Veličina papira</translation>
@@ -1224,7 +1223,6 @@
 <translation id="2806891468525657116">Prečac već postoji</translation>
 <translation id="2807517655263062534">Ovdje se prikazuju datoteke koje ste preuzeli</translation>
 <translation id="2809586584051668049">i još <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
-<translation id="281133045296806353">Stvoren je novi prozor u postojećoj sesiji pregledavanja.</translation>
 <translation id="2812944337881233323">Odjavite se, pa se ponovo prijavite</translation>
 <translation id="2812989263793994277">Ne prikazuj nikakve slike</translation>
 <translation id="2814489978934728345">Prekini učitavanje ove stranice</translation>
@@ -3713,7 +3711,6 @@
 <translation id="6582421931165117398">Radi zaštite osobnih podataka odmah promijenite zaporku. Prije promjene zaporke morat ćete se prijaviti.</translation>
 <translation id="6583851739559471707">Blokirano na web-lokacijama koje često prikazuju ometajuće oglase (preporučeno)</translation>
 <translation id="6584878029876017575">Microsoftovo cjeloživotno potpisivanje</translation>
-<translation id="6585283250473596934">Ulazak u javnu sesiju.</translation>
 <translation id="6586451623538375658">Zamijeni primarnu tipku miša</translation>
 <translation id="6589660129740381104">Da biste lakše upravljali svojim iskustvom u proizvodu <ph name="IDS_SHORT_PRODUCT_NAME" />, značajke povezane sa sinkronizacijom i prilagodbom sada su pod jednom kontrolom. Ako to uključite, vaše se trenutačne postavke mogu promijeniti.</translation>
 <translation id="6589706261477377614">Povećanje svjetline tipke</translation>
@@ -5145,7 +5142,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8755376271068075440">&amp;Veći</translation>
 <translation id="8756969031206844760">Želite li ažurirati zaporku?</translation>
 <translation id="8757090071857742562">Nije moguće emitirati radnu površinu. Provjerite jeste li potvrdili upit za početak dijeljenja zaslona.</translation>
-<translation id="8757640015637159332">Ulazak u javnu sesiju</translation>
 <translation id="8757742102600829832">Odaberi Chromebox za povezivanje</translation>
 <translation id="8757803915342932642">Uređaj na usluzi Google Cloud Devices</translation>
 <translation id="8758418656925882523">Omogući diktiranje (zapisivanje govora)</translation>

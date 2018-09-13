@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
 <translation id="2761704814324807722">Област за състоянието, часът е <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Установява се повторна връзка с мрежата „<ph name="NAME" />“</translation>
+<translation id="2790844815106384441">да избира дали уебсайтовете да могат да използват услугите за местоположение, или микрофона, камерата или други функции на устройството;</translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
 <translation id="2805756323405976993">Приложения</translation>
 <translation id="2808012452536866044">За функцията По-добре заедно бе зададен нов телефон</translation>
@@ -129,7 +130,6 @@
 <translation id="2992931425024192067">Показване на цялото съдържание от известията</translation>
 <translation id="2995447421581609334">Показване на устройствата за предаване.</translation>
 <translation id="2996462380875591307">Лупата в прикрепен режим е активирана. За да я изключите, натиснете отново Ctrl + клавиш „Търсене“ + D.</translation>
-<translation id="2999742336789313416">„<ph name="DISPLAY_NAME" />“ е обществена сесия, управлявана от <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Монозвук</translation>
 <translation id="3009178788565917040">Изход</translation>
 <translation id="3019353588588144572">Оставащо време до пълното зареждане на батерията: <ph name="TIME_REMAINING" /></translation>
@@ -193,6 +193,7 @@
 <translation id="4200057768455216496">Използвахте клавишната комбинация за лупата в прикрепен режим. Искате ли да включите функцията?</translation>
 <translation id="4217571870635786043">Диктуване</translation>
 <translation id="4261870227682513959">Показване на настройките за известия. Известията са изключени</translation>
+<translation id="4269883910223712419">Администраторът на това устройство може:</translation>
 <translation id="4274921305979314545">Свържете своя Chromebook с телефона си</translation>
 <translation id="4279490309300973883">Дублиране</translation>
 <translation id="4292681942966152062">Мрежата се активира (<ph name="NETWORK_NAME" />)</translation>
@@ -220,6 +221,7 @@
 <translation id="4734965478015604180">Хоризонтална ориентация</translation>
 <translation id="476166673298332917">Администраторът на това устройство има достъп до цялата активност, включително паролите и комуникациите.</translation>
 <translation id="4776917500594043016">Парола за <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Google Асистент не е налице по време на демонстрационна сесия.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Изключване</translation>
 <translation id="4849058404725798627">Открояване на обекта, върху който е фокусът от клавиатурата</translation>
@@ -335,6 +337,7 @@
 <translation id="6751826523481687655">Проследяването на ефективността е включено</translation>
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE" />% пълна и се зарежда.</translation>
 <translation id="6803622936009808957">Дисплеите не можаха да се дублират, тъй като не бяха намерени поддържани разделителни способности. Вместо това влязохте в режима за разширен работен плот.</translation>
+<translation id="6814658242098378692">да управлява приложения, разширения и теми;</translation>
 <translation id="6820676911989879663">Време е за почивка!</translation>
 <translation id="683971173229319003">търсене + L</translation>
 <translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE" /></translation>
@@ -358,6 +361,7 @@
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Заден микрофон</translation>
 <translation id="726276584504105859">Преместете тук с плъзгане, за да използвате режим за разделен екран</translation>
+<translation id="7303365578352795231">Отговаря се на друго устройство.</translation>
 <translation id="7348093485538360975">Екранна клавиатура</translation>
 <translation id="735745346212279324">Връзката с виртуалната частна мрежа (VPN) е прекъсната</translation>
 <translation id="7377169924702866686">„Caps Lock“ е включен.</translation>
@@ -390,6 +394,7 @@
 <translation id="7842211907556571265">Установява се връзка (<ph name="NETWORK_NAME" />)</translation>
 <translation id="7842569679327885685">Предупреждение: Експериментална функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
+<translation id="7886169021410746335">да коригира настройките за поверителност.</translation>
 <translation id="7886277072580235377">Сесията ви за интернет ще бъде изчистена, когато излезете от профила си. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">„Send an email“ („Изпрати имейл“)</translation>
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>

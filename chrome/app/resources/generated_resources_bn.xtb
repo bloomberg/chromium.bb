@@ -42,7 +42,7 @@
 <translation id="1056775291175587022">কোনও নেটওয়ার্ক নেই</translation>
 <translation id="1056898198331236512">সতর্কতা</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1059855432287631118">আঙুলের ছাপ রেজিস্টার করুন</translation>
+<translation id="1059855432287631118">আঙুলের ছাপ রেজিস্টার করা হচ্ছে</translation>
 <translation id="1061904396131502319">বিরতির সময় হতে চলেছে</translation>
 <translation id="1062407476771304334">প্রতিস্থাপন করুন</translation>
 <translation id="1067048845568873861">তৈরি হয়েছে</translation>
@@ -881,7 +881,6 @@
 <translation id="230927227160767054">এই পৃষ্ঠাটি একটি পরিষেবা নিয়ন্ত্রক ইনস্টল করতে চায়৷</translation>
 <translation id="2309620859903500144">এই সাইটটি আপনার মোশন এবং লাইট সেন্সর অ্যাক্সেস করতে পারবে না।</translation>
 <translation id="2315414688463285945">Linux ফাইল কনফিগার করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।</translation>
-<translation id="2315821125498993513">ফোনের সাথে কানেক্ট করা যায়নি। <ph name="LINK_BEGIN" />আরও জানুন।<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">না, ধন্যবাদ</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% হয়েছে</translation>
 <translation id="2318143611928805047">কাগজের আকার</translation>
@@ -1218,7 +1217,6 @@
 <translation id="2806891468525657116">শর্টকাটটি আগে থেকেই আছে</translation>
 <translation id="2807517655263062534">ডাউনলোড করা ফাইল এখানে দেখা যাবে</translation>
 <translation id="2809586584051668049">এবং আরও <ph name="NUMBER_ADDITIONAL_DISABLED" />টি</translation>
-<translation id="281133045296806353">বিদ্যমান ব্রাউজার সেশনে নতুন উইন্ডো তৈরি হয়েছে৷</translation>
 <translation id="2812944337881233323">সাইন আউট করে আবার ফিরে এসে দেখুন</translation>
 <translation id="2812989263793994277">কোনও ছবি দেখাবেন না</translation>
 <translation id="2814489978934728345">এই পৃষ্ঠা লোড করা বন্ধ করুন</translation>
@@ -1753,7 +1751,7 @@
 <translation id="363903084947548957">পরবর্তী ইনপুট পদ্ধতি</translation>
 <translation id="3640214691812501263"><ph name="USER_NAME" /> এর জন্য "<ph name="EXTENSION_NAME" />" জুড়বেন?</translation>
 <translation id="3644896802912593514">প্রস্থ</translation>
-<translation id="3645372836428131288">আঙ্গুলের ছাপের বিভিন্ন অংশ ক্যাপচার করতে একটু এদিক-ওদিক সরান</translation>
+<translation id="3645372836428131288">আঙ্গুলের ছাপের বিভিন্ন অংশ ক্যাপচার করতে একটু এদিক-ওদিক সরান৷</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> শনাক্ত হয়েছে</translation>
 <translation id="3649138363871392317">ফটো তোলা হয়েছে</translation>
 <translation id="3650952250015018111">"<ph name="APP_NAME" />" অ্যাপকে এগুলি অ্যাক্সেস করতে দিন:</translation>
@@ -2222,7 +2220,7 @@
 <translation id="438503109373656455">সারাটোগা</translation>
 <translation id="4387004326333427325">দূরবর্তী লোকেশন থেকে প্রমাণীকরণ শংসাপত্র প্রত্যাখ্যান করা হয়েছে</translation>
 <translation id="4389091756366370506">ব্যবহারকারী<ph name="VALUE" /></translation>
-<translation id="439266289085815679"><ph name="USER_EMAIL" /> এর মাধ্যমে ব্লুটুথ কনফিগারেশনটি নিয়ন্ত্রিত হয়।</translation>
+<translation id="439266289085815679"><ph name="USER_EMAIL" /> এর মাধ্যমে ব্লুটুথ কনফিগারেশন নিয়ন্ত্রিত হয়।</translation>
 <translation id="4394049700291259645">অক্ষম</translation>
 <translation id="4400367121200150367">যে সাইটগুলি কখনও পাসওয়ার্ড সংরক্ষণ করে না সেগুলি এখানে দেখা যাবে</translation>
 <translation id="4400632832271803360">সবথেকে উপরের-সারির কীগুলির আচরণ পরিবর্তন করতে লঞ্চার কী ধরে থাকুন</translation>
@@ -2526,7 +2524,7 @@
 <translation id="4880520557730313061">স্বতঃ-ফিক্স</translation>
 <translation id="4880827082731008257">সার্চের ইতিহাস</translation>
 <translation id="4881695831933465202">খুলুন</translation>
-<translation id="4882312758060467256">এই সাইটটিতে অ্যাক্সেস আছে</translation>
+<translation id="4882312758060467256">এই সাইটে অ্যাক্সেস আছে</translation>
 <translation id="4882473678324857464">বুকমার্কগুলি ফোকাস করুন</translation>
 <translation id="4882831918239250449">সার্চ, বিজ্ঞাপনসহ আরও অনেক কিছু ব্যক্তিগতকৃত করার জন্য আপনার ব্রাউজিং ইতিহাস কিভাবে ব্যবহার হবে তা নিয়ন্ত্রণ করুন</translation>
 <translation id="4883178195103750615">বুকমার্কগুলিকে HTML ফাইলে রপ্তানি করুন...</translation>
@@ -3674,7 +3672,6 @@
 <translation id="6582421931165117398">আপনার ব্যক্তিগত তথ্য রক্ষা করতে, এখনই এখনই আপনার পাসওয়ার্ড পরিবর্তন করুন। আপনার পাসওয়ার্ড পরিবর্তন করার আগে, আপনাকে সাইন ইন করতে বলা হবে।</translation>
 <translation id="6583851739559471707">যে সমস্ত সাইটে বিরক্তিকরভাবে বিজ্ঞাপন (প্রস্তাবিত) দেখানো হয়, সেগুলিতে ব্লক করা হয়েছে</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
-<translation id="6585283250473596934">সর্বজনীন সেশন ঢোকানো হচ্ছে৷</translation>
 <translation id="6586451623538375658">প্রাথমিক মাউস বোতাম অদল-বদল করুন</translation>
 <translation id="6589660129740381104">আরও সহজে <ph name="IDS_SHORT_PRODUCT_NAME" />-এ আপনার অভিজ্ঞতা পরিচালনা করতে, সিঙ্ক এবং ব্যক্তিগতকরণের সাথে সম্পর্কিত বৈশিষ্ট্য এখন একই জায়গা থেকে নিয়ন্ত্রণ করা যাবে। এটি চালু করলে আপনার বর্তমান সেটিংস পরিবর্তন হতে পারে।</translation>
 <translation id="6589706261477377614">কী উজ্জ্বলতা বাড়ান</translation>
@@ -4859,7 +4856,7 @@
 <translation id="8413385045638830869">প্রথমে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="8418445294933751433">ট্যাব রূপে &amp;দেখান</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' এর সার্চ ফলাফল</translation>
-<translation id="8419368276599091549"><ph name="DEVICE_TYPE" /> এ আপনাকে স্বাগত!</translation>
+<translation id="8419368276599091549">আপনার <ph name="DEVICE_TYPE" /> এ স্বাগতম!</translation>
 <translation id="8420060421540670057">Google দস্তাবেজ ফাইলগুলি দেখান</translation>
 <translation id="8424039430705546751">নিচে</translation>
 <translation id="8425213833346101688">পরিবর্তন</translation>
@@ -4985,7 +4982,7 @@
 <translation id="8620765578342452535">নেটওয়ার্ক সংযোগ কনফিগার করুন</translation>
 <translation id="8624205858755890468">আপনাকে সম্পর্কিত তথ্য, অ্যাপ এবং অ্যাকশন দেখাতে সহায়ককে সক্ষম করে।</translation>
 <translation id="862542460444371744">&amp;এক্সটেনশনস</translation>
-<translation id="8626219642120025691">টাইমারের কাজ হয়ে গেছে</translation>
+<translation id="8626219642120025691">টাইমারের কাজ শেষ</translation>
 <translation id="8627151598708688654">উৎস বেছে নিন</translation>
 <translation id="862727964348362408">সাসপেন্ড</translation>
 <translation id="862750493060684461">CSS ক্যাশে</translation>
@@ -5092,7 +5089,6 @@
 <translation id="8755376271068075440">&amp;বৃহত্তর</translation>
 <translation id="8756969031206844760">পাসওয়ার্ড আপডেট করবেন?</translation>
 <translation id="8757090071857742562">ডেস্কটপ কাস্ট করতে ব্যর্থ হয়েছে। আপনি আপনার স্ক্রিন শেয়ার করা শুরু করার জন্য প্রম্পটটি নিশ্চিত করেছেন কিনা তা দেখুন।</translation>
-<translation id="8757640015637159332">সর্বজনীন সেশন প্রবশ করুন</translation>
 <translation id="8757742102600829832">সংযোগ করার জন্য কোনো Chromebox বেছে নিন</translation>
 <translation id="8757803915342932642">Google ক্লাউড ডিভাইসগুলিতে ডিভাইস</translation>
 <translation id="8758418656925882523">ডিক্টেশন চালু করুন (টাইপ করার জন্য বলুন)</translation>
@@ -5106,7 +5102,7 @@
 <translation id="8775404590947523323">আপনার সম্পাদনাগুলি স্বয়ংক্রিয়ভাবে সংরক্ষিত হয়৷ আসল চিত্রের একটি কপি রাখতে <ph name="BREAKS" /> করুন , "মূল লেখা পুনর্লিখন করুন" চিহ্ন মুছে দিন</translation>
 <translation id="8777628254805677039">রুট পাসওয়ার্ড</translation>
 <translation id="8780443667474968681">ভয়েস সার্চ বন্ধ করা হয়েছে।</translation>
-<translation id="878068003854005405">শুরু করা যাক। আপনার আঙুলটি সেন্সরের ওপর রাখুন।</translation>
+<translation id="878068003854005405">শুরু করা যাক। আপনার আঙুল সেন্সরের ওপর রাখুন।</translation>
 <translation id="878069093594050299">এই শংসাপত্রটি নিম্নলিখিত ব্যবহারগুলির জন্য যাচাইকৃত:</translation>
 <translation id="8781980678064919987">যখন ঢাকনাটি বন্ধ থাকবে তখন বন্ধ করুন</translation>
 <translation id="8782565991310229362">Kiosk অ্যাপ্লিকেশান লঞ্চ বাতিল হয়েছে৷</translation>
@@ -5283,7 +5279,7 @@
 <translation id="9050666287014529139">পাসফ্রেজ</translation>
 <translation id="9052208328806230490">আপনি আপনার মুদ্রকগুলি <ph name="EMAIL" /> অ্যাকাউন্টটি ব্যবহার করে <ph name="CLOUD_PRINT_NAME" />তে নিবন্ধীকৃত করেছেন</translation>
 <translation id="9052404922357793350">ব্লক করা চালিয়ে যান</translation>
-<translation id="9053091947372579468">আপনার ডিভাইসে একটি Chrome লাইসেন্স রয়েছে, কিন্তু আপনার ব্যবহারকারীর নামের অ্যাডমিন কনসোলের সাথে অ্যাসোসিয়েটেড নয়। রেজিস্টার করার জন্য একটি অ্যাডমিন কনসোল অ্যাকাউন্ট তৈরি করুন। দ্রষ্টব্য: যদি আপনি একটি নতুন অ্যাডমিন কনসোল অ্যাকাউন্ট তৈরি করতে আপনার নিজস্ব ডোমেনটি ব্যবহার করতে চান, তাহলে https://g.co/ChromeEnterpriseAccount-এ সাইন- আপ করার পর আপনাকে ডোমেন যাচাই করার কাজটি সম্পূর্ণ করতে হবে।</translation>
+<translation id="9053091947372579468">আপনার ডিভাইসে একটি Chrome লাইসেন্স আছে, কিন্তু আপনার ব্যবহারকারীর নাম অ্যাডমিন কনসোলের সাথে অ্যাসোসিয়েটেড নয়। এনরোল করার জন্য একটি অ্যাডমিন কনসোল অ্যাকাউন্ট তৈরি করুন। দ্রষ্টব্য: যদি আপনি একটি নতুন অ্যাডমিন কনসোল অ্যাকাউন্ট তৈরি করতে আপনার নিজস্ব ডোমেনটি ব্যবহার করতে চান, তাহলে https://g.co/ChromeEnterpriseAccount-এ সাইন- আপ করার পর আপনাকে ডোমেন যাচাই করার কাজটি সম্পূর্ণ করতে হবে।</translation>
 <translation id="9053893665344928494">আমার পছন্দ মনে রাখুন</translation>
 <translation id="9055636786322918818">RC4 এনক্রিপশন চালু করুন। এই বিকল্পটির ব্যবহার ঝুঁকি বাড়ায় কারণ RC4 সাইফারটি নিরাপদ নয়।</translation>
 <translation id="9056034633062863292">Chromebox আপডেট করা হচ্ছে</translation>

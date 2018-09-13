@@ -888,7 +888,6 @@
 <translation id="230927227160767054">Esta página quer instalar um manipulador de serviço.</translation>
 <translation id="2309620859903500144">Este site foi impedido de acessar os sensores de luz ou movimento.</translation>
 <translation id="2315414688463285945">Erro ao configurar arquivos do Linux. Tente novamente.</translation>
-<translation id="2315821125498993513">Não foi possível se conectar ao smartphone. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" />.</translation>
 <translation id="2316129865977710310">Não.</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% concluída</translation>
 <translation id="2318143611928805047">Tamanho do papel</translation>
@@ -1224,7 +1223,6 @@
 <translation id="2806891468525657116">O atalho já existe</translation>
 <translation id="2807517655263062534">Os arquivos transferidos por download aparecem aqui</translation>
 <translation id="2809586584051668049">e mais <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
-<translation id="281133045296806353">Foi criada uma nova janela em uma sessão existente do navegador.</translation>
 <translation id="2812944337881233323">Tente sair e fazer login novamente</translation>
 <translation id="2812989263793994277">Não mostrar nenhuma imagem</translation>
 <translation id="2814489978934728345">Parar de carregar esta página</translation>
@@ -3715,7 +3713,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6582421931165117398">Para proteger suas informações pessoais, altere sua senha agora. Antes de alterar sua senha, você precisará fazer login.</translation>
 <translation id="6583851739559471707">Bloqueados em sites que costumam mostrar anúncios invasivos (recomendado)</translation>
 <translation id="6584878029876017575">Assinatura de tempo de vida da Microsoft</translation>
-<translation id="6585283250473596934">Ingressando em uma sessão pública.</translation>
 <translation id="6586451623538375658">Trocar botão principal do mouse</translation>
 <translation id="6589660129740381104">Para ajudar você a gerenciar sua experiência no <ph name="IDS_SHORT_PRODUCT_NAME" />, os recursos relacionados à sincronização e à personalização estão agora sob um único controle. A ativação pode alterar suas configurações atuais.</translation>
 <translation id="6589706261477377614">Aumentar brilho das teclas</translation>
@@ -5147,7 +5144,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8755376271068075440">&amp;Maior</translation>
 <translation id="8756969031206844760">Atualizar senha?</translation>
 <translation id="8757090071857742562">Não é possível transmitir a área de trabalho. Verifique se você confirmou a solicitação para começar a compartilhar sua tela.</translation>
-<translation id="8757640015637159332">Entrar na sessão pública</translation>
 <translation id="8757742102600829832">Selecionar um Chromebox para se conectar</translation>
 <translation id="8757803915342932642">Dispositivo no Google Cloud Devices</translation>
 <translation id="8758418656925882523">Ativar ditado (fale para digitar)</translation>

@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">您的浏览数据和活动，会同步到您的 Google 帐号</translation>
 <translation id="116280672541001035">已耗用</translation>
 <translation id="1172593791219290334">启动页</translation>
+<translation id="1175310183703641346">您的书签、历史记录、密码和其他设置将不再同步到您的 Google 帐号中</translation>
 <translation id="1178581264944972037">暂停</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="1197267115302279827">移动书签</translation>
@@ -48,6 +49,7 @@
 <translation id="129553762522093515">最近关闭的标签页</translation>
 <translation id="1326317727527857210">要在您的其他设备上访问您的标签页，请登录 Chrome。</translation>
 <translation id="1332501820983677155">Google Chrome 功能快捷键</translation>
+<translation id="1360432990279830238">退出帐号并关闭同步功能？</translation>
 <translation id="136248372334525878">预加载网页，以便更快地加载并实现离线阅读</translation>
 <translation id="1369915414381695676">网站 <ph name="SITE_NAME" /> 已添加</translation>
 <translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
@@ -158,6 +160,7 @@
 <translation id="2131665479022868825">节省了 <ph name="DATA" /></translation>
 <translation id="213279576345780926">已关闭“<ph name="TAB_TITLE" />”</translation>
 <translation id="2139186145475833000">添加到主屏幕</translation>
+<translation id="2142289305367051020">您最常访问的网页显示在此处</translation>
 <translation id="2146738493024040262">打开免安装应用</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2154484045852737596">修改支付卡</translation>
@@ -348,6 +351,7 @@
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>
 <translation id="385051799172605136">后退</translation>
 <translation id="3859306556332390985">前进</translation>
+<translation id="3868004864571585162">Cookie、媒体许可和网站数据</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="3895926599014793903">强制启用缩放功能</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -810,6 +814,7 @@
 <translation id="7413229368719586778">开始日期：<ph name="DATE" /></translation>
 <translation id="7423098979219808738">先询问</translation>
 <translation id="7423538860840206698">已阻止读取剪贴板中的内容</translation>
+<translation id="7431991332293347422">控制 Google 如何利用您的浏览记录为您提供个性化的 Google 搜索和其他 Google 服务</translation>
 <translation id="7437998757836447326">退出 Chrome</translation>
 <translation id="7444811645081526538">更多类别</translation>
 <translation id="7445411102860286510">允许网站自动播放静音的视频（推荐）</translation>
@@ -878,6 +883,7 @@
 <translation id="7963646190083259054">供应商：</translation>
 <translation id="7981313251711023384">预加载网页，以便实现更快速的浏览和搜索</translation>
 <translation id="79859296434321399">要查看增强现实内容，请安装 ARCore</translation>
+<translation id="7986741934819883144">选择联系人</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
 <translation id="7987764905897278458">畅享 Google 的更多智能技术</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
@@ -906,6 +912,7 @@
 <translation id="8109613176066109935">要将您的书签同步到您的所有设备上，请开启同步功能</translation>
 <translation id="8116925261070264013">已静音的网站</translation>
 <translation id="813082847718468539">查看网站信息</translation>
+<translation id="8156139159503939589">您能看懂哪些语言？</translation>
 <translation id="8168435359814927499">内容</translation>
 <translation id="8186512483418048923">还剩 <ph name="FILES" /> 个文件</translation>
 <translation id="8190358571722158785">还剩 1 天</translation>
@@ -918,6 +925,7 @@
 <translation id="8260126382462817229">请尝试重新登录</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8266862848225348053">下载内容保存位置</translation>
+<translation id="8274165955039650276">查看下载内容</translation>
 <translation id="8283853025636624853">正在同步到 <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">标准标签页</translation>
 <translation id="8313455859591948645">修改启动页</translation>
@@ -934,6 +942,7 @@
 <translation id="8441146129660941386">后退</translation>
 <translation id="8445448999790540984">无法导出密码</translation>
 <translation id="8447861592752582886">撤消设备权限</translation>
+<translation id="8477071352266846533">为 <ph name="SYNC_ACCOUNT_USER_NAME" /> 关闭同步功能</translation>
 <translation id="8487700953926739672">可离线使用</translation>
 <translation id="8489271220582375723">打开历史记录页</translation>
 <translation id="8493948351860045254">释放空间</translation>
@@ -973,6 +982,7 @@
 <translation id="8728487861892616501">使用此应用即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />，以及<ph name="BEGIN_LINK3" />针对通过 Family Link 管理的 Google 帐号的隐私权声明<ph name="END_LINK3" />。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8748850008226585750">内容已隐藏</translation>
+<translation id="8751914237388039244">选择图片</translation>
 <translation id="8788968922598763114">重新打开上次关闭的标签页</translation>
 <translation id="8812260976093120287">在某些网站上，您可以使用自己的设备通过上述支持的付款应用付款。</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" />将在 Chrome 中打开。继续操作即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />，以及<ph name="BEGIN_LINK3" />针对通过 Family Link 管理的 Google 帐号的隐私权声明<ph name="END_LINK3" />。</translation>

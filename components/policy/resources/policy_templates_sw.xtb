@@ -216,7 +216,6 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
 
       Onyo: Unashauriwa kutohawilisha udhibiti wa toleo la <ph name="PRODUCT_OS_NAME" /> kwenye programu ya skrini nzima kwa sababu inaweza kuzuia kifaa kupokea masasisho ya programu na marekebisho muhimu ya usalama. Kuhawilisha udhibiti wa toleo la <ph name="PRODUCT_OS_NAME" /> kunaweza kuhatarisha hali ya watumiaji.</translation>
 <translation id="1675002386741412210">Imehimiliwa kwenye:</translation>
-<translation id="1679420586049708690">Kipindi cha umma cha uingiaji otomatiki</translation>
 <translation id="1689963000958717134">Inaruhusu kusukuma usanidi wa mtandao ili kutumika kwa watumiaji wote wa kifaa cha <ph name="PRODUCT_OS_NAME" />. Usanidi wa mtandao ni mtungo wa JSON ulioumbizwa kama ilivyofafanuliwa na umbizo la Usanidi Huru wa Mtandao ulioelezwa kwenye <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Weka kizuizi kwenye uletaji wa mbegu Tofauti</translation>
 <translation id="172374442286684480">Ruhusu tovuti zote kuweka data za karibu nawe</translation>
@@ -360,12 +359,6 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 <translation id="2082205219176343977">Weka mipangilio ya msingi inayoruhusiwa ya toleo la Chrome kwenye kifaa.</translation>
 <translation id="209586405398070749">Kituo imara</translation>
 <translation id="2098658257603918882">Wezesha kuripoti kwa matumizi na data zinazohusu mvurugiko</translation>
-<translation id="2098916259427011890">Sera hii inadhibiti ikiwa unapaswa kuripoti maelezo ya toleo, kama vile toleo la mfumo wa uendeshaji, mifumo ya uendeshaji, usanifu wa mfumo wa uendeshaji, toleo la <ph name="PRODUCT_NAME" /> na kituo cha <ph name="PRODUCT_NAME" />.
-
-      Mipangilio ya sera hii isipowekwa au ikiwekewa mipangilio ya Ndivyo, maelezo ya toleo yanakusanywa.
-      Sera hii ikiwekewa mipangilio ya Sivyo, maelezo ya toleo hayatakusanywa.
-
-      Sera hii inatumika tu wakati umewasha Kiendelezi cha Kuripoti Chrome na kipengele cha Kudhibiti Wingu.</translation>
 <translation id="2111016292707172233">Huwasha kipengele cha Gusa ili Utafute katika mwonekano wa maudhui ya <ph name="PRODUCT_NAME" />.
 
       Ukiwasha mipangilio hii, kipengele cha Gusa ili Utafute kitapatikana kwa mtumiaji na anaweza kuamua kukiwasha au kukizima.
@@ -462,24 +455,6 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
           Sera hii inapoondolewa, hakuna mazungumzo ya onyo yatatoonyeshwa.
 
           Thamani ya sera inapaswa kubainishwa kwa milisekunde. Thamani zinafungashwa kuwa chini ya au sawa na muda wa kutofanya kitu.</translation>
-<translation id="2289578386193672044">Hubainisha orodha ya programu na viendelezi vinavyosakinishwa chinichini,
-          bila kumhusisha mtumiaji, ambavyo haviwezi kuondolewa au kuzimwa na     mtumiaji. Ruhusa zote zinazoombwa na programu
-          au viendelezi zitatolewa kwa njia fiche, bila mtumiaji kuhusishwa,
-          ikijumuisha programu zozote za ziada zinazoombwa na matoleo ya baadaye 
-          ya programu au kiendelezi. Zaidi ya hayo, ruhusa za API za
-          viendelezi vya enterprise.deviceAttributes na enterprise.platformKeys zinatolewa (API hizi mbili zinapatikana kwenye programu au viendelezi ambavyo havisakinishwi kwa lazima.)
-
-          Sera hii inapewa kipaumbele ikiwa kuna sera inayoweza kukinzana ya <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ikiwa programu au kiendelezi kilichosakinishwa hapo awali kwa lazima kitaondolewa kwenye orodha hii, kitaondolewa kiotomatiki na <ph name="PRODUCT_NAME" />.
-
-          Katika matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />, usakinishaji wa lazima unatumiwa tu na programu na viendelezi vilivyoorodheshwa katika Duka la Chrome kwenye Wavuti.
-
-          Kumbuka kuwa msimbo wa kiendelezi chochote unaweza kubadilishwa na mtumiaji kupitia Zana za Wasanidi Programu (hali hii inaweza kuzuia kiendelezi kufanya kazi). Ikiwa jambo hili litatokea, sera ya <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> inapaswa kuwekwa.
-
-          Kila kipengee cha orodha ya sera ni kifungu ambacho kinajumuisha kitambulisho cha kiendelezi na URL ya "sasisho" isiyo ya lazima inayotenganishwa kwa nukta mkato (<ph name="SEMICOLON" />). Kitambulisho cha kiendelezi ni kifungu cha herufi 32 kinachopatikana (kwa mfano kwenye <ph name="CHROME_EXTENSIONS_LINK" /> ikiwa katika hali ya msanidi programu. URL ya "sasisho" inapaswa kuashiria hati ya XML ya faili ya Maelezo ya Sasisho kama ilivyofanunuliwa katika <ph name="LINK_TO_EXTENSION_DOC1" />. Kwa chaguomsingi, sasisho la URL ya Duka la Chrome kwenye Wavuti linatumika (kwa sasa ni "https://clients2.google.com/service/update2/crx"). Kumbuka kuwa URL ya "sasisho" inayowekwa kwenye sera hii itatumiwa tu kwenye usanikishaji wa mwanzo; masasisho yanayofuata ya kiendelezi yatatumia URL ya sasisho inayoonyeshwa katika faili ya maelezo ya kiendelezi. Kumbuka pia kubainisha URL ya "sasisho" waziwazi ni lazima katika matoleo ya <ph name="PRODUCT_NAME" /> na mapya zaidi ikiwa ni pamoja na 67.
-
-          Kwa mfano, <ph name="EXTENSION_POLICY_EXAMPLE" /> inasakinisha programu ya <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> kutoka URL ya "sasisho" la kawaida la Duka la Chrome kwenye Wavuti. Kwa maelezo zaidi kuhusu jinsi ya kupangisha viendelezi, angalia: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kiotomatiki na mtumiaji anaweza kuondoa programu au kiendelezi chochote katika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> inaweza kutumia huduma ya wavuti ya Google ili kusaidia kutatua hitilafu za tahajia. Ikiwa mpangilio huu umewezeshwa, basi huduma hii inatumika kila mara. Ikiwa mpangilio huu unalemazwa, basi huduma hii haitumiki kamwe.
 
       Ukaguzi tahajia bado unaweza kutekelezwa kwa kutumia kamusi iliyopakuliwa; sera hii inadhibiti tu matumizi ya huduma ya mtandaoni.
@@ -508,15 +483,6 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 
       Maudhui ya orodha ya  'URL za kufungua mwanzoni' zinapuuzwa isipokuwa uchague 'Fungua orodha ya URL katika 'Kitendo cha mwanzo'.</translation>
 <translation id="2327252517317514801">Bainisha vikoa vinavyoruhusiwa kufikia G Suite</translation>
-<translation id="2372547058085956601">Ucheleweshwaji wa kuingia kiotomatiki katika kipindi cha umma.
-
-      Sera ya |DeviceLocalAccountAutoLoginId| ikiondolewa, sera hii haina athari. Vinginevyo:
-
-      Sera hii ikiwekwa, inabainisha kiasi cha muda ambacho kinaweza kupita bila shughuli ya mtumiaji kabla kuingia kiotomatiki katika kipindi cha umma kilichobainishwa na sera ya |DeviceLocalAccountAutoLoginId|.
-
-      Ikiwa sera haitawekwa, milisekunde 0 zitatumika kuonyesha muda umekwisha.
-
-      Sera hii inabainishwa kwa miliksekunde.</translation>
 <translation id="237494535617297575">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo zinaruhusiwa kuonyesha arifa.
 
            Ikiwa sera hii itasalia kama haijawekwa thamani yote chaguomsingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultNotificationsSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
@@ -1112,7 +1078,6 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
       Kama hutaweka sera hii, <ph name="PRODUCT_NAME" /> itatumia saraka chaguomsingi ya kawaida (inayolenga mfumo mahususi).
 
      Ili kupata orodha ya vigezo vinavyoweza kutumika, angalia https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
-<translation id="3907986150060929099">Weka lugha zinazopendekezwa kwa vipindi vya umma</translation>
 <translation id="3911737181201537215">Sera hii haiathiri uwekaji kumbukumbu wa Android.</translation>
 <translation id="391531815696899618">Huzima usawazishaji wa Hifadhi ya Google katika programu ya Faili ya <ph name="PRODUCT_OS_NAME" /> unapowekwa kuwa Ndivyo. Kwa hivyo, hakuna data inayopakiwa kwenye Hifadhi ya Google.
 
@@ -1180,12 +1145,6 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
       Vinginevyo, huenda ikawekwa katika mojawapo ya thamani zifuatazo: "tls1.2" au "tls1.3". Ikiwekwa, <ph name="PRODUCT_NAME" /> haitatumia matoleo ya SSL/TLS ambayo yamepita toleo lililobainishwa. Thamani isiyotambuliwa haitazingatiwa.</translation>
 <translation id="4121350739760194865">Zuia utambulishaji dhidi ya kuonekana kwenye ukurasa mpya wa kichupo</translation>
 <translation id="412697421478384751">Ruhusu watumiaji waweke PIN ambazo si thabiti zitumike kama PIN ya skrini iliyofungwa</translation>
-<translation id="4129183564590133854">Sera hii inadhibiti ikiwa unapaswa kuripoti maelezo yanayoweza kutumika kutambulisha watumiaji kama vile kuingia katika akaunti ya mfumo wa uendeshaji, kuingia katika akaunti ya wasifu wa <ph name="PRODUCT_NAME" />, Jina la wasifu wa <ph name="PRODUCT_NAME" />, Njia ya wasifu wa <ph name="PRODUCT_NAME" /> na njia inayoweza kutumika ya <ph name="PRODUCT_NAME" />.
-
-      Mipangilio ya sera hii isipowekwa au ikiwekewa mipangilio ya Ndivyo, maelezo yanayoweza kutumika kutambulisha watumiaji yanakusanywa.
-      Sera hii ikiwekewa mipangilio ya Sivyo, maelezo yanayoweza kutumika kutambulisha watumiaji hayakusanywi.
-
-      Sera hii inatumika tu wakati umewasha Kiendelezi cha Kuripoti cha Chrome na kipengele ha Kudhibiti Wingu.</translation>
 <translation id="4138655880188755661">Kikomo cha Muda</translation>
 <translation id="4157003184375321727">Ripoti OS na toleo la programu dhibiti</translation>
 <translation id="4157594634940419685">Ruhusu ufikiaji wa printa za mtandao wa CUPS</translation>
@@ -1490,12 +1449,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Ikiwa haijawekwa, mtumiaji anaweza kuombwa iwapo anataka kuleta, au uletaji unaweza kufanyika kiotomatiki.</translation>
 <translation id="5056708224511062314">Kikuza skrini kimezimwa</translation>
 <translation id="5058573563327660283">Chagua mkakati unaotumiwa kufuta baadhi ya faili ili kupata nafasi wakati wa kufuta data kiotomatiki (haitumiki)</translation>
-<translation id="5058771123777243130">Sera hii inadhibiti iwapo utaripoti data ya sera na wakati wa kuleta sera.
-
-      Mipangilio ya sera hii isipowekwa au ikiwekewa mipangilio ya Ndivyo, maelezo ya data ya sera na wakati wa kuleta sera yatakusanywa.
-      Sera hii ikiwekewa mipangilio ya Sivyo, maelezo kuhusu data ya sera na wakati wa kuleta sera hayatakusanywa.
-
-      Sera hii inatumika tu wakati umewasha Kiendelezi cha Kuripoti Chrome na kipengele cha Kudhibiti Wingu.</translation>
 <translation id="5067143124345820993">Ingia kwenye orodha ya kutoa idhini ya mtumiaji</translation>
 <translation id="5068140065960598044">Sera ya wingu ya <ph name="PRODUCT_NAME" /> inabatilisha Sera ya Mashine</translation>
 <translation id="5085647276663819155">Lemaza Uhakiki wa Uchapishaji</translation>
@@ -1664,11 +1617,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Iwapo orodha hii haina maudhui, mchakato hautaanzishwa na masasisho yatatumika kulingana na sera za vifaa vingine.
 
       Sera hii haitumiki katika swichi za vituo.</translation>
-<translation id="5523812257194833591">Kipindi cha uma cha kuingia otomatiki baada ya kuchelewa.
-
-      Endapo sera imewekwa, kipindi kilichobainishwa kitawekewa kumbukumbu kiotomatiki baada ya kipindi cha muda kupita katika skrini ya kuingia bila muingiliano wa mtumiaji. Kipindi cha umma lazima kiwe kimesanidiwa tayari (tazama |DeviceLocalAccounts|).
-
-      Endapo sera hii haijawekwa, hakutakuwa na kuingia kiotomatiki.</translation>
 <translation id="5526701598901867718">Zote (si salama)</translation>
 <translation id="5529037166721644841">Hubainisha muda kwa kipimo cha milisekunde ambacho huduma ya kudhibiti kifaa ambao huulizwa maelezo ya sera ya kifaa.
 
@@ -2078,13 +2026,6 @@ Ukiweka sera hii kuwa 'ndivyo', kipindi cha mgeni kinachodhibitiwa kitachukua si
       Mipangilio hii hudhibiti uwasilishaji wa kurasa za utangulizi ambazo husaidia watumiaji kuingia katika akaunti ya <ph name="PRODUCT_NAME" />, kuichagua iwe kivinjari chaguomsingi au kuwafahamisha kuhusu vipengele vya bidhaa.</translation>
 <translation id="6766216162565713893">Ruhusu tovuti zimwombe mtumiaji atoe idhini ya kufikia vifaa vya karibu vya Bluetooth</translation>
 <translation id="6770454900105963262">Ripoti taarifa kuhusu vipindi vya skrini nzima vinavyoendelea</translation>
-<translation id="6773056206551814546">Sera hii inadhibiti iwapo unapaswa kuripoti maelezo yanayoweza kutumika kutambua mashine, kama vile jina la mashine na anwani za mtandao.
-
-   Mipangilio ya sera hii isipowekwa au ikiwekewa mipangilio ya Ndivyo, maelezo yanayoweza kutumika kutambulisha mashine yanakusanywa. 
-
-   Sera hii ikiwekewa mipangilio ya Sivyo, maelezo yanayoweza kutumika kutambulisha mashine hayakusanywi.
-
-    Sera hii inatumika tu wakati umewasha Kiendelezi cha Kuripoti Chrome na Kipengele ha Kudhibiti Wingu.</translation>
 <translation id="6786747875388722282">Viendelezi</translation>
 <translation id="6786967369487349613">Weka saraka ya wasifu isiyo ya kawaida</translation>
 <translation id="6810445994095397827">Zuia JavaScript kwenye tovuti hizi</translation>
@@ -2538,22 +2479,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7750991880413385988">Fungua Ukurasa Mpya wa Kichupo</translation>
 <translation id="7754704193130578113">Uliza mahali pa kuhifadhi kila faili kabla ya kuipakua.</translation>
 <translation id="7761446981238915769">Weka orodha ya programu zilizosakinishwa kwenye skrini ya kuingia katika akaunti</translation>
-<translation id="7761526206824804472">Huweka lugha moja au zaidi zilizopendekezwa kwa vipindi vya umma, hivyo kuwaruhusu watumiaji kuchagua kwa urahisi mojawapo ya lugha hizi.
-
-      Mtumiaji anaweza kuchagua lugha na mpangilio wa kibodi kabla ya kuanza kipindi cha umma. Kwa chaguomsingi, lugha zote zinazotumika kwenye <ph name="PRODUCT_OS_NAME" /> zimeorodheshwa kwa mpangilio wa alfabeti. Unaweza kutumia sera hii kuhamisha seti ya lugha zilizoorodheshwa hadi upande wa juu wa orodha.
-
-      Sera hii isipowekwa, kiolesura cha lugha ya sasa kitachaguliwa awali.
-
-      Sera hii ikiwekwa, lugha zilizopendekezwa zitahamishwa hadi upande wa juu wa orodha na itatenganishwa na lugha nyingine zote. Lugha zinazopendekezwa zitaorodheshwa katika mpangilio ambao zinaonekana katika sera. Lugha ya kwanza iliyopendekezwa itachaguliwa awali.
-
-      Ikiwa kuna lugha zaidi ya moja iliyopendekezwa, inachukuliwa kwamba watumiaji wangependa kuchagua kati ya lugha hizi. Uteuzi wa lugha na mpangilio wa kibodi utatolewa sana wakati wa kuanza kipindi cha umma. Vinginevyo, inachukuliwa kwamba watumiaji wengi wangependa kutumia lugha hizi zilizochaguliwa awali. Uteuzi wa lugha na mpangilio wa kibodi hautatolewa sana wakati wa kuanza kipindi cha umma.
-
-       Sera hii inapowekwa na kipengee cha kuingia katika akaunti kiotomatiki kuwashwa (angalia sera za |DeviceLocalAccountAutoLoginId| na |DeviceLocalAccountAutoLoginDelay|), kipindi cha umma kilichoanzishwa kiotomatiki kitatumia lugha ya kwanza iliyopendekezwa na mpangilio wa kibodi maarufu sana unaolingana na lugha hii.
-
-      Kila wakati, mpangilio wa kibodi uliochaguliwa awali utakuwa mpangilio maarufu unaolingana na lugha iliyochaguliwa awali.
-
-      Sera hii inaweza tu kuwekwa kama ilivyopendekezwa. Unaweza kutumia sera hii kuhamisha seti ya lugha zilizopendekezwa hadi upande wa juu lakini watumiaji wanaruhusiwa kuchagua lugha inayotumika kwenye <ph name="PRODUCT_OS_NAME" /> kwa kipindi chao wakati wowote.
-      </translation>
 <translation id="7763479091692861127"> Aina za miunganisho zinazoruhusiwa kutumia sasisho za Mfumo wa Uendeshaji. Sasisho za Mfumo wa Uendeshaji zinaweza kuweka vichujo vizito kwenye muunganisho kwa sababu ya ukubwa wavyo na huenda vikasababisha gharama ya ziada. Kwa hivyo, haviwashwi kwa chaguomsingi kwa aina za miunganisho zinazoonekana kuwa ghali, zinazojumuisha WiMax, Bluetooth na Simu ya Mkononi kwa wakati huu.
 
       Vitambulisho vinavyotambuliwa vya aina vya muunganisho ni "ethaneti", "wifi", "wimax", "bluetooth"  na "simu ya mkononi".</translation>
@@ -3025,7 +2950,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 
       KUMBUKA: Kabla ya toleo la 45, sera hii ilitumika katika Skrini nzima pekee.</translation>
 <translation id="8970205333161758602">Didimiza kukataa kuuliza kwa <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="8971221018777092728">Saa ya kipindi cha umma cha uingiaji otomatiki</translation>
 <translation id="8976248126101463034">Ruhusu kipengele cha uthibitishaji wa gnubby kwa seva pangishi za uwezo wa kufikia kwa mbali</translation>
 <translation id="8976531594979650914">Tumia Printa Chaguomsingi ya Mfumo kama Chaguomsingi</translation>
 <translation id="8992176907758534924">Usiruhusu tovuti yoyote kuonyesha picha</translation>
@@ -3115,9 +3039,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
       Wakati sera hii imewekwa kuwa Cheti cha Kiteja (thamani ya 1), uthibitishaji wa cheti cha kiteja hutumiwa kwa watumiaji wapya walioongezwa ambao wanaingia katika akaunti wakitumia SAML. Hakuna manenosiri yanayotumiwa kwa watumiaji kama hawa na akiba ya data yao iliyohifadhiwa inalindwa kwa kutumia funguo za kriptografia zinazowiana. Kwa mfano, mipangilio hii inaruhusu kuweka mipangilio ya kadi mahiri kulingana na uthibitishaji wa mteja (kumbuka programu zinazotumika kati ya kadi mahiri na programu zinapaswa kusakinishwa kupitia DeviceLoginScreenAppInstallList).
 
       Sera hii inaathiriwa watumiaji ambao wanathibitisha kupitia SAML pekee.</translation>
-<translation id="9211439035693857287">Weka mipangilio inayohusiana na sera za Kiendelezi cha Kuripoti Chrome.
-
-      Sera hizi zinaweza kutumika tu wakati umewasha Kiendelezi cha Kuripoti Chrome na Kipengele cha Kudhibiti Wingu.</translation>
 <translation id="9213347477683611358">Weka mipangilio ya picha ya mandhari ya kiwango cha kifaa ambayo inaonyeshwa kwenye skrini ya kuingia katika akaunti ikiwa hakuna mtumiaji aliyeingia katika kifaa. Sera inawekwa kwa kubainisha URL ambayo kifaa cha Mfumo wa Uendeshaji wa Chrome kinaweza kupakua picha ya mandhari na hash ya kriptografia inayotumiwa kuthibitisha kwamba kipakuliwa hakina virusi. Lazima picha iwe ya aina ya faili ya JPEG, ukubwa wake usizidi MB 16. Lazima URL ifikiwe bila uthibitishaji wowote. Picha ya mandhari hupakuliwa na kuakibishwa. Itapakuliwa tena wakati URL au hash inabadilika.
 
       Sera inapaswa kubainishwa kama mfuatano unaoeleza URL na hash katika aina ya faili ya JSON, kwa mfano,

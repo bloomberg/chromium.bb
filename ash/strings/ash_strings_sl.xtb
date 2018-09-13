@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Priključen je nizkoenergijski polnilnik. Polnjenje akumulatorja morda ne bo zanesljivo.</translation>
 <translation id="2761704814324807722">Vrstica stanja, čas: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Vnovično vzpostavljanje povezave z omrežjem <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Izberite, ali lahko spletna mesta uporabljajo lokacijske storitve ali mikrofon, fotoaparat ali druge funkcije naprave</translation>
 <translation id="2792498699870441125">Alt + iskanje</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2808012452536866044">Funkcija Better Together je premaknjena na novi telefon</translation>
@@ -129,7 +130,6 @@
 <translation id="2992931425024192067">Pokaži vso vsebino obvestil</translation>
 <translation id="2995447421581609334">Prikaz naprav za predvajanje.</translation>
 <translation id="2996462380875591307">Zasidrana lupa je omogočena. Če jo želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + D.</translation>
-<translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> je javna seja, ki jo upravlja <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Mono zvok</translation>
 <translation id="3009178788565917040">Izhod</translation>
 <translation id="3019353588588144572">Preostali čas do napolnitve akumulatorja, <ph name="TIME_REMAINING" /></translation>
@@ -193,6 +193,7 @@
 <translation id="4200057768455216496">Pritisnili ste bližnjico za zasidrano lupo. Ali jo želite vklopiti?</translation>
 <translation id="4217571870635786043">Narek</translation>
 <translation id="4261870227682513959">Prikaz nastavitev obvestil. Obvestila so izklopljena.</translation>
+<translation id="4269883910223712419">Skrbniku te naprave je omogočeno to:</translation>
 <translation id="4274921305979314545">Povežite Chromebook s telefonom</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4292681942966152062">Aktiviranje omrežja <ph name="NETWORK_NAME" /></translation>
@@ -220,6 +221,7 @@
 <translation id="4734965478015604180">Vodoravno</translation>
 <translation id="476166673298332917">Skrbnik te naprave ima dostop do vse dejavnosti, vključno z gesli in komunikacijami.</translation>
 <translation id="4776917500594043016">Geslo za <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Pomočnik Google ni na voljo v predstavitveni seji.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Prekini povezavo</translation>
 <translation id="4849058404725798627">Označitev predmeta s fokusom na tipkovnici</translation>
@@ -335,6 +337,7 @@
 <translation id="6751826523481687655">Sledenje učinkovitosti delovanja je vklopljeno</translation>
 <translation id="6785414152754474415">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> % – polnjenje še poteka.</translation>
 <translation id="6803622936009808957">Zaslonov ni bilo mogoče zrcaliti, ker ni bilo najdene nobene podprte ločljivosti. Uporabljeno je razširjeno namizje.</translation>
+<translation id="6814658242098378692">Upravljanje aplikacij, razširitev in tem</translation>
 <translation id="6820676911989879663">Čas za odmor!</translation>
 <translation id="683971173229319003">Iskanje + L</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
@@ -358,6 +361,7 @@
 <translation id="7168224885072002358">Ponastavitev na prejšnjo ločljivost čez <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Zadnji mikrofon</translation>
 <translation id="726276584504105859">Povlecite sem za razdeljeni zaslon</translation>
+<translation id="7303365578352795231">Odgovor v drugi napravi.</translation>
 <translation id="7348093485538360975">Zaslonska tipkovnica</translation>
 <translation id="735745346212279324">Povezava z navideznim zasebnim omrežjem je prekinjena</translation>
 <translation id="7377169924702866686">Tipka Caps Lock je vklopljena.</translation>
@@ -390,6 +394,7 @@
 <translation id="7842211907556571265">Vzpostavljanje povezave z omrežjem <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Opozorilo: poskusna funkcija</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>
+<translation id="7886169021410746335">Prilagodite nastavitve zasebnosti</translation>
 <translation id="7886277072580235377">Seja interneta bo počiščena, ko se odjavite. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Pošlji e-poštno sporočilo</translation>
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>

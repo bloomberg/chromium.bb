@@ -888,7 +888,6 @@
 <translation id="230927227160767054">Questa pagina vuole installare un gestore di servizi.</translation>
 <translation id="2309620859903500144">A questo sito è stato impedito l'accesso ai sensori di movimento o della luce.</translation>
 <translation id="2315414688463285945">Errore durante la configurazione dei file Linux. Riprova.</translation>
-<translation id="2315821125498993513">Impossibile connettersi al telefono. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" />.</translation>
 <translation id="2316129865977710310">No, grazie</translation>
 <translation id="2317842250900878657">Percentuale di completamento: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Formato carta</translation>
@@ -1223,7 +1222,6 @@
 <translation id="2806891468525657116">Scorciatoia già presente</translation>
 <translation id="2807517655263062534">I file scaricati vengono mostrati qui</translation>
 <translation id="2809586584051668049">e altre <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
-<translation id="281133045296806353">È stata creata una nuova finestra nella sessione corrente del browser.</translation>
 <translation id="2812944337881233323">Prova a uscire e ad accedere di nuovo</translation>
 <translation id="2812989263793994277">Non mostrare le immagini</translation>
 <translation id="2814489978934728345">Interrompi il caricamento della pagina</translation>
@@ -3709,7 +3707,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6582421931165117398">Cambia subito la password per proteggere le tue informazioni personali. Ti verrà chiesto di accedere per cambiare la password.</translation>
 <translation id="6583851739559471707">Bloccati sui siti che tendono a mostrare annunci invasivi (opzione consigliata)</translation>
 <translation id="6584878029876017575">Firma definitiva Microsoft</translation>
-<translation id="6585283250473596934">Accesso a una sessione pubblica.</translation>
 <translation id="6586451623538375658">Inverti pulsante principale del mouse</translation>
 <translation id="6589660129740381104">Per aiutarti a gestire più facilmente la tua esperienza con <ph name="IDS_SHORT_PRODUCT_NAME" />, le funzioni relative a sincronizzazione e personalizzazione sono ora raggruppate in un'unica opzione di controllo. Attivarla può modificare le attuali impostazioni.</translation>
 <translation id="6589706261477377614">Consente di aumentare la luminosità dei tasti</translation>
@@ -5138,7 +5135,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8755376271068075440">Più &amp;grande</translation>
 <translation id="8756969031206844760">Aggiornare la password?</translation>
 <translation id="8757090071857742562">Impossibile trasmettere il desktop. Verifica di avere confermato la richiesta di avvio della condivisione dello schermo.</translation>
-<translation id="8757640015637159332">Entra nella sessione pubblica</translation>
 <translation id="8757742102600829832">Seleziona un Chromebox a cui collegarti</translation>
 <translation id="8757803915342932642">Dispositivo su Google Cloud Devices</translation>
 <translation id="8758418656925882523">Attiva dettatura (parla per digitare)</translation>
