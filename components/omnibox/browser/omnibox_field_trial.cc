@@ -57,6 +57,11 @@ const base::Feature kOmniboxTailSuggestions{
 const base::Feature kOmniboxTabSwitchSuggestions{
     "OmniboxTabSwitchSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable various experiments on keyword mode, UI and
+// suggestions.
+const base::Feature kExperimentalKeywordMode{"ExperimentalKeywordMode",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable clipboard provider, which provides the user with
 // suggestions of the URL in the user's clipboard (if any) upon omnibox focus.
 const base::Feature kEnableClipboardProvider {
