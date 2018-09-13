@@ -212,16 +212,34 @@ cr.define('test_util', function() {
         override);
   }
 
+  /**
+   * Converts beforeNextRender() API to promise-based.
+   * @param {!Element} element
+   * @return {!Promise}
+   */
+  function waitForRender(element) {
+    return new Promise(resolve => {
+      // TODO(dpapad): Remove early return once Polymer 2 migration is complete.
+      if (!Polymer.DomIf) {
+        resolve();
+        return;
+      }
+
+      Polymer.RenderStatus.beforeNextRender(element, resolve);
+    });
+  }
+
   return {
-    eventToPromise: eventToPromise,
-    fakeDataBind: fakeDataBind,
-    whenAttributeIs: whenAttributeIs,
     createContentSettingTypeToValuePair: createContentSettingTypeToValuePair,
     createDefaultContentSetting: createDefaultContentSetting,
-    createRawSiteException: createRawSiteException,
-    createSiteSettingsPrefs: createSiteSettingsPrefs,
-    createSiteGroup: createSiteGroup,
     createOriginInfo: createOriginInfo,
+    createRawSiteException: createRawSiteException,
+    createSiteGroup: createSiteGroup,
+    createSiteSettingsPrefs: createSiteSettingsPrefs,
+    eventToPromise: eventToPromise,
+    fakeDataBind: fakeDataBind,
+    waitForRender: waitForRender,
+    whenAttributeIs: whenAttributeIs,
   };
 
 });

@@ -51,7 +51,8 @@ SettingsPageBrowserTest.prototype = {
    * Toggles the Advanced sections.
    */
   toggleAdvanced: function() {
-    const settingsMain = document.querySelector('* /deep/ settings-main');
+    const settingsMain =
+        document.querySelector('settings-ui').$$('settings-main');
     assert(!!settingsMain);
     settingsMain.advancedToggleExpanded = !settingsMain.advancedToggleExpanded;
     Polymer.dom.flush();
