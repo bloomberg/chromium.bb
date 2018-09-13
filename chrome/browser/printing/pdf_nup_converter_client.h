@@ -29,12 +29,14 @@ class PdfNupConverterClient
       int document_cookie,
       uint32_t pages_per_sheet,
       const gfx::Size& page_size,
+      const gfx::Rect& printable_area,
       std::vector<base::ReadOnlySharedMemoryRegion> pdf_page_regions,
       mojom::PdfNupConverter::NupPageConvertCallback callback);
   void DoNupPdfDocumentConvert(
       int document_cookie,
       uint32_t pages_per_sheet,
       const gfx::Size& page_size,
+      const gfx::Rect& printable_area,
       base::ReadOnlySharedMemoryRegion src_pdf_document,
       mojom::PdfNupConverter::NupDocumentConvertCallback callback);
 

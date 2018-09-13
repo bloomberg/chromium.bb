@@ -10,6 +10,7 @@
 #include "pdf/pdf.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
@@ -102,14 +103,26 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfPagesToNupPdf) {
   ASSERT_TRUE(base::ReadFileToString(pdf_path, &pdf_data));
 
   std::vector<base::span<const uint8_t>> pdf_buffers;
-  std::vector<uint8_t> output_pdf_buffer =
-      ConvertPdfPagesToNupPdf(pdf_buffers, 1, gfx::Size(512, 792));
+  std::vector<uint8_t> output_pdf_buffer = ConvertPdfPagesToNupPdf(
+      pdf_buffers, 1, gfx::Size(612, 792), gfx::Rect(22, 20, 570, 750));
   EXPECT_TRUE(output_pdf_buffer.empty());
 
   pdf_buffers.push_back(base::as_bytes(base::make_span(pdf_data)));
   pdf_buffers.push_back(base::as_bytes(base::make_span(pdf_data)));
-  output_pdf_buffer =
-      ConvertPdfPagesToNupPdf(pdf_buffers, 2, gfx::Size(512, 792));
+  output_pdf_buffer = ConvertPdfPagesToNupPdf(
+      pdf_buffers, 2, gfx::Size(612, 792), gfx::Rect(22, 20, 0, 750));
+  EXPECT_TRUE(output_pdf_buffer.empty());
+  output_pdf_buffer = ConvertPdfPagesToNupPdf(
+      pdf_buffers, 2, gfx::Size(612, 792), gfx::Rect(22, 20, 570, 0));
+  EXPECT_TRUE(output_pdf_buffer.empty());
+  output_pdf_buffer = ConvertPdfPagesToNupPdf(
+      pdf_buffers, 2, gfx::Size(612, 792), gfx::Rect(300, 20, 570, 750));
+  EXPECT_TRUE(output_pdf_buffer.empty());
+  output_pdf_buffer = ConvertPdfPagesToNupPdf(
+      pdf_buffers, 2, gfx::Size(612, 792), gfx::Rect(22, 400, 570, 750));
+  EXPECT_TRUE(output_pdf_buffer.empty());
+  output_pdf_buffer = ConvertPdfPagesToNupPdf(
+      pdf_buffers, 2, gfx::Size(612, 792), gfx::Rect(22, 20, 570, 750));
   ASSERT_GT(output_pdf_buffer.size(), 0U);
 
   base::span<const uint8_t> output_pdf_span =
@@ -122,7 +135,7 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfPagesToNupPdf) {
   double height;
   ASSERT_TRUE(GetPDFPageSizeByIndex(output_pdf_span, 0, &width, &height));
   EXPECT_DOUBLE_EQ(792.0, width);
-  EXPECT_DOUBLE_EQ(512.0, height);
+  EXPECT_DOUBLE_EQ(612.0, height);
 }
 
 TEST_F(PDFiumEngineExportsTest, ConvertPdfDocumentToNupPdf) {
@@ -132,13 +145,13 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfDocumentToNupPdf) {
   ASSERT_TRUE(base::ReadFileToString(pdf_path, &pdf_data));
 
   base::span<const uint8_t> pdf_buffer;
-  std::vector<uint8_t> output_pdf_buffer =
-      ConvertPdfDocumentToNupPdf(pdf_buffer, 1, gfx::Size(512, 792));
+  std::vector<uint8_t> output_pdf_buffer = ConvertPdfDocumentToNupPdf(
+      pdf_buffer, 1, gfx::Size(612, 792), gfx::Rect(32, 20, 570, 750));
   EXPECT_TRUE(output_pdf_buffer.empty());
 
   pdf_buffer = base::as_bytes(base::make_span(pdf_data));
-  output_pdf_buffer =
-      ConvertPdfDocumentToNupPdf(pdf_buffer, 4, gfx::Size(512, 792));
+  output_pdf_buffer = ConvertPdfDocumentToNupPdf(
+      pdf_buffer, 4, gfx::Size(612, 792), gfx::Rect(22, 20, 570, 750));
   ASSERT_GT(output_pdf_buffer.size(), 0U);
 
   base::span<const uint8_t> output_pdf_span =
@@ -151,7 +164,7 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfDocumentToNupPdf) {
     double height;
     ASSERT_TRUE(
         GetPDFPageSizeByIndex(output_pdf_span, page_number, &width, &height));
-    EXPECT_DOUBLE_EQ(512.0, width);
+    EXPECT_DOUBLE_EQ(612.0, width);
     EXPECT_DOUBLE_EQ(792.0, height);
   }
 }

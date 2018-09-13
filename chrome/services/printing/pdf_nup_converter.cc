@@ -60,6 +60,7 @@ PdfNupConverter::~PdfNupConverter() {}
 void PdfNupConverter::NupPageConvert(
     uint32_t pages_per_sheet,
     const gfx::Size& page_size,
+    const gfx::Rect& printable_area,
     std::vector<base::ReadOnlySharedMemoryRegion> pdf_page_regions,
     NupPageConvertCallback callback) {
   std::vector<base::ReadOnlySharedMemoryMapping> pdf_mappings;
@@ -67,7 +68,7 @@ void PdfNupConverter::NupPageConvert(
       CreatePdfPagesVector(pdf_page_regions, &pdf_mappings);
 
   std::vector<uint8_t> output_pdf_buffer = chrome_pdf::ConvertPdfPagesToNupPdf(
-      std::move(input_pdf_buffers), pages_per_sheet, page_size);
+      std::move(input_pdf_buffers), pages_per_sheet, page_size, printable_area);
   if (output_pdf_buffer.empty()) {
     std::move(callback).Run(mojom::PdfNupConverter::Status::CONVERSION_FAILURE,
                             base::ReadOnlySharedMemoryRegion());
@@ -80,6 +81,7 @@ void PdfNupConverter::NupPageConvert(
 void PdfNupConverter::NupDocumentConvert(
     uint32_t pages_per_sheet,
     const gfx::Size& page_size,
+    const gfx::Rect& printable_area,
     base::ReadOnlySharedMemoryRegion src_pdf_region,
     NupDocumentConvertCallback callback) {
   base::ReadOnlySharedMemoryMapping pdf_document_mapping = src_pdf_region.Map();
@@ -87,7 +89,7 @@ void PdfNupConverter::NupDocumentConvert(
 
   std::vector<uint8_t> output_pdf_buffer =
       chrome_pdf::ConvertPdfDocumentToNupPdf(input_pdf_buffer, pages_per_sheet,
-                                             page_size);
+                                             page_size, printable_area);
   if (output_pdf_buffer.empty()) {
     std::move(callback).Run(mojom::PdfNupConverter::Status::CONVERSION_FAILURE,
                             base::ReadOnlySharedMemoryRegion());

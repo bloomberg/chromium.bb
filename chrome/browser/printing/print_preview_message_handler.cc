@@ -61,6 +61,25 @@ bool IsValidPageNumber(int page_number, int page_count) {
   return page_number >= 0 && page_number < page_count;
 }
 
+// Checks whether |printable_area| can be used to form a valid symmetrical
+// printable area, so that margin_left equals margin_right, and margin_top
+// equals margin_bottom.  For example if
+// printable_area.x() * 2 >= page_size.width(), then the
+// content_width = page_size.width() - 2 * printable_area.x() would be zero or
+// negative, which is invalid.
+// |page_size| is the physical page size that includes margins.
+bool IsValidPrintableArea(const gfx::Size& page_size,
+                          const gfx::Rect& printable_area) {
+  return !printable_area.IsEmpty() && printable_area.x() >= 0 &&
+         printable_area.y() >= 0 &&
+         printable_area.right() <= page_size.width() &&
+         printable_area.bottom() <= page_size.height() &&
+         printable_area.x() * 2 < page_size.width() &&
+         printable_area.y() * 2 < page_size.height() &&
+         printable_area.right() * 2 > page_size.width() &&
+         printable_area.bottom() * 2 > page_size.height();
+}
+
 }  // namespace
 
 PrintPreviewMessageHandler::PrintPreviewMessageHandler(
@@ -339,11 +358,16 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
       std::vector<base::ReadOnlySharedMemoryRegion> pdf_page_regions =
           print_preview_ui->TakePagesForNupConvert();
 
+      gfx::Rect printable_area = GetSymmetricalPrintableArea(
+          print_preview_ui->page_size(), print_preview_ui->printable_area());
+      if (printable_area.IsEmpty())
+        return;
+
       auto* client = PdfNupConverterClient::FromWebContents(web_contents());
       DCHECK(client);
       client->DoNupPdfConvert(
           document_cookie, pages_per_sheet, print_preview_ui->page_size(),
-          std::move(pdf_page_regions),
+          printable_area, std::move(pdf_page_regions),
           base::BindOnce(&PrintPreviewMessageHandler::OnNupPdfConvertDone,
                          weak_ptr_factory_.GetWeakPtr(), new_page_number, ids));
     }
@@ -395,9 +419,14 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     auto* client = PdfNupConverterClient::FromWebContents(web_contents());
     DCHECK(client);
 
+    gfx::Rect printable_area = GetSymmetricalPrintableArea(
+        print_preview_ui->page_size(), print_preview_ui->printable_area());
+    if (printable_area.IsEmpty())
+      return;
+
     client->DoNupPdfDocumentConvert(
         document_cookie, pages_per_sheet, print_preview_ui->page_size(),
-        std::move(region),
+        printable_area, std::move(region),
         base::BindOnce(&PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone,
                        weak_ptr_factory_.GetWeakPtr(),
                        (page_count + pages_per_sheet - 1) / pages_per_sheet,
@@ -457,6 +486,26 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+// static
+gfx::Rect PrintPreviewMessageHandler::GetSymmetricalPrintableArea(
+    const gfx::Size& page_size,
+    const gfx::Rect& printable_area) {
+  if (!IsValidPrintableArea(page_size, printable_area))
+    return gfx::Rect();
+
+  int left_right_margin =
+      std::max(printable_area.x(), page_size.width() - printable_area.right());
+  int top_bottom_margin = std::max(
+      printable_area.y(), page_size.height() - printable_area.bottom());
+  int width = page_size.width() - 2 * left_right_margin;
+  int height = page_size.height() - 2 * top_bottom_margin;
+
+  gfx::Rect symmetrical_printable_area = gfx::Rect(page_size);
+  symmetrical_printable_area.ClampToCenteredSize(gfx::Size(width, height));
+
+  return symmetrical_printable_area;
 }
 
 }  // namespace printing

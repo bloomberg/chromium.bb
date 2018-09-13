@@ -752,6 +752,8 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
     NOTREACHED();
     return;
   }
+  // Save printable_area information for N-up conversion.
+  printable_area_ = printable_area;
 
   base::DictionaryValue layout;
   layout.SetDouble(printing::kSettingMarginTop, page_layout.margin_top);
