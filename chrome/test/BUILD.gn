@@ -5041,6 +5041,7 @@ if (!is_android) {
         "../browser/download/notification/download_notification_interactive_uitest.cc",
         "../browser/ui/ash/tab_scrubber_browsertest.cc",
         "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_interactive_uitest.cc",
+        "../browser/ui/views/frame/hosted_app_ash_interactive_ui_test.cc",
         "../browser/ui/webui/chromeos/login/oobe_display_chooser_browsertest.cc",
         "../browser/ui/window_sizer/window_sizer_ash_uitest.cc",
         "//ash/accelerators/accelerator_interactive_uitest_chromeos.cc",
