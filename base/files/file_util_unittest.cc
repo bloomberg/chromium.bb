@@ -2370,7 +2370,14 @@ TEST_F(FileUtilTest, GetTempDirTest) {
 TEST_F(FileUtilTest, OpenFileNoInheritance) {
   FilePath file_path(temp_dir_.GetPath().Append(FPL("a_file")));
 
-  for (const char* mode : {"wb", "r,ccs=UTF-8"}) {
+// Character set handling is leaking according to ASAN. http://crbug.com/883698
+#if defined(ADDRESS_SANITIZER)
+  static constexpr const char* modes[] = {"wb", "r"};
+#else
+  static constexpr const char* modes[] = {"wb", "r,ccs=UTF-8"};
+#endif
+
+  for (const char* mode : modes) {
     SCOPED_TRACE(mode);
     ASSERT_NO_FATAL_FAILURE(CreateTextFile(file_path, L"Geepers"));
     FILE* file = OpenFile(file_path, mode);
