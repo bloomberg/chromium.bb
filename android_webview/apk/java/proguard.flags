@@ -64,11 +64,6 @@
 }
 
 # Accessed via reflection but not present in all builds
--keep class com.android.webview.chromium.PlatformServiceBridgeGoogle {
-  void setMetricsSettingListener(...);
-  PlatformServiceBridgeGoogle(...);
-}
--dontnote com.android.webview.chromium.PlatformServiceBridgeGoogle
 -keep class com.android.webview.chromium.AwSafeBrowsingApiHandler {
   AwSafeBrowsingApiHandler(...);
 }
