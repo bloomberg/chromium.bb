@@ -50,6 +50,11 @@ KeyedService* ChromeCryptAuthServiceFactory::BuildServiceInstanceFor(
 
 void ChromeCryptAuthServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // If DeviceSync service is being used, it will be responsible for registering
+  // these preferences. See https://crbug.com/876906.
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+    return;
+
   cryptauth::CryptAuthService::RegisterProfilePrefs(registry);
 }
 
