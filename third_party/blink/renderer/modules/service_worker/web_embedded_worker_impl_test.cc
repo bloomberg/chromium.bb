@@ -156,6 +156,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
 
     start_data_.script_url = script_url;
     start_data_.user_agent = WebString("dummy user agent");
+    start_data_.script_type = mojom::ScriptType::kClassic;
     start_data_.pause_after_download_mode =
         WebEmbeddedWorkerStartData::kDontPauseAfterDownload;
     start_data_.wait_for_debugger_mode =

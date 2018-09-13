@@ -652,8 +652,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     registration_->set_last_update_check(base::Time::Now());
 
     version_ = new ServiceWorkerVersion(
-        registration_.get(),
-        embedded_test_server()->GetURL(worker_url),
+        registration_.get(), embedded_test_server()->GetURL(worker_url),
+        blink::mojom::ScriptType::kClassic,
         wrapper()->context()->storage()->NewVersionId(),
         wrapper()->context()->AsWeakPtr());
 
@@ -688,6 +688,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     scoped_refptr<ServiceWorkerVersion> waiting_version(
         new ServiceWorkerVersion(
             registration_.get(), embedded_test_server()->GetURL(worker_url),
+            blink::mojom::ScriptType::kClassic,
             wrapper()->context()->storage()->NewVersionId(),
             wrapper()->context()->AsWeakPtr()));
     waiting_version->set_fetch_handler_existence(
@@ -1472,6 +1473,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   // Make options. Set to kAll so updating exercises the browser cache.
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL(kScope),
+      blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kAll);
 
   // Register and wait for activation.
@@ -1604,6 +1606,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, FetchPageWithSaveData) {
   observer->Init();
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL(kPageUrl),
+      blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
@@ -1648,6 +1651,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
   observer->Init();
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL(kPageUrl),
+      blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
@@ -1693,6 +1697,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
 
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL(kPageUrl),
+      blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
@@ -1721,6 +1726,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
   observer->Init();
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL(kPageUrl),
+      blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
@@ -1772,7 +1778,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, IdleTimerWithDevTools) {
       "/service_worker/fetch_event_respond_with_fetch.js");
 
   blink::mojom::ServiceWorkerRegistrationOptions options(
-      scope, blink::mojom::ServiceWorkerUpdateViaCache::kNone);
+      scope, blink::mojom::ScriptType::kClassic,
+      blink::mojom::ServiceWorkerUpdateViaCache::kNone);
   public_context()->RegisterServiceWorker(
       worker_url, options,
       base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
@@ -1875,7 +1882,8 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
     observer->Init();
 
     blink::mojom::ServiceWorkerRegistrationOptions options(
-        scope, blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+        scope, blink::mojom::ScriptType::kClassic,
+        blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         worker_url, options,
         base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
@@ -2621,7 +2629,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
       new WorkerActivatedObserver(wrapper());
   observer->Init();
   blink::mojom::ServiceWorkerRegistrationOptions options(
-      https_server.GetURL(kPageUrl),
+      https_server.GetURL(kPageUrl), blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       https_server.GetURL(kWorkerUrl), options,
@@ -2660,6 +2668,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   observer->Init();
   blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL(kPageUrl),
+      blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
   public_context()->RegisterServiceWorker(
       embedded_test_server()->GetURL(kWorkerUrl), options,
@@ -2801,6 +2810,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
     base::RunLoop run_loop;
     blink::mojom::ServiceWorkerRegistrationOptions options(
         embedded_test_server()->GetURL(kScope),
+        blink::mojom::ScriptType::kClassic,
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         embedded_test_server()->GetURL("/does/not/exist"), options,
@@ -2814,6 +2824,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
     base::RunLoop run_loop;
     blink::mojom::ServiceWorkerRegistrationOptions options(
         embedded_test_server()->GetURL(kScope),
+        blink::mojom::ScriptType::kClassic,
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         embedded_test_server()->GetURL(kWorkerUrl), options,
@@ -2828,6 +2839,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
     base::RunLoop run_loop;
     blink::mojom::ServiceWorkerRegistrationOptions options(
         embedded_test_server()->GetURL(kScope),
+        blink::mojom::ScriptType::kClassic,
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         embedded_test_server()->GetURL(kWorkerUrl), options,
@@ -3166,6 +3178,7 @@ class ServiceWorkerV8CodeCacheForCacheStorageTest
     observer->Init();
     blink::mojom::ServiceWorkerRegistrationOptions options(
         embedded_test_server()->GetURL(kPageUrl),
+        blink::mojom::ScriptType::kClassic,
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         embedded_test_server()->GetURL(kWorkerUrl), options,
@@ -3287,7 +3300,7 @@ class ServiceWorkerDisableWebSecurityTest : public ServiceWorkerBrowserTest {
         new WorkerActivatedObserver(wrapper());
     observer->Init();
     blink::mojom::ServiceWorkerRegistrationOptions options(
-        cross_origin_server_.GetURL(scope),
+        cross_origin_server_.GetURL(scope), blink::mojom::ScriptType::kClassic,
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     public_context()->RegisterServiceWorker(
         cross_origin_server_.GetURL(script), options,

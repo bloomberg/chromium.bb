@@ -96,7 +96,8 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
         options, 1L /* registration_id */, context->AsWeakPtr());
     version_ = base::MakeRefCounted<ServiceWorkerVersion>(
         registration_.get(), GURL("https://host/script.js"),
-        context->storage()->NewVersionId(), context->AsWeakPtr());
+        blink::mojom::ScriptType::kClassic, context->storage()->NewVersionId(),
+        context->AsWeakPtr());
 
     provider_host_ = CreateProviderHostForServiceWorkerContext(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,

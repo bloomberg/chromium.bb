@@ -226,6 +226,7 @@ base::TimeDelta ServiceWorkerVersion::GetTickDuration(
 ServiceWorkerVersion::ServiceWorkerVersion(
     ServiceWorkerRegistration* registration,
     const GURL& script_url,
+    blink::mojom::ScriptType script_type,
     int64_t version_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : version_id_(version_id),
@@ -233,6 +234,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       script_url_(script_url),
       script_origin_(url::Origin::Create(script_url_)),
       scope_(registration->pattern()),
+      script_type_(script_type),
       fetch_handler_existence_(FetchHandlerExistence::UNKNOWN),
       site_for_uma_(ServiceWorkerMetrics::SiteFromURL(scope_)),
       binding_(this),
@@ -1522,6 +1524,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->service_worker_version_id = version_id_;
   params->scope = scope_;
   params->script_url = script_url_;
+  params->script_type = script_type_;
   params->is_installed = IsInstalled(status_);
   params->pause_after_download = pause_after_download();
 

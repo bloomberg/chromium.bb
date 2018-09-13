@@ -550,7 +550,8 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   job_coordinator()->Register(
       script_url1,
       blink::mojom::ServiceWorkerRegistrationOptions(
-          pattern, blink::mojom::ServiceWorkerUpdateViaCache::kNone),
+          pattern, blink::mojom::ScriptType::kClassic,
+          blink::mojom::ServiceWorkerUpdateViaCache::kNone),
       SaveRegistration(blink::ServiceWorkerStatusCode::kOk,
                        &registration1_called, &registration1));
 
@@ -560,7 +561,8 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   job_coordinator()->Register(
       script_url2,
       blink::mojom::ServiceWorkerRegistrationOptions(
-          pattern, blink::mojom::ServiceWorkerUpdateViaCache::kAll),
+          pattern, blink::mojom::ScriptType::kClassic,
+          blink::mojom::ServiceWorkerUpdateViaCache::kAll),
       SaveRegistration(blink::ServiceWorkerStatusCode::kOk,
                        &registration2_called, &registration2));
 
@@ -764,7 +766,8 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   // Manually create the waiting worker since there is no way to become a
   // waiting worker until Update is implemented.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
-      registration.get(), script_url, 1L, helper_->context()->AsWeakPtr());
+      registration.get(), script_url, blink::mojom::ScriptType::kClassic, 1L,
+      helper_->context()->AsWeakPtr());
   base::Optional<blink::ServiceWorkerStatusCode> status;
   version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                        CreateReceiverOnCurrentThread(&status));
@@ -1323,8 +1326,8 @@ TEST_F(ServiceWorkerJobTest, Update_ScriptUrlChanged) {
   // Add a waiting version with a new script.
   GURL new_script("https://www.example.com/new_worker.js");
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
-      registration.get(), new_script, 2L /* dummy version id */,
-      helper_->context()->AsWeakPtr());
+      registration.get(), new_script, blink::mojom::ScriptType::kClassic,
+      2L /* dummy version id */, helper_->context()->AsWeakPtr());
   registration->SetWaitingVersion(version);
 
   // Run the update job.
