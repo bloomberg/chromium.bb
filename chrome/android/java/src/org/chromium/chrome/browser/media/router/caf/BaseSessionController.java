@@ -182,13 +182,21 @@ public class BaseSessionController {
     private class RemoteMediaClientCallback extends RemoteMediaClient.Callback {
         @Override
         public void onStatusUpdated() {
-            mNotificationController.onStatusUpdated();
+            BaseSessionController.this.onStatusUpdated();
         }
 
         @Override
         public void onMetadataUpdated() {
-            mNotificationController.onMetadataUpdated();
+            BaseSessionController.this.onMetadataUpdated();
         }
+    }
+
+    protected void onStatusUpdated() {
+        mNotificationController.onStatusUpdated();
+    }
+
+    protected void onMetadataUpdated() {
+        mNotificationController.onMetadataUpdated();
     }
 
     @Nullable

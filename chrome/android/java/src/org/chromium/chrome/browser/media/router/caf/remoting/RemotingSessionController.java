@@ -44,6 +44,12 @@ public class RemotingSessionController extends BaseSessionController {
     }
 
     @Override
+    protected void onStatusUpdated() {
+        super.onStatusUpdated();
+        mFlingingControllerAdapter.onStatusUpdated();
+    }
+
+    @Override
     public FlingingController getFlingingController() {
         return mFlingingControllerAdapter;
     }
