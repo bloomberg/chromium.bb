@@ -32,9 +32,9 @@ class NetworkInformation final
 
   String type() const;
   double downlinkMax() const;
-  String effectiveType() const;
-  unsigned long rtt() const;
-  double downlink() const;
+  String effectiveType();
+  unsigned long rtt();
+  double downlink();
   bool saveData() const;
 
   // NetworkStateObserver overrides.
@@ -79,6 +79,8 @@ class NetworkInformation final
 
   const String Host() const;
 
+  void MaybeShowWebHoldbackConsoleMsg();
+
   // Touched only on context thread.
   WebConnectionType type_;
 
@@ -100,6 +102,11 @@ class NetworkInformation final
 
   // Whether the data saving mode is enabled.
   bool save_data_;
+
+  // True if the console message indicating that network quality is overridden
+  // using a holdback experiment has been shown. Set to true if the console
+  // message has been shown, or if the holdback experiment is not enabled.
+  bool web_holdback_console_message_shown_;
 
   // Whether ContextLifecycleObserver::contextDestroyed has been called.
   bool context_stopped_;
