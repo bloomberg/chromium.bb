@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet_init.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_definition_options.h"
@@ -445,7 +446,27 @@ TEST_F(CustomElementRegistryTest, defineCustomElementWithStyle) {
   CustomElementDefinition* definition_a =
       Registry().define("a-a", builder, options, should_not_throw);
   EXPECT_EQ(definition_a, Registry().DefinitionForName("a-a"));
-  EXPECT_EQ(sheet, Registry().DefinitionForName("a-a")->DefaultStyleSheet());
+  EXPECT_NE(nullptr, Registry().DefinitionForName("a-a")->DefaultStyleSheet());
+  StyleSheetContents* contents =
+      Registry().DefinitionForName("a-a")->DefaultStyleSheet()->Contents();
+  EXPECT_NE(nullptr, contents);
+  EXPECT_EQ(sheet->Contents()->ChildRules().size(),
+            contents->ChildRules().size());
+  EXPECT_EQ(sheet->Contents()->ImportRules().size(),
+            contents->ImportRules().size());
+  EXPECT_EQ(sheet->Contents()->NamespaceRules().size(),
+            contents->NamespaceRules().size());
+  EXPECT_EQ(sheet->Contents()->OriginalURL(), contents->OriginalURL());
+  EXPECT_EQ(sheet->Contents()->DefaultNamespace(),
+            contents->DefaultNamespace());
+  EXPECT_EQ(sheet->Contents()->HasFontFaceRule(), contents->HasFontFaceRule());
+  EXPECT_EQ(sheet->Contents()->HasViewportRule(), contents->HasViewportRule());
+  EXPECT_EQ(sheet->Contents()->HasMediaQueries(), contents->HasMediaQueries());
+  EXPECT_EQ(sheet->Contents()->HasSyntacticallyValidCSSHeader(),
+            contents->HasSyntacticallyValidCSSHeader());
+  EXPECT_EQ(
+      sheet->ownerRule(),
+      Registry().DefinitionForName("a-a")->DefaultStyleSheet()->ownerRule());
 }
 
 // TODO(dominicc): Add tests which adjust the "is" attribute when type

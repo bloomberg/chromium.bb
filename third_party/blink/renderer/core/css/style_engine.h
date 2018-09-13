@@ -122,6 +122,7 @@ class CORE_EXPORT StyleEngine final
   void AdoptedStyleSheetsWillChange(TreeScope&,
                                     StyleSheetList* old_sheets,
                                     StyleSheetList* new_sheets);
+  void AddedCustomElementDefaultStyle(CSSStyleSheet* default_style);
   void MediaQueriesChangedInScope(TreeScope&);
   void WatchedSelectorsChanged();
   void InitialStyleChanged();
@@ -247,9 +248,13 @@ class CORE_EXPORT StyleEngine final
                              TextPosition start_position,
                              StyleEngineContext&);
 
-  void CollectFeaturesTo(RuleFeatureSet& features) const {
+  void CollectFeaturesTo(RuleFeatureSet& features) {
     CollectUserStyleFeaturesTo(features);
     CollectScopedStyleFeaturesTo(features);
+    for (CSSStyleSheet* sheet : custom_element_default_style_sheets_) {
+      if (sheet)
+        features.Add(RuleSetForSheet(*sheet)->Features());
+    }
   }
 
   void EnsureUAStyleForFullscreen();
@@ -481,6 +486,7 @@ class CORE_EXPORT StyleEngine final
 
   ActiveStyleSheetVector active_user_style_sheets_;
 
+  HeapHashSet<WeakMember<CSSStyleSheet>> custom_element_default_style_sheets_;
   using KeyframesRuleMap =
       HeapHashMap<AtomicString, Member<StyleRuleKeyframes>>;
   KeyframesRuleMap keyframes_rule_map_;

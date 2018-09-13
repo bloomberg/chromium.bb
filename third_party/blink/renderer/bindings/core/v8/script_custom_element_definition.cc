@@ -199,6 +199,7 @@ HTMLElement* ScriptCustomElementDefinition::CreateAutonomousCustomElementSync(
   if (element->prefix() != tag_name.Prefix())
     element->SetTagNameForCreateElementNS(tag_name);
   DCHECK_EQ(element->GetCustomElementState(), CustomElementState::kCustom);
+  AddDefaultStyle(element);
   return ToHTMLElement(element);
 }
 

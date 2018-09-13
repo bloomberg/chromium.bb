@@ -83,6 +83,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -198,13 +199,39 @@ static void MatchHostRules(const Element& element,
   ShadowRoot* shadow_root = element.GetShadowRoot();
   if (!shadow_root)
     return;
-
-  if (ScopedStyleResolver* resolver = shadow_root->GetScopedStyleResolver()) {
-    collector.ClearMatchedRules();
+  if (ScopedStyleResolver* resolver = shadow_root->GetScopedStyleResolver())
     resolver->CollectMatchingShadowHostRules(collector);
-    collector.SortAndTransferMatchedRules();
-    collector.FinishAddingAuthorRulesForTreeScope();
+}
+
+// Matches custom element rules from Custom Element Default Style.
+static void MatchCustomElementRules(const Element& element,
+                                    ElementRuleCollector& collector) {
+  if (!RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled())
+    return;
+  if (CustomElementDefinition* definition =
+          element.GetCustomElementDefinition()) {
+    if (CSSStyleSheet* default_style = definition->DefaultStyleSheet()) {
+      collector.CollectMatchingRules(
+          MatchRequest(element.GetDocument().GetStyleEngine().RuleSetForSheet(
+              *default_style)));
+    }
   }
+}
+
+// Matches :host and :host-context rules
+// and custom element rules from Custom Element Default Style.
+static void MatchHostAndCustomElementRules(const Element& element,
+                                           ElementRuleCollector& collector) {
+  ShadowRoot* shadow_root = element.GetShadowRoot();
+  ScopedStyleResolver* resolver =
+      shadow_root ? shadow_root->GetScopedStyleResolver() : nullptr;
+  if (!resolver && !RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled())
+    return;
+  collector.ClearMatchedRules();
+  MatchCustomElementRules(element, collector);
+  MatchHostRules(element, collector);
+  collector.SortAndTransferMatchedRules();
+  collector.FinishAddingAuthorRulesForTreeScope();
 }
 
 // Matches `::slotted` selectors. It matches rules in the element's slot's
@@ -386,7 +413,7 @@ void StyleResolver::MatchAuthorRules(const Element& element,
     return;
   }
 
-  MatchHostRules(element, collector);
+  MatchHostAndCustomElementRules(element, collector);
 
   ScopedStyleResolver* element_scope_resolver = ScopedResolverFor(element);
   if (GetDocument().MayContainV0Shadow()) {
