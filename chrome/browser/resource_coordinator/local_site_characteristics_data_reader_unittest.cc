@@ -171,9 +171,7 @@ TEST_F(LocalSiteCharacteristicsDataReaderTest,
               kOrigin, &delegate_, &database))));
   ::testing::Mock::VerifyAndClear(&database);
 
-  EXPECT_TRUE(reader->impl_for_testing()
-                  ->site_characteristics_for_testing()
-                  .IsInitialized());
+  EXPECT_TRUE(reader->impl_for_testing()->fully_initialized_for_testing());
 
   // Resetting the reader shouldn't cause any write operation to the database.
   EXPECT_CALL(database,

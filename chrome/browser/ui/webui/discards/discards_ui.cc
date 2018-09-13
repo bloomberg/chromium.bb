@@ -111,7 +111,11 @@ mojom::SiteCharacteristicsDatabaseEntryPtr ConvertEntryFromProto(
   mojom::SiteCharacteristicsDatabaseValuePtr value =
       mojom::SiteCharacteristicsDatabaseValue::New();
 
-  value->last_loaded = proto->last_loaded();
+  if (proto->has_last_loaded()) {
+    value->last_loaded = proto->last_loaded();
+  } else {
+    value->last_loaded = 0;
+  }
   value->updates_favicon_in_background =
       ConvertFeatureFromProto(proto->updates_favicon_in_background());
   value->updates_title_in_background =

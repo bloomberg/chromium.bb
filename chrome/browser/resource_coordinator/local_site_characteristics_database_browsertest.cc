@@ -141,7 +141,7 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
     const internal::LocalSiteCharacteristicsDataImpl* impl =
         static_cast<LocalSiteCharacteristicsDataReader*>(reader.get())
             ->impl_for_testing();
-    while (!impl->site_characteristics_for_testing().IsInitialized())
+    while (!impl->fully_initialized_for_testing())
       base::RunLoop().RunUntilIdle();
     return reader;
   }
