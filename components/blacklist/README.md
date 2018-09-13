@@ -1,15 +1,43 @@
-#Blacklist component#
+# Blacklist component #
 
 The goal of the blacklist component is to provide various blacklists that allow
-different policies for features to consume. Currently, the only implemented
-blacklist is the opt out blacklist.
+different policies for features to consume. Below are various types of blacklist
+included within the component.
 
-##Opt out blacklist##
+## Bloom filter blacklist ##
+The Bloom filter blacklist allows blocking specific strings (hosts) based on a
+probabilistic data structure that represents a host as a hashed value.
+Collisions are possible (false positive matches), and the consumer is
+responsible for determining what action to take when a match occurs. The
+implementation uses MurmurHash3 in coordination with wherever (i.e., the server
+that ships it) the bloom filter is generated.
+
+### Expected behavior ###
+The consumer needs to supply a Bloom filter, the number of times to hash the
+string, and the number of bits that the Bloom filter occupies. Calling Contains,
+will inform the consumer whether the string is included in the Bloom filter, and
+these should be considered strings that are not allowed to be used for the
+consumer feature.
+
+### Host filter ###
+HostFilter uses an internal Bloom filter to blacklist host names. It uses the
+Bloom filter to store blacklisted host name suffixes. Given a URL, HostFilter
+will check the URL's host name for any blacklisted host suffixes. The host
+filter will look for matching sub-domains and the full domain in the Bloom
+filter, and will treat any match as a blacklisted host. For instance, a host
+like a.b.c.d.e.chromium.org would match any of the following if they appeared in
+the Bloom filter: a.b.c.d.e.chromium.org, chromium.org, e.chromium.org,
+d.e.chromium.org, c.d.e.chromium.org. Note that b.c.d.e.chromium.org is not
+included, as the default implementation checks the full host, and four other
+sub-domains, looking at the most granular to least granular. Hosts with top
+level domains of more than 6 characters are not supported.
+
+## Opt out blacklist ##
 The opt out blacklist makes decisions based on user history actions. Each user
 action is evaluated based on action type, time of the evaluation, host name of
 the action (can be any string representation), and previous action history.
 
-###Expected feature behavior###
+### Expected feature behavior ###
 When a feature action is allowed, the feature may perform said action. After
 performing the action, the user interaction should be determined to be an opt
 out (the user did not like the action) or a non-opt out (the user was not
@@ -24,7 +52,7 @@ dismisses the InfoBar, that could be considered an opt out; if the user does
 not dismiss the InfoBar that could be considered a non-opt out. All of the
 information related to that action should be reported to the blacklist.
 
-###Supported evaluation policies###
+### Supported evaluation policies ###
 In general, policies follow a specific form: the most recent _n_ actions are
 evaluated, and if _t_ or more of them are opt outs the action will not be
 allowed for a specified duration, _d_. For each policy, the feature specifies
@@ -51,7 +79,7 @@ prevented from having an action performed for the specific user. The feature
 specifies a set of enabled types and versions for each type. This allows
 removing past versions of types to be removed from the backing store.
 
-###Clearing the blacklist###
+### Clearing the blacklist ###
 Because many actions should be cleared when user clears history, the opt out
 blacklist allows clearing history in certain time ranges. All entries are
 cleared for the specified time range, and the data in memory is repopulated
