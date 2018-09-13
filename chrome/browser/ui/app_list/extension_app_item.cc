@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
+#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -78,7 +79,8 @@ void ExtensionAppItem::Reload() {
   if (!icon_) {
     icon_ = extensions::ChromeAppIconService::Get(profile())->CreateIcon(
         this, extension_id(),
-        app_list::AppListConfig::instance().grid_icon_dimension());
+        app_list::AppListConfig::instance().grid_icon_dimension(),
+        base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd));
   } else {
     icon_->Reload();
   }

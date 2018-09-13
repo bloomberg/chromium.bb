@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
+#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -44,7 +45,8 @@ ExtensionAppResult::ExtensionAppResult(Profile* profile,
   is_platform_app_ = extension->is_platform_app();
   icon_ = extensions::ChromeAppIconService::Get(profile)->CreateIcon(
       this, app_id,
-      AppListConfig::instance().GetPreferredIconDimension(display_type()));
+      AppListConfig::instance().GetPreferredIconDimension(display_type()),
+      base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd));
 
   StartObservingExtensionRegistry();
 }

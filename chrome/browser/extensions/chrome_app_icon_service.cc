@@ -39,15 +39,23 @@ void ChromeAppIconService::Shutdown() {
 std::unique_ptr<ChromeAppIcon> ChromeAppIconService::CreateIcon(
     ChromeAppIconDelegate* delegate,
     const std::string& app_id,
-    int resource_size_in_dip) {
+    int resource_size_in_dip,
+    const ResizeFunction& resize_function) {
   std::unique_ptr<ChromeAppIcon> icon = std::make_unique<ChromeAppIcon>(
       delegate, context_,
       base::Bind(&ChromeAppIconService::OnIconDestroyed,
                  weak_ptr_factory_.GetWeakPtr()),
-      app_id, resource_size_in_dip);
+      app_id, resource_size_in_dip, resize_function);
 
   icon_map_[icon->app_id()].insert(icon.get());
   return icon;
+}
+
+std::unique_ptr<ChromeAppIcon> ChromeAppIconService::CreateIcon(
+    ChromeAppIconDelegate* delegate,
+    const std::string& app_id,
+    int resource_size_in_dip) {
+  return CreateIcon(delegate, app_id, resource_size_in_dip, ResizeFunction());
 }
 
 void ChromeAppIconService::OnExtensionLoaded(

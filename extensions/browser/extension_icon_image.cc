@@ -120,17 +120,18 @@ gfx::ImageSkiaRep IconImage::Source::GetImageForScale(float scale) {
 ////////////////////////////////////////////////////////////////////////////////
 // IconImage
 
-IconImage::IconImage(
-    content::BrowserContext* context,
-    const Extension* extension,
-    const ExtensionIconSet& icon_set,
-    int resource_size_in_dip,
-    const gfx::ImageSkia& default_icon,
-    Observer* observer)
+IconImage::IconImage(content::BrowserContext* context,
+                     const Extension* extension,
+                     const ExtensionIconSet& icon_set,
+                     int resource_size_in_dip,
+                     bool keep_original_size,
+                     const gfx::ImageSkia& default_icon,
+                     Observer* observer)
     : browser_context_(context),
       extension_(extension),
       icon_set_(icon_set),
       resource_size_in_dip_(resource_size_in_dip),
+      keep_original_size_(keep_original_size),
       source_(NULL),
       default_icon_(gfx::ImageSkiaOperations::CreateResizedImage(
           default_icon,
@@ -148,6 +149,20 @@ IconImage::IconImage(
                  extensions::NOTIFICATION_EXTENSION_REMOVED,
                  content::NotificationService::AllSources());
 }
+
+IconImage::IconImage(content::BrowserContext* context,
+                     const Extension* extension,
+                     const ExtensionIconSet& icon_set,
+                     int resource_size_in_dip,
+                     const gfx::ImageSkia& default_icon,
+                     Observer* observer)
+    : IconImage(context,
+                extension,
+                icon_set,
+                resource_size_in_dip,
+                /* keep_original_size */ false,
+                default_icon,
+                observer) {}
 
 void IconImage::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
@@ -187,8 +202,11 @@ void IconImage::LoadImageForScaleAsync(float scale) {
 
   if (!resource.empty()) {
     std::vector<ImageLoader::ImageRepresentation> info_list;
+    const ImageLoader::ImageRepresentation::ResizeCondition resize_condition =
+        keep_original_size_ ? ImageLoader::ImageRepresentation::NEVER_RESIZE
+                            : ImageLoader::ImageRepresentation::ALWAYS_RESIZE;
     info_list.push_back(ImageLoader::ImageRepresentation(
-        resource, ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+        resource, resize_condition,
         gfx::Size(resource_size_in_pixel, resource_size_in_pixel), scale));
 
     extensions::ImageLoader* loader =

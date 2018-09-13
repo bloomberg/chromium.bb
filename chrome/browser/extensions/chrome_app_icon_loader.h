@@ -9,11 +9,17 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 
 class Profile;
+
+namespace gfx {
+class ImageSkia;
+class Size;
+}  // namespace gfx
 
 namespace extensions {
 
@@ -21,6 +27,16 @@ namespace extensions {
 // Chrome app images.
 class ChromeAppIconLoader : public AppIconLoader, public ChromeAppIconDelegate {
  public:
+  using ResizeFunction =
+      base::RepeatingCallback<void(const gfx::Size&, gfx::ImageSkia*)>;
+
+  // |resize_function| overrides icon resizing behavior if non-null. Otherwise
+  // IconLoader with perform the resizing. In both cases |resource_size_in_dip|
+  // is used to pick the correct icon representation from resources.
+  ChromeAppIconLoader(Profile* profile,
+                      int icon_size_in_dips,
+                      const ResizeFunction& resize_function,
+                      AppIconLoaderDelegate* delegate);
   ChromeAppIconLoader(Profile* profile,
                       int icon_size_in_dips,
                       AppIconLoaderDelegate* delegate);
@@ -41,6 +57,10 @@ class ChromeAppIconLoader : public AppIconLoader, public ChromeAppIconDelegate {
 
   // Maps from extension id to ChromeAppIcon.
   ExtensionIDToChromeAppIconMap map_;
+
+  // Function to be used to resize the image loaded from a resource. If null,
+  // resize will be performed by ImageLoader.
+  const ResizeFunction resize_function_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppIconLoader);
 };
