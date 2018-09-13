@@ -234,12 +234,17 @@ class FakeV4L2Impl::OpenedDevice {
       return EINVAL;
     if (buf->memory != V4L2_MEMORY_MMAP)
       return EINVAL;
-    base::AutoLock lock(outgoing_queue_lock_);
-    if (outgoing_queue_.empty()) {
+    bool outgoing_queue_is_empty = true;
+    {
+      base::AutoLock lock(outgoing_queue_lock_);
+      outgoing_queue_is_empty = outgoing_queue_.empty();
+    }
+    if (outgoing_queue_is_empty) {
       if (open_flags_ & O_NONBLOCK)
         return EAGAIN;
       wait_for_outgoing_queue_event_.Wait();
     }
+    base::AutoLock lock(outgoing_queue_lock_);
     auto* buffer = outgoing_queue_.front();
     outgoing_queue_.pop();
     buffer->flags = V4L2_BUF_FLAG_MAPPED & V4L2_BUF_FLAG_DONE;
