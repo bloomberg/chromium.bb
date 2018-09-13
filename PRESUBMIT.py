@@ -709,7 +709,7 @@ _KNOWN_ROBOTS = set(
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll',)
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
-          for s in ('chromium-internal-autoroll,'))
+          for s in ('chromium-internal-autoroll',))
 
 
 def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
