@@ -76,7 +76,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   void set_mirror_arrow_in_rtl(bool mirror) { mirror_arrow_in_rtl_ = mirror; }
 
-  BubbleBorder::Shadow shadow() const { return shadow_; }
+  BubbleBorder::Shadow GetShadow() const;
   void set_shadow(BubbleBorder::Shadow shadow) { shadow_ = shadow; }
 
   SkColor color() const { return color_; }

@@ -51,17 +51,30 @@ class BubbleDialogFrameView : public BubbleFrameView {
   DISALLOW_COPY_AND_ASSIGN(BubbleDialogFrameView);
 };
 
+bool CustomShadowsSupported() {
+#if defined(OS_WIN)
+  return ui::win::IsAeroGlassEnabled();
+#else
+  return true;
+#endif
+}
+
 // Create a widget to host the bubble.
 Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
   Widget* bubble_widget = new Widget();
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
-  bubble_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  bubble_params.opacity = CustomShadowsSupported()
+                              ? Widget::InitParams::TRANSLUCENT_WINDOW
+                              : Widget::InitParams::OPAQUE_WINDOW;
   bubble_params.accept_events = bubble->accept_events();
   // Use a window default shadow if the bubble doesn't provides its own.
-  bubble_params.shadow_type = bubble->shadow() == BubbleBorder::NO_ASSETS
-                                  ? Widget::InitParams::SHADOW_TYPE_DEFAULT
-                                  : Widget::InitParams::SHADOW_TYPE_NONE;
+  if (bubble->GetShadow() == BubbleBorder::NO_ASSETS)
+    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_DEFAULT;
+  else if (CustomShadowsSupported())
+    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
+  else
+    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
   if (bubble->parent_window())
     bubble_params.parent = bubble->parent_window();
   else if (bubble->anchor_widget())
@@ -102,12 +115,7 @@ Widget* BubbleDialogDelegateView::CreateBubble(
   bubble_delegate->SetAnchorView(bubble_delegate->GetAnchorView());
   Widget* bubble_widget = CreateBubbleWidget(bubble_delegate);
 
-#if defined(OS_WIN)
-  // If glass is enabled, the bubble is allowed to extend outside the bounds of
-  // the parent frame and let DWM handle compositing.  If not, then we don't
-  // want to allow the bubble to extend the frame because it will be clipped.
-  bubble_delegate->set_adjust_if_offscreen(ui::win::IsAeroGlassEnabled());
-#elif (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
   // Linux clips bubble windows that extend outside their parent window bounds.
   // Mac never adjusts.
   bubble_delegate->set_adjust_if_offscreen(false);
@@ -145,7 +153,11 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   if (base::i18n::IsRTL() && mirror_arrow_in_rtl_)
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
   std::unique_ptr<BubbleBorder> border =
-      std::make_unique<BubbleBorder>(adjusted_arrow, shadow(), color());
+      std::make_unique<BubbleBorder>(adjusted_arrow, GetShadow(), color());
+  // If custom shadows aren't supported we fall back to an OS provided square
+  // shadow.
+  if (!CustomShadowsSupported())
+    border->SetCornerRadius(0);
   frame->SetBubbleBorder(std::move(border));
   return frame;
 }
@@ -196,6 +208,12 @@ void BubbleDialogDelegateView::OnWidgetBoundsChanged(
     const gfx::Rect& new_bounds) {
   if (GetBubbleFrameView() && anchor_widget() == widget)
     SizeToContents();
+}
+
+BubbleBorder::Shadow BubbleDialogDelegateView::GetShadow() const {
+  if (CustomShadowsSupported() || shadow_ == BubbleBorder::NO_ASSETS)
+    return shadow_;
+  return BubbleBorder::NO_SHADOW;
 }
 
 View* BubbleDialogDelegateView::GetAnchorView() const {
