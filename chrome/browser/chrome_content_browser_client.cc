@@ -3182,6 +3182,25 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
+  if (base::FeatureList::IsEnabled(
+          features::kNetworkQualityEstimatorWebHoldback)) {
+    std::string effective_connection_type_param =
+        base::GetFieldTrialParamValueByFeature(
+            features::kNetworkQualityEstimatorWebHoldback,
+            "web_effective_connection_type_override");
+
+    base::Optional<net::EffectiveConnectionType> effective_connection_type =
+        net::GetEffectiveConnectionTypeForName(effective_connection_type_param);
+    DCHECK(effective_connection_type_param.empty() ||
+           effective_connection_type);
+    if (effective_connection_type) {
+      DCHECK_NE(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+                effective_connection_type.value());
+      web_prefs->network_quality_estimator_web_holdback =
+          effective_connection_type.value();
+    }
+  }
+
 #if !defined(OS_ANDROID)
   if (IsAutoplayAllowedByPolicy(contents, prefs)) {
     // If autoplay is allowed by policy then force the no user gesture required

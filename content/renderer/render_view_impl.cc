@@ -816,6 +816,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->SetTextAutosizingEnabled(prefs.text_autosizing_enabled);
   settings->SetDoubleTapToZoomEnabled(prefs.double_tap_to_zoom_enabled);
+  blink::WebNetworkStateNotifier::SetNetworkQualityWebHoldback(
+      static_cast<blink::WebEffectiveConnectionType>(
+          prefs.network_quality_estimator_web_holdback));
 
 #if defined(OS_ANDROID)
   settings->SetAllowCustomScrollbarInMainFrame(false);

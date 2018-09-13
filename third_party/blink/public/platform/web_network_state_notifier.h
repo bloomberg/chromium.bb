@@ -48,6 +48,8 @@ class WebNetworkStateNotifier {
       base::TimeDelta http_rtt,
       base::TimeDelta transport_rtt,
       int downlink_throughput_kbps);
+  BLINK_PLATFORM_EXPORT static void SetNetworkQualityWebHoldback(
+      WebEffectiveConnectionType);
   BLINK_PLATFORM_EXPORT static void SetSaveDataEnabled(bool enabled);
 
  private:
