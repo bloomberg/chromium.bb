@@ -2541,6 +2541,8 @@ void LayoutBlockFlow::SetCachedLayoutResult(const NGConstraintSpace&,
                                             const NGBreakToken*,
                                             const NGLayoutResult&) {}
 
+void LayoutBlockFlow::ClearCachedLayoutResult() {}
+
 void LayoutBlockFlow::SetPaintFragment(const NGBreakToken*,
                                        scoped_refptr<const NGPhysicalFragment>,
                                        NGPhysicalOffset) {}

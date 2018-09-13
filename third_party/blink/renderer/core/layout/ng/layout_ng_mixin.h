@@ -64,6 +64,8 @@ class LayoutNGMixin : public Base {
   void SetCachedLayoutResult(const NGConstraintSpace&,
                              const NGBreakToken*,
                              const NGLayoutResult&) override;
+  void ClearCachedLayoutResult() override;
+
   // For testing only.
   scoped_refptr<const NGLayoutResult> CachedLayoutResultForTesting() override;
 

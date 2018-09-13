@@ -184,6 +184,12 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       }
       return layout_result;
     }
+    // Cached fragment was stale. Its fragment children might point to
+    // deleted LayoutObjects.
+    // Removing cached result to ensure that stale children cannot be
+    // reached through LayoutNGMixin::CurrentFragment.
+    if (box_->NeedsLayout())
+      ToLayoutBlockFlow(box_)->ClearCachedLayoutResult();
   }
 
   // This follows the code from LayoutBox::UpdateLogicalWidth
