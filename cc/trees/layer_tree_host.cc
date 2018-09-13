@@ -1290,7 +1290,7 @@ void LayerTreeHost::UnregisterLayer(Layer* layer) {
     mutator_host_->UnregisterElement(layer->element_id(),
                                      ElementListType::ACTIVE);
   }
-  RemoveLayerShouldPushProperties(layer);
+  layers_that_should_push_properties_.erase(layer);
   layer_id_map_.erase(layer->id());
 }
 
@@ -1343,13 +1343,8 @@ void LayerTreeHost::RemoveLayerShouldPushProperties(Layer* layer) {
   layers_that_should_push_properties_.erase(layer);
 }
 
-std::unordered_set<Layer*>& LayerTreeHost::LayersThatShouldPushProperties() {
-  return layers_that_should_push_properties_;
-}
-
-bool LayerTreeHost::LayerNeedsPushPropertiesForTesting(Layer* layer) const {
-  return layers_that_should_push_properties_.find(layer) !=
-         layers_that_should_push_properties_.end();
+void LayerTreeHost::ClearLayersThatShouldPushProperties() {
+  layers_that_should_push_properties_.clear();
 }
 
 void LayerTreeHost::SetPageScaleFromImplSide(float page_scale) {

@@ -30,18 +30,13 @@ class PushPropertiesCountingLayer : public Layer {
   size_t push_properties_count() const { return push_properties_count_; }
   void reset_push_properties_count() { push_properties_count_ = 0; }
 
-  void set_persist_needs_push_properties(bool persist) {
-    persist_needs_push_properties_ = persist;
-  }
-
  private:
   PushPropertiesCountingLayer();
   ~PushPropertiesCountingLayer() override;
 
   void AddPushPropertiesCount();
 
-  size_t push_properties_count_;
-  bool persist_needs_push_properties_;
+  size_t push_properties_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PushPropertiesCountingLayer);
 };

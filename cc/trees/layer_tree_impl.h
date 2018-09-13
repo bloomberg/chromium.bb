@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "cc/base/synced_property.h"
@@ -421,9 +422,10 @@ class CC_EXPORT LayerTreeImpl {
   void ClearSurfaceRanges();
 
   void AddLayerShouldPushProperties(LayerImpl* layer);
-  void RemoveLayerShouldPushProperties(LayerImpl* layer);
-  std::unordered_set<LayerImpl*>& LayersThatShouldPushProperties();
-  bool LayerNeedsPushPropertiesForTesting(LayerImpl* layer);
+  void ClearLayersThatShouldPushProperties();
+  const base::flat_set<LayerImpl*>& LayersThatShouldPushProperties() {
+    return layers_that_should_push_properties_;
+  }
 
   // These should be called by LayerImpl's ctor/dtor.
   void RegisterLayer(LayerImpl* layer);
@@ -653,7 +655,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImplMap layer_id_map_;
   LayerImplList layer_list_;
   // Set of layers that need to push properties.
-  std::unordered_set<LayerImpl*> layers_that_should_push_properties_;
+  base::flat_set<LayerImpl*> layers_that_should_push_properties_;
 
   // Set of ElementIds which are present in the |layer_list_|.
   std::unordered_set<ElementId, ElementIdHash> elements_in_layer_list_;

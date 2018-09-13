@@ -7,6 +7,7 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/completion_event.h"
@@ -972,17 +973,17 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
     Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
-        EXPECT_TRUE(
-            scroll_layer->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-                scroll_layer));
+        EXPECT_TRUE(base::ContainsKey(
+            scroll_layer->layer_tree_host()->LayersThatShouldPushProperties(),
+            scroll_layer));
         break;
       case 1:
         // Even if this layer doesn't need push properties, it should
         // still pick up scrolls that happen on the active layer during
         // commit.
-        EXPECT_FALSE(
-            scroll_layer->layer_tree_host()->LayerNeedsPushPropertiesForTesting(
-                scroll_layer));
+        EXPECT_FALSE(base::ContainsKey(
+            scroll_layer->layer_tree_host()->LayersThatShouldPushProperties(),
+            scroll_layer));
         break;
     }
   }

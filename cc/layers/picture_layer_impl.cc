@@ -144,7 +144,7 @@ gfx::Size CalculateGpuTileSize(const gfx::Size& base_tile_size,
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
                                    int id,
                                    Layer::LayerMaskType mask_type)
-    : LayerImpl(tree_impl, id),
+    : LayerImpl(tree_impl, id, /*will_always_push_properties=*/true),
       twin_layer_(nullptr),
       tilings_(CreatePictureLayerTilingSet()),
       ideal_page_scale_(0.f),
@@ -241,11 +241,6 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->can_use_lcd_text_ = can_use_lcd_text_;
 
   layer_impl->SanityCheckTilingState();
-
-  // We always need to push properties.
-  // See http://crbug.com/303943
-  // TODO(danakj): Stop always pushing properties since we don't swap tilings.
-  layer_tree_impl()->AddLayerShouldPushProperties(this);
 }
 
 void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
@@ -1694,7 +1689,8 @@ PictureLayerImpl::InvalidateRegionForImages(
 
   invalidation_.Union(invalidation);
   tilings_->Invalidate(invalidation);
-  SetNeedsPushProperties();
+  // TODO(crbug.com/303943): SetNeedsPushProperties() would be needed here if
+  // PictureLayerImpl didn't always push properties every activation.
   return ImageInvalidationResult::kInvalidated;
 }
 
