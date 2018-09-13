@@ -147,7 +147,14 @@ class SubresourceFilterAgentTest : public ::testing::Test {
     // No DidFinishLoad is called in this case.
   }
 
-  void StartLoadAndSetActivationState(ActivationState state,
+  void StartLoadAndSetActivationState(mojom::ActivationLevel level,
+                                      bool is_ad_subframe = false) {
+    mojom::ActivationState state;
+    state.activation_level = level;
+    StartLoadAndSetActivationState(state, is_ad_subframe);
+  }
+
+  void StartLoadAndSetActivationState(mojom::ActivationState state,
                                       bool is_ad_subframe = false) {
     agent_as_rfo()->DidStartProvisionalLoad(nullptr);
     EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
@@ -249,24 +256,21 @@ TEST_F(SubresourceFilterAgentTest, MmapFailure_FailsToInjectSubresourceFilter) {
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
   MemoryMappedRuleset::SetMemoryMapFailuresForTesting(true);
   ExpectNoSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kEnabled),
-      false /* is_associated_with_ad_subframe */);
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled,
+                                 false /* is_associated_with_ad_subframe */);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   MemoryMappedRuleset::SetMemoryMapFailuresForTesting(false);
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kEnabled),
-      false /* is_associated_with_ad_subframe */);
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled,
+                                 false /* is_associated_with_ad_subframe */);
 }
 
 TEST_F(SubresourceFilterAgentTest, Disabled_NoFilterIsInjected) {
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestBothURLsPathSuffix));
   ExpectNoSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kDisabled));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kDisabled);
   FinishLoad();
 }
 
@@ -274,8 +278,7 @@ TEST_F(SubresourceFilterAgentTest,
        EnabledButRulesetUnavailable_NoFilterIsInjected) {
   base::HistogramTester histogram_tester;
   ExpectNoSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
   FinishLoad();
 
   histogram_tester.ExpectUniqueSample(
@@ -301,8 +304,7 @@ TEST_F(SubresourceFilterAgentTest, EmptyDocumentLoad_NoFilterIsInjected) {
   ExpectNoSubresourceFilterGetsInjected();
   EXPECT_CALL(*agent(), GetDocumentURL())
       .WillOnce(::testing::Return(GURL("about:blank")));
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
   FinishLoad();
 
   histogram_tester.ExpectTotalCount(kDocumentLoadActivationLevel, 0);
@@ -323,8 +325,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
 
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   ExpectSignalAboutFirstSubresourceDisallowed();
@@ -368,7 +369,8 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
     ASSERT_NO_FATAL_FAILURE(
         SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
     ExpectSubresourceFilterGetsInjected();
-    ActivationState state(mojom::ActivationLevel::kEnabled);
+    mojom::ActivationState state;
+    state.activation_level = mojom::ActivationLevel::kEnabled;
     state.measure_performance = measure_performance;
     StartLoadAndSetActivationState(state);
     ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
@@ -425,8 +427,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_NewRulesetIsPickedUpAtNextLoad) {
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   // Set the new ruleset just after the deadline for being used for the current
@@ -442,8 +443,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_NewRulesetIsPickedUpAtNextLoad) {
   FinishLoad();
 
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   ExpectSignalAboutFirstSubresourceDisallowed();
@@ -462,7 +462,8 @@ TEST_F(SubresourceFilterAgentTest,
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestBothURLsPathSuffix));
   ExpectNoSubresourceFilterGetsInjected();
   agent_as_rfo()->DidStartProvisionalLoad(nullptr);
-  ActivationState state(mojom::ActivationLevel::kEnabled);
+  mojom::ActivationState state;
+  state.activation_level = mojom::ActivationLevel::kEnabled;
   state.measure_performance = true;
   EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
       SubresourceFilterMsg_ActivateForNextCommittedLoad(
@@ -480,8 +481,7 @@ TEST_F(SubresourceFilterAgentTest, DryRun_ResourcesAreEvaluatedButNotFiltered) {
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kDryRun));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kDryRun);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   // In dry-run mode, loads to the first URL should be recorded as
@@ -518,8 +518,7 @@ TEST_F(SubresourceFilterAgentTest,
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   ExpectSignalAboutFirstSubresourceDisallowed();
@@ -533,8 +532,7 @@ TEST_F(SubresourceFilterAgentTest,
   FinishLoad();
 
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::kAllow);
@@ -550,8 +548,7 @@ TEST_F(SubresourceFilterAgentTest,
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kEnabled);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   auto filter = agent()->TakeFilter();
@@ -571,9 +568,8 @@ TEST_F(SubresourceFilterAgentTest,
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
 
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kDryRun),
-      true /* is_associated_with_ad_subframe */);
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kDryRun,
+                                 true /* is_associated_with_ad_subframe */);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   // Test the ad subframe value that is set at the filter.
@@ -590,9 +586,8 @@ TEST_F(SubresourceFilterAgentTest, DryRun_FrameAlreadyTaggedAsAd) {
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix("somethingNotMatched"));
   ExpectSubresourceFilterGetsInjected();
-  StartLoadAndSetActivationState(
-      ActivationState(mojom::ActivationLevel::kDryRun),
-      false /* is_associated_with_ad_subframe */);
+  StartLoadAndSetActivationState(mojom::ActivationLevel::kDryRun,
+                                 false /* is_associated_with_ad_subframe */);
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(agent()));
 
   EXPECT_TRUE(agent()->IsFilterAssociatedWithAdSubframe());

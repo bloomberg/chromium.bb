@@ -10,7 +10,7 @@
 
 namespace subresource_filter {
 
-PageLoadStatistics::PageLoadStatistics(const ActivationState& state)
+PageLoadStatistics::PageLoadStatistics(const mojom::ActivationState& state)
     : activation_state_(state) {}
 
 PageLoadStatistics::~PageLoadStatistics() {}

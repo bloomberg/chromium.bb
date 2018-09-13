@@ -27,7 +27,6 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"

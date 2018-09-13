@@ -19,7 +19,7 @@ namespace subresource_filter {
 
 DocumentSubresourceFilter::DocumentSubresourceFilter(
     url::Origin document_origin,
-    ActivationState activation_state,
+    mojom::ActivationState activation_state,
     scoped_refptr<const MemoryMappedRuleset> ruleset)
     : activation_state_(activation_state),
       ruleset_(std::move(ruleset)),

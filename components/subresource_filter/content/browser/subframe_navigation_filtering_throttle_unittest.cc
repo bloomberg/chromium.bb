@@ -17,7 +17,6 @@
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/navigation_handle.h"
@@ -102,7 +101,8 @@ class SubframeNavigationFilteringThrottleTest
         std::make_unique<VerifiedRuleset::Handle>(dealer_handle_.get());
 
     testing::TestActivationStateCallbackReceiver activation_state;
-    ActivationState parent_activation_state(parent_level);
+    mojom::ActivationState parent_activation_state;
+    parent_activation_state.activation_level = parent_level;
     parent_activation_state.enable_logging = true;
     parent_filter_ = std::make_unique<AsyncDocumentSubresourceFilter>(
         ruleset_handle_.get(),

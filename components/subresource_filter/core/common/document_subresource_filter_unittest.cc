@@ -66,7 +66,8 @@ class DocumentSubresourceFilterTest : public ::testing::Test {
 };
 
 TEST_F(DocumentSubresourceFilterTest, DryRun) {
-  ActivationState activation_state(kDryRun);
+  mojom::ActivationState activation_state;
+  activation_state.activation_level = kDryRun;
   activation_state.measure_performance = true;
   DocumentSubresourceFilter filter(url::Origin(), activation_state, ruleset());
 
@@ -92,7 +93,8 @@ TEST_F(DocumentSubresourceFilterTest, DryRun) {
 }
 
 TEST_F(DocumentSubresourceFilterTest, MatchingRuleDryRun) {
-  ActivationState activation_state(kDryRun);
+  mojom::ActivationState activation_state;
+  activation_state.activation_level = kDryRun;
   activation_state.measure_performance = false;
   DocumentSubresourceFilter filter(url::Origin(), activation_state, ruleset());
 
@@ -112,7 +114,8 @@ TEST_F(DocumentSubresourceFilterTest, MatchingRuleDryRun) {
 
 TEST_F(DocumentSubresourceFilterTest, Enabled) {
   auto test_impl = [this](bool measure_performance) {
-    ActivationState activation_state(kEnabled);
+    mojom::ActivationState activation_state;
+    activation_state.activation_level = kEnabled;
     activation_state.measure_performance = measure_performance;
     DocumentSubresourceFilter filter(url::Origin(), activation_state,
                                      ruleset());
@@ -150,7 +153,8 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
 }
 
 TEST_F(DocumentSubresourceFilterTest, MatchingRuleEnabled) {
-  ActivationState activation_state(kEnabled);
+  mojom::ActivationState activation_state;
+  activation_state.activation_level = kEnabled;
   activation_state.measure_performance = false;
   DocumentSubresourceFilter filter(url::Origin(), activation_state, ruleset());
 

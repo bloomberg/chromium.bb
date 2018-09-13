@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/subresource_filter/content/renderer/ad_resource_tracker.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
@@ -75,12 +74,14 @@ class SubresourceFilterAgent
  private:
   // Assumes that the parent will be in a local frame relative to this one, upon
   // construction.
-  static ActivationState GetParentActivationState(
+  static mojom::ActivationState GetParentActivationState(
       content::RenderFrame* render_frame);
 
-  void OnActivateForNextCommittedLoad(const ActivationState& activation_state,
-                                      bool is_ad_subframe);
-  void RecordHistogramsOnLoadCommitted(const ActivationState& activation_state);
+  void OnActivateForNextCommittedLoad(
+      const mojom::ActivationState& activation_state,
+      bool is_ad_subframe);
+  void RecordHistogramsOnLoadCommitted(
+      const mojom::ActivationState& activation_state);
   void RecordHistogramsOnLoadFinished();
   void ResetInfoForNextCommit();
 
@@ -99,7 +100,7 @@ class SubresourceFilterAgent
   // Owned by the ChromeContentRendererClient and outlives us.
   UnverifiedRulesetDealer* ruleset_dealer_;
 
-  ActivationState activation_state_for_next_commit_;
+  mojom::ActivationState activation_state_for_next_commit_;
 
   // Tracks all ad resource observers.
   std::unique_ptr<AdResourceTracker> ad_resource_tracker_;

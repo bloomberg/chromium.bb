@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/load_policy.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "url/gurl.h"
@@ -104,7 +104,7 @@ WebDocumentSubresourceFilterImpl::~WebDocumentSubresourceFilterImpl() = default;
 
 WebDocumentSubresourceFilterImpl::WebDocumentSubresourceFilterImpl(
     url::Origin document_origin,
-    ActivationState activation_state,
+    mojom::ActivationState activation_state,
     scoped_refptr<const MemoryMappedRuleset> ruleset,
     base::OnceClosure first_disallowed_load_callback,
     bool is_associated_with_ad_subframe)
@@ -155,7 +155,7 @@ WebLoadPolicy WebDocumentSubresourceFilterImpl::getLoadPolicyImpl(
 
 WebDocumentSubresourceFilterImpl::BuilderImpl::BuilderImpl(
     url::Origin document_origin,
-    ActivationState activation_state,
+    mojom::ActivationState activation_state,
     base::File ruleset_file,
     base::OnceClosure first_disallowed_load_callback,
     bool is_associated_with_ad_subframe)

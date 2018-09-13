@@ -89,7 +89,7 @@ void SubresourceFilterAgent::SetIsAdSubframe() {
 }
 
 // static
-ActivationState SubresourceFilterAgent::GetParentActivationState(
+mojom::ActivationState SubresourceFilterAgent::GetParentActivationState(
     content::RenderFrame* render_frame) {
   blink::WebFrame* parent =
       render_frame ? render_frame->GetWebFrame()->Parent() : nullptr;
@@ -99,11 +99,11 @@ ActivationState SubresourceFilterAgent::GetParentActivationState(
     if (agent && agent->filter_for_last_committed_load_)
       return agent->filter_for_last_committed_load_->activation_state();
   }
-  return ActivationState(mojom::ActivationLevel::kDisabled);
+  return mojom::ActivationState();
 }
 
 void SubresourceFilterAgent::OnActivateForNextCommittedLoad(
-    const ActivationState& activation_state,
+    const mojom::ActivationState& activation_state,
     bool is_ad_subframe) {
   activation_state_for_next_commit_ = activation_state;
   if (is_ad_subframe)
@@ -111,9 +111,9 @@ void SubresourceFilterAgent::OnActivateForNextCommittedLoad(
 }
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted(
-    const ActivationState& activation_state) {
-  // Note: mojom::ActivationLevel used to be called ActivationState, the legacy
-  // name is kept for the histogram.
+    const mojom::ActivationState& activation_state) {
+  // Note: mojom::ActivationLevel used to be called mojom::ActivationState, the
+  // legacy name is kept for the histogram.
   mojom::ActivationLevel activation_level = activation_state.activation_level;
   UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.DocumentLoad.ActivationState",
                             activation_level);
@@ -168,8 +168,7 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
 }
 
 void SubresourceFilterAgent::ResetInfoForNextCommit() {
-  activation_state_for_next_commit_ =
-      ActivationState(mojom::ActivationLevel::kDisabled);
+  activation_state_for_next_commit_ = mojom::ActivationState();
 }
 
 const mojom::SubresourceFilterHostAssociatedPtr&
@@ -215,7 +214,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
 
   bool use_parent_activation = !IsMainFrame() && ShouldUseParentActivation(url);
 
-  const ActivationState activation_state =
+  const mojom::ActivationState activation_state =
       use_parent_activation ? GetParentActivationState(render_frame())
                             : activation_state_for_next_commit_;
 

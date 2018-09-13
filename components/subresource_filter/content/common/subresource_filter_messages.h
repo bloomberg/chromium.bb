@@ -6,7 +6,6 @@
 // no-include-guard-because-multiply-included
 
 #include "base/time/time.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/common/common_param_traits_macros.h"
@@ -20,7 +19,7 @@
 IPC_ENUM_TRAITS_MAX_VALUE(subresource_filter::mojom::ActivationLevel,
                           subresource_filter::mojom::ActivationLevel::kMaxValue)
 
-IPC_STRUCT_TRAITS_BEGIN(subresource_filter::ActivationState)
+IPC_STRUCT_TRAITS_BEGIN(subresource_filter::mojom::ActivationState)
   IPC_STRUCT_TRAITS_MEMBER(activation_level)
   IPC_STRUCT_TRAITS_MEMBER(filtering_disabled_for_document)
   IPC_STRUCT_TRAITS_MEMBER(generic_blocking_rules_disabled)
@@ -60,9 +59,10 @@ IPC_MESSAGE_CONTROL1(SubresourceFilterMsg_SetRulesetForProcess,
 //
 // If no message arrives, the default behavior is
 // mojom::ActivationLevel::kDisabled.
-IPC_MESSAGE_ROUTED2(SubresourceFilterMsg_ActivateForNextCommittedLoad,
-                    subresource_filter::ActivationState /* activation_state */,
-                    bool /* is_ad_subframe */)
+IPC_MESSAGE_ROUTED2(
+    SubresourceFilterMsg_ActivateForNextCommittedLoad,
+    subresource_filter::mojom::ActivationState /* activation_state */,
+    bool /* is_ad_subframe */)
 
 // ----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

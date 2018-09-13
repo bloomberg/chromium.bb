@@ -21,6 +21,8 @@ namespace subresource_filter {
 
 namespace {
 
+const mojom::ActivationState kDisabled;
+
 void OpenAndPublishRuleset(ContentRulesetService* content_ruleset_service,
                            const base::FilePath& path) {
   base::File index_file;
@@ -84,8 +86,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
                                         receiver.GetCallback());
   receiver.WaitForActivationDecision();
-  receiver.ExpectReceivedOnce(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  mojom::ActivationState expected_state;
+  expected_state.activation_level = mojom::ActivationLevel::kEnabled;
+  receiver.ExpectReceivedOnce(expected_state);
   histogram_tester.ExpectUniqueSample(kIndexedRulesetVerifyHistogram,
                                       VerifyStatus::kPassValidChecksum, 1);
 }
@@ -108,8 +111,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, NoRuleset_NoActivation) {
   AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
                                         receiver.GetCallback());
   receiver.WaitForActivationDecision();
-  receiver.ExpectReceivedOnce(
-      ActivationState(mojom::ActivationLevel::kDisabled));
+  receiver.ExpectReceivedOnce(kDisabled);
   histogram_tester.ExpectTotalCount(kIndexedRulesetVerifyHistogram, 0);
 }
 
@@ -147,8 +149,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, InvalidRuleset_Checksum) {
   AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
                                         receiver.GetCallback());
   receiver.WaitForActivationDecision();
-  receiver.ExpectReceivedOnce(
-      ActivationState(mojom::ActivationLevel::kDisabled));
+  receiver.ExpectReceivedOnce(kDisabled);
   RulesetVerificationStatus dealer_status = GetRulesetVerification();
   EXPECT_EQ(RulesetVerificationStatus::kCorrupt, dealer_status);
   // If AdTagging is enabled, then the initial SetRuleset will trigger
@@ -197,8 +198,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   AsyncDocumentSubresourceFilter filter(ruleset_handle.get(), std::move(params),
                                         receiver.GetCallback());
   receiver.WaitForActivationDecision();
-  receiver.ExpectReceivedOnce(
-      ActivationState(mojom::ActivationLevel::kDisabled));
+  receiver.ExpectReceivedOnce(kDisabled);
   RulesetVerificationStatus dealer_status = GetRulesetVerification();
   EXPECT_EQ(RulesetVerificationStatus::kCorrupt, dealer_status);
   histogram_tester.ExpectUniqueSample(kIndexedRulesetVerifyHistogram,

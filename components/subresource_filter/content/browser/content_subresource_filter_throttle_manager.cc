@@ -64,9 +64,9 @@ void ContentSubresourceFilterThrottleManager::RenderFrameDeleted(
   DestroyRulesetHandleIfNoLongerUsed();
 }
 
-// Pull the AsyncDocumentSubresourceFilter and its associated ActivationState
-// out of the activation state computing throttle. Store it for later filtering
-// of subframe navigations.
+// Pull the AsyncDocumentSubresourceFilter and its associated
+// mojom::ActivationState out of the activation state computing throttle. Store
+// it for later filtering of subframe navigations.
 void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   // Since the frame hasn't yet committed, GetCurrentRenderFrameHost() points
@@ -110,7 +110,8 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
   TRACE_EVENT1(
       TRACE_DISABLED_BY_DEFAULT("loading"),
       "ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation",
-      "activation_state", filter->activation_state().ToTracedValue());
+      "activation_state",
+      static_cast<int>(filter->activation_state().activation_level));
 
   throttle->WillSendActivationToRenderer();
 
@@ -213,7 +214,7 @@ bool ContentSubresourceFilterThrottleManager::OnMessageReceived(
 // activation for that page load.
 void ContentSubresourceFilterThrottleManager::OnPageActivationComputed(
     content::NavigationHandle* navigation_handle,
-    const ActivationState& activation_state) {
+    const mojom::ActivationState& activation_state) {
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->HasCommitted());
   // Do not notify the throttle if activation is disabled.
@@ -304,9 +305,10 @@ ContentSubresourceFilterThrottleManager::
         ActivationStateComputingNavigationThrottle::CreateForMainFrame(
             navigation_handle);
     if (base::FeatureList::IsEnabled(kAdTagging)) {
-      throttle->NotifyPageActivationWithRuleset(
-          EnsureRulesetHandle(),
-          ActivationState(mojom::ActivationLevel::kDryRun));
+      mojom::ActivationState ad_tagging_state;
+      ad_tagging_state.activation_level = mojom::ActivationLevel::kDryRun;
+      throttle->NotifyPageActivationWithRuleset(EnsureRulesetHandle(),
+                                                ad_tagging_state);
     }
     return throttle;
   }

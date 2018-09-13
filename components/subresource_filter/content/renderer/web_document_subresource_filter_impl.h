@@ -29,7 +29,7 @@ class WebDocumentSubresourceFilterImpl
   class BuilderImpl : public blink::WebDocumentSubresourceFilter::Builder {
    public:
     BuilderImpl(url::Origin document_origin,
-                ActivationState activation_state,
+                mojom::ActivationState activation_state,
                 base::File ruleset_file,
                 base::OnceClosure first_disallowed_load_callback,
                 bool is_associated_with_ad_subframe);
@@ -39,7 +39,7 @@ class WebDocumentSubresourceFilterImpl
 
    private:
     url::Origin document_origin_;
-    ActivationState activation_state_;
+    mojom::ActivationState activation_state_;
     base::File ruleset_file_;
     base::OnceClosure first_disallowed_load_callback_;
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -54,7 +54,7 @@ class WebDocumentSubresourceFilterImpl
   // reportDisallowedLoad() call.
   WebDocumentSubresourceFilterImpl(
       url::Origin document_origin,
-      ActivationState activation_state,
+      mojom::ActivationState activation_state,
       scoped_refptr<const MemoryMappedRuleset> ruleset,
       base::OnceClosure first_disallowed_load_callback,
       bool is_associated_with_ad_subframe);
@@ -73,7 +73,7 @@ class WebDocumentSubresourceFilterImpl
   bool GetIsAssociatedWithAdSubframe() const override;
   void ReportAdRequestId(int request_id) override;
 
-  const ActivationState& activation_state() const {
+  const mojom::ActivationState& activation_state() const {
     return filter_.activation_state();
   }
 
@@ -86,7 +86,7 @@ class WebDocumentSubresourceFilterImpl
       const blink::WebURL& url,
       url_pattern_index::proto::ElementType element_type);
 
-  ActivationState activation_state_;
+  mojom::ActivationState activation_state_;
   DocumentSubresourceFilter filter_;
   base::OnceClosure first_disallowed_load_callback_;
   bool is_associated_with_ad_subframe_;
