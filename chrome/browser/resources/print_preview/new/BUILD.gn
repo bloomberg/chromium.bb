@@ -108,6 +108,7 @@ js_library("pages_settings") {
     ":input_behavior",
     ":settings_behavior",
     "../data:document_info",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
     "//ui/webui/resources/js:load_time_data",
   ]
 }

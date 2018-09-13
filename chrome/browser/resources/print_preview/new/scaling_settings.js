@@ -166,7 +166,7 @@ Polymer({
 
       // For tests only
       this.fire('update-checkbox-setting', 'fitToPage');
-    }, 100);
+    }, 200);
   },
 
   /**

@@ -82,12 +82,12 @@ cr.define('system_dialog_browsertest', function() {
       nativeLayer.resetResolver('getPreview');
 
       // Set page settings to a bad value
-      pageSettings.$$('#custom-radio-button').checked = true;
-      pageSettings.$$('#all-radio-button')
-          .dispatchEvent(new CustomEvent('change'));
-      const pageSettingsInput = pageSettings.$$('.user-value');
+      pageSettings.$$('#custom-radio-button').click();
+      const pageSettingsInput =
+          pageSettings.$.pageSettingsCustomInput.inputElement;
       pageSettingsInput.value = 'abc';
-      pageSettingsInput.dispatchEvent(new CustomEvent('input'));
+      pageSettingsInput.dispatchEvent(
+          new CustomEvent('input', {composed: true, bubbles: true}));
 
       // No new preview
       nativeLayer.whenCalled('getPreview').then(function() {
@@ -98,7 +98,7 @@ cr.define('system_dialog_browsertest', function() {
           .then(function() {
             // Expect disabled print button and Pdf in preview link
             const header = page.$$('print-preview-header');
-            const printButton = header.$$('.print');
+            const printButton = header.$$('.action-button');
             assertTrue(printButton.disabled);
             assertTrue(linkContainer.disabled);
             assertFalse(link.hidden);

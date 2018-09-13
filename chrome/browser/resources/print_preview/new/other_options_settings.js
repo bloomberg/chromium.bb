@@ -50,7 +50,7 @@ Polymer({
 
                          // For tests only
                          this.fire('update-checkbox-setting', settingName);
-                       }, 100));
+                       }, 200));
   },
 
   /**

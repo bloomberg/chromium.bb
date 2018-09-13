@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="checkbox_radio_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="../data/document_info.html">
 <link rel="import" href="../print_preview_utils.html">
 <link rel="import" href="input_behavior.html">
-<link rel="import" href="input_css.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="settings_section.html">
@@ -12,53 +12,45 @@
 
 <dom-module id="print-preview-pages-settings">
   <template>
-    <style include="print-preview-shared checkbox-radio input">
-      :host .radio .user-value {
-        flex: 1;
-        margin-inline-start: 0.6em;
-        width: 100%;
+    <style include="print-preview-shared">
+      print-preview-settings-section {
+        margin-bottom: 8px;
       }
 
-      [slot='title'] {
-        --settings-section-title-style: {
-          padding-top: 7px;
-          align-self: flex-start;
+      #custom-radio-button {
+        --cr-radio-button-disc: {
+          margin-top: -1.5rem;
         };
-      }
-
-      .custom-input-wrapper:focus {
-        outline: none;
       }
     </style>
     <print-preview-settings-section
         class="input-settings-section multirow-controls">
       <span slot="title">$i18n{pagesLabel}</span>
-      <div slot="controls">
+      <div slot="controls" id="controls">
         <div class="radio">
-          <label><input type="radio" name="pages" id="all-radio-button"
-              checked="{{allSelected_::change}}"
-              disabled$="[[getDisabled_(disabled)]]">
+          <cr-radio-button name="pages" id="all-radio-button"
+              checked$="[[!customSelected_]]"
+              disabled$="[[getDisabled_(disabled)]]"
+              on-click="onAllRadioClick_">
             <span>$i18n{optionAllPages}</span>
-          </label>
-          <label class="custom-input-wrapper"
-              for="pageSettingsCustomInput" tabindex=-1>
-            <input type="radio" name="pages" id="custom-radio-button"
-                disabled$="[[getDisabled_(disabled)]]"
-                on-click="onCustomRadioClick_">
-            <input id="pageSettingsCustomInput" class="user-value" type="text"
-                checked="{{customSelected_::change}}" data-timeout-delay="500"
+          </cr-radio-button>
+          <cr-radio-button name="pages" id="custom-radio-button"
+              checked$="[[customSelected_]]"
+              disabled$="[[getDisabled_(disabled)]]"
+              on-click="onCustomRadioClick_">
+            <cr-input id="pageSettingsCustomInput" type="text"
+                data-timeout-delay="500"
                 disabled$="[[getDisabled_(disabled)]]" spellcheck="false"
                 pattern="[[inputPattern_]]"
                 on-focus="onCustomInputFocus_" on-blur="onCustomInputBlur_"
                 placeholder="$i18n{examplePageRangeText}"
-                aria-label="$i18n{examplePageRangeText}">
-          </label>
+                aria-label="$i18n{examplePageRangeText}"
+                error-message="[[getHintMessage_(errorState_,
+                    documentInfo.pageCount)]]"
+                auto-validate>
+            </cr-input>
+          </cr-radio-button>
         </div>
-        <span class="hint" aria-live="polite"
-            inner-h-t-m-l="[[getHintMessage_(errorState_,
-                                             documentInfo.pageCount)]]"
-            hidden$="[[hintHidden_(inputString_, errorState_)]]">
-        </span>
       </div>
     </print-preview-settings-section>
   </template>

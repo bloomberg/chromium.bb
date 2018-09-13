@@ -112,7 +112,7 @@ cr.define('header_test', function() {
     // the print button is disabled appropriately.
     test(assert(TestNames.HeaderChangesForState), function() {
       const summary = header.$$('.summary');
-      const printButton = header.$$('.print');
+      const printButton = header.$$('.action-button');
       assertEquals('Total: 1 sheet of paper', summary.textContent);
       assertFalse(printButton.disabled);
 
@@ -145,15 +145,16 @@ cr.define('header_test', function() {
     // See https://crbug.com/880562.
     test(assert(TestNames.ButtonOrder), function() {
       // Verify that there are only 2 buttons.
-      assertEquals(2, header.shadowRoot.querySelectorAll('button').length);
+      assertEquals(
+          2, header.shadowRoot.querySelectorAll('paper-button').length);
 
-      const firstButton = header.$$('button:first-child');
-      const lastButton = header.$$('button:last-child');
-      const printButton = header.$$('button.print');
-      const cancelButton = header.$$('button.cancel');
+      const firstButton = header.$$('paper-button:first-child');
+      const lastButton = header.$$('paper-button:last-child');
+      const printButton = header.$$('paper-button.action-button');
+      const cancelButton = header.$$('paper-button.cancel-button');
 
-      if (cr.isWindows || cr.isChromeOS) {
-        // On Windows and Chrome OS, the print button is on the left.
+      if (cr.isWindows) {
+        // On Windows, the print button is on the left.
         assertEquals(firstButton, printButton);
         assertEquals(lastButton, cancelButton);
       } else {

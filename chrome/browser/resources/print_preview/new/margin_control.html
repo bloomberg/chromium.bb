@@ -1,5 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="../print_preview_utils.html">
 <link rel="import" href="../data/coordinate2d.html">
 <link rel="import" href="../data/margins.html">
@@ -35,7 +37,7 @@
       }
 
       #line {
-        border: 1px dashed rgb(64, 128, 250);
+        border: 1px dashed var(--google-blue-500);
       }
 
       :host([side=top]) #line,
@@ -49,21 +51,19 @@
       }
 
       #textbox {
-        background-color: #2a2a2a;
-        border: 1px solid #888;
+        --cr-input-background-color: var(--google-grey-900);
+        --cr-input-color: white;
+        --cr-input-error-display: none;
+        --cr-input-row-container: {
+          min-height: 25px;
+        }
         box-sizing: border-box;
         color: white;
-        cursor: auto;
         font-size: 0.8rem;
-        height: 25px;
-        padding: 5px 0;
+        padding: 1px;
         position: absolute;
         text-align: center;
         width: 60px;
-      }
-
-      :host([invalid]) #textbox {
-        background-color: rgb(193, 27, 23);
       }
 
       :host([side=top]) #textbox {
@@ -87,8 +87,10 @@
       }
     </style>
     <div id="line"></div>
-    <input id="textbox" aria-hidden$="[[getAriaHidden_(invisible)]]" type="text"
-        disabled="[[invisible]]" on-blur="onBlur_" data-timeout-delay="1000">
+    <cr-input id="textbox" aria-hidden$="[[getAriaHidden_(invisible)]]"
+        type="text" disabled="[[invisible]]" on-blur="onBlur_"
+        invalid="[[invalid]]" data-timeout-delay="1000">
+    </cr-input>
   </template>
   <script src="margin_control.js"></script>
 </dom-module>

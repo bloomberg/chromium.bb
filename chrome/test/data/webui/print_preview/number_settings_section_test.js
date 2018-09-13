@@ -39,7 +39,8 @@ cr.define('number_settings_section_test', function() {
        */
       const sendKeyDownAndReturnPromise = (code, key) => {
         const whenKeyDown = test_util.eventToPromise('keydown', parentElement);
-        MockInteractions.keyEventOn(input, 'keydown', code, undefined, key);
+        MockInteractions.keyEventOn(
+            input.inputElement, 'keydown', code, undefined, key);
         return whenKeyDown;
       };
 

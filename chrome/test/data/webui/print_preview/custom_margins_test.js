@@ -195,9 +195,11 @@ cr.define('custom_margins_test', function() {
           Math.round(parseFloat(input) * pointsPerInch);
       assertEquals(
           currentValuePts, container.getSettingValue('customMargins')[key]);
-      controlTextbox = control.$.textbox;
+      controlTextbox = control.$.textbox.inputElement;
       controlTextbox.value = input;
-      controlTextbox.dispatchEvent(new CustomEvent('input'));
+      controlTextbox.dispatchEvent(
+          new CustomEvent('input', {composed: true, bubbles: true}));
+
       return test_util.eventToPromise('text-change', control).then(() => {
         assertEquals(
             newValuePts, container.getSettingValue('customMargins')[key]);

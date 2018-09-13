@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="checkbox_radio_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="../data/document_info.html">
 <link rel="import" href="number_settings_section.html">
 <link rel="import" href="print_preview_shared_css.html">
@@ -8,7 +8,7 @@
 
 <dom-module id="print-preview-scaling-settings">
   <template>
-    <style include="print-preview-shared checkbox-radio">
+    <style include="print-preview-shared">
     </style>
     <print-preview-number-settings-section max-value="200" min-value="10"
         default-value="100" input-label="$i18n{scalingLabel}"
@@ -17,12 +17,11 @@
         class="multirow-controls">
       <div slot="opt-outside-content" class="checkbox"
           hidden$="[[!settings.fitToPage.available]]">
-        <label aria-live="polite">
-          <input type="checkbox" id="fit-to-page-checkbox" tabindex="1"
-              disabled$="[[getDisabled_(disabled, inputValid_)]]"
-              on-change="onFitToPageChange_">
-          <span>$i18n{optionFitToPage}</span>
-        </label>
+        <cr-checkbox id="fit-to-page-checkbox" tabindex="1"
+            disabled$="[[getDisabled_(disabled, inputValid_)]]"
+            on-change="onFitToPageChange_" aria-live="polite">
+          $i18n{optionFitToPage}
+        </cr-checkbox>
       </div>
     </print-preview-number-settings-section>
   </template>

@@ -233,6 +233,9 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("goBackButton",
                              IDS_PRINT_PREVIEW_BUTTON_GO_BACK);
   source->AddLocalizedString(
+      "resolveExtensionUSBDialogTitle",
+      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_DIALOG_TITLE);
+  source->AddLocalizedString(
       "resolveExtensionUSBPermissionMessage",
       IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_PERMISSION_MESSAGE);
   source->AddLocalizedString(
@@ -369,9 +372,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_PRINT_CONFIGURING_FAILED_TEXT);
 #else
   const base::string16 shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
-  source->AddString("systemDialogOption",
-                    l10n_util::GetStringFUTF16(
-                        IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION, shortcut_text));
+  source->AddLocalizedString("systemDialogOption",
+                             IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION);
 #endif
 #if defined(OS_MACOSX)
   source->AddLocalizedString("openingPDFInPreview",
