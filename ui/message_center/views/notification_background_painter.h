@@ -24,9 +24,13 @@ class MESSAGE_CENTER_EXPORT NotificationBackgroundPainter
 
   void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
+  void set_insets(const gfx::Insets& insets) { insets_ = insets; }
+
  private:
   const SkScalar top_radius_;
   const SkScalar bottom_radius_;
+
+  gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationBackgroundPainter);
 };

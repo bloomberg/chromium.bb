@@ -30,7 +30,9 @@ void NotificationBackgroundPainter::Paint(gfx::Canvas* canvas,
   SkScalar radii[8] = {top_radius_,    top_radius_,    top_radius_,
                        top_radius_,    bottom_radius_, bottom_radius_,
                        bottom_radius_, bottom_radius_};
-  path.addRoundRect(gfx::RectToSkRect(gfx::Rect(size)), radii);
+  gfx::Rect rect(size);
+  rect.Inset(insets_);
+  path.addRoundRect(gfx::RectToSkRect(rect), radii);
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
