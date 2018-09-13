@@ -374,6 +374,8 @@ const QuantizeParam kQParamArraySSE2[] = {
              AOM_BITS_8),
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_sse2, TX_32X8, TYPE_FP,
              AOM_BITS_8),
+  make_tuple(&aom_quantize_b_c, &aom_quantize_b_sse2, TX_16X16, TYPE_B,
+             AOM_BITS_8),
   make_tuple(&aom_highbd_quantize_b_c, &aom_highbd_quantize_b_sse2, TX_16X16,
              TYPE_B, AOM_BITS_8),
   make_tuple(&aom_highbd_quantize_b_c, &aom_highbd_quantize_b_sse2, TX_16X16,
@@ -392,4 +394,32 @@ INSTANTIATE_TEST_CASE_P(SSE2, QuantizeTest,
                         ::testing::ValuesIn(kQParamArraySSE2));
 #endif
 
+#if HAVE_SSSE3 && ARCH_X86_64
+INSTANTIATE_TEST_CASE_P(
+    SSSE3, QuantizeTest,
+    ::testing::Values(make_tuple(&aom_quantize_b_c, &aom_quantize_b_ssse3,
+                                 TX_16X16, TYPE_B, AOM_BITS_8)));
+
+// Like libvpx, the ssse3 and avx quantize tests do not pass.
+// https://bugs.chromium.org/p/webm/issues/detail?id=1448
+INSTANTIATE_TEST_CASE_P(
+    DISABLED_SSSE3_32x32, QuantizeTest,
+    ::testing::Values(make_tuple(&aom_quantize_b_32x32_c,
+                                 &aom_quantize_b_32x32_ssse3, TX_16X16, TYPE_B,
+                                 AOM_BITS_8)));
+
+#endif  // HAVE_SSSE3 && ARCH_X86_64
+
+#if HAVE_AVX && ARCH_X86_64
+INSTANTIATE_TEST_CASE_P(
+    AVX, QuantizeTest,
+    ::testing::Values(
+        make_tuple(&aom_quantize_b_c, &aom_quantize_b_avx, TX_16X16, TYPE_B,
+                   AOM_BITS_8),
+        // Although these tests will not pass against _c, test them against each
+        // other so there is some minor checking.
+        make_tuple(&aom_quantize_b_32x32_ssse3, &aom_quantize_b_32x32_avx,
+                   TX_32X32, TYPE_B, AOM_BITS_8)));
+
+#endif  // HAVE_AVX && ARCH_X86_64
 }  // namespace
