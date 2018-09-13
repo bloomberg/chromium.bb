@@ -57,13 +57,6 @@ bool ConvertAnimationEffects(
     return false;
   }
 
-  if (keyframe_effects.size() > 1) {
-    // TODO(yigu): We should allow group effects eventually by spec. See
-    // https://crbug.com/767043.
-    error_string = "Multiple effects are not currently supported";
-    return false;
-  }
-
   // TODO(crbug.com/781816): Allow using effects with no target.
   for (const auto& effect : keyframe_effects) {
     if (!effect->target()) {
@@ -299,8 +292,10 @@ WorkletAnimation::WorkletAnimation(
   DCHECK(IsMainThread());
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
 
-  AnimationEffect* target_effect = effects_.at(0);
-  target_effect->Attach(this);
+  for (auto& effect : effects_) {
+    AnimationEffect* target_effect = effect;
+    target_effect->Attach(this);
+  }
 
   if (timeline_->IsScrollTimeline())
     ToScrollTimeline(timeline_)->AttachAnimation();
@@ -328,13 +323,14 @@ void WorkletAnimation::play() {
 
   SetPlayState(Animation::kPending);
 
-  Element* target = GetEffect()->target();
-  if (!target)
-    return;
-  target->EnsureElementAnimations().GetWorkletAnimations().insert(this);
-  // TODO(majidvp): This should be removed once worklet animation correctly
-  // updates its effect timing. https://crbug.com/814851.
-  target->SetNeedsAnimationStyleRecalc();
+  for (auto& effect : effects_) {
+    Element* target = effect->target();
+    DCHECK(target);
+    target->EnsureElementAnimations().GetWorkletAnimations().insert(this);
+    // TODO(majidvp): This should be removed once worklet animation correctly
+    // updates its effect timing. https://crbug.com/814851.
+    target->SetNeedsAnimationStyleRecalc();
+  }
 }
 
 void WorkletAnimation::cancel() {
@@ -355,17 +351,20 @@ void WorkletAnimation::cancel() {
   // updates anymore, we have to update its value upon cancel. Similar to
   // regular animations, we should not detach them immediately and update the
   // value in the next frame. See https://crbug.com/883312.
-  if (IsActive(play_state_))
-    GetEffect()->UpdateInheritedTime(NullValue(), kTimingUpdateOnDemand);
+  if (IsActive(play_state_)) {
+    for (auto& effect : effects_)
+      effect->UpdateInheritedTime(NullValue(), kTimingUpdateOnDemand);
+  }
   SetPlayState(Animation::kIdle);
 
-  Element* target = GetEffect()->target();
-  if (!target)
-    return;
-  target->EnsureElementAnimations().GetWorkletAnimations().erase(this);
-  // TODO(majidvp): This should be removed once worklet animation correctly
-  // updates its effect timing. https://crbug.com/814851.
-  target->SetNeedsAnimationStyleRecalc();
+  for (auto& effect : effects_) {
+    Element* target = effect->target();
+    DCHECK(target);
+    target->EnsureElementAnimations().GetWorkletAnimations().erase(this);
+    // TODO(majidvp): This should be removed once worklet animation correctly
+    // updates its effect timing. https://crbug.com/814851.
+    target->SetNeedsAnimationStyleRecalc();
+  }
 }
 
 bool WorkletAnimation::Playing() const {
@@ -398,19 +397,16 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
   if (local_time_)
     inherited_time_seconds = local_time_->InSecondsF();
 
-  GetEffect()->UpdateInheritedTime(inherited_time_seconds, reason);
+  for (auto& effect : effects_)
+    effect->UpdateInheritedTime(inherited_time_seconds, reason);
 }
 
 bool WorkletAnimation::CheckCanStart(String* failure_message) {
   DCHECK(IsMainThread());
-  Element* target = GetEffect()->target();
 
-  if (!target) {
-    *failure_message = "Animation effect has no target element";
-    return false;
-  }
-
-  if (!GetEffect()->Model()->HasFrames()) {
+  for (auto& effect : effects_) {
+    if (effect->Model()->HasFrames())
+      continue;
     *failure_message = "Animation effect has no keyframes";
     return false;
   }
@@ -452,6 +448,14 @@ void WorkletAnimation::StartOnMain() {
 
 bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   DCHECK(IsMainThread());
+  if (effects_.size() > 1) {
+    // Compositor doesn't support multiple effects but they can be run via main.
+    *failure_message =
+        "Multiple effects with composited properties are not currently "
+        "supported on compositor";
+    return false;
+  }
+
   Element& target = *GetEffect()->target();
 
   // TODO(crbug.com/836393): This should not be possible but it is currently
