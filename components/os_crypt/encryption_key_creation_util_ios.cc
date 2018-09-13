@@ -18,6 +18,12 @@ bool EncryptionKeyCreationUtilIOS::ShouldPreventOverwriting() {
   return false;
 }
 
+void EncryptionKeyCreationUtilIOS::OnKeyWasFound() {}
+
 void EncryptionKeyCreationUtilIOS::OnKeyWasStored() {}
+
+void EncryptionKeyCreationUtilIOS::OnOverwritingPrevented() {}
+
+void EncryptionKeyCreationUtilIOS::OnKeychainLookupFailed() {}
 
 }  // namespace os_crypt
