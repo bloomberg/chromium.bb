@@ -13,9 +13,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.support.test.filters.SmallTest;
+import android.util.ArrayMap;
 
 import com.google.android.libraries.feed.api.knowncontent.ContentMetadata;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,6 +29,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
@@ -34,6 +37,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Unit tests for {@link FeedActionHandler}.
@@ -97,6 +101,15 @@ public class FeedActionHandlerTest {
                 .when(mOfflinePageBridge)
                 .getLoadUrlParamsByOfflineId(mOfflineIdCapture.capture(), anyInt(),
                         mLoadUrlParamsCallbackCapture.capture());
+
+        Map<String, Boolean> featureMap = new ArrayMap<>();
+        featureMap.put(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, true);
+        ChromeFeatureList.setTestFeatures(featureMap);
+    }
+
+    @After
+    public void tearDown() {
+        ChromeFeatureList.setTestFeatures(null);
     }
 
     @Test

@@ -10,6 +10,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -147,8 +148,9 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         // to filter out these history entries for NTP tiles.
         // TODO(mastiz): Extend this with support for other categories.
         if (article.mCategory == KnownCategories.ARTICLES) {
-            loadUrlParams.setReferrer(
-                    new Referrer(SuggestionsConfig.getReferrerUrl(), WebReferrerPolicy.ALWAYS));
+            loadUrlParams.setReferrer(new Referrer(
+                    SuggestionsConfig.getReferrerUrl(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS),
+                    WebReferrerPolicy.ALWAYS));
         }
 
         // Set appropriate referrer for contextual suggestions to distinguish them from navigation
