@@ -18,6 +18,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1502360822835740515">Gör Chromium till din standardwebbläsare</translation>
 <translation id="151962892725702025">Det gick inte att synkronisera data med Chromium eftersom synkronisering inte är tillgängligt för domänen.</translation>
 <translation id="1585657529869845941">Klicka på <ph name="BEGIN_BOLD" />Byt ändå<ph name="END_BOLD" /> om det visas</translation>
+<translation id="1662639173275167396">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS" />program med öppen källkod<ph name="END_LINK_CROS_OSS" />, liksom <ph name="BEGIN_LINK_LINUX_OSS" />Linux (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1668054258064581266">När du har tagit bort kontot från Chromium kan öppna flikar behöva läsas in på nytt för att ändringen ska träda i kraft.</translation>
 <translation id="1688750314291223739">Konfigurera synkronisering för att spara dina webbläsarfunktioner på webben och använda dem i Chromium på alla datorer.</translation>
 <translation id="1708666629004767631">Det finns en ny, ännu säkrare version av Chromium.</translation>

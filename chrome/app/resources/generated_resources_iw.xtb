@@ -879,7 +879,6 @@
 <translation id="230927227160767054">דף זה מעוניין להתקין מטפל שירות.</translation>
 <translation id="2309620859903500144">נחסמה הגישה של האתר הזה אל חיישני התנועה או התאורה.</translation>
 <translation id="2315414688463285945">‏קרתה שגיאה בקביעת ההגדרה של קובצי Linux. צריך לנסות שוב.</translation>
-<translation id="2315821125498993513">לא ניתן היה להתחבר אל הטלפון. <ph name="LINK_BEGIN" />מידע נוסף.<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">לא, תודה</translation>
 <translation id="2317842250900878657">%<ph name="PROGRESS_PERCENT" />הושלמו</translation>
 <translation id="2318143611928805047">גודל נייר</translation>
@@ -1214,7 +1213,6 @@
 <translation id="2806891468525657116">קיצור הדרך כבר קיים</translation>
 <translation id="2807517655263062534">קבצים שתוריד יופיעו כאן</translation>
 <translation id="2809586584051668049">ועוד <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
-<translation id="281133045296806353">חלון חדש שנוצר בהפעלת דפדפן קיים.</translation>
 <translation id="2812944337881233323">נסה לצאת ולהיכנס שוב</translation>
 <translation id="2812989263793994277">אל תציג אף תמונה</translation>
 <translation id="2814489978934728345">הפסק את טעינת הדף</translation>
@@ -3676,7 +3674,6 @@
 <translation id="6582421931165117398">כדאי לשנות את הסיסמה עכשיו כדי להגן על המידע האישי. תוצג לך בקשה להיכנס לחשבונך לפני שינוי הסיסמה.</translation>
 <translation id="6583851739559471707">חסומות באתרים שנוטים להציג מודעות שמפריעות (מומלץ)</translation>
 <translation id="6584878029876017575">‏חתימה לכל החיים של Microsoft</translation>
-<translation id="6585283250473596934">נכנס לפעילות ציבורית באתר.</translation>
 <translation id="6586451623538375658">החלף את לחצן העכבר העיקרי</translation>
 <translation id="6589660129740381104">כדי לעזור לך לנהל בקלות את החוויה ב-<ph name="IDS_SHORT_PRODUCT_NAME" />, התכונות הקשורות לסינכרון ולהתאמה אישית נשלטות עכשיו דרך פקד אחד. הפעלת הפקד הזה עשויה לשנות את ההגדרות הנוכחיות.</translation>
 <translation id="6589706261477377614">הגבר את בהירות המקשים</translation>
@@ -5091,7 +5088,6 @@
 <translation id="8755376271068075440">&amp;גדול יותר</translation>
 <translation id="8756969031206844760">לעדכן את הסיסמה?</translation>
 <translation id="8757090071857742562">לא ניתן להעביר את שולחן העבודה. בדוק אם אישרת את הבקשה להתחיל בשיתוף המסך.</translation>
-<translation id="8757640015637159332">היכנס לפעילות ציבורית באתר</translation>
 <translation id="8757742102600829832">‏מחר Chromebox שאליו ברצונך להתחבר</translation>
 <translation id="8757803915342932642">‏מכשיר ב-Google Cloud Devices</translation>
 <translation id="8758418656925882523">הפעלת הכתבה (דיבור להקלדה)</translation>

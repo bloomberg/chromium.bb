@@ -882,7 +882,6 @@
 <translation id="230927227160767054">Sivu haluaa asentaa palvelukäsittelijän.</translation>
 <translation id="2309620859903500144">Tältä sivustolta on estetty liikkeen- tai valontunnistimien käyttö.</translation>
 <translation id="2315414688463285945">Virhe Linux-tiedostojen määrittämisessä. Yritä uudelleen.</translation>
-<translation id="2315821125498993513">Yhteyden muodostaminen puhelimeen epäonnistui. <ph name="LINK_BEGIN" />Lisätietoja<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" /> % valmis</translation>
 <translation id="2318143611928805047">Paperin koko</translation>
@@ -1218,7 +1217,6 @@
 <translation id="2806891468525657116">Pikakuvake on jo olemassa</translation>
 <translation id="2807517655263062534">Lataamasi tiedostot näytetään tässä.</translation>
 <translation id="2809586584051668049">ja <ph name="NUMBER_ADDITIONAL_DISABLED" /> muuta</translation>
-<translation id="281133045296806353">Nykyisessä selainistunnossa avattiin uusi ikkuna.</translation>
 <translation id="2812944337881233323">Kokeile kirjautua ensin ulos ja sitten takaisin sisään.</translation>
 <translation id="2812989263793994277">Älä näytä kuvia</translation>
 <translation id="2814489978934728345">Pysäytä tämän sivun lataus</translation>
@@ -3678,7 +3676,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6582421931165117398">Vaihda salasanasi nyt, jotta henkilötietosi pysyvät turvassa. Sinun on kirjauduttava sisään ennen salasanan vaihtamista.</translation>
 <translation id="6583851739559471707">Estetty häiritseviä mainoksia toistuvasti näyttävillä sivustoilla (suositus)</translation>
 <translation id="6584878029876017575">Microsoftin elinikäinen allekirjoitus</translation>
-<translation id="6585283250473596934">Aloitetaan julkinen istunto.</translation>
 <translation id="6586451623538375658">Vaihda hiiren ykköspainiketta</translation>
 <translation id="6589660129740381104">Synkronointi- ja räätälöintiominaisuudet on nyt yhdistetty samaan asetukseen, jotta voit vaikuttaa käyttökokemukseesi (<ph name="IDS_SHORT_PRODUCT_NAME" />) helpommin. Tämän asetuksen käyttöönotto voi muuttaa nykyisiä asetuksiasi.</translation>
 <translation id="6589706261477377614">Lisää näppäimistön kirkkautta</translation>
@@ -5095,7 +5092,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8755376271068075440">&amp;Suurempi</translation>
 <translation id="8756969031206844760">Päivitetäänkö salasana?</translation>
 <translation id="8757090071857742562">Työpöydän suoratoisto ei onnistu. Tarkista, hyväksyitkö kehotteen näytön jakamisen aloittamisesta.</translation>
-<translation id="8757640015637159332">Aloita julkinen istunto</translation>
 <translation id="8757742102600829832">Valitse Chromebox, johon haluat yhdistää</translation>
 <translation id="8757803915342932642">Google Cloud Devices -laite</translation>
 <translation id="8758418656925882523">Ota sanelu käyttöön (kirjoita puhumalla)</translation>

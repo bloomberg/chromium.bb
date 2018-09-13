@@ -239,7 +239,6 @@
 
       Varoitus: emme suosittele <ph name="PRODUCT_OS_NAME" /> ‑version hallinnan antamista kioskisovellukselle, sillä tämä voi estää laitetta saamasta ohjelmistopäivityksiä ja kriittisiä tietoturvapäivityksiä. Jos <ph name="PRODUCT_OS_NAME" /> ‑version hallinta annetaan sovellukselle, käyttäjät voivat vaarantua.</translation>
 <translation id="1675002386741412210">Tuettu kohteissa:</translation>
-<translation id="1679420586049708690">Automaattisen kirjautumisen julkinen istunto</translation>
 <translation id="1689963000958717134">Antaa määrittää tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävien laitteiden verkkoasetukset kaikille käyttäjille. Verkkoasetukset määritetään JSON-muotoiltuna merkkijonona Open Network Configuration -muodossa, josta on lisätietoja osoitteessa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Aseta Variations-siemenarvon hakemisen rajoitukset</translation>
 <translation id="172374442286684480">Anna kaikkien sivustojen luoda tiedostoja tietokoneelle</translation>
@@ -470,27 +469,6 @@
           Jos käytäntöä ei määritetä, varoitusta ei näytetä.
 
           Käytännön arvo tulee määrittää millisekunneissa. Arvon on oltava sama tai pienempi kuin käyttämättömyysviiveen.</translation>
-<translation id="2289578386193672044">Määrittää luettelon sovelluksista ja laajennuksista, jotka asennetaan hiljaisesti
-          ilman käyttäjän toimenpiteitä ja joita käyttäjä ei voi poistaa käytöstä tai
-          poistaa kokonaan. Kaikki sovellusten/laajennusten pyytämät käyttöluvat
-          myönnetään implisiittisesti ilman käyttäjän toimenpiteitä.
-          Tämä koskee myös uusia käyttölupia, joita sovelluksen/laajennuksen
-          myöhemmät versiot voivat pyytää. Lisäksi myönnetään
-          enterprise.deviceAttributes- ja enterprise.platformKeys-laajennussovellusliittymien
-          käyttöoikeus. (Näitä kahta sovellusliittymää voivat käyttää vain sovellukset/laajennukset, jotka
-          asennetaan pakollisina.)
-
-          Tätä käytäntöä sovelletaan ensisijaisesti, jos käytäntö <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> on sen kanssa ristiriidassa. Jos sovellus tai laajennus on aiemmin asennettu pakollisena ja se poistetaan tästä luettelosta, <ph name="PRODUCT_NAME" /> poistaa sen automaattisesti.
-
-          Windows-asennuksissa, joita ei ole liitetty tyypin <ph name="MS_AD_NAME" /> toimialueeseen, pakollisena asennus on käytettävissä vain Chrome Web Storesta saataville sovelluksille ja laajennuksille.
-
-          Huomaa, että käyttäjät voivat muokata laajennusten lähdekoodia Kehittäjätyökaluilla (mikä voi häiritä laajennuksen toimintaa). Jos tämä mahdollisuus on huomioitava, käytäntö <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> tulee määrittää.
-
-          Käytännön jokainen luettelokohde on merkkijono, joka sisältää laajennuksen tunnuksen sekä valinnaisesti myös puolipisteellä (<ph name="SEMICOLON" />) erotetun URL-osoitteen, jota käytetään päivitykseen. Laajennuksen tunnus on 32-kirjaiminen merkkijono, joka on nähtävissä kehittäjätilassa esimerkiksi täällä: <ph name="CHROME_EXTENSIONS_LINK" />. Laajennuksen mahdollisen päivitysosoitteen tulee johtaa XML-päivitysluetteloasiakirjaan, kuten osoitteessa <ph name="LINK_TO_EXTENSION_DOC1" /> on kuvattu. Oletusarvoisesti käytetään Chrome Web Storen päivitysosoitetta (joka on tällä hetkellä "https://clients2.google.com/service/update2/crx"). Huomaa, että tässä käytännössä määritettyä päivitysosoitetta käytetään vain ensimmäiseen asennukseen. Laajennuksen myöhempiin päivityksiin käytetään laajennuksen luettelossa ilmoitettua päivitysosoitetta. Päivitysosoitteen ilmoittaminen oli pakollista vielä tuotteen <ph name="PRODUCT_NAME" /> versiossa 67.
-
-          Esimerkki: <ph name="EXTENSION_POLICY_EXAMPLE" /> asentaa sovelluksen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> Chrome Web Storen tavallisen päivitysosoitteen kautta. Jos haluat lisätietoja laajennusten isännöinnistä, katso <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Jos tätä käytäntöä ei aseteta, mitään sovelluksia tai laajennuksia ei asenneta automaattisesti ja käyttäjä voi poistaa minkä tahansa sovelluksen tai laajennuksen tuotteesta <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> voi korjata oikeinkirjoitusvirheitä Googlen verkkopalvelun avulla. Jos asetus on käytössä, palvelua käytetään aina. Jos asetus ei ole käytössä, palvelua ei käytetä koskaan.
 
       Oikoluvun voi suorittaa myös ladatun sanakirjan avulla. Käytäntö hallinnoi vain verkkopalvelun käyttöä.
@@ -517,15 +495,6 @@
 <translation id="2309390639296060546">Maantieteellisen sijainnin oletusasetus</translation>
 <translation id="2312134445771258233">Voit määrittää käynnistettäessä avattavat sivut. Käynnistettäessä avattavat sivut -luettelo ohitetaan, jos et valitse Toiminto käynnistettäessä -asetukseksi vaihtoehtoa Avaa seuraavat sivut:.</translation>
 <translation id="2327252517317514801">Määritä verkkotunnukset, joilla on G Suiten käyttöoikeus</translation>
-<translation id="2372547058085956601">Julkisen istunnon automaattisen kirjautumisen viive.
-
-      Jos |DeviceLocalAccountAutoLoginId|-käytäntöä ei ole määritetty, käytännöllä ei ole vaikutusta. Muutoin:
-
-      Jos käytäntö on asetettu, se määrittää käyttämättömyysajan, jonka jälkeen julkiseen istuntoon kirjaudutaan automaattisesti |DeviceLocalAccountAutoLoginId|-käytännön mukaisesti.
-
-      Jos käytäntöä ei määritetä, aikakatkaisun raja on 0 millisekuntia.
-
-      Käytännön arvo määritetään millisekunneissa.</translation>
 <translation id="237494535617297575">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat näyttää ilmoituksia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultNotificationsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="2386362615870139244">Salli näytön herätyksen lukitus</translation>
 <translation id="2411817661175306360">Salasanasuojauksen varoitus on poissa käytöstä</translation>
@@ -1088,7 +1057,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos et ota tätä käytäntöä käyttöön, <ph name="PRODUCT_NAME" /> käyttää tavallista oletushakemistoaan (käyttöympäristökohtainen).
 
       Osoitteessa https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables on lista käytettävissä olevista muuttujista.</translation>
-<translation id="3907986150060929099">Asettaa julkisten käyttökertojen suositellut kielet</translation>
 <translation id="3911737181201537215">Tällä käytännöllä ei ole vaikutusta Androidin tekemään lokikirjaukseen.</translation>
 <translation id="391531815696899618">Jos arvo on tosi, Google Driven synkronointi tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksen kanssa poistetaan käytöstä. Tällöin mitään tietoja ei lähetetä Google Driveen.
 
@@ -1600,11 +1568,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos tämä luettelo on tyhjä, päivityksiä ei jaeta päiväkohtaisten kiintiöiden mukaan, vaan ne asennetaan muiden laitekäytäntöjen mukaan.
 
       Tämä käytäntö ei koske kanavan vaihtoja.</translation>
-<translation id="5523812257194833591">Automaattinen kirjautuminen julkiseen istuntoon viiveen jälkeen.
-
-      Jos käytäntö asetetaan, määritettyyn istuntoon kirjaudutaan automaattisesti, kun kirjautumisruudulla ei ole havaittu käyttäjän toimia tietyn ajan kuluessa. Julkinen istunto täytyy määrittää ensin (katso |DeviceLocalAccounts|).
-
-      Jos käytäntöä ei aseteta, automaattista kirjautumista ei suoriteta.</translation>
 <translation id="5526701598901867718">Kaikki (suojaamaton)</translation>
 <translation id="5529037166721644841">Määrittää millisekunteina ajan, jonka jälkeen laitteen hallintapalvelulta pyydetään tietoja käyttäjäkäytännöistä.
 
@@ -2421,22 +2384,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7750991880413385988">Avaa Uusi välilehti -sivu</translation>
 <translation id="7754704193130578113">Kysy, minne kukin tiedosto tallennetaan ennen lataamista</translation>
 <translation id="7761446981238915769">Muokkaa kirjautumisnäytöllä asennettavien sovellusten luetteloa</translation>
-<translation id="7761526206824804472">Asettaa julkisia käyttökertoja varten yhden tai useamman suositellun kielen, joista käyttäjät voivat valita haluamansa.
-
-      Käyttäjä voi valita kielen ja näppäimistöasettelun ennen julkisen käyttökerran aloittamista. Oletuksena kaikki kielet, joita <ph name="PRODUCT_OS_NAME" /> tukee, näytetään aakkosjärjestyksessä. Tämän käytännön avulla suositellut kielet voidaan näyttää listan alussa.
-
-      Jos tätä käytäntöä ei aseteta, käyttöliittymän kieli on esivalittuna.
-
-      Jos tämä käytäntö asetetaan, suositellut kielet näytetään listan alussa muista kielistä erotettuina. Suositellut kielet näytetään käytännössä määritellyssä järjestyksessä. Suositelluista kielistä ensimmäinen on esivalittuna.
-
-      Jos suositeltuja kieliä on useita, oletuksena on, että käyttäjät haluavat valita jonkin suosituksista. Kielen ja näppäimistöasettelun valintaa tarjotaan näkyvästi julkisen käyttökerran alussa. Muussa tapauksessa oletetaan, että useimmat käyttäjät haluavat valita esivalitun kielen. Tällöin kielen ja näppäimistöasettelun valintaa ei tarjota yhtä näkyvästi julkisen käyttökerran alussa.
-
-      Kun tämä käytäntö on asetettu ja automaattinen kirjautuminen on käytössä (katso käytännöt |DeviceLocalAccountAutoLoginId| ja |DeviceLocalAccountAutoLoginDelay|), automaattisesti aloitettavassa julkisessa käyttökerrassa käytetään ensimmäistä kielisuositusta sekä sitä vastaavaa suosituinta näppäimistöasettelua.
-
-      Esivalittuna näppäimistöasetteluna käytetään aina kielivalintaa vastaavaa suosituinta asettelua.
-
-      Tämä käytäntö voidaan asettaa vain suositukseksi. Käytännön avulla suositellut kielet voidaan näyttää listan alussa, mutta käyttäjä voi aina valita käyttökertaa varten minkä tahansa kielen, jota <ph name="PRODUCT_OS_NAME" /> tukee.
-      </translation>
 <translation id="7763479091692861127"> Yhteystyypit, joilla voidaan suorittaa käyttöjärjestelmäpäivityksiä. Käyttöjärjestelmäpäivitykset saattavat kuormittaa yhteyttä niiden koon vuoksi, ja tiedonsiirrosta voidaan periä lisämaksuja. Järjestelmäpäivityksiä ei voi tällä hetkellä oletuksena suorittaa kalliilla yhteystyypeillä, kuten WiMax, Bluetooth ja Cellular.
 
       Tunnistettuja yhteystyypin tunnuksia ovat ethernet, wifi, wimax, bluetooth ja cellular.</translation>
@@ -2919,7 +2866,6 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 
       Huom. Versioon 45 asti tätä käytäntöä tuettiin vain kioskitilassa.</translation>
 <translation id="8970205333161758602">Torju tuotteen <ph name="PRODUCT_FRAME_NAME" /> hylkäyspyyntö</translation>
-<translation id="8971221018777092728">Julkisten istuntojen automaattisen kirjautumisen ajastin</translation>
 <translation id="8976248126101463034">Salli etäkäytön isäntien gnubby-todennus</translation>
 <translation id="8976531594979650914">Käytä oletuksena järjestelmän oletustulostinta</translation>
 <translation id="8992176907758534924">Älä anna sivustojen näyttää kuvia</translation>

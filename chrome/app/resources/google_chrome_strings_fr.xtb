@@ -27,6 +27,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1587325591171447154">Chrome a bloqué <ph name="FILE_NAME" />, car ce fichier est dangereux.</translation>
 <translation id="1619887657840448962">Afin de rendre Chromium plus sûr, nous avons désactivé l'extension suivante qui n'est pas répertoriée sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui a pu être ajoutée à votre insu.</translation>
 <translation id="1628000112320670027">Obtenir de l'aide avec Chrome</translation>
+<translation id="1662639173275167396">Chrome OS a été créé à partir d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels Open Source<ph name="END_LINK_CROS_OSS" />, tout comme <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Bêta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chrome</translation>
 <translation id="1682634494516646069">Google Chrome ne peut pas lire et écrire dans son répertoire de données : 
 

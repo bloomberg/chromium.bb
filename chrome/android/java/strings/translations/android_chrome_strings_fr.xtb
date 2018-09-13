@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">Vos données de navigation et votre activité sont synchronisées avec votre compte Google</translation>
 <translation id="116280672541001035">Utilisées</translation>
 <translation id="1172593791219290334">Page de démarrage</translation>
+<translation id="1175310183703641346">Vos favoris, votre historique, vos mots de passe et d'autres paramètres ne seront plus synchronisés avec votre compte Google</translation>
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1197267115302279827">Déplacer les favoris</translation>
@@ -48,6 +49,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="129553762522093515">Récemment fermés</translation>
 <translation id="1326317727527857210">Connectez-vous à Chrome pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="1332501820983677155">Raccourcis liés aux fonctionnalités de Google Chrome</translation>
+<translation id="1360432990279830238">Se déconnecter et arrêter la synchro. ?</translation>
 <translation id="136248372334525878">Préchargez des pages pour accélérer leur chargement ou les lire hors connexion</translation>
 <translation id="1369915414381695676">Site "<ph name="SITE_NAME" />" ajouté</translation>
 <translation id="1373696734384179344">Mémoire insuffisante pour télécharger le contenu sélectionné.</translation>
@@ -158,6 +160,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="2131665479022868825"><ph name="DATA" /> économisés</translation>
 <translation id="213279576345780926">L'onglet "<ph name="TAB_TITLE" />" a été fermé.</translation>
 <translation id="2139186145475833000">Ajouter à l'écran d'accueil</translation>
+<translation id="2142289305367051020">Vos pages préférées sont ici</translation>
 <translation id="2146738493024040262">Ouvrir l'appli instantanée</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2154484045852737596">Modifier la carte</translation>
@@ -348,6 +351,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="3822502789641063741">Suppr. données de site ?</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3859306556332390985">Avance rapide</translation>
+<translation id="3868004864571585162">Cookies, licences multimédias et données de sites</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -810,6 +814,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7413229368719586778">Date de début : <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Demander d'abord</translation>
 <translation id="7423538860840206698">Accès en lecture au presse-papiers bloqué</translation>
+<translation id="7431991332293347422">Contrôler la manière dont votre historique de navigation est utilisé pour personnaliser la recherche et plus encore</translation>
 <translation id="7437998757836447326">Se déconnecter de Chrome</translation>
 <translation id="7444811645081526538">Autres catégories</translation>
 <translation id="7445411102860286510">Autoriser les sites à lire automatiquement des vidéos dont le son est coupé (recommandé)</translation>
@@ -878,6 +883,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7963646190083259054">Fournisseur :</translation>
 <translation id="7981313251711023384">Précharger les pages pour accélérer la navigation et la recherche</translation>
 <translation id="79859296434321399">Pour afficher des contenus en réalité augmentée, installez ARCore</translation>
+<translation id="7986741934819883144">Sélectionner un contact</translation>
 <translation id="7987073022710626672">Conditions d'utilisation de Chrome</translation>
 <translation id="7987764905897278458">Profitez d'encore plus de fonctionnalités intelligentes de Google</translation>
 <translation id="7998918019931843664">Rouvrir un onglet fermé</translation>
@@ -906,6 +912,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8109613176066109935">Activez la synchronisation pour accéder à vos favoris sur tous vos appareils</translation>
 <translation id="8116925261070264013">Son coupé</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
+<translation id="8156139159503939589">Quelles langues comprenez-vous ?</translation>
 <translation id="8168435359814927499">Contenu</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> fichiers restants</translation>
 <translation id="8190358571722158785">1 jour restant</translation>
@@ -918,6 +925,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8260126382462817229">Essayez de vous connecter de nouveau à votre compte.</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8266862848225348053">Emplacement de téléchargement</translation>
+<translation id="8274165955039650276">Voir les téléchargements</translation>
 <translation id="8283853025636624853">Synchronisation avec <ph name="SYNC_ACCOUNT_USER_NAME" />…</translation>
 <translation id="8310344678080805313">Onglets standards</translation>
 <translation id="8313455859591948645">Modifier la page de démarrage</translation>
@@ -934,6 +942,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8441146129660941386">Retour rapide</translation>
 <translation id="8445448999790540984">Impossible d'exporter les mots de passe</translation>
 <translation id="8447861592752582886">Révoquer l'autorisation d'accès à l'appareil</translation>
+<translation id="8477071352266846533">Synchronisation désactivée pour <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8487700953926739672">Disponible hors connexion</translation>
 <translation id="8489271220582375723">Ouvrir la page "Historique"</translation>
 <translation id="8493948351860045254">Libérer de l'espace</translation>
@@ -973,6 +982,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8728487861892616501">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome, ainsi que l'<ph name="BEGIN_LINK3" />Avis de confidentialité relatif aux comptes Google gérés dans Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">OK</translation>
 <translation id="8748850008226585750">Contenu masqué</translation>
+<translation id="8751914237388039244">Sélectionner une image</translation>
 <translation id="8788968922598763114">Rouvrir le dernier onglet fermé</translation>
 <translation id="8812260976093120287">Sur certains sites Web, vous pouvez payer depuis votre appareil avec les applications de paiement compatibles indiquées ci-dessus.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> va s'ouvrir dans Chrome. En continuant, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome, ainsi que l'<ph name="BEGIN_LINK3" />Avis de confidentialité relatif aux comptes Google gérés dans Family Link<ph name="END_LINK3" />.</translation>

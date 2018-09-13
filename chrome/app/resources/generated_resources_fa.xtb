@@ -885,7 +885,6 @@
 <translation id="230927227160767054">این صفحه، می‌خواهد یک کنترل‌کننده سرویس نصب کند.</translation>
 <translation id="2309620859903500144">دسترسی این سایت به حسگرهای نور یا حرکت مسدود شده است.</translation>
 <translation id="2315414688463285945">‏هنگام پیکربندی فایل‌های Linux خطایی روی داد. لطفاً دوباره امتحان کنید.</translation>
-<translation id="2315821125498993513">ارتباط با تلفن برقرار نشد. <ph name="LINK_BEGIN" />بیشتر بدانید.<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">نه متشکرم</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% کامل شد</translation>
 <translation id="2318143611928805047">اندازه کاغذ</translation>
@@ -1220,7 +1219,6 @@
 <translation id="2806891468525657116">میان‌بر از قبل وجود دارد</translation>
 <translation id="2807517655263062534">فایل‌هایی که بارگیری می‌کنید اینجا نشان داده می‌شود</translation>
 <translation id="2809586584051668049">و <ph name="NUMBER_ADDITIONAL_DISABLED" /> مورد دیگر</translation>
-<translation id="281133045296806353">پنجرهٔ جدید ایجاد شده در جلسه مرورگر فعلی.</translation>
 <translation id="2812944337881233323">تلاش کنید از سیستم خارج و دوباره وارد شوید</translation>
 <translation id="2812989263793994277">تصویری نشان داده نشود</translation>
 <translation id="2814489978934728345">توقف بارگیری این صفحه</translation>
@@ -3709,7 +3707,6 @@
 <translation id="6582421931165117398">برای محافظت از اطلاعات شخصی، هم‌اکنون گذرواژه را تغییر دهید. قبل از اینکه بتوانید گذرواژه را تغییر دهید، از شما درخواست می‌شود به سیستم وارد شوید.</translation>
 <translation id="6583851739559471707">در سایت‌هایی که تمایل دارند آگهی‌های مزاحم نشان دهند مسدود شوند (توصیه می‌شود)</translation>
 <translation id="6584878029876017575">‏امضای دائمی Microsoft</translation>
-<translation id="6585283250473596934">ورود به جلسه عمومی.</translation>
 <translation id="6586451623538375658">جابجایی دکمه اصلی ماوس</translation>
 <translation id="6589660129740381104">برای اینکه بتوانید تجربه کار در <ph name="IDS_SHORT_PRODUCT_NAME" /> را آسان‌تر مدیریت کنید، اکنون می‌توانید ویژگی‌های مربوط به همگام‌سازی و شخصی‌سازی را با یک گزینه کنترل کنید. روشن کردن این گزینه ممکن است تنظیمات فعلی‌تان را تغییر دهد.</translation>
 <translation id="6589706261477377614">افزایش روشنایی کلید</translation>
@@ -5140,7 +5137,6 @@
 <translation id="8755376271068075440">&amp;بزرگ تر</translation>
 <translation id="8756969031206844760">گذرواژه به‌روزرسانی شود؟</translation>
 <translation id="8757090071857742562">ارسال محتوای دسک‌تاپ امکان‌پذیر نیست. ببینید آیا فرمان شروع اشتراک‌گذاری صفحه‌تان را تأیید کرده‌اید.</translation>
-<translation id="8757640015637159332">ورود به جلسه عمومی</translation>
 <translation id="8757742102600829832">‏یک Chromebox برای ارتباط با این دستگاه انتخاب کنید</translation>
 <translation id="8757803915342932642">‏دستگاه در Google Cloud Devices</translation>
 <translation id="8758418656925882523">فعال کردن املا (صحبت برای تایپ)</translation>

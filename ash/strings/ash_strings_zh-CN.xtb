@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME" />，<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">正在重新连接到 <ph name="NAME" /></translation>
+<translation id="2790844815106384441">选择是否允许网站使用位置信息服务或使用此设备的麦克风/摄像头/其他功能</translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
 <translation id="2805756323405976993">应用</translation>
 <translation id="2808012452536866044">Better Together 已改为与新手机连接</translation>
@@ -129,7 +130,6 @@
 <translation id="2992931425024192067">显示所有通知内容</translation>
 <translation id="2995447421581609334">显示投射设备。</translation>
 <translation id="2996462380875591307">已启用停靠的放大镜。再按一次 Ctrl+搜索键+D 组合键即可将其停用。</translation>
-<translation id="2999742336789313416">“<ph name="DISPLAY_NAME" />”是由 <ph name="DOMAIN" /> 管理的公用自助终端</translation>
 <translation id="3000461861112256445">单声道音频</translation>
 <translation id="3009178788565917040">输出</translation>
 <translation id="3019353588588144572">电池电量将在 <ph name="TIME_REMAINING" />后充满</translation>
@@ -193,6 +193,7 @@
 <translation id="4200057768455216496">您按下了停靠放大镜的快捷键。要开启这项功能吗？</translation>
 <translation id="4217571870635786043">语音输入</translation>
 <translation id="4261870227682513959">显示通知设置。通知已关闭</translation>
+<translation id="4269883910223712419">此设备的管理员能够：</translation>
 <translation id="4274921305979314545">将您的 Chromebook 连接到手机</translation>
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4292681942966152062">正在启用<ph name="NETWORK_NAME" /></translation>
@@ -221,6 +222,7 @@
 <translation id="4734965478015604180">横向</translation>
 <translation id="476166673298332917">此设备的管理员有权访问所有活动数据，包括密码和通信内容。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密码</translation>
+<translation id="4778095205580009397">无法在演示会话中使用 Google 助理。</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="4849058404725798627">突出显示键盘焦点所在对象</translation>
@@ -336,6 +338,7 @@
 <translation id="6751826523481687655">已启用性能跟踪</translation>
 <translation id="6785414152754474415">电池电量为<ph name="PERCENTAGE" />%（正在充电）。</translation>
 <translation id="6803622936009808957">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。</translation>
+<translation id="6814658242098378692">管理应用、扩展程序和主题背景</translation>
 <translation id="6820676911989879663">休息一下！</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">激活 <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +362,7 @@
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />秒后恢复到原分辨率</translation>
 <translation id="7256634071279256947">后置麦克风</translation>
 <translation id="726276584504105859">拖到此处即可使用分屏模式</translation>
+<translation id="7303365578352795231">正在通过另一设备答复</translation>
 <translation id="7348093485538360975">屏幕键盘</translation>
 <translation id="735745346212279324">VPN 连接已断开</translation>
 <translation id="7377169924702866686">大写锁定已打开。</translation>
@@ -391,6 +395,7 @@
 <translation id="7842211907556571265">正在连接到<ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">警告：实验性功能</translation>
 <translation id="7846634333498149051">键盘</translation>
+<translation id="7886169021410746335">调整隐私设置</translation>
 <translation id="7886277072580235377">当您退出时，系统即会清除您的网络会话。<ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">发送电子邮件</translation>
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>

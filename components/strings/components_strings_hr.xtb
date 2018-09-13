@@ -515,6 +515,7 @@
 <translation id="4408413947728134509">Kolačića: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Adresa preuzimanja</translation>
 <translation id="4424024547088906515">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; Chrome smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
+<translation id="4430369329743628066">Oznaka je dodana</translation>
 <translation id="4432688616882109544">Host <ph name="HOST_NAME" /> nije prihvatio vaš certifikat za prijavu ili certifikat nije poslan.</translation>
 <translation id="4434045419905280838">Skočni prozori i preusmjeravanja</translation>
 <translation id="443673843213245140">Upotreba proxy poslužitelja onemogućena je, ali određena je izričita konfiguracija proxy poslužitelja.</translation>
@@ -779,7 +780,6 @@
 <translation id="6328786501058569169">Ova je web-lokacija obmanjujuća</translation>
 <translation id="6337133576188860026">Oslobodit će se <ph name="SIZE" />. Neke bi se web-lokacije pri sljedećem otvaranju mogle sporije učitavati.</translation>
 <translation id="6337534724793800597">Filtriranje pravila prema nazivu</translation>
-<translation id="6355080345576803305">Nadjačavanje javne sesije</translation>
 <translation id="6358450015545214790">Što to znači?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 drugi prijedlog}one{# drugi prijedlog}few{# druga prijedloga}other{# drugih prijedloga}}</translation>
 <translation id="6387754724289022810">Da biste sljedeći put platili brže, karticu i adresu za naplatu spremite na svoj Google račun i na ovaj uređaj.</translation>

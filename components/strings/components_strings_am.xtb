@@ -515,6 +515,7 @@
 <translation id="4408413947728134509">ኩኪዎች <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">የመውሰጃ አድራሻ</translation>
 <translation id="4424024547088906515">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው በChrome የሚታመን አይደለም። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
+<translation id="4430369329743628066">ዕልባት ታክሏል</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> የመግቢያ እውቅና ማረጋገጫዎን አልተቀበለም፣ ወይም ገና አልተሰጠዎት ይሆናል።</translation>
 <translation id="4434045419905280838">ብቅ-ባዮች እና አቅጣጫ ማዞሮች</translation>
 <translation id="443673843213245140">የተኪ መጠቀም ተሰናክሏል ግን ግልጽ የሆነ የተኪ ውቅር ተገልጿል።</translation>
@@ -779,7 +780,6 @@
 <translation id="6328786501058569169">ይህ ጣቢያ አታላይ ነው</translation>
 <translation id="6337133576188860026">ከ<ph name="SIZE" /> ያነሰ ቦታ ያስለቅቃል። አንዳንድ ጣቢያዎች በሚቀጥለው ጉብኝትዎ ላይ ይበልጥ በዝግታ ሊጫኑ ይችላሉ።</translation>
 <translation id="6337534724793800597">መምሪያዎችን በስም አጣራ</translation>
-<translation id="6355080345576803305">የይፋዊ ክፍለ-ጊዜ መሻር</translation>
 <translation id="6358450015545214790">እነዚህ ምን ማለት ናቸው?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ሌላ የአስተያየት ጥቆማ}one{# ሌሎች የአስተያየት ጥቆማዎች}other{# ሌሎች የአስተያየት ጥቆማዎች}}</translation>
 <translation id="6387754724289022810">በሚቀጥለው ጊዜ በበለጠ ፍጥነት ለመክፈል ካርድዎን እና የማስከፈያ አድራሻዎን በGoogle መለያዎ እና በዚህ መሣሪያ ላይ ያስቀምጡ።</translation>

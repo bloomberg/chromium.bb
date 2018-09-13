@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Onbekend product <ph name="PRODUCT_ID" /> van <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Manifestbestand is ongeldig</translation>
 <translation id="7217838517480956708">De beheerder van dit apparaat vereist dat <ph name="EXTENSION_NAME" /> is geïnstalleerd. Het kan niet worden verwijderd of gewijzigd.</translation>
+<translation id="7612608473764576263">De invoerwaarde voor de privésleutel moet een geldige indeling hebben (PKCS#8-indeling met PEM-gecodeerde RSA-sleutel).</translation>
 <translation id="7939686037314084444">De extensie wordt niet goed geladen. Mogelijk kan deze geen netwerkverzoeken onderscheppen.</translation>
 <translation id="7972881773422714442">Opties: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Camera aan voorzijde</translation>

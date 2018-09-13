@@ -888,7 +888,6 @@
 <translation id="230927227160767054">このページはサービス ハンドラのインストールを求めています。</translation>
 <translation id="2309620859903500144">このサイトではモーション センサーまたは光センサーへのアクセスがブロックされています。</translation>
 <translation id="2315414688463285945">[Linux ファイル] の設定中にエラーが発生しました。もう一度お試しください。</translation>
-<translation id="2315821125498993513">スマートフォンに接続できませんでした。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">いいえ</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% 完了</translation>
 <translation id="2318143611928805047">用紙サイズ</translation>
@@ -1224,7 +1223,6 @@
 <translation id="2806891468525657116">ショートカットがすでに存在します</translation>
 <translation id="2807517655263062534">ダウンロードしたファイルがここに表示されます</translation>
 <translation id="2809586584051668049">、他 <ph name="NUMBER_ADDITIONAL_DISABLED" /> 件</translation>
-<translation id="281133045296806353">既存のブラウザ セッションに新しいウィンドウが作成されました。</translation>
 <translation id="2812944337881233323">ログアウトして再度ログインしてみてください</translation>
 <translation id="2812989263793994277">すべての画像を表示しない</translation>
 <translation id="2814489978934728345">このページの読み込みを停止します</translation>
@@ -3713,7 +3711,6 @@
 <translation id="6582421931165117398">個人情報を保護するために、今すぐパスワードを変更してください。パスワードを変更する際は、まずログインが求められます。</translation>
 <translation id="6583851739559471707">煩わしい広告がよく表示されるサイトでブロック（推奨）</translation>
 <translation id="6584878029876017575">Microsoft ライフタイム署名</translation>
-<translation id="6585283250473596934">公開セッションを開始しています。</translation>
 <translation id="6586451623538375658">マウスのメイン ボタンを右にする</translation>
 <translation id="6589660129740381104"><ph name="IDS_SHORT_PRODUCT_NAME" /> の利用環境を管理しやすいように、同期とカスタマイズに関連する機能が 1 つの設定にまとめられました。この設定をオンにした場合、現在の設定が変わる可能性があります。</translation>
 <translation id="6589706261477377614">キーの明るさを上げる</translation>
@@ -5145,7 +5142,6 @@
 <translation id="8755376271068075440">拡大(&amp;L)</translation>
 <translation id="8756969031206844760">パスワードを更新しますか？</translation>
 <translation id="8757090071857742562">デスクトップをキャストできません。画面共有の開始を確認するメッセージで同意したかどうかを確認してください。</translation>
-<translation id="8757640015637159332">公開セッションを開始します</translation>
 <translation id="8757742102600829832">接続する Chromebox を選択</translation>
 <translation id="8757803915342932642">Google クラウド デバイス上のデバイス</translation>
 <translation id="8758418656925882523">音声入力を有効にする</translation>

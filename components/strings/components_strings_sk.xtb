@@ -512,6 +512,7 @@
 <translation id="4408413947728134509">Súbory cookie: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Adresa vyzdvihnutia</translation>
 <translation id="4424024547088906515">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, Chrome nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
+<translation id="4430369329743628066">Záložka bola pridaná</translation>
 <translation id="4432688616882109544">Web <ph name="HOST_NAME" /> neakceptoval váš prihlasovací certifikát alebo nebol žiadny poskytnutý.</translation>
 <translation id="4434045419905280838">Kontextové okná a presmerovania</translation>
 <translation id="443673843213245140">Použitie servera proxy je zakázané, ale je určená explicitná konfigurácia servera proxy.</translation>
@@ -775,7 +776,6 @@
 <translation id="6328786501058569169">Tento web je klamlivý</translation>
 <translation id="6337133576188860026">Uvoľní menej ako <ph name="SIZE" />. Niektoré weby sa môžu pri ďalšej návšteve načítať pomalšie.</translation>
 <translation id="6337534724793800597">Filtrovať pravidlá podľa mena</translation>
-<translation id="6355080345576803305">Prepísanie verejnej relácie</translation>
 <translation id="6358450015545214790">Čo znamenajú tieto položky?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ďalší návrh}few{# ďalšie návrhy}many{# ďalšieho návrhu}other{# ďalších návrhov}}</translation>
 <translation id="6387754724289022810">Ak chcete nabudúce zaplatiť rýchlejšie, uložte si kartu a fakturačnú adresu do účtu Google a tohto zariadenia.</translation>

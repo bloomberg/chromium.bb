@@ -227,7 +227,6 @@
 
       Peringatan: Sebaiknya jangan mendelegasikan kontrol versi <ph name="PRODUCT_OS_NAME" /> ke aplikasi kios karena tindakan tersebut dapat mencegah perangkat dari menerima update software dan perbaikan keamanan penting. Mendelegasikan kontrol versi <ph name="PRODUCT_OS_NAME" /> dapat menimbulkan risiko terhadap pengguna.</translation>
 <translation id="1675002386741412210">Didukung di:</translation>
-<translation id="1679420586049708690">Sesi publik untuk masuk otomatis</translation>
 <translation id="1689963000958717134">Memungkinkan konfigurasi jaringan dorong untuk diterapkan pada semua pengguna perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka yang dideskripsikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Setel batasan pada pengambilan bibit Varietas</translation>
 <translation id="172374442286684480">Izinkan semua situs menyetel data lokal</translation>
@@ -365,12 +364,6 @@
 <translation id="2082205219176343977">Mengonfigurasi versi minimum Chrome yang diizinkan untuk perangkat.</translation>
 <translation id="209586405398070749">Saluran stabil</translation>
 <translation id="2098658257603918882">Aktifkan laporan data penggunaan dan yang terkait error</translation>
-<translation id="2098916259427011890">Kebijakan ini mengontrol apakah akan melaporkan informasi versi, seperti versi OS, platform OS, arsitektur OS, versi <ph name="PRODUCT_NAME" />, dan saluran <ph name="PRODUCT_NAME" />.
-
-      Jika kebijakan ini tidak disetel atau disetel ke True, informasi versi akan dikumpulkan.
-      Jika kebijakan ini disetel ke False, informasi versi tidak akan dikumpulkan.
-
-      Kebijakan ini hanya berlaku jika Ekstensi Pelaporan Chrome dan Pengelolaan Cloud diaktifkan.</translation>
 <translation id="2111016292707172233">Mengaktifkan ketersediaan Tap untuk Menelusuri di tampilan konten <ph name="PRODUCT_NAME" />.
 
 Jika Anda mengaktifkan setelan ini, Tap untuk Menelusuri akan tersedia untuk pengguna dan mereka dapat memilih untuk mengaktifkan atau menonaktifkannya.
@@ -466,19 +459,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
           Saat kebijakan ini tidak disetel, dialog peringatan tidak akan ditampilkan.
 
           Nilai kebijakan harus ditentukan dalam milidetik. Nilai dibatasi agar kurang dari atau sama dengan penundaan menganggur.</translation>
-<translation id="2289578386193672044">Menentukan daftar aplikasi dan ekstensi yang diinstal tanpa menampilkan notifikasi kepada pengguna, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna. Semua izin yang diminta oleh aplikasi/ekstensi akan diberikan secara implisit, tanpa interaksi pengguna, termasuk izin tambahan apa pun yang diminta oleh versi aplikasi/ekstensi yang berikutnya. Selain itu, izin diberikan untuk API ekstensi enterprise.deviceAttributes dan enterprise.platformKeys. (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang tidak diinstal otomatis.)
-
-Kebijakan ini lebih diutamakan daripada kebijakan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> yang berpotensi bertentangan. Jika aplikasi atau ekstensi yang sebelumnya diinstal otomatis telah dihapus dari daftar ini, aplikasi/ekstensi tersebut otomatis di-uninstal oleh <ph name="PRODUCT_NAME" />.
-
-Untuk instance Windows yang tidak tergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan otomatis dibatasi untuk aplikasi dan ekstensi yang tercantum di Chrome Web Store.
-
-Perlu diperhatikan bahwa kode sumber untuk ekstensi apa pun dapat diubah oleh pengguna melalui Fitur Developer (berpotensi mengganggu fungsi ekstensi). Jika hal ini menjadi masalah, kebijakan <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> sebaiknya disetel.
-
-Setiap item daftar kebijakan merupakan string yang berisi ID ekstensi dan, secara opsional, URL "update" yang dipisah dengan titik koma (<ph name="SEMICOLON" />). ID ekstensi adalah string 32 huruf yang ditemukan misalnya di <ph name="CHROME_EXTENSIONS_LINK" /> saat dalam mode developer. URL "update", jika ditentukan, seharusnya mengarah ke dokumen XML Manifes Update seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC1" />. Secara default, URL update Chrome Web Store digunakan (yang saat ini adalah "https://clients2.google.com/service/update2/crx"). Perhatikan bahwa URL "update" yang disetel di kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan dalam manifes ekstensi. Perhatikan juga bahwa menentukan URL "update" secara eksplisit harus dilakukan di versi <ph name="PRODUCT_NAME" /> hingga dan termasuk 67.
-
-Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> menginstal aplikasi <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dari URL "update" Chrome Web Store standar. Untuk informasi selengkapnya tentang cara menghosting ekstensi, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis diinstal dan pengguna dapat meng-uninstal aplikasi atau ekstensi apa pun di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> dapat menggunakan layanan web Google untuk membantu mengatasi masalah ejaan yang salah. Jika setelan ini diaktifkan, layanan ini akan selalu digunakan. Jika setelan ini dinonaktifkan, layanan ini tidak akan pernah digunakan.
 
       Memeriksa ejaan tetap dapat dilakukan menggunakan kamus yang didownload; kebijakan ini hanya mengontrol penggunaan layanan online.
@@ -506,15 +486,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 <translation id="2309390639296060546">Setelan geolokasi default</translation>
 <translation id="2312134445771258233">Memungkinkan Anda mengonfigurasi halaman yang dimuat saat permulaan. Isi daftar 'URL yang dibuka saat permulaan' diabaikan kecuali jika Anda memilih 'Buka daftar URL' dalam 'Tindakan saat permulaan'.</translation>
 <translation id="2327252517317514801">Menentukan domain yang diizinkan untuk mengakses G Suite</translation>
-<translation id="2372547058085956601">Penundaan masuk otomatis sesi publik.
-
-      Jika kebijakan |DeviceLocalAccountAutoLoginId| tidak disetel, kebijakan ini tidak akan berpengaruh.
-
-      Jika kebijakan ini disetel, jumlah waktu akan ditentukan tanpa aktivitas pengguna yang harus dilalui sebelum masuk otomatis ke sesi publik yang ditentukan oleh kebijakan |DeviceLocalAccountAutoLoginId|.
-
-      Jika kebijakan ini tidak disetel, waktu tunggunya akan menjadi 0 milidetik.
-
-      Kebijakan ini ditentukan dalam milidetik.</translation>
 <translation id="237494535617297575">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="2386362615870139244">Izinkan penguncian layar saat bangun</translation>
 <translation id="2411817661175306360">Peringatan perlindungan sandi nonaktif</translation>
@@ -1089,7 +1060,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
       Jika Anda tidak menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori defaultnya yang biasa digunakan (khusus platform).
 
       Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.</translation>
-<translation id="3907986150060929099">Menyetel bahasa yang disarankan untuk sesi publik</translation>
 <translation id="3911737181201537215">Kebijakan ini tidak memengaruhi penyimpanan log yang dilakukan oleh Android.</translation>
 <translation id="391531815696899618">Menonaktifkan sinkronisasi Google Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /> ketika disetel ke True. Dalam kasus ini, tidak ada data yang diupload ke Google Drive.
 
@@ -1155,12 +1125,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
       Jika dikonfigurasi, kebijakan dapat disetel ke salah satu nilai berikut: "tls1.2" atau "tls1.3". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih besar daripada versi yang ditentukan. Nilai yang tidak dikenal akan diabaikan.</translation>
 <translation id="4121350739760194865">Mencegah promosi apl muncul di halaman tab baru</translation>
 <translation id="412697421478384751">Izinkan pengguna menyetel PIN lemah untuk PIN layar kunci</translation>
-<translation id="4129183564590133854">Kebijakan ini mengontrol apakah akan melaporkan informasi yang dapat digunakan untuk mengidentifikasi pengguna, seperti login OS, login Profil <ph name="PRODUCT_NAME" />, nama Profil <ph name="PRODUCT_NAME" />, jalur Profil <ph name="PRODUCT_NAME" />, dan jalur <ph name="PRODUCT_NAME" /> yang dapat dieksekusi.
-
-      Jika kebijakan ini tidak disetel atau disetel ke True, informasi yang dapat digunakan untuk mengidentifikasi pengguna akan dikumpulkan.
-      Jika kebijakan ini disetel ke False, informasi yang dapat digunakan untuk mengidentifikasi pengguna tidak akan dikumpulkan.
-
-      Kebijakan ini hanya berlaku jika Ekstensi Pelaporan Chrome dan Pengelolaan Cloud diaktifkan.</translation>
 <translation id="4138655880188755661">Batas Waktu</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan firmware</translation>
 <translation id="4157594634940419685">Izinkan akses ke printer CUPS native</translation>
@@ -1460,12 +1424,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5052081091120171147">Kebijakan ini memaksa histori browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada histori browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="5056708224511062314">Lup dinonaktifkan</translation>
 <translation id="5058573563327660283">Pilih strategi yang digunakan untuk mengosongkan ruang disk selama pembersihan otomatis (tidak digunakan lagi)</translation>
-<translation id="5058771123777243130">Kebijakan ini mengontrol apakah akan melaporkan data kebijakan dan waktu pengambilan kebijakan.
-
-      Jika kebijakan ini tidak disetel atau disetel ke True, data kebijakan dan waktu pengambilan kebijakan akan dikumpulkan.
-      Jika kebijakan ini disetel ke False, data kebijakan dan waktu pengambilan kebijakan tidak akan dikumpulkan.
-
-      Kebijakan ini hanya berlaku jika Ekstensi Pelaporan Chrome dan Pengelolaan Cloud diaktifkan.</translation>
 <translation id="5067143124345820993">Daftar putih pengguna masuk</translation>
 <translation id="5068140065960598044">Kebijakan cloud <ph name="PRODUCT_NAME" /> mengganti kebijakan Perangkat.</translation>
 <translation id="5085647276663819155">Nonaktifkan Pratinjau Cetak</translation>
@@ -1615,11 +1573,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika daftar ini kosong, tidak akan ada persiapan dan update akan diterapkan menurut kebijakan perangkat lain.
 
       Kebijakan ini tidak berlaku untuk peralihan channel.</translation>
-<translation id="5523812257194833591">Sesi publik untuk masuk secara otomatis setelah penundaan.
-
-      Jika kebijakan ini disetel, sesi yang ditentukan akan secara otomatis masuk setelah jangka waktu tersebut berlalu pada layar masuk tanpa interaksi pengguna. Sesi publik harus sudah dikonfigurasi (lihat |DeviceLocalAccounts|).
-
-      Jika kebijakan ini tidak disetel, tidak akan ada masuk secara otomatis.</translation>
 <translation id="5526701598901867718">Semua (tidak aman)</translation>
 <translation id="5529037166721644841">Menjelaskan jangka waktu dalam milidetik terkait layanan pengelolaan perangkat yang ditanyakan untuk informasi kebijakan pengguna.
 
@@ -2026,11 +1979,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
       Setelan ini mengontrol penyajian halaman sambutan yang membantu pengguna login ke <ph name="PRODUCT_NAME" />, memilihnya sebagai browser default, atau memberi tahu pengguna tentang fitur produk.</translation>
 <translation id="6766216162565713893">Izinkan situs meminta pengguna memberikan akses ke perangkat Bluetooth di sekitar</translation>
 <translation id="6770454900105963262">Melaporkan informasi tentang sesi kios aktif</translation>
-<translation id="6773056206551814546">This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
-
-      Jika kebijakan ini tidak disetel atau disetel ke True, informasi yang dapat digunakan untuk mengidentifikasi mesin akan dikumpulkan.
-      Jika kebijakan ini disetel ke False, informasi yang dapat digunakan untuk mengidentifikasi mesin tidak akan dikumpulkan.
-      Kebijakan ini hanya berlaku jika Ekstensi Pelaporan Chrome dan Pengelolaan Cloud diaktifkan.</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
 <translation id="6786967369487349613">Menyetel direktori profil roaming</translation>
 <translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
@@ -2460,22 +2408,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="7750991880413385988">Buka Halaman Tab Baru</translation>
 <translation id="7754704193130578113">Tanyakan lokasi penyimpanan setiap file sebelum mendownload</translation>
 <translation id="7761446981238915769">Konfigurasi daftar aplikasi yang terpasang di layar masuk</translation>
-<translation id="7761526206824804472">Menyetel satu atau beberapa bahasa yang disarankan untuk sesi publik memungkinkan pengguna memilih salah satu bahasa tersebut dengan mudah.
-
-      Pengguna dapat memilih bahasa dan tata letak keyboard sebelum memulai sesi publik. Secara default, semua bahasa yang didukung oleh <ph name="PRODUCT_OS_NAME" /> dicantumkan sesuai urutan abjad. Anda dapat menggunakan kebijakan ini untuk memindahkan rangkaian bahasa yang disarankan ke bagian atas daftar.
-
-      Jika kebijakan ini tidak disetel, bahasa UI saat ini akan dipilih sebelumnya.
-
-      Jika kebijakan ini disetel, bahasa yang disarankan akan dipindahkan ke atas daftar dan secara visual akan dipisahkan dari semua bahasa yang lain. Bahasa yang disarankan akan dicantumkan dalam urutan sesuai tampilannya dalam kebijakan. Bahasa yang pertama kali disarankan akan dipilih sebelumnya.
-
-      Jika ada lebih dari satu bahasa yang disarankan, akan dianggap bahwa pengguna ingin memilih di antara bahasa tersebut. Pilihan bahasa dan tata letak keyboard akan ditawarkan ketika memulai sesi publik. Jika tidak, akan dianggap bahwa sebagian besar pengguna ingin menggunakan bahasa yang dipilih sebelumnya. Pilihan bahasa dan tata letak keyboard akan ditawarkan dengan kurang mencolok ketika memulai sesi publik.
-
-      Jika kebijakan ini disetel dan proses masuk otomatis diaktifkan (lihat kebijakan |DeviceLocalAccountAutoLoginId| dan |DeviceLocalAccountAutoLoginDelay|), sesi publik yang dimulai secara otomatis akan menggunakan bahasa yang disarankan pertama kali, dan tata letak keyboard paling populer yang cocok dengan bahasa ini.
-
-      Tata letak keyboard yang dipilih sebelumnya akan selalu menjadi tata letak yang paling populer yang cocok dengan bahasa yang dipilih sebelumnya.
-
-      Kebijakan ini hanya dapat disetel sebagai yang disarankan. Anda tidak dapat menggunakan kebijakan ini untuk memindahkan rangkaian bahasa yang disarankan ke atas, namun pengguna selalu diizinkan untuk memilih bahasa apa pun yang didukung oleh <ph name="PRODUCT_OS_NAME" /> untuk sesi mereka.
-      </translation>
 <translation id="7763479091692861127"> Jenis sambungan yang diizinkan penggunaannya untuk pembaruan OS. Pembaruan OS berpotensi memberikan beban berat pada koneksi Internet karena ukurannya dan mungkin mengakibatkan biaya tambahan. Oleh karena itu, koneksi secara default tidak aktif untuk jenis koneksi yang dianggap mahal, yang meliputi WiMax, Bluetooth, dan Seluler untuk saat ini.
 
       Pengenal jenis koneksi yang diketahui saat ini adalah "ethernet", "wifi", "wimax", "bluetooth", dan "cellular".</translation>
@@ -2947,7 +2879,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 
       CATATAN: Hingga versi 45, kebijakan ini hanya didukung dalam mode Kios.</translation>
 <translation id="8970205333161758602">Tindas permintaan penghentian <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="8971221018777092728">Timer masuk otomatis sesi publik</translation>
 <translation id="8976248126101463034">Izinkan autentikasi gnubby untuk host akses jarak jauh</translation>
 <translation id="8976531594979650914">Menggunakan Printer Default Sistem sebagai Default</translation>
 <translation id="8992176907758534924">Jangan izinkan situs apa pun menampilkan gambar</translation>
@@ -3029,9 +2960,6 @@ Jika kebijakan ini tidak disetel atau disetel ke Default (nilai 0), perilaku log
 Jika kebijakan ini disetel ke ClientCertificate (nilai 1), autentikasi sertifikat klien digunakan untuk pengguna yang baru ditambahkan yang login melalui SAML. Tidak ada sandi yang digunakan untuk pengguna tersebut, dan data lokalnya yang disimpan dalam cache dilindungi menggunakan kunci kriptografi yang sesuai. Misalnya, setelan ini memungkinkan konfigurasi kartu smart berdasarkan autentikasi pengguna (perlu diketahui bahwa aplikasi middleware kartu smart harus diinstal melalui kebijakan DeviceLoginScreenAppInstallList).
 
 Kebijakan ini hanya memengaruhi pengguna yang melakukan autentikasi menggunakan SAML.</translation>
-<translation id="9211439035693857287">Konfigurasikan kebijakan terkait Ekstensi Pelaporan Chrome.
-
-      Kebijakan ini hanya berlaku jika Ekstensi Pelaporan Chrome dan Pengelolaan Cloud diaktifkan.</translation>
 <translation id="9213347477683611358">Mengonfigurasi gambar wallpaper tingkat perangkat yang ditampilkan di layar login jika belum ada pengguna yang login ke perangkat. Kebijakan ini disetel dengan menetapkan URL tempat perangkat Chrome OS dapat mendownload gambar wallpaper dan potongan kriptografi yang digunakan untuk memverifikasi integritas download. Gambar harus dalam format JPEG dan ukuran filenya tidak boleh melebihi 16MB. URL harus dapat diakses tanpa autentikasi apa pun. Gambar wallpaper akan didownload dan disimpan dalam cache. Gambar ini akan didownload jika URL atau potongan berubah.
 
       Kebijakan ini harus ditetapkan sebagai string yang mengekspresikan URL dan potongan dalam format JSON, misalnya:

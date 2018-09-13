@@ -516,6 +516,7 @@
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Address sa Pag-pick up</translation>
 <translation id="4424024547088906515">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng Chrome ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
+<translation id="4430369329743628066">Naidagdag na ang bookmark</translation>
 <translation id="4432688616882109544">Hindi tinanggap ng <ph name="HOST_NAME" /> ang iyong certificate sa pag-log in o maaaring walang ibinigay.</translation>
 <translation id="4434045419905280838">Mga pop-up at pag-redirect</translation>
 <translation id="443673843213245140">Hindi pinagana ang paggamit ng isang proxy ngunit tinutukoy ang isang tahasang configuration ng proxy.</translation>
@@ -780,7 +781,6 @@
 <translation id="6328786501058569169">Mapanlinlang ang site na ito</translation>
 <translation id="6337133576188860026">Magbabakante ng wala pang <ph name="SIZE" />. Maaaring mag-load nang mas mabagal ang ilang site sa iyong susunod na pagbisita.</translation>
 <translation id="6337534724793800597">I-filter ang mga patakaran ayon sa pangalan</translation>
-<translation id="6355080345576803305">Override sa pampublikong session</translation>
 <translation id="6358450015545214790">Ano ang ibig sabihin ng mga ito?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 pang suhestyon}one{# pang suhestyon}other{# pang suhestyon}}</translation>
 <translation id="6387754724289022810">Para mas mabilis na makapagbayad sa susunod, i-save ang iyong card at billing address sa Google Account mo at sa device na ito.</translation>

@@ -516,6 +516,7 @@
 <translation id="4408413947728134509">Cookies: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Endereço de Retirada</translation>
 <translation id="4424024547088906515">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o Chrome. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
+<translation id="4430369329743628066">Página adicionada como favorito</translation>
 <translation id="4432688616882109544">O certificado de login não foi aceito por <ph name="HOST_NAME" /> ou não foi fornecido.</translation>
 <translation id="4434045419905280838">Pop-ups e redirecionamentos</translation>
 <translation id="443673843213245140">O uso de um proxy está desativado, mas uma configuração explícita de proxy é especificada.</translation>
@@ -780,7 +781,6 @@
 <translation id="6328786501058569169">Este site é enganoso</translation>
 <translation id="6337133576188860026">Libera menos de <ph name="SIZE" />. O carregamento de alguns sites pode ficar mais lento no seu próximo acesso.</translation>
 <translation id="6337534724793800597">Filtrar políticas por nome</translation>
-<translation id="6355080345576803305">Modificação de sessão pública</translation>
 <translation id="6358450015545214790">O que são essas informações?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 outra sugestão}one{# outra sugestão}other{# outras sugestões}}</translation>
 <translation id="6387754724289022810">Para agilizar o pagamento na próxima vez, salve o cartão e o endereço de faturamento na sua Conta do Google e neste dispositivo.</translation>

@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din computer ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1151972924205500581">En adgangskode er påkrævet</translation>
 <translation id="1152921474424827756">Få adgang til en <ph name="BEGIN_LINK" />cachelagret kopi<ph name="END_LINK" /> af <ph name="URL" /></translation>
+<translation id="1156303062776767266">Du får vist en lokal eller delt fil</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> lukkede forbindelsen uventet.</translation>
 <translation id="1161325031994447685">Genoprette forbindelse til Wi-Fi</translation>
 <translation id="1165039591588034296">Fejl</translation>
@@ -515,6 +516,7 @@
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Afhentningsadresse</translation>
 <translation id="4424024547088906515">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da Chrome ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
+<translation id="4430369329743628066">Bogmærket er tilføjet</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> accepterede ikke dit logincertifikat, eller der er ikke angivet et.</translation>
 <translation id="4434045419905280838">Pop op-vinduer og omdirigeringer</translation>
 <translation id="443673843213245140">Brug af en proxy er deaktiveret, men en eksplicit proxykonfiguration er angivet.</translation>
@@ -534,6 +536,7 @@
 <translation id="4592951414987517459">Din forbindelse til <ph name="DOMAIN" /> er krypteret ved hjælp af en moderne krypteringspakke.</translation>
 <translation id="4594403342090139922">&amp;Fortryd sletning</translation>
 <translation id="4619615317237390068">Faner fra andre enheder</translation>
+<translation id="4646534391647090355">Før mig dertil nu</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet indeholder fejl. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="4690462567478992370">Stop med at bruge et ugyldigt certifikat</translation>
@@ -580,6 +583,7 @@
 <translation id="4958444002117714549">Udvid liste</translation>
 <translation id="4974590756084640048">Genaktiver advarsler</translation>
 <translation id="4988217478422488391">Gør det hurtigere at betale for ting online</translation>
+<translation id="4989163558385430922">Se alle</translation>
 <translation id="4989809363548539747">Dette plugin understøttes ikke</translation>
 <translation id="5002932099480077015">Hvis denne indstilling er slået til, gemmer Chrome en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
 <translation id="5018422839182700155">Denne side kan ikke åbnes</translation>
@@ -724,6 +728,7 @@
 <translation id="5922853866070715753">Næsten færdig</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="5951495562196540101">Det er ikke muligt at tilmelde sig med en forbrugerkonto (mulighed for tilknyttet licens ).</translation>
+<translation id="5966151627327109289">Logger dig ud af de fleste websites. Du mister muligvis adgang til beskyttet indhold fra <ph name="SITE" /> og visse andre websites.</translation>
 <translation id="5967592137238574583">Rediger kontaktoplysninger</translation>
 <translation id="5967867314010545767">Fjern fra historik</translation>
 <translation id="5975083100439434680">Zoom ud</translation>
@@ -745,6 +750,7 @@
 <translation id="6071091556643036997">Politiktypen er ugyldig.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Dette kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}one{Dette kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}other{Disse kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}}</translation>
 <translation id="6080696365213338172">Du har opnår adgang til indhold vha. et administratorcertifikat. De data, du angiver til <ph name="DOMAIN" />, kan indhentes af din administrator.</translation>
+<translation id="6096619198407627433">Logger dig ud af de fleste websites. Du bliver ikke logget ud af din Google-konto. Du kan miste adgang til beskyttet indhold på <ph name="SITE" /> og visse andre websites.</translation>
 <translation id="610911394827799129">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Ingen}=1{1 adgangskode (synkroniseret)}one{# adgangskode (synkroniseret)}other{# adgangskoder (synkroniseret)}}</translation>
 <translation id="6146055958333702838">Kontrollér eventuelle kabler, og genstart alle routere, modemmer eller andre
@@ -775,7 +781,6 @@
 <translation id="6328786501058569169">Dette website er vildledende</translation>
 <translation id="6337133576188860026">Frigiver mindre end <ph name="SIZE" />. Nogle websites indlæses muligvis langsommere under dit næste besøg.</translation>
 <translation id="6337534724793800597">Filtrér politikker efter navn</translation>
-<translation id="6355080345576803305">Tilsidesættelse af offentlig session</translation>
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andet forslag}one{# andet forslag}other{# andre forslag}}</translation>
 <translation id="6387754724289022810">Gem dit kort og din faktureringsadresse på din Google-konto og denne enhed for at betale hurtigere næste gang.</translation>
@@ -816,6 +821,7 @@
 <translation id="6710594484020273272">&lt;Indtast søgeterm&gt;</translation>
 <translation id="6711464428925977395">Der er noget galt med proxyserveren, eller adressen er forkert.</translation>
 <translation id="674375294223700098">Ukendt fejl i servercertifikatet.</translation>
+<translation id="6744009308914054259">Mens du venter på en forbindelse, kan du gå til Downloads for at læse artikler offline.</translation>
 <translation id="6753269504797312559">Politikkens værdi</translation>
 <translation id="6757797048963528358">Din enhed gik i dvale.</translation>
 <translation id="6778737459546443941">Din forælder har ikke godkendt det endnu</translation>
@@ -913,6 +919,7 @@ Yderligere oplysninger:
 <translation id="7416351320495623771">Administrer adgangskoder…</translation>
 <translation id="7419106976560586862">Profilsti</translation>
 <translation id="7437289804838430631">Tilføj kontaktoplysninger</translation>
+<translation id="7440140511386898319">Udforsk, mens du er offline</translation>
 <translation id="7441627299479586546">Forkert emne for politik</translation>
 <translation id="7444046173054089907">Dette website er blokeret</translation>
 <translation id="7445762425076701745">Identiteten på den server, som du er tilknyttet, kan ikke bekræftes. Du er tilknyttet en server via et navn, der kun er gyldigt i dit netværk, og som en ekstern certifikatautoritet derfor ikke har mulighed for at bekræfte ejerskabet på. Da enkelte certifikatautoriteter alligevel udsteder certifikater for disse navne, kan vi på ingen måde sikre, at du er tilknyttet det tilsigtede website og ikke til en forbryder.</translation>

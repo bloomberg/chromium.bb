@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">Google Hesabınızla senkronize edilen tarama verileriniz ve etkinliğiniz</translation>
 <translation id="116280672541001035">Kullanılan</translation>
 <translation id="1172593791219290334">Başlangıç Sayfası</translation>
+<translation id="1175310183703641346">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınız artık Google Hesabınız ile senkronize edilmeyecek.</translation>
 <translation id="1178581264944972037">Duraklat</translation>
 <translation id="1181037720776840403">Kaldır</translation>
 <translation id="1197267115302279827">Yer işaretlerini taşı</translation>
@@ -48,6 +49,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="129553762522093515">Son kapatılan</translation>
 <translation id="1326317727527857210">Diğer cihazlarınızdaki sekmelerinize ulaşmak için Chrome'da oturum açın.</translation>
 <translation id="1332501820983677155">Google Chrome'un özellik kısayolları</translation>
+<translation id="1360432990279830238">Oturum ve senkronizasyon kapatılsın mı?</translation>
 <translation id="136248372334525878">Daha hızlı yükleme ve çevrimdışı okuma için sayfaları önceden yükle</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> sitesi eklendi</translation>
 <translation id="1373696734384179344">Seçilen içeriği indirmek için bellek yetersiz.</translation>
@@ -158,6 +160,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="2131665479022868825"><ph name="DATA" /> tasarruf edildi</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> kapatıldı</translation>
 <translation id="2139186145475833000">Ana ekrana ekle</translation>
+<translation id="2142289305367051020">Favori sayfalarınız burada</translation>
 <translation id="2146738493024040262">Hazır Uygulamayı aç</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2154484045852737596">Kartı düzenle</translation>
@@ -348,6 +351,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="3822502789641063741">Site depo. silinsin mi?</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3859306556332390985">İleriye doğru git</translation>
+<translation id="3868004864571585162">Çerezler, medya lisansları ve site verileri</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
 <translation id="3895926599014793903">Yakınlaştırmayı etkinleştirmeye zorla</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -810,6 +814,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7413229368719586778">Başlangıç tarihi: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Önce sor</translation>
 <translation id="7423538860840206698">Pano okuma engellendi</translation>
+<translation id="7431991332293347422">Göz atma geçmişinizin Arama ve diğer hizmetleri kişiselleştirmek için nasıl kullanıldığını kontrol edin</translation>
 <translation id="7437998757836447326">Chrome oturumunu kapatma</translation>
 <translation id="7444811645081526538">Diğer kategoriler</translation>
 <translation id="7445411102860286510">Sitelerin, sesi kapatılmış videoları otomatik olarak oynatmasına izin ver (önerilen)</translation>
@@ -878,6 +883,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7963646190083259054">Firma:</translation>
 <translation id="7981313251711023384">Daha hızlı göz atmak ve arama yapmak için sayfaları önceden yükle</translation>
 <translation id="79859296434321399">Artırılmış gerçeklik içeriğini görüntülemek için ARCore'u yükleyin</translation>
+<translation id="7986741934819883144">Kişi seçin</translation>
 <translation id="7987073022710626672">Chrome Hizmet Şartları</translation>
 <translation id="7987764905897278458">Google zekasından daha fazla yararlanın</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
@@ -906,6 +912,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8109613176066109935">Yer işaretlerinize tüm cihazlarınızda ulaşmak için senkronizasyonu açın</translation>
 <translation id="8116925261070264013">Ses kapatıldı</translation>
 <translation id="813082847718468539">Site bilgilerini görüntüle</translation>
+<translation id="8156139159503939589">Hangi dillerde okuyorsunuz?</translation>
 <translation id="8168435359814927499">İçerik</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> dosya kaldı</translation>
 <translation id="8190358571722158785">1 gün kaldı</translation>
@@ -918,6 +925,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8260126382462817229">Tekrar oturum açmayı deneyin</translation>
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8266862848225348053">İndirme konumu</translation>
+<translation id="8274165955039650276">İndirilenleri göster</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> ile senkronize ediliyor</translation>
 <translation id="8310344678080805313">Standart sekmeler</translation>
 <translation id="8313455859591948645">Başlangıç sayfasını düzenle</translation>
@@ -934,6 +942,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8441146129660941386">Geriye doğru git</translation>
 <translation id="8445448999790540984">Şifreler dışa aktarılamıyor</translation>
 <translation id="8447861592752582886">Cihaz iznini iptal et</translation>
+<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> için senkronizasyon kapalı</translation>
 <translation id="8487700953926739672">Çevrimdışı kullanılabilir</translation>
 <translation id="8489271220582375723">Geçmiş sayfasını açar</translation>
 <translation id="8493948351860045254">Yer aç</translation>
@@ -973,6 +982,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8728487861892616501">Bu uygulamayı kullanarak Chrome’un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" /> ve <ph name="BEGIN_LINK2" />Gizlilik Bildirimi<ph name="END_LINK2" /> ile <ph name="BEGIN_LINK3" />Family Link ile Yönetilen Google Hesapları için Gizlilik Bildirimi<ph name="END_LINK3" />'ni kabul etmiş olursunuz.</translation>
 <translation id="8730621377337864115">Bitti</translation>
 <translation id="8748850008226585750">İçerik gizlendi</translation>
+<translation id="8751914237388039244">Resim seçin</translation>
 <translation id="8788968922598763114">Son kapatılan sekmeyi yeniden açar</translation>
 <translation id="8812260976093120287">Bazı web sitelerinde, yukarıdaki desteklenen ödeme uygulamalarıyla cihazınızdan ödeme yapabilirsiniz.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> Chrome'da açılacak. Devam ederek Chrome'un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" />'nı, <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı ve <ph name="BEGIN_LINK3" />Family Link ile Yönetilen Google Hesapları için Gizlilik Uyarısı<ph name="END_LINK3" />'nı kabul etmiş olursunuz.</translation>

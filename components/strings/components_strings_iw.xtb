@@ -515,6 +515,7 @@
 <translation id="4408413947728134509">‏קובצי Cookie <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">כתובת איסוף</translation>
 <translation id="4424024547088906515">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי Chrome. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
+<translation id="4430369329743628066">הסימנייה נוספה</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> לא אישר את אישור ההתחברות שלך, או שלא סופק אישור התחברות.</translation>
 <translation id="4434045419905280838">חלונות קופצים והפניות אוטומטיות</translation>
 <translation id="443673843213245140">‏השימוש בשרת Proxy הושבת, אך צויינה תצורת שרת Proxy מפורשת.</translation>
@@ -780,7 +781,6 @@ Del</translation>
 <translation id="6328786501058569169">האתר הזה מטעה</translation>
 <translation id="6337133576188860026">פינוי של פחות מ-<ph name="SIZE" /> מהשטח. ייתכן שחלק מהאתרים ייטענו לאט יותר בביקור הבא שלך.</translation>
 <translation id="6337534724793800597">סנן מדיניות לפי שם</translation>
-<translation id="6355080345576803305">שינוי הפעלה ציבורית</translation>
 <translation id="6358450015545214790">מה זה אומר?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{הצעה אחת נוספת}two{שתי הצעות נוספות}many{# הצעות נוספות}other{# הצעות נוספות}}</translation>
 <translation id="6387754724289022810">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google ובמכשיר הזה את פרטי הכרטיס ואת הכתובת לחיוב.</translation>

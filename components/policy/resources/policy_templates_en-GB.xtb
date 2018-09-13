@@ -241,7 +241,6 @@
 
       Warning: It is not recommended to delegate control of the <ph name="PRODUCT_OS_NAME" /> version to a kiosk app as it may prevent the device from receiving software updates and critical security fixes. Delegating control of the <ph name="PRODUCT_OS_NAME" /> version might leave users at risk.</translation>
 <translation id="1675002386741412210">Supported on:</translation>
-<translation id="1679420586049708690">Public session for auto-login</translation>
 <translation id="1689963000958717134">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Set the restriction on the fetching of the Variations seed</translation>
 <translation id="172374442286684480">Allow all sites to set local data.</translation>
@@ -385,12 +384,6 @@
 <translation id="2082205219176343977">Configure minimum allowed Chrome version for the device.</translation>
 <translation id="209586405398070749">Stable channel</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
-<translation id="2098916259427011890">This policy controls whether to report version information, such as OS version, OS platform, OS architecture, <ph name="PRODUCT_NAME" /> version and <ph name="PRODUCT_NAME" /> channel.
-
-      When this policy is left unset or set to True, version information is gathered.
-      When this policy is set to False, version information is not gathered.
-
-      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="2111016292707172233">Enables the availability of Tap to Search in <ph name="PRODUCT_NAME" />'s content view.
 
       If you enable this setting, Tap to Search will be available to the user and they can choose to turn the feature on or off.
@@ -488,27 +481,6 @@
           When this policy is unset, no warning dialogue is shown.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal the idle delay.</translation>
-<translation id="2289578386193672044">Specifies a list of apps and extensions that are installed silently,
-          without user interaction, and which cannot be uninstalled or
-          disabled by the user. All permissions requested by the
-          apps/extensions are granted implicitly, without user interaction,
-          including any additional permissions requested by future versions of
-          the app/extension. Furthermore, permissions are granted for the
-          enterprise.deviceAttributes and enterprise.platformKeys extension
-          APIs. (These two APIs are not available to apps/extensions that are
-          not force-installed.)
-
-          This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME" />.
-
-          For Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
-
-          Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> policy should be set.
-
-          Each list item of the policy is a string that contains an extension ID and, optionally, an 'update' URL separated by a semicolon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK" /> when in developer mode. The 'update' URL, if specified, should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. By default, the Chrome Web Store's update URL is used (which currently is 'https://clients2.google.com/service/update2/crx'). Note that the 'update'URL set in this policy is only used for the initial installation; subsequent updates of the extension employ the update URL indicated in the extension's manifest. Note also that specifying the 'update' URL explicitly was mandatory in <ph name="PRODUCT_NAME" /> versions up to and including 67.
-
-          For example, <ph name="EXTENSION_POLICY_EXAMPLE" /> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app from the standard Chrome Web Store 'update' URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> can use a Google web service to help resolve spelling errors. If this setting is enabled, then this service is always used. If this setting is disabled, then this service is never used.
 
       Spell checking can still be performed using a downloaded dictionary; this policy only controls the usage of the online service.
@@ -538,15 +510,6 @@
 
 The contents of the list 'URLs to open at start-up' are ignored unless you select 'Open a list of URLs' in 'Action on start-up'.</translation>
 <translation id="2327252517317514801">Define domains allowed to access G Suite</translation>
-<translation id="2372547058085956601">The public session auto-login delay.
-
-      If the |DeviceLocalAccountAutoLoginId| policy is unset, this policy has no effect. Otherwise:
-
-      If this policy is set, it determines the amount of time without user activity that should elapse before automatically logging into the public session specified by the |DeviceLocalAccountAutoLoginId| policy.
-
-      If this policy is unset, 0 milliseconds will be used as the timeout.
-
-      This policy is specified in milliseconds.</translation>
 <translation id="237494535617297575">Allows you to set a list of url patterns that specify sites which are allowed to display notifications.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1144,7 +1107,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you do not set this policy, <ph name="PRODUCT_NAME" /> will use its usual default directory (platform-specific).
 
       See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.</translation>
-<translation id="3907986150060929099">Set the recommended locales for a public session</translation>
 <translation id="3911737181201537215">This policy has no effect on the logging done by Android.</translation>
 <translation id="391531815696899618">Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME" /> Files app when set to True. In that case, no data is uploaded to Google Drive.
 
@@ -1212,12 +1174,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Otherwise it may be set to one of the following values: 'tls1.2' or 'tls1.3'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="4121350739760194865">Prevent app promotions from appearing on the new tab page</translation>
 <translation id="412697421478384751">Enable users to set weak PINs for the lock screen PIN</translation>
-<translation id="4129183564590133854">This policy controls whether to report information that can be used to identify users, such as OS login, <ph name="PRODUCT_NAME" /> Profile login, <ph name="PRODUCT_NAME" /> Profile name, <ph name="PRODUCT_NAME" /> Profile path and <ph name="PRODUCT_NAME" /> executable path.
-
-      When this policy is left unset or set to True, information that can be used to identify users is gathered.
-      When this policy is set to False, information that can be used to identify users is not gathered.
-
-      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="4138655880188755661">Time Limit</translation>
 <translation id="4157003184375321727">Report OS and firmware version</translation>
 <translation id="4157594634940419685">Allow access to native CUPS printers</translation>
@@ -1529,12 +1485,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5056708224511062314">Screen magnifier disabled</translation>
 <translation id="5058573563327660283">Select the strategy used to free up disk space during automatic clean-up (deprecated)</translation>
-<translation id="5058771123777243130">This policy controls whether to report policy data and time of policy fetch.
-
-      When this policy is left unset or set to True, policy data and time of policy fetch are gathered.
-      When this policy is set to False, policy data and time of policy fetch are not gathered.
-
-      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="5067143124345820993">Login user white list</translation>
 <translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
@@ -1705,11 +1655,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this list is empty, there will be no staging, and updates will be applied according to other device policies.
 
       This policy does not apply for channel switches.</translation>
-<translation id="5523812257194833591">A public session to auto-login after a delay.
-
-      If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The public session must already be configured (see |DeviceLocalAccounts|).
-
-      If this policy is unset, there will be no auto-login.</translation>
 <translation id="5526701598901867718">All (insecure)</translation>
 <translation id="5529037166721644841">Specifies the period in milliseconds at which the device management service is queried for device policy information.
 
@@ -2124,12 +2069,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       This setting controls the presentation of the welcome pages that help users sign in to <ph name="PRODUCT_NAME" />, choose it as their default browser or otherwise inform them of product features.</translation>
 <translation id="6766216162565713893">Allow sites to ask the user to grant access to a nearby Bluetooth device</translation>
 <translation id="6770454900105963262">Report information about active kiosk sessions</translation>
-<translation id="6773056206551814546">This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
-
-      When this policy is left unset or set to True, information that can be used to identify machines is gathered.
-      When this policy is set to False, information that can be used to identify machines is not gathered.
-
-      This policy is only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="6786967369487349613">Set the roaming profile directory</translation>
 <translation id="6810445994095397827">Block JavaScript on these sites</translation>
@@ -2581,22 +2520,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7750991880413385988">Open New Tab Page</translation>
 <translation id="7754704193130578113">Ask where to save each file before downloading</translation>
 <translation id="7761446981238915769">Configure the list of installed apps on the login screen</translation>
-<translation id="7761526206824804472">Sets one or more recommended locales for a public session, allowing users to easily choose one of these locales.
-
-      The user can choose a locale and a keyboard layout before starting a public session. By default, all locales supported by <ph name="PRODUCT_OS_NAME" /> are listed in alphabetic order. You can use this policy to move a set of recommended locales to the top of the list.
-
-      If this policy is not set, the current UI locale will be pre-selected.
-
-      If this policy is set, the recommended locales will be moved to the top of the list and will be visually separated from all other locales. The recommended locales will be listed in the order in which they appear in the policy. The first recommended locale will be pre-selected.
-
-      If there is more than one recommended locale, it is assumed that users will want to select among these locales. Locale and keyboard layout selection will be prominently offered when starting a public session. Otherwise, it is assumed that most users will want to use the pre-selected locale. Locale and keyboard layout selection will be less prominently offered when starting a public session.
-
-      When this policy is set and automatic login is enabled (see the |DeviceLocalAccountAutoLoginId| and |DeviceLocalAccountAutoLoginDelay| policies), the automatically started public session will use the first recommended locale and the most popular keyboard layout matching this locale.
-
-      The pre-selected keyboard layout will always be the most popular layout matching the pre-selected locale.
-
-      This policy can only be set as recommended. You can use this policy to move a set of recommended locales to the top but users are always allowed to choose any locale supported by <ph name="PRODUCT_OS_NAME" /> for their session.
-      </translation>
 <translation id="7763479091692861127"> The types of connections that are allowed to use for OS updates. OS updates potentially put heavy strain on the connection due to their size and may incur additional cost. Therefore, they are by default not enabled for connection types that are considered expensive, which include WiMax, Bluetooth and Cellular at the moment.
 
       The recognised connection type identifiers are "ethernet", "wifi", "wimax", "bluetooth" and "cellular".</translation>
@@ -3098,7 +3021,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       NOTE: Until version 45, this policy was only supported in Kiosk mode.</translation>
 <translation id="8970205333161758602">Suppress the <ph name="PRODUCT_FRAME_NAME" /> turn-down prompt</translation>
-<translation id="8971221018777092728">Public session auto-login timer</translation>
 <translation id="8976248126101463034">Allow gnubby authentication for remote access hosts</translation>
 <translation id="8976531594979650914">Use System Default Printer as Default</translation>
 <translation id="8992176907758534924">Do not allow any site to show images</translation>
@@ -3187,9 +3109,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card-based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenAppInstallList policy).
 
       This policy only affects users who authenticate using SAML.</translation>
-<translation id="9211439035693857287">Configure Chrome Reporting Extension-related policies.
-
-      These policies are only effective when the Chrome Reporting Extension and Cloud Management are enabled.</translation>
 <translation id="9213347477683611358">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
       The policy should be specified as a string that expresses the URL and hash in JSON format, e.g.,

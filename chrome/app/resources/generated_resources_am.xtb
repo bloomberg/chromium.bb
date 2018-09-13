@@ -888,7 +888,6 @@
 <translation id="230927227160767054">ይህ ገጽ የአገልግሎት ተቆጣጣሪ ለመጫን ይፈልጋል።</translation>
 <translation id="2309620859903500144">ይህ ጣቢያ የእርስዎን እንቅስቃሴ ወይም የብርሃን ዳሳሾችን እንዳይደርስ አግዷል።</translation>
 <translation id="2315414688463285945">የLinux ፋይሎችን ማዋቀር ላይ ስህተት። እባክዎ እንደገና ይሞክሩ።</translation>
-<translation id="2315821125498993513">ወደ ስልክ ማገናኘት አልተቻለም። <ph name="LINK_BEGIN" />የበለጠ ለመረዳት።<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">አይ፣ አመሰግናለሁ</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% ተከናውኗል</translation>
 <translation id="2318143611928805047">የወረቀት መጠን</translation>
@@ -1224,7 +1223,6 @@
 <translation id="2806891468525657116">አቋራጭ አስቀድሞ አለ</translation>
 <translation id="2807517655263062534">እርስዎ የሚያወርዷቸው ፋይሎች እዚህ ይመጣሉ</translation>
 <translation id="2809586584051668049">እና <ph name="NUMBER_ADDITIONAL_DISABLED" /> ተጨማሪ</translation>
-<translation id="281133045296806353">ባለው አሳሽ ክፍለ ጊዜ አዲስ መስኮት ተፈጥሯል።</translation>
 <translation id="2812944337881233323">ዘግተው ወጥተው እና ተመልሰው ለመግባት ይሞክሩ</translation>
 <translation id="2812989263793994277">ምንም አይነት ምስል አታሳይ</translation>
 <translation id="2814489978934728345">ይህን ገጽ መጫን አቁም</translation>
@@ -3710,7 +3708,6 @@
 <translation id="6582421931165117398">የግል መረጃዎን ለመጠበቅ የይለፍ ቃልዎን አሁን ይቀይሩት። የይለፍ ቃልዎን መቀየር ከመቻልዎ በፊት በመለያ እንዲገቡ ይጠየቃሉ።</translation>
 <translation id="6583851739559471707">ጣልቃ ገቢ ማስታወቂያዎችን የማሳየት አዝማሚያ ባላቸው ጣቢያዎች ላይ ታግደዋል (የሚመከር)</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
-<translation id="6585283250473596934">ወደ ይፋዊ ክፍለ ጊዜ በመግባት ላይ።</translation>
 <translation id="6586451623538375658">የዋና መዳፊት አዘራር ይቀይሩ</translation>
 <translation id="6589660129740381104">በ<ph name="IDS_SHORT_PRODUCT_NAME" /> ውስጥ ያለዎት ተሞክሮ በቀለለ ሁኔታ እንዲያቀናብሩ እርስዎን ለማገዝ ከስምረት እና ግላዊነት ማላበስ ጋር የሚዛመዱ ባህሪያት አሁን በአንድ ነጠላ ቁጥጥር ስር ናቸው። ይህን ማብራት የአሁኖቹን ቅንብሮችዎ ሊቀይረው ይችላል።</translation>
 <translation id="6589706261477377614">የቁልፍ ብሩህነት ጨምር</translation>
@@ -5146,7 +5143,6 @@ nil</translation>
 <translation id="8755376271068075440">&amp;አስተልቅ</translation>
 <translation id="8756969031206844760">የይለፍ ቃል ይዘምን?</translation>
 <translation id="8757090071857742562">ዴስክቶፑን cast ማድረግ አልተቻለም።  ማያ ገጽዎን ማጋራት ለመጀመር ጥያቄውን ማረጋገጥዎን ይመልከቱ።</translation>
-<translation id="8757640015637159332">ወደ ይፋዊ ክፍለ ጊዜ ይግቡ</translation>
 <translation id="8757742102600829832">አንድ Chromebox ከሚከተለው ጋር እንዲገናኝ ይምረጡ፦</translation>
 <translation id="8757803915342932642">በGoogle የደመና መሣሪያዎች ላይ ያለ መሣሪያ</translation>
 <translation id="8758418656925882523">በቃል ማጻፍን አንቃ (ለመተየብ ይናገሩ)</translation>

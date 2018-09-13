@@ -888,7 +888,6 @@
 <translation id="230927227160767054">Ta strona chce zainstalować moduł do obsługiwania usługi.</translation>
 <translation id="2309620859903500144">Ta witryna ma zablokowany dostęp do czujników ruchu i oświetlenia.</translation>
 <translation id="2315414688463285945">Błąd podczas konfigurowania plików Linuksa. Spróbuj ponownie.</translation>
-<translation id="2315821125498993513">Nie udało się połączyć z telefonem. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
 <translation id="2317842250900878657">Gotowe: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Rozmiar papieru</translation>
@@ -1224,7 +1223,6 @@
 <translation id="2806891468525657116">Skrót już istnieje</translation>
 <translation id="2807517655263062534">Tutaj wyświetlają się pobrane pliki</translation>
 <translation id="2809586584051668049">i jeszcze <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
-<translation id="281133045296806353">Utworzono nowe okno w istniejącej sesji przeglądarki.</translation>
 <translation id="2812944337881233323">Wyloguj się i zaloguj się ponownie</translation>
 <translation id="2812989263793994277">Nie pokazuj żadnych grafik</translation>
 <translation id="2814489978934728345">Zatrzymaj ładowanie strony</translation>
@@ -3713,7 +3711,6 @@
 <translation id="6582421931165117398">Aby chronić swoje dane osobowe, zmień teraz hasło. Najpierw zobaczysz prośbę, by się zalogować.</translation>
 <translation id="6583851739559471707">Blokowane na stronach, które wyświetlają uciążliwe reklamy (zalecane)</translation>
 <translation id="6584878029876017575">Podpisywanie dożywotnie firmy Microsoft</translation>
-<translation id="6585283250473596934">Uruchamianie sesji publicznej.</translation>
 <translation id="6586451623538375658">Zamień główny przycisk myszy</translation>
 <translation id="6589660129740381104">Aby ułatwić Ci kontrolowanie działania <ph name="IDS_SHORT_PRODUCT_NAME" />, konfigurację funkcji związanych z synchronizacją i personalizacją umieściliśmy w jednym miejscu. Włączając tę opcję, możesz spowodować zmianę swoich bieżących ustawień.</translation>
 <translation id="6589706261477377614">Zwiększ jasność klawiszy</translation>
@@ -5145,7 +5142,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8755376271068075440">&amp;Większy</translation>
 <translation id="8756969031206844760">Zaktualizować hasło?</translation>
 <translation id="8757090071857742562">Nie udało się przesłać pulpitu. Sprawdź, czy potwierdzono prośbę o rozpoczęcie udostępniania ekranu.</translation>
-<translation id="8757640015637159332">Rozpocznij sesję publiczną</translation>
 <translation id="8757742102600829832">Wybierz Chromeboxa, z którym chcesz się połączyć</translation>
 <translation id="8757803915342932642">Urządzenie w chmurze Google</translation>
 <translation id="8758418656925882523">Włącz dyktowanie (mów, by pisać)</translation>

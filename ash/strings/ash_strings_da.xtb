@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
 <translation id="2761704814324807722">Statusbakke, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Genopretter forbindelsen til <ph name="NAME" /></translation>
+<translation id="2790844815106384441">Vælg, om websites skal kunne bruge placeringstjenester eller enhedens mikrofon, kamera eller andre funktioner</translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2808012452536866044">Better Together skiftede til en ny telefon</translation>
@@ -129,7 +130,6 @@
 <translation id="2992931425024192067">Vis alt indhold i underretninger</translation>
 <translation id="2995447421581609334">Vis Cast-enheder.</translation>
 <translation id="2996462380875591307">Fastgjort lupvindue er aktiveret. Tryk på Ctrl+Søg+D igen for at deaktivere tilstanden.</translation>
-<translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> er en offentlig session administreret af <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Monolyd</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Resterende tid, indtil batteriet er fuldt opladet, <ph name="TIME_REMAINING" /></translation>
@@ -193,6 +193,7 @@
 <translation id="4200057768455216496">Du trykkede på genvejen for det fastgjorte lupvindue. Vil du aktivere indstillingen?</translation>
 <translation id="4217571870635786043">Diktering</translation>
 <translation id="4261870227682513959">Vis indstillinger for underretninger. Underretninger er slået fra</translation>
+<translation id="4269883910223712419">Administratoren af denne enhed kan gøre følgende:</translation>
 <translation id="4274921305979314545">Knyt din Chromebook til din telefon</translation>
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="4292681942966152062">Aktiverer <ph name="NETWORK_NAME" /></translation>
@@ -220,6 +221,7 @@
 <translation id="4734965478015604180">Vandret</translation>
 <translation id="476166673298332917">Administratoren af denne enhed har adgang til al aktivitet, herunder adgangskoder og kommunikation.</translation>
 <translation id="4776917500594043016">Adgangskode for <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">Google Assistent er ikke tilgængelig i en demosession.</translation>
 <translation id="479989351350248267">søg</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="4849058404725798627">Fremhæv element med tastaturfokus</translation>
@@ -336,6 +338,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6751826523481687655">Sporing af effektivitet er slået til</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % opladet og oplades nu.</translation>
 <translation id="6803622936009808957">Skærmene kunne ikke spejles, da der ikke fandtes en understøttet opløsning. I stedet anvendes Udvidet skrivebord.</translation>
+<translation id="6814658242098378692">Administrer apps, udvidelser og temaer</translation>
 <translation id="6820676911989879663">Hold en pause</translation>
 <translation id="683971173229319003">Søg+L</translation>
 <translation id="6857811139397017780">Aktivér <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +362,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7256634071279256947">Mikrofon på bagsiden</translation>
 <translation id="726276584504105859">Træk hertil for at bruge delt skærm</translation>
+<translation id="7303365578352795231">Besvares på en anden enhed</translation>
 <translation id="7348093485538360975">Skærmtastatur</translation>
 <translation id="735745346212279324">VPN afbrudt</translation>
 <translation id="7377169924702866686">Caps Lock er slået til.</translation>
@@ -391,6 +395,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7842211907556571265">Opretter forbindelse til <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advarsel! Eksperimentel funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="7886169021410746335">Juster privatlivsindstillinger</translation>
 <translation id="7886277072580235377">Din internetsession ryddes, når du logger ud. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Send en mail</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>

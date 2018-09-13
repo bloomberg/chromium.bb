@@ -516,6 +516,7 @@
 <translation id="4408413947728134509">Küpsisefailid: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Kättesaamisaadress</translation>
 <translation id="4424024547088906515">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, Chrome ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
+<translation id="4430369329743628066">Järjehoidja on lisatud</translation>
 <translation id="4432688616882109544">Host <ph name="HOST_NAME" /> ei aktsepteerinud teie sisselogimise sertifikaati või te ei esitanud seda.</translation>
 <translation id="4434045419905280838">Hüpikaknad ja ümbersuunamised</translation>
 <translation id="443673843213245140">Puhverserveri kasutamine on keelatud, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
@@ -780,7 +781,6 @@
 <translation id="6328786501058569169">See sait on petturlik</translation>
 <translation id="6337133576188860026">Vabastab alla <ph name="SIZE" />. Mõne saidi laadimine võib järgmisel külastusel rohkem aega võtta.</translation>
 <translation id="6337534724793800597">Reeglite filtreerimine nime järgi</translation>
-<translation id="6355080345576803305">Avaliku seansi alistamine</translation>
 <translation id="6358450015545214790">Mida need tähendavad?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{veel 1 soovitus}other{veel # soovitust}}</translation>
 <translation id="6387754724289022810">Kui soovite järgmisel korral kiiremini maksta, salvestage kaart ja arveldusaadress oma Google'i kontole ja sellesse seadmesse.</translation>

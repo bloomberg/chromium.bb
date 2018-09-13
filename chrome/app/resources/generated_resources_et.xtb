@@ -888,7 +888,6 @@
 <translation id="230927227160767054">Leht soovib installida teenusetöötleja.</translation>
 <translation id="2309620859903500144">Sellel saidil on juurdepääs teie liikumis- ja valgusanduritele blokeeritud.</translation>
 <translation id="2315414688463285945">Linuxi failide seadistamisel ilmnes viga. Proovige uuesti.</translation>
-<translation id="2315821125498993513">Telefoniga ei õnnestunud ühendada. <ph name="LINK_BEGIN" />Vaadake lisateavet.<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">Ei, aitäh</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% on valmis</translation>
 <translation id="2318143611928805047">Paberi suurus</translation>
@@ -1224,7 +1223,6 @@
 <translation id="2806891468525657116">Otsetee on juba olemas</translation>
 <translation id="2807517655263062534">Siin kuvatakse teie allalaaditud failid</translation>
 <translation id="2809586584051668049">ja veel <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
-<translation id="281133045296806353">Olemasoleva brauseri seansi ajal loodi uus aken.</translation>
 <translation id="2812944337881233323">Proovige välja ja seejärel uuesti sisse logida</translation>
 <translation id="2812989263793994277">Ära kuva ühtki pilti</translation>
 <translation id="2814489978934728345">Peata selle lehekülje laadimine</translation>
@@ -3713,7 +3711,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6582421931165117398">Oma isiklike andmete kaitsmiseks muutke nüüd oma parooli. Enne parooli muutmist palutakse teil sisse logida.</translation>
 <translation id="6583851739559471707">Blokeeritud saitidel, mis esitavad sekkuvaid reklaame (soovitatav)</translation>
 <translation id="6584878029876017575">Microsofti pikaajaline signeerimine</translation>
-<translation id="6585283250473596934">Avalikku seanssi sisenemine.</translation>
 <translation id="6586451623538375658">Vaheta esmast hiirenuppu</translation>
 <translation id="6589660129740381104">Selleks et aidata teil teenuses <ph name="IDS_SHORT_PRODUCT_NAME" /> oma kasutuskogemust hõlpsamini hallata, on sünkroonimise ja isikupärastamisega seotud funktsioonid nüüd koondatud ühe juhtelemendi alla. Selle sisselülitamine võib praeguseid seadeid muuta.</translation>
 <translation id="6589706261477377614">Klaviatuuri heleduse suurendamine</translation>
@@ -5145,7 +5142,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8755376271068075440">&amp;Suuremaks</translation>
 <translation id="8756969031206844760">Kas värskendada parooli?</translation>
 <translation id="8757090071857742562">Töölauda ei õnnestu üle kanda. Kontrollige, kas kinnitasite viiba ekraani jagamise alustamiseks.</translation>
-<translation id="8757640015637159332">Sisenemine avalikku seanssi</translation>
 <translation id="8757742102600829832">Valige Chromebox, millega ühendus luua</translation>
 <translation id="8757803915342932642">Seade Google'i pilvseadmetes</translation>
 <translation id="8758418656925882523">Dikteerimise lubamine (kõnelemine sisestamiseks)</translation>

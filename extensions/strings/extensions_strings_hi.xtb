@@ -56,6 +56,7 @@
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>
 <translation id="7068383018033524534">मेनिफ़ेस्ट फ़ाइल अमान्य है</translation>
 <translation id="7217838517480956708">इस मशीन का व्यवस्थापक चाहता है कि <ph name="EXTENSION_NAME" /> इंस्टॉल किया हुआ हो. इसे निकाला या संशोधित नहीं किया जा सकता.</translation>
+<translation id="7612608473764576263">निजी कुंजी के लिए इनपुट मान एक सही फ़ॉर्मेट में होना चाहिए (PKCS#8-फ़ॉर्मेट PEM-कोड में बदली गई RSA कुंजी).</translation>
 <translation id="7939686037314084444">एक्सटेंशन ठीक से लोड नहीं हो पाया. शायद वह नेटवर्क अनुरोधों को बीच में रोक नहीं पाए.</translation>
 <translation id="7972881773422714442">विकल्‍प: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">सामने वाला कैमरा</translation>

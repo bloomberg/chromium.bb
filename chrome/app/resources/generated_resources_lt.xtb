@@ -888,7 +888,6 @@
 <translation id="230927227160767054">Puslapis prašo leidimo įdiegti paslaugos doroklę.</translation>
 <translation id="2309620859903500144">Ši svetainė užblokuota, kad nebūtų naudojami judesio ar šviesos jutikliai.</translation>
 <translation id="2315414688463285945">Konfigūruojant „Linux“ failus įvyko klaida. Bandykite dar kartą.</translation>
-<translation id="2315821125498993513">Nepavyko prisijungti prie telefono. <ph name="LINK_BEGIN" />Sužinokite daugiau.<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">Ačiū, ne</translation>
 <translation id="2317842250900878657">Atlikta: <ph name="PROGRESS_PERCENT" /> %</translation>
 <translation id="2318143611928805047">Popieriaus lapo dydis</translation>
@@ -1224,7 +1223,6 @@
 <translation id="2806891468525657116">Spartusis klavišas jau yra</translation>
 <translation id="2807517655263062534">Atsisiųsti failai rodomi čia</translation>
 <translation id="2809586584051668049">ir dar <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
-<translation id="281133045296806353">Esamos naršyklės sesijos metu sukurtas naujas langas.</translation>
 <translation id="2812944337881233323">Bandykite atsijungti ir vėl prisijungti</translation>
 <translation id="2812989263793994277">Nerodyti jokių vaizdų</translation>
 <translation id="2814489978934728345">Nutraukti šio puslapio įkėlimą</translation>
@@ -3714,7 +3712,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6582421931165117398">Kad apsaugotumėte savo asmens informaciją, pakeiskite slaptažodį dabar. Kad galėtumėte pakeisti slaptažodį, būsite paprašyti prisijungti.</translation>
 <translation id="6583851739559471707">Užblokuota svetainėse, kuriose bandoma rodyti nepageidaujamus skelbimus (rekomenduojama)</translation>
 <translation id="6584878029876017575">„Microsoft“ pasirašymas visam laikui</translation>
-<translation id="6585283250473596934">Prisijungiate prie viešos sesijos.</translation>
 <translation id="6586451623538375658">Sukeisti pagrindinį pelės klavišą</translation>
 <translation id="6589660129740381104">Kad būtų lengviau tvarkyti funkcijas sistemoje „<ph name="IDS_SHORT_PRODUCT_NAME" />“, su sinchronizavimu ir suasmeninimu susijusios funkcijos dabar valdomos vienoje vietoje. Tai įjungus gali būti pakeisti dabartiniai nustatymai.</translation>
 <translation id="6589706261477377614">Padidinti klaviatūros šviesumą</translation>
@@ -5145,7 +5142,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8755376271068075440">&amp;Didesnis</translation>
 <translation id="8756969031206844760">Atnaujinti slaptažodį?</translation>
 <translation id="8757090071857742562">Nepavyko perduoti stalinio kompiuterio ekrano vaizdo. Patikrinkite, ar patvirtinote raginimą pradėti bendrinti ekraną.</translation>
-<translation id="8757640015637159332">Pradėti viešą sesiją</translation>
 <translation id="8757742102600829832">Pasirinkite „Chromebox“, prie kurio reikia prisijungti</translation>
 <translation id="8757803915342932642">Įrenginys „Google“ debesies įrenginiuose</translation>
 <translation id="8758418656925882523">Įgalinti diktavimą (sakomo teksto įvedimas)</translation>

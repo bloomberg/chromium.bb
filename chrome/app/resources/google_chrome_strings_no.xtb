@@ -26,6 +26,7 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> er farlig, så Chrome har blokkert den.</translation>
 <translation id="1619887657840448962">For å gjøre Chrome tryggere har vi slått av følgende utvidelse som ikke finnes i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og som kan ha blitt lagt til uten at du vet det.</translation>
 <translation id="1628000112320670027">Få hjelp med Chrome</translation>
+<translation id="1662639173275167396">Chrome OS er basert på <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />, i likhet med <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Åpne linken i et inko&amp;gnitovindu i Chrome</translation>
 <translation id="1682634494516646069">Google Chrome kan ikke lese og skrive til sin egen datakatalog: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome er en nettleser som kjører nettsider og programmer i ekspressfart. Den er rask, stabil og enkel å bruke. Google Chrome har innebygd beskyttelse mot skadelig programvare og svindelforsøk (nettfisking), slik at du kan føle deg tryggere når du surfer på nettet.</translation>

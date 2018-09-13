@@ -16,6 +16,7 @@
 <translation id="1502360822835740515">Задаване на Chromium като браузър по подразбиране</translation>
 <translation id="151962892725702025">Chromium OS не можа да синхронизира данните ви, защото тази функция не е налице за домейна ви.</translation>
 <translation id="1585657529869845941">Кликнете върху бутона <ph name="BEGIN_BOLD" />Превключване въпреки това<ph name="END_BOLD" />, ако се показва</translation>
+<translation id="1662639173275167396">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />. Това се отнася и за <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1668054258064581266">За да влезе в сила премахването на профила ви от Chromium, може да се наложи да презаредите отворените си раздели.</translation>
 <translation id="1688750314291223739">Настройте синхронизирането, за да запазите онлайн персонализираните функции на браузъра си и да осъществявате достъп до тях от Chromium на всеки компютър.</translation>
 <translation id="1708666629004767631">Налице е нова, по-сигурна версия на Chromium.</translation>

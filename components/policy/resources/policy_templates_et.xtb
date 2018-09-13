@@ -243,7 +243,6 @@
 
       Hoiatus. Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni juhtimist ei ole soovitatav üle anda kioskirakendusele, kuna see võib takistada seadmel tarkvaravärskendusi ja kriitilisi turvapaikasid vastu võtmast. Operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni juhtimise üleandmine võib kasutajad ohtu seada.</translation>
 <translation id="1675002386741412210">Toetatud:</translation>
-<translation id="1679420586049708690">Avalik seanss automaatseks sisselogimiseks</translation>
 <translation id="1689963000958717134">Võimaldab jõustada võrgu konfigureerimise kõigile <ph name="PRODUCT_OS_NAME" /> seadme kasutajatele. Võrgu konfigureerimine on JSON-i vormingus string, mille määrab aadressil <ph name="ONC_SPEC_URL" /> kirjeldatud vorming Open Network Configuration</translation>
 <translation id="1708496595873025510">Piirangu määramine variatsioonide lähteväärtuse toomisele</translation>
 <translation id="172374442286684480">Luba kõikidel saitidel kohalike andmete määramine</translation>
@@ -387,12 +386,6 @@
 <translation id="2082205219176343977">Seadmes kõige vanema lubatud Chrome'i versiooni seadistamine.</translation>
 <translation id="209586405398070749">Stabiilne kanal</translation>
 <translation id="2098658257603918882">Luba kasutus- ja krahhiandmete aruandlus</translation>
-<translation id="2098916259427011890">Reegel määrab, kas edastada versiooniteavet, nagu operatsioonisüsteemi versioon, platvorm ja arhitektuur, rakenduse <ph name="PRODUCT_NAME" /> versioon ja rakenduse <ph name="PRODUCT_NAME" /> kanal.
-
-      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse versiooniteavet.
-      Kui reegel on seatud väärtusele Väär, ei koguta versiooniteavet.
-
-      Reegel kehtib ainult juhul, kui Chrome'i aruandluse laiendus ja pilvehaldus on lubatud.</translation>
 <translation id="2111016292707172233">Lubab teenuse <ph name="PRODUCT_NAME" /> sisu vaates funktsiooni Puuduta otsimiseks.
 
       Kui selle seade lubate, on funktsioon Puuduta otsimiseks kasutaja jaoks saadaval ja ta saab selle sisse või välja lülitada.
@@ -490,26 +483,6 @@
           Kui seda reeglit pole määratud, siis hoiatusdialoogi ei kuvata.
 
           Reegli väärtus tuleb määrata millisekundites. Väärtus peab olema tegevusetuse viivitusest väiksem või sellega võrdne.</translation>
-<translation id="2289578386193672044">Määrab loendi rakendustest ja laiendustest, mis installitakse vaikimisi
-          ning kasutajaga suhtlemata ja mida kasutaja ei saa desinstallida ega
-          keelata. Kõik rakenduste/laienduste taotletud load (sh kõik lisaload, mida            rakenduse/laienduse tulevased versioonid taotlevad) antakse vaikimisi
-
-          ning kasutajaga suhtlemata. Load antakse ka laienduste API-dele
-          enterprise.deviceAttributes ja enterprise.platformKeys. (Need kaks
-          API-t pole saadaval rakendustele/laiendustele, mis pole sundinstallitud.)
-
-          See reegel seatakse ettepoole potentsiaalselt konfliktsest reeglist <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kui rakendus või laiendus, mis varem sundinstalliti, sellest loendist eemaldatakse, siis desinstallib teenus <ph name="PRODUCT_NAME" /> selle automaatselt.
-
-          Windowsi eksemplaride puhul, mis ei ole ühendatud domeeniga <ph name="MS_AD_NAME" />, saab sundinstallida vaid Chrome’i veebipoes olevaid rakendusi ja laiendusi.
-
-          Pange tähele, et arendaja tööriistadega saavad kasutajad muuta iga laienduse lähtekoodi (mis võib põhjustada laienduse väärtalitlust). Kui see on probleem, tuleb määrata reegel <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          
-Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt ka „värskenduse” URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string, mis kuvatakse näiteks arendajarežiimis teenuses <ph name="CHROME_EXTENSIONS_LINK" />. „Värskenduse” URL peab viitama XML-dokumendi värskendusmanifestile, nagu on kirjeldatud jaotises <ph name="LINK_TO_EXTENSION_DOC1" />. Vaikimisi kasutatakse Chrome'i veebipoe värskenduse URL-i (praegune URL on „https://clients2.google.com/service/update2/crx”). Pange tähele, et reeglis määratud „värskenduse” URL-i kasutatakse vaid algsel installimisel ja laienduse tulevased värskendused kasutavad laienduse manifestis märgitud värskenduse URL-i. Konkreetse värskenduse URL-i määramine oli kohustuslik kuni teenuse <ph name="PRODUCT_NAME" /> 67. versioonini (kaasa arvatud).
-
-          Näiteks reegel <ph name="EXTENSION_POLICY_EXAMPLE" /> installib laienduse <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> rakenduse standardselt Chrome’i veebipoe „värskenduse” URL-ilt. Lisateavet hostimise laienduste kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Kui see reegel jäetakse määramata, ei installita automaatselt mitte ühtegi rakendust ega laiendust ja kasutaja saab iga rakenduse või laienduse desinstallida teenuses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> saab kasutada Google'i veebiteenust, et aidata parandada õigekirjavigu. Kui seade on lubatud, siis kasutatakse teenust alati. Kui seade on keelatud, siis ei kasutata teenust kunagi.
 
       Õigekirjakontrolli saab siiski teha, kasutades selleks allalaaditud sõnastikku. Reegel haldab ainult veebiteenuse kasutamist.
@@ -537,15 +510,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="2309390639296060546">Geograafilise asukoha vaikeseade</translation>
 <translation id="2312134445771258233">Võimaldab seadistada käivitamisel avatavad lehed. Loendi „Käivitamisel avatavad URL-id” sisu eiratakse, kui te ei vali jaotises „Toiming käivitamisel” käsku „Ava URL-ide loend”.</translation>
 <translation id="2327252517317514801">G Suite'i kasutamise loaga domeenide määramine</translation>
-<translation id="2372547058085956601">Avaliku seansi automaatse sisselogimise viivitus.
-
-      Kui reeglit |DeviceLocalAccountAutoLoginId| ei määrata, ei ole sellel mingit mõju. Muidu on mõju järgmine.
-
-      Kui selle reegli määrate, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui logitakse automaatselt sisse reegli |DeviceLocalAccountAutoLoginId| määratud avalikku seanssi.
-
-      Kui seda reeglit ei määrata, on ajalimiidi väärtuseks 0 millisekundit.
-
-      See reegel on määratud millisekundites.</translation>
 <translation id="237494535617297575">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kuvada märguandeid.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultNotificationsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
@@ -1135,7 +1099,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui te seda reeglit ei määra, kasutab brauser <ph name="PRODUCT_NAME" /> oma tavapärast kataloogi (platvormipõhine).
 
       Saidil https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables näete loendit kasutatavatest muutujatest.</translation>
-<translation id="3907986150060929099">Avaliku seansi soovitatud lokaatide määramine</translation>
 <translation id="3911737181201537215">See reegel ei mõjuta Androidi logimist.</translation>
 <translation id="391531815696899618">Keelab Google Drive'i sünkroonimise operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid, kui väärtuse olekuks on määratud Tõene. Sellisel juhul ei laadita Google Drive'i üles mingeid andmeid.
 
@@ -1203,12 +1166,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Muul juhul võidakse määrata üks järgmistest väärtustest: „tls1.2” või „tls1.3”. Kui see on määratud, ei kasuta teenus <ph name="PRODUCT_NAME" /> määratud versioonist uuemaid SSL-i/TLS-i versioone. Tuvastamatut väärtust eiratakse.</translation>
 <translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
 <translation id="412697421478384751">Nõrkade lukustuskuva PIN-koodide määramise lubamine</translation>
-<translation id="4129183564590133854">Reegel määrab, kas edastada teavet, mille alusel saab kasutajaid identifitseerida, nagu operatsioonisüsteemi sisselogimisteave, rakenduse <ph name="PRODUCT_NAME" /> profiili sisselogimisteave, rakenduse <ph name="PRODUCT_NAME" /> profiili nimi, rakenduse <ph name="PRODUCT_NAME" /> profiili tee ja rakenduse <ph name="PRODUCT_NAME" /> täitmistee.
-
-      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse teavet, mille alusel saab kasutajaid identifitseerida.
-      Kui reegel on seatud väärtusele Väär, ei koguta teavet, mille alusel saab kasutajaid identifitseerida.
-
-      Reegel kehtib ainult juhul, kui Chrome'i aruandluse laiendus ja pilvehaldus on lubatud.</translation>
 <translation id="4138655880188755661">Ajapiirang</translation>
 <translation id="4157003184375321727">OS-ist ja püsivara versioonist teavitamine</translation>
 <translation id="4157594634940419685">CUPS-i omaprinteritele juurdepääsu lubamine</translation>
@@ -1520,12 +1477,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui jätate reegli määramata, siis võib importimine toimuda automaatselt või kasutajalt võidakse küsida, kas ta soovib importida.</translation>
 <translation id="5056708224511062314">Ekraaniluup on keelatud</translation>
 <translation id="5058573563327660283">Automaatse puhastamise ajal kettaruumi vabastamiseks kasutatava strateegia valimine (tugi on katkestatud)</translation>
-<translation id="5058771123777243130">Reegel määrab, kas edastada reegli andmed ja reegli toomise aeg.
-
-      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse reegli andmed ja reegli toomise aeg.
-      Kui reegel on seatud väärtusele väär, ei koguta reegli andmeid ja reegli toomise aega.
-
-      Reegel kehtib ainult juhul, kui Chrome'i aruandluse laiendus ja pilvehaldus on lubatud.</translation>
 <translation id="5067143124345820993">Kasutajate sisselogimise lubatud loend</translation>
 <translation id="5068140065960598044">Teenuse <ph name="PRODUCT_NAME" /> pilve-eeskirjad alistavad seadme-eeskirjad.</translation>
 <translation id="5085647276663819155">Printimise eelvaate keelamine</translation>
@@ -1692,11 +1643,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui loend on tühi, siis kontrollimist ei kasutata ja värskendused rakendatakse seadme muude eeskirjade alusel.
 
       Reegel ei kehti kanalivahetuste puhul.</translation>
-<translation id="5523812257194833591">Avalik seanss automaatseks sisselogimiseks pärast viivitust.
-
-      Kui selle reegli määrate, logitakse määratud seanssi automaatselt sisse pärast teatud perioodi möödumist sisselogimisekraanil ilma kasutaja interaktsioonita. Avalik seanss peab olema juba seadistatud (vt |DeviceLocalAccounts|).
-
-      Kui te seda reeglit ei määra, siis automaatset sisselogimist ei toimu.</translation>
 <translation id="5526701598901867718">Kõik (ebaturvaline)</translation>
 <translation id="5529037166721644841">Määrab perioodi millisekundites, mille jooksul seadme haldusteenusele esitatakse päring kasutajareegli teabe hankimiseks.
 
@@ -2115,12 +2061,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Selle seadega hallatakse tervituslehtede esitamist, mis aitavad kasutajatel teenusesse <ph name="PRODUCT_NAME" /> sisse logida, määrata selle vaikebrauseriks või muul viisil neid toote funktsioonidest teavitada.</translation>
 <translation id="6766216162565713893">Luba saitidel paluda kasutajatelt juurdepääsu läheduses asuvatele Bloetoothi seadmetele</translation>
 <translation id="6770454900105963262">Aruandeteave aktiivsete kioskiseansside kohta</translation>
-<translation id="6773056206551814546">Reegel määrab, kas koguda teavet, mille alusel saab masinaid identifitseerida, nagu masina nimi ja võrguaadressid.
-
-      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse teavet, mille alusel saab masinaid identifitseerida.
-      Kui reegel on seatud väärtusele Väär, ei koguta teavet, mille alusel saab masinaid identifitseerida.
-
-      Reegel kehtib ainult juhul, kui Chrome'i aruandluse laiendus ja pilvehaldus on lubatud.</translation>
 <translation id="6786747875388722282">Laiendused</translation>
 <translation id="6786967369487349613">Rändlusprofiili kataloogi määramine</translation>
 <translation id="6810445994095397827">Blokeeri JavaScript nendel saitidel</translation>
@@ -2573,23 +2513,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="7750991880413385988">Ava uus vaheleht</translation>
 <translation id="7754704193130578113">Küsi enne iga faili allalaadimist, kuhu see salvestada.</translation>
 <translation id="7761446981238915769">Sisselogimisekraanil olevate installitud rakenduste loendi seadistamine</translation>
-<translation id="7761526206824804472">Avalikule seansile määratakse üks või mitu soovitatud lokaati, et kasutajad saaksid hõlpsalt valida ühe lokaatidest.
-
-
-      Kasutaja saab enne avaliku seansi algust valida lokaadi ja klaviatuuripaigutuse. Vaikimisi on kõik operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> toetatud lokaadid loetletud tähestikulises järjekorras. Selle reegliga saate teisaldada soovitatud lokaadid loendi ülaossa.
-
-      Kui reegel jäetakse määramata, on praegune kasutajaliidese lokaat eelvalitud.
-
-      Kui reegel on määratud, teisaldatakse soovitatud lokaadid loendi ülaossa ja eraldatakse visuaalselt muudest lokaatidest. Soovitatud lokaadid on loendis samas järjekorras nagu reeglis. Esimene soovitatud lokaat on eelvalitud.
-
-      Kui soovitatud lokaate on mitu, eeldatakse, et kasutaja soovib nende lokaatide hulgast valida. Lokaadi ja klaviatuuripaigutuse valik tõstetakse avaliku seansi alguses selgelt esile. Muidu eeldatakse, et enamik kasutajaid soovib kasutada eelvalitud lokaati. Lokaadi ja klaviatuuripaigutuse valik tõstetakse avaliku seansi alguses esile vähem märgatavalt.
-
-      Kui reegel on määratud ja automaatne sisselogimine on lubatud (vt reegleid |DeviceLocalAccountAutoLoginId| ja |DeviceLocalAccountAutoLoginDelay|), kasutab automaatselt käivitatud avalik seanss esimest soovitatud lokaati ja selle kõige populaarsemat klaviatuuripaigutust.
-
-      Eelvalitud klaviatuuripaigutus on alati kõige populaarsem paigutus, mis vastab eelvalitud lokaadile.
-
-      Reegli saab määrata ainult soovitusena. Reegliga saab teisaldada soovitatud lokaadid loendi ülaossa, kuid kasutajad võivad alati seansi jaoks valida mis tahes muu lokaadi, mida operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> toetab.
-      </translation>
 <translation id="7763479091692861127"> Ühendustüübid, mis on lubatud kasutamiseks OS-i värskendamiseks. OS-i värskendused võivad oma mahu tõttu panna ühendusele suure koormuse ja sellega võib kaasneda ka lisakulu. Seepärast pole need vaikimisi lubatud ühendustüüpidele, mida peetakse kalliteks ja mille hulka praegu kuuluvad WiMax, Bluetooth ja Cellular.
 
       Tunnustatud ühendustüübi identifikaatorid on „ethernet”, „wifi”, „wimax”, „bluetooth” ja „cellular”.</translation>
@@ -3091,7 +3014,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       MÄRKUS. Versioonini 45 toetati seda reeglit ainult kioskirežiimis.</translation>
 <translation id="8970205333161758602">Toote <ph name="PRODUCT_FRAME_NAME" /> tagasilükkamisviiba keelamine</translation>
-<translation id="8971221018777092728">Avaliku seansi automaatse sisselogimise ajasti</translation>
 <translation id="8976248126101463034">Gnubby autentimise lubamine kaugjuurdepääsuhostidele</translation>
 <translation id="8976531594979650914">Kasuta vaikeseadena süsteemi vaikeprinterit</translation>
 <translation id="8992176907758534924">Keela kõigil saitidel kujutiste näitamine</translation>
@@ -3180,9 +3102,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Kui reegel on seatud väärtusele ClientCertificate (1), kasutatakse äsja lisatud ja SAML-i kaudu sisse logivate kasutajate puhul kliendi sertifikaadi autentimist. Selliste kasutajate puhul ei kasutata paroole ja nende vahemällu talletatud kohalikke andmeid kaitstakse vastavate krüptovõtmetega. See seade võimaldab näiteks seadistada kiipkaardipõhise autentimise (pange tähele, et kiipkaardi vaherakendused tuleb installida reegli DeviceLoginScreenAppInstallList kaudu).
 
       Reegel mõjutab ainult kasutajaid, kes kasutavad autentimiseks SAML-i.</translation>
-<translation id="9211439035693857287">Võimaldab seadistada Chrome'i aruandluse laiendusega seotud reeglid.
-
-      Reeglid kehtivad ainult juhul, kui Chrome'i aruandluse laiendus ja pilvehaldus on lubatud.</translation>
 <translation id="9213347477683611358">Seadistage seadmetasemel taustapildi kujutis, mis kuvatakse sisselogimisekraanil, kui ükski kasutaja pole veel seadmesse sisse loginud. Selle reegli määramiseks tuleb määrata URL, kust Chrome OS-i seade saab alla laadida taustapildi kujutise ja krüptograafilise räsiväärtuse, mida kasutatakse allalaadimise terviklikkuse kontrollimiseks. Kujutis peab olema JPEG-vormingus ja faili suurus ei tohi ületada 16 MB. URL peab olema autentimiseta juurdepääsetav. Taustapildi kujutis laaditakse alla ja salvestatakse vahemällu. See laaditakse uuesti alla iga kord, kui URL või räsiväärtus muutub.
 
       Reegel tuleks määrata stringina, mis näitab URL-i ja räsiväärtust JSON-vormingus, nt

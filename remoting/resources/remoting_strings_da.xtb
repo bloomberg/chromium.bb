@@ -330,6 +330,8 @@ Pc</translation>
 <translation id="8525306231823319788">Fuld skærm</translation>
 <translation id="8548209692293300397">Du har tidligere logget ind som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). For at få adgang til dine computere på den pågældende konto skal du <ph name="LINK_BEGIN" />logge ind på Google Chrome<ph name="LINK_END" /> med denne konto og geninstallere Chrome Fjernskrivebord.</translation>
 <translation id="8642984861538780905">Rimelig</translation>
+<translation id="8705151241155781642">• Understøtter nu Android 9.0 Pie.
+• Understøtter tilpasning af fjernskrivebordets opløsning, så den matcher din Android-enheds skærm.</translation>
 <translation id="8712909229180978490">Jeg kan ikke se mine gemte filer online i Google Drev.</translation>
 <translation id="8743328882720071828">Vil du give <ph name="CLIENT_USERNAME" /> tilladelse til at se og styre din computer?</translation>
 <translation id="8747048596626351634">Sessionen gik ned eller kunne ikke startes. Hvis ~/.chrome-remote-desktop-session findes på fjerncomputeren, skal du sørge for, at den starter en proces, der er længe åben i forgrunden, f.eks. et computermiljø eller en vinduesadministrator.</translation>

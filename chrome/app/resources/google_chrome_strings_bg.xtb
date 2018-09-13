@@ -26,6 +26,7 @@
 <translation id="1587325591171447154">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен.</translation>
 <translation id="1619887657840448962">За да направим Chrome по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
 <translation id="1628000112320670027">Получаване на помощ за Chrome</translation>
+<translation id="1662639173275167396">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />. Това се отнася и за <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chrome</translation>
 <translation id="1682634494516646069">Google Chrome не може да чете и записва в директорията си за данни:
 

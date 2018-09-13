@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">Je browsergegevens en activiteit die zijn gesynchroniseerd met je Google-account</translation>
 <translation id="116280672541001035">Gebruikt</translation>
 <translation id="1172593791219290334">Startpagina</translation>
+<translation id="1175310183703641346">Je bladwijzers, geschiedenis, wachtwoorden en meer worden niet meer gesynchroniseerd met je Google-account</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
 <translation id="1197267115302279827">Bladwijzers verplaatsen</translation>
@@ -48,6 +49,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="129553762522093515">Recent gesloten</translation>
 <translation id="1326317727527857210">Log in bij Chrome om de tabbladen van je andere apparaten te bekijken.</translation>
 <translation id="1332501820983677155">Functiesneltoetsen in Google Chrome</translation>
+<translation id="1360432990279830238">Uitloggen en synchroniseren uitschakelen?</translation>
 <translation id="136248372334525878">Pagina's vooraf laden voor sneller laden en offline lezen</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> toegevoegd</translation>
 <translation id="1373696734384179344">Onvoldoende geheugen om de geselecteerde content te downloaden.</translation>
@@ -158,6 +160,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="2131665479022868825"><ph name="DATA" /> bespaard</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> gesloten</translation>
 <translation id="2139186145475833000">Toevoegen aan startscherm</translation>
+<translation id="2142289305367051020">Je favoriete pagina's bevinden zich hier</translation>
 <translation id="2146738493024040262">Instant-app openen</translation>
 <translation id="2148716181193084225">Vandaag</translation>
 <translation id="2154484045852737596">Kaart bewerken</translation>
@@ -348,6 +351,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="3822502789641063741">Site-opslag wissen?</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3859306556332390985">Vooruit zoeken</translation>
+<translation id="3868004864571585162">Cookies, medialicenties en sitegegevens</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
 <translation id="3895926599014793903">Zoom inschakelen forceren</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -810,6 +814,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7413229368719586778">Begindatum: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Eerst vragen</translation>
 <translation id="7423538860840206698">Lezen van het klembord geblokkeerd</translation>
+<translation id="7431991332293347422">Beheren hoe je browsegeschiedenis wordt gebruikt om Google Zoeken en meer te personaliseren</translation>
 <translation id="7437998757836447326">Uitloggen bij Chrome</translation>
 <translation id="7444811645081526538">Meer categorieën</translation>
 <translation id="7445411102860286510">Sites toestaan gedempte video's automatisch af te spelen (aanbevolen)</translation>
@@ -878,6 +883,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7963646190083259054">Leverancier:</translation>
 <translation id="7981313251711023384">Pagina's vooraf laden voor sneller browsen en zoeken</translation>
 <translation id="79859296434321399">Installeer ARCore om augmented reality-content te bekijken</translation>
+<translation id="7986741934819883144">Een contact selecteren</translation>
 <translation id="7987073022710626672">Servicevoorwaarden van Chrome</translation>
 <translation id="7987764905897278458">Gebruik meer slimme Google-functies</translation>
 <translation id="7998918019931843664">Gesloten tabblad opnieuw openen</translation>
@@ -906,6 +912,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8109613176066109935">Schakel synchronisatie in om op al je apparaten toegang tot je bladwijzers te hebben</translation>
 <translation id="8116925261070264013">Gedempt</translation>
 <translation id="813082847718468539">Sitegegevens bekijken</translation>
+<translation id="8156139159503939589">Welke talen lees je?</translation>
 <translation id="8168435359814927499">Content</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> bestanden over</translation>
 <translation id="8190358571722158785">1 dag resterend</translation>
@@ -918,6 +925,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8260126382462817229">Probeer opnieuw in te loggen</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8266862848225348053">Downloadlocatie</translation>
+<translation id="8274165955039650276">Downloads bekijken</translation>
 <translation id="8283853025636624853">Synchroniseren met <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standaardtabbladen</translation>
 <translation id="8313455859591948645">Startpagina bewerken</translation>
@@ -934,6 +942,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8441146129660941386">Achteruit zoeken</translation>
 <translation id="8445448999790540984">Wachtwoorden kunnen niet worden geëxporteerd</translation>
 <translation id="8447861592752582886">Toegang tot apparaat intrekken</translation>
+<translation id="8477071352266846533">Synchroniseren uitschakelen voor <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8487700953926739672">Offline beschikbaar</translation>
 <translation id="8489271220582375723">De pagina Geschiedenis openen</translation>
 <translation id="8493948351860045254">Ruimte vrijmaken</translation>
@@ -973,6 +982,7 @@ Maak verbinding met internet en speel je gedownloade content af om nieuwe licent
 <translation id="8728487861892616501">Door deze app te gebruiken, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome en het <ph name="BEGIN_LINK3" />Privacybeleid voor Google-accounts die worden beheerd met Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Gereed</translation>
 <translation id="8748850008226585750">Content verborgen</translation>
+<translation id="8751914237388039244">Een afbeelding selecteren</translation>
 <translation id="8788968922598763114">Het laatst gesloten tabblad opnieuw openen</translation>
 <translation id="8812260976093120287">Op sommige websites kun je betalen met de bovenstaande ondersteunde betaal-apps op je apparaat.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> wordt geopend in Chrome. Als je doorgaat, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome en het <ph name="BEGIN_LINK3" />Privacybeleid voor Google-accounts die worden beheerd met Family Link<ph name="END_LINK3" />.</translation>

@@ -239,7 +239,6 @@
 
       Babala: Hindi inirerekomenda ang pagtatalaga ng kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" /> sa isang kiosk app dahil maaari nitong pigilan ang pagtanggap ng device ng mga update sa software at kritikal na pag-aayos sa seguridad. Maaaring malagay sa peligro ang mga user kung magtatalaga ng kontrol sa bersyon ng <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="1675002386741412210">Suportado sa:</translation>
-<translation id="1679420586049708690">Pampublikong session para sa awtomatikong pag-log in</translation>
 <translation id="1689963000958717134">Nagbibigay-daan na malapat sa lahat ng user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang string na naka-format sa JSON tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="1708496595873025510">Itakda ang paghihigpit sa pagkuha ng seed ng Mga Variation</translation>
 <translation id="172374442286684480">Payagan ang lahat ng site na magtakda ng lokal na data</translation>
@@ -383,12 +382,6 @@
 <translation id="2082205219176343977">I-configure ang minimum na pinapayagang bersyon ng Chrome para sa device.</translation>
 <translation id="209586405398070749">Stable na channel</translation>
 <translation id="2098658257603918882">Paganahin ang pag-uulat ng data ng paggamit at kaugnay ng crash</translation>
-<translation id="2098916259427011890">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyon ng bersyon, gaya ng bersyon ng OS, platform ng OS, architecture ng OS, bersyon ng <ph name="PRODUCT_NAME" />, at channel ng <ph name="PRODUCT_NAME" />.
-
-      Kapag hinayaang hindi nakatakda ang patakarang ito o nakatakda sa True, kukunin ang impormasyon ng bersyon.
-      Kung nakatakda ang patakarang ito sa False, hindi kukunin ang impormasyon ng bersyon.
-
-      May bisa lang ang patakarang ito kapag naka-enable ang Chrome Reporting Extension at Cloud Management.</translation>
 <translation id="2111016292707172233">Ine-enable ang availability ng I-tap para Maghanap sa view ng content ng <ph name="PRODUCT_NAME" />.
 
       Kung ie-enable mo ang setting na ito, magagamit ng user ang I-tap para Maghanap at maaari niyang piliing i-on o i-off ang feature.
@@ -486,27 +479,6 @@
           Kapag hindi nakatakda ang patakarang ito, walang ipapakitang dialog ng babala.
 
           Dapat tukuyin ang halaga ng patakaran gamit ang milliseconds. Nililimitahan ang mga halaga upang maging mas mababa sa o katumbas ng delay bago mag-idle.</translation>
-<translation id="2289578386193672044">Tumutukoy ng listahan ng mga app at extension na na-install nang hindi napapansin,
-          nang walang pakikipag-ugnayan sa user, at hindi maa-uninstall o
-          madi-disable ng user. Hayagang ibinibigay ang lahat ng pahintulot na hiniling ng
-          mga app/extension, nang walang pakikipag-ugnayan sa user,
-          kabilang ang anumang karagdagang pahintulot na hiniling ng mga bersyon sa hinaharap ng
-          app/extension. Bukod pa rito, ibinibigay ang mga pahintulot para sa
-          enterprise.deviceAttributes at enterprise.platformKeys na extension
-          API. (Hindi available ang dalawang API na ito sa mga app/extension na
-          hindi sapilitang na-install.)
-
-          Mangingibabaw ang patakarang ito sa posibleng salungat na patakarang <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kung may inalis na app o extension sa listahang ito na kamakailang sapilitang na-install, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME" />.
-
-          Para sa mga sitwasyon ng Mga Window na hindi kasali sa isang <ph name="MS_AD_NAME" /> na domain, para lang sa mga app at extension na nakalista sa Chrome Web Store ang sapilitang pag-install.
-
-          Tandaang maaaring mabago ng mga user ang source code ng anumang extension sa pamamagitan ng Mga Tool ng Developer (na maaaring humantong sa maling paggana ng extension). Kung isa itong alalahanin, dapat itakda ang patakarang <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
-
-          Ang bawat item sa listahan ng patakaran ay isang string na may extension ID at, bilang opsyon, isang URL ng "update" na hinihiwalay ng semicolon (<ph name="SEMICOLON" />). Ang extension ID ay ang 32 titik na string na makikita hal. sa <ph name="CHROME_EXTENSIONS_LINK" /> kapag nasa developer mode. Dapat hindi nakadirekta ang URL ng "update," kung natukoy, sa isang dokumentong Update Manifest XML gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />. Bilang default, ginagamit ang URL ng update ng Chrome Web Store (na kasalukuyang "https://clients2.google.com/service/update2/crx"). Tandaang ginagamit lang ang nakatakdang URL ng "update" sa patakarang ito para sa paunang pag-install; ine-employ ng mga susunod na pag-update ng extension ang URL ng update na nakasaad sa manifest ng extension. Tandaan ding mandatoryo ang hayagang pagtukoy sa URL ng "update" sa mga bersyon ng <ph name="PRODUCT_NAME" /> hanggang sa at kabilang ang 67.
-
-          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE" /> ang <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app mula sa karaniwang URL ng "update" ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa mga extension ng pag-host, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2" />.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito, walang app o extension ang awtomatikong ii-install at makakapag-uninstall ng anumang app o extension ang user sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2292084646366244343">Makakagamit ang <ph name="PRODUCT_NAME" /> ng serbisyo sa web ng Google upang makatulong na resolbahin ang mga error sa spelling. Kung pinapagana ang setting na ito, palaging gagamitin ang serbisyong ito. Kung hindi pinapagana ang setting na ito, hindi kailanman gagamitin ang serbisyong ito.
 
       Maisasagawa pa rin ang pag-spell check gamit ang isang na-download na diksyunaryo; ang paggamit ng online na serbisyo lang ang kinokontrol ng patakarang ito.
@@ -534,15 +506,6 @@
 <translation id="2309390639296060546">Default na setting ng geolocation</translation>
 <translation id="2312134445771258233">Pinapayagan kang i-configure ang mga pahina na na-load sa startup. Ang mga nilalaman ng listahan ng 'Mga URL upang buksan sa startup' ay binabalewala maliban kung piliin mo ang 'Magbukas ng listahan ng mga URL' sa 'Pagkilos sa startup'.</translation>
 <translation id="2327252517317514801">Tumutukoy sa mga domain na pinapayagang i-access ang G Suite</translation>
-<translation id="2372547058085956601">Delay ng awtomatikong pag-log in sa pampublikong session.
-
-      Kung hindi nakatakda ang patakaran ng |DeviceLocalAccountAutoLoginId|, walang bisa ang patakarang ito. Kung hindi:
-
-      Kung nakatakda ang patakarang ito, tinutukoy nito ang haba ng oras na walang aktibidad ng user na dapat lumipas bago awtomatikong mag-log in sa pampublikong session na tinukoy ng patakarang |DeviceLocalAccountAutoLoginId|.
-
-      Kung hindi nakatakda ang patakarang ito, gagamitin ang 0 milliseconds bilang pag-timeout.
-
-      Tinutukoy ang patakarang ito gamit ang milliseconds.</translation>
 <translation id="237494535617297575">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpakita ng mga notification.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung hindi ito nakatakda, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -1133,7 +1096,6 @@
       Kung hindi mo itatakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang karaniwang default na directory nito (partikular sa platform).
 
       Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa isang listahan ng mga magagamit na variable.</translation>
-<translation id="3907986150060929099">Itakda ang mga inirerekumendang lokal para sa isang pampublikong session</translation>
 <translation id="3911737181201537215">Walang epekto ang patakarang ito sa pag-log na ginawa ng Android.</translation>
 <translation id="391531815696899618">Dini-disable ang pagsi-sync ng Google Drive sa <ph name="PRODUCT_OS_NAME" /> Files app kapag nakatakda sa True. Sa sitwasyong iyon, walang data na maa-upload sa Google Drive.
 
@@ -1201,12 +1163,6 @@
       Kung hindi, maaari itong itakda sa isa sa mga sumusunod na value: "tls1.2" o "tls1.3." Kapag naitakda, hindi gagamit ang <ph name="PRODUCT_NAME" /> ng mga bersyon ng SSL/TLS na mas bago kaysa sa tinukoy na bersyon. Babalewalain ang hindi kilalang value.</translation>
 <translation id="4121350739760194865">Pigilan ang paglitaw ng mga pag-promote ng app sa pahina ng bagong tab</translation>
 <translation id="412697421478384751">I-enable ang mga user na magtakda ng madadaling hulaang PIN para sa PIN ng lock screen</translation>
-<translation id="4129183564590133854">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyong magagamit para makilala ang mga user, gaya ng login ng OS, login ng Profile sa <ph name="PRODUCT_NAME" />, pangalan ng Profile sa <ph name="PRODUCT_NAME" />, path ng Profile sa <ph name="PRODUCT_NAME" />, at nae-execute na path sa <ph name="PRODUCT_NAME" />.
-
-      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukunin ang impormasyong magagamit sa pagkilala ng mga user.
-      Kung nakatakda ang patakarang ito sa False, hindi kukunin ang impormasyong magagamit sa pagkilala ng mga user.
-
-      May bisa lang ang patakarang ito kapag naka-enable ang Chrome Reporting Extension at Cloud Management.</translation>
 <translation id="4138655880188755661">Limitasyon sa Oras</translation>
 <translation id="4157003184375321727">I-ulat ang bersyon ng OS at firmware.</translation>
 <translation id="4157594634940419685">Payagan ang pag-access sa mga native na CUPS printer</translation>
@@ -1518,12 +1474,6 @@
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="5056708224511062314">Naka-disable ang magnifier ng screen</translation>
 <translation id="5058573563327660283">Piliin ang diskarteng gagamitin para magbakante ng espasyo sa disk sa panahon ng awtomatikong pag-clean-up (hindi na ginagamit)</translation>
-<translation id="5058771123777243130">Kinokontrol ng patakarang ito kung mag-uulat ng data ng patakaran at oras ng pagkuha ng patakaran.
-
-      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukunin ang data ng patakaran at oras ng pagkuha ng patakaran.
-      Kung nakatakda ang patakarang ito sa False, hindi kukunin ang data ng patakaran at oras ng pagkuha ng patakaran.
-
-      May bisa lang ang patakarang ito kapag naka-enable ang Chrome Reporting Extension at Cloud Management.</translation>
 <translation id="5067143124345820993">White list ng user sa pag-login</translation>
 <translation id="5068140065960598044">Ino-override ng patakaran sa cloud ng <ph name="PRODUCT_NAME" /> ang patakaran sa Machine.</translation>
 <translation id="5085647276663819155">Huwag paganahin ang Preview ng Pag-print</translation>
@@ -1690,11 +1640,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung walang laman ang listahang ito, walang magiging staging at ilalapat ang mga update ayon sa iba pang patakaran ng device.
 
       Hindi nalalapat ang patakarang ito para sa mga switch ng channel.</translation>
-<translation id="5523812257194833591">Awtomatikong mala-log in ang isang pampublikong session pagkatapos ng delay.
-
-      Kung nakatakda ang patakarang ito, ang tinukoy na session ay awtomatikong mala-log in kapag lumipas na ang isang takdang panahon sa screen sa pag-log in nang walang pakikipag-ugnayan ng user. Dapat ay naka-configure na ang pampublikong session (tingnan ang |DeviceLocalAccounts|).
-
-      Kung hindi nakatakda ang patakarang ito, walang magaganap na awtomatikong pag-log in.</translation>
 <translation id="5526701598901867718">Lahat (hindi secure)</translation>
 <translation id="5529037166721644841">Tinutukoy ang tagal sa mga millisecond kung gaano katagal na-query ang serbisyo ng pamamahala sa device para sa impormasyon ng patakaran ng device.
 
@@ -2113,12 +2058,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kinokontrol ng setting na ito ang presentasyon ng mga welcome page na nakakatulong sa mga user na mag-sign in sa <ph name="PRODUCT_NAME" />, piliin ito bilang kanilang default na browser, o abisuhan sila tungkol sa mga feature ng produkto.</translation>
 <translation id="6766216162565713893">Payagan ang mga site na hilingin sa user na magbigay ng access sa malapit na Bluetooth device</translation>
 <translation id="6770454900105963262">Mag-ulat ng impormasyon tungkol sa mga aktibong session ng kiosk</translation>
-<translation id="6773056206551814546">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyong magagamit para makilala ang mga machine, gaya ng pangalan ng machine at mga address ng network.
-
-      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukunin ang impormasyong magagamit sa pagkilala ng mga machine.
-      Kung nakatakda ang patakarang ito sa False, hindi kukunin ang impormasyong magagamit sa pagkilala ng mga machine.
-
-      May bisa lang ang patakarang ito kapag naka-enable ang Chrome Reporting Extension at Cloud Management.</translation>
 <translation id="6786747875388722282">Mga Extension</translation>
 <translation id="6786967369487349613">Itakda ang direktoryo ng roaming na profile</translation>
 <translation id="6810445994095397827">I-block ang JavaScript sa mga site na ito</translation>
@@ -2571,22 +2510,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7750991880413385988">Buksan ang Pahina ng Bagong Tab</translation>
 <translation id="7754704193130578113">Magtanong kung saan ise-save ang bawat file bago ang pagda-download</translation>
 <translation id="7761446981238915769">I-configure ang listahan ng mga naka-install na app sa screen ng pag-login</translation>
-<translation id="7761526206824804472">Nagtatakda ng isa o higit pang mga inirerekomendang lokal para sa isang pampublikong session, na nagbibigay-daan sa mga user na madaling pumili ng isa sa mga lokal na ito.
-
-      Makakapili ang user ng lokal at layout ng keyboard bago magsimula ng pampublikong session. Bilang default, nakalista ang lahat ng lokal na sinusuportahan ng <ph name="PRODUCT_OS_NAME" /> ayon sa pagkakasunud-sunod ng alpabeto. Magagamit mo ang patakarang ito upang maglipat ng hanay ng mga inirerekomendang lokal sa itaas ng listahan.
-
-      Kung hindi itatakda ang patakarang ito, paunang pipiliin ang kasalukuyang lokal ng UI.
-
-      Kung itatakda ang patakarang ito, ililipat ang mga inirerekomendang lokal sa itaas ng listahan at makikitang mahihiwalay sa lahat ng iba pang lokal. Ililista ang mga inirerekomendang lokal sa pagkakasunud-sunod ng mga ito sa paglabas sa patakaran. Paunang pipiliin ang unang inirerekomendang lokal.
-
-      Kung mayroong mahigit sa isang inirerekomendang lokal, ipinapalagay na gugustuhin ng mga user na pumili sa mga lokal na ito. Prominenteng iaalok ang pagpili ng lokal at layout ng keyboard kapag magsisimula ng pampublikong session. Kung hindi, ipinapalagay na gugustuhin ng karamihan ng mga user na gamitin ang paunang piniling lokal. Hindi gaanong prominenteng iaalok ang pagpili ng lokal at layout ng keyboard kapag magsisimula ng pampublikong session.
-
-      Kapag itinakda ang patakarang ito at na-enable ang awtomatikong pag-log in (tingnan ang mga patakarang |DeviceLocalAccountAutoLoginId| at |DeviceLocalAccountAutoLoginDelay|), gagamitin ng awtomatikong sinimulang pampublikong session ang unang inirerekomendang lokal at ang pinakasikat na layout ng keyboard na tumutugma sa lokal na ito.
-
-      Ang paunang piniling layout ng keyboard ang palaging magiging pinakasikat na layout na tumutugma sa paunang piniling lokal.
-
-      Maaari lang itakda ang patakarang ito tulad ng inirerekomenda. Magagamit mo ang patakarang ito upang maglipat ng hanay ng mga inirerekomendang lokal sa itaas, ngunit maaaring pumili anumang oras ang mga user ng anumang lokal na sinusuportahan ng <ph name="PRODUCT_OS_NAME" /> para sa kanilang session.
-      </translation>
 <translation id="7763479091692861127"> Ang mga uri ng koneksyon na pinapayagang gamitin para sa mga pag-update sa OS. Potensyal na nakakapagpabagal ng koneksyon ang mga pag-update sa OS dahil sa laki ng mga ito at maaari itong makaipon ng karagdagang gastusin. Samakatuwid, hindi naka-enable ang mga ito bilang default para sa mga uri ng koneksyon na itinuturing na mahal, na kinabibilangan ng WiMax, Bluetooth at Cellular sa ngayon.
 
       Ang mga kilalang identifier ng uri ng koneksyon ay "ethernet," "wifi," "wimax," "bluetooth" at "cellular."</translation>
@@ -3086,7 +3009,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
       TANDAAN: Hanggang sa bersyon 45, sinusuportahan lang ang patakarang ito sa Kiosk mode.</translation>
 <translation id="8970205333161758602">Pigilan ang turndown prompt sa <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="8971221018777092728">Timer ng awtomatikong pag-log in sa pampublikong session</translation>
 <translation id="8976248126101463034">Payagan ang pagpapatotoo ng gnubby para sa mga host ng malayuang pag-access</translation>
 <translation id="8976531594979650914">Gamitin ang Default na Printer ng System bilang Default</translation>
 <translation id="8992176907758534924">Huwag payagan ang anumang site na magpakita ng mga larawan</translation>
@@ -3175,9 +3097,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung nakatakda ang patakarang ito sa ClientCertificate (value 1), gagamitin ang pag-authenticate ng certificate ng kliyente para sa mga bagong naidagdag na user na nagla-log in sa pamamagitan ng SAML. Walang ginagamit na password para sa mga nasabing user, at pinoprotektahan ang kanilang naka-cache na lokal na data gamit ang mga kaukulang cryptographic key. Halimbawa, nagagamit ang setting na ito para ma-configure ang smart card batay sa pag-authenticate ng user (tandaang kailangang i-install ang mga smart card middleware app sa pamamagitan ng patakarang DeviceLoginScreenAppInstallList).
 
       Maaapektuhan lang ng patakarang ito ang mga user na nao-authenticate gamit ang SAML.</translation>
-<translation id="9211439035693857287">I-configure ang mga patakarang nauugnay sa Chrome Reporting Extension.
-
-      May bisa lang ang mga patakarang ito kapag naka-enable ang Chrome Reporting Extension at Cloud Management.</translation>
 <translation id="9213347477683611358">Nagko-configure ng larawan ng wallpaper sa device na ipinapakita sa screen ng pag-login kung wala pang naka-sign in na user sa device. Itinatakda ang patakaran sa pamamagitan ng pagtukoy sa URL kung saan maaaring i-download ng Chrome OS device ang larawan ng wallpaper at isang cryptographic hash na ginagamit upang i-verify ang integridad ng pag-download. Dapat ay nasa format na JPEG ang larawan, at hindi dapat lumampas ang laki ng file sa 16MB. Dapat ay naa-access ang URL nang walang anumang pag-authenticate. Na-download at na-cache ang larawan ng wallpaper. Ida-download itong muli sa tuwing magbabago ang URL o ang hash.
 
       Dapat ay tukuyin ang patakaran bilang isang string na nagpapakita ng URL at hash sa format na JSON, hal.,

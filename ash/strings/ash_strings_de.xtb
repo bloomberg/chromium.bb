@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
 <translation id="2761704814324807722">Statusleiste, Uhrzeit <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Verbindung zu <ph name="NAME" /> wird wiederhergestellt</translation>
+<translation id="2790844815106384441">Auswählen, ob Websites Standortdienste oder das Mikrofon, die Kamera oder andere Funktionen des Geräts verwenden dürfen</translation>
 <translation id="2792498699870441125">Alt+Suchtaste</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2808012452536866044">Better Together auf ein neues Smartphone umgestellt</translation>
@@ -129,7 +130,6 @@
 <translation id="2992931425024192067">Gesamten Benachrichtigungsinhalt anzeigen</translation>
 <translation id="2995447421581609334">Übertragungsgeräte anzeigen.</translation>
 <translation id="2996462380875591307">Angedockte Lupe aktiviert. Drücken Sie Strg + Suchtaste + D, um sie zu deaktivieren.</translation>
-<translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ist eine öffentliche Sitzung, die von <ph name="DOMAIN" /> verwaltet wird.</translation>
 <translation id="3000461861112256445">Mono-Audio</translation>
 <translation id="3009178788565917040">Ausgang</translation>
 <translation id="3019353588588144572">Verbleibende Zeit, bis der Akku vollständig geladen ist: <ph name="TIME_REMAINING" /></translation>
@@ -193,6 +193,7 @@
 <translation id="4200057768455216496">Sie haben die Tastenkombination für die angedockte Lupe gedrückt. Möchten Sie sie aktivieren?</translation>
 <translation id="4217571870635786043">Spracheingabe</translation>
 <translation id="4261870227682513959">Benachrichtigungseinstellungen anzeigen. Benachrichtigungen sind deaktiviert.</translation>
+<translation id="4269883910223712419">Der Administrator dieses Geräts kann Folgendes tun:</translation>
 <translation id="4274921305979314545">Sie können Ihr Chromebook mit Ihrem Smartphone verbinden</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> wird aktiviert</translation>
@@ -220,6 +221,7 @@
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="476166673298332917">Der Administrator dieses Geräts hat Zugriff auf sämtliche Aktivitäten, einschließlich Passwörtern und Kommunikation.</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">In Demositzungen ist Google Assistant nicht verfügbar.</translation>
 <translation id="479989351350248267">Suchen</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="4849058404725798627">Objekt mit Tastaturfokus hervorheben</translation>
@@ -335,6 +337,7 @@
 <translation id="6751826523481687655">Leistungsverfolgung ist aktiviert</translation>
 <translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE" /> % geladen und wird geladen.</translation>
 <translation id="6803622936009808957">Der Bildschirm konnte nicht gespiegelt werden, da die Auflösung nicht unterstützt wird. Stattdessen wurde der Modus für den erweiterten Desktop gestartet.</translation>
+<translation id="6814658242098378692">Apps, Erweiterungen und Designs verwalten</translation>
 <translation id="6820676911989879663">Zeit für eine Pause.</translation>
 <translation id="683971173229319003">Suche + L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktivieren</translation>
@@ -358,6 +361,7 @@
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
 <translation id="726276584504105859">Hierher ziehen, um den Bildschirm zu teilen</translation>
+<translation id="7303365578352795231">Antwort auf einem anderen Gerät.</translation>
 <translation id="7348093485538360975">Bildschirmtastatur</translation>
 <translation id="735745346212279324">VPN-Verbindung getrennt</translation>
 <translation id="7377169924702866686">Feststelltaste An</translation>
@@ -390,6 +394,7 @@
 <translation id="7842211907556571265">Verbindung zu <ph name="NETWORK_NAME" /> wird hergestellt</translation>
 <translation id="7842569679327885685">Achtung: Experimentelle Funktion</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="7886169021410746335">Datenschutzeinstellungen anpassen</translation>
 <translation id="7886277072580235377">Ihre Internetsitzung wird gelöscht, sobald Sie sich abmelden. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">E-Mails senden</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>

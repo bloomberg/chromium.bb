@@ -516,6 +516,7 @@
 <translation id="4408413947728134509">Pliki cookie (<ph name="NUM_COOKIES" />)</translation>
 <translation id="4415426530740016218">Adres odbioru</translation>
 <translation id="4424024547088906515">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w Chrome. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
+<translation id="4430369329743628066">Dodano zakładkę</translation>
 <translation id="4432688616882109544">Serwer <ph name="HOST_NAME" /> nie zaakceptował lub nie otrzymał Twojego certyfikatu logowania.</translation>
 <translation id="4434045419905280838">Pop-upy i przekierowania</translation>
 <translation id="443673843213245140">Korzystanie z serwera proxy jest wyłączone, ale podano konfigurację proxy.</translation>
@@ -780,7 +781,6 @@
 <translation id="6328786501058569169">Ta strona wprowadza w błąd</translation>
 <translation id="6337133576188860026">Zwolni się mniej niż <ph name="SIZE" />. Podczas następnej wizyty niektóre strony mogą ładować się wolniej.</translation>
 <translation id="6337534724793800597">Filtruj zasady według nazwy</translation>
-<translation id="6355080345576803305">Zastąpienie sesji publicznej</translation>
 <translation id="6358450015545214790">Co to oznacza?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 inna podpowiedź}few{# inne podpowiedzi}many{# innych podpowiedzi}other{# innej podpowiedzi}}</translation>
 <translation id="6387754724289022810">Aby następnym razem zapłacić szybciej, zapisz kartę i adres rozliczeniowy na swoim koncie Google i na tym urządzeniu.</translation>

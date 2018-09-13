@@ -888,7 +888,6 @@
 <translation id="230927227160767054">Ez az oldal szolgáltatáskezelőt akar telepíteni.</translation>
 <translation id="2309620859903500144">Ennél a webhelynél le van tiltva a hozzáférés a felhasználó mozgás- vagy fényérzékelőihez.</translation>
 <translation id="2315414688463285945">Hiba történt a Linux-fájlok konfigurálása során. Próbálja újra.</translation>
-<translation id="2315821125498993513">Nem sikerült kapcsolódni a telefonhoz. <ph name="LINK_BEGIN" />További információ<ph name="LINK_END" />.</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% kész</translation>
 <translation id="2318143611928805047">Papírméret</translation>
@@ -1225,7 +1224,6 @@
 <translation id="2806891468525657116">Ez a billentyűparancs már létezik</translation>
 <translation id="2807517655263062534">A letöltött fájlok itt jelennek meg</translation>
 <translation id="2809586584051668049">és <ph name="NUMBER_ADDITIONAL_DISABLED" /> további</translation>
-<translation id="281133045296806353">Új ablak jött létre a már futó böngésző-programfolyamatban.</translation>
 <translation id="2812944337881233323">Próbáljon meg kijelentkezni, majd újra bejelentkezni</translation>
 <translation id="2812989263793994277">Ne mutassa a képeket</translation>
 <translation id="2814489978934728345">Oldal betöltésének leállítása</translation>
@@ -3715,7 +3713,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6582421931165117398">Személyes adatainak védelme érdekében módosítsa jelszavát most. A jelszó módosításához a rendszer a bejelentkezését kéri.</translation>
 <translation id="6583851739559471707">Letiltva azokon a webhelyeken, amelyek jellemzően tolakodó hirdetéseket jelenítenek meg (ajánlott)</translation>
 <translation id="6584878029876017575">Microsoft élethosszig tartó aláírás</translation>
-<translation id="6585283250473596934">Belépés nyilvános munkafolyamatba.</translation>
 <translation id="6586451623538375658">Az elsődleges egérgomb cseréje</translation>
 <translation id="6589660129740381104">A szinkronizálással és személyre szabással kapcsolatos beállítások már közös vezérlőelem alatt találhatók meg, hogy <ph name="IDS_SHORT_PRODUCT_NAME" /> szolgáltatásunkban még könnyebben kezelhesse felhasználói élményét. Ha ezt bekapcsolja, módosíthatja aktuális beállításait.</translation>
 <translation id="6589706261477377614">Billentyűfényerő növelése</translation>
@@ -5146,7 +5143,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8755376271068075440">&amp;Nagyobb</translation>
 <translation id="8756969031206844760">Szeretné frissíteni a jelszót?</translation>
 <translation id="8757090071857742562">Nem lehet átküldeni az asztal tartalmát. Ellenőrizze, hogy megerősítette-e a képernyő megosztásának megkezdésére vonatkozó kérdést.</translation>
-<translation id="8757640015637159332">Nyilvános munkamenet megkezdése</translation>
 <translation id="8757742102600829832">Válasszon Chromebox eszközt a következőhöz való csatlakozáshoz:</translation>
 <translation id="8757803915342932642">A Google Cloud Devices szolgáltatásban elérhető eszköz</translation>
 <translation id="8758418656925882523">Diktálás (beszéddel írás) engedélyezése</translation>

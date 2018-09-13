@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo de la computadora no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="1151972924205500581">Contraseña obligatoria</translation>
 <translation id="1152921474424827756">Accede a una <ph name="BEGIN_LINK" />copia almacenada en caché<ph name="END_LINK" /> de <ph name="URL" />.</translation>
+<translation id="1156303062776767266">Estás viendo un archivo local o compartido</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> cerró la conexión de forma inesperada.</translation>
 <translation id="1161325031994447685">Volver a conectarte a Wi-Fi</translation>
 <translation id="1165039591588034296">Error</translation>
@@ -516,6 +517,7 @@
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Dirección de retiro</translation>
 <translation id="4424024547088906515">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; Chrome no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
+<translation id="4430369329743628066">Se agregó el marcador</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> no aceptó tu certificado de acceso o es posible que no se haya proporcionado.</translation>
 <translation id="4434045419905280838">Ventanas emergentes y redirec.</translation>
 <translation id="443673843213245140">Se inhabilitó el uso de un proxy, pero se especificó una configuración explícita de proxy.</translation>
@@ -535,6 +537,7 @@
 <translation id="4592951414987517459">Tu conexión a <ph name="DOMAIN" /> está encriptada con un conjunto de cifrado moderno.</translation>
 <translation id="4594403342090139922">&amp;Deshacer Eliminar</translation>
 <translation id="4619615317237390068">Pestañas de otros dispositivos</translation>
+<translation id="4646534391647090355">Ir ahora</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad contiene errores. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="4690462567478992370">Dejar de usar un certificado no válido</translation>
@@ -581,6 +584,7 @@
 <translation id="4958444002117714549">Mostrar lista</translation>
 <translation id="4974590756084640048">Volver a habilitar las advertencias</translation>
 <translation id="4988217478422488391">Permite realizar pagos de compras en línea más rápidamente</translation>
+<translation id="4989163558385430922">Ver todo</translation>
 <translation id="4989809363548539747">Este complemento no es compatible</translation>
 <translation id="5002932099480077015">Si se habilita esta opción, Chrome almacenará una copia de la tarjeta en el dispositivo para llenar más rápidamente los formularios.</translation>
 <translation id="5018422839182700155">No se puede abrir esta página</translation>
@@ -725,6 +729,7 @@
 <translation id="5922853866070715753">Ya casi</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="5951495562196540101">No se puede realizar la inscripción con una cuenta personal (licencia de paquete disponible).</translation>
+<translation id="5966151627327109289">Esta acción te hace salir de la mayoría de los sitios. Es posible que ya no puedas acceder al contenido protegido de <ph name="SITE" /> y otros sitios.</translation>
 <translation id="5967592137238574583">Editar la información de contacto</translation>
 <translation id="5967867314010545767">Eliminar del historial</translation>
 <translation id="5975083100439434680">Alejar</translation>
@@ -746,6 +751,7 @@
 <translation id="6071091556643036997">El tipo de política no es válido.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Esta tarjeta se guardará en tu cuenta de Google para que puedas confirmar compras en diferentes dispositivos de manera más rápida.}other{Estas tarjetas se guardarán en tu cuenta de Google para que puedas confirmar compras en diferentes dispositivos de manera más rápida.}}</translation>
 <translation id="6080696365213338172">Accediste al contenido mediante un certificado proporcionado por el administrador. Los datos que proporciones a <ph name="DOMAIN" /> pueden ser interceptados por tu administrador.</translation>
+<translation id="6096619198407627433">Esta acción te hace salir de la mayoría de los sitios. No saldrás de tu cuenta de Google. Es posible que ya no puedas acceder al contenido protegido de <ph name="SITE" /> y otros sitios.</translation>
 <translation id="610911394827799129">Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Ninguna}=1{1 contraseña (sincronizada)}other{# contraseñas (sincronizadas)}}</translation>
 <translation id="6146055958333702838">Revisa los cables y reinicia los routers, módems u otros dispositivos
@@ -776,7 +782,6 @@
 <translation id="6328786501058569169">Este sitio es engañoso</translation>
 <translation id="6337133576188860026">Esta acción libera menos de <ph name="SIZE" />. Es posible que algunos sitios se carguen más lento en tu próxima visita.</translation>
 <translation id="6337534724793800597">Filtrar políticas por nombre</translation>
-<translation id="6355080345576803305">Anulación de sesión pública</translation>
 <translation id="6358450015545214790">¿Qué significa esto?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 sugerencia más}other{# sugerencias más}}</translation>
 <translation id="6387754724289022810">Para realizar pagos de forma más rápida la próxima vez, guarda tu tarjeta y dirección de facturación en tu cuenta de Google y en este dispositivo.</translation>
@@ -817,6 +822,7 @@
 <translation id="6710594484020273272">&lt;Escribe el término de búsqueda&gt;</translation>
 <translation id="6711464428925977395">Hay un error en el servidor proxy o la dirección es incorrecta.</translation>
 <translation id="674375294223700098">Error de certificado de servidor desconocido.</translation>
+<translation id="6744009308914054259">Mientras esperas a que se restablezca la conexión, puedes visitar Descargas para leer artículos sin conexión.</translation>
 <translation id="6753269504797312559">Valor de la política</translation>
 <translation id="6757797048963528358">El dispositivo se suspendió.</translation>
 <translation id="6778737459546443941">Uno de tus padres aún no lo aprobó</translation>
@@ -914,6 +920,7 @@ Detalles adicionales:
 <translation id="7416351320495623771">Administrar contraseñas…</translation>
 <translation id="7419106976560586862">Ruta del perfil</translation>
 <translation id="7437289804838430631">Agregar información de contacto</translation>
+<translation id="7440140511386898319">Explorar sin conexión</translation>
 <translation id="7441627299479586546">Nombre de usuario o dominio de política incorrecto</translation>
 <translation id="7444046173054089907">Este sitio está bloqueado</translation>
 <translation id="7445762425076701745">La identidad del servidor al que estás conectado no se puede validar en su totalidad. Estás conectado a un servidor utilizando un nombre que sólo es válido dentro de tu red y cuya propiedad no puede validar una entidad externa de certificación. Debido a que algunas entidades emiten certificados aún para estos nombres, no hay manera de asegurar que estás conectado al sitio web que pretendías o a un atacante.</translation>

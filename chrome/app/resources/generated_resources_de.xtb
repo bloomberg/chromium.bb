@@ -247,6 +247,7 @@
 <translation id="1358741672408003399">Rechtschreibung und Grammatik</translation>
 <translation id="1361164813881551742">Manuell hinzufügen</translation>
 <translation id="1361655923249334273">Nicht verwendet</translation>
+<translation id="1361872463926621533">Ton beim Start abspielen</translation>
 <translation id="1363028406613469049">Titel</translation>
 <translation id="1367951781824006909">Datei auswählen</translation>
 <translation id="1368265273904755308">Problem melden</translation>
@@ -567,6 +568,7 @@
 <translation id="1817310072033858383">Smart Lock für <ph name="DEVICE_TYPE" /> einrichten</translation>
 <translation id="1817871734039893258">Microsoft-Dateiwiederherstellung</translation>
 <translation id="1818007989243628752">Passwort löschen für <ph name="USERNAME" /></translation>
+<translation id="1818913467757368489">Das Protokoll wird hochgeladen.</translation>
 <translation id="1819721979226826163">Tippen Sie auf "App-Benachrichtigungen" &gt; "Google Play-Dienste".</translation>
 <translation id="1826516787628120939">Überprüfung läuft</translation>
 <translation id="1828378091493947763">Dieses Plug-in wird auf diesem Gerät nicht unterstützt</translation>
@@ -615,11 +617,13 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">In Vollbildmodus öffnen</translation>
 <translation id="189358972401248634">Sonstige Sprachen</translation>
+<translation id="1894591787927543791">Karte speichern, um Google Pay zu nutzen</translation>
 <translation id="1895658205118569222">Herunterfahren</translation>
 <translation id="1895934970388272448">Bestätigen Sie nun zum Abschluss des Vorgangs die Registrierung auf Ihrem Drucker.</translation>
 <translation id="1897762215429052132">Netzwerkverbindung, Sprache und Tastaturlayout einrichten</translation>
 <translation id="1901303067676059328">&amp;Alles auswählen</translation>
 <translation id="1902576642799138955">Gültigkeitsdauer</translation>
+<translation id="1904518222538904133">Eine Ihrer Karten kann nur auf diesem Gerät verwendet werden</translation>
 <translation id="1905375423839394163">Name des Chromebooks</translation>
 <translation id="1905710495812624430">Die maximal zulässige Anzahl an Versuchen wurde überschritten.</translation>
 <translation id="1909880997794698664">Möchten Sie das Gerät wirklich dauerhaft im Kioskmodus betreiben?</translation>
@@ -656,6 +660,7 @@
 <translation id="1962969542251276847">Gesperrter Bildschirm</translation>
 <translation id="1963227389609234879">Alle entfernen</translation>
 <translation id="1965624977906726414">Erfordert keine besonderen Berechtigungen</translation>
+<translation id="1969654639948595766">WebRTC-Textprotokolle (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1970368523891847084">Videomodus aktiviert</translation>
 <translation id="197288927597451399">Behalten</translation>
 <translation id="1974043046396539880">CRL-Verteilungspunkte</translation>
@@ -799,6 +804,7 @@
 <translation id="2190069059097339078">WLAN-Anmeldedaten-Abruf</translation>
 <translation id="219008588003277019">Natives Client-Modul: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(leer)</translation>
+<translation id="2191223688506386601">Noch eine Sache</translation>
 <translation id="2192505247865591433">von</translation>
 <translation id="2193365732679659387">Vertrauenseinstellungen</translation>
 <translation id="2195729137168608510">E-Mail-Schutz</translation>
@@ -879,7 +885,6 @@
 <translation id="230927227160767054">Diese Seite möchte einen Service-Handler installieren.</translation>
 <translation id="2309620859903500144">Diese Website darf nicht auf meine Bewegungs- oder Lichtsensoren zugreifen.</translation>
 <translation id="2315414688463285945">Fehler beim Konfigurieren von Linux-Dateien. Bitte versuchen Sie es noch einmal.</translation>
-<translation id="2315821125498993513">Keine Verbindung zum Smartphone möglich. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" /> % abgeschlossen</translation>
 <translation id="2318143611928805047">Papierformat</translation>
@@ -1022,6 +1027,7 @@
 <translation id="2534460670861217804">Sicherer HTTP-Proxy</translation>
 <translation id="253557089021624350">Keepalive-Zahl</translation>
 <translation id="2538361623464451692">Synchronisierung deaktiviert</translation>
+<translation id="2539876824180063438">Bewegen Sie den Zeigefinger leicht hin und her, damit Ihr Fingerabdruck komplett erfasst werden kann.</translation>
 <translation id="2541002089857695151">Vollbildstreaming optimieren?</translation>
 <translation id="2542049655219295786">Google-Tabelle</translation>
 <translation id="2544853746127077729">Ablehnung des Authentifizierungszertifikats durch das Netzwerk</translation>
@@ -1213,7 +1219,6 @@
 <translation id="2806891468525657116">Verknüpfung ist bereits vorhanden</translation>
 <translation id="2807517655263062534">Hier werden heruntergeladene Dateien angezeigt</translation>
 <translation id="2809586584051668049">und <ph name="NUMBER_ADDITIONAL_DISABLED" /> weitere</translation>
-<translation id="281133045296806353">Neues Fenster in aktueller Browsersitzung erstellt.</translation>
 <translation id="2812944337881233323">Melden Sie sich ab und dann wieder an</translation>
 <translation id="2812989263793994277">Keine Bilder anzeigen</translation>
 <translation id="2814489978934728345">Seite nicht weiter laden</translation>
@@ -1254,7 +1259,9 @@
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> hinzufügen...</translation>
 <translation id="2874343608108773609">Wenn Sie Ihre Passwörter auf allen Geräten verfügbar haben möchten, melden Sie sich in Chrome an.</translation>
 <translation id="2875698561019555027">(Chrome-Fehlerseiten)</translation>
+<translation id="2876336351874743617">Finger 2</translation>
 <translation id="288042212351694283">Auf Ihre Universal 2nd Factor-Geräte zugreifen</translation>
+<translation id="2881076733170862447">Wenn die Erweiterung angeklickt wird</translation>
 <translation id="2881966438216424900">Letzter Zugriff am:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> wird in wenigen Augenblicken neu gestartet und zurückgesetzt.</translation>
 <translation id="2885378588091291677">Task-Manager</translation>
@@ -1440,6 +1447,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3154429428035006212">Seit über einem Monat offline</translation>
 <translation id="3156531245809797194">Melden Sie sich bitte an, wenn Sie Chrome verwenden möchten</translation>
 <translation id="3157931365184549694">Wiederherstellen</translation>
+<translation id="3158033540161634471">Fingerabdruck einrichten</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (hardwaregestützt)</translation>
 <translation id="316125635462764134">App entfernen</translation>
 <translation id="3161522574479303604">Alle Sprachen</translation>
@@ -1511,6 +1519,8 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3289856944988573801">Verwenden Sie Ethernet oder WLAN zur Suche nach Updates.</translation>
 <translation id="32939749466444286">Der Linux-Container konnte nicht gestartet werden. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="3294437725009624529">Gast</translation>
+<translation id="329703603001918157">Verknüpfung kann nicht bearbeitet werden</translation>
+<translation id="3297951628821704004">Konto von diesem Gerät entfernen</translation>
 <translation id="329838636886466101">Reparieren</translation>
 <translation id="3298789223962368867">Die eingegebene URL ist ungültig.</translation>
 <translation id="32991397311664836">Geräte:</translation>
@@ -1677,6 +1687,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3534879087479077042">Was ist ein betreuter Nutzer?</translation>
 <translation id="3538066758857505094">Fehler beim Deinstallieren von Linux. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="354060433403403521">Netzteil</translation>
+<translation id="354068948465830244">Kann Websitedaten lesen und ändern</translation>
 <translation id="3541661933757219855">Drücken Sie zum Ausblenden "Strg+Alt+/" oder "Esc"</translation>
 <translation id="3543393733900874979">Fehler bei der Aktualisierung (Fehler: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="3543597750097719865">X9.62-ECDSA-Signatur mit SHA-512</translation>
@@ -1722,6 +1733,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3606712892509067288">Aus Better Together entfernen</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">Vorschau für Nutzerbild</translation>
+<translation id="3609446736023031597">Die neuesten Updates und Empfehlungen zu Play Store-Apps erhalten</translation>
 <translation id="3609785682760573515">Synchronisieren...</translation>
 <translation id="3609895557594655134">Android-VPN hinzufügen...</translation>
 <translation id="361106536627977100">Flash-Daten</translation>
@@ -1754,6 +1766,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3645372836428131288">Bewegen Sie Ihren Finger etwas, um einen anderen Teil des Fingerabdrucks zu erfassen.</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> erkannt</translation>
 <translation id="3649138363871392317">Das Foto wurde aufgenommen.</translation>
+<translation id="3650845953328929506">Protokoll-Upload steht aus.</translation>
 <translation id="3650952250015018111">"<ph name="APP_NAME" />" Zugriff erlauben auf:</translation>
 <translation id="3651488188562686558">Die WLAN-Verbindung trennen</translation>
 <translation id="3652817283076144888">Initialisierung läuft</translation>
@@ -1905,6 +1918,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3856800405688283469">Zeitzone auswählen</translation>
 <translation id="3857228364945137633">Mit Smart Lock können Sie Ihr <ph name="DEVICE_TYPE" /> ohne Passwort entsperren, wenn Ihr Smartphone in der Nähe ist.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
+<translation id="3857807444929313943">Anheben und erneut berühren</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Synchronisierung pausiert</translation>
 <translation id="3860381078714302691">Willkommen bei Hangouts Meet</translation>
 <translation id="3861241522664181545">Seite pausiert.</translation>
@@ -1923,6 +1937,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3873315167136380065">Wenn Sie diese Funktion aktivieren möchten, müssen Sie die <ph name="BEGIN_LINK" />Synchronisierung zurücksetzen<ph name="END_LINK" />, um die Synchronisierungspassphrase zu entfernen</translation>
 <translation id="3878840326289104869">Betreuter Nutzer wird erstellt...</translation>
 <translation id="3879748587602334249">Download-Manager</translation>
+<translation id="3885455691202481064">Berühren Sie den Sensor oben links auf dem Chromebook mit Ihrem Zeigefinger.</translation>
 <translation id="3888550877729210209">Notizerstellung mit <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">OpenVPN/L2TP hinzufügen…</translation>
 <translation id="3893536212201235195">Einstellungen für Eingabehilfen lesen und ändern</translation>
@@ -1975,6 +1990,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="3950820424414687140">Anmelden</translation>
 <translation id="3954354850384043518">Wird heruntergeladen</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hertz)</translation>
+<translation id="3954953195017194676">Es sind keine kürzlich erfassten WebRTC-Ereignisprotokolle vorhanden.</translation>
 <translation id="3955193568934677022">Wiedergabe geschützter Inhalte auf Websites zulassen (empfohlen)</translation>
 <translation id="3956702100721821638">Keine Verbindung zu Google Play</translation>
 <translation id="3958088479270651626">Lesezeichen und Einstellungen importieren</translation>
@@ -2228,6 +2244,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">&amp;Hilfe</translation>
 <translation id="4409697491990005945">Ränder</translation>
+<translation id="4410545552906060960">Anstelle eines Passworts können Sie eine Nummer (PIN) zum Entsperren Ihres Geräts verwenden. Die PIN kann später unter "Einstellungen" festgelegt werden.</translation>
 <translation id="4411578466613447185">Code-Signaturgeber</translation>
 <translation id="4412698727486357573">Hilfe</translation>
 <translation id="44141919652824029">"<ph name="APP_NAME" />" erlauben, die Liste der angeschlossenen USB-Geräte abzurufen?</translation>
@@ -2319,8 +2336,10 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4555769855065597957">Schatten</translation>
 <translation id="4556110439722119938">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie sie auf allen Ihren Geräten nutzen können.</translation>
 <translation id="4558426062282641716">Berechtigung zum automatischen Start angefordert</translation>
+<translation id="4558491878126948419">Sie erhalten Tipps zu <ph name="DEVICE_TYPE" /> sowie Updates zu Google-Produkten und können uns Feedback geben. Die Abbestellung ist jederzeit möglich.</translation>
 <translation id="4559617833001311418">Diese Website greift auf meine Bewegungs- oder Lichtsensoren zu.</translation>
 <translation id="4562155214028662640">Fingerabdruck hinzufügen</translation>
+<translation id="4563880231729913339">Finger 3</translation>
 <translation id="4565377596337484307">Passwort ausblenden</translation>
 <translation id="4567772783389002344">Wort hinzufügen</translation>
 <translation id="4568213207643490790">Google-Konten sind auf diesem Gerät nicht zugelassen.</translation>
@@ -2395,6 +2414,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4681930562518940301">&amp;Original in neuem Tab öffnen</translation>
 <translation id="4682551433947286597">Hintergründe werden auf dem Anmeldebildschirm angezeigt.</translation>
 <translation id="4684427112815847243">Alles synchronisieren</translation>
+<translation id="4688036121858134881">Lokale Protokoll-ID: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />.</translation>
 <translation id="4689235506267737042">Einstellungen für den Demomodus auswählen</translation>
 <translation id="4689421377817139245">Lesezeichen mit meinem iPhone synchronisieren</translation>
 <translation id="4690091457710545971">&lt;Vier Dateien wurden von der Intel-WLAN-Firmware erstellt: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Bei den ersten drei handelt es sich um Binärdateien mit Registrierungsabbildern, für die Intel angibt, dass sie keine personenbezogenen oder zur Geräteidentifikation nutzbaren Informationen enthält. Die letzte Datei ist eine Ablaufverfolgungsdatei von der Intel-Firmware, aus der alle personenbezogenen oder zur Geräteidentifikation nutzbaren Informationen entfernt wurden. Sie ist allerdings zu groß, um hier angezeigt zu werden. Diese Dateien wurden wegen WLAN-Problemen auf Ihrem Gerät erstellt, die kürzlich aufgetreten sind. Sie werden zur Fehlerbehebung an Intel weitergegeben.&gt;</translation>
@@ -2579,6 +2599,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4945444280533270988">Smart Lock ist an</translation>
 <translation id="4953689047182316270">Auf Bedienungshilfen reagieren</translation>
 <translation id="4953808748584563296">Orangefarbener Standardavatar</translation>
+<translation id="4955710816792587366">PIN wählen</translation>
 <translation id="4955814292505481804">Jährlich</translation>
 <translation id="4957949153200969297">Nur Funktionen aktivieren, die zur <ph name="IDS_SHORT_PRODUCT_NAME" />-Synchronisierung gehören</translation>
 <translation id="4959262764292427323">Passwörter werden in Ihrem Google-Konto gespeichert, sodass Sie sie auf jedem Gerät verwenden können</translation>
@@ -2644,6 +2665,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5050042263972837708">Gruppenname</translation>
 <translation id="5052499409147950210">Website bearbeiten</translation>
 <translation id="5053604404986157245">Das nach dem Zufallsprinzip erzeugte TPM-Passwort ist nicht verfügbar. Dies ist nach einem Powerwash normal.</translation>
+<translation id="5057110919553308744">Wenn die Erweiterung angeklickt wird</translation>
 <translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{Dieser Ordner enthält ein Lesezeichen. Möchten Sie ihn wirklich löschen?}other{Dieser Ordner enthält # Lesezeichen. Möchten Sie ihn wirklich löschen?}}</translation>
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5062930723426326933">Fehler bei der Anmeldung. Bitte stellen Sie eine Internetverbindung her und versuchen Sie es erneut.</translation>
@@ -2819,6 +2841,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5315873049536339193">Identität</translation>
 <translation id="5316716239522500219">Monitore spiegeln</translation>
 <translation id="5317780077021120954">Speichern</translation>
+<translation id="5318819489018851358">Mit Linux teilen</translation>
 <translation id="5319359161174645648">Google empfiehlt Chrome</translation>
 <translation id="5319566035256672173">Für dieses Gerät werden keine Softwareupdates mehr bereitgestellt. Wir empfehlen ein Upgrade auf ein neueres Gerät.</translation>
 <translation id="532247166573571973">Der Server ist eventuell nicht erreichbar. Versuchen Sie es später noch einmal.</translation>
@@ -3159,6 +3182,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5804241973901381774">Berechtigungen</translation>
 <translation id="580571955903695899">Neu sortieren nach Titel</translation>
 <translation id="5807290661599647102">Displaysperre einrichten</translation>
+<translation id="5811750797187914944">Fertig</translation>
 <translation id="5814126672212206791">Verbindungstyp</translation>
 <translation id="5815645614496570556">X.400-Adresse</translation>
 <translation id="5816434091619127343">Die angeforderten Änderungen würden den Drucker unbrauchbar machen.</translation>
@@ -3196,6 +3220,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5855773610748894548">Hoppla! Fehler mit dem Sicherheitsmodul.</translation>
 <translation id="5856721540245522153">Debugging-Funktionen aktivieren</translation>
 <translation id="5857090052475505287">Neuer Ordner</translation>
+<translation id="5858490737742085133">Terminal</translation>
 <translation id="585979798156957858">Externe Metataste</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5860209693144823476">Tab 3</translation>
@@ -3218,6 +3243,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5882919346125742463">Bekannte Netzwerke</translation>
 <translation id="5884474295213649357">Dieser Tab ist mit einem USB-Gerät verbunden.</translation>
 <translation id="5885324376209859881">Medieneinstellungen verwalten...</translation>
+<translation id="5886009770935151472">Finger 1</translation>
 <translation id="5889282057229379085">Maximal zulässige Anzahl an Zwischenzertifizierungsstellen: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">Neu starten</translation>
 <translation id="5895187275912066135">Ausgestellt am</translation>
@@ -3302,6 +3328,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6025215716629925253">Stacktrace</translation>
 <translation id="6026047032548434446">App installieren?</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB-Gerät verbunden</translation>
+<translation id="6028117231645531007">Fingerabdruck hinzufügen</translation>
 <translation id="6029027682598229313">Die Linux-Installation ist abgeschlossen.</translation>
 <translation id="6029587122245504742">Langsamste</translation>
 <translation id="6032912588568283682">Dateisystem</translation>
@@ -3316,6 +3343,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> teilt einen Chrome-Tab mit <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> teilt einen Chrome-Tab und Audio mit <ph name="TAB_NAME" />.</translation>
+<translation id="6047938872139769630">PIN zum Entsperren Ihres Geräts verwenden, wenn Sie abgemeldet sind</translation>
 <translation id="6049004884579590341">|<ph name="ACCELERATOR" />| gedrückt halten, um den Vollbildmodus zu beenden</translation>
 <translation id="6049065490165456785">Foto von interner Kamera</translation>
 <translation id="6051354611314852653">Hoppla! Das System konnte das Gerät nicht für den API-Zugriff autorisieren.</translation>
@@ -3338,6 +3366,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6075907793831890935">Daten mit dem Gerät mit dem Namen "<ph name="HOSTNAME" />" austauschen</translation>
 <translation id="6076448957780543068">Diesen Screenshot einfügen</translation>
 <translation id="6077131872140550515">Von bevorzugten Netzwerken entfernen</translation>
+<translation id="6077189836672154517">Tipps und Updates für <ph name="DEVICE_TYPE" /></translation>
 <translation id="6078323886959318429">Tastenkombination hinzufügen</translation>
 <translation id="6078752646384677957">Überprüfen Sie Ihr Mikrofon und die Audio-Lautstärke.</translation>
 <translation id="6080515710685820702">Sie teilen sich einen Computer? Dann können Sie ganz einfach ein Inkognitofenster nutzen.</translation>
@@ -3387,6 +3416,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6144938890088808325">Bei der Verbesserung von Chromebooks helfen</translation>
 <translation id="6146563240635539929">Videos</translation>
 <translation id="6147020289383635445">Druckvorschau fehlgeschlagen</translation>
+<translation id="6148052338549899048">Keine geeigneten Geräte vorhanden. <ph name="LINK_BEGIN" />Weitere Informationen.<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Versuchen Sie Folgendes:</translation>
 <translation id="6150853954427645995">Wenn Sie diese Datei zur Offline-Nutzung speichern möchten, gehen Sie online, klicken Sie mit der rechten Maustaste auf die Datei und wählen Sie die Option "<ph name="OFFLINE_CHECKBOX_NAME" />" aus.</translation>
 <translation id="6151323131516309312">Drücken Sie <ph name="SEARCH_KEY" />, um <ph name="SITE_NAME" /> zu durchsuchen.</translation>
@@ -3406,6 +3436,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6169040057125497443">Überprüfen Sie Ihr Mikrofon.</translation>
 <translation id="6169666352732958425">Der Desktop kann nicht übertragen werden</translation>
 <translation id="6171948306033499786">Druckvorgang pausieren</translation>
+<translation id="6173623053897475761">PIN noch einmal eingeben</translation>
 <translation id="6175314957787328458">Microsoft-Domain-GUID</translation>
 <translation id="6176043333338857209">Bluetooth wird vorübergehend aktiviert, damit eine Kommunikation mit dem Sicherheitsschlüssel möglich ist</translation>
 <translation id="6178664161104547336">Zertifikat auswählen</translation>
@@ -3595,11 +3626,13 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6456394469623773452">In Ordnung</translation>
 <translation id="6456631036739229488">Das Smartphone für Smart Lock wurde geändert. Geben Sie Ihr Passwort ein, um Smart Lock zu aktualisieren. Das nächste Mal wird Ihr <ph name="DEVICE_TYPE" /> von Ihrem Smartphone entsperrt. Sie können Smart Lock bei Bedarf jederzeit in den Einstellungen deaktivieren.</translation>
 <translation id="645705751491738698">JavaScript weiterhin blockieren</translation>
+<translation id="6458701200018867744">Upload fehlgeschlagen (<ph name="WEBRTC_LOG_UPLOAD_TIME" />).</translation>
 <translation id="6459488832681039634">Auswahl suchen</translation>
 <translation id="6459799433792303855">Aktives Fenster auf anderen Bildschirm verschoben.</translation>
 <translation id="6460601847208524483">Nächste Übereinstimmung suchen</translation>
 <translation id="6463795194797719782">B&amp;earbeiten</translation>
 <translation id="6466988389784393586">&amp;Alle Lesezeichen öffnen</translation>
+<translation id="6467304607960172345">Vollbildvideos optimieren</translation>
 <translation id="6468485451923838994">Schriftarten</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6472893788822429178">Schaltfläche "Startseite" anzeigen</translation>
@@ -3674,7 +3707,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6582421931165117398">Ändern Sie jetzt Ihr Passwort, um Ihre persönlichen Informationen zu schützen. Bevor Sie Ihr Passwort ändern können, werden Sie aufgefordert, sich anzumelden.</translation>
 <translation id="6583851739559471707">Auf Websites blockiert, die für gewöhnlich aufdringliche Werbung anzeigen (empfohlen)</translation>
 <translation id="6584878029876017575">Microsoft-Lebensdauersignatur</translation>
-<translation id="6585283250473596934">Öffentliche Sitzung wird gestartet.</translation>
 <translation id="6586451623538375658">Primäre Maustaste tauschen</translation>
 <translation id="6589660129740381104">Zur einfacheren Anpassung von <ph name="IDS_SHORT_PRODUCT_NAME" /> auf die eigenen Vorlieben sind Funktionen zur Synchronisierung und Personalisierung jetzt über ein einzelnes Steuerelement verfügbar. Wenn Sie dieses aktivieren, können sich Ihre aktuellen Einstellungen ändern.</translation>
 <translation id="6589706261477377614">Tastenhelligkeit erhöhen</translation>
@@ -3775,6 +3807,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6725206449694821596">Internet Printing Protocol (IPP)</translation>
 <translation id="6727005317916125192">Vorheriger Bereich</translation>
 <translation id="6732801395666424405">Zertifikate nicht geladen</translation>
+<translation id="6732900235521116609">Verknüpfung kann nicht entfernt werden</translation>
 <translation id="6735304988756581115">Cookies und andere Websitedaten anzeigen...</translation>
 <translation id="6736045498964449756">Die Passwörter stimmen nicht überein.</translation>
 <translation id="6736243959894955139">Adresse</translation>
@@ -3858,6 +3891,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6860427144121307915">In Tab öffnen</translation>
 <translation id="6862635236584086457">Alle in diesem Ordner gespeicherten Dateien werden automatisch online gesichert.</translation>
 <translation id="6865313869410766144">AutoFill-Formulardaten</translation>
+<translation id="6865708901122695652">WebRTC-Ereignisprotokolle (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">Farbtemperatur</translation>
 <translation id="6870888490422746447">App wählen, um sie zu teilen über:</translation>
 <translation id="6871644448911473373">OCSP-Antwortdienst: <ph name="LOCATION" /></translation>
@@ -3902,6 +3936,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="694592694773692225">Weiterleitung auf dieser Seite blockiert.</translation>
 <translation id="6949306908218145636">Offene Seiten als Lesezeichen speichern...</translation>
 <translation id="6950627417367801484">Apps wiederherstellen</translation>
+<translation id="6950943362443484797">Die App wird installiert</translation>
 <translation id="6951153907720526401">Zahlungs-Handler</translation>
 <translation id="6955446738988643816">Pop-up prüfen</translation>
 <translation id="6957231940976260713">Name des Dienstes</translation>
@@ -3937,6 +3972,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> Ordner ausgewählt</translation>
 <translation id="6998793565256476099">Gerät für Videokonferenzen registrieren</translation>
 <translation id="7000347579424117903">Strg, Alt oder Suchtaste integrieren</translation>
+<translation id="700203306553508933">Karten speichern, um Google Pay zu nutzen</translation>
 <translation id="7002055706763150362">Zum Einrichten von Smart Lock für Chromebooks müssen wir Sie authentifizieren. Geben Sie bitte Ihr Passwort ein.</translation>
 <translation id="7002454948392136538">Manager für diesen betreuten Nutzer auswählen</translation>
 <translation id="7003339318920871147">Web-Datenbanken</translation>
@@ -3984,6 +4020,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="706626672220389329">Fehler beim Bereitstellen der Freigabe. Die angegebene Freigabe ist schon bereitgestellt.</translation>
 <translation id="7066944511817949584">Es konnte keine Verbindung mit "<ph name="DEVICE_NAME" />" hergestellt werden.</translation>
 <translation id="7067725467529581407">Nicht mehr anzeigen.</translation>
+<translation id="7070484045139057854">Kann Websitedaten lesen und ändern</translation>
 <translation id="7072010813301522126">Verknüpfungsname</translation>
 <translation id="707392107419594760">Tastatur auswählen:</translation>
 <translation id="7075513071073410194">PKCS #1 MD5 mit RSA-Verschlüsselung</translation>
@@ -4113,6 +4150,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7256710573727326513">In Tab öffnen</translation>
 <translation id="725758059478686223">Druckdienst</translation>
 <translation id="7257666756905341374">Daten lesen, die Sie kopieren und einfügen</translation>
+<translation id="7258697411818564379">PIN wurde hinzugefügt</translation>
 <translation id="7260764918845374269">Damit Ihr Sicherheitsschlüssel angezeigt werden kann, muss er sich im Kopplungsmodus befinden. Halten Sie die Taste auf Ihrem Sicherheitsschlüssel mindestens fünf Sekunden lang gedrückt.</translation>
 <translation id="7262004276116528033">Dieser Anmeldedienst wird von <ph name="SAML_DOMAIN" /> gehostet.</translation>
 <translation id="7268365133021434339">Tabs schließen</translation>
@@ -4260,6 +4298,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Haben Sie Ihr altes Passwort vergessen?</translation>
 <translation id="7497215489070763236">CA-Serverzertifikat</translation>
+<translation id="7497981768003291373">Es sind keine kürzlich erfassten WebRTC-Textprotokolle vorhanden.</translation>
 <translation id="7502658306369382406">IPv6-Adresse</translation>
 <translation id="7503191893372251637">Netscape-Zertifikatstyp</translation>
 <translation id="7503821294401948377">Symbol "<ph name="ICON" />" konnte nicht für Browseraktion geladen werden.</translation>
@@ -4302,6 +4341,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7564847347806291057">Prozess beenden</translation>
 <translation id="7566118625369982896">Play-App-Links verwalten</translation>
 <translation id="7566723889363720618">F12</translation>
+<translation id="7567772679638539078">Finger positionieren</translation>
 <translation id="756809126120519699">Gelöschte Chrome-Daten</translation>
 <translation id="7568790562536448087">Aktualisierung läuft</translation>
 <translation id="7571643774869182231">Nicht genug Speicherplatz, um Update auszuführen</translation>
@@ -4464,6 +4504,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
     <ph name="LINE_BREAK2" />
     Wählen Sie weniger Fotos aus.</translation>
 <translation id="782590969421016895">Aktuelle Seiten verwenden</translation>
+<translation id="7826346148677309647">Im Play Store finden Sie weitere Apps für Ihr Gerät.</translation>
 <translation id="7826790948326204519"><ph name="BEGIN_H3" />Funktionen zur Fehlerbehebung<ph name="END_H3" />
     <ph name="BR" />
     Sie können die Funktionen zur Fehlerbehebung auf Ihrem Chrome OS-Gerät aktivieren, um benutzerdefinierten Code auf Ihrem Gerät zu installieren und zu testen. Dadurch können Sie<ph name="BR" />
@@ -4660,6 +4701,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8059417245945632445">&amp;Geräte untersuchen</translation>
 <translation id="8063235345342641131">Grüner Standardavatar</translation>
 <translation id="8064671687106936412">Schlüssel:</translation>
+<translation id="8065485338434000013">Einige Ihrer Karten können nur auf diesem Gerät verwendet werden</translation>
 <translation id="806812017500012252">Neu sortieren nach Titel</translation>
 <translation id="8068253693380742035">Zum Anmelden tippen</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
@@ -4737,6 +4779,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8191453843330043793">V8-Proxy-Resolver</translation>
 <translation id="8193175696669055101">Gerätemodell</translation>
 <translation id="8195027750202970175">Dateigröße</translation>
+<translation id="8198323535106903877"><ph name="NUMBER_OF_APPS" /> Apps werden installiert</translation>
 <translation id="8199300056570174101">Netzwerk(dienst) und Geräteeigenschaften</translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
 <translation id="8202160505685531999">Geben Sie Ihr Passwort erneut ein, um Ihr <ph name="DEVICE_TYPE" />-Profil zu aktualisieren.</translation>
@@ -5069,6 +5112,8 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8716931980467311658">Alle Linux-Anwendungen und Daten im Ordner "Linux-Dateien" von diesem <ph name="DEVICE_TYPE" /> löschen?</translation>
 <translation id="8719653885894320876">Fehler beim Download von <ph name="PLUGIN_NAME" /></translation>
 <translation id="8723829621484579639">Inkognito-Subframes für: <ph name="PARENT_SITE" /></translation>
+<translation id="8724405322205516354">Wenn Sie dieses Symbol sehen, können Sie Ihren Fingerabdruck zur Identifizierung oder zur Autorisierung eines Kaufs verwenden.</translation>
+<translation id="8724409975248965964">Fingerabdruck hinzugefügt</translation>
 <translation id="8724859055372736596">&amp;In Ordner anzeigen</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8725178340343806893">Favoriten/Lesezeichen</translation>
@@ -5093,7 +5138,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8755376271068075440">&amp;Größer</translation>
 <translation id="8756969031206844760">Passwort aktualisieren?</translation>
 <translation id="8757090071857742562">Der Desktop kann nicht gestreamt werden. Überprüfen Sie, ob Sie die Aufforderung zum Teilen Ihres Bildschirms bestätigt haben.</translation>
-<translation id="8757640015637159332">Öffentliche Sitzung beginnen</translation>
 <translation id="8757742102600829832">Wählen Sie eine Chromebox für die Verbindung aus.</translation>
 <translation id="8757803915342932642">Gerät in Google Cloud Devices</translation>
 <translation id="8758418656925882523">Diktierfunktion aktivieren (zum Tippen sprechen)</translation>
@@ -5149,6 +5193,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Bild mit Anmerkung versehen</translation>
 <translation id="8845001906332463065">Hilfe aufrufen</translation>
+<translation id="8846132060409673887">Hersteller und Modell dieses Computers auslesen</translation>
 <translation id="8846141544112579928">Suche nach Tastatur läuft...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8859057652521303089">Sprache auswählen:</translation>
@@ -5363,6 +5408,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9161070040817969420">Subframes für: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">Systemdaten senden. Das Gerät sendet automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Diese Einstellung wird durch den Eigentümer erzwungen. Wenn Sie zusätzliche Web- &amp; App-Aktivitäten aktiviert haben, werden diese Informationen in Ihrem Konto gespeichert, damit Sie sie unter "Meine Aktivitäten" verwalten können. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">Bild-in-Bild</translation>
+<translation id="9168436347345867845">Später</translation>
 <translation id="9169496697824289689">Tastenkombinationen ansehen</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" /> zum Startbildschirm hinzufügen</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>

@@ -516,6 +516,7 @@
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Pickup Address</translation>
 <translation id="4424024547088906515">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
+<translation id="4430369329743628066">Bookmark added</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> didn’t accept your login certificate, or one may not have been provided.</translation>
 <translation id="4434045419905280838">Pop-ups and redirects</translation>
 <translation id="443673843213245140">Use of a proxy is disabled but an explicit proxy configuration is specified.</translation>
@@ -780,7 +781,6 @@
 <translation id="6328786501058569169">This site is deceptive</translation>
 <translation id="6337133576188860026">Frees up less than <ph name="SIZE" />. Some sites may load more slowly on your next visit.</translation>
 <translation id="6337534724793800597">Filter policies by name</translation>
-<translation id="6355080345576803305">Public session override</translation>
 <translation id="6358450015545214790">What do these mean?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 other suggestion}other{# other suggestions}}</translation>
 <translation id="6387754724289022810">To pay faster next time, save your card and billing address to your Google Account and to this device.</translation>
