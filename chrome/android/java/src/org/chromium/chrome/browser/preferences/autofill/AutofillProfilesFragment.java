@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.MainPreferences;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 
@@ -29,9 +30,6 @@ public class AutofillProfilesFragment
         extends PreferenceFragment implements PersonalDataManager.PersonalDataManagerObserver {
     private static EditorObserverForTest sObserverForTest;
     static final String PREF_NEW_PROFILE = "new_profile";
-
-    private static final String PREF_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL =
-            "autofill_enable_profiles_toggle_label";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,13 +56,24 @@ public class AutofillProfilesFragment
         ChromeSwitchPreference autofillSwitch = new ChromeSwitchPreference(getActivity(), null);
         autofillSwitch.setTitle(R.string.autofill_enable_profiles_toggle_label);
         autofillSwitch.setSummary(R.string.autofill_enable_profiles_toggle_sublabel);
-        autofillSwitch.setKey(PREF_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL); // For testing.
         autofillSwitch.setChecked(PersonalDataManager.isAutofillProfileEnabled());
         autofillSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 PersonalDataManager.setAutofillProfileEnabled((boolean) newValue);
                 return true;
+            }
+        });
+        autofillSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+            @Override
+            public boolean isPreferenceControlledByPolicy(Preference preference) {
+                return PersonalDataManager.isAutofillProfileManaged();
+            }
+
+            @Override
+            public boolean isPreferenceClickDisabledByPolicy(Preference preference) {
+                return PersonalDataManager.isAutofillProfileManaged()
+                        && !PersonalDataManager.isAutofillProfileEnabled();
             }
         });
         getPreferenceScreen().addPreference(autofillSwitch);
