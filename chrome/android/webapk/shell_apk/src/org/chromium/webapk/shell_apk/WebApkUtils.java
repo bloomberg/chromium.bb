@@ -90,10 +90,11 @@ public class WebApkUtils {
 
     /** Returns a list of ResolveInfo for all of the installed browsers. */
     public static List<ResolveInfo> getInstalledBrowserResolveInfos(PackageManager packageManager) {
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
+        Intent browserIntent = getQueryInstalledBrowsersIntent();
         // Note: {@link PackageManager#queryIntentActivities()} does not return ResolveInfos for
         // disabled browsers.
-        return packageManager.queryIntentActivities(browserIntent, PackageManager.MATCH_ALL);
+        return packageManager.queryIntentActivities(
+                browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
     }
 
     /**
@@ -149,5 +150,15 @@ public class WebApkUtils {
 
         int version = Integer.parseInt(versionName.substring(0, dotIndex));
         return version < MINIMUM_REQUIRED_CHROME_VERSION;
+    }
+
+    /**
+     * Returns the Intent to query a list of installed browser apps.
+     */
+    static Intent getQueryInstalledBrowsersIntent() {
+        return new Intent()
+                .setAction(Intent.ACTION_VIEW)
+                .addCategory(Intent.CATEGORY_BROWSABLE)
+                .setData(Uri.parse("http://"));
     }
 }
