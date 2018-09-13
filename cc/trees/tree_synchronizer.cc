@@ -8,7 +8,9 @@
 
 #include <set>
 
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_collections.h"
@@ -91,6 +93,17 @@ static bool LayerHasValidPropertyTreeIndices(LayerImpl* layer) {
          layer->clip_tree_index() != ClipTree::kInvalidNodeId &&
          layer->scroll_tree_index() != ScrollTree::kInvalidNodeId;
 }
+
+static bool LayerWillPushProperties(LayerTreeHost* host, Layer* layer) {
+  return base::ContainsKey(host->LayersThatShouldPushProperties(), layer);
+}
+
+static bool LayerWillPushProperties(LayerTreeImpl* tree, LayerImpl* layer) {
+  return base::ContainsKey(tree->LayersThatShouldPushProperties(), layer) ||
+         // TODO(crbug.com/303943): Stop always pushing PictureLayerImpl
+         // properties.
+         base::ContainsValue(tree->picture_layers(), layer);
+}
 #endif
 
 template <typename LayerTreeType>
@@ -108,7 +121,7 @@ void PushLayerList(OwnedLayerImplMap* old_layers,
     // Every layer_impl should either have valid property tree indices already
     // or the corresponding layer should push them onto layer_impl.
     DCHECK(LayerHasValidPropertyTreeIndices(layer_impl.get()) ||
-           host->LayerNeedsPushPropertiesForTesting(layer));
+           LayerWillPushProperties(host, layer));
 #endif
 
     tree_impl->AddToLayerList(layer_impl.get());
@@ -117,31 +130,38 @@ void PushLayerList(OwnedLayerImplMap* old_layers,
   tree_impl->OnCanDrawStateChangedForTree();
 }
 
-template <typename LayerType>
-static void PushLayerPropertiesInternal(
-    std::unordered_set<LayerType*> layers_that_should_push_properties,
-    LayerTreeImpl* impl_tree) {
-  for (auto layer : layers_that_should_push_properties) {
-    LayerImpl* layer_impl = impl_tree->LayerById(layer->id());
-    DCHECK(layer_impl);
-    layer->PushPropertiesTo(layer_impl);
+template <typename Iterator>
+static void PushLayerPropertiesInternal(Iterator source_layers_begin,
+                                        Iterator source_layers_end,
+                                        LayerTreeImpl* target_impl_tree) {
+  for (Iterator it = source_layers_begin; it != source_layers_end; ++it) {
+    auto* source_layer = *it;
+    LayerImpl* target_layer = target_impl_tree->LayerById(source_layer->id());
+    DCHECK(target_layer);
+    source_layer->PushPropertiesTo(target_layer);
   }
 }
 
 void TreeSynchronizer::PushLayerProperties(LayerTreeImpl* pending_tree,
                                            LayerTreeImpl* active_tree) {
   const auto& layers = pending_tree->LayersThatShouldPushProperties();
+  // TODO(crbug.com/303943): Stop always pushing PictureLayerImpl properties.
+  const auto& picture_layers = pending_tree->picture_layers();
   TRACE_EVENT1("cc", "TreeSynchronizer::PushLayerPropertiesTo.Impl",
-               "layer_count", layers.size());
-  PushLayerPropertiesInternal(layers, active_tree);
+               "layer_count", layers.size() + picture_layers.size());
+  PushLayerPropertiesInternal(layers.begin(), layers.end(), active_tree);
+  PushLayerPropertiesInternal(picture_layers.begin(), picture_layers.end(),
+                              active_tree);
+  pending_tree->ClearLayersThatShouldPushProperties();
 }
 
 void TreeSynchronizer::PushLayerProperties(LayerTreeHost* host_tree,
                                            LayerTreeImpl* impl_tree) {
-  const auto& layers = host_tree->LayersThatShouldPushProperties();
+  auto layers = host_tree->LayersThatShouldPushProperties();
   TRACE_EVENT1("cc", "TreeSynchronizer::PushLayerPropertiesTo.Main",
                "layer_count", layers.size());
-  PushLayerPropertiesInternal(layers, impl_tree);
+  PushLayerPropertiesInternal(layers.begin(), layers.end(), impl_tree);
+  host_tree->ClearLayersThatShouldPushProperties();
 }
 
 }  // namespace cc

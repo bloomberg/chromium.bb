@@ -461,10 +461,12 @@ class CC_EXPORT LayerImpl {
   virtual bool is_surface_layer() const;
 
  protected:
+  // When |will_always_push_properties| is true, the layer will not itself set
+  // its SetNeedsPushProperties() state, as it expects to be always pushed to
+  // the active tree regardless.
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,
-            scoped_refptr<SyncedScrollOffset> scroll_offset);
-  LayerImpl(LayerTreeImpl* layer_impl, int id);
+            bool will_always_push_properties = false);
 
   // Get the color and size of the layer's debug border.
   virtual void GetDebugBorderProperties(SkColor* color, float* width) const;
@@ -487,8 +489,9 @@ class CC_EXPORT LayerImpl {
 
   virtual const char* LayerTypeAsString() const;
 
-  int layer_id_;
-  LayerTreeImpl* layer_tree_impl_;
+  const int layer_id_;
+  LayerTreeImpl* const layer_tree_impl_;
+  const bool will_always_push_properties_ : 1;
 
   std::unique_ptr<LayerImplTestProperties> test_properties_;
 

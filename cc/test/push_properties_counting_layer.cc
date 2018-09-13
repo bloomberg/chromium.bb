@@ -15,8 +15,7 @@ PushPropertiesCountingLayer::Create() {
   return new PushPropertiesCountingLayer();
 }
 
-PushPropertiesCountingLayer::PushPropertiesCountingLayer()
-    : push_properties_count_(0), persist_needs_push_properties_(false) {
+PushPropertiesCountingLayer::PushPropertiesCountingLayer() {
   SetBounds(gfx::Size(1, 1));
 }
 
@@ -38,9 +37,6 @@ void PushPropertiesCountingLayer::MakePushProperties() {
 
 void PushPropertiesCountingLayer::AddPushPropertiesCount() {
   push_properties_count_++;
-  if (persist_needs_push_properties_) {
-    layer_tree_host()->AddLayerShouldPushProperties(this);
-  }
 }
 
 }  // namespace cc

@@ -1250,7 +1250,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   if (mask_layer())
     DCHECK_EQ(bounds().ToString(), mask_layer()->bounds().ToString());
-  layer_tree_host_->RemoveLayerShouldPushProperties(this);
 }
 
 void Layer::TakeCopyRequests(

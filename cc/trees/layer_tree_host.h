@@ -434,10 +434,17 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void RemoveSurfaceRange(const viz::SurfaceRange& surface_range);
   base::flat_set<viz::SurfaceRange> SurfaceRanges() const;
 
+  // Marks or unmarks a layer are needing PushPropertiesTo in the next commit.
+  // These are internal methods, called from the Layer itself when changing a
+  // property or completing a PushPropertiesTo.
   void AddLayerShouldPushProperties(Layer* layer);
   void RemoveLayerShouldPushProperties(Layer* layer);
-  std::unordered_set<Layer*>& LayersThatShouldPushProperties();
-  bool LayerNeedsPushPropertiesForTesting(Layer* layer) const;
+  void ClearLayersThatShouldPushProperties();
+  // The current set of all Layers attached to the LayerTreeHost's tree that
+  // have been marked as needing PushPropertiesTo in the next commit.
+  const base::flat_set<Layer*>& LayersThatShouldPushProperties() {
+    return layers_that_should_push_properties_;
+  }
 
   void SetPageScaleFromImplSide(float page_scale);
   void SetElasticOverscrollFromImplSide(gfx::Vector2dF elastic_overscroll);
@@ -733,7 +740,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   base::flat_map<viz::SurfaceRange, int> surface_ranges_;
 
   // Set of layers that need to push properties.
-  std::unordered_set<Layer*> layers_that_should_push_properties_;
+  base::flat_set<Layer*> layers_that_should_push_properties_;
 
   // Layer id to Layer map.
   std::unordered_map<int, Layer*> layer_id_map_;

@@ -45,9 +45,12 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
-LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
+LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
+                     int id,
+                     bool will_always_push_properties)
     : layer_id_(id),
       layer_tree_impl_(tree_impl),
+      will_always_push_properties_(will_always_push_properties),
       test_properties_(nullptr),
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
@@ -354,7 +357,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer_property_changed_from_property_trees_ = false;
   needs_push_properties_ = false;
   update_rect_ = gfx::Rect();
-  layer_tree_impl()->RemoveLayerShouldPushProperties(this);
 }
 
 bool LayerImpl::IsAffectedByPageScale() const {
@@ -709,8 +711,11 @@ gfx::Vector2dF LayerImpl::ClampScrollToMaxScrollOffset() {
 }
 
 void LayerImpl::SetNeedsPushProperties() {
-  // There's no need to push layer properties on the active tree.
-  if (!needs_push_properties_ && !layer_tree_impl()->IsActiveTree()) {
+  // There's no need to push layer properties on the active tree, or when
+  // |will_always_push_properties_| is true.
+  if (will_always_push_properties_ || layer_tree_impl()->IsActiveTree())
+    return;
+  if (!needs_push_properties_) {
     needs_push_properties_ = true;
     layer_tree_impl()->AddLayerShouldPushProperties(this);
   }

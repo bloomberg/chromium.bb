@@ -1404,21 +1404,14 @@ void LayerTreeImpl::ClearSurfaceRanges() {
 
 void LayerTreeImpl::AddLayerShouldPushProperties(LayerImpl* layer) {
   DCHECK(!IsActiveTree()) << "The active tree does not push layer properties";
+  // TODO(crbug.com/303943): PictureLayerImpls always push properties so should
+  // not go into this set or we'd push them twice.
+  DCHECK(!base::ContainsValue(picture_layers_, layer));
   layers_that_should_push_properties_.insert(layer);
 }
 
-void LayerTreeImpl::RemoveLayerShouldPushProperties(LayerImpl* layer) {
-  layers_that_should_push_properties_.erase(layer);
-}
-
-std::unordered_set<LayerImpl*>&
-LayerTreeImpl::LayersThatShouldPushProperties() {
-  return layers_that_should_push_properties_;
-}
-
-bool LayerTreeImpl::LayerNeedsPushPropertiesForTesting(LayerImpl* layer) {
-  return layers_that_should_push_properties_.find(layer) !=
-         layers_that_should_push_properties_.end();
+void LayerTreeImpl::ClearLayersThatShouldPushProperties() {
+  layers_that_should_push_properties_.clear();
 }
 
 void LayerTreeImpl::RegisterLayer(LayerImpl* layer) {
