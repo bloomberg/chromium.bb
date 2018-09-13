@@ -46,11 +46,9 @@
 
 namespace blink {
 
-EventListener* CreateAttributeEventListener(
-    Node* node,
-    const QualifiedName& name,
-    const AtomicString& value,
-    const AtomicString& event_parameter_name) {
+EventListener* CreateAttributeEventListener(Node* node,
+                                            const QualifiedName& name,
+                                            const AtomicString& value) {
   DCHECK(node);
   if (value.IsNull())
     return nullptr;
@@ -69,16 +67,13 @@ EventListener* CreateAttributeEventListener(
     source_url = node->GetDocument().Url().GetString();
   }
 
-  return V8LazyEventListener::Create(name.LocalName(), event_parameter_name,
-                                     value, source_url, position, node,
-                                     isolate);
+  return V8LazyEventListener::Create(name.LocalName(), value, source_url,
+                                     position, node, isolate);
 }
 
-EventListener* CreateAttributeEventListener(
-    LocalFrame* frame,
-    const QualifiedName& name,
-    const AtomicString& value,
-    const AtomicString& event_parameter_name) {
+EventListener* CreateAttributeEventListener(LocalFrame* frame,
+                                            const QualifiedName& name,
+                                            const AtomicString& value) {
   if (!frame)
     return nullptr;
 
@@ -91,9 +86,8 @@ EventListener* CreateAttributeEventListener(
   TextPosition position = frame->GetScriptController().EventHandlerPosition();
   String source_url = frame->GetDocument()->Url().GetString();
 
-  return V8LazyEventListener::Create(name.LocalName(), event_parameter_name,
-                                     value, source_url, position, nullptr,
-                                     ToIsolate(frame));
+  return V8LazyEventListener::Create(name.LocalName(), value, source_url,
+                                     position, nullptr, ToIsolate(frame));
 }
 
 v8::Local<v8::Object> EventListenerHandler(ExecutionContext* execution_context,

@@ -693,8 +693,7 @@ void SVGElement::ParseAttribute(const AttributeModificationParams& params) {
   if (!event_name.IsNull()) {
     SetAttributeEventListener(
         event_name,
-        CreateAttributeEventListener(this, params.name, params.new_value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(this, params.name, params.new_value));
     return;
   }
 
@@ -1313,11 +1312,6 @@ void SVGElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(svg_rare_data_);
   visitor->Trace(class_name_);
   Element::Trace(visitor);
-}
-
-const AtomicString& SVGElement::EventParameterName() {
-  DEFINE_STATIC_LOCAL(const AtomicString, evt_string, ("evt"));
-  return evt_string;
 }
 
 }  // namespace blink

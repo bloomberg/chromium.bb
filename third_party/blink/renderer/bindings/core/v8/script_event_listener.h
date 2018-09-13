@@ -41,16 +41,12 @@ class LocalFrame;
 class QualifiedName;
 class SourceLocation;
 
-EventListener* CreateAttributeEventListener(
-    Node*,
-    const QualifiedName&,
-    const AtomicString& value,
-    const AtomicString& event_parameter_name);
-EventListener* CreateAttributeEventListener(
-    LocalFrame*,
-    const QualifiedName&,
-    const AtomicString& value,
-    const AtomicString& event_parameter_name);
+EventListener* CreateAttributeEventListener(Node*,
+                                            const QualifiedName&,
+                                            const AtomicString& value);
+EventListener* CreateAttributeEventListener(LocalFrame*,
+                                            const QualifiedName&,
+                                            const AtomicString& value);
 v8::Local<v8::Object> EventListenerHandler(ExecutionContext*, EventListener*);
 v8::Local<v8::Function> EventListenerEffectiveFunction(
     v8::Isolate*,

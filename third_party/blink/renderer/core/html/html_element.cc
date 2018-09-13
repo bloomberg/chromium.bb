@@ -597,8 +597,7 @@ void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
   if (triggers->event != g_null_atom) {
     SetAttributeEventListener(
         triggers->event,
-        CreateAttributeEventListener(this, params.name, params.new_value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(this, params.name, params.new_value));
   }
 
   if (triggers->web_feature != kNoWebFeature) {
@@ -1256,11 +1255,6 @@ void HTMLElement::HandleKeypressEvent(KeyboardEvent& event) {
     DispatchSimulatedClick(&event);
     event.SetDefaultHandled();
   }
-}
-
-const AtomicString& HTMLElement::EventParameterName() {
-  DEFINE_STATIC_LOCAL(const AtomicString, event_string, ("event"));
-  return event_string;
 }
 
 int HTMLElement::offsetLeftForBinding() {

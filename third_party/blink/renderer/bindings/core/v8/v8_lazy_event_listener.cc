@@ -55,7 +55,6 @@ namespace blink {
 V8LazyEventListener::V8LazyEventListener(
     v8::Isolate* isolate,
     const AtomicString& function_name,
-    const AtomicString& event_parameter_name,
     const String& code,
     const String source_url,
     const TextPosition& position,
@@ -63,7 +62,6 @@ V8LazyEventListener::V8LazyEventListener(
     : V8AbstractEventHandler(isolate, true, DOMWrapperWorld::MainWorld()),
       was_compilation_failed_(false),
       function_name_(function_name),
-      event_parameter_name_(event_parameter_name),
       code_(code),
       source_url_(source_url),
       node_(node),
@@ -176,8 +174,11 @@ void V8LazyEventListener::CompileScript(ScriptState* script_state,
   scopes[0] = ToObjectWrapper<Document>(
       node_ ? node_->ownerDocument() : nullptr, script_state);
 
+  // SVG requires to introduce evt as an alias to event in event handlers.
+  // See ANNOTATION 3: https://www.w3.org/TR/SVG/interact.html#SVGEvents
   v8::Local<v8::String> parameter_name =
-      V8String(GetIsolate(), event_parameter_name_);
+      V8String(GetIsolate(), node_ && node_->IsSVGElement() ? "evt" : "event");
+
   v8::ScriptOrigin origin(
       V8String(GetIsolate(), source_url_),
       v8::Integer::New(GetIsolate(), position_.line_.ZeroBasedInt()),

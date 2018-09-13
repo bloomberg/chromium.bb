@@ -163,18 +163,15 @@ void SVGSVGElement::ParseAttribute(const AttributeModificationParams& params) {
     if (name == HTMLNames::onunloadAttr) {
       GetDocument().SetWindowAttributeEventListener(
           EventTypeNames::unload,
-          CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                       EventParameterName()));
+          CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
     } else if (name == HTMLNames::onresizeAttr) {
       GetDocument().SetWindowAttributeEventListener(
           EventTypeNames::resize,
-          CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                       EventParameterName()));
+          CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
     } else if (name == HTMLNames::onscrollAttr) {
       GetDocument().SetWindowAttributeEventListener(
           EventTypeNames::scroll,
-          CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                       EventParameterName()));
+          CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
     } else {
       set_listener = false;
     }
@@ -186,13 +183,11 @@ void SVGSVGElement::ParseAttribute(const AttributeModificationParams& params) {
   if (name == HTMLNames::onabortAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::abort,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == HTMLNames::onerrorAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::error,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (SVGZoomAndPan::ParseAttribute(name, value)) {
   } else {
     SVGElement::ParseAttribute(params);
