@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
+#include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
 #include "url/gurl.h"
 
@@ -258,6 +259,9 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
   }
   hints->url_matcher_.AddConditionSets(all_conditions);
 
+  // Extract any supported large scale blacklists from the configuration.
+  hints->ParseOptimizationFilters(config);
+
   // Completed processing hints data without crashing so clear sentinel.
   DeleteSentinelFile(sentinel_path);
   RecordProcessHintsResult(
@@ -265,6 +269,39 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
           ? PreviewsProcessHintsResult::PROCESSED_NO_PREVIEWS_HINTS
           : PreviewsProcessHintsResult::PROCESSED_PREVIEWS_HINTS);
   return hints;
+}
+
+void PreviewsHints::ParseOptimizationFilters(
+    const optimization_guide::proto::Configuration& config) {
+  for (const auto blacklist : config.optimization_blacklists()) {
+    if (blacklist.optimization_type() ==
+            optimization_guide::proto::LITE_PAGE_REDIRECT &&
+        blacklist.has_bloom_filter()) {
+      if (lite_page_redirect_blacklist_) {
+        DLOG(WARNING)
+            << "Found multiple blacklist configs for LITE_PAGE_REDIRECT";
+        continue;
+      }
+      auto bloom_filter_proto = blacklist.bloom_filter();
+      DCHECK_GT(bloom_filter_proto.num_hash_functions(), 0u);
+      DCHECK_GT(bloom_filter_proto.num_bits(), 0u);
+      DCHECK(bloom_filter_proto.has_data());
+      if (bloom_filter_proto.num_bits() <= 0) {
+        DLOG(ERROR) << "Bloom filter config does not specify number of bits";
+        continue;
+      }
+      if (bloom_filter_proto.num_bits() >
+          bloom_filter_proto.data().size() * 8) {
+        DLOG(ERROR) << "Bloom filter config does not have enough data for bits";
+        continue;
+      }
+      std::unique_ptr<BloomFilter> bloom_filter = std::make_unique<BloomFilter>(
+          bloom_filter_proto.num_hash_functions(),
+          bloom_filter_proto.num_bits(), bloom_filter_proto.data());
+      lite_page_redirect_blacklist_ =
+          std::make_unique<HostFilter>(std::move(bloom_filter));
+    }
+  }
 }
 
 // static

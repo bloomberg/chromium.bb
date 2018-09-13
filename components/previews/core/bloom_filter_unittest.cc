@@ -5,6 +5,7 @@
 #include "components/previews/core/bloom_filter.h"
 
 #include <stdint.h>
+#include <string>
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,8 +29,7 @@ int CountBits(const ByteVector& vector) {
 }  // namespace
 
 TEST(BloomFilterTest, SingleHash) {
-  ByteVector data(2, 0);
-  BloomFilter filter(16 /* num_bits */, data, 1 /* num_hash_functions */);
+  BloomFilter filter(1 /* num_hash_functions */, 16 /* num_bits */);
   EXPECT_EQ(2u, filter.bytes().size());
   EXPECT_EQ(0, CountBits(filter.bytes()));
 
@@ -52,8 +52,8 @@ TEST(BloomFilterTest, SingleHash) {
 }
 
 TEST(BloomFilterTest, FalsePositivesWithSingleBitFilterCollisions) {
-  ByteVector data(1, 0);
-  BloomFilter filter(1 /* num_bits */, data, 1 /* num_hash_functions */);
+  BloomFilter filter(1 /* num_hash_functions */, 1 /* num_bits */);
+  EXPECT_EQ(1u, filter.bytes().size());
 
   EXPECT_FALSE(filter.Contains("Alfa"));
   EXPECT_FALSE(filter.Contains("Bravo"));
@@ -66,8 +66,9 @@ TEST(BloomFilterTest, FalsePositivesWithSingleBitFilterCollisions) {
 }
 
 TEST(BloomFilterTest, MultiHash) {
-  ByteVector data(10, 0);
-  BloomFilter filter(75 /* num_bits */, data, 3 /* num_hash_functions */);
+  // Provide zero-ed filter data.
+  std::string data(10, 0);
+  BloomFilter filter(3 /* num_hash_functions */, 75 /* num_bits */, data);
   EXPECT_EQ(10u, filter.bytes().size());
   EXPECT_EQ(0, CountBits(filter.bytes()));
 
@@ -90,9 +91,9 @@ TEST(BloomFilterTest, MultiHash) {
 }
 
 TEST(BloomFilterTest, EverythingMatches) {
-  // Set all bits ON in byte vector.
-  ByteVector data(1024, 0xff);
-  BloomFilter filter(8191 /* num_bits */, data, 7 /* num_hash_functions */);
+  // Provide filter data with all bits set ON.
+  std::string data(1024, 0xff);
+  BloomFilter filter(7 /* num_hash_functions */, 8191 /* num_bits */, data);
 
   EXPECT_TRUE(filter.Contains("Alfa"));
   EXPECT_TRUE(filter.Contains("Bravo"));
@@ -104,9 +105,13 @@ TEST(BloomFilterTest, EverythingMatches) {
 // Disable this test in configurations that don't print CHECK failures.
 #if !defined(OS_IOS) && !(defined(OFFICIAL_BUILD) && defined(NDEBUG))
 TEST(BloomFilterTest, ByteVectorTooSmall) {
-  ByteVector data(1023, 0xff);
-  EXPECT_DEATH({ BloomFilter filter(8191 /* num_bits */, data, 7); },
-               "Check failed");
+  std::string data(1023, 0xff);
+  EXPECT_DEATH(
+      {
+        BloomFilter filter(7 /* num_hash_functions */, 8191 /* num_bits */,
+                           data);
+      },
+      "Check failed");
 }
 #endif
 

@@ -18,7 +18,7 @@ uint64_t MurmurHash3(const std::string& str, uint32_t seed) {
   // Uses MurmurHash3 in coordination with server as it is a fast hashing
   // function with compatible public client and private server implementations.
   // DO NOT CHANGE this hashing function without coordination and migration
-  // plan with the server.
+  // plan with the server providing the OptimizationGuide proto.
   uint64_t output[2];
   MurmurHash3_x64_128(str.data(), str.size(), seed, &output);
   // Drop the last 64 bits.
@@ -27,14 +27,21 @@ uint64_t MurmurHash3(const std::string& str, uint32_t seed) {
 
 }  // namespace
 
-BloomFilter::BloomFilter(uint32_t num_bits,
-                         ByteVector filter_data,
-                         uint32_t num_hash_functions)
+BloomFilter::BloomFilter(uint32_t num_hash_functions, uint32_t num_bits)
 
-    : num_bits_(num_bits),
-      bytes_(filter_data),
-      num_hash_functions_(num_hash_functions) {
+    : num_hash_functions_(num_hash_functions),
+      num_bits_(num_bits),
+      bytes_(((num_bits + 7) / 8), 0) {}
+
+BloomFilter::BloomFilter(uint32_t num_hash_functions,
+                         uint32_t num_bits,
+                         std::string filter_data)
+
+    : num_hash_functions_(num_hash_functions),
+      num_bits_(num_bits),
+      bytes_(filter_data.size()) {
   CHECK_GE(filter_data.size() * 8, num_bits);
+  memcpy(&bytes_[0], filter_data.data(), filter_data.size());
 }
 
 BloomFilter::~BloomFilter() {}
