@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/wtf/doubly_linked_list.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
 
 namespace WTF {
@@ -70,7 +71,8 @@ DoublyLinkedList<TestNode>::AddResult DoublyLinkedListTest::CheckedInsert(
     int i) {
   size_t current_size = list_.size();
 
-  auto result = list_.Insert(std::make_unique<TestNode>(i), CompareInt);
+  auto result =
+      list_.Insert(std::make_unique<TestNode>(i), BindRepeating(CompareInt));
   EXPECT_EQ(list_.size(),
             result.is_new_entry ? current_size + 1 : current_size);
   EXPECT_EQ(test_node_counter,
@@ -98,7 +100,7 @@ TEST_F(DoublyLinkedListTest, InsertEmpty) {
   delete list_.RemoveHead();
 
   TestNode node_stack(-1);
-  list_.Insert(&node_stack, CompareInt);
+  list_.Insert(&node_stack, BindRepeating(CompareInt));
   EXPECT_EQ(1ul, list_.size());
   EXPECT_EQ(1ul, test_node_counter);
   EXPECT_EQ(list_.Head(), list_.Tail());
@@ -115,7 +117,8 @@ TEST_F(DoublyLinkedListTest, InsertRandom) {
   int items[6] = {2, -1, 3, 4, 0, 1};
 
   for (int item : items) {
-    auto result = list_.Insert(std::make_unique<TestNode>(item), CompareInt);
+    auto result = list_.Insert(std::make_unique<TestNode>(item),
+                               BindRepeating(CompareInt));
     EXPECT_TRUE(result.is_new_entry);
   }
   EXPECT_EQ(num_items, list_.size());
@@ -131,7 +134,8 @@ TEST_F(DoublyLinkedListTest, InsertSorted) {
   int items[6] = {0, 1, 2, 3, 4, 5};
 
   for (int item : items) {
-    auto result = list_.Insert(std::make_unique<TestNode>(item), CompareInt);
+    auto result = list_.Insert(std::make_unique<TestNode>(item),
+                               BindRepeating(CompareInt));
     EXPECT_TRUE(result.is_new_entry);
   }
   EXPECT_EQ(num_items, list_.size());

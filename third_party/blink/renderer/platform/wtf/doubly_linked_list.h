@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DOUBLY_LINKED_LIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DOUBLY_LINKED_LIST_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -100,7 +101,7 @@ class DoublyLinkedList {
 
   // This function should return -1 if the first argument is strictly
   // less than the second, 0 if they are equal or 1 otherwise.
-  using CompareFunc = std::function<int(T*, T*)>;
+  using CompareFunc = base::RepeatingCallback<int(T*, T*)>;
 
   // The following two functions can be used to implement a sorted
   // version of the doubly linked list. It's guaranteed that the list
@@ -240,10 +241,10 @@ DoublyLinkedList<T, PointerType>::Insert(T* node,
                                          const CompareFunc& compare_func) {
   DCHECK(node);
   T* iter = head_;
-  while (iter && compare_func(iter, node) < 0)
+  while (iter && compare_func.Run(iter, node) < 0)
     iter = iter->Next();
 
-  if (iter && !compare_func(iter, node))
+  if (iter && !compare_func.Run(iter, node))
     return {iter, false};
 
   return InsertAfter(node, iter ? iter->Prev() : tail_);
