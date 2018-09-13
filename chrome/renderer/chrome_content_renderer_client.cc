@@ -1605,6 +1605,16 @@ void ChromeContentRendererClient::
 #endif
 }
 
+void ChromeContentRendererClient::DidStartServiceWorkerContextOnWorkerThread(
+    int64_t service_worker_version_id,
+    const GURL& service_worker_scope,
+    const GURL& script_url) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  extensions::Dispatcher::DidStartServiceWorkerContextOnWorkerThread(
+      service_worker_version_id, service_worker_scope, script_url);
+#endif
+}
+
 void ChromeContentRendererClient::WillDestroyServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> context,
     int64_t service_worker_version_id,

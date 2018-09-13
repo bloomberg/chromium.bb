@@ -1559,6 +1559,11 @@ void ServiceWorkerContextClient::SendWorkerStarted(
     blink::mojom::ServiceWorkerStartStatus status) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
 
+  if (GetContentClient()->renderer()) {  // nullptr in unit_tests.
+    GetContentClient()->renderer()->DidStartServiceWorkerContextOnWorkerThread(
+        service_worker_version_id_, service_worker_scope_, script_url_);
+  }
+
   (*instance_host_)
       ->OnStarted(status, WorkerThread::GetCurrentId(),
                   std::move(start_timing_));

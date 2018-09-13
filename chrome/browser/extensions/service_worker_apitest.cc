@@ -960,7 +960,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, EventsToStoppedWorker) {
 // Tests that events to service worker arrives correctly event if the owner
 // extension of the worker is not running.
 IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
-                       DISABLED_EventsToStoppedExtension) {
+                       EventsToStoppedExtension) {
   LazyBackgroundObserver lazy_observer;
   ResultCatcher catcher;
   const Extension* extension = LoadExtensionWithFlags(

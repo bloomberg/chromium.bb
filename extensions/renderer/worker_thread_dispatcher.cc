@@ -167,6 +167,21 @@ void WorkerThreadDispatcher::AddWorkerData(
   }
 }
 
+void WorkerThreadDispatcher::DidStartContext(
+    int64_t service_worker_version_id) {
+  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
+  DCHECK_EQ(service_worker_version_id, data->service_worker_version_id());
+  Send(new ExtensionHostMsg_DidStartServiceWorkerContext(
+      data->context()->GetExtensionID(), service_worker_version_id));
+}
+
+void WorkerThreadDispatcher::DidStopContext(int64_t service_worker_version_id) {
+  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
+  DCHECK_EQ(service_worker_version_id, data->service_worker_version_id());
+  Send(new ExtensionHostMsg_DidStopServiceWorkerContext(
+      data->context()->GetExtensionID(), service_worker_version_id));
+}
+
 void WorkerThreadDispatcher::RemoveWorkerData(
     int64_t service_worker_version_id) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
