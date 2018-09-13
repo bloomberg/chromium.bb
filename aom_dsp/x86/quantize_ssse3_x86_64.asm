@@ -268,5 +268,5 @@ cglobal quantize_%1, 0, %2, 15, coeff, ncoeff, zbin, round, quant, \
 %endmacro
 
 INIT_XMM ssse3
-QUANTIZE_FN b, 7
-QUANTIZE_FN b_32x32, 7
+QUANTIZE_FN b, 9
+QUANTIZE_FN b_32x32, 9
