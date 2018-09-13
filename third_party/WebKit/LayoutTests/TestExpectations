@@ -5141,4 +5141,4 @@ crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-featu
 crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure ]
 
 # Sheriff 2018-09-13
-crbug.com/883591 [ Android ] fullscreen/full-screen-inline-split-crash.html [ Failure ]
+crbug.com/883591 [ Android ] fullscreen/full-screen-inline-split-crash.html [ Pass Crash ]
