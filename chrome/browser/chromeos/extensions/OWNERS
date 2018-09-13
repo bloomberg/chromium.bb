@@ -2,7 +2,6 @@ file://extensions/OWNERS
 
 # Additional ChromeOS-specific reviewers
 tbarzic@chromium.org
-zelidrag@chromium.org
 
 per-file *wallpaper*=file://ash/wallpaper/OWNERS
 
