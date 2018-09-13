@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/debug/alias.h"
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -1147,6 +1148,19 @@ int EntryImpl::InternalWriteData(int index,
   backend_->OnWrite(buf_len);
 
   if (user_buffers_[index].get()) {
+    // Temporary to debug https://crbug.com/882246
+    base::debug::Alias(&index);
+    base::debug::Alias(&offset);
+    base::debug::Alias(&buf);
+    const char* raw_data = nullptr;
+    void* buf_vptr = nullptr;
+    if (buf) {
+      raw_data = buf->data();
+      memcpy(&buf_vptr, static_cast<void*>(buf), sizeof(void*));
+    }
+    base::debug::Alias(&raw_data);
+    base::debug::Alias(&buf_vptr);
+
     // Complete the operation locally.
     user_buffers_[index]->Write(offset, buf, buf_len);
     ReportIOTime(kWrite, start);
