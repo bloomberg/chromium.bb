@@ -179,7 +179,10 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       gesture_sequence_in_progress_ = true;
       // If the gesture is hitting a region that has a non-blocking (such as a
       // passive) event listener.
-      if (gesture_event->is_source_touch_event_set_non_blocking)
+      // In theory, the num_of_active_touches_ should be > 0 at this point. But
+      // crash reports suggest otherwise.
+      if (gesture_event->is_source_touch_event_set_non_blocking ||
+          num_of_active_touches_ <= 0)
         SetTouchAction(cc::kTouchActionAuto);
       scrolling_touch_action_ = allowed_touch_action_;
       if (scrolling_touch_action_.has_value())

@@ -440,6 +440,18 @@ class InputRouterImplTest : public testing::Test {
     EXPECT_EQ(input_router_->num_of_active_touches_for_test(), 0);
   }
 
+  void OnTouchEventAckWithResultNonBlocking() {
+    input_router_->OnHasTouchEventHandlers(true);
+    EXPECT_FALSE(input_router_->AllowedTouchAction().has_value());
+    PressTouchPoint(1, 1);
+    input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
+    input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
+                                   InputEventAckSource::BROWSER,
+                                   INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+    EXPECT_EQ(input_router_->AllowedTouchAction().value(),
+              cc::kTouchActionAuto);
+  }
+
   InputRouter::Config config_;
   std::unique_ptr<MockInputRouterImplClient> client_;
   std::unique_ptr<InputRouterImpl> input_router_;
@@ -635,6 +647,10 @@ TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchActionNoConsumer) {
   base::Optional<cc::TouchAction> touch_action(cc::kTouchActionPanY);
   ActiveTouchSequenceCountTest(touch_action,
                                INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckResultNonBlocking) {
+  OnTouchEventAckWithResultNonBlocking();
 }
 
 // Tests that touch-events are sent properly.
