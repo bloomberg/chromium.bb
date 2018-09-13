@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "api/public/screen_connection_client.h"
-#include "api/public/screen_connection_server.h"
+#include "api/public/protocol_connection_client.h"
+#include "api/public/protocol_connection_server.h"
 #include "api/public/screen_listener.h"
 #include "api/public/screen_publisher.h"
 
@@ -28,8 +28,8 @@ class NetworkServiceManager final {
   static NetworkServiceManager* Create(
       std::unique_ptr<ScreenListener> mdns_listener,
       std::unique_ptr<ScreenPublisher> mdns_publisher,
-      std::unique_ptr<ScreenConnectionClient> connection_client,
-      std::unique_ptr<ScreenConnectionServer> connection_server);
+      std::unique_ptr<ProtocolConnectionClient> connection_client,
+      std::unique_ptr<ProtocolConnectionServer> connection_server);
 
   // Returns the singleton instance of the NetworkServiceManager previously
   // created by Create().
@@ -50,27 +50,27 @@ class NetworkServiceManager final {
   // if not provided.
   ScreenPublisher* GetMdnsScreenPublisher();
 
-  // Returns an instance of the screen connection client, or nullptr
+  // Returns an instance of the protocol connection client, or nullptr
   // if not provided.
-  ScreenConnectionClient* GetScreenConnectionClient();
+  ProtocolConnectionClient* GetProtocolConnectionClient();
 
-  // Returns an instance of the screen connection server, or nullptr if
+  // Returns an instance of the protocol connection server, or nullptr if
   // not provided.
-  ScreenConnectionServer* GetScreenConnectionServer();
+  ProtocolConnectionServer* GetProtocolConnectionServer();
 
  private:
   NetworkServiceManager(
       std::unique_ptr<ScreenListener> mdns_listener,
       std::unique_ptr<ScreenPublisher> mdns_publisher,
-      std::unique_ptr<ScreenConnectionClient> connection_client,
-      std::unique_ptr<ScreenConnectionServer> connection_server);
+      std::unique_ptr<ProtocolConnectionClient> connection_client,
+      std::unique_ptr<ProtocolConnectionServer> connection_server);
 
   ~NetworkServiceManager();
 
   std::unique_ptr<ScreenListener> mdns_listener_;
   std::unique_ptr<ScreenPublisher> mdns_publisher_;
-  std::unique_ptr<ScreenConnectionClient> connection_client_;
-  std::unique_ptr<ScreenConnectionServer> connection_server_;
+  std::unique_ptr<ProtocolConnectionClient> connection_client_;
+  std::unique_ptr<ProtocolConnectionServer> connection_server_;
 };
 
 }  // namespace openscreen

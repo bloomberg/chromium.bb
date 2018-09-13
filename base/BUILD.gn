@@ -11,6 +11,7 @@ source_set("base") {
     "make_unique.h",
     "scoped_pipe.h",
     "stringprintf.h",
+    "time.h",
   ]
 }
 

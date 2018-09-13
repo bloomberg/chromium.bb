@@ -4,10 +4,12 @@
 
 source_set("api") {
   sources = [
-    "network_service_manager.cc",
     "network_service_manager.h",
-    "screen_connection_client.h",
-    "screen_connection_server.h",
+    "network_service_manager.cc",
+    "protocol_connection.h",
+    "protocol_connection_client.h",
+    "protocol_connection_client.cc",
+    "protocol_connection_server.h",
     "screen_info.cc",
     "screen_info.h",
     "screen_listener.cc",
