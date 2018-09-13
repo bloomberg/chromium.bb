@@ -79,16 +79,10 @@ ChangeList::ChangeList(const google_apis::ChangeList& change_list)
       change_list.items();
   entries_.resize(items.size());
   parent_resource_ids_.resize(items.size());
-  size_t entries_index = 0;
   for (size_t i = 0; i < items.size(); ++i) {
-    if (ConvertChangeResourceToResourceEntry(
-            *items[i], &entries_[entries_index],
-            &parent_resource_ids_[entries_index])) {
-      ++entries_index;
-    }
+    ConvertChangeResourceToResourceEntry(*items[i], &entries_[i],
+                                         &parent_resource_ids_[i]);
   }
-  entries_.resize(entries_index);
-  parent_resource_ids_.resize(entries_index);
 }
 
 ChangeList::ChangeList(const google_apis::FileList& file_list)
@@ -97,17 +91,10 @@ ChangeList::ChangeList(const google_apis::FileList& file_list)
       file_list.items();
   entries_.resize(items.size());
   parent_resource_ids_.resize(items.size());
-  size_t entries_index = 0;
   for (size_t i = 0; i < items.size(); ++i) {
-    if (ConvertFileResourceToResourceEntry(
-            *items[i],
-            &entries_[entries_index],
-            &parent_resource_ids_[entries_index])) {
-      ++entries_index;
-    }
+    ConvertFileResourceToResourceEntry(*items[i], &entries_[i],
+                                       &parent_resource_ids_[i]);
   }
-  entries_.resize(entries_index);
-  parent_resource_ids_.resize(entries_index);
 }
 
 ChangeList::~ChangeList() = default;

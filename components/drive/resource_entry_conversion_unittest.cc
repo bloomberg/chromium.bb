@@ -58,8 +58,8 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
-      file_resource, &entry, &parent_resource_id));
+  ConvertFileResourceToResourceEntry(file_resource, &entry,
+                                     &parent_resource_id);
 
   EXPECT_EQ(file_resource.title(), entry.title());
   EXPECT_EQ(file_resource.title(), entry.base_name());
@@ -124,8 +124,8 @@ TEST(ResourceEntryConversionTest,
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
-      file_resource, &entry, &parent_resource_id));
+  ConvertFileResourceToResourceEntry(file_resource, &entry,
+                                     &parent_resource_id);
 
   EXPECT_EQ(file_resource.title(), entry.title());
   EXPECT_EQ(file_resource.title() + ".gdoc",
@@ -185,8 +185,8 @@ TEST(ResourceEntryConversionTest,
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
-      file_resource, &entry, &parent_resource_id));
+  ConvertFileResourceToResourceEntry(file_resource, &entry,
+                                     &parent_resource_id);
 
   EXPECT_EQ(file_resource.title(), entry.title());
   EXPECT_EQ(file_resource.title(), entry.base_name());
@@ -231,8 +231,8 @@ TEST(ResourceEntryConversionTest,
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
-      file_resource, &entry, &parent_resource_id));
+  ConvertFileResourceToResourceEntry(file_resource, &entry,
+                                     &parent_resource_id);
 
   EXPECT_EQ(file_resource.title(), entry.title());
   EXPECT_EQ(file_resource.title() + ".gdoc", entry.base_name());
@@ -277,8 +277,8 @@ TEST(ResourceEntryConversionTest, ConvertChangeResourceToResourceEntry) {
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertChangeResourceToResourceEntry(
-      change_resource, &entry, &parent_resource_id));
+  ConvertChangeResourceToResourceEntry(change_resource, &entry,
+                                       &parent_resource_id);
 
   EXPECT_EQ(change_resource.file_id(), entry.resource_id());
   EXPECT_EQ(change_resource.modification_date().ToInternalValue(),
@@ -308,8 +308,8 @@ TEST(ResourceEntryConversionTest,
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertChangeResourceToResourceEntry(
-      change_resource, &entry, &parent_resource_id));
+  ConvertChangeResourceToResourceEntry(change_resource, &entry,
+                                       &parent_resource_id);
 
   EXPECT_EQ(change_resource.file_id(), entry.resource_id());
   EXPECT_EQ(change_resource.modification_date().ToInternalValue(),
@@ -332,8 +332,8 @@ TEST(ResourceEntryConversionTest,
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertChangeResourceToResourceEntry(
-      change_resource, &entry, &parent_resource_id));
+  ConvertChangeResourceToResourceEntry(change_resource, &entry,
+                                       &parent_resource_id);
 
   EXPECT_EQ(change_resource.file_id(), entry.resource_id());
   EXPECT_EQ("", parent_resource_id);
@@ -351,8 +351,8 @@ TEST(ResourceEntryConversionTest,
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
-      file_resource, &entry, &parent_resource_id));
+  ConvertFileResourceToResourceEntry(file_resource, &entry,
+                                     &parent_resource_id);
   EXPECT_TRUE(entry.starred());
 }
 
@@ -364,8 +364,8 @@ TEST(ResourceEntryConversionTest,
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
-      file_resource, &entry, &parent_resource_id));
+  ConvertFileResourceToResourceEntry(file_resource, &entry,
+                                     &parent_resource_id);
   EXPECT_TRUE(entry.shared_with_me());
   EXPECT_TRUE(entry.shared());
 }
@@ -409,8 +409,8 @@ TEST(ResourceEntryConversionTest,
   {
     ResourceEntry entry;
     std::string parent_resource_id;
-    EXPECT_TRUE(ConvertFileResourceToResourceEntry(
-        entry_all_fields, &entry, &parent_resource_id));
+    ConvertFileResourceToResourceEntry(entry_all_fields, &entry,
+                                       &parent_resource_id);
     EXPECT_EQ(640, entry.file_specific_info().image_width());
     EXPECT_EQ(480, entry.file_specific_info().image_height());
     EXPECT_EQ(90, entry.file_specific_info().image_rotation());
@@ -418,8 +418,8 @@ TEST(ResourceEntryConversionTest,
   {
     ResourceEntry entry;
     std::string parent_resource_id;
-    EXPECT_TRUE(ConvertFileResourceToResourceEntry(
-        entry_zero_fields, &entry, &parent_resource_id));
+    ConvertFileResourceToResourceEntry(entry_zero_fields, &entry,
+                                       &parent_resource_id);
     EXPECT_TRUE(entry.file_specific_info().has_image_width());
     EXPECT_TRUE(entry.file_specific_info().has_image_height());
     EXPECT_TRUE(entry.file_specific_info().has_image_rotation());
@@ -430,8 +430,8 @@ TEST(ResourceEntryConversionTest,
   {
     ResourceEntry entry;
     std::string parent_resource_id;
-    EXPECT_TRUE(ConvertFileResourceToResourceEntry(
-        entry_no_fields, &entry, &parent_resource_id));
+    ConvertFileResourceToResourceEntry(entry_no_fields, &entry,
+                                       &parent_resource_id);
     EXPECT_FALSE(entry.file_specific_info().has_image_width());
     EXPECT_FALSE(entry.file_specific_info().has_image_height());
     EXPECT_FALSE(entry.file_specific_info().has_image_rotation());
@@ -465,8 +465,8 @@ TEST(ResourceEntryConversionTest,
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertChangeResourceToResourceEntry(change_resource, &entry,
-                                                   &parent_resource_id));
+  ConvertChangeResourceToResourceEntry(change_resource, &entry,
+                                       &parent_resource_id);
 
   EXPECT_EQ(change_resource.team_drive_id(), entry.resource_id());
   EXPECT_EQ(team_drive_resource->name(), entry.title());
@@ -511,8 +511,8 @@ TEST(ResourceEntryConversionTest,
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  EXPECT_TRUE(ConvertChangeResourceToResourceEntry(change_resource, &entry,
-                                                   &parent_resource_id));
+  ConvertChangeResourceToResourceEntry(change_resource, &entry,
+                                       &parent_resource_id);
 
   EXPECT_EQ(change_resource.team_drive_id(), entry.resource_id());
   EXPECT_EQ(change_resource.modification_date().ToInternalValue(),

@@ -318,9 +318,8 @@ void FakeFileSystem::GetFileContentAfterGetFileResource(
 
   std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
   std::string parent_resource_id;
-  bool converted = ConvertFileResourceToResourceEntry(
-      *gdata_entry, entry.get(), &parent_resource_id);
-  DCHECK(converted);
+  ConvertFileResourceToResourceEntry(*gdata_entry, entry.get(),
+                                     &parent_resource_id);
   entry->set_parent_local_id(parent_resource_id);
 
   base::FilePath cache_path =
@@ -418,9 +417,8 @@ void FakeFileSystem::GetResourceEntryAfterGetFileList(
   for (size_t i = 0; i < entries.size(); ++i) {
     std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
     std::string parent_resource_id;
-    bool converted = ConvertFileResourceToResourceEntry(
-        *entries[i], entry.get(), &parent_resource_id);
-    DCHECK(converted);
+    ConvertFileResourceToResourceEntry(*entries[i], entry.get(),
+                                       &parent_resource_id);
     entry->set_parent_local_id(parent_resource_id);
 
     if (entry->base_name() == base_name.AsUTF8Unsafe()) {
