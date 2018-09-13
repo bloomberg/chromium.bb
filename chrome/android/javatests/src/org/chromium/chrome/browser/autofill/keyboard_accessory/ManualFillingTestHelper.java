@@ -57,7 +57,7 @@ public class ManualFillingTestHelper {
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
     private class FakeKeyboard extends KeyboardVisibilityDelegate {
-        static final int KEYBOARD_HEIGHT = 234;
+        static final int KEYBOARD_HEIGHT = 678;
         private boolean mIsShowing;
 
         @Override
