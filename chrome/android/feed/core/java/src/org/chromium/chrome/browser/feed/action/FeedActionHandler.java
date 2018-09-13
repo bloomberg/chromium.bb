@@ -9,11 +9,15 @@ import android.support.annotation.NonNull;
 import com.google.android.libraries.feed.api.knowncontent.ContentMetadata;
 import com.google.android.libraries.feed.host.action.ActionApi;
 
+import org.chromium.blink_public.web.WebReferrerPolicy;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -109,7 +113,12 @@ public class FeedActionHandler implements ActionApi {
     }
 
     private LoadUrlParams createLoadUrlParams(String url) {
-        return new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK);
+        LoadUrlParams params = new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK);
+        params.setReferrer(
+                new Referrer(SuggestionsConfig.getReferrerUrl(
+                                     ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS),
+                        WebReferrerPolicy.ALWAYS));
+        return params;
     }
 
     /**

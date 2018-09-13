@@ -66,10 +66,14 @@ public final class SuggestionsConfig {
         return false;
     }
 
-    /** @return The value of referrer URL to use with content suggestions. */
-    public static String getReferrerUrl() {
-        String referrerParamValue = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS, REFERRER_URL_PARAM);
+    /**
+     * @param featureName The feature from {@link ChromeFeatureList}, which provides the referrer
+     *                    URL parameter.
+     * @return The value of referrer URL to use with content suggestions.
+     */
+    public static String getReferrerUrl(String featureName) {
+        String referrerParamValue =
+                ChromeFeatureList.getFieldTrialParamByFeature(featureName, REFERRER_URL_PARAM);
 
         if (!TextUtils.isEmpty(referrerParamValue)) {
             return referrerParamValue;
