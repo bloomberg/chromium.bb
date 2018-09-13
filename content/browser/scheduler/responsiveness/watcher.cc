@@ -30,6 +30,7 @@ void Watcher::SetUp() {
 
   calculator_ = CreateCalculator();
   native_event_observer_ui_ = CreateNativeEventObserver();
+  currently_running_metadata_ui_.reserve(5);
 
   RegisterMessageLoopObserverUI();
 
@@ -96,6 +97,7 @@ void Watcher::RegisterMessageLoopObserverIO() {
 void Watcher::SetUpOnIOThread(Calculator* calculator) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
+  currently_running_metadata_io_.reserve(5);
   RegisterMessageLoopObserverIO();
   calculator_io_ = calculator;
 }
@@ -156,23 +158,23 @@ void Watcher::DidRunTaskOnIOThread(const base::PendingTask* task) {
 }
 
 void Watcher::WillRunTask(const base::PendingTask* task,
-                          std::stack<Metadata>* currently_running_metadata) {
+                          std::vector<Metadata>* currently_running_metadata) {
   // Reentrancy should be rare.
   if (UNLIKELY(!currently_running_metadata->empty())) {
-    currently_running_metadata->top().caused_reentrancy = true;
+    currently_running_metadata->back().caused_reentrancy = true;
   }
 
-  currently_running_metadata->emplace(task);
+  currently_running_metadata->emplace_back(task);
 
   // For delayed tasks, record the time right before the task is run.
   if (!task->delayed_run_time.is_null()) {
-    currently_running_metadata->top().delayed_task_start =
+    currently_running_metadata->back().delayed_task_start =
         base::TimeTicks::Now();
   }
 }
 
 void Watcher::DidRunTask(const base::PendingTask* task,
-                         std::stack<Metadata>* currently_running_metadata,
+                         std::vector<Metadata>* currently_running_metadata,
                          int* mismatched_task_identifiers,
                          TaskOrEventFinishedCallback callback) {
   // Calls to DidRunTask should always be paired with WillRunTask. The only time
@@ -180,16 +182,16 @@ void Watcher::DidRunTask(const base::PendingTask* task,
   // TaskRunner Observers may be added while a task is being run, which means
   // that there was no corresponding WillRunTask.
   if (UNLIKELY(currently_running_metadata->empty() ||
-               (task != currently_running_metadata->top().identifier))) {
+               (task != currently_running_metadata->back().identifier))) {
     *mismatched_task_identifiers += 1;
     DCHECK_LE(*mismatched_task_identifiers, 1);
     return;
   }
 
-  bool caused_reentrancy = currently_running_metadata->top().caused_reentrancy;
+  bool caused_reentrancy = currently_running_metadata->back().caused_reentrancy;
   base::TimeTicks delayed_task_start =
-      currently_running_metadata->top().delayed_task_start;
-  currently_running_metadata->pop();
+      currently_running_metadata->back().delayed_task_start;
+  currently_running_metadata->pop_back();
 
   // Ignore tasks that caused reentrancy, since their execution latency will
   // be very large, but Chrome was still responsive.
@@ -218,10 +220,10 @@ void Watcher::WillRunEventOnUIThread(const void* opaque_identifier) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Reentrancy should be rare.
   if (UNLIKELY(!currently_running_metadata_ui_.empty())) {
-    currently_running_metadata_ui_.top().caused_reentrancy = true;
+    currently_running_metadata_ui_.back().caused_reentrancy = true;
   }
 
-  currently_running_metadata_ui_.emplace(opaque_identifier);
+  currently_running_metadata_ui_.emplace_back(opaque_identifier);
 }
 
 void Watcher::DidRunEventOnUIThread(const void* opaque_identifier,
@@ -234,15 +236,15 @@ void Watcher::DidRunEventOnUIThread(const void* opaque_identifier,
   // task is being run, which means that there was no corresponding WillRunTask.
   if (UNLIKELY(currently_running_metadata_ui_.empty() ||
                (opaque_identifier !=
-                currently_running_metadata_ui_.top().identifier))) {
+                currently_running_metadata_ui_.back().identifier))) {
     mismatched_event_identifiers_ui_ += 1;
     DCHECK_LE(mismatched_event_identifiers_ui_, 1);
     return;
   }
 
   bool caused_reentrancy =
-      currently_running_metadata_ui_.top().caused_reentrancy;
-  currently_running_metadata_ui_.pop();
+      currently_running_metadata_ui_.back().caused_reentrancy;
+  currently_running_metadata_ui_.pop_back();
 
   // Ignore events that caused reentrancy, since their execution latency will
   // be very large, but Chrome was still responsive.
