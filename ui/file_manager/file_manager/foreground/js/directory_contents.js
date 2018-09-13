@@ -384,10 +384,9 @@ CrostiniMounter.prototype.__proto__ = ContentScanner.prototype;
 CrostiniMounter.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
   metrics.startInterval('MountCrostiniContainer');
-  chrome.fileManagerPrivate.mountCrostiniContainer(() => {
+  chrome.fileManagerPrivate.mountCrostini(() => {
     if (chrome.runtime.lastError) {
-      console.error(
-          'mountCrostiniContainer error: ', chrome.runtime.lastError.message);
+      console.error('mountCrostini error: ', chrome.runtime.lastError.message);
       errorCallback(util.createDOMError(
           DirectoryModel.CROSTINI_CONNECT_ERR,
           chrome.runtime.lastError.message));

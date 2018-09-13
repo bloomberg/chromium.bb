@@ -940,7 +940,7 @@ chrome.fileManagerPrivate.isCrostiniEnabled = function(callback) {};
  *     is started and mounted.
  *     chrome.runtime.lastError will be set if there was an error.
  */
-chrome.fileManagerPrivate.mountCrostiniContainer = function(callback) {};
+chrome.fileManagerPrivate.mountCrostini = function(callback) {};
 
 /**
  * Shares directory with crostini container.
@@ -948,7 +948,7 @@ chrome.fileManagerPrivate.mountCrostiniContainer = function(callback) {};
  * @param {function()} callback Callback called after the folder is shared.
  *     chrome.runtime.lastError will be set if there was an error.
  */
-chrome.fileManagerPrivate.sharePathWithCrostiniContainer = function(
+chrome.fileManagerPrivate.sharePathWithCrostini = function(
     entry, callback) {};
 
 /**

@@ -577,10 +577,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles"),
         TestCase("enableToggleHiddenAndroidFoldersShowsHiddenFiles")));
 
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    Crostini, /* crostini.js */
-    FilesAppBrowserTest,
-    ::testing::Values(TestCase("mountCrostiniContainer")));
+WRAPPED_INSTANTIATE_TEST_CASE_P(Crostini, /* crostini.js */
+                                FilesAppBrowserTest,
+                                ::testing::Values(TestCase("mountCrostini")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MyFiles, /* my_files.js */

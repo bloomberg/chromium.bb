@@ -1657,7 +1657,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
     const entry = CommandUtil.getCommandEntry(event.target);
     if (entry && entry.isDirectory) {
       const dir = /** @type {!DirectoryEntry} */ (entry);
-      chrome.fileManagerPrivate.sharePathWithCrostiniContainer(
+      chrome.fileManagerPrivate.sharePathWithCrostini(
           dir, () => {
             if (chrome.runtime.lastError) {
               console.error(

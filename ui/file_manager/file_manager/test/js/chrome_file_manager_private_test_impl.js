@@ -134,12 +134,12 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, false);
   },
   // Simulate startup of vm and container by taking 1s.
-  mountCrostiniContainerDelay_: 1000,
-  mountCrostiniContainer: (callback) => {
+  mountCrostiniDelay_: 1000,
+  mountCrostini: (callback) => {
     setTimeout(() => {
       test.mountCrostini();
       callback();
-    }, chrome.fileManagerPrivate.mountCrostiniContainerDelay_);
+    }, chrome.fileManagerPrivate.mountCrostiniDelay_);
   },
   onAppsUpdated: new test.Event(),
   onCopyProgress: new test.Event(),
@@ -176,7 +176,7 @@ chrome.fileManagerPrivate = {
     // highlightedBaseName: string }
     setTimeout(callback, 0, []);
   },
-  sharePathWithCrostiniContainer: (entry, callback) => {
+  sharePathWithCrostini: (entry, callback) => {
     setTimeout(callback, 0);
   },
   nextCopyId_: 0,

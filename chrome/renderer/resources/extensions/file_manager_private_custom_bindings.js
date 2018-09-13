@@ -223,9 +223,9 @@ binding.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest(
-      'sharePathWithCrostiniContainer', function(entry, callback) {
+      'sharePathWithCrostini', function(entry, callback) {
         const url = fileManagerPrivateNatives.GetEntryURL(entry);
-        fileManagerPrivateInternal.sharePathWithCrostiniContainer(
+        fileManagerPrivateInternal.sharePathWithCrostini(
             url, callback);
       });
 

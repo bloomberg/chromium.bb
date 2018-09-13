@@ -649,13 +649,13 @@ FileManagerPrivateIsCrostiniEnabledFunction::Run() {
       IsCrostiniEnabled(Profile::FromBrowserContext(browser_context())))));
 }
 
-FileManagerPrivateMountCrostiniContainerFunction::
-    FileManagerPrivateMountCrostiniContainerFunction() = default;
+FileManagerPrivateMountCrostiniFunction::
+    FileManagerPrivateMountCrostiniFunction() = default;
 
-FileManagerPrivateMountCrostiniContainerFunction::
-    ~FileManagerPrivateMountCrostiniContainerFunction() = default;
+FileManagerPrivateMountCrostiniFunction::
+    ~FileManagerPrivateMountCrostiniFunction() = default;
 
-bool FileManagerPrivateMountCrostiniContainerFunction::RunAsync() {
+bool FileManagerPrivateMountCrostiniFunction::RunAsync() {
   // Use OriginalProfile since using crostini in incognito such as saving
   // files into Linux files should still work.
   Profile* profile =
@@ -663,13 +663,12 @@ bool FileManagerPrivateMountCrostiniContainerFunction::RunAsync() {
   DCHECK(IsCrostiniEnabled(profile));
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-      base::BindOnce(
-          &FileManagerPrivateMountCrostiniContainerFunction::RestartCallback,
-          this));
+      base::BindOnce(&FileManagerPrivateMountCrostiniFunction::RestartCallback,
+                     this));
   return true;
 }
 
-void FileManagerPrivateMountCrostiniContainerFunction::RestartCallback(
+void FileManagerPrivateMountCrostiniFunction::RestartCallback(
     crostini::ConciergeClientResult result) {
   if (result != crostini::ConciergeClientResult::SUCCESS) {
     Respond(Error(
@@ -680,9 +679,9 @@ void FileManagerPrivateMountCrostiniContainerFunction::RestartCallback(
 }
 
 ExtensionFunction::ResponseAction
-FileManagerPrivateInternalSharePathWithCrostiniContainerFunction::Run() {
-  using extensions::api::file_manager_private_internal::
-      SharePathWithCrostiniContainer::Params;
+FileManagerPrivateInternalSharePathWithCrostiniFunction::Run() {
+  using extensions::api::file_manager_private_internal::SharePathWithCrostini::
+      Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -707,16 +706,16 @@ FileManagerPrivateInternalSharePathWithCrostiniContainerFunction::Run() {
       cracked.virtual_path().value().substr(downloads_mount_name.size() + 1);
   crostini::CrostiniSharePath::GetInstance()->SharePath(
       profile, kCrostiniDefaultVmName, share_path,
-      base::BindOnce(
-          &FileManagerPrivateInternalSharePathWithCrostiniContainerFunction::
-              SharePathCallback,
-          this));
+      base::BindOnce(&FileManagerPrivateInternalSharePathWithCrostiniFunction::
+                         SharePathCallback,
+                     this));
 
   return RespondLater();
 }
 
-void FileManagerPrivateInternalSharePathWithCrostiniContainerFunction::
-    SharePathCallback(bool success, std::string failure_reason) {
+void FileManagerPrivateInternalSharePathWithCrostiniFunction::SharePathCallback(
+    bool success,
+    std::string failure_reason) {
   Respond(success ? NoArguments() : Error(failure_reason));
 }
 
