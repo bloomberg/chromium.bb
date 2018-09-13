@@ -484,7 +484,11 @@ void AudioContext::NotifyAudibleAudioStopped() {
   DCHECK(IsMainThread());
   DCHECK(audio_context_manager_);
 
-  audio_context_manager_->AudioContextAudiblePlaybackStopped(context_id_);
+  // If we don't have a document, we don't need to notify anyone that we've
+  // stopped.
+  if (GetDocument()) {
+    audio_context_manager_->AudioContextAudiblePlaybackStopped(context_id_);
+  }
 }
 
 }  // namespace blink
