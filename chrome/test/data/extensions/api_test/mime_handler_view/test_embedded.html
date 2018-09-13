@@ -1,14 +1,5 @@
 <html>
 <body>
 <object id="plugin" width="200" height="200" data="testEmbedded.csv" type="text/csv"></object>
-<script>
-  // TODO(ekaramad): Remove once MimeHandlerViewGuest is based on OOPIF (https://crbug.com/659750).
-  function ensurePageIsScrollable() {
-    var spacer = document.createElement("div");
-    spacer.style = "width: 100%; height: 200%";
-    document.body.appendChild(spacer);
-    window.scrollTo(0, 0);
-  }
-</script>
 </body>
 </html>
