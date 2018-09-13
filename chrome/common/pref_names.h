@@ -403,7 +403,6 @@ extern const char kSupervisedUserCreationAllowed[];
 extern const char kSupervisedUsers[];
 
 extern const char kMessageCenterDisabledExtensionIds[];
-extern const char kMessageCenterDisabledSystemComponentIds[];
 
 extern const char kFullscreenAllowed[];
 
