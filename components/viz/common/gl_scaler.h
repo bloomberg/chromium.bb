@@ -7,6 +7,10 @@
 
 #include <stdint.h>
 
+#include <map>
+#include <memory>
+#include <tuple>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -17,8 +21,10 @@
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace gfx {
+class ColorTransform;
 class Vector2dF;
 class Rect;
+class RectF;
 class Size;
 }  // namespace gfx
 
@@ -266,10 +272,98 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
                                           const gfx::Vector2d& to);
 
  private:
+  friend class GLScalerShaderPixelTest;
+
   using GLES2Interface = gpu::gles2::GLES2Interface;
+
+  enum Axis { HORIZONTAL, VERTICAL };
+
+  // The shaders used by each stage in the scaling pipeline.
+  enum class Shader : int8_t {
+    BILINEAR,
+    BILINEAR2,
+    BILINEAR3,
+    BILINEAR4,
+    BILINEAR2X2,
+    BICUBIC_UPSCALE,
+    BICUBIC_HALF_1D,
+    PLANAR_CHANNEL_0,
+    PLANAR_CHANNEL_1,
+    PLANAR_CHANNEL_2,
+    PLANAR_CHANNEL_3,
+    I422_NV61_MRT,
+    DEINTERLEAVE_PAIRWISE_MRT,
+  };
+
+  // A cached, re-usable shader program that performs one step in the scaling
+  // pipeline.
+  class VIZ_COMMON_EXPORT ShaderProgram {
+   public:
+    ShaderProgram(GLES2Interface* gl,
+                  Shader shader,
+                  GLint texture_format,
+                  const gfx::ColorTransform* color_transform,
+                  const GLenum swizzle[2]);
+    ~ShaderProgram();
+
+    Shader shader() const { return shader_; }
+    GLint texture_format() const { return texture_format_; }
+
+    // UseProgram must be called with GL_ARRAY_BUFFER bound to a vertex
+    // attribute buffer. |src_texture_size| is the size of the entire source
+    // texture, regardless of which region is to be sampled. |src_rect| is the
+    // source region, not including overscan pixels past the edges.
+    // |primary_axis| configures certain programs which scale in only one
+    // particular direction. |flip_y| causes the |src_rect| to be scanned
+    // upside-down, to produce a vertically-flipped result.
+    void UseProgram(const gfx::Size& src_texture_size,
+                    const gfx::RectF& src_rect,
+                    const gfx::Size& dst_size,
+                    Axis primary_axis,
+                    bool flip_y);
+
+    // GL_ARRAY_BUFFER data that must be bound when drawing with a
+    // ShaderProgram. These are the vertex attributes that will sweep the entire
+    // source area when executing the program. They represent triangle strip
+    // coordinates: The first two columns are (x,y) values interpolated to
+    // produce the vertex coordinates in object space, while the latter two
+    // columns are (s,t) values interpolated to produce the texture coordinates
+    // that correspond to the vertex coordinates.
+    static const GLfloat kVertexAttributes[16];
+
+   private:
+    GLES2Interface* const gl_;
+    const Shader shader_;
+    const GLint texture_format_;
+
+    // A program for copying a source texture into a destination texture.
+    const GLuint program_;
+
+    // The location of the position in the program.
+    GLint position_location_ = -1;
+    // The location of the texture coordinate in the program.
+    GLint texcoord_location_ = -1;
+    // The location of the source texture in the program.
+    GLint texture_location_ = -1;
+    // The location of the texture coordinate of the source rectangle in the
+    // program.
+    GLint src_rect_location_ = -1;
+    // Location of size of source image in pixels.
+    GLint src_pixelsize_location_ = -1;
+    // Location of vector for scaling ratio between source and dest textures.
+    GLint scaling_vector_location_ = -1;
+
+    DISALLOW_COPY_AND_ASSIGN(ShaderProgram);
+  };
 
   // ContextLostObserver implementation.
   void OnContextLost() final;
+
+  // Returns a cached ShaderProgram, creating one on-demand if necessary.
+  ShaderProgram* GetShaderProgram(Shader shader,
+                                  GLint texture_format,
+                                  const gfx::ColorTransform* color_transform,
+                                  const GLenum swizzle[2]);
 
   // The provider of the GL context. This is non-null while the GL context is
   // valid and GLScaler is observing for context loss.
@@ -281,6 +375,13 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
   // The maximum number of simultaneous draw buffers, lazy initialized by
   // GetMaxDrawBuffersSupported(). -1 means "not yet known."
   mutable int max_draw_buffers_ = -1;
+
+  // Cache of ShaderPrograms. The cache key consists of fields that correspond
+  // to the arguments of GetShaderProgram(): the shader, the texture format, the
+  // source and output color spaces (color transform), and the two swizzles.
+  using ShaderCacheKey = std::
+      tuple<Shader, GLint, gfx::ColorSpace, gfx::ColorSpace, GLenum, GLenum>;
+  std::map<ShaderCacheKey, ShaderProgram> shader_programs_;
 
   DISALLOW_COPY_AND_ASSIGN(GLScaler);
 };
