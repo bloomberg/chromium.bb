@@ -1485,8 +1485,9 @@ TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback) {
 
   EXPECT_TRUE(proc_->WaitFor(1u));
 
-  // Triggering an IP address change.
-  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  // Triggering a network change.
+  NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      NetworkChangeNotifier::CONNECTION_UNKNOWN);
 
   // |MyHandler| will send quit message once all the requests have finished.
   base::RunLoop().Run();
@@ -1533,7 +1534,9 @@ TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback_ResolveHost) {
   // Wait for all calls to queue up, trigger abort via IP address change, then
   // signal all the queued requests to let them all try to finish.
   EXPECT_TRUE(proc_->WaitFor(2u));
-  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  // Triggering a network change.
+  NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      NetworkChangeNotifier::CONNECTION_UNKNOWN);
   proc_->SignalAll();
 
   EXPECT_THAT(deleting_response.result_error(), IsError(ERR_NETWORK_CHANGED));
@@ -1652,9 +1655,9 @@ TEST_F(HostResolverImplTest, BypassCache_ResolveHost) {
   EXPECT_EQ(2u, proc_->GetCaptureList().size());
 }
 
-// Test that IP address changes flush the cache but initial DNS config reads do
+// Test that Network changes flush the cache but initial DNS config reads do
 // not.
-TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange) {
+TEST_F(HostResolverImplTest, FlushCacheOnNetworkChange) {
   proc_->SignalMultiple(2u);  // One before the flush, one after.
 
   Request* req = CreateRequest("host1", 70);
@@ -1669,8 +1672,9 @@ TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange) {
   req = CreateRequest("host1", 75);
   EXPECT_THAT(req->Resolve(), IsOk());  // Should complete synchronously.
 
-  // Flush cache by triggering an IP address change.
-  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  // Flush cache by triggering a network change.
+  NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      NetworkChangeNotifier::CONNECTION_UNKNOWN);
   base::RunLoop().RunUntilIdle();  // Notification happens async.
 
   // Resolve "host1" again -- this time it won't be served from cache, so it
@@ -1680,9 +1684,9 @@ TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange) {
   EXPECT_THAT(req->WaitForResult(), IsOk());
 }
 
-// Test that IP address changes flush the cache but initial DNS config reads
+// Test that Network changes flush the cache but initial DNS config reads
 // do not.
-TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange_ResolveHost) {
+TEST_F(HostResolverImplTest, FlushCacheOnNetworkChange_ResolveHost) {
   proc_->SignalMultiple(2u);  // One before the flush, one after.
 
   ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
@@ -1702,8 +1706,9 @@ TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange_ResolveHost) {
   EXPECT_THAT(unflushed_response.result_error(), IsOk());
   EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No expected increase.
 
-  // Flush cache by triggering an IP address change.
-  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  // Flush cache by triggering a network change.
+  NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      NetworkChangeNotifier::CONNECTION_UNKNOWN);
   base::RunLoop().RunUntilIdle();  // Notification happens async.
 
   // Resolve "host1" again -- this time it won't be served from cache, so it
@@ -1714,14 +1719,15 @@ TEST_F(HostResolverImplTest, FlushCacheOnIPAddressChange_ResolveHost) {
   EXPECT_EQ(2u, proc_->GetCaptureList().size());  // Expected increase.
 }
 
-// Test that IP address changes send ERR_NETWORK_CHANGED to pending requests.
-TEST_F(HostResolverImplTest, AbortOnIPAddressChanged) {
+// Test that Network changes send ERR_NETWORK_CHANGED to pending requests.
+TEST_F(HostResolverImplTest, AbortOnNetworkChanged) {
   Request* req = CreateRequest("host1", 70);
   EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
 
   EXPECT_TRUE(proc_->WaitFor(1u));
-  // Triggering an IP address change.
-  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  // Triggering a network change.
+  NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      NetworkChangeNotifier::CONNECTION_UNKNOWN);
   base::RunLoop().RunUntilIdle();  // Notification happens async.
   proc_->SignalAll();
 
@@ -1729,16 +1735,17 @@ TEST_F(HostResolverImplTest, AbortOnIPAddressChanged) {
   EXPECT_EQ(0u, resolver_->GetHostCache()->size());
 }
 
-// Test that IP address changes send ERR_NETWORK_CHANGED to pending requests.
-TEST_F(HostResolverImplTest, AbortOnIPAddressChanged_ResolveHost) {
+// Test that Network changes send ERR_NETWORK_CHANGED to pending requests.
+TEST_F(HostResolverImplTest, AbortOnNetworkChanged_ResolveHost) {
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("host1", 70), NetLogWithSource(), base::nullopt));
 
   ASSERT_FALSE(response.complete());
   ASSERT_TRUE(proc_->WaitFor(1u));
 
-  // Triggering an IP address change.
-  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  // Triggering a network change.
+  NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      NetworkChangeNotifier::CONNECTION_UNKNOWN);
   base::RunLoop().RunUntilIdle();  // Notification happens async.
   proc_->SignalAll();
 
@@ -1778,8 +1785,8 @@ TEST_F(HostResolverImplTest, DontAbortOnInitialDNSConfigRead_ResolveHost) {
   EXPECT_TRUE(response.request()->GetAddressResults());
 }
 
-// Obey pool constraints after IP address has changed.
-TEST_F(HostResolverImplTest, ObeyPoolConstraintsAfterIPAddressChange) {
+// Obey pool constraints after Network has changed.
+TEST_F(HostResolverImplTest, ObeyPoolConstraintsAfterNetworkChange) {
   // Runs at most one job at a time.
   CreateSerialResolver();
   EXPECT_THAT(CreateRequest("a")->Resolve(), IsError(ERR_IO_PENDING));
@@ -1787,8 +1794,9 @@ TEST_F(HostResolverImplTest, ObeyPoolConstraintsAfterIPAddressChange) {
   EXPECT_THAT(CreateRequest("c")->Resolve(), IsError(ERR_IO_PENDING));
 
   EXPECT_TRUE(proc_->WaitFor(1u));
-  // Triggering an IP address change.
-  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  // Triggering a network change.
+  NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      NetworkChangeNotifier::CONNECTION_UNKNOWN);
   base::RunLoop().RunUntilIdle();  // Notification happens async.
   proc_->SignalMultiple(3u);  // Let the false-start go so that we can catch it.
 
@@ -1803,9 +1811,9 @@ TEST_F(HostResolverImplTest, ObeyPoolConstraintsAfterIPAddressChange) {
   EXPECT_THAT(requests_[1]->result(), IsOk());
 }
 
-// Obey pool constraints after IP address has changed.
+// Obey pool constraints after Network has changed.
 TEST_F(HostResolverImplTest,
-       ObeyPoolConstraintsAfterIPAddressChange_ResolveHost) {
+       ObeyPoolConstraintsAfterNetworkChange_ResolveHost) {
   // Runs at most one job at a time.
   CreateSerialResolver();
 
@@ -1825,8 +1833,9 @@ TEST_F(HostResolverImplTest,
   }
   ASSERT_TRUE(proc_->WaitFor(1u));
 
-  // Triggering an IP address change.
-  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  // Triggering a network change.
+  NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      NetworkChangeNotifier::CONNECTION_UNKNOWN);
   base::RunLoop().RunUntilIdle();  // Notification happens async.
   proc_->SignalMultiple(3u);  // Let the false-start go so that we can catch it.
 
@@ -1845,7 +1854,7 @@ TEST_F(HostResolverImplTest,
 
 // Tests that a new Request made from the callback of a previously aborted one
 // will not be aborted.
-TEST_F(HostResolverImplTest, AbortOnlyExistingRequestsOnIPAddressChange) {
+TEST_F(HostResolverImplTest, AbortOnlyExistingRequestsOnNetworkChange) {
   struct MyHandler : public Handler {
     void Handle(Request* req) override {
       // Start new request for a different hostname to ensure that the order
@@ -1870,8 +1879,9 @@ TEST_F(HostResolverImplTest, AbortOnlyExistingRequestsOnIPAddressChange) {
 
   // Wait until all are blocked;
   EXPECT_TRUE(proc_->WaitFor(3u));
-  // Trigger an IP address change.
-  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  // Triggering a network change.
+  NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      NetworkChangeNotifier::CONNECTION_UNKNOWN);
   // This should abort all running jobs.
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(requests_[0]->result(), IsError(ERR_NETWORK_CHANGED));
@@ -1892,7 +1902,7 @@ TEST_F(HostResolverImplTest, AbortOnlyExistingRequestsOnIPAddressChange) {
 // Tests that a new Request made from the callback of a previously aborted one
 // will not be aborted.
 TEST_F(HostResolverImplTest,
-       AbortOnlyExistingRequestsOnIPAddressChange_ResolveHost) {
+       AbortOnlyExistingRequestsOnNetworkChange_ResolveHost) {
   auto custom_callback_template = base::BindLambdaForTesting(
       [&](const HostPortPair& next_host,
           std::unique_ptr<ResolveHostResponseHelper>* next_response,
@@ -1925,8 +1935,9 @@ TEST_F(HostResolverImplTest,
 
   // Wait until all are blocked;
   ASSERT_TRUE(proc_->WaitFor(3u));
-  // Trigger an IP address change.
-  NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  // Triggering a network change.
+  NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      NetworkChangeNotifier::CONNECTION_UNKNOWN);
   // This should abort all running jobs.
   base::RunLoop().RunUntilIdle();
 
