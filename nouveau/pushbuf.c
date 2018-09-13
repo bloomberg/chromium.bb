@@ -528,7 +528,7 @@ pushbuf_validate(struct nouveau_pushbuf *push, bool retry)
 	return ret;
 }
 
-int
+drm_public int
 nouveau_pushbuf_new(struct nouveau_client *client, struct nouveau_object *chan,
 		    int nr, uint32_t size, bool immediate,
 		    struct nouveau_pushbuf **ppush)
@@ -599,7 +599,7 @@ nouveau_pushbuf_new(struct nouveau_client *client, struct nouveau_object *chan,
 	return 0;
 }
 
-void
+drm_public void
 nouveau_pushbuf_del(struct nouveau_pushbuf **ppush)
 {
 	struct nouveau_pushbuf_priv *nvpb = nouveau_pushbuf(*ppush);
@@ -625,7 +625,7 @@ nouveau_pushbuf_del(struct nouveau_pushbuf **ppush)
 	*ppush = NULL;
 }
 
-struct nouveau_bufctx *
+drm_public struct nouveau_bufctx *
 nouveau_pushbuf_bufctx(struct nouveau_pushbuf *push, struct nouveau_bufctx *ctx)
 {
 	struct nouveau_bufctx *prev = push->bufctx;
@@ -633,7 +633,7 @@ nouveau_pushbuf_bufctx(struct nouveau_pushbuf *push, struct nouveau_bufctx *ctx)
 	return prev;
 }
 
-int
+drm_public int
 nouveau_pushbuf_space(struct nouveau_pushbuf *push,
 		      uint32_t dwords, uint32_t relocs, uint32_t pushes)
 {
@@ -697,7 +697,7 @@ nouveau_pushbuf_space(struct nouveau_pushbuf *push,
 	return flushed ? pushbuf_validate(push, false) : 0;
 }
 
-void
+drm_public void
 nouveau_pushbuf_data(struct nouveau_pushbuf *push, struct nouveau_bo *bo,
 		     uint64_t offset, uint64_t length)
 {
@@ -735,7 +735,7 @@ nouveau_pushbuf_refn(struct nouveau_pushbuf *push,
 	return pushbuf_refn(push, true, refs, nr);
 }
 
-void
+drm_public void
 nouveau_pushbuf_reloc(struct nouveau_pushbuf *push, struct nouveau_bo *bo,
 		      uint32_t data, uint32_t flags, uint32_t vor, uint32_t tor)
 {
@@ -743,13 +743,13 @@ nouveau_pushbuf_reloc(struct nouveau_pushbuf *push, struct nouveau_bo *bo,
 	push->cur++;
 }
 
-int
+drm_public int
 nouveau_pushbuf_validate(struct nouveau_pushbuf *push)
 {
 	return pushbuf_validate(push, true);
 }
 
-uint32_t
+drm_public uint32_t
 nouveau_pushbuf_refd(struct nouveau_pushbuf *push, struct nouveau_bo *bo)
 {
 	struct drm_nouveau_gem_pushbuf_bo *kref;
@@ -767,7 +767,7 @@ nouveau_pushbuf_refd(struct nouveau_pushbuf *push, struct nouveau_bo *bo)
 	return flags;
 }
 
-int
+drm_public int
 nouveau_pushbuf_kick(struct nouveau_pushbuf *push, struct nouveau_object *chan)
 {
 	if (!push->channel)
