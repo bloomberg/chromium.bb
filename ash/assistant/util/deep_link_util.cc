@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -37,9 +38,9 @@ constexpr char kAssistantWhatsOnMyScreenPrefix[] =
 
 // TODO(b/113357196): Make these URLs configurable for development purposes.
 constexpr char kAssistantRemindersWebUrl[] =
-    "https://assistant.google.com/reminders/mainview";
+    "https://assistant.google.com/reminders/mainview?hl=";
 constexpr char kAssistantSettingsWebUrl[] =
-    "https://assistant.google.com/settings/mainpage";
+    "https://assistant.google.com/settings/mainpage?hl=";
 
 }  // namespace
 
@@ -141,9 +142,10 @@ base::Optional<GURL> GetWebUrl(DeepLinkType type) {
 
   switch (type) {
     case DeepLinkType::kReminders:
-      return GURL(kAssistantRemindersWebUrl);
+      return GURL(kAssistantRemindersWebUrl +
+                  base::i18n::GetConfiguredLocale());
     case DeepLinkType::kSettings:
-      return GURL(kAssistantSettingsWebUrl);
+      return GURL(kAssistantSettingsWebUrl + base::i18n::GetConfiguredLocale());
     case DeepLinkType::kUnsupported:
     case DeepLinkType::kFeedback:
     case DeepLinkType::kOnboarding:
