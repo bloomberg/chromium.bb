@@ -15,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_data.h"
@@ -910,6 +911,12 @@ const char* AXPlatformNodeAuraLinux::GetUniqueAccessibilityGTypeName(
   return name;
 }
 
+static bool IsRoleWithValueInterface(AtkRole role) {
+  return role == ATK_ROLE_SCROLL_BAR || role == ATK_ROLE_SLIDER ||
+         role == ATK_ROLE_PROGRESS_BAR || role == ATK_ROLE_SEPARATOR ||
+         role == ATK_ROLE_SPIN_BUTTON;
+}
+
 int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   int interface_mask = 0;
 
@@ -926,10 +933,8 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   interface_mask |= 1 << ATK_TEXT_INTERFACE;
 
   // Value Interface
-  int role = GetAtkRole();
-  if (role == ATK_ROLE_SCROLL_BAR || role == ATK_ROLE_SLIDER ||
-      role == ATK_ROLE_PROGRESS_BAR || role == ATK_ROLE_SEPARATOR ||
-      role == ATK_ROLE_SPIN_BUTTON) {
+  AtkRole role = GetAtkRole();
+  if (IsRoleWithValueInterface(role)) {
     interface_mask |= 1 << ATK_VALUE_INTERFACE;
   }
 
@@ -1669,6 +1674,28 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
   return false;
 }
 
+void AXPlatformNodeAuraLinux::OnValueChanged() {
+  DCHECK(atk_object_);
+
+  if (!IsRoleWithValueInterface(GetAtkRole()))
+    return;
+
+  float float_val;
+  if (!GetFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, &float_val))
+    return;
+
+  AtkPropertyValues property_values;
+  property_values.property_name = "accessible-value";
+
+  property_values.new_value = G_VALUE_INIT;
+  g_value_init(&property_values.new_value, G_TYPE_DOUBLE);
+  g_value_set_double(&property_values.new_value,
+                     static_cast<double>(float_val));
+  g_signal_emit_by_name(G_OBJECT(atk_object_),
+                        "property-change::accessible-value", &property_values,
+                        nullptr);
+}
+
 void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   switch (event_type) {
@@ -1684,6 +1711,9 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       break;
     case ax::mojom::Event::kSelection:
       OnSelected();
+      break;
+    case ax::mojom::Event::kValueChanged:
+      OnValueChanged();
       break;
     default:
       break;
