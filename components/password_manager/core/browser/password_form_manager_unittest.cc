@@ -4830,4 +4830,27 @@ TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_EmptyUsername) {
   form_manager()->PresaveGeneratedPassword(credentials);
 }
 
+TEST_F(PasswordFormManagerTest, MetricForManuallyTypedAndGeneratedPasswords) {
+  for (bool is_generated_password : {false, true}) {
+    SCOPED_TRACE(testing::Message("is_generated_password = ")
+                 << is_generated_password);
+    fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(),
+                                         0u);
+
+    PasswordForm credentials(*observed_form());
+    credentials.username_value = ASCIIToUTF16("test@gmail.com");
+    credentials.preferred = true;
+    form_manager()->SetHasGeneratedPassword(is_generated_password);
+    form_manager()->ProvisionallySave(credentials);
+
+    PasswordForm saved_result;
+    EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _));
+    base::HistogramTester histogram_tester;
+    form_manager()->Save();
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.NewlySavedPasswordIsGenerated", is_generated_password,
+        1);
+  }
+}
+
 }  // namespace password_manager
