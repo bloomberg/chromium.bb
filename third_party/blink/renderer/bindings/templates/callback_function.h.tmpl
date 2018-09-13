@@ -17,7 +17,9 @@ class {{forward_declaration}};
 
 class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
  public:
-  static {{cpp_class}}* Create(v8::Local<v8::Function> callback_function) {
+  static {{cpp_class}}* Create(
+      {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>
+      {%- else %}v8::Local<v8::Function>{% endif %} callback_function) {
     return new {{cpp_class}}(callback_function);
   }
 
@@ -48,7 +50,9 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
 {% endif %}
 
  private:
-  explicit {{cpp_class}}(v8::Local<v8::Function> callback_function)
+  explicit {{cpp_class}}(
+      {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>
+      {%- else %}v8::Local<v8::Function>{% endif %} callback_function)
       : CallbackFunctionBase(callback_function) {}
 };
 
