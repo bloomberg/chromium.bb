@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -22,6 +23,11 @@
 namespace content {
 class BrowserContext;
 }
+
+namespace gfx {
+class ImageSkia;
+class Size;
+}  // namespace gfx
 
 namespace extensions {
 
@@ -39,6 +45,9 @@ class ChromeAppIconService : public KeyedService,
 #endif
                              public ExtensionRegistryObserver {
  public:
+  using ResizeFunction =
+      base::RepeatingCallback<void(const gfx::Size&, gfx::ImageSkia*)>;
+
   explicit ChromeAppIconService(content::BrowserContext* context);
 
   ~ChromeAppIconService() override;
@@ -49,6 +58,15 @@ class ChromeAppIconService : public KeyedService,
 
   // Creates extension app icon for requested app and size. Icon updates are
   // dispatched via |delegate|.
+  // |resize_function| overrides icon resizing behavior if non-null. Otherwise
+  // IconLoader with perform the resizing. In both cases |resource_size_in_dip|
+  // is used to pick the correct icon representation from resources.
+  std::unique_ptr<ChromeAppIcon> CreateIcon(
+      ChromeAppIconDelegate* delegate,
+      const std::string& app_id,
+      int resource_size_in_dip,
+      const ResizeFunction& resize_function);
+
   std::unique_ptr<ChromeAppIcon> CreateIcon(ChromeAppIconDelegate* delegate,
                                             const std::string& app_id,
                                             int resource_size_in_dip);

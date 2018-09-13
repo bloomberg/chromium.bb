@@ -65,12 +65,14 @@ ChromeAppIcon::ChromeAppIcon(ChromeAppIconDelegate* delegate,
                              content::BrowserContext* browser_context,
                              DestroyedCallback destroyed_callback,
                              const std::string& app_id,
-                             int resource_size_in_dip)
+                             int resource_size_in_dip,
+                             const ResizeFunction& resize_function)
     : delegate_(delegate),
       browser_context_(browser_context),
       destroyed_callback_(std::move(destroyed_callback)),
       app_id_(app_id),
-      resource_size_in_dip_(resource_size_in_dip) {
+      resource_size_in_dip_(resource_size_in_dip),
+      resize_function_(resize_function) {
   DCHECK(delegate_);
   DCHECK(browser_context_);
   DCHECK(!destroyed_callback_.is_null());
@@ -95,7 +97,7 @@ void ChromeAppIcon::Reload() {
   icon_ = std::make_unique<IconImage>(
       browser_context_, extension,
       extension ? IconsInfo::GetIcons(extension) : ExtensionIconSet(),
-      resource_size_in_dip_, default_icon, this);
+      resource_size_in_dip_, !resize_function_.is_null(), default_icon, this);
   UpdateIcon();
 }
 
@@ -108,6 +110,10 @@ void ChromeAppIcon::UpdateIcon() {
   DCHECK(icon_);
 
   image_skia_ = icon_->image_skia();
+  if (!resize_function_.is_null()) {
+    resize_function_.Run(
+        gfx::Size(resource_size_in_dip_, resource_size_in_dip_), &image_skia_);
+  }
 #if defined(OS_CHROMEOS)
   icon_is_badged_ =
       util::MaybeApplyChromeBadge(browser_context_, app_id_, &image_skia_);

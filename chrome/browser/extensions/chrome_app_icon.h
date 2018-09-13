@@ -30,12 +30,18 @@ class ChromeAppIconDelegate;
 class ChromeAppIcon : public IconImage::Observer {
  public:
   using DestroyedCallback = base::OnceCallback<void(ChromeAppIcon*)>;
+  using ResizeFunction =
+      base::RepeatingCallback<void(const gfx::Size&, gfx::ImageSkia*)>;
 
+  // |resize_function| overrides icon resizing behavior if non-null. Otherwise
+  // IconLoader with perform the resizing. In both cases |resource_size_in_dip|
+  // is used to pick the correct icon representation from resources.
   ChromeAppIcon(ChromeAppIconDelegate* delegate,
                 content::BrowserContext* browser_context,
                 DestroyedCallback destroyed_callback,
                 const std::string& app_id,
-                int resource_size_in_dip);
+                int resource_size_in_dip,
+                const ResizeFunction& resize_function);
   ~ChromeAppIcon() override;
 
   // Reloads icon.
@@ -83,6 +89,10 @@ class ChromeAppIcon : public IconImage::Observer {
 #endif
 
   const int resource_size_in_dip_;
+
+  // Function to be used to resize the image loaded from a resource. If null,
+  // resize will be performed by ImageLoader.
+  const ResizeFunction resize_function_;
 
   std::unique_ptr<IconImage> icon_;
 
