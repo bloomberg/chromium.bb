@@ -27,6 +27,7 @@ namespace blink {
 class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebString;
+class WebVideoFrameSubmitter;
 }
 
 namespace media {
@@ -91,6 +92,8 @@ class CONTENT_EXPORT WebMediaPlayerMS
       media::GpuVideoAcceleratorFactories* gpu_factories,
       const blink::WebString& sink_id,
       CreateSurfaceLayerBridgeCB create_bridge_callback,
+      base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
+          create_submitter_callback,
       bool surface_layer_for_video_enabled_);
 
   ~WebMediaPlayerMS() override;
@@ -237,10 +240,17 @@ class CONTENT_EXPORT WebMediaPlayerMS
   static const gfx::Size kUseGpuMemoryBufferVideoFramesMinResolution;
 #endif  // defined(OS_WIN)
 
+  // When we lose the context_provider, we destroy the CompositorFrameSink to
+  // prevent frames from being submitted. The current surface_ids become
+  // invalid.
+  void OnFrameSinkDestroyed();
+
   void OnFirstFrameReceived(media::VideoRotation video_rotation,
                             bool is_opaque);
   void OnOpacityChanged(bool is_opaque);
   void OnRotationChanged(media::VideoRotation video_rotation, bool is_opaque);
+
+  bool IsInPictureInPicture() const;
 
   // Need repaint due to state change.
   void RepaintInternal();
@@ -309,6 +319,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+
   const scoped_refptr<base::TaskRunner> worker_task_runner_;
   media::GpuVideoAcceleratorFactories* gpu_factories_;
 
@@ -335,6 +346,9 @@ class CONTENT_EXPORT WebMediaPlayerMS
   blink::WebString current_audio_track_id_;
 
   CreateSurfaceLayerBridgeCB create_bridge_callback_;
+
+  base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
+      create_submitter_callback_;
 
   // Whether the use of a surface layer instead of a video layer is enabled.
   bool surface_layer_for_video_enabled_ = false;

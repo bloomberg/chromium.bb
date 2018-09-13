@@ -269,6 +269,8 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     media::GpuVideoAcceleratorFactories* gpu_factories,
     const blink::WebString& sink_id,
     CreateSurfaceLayerBridgeCB create_bridge_callback,
+    base::RepeatingCallback<std::unique_ptr<blink::WebVideoFrameSubmitter>()>
+        create_submitter_callback,
     bool surface_layer_for_video_enabled)
     : frame_(frame),
       network_state_(WebMediaPlayer::kNetworkStateEmpty),
@@ -291,6 +293,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       volume_multiplier_(1.0),
       should_play_upon_shown_(false),
       create_bridge_callback_(std::move(create_bridge_callback)),
+      create_submitter_callback_(create_submitter_callback),
       surface_layer_for_video_enabled_(surface_layer_for_video_enabled) {
   DVLOG(1) << __func__;
   DCHECK(client);
@@ -349,7 +352,9 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
     web_stream_.AddObserver(this);
 
   compositor_ = new WebMediaPlayerMSCompositor(
-      compositor_task_runner_, io_task_runner_, web_stream_, AsWeakPtr());
+      compositor_task_runner_, io_task_runner_, web_stream_,
+      create_submitter_callback_, surface_layer_for_video_enabled_,
+      AsWeakPtr());
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
@@ -1079,6 +1084,10 @@ bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
   return false;
 }
 
+void WebMediaPlayerMS::OnFrameSinkDestroyed() {
+  bridge_->ClearSurfaceId();
+}
+
 void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
                                             bool is_opaque) {
   DVLOG(1) << __func__;
@@ -1090,6 +1099,16 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
     bridge_ = std::move(create_bridge_callback_)
                   .Run(this, compositor_->GetUpdateSubmissionStateCallback());
     bridge_->CreateSurfaceLayer();
+    bridge_->SetContentsOpaque(opaque_);
+
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &WebMediaPlayerMSCompositor::EnableSubmission, compositor_,
+            bridge_->GetSurfaceId(), video_rotation, IsInPictureInPicture(),
+            opaque_,
+            media::BindToCurrentLoop(base::BindRepeating(
+                &WebMediaPlayerMS::OnFrameSinkDestroyed, AsWeakPtr()))));
   }
 
   SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
@@ -1112,6 +1131,9 @@ void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
     DCHECK(bridge_);
 
     bridge_->SetContentsOpaque(opaque_);
+    compositor_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::UpdateIsOpaque,
+                                  compositor_, opaque_));
   }
 }
 
@@ -1132,10 +1154,16 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
     get_client()->SetCcLayer(new_video_layer.get());
 
     video_layer_ = std::move(new_video_layer);
-  } else if (bridge_->GetCcLayer()) {
-    // TODO(lethalantidote): Handle rotation.
-    bridge_->SetContentsOpaque(opaque_);
+  } else {
+    compositor_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::UpdateRotation,
+                                  compositor_, video_rotation));
   }
+}
+
+bool WebMediaPlayerMS::IsInPictureInPicture() const {
+  // TODO(apacible): Add implementation. See http://crbug/746182.
+  return false;
 }
 
 void WebMediaPlayerMS::RepaintInternal() {
