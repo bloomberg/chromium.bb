@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "components/cronet/cronet_url_request.h"
 #include "components/cronet/cronet_url_request_context.h"
 #include "components/cronet/native/generated/cronet.idl_impl_interface.h"
@@ -100,6 +101,11 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   // Cronet Engine used to run network operations. Not owned, accessed from
   // client thread. Must outlive this request.
   Cronet_EngineImpl* engine_;
+
+#if DCHECK_IS_ON()
+  // Event indicating Executor is properly destroying Runnables.
+  base::WaitableEvent runnable_destroyed_;
+#endif  // DCHECK_IS_ON()
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestImpl);
 };
