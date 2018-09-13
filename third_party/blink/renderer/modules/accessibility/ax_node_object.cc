@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
@@ -1190,9 +1191,18 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
     DocumentMarker* marker = markers[i];
     if (MarkerTypeIsUsedForAccessibility(marker->GetType())) {
       marker_types.push_back(marker->GetType());
+      const Position start_position(*GetNode(), marker->StartOffset());
+      const Position end_position(*GetNode(), marker->EndOffset());
+      if (!start_position.IsValidFor(*GetDocument()) ||
+          !end_position.IsValidFor(*GetDocument())) {
+        continue;
+      }
+
       marker_ranges.emplace_back(
-          AXPosition::CreatePositionInTextObject(*this, marker->StartOffset()),
-          AXPosition::CreatePositionInTextObject(*this, marker->EndOffset()));
+          AXPosition::FromPosition(start_position, TextAffinity::kDownstream,
+                                   AXPositionAdjustmentBehavior::kMoveLeft),
+          AXPosition::FromPosition(end_position, TextAffinity::kDownstream,
+                                   AXPositionAdjustmentBehavior::kMoveRight));
     }
   }
 }
