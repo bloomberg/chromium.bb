@@ -21,6 +21,18 @@ AutofillPolicyHandler::~AutofillPolicyHandler() {}
 void AutofillPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
+  const base::Value* autofill_credit_card_policy_value =
+      policies.GetValue(policy::key::kAutofillCreditCardEnabled);
+  const base::Value* autofill_address_policy_value =
+      policies.GetValue(policy::key::kAutofillAddressEnabled);
+  // Ignore the old policy if either of the new fine-grained policies are set.
+  if ((autofill_credit_card_policy_value &&
+       autofill_credit_card_policy_value->is_bool()) ||
+      (autofill_address_policy_value &&
+       autofill_address_policy_value->is_bool())) {
+    return;
+  }
+
   const base::Value* value = policies.GetValue(policy_name());
   bool autofill_enabled;
   if (value && value->GetAsBoolean(&autofill_enabled) && !autofill_enabled) {
