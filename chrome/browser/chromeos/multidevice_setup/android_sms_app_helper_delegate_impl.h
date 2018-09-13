@@ -9,13 +9,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "url/gurl.h"
 
 class Profile;
 
 namespace web_app {
+enum class InstallResultCode;
 class PendingAppManager;
 }  // namespace web_app
 
@@ -36,8 +36,7 @@ class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
   // function are added. See https://crbug.com/876972.
   explicit AndroidSmsAppHelperDelegateImpl(
       web_app::PendingAppManager* pending_app_manager);
-  void OnAppInstalled(const GURL& app_url,
-                      const base::Optional<std::string>& app_id);
+  void OnAppInstalled(const GURL& app_url, web_app::InstallResultCode code);
 
   // AndroidSmsAppHelperDelegate:
   void InstallAndroidSmsApp() override;

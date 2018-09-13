@@ -33,6 +33,7 @@ class Extension;
 // or WebApplicationInfo. Can only be called from the UI thread.
 class BookmarkAppInstallationTask {
  public:
+  // TODO(nigeltao): fold this into web_app::InstallResultCode.
   enum class ResultCode {
     kSuccess,
     kGetWebApplicationInfoFailed,

@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/web_applications/components/install_result_code.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
@@ -68,12 +69,12 @@ bool AndroidSmsAppHelperDelegateImpl::LaunchAndroidSmsApp() {
 
 void AndroidSmsAppHelperDelegateImpl::OnAppInstalled(
     const GURL& app_url,
-    const base::Optional<std::string>& app_id) {
-  if (app_id) {
-    PA_LOG(INFO) << "Messages app installed! URL: " << app_url
-                 << ". Id: " << app_id.value();
+    web_app::InstallResultCode code) {
+  if (code == web_app::InstallResultCode::kSuccess) {
+    PA_LOG(INFO) << "Messages app installed! URL: " << app_url;
   } else {
-    PA_LOG(INFO) << "Messages app failed to install! URL: " << app_url;
+    PA_LOG(WARNING) << "Messages app failed to install! URL: " << app_url
+                    << ", InstallResultCode: " << static_cast<int>(code);
   }
 }
 

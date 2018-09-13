@@ -11,6 +11,8 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/components/install_result_code.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "extensions/browser/extension_registry.h"
@@ -25,28 +27,33 @@ class PendingBookmarkAppManagerBrowserTest : public InProcessBrowserTest {};
 // flow is unit tested separately.
 IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, InstallSucceeds) {
   ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
   base::RunLoop run_loop;
-  std::string app_id;
+  base::Optional<web_app::InstallResultCode> result_code;
+
   web_app::WebAppProvider::Get(browser()->profile())
       ->pending_app_manager()
       .Install(web_app::PendingAppManager::AppInfo(
-                   embedded_test_server()->GetURL(
-                       "/banners/manifest_test_page.html"),
-                   web_app::PendingAppManager::LaunchContainer::kWindow,
+                   url, web_app::PendingAppManager::LaunchContainer::kWindow,
                    web_app::PendingAppManager::InstallSource::kInternal,
                    false /* create_shortcuts */),  // Avoid creating real
                                                    // shortcuts in tests.
                base::BindLambdaForTesting(
-                   [&run_loop, &app_id](const GURL& provided_url,
-                                        const base::Optional<std::string>& id) {
-                     app_id = id.value();
+                   [&run_loop, &result_code](const GURL& provided_url,
+                                             web_app::InstallResultCode code) {
+                     result_code = code;
                      run_loop.QuitClosure().Run();
                    }));
   run_loop.Run();
 
+  ASSERT_TRUE(result_code.has_value());
+  EXPECT_EQ(web_app::InstallResultCode::kSuccess, result_code.value());
+  base::Optional<std::string> id =
+      web_app::ExtensionIdsMap(browser()->profile()->GetPrefs()).Lookup(url);
+  ASSERT_TRUE(id.has_value());
   const Extension* app = ExtensionRegistry::Get(browser()->profile())
                              ->enabled_extensions()
-                             .GetByID(app_id);
+                             .GetByID(id.value());
   ASSERT_TRUE(app);
   EXPECT_EQ("Manifest test app", app->name());
 }
