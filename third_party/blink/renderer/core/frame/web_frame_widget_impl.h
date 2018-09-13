@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
@@ -66,6 +65,7 @@ class WebLayerTreeView;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebFrameWidgetImpl;
+class WorkletMutatorImpl;
 
 using WebFrameWidgetsSet =
     PersistentHeapHashSet<WeakMember<WebFrameWidgetImpl>>;
@@ -134,7 +134,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // Create or return cached mutation distributor.  This usually requires a
   // round trip to the compositor.  The output task runner is the one to use
   // for sending mutations using the WeakPtr.
-  base::WeakPtr<CompositorMutatorImpl> EnsureCompositorMutator(
+  base::WeakPtr<WorkletMutatorImpl> EnsureCompositorMutator(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner)
       override;
 
@@ -215,7 +215,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // This is owned by the LayerTreeHostImpl, and should only be used on the
   // compositor thread, so we keep the TaskRunner where you post tasks to
   // make that happen.
-  base::WeakPtr<CompositorMutatorImpl> mutator_;
+  base::WeakPtr<WorkletMutatorImpl> mutator_;
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
   WebLayerTreeView* layer_tree_view_;

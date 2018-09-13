@@ -59,7 +59,7 @@ bool ConvertAnimationEffects(
 
   if (keyframe_effects.size() > 1) {
     // TODO(yigu): We should allow group effects eventually by spec. See
-    // crbug.com/767043.
+    // https://crbug.com/767043.
     error_string = "Multiple effects are not currently supported";
     return false;
   }
@@ -80,6 +80,21 @@ bool ConvertAnimationEffects(
     }
   }
   return true;
+}
+
+bool IsActive(const Animation::AnimationPlayState& state) {
+  switch (state) {
+    case Animation::kIdle:
+    case Animation::kPending:
+      return false;
+    case Animation::kRunning:
+    case Animation::kPaused:
+      return true;
+    default:
+      // kUnset and kFinished are not used in WorkletAnimation.
+      NOTREACHED();
+      return false;
+  }
 }
 
 bool ValidateTimeline(const DocumentTimelineOrScrollTimeline& timeline,
@@ -275,6 +290,7 @@ WorkletAnimation::WorkletAnimation(
       id_(id),
       animator_name_(animator_name),
       play_state_(Animation::kIdle),
+      last_play_state_(play_state_),
       document_(document),
       effects_(effects),
       timeline_(timeline),
@@ -300,7 +316,17 @@ void WorkletAnimation::play() {
   if (play_state_ == Animation::kPending)
     return;
   document_->GetWorkletAnimationController().AttachAnimation(*this);
-  play_state_ = Animation::kPending;
+
+  String failure_message;
+  if (!CheckCanStart(&failure_message)) {
+    // TODO(yigu): Throw an exception instead of a console message.
+    // https://crbug.com/882939.
+    document_->AddConsoleMessage(ConsoleMessage::Create(
+        kOtherMessageSource, kErrorMessageLevel, failure_message));
+    return;
+  }
+
+  SetPlayState(Animation::kPending);
 
   Element* target = GetEffect()->target();
   if (!target)
@@ -322,7 +348,16 @@ void WorkletAnimation::cancel() {
     DestroyCompositorAnimation();
   }
 
-  play_state_ = Animation::kIdle;
+  local_time_ = base::nullopt;
+  start_time_ = base::nullopt;
+  running_on_main_thread_ = false;
+  // TODO(yigu): Because this animation has been detached and will not receive
+  // updates anymore, we have to update its value upon cancel. Similar to
+  // regular animations, we should not detach them immediately and update the
+  // value in the next frame. See https://crbug.com/883312.
+  if (IsActive(play_state_))
+    GetEffect()->UpdateInheritedTime(NullValue(), kTimingUpdateOnDemand);
+  SetPlayState(Animation::kIdle);
 
   Element* target = GetEffect()->target();
   if (!target)
@@ -355,29 +390,64 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
   if (!start_time_)
     return;
 
-  // TODO(crbug.com/756359): For now we use 0 as inherited time in but we will
-  // need to get the inherited time from worklet context.
+  // TODO(crbug.com/756539): For now we use 0 as inherited time for compositor
+  // worklet animations. Will need to get the inherited time from worklet
+  // context.
   double inherited_time_seconds = 0;
+
+  if (local_time_)
+    inherited_time_seconds = local_time_->InSecondsF();
+
   GetEffect()->UpdateInheritedTime(inherited_time_seconds, reason);
 }
 
-bool WorkletAnimation::UpdateCompositingState() {
-  switch (play_state_) {
-    case Animation::kPending: {
-      String failure_message;
-      if (StartOnCompositor(&failure_message))
-        return true;
-      document_->AddConsoleMessage(ConsoleMessage::Create(
-          kOtherMessageSource, kWarningMessageLevel, failure_message));
-      return false;
-    }
-    case Animation::kRunning: {
-      UpdateOnCompositor();
-      return false;
-    }
-    default:
-      return false;
+bool WorkletAnimation::CheckCanStart(String* failure_message) {
+  DCHECK(IsMainThread());
+  Element* target = GetEffect()->target();
+
+  if (!target) {
+    *failure_message = "Animation effect has no target element";
+    return false;
   }
+
+  if (!GetEffect()->Model()->HasFrames()) {
+    *failure_message = "Animation effect has no keyframes";
+    return false;
+  }
+
+  return true;
+}
+
+void WorkletAnimation::SetStartTimeToNow() {
+  DCHECK(!start_time_);
+  bool is_null;
+  double time = timeline_->currentTime(is_null);
+  if (!is_null)
+    start_time_ = base::TimeDelta::FromSecondsD(time);
+}
+
+void WorkletAnimation::UpdateCompositingState() {
+  if (play_state_ == Animation::kPending) {
+    String warning_message;
+    DCHECK(CheckCanStart(&warning_message));
+    DCHECK(warning_message.IsEmpty());
+    if (StartOnCompositor(&warning_message)) {
+      return;
+    }
+    String message = "The animation cannot be accelerated. Reason: ";
+    message = message + warning_message;
+    document_->AddConsoleMessage(ConsoleMessage::Create(
+        kOtherMessageSource, kWarningMessageLevel, message));
+    StartOnMain();
+  } else if (play_state_ == Animation::kRunning) {
+    UpdateOnCompositor();
+  }
+}
+
+void WorkletAnimation::StartOnMain() {
+  running_on_main_thread_ = true;
+  SetStartTimeToNow();
+  SetPlayState(Animation::kRunning);
 }
 
 bool WorkletAnimation::StartOnCompositor(String* failure_message) {
@@ -387,8 +457,7 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   // TODO(crbug.com/836393): This should not be possible but it is currently
   // happening and needs to be investigated/fixed.
   if (!target.GetComputedStyle()) {
-    if (failure_message)
-      *failure_message = "The target element does not have style.";
+    *failure_message = "The target element does not have style";
     return false;
   }
   // CheckCanStartAnimationOnCompositor requires that the property-specific
@@ -398,21 +467,19 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   GetEffect()->Model()->SnapshotAllCompositorKeyframesIfNecessary(
       target, target.ComputedStyleRef(), target.ParentComputedStyle());
 
-  if (!CheckElementComposited(target)) {
-    if (failure_message)
-      *failure_message = "The target element is not composited.";
-    return false;
-  }
-
   double playback_rate = 1;
   CompositorAnimations::FailureCode failure_code =
       GetEffect()->CheckCanStartAnimationOnCompositor(
           base::Optional<CompositorElementIdSet>(), playback_rate);
 
   if (!failure_code.Ok()) {
-    play_state_ = Animation::kIdle;
-    if (failure_message)
-      *failure_message = failure_code.reason;
+    SetPlayState(Animation::kIdle);
+    *failure_message = failure_code.reason;
+    return false;
+  }
+
+  if (!CheckElementComposited(target)) {
+    *failure_message = "The target element is not composited";
     return false;
   }
 
@@ -434,12 +501,12 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
 
   // TODO(smcgruer): We need to start all of the effects, not just the first.
   StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
-  play_state_ = Animation::kRunning;
+  SetPlayState(Animation::kRunning);
 
   bool is_null;
   double time = timeline_->currentTime(is_null);
   if (!is_null)
-    start_time_ = time;
+    start_time_ = base::TimeDelta::FromSecondsD(time);
 
   return true;
 }
@@ -478,6 +545,49 @@ void WorkletAnimation::DestroyCompositorAnimation() {
 KeyframeEffect* WorkletAnimation::GetEffect() const {
   DCHECK(effects_.at(0));
   return effects_.at(0);
+}
+
+bool WorkletAnimation::IsActiveOnMainThread() const {
+  return IsActive(play_state_) && running_on_main_thread_;
+}
+
+bool WorkletAnimation::IsActiveOnCompositorThread() const {
+  return IsActive(play_state_) && !running_on_main_thread_;
+}
+
+void WorkletAnimation::UpdateInputState(
+    CompositorMutatorInputState* input_state) {
+  bool was_active = IsActive(last_play_state_);
+  bool is_active = IsActive(play_state_);
+
+  DCHECK(start_time_);
+  DCHECK(last_current_time_ || !was_active);
+  bool is_null;
+  double current_time = timeline_->currentTime(is_null);
+
+  bool did_time_change =
+      !last_current_time_ || current_time != last_current_time_->InSecondsF();
+  last_current_time_ = base::TimeDelta::FromSecondsD(current_time);
+
+  if (!was_active && is_active) {
+    input_state->Add(
+        {id_,
+         std::string(animator_name_.Ascii().data(), animator_name_.length()),
+         current_time, CloneOptions()});
+  } else if (was_active && is_active) {
+    // Skip if the input time is not changed.
+    if (did_time_change)
+      input_state->Update({id_, current_time});
+  } else if (was_active && !is_active) {
+    input_state->Remove(id_);
+  }
+  last_play_state_ = play_state_;
+}
+
+void WorkletAnimation::SetOutputState(
+    const AnimationWorkletOutput::AnimationState& state) {
+  DCHECK(state.worklet_animation_id == id_);
+  local_time_ = state.local_time;
 }
 
 void WorkletAnimation::Dispose() {

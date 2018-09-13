@@ -4,24 +4,28 @@
 
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client_impl.h"
 
+#include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
+#include "third_party/blink/renderer/platform/graphics/worklet_mutator_impl.h"
 
 namespace blink {
 
 AnimationWorkletProxyClientImpl::AnimationWorkletProxyClientImpl(
     int scope_id,
-    base::WeakPtr<CompositorMutatorImpl> mutator,
-    scoped_refptr<base::SingleThreadTaskRunner> mutator_runner)
-    : scope_id_(scope_id),
-      mutator_(std::move(mutator)),
-      mutator_runner_(std::move(mutator_runner)),
-      state_(RunState::kUninitialized) {
+    base::WeakPtr<WorkletMutatorImpl> compositor_mutator,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_mutator_runner,
+    base::WeakPtr<WorkletMutatorImpl> main_thread_mutator,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_mutator_runner)
+    : scope_id_(scope_id), state_(RunState::kUninitialized) {
   DCHECK(IsMainThread());
+  mutator_items_.emplace_back(std::move(compositor_mutator),
+                              std::move(compositor_mutator_runner));
+  mutator_items_.emplace_back(std::move(main_thread_mutator),
+                              std::move(main_thread_mutator_runner));
 }
 
 void AnimationWorkletProxyClientImpl::Trace(blink::Visitor* visitor) {
@@ -42,23 +46,29 @@ void AnimationWorkletProxyClientImpl::SetGlobalScope(
   scoped_refptr<base::SingleThreadTaskRunner> global_scope_runner =
       global_scope_->GetThread()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   state_ = RunState::kWorking;
-  DCHECK(mutator_runner_);
-  PostCrossThreadTask(
-      *mutator_runner_, FROM_HERE,
-      CrossThreadBind(&CompositorMutatorImpl::RegisterCompositorAnimator,
-                      mutator_, WrapCrossThreadPersistent(this),
-                      global_scope_runner));
+
+  for (auto& mutator_item : mutator_items_) {
+    DCHECK(mutator_item.mutator_runner);
+    PostCrossThreadTask(
+        *mutator_item.mutator_runner, FROM_HERE,
+        CrossThreadBind(&WorkletMutatorImpl::RegisterCompositorAnimator,
+                        mutator_item.mutator, WrapCrossThreadPersistent(this),
+                        global_scope_runner));
+  }
 }
 
 void AnimationWorkletProxyClientImpl::Dispose() {
   if (state_ == RunState::kWorking) {
-    // At worklet scope termination break the reference to the Client from
-    // the compositor if it is still alive.
-    DCHECK(mutator_runner_);
-    PostCrossThreadTask(
-        *mutator_runner_, FROM_HERE,
-        CrossThreadBind(&CompositorMutatorImpl::UnregisterCompositorAnimator,
-                        mutator_, WrapCrossThreadPersistent(this)));
+    // At worklet scope termination break the reference to the clients if it is
+    // still alive.
+    for (auto& mutator_item : mutator_items_) {
+      DCHECK(mutator_item.mutator_runner);
+      PostCrossThreadTask(
+          *mutator_item.mutator_runner, FROM_HERE,
+          CrossThreadBind(&WorkletMutatorImpl::UnregisterCompositorAnimator,
+                          mutator_item.mutator,
+                          WrapCrossThreadPersistent(this)));
+    }
 
     DCHECK(global_scope_);
     DCHECK(global_scope_->IsContextThread());
@@ -68,7 +78,8 @@ void AnimationWorkletProxyClientImpl::Dispose() {
     global_scope_ = nullptr;
   }
 
-  mutator_runner_ = nullptr;
+  mutator_items_.clear();
+
   DCHECK(state_ != RunState::kDisposed);
   state_ = RunState::kDisposed;
 }
@@ -98,12 +109,21 @@ AnimationWorkletProxyClientImpl* AnimationWorkletProxyClientImpl::FromDocument(
     int scope_id) {
   WebLocalFrameImpl* local_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
-  scoped_refptr<base::SingleThreadTaskRunner> mutator_queue;
-  base::WeakPtr<CompositorMutatorImpl> mutator =
+
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_mutator_queue;
+  base::WeakPtr<WorkletMutatorImpl> compositor_mutator =
       local_frame->LocalRootFrameWidget()->EnsureCompositorMutator(
-          &mutator_queue);
-  return new AnimationWorkletProxyClientImpl(scope_id, std::move(mutator),
-                                             std::move(mutator_queue));
+          &compositor_mutator_queue);
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_mutator_queue;
+  base::WeakPtr<WorkletMutatorImpl> main_thread_mutator =
+      document->GetWorkletAnimationController().EnsureMainThreadMutator(
+          &main_thread_mutator_queue);
+
+  return new AnimationWorkletProxyClientImpl(
+      scope_id, std::move(compositor_mutator),
+      std::move(compositor_mutator_queue), std::move(main_thread_mutator),
+      std::move(main_thread_mutator_queue));
 }
 
 }  // namespace blink

@@ -14,11 +14,11 @@
 
 namespace blink {
 
-class CompositorMutatorImpl;
 class Document;
 class WorkletGlobalScope;
+class WorkletMutatorImpl;
 
-// Mediates between one Animator and the associated CompositorMutatorImpl. There
+// Mediates between one Animator and the associated WorkletMutatorImpl. There
 // is one AnimationWorkletProxyClientImpl per Animator but there may be multiple
 // for a given mutator and animatorWorklet.
 //
@@ -36,8 +36,10 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
   // |mutatee_runner|.
   explicit AnimationWorkletProxyClientImpl(
       int scope_id,
-      base::WeakPtr<CompositorMutatorImpl> mutatee,
-      scoped_refptr<base::SingleThreadTaskRunner> mutatee_runner);
+      base::WeakPtr<WorkletMutatorImpl> compositor_mutatee,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_mutatee_runner,
+      base::WeakPtr<WorkletMutatorImpl> main_thread_mutatee,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_mutatee_runner);
   void Trace(blink::Visitor*) override;
 
   // AnimationWorkletProxyClient:
@@ -54,8 +56,16 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
 
  private:
   const int scope_id_;
-  base::WeakPtr<CompositorMutatorImpl> mutator_;
-  scoped_refptr<base::SingleThreadTaskRunner> mutator_runner_;
+
+  struct MutatorItem {
+    base::WeakPtr<WorkletMutatorImpl> mutator;
+    scoped_refptr<base::SingleThreadTaskRunner> mutator_runner;
+    MutatorItem(base::WeakPtr<WorkletMutatorImpl> mutator,
+                scoped_refptr<base::SingleThreadTaskRunner> mutator_runner)
+        : mutator(std::move(mutator)),
+          mutator_runner(std::move(mutator_runner)) {}
+  };
+  WTF::Vector<MutatorItem> mutator_items_;
 
   CrossThreadPersistent<AnimationWorkletGlobalScope> global_scope_;
 

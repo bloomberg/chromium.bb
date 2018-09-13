@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
+#include "third_party/blink/renderer/platform/graphics/worklet_mutator_impl.h"
 
 #include "base/single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -61,7 +61,7 @@ class MockCompositorAnimator
 
 class MockCompositorMutatorClient : public CompositorMutatorClient {
  public:
-  MockCompositorMutatorClient(std::unique_ptr<CompositorMutatorImpl> mutator)
+  MockCompositorMutatorClient(std::unique_ptr<WorkletMutatorImpl> mutator)
       : CompositorMutatorClient(std::move(mutator)) {}
   ~MockCompositorMutatorClient() override {}
   // gmock cannot mock methods with move-only args so we forward it to ourself.
@@ -74,10 +74,10 @@ class MockCompositorMutatorClient : public CompositorMutatorClient {
                void(cc::MutatorOutputState* output_state));
 };
 
-class CompositorMutatorImplTest : public ::testing::Test {
+class WorkletMutatorImplTest : public ::testing::Test {
  public:
   void SetUp() override {
-    auto mutator = std::make_unique<CompositorMutatorImpl>();
+    auto mutator = std::make_unique<WorkletMutatorImpl>(false);
     mutator_ = mutator.get();
     client_ =
         std::make_unique<::testing::StrictMock<MockCompositorMutatorClient>>(
@@ -87,7 +87,7 @@ class CompositorMutatorImplTest : public ::testing::Test {
   void TearDown() override { mutator_ = nullptr; }
 
   std::unique_ptr<::testing::StrictMock<MockCompositorMutatorClient>> client_;
-  CompositorMutatorImpl* mutator_;
+  WorkletMutatorImpl* mutator_;
 };
 
 std::unique_ptr<CompositorMutatorInputState> CreateTestMutatorInput() {
@@ -110,7 +110,7 @@ bool OnlyIncludesAnimation1(const AnimationWorkletInput& in) {
              1;
 }
 
-TEST_F(CompositorMutatorImplTest,
+TEST_F(WorkletMutatorImplTest,
        RegisteredAnimatorShouldOnlyReceiveInputForItself) {
   std::unique_ptr<WebThread> first_thread = CreateThread("FirstThread");
   MockCompositorAnimator* first_animator =
@@ -129,7 +129,7 @@ TEST_F(CompositorMutatorImplTest,
   mutator_->Mutate(CreateTestMutatorInput());
 }
 
-TEST_F(CompositorMutatorImplTest,
+TEST_F(WorkletMutatorImplTest,
        RegisteredAnimatorShouldNotBeMutatedWhenNoInput) {
   std::unique_ptr<WebThread> first_thread = CreateThread("FirstThread");
   MockCompositorAnimator* first_animator =
@@ -152,7 +152,7 @@ TEST_F(CompositorMutatorImplTest,
   mutator_->Mutate(std::move(input));
 }
 
-TEST_F(CompositorMutatorImplTest,
+TEST_F(WorkletMutatorImplTest,
        MutationUpdateIsNotInvokedWithNoRegisteredAnimators) {
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
   std::unique_ptr<CompositorMutatorInputState> input =
@@ -160,7 +160,7 @@ TEST_F(CompositorMutatorImplTest,
   mutator_->Mutate(std::move(input));
 }
 
-TEST_F(CompositorMutatorImplTest, MutationUpdateIsNotInvokedWithNullOutput) {
+TEST_F(WorkletMutatorImplTest, MutationUpdateIsNotInvokedWithNullOutput) {
   // Create a thread to run animator tasks.
   std::unique_ptr<WebThread> first_thread =
       CreateThread("FirstAnimationThread");
@@ -176,7 +176,7 @@ TEST_F(CompositorMutatorImplTest, MutationUpdateIsNotInvokedWithNullOutput) {
   mutator_->Mutate(CreateTestMutatorInput());
 }
 
-TEST_F(CompositorMutatorImplTest,
+TEST_F(WorkletMutatorImplTest,
        MutationUpdateIsInvokedCorrectlyWithSingleRegisteredAnimator) {
   // Create a thread to run animator tasks.
   std::unique_ptr<WebThread> first_thread =
@@ -207,7 +207,7 @@ TEST_F(CompositorMutatorImplTest,
   Mock::VerifyAndClearExpectations(client_.get());
 }
 
-TEST_F(CompositorMutatorImplTest,
+TEST_F(WorkletMutatorImplTest,
        MutationUpdateInvokedCorrectlyWithTwoRegisteredAnimatorsOnSameThread) {
   std::unique_ptr<WebThread> first_thread =
       CreateThread("FirstAnimationThread");
@@ -237,7 +237,7 @@ TEST_F(CompositorMutatorImplTest,
 }
 
 TEST_F(
-    CompositorMutatorImplTest,
+    WorkletMutatorImplTest,
     MutationUpdateInvokedCorrectlyWithTwoRegisteredAnimatorsOnDifferentThreads) {
   std::unique_ptr<WebThread> first_thread =
       CreateThread("FirstAnimationThread");

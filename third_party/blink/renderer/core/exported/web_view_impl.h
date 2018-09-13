@@ -87,11 +87,11 @@ class WebInputMethodController;
 class WebLayerTreeView;
 class WebLocalFrame;
 class WebLocalFrameImpl;
-class CompositorMutatorImpl;
 class WebRemoteFrame;
 class WebSettingsImpl;
 class WebViewClient;
 class WebWidgetClient;
+class WorkletMutatorImpl;
 
 class CORE_EXPORT WebViewImpl final : public WebView,
                                       public RefCounted<WebViewImpl>,
@@ -538,7 +538,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // Create or return cached mutation distributor.  The WeakPtr must only be
   // dereferenced on the returned |mutator_task_runner|.
-  base::WeakPtr<CompositorMutatorImpl> EnsureCompositorMutator(
+  base::WeakPtr<WorkletMutatorImpl> EnsureCompositorMutator(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
 
   bool ScrollFocusedEditableElementIntoView();
@@ -661,7 +661,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // This is owned by the LayerTreeHostImpl, and should only be used on the
   // compositor thread, so we keep the TaskRunner where you post tasks to
   // make that happen.
-  base::WeakPtr<CompositorMutatorImpl> mutator_;
+  base::WeakPtr<WorkletMutatorImpl> mutator_;
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
   Persistent<EventListener> popup_mouse_wheel_event_listener_;

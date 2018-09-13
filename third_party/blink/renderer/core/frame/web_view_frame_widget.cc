@@ -197,8 +197,7 @@ void WebViewFrameWidget::ScheduleAnimation() {
   web_view_->ScheduleAnimationForWidget();
 }
 
-base::WeakPtr<CompositorMutatorImpl>
-WebViewFrameWidget::EnsureCompositorMutator(
+base::WeakPtr<WorkletMutatorImpl> WebViewFrameWidget::EnsureCompositorMutator(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
   return web_view_->EnsureCompositorMutator(mutator_task_runner);
 }
