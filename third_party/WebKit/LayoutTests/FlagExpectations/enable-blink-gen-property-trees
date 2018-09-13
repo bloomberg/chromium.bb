@@ -134,10 +134,6 @@ Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
 crbug.com/854189 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
 crbug.com/854189 css3/filters/backdrop-filter-rendering.html [ Failure ]
 
-# These scrollbar tests should pass.
-crbug.com/836912 compositing/squashing/no-squashing-into-another-clip-layer.html [ Failure ]
-crbug.com/836912 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure ]
-
 # These scrolling tests should pass.
 crbug.com/836913 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Timeout ]
 
