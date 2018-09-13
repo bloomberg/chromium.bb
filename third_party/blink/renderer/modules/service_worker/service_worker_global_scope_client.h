@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_GLOBAL_SCOPE_CLIENT_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_claim_callbacks.h"
@@ -41,8 +43,6 @@
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -60,7 +60,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
     : public GarbageCollected<ServiceWorkerGlobalScopeClient>,
       public Supplement<WorkerClients> {
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClient);
-  WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
 
  public:
   static const char kSupplementName[];
@@ -161,6 +160,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
 
  private:
   WebServiceWorkerContextClient& client_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerGlobalScopeClient);
 };
 
 MODULES_EXPORT void ProvideServiceWorkerGlobalScopeClientToWorker(
