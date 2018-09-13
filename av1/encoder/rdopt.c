@@ -7737,7 +7737,7 @@ typedef struct {
   int single_comp_cost;
   int64_t (*simple_rd)[MAX_REF_MV_SERCH][REF_FRAMES];
   int skip_motion_mode;
-  INTERINTRA_MODE inter_intra_mode[REF_FRAMES];
+  INTERINTRA_MODE *inter_intra_mode;
 } HandleInterModeArgs;
 
 /* If the current mode shares the same mv with other modes with higher cost,
@@ -11197,6 +11197,55 @@ static int compound_skip_by_single_states(
   return 0;
 }
 
+static INLINE int sf_check_is_drop_ref(const MODE_DEFINITION *mode,
+                                       InterModeSearchState *search_state) {
+  const MV_REFERENCE_FRAME ref_frame = mode->ref_frame[0];
+  const MV_REFERENCE_FRAME second_ref_frame = mode->ref_frame[1];
+  if (search_state->num_available_refs > 2) {
+    if ((ref_frame == search_state->dist_order_refs[0] &&
+         second_ref_frame == search_state->dist_order_refs[1]) ||
+        (ref_frame == search_state->dist_order_refs[1] &&
+         second_ref_frame == search_state->dist_order_refs[0]))
+      return 1;  // drop this pair of refs
+  }
+  return 0;
+}
+
+static INLINE void sf_drop_ref_analyze(InterModeSearchState *search_state,
+                                       const MODE_DEFINITION *mode,
+                                       int64_t distortion2) {
+  const PREDICTION_MODE this_mode = mode->mode;
+  MV_REFERENCE_FRAME ref_frame = mode->ref_frame[0];
+  const int idx = ref_frame - LAST_FRAME;
+  if (idx && distortion2 > search_state->dist_refs[idx]) {
+    search_state->dist_refs[idx] = distortion2;
+    search_state->dist_order_refs[idx] = ref_frame;
+  }
+
+  // Reach the last single ref prediction mode
+  if (ref_frame == ALTREF_FRAME && this_mode == GLOBALMV) {
+    // bubble sort dist_refs and the order index
+    for (int i = 0; i < REF_FRAMES; ++i) {
+      for (int k = i + 1; k < REF_FRAMES; ++k) {
+        if (search_state->dist_refs[i] < search_state->dist_refs[k]) {
+          int64_t tmp_dist = search_state->dist_refs[i];
+          search_state->dist_refs[i] = search_state->dist_refs[k];
+          search_state->dist_refs[k] = tmp_dist;
+
+          int tmp_idx = search_state->dist_order_refs[i];
+          search_state->dist_order_refs[i] = search_state->dist_order_refs[k];
+          search_state->dist_order_refs[k] = tmp_idx;
+        }
+      }
+    }
+    for (int i = 0; i < REF_FRAMES; ++i) {
+      if (search_state->dist_refs[i] == -1) break;
+      search_state->num_available_refs = i;
+    }
+    search_state->num_available_refs++;
+  }
+}
+
 static void alloc_compound_type_rd_buffers(AV1_COMMON *const cm,
                                            CompoundTypeRdBuffers *const bufs) {
   CHECK_MEM_ERROR(
@@ -11241,7 +11290,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const struct segmentation *const seg = &cm->seg;
   PREDICTION_MODE this_mode;
   unsigned char segment_id = mbmi->segment_id;
-  int i, k;
+  int i;
   struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE];
   unsigned int ref_costs_single[REF_FRAMES];
   unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES];
@@ -11253,23 +11302,18 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   InterModeSearchState search_state;
   init_inter_mode_search_state(&search_state, cpi, tile_data, x, bsize,
                                best_rd_so_far);
-
+  INTERINTRA_MODE interintra_modes[REF_FRAMES] = {
+    INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES,
+    INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES
+  };
   HandleInterModeArgs args = {
-    { NULL },
-    { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
-    { NULL },
-    { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1 },
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    { { 0 } },
-    INT_MAX,
-    INT_MAX,
-    NULL,
-    0,
-    { INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES,
-      INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES }
+    { NULL },  { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
+    { NULL },  { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1 },
+    NULL,      NULL,
+    NULL,      search_state.modelled_rd,
+    { { 0 } }, INT_MAX,
+    INT_MAX,   search_state.simple_rd,
+    0,         interintra_modes
   };
   for (i = 0; i < REF_FRAMES; ++i) x->pred_sse[i] = INT_MAX;
 
@@ -11317,12 +11361,11 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     int64_t distortion2 = 0;
     int skippable = 0;
     int this_skip2 = 0;
-
-    this_mode = av1_mode_order[mode_index].mode;
-    const MV_REFERENCE_FRAME ref_frame =
-        av1_mode_order[mode_index].ref_frame[0];
-    const MV_REFERENCE_FRAME second_ref_frame =
-        av1_mode_order[mode_index].ref_frame[1];
+    const MODE_DEFINITION *mode_order = &av1_mode_order[mode_index];
+    const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
+    const MV_REFERENCE_FRAME second_ref_frame = mode_order->ref_frame[1];
+    const int comp_pred = second_ref_frame > INTRA_FRAME;
+    this_mode = mode_order->mode;
 
     init_mbmi(mbmi, mode_index, cm);
 
@@ -11330,8 +11373,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
     // Reach the first compound prediction mode
-    if (sf->prune_comp_search_by_single_result > 0 &&
-        second_ref_frame > INTRA_FRAME && reach_first_comp_mode == 0) {
+    if (sf->prune_comp_search_by_single_result > 0 && comp_pred &&
+        reach_first_comp_mode == 0) {
       analyze_single_states(cpi, &search_state);
       reach_first_comp_mode = 1;
     }
@@ -11341,34 +11384,21 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
 
-    if (ref_frame == INTRA_FRAME) {
-      if (sf->skip_intra_in_interframe && search_state.skip_intra_modes)
+    if (sf->drop_ref && comp_pred) {
+      if (sf_check_is_drop_ref(mode_order, &search_state)) {
         continue;
-    }
-
-    if (sf->drop_ref) {
-      if (ref_frame > INTRA_FRAME && second_ref_frame > INTRA_FRAME) {
-        if (search_state.num_available_refs > 2) {
-          if ((ref_frame == search_state.dist_order_refs[0] &&
-               second_ref_frame == search_state.dist_order_refs[1]) ||
-              (ref_frame == search_state.dist_order_refs[1] &&
-               second_ref_frame == search_state.dist_order_refs[0]))
-            continue;
-        }
       }
     }
 
     if (search_state.best_rd < search_state.mode_threshold[mode_index])
       continue;
 
-    if (sf->prune_comp_search_by_single_result > 0 &&
-        second_ref_frame > INTRA_FRAME) {
+    if (sf->prune_comp_search_by_single_result > 0 && comp_pred) {
       if (compound_skip_by_single_states(cpi, &search_state, this_mode,
                                          ref_frame, second_ref_frame, x))
         continue;
     }
 
-    const int comp_pred = second_ref_frame > INTRA_FRAME;
     const int ref_frame_cost = comp_pred
                                    ? ref_costs_comp[ref_frame][second_ref_frame]
                                    : ref_costs_single[ref_frame];
@@ -11414,6 +11444,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (ref_frame == INTRA_FRAME) {
       intra_mode_idx_ls[intra_mode_num++] = mode_index;
+      continue;
     } else {
       mbmi->angle_delta[PLANE_TYPE_Y] = 0;
       mbmi->angle_delta[PLANE_TYPE_UV] = 0;
@@ -11429,10 +11460,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         args.single_newmv = search_state.single_newmv;
         args.single_newmv_rate = search_state.single_newmv_rate;
         args.single_newmv_valid = search_state.single_newmv_valid;
-        args.modelled_rd = search_state.modelled_rd;
         args.single_comp_cost = real_compmode_cost;
         args.ref_frame_cost = ref_frame_cost;
-        args.simple_rd = search_state.simple_rd;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
         this_rd = handle_inter_mode(
             cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv, &disable_skip,
@@ -11537,40 +11566,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       if (hybrid_rd < search_state.best_pred_rd[REFERENCE_MODE_SELECT])
         search_state.best_pred_rd[REFERENCE_MODE_SELECT] = hybrid_rd;
     }
-
-    if (sf->drop_ref) {
-      if (second_ref_frame == NONE_FRAME) {
-        const int idx = ref_frame - LAST_FRAME;
-        if (idx && distortion2 > search_state.dist_refs[idx]) {
-          search_state.dist_refs[idx] = distortion2;
-          search_state.dist_order_refs[idx] = ref_frame;
-        }
-
-        // Reach the last single ref prediction mode
-        if (ref_frame == ALTREF_FRAME && this_mode == GLOBALMV) {
-          // bubble sort dist_refs and the order index
-          for (i = 0; i < REF_FRAMES; ++i) {
-            for (k = i + 1; k < REF_FRAMES; ++k) {
-              if (search_state.dist_refs[i] < search_state.dist_refs[k]) {
-                int64_t tmp_dist = search_state.dist_refs[i];
-                search_state.dist_refs[i] = search_state.dist_refs[k];
-                search_state.dist_refs[k] = tmp_dist;
-
-                int tmp_idx = search_state.dist_order_refs[i];
-                search_state.dist_order_refs[i] =
-                    search_state.dist_order_refs[k];
-                search_state.dist_order_refs[k] = tmp_idx;
-              }
-            }
-          }
-
-          for (i = 0; i < REF_FRAMES; ++i) {
-            if (search_state.dist_refs[i] == -1) break;
-            search_state.num_available_refs = i;
-          }
-          search_state.num_available_refs++;
-        }
-      }
+    if (sf->drop_ref && second_ref_frame == NONE_FRAME) {
+      // Collect data from single ref mode, and analyze data.
+      sf_drop_ref_analyze(&search_state, mode_order, distortion2);
     }
 
     if (x->skip && !comp_pred) break;
