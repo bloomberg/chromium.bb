@@ -41,6 +41,8 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
     private final Map<String, ClientRecord> mClientIdToRecords =
             new HashMap<String, ClientRecord>();
     private CafMessageHandler mMessageHandler;
+    // The session controller which is always attached to the current CastSession.
+    private final CastSessionController mSessionController;
 
     public static CafMediaRouteProvider create(MediaRouteManager manager) {
         return new CafMediaRouteProvider(ChromeMediaRouter.getAndroidMediaRouter(), manager);
@@ -95,11 +97,6 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
     }
 
     @Override
-    public void detachRoute(String routeId) {
-        removeRoute(routeId, /* error= */ null);
-    }
-
-    @Override
     public void sendStringMessage(String routeId, String message) {
         Log.d(TAG, "Received message from client: %s", message);
 
@@ -113,6 +110,11 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
     @Override
     protected MediaSource getSourceFromId(String sourceId) {
         return CastMediaSource.from(sourceId);
+    }
+
+    @Override
+    public BaseSessionController sessionController() {
+        return mSessionController;
     }
 
     public void sendMessageToClient(String clientId, String message) {
@@ -192,7 +194,8 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
 
     private CafMediaRouteProvider(MediaRouter androidMediaRouter, MediaRouteManager manager) {
         super(androidMediaRouter, manager);
-        mMessageHandler = new CafMessageHandler(this, sessionController());
+        mSessionController = new CastSessionController(this);
+        mMessageHandler = new CafMessageHandler(this, mSessionController);
     }
 
     private boolean canJoinExistingSession(

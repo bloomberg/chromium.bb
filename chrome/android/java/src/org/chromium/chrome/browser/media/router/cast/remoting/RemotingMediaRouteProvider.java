@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 /**
  * A {@link MediaRouteProvider} implementation for media remote playback.
  */
+// Migrated to CafRemotingMediaRouteProvider. See https://crbug.com/711860.
 public class RemotingMediaRouteProvider extends BaseMediaRouteProvider {
     private static final String TAG = "MediaRemoting";
 
