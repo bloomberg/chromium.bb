@@ -2921,27 +2921,6 @@
             ]
         }
     ],
-    "PageAlmostIdle": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "mainThreadTaskLoadLowThreshold": "25"
-                    },
-                    "enable_features": [
-                        "PageAlmostIdle"
-                    ]
-                }
-            ]
-        }
-    ],
     "ParallelDownloading": [
         {
             "platforms": [
@@ -3351,9 +3330,11 @@
                         "HighLoadedTabCount": "10000",
                         "ShouldPeriodicallyUnfreeze": "true",
                         "ShouldProactivelyDiscard": "true",
-                        "ShouldProtectTabsSharingBrowsingInstance": "true"
+                        "ShouldProtectTabsSharingBrowsingInstance": "true",
+                        "mainThreadTaskLoadLowThreshold": "25"
                     },
                     "enable_features": [
+                        "PageAlmostIdle",
                         "PageLifecycle",
                         "ProactiveTabFreezeAndDiscard",
                         "SiteCharacteristicsDatabase",
