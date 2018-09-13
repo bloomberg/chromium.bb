@@ -2738,7 +2738,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterSameDocumentNavigation) {
     params.transition = ui::PAGE_TRANSITION_LINK;
     params.redirects.push_back(url);
     params.should_update_history = true;
-    params.gesture = NavigationGestureUnknown;
+    params.gesture = NavigationGestureAuto;
     params.method = "GET";
     params.page_state = PageState::CreateFromURL(url);
 
@@ -2763,7 +2763,7 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterSameDocumentNavigation) {
     params.redirects.push_back(GURL("http://foo2/#a"));
     params.redirects.push_back(url);
     params.should_update_history = true;
-    params.gesture = NavigationGestureUnknown;
+    params.gesture = NavigationGestureAuto;
     params.method = "GET";
     params.page_state = PageState::CreateFromURL(url);
 

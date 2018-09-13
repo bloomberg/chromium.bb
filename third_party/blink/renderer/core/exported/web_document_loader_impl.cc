@@ -171,6 +171,10 @@ WebArchiveInfo WebDocumentLoaderImpl::GetArchiveInfo() const {
   return {archive->MainResource()->Url(), archive->Date()};
 }
 
+bool WebDocumentLoaderImpl::HadUserGesture() const {
+  return DocumentLoader::had_transient_activation();
+}
+
 void WebDocumentLoaderImpl::Trace(blink::Visitor* visitor) {
   DocumentLoader::Trace(visitor);
 }

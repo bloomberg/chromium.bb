@@ -137,7 +137,8 @@ DocumentLoader::DocumentLoader(
       in_data_received_(false),
       data_buffer_(SharedBuffer::Create()),
       devtools_navigation_token_(devtools_navigation_token),
-      user_activated_(false),
+      had_sticky_activation_(false),
+      had_transient_activation_(Frame::HasTransientUserActivation(frame_)),
       use_counter_(frame_->GetChromeClient().IsSVGImageChromeClient()
                        ? UseCounter::kSVGImageContext
                        : UseCounter::kDefaultContext) {
@@ -469,7 +470,7 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
 }
 
 void DocumentLoader::SetUserActivated() {
-  user_activated_ = true;
+  had_sticky_activation_ = true;
 }
 
 const AtomicString& DocumentLoader::RequiredCSP() {
@@ -1138,10 +1139,12 @@ void DocumentLoader::InstallNewDocument(
   // The DocumentLoader was flagged as activated if it needs to notify the frame
   // that it was activated before navigation. Update the frame state based on
   // the new value.
-  if (frame_->HasReceivedUserGestureBeforeNavigation() != user_activated_) {
-    frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(user_activated_);
+  if (frame_->HasReceivedUserGestureBeforeNavigation() !=
+      had_sticky_activation_) {
+    frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(
+        had_sticky_activation_);
     GetLocalFrameClient().SetHasReceivedUserGestureBeforeNavigation(
-        user_activated_);
+        had_sticky_activation_);
   }
 
   if (ShouldClearWindowName(*frame_, previous_security_origin, *document)) {

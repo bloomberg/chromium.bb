@@ -56,6 +56,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
+#include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_messages.h"
 #include "content/common/possibly_associated_wrapper_shared_url_loader_factory.h"
@@ -4098,14 +4099,7 @@ void RenderFrameImpl::DidStartProvisionalLoad(
       DocumentState::FromDocumentLoader(document_loader);
   NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
       document_state->navigation_state());
-  bool is_top_most = !frame_->Parent();
-  if (is_top_most) {
-    auto navigation_gesture =
-        WebUserGestureIndicator::IsProcessingUserGesture(frame_)
-            ? NavigationGestureUser
-            : NavigationGestureAuto;
-    render_view_->set_navigation_gesture(navigation_gesture);
-  } else if (document_loader->ReplacesCurrentHistoryItem()) {
+  if (frame_->Parent() && document_loader->ReplacesCurrentHistoryItem()) {
     // Subframe navigations that don't add session history items must be
     // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
     // handle loading of error pages.
@@ -5467,8 +5461,8 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   params->searchable_form_url = internal_data->searchable_form_url();
   params->searchable_form_encoding = internal_data->searchable_form_encoding();
 
-  params->gesture = render_view_->navigation_gesture_;
-  render_view_->navigation_gesture_ = NavigationGestureUnknown;
+  params->gesture = document_loader->HadUserGesture() ? NavigationGestureUser
+                                                      : NavigationGestureAuto;
 
   // Make navigation state a part of the DidCommitProvisionalLoad message so
   // that committed entry has it at all times.  Send a single HistoryItem for

@@ -82,6 +82,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   void ResumeParser() override;
   bool IsArchive() const override;
   WebArchiveInfo GetArchiveInfo() const override;
+  bool HadUserGesture() const override;
 
   void Trace(blink::Visitor*) override;
 
