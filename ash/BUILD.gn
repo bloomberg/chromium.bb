@@ -1297,8 +1297,6 @@ component("ash") {
     "wm/workspace/two_step_edge_cycler.h",
     "wm/workspace/workspace_event_handler.cc",
     "wm/workspace/workspace_event_handler.h",
-    "wm/workspace/workspace_event_handler_classic.cc",
-    "wm/workspace/workspace_event_handler_classic.h",
     "wm/workspace/workspace_layout_manager.cc",
     "wm/workspace/workspace_layout_manager.h",
     "wm/workspace/workspace_types.h",
