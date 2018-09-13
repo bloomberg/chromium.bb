@@ -314,11 +314,6 @@ void ProfileSyncService::Initialize() {
   if (gaia_cookie_manager_service_)
     gaia_cookie_manager_service_->AddObserver(this);
 
-  // We clear this here (vs Shutdown) because we want to remember that an error
-  // happened on shutdown so we can display details (message, location) about it
-  // in about:sync.
-  ClearStaleErrors();
-
   sync_prefs_.AddSyncPrefObserver(this);
 
   int disable_reasons = GetDisableReasons();
