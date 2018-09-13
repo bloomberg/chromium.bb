@@ -103,11 +103,7 @@ int GbmPixmapWayland::GetDmaBufOffset(size_t plane) const {
 }
 
 uint64_t GbmPixmapWayland::GetDmaBufModifier(size_t plane) const {
-  // TODO(msisov): figure out why returning format modifier results in
-  // EGL_BAD_ALLOC.
-  //
-  // return gbm_bo_->get_format_modifier();
-  return 0;
+  return gbm_bo_->GetFormatModifier();
 }
 
 gfx::BufferFormat GbmPixmapWayland::GetBufferFormat() const {

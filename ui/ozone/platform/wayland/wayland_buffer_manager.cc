@@ -104,8 +104,8 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
   uint32_t fd = file.TakePlatformFile();
   for (size_t i = 0; i < planes_count; i++) {
     zwp_linux_buffer_params_v1_add(params, fd, i /* plane id */, offsets[i],
-                                   strides[i], 0 /* modifier hi */,
-                                   0 /* modifier lo */);
+                                   strides[i], modifiers[i] >> 32,
+                                   modifiers[i] & UINT32_MAX);
   }
   zwp_linux_buffer_params_v1_add_listener(params, &params_listener, this);
   zwp_linux_buffer_params_v1_create(params, width, height, format, 0);
