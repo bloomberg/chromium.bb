@@ -229,7 +229,6 @@ source_set("chromeos") {
     "//ui/events/platform",
     "//ui/file_manager",
     "//ui/keyboard",
-    "//ui/keyboard:mojom",
     "//ui/message_center",
     "//ui/message_center/public/cpp",
     "//ui/ozone",

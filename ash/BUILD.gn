@@ -1426,7 +1426,6 @@ component("ash") {
     "//ui/events/devices/mojo",
     "//ui/events/ozone:events_ozone",
     "//ui/keyboard",
-    "//ui/keyboard:mojom",
     "//ui/message_center",
     "//ui/native_theme",
     "//ui/ozone",
