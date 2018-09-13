@@ -53,9 +53,8 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pH264) {
   RunColorTest("yuv420p.mp4");
 }
 
-// This test fails on Android: http://crbug.com/647818 and OSX:
-// http://crbug.com/647838
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+// This test fails on Android: http://crbug.com/647818
+#if defined(OS_ANDROID)
 #define MAYBE_Yuvj420pH264 DISABLED_Yuvj420pH264
 #else
 #define MAYBE_Yuvj420pH264 Yuvj420pH264
