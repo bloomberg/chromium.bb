@@ -71,6 +71,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "libdrm_macros.h"
 #include "xf86drm.h"
 #include "xf86drmHash.h"
 
@@ -101,7 +102,7 @@ static unsigned long HashHash(unsigned long key)
     return hash;
 }
 
-void *drmHashCreate(void)
+drm_public void *drmHashCreate(void)
 {
     HashTablePtr table;
     int          i;
@@ -118,7 +119,7 @@ void *drmHashCreate(void)
     return table;
 }
 
-int drmHashDestroy(void *t)
+drm_public int drmHashDestroy(void *t)
 {
     HashTablePtr  table = (HashTablePtr)t;
     HashBucketPtr bucket;
@@ -169,7 +170,7 @@ static HashBucketPtr HashFind(HashTablePtr table,
     return NULL;
 }
 
-int drmHashLookup(void *t, unsigned long key, void **value)
+drm_public int drmHashLookup(void *t, unsigned long key, void **value)
 {
     HashTablePtr  table = (HashTablePtr)t;
     HashBucketPtr bucket;
@@ -182,7 +183,7 @@ int drmHashLookup(void *t, unsigned long key, void **value)
     return 0;			/* Found */
 }
 
-int drmHashInsert(void *t, unsigned long key, void *value)
+drm_public int drmHashInsert(void *t, unsigned long key, void *value)
 {
     HashTablePtr  table = (HashTablePtr)t;
     HashBucketPtr bucket;
@@ -201,7 +202,7 @@ int drmHashInsert(void *t, unsigned long key, void *value)
     return 0;			/* Added to table */
 }
 
-int drmHashDelete(void *t, unsigned long key)
+drm_public int drmHashDelete(void *t, unsigned long key)
 {
     HashTablePtr  table = (HashTablePtr)t;
     unsigned long hash;
@@ -218,7 +219,7 @@ int drmHashDelete(void *t, unsigned long key)
     return 0;
 }
 
-int drmHashNext(void *t, unsigned long *key, void **value)
+drm_public int drmHashNext(void *t, unsigned long *key, void **value)
 {
     HashTablePtr  table = (HashTablePtr)t;
 
@@ -235,7 +236,7 @@ int drmHashNext(void *t, unsigned long *key, void **value)
     return 0;
 }
 
-int drmHashFirst(void *t, unsigned long *key, void **value)
+drm_public int drmHashFirst(void *t, unsigned long *key, void **value)
 {
     HashTablePtr  table = (HashTablePtr)t;
 

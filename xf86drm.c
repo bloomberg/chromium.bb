@@ -121,7 +121,7 @@ struct drm_pciinfo {
 
 static drmServerInfoPtr drm_server_info;
 
-void drmSetServerInfo(drmServerInfoPtr info)
+drm_public void drmSetServerInfo(drmServerInfoPtr info)
 {
     drm_server_info = info;
 }
@@ -141,7 +141,7 @@ drmDebugPrint(const char *format, va_list ap)
     return vfprintf(stderr, format, ap);
 }
 
-void
+drm_public void
 drmMsg(const char *format, ...)
 {
     va_list ap;
@@ -161,17 +161,17 @@ drmMsg(const char *format, ...)
 
 static void *drmHashTable = NULL; /* Context switch callbacks */
 
-void *drmGetHashTable(void)
+drm_public void *drmGetHashTable(void)
 {
     return drmHashTable;
 }
 
-void *drmMalloc(int size)
+drm_public void *drmMalloc(int size)
 {
     return calloc(1, size);
 }
 
-void drmFree(void *pt)
+drm_public void drmFree(void *pt)
 {
     free(pt);
 }
@@ -179,7 +179,7 @@ void drmFree(void *pt)
 /**
  * Call ioctl, restarting if it is interupted
  */
-int
+drm_public int
 drmIoctl(int fd, unsigned long request, void *arg)
 {
     int ret;
@@ -199,7 +199,7 @@ static unsigned long drmGetKeyFromFd(int fd)
     return st.st_rdev;
 }
 
-drmHashEntry *drmGetEntry(int fd)
+drm_public drmHashEntry *drmGetEntry(int fd)
 {
     unsigned long key = drmGetKeyFromFd(fd);
     void          *value;
@@ -490,7 +490,7 @@ static int drmOpenMinor(int minor, int create, int type)
  * minor and get version information.  For backward compatibility with older
  * Linux implementations, /proc/dri is also checked.
  */
-int drmAvailable(void)
+drm_public int drmAvailable(void)
 {
     drmVersionPtr version;
     int           retval = 0;
@@ -725,7 +725,7 @@ static int drmOpenByName(const char *name, int type)
  * It calls drmOpenByBusid() if \p busid is specified or drmOpenByName()
  * otherwise.
  */
-int drmOpen(const char *name, const char *busid)
+drm_public int drmOpen(const char *name, const char *busid)
 {
     return drmOpenWithType(name, busid, DRM_NODE_PRIMARY);
 }
@@ -746,7 +746,7 @@ int drmOpen(const char *name, const char *busid)
  * It calls drmOpenByBusid() if \p busid is specified or drmOpenByName()
  * otherwise.
  */
-int drmOpenWithType(const char *name, const char *busid, int type)
+drm_public int drmOpenWithType(const char *name, const char *busid, int type)
 {
     if (!drmAvailable() && name != NULL && drm_server_info &&
         drm_server_info->load_module) {
@@ -769,12 +769,12 @@ int drmOpenWithType(const char *name, const char *busid, int type)
     return -1;
 }
 
-int drmOpenControl(int minor)
+drm_public int drmOpenControl(int minor)
 {
     return drmOpenMinor(minor, 0, DRM_NODE_CONTROL);
 }
 
-int drmOpenRender(int minor)
+drm_public int drmOpenRender(int minor)
 {
     return drmOpenMinor(minor, 0, DRM_NODE_RENDER);
 }
@@ -788,7 +788,7 @@ int drmOpenRender(int minor)
  * It frees the memory pointed by \p %v as well as all the non-null strings
  * pointers in it.
  */
-void drmFreeVersion(drmVersionPtr v)
+drm_public void drmFreeVersion(drmVersionPtr v)
 {
     if (!v)
         return;
@@ -858,7 +858,7 @@ static void drmCopyVersion(drmVersionPtr d, const drm_version_t *s)
  * first with zeros to get the string lengths, and then the actually strings.
  * It also null-terminates them since they might not be already.
  */
-drmVersionPtr drmGetVersion(int fd)
+drm_public drmVersionPtr drmGetVersion(int fd)
 {
     drmVersionPtr retval;
     drm_version_t *version = drmMalloc(sizeof(*version));
@@ -906,7 +906,7 @@ drmVersionPtr drmGetVersion(int fd)
  * This function allocates and fills a drm_version structure with a hard coded
  * version number.
  */
-drmVersionPtr drmGetLibVersion(int fd)
+drm_public drmVersionPtr drmGetLibVersion(int fd)
 {
     drm_version_t *version = drmMalloc(sizeof(*version));
 
@@ -927,7 +927,7 @@ drmVersionPtr drmGetLibVersion(int fd)
     return (drmVersionPtr)version;
 }
 
-int drmGetCap(int fd, uint64_t capability, uint64_t *value)
+drm_public int drmGetCap(int fd, uint64_t capability, uint64_t *value)
 {
     struct drm_get_cap cap;
     int ret;
@@ -943,7 +943,7 @@ int drmGetCap(int fd, uint64_t capability, uint64_t *value)
     return 0;
 }
 
-int drmSetClientCap(int fd, uint64_t capability, uint64_t value)
+drm_public int drmSetClientCap(int fd, uint64_t capability, uint64_t value)
 {
     struct drm_set_client_cap cap;
 
@@ -962,7 +962,7 @@ int drmSetClientCap(int fd, uint64_t capability, uint64_t value)
  * \internal
  * This function is just frees the memory pointed by \p busid.
  */
-void drmFreeBusid(const char *busid)
+drm_public void drmFreeBusid(const char *busid)
 {
     drmFree((void *)busid);
 }
@@ -980,7 +980,7 @@ void drmFreeBusid(const char *busid)
  * get the string length and data, passing the arguments in a drm_unique
  * structure.
  */
-char *drmGetBusid(int fd)
+drm_public char *drmGetBusid(int fd)
 {
     drm_unique_t u;
 
@@ -1011,7 +1011,7 @@ char *drmGetBusid(int fd)
  * This function is a wrapper around the DRM_IOCTL_SET_UNIQUE ioctl, passing
  * the arguments in a drm_unique structure.
  */
-int drmSetBusid(int fd, const char *busid)
+drm_public int drmSetBusid(int fd, const char *busid)
 {
     drm_unique_t u;
 
@@ -1025,7 +1025,7 @@ int drmSetBusid(int fd, const char *busid)
     return 0;
 }
 
-int drmGetMagic(int fd, drm_magic_t * magic)
+drm_public int drmGetMagic(int fd, drm_magic_t * magic)
 {
     drm_auth_t auth;
 
@@ -1038,7 +1038,7 @@ int drmGetMagic(int fd, drm_magic_t * magic)
     return 0;
 }
 
-int drmAuthMagic(int fd, drm_magic_t magic)
+drm_public int drmAuthMagic(int fd, drm_magic_t magic)
 {
     drm_auth_t auth;
 
@@ -1099,8 +1099,8 @@ int drmAuthMagic(int fd, drm_magic_t magic)
  * This function is a wrapper around the DRM_IOCTL_ADD_MAP ioctl, passing
  * the arguments in a drm_map structure.
  */
-int drmAddMap(int fd, drm_handle_t offset, drmSize size, drmMapType type,
-              drmMapFlags flags, drm_handle_t *handle)
+drm_public int drmAddMap(int fd, drm_handle_t offset, drmSize size, drmMapType type,
+                         drmMapFlags flags, drm_handle_t *handle)
 {
     drm_map_t map;
 
@@ -1116,7 +1116,7 @@ int drmAddMap(int fd, drm_handle_t offset, drmSize size, drmMapType type,
     return 0;
 }
 
-int drmRmMap(int fd, drm_handle_t handle)
+drm_public int drmRmMap(int fd, drm_handle_t handle)
 {
     drm_map_t map;
 
@@ -1144,8 +1144,8 @@ int drmRmMap(int fd, drm_handle_t handle)
  *
  * \sa drm_buf_desc.
  */
-int drmAddBufs(int fd, int count, int size, drmBufDescFlags flags,
-               int agp_offset)
+drm_public int drmAddBufs(int fd, int count, int size, drmBufDescFlags flags,
+                          int agp_offset)
 {
     drm_buf_desc_t request;
 
@@ -1160,7 +1160,7 @@ int drmAddBufs(int fd, int count, int size, drmBufDescFlags flags,
     return request.count;
 }
 
-int drmMarkBufs(int fd, double low, double high)
+drm_public int drmMarkBufs(int fd, double low, double high)
 {
     drm_buf_info_t info;
     int            i;
@@ -1211,7 +1211,7 @@ int drmMarkBufs(int fd, double low, double high)
  * This function is a wrapper around the DRM_IOCTL_FREE_BUFS ioctl, passing
  * the arguments in a drm_buf_free structure.
  */
-int drmFreeBufs(int fd, int count, int *list)
+drm_public int drmFreeBufs(int fd, int count, int *list)
 {
     drm_buf_free_t request;
 
@@ -1232,7 +1232,7 @@ int drmFreeBufs(int fd, int count, int *list)
  * \internal
  * This function closes the file descriptor.
  */
-int drmClose(int fd)
+drm_public int drmClose(int fd)
 {
     unsigned long key    = drmGetKeyFromFd(fd);
     drmHashEntry  *entry = drmGetEntry(fd);
@@ -1263,7 +1263,8 @@ int drmClose(int fd)
  * \internal
  * This function is a wrapper for mmap().
  */
-int drmMap(int fd, drm_handle_t handle, drmSize size, drmAddressPtr address)
+drm_public int drmMap(int fd, drm_handle_t handle, drmSize size,
+                      drmAddressPtr address)
 {
     static unsigned long pagesize_mask = 0;
 
@@ -1293,12 +1294,12 @@ int drmMap(int fd, drm_handle_t handle, drmSize size, drmAddressPtr address)
  * \internal
  * This function is a wrapper for munmap().
  */
-int drmUnmap(drmAddress address, drmSize size)
+drm_public int drmUnmap(drmAddress address, drmSize size)
 {
     return drm_munmap(address, size);
 }
 
-drmBufInfoPtr drmGetBufInfo(int fd)
+drm_public drmBufInfoPtr drmGetBufInfo(int fd)
 {
     drm_buf_info_t info;
     drmBufInfoPtr  retval;
@@ -1348,7 +1349,7 @@ drmBufInfoPtr drmGetBufInfo(int fd)
  * information about the buffers in a drm_buf_map structure into the
  * client-visible data structures.
  */
-drmBufMapPtr drmMapBufs(int fd)
+drm_public drmBufMapPtr drmMapBufs(int fd)
 {
     drm_buf_map_t bufs;
     drmBufMapPtr  retval;
@@ -1393,7 +1394,7 @@ drmBufMapPtr drmMapBufs(int fd)
  * Calls munmap() for every buffer stored in \p bufs and frees the
  * memory allocated by drmMapBufs().
  */
-int drmUnmapBufs(drmBufMapPtr bufs)
+drm_public int drmUnmapBufs(drmBufMapPtr bufs)
 {
     int i;
 
@@ -1421,7 +1422,7 @@ int drmUnmapBufs(drmBufMapPtr bufs)
  * Assemble the arguments into a drm_dma structure and keeps issuing the
  * DRM_IOCTL_DMA ioctl until success or until maximum number of retries.
  */
-int drmDMA(int fd, drmDMAReqPtr request)
+drm_public int drmDMA(int fd, drmDMAReqPtr request)
 {
     drm_dma_t dma;
     int ret, i = 0;
@@ -1464,7 +1465,7 @@ int drmDMA(int fd, drmDMAReqPtr request)
  * This function translates the arguments into a drm_lock structure and issue
  * the DRM_IOCTL_LOCK ioctl until the lock is successfully acquired.
  */
-int drmGetLock(int fd, drm_context_t context, drmLockFlags flags)
+drm_public int drmGetLock(int fd, drm_context_t context, drmLockFlags flags)
 {
     drm_lock_t lock;
 
@@ -1495,7 +1496,7 @@ int drmGetLock(int fd, drm_context_t context, drmLockFlags flags)
  * This function is a wrapper around the DRM_IOCTL_UNLOCK ioctl, passing the
  * argument in a drm_lock structure.
  */
-int drmUnlock(int fd, drm_context_t context)
+drm_public int drmUnlock(int fd, drm_context_t context)
 {
     drm_lock_t lock;
 
@@ -1504,7 +1505,7 @@ int drmUnlock(int fd, drm_context_t context)
     return drmIoctl(fd, DRM_IOCTL_UNLOCK, &lock);
 }
 
-drm_context_t *drmGetReservedContextList(int fd, int *count)
+drm_public drm_context_t *drmGetReservedContextList(int fd, int *count)
 {
     drm_ctx_res_t res;
     drm_ctx_t     *list;
@@ -1541,7 +1542,7 @@ err_free_context:
     return NULL;
 }
 
-void drmFreeReservedContextList(drm_context_t *pt)
+drm_public void drmFreeReservedContextList(drm_context_t *pt)
 {
     drmFree(pt);
 }
@@ -1564,7 +1565,7 @@ void drmFreeReservedContextList(drm_context_t *pt)
  * This function is a wrapper around the DRM_IOCTL_ADD_CTX ioctl, passing the
  * argument in a drm_ctx structure.
  */
-int drmCreateContext(int fd, drm_context_t *handle)
+drm_public int drmCreateContext(int fd, drm_context_t *handle)
 {
     drm_ctx_t ctx;
 
@@ -1575,7 +1576,7 @@ int drmCreateContext(int fd, drm_context_t *handle)
     return 0;
 }
 
-int drmSwitchToContext(int fd, drm_context_t context)
+drm_public int drmSwitchToContext(int fd, drm_context_t context)
 {
     drm_ctx_t ctx;
 
@@ -1586,7 +1587,8 @@ int drmSwitchToContext(int fd, drm_context_t context)
     return 0;
 }
 
-int drmSetContextFlags(int fd, drm_context_t context, drm_context_tFlags flags)
+drm_public int drmSetContextFlags(int fd, drm_context_t context,
+                                  drm_context_tFlags flags)
 {
     drm_ctx_t ctx;
 
@@ -1607,8 +1609,8 @@ int drmSetContextFlags(int fd, drm_context_t context, drm_context_tFlags flags)
     return 0;
 }
 
-int drmGetContextFlags(int fd, drm_context_t context,
-                       drm_context_tFlagsPtr flags)
+drm_public int drmGetContextFlags(int fd, drm_context_t context,
+                                  drm_context_tFlagsPtr flags)
 {
     drm_ctx_t ctx;
 
@@ -1641,7 +1643,7 @@ int drmGetContextFlags(int fd, drm_context_t context,
  * This function is a wrapper around the DRM_IOCTL_RM_CTX ioctl, passing the
  * argument in a drm_ctx structure.
  */
-int drmDestroyContext(int fd, drm_context_t handle)
+drm_public int drmDestroyContext(int fd, drm_context_t handle)
 {
     drm_ctx_t ctx;
 
@@ -1652,7 +1654,7 @@ int drmDestroyContext(int fd, drm_context_t handle)
     return 0;
 }
 
-int drmCreateDrawable(int fd, drm_drawable_t *handle)
+drm_public int drmCreateDrawable(int fd, drm_drawable_t *handle)
 {
     drm_draw_t draw;
 
@@ -1663,7 +1665,7 @@ int drmCreateDrawable(int fd, drm_drawable_t *handle)
     return 0;
 }
 
-int drmDestroyDrawable(int fd, drm_drawable_t handle)
+drm_public int drmDestroyDrawable(int fd, drm_drawable_t handle)
 {
     drm_draw_t draw;
 
@@ -1674,9 +1676,9 @@ int drmDestroyDrawable(int fd, drm_drawable_t handle)
     return 0;
 }
 
-int drmUpdateDrawableInfo(int fd, drm_drawable_t handle,
-                          drm_drawable_info_type_t type, unsigned int num,
-                          void *data)
+drm_public int drmUpdateDrawableInfo(int fd, drm_drawable_t handle,
+                                     drm_drawable_info_type_t type,
+                                     unsigned int num, void *data)
 {
     drm_update_draw_t update;
 
@@ -1692,7 +1694,8 @@ int drmUpdateDrawableInfo(int fd, drm_drawable_t handle,
     return 0;
 }
 
-int drmCrtcGetSequence(int fd, uint32_t crtcId, uint64_t *sequence, uint64_t *ns)
+drm_public int drmCrtcGetSequence(int fd, uint32_t crtcId, uint64_t *sequence,
+                                  uint64_t *ns)
 {
     struct drm_crtc_get_sequence get_seq;
     int ret;
@@ -1710,8 +1713,10 @@ int drmCrtcGetSequence(int fd, uint32_t crtcId, uint64_t *sequence, uint64_t *ns
     return 0;
 }
 
-int drmCrtcQueueSequence(int fd, uint32_t crtcId, uint32_t flags, uint64_t sequence,
-                         uint64_t *sequence_queued, uint64_t user_data)
+drm_public int drmCrtcQueueSequence(int fd, uint32_t crtcId, uint32_t flags,
+                                    uint64_t sequence,
+                                    uint64_t *sequence_queued,
+                                    uint64_t user_data)
 {
     struct drm_crtc_queue_sequence queue_seq;
     int ret;
@@ -1741,7 +1746,7 @@ int drmCrtcQueueSequence(int fd, uint32_t crtcId, uint32_t flags, uint64_t seque
  * \internal
  * This function is a wrapper around the DRM_IOCTL_AGP_ACQUIRE ioctl.
  */
-int drmAgpAcquire(int fd)
+drm_public int drmAgpAcquire(int fd)
 {
     if (drmIoctl(fd, DRM_IOCTL_AGP_ACQUIRE, NULL))
         return -errno;
@@ -1759,7 +1764,7 @@ int drmAgpAcquire(int fd)
  * \internal
  * This function is a wrapper around the DRM_IOCTL_AGP_RELEASE ioctl.
  */
-int drmAgpRelease(int fd)
+drm_public int drmAgpRelease(int fd)
 {
     if (drmIoctl(fd, DRM_IOCTL_AGP_RELEASE, NULL))
         return -errno;
@@ -1779,7 +1784,7 @@ int drmAgpRelease(int fd)
  * This function is a wrapper around the DRM_IOCTL_AGP_ENABLE ioctl, passing the
  * argument in a drm_agp_mode structure.
  */
-int drmAgpEnable(int fd, unsigned long mode)
+drm_public int drmAgpEnable(int fd, unsigned long mode)
 {
     drm_agp_mode_t m;
 
@@ -1807,8 +1812,8 @@ int drmAgpEnable(int fd, unsigned long mode)
  * This function is a wrapper around the DRM_IOCTL_AGP_ALLOC ioctl, passing the
  * arguments in a drm_agp_buffer structure.
  */
-int drmAgpAlloc(int fd, unsigned long size, unsigned long type,
-                unsigned long *address, drm_handle_t *handle)
+drm_public int drmAgpAlloc(int fd, unsigned long size, unsigned long type,
+                           unsigned long *address, drm_handle_t *handle)
 {
     drm_agp_buffer_t b;
 
@@ -1837,7 +1842,7 @@ int drmAgpAlloc(int fd, unsigned long size, unsigned long type,
  * This function is a wrapper around the DRM_IOCTL_AGP_FREE ioctl, passing the
  * argument in a drm_agp_buffer structure.
  */
-int drmAgpFree(int fd, drm_handle_t handle)
+drm_public int drmAgpFree(int fd, drm_handle_t handle)
 {
     drm_agp_buffer_t b;
 
@@ -1862,7 +1867,7 @@ int drmAgpFree(int fd, drm_handle_t handle)
  * This function is a wrapper around the DRM_IOCTL_AGP_BIND ioctl, passing the
  * argument in a drm_agp_binding structure.
  */
-int drmAgpBind(int fd, drm_handle_t handle, unsigned long offset)
+drm_public int drmAgpBind(int fd, drm_handle_t handle, unsigned long offset)
 {
     drm_agp_binding_t b;
 
@@ -1887,7 +1892,7 @@ int drmAgpBind(int fd, drm_handle_t handle, unsigned long offset)
  * This function is a wrapper around the DRM_IOCTL_AGP_UNBIND ioctl, passing
  * the argument in a drm_agp_binding structure.
  */
-int drmAgpUnbind(int fd, drm_handle_t handle)
+drm_public int drmAgpUnbind(int fd, drm_handle_t handle)
 {
     drm_agp_binding_t b;
 
@@ -1910,7 +1915,7 @@ int drmAgpUnbind(int fd, drm_handle_t handle)
  * This function is a wrapper around the DRM_IOCTL_AGP_INFO ioctl, getting the
  * necessary information in a drm_agp_info structure.
  */
-int drmAgpVersionMajor(int fd)
+drm_public int drmAgpVersionMajor(int fd)
 {
     drm_agp_info_t i;
 
@@ -1933,7 +1938,7 @@ int drmAgpVersionMajor(int fd)
  * This function is a wrapper around the DRM_IOCTL_AGP_INFO ioctl, getting the
  * necessary information in a drm_agp_info structure.
  */
-int drmAgpVersionMinor(int fd)
+drm_public int drmAgpVersionMinor(int fd)
 {
     drm_agp_info_t i;
 
@@ -1956,7 +1961,7 @@ int drmAgpVersionMinor(int fd)
  * This function is a wrapper around the DRM_IOCTL_AGP_INFO ioctl, getting the
  * necessary information in a drm_agp_info structure.
  */
-unsigned long drmAgpGetMode(int fd)
+drm_public unsigned long drmAgpGetMode(int fd)
 {
     drm_agp_info_t i;
 
@@ -1979,7 +1984,7 @@ unsigned long drmAgpGetMode(int fd)
  * This function is a wrapper around the DRM_IOCTL_AGP_INFO ioctl, getting the
  * necessary information in a drm_agp_info structure.
  */
-unsigned long drmAgpBase(int fd)
+drm_public unsigned long drmAgpBase(int fd)
 {
     drm_agp_info_t i;
 
@@ -2002,7 +2007,7 @@ unsigned long drmAgpBase(int fd)
  * This function is a wrapper around the DRM_IOCTL_AGP_INFO ioctl, getting the
  * necessary information in a drm_agp_info structure.
  */
-unsigned long drmAgpSize(int fd)
+drm_public unsigned long drmAgpSize(int fd)
 {
     drm_agp_info_t i;
 
@@ -2025,7 +2030,7 @@ unsigned long drmAgpSize(int fd)
  * This function is a wrapper around the DRM_IOCTL_AGP_INFO ioctl, getting the
  * necessary information in a drm_agp_info structure.
  */
-unsigned long drmAgpMemoryUsed(int fd)
+drm_public unsigned long drmAgpMemoryUsed(int fd)
 {
     drm_agp_info_t i;
 
@@ -2048,7 +2053,7 @@ unsigned long drmAgpMemoryUsed(int fd)
  * This function is a wrapper around the DRM_IOCTL_AGP_INFO ioctl, getting the
  * necessary information in a drm_agp_info structure.
  */
-unsigned long drmAgpMemoryAvail(int fd)
+drm_public unsigned long drmAgpMemoryAvail(int fd)
 {
     drm_agp_info_t i;
 
@@ -2071,7 +2076,7 @@ unsigned long drmAgpMemoryAvail(int fd)
  * This function is a wrapper around the DRM_IOCTL_AGP_INFO ioctl, getting the
  * necessary information in a drm_agp_info structure.
  */
-unsigned int drmAgpVendorId(int fd)
+drm_public unsigned int drmAgpVendorId(int fd)
 {
     drm_agp_info_t i;
 
@@ -2094,7 +2099,7 @@ unsigned int drmAgpVendorId(int fd)
  * This function is a wrapper around the DRM_IOCTL_AGP_INFO ioctl, getting the
  * necessary information in a drm_agp_info structure.
  */
-unsigned int drmAgpDeviceId(int fd)
+drm_public unsigned int drmAgpDeviceId(int fd)
 {
     drm_agp_info_t i;
 
@@ -2105,7 +2110,8 @@ unsigned int drmAgpDeviceId(int fd)
     return i.id_device;
 }
 
-int drmScatterGatherAlloc(int fd, unsigned long size, drm_handle_t *handle)
+drm_public int drmScatterGatherAlloc(int fd, unsigned long size,
+                                     drm_handle_t *handle)
 {
     drm_scatter_gather_t sg;
 
@@ -2119,7 +2125,7 @@ int drmScatterGatherAlloc(int fd, unsigned long size, drm_handle_t *handle)
     return 0;
 }
 
-int drmScatterGatherFree(int fd, drm_handle_t handle)
+drm_public int drmScatterGatherFree(int fd, drm_handle_t handle)
 {
     drm_scatter_gather_t sg;
 
@@ -2141,7 +2147,7 @@ int drmScatterGatherFree(int fd, drm_handle_t handle)
  * \internal
  * This function is a wrapper around the DRM_IOCTL_WAIT_VBLANK ioctl.
  */
-int drmWaitVBlank(int fd, drmVBlankPtr vbl)
+drm_public int drmWaitVBlank(int fd, drmVBlankPtr vbl)
 {
     struct timespec timeout, cur;
     int ret;
@@ -2173,7 +2179,7 @@ out:
     return ret;
 }
 
-int drmError(int err, const char *label)
+drm_public int drmError(int err, const char *label)
 {
     switch (err) {
     case DRM_ERR_NO_DEVICE:
@@ -2210,7 +2216,7 @@ int drmError(int err, const char *label)
  * This function is a wrapper around the DRM_IOCTL_CONTROL ioctl, passing the
  * argument in a drm_control structure.
  */
-int drmCtlInstHandler(int fd, int irq)
+drm_public int drmCtlInstHandler(int fd, int irq)
 {
     drm_control_t ctl;
 
@@ -2234,7 +2240,7 @@ int drmCtlInstHandler(int fd, int irq)
  * This function is a wrapper around the DRM_IOCTL_CONTROL ioctl, passing the
  * argument in a drm_control structure.
  */
-int drmCtlUninstHandler(int fd)
+drm_public int drmCtlUninstHandler(int fd)
 {
     drm_control_t ctl;
 
@@ -2246,7 +2252,7 @@ int drmCtlUninstHandler(int fd)
     return 0;
 }
 
-int drmFinish(int fd, int context, drmLockFlags flags)
+drm_public int drmFinish(int fd, int context, drmLockFlags flags)
 {
     drm_lock_t lock;
 
@@ -2277,7 +2283,8 @@ int drmFinish(int fd, int context, drmLockFlags flags)
  * This function is a wrapper around the DRM_IOCTL_IRQ_BUSID ioctl, passing the
  * arguments in a drm_irq_busid structure.
  */
-int drmGetInterruptFromBusID(int fd, int busnum, int devnum, int funcnum)
+drm_public int drmGetInterruptFromBusID(int fd, int busnum, int devnum,
+                                        int funcnum)
 {
     drm_irq_busid_t p;
 
@@ -2290,7 +2297,7 @@ int drmGetInterruptFromBusID(int fd, int busnum, int devnum, int funcnum)
     return p.irq;
 }
 
-int drmAddContextTag(int fd, drm_context_t context, void *tag)
+drm_public int drmAddContextTag(int fd, drm_context_t context, void *tag)
 {
     drmHashEntry  *entry = drmGetEntry(fd);
 
@@ -2301,14 +2308,14 @@ int drmAddContextTag(int fd, drm_context_t context, void *tag)
     return 0;
 }
 
-int drmDelContextTag(int fd, drm_context_t context)
+drm_public int drmDelContextTag(int fd, drm_context_t context)
 {
     drmHashEntry  *entry = drmGetEntry(fd);
 
     return drmHashDelete(entry->tagTable, context);
 }
 
-void *drmGetContextTag(int fd, drm_context_t context)
+drm_public void *drmGetContextTag(int fd, drm_context_t context)
 {
     drmHashEntry  *entry = drmGetEntry(fd);
     void          *value;
@@ -2319,8 +2326,8 @@ void *drmGetContextTag(int fd, drm_context_t context)
     return value;
 }
 
-int drmAddContextPrivateMapping(int fd, drm_context_t ctx_id,
-                                drm_handle_t handle)
+drm_public int drmAddContextPrivateMapping(int fd, drm_context_t ctx_id,
+                                           drm_handle_t handle)
 {
     drm_ctx_priv_map_t map;
 
@@ -2333,8 +2340,8 @@ int drmAddContextPrivateMapping(int fd, drm_context_t ctx_id,
     return 0;
 }
 
-int drmGetContextPrivateMapping(int fd, drm_context_t ctx_id,
-                                drm_handle_t *handle)
+drm_public int drmGetContextPrivateMapping(int fd, drm_context_t ctx_id,
+                                           drm_handle_t *handle)
 {
     drm_ctx_priv_map_t map;
 
@@ -2349,9 +2356,9 @@ int drmGetContextPrivateMapping(int fd, drm_context_t ctx_id,
     return 0;
 }
 
-int drmGetMap(int fd, int idx, drm_handle_t *offset, drmSize *size,
-              drmMapType *type, drmMapFlags *flags, drm_handle_t *handle,
-              int *mtrr)
+drm_public int drmGetMap(int fd, int idx, drm_handle_t *offset, drmSize *size,
+                         drmMapType *type, drmMapFlags *flags,
+                         drm_handle_t *handle, int *mtrr)
 {
     drm_map_t map;
 
@@ -2368,8 +2375,8 @@ int drmGetMap(int fd, int idx, drm_handle_t *offset, drmSize *size,
     return 0;
 }
 
-int drmGetClient(int fd, int idx, int *auth, int *pid, int *uid,
-                 unsigned long *magic, unsigned long *iocs)
+drm_public int drmGetClient(int fd, int idx, int *auth, int *pid, int *uid,
+                            unsigned long *magic, unsigned long *iocs)
 {
     drm_client_t client;
 
@@ -2385,7 +2392,7 @@ int drmGetClient(int fd, int idx, int *auth, int *pid, int *uid,
     return 0;
 }
 
-int drmGetStats(int fd, drmStatsT *stats)
+drm_public int drmGetStats(int fd, drmStatsT *stats)
 {
     drm_stats_t s;
     unsigned    i;
@@ -2523,7 +2530,7 @@ int drmGetStats(int fd, drmStatsT *stats)
  * It issues a read-write ioctl given by
  * \code DRM_COMMAND_BASE + drmCommandIndex \endcode.
  */
-int drmSetInterfaceVersion(int fd, drmSetVersion *version)
+drm_public int drmSetInterfaceVersion(int fd, drmSetVersion *version)
 {
     int retcode = 0;
     drm_set_version_t sv;
@@ -2558,7 +2565,7 @@ int drmSetInterfaceVersion(int fd, drmSetVersion *version)
  * It issues a ioctl given by
  * \code DRM_COMMAND_BASE + drmCommandIndex \endcode.
  */
-int drmCommandNone(int fd, unsigned long drmCommandIndex)
+drm_public int drmCommandNone(int fd, unsigned long drmCommandIndex)
 {
     unsigned long request;
 
@@ -2585,8 +2592,8 @@ int drmCommandNone(int fd, unsigned long drmCommandIndex)
  * It issues a read ioctl given by
  * \code DRM_COMMAND_BASE + drmCommandIndex \endcode.
  */
-int drmCommandRead(int fd, unsigned long drmCommandIndex, void *data,
-                   unsigned long size)
+drm_public int drmCommandRead(int fd, unsigned long drmCommandIndex,
+                              void *data, unsigned long size)
 {
     unsigned long request;
 
@@ -2614,8 +2621,8 @@ int drmCommandRead(int fd, unsigned long drmCommandIndex, void *data,
  * It issues a write ioctl given by
  * \code DRM_COMMAND_BASE + drmCommandIndex \endcode.
  */
-int drmCommandWrite(int fd, unsigned long drmCommandIndex, void *data,
-                    unsigned long size)
+drm_public int drmCommandWrite(int fd, unsigned long drmCommandIndex,
+                               void *data, unsigned long size)
 {
     unsigned long request;
 
@@ -2643,8 +2650,8 @@ int drmCommandWrite(int fd, unsigned long drmCommandIndex, void *data,
  * It issues a read-write ioctl given by
  * \code DRM_COMMAND_BASE + drmCommandIndex \endcode.
  */
-int drmCommandWriteRead(int fd, unsigned long drmCommandIndex, void *data,
-                        unsigned long size)
+drm_public int drmCommandWriteRead(int fd, unsigned long drmCommandIndex,
+                                   void *data, unsigned long size)
 {
     unsigned long request;
 
@@ -2666,14 +2673,13 @@ static struct {
 
 static int nr_fds = 0;
 
-int drmOpenOnce(void *unused,
-                const char *BusID,
-                int *newlyopened)
+drm_public int drmOpenOnce(void *unused, const char *BusID, int *newlyopened)
 {
     return drmOpenOnceWithType(BusID, newlyopened, DRM_NODE_PRIMARY);
 }
 
-int drmOpenOnceWithType(const char *BusID, int *newlyopened, int type)
+drm_public int drmOpenOnceWithType(const char *BusID, int *newlyopened,
+                                   int type)
 {
     int i;
     int fd;
@@ -2706,7 +2712,7 @@ int drmOpenOnceWithType(const char *BusID, int *newlyopened, int type)
     return fd;
 }
 
-void drmCloseOnce(int fd)
+drm_public void drmCloseOnce(int fd)
 {
     int i;
 
@@ -2725,17 +2731,17 @@ void drmCloseOnce(int fd)
     }
 }
 
-int drmSetMaster(int fd)
+drm_public int drmSetMaster(int fd)
 {
         return drmIoctl(fd, DRM_IOCTL_SET_MASTER, NULL);
 }
 
-int drmDropMaster(int fd)
+drm_public int drmDropMaster(int fd)
 {
         return drmIoctl(fd, DRM_IOCTL_DROP_MASTER, NULL);
 }
 
-char *drmGetDeviceNameFromFd(int fd)
+drm_public char *drmGetDeviceNameFromFd(int fd)
 {
     char name[128];
     struct stat sbuf;
@@ -2761,7 +2767,7 @@ char *drmGetDeviceNameFromFd(int fd)
     return strdup(name);
 }
 
-int drmGetNodeTypeFromFd(int fd)
+drm_public int drmGetNodeTypeFromFd(int fd)
 {
     struct stat sbuf;
     int maj, min, type;
@@ -2783,7 +2789,8 @@ int drmGetNodeTypeFromFd(int fd)
     return type;
 }
 
-int drmPrimeHandleToFD(int fd, uint32_t handle, uint32_t flags, int *prime_fd)
+drm_public int drmPrimeHandleToFD(int fd, uint32_t handle, uint32_t flags,
+                                  int *prime_fd)
 {
     struct drm_prime_handle args;
     int ret;
@@ -2800,7 +2807,7 @@ int drmPrimeHandleToFD(int fd, uint32_t handle, uint32_t flags, int *prime_fd)
     return 0;
 }
 
-int drmPrimeFDToHandle(int fd, int prime_fd, uint32_t *handle)
+drm_public int drmPrimeFDToHandle(int fd, int prime_fd, uint32_t *handle)
 {
     struct drm_prime_handle args;
     int ret;
@@ -2900,12 +2907,12 @@ static char *drmGetMinorNameForFD(int fd, int type)
 #endif
 }
 
-char *drmGetPrimaryDeviceNameFromFd(int fd)
+drm_public char *drmGetPrimaryDeviceNameFromFd(int fd)
 {
     return drmGetMinorNameForFD(fd, DRM_NODE_PRIMARY);
 }
 
-char *drmGetRenderDeviceNameFromFd(int fd)
+drm_public char *drmGetRenderDeviceNameFromFd(int fd)
 {
     return drmGetMinorNameForFD(fd, DRM_NODE_RENDER);
 }
@@ -3069,7 +3076,7 @@ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
 #endif
 }
 
-int drmDevicesEqual(drmDevicePtr a, drmDevicePtr b)
+drm_public int drmDevicesEqual(drmDevicePtr a, drmDevicePtr b)
 {
     if (a == NULL || b == NULL)
         return 0;
@@ -3269,7 +3276,7 @@ static void drmFreeHost1xDevice(drmDevicePtr device)
     }
 }
 
-void drmFreeDevice(drmDevicePtr *device)
+drm_public void drmFreeDevice(drmDevicePtr *device)
 {
     if (device == NULL)
         return;
@@ -3290,7 +3297,7 @@ void drmFreeDevice(drmDevicePtr *device)
     *device = NULL;
 }
 
-void drmFreeDevices(drmDevicePtr devices[], int count)
+drm_public void drmFreeDevices(drmDevicePtr devices[], int count)
 {
     int i;
 
@@ -3812,7 +3819,7 @@ drm_device_has_rdev(drmDevicePtr device, dev_t find_rdev)
  * \note Unlike drmGetDevice it does not retrieve the pci device revision field
  * unless the DRM_DEVICE_GET_PCI_REVISION \p flag is set.
  */
-int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
+drm_public int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
 {
 #ifdef __OpenBSD__
     /*
@@ -3960,7 +3967,7 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
  *
  * \return zero on success, negative error code otherwise.
  */
-int drmGetDevice(int fd, drmDevicePtr *device)
+drm_public int drmGetDevice(int fd, drmDevicePtr *device)
 {
     return drmGetDevice2(fd, DRM_DEVICE_GET_PCI_REVISION, device);
 }
@@ -3981,7 +3988,8 @@ int drmGetDevice(int fd, drmDevicePtr *device)
  * \note Unlike drmGetDevices it does not retrieve the pci device revision field
  * unless the DRM_DEVICE_GET_PCI_REVISION \p flag is set.
  */
-int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
+drm_public int drmGetDevices2(uint32_t flags, drmDevicePtr devices[],
+                              int max_devices)
 {
     drmDevicePtr local_devices[MAX_DRM_NODES];
     drmDevicePtr device;
@@ -4044,12 +4052,12 @@ int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
  *         alternatively the number of devices stored in devices[], which is
  *         capped by the max_devices.
  */
-int drmGetDevices(drmDevicePtr devices[], int max_devices)
+drm_public int drmGetDevices(drmDevicePtr devices[], int max_devices)
 {
     return drmGetDevices2(DRM_DEVICE_GET_PCI_REVISION, devices, max_devices);
 }
 
-char *drmGetDeviceNameFromFd2(int fd)
+drm_public char *drmGetDeviceNameFromFd2(int fd)
 {
 #ifdef __linux__
     struct stat sbuf;
@@ -4121,7 +4129,7 @@ char *drmGetDeviceNameFromFd2(int fd)
 #endif
 }
 
-int drmSyncobjCreate(int fd, uint32_t flags, uint32_t *handle)
+drm_public int drmSyncobjCreate(int fd, uint32_t flags, uint32_t *handle)
 {
     struct drm_syncobj_create args;
     int ret;
@@ -4136,7 +4144,7 @@ int drmSyncobjCreate(int fd, uint32_t flags, uint32_t *handle)
     return 0;
 }
 
-int drmSyncobjDestroy(int fd, uint32_t handle)
+drm_public int drmSyncobjDestroy(int fd, uint32_t handle)
 {
     struct drm_syncobj_destroy args;
 
@@ -4145,7 +4153,7 @@ int drmSyncobjDestroy(int fd, uint32_t handle)
     return drmIoctl(fd, DRM_IOCTL_SYNCOBJ_DESTROY, &args);
 }
 
-int drmSyncobjHandleToFD(int fd, uint32_t handle, int *obj_fd)
+drm_public int drmSyncobjHandleToFD(int fd, uint32_t handle, int *obj_fd)
 {
     struct drm_syncobj_handle args;
     int ret;
@@ -4160,7 +4168,7 @@ int drmSyncobjHandleToFD(int fd, uint32_t handle, int *obj_fd)
     return 0;
 }
 
-int drmSyncobjFDToHandle(int fd, int obj_fd, uint32_t *handle)
+drm_public int drmSyncobjFDToHandle(int fd, int obj_fd, uint32_t *handle)
 {
     struct drm_syncobj_handle args;
     int ret;
@@ -4175,7 +4183,8 @@ int drmSyncobjFDToHandle(int fd, int obj_fd, uint32_t *handle)
     return 0;
 }
 
-int drmSyncobjImportSyncFile(int fd, uint32_t handle, int sync_file_fd)
+drm_public int drmSyncobjImportSyncFile(int fd, uint32_t handle,
+                                        int sync_file_fd)
 {
     struct drm_syncobj_handle args;
 
@@ -4186,7 +4195,8 @@ int drmSyncobjImportSyncFile(int fd, uint32_t handle, int sync_file_fd)
     return drmIoctl(fd, DRM_IOCTL_SYNCOBJ_FD_TO_HANDLE, &args);
 }
 
-int drmSyncobjExportSyncFile(int fd, uint32_t handle, int *sync_file_fd)
+drm_public int drmSyncobjExportSyncFile(int fd, uint32_t handle,
+                                        int *sync_file_fd)
 {
     struct drm_syncobj_handle args;
     int ret;
@@ -4202,9 +4212,9 @@ int drmSyncobjExportSyncFile(int fd, uint32_t handle, int *sync_file_fd)
     return 0;
 }
 
-int drmSyncobjWait(int fd, uint32_t *handles, unsigned num_handles,
-                   int64_t timeout_nsec, unsigned flags,
-                   uint32_t *first_signaled)
+drm_public int drmSyncobjWait(int fd, uint32_t *handles, unsigned num_handles,
+                              int64_t timeout_nsec, unsigned flags,
+                              uint32_t *first_signaled)
 {
     struct drm_syncobj_wait args;
     int ret;
@@ -4224,7 +4234,8 @@ int drmSyncobjWait(int fd, uint32_t *handles, unsigned num_handles,
     return ret;
 }
 
-int drmSyncobjReset(int fd, const uint32_t *handles, uint32_t handle_count)
+drm_public int drmSyncobjReset(int fd, const uint32_t *handles,
+                               uint32_t handle_count)
 {
     struct drm_syncobj_array args;
     int ret;
@@ -4237,7 +4248,8 @@ int drmSyncobjReset(int fd, const uint32_t *handles, uint32_t handle_count)
     return ret;
 }
 
-int drmSyncobjSignal(int fd, const uint32_t *handles, uint32_t handle_count)
+drm_public int drmSyncobjSignal(int fd, const uint32_t *handles,
+                                uint32_t handle_count)
 {
     struct drm_syncobj_array args;
     int ret;

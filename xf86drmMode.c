@@ -48,6 +48,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "libdrm_macros.h"
 #include "xf86drmMode.h"
 #include "xf86drm.h"
 #include <drm.h>
@@ -92,7 +93,7 @@ static void* drmAllocCpy(char *array, int count, int entry_size)
  * A couple of free functions.
  */
 
-void drmModeFreeModeInfo(drmModeModeInfoPtr ptr)
+drm_public void drmModeFreeModeInfo(drmModeModeInfoPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -100,7 +101,7 @@ void drmModeFreeModeInfo(drmModeModeInfoPtr ptr)
 	drmFree(ptr);
 }
 
-void drmModeFreeResources(drmModeResPtr ptr)
+drm_public void drmModeFreeResources(drmModeResPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -112,7 +113,7 @@ void drmModeFreeResources(drmModeResPtr ptr)
 	drmFree(ptr);
 }
 
-void drmModeFreeFB(drmModeFBPtr ptr)
+drm_public void drmModeFreeFB(drmModeFBPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -121,7 +122,7 @@ void drmModeFreeFB(drmModeFBPtr ptr)
 	drmFree(ptr);
 }
 
-void drmModeFreeCrtc(drmModeCrtcPtr ptr)
+drm_public void drmModeFreeCrtc(drmModeCrtcPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -129,7 +130,7 @@ void drmModeFreeCrtc(drmModeCrtcPtr ptr)
 	drmFree(ptr);
 }
 
-void drmModeFreeConnector(drmModeConnectorPtr ptr)
+drm_public void drmModeFreeConnector(drmModeConnectorPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -141,7 +142,7 @@ void drmModeFreeConnector(drmModeConnectorPtr ptr)
 	drmFree(ptr);
 }
 
-void drmModeFreeEncoder(drmModeEncoderPtr ptr)
+drm_public void drmModeFreeEncoder(drmModeEncoderPtr ptr)
 {
 	drmFree(ptr);
 }
@@ -150,7 +151,7 @@ void drmModeFreeEncoder(drmModeEncoderPtr ptr)
  * ModeSetting functions.
  */
 
-drmModeResPtr drmModeGetResources(int fd)
+drm_public drmModeResPtr drmModeGetResources(int fd)
 {
 	struct drm_mode_card_res res, counts;
 	drmModeResPtr r = 0;
@@ -244,9 +245,10 @@ err_allocs:
 	return r;
 }
 
-int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
-		 uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
-		 uint32_t *buf_id)
+
+drm_public int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
+                            uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
+                            uint32_t *buf_id)
 {
 	struct drm_mode_fb_cmd f;
 	int ret;
@@ -266,10 +268,10 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 	return 0;
 }
 
-int drmModeAddFB2WithModifiers(int fd, uint32_t width, uint32_t height,
-                               uint32_t pixel_format, const uint32_t bo_handles[4],
-                               const uint32_t pitches[4], const uint32_t offsets[4],
-                               const uint64_t modifier[4], uint32_t *buf_id, uint32_t flags)
+drm_public int drmModeAddFB2WithModifiers(int fd, uint32_t width,
+		uint32_t height, uint32_t pixel_format, const uint32_t bo_handles[4],
+		const uint32_t pitches[4], const uint32_t offsets[4],
+		const uint64_t modifier[4], uint32_t *buf_id, uint32_t flags)
 {
 	struct drm_mode_fb_cmd2 f;
 	int ret;
@@ -292,10 +294,10 @@ int drmModeAddFB2WithModifiers(int fd, uint32_t width, uint32_t height,
 	return 0;
 }
 
-int drmModeAddFB2(int fd, uint32_t width, uint32_t height,
-                  uint32_t pixel_format, const uint32_t bo_handles[4],
-                  const uint32_t pitches[4], const uint32_t offsets[4],
-                  uint32_t *buf_id, uint32_t flags)
+drm_public int drmModeAddFB2(int fd, uint32_t width, uint32_t height,
+		uint32_t pixel_format, const uint32_t bo_handles[4],
+		const uint32_t pitches[4], const uint32_t offsets[4],
+		uint32_t *buf_id, uint32_t flags)
 {
 	return drmModeAddFB2WithModifiers(fd, width, height,
 					  pixel_format, bo_handles,
@@ -303,12 +305,12 @@ int drmModeAddFB2(int fd, uint32_t width, uint32_t height,
 					  buf_id, flags);
 }
 
-int drmModeRmFB(int fd, uint32_t bufferId)
+drm_public int drmModeRmFB(int fd, uint32_t bufferId)
 {
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_RMFB, &bufferId);
 }
 
-drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
+drm_public drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
 {
 	struct drm_mode_fb_cmd info;
 	drmModeFBPtr r;
@@ -333,7 +335,7 @@ drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
 	return r;
 }
 
-int drmModeDirtyFB(int fd, uint32_t bufferId,
+drm_public int drmModeDirtyFB(int fd, uint32_t bufferId,
 		   drmModeClipPtr clips, uint32_t num_clips)
 {
 	struct drm_mode_fb_dirty_cmd dirty;
@@ -350,7 +352,7 @@ int drmModeDirtyFB(int fd, uint32_t bufferId,
  * Crtc functions
  */
 
-drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
+drm_public drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 {
 	struct drm_mode_crtc crtc;
 	drmModeCrtcPtr r;
@@ -382,7 +384,7 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 	return r;
 }
 
-int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
+drm_public int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
 		   uint32_t x, uint32_t y, uint32_t *connectors, int count,
 		   drmModeModeInfoPtr mode)
 {
@@ -407,7 +409,8 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
  * Cursor manipulation
  */
 
-int drmModeSetCursor(int fd, uint32_t crtcId, uint32_t bo_handle, uint32_t width, uint32_t height)
+drm_public int drmModeSetCursor(int fd, uint32_t crtcId, uint32_t bo_handle,
+								uint32_t width, uint32_t height)
 {
 	struct drm_mode_cursor arg;
 
@@ -421,7 +424,9 @@ int drmModeSetCursor(int fd, uint32_t crtcId, uint32_t bo_handle, uint32_t width
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_CURSOR, &arg);
 }
 
-int drmModeSetCursor2(int fd, uint32_t crtcId, uint32_t bo_handle, uint32_t width, uint32_t height, int32_t hot_x, int32_t hot_y)
+drm_public int drmModeSetCursor2(int fd, uint32_t crtcId, uint32_t bo_handle,
+								 uint32_t width, uint32_t height, int32_t hot_x,
+								 int32_t hot_y)
 {
 	struct drm_mode_cursor2 arg;
 
@@ -437,7 +442,7 @@ int drmModeSetCursor2(int fd, uint32_t crtcId, uint32_t bo_handle, uint32_t widt
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_CURSOR2, &arg);
 }
 
-int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y)
+drm_public int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y)
 {
 	struct drm_mode_cursor arg;
 
@@ -453,7 +458,7 @@ int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y)
 /*
  * Encoder get
  */
-drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id)
+drm_public drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id)
 {
 	struct drm_mode_get_encoder enc;
 	drmModeEncoderPtr r = NULL;
@@ -585,17 +590,17 @@ err_allocs:
 	return r;
 }
 
-drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
+drm_public drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 {
 	return _drmModeGetConnector(fd, connector_id, 1);
 }
 
-drmModeConnectorPtr drmModeGetConnectorCurrent(int fd, uint32_t connector_id)
+drm_public drmModeConnectorPtr drmModeGetConnectorCurrent(int fd, uint32_t connector_id)
 {
 	return _drmModeGetConnector(fd, connector_id, 0);
 }
 
-int drmModeAttachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_info)
+drm_public int drmModeAttachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_info)
 {
 	struct drm_mode_mode_cmd res;
 
@@ -606,7 +611,7 @@ int drmModeAttachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_inf
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_ATTACHMODE, &res);
 }
 
-int drmModeDetachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_info)
+drm_public int drmModeDetachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_info)
 {
 	struct drm_mode_mode_cmd res;
 
@@ -617,7 +622,7 @@ int drmModeDetachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_inf
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_DETACHMODE, &res);
 }
 
-drmModePropertyPtr drmModeGetProperty(int fd, uint32_t property_id)
+drm_public drmModePropertyPtr drmModeGetProperty(int fd, uint32_t property_id)
 {
 	struct drm_mode_get_property prop;
 	drmModePropertyPtr r;
@@ -671,7 +676,7 @@ err_allocs:
 	return r;
 }
 
-void drmModeFreeProperty(drmModePropertyPtr ptr)
+drm_public void drmModeFreeProperty(drmModePropertyPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -681,7 +686,8 @@ void drmModeFreeProperty(drmModePropertyPtr ptr)
 	drmFree(ptr);
 }
 
-drmModePropertyBlobPtr drmModeGetPropertyBlob(int fd, uint32_t blob_id)
+drm_public drmModePropertyBlobPtr drmModeGetPropertyBlob(int fd,
+														 uint32_t blob_id)
 {
 	struct drm_mode_get_blob blob;
 	drmModePropertyBlobPtr r;
@@ -712,7 +718,7 @@ err_allocs:
 	return r;
 }
 
-void drmModeFreePropertyBlob(drmModePropertyBlobPtr ptr)
+drm_public void drmModeFreePropertyBlob(drmModePropertyBlobPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -721,8 +727,9 @@ void drmModeFreePropertyBlob(drmModePropertyBlobPtr ptr)
 	drmFree(ptr);
 }
 
-int drmModeConnectorSetProperty(int fd, uint32_t connector_id, uint32_t property_id,
-			     uint64_t value)
+drm_public int drmModeConnectorSetProperty(int fd, uint32_t connector_id,
+										   uint32_t property_id,
+										   uint64_t value)
 {
 	struct drm_mode_connector_set_property osp;
 
@@ -740,7 +747,7 @@ int drmModeConnectorSetProperty(int fd, uint32_t connector_id, uint32_t property
  *  -EINVAL or invalid bus id
  *  -ENOSYS if no modesetting support
 */
-int drmCheckModesettingSupported(const char *busid)
+drm_public int drmCheckModesettingSupported(const char *busid)
 {
 #if defined (__linux__)
 	char pci_dev_dir[1024];
@@ -848,8 +855,9 @@ int drmCheckModesettingSupported(const char *busid)
 	return -ENOSYS;
 }
 
-int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
-			uint16_t *red, uint16_t *green, uint16_t *blue)
+drm_public int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
+								   uint16_t *red, uint16_t *green,
+								   uint16_t *blue)
 {
 	struct drm_mode_crtc_lut l;
 
@@ -863,8 +871,9 @@ int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_GETGAMMA, &l);
 }
 
-int drmModeCrtcSetGamma(int fd, uint32_t crtc_id, uint32_t size,
-			uint16_t *red, uint16_t *green, uint16_t *blue)
+drm_public int drmModeCrtcSetGamma(int fd, uint32_t crtc_id, uint32_t size,
+								   uint16_t *red, uint16_t *green,
+								   uint16_t *blue)
 {
 	struct drm_mode_crtc_lut l;
 
@@ -878,7 +887,7 @@ int drmModeCrtcSetGamma(int fd, uint32_t crtc_id, uint32_t size,
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_SETGAMMA, &l);
 }
 
-int drmHandleEvent(int fd, drmEventContextPtr evctx)
+drm_public int drmHandleEvent(int fd, drmEventContextPtr evctx)
 {
 	char buffer[1024];
 	int len, i;
@@ -946,7 +955,7 @@ int drmHandleEvent(int fd, drmEventContextPtr evctx)
 	return 0;
 }
 
-int drmModePageFlip(int fd, uint32_t crtc_id, uint32_t fb_id,
+drm_public int drmModePageFlip(int fd, uint32_t crtc_id, uint32_t fb_id,
 		    uint32_t flags, void *user_data)
 {
 	struct drm_mode_crtc_page_flip flip;
@@ -960,7 +969,7 @@ int drmModePageFlip(int fd, uint32_t crtc_id, uint32_t fb_id,
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_PAGE_FLIP, &flip);
 }
 
-int drmModePageFlipTarget(int fd, uint32_t crtc_id, uint32_t fb_id,
+drm_public int drmModePageFlipTarget(int fd, uint32_t crtc_id, uint32_t fb_id,
 			  uint32_t flags, void *user_data,
 			  uint32_t target_vblank)
 {
@@ -976,7 +985,7 @@ int drmModePageFlipTarget(int fd, uint32_t crtc_id, uint32_t fb_id,
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_PAGE_FLIP, &flip_target);
 }
 
-int drmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
+drm_public int drmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
 		    uint32_t fb_id, uint32_t flags,
 		    int32_t crtc_x, int32_t crtc_y,
 		    uint32_t crtc_w, uint32_t crtc_h,
@@ -1002,7 +1011,7 @@ int drmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_SETPLANE, &s);
 }
 
-drmModePlanePtr drmModeGetPlane(int fd, uint32_t plane_id)
+drm_public drmModePlanePtr drmModeGetPlane(int fd, uint32_t plane_id)
 {
 	struct drm_mode_get_plane ovr, counts;
 	drmModePlanePtr r = 0;
@@ -1053,7 +1062,7 @@ err_allocs:
 	return r;
 }
 
-void drmModeFreePlane(drmModePlanePtr ptr)
+drm_public void drmModeFreePlane(drmModePlanePtr ptr)
 {
 	if (!ptr)
 		return;
@@ -1062,7 +1071,7 @@ void drmModeFreePlane(drmModePlanePtr ptr)
 	drmFree(ptr);
 }
 
-drmModePlaneResPtr drmModeGetPlaneResources(int fd)
+drm_public drmModePlaneResPtr drmModeGetPlaneResources(int fd)
 {
 	struct drm_mode_get_plane_res res, counts;
 	drmModePlaneResPtr r = 0;
@@ -1107,7 +1116,7 @@ err_allocs:
 	return r;
 }
 
-void drmModeFreePlaneResources(drmModePlaneResPtr ptr)
+drm_public void drmModeFreePlaneResources(drmModePlaneResPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -1116,7 +1125,7 @@ void drmModeFreePlaneResources(drmModePlaneResPtr ptr)
 	drmFree(ptr);
 }
 
-drmModeObjectPropertiesPtr drmModeObjectGetProperties(int fd,
+drm_public drmModeObjectPropertiesPtr drmModeObjectGetProperties(int fd,
 						      uint32_t object_id,
 						      uint32_t object_type)
 {
@@ -1177,7 +1186,7 @@ err_allocs:
 	return ret;
 }
 
-void drmModeFreeObjectProperties(drmModeObjectPropertiesPtr ptr)
+drm_public void drmModeFreeObjectProperties(drmModeObjectPropertiesPtr ptr)
 {
 	if (!ptr)
 		return;
@@ -1186,7 +1195,7 @@ void drmModeFreeObjectProperties(drmModeObjectPropertiesPtr ptr)
 	drmFree(ptr);
 }
 
-int drmModeObjectSetProperty(int fd, uint32_t object_id, uint32_t object_type,
+drm_public int drmModeObjectSetProperty(int fd, uint32_t object_id, uint32_t object_type,
 			     uint32_t property_id, uint64_t value)
 {
 	struct drm_mode_obj_set_property prop;
@@ -1214,7 +1223,7 @@ struct _drmModeAtomicReq {
 	drmModeAtomicReqItemPtr items;
 };
 
-drmModeAtomicReqPtr drmModeAtomicAlloc(void)
+drm_public drmModeAtomicReqPtr drmModeAtomicAlloc(void)
 {
 	drmModeAtomicReqPtr req;
 
@@ -1229,7 +1238,7 @@ drmModeAtomicReqPtr drmModeAtomicAlloc(void)
 	return req;
 }
 
-drmModeAtomicReqPtr drmModeAtomicDuplicate(drmModeAtomicReqPtr old)
+drm_public drmModeAtomicReqPtr drmModeAtomicDuplicate(drmModeAtomicReqPtr old)
 {
 	drmModeAtomicReqPtr new;
 
@@ -1258,7 +1267,8 @@ drmModeAtomicReqPtr drmModeAtomicDuplicate(drmModeAtomicReqPtr old)
 	return new;
 }
 
-int drmModeAtomicMerge(drmModeAtomicReqPtr base, drmModeAtomicReqPtr augment)
+drm_public int drmModeAtomicMerge(drmModeAtomicReqPtr base,
+                                  drmModeAtomicReqPtr augment)
 {
 	if (!base)
 		return -EINVAL;
@@ -1287,23 +1297,23 @@ int drmModeAtomicMerge(drmModeAtomicReqPtr base, drmModeAtomicReqPtr augment)
 	return 0;
 }
 
-int drmModeAtomicGetCursor(drmModeAtomicReqPtr req)
+drm_public int drmModeAtomicGetCursor(drmModeAtomicReqPtr req)
 {
 	if (!req)
 		return -EINVAL;
 	return req->cursor;
 }
 
-void drmModeAtomicSetCursor(drmModeAtomicReqPtr req, int cursor)
+drm_public void drmModeAtomicSetCursor(drmModeAtomicReqPtr req, int cursor)
 {
 	if (req)
 		req->cursor = cursor;
 }
 
-int drmModeAtomicAddProperty(drmModeAtomicReqPtr req,
-			     uint32_t object_id,
-			     uint32_t property_id,
-			     uint64_t value)
+drm_public int drmModeAtomicAddProperty(drmModeAtomicReqPtr req,
+                                        uint32_t object_id,
+                                        uint32_t property_id,
+                                        uint64_t value)
 {
 	if (!req)
 		return -EINVAL;
@@ -1331,7 +1341,7 @@ int drmModeAtomicAddProperty(drmModeAtomicReqPtr req,
 	return req->cursor;
 }
 
-void drmModeAtomicFree(drmModeAtomicReqPtr req)
+drm_public void drmModeAtomicFree(drmModeAtomicReqPtr req)
 {
 	if (!req)
 		return;
@@ -1354,8 +1364,8 @@ static int sort_req_list(const void *misc, const void *other)
 		return second->property_id - first->property_id;
 }
 
-int drmModeAtomicCommit(int fd, drmModeAtomicReqPtr req, uint32_t flags,
-			void *user_data)
+drm_public int drmModeAtomicCommit(int fd, drmModeAtomicReqPtr req,
+                                   uint32_t flags, void *user_data)
 {
 	drmModeAtomicReqPtr sorted;
 	struct drm_mode_atomic atomic;
@@ -1459,8 +1469,9 @@ out:
 	return ret;
 }
 
-int
-drmModeCreatePropertyBlob(int fd, const void *data, size_t length, uint32_t *id)
+drm_public int
+drmModeCreatePropertyBlob(int fd, const void *data, size_t length,
+                                     uint32_t *id)
 {
 	struct drm_mode_create_blob create;
 	int ret;
@@ -1483,7 +1494,7 @@ drmModeCreatePropertyBlob(int fd, const void *data, size_t length, uint32_t *id)
 	return 0;
 }
 
-int
+drm_public int
 drmModeDestroyPropertyBlob(int fd, uint32_t id)
 {
 	struct drm_mode_destroy_blob destroy;
@@ -1493,8 +1504,9 @@ drmModeDestroyPropertyBlob(int fd, uint32_t id)
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_DESTROYPROPBLOB, &destroy);
 }
 
-int
-drmModeCreateLease(int fd, const uint32_t *objects, int num_objects, int flags, uint32_t *lessee_id)
+drm_public int
+drmModeCreateLease(int fd, const uint32_t *objects, int num_objects, int flags,
+                   uint32_t *lessee_id)
 {
 	struct drm_mode_create_lease create;
 	int ret;
@@ -1512,7 +1524,7 @@ drmModeCreateLease(int fd, const uint32_t *objects, int num_objects, int flags, 
 	return -errno;
 }
 
-drmModeLesseeListPtr
+drm_public drmModeLesseeListPtr
 drmModeListLessees(int fd)
 {
 	struct drm_mode_list_lessees list;
@@ -1539,7 +1551,7 @@ drmModeListLessees(int fd)
 	return ret;
 }
 
-drmModeObjectListPtr
+drm_public drmModeObjectListPtr
 drmModeGetLease(int fd)
 {
 	struct drm_mode_get_lease get;
@@ -1566,7 +1578,7 @@ drmModeGetLease(int fd)
 	return ret;
 }
 
-int
+drm_public int
 drmModeRevokeLease(int fd, uint32_t lessee_id)
 {
 	struct drm_mode_revoke_lease revoke;
