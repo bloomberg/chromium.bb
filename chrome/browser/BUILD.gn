@@ -3148,6 +3148,8 @@ jumbo_split_static_library("browser") {
       "browser_switcher/alternative_browser_driver.h",
       "browser_switcher/alternative_browser_launcher.cc",
       "browser_switcher/alternative_browser_launcher.h",
+      "browser_switcher/browser_switcher_navigation_throttle.cc",
+      "browser_switcher/browser_switcher_navigation_throttle.h",
       "browser_switcher/browser_switcher_prefs.cc",
       "browser_switcher/browser_switcher_prefs.h",
       "browser_switcher/browser_switcher_service.cc",

@@ -16,20 +16,30 @@ class GURL;
 
 namespace browser_switcher {
 
+// Interface for launching an alternative browser.
+class AlternativeBrowserLauncher {
+ public:
+  virtual ~AlternativeBrowserLauncher();
+
+  // Opens |url| in an alternative browser.  Returns true on success, false on
+  // error.
+  virtual bool Launch(const GURL& url) const = 0;
+};
+
 // Used to launch an appropriate alternative browser based on policy/pref
 // values.
 //
 // Delegates I/O operations to an |AlternativeBrowserDriver|.
-class AlternativeBrowserLauncher : public content::WebContentsObserver {
+class AlternativeBrowserLauncherImpl : public AlternativeBrowserLauncher {
  public:
-  explicit AlternativeBrowserLauncher(PrefService* prefs);
-  AlternativeBrowserLauncher(PrefService* prefs,
-                             std::unique_ptr<AlternativeBrowserDriver> driver);
-  ~AlternativeBrowserLauncher() override;
+  explicit AlternativeBrowserLauncherImpl(PrefService* prefs);
+  AlternativeBrowserLauncherImpl(
+      PrefService* prefs,
+      std::unique_ptr<AlternativeBrowserDriver> driver);
+  ~AlternativeBrowserLauncherImpl() override;
 
-  // Opens |url| in an alternative browser.  Returns true on success, false on
-  // error.
-  bool Launch(const GURL& url) const;
+  // AlternativeBrowserLauncher
+  bool Launch(const GURL& url) const override;
 
  private:
   void OnAltBrowserPathChanged();
@@ -40,7 +50,7 @@ class AlternativeBrowserLauncher : public content::WebContentsObserver {
 
   const std::unique_ptr<AlternativeBrowserDriver> driver_;
 
-  DISALLOW_COPY_AND_ASSIGN(AlternativeBrowserLauncher);
+  DISALLOW_COPY_AND_ASSIGN(AlternativeBrowserLauncherImpl);
 };
 
 }  // namespace browser_switcher

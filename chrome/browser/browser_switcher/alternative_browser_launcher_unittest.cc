@@ -43,7 +43,7 @@ class AlternativeBrowserLauncherTest : public testing::Test {
     driver_ = new MockAlternativeBrowserDriver();
     EXPECT_CALL(*driver_, SetBrowserPath(_));
     EXPECT_CALL(*driver_, SetBrowserParameters(_));
-    launcher_ = std::make_unique<AlternativeBrowserLauncher>(
+    launcher_ = std::make_unique<AlternativeBrowserLauncherImpl>(
         &prefs_, std::unique_ptr<AlternativeBrowserDriver>(driver_));
   }
 

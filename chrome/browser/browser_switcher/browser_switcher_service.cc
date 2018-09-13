@@ -21,14 +21,24 @@ BrowserSwitcherService::~BrowserSwitcherService() {}
 
 AlternativeBrowserLauncher* BrowserSwitcherService::launcher() {
   if (!launcher_)
-    launcher_ = std::make_unique<AlternativeBrowserLauncher>(prefs_);
+    launcher_ = std::make_unique<AlternativeBrowserLauncherImpl>(prefs_);
   return launcher_.get();
 }
 
 BrowserSwitcherSitelist* BrowserSwitcherService::sitelist() {
   if (!sitelist_)
-    sitelist_ = std::make_unique<BrowserSwitcherSitelist>(prefs_);
+    sitelist_ = std::make_unique<BrowserSwitcherSitelistImpl>(prefs_);
   return sitelist_.get();
+}
+
+void BrowserSwitcherService::SetLauncherForTesting(
+    std::unique_ptr<AlternativeBrowserLauncher> launcher) {
+  launcher_ = std::move(launcher);
+}
+
+void BrowserSwitcherService::SetSitelistForTesting(
+    std::unique_ptr<BrowserSwitcherSitelist> sitelist) {
+  sitelist_ = std::move(sitelist);
 }
 
 }  // namespace browser_switcher
