@@ -60,6 +60,9 @@ enum class UserInteractionType {
   // User started an app by opening files in the file manager.
   APP_STARTED_FROM_FILE_MANAGER = 14,
 
+  // User started an app by left-clicking on links in the browser.
+  APP_STARTED_FROM_LINK = 15,
+
   // The size of this enum; keep last.
   SIZE,
 };
