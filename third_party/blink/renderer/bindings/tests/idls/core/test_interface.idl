@@ -118,6 +118,9 @@
     Promise promiseMethodPartialOverload(Window window);
     static Promise staticPromiseMethodPartialOverload();
 
+    void overloadMethodWithUnionTypeWithStringMember((double or DOMString) unionArg);
+    void overloadMethodWithUnionTypeWithStringMember(boolean boolArg);
+
     iterable<ByteString, long>;
 
     [LenientThis] attribute any lenientThisAttribute;
