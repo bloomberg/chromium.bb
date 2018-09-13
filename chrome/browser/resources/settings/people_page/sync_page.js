@@ -245,7 +245,7 @@ Polymer({
    * @private
    */
   computeSyncSectionDisabled_: function() {
-    return !!this.unifiedConsentEnabled &&
+    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
         (!this.syncStatus.signedIn || !!this.syncStatus.disabled ||
          (!!this.syncStatus.hasError &&
           this.syncStatus.statusAction !==
@@ -673,7 +673,7 @@ Polymer({
    * @private
    */
   shouldShowSyncAccountControl_: function() {
-    return !!this.unifiedConsentEnabled &&
+    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
         !!this.syncStatus.syncSystemEnabled && !!this.syncStatus.signinAllowed;
   },
   // </if>
@@ -683,7 +683,8 @@ Polymer({
    * @private
    */
   shouldShowExistingPassphraseBelowAccount_: function() {
-    return !!this.unifiedConsentEnabled && !!this.syncPrefs.passphraseRequired;
+    return !!this.unifiedConsentEnabled && this.syncPrefs !== undefined &&
+        !!this.syncPrefs.passphraseRequired;
   },
 
   /**
@@ -691,7 +692,8 @@ Polymer({
    * @private
    */
   shouldShowExistingPassphraseInSyncSection_: function() {
-    return !this.unifiedConsentEnabled && !!this.syncPrefs.passphraseRequired;
+    return !this.unifiedConsentEnabled && this.syncPrefs !== undefined &&
+        !!this.syncPrefs.passphraseRequired;
   },
 
   /**
@@ -699,7 +701,8 @@ Polymer({
    * @private
    */
   shouldShowSyncControls_: function() {
-    return !!this.unifiedConsentEnabled && !this.syncStatus.disabled;
+    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
+        !this.syncStatus.disabled;
   },
 
   /**
@@ -707,8 +710,8 @@ Polymer({
    * @private
    */
   shouldShowUnifiedConsentToggle_: function() {
-    return !!this.unifiedConsentEnabled && !this.syncStatus.disabled &&
-        !!this.syncStatus.signedIn;
+    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
+        !this.syncStatus.disabled && !!this.syncStatus.signedIn;
   },
 });
 

@@ -17,8 +17,6 @@
 # Chrome Desktop failures (Mac, Linux, Windows).
 -CrSettingsMenuTest.SettingsMenu
 -CrSettingsPeoplePageSyncAccountControlTest.All
--CrSettingsPeoplePageSyncPageTest.All
--CrSettingsPeoplePageTest.All
 -MediaRouterElementsBrowserTest.MediaRouterContainerCastModeList
 -MediaRouterElementsBrowserTest.MediaRouterContainerFilterPart1
 -MediaRouterElementsBrowserTest.MediaRouterContainerFirstRunFlow
