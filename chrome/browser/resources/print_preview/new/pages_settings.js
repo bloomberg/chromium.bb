@@ -34,12 +34,6 @@ Polymer({
     },
 
     /** @private {boolean} */
-    allSelected_: {
-      type: Boolean,
-      value: true,
-    },
-
-    /** @private {boolean} */
     customSelected_: {
       type: Boolean,
       value: false,
@@ -57,7 +51,7 @@ Polymer({
     pagesToPrint_: {
       type: Array,
       computed: 'computePagesToPrint_(' +
-          'inputString_, allSelected_, allPagesArray_)',
+          'inputString_, customSelected_, allPagesArray_)',
     },
 
     /** @private {!Array<{to: number, from: number}>} */
@@ -78,14 +72,13 @@ Polymer({
   observers: [
     'onRangeChange_(errorState_, rangesToPrint_, settings.pages, ' +
         'settings.pagesPerSheet.value)',
-    'onRadioChange_(allSelected_, customSelected_)'
   ],
 
   listeners: {
     'input-change': 'onInputChange_',
   },
 
-  /** @return {!HTMLInputElement} The input field element for InputBehavior. */
+  /** @return {!CrInputElement} The cr-input field element for InputBehavior. */
   getInput: function() {
     return this.$.pageSettingsCustomInput;
   },
@@ -137,12 +130,13 @@ Polymer({
    * @private
    */
   computePagesToPrint_: function() {
-    if (this.allSelected_ || this.inputString_.trim() == '') {
+    if (!this.customSelected_ || this.inputString_.trim() == '') {
       this.errorState_ = PagesInputErrorState.NO_ERROR;
       return this.allPagesArray_;
     }
-    if (!this.$.pageSettingsCustomInput.validity.valid) {
+    if (this.$.pageSettingsCustomInput.invalid) {
       this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
+      this.onRangeChange_();
       return this.pagesToPrint_;
     }
 
@@ -154,17 +148,20 @@ Polymer({
       range = range.trim();
       if (range == '') {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
+        this.onRangeChange_();
         return this.pagesToPrint_;
       }
       const limits = range.split('-');
       let min = parseInt(limits[0], 10);
       if (min < 1) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
+        this.onRangeChange_();
         return this.pagesToPrint_;
       }
       if (limits.length == 1) {
         if (min > maxPage) {
           this.errorState_ = PagesInputErrorState.OUT_OF_BOUNDS;
+          this.onRangeChange_();
           return this.pagesToPrint_;
         }
         if (!added.hasOwnProperty(min)) {
@@ -181,10 +178,12 @@ Polymer({
         max = maxPage;
       if (min > max) {
         this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
+        this.onRangeChange_();
         return this.pagesToPrint_;
       }
       if (max > maxPage) {
         this.errorState_ = PagesInputErrorState.OUT_OF_BOUNDS;
+        this.onRangeChange_();
         return this.pagesToPrint_;
       }
       for (let i = min; i <= max; i++) {
@@ -206,8 +205,9 @@ Polymer({
   computeRangesToPrint_: function() {
     let lastPage = 0;
     if (this.pagesToPrint_.length == 0 || this.pagesToPrint_[0] == -1 ||
-        this.pagesToPrint_ == this.allPagesArray_)
+        this.pagesToPrint_ == this.allPagesArray_) {
       return [];
+    }
 
     let from = this.pagesToPrint_[0];
     let to = this.pagesToPrint_[0];
@@ -255,10 +255,10 @@ Polymer({
 
     if (this.errorState_ != PagesInputErrorState.NO_ERROR) {
       this.setSettingValid('pages', false);
-      this.$.pageSettingsCustomInput.classList.add('invalid');
+      this.$.pageSettingsCustomInput.invalid = true;
       return;
     }
-    this.$.pageSettingsCustomInput.classList.remove('invalid');
+    this.$.pageSettingsCustomInput.invalid = false;
     this.setSettingValid('pages', true);
     const nupPages = this.getNupPages_();
     const rangesChanged = !areRangesEqual(
@@ -273,22 +273,19 @@ Polymer({
   },
 
   /** @private */
-  onRadioChange_: function() {
-    if (this.$$('#all-radio-button').checked)
-      this.customSelected_ = false;
-    if (this.$$('#custom-radio-button').checked)
-      this.allSelected_ = false;
+  onAllRadioClick_: function() {
+    this.customSelected_ = false;
   },
 
   /** @private */
   onCustomRadioClick_: function() {
-    this.$.pageSettingsCustomInput.focus();
+    /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
+        .inputElement.focus();
+    this.customSelected_ = true;
   },
 
   /** @private */
   onCustomInputFocus_: function() {
-    this.$$('#all-radio-button').checked = false;
-    this.$$('#custom-radio-button').checked = true;
     this.customSelected_ = true;
   },
 
@@ -300,9 +297,7 @@ Polymer({
     if (this.inputString_.trim() == '' &&
         event.relatedTarget != this.$$('.custom-input-wrapper') &&
         event.relatedTarget != this.$$('#custom-radio-button')) {
-      this.$$('#all-radio-button').checked = true;
-      this.$$('#custom-radio-button').checked = false;
-      this.allSelected_ = true;
+      this.customSelected_ = false;
     }
   },
 
@@ -311,15 +306,22 @@ Polymer({
    * @private
    */
   getHintMessage_: function() {
+    if (this.errorState_ == PagesInputErrorState.NO_ERROR)
+      return '';
+
+    let formattedMessage = '';
     if (this.errorState_ == PagesInputErrorState.INVALID_SYNTAX) {
-      return loadTimeData.getStringF(
+      formattedMessage = loadTimeData.getStringF(
           'pageRangeSyntaxInstruction',
           loadTimeData.getString('examplePageRangeText'));
+    } else {
+      formattedMessage = (this.documentInfo === undefined) ?
+          '' :
+          loadTimeData.getStringF(
+              'pageRangeLimitInstructionWithValue',
+              this.documentInfo.pageCount);
     }
-    return (this.documentInfo === undefined) ?
-        '' :
-        loadTimeData.getStringF(
-            'pageRangeLimitInstructionWithValue', this.documentInfo.pageCount);
+    return formattedMessage.replace(/<\/b>|<b>/g, '');
   },
 
   /**

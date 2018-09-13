@@ -79,8 +79,9 @@ cr.define('destination_dialog_test', function() {
           'print-preview-destination-list-item');
       // Check that list titles have the correct text color.
       lists.forEach(list => {
+        // google-grey-refresh-700
         assertEquals(
-            'rgb(51, 51, 51)',
+            'rgb(95, 99, 104)',
             window.getComputedStyle(list.$$('.title')).color);
       });
 
@@ -91,8 +92,9 @@ cr.define('destination_dialog_test', function() {
       // Check FooName is most recent and has the correct text color.
       const mostRecent = recentItems[0];
       assertEquals('FooName', getDisplayedName(mostRecent));
+      // google-grey-900
       assertEquals(
-          'rgb(51, 51, 51)',
+          'rgb(32, 33, 36)',
           window.getComputedStyle(mostRecent.$$('.name')).color);
 
       // 5 printers + Save as PDF

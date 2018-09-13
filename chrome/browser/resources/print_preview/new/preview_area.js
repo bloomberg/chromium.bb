@@ -273,22 +273,28 @@ Polymer({
   currentMessage_: function() {
     switch (this.previewState) {
       case print_preview_new.PreviewAreaState.NO_PLUGIN:
-        return this.i18n('noPlugin');
+        return this.i18nAdvanced('noPlugin');
       case print_preview_new.PreviewAreaState.LOADING:
-        return this.i18n('loading');
+        return this.i18nAdvanced('loading');
       case print_preview_new.PreviewAreaState.DISPLAY_PREVIEW:
         return '';
       // <if expr="is_macosx">
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING:
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
-        return this.i18n('openingPDFInPreview');
+        return this.i18nAdvanced('openingPDFInPreview');
       // </if>
       case print_preview_new.PreviewAreaState.INVALID_SETTINGS:
-        return this.i18n('invalidPrinterSettings');
+        return this.i18nAdvanced('invalidPrinterSettings', {
+          substitutions: [],
+          tags: ['BR'],
+        });
       case print_preview_new.PreviewAreaState.PREVIEW_FAILED:
-        return this.i18n('previewFailed');
+        return this.i18nAdvanced('previewFailed');
       case print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER:
-        return this.i18n('unsupportedCloudPrinter');
+        return this.i18nAdvanced('unsupportedCloudPrinter', {
+          substitutions: [],
+          tags: ['BR'],
+        });
       default:
         return '';
     }

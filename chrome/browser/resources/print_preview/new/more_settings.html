@@ -1,43 +1,46 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../metrics.html">
 <link rel="import" href="strings.html">
 
 <dom-module id="print-preview-more-settings">
   <template>
-    <style include="cr-hidden-style">
+    <style include="cr-hidden-style print-preview-shared paper-button-style">
       :host {
         display: block;
-        margin: 10px auto 0;
       }
 
       :host([disabled]) {
         pointer-events: none;
       }
 
-      :host button {
-        align-items: center;
-        background-color: #f6f6f6;
-        background-image: none;
-        --border: 1px solid #e1e1e1;
-        border-bottom: var(--border);
-        border-left: none;
-        border-right: none;
-        border-top: var(--border);
-        box-shadow: none;
-        cursor: pointer;
-        display: flex;
+      paper-button {
+        --cr-selectable-focus: {
+          outline: auto 5px -webkit-focus-ring-color;
+        };
+        border: none;
+        border-top: var(--print-preview-settings-border);
         font: inherit;
-        margin: auto;
-        min-height: 51px;
-        outline: none;
-        padding: 5px 20px;
-        /* sidebar width - 2px */
-        width: 308px;
+        margin: 0 auto 16px;
+        min-height: 48px;
+        padding: 0 18px;
+        width: 100%;
       }
 
-      :host-context(.focus-outline-visible) button:focus {
+      paper-button:not([raised]).keyboard-focus {
+        font-weight: inherit;
+      }
+
+      paper-button:focus {
+        box-shadow: none;
+        outline: none;
+      }
+
+      :host-context(.focus-outline-visible) paper-button:focus {
         outline: -webkit-focus-ring-color auto 5px;
       }
 
@@ -45,10 +48,9 @@
         display: none;
       }
 
-      :host #label {
-        color: var(--google-blue-700);
+      #label {
+        color: var(--google-grey-900);
         flex: 1;
-        text-align: left;
       }
 
       :host-context([dir=rtl]) #label {
@@ -60,30 +62,25 @@
         opacity: .65;
       }
 
-      :host #label:hover,
-      :host #label:active {
-        text-decoration: underline;
-      }
-
-      :host #icon {
+      #icon {
         height: 25px;
         width: 25px;
       }
 
-      :host .minus-icon {
+      .minus-icon {
         background-image: url(chrome://resources/images/icon_expand_less.svg);
       }
 
-      :host .plus-icon {
+      .plus-icon {
         background-image: url(chrome://resources/images/icon_expand_more.svg);
       }
     </style>
-    <button disabled="[[disabled]]" on-click="onMoreSettingsClick_"
+    <paper-button disabled="[[disabled]]" on-click="onMoreSettingsClick_"
         aria-expanded$="[[getAriaExpanded_(settingsExpandedByUser)]]"
         aria-label$="[[i18n('moreOptionsLabel')]]">
       <span id="label">[[getLabelText_(settingsExpandedByUser)]]</span>
       <div id="icon" class$="[[getIconClass_(settingsExpandedByUser)]]"></div>
-    </button>
+    </paper-button>
   </template>
   <script src="more_settings.js"></script>
 </dom-module>

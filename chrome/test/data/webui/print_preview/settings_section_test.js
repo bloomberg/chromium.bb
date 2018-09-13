@@ -106,6 +106,16 @@ cr.define('settings_sections_tests', function() {
       moreSettingsElement.$.label.click();
     }
 
+    /**
+     * @param {!HTMLInputElement} element
+     * @param {!string} input The value to set for the input element.
+     */
+    function triggerInputEvent(element, input) {
+      element.value = input;
+      element.dispatchEvent(
+          new CustomEvent('input', {composed: true, bubbles: true}));
+    }
+
     test(assert(TestNames.Copies), function() {
       const copiesElement = page.$$('print-preview-copies-settings');
       assertFalse(copiesElement.hidden);
@@ -387,11 +397,11 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.Other), function() {
       const optionsElement = page.$$('print-preview-other-options-settings');
-      const headerFooter = optionsElement.$.headerFooter.parentElement;
-      const duplex = optionsElement.$.duplex.parentElement;
-      const cssBackground = optionsElement.$.cssBackground.parentElement;
-      const rasterize = optionsElement.$.rasterize.parentElement;
-      const selectionOnly = optionsElement.$.selectionOnly.parentElement;
+      const headerFooter = optionsElement.$.headerFooter;
+      const duplex = optionsElement.$.duplex;
+      const cssBackground = optionsElement.$.cssBackground;
+      const rasterize = optionsElement.$.rasterize;
+      const selectionOnly = optionsElement.$.selectionOnly;
 
       // Start with HTML + duplex capability.
       initDocumentInfo(false, false);
@@ -452,7 +462,7 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.HeaderFooter), function() {
       const optionsElement = page.$$('print-preview-other-options-settings');
-      const headerFooter = optionsElement.$.headerFooter.parentElement;
+      const headerFooter = optionsElement.$.headerFooter;
 
       // HTML page to show Header/Footer option.
       initDocumentInfo(false, false);
@@ -540,8 +550,8 @@ cr.define('settings_sections_tests', function() {
       // Default value is all pages. Print ticket expects this to be empty.
       const allRadio = pagesElement.$$('#all-radio-button');
       const customRadio = pagesElement.$$('#custom-radio-button');
-      const pagesInput = pagesElement.$.pageSettingsCustomInput;
-      const hint = pagesElement.$$('.hint');
+      const pagesCrInput = pagesElement.$.pageSettingsCustomInput;
+      const pagesInput = pagesCrInput.inputElement;
 
       /**
        * @param {boolean} allChecked Whether the all pages radio button is
@@ -553,7 +563,7 @@ cr.define('settings_sections_tests', function() {
         assertEquals(allChecked, allRadio.checked);
         assertEquals(!allChecked, customRadio.checked);
         assertEquals(inputString, pagesInput.value);
-        assertEquals(valid, hint.hidden);
+        assertEquals(valid, !pagesCrInput.invalid);
       };
       validateInputState(true, '', true);
       assertEquals(0, page.settings.ranges.value.length);
@@ -561,10 +571,9 @@ cr.define('settings_sections_tests', function() {
       assertTrue(page.settings.pages.valid);
 
       // Set selection of pages 1 and 2.
-      customRadio.checked = true;
-      allRadio.dispatchEvent(new CustomEvent('change'));
-      pagesInput.value = '1-2';
-      pagesInput.dispatchEvent(new CustomEvent('input'));
+      customRadio.click();
+
+      triggerInputEvent(pagesInput, '1-2');
       return test_util.eventToPromise('input-change', pagesElement)
           .then(function() {
             validateInputState(false, '1-2', true);
@@ -575,8 +584,7 @@ cr.define('settings_sections_tests', function() {
             assertTrue(page.settings.pages.valid);
 
             // Select pages 1 and 3
-            pagesInput.value = '1, 3';
-            pagesInput.dispatchEvent(new CustomEvent('input'));
+            triggerInputEvent(pagesInput, '1, 3');
             return test_util.eventToPromise('input-change', pagesElement);
           })
           .then(function() {
@@ -590,8 +598,7 @@ cr.define('settings_sections_tests', function() {
             assertTrue(page.settings.pages.valid);
 
             // Enter an out of bounds value.
-            pagesInput.value = '5';
-            pagesInput.dispatchEvent(new CustomEvent('input'));
+            triggerInputEvent(pagesInput, '5');
             return test_util.eventToPromise('input-change', pagesElement);
           })
           .then(function() {
@@ -609,13 +616,12 @@ cr.define('settings_sections_tests', function() {
       // Default value is 1
       const copiesInput =
           copiesElement.$$('print-preview-number-settings-section')
-              .$$('.user-value');
+              .$.userValue.inputElement;
       assertEquals('1', copiesInput.value);
       assertEquals(1, page.settings.copies.value);
 
       // Change to 2
-      copiesInput.value = '2';
-      copiesInput.dispatchEvent(new CustomEvent('input'));
+      triggerInputEvent(copiesInput, '2');
       return test_util.eventToPromise('input-change', copiesElement)
           .then(function() {
             assertEquals(2, page.settings.copies.value);
@@ -837,7 +843,7 @@ cr.define('settings_sections_tests', function() {
       // Default is 100
       const scalingInput =
           scalingElement.$$('print-preview-number-settings-section')
-              .$$('input');
+              .$.userValue.inputElement;
       const fitToPageCheckbox = scalingElement.$$('#fit-to-page-checkbox');
 
       const validateScalingState = (scalingValue, scalingValid, fitToPage) => {
@@ -863,8 +869,7 @@ cr.define('settings_sections_tests', function() {
       validateScalingState('100', true, false);
 
       // Change to 105
-      scalingInput.value = '105';
-      scalingInput.dispatchEvent(new CustomEvent('input'));
+      triggerInputEvent(scalingInput, '105');
       return test_util.eventToPromise('input-change', scalingElement)
           .then(function() {
             validateScalingState('105', true, false);
@@ -882,8 +887,7 @@ cr.define('settings_sections_tests', function() {
 
             // Set scaling. Should uncheck fit to page and set the settings for
             // scaling and fit to page.
-            scalingInput.value = '95';
-            scalingInput.dispatchEvent(new CustomEvent('input'));
+            triggerInputEvent(scalingInput, '95');
             return test_util.eventToPromise('input-change', scalingElement);
           })
           .then(function() {
@@ -891,8 +895,7 @@ cr.define('settings_sections_tests', function() {
 
             // Set scaling to something invalid. Should change setting validity
             // but not value.
-            scalingInput.value = '5';
-            scalingInput.dispatchEvent(new CustomEvent('input'));
+            triggerInputEvent(scalingInput, '5');
             return test_util.eventToPromise('input-change', scalingElement);
           })
           .then(function() {
@@ -970,7 +973,7 @@ cr.define('settings_sections_tests', function() {
       // Default value is 1
       const copiesInput =
           copiesElement.$$('print-preview-number-settings-section')
-              .$$('.user-value');
+              .$.userValue.inputElement;
       assertEquals('1', copiesInput.value);
       assertEquals(1, page.settings.copies.value);
 

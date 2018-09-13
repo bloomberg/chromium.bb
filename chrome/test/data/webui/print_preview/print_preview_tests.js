@@ -1414,10 +1414,13 @@ cr.define('print_preview_test', function() {
             expectFalse(cloudPrintMessageEl.hidden);
             const expectedMessageStart =
                 'The selected Google Cloud Print device ' +
-                'is no longer supported. Try setting up the printer in your ' +
+                'is no longer supported.';
+            const expectedMessageEnd = 'Try setting up the printer in your ' +
                 'computer\'s system settings.';
             expectTrue(
                 cloudPrintMessageEl.textContent.includes(expectedMessageStart));
+            expectTrue(
+                cloudPrintMessageEl.textContent.includes(expectedMessageEnd));
 
             // Verify that the print button is disabled
             checkElementDisplayed(printButton, true);

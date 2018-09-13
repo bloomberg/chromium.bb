@@ -46,7 +46,7 @@ Polymer({
     'input-change': 'onInputChange_',
   },
 
-  /** @return {!HTMLInputElement} The input field element for InputBehavior. */
+  /** @return {!CrInputElement} The cr-input field element for InputBehavior. */
   getInput: function() {
     return this.$.userValue;
   },
@@ -103,14 +103,15 @@ Polymer({
   computeValid_: function() {
     // Make sure value updates first, in case inputString_ was updated by JS.
     this.$.userValue.value = this.inputString_;
-    return this.$.userValue.validity.valid && this.inputString_ != '';
+    return !this.$.userValue.invalid && this.inputString_ != '';
   },
 
   /**
-   * @return {boolean} Whether error message should be hidden.
+   * @return {string} The error message, or an empty string if there is no
+   *     error.
    * @private
    */
-  hintHidden_: function() {
-    return this.inputValid || this.inputString_ == '';
+  getHintMessage_: function() {
+    return this.inputValid || this.inputString_ == '' ? '' : this.hintMessage;
   },
 });

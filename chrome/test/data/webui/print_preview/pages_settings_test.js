@@ -68,14 +68,13 @@ cr.define('pages_settings_test', function() {
       Polymer.dom.flush();
 
       // Select custom
-      pagesSection.$$('#custom-radio-button').checked = true;
-      pagesSection.$$('#all-radio-button')
-          .dispatchEvent(new CustomEvent('change'));
+      pagesSection.$$('#custom-radio-button').click();
 
       // Set input string
-      const input = pagesSection.$.pageSettingsCustomInput;
+      const input = pagesSection.$.pageSettingsCustomInput.inputElement;
       input.value = inputString;
-      input.dispatchEvent(new CustomEvent('input'));
+      input.dispatchEvent(
+          new CustomEvent('input', {composed: true, bubbles: true}));
 
       // Validate results
       return test_util.eventToPromise('input-change', pagesSection);
@@ -88,7 +87,7 @@ cr.define('pages_settings_test', function() {
       expectedPages.forEach((page, index) => {
         assertEquals(page, pagesValue[index]);
       });
-      assertTrue(pagesSection.$$('.hint').hidden);
+      assertTrue(pagesSection.$$('cr-input').errorMessage.length === 0);
     }
 
     // Tests that the page ranges set are valid for different user inputs.
@@ -135,9 +134,8 @@ cr.define('pages_settings_test', function() {
 
       /** @param {string} expectedMessage The expected error message. */
       const validateErrorState = function(expectedMessage) {
-        assertFalse(pagesSection.$$('.hint').hidden);
-        assertEquals(
-            expectedMessage, pagesSection.$$('.hint').textContent.trim());
+        assertFalse(pagesSection.$$('cr-input').errorMessage.length === 0);
+        assertEquals(expectedMessage, pagesSection.$$('cr-input').errorMessage);
       };
 
       return setupInput('10-100000', 100)

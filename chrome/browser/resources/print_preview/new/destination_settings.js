@@ -118,6 +118,6 @@ Polymer({
 
   /** @private */
   onDialogClose_: function() {
-    this.$$('button').focus();
+    this.$$('paper-button').focus();
   },
 });

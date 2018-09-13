@@ -643,6 +643,32 @@ cr.define('print_preview', function() {
       return this.lastAccessTime_;
     }
 
+    /** @return {string} Path to the SVG for the destination's icon. */
+    get icon() {
+      if (this.id_ == Destination.GooglePromotedId.DOCS) {
+        return 'print-preview:save-to-drive';
+      }
+      if (this.id_ == Destination.GooglePromotedId.SAVE_AS_PDF) {
+        return 'print-preview:insert-drive-file';
+      }
+      if (this.isEnterprisePrinter) {
+        return 'print-preview:business';
+      }
+      if (this.isLocal) {
+        return 'print-preview:print';
+      }
+      if (this.type_ == print_preview.DestinationType.MOBILE && this.isOwned_) {
+        return 'print-preview:smartphone';
+      }
+      if (this.type_ == print_preview.DestinationType.MOBILE) {
+        return 'print-preview:smartphone';
+      }
+      if (this.isOwned_) {
+        return 'print-preview:print';
+      }
+      return 'print-preview:printer-shared';
+    }
+
     /** @return {string} Relative URL of the destination's icon. */
     get iconUrl() {
       if (this.id_ == Destination.GooglePromotedId.DOCS) {

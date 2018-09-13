@@ -22,7 +22,7 @@ cr.define('base_settings_section_test', function() {
 
     // Test that key events that would result in invalid values are blocked.
     test(assert(TestNames.ManagedShowsEnterpriseIcon), function() {
-      const icon = settingsSection.$$('img');
+      const icon = settingsSection.$$('iron-icon');
 
       // Default initial state is that the section is not managed, so the icon
       // is hidden.
