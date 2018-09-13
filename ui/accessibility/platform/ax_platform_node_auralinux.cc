@@ -1596,6 +1596,13 @@ void AXPlatformNodeAuraLinux::OnCheckedStateChanged() {
       GetData().GetCheckedState() != ax::mojom::CheckedState::kFalse);
 }
 
+void AXPlatformNodeAuraLinux::OnExpandedStateChanged(bool is_expanded) {
+  DCHECK(atk_object_);
+
+  atk_object_notify_state_change(ATK_OBJECT(atk_object_), ATK_STATE_EXPANDED,
+                                 is_expanded);
+}
+
 AtkObject* AXPlatformNodeAuraLinux::current_focused_ = nullptr;
 
 void AXPlatformNodeAuraLinux::OnFocused() {
@@ -1667,6 +1674,9 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
   switch (event_type) {
     case ax::mojom::Event::kCheckedStateChanged:
       OnCheckedStateChanged();
+      break;
+    case ax::mojom::Event::kExpandedChanged:
+      OnExpandedStateChanged(GetData().HasState(ax::mojom::State::kExpanded));
       break;
     case ax::mojom::Event::kFocus:
     case ax::mojom::Event::kFocusContext:

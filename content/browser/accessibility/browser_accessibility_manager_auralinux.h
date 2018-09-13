@@ -35,6 +35,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
                           BrowserAccessibility* node) override;
 
   void FireSelectedEvent(BrowserAccessibility* node);
+  void FireExpandedEvent(BrowserAccessibility* node, bool is_expanded);
 
   AtkObject* parent_object() { return parent_object_; }
 

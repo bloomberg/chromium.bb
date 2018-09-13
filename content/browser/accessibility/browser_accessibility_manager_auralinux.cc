@@ -71,6 +71,16 @@ void BrowserAccessibilityManagerAuraLinux::FireSelectedEvent(
   FireEvent(node, ax::mojom::Event::kSelection);
 }
 
+void BrowserAccessibilityManagerAuraLinux::FireExpandedEvent(
+    BrowserAccessibility* node,
+    bool is_expanded) {
+  if (!node->IsNative())
+    return;
+
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnExpandedStateChanged(
+      is_expanded);
+}
+
 void BrowserAccessibilityManagerAuraLinux::FireEvent(BrowserAccessibility* node,
                                                      ax::mojom::Event event) {
   if (!node->IsNative())
@@ -95,6 +105,12 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
   switch (event_type) {
     case Event::CHECKED_STATE_CHANGED:
       FireEvent(node, ax::mojom::Event::kCheckedStateChanged);
+      break;
+    case Event::COLLAPSED:
+      FireExpandedEvent(node, false);
+      break;
+    case Event::EXPANDED:
+      FireExpandedEvent(node, true);
       break;
     case Event::MENU_ITEM_SELECTED:
     case Event::SELECTED_CHANGED:
