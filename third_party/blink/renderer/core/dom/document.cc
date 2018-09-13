@@ -1973,6 +1973,8 @@ void Document::PropagateStyleToViewport() {
   const ComputedStyle* document_element_style =
       documentElement()->EnsureComputedStyle();
 
+  TouchAction effective_touch_action =
+      document_element_style->GetEffectiveTouchAction();
   WritingMode root_writing_mode = document_element_style->GetWritingMode();
   TextDirection root_direction = document_element_style->Direction();
   if (body_style) {
@@ -2084,7 +2086,8 @@ void Document::PropagateStyleToViewport() {
       viewport_style.ScrollPaddingTop() != scroll_padding_top ||
       viewport_style.ScrollPaddingRight() != scroll_padding_right ||
       viewport_style.ScrollPaddingBottom() != scroll_padding_bottom ||
-      viewport_style.ScrollPaddingLeft() != scroll_padding_left) {
+      viewport_style.ScrollPaddingLeft() != scroll_padding_left ||
+      viewport_style.GetEffectiveTouchAction() != effective_touch_action) {
     scoped_refptr<ComputedStyle> new_style =
         ComputedStyle::Clone(viewport_style);
     new_style->SetWritingMode(root_writing_mode);
@@ -2104,6 +2107,7 @@ void Document::PropagateStyleToViewport() {
     new_style->SetScrollPaddingRight(scroll_padding_right);
     new_style->SetScrollPaddingBottom(scroll_padding_bottom);
     new_style->SetScrollPaddingLeft(scroll_padding_left);
+    new_style->SetEffectiveTouchAction(effective_touch_action);
     GetLayoutView()->SetStyle(new_style);
     SetupFontBuilder(*new_style);
 

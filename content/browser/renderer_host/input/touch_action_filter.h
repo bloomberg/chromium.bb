@@ -77,6 +77,7 @@ class CONTENT_EXPORT TouchActionFilter {
  private:
   friend class MockRenderWidgetHost;
   friend class TouchActionFilterTest;
+  friend class SitePerProcessBrowserTouchActionTest;
 
   bool ShouldSuppressManipulation(const blink::WebGestureEvent&);
   bool FilterManipulationEventAndResetState();
