@@ -69,6 +69,7 @@ class GLES2Interface;
 
 namespace blink {
 
+class AcceleratedStaticBitmapImage;
 class CanvasResourceProvider;
 class EXTDisjointTimerQuery;
 class EXTDisjointTimerQueryWebGL2;
@@ -1054,7 +1055,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                     const IntRect&,
                     GLsizei depth,
                     GLint unpack_image_height);
-
   template <typename T>
   IntRect GetTextureSourceSize(T* texture_source) {
     return IntRect(0, 0, texture_source->width(), texture_source->height());
@@ -1140,19 +1140,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     }
     return true;
   }
-
-  // Copy from the source directly to the texture via the gpu, without a
-  // read-back to system memory.  Source could be canvas or imageBitmap.
-  void TexImageByGPU(TexImageFunctionID,
-                     WebGLTexture*,
-                     GLenum target,
-                     GLint level,
-                     GLint xoffset,
-                     GLint yoffset,
-                     GLint zoffset,
-                     CanvasImageSource*,
-                     const IntRect& source_sub_rectangle);
-  bool CanUseTexImageByGPU(GLenum format, GLenum type);
 
   virtual WebGLImageConversion::PixelStoreParams GetPackPixelStoreParams();
   virtual WebGLImageConversion::PixelStoreParams GetUnpackPixelStoreParams(
@@ -1697,19 +1684,22 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                 const CanvasContextCreationAttributesCore&,
                                 Platform::ContextType context_type,
                                 bool* using_gpu_compositing);
-  void TexImageCanvasByGPU(TexImageFunctionID,
-                           CanvasRenderingContextHost*,
-                           GLenum,
-                           GLuint,
-                           GLint,
-                           GLint,
-                           const IntRect&);
-  void TexImageBitmapByGPU(ImageBitmap*,
-                           GLenum,
-                           GLuint,
-                           GLint,
-                           GLint,
-                           const IntRect&);
+  // Copy from the source directly to the texture via the gpu, without
+  // a read-back to system memory. Source can be a texture-backed
+  // Image, or another canvas's WebGLRenderingContext.
+  void TexImageViaGPU(TexImageFunctionID,
+                      WebGLTexture*,
+                      GLenum,
+                      GLint,
+                      GLint,
+                      GLint,
+                      GLint,
+                      AcceleratedStaticBitmapImage*,
+                      WebGLRenderingContextBase*,
+                      const IntRect& source_sub_rectangle,
+                      bool premultiply_alpha,
+                      bool flip_y);
+  bool CanUseTexImageViaGPU(GLenum format, GLenum type);
 
   bool ValidateShaderType(const char* function_name, GLenum shader_type);
 
