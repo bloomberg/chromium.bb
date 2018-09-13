@@ -552,8 +552,8 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
     return;
   }
 
-  InterpFilter filter_x;
-  InterpFilter filter_y;
+  InterpFilter filter_x = 0;
+  InterpFilter filter_y = 0;
   const int need_filter_params_x = (subpel_x_q4 != 0) | scaled;
   const int need_filter_params_y = (subpel_y_q4 != 0) | scaled;
   if (need_filter_params_x)
@@ -1053,8 +1053,8 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
     return;
   }
 
-  InterpFilter filter_x;
-  InterpFilter filter_y;
+  InterpFilter filter_x = 0;
+  InterpFilter filter_y = 0;
   const int need_filter_params_x = (subpel_x_q4 != 0) | scaled;
   const int need_filter_params_y = (subpel_y_q4 != 0) | scaled;
   if (need_filter_params_x)
