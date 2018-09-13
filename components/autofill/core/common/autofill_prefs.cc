@@ -70,27 +70,33 @@ const char kAutofillWalletImportStorageCheckboxState[] =
     "autofill.wallet_import_storage_checkbox_state";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  // Synced prefs. Used for cross-device choices, e.g., credit card Autofill.
   registry->RegisterDoublePref(
       prefs::kAutofillBillingCustomerNumber, 0.0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  // This pref is not synced because it's for a signin promo, which by
-  // definition will not be synced.
-  registry->RegisterIntegerPref(
-      prefs::kAutofillCreditCardSigninPromoImpressionCount, 0);
   registry->RegisterBooleanPref(
       prefs::kAutofillEnabledDeprecated, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kAutofillProfileEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kAutofillJapanCityFieldMigrated, false);
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDeduped, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDisusedAddressesDeleted, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  // These choices are made on a per-device basis, so they're not syncable.
+  registry->RegisterBooleanPref(
+      prefs::kAutofillCreditCardEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kAutofillProfileValidity, "",
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+
+  // Non-synced prefs. Used for per-device choices, e.g., signin promo.
+  registry->RegisterIntegerPref(
+      prefs::kAutofillCreditCardSigninPromoImpressionCount, 0);
+  registry->RegisterBooleanPref(prefs::kAutofillJapanCityFieldMigrated, false);
   registry->RegisterBooleanPref(prefs::kAutofillWalletImportEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kAutofillWalletImportStorageCheckboxState, true);
@@ -99,11 +105,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
   registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDisusedCreditCardsDeleted, 0);
-  registry->RegisterBooleanPref(prefs::kAutofillCreditCardEnabled, true);
   registry->RegisterBooleanPref(prefs::kAutofillOrphanRowsRemoved, false);
-  registry->RegisterStringPref(
-      prefs::kAutofillProfileValidity, "",
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 }
 
 void MigrateDeprecatedAutofillPrefs(PrefService* prefs) {
