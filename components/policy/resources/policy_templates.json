@@ -8948,7 +8948,8 @@
       'name': 'SupervisedUsersEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:29-'],
+      'deprecated': True,
+      'supported_on': ['chrome_os:29-70'],
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
@@ -8969,7 +8970,8 @@
       'name': 'SupervisedUserCreationEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:29-'],
+      'deprecated': True,
+      'supported_on': ['chrome.*:29-70'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -8990,7 +8992,8 @@
       'name': 'SupervisedUserContentProviderEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['android:49-'],
+      'deprecated': True,
+      'supported_on': ['android:49-70'],
       'features': {
         'dynamic_refresh': True,
         'per_profile' : True,
