@@ -74,8 +74,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSSocketFactory {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TCPConnectedSocket::UpgradeToTLSCallback callback);
 
-  // The following are used when |skip_cert_verification| is specified in
-  // upgrade options.
+  // The following are used when |unsafely_skip_cert_verification| is specified
+  // in upgrade options.
   net::SSLClientSocketContext no_verification_ssl_client_socket_context_;
   std::unique_ptr<net::CertVerifier> no_verification_cert_verifier_;
   std::unique_ptr<net::TransportSecurityState>

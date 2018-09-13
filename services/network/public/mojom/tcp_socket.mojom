@@ -51,7 +51,8 @@ interface TCPConnectedSocket {
   // On success, |net_error| is net::OK. Caller is to use |send_stream| to send
   // data and |receive_stream| to receive data over the connection. On failure,
   // |result| is a network error code.
-  // |ssl_info| is only returned if |options::skip_cert_verification| is true.
+  // |ssl_info| is only returned if |options::unsafely_skip_cert_verification|
+  // is true.
   UpgradeToTLS(HostPortPair host_port_pair,
                TLSClientSocketOptions? options,
                MutableNetworkTrafficAnnotationTag traffic_annotation,
