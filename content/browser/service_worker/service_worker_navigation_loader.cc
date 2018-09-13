@@ -17,6 +17,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 
 namespace content {
@@ -44,7 +45,41 @@ bool BodyHasNoDataPipeGetters(const network::ResourceRequestBody* body) {
   return true;
 }
 
+const char* ResponseTypeString(ServiceWorkerResponseType response_type) {
+  switch (response_type) {
+    case ServiceWorkerResponseType::NOT_DETERMINED:
+      return "NOT_DETERMINED";
+    case ServiceWorkerResponseType::FAIL_DUE_TO_LOST_CONTROLLER:
+      return "FAIL_DUE_TO_LOST_CONTROLLER";
+    case ServiceWorkerResponseType::FALLBACK_TO_NETWORK:
+      return "FALLBACK_TO_NETWORK";
+    case ServiceWorkerResponseType::FALLBACK_TO_RENDERER:
+      return "FALLBACK_TO_RENDERER";
+    case ServiceWorkerResponseType::FORWARD_TO_SERVICE_WORKER:
+      return "FORWARD_TO_SERVICE_WORKER";
+  }
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace
+
+// static
+const char* ServiceWorkerNavigationLoader::StatusString(
+    ServiceWorkerNavigationLoader::Status status) {
+  switch (status) {
+    case ServiceWorkerNavigationLoader::Status::kNotStarted:
+      return "NotStarted";
+    case ServiceWorkerNavigationLoader::Status::kStarted:
+      return "Started";
+    case ServiceWorkerNavigationLoader::Status::kSentHeader:
+      return "SentHeader";
+    case ServiceWorkerNavigationLoader::Status::kCompleted:
+      return "Completed";
+  }
+  NOTREACHED();
+  return "";
+}
 
 // This class waits for completion of a stream response from the service worker.
 // It calls ServiceWorkerNavigationLoader::CommitCompleted() upon completion of
@@ -95,6 +130,10 @@ ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       binding_(this),
       weak_factory_(this) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    debug_log_ = base::make_optional<std::vector<std::string>>();
+  }
+
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerNavigationLoader::ServiceWorkerNavigationloader", this,
@@ -130,6 +169,12 @@ void ServiceWorkerNavigationLoader::FallbackToNetwork() {
   DCHECK_EQ(status_, Status::kNotStarted);
   DCHECK_EQ(response_type_, ResponseType::NOT_DETERMINED);
 
+  if (debug_log_) {
+    debug_log_->emplace_back(base::StringPrintf(
+        "FallbackToNW:%s->%s", ResponseTypeString(response_type_),
+        ResponseTypeString(ResponseType::FALLBACK_TO_NETWORK)));
+  }
+
   response_type_ = ResponseType::FALLBACK_TO_NETWORK;
   TransitionToStatus(Status::kCompleted);
   std::move(loader_callback_).Run({});
@@ -141,7 +186,25 @@ void ServiceWorkerNavigationLoader::ForwardToServiceWorker() {
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK_EQ(status_, Status::kNotStarted);
   DCHECK_EQ(response_type_, ResponseType::NOT_DETERMINED);
+
+  if (debug_log_) {
+    debug_log_->emplace_back(base::StringPrintf(
+        "ForwardToSW:%s->%s", ResponseTypeString(response_type_),
+        ResponseTypeString(ResponseType::FORWARD_TO_SERVICE_WORKER)));
+  }
+
   response_type_ = ResponseType::FORWARD_TO_SERVICE_WORKER;
+
+  // https://crbug.com/881826
+  if (!loader_callback_ && debug_log_) {
+    std::string log;
+    for (const auto& entry : *debug_log_) {
+      log += entry + " ";
+    }
+    DEBUG_ALIAS_FOR_GURL(debug_url, resource_request_.url);
+    DEBUG_ALIAS_FOR_CSTR(debug_log, log.c_str(), 1024);
+    CHECK(false);
+  }
 
   std::move(loader_callback_)
       .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartRequest,
@@ -157,6 +220,9 @@ bool ServiceWorkerNavigationLoader::ShouldForwardToServiceWorker() {
 }
 
 void ServiceWorkerNavigationLoader::DetachedFromRequest() {
+  if (debug_log_)
+    debug_log_->emplace_back("DetachedFromRequest");
+
   delegate_ = nullptr;
   DeleteIfNeeded();
 }
@@ -487,6 +553,9 @@ void ServiceWorkerNavigationLoader::OnConnectionClosed() {
       "ServiceWorker", "ServiceWorkerNavigationLoader::OnConnectionClosed",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
+  if (debug_log_)
+    debug_log_->emplace_back("ConnectionClosed");
+
   // The fetch dispatcher or stream waiter may still be running. Don't let them
   // do callbacks back to this loader, since it is now done with the request.
   // TODO(falken): Try to move this to CommitCompleted(), since the same
@@ -532,6 +601,11 @@ void ServiceWorkerNavigationLoader::TransitionToStatus(Status new_status) {
       break;
   }
 #endif  // DCHECK_IS_ON()
+
+  if (debug_log_) {
+    debug_log_->emplace_back(base::StringPrintf(
+        "Status:%s->%s", StatusString(status_), StatusString(new_status)));
+  }
 
   status_ = new_status;
 }
