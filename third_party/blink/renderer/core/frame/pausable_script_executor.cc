@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -60,9 +61,10 @@ Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
   for (const auto& source : sources_) {
     v8::Local<v8::Value> script_value =
         world_id_ ? frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-                        world_id_, source)
+                        world_id_, source, KURL(), kNotSharableCrossOrigin)
                   : frame->GetScriptController()
-                        .ExecuteScriptInMainWorldAndReturnValue(source);
+                        .ExecuteScriptInMainWorldAndReturnValue(
+                            source, KURL(), kNotSharableCrossOrigin);
     results.push_back(script_value);
   }
 

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/mojo/tests/JsToCpp.mojom-blink.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -72,7 +73,8 @@ v8::Local<v8::Value> ExecuteScript(const String& script_path,
                                    LocalFrame& frame) {
   scoped_refptr<SharedBuffer> script_src = test::ReadFromFile(script_path);
   return frame.GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-      ScriptSourceCode(String(script_src->Data(), script_src->size())));
+      ScriptSourceCode(String(script_src->Data(), script_src->size())), KURL(),
+      kNotSharableCrossOrigin);
 }
 
 void CheckDataPipe(mojo::DataPipeConsumerHandle data_pipe_handle) {
