@@ -308,7 +308,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
                       styleMask:NSBorderlessWindowMask
                         backing:NSBackingStoreBuffered
                           defer:NO]);
-    bridge_impl()->SetWindow(window);
+    bridge_host_for_testing()->CreateLocalBridge(window, params.parent);
     bridge_host_for_testing()->InitWindow(params);
 
     // Usually the bridge gets initialized here. It is skipped to run extra
@@ -384,7 +384,9 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   }
 
   NSWindow* bridge_window() const {
-    return native_widget_mac_->bridge_impl()->ns_window();
+    if (native_widget_mac_->bridge_impl())
+      return native_widget_mac_->bridge_impl()->ns_window();
+    return nil;
   }
 
  protected:
@@ -844,8 +846,8 @@ TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
   std::unique_ptr<MockNativeWidgetMac> native_widget(
       new MockNativeWidgetMac(nullptr));
   native_widget_mac_ = native_widget.get();
-  EXPECT_FALSE(bridge()->ns_view());
-  EXPECT_FALSE(bridge()->ns_window());
+  EXPECT_FALSE(bridge());
+  EXPECT_FALSE(bridge_host()->GetLocalNSWindow());
 }
 
 // Tests the shadow type given in InitParams.
