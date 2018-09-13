@@ -15,12 +15,12 @@ import "components/arc/common/gfx.mojom";
 enum ArcNotificationEvent {
   BODY_CLICKED = 0,
   CLOSED = 1,
-  // Five buttons at maximum (message_center::kNotificationMaximumItems = 5).
-  BUTTON_1_CLICKED = 2,
-  BUTTON_2_CLICKED = 3,
-  BUTTON_3_CLICKED = 4,
-  BUTTON_4_CLICKED = 5,
-  BUTTON_5_CLICKED = 6,
+  // Deprecated: Five button events
+  DEPRECATED_BUTTON_1_CLICKED = 2,
+  DEPRECATED_BUTTON_2_CLICKED = 3,
+  DEPRECATED_BUTTON_3_CLICKED = 4,
+  DEPRECATED_BUTTON_4_CLICKED = 5,
+  DEPRECATED_BUTTON_5_CLICKED = 6,
   // expand/collapse the bundled notification
   [MinVersion=10] TOGGLE_EXPANSION = 7,
 };
