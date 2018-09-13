@@ -284,17 +284,11 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, PRE_Basic) {
   EXPECT_FALSE(process_manager()->GetBackgroundHostForExtension(extension_id));
 }
 
-#if defined(OS_LINUX)
-// Disabled on Linux due to flakes; see https://crbug.com/855800.
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
 // After browser restarts, this test step ensures that opening a tab fires
 // tabs.onCreated event listener to the extension without explicitly loading the
 // extension. This is because the extension registered a listener before browser
 // restarted in PRE_Basic.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, MAYBE_Basic) {
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, Basic) {
   ExtensionTestMessageListener newtab_listener("CREATED", false);
   newtab_listener.set_failure_message("CREATE_FAILED");
   const GURL url = embedded_test_server()->GetURL("/extensions/test_file.html");
