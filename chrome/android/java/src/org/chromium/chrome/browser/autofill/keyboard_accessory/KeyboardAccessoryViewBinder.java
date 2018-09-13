@@ -4,12 +4,10 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -128,39 +126,24 @@ class KeyboardAccessoryViewBinder
             view.setActiveTabColor(model.activeTab());
             setActiveTabHint(model, view);
             view.setVisible(model.isVisible());
-            requestLayout(view);
             return;
         }
         if (propertyKey == PropertyKey.ACTIVE_TAB) {
             view.setActiveTabColor(model.activeTab());
             setActiveTabHint(model, view);
-            requestLayout(view);
             return;
         }
         if (propertyKey == PropertyKey.BOTTOM_OFFSET) {
             view.setBottomOffset(model.bottomOffset());
-            requestLayout(view);
             return;
         }
         if (propertyKey == PropertyKey.TAB_SELECTION_CALLBACKS) {
             // Don't add null as listener. It's a valid state but an invalid argument.
             if (model.getTabSelectionCallbacks() == null) return;
             view.setTabSelectionAdapter(model.getTabSelectionCallbacks());
-            requestLayout(view);
             return;
         }
         assert false : "Every possible property update needs to be handled!";
-    }
-
-    private static void requestLayout(ViewPager view) {
-         // Layout requests happen automatically since Kitkat and redundant requests cause warnings.
-        if (view == null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) return;
-        view.post(() -> {
-            ViewParent parent = view.getParent();
-            if (parent != null) {
-                parent.requestLayout();
-            }
-        });
     }
 
     private static void setActiveTabHint(KeyboardAccessoryModel model, KeyboardAccessoryView view) {
