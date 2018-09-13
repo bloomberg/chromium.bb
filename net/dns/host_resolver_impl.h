@@ -68,8 +68,7 @@ class NetLogWithSource;
 // Jobs are ordered in the queue based on their priority and order of arrival.
 class NET_EXPORT HostResolverImpl
     : public HostResolver,
-      public NetworkChangeNotifier::IPAddressObserver,
-      public NetworkChangeNotifier::ConnectionTypeObserver,
+      public NetworkChangeNotifier::NetworkChangeObserver,
       public NetworkChangeNotifier::DNSObserver {
  public:
   // Parameters for ProcTask which resolves hostnames using HostResolveProc.
@@ -325,12 +324,10 @@ class NET_EXPORT HostResolverImpl
   // a DnsClient with a valid DnsConfig.
   void TryServingAllJobsFromHosts();
 
-  // NetworkChangeNotifier::IPAddressObserver:
-  void OnIPAddressChanged() override;
+  // NetworkChangeNotifier::NetworkChangeObserver:
+  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override;
 
-  // NetworkChangeNotifier::ConnectionTypeObserver:
-  void OnConnectionTypeChanged(
-      NetworkChangeNotifier::ConnectionType type) override;
+  void UpdateProcParams(NetworkChangeNotifier::ConnectionType type);
 
   // NetworkChangeNotifier::DNSObserver:
   void OnDNSChanged() override;
