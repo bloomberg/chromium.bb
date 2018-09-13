@@ -21,7 +21,8 @@ class GoogleSearchDomainMixingMetricsEmitterTest : public testing::Test {
  public:
   GoogleSearchDomainMixingMetricsEmitterTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        thread_bundle_(content::TestBrowserThreadBundle::PLAIN_MAINLOOP) {}
 
   void SetUp() override {
     GoogleSearchDomainMixingMetricsEmitter::RegisterProfilePrefs(
@@ -79,6 +80,7 @@ class GoogleSearchDomainMixingMetricsEmitterTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingPrefServiceSimple prefs_;
   base::ScopedTempDir history_dir_;
   std::unique_ptr<history::HistoryService> history_service_;

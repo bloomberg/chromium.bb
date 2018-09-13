@@ -23,11 +23,14 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/spin_wait.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -608,8 +611,7 @@ class ThreadWatcherListTest : public ::testing::Test {
       : done_(&lock_),
         state_available_(false),
         has_thread_watcher_list_(false),
-        stopped_(false) {
-  }
+        stopped_(false) {}
 
   void ReadStateOnWatchDogThread() {
     CHECK(WatchDogThread::CurrentlyOnWatchDogThread());
@@ -634,8 +636,8 @@ class ThreadWatcherListTest : public ::testing::Test {
 
     WatchDogThread::PostTask(
         FROM_HERE,
-        base::Bind(&ThreadWatcherListTest::ReadStateOnWatchDogThread,
-                   base::Unretained(this)));
+        base::BindRepeating(&ThreadWatcherListTest::ReadStateOnWatchDogThread,
+                            base::Unretained(this)));
     {
       base::AutoLock auto_lock(lock_);
       while (!state_available_)
@@ -646,6 +648,7 @@ class ThreadWatcherListTest : public ::testing::Test {
     }
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   base::Lock lock_;
   base::ConditionVariable done_;
 
@@ -656,9 +659,6 @@ class ThreadWatcherListTest : public ::testing::Test {
 
 TEST_F(ThreadWatcherListTest, Restart) {
   ThreadWatcherList::g_initialize_delay_seconds = 1;
-
-  base::MessageLoopForUI message_loop_for_ui;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop_for_ui);
 
   std::unique_ptr<WatchDogThread> watchdog_thread_(new WatchDogThread());
   watchdog_thread_->StartAndWaitForTesting();
@@ -672,44 +672,41 @@ TEST_F(ThreadWatcherListTest, Restart) {
   ThreadWatcherList::StopWatchingAll();
   {
     base::RunLoop run_loop;
-    message_loop_for_ui.task_runner()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitWhenIdleClosure(),
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI}, run_loop.QuitWhenIdleClosure(),
         base::TimeDelta::FromSeconds(
             ThreadWatcherList::g_initialize_delay_seconds));
     run_loop.Run();
   }
 
-  CheckState(false /* has_thread_watcher_list */,
-             true /* stopped */,
+  CheckState(false /* has_thread_watcher_list */, true /* stopped */,
              "Start / Stopped");
 
   // Proceed with just |StartWatchingAll| and ensure it'll be started.
   ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
   {
     base::RunLoop run_loop;
-    message_loop_for_ui.task_runner()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitWhenIdleClosure(),
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI}, run_loop.QuitWhenIdleClosure(),
         base::TimeDelta::FromSeconds(
             ThreadWatcherList::g_initialize_delay_seconds + 1));
     run_loop.Run();
   }
 
-  CheckState(true /* has_thread_watcher_list */,
-             false /* stopped */,
+  CheckState(true /* has_thread_watcher_list */, false /* stopped */,
              "Started");
 
   // Finally, StopWatchingAll() must stop.
   ThreadWatcherList::StopWatchingAll();
   {
     base::RunLoop run_loop;
-    message_loop_for_ui.task_runner()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitWhenIdleClosure(),
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI}, run_loop.QuitWhenIdleClosure(),
         base::TimeDelta::FromSeconds(
             ThreadWatcherList::g_initialize_delay_seconds));
     run_loop.Run();
   }
 
-  CheckState(false /* has_thread_watcher_list */,
-             true /* stopped */,
+  CheckState(false /* has_thread_watcher_list */, true /* stopped */,
              "Stopped");
 }

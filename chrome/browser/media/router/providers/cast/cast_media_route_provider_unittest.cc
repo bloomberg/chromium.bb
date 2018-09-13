@@ -5,13 +5,13 @@
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,7 +43,7 @@ class CastMediaRouteProviderTest : public testing::Test {
   void TearDown() override { provider_.reset(); }
 
  protected:
-  base::test::ScopedTaskEnvironment environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
   mojom::MediaRouteProviderPtr provider_ptr_;
   MockMojoMediaRouter mock_router_;
   std::unique_ptr<mojo::Binding<mojom::MediaRouter>> router_binding_;
