@@ -301,89 +301,32 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
   if (skia_image->alphaType() == alpha_type)
     return std::move(image);
 
-  // Premul/unpremul are performed in gamma-corrected space, using arithmetic
-  // that assumes linear space. It is an incorrect implementation that has
-  // become the de facto standard on the web. Therefore, the legacy behavior
-  // must be maintained to ensure backward compatibility. Historically, passing
-  // nullptr as the color space to SkImage::readPixels() enforces alpha
-  // disposition to be done in non-linear space, using arithmetic that assumes
-  // otherwise, but we want to avoid passing nullptr color space
-  // (crbug.com/811318). Therefore, to premul, we draw on a surface or use
-  // SkColorSpaceXform, and to unpremul, we read back the pixels and unpremul
-  // manually. Unpremul results in a GPU readback if |image| is texture backed,
-  // which cannot be avoided for now (crbug.com/740197).
-
   SkImageInfo info = GetSkImageInfo(image.get()).makeAlphaType(alpha_type);
-
-  // Manual alpha disposition is needed if the image has a non-linear gamma
-  // color space but still uses 8888 pixel storage format. In this case, we
-  // ignore the gamma transfer and premul/unpremul the pixels in linear space.
-  bool manual_alpha_disposition_needed =
-      skia_image->colorSpace() &&
-      skia_image->colorType() != kRGBA_F16_SkColorType &&
-      !skia_image->colorSpace()->gammaIsLinear();
-
-  if (alpha_type == kUnpremul_SkAlphaType) {
-    scoped_refptr<Uint8Array> dst_pixels = nullptr;
-    if (manual_alpha_disposition_needed) {
-      dst_pixels = CopyImageData(image);
-      if (!dst_pixels)
-        return nullptr;
-      int alpha = 0;
-      for (unsigned i = 0; i < image->Size().Area(); i++) {
-        alpha = dst_pixels->Data()[i * 4 + 3];
-        dst_pixels->Data()[i * 4] =
-            std::round(dst_pixels->Data()[i * 4] * 255.0 / alpha);
-        dst_pixels->Data()[i * 4 + 1] =
-            std::round(dst_pixels->Data()[i * 4 + 1] * 255.0 / alpha);
-        dst_pixels->Data()[i * 4 + 2] =
-            std::round(dst_pixels->Data()[i * 4 + 2] * 255.0 / alpha);
-      }
-    } else {
-      dst_pixels = CopyImageData(image, info);
-      if (!dst_pixels)
-        return nullptr;
+  // To premul, draw the unpremul image on a surface to avoid GPU read back if
+  // image is texture backed.
+  if (alpha_type == kPremul_SkAlphaType) {
+    sk_sp<SkSurface> surface = nullptr;
+    if (image->IsTextureBacked()) {
+      GrContext* context =
+          image->ContextProviderWrapper()->ContextProvider()->GetGrContext();
+      if (context)
+        surface = SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, info);
     }
-    return StaticBitmapImage::Create(std::move(dst_pixels), info);
-  }
-
-  // We prefer to draw on a canvas to premul, since it allows us to avoid GPU
-  // readback if |image| is texture backed. However, since there is no API
-  // for tagging a texture backed SkImage with a color space without touching
-  // the pixels, whe still need to fall back to manual premul in linear space
-  // when necessary, which may result in a GPU read back.
-  if (manual_alpha_disposition_needed) {
-    scoped_refptr<Uint8Array> dst_pixels = CopyImageData(image);
-    if (!dst_pixels)
+    if (!surface)
+      surface = SkSurface::MakeRaster(info);
+    if (!surface)
       return nullptr;
-    sk_sp<SkColorSpace> color_space = SkColorSpace::MakeSRGBLinear();
-    SkColorSpaceXform::ColorFormat color_format =
-        SkColorSpaceXform::kRGBA_8888_ColorFormat;
-    if (info.colorType() == kRGBA_F16_SkColorType)
-      color_format = SkColorSpaceXform::kRGBA_F16_ColorFormat;
-    SkColorSpaceXform::Apply(
-        color_space.get(), color_format, (void*)(dst_pixels->Data()),
-        color_space.get(), color_format, (void*)(dst_pixels->Data()),
-        image->Size().Area(), SkColorSpaceXform::kPremul_AlphaOp);
-    return StaticBitmapImage::Create(std::move(dst_pixels), info);
+    SkPaint paint;
+    paint.setBlendMode(SkBlendMode::kSrc);
+    surface->getCanvas()->drawImage(skia_image.get(), 0, 0, &paint);
+    return StaticBitmapImage::Create(surface->makeImageSnapshot(),
+                                     image->ContextProviderWrapper());
   }
-
-  sk_sp<SkSurface> surface = nullptr;
-  if (image->IsTextureBacked()) {
-    GrContext* context =
-        image->ContextProviderWrapper()->ContextProvider()->GetGrContext();
-    if (context)
-      surface = SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, info);
-  }
-  if (!surface)
-    surface = SkSurface::MakeRaster(info);
-  if (!surface)
+  // To unpremul, read back the pixels.
+  auto dst_pixels = CopyImageData(image, info);
+  if (!dst_pixels)
     return nullptr;
-  SkPaint paint;
-  paint.setBlendMode(SkBlendMode::kSrc);
-  surface->getCanvas()->drawImage(skia_image.get(), 0, 0, &paint);
-  return StaticBitmapImage::Create(surface->makeImageSnapshot(),
-                                   image->ContextProviderWrapper());
+  return StaticBitmapImage::Create(std::move(dst_pixels), info);
 }
 
 void freePixels(const void*, void* pixels) {
