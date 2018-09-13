@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.UiUtils;
@@ -123,10 +122,8 @@ public class NavigationBarColorController implements VrModeObserver {
         boolean useLightNavigation;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected();
-        } else if (FeatureUtilities.isChromeModernDesignEnabled()) {
-            useLightNavigation = !mTabModelSelector.isIncognitoSelected() || overviewVisible;
         } else {
-            useLightNavigation = !mTabModelSelector.isIncognitoSelected() && !overviewVisible;
+            useLightNavigation = !mTabModelSelector.isIncognitoSelected() || overviewVisible;
         }
 
         useLightNavigation &= !UiUtils.isSystemUiThemingDisabled();

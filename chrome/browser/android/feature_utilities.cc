@@ -30,11 +30,6 @@ bool GetIsInMultiWindowModeValue() {
   return is_in_multi_window_mode;
 }
 
-bool GetIsChromeModernDesignEnabled() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_FeatureUtilities_isChromeModernDesignEnabled(env);
-}
-
 } // namespace android
 } // namespace chrome
 
