@@ -290,6 +290,8 @@ class CORE_EXPORT DocumentLoader
       const SecurityOrigin* previous_security_origin,
       const Document& new_document);
 
+  bool had_transient_activation() const { return had_transient_activation_; }
+
   Vector<KURL> redirect_chain_;
 
  private:
@@ -429,8 +431,11 @@ class CORE_EXPORT DocumentLoader
   scoped_refptr<SharedBuffer> data_buffer_;
   base::UnguessableToken devtools_navigation_token_;
 
-  // Whether this load request comes from a user activation.
-  bool user_activated_;
+  // Whether this load request comes with a sitcky user activation.
+  bool had_sticky_activation_;
+  // Whether this load request had a user activation when created.
+  bool had_transient_activation_;
+
   // This UseCounter tracks feature usage associated with the lifetime of the
   // document load. Features recorded prior to commit will be recorded locally.
   // Once commited, feature usage will be piped to the browser side page load

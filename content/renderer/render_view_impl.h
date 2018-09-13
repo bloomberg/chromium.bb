@@ -27,7 +27,6 @@
 #include "cc/input/browser_controls_state.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
-#include "content/common/navigation_gesture.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/page_zoom.h"
@@ -515,13 +514,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
     return observers_;
   }
 
-  NavigationGesture navigation_gesture() {
-    return navigation_gesture_;
-  }
-  void set_navigation_gesture(NavigationGesture gesture) {
-    navigation_gesture_ = gesture;
-  }
-
 // Platform specific theme preferences if any are updated here.
 #if defined(OS_WIN)
   void UpdateThemePrefs();
@@ -576,10 +568,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   gfx::Size disable_scrollbars_size_limit_;
 
   // Loading state -------------------------------------------------------------
-
-  // The gesture that initiated the current navigation.
-  // TODO(nasko): Move to RenderFrame, as this is per-frame state.
-  NavigationGesture navigation_gesture_ = NavigationGestureUnknown;
 
   // Timer used to delay the updating of nav state (see
   // StartNavStateSyncTimerIfNecessary).
