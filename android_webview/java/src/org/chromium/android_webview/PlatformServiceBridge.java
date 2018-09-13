@@ -16,9 +16,6 @@ import org.chromium.base.ThreadUtils;
  */
 public abstract class PlatformServiceBridge {
     private static final String TAG = "PlatformServiceBrid-";
-    private static final String PLATFORM_SERVICE_BRIDGE =
-            "com.android.webview.chromium.PlatformServiceBridgeGoogle";
-
     private static PlatformServiceBridge sInstance;
     private static final Object sInstanceLock = new Object();
 
