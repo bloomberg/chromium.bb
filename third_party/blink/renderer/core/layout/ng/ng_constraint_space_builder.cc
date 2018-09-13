@@ -151,9 +151,8 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   bool is_new_fc_ = flags_ & NGConstraintSpace::kNewFormattingContext;
   DCHECK(!is_new_fc_ || !adjoining_floats_);
 
-  DEFINE_STATIC_LOCAL(NGExclusionSpace, empty_exclusion_space, ());
   const NGExclusionSpace& exclusion_space = (is_new_fc_ || !exclusion_space_)
-                                                ? empty_exclusion_space
+                                                ? NGExclusionSpace()
                                                 : *exclusion_space_;
   NGBfcOffset bfc_offset = is_new_fc_ ? NGBfcOffset() : bfc_offset_;
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;

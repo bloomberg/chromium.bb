@@ -613,8 +613,7 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
 }
 
 scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
-  std::unique_ptr<NGExclusionSpace> initial_exclusion_space(
-      std::make_unique<NGExclusionSpace>(ConstraintSpace().ExclusionSpace()));
+  NGExclusionSpace initial_exclusion_space(ConstraintSpace().ExclusionSpace());
 
   bool is_empty_inline = Node().IsEmptyInline();
 
@@ -649,13 +648,12 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
   // In order to get the correct list of layout opportunities, we need to
   // position any "leading" items (floats) within the exclusion space first.
-  unsigned handled_item_index =
-      PositionLeadingFloats(initial_exclusion_space.get());
+  unsigned handled_item_index = PositionLeadingFloats(&initial_exclusion_space);
 
   // We query all the layout opportunities on the initial exclusion space up
   // front, as if the line breaker may add floats and change the opportunities.
   const LayoutOpportunityVector opportunities =
-      initial_exclusion_space->AllLayoutOpportunities(
+      initial_exclusion_space.AllLayoutOpportunities(
           ConstraintSpace().BfcOffset(),
           ConstraintSpace().AvailableSize().inline_size);
 
@@ -663,7 +661,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // We shouldn't have any unpositioned floats if we aren't empty.
   DCHECK(unpositioned_floats_.IsEmpty() || is_empty_inline);
 
-  std::unique_ptr<NGExclusionSpace> exclusion_space;
+  NGExclusionSpace exclusion_space;
   NGInlineBreakToken* break_token = BreakToken();
 
   LayoutUnit line_block_size;
@@ -694,19 +692,17 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     positioned_floats.clear();
     unpositioned_floats_.clear();
     container_builder_.Reset();
-    exclusion_space =
-        std::make_unique<NGExclusionSpace>(*initial_exclusion_space);
+    exclusion_space = initial_exclusion_space;
 
     NGLineLayoutOpportunity line_opportunity =
         opportunity.ComputeLineLayoutOpportunity(ConstraintSpace(),
                                                  line_block_size, block_delta);
 
     NGLineInfo line_info;
-    NGLineBreaker line_breaker(Node(), NGLineBreakerMode::kContent,
-                               constraint_space_, &positioned_floats,
-                               &unpositioned_floats_, &container_builder_,
-                               exclusion_space.get(), handled_item_index,
-                               line_opportunity, break_token);
+    NGLineBreaker line_breaker(
+        Node(), NGLineBreakerMode::kContent, constraint_space_,
+        &positioned_floats, &unpositioned_floats_, &container_builder_,
+        &exclusion_space, handled_item_index, line_opportunity, break_token);
     line_breaker.NextLine(&line_info);
 
     // If this fragment will be larger than the inline-size of the opportunity,
@@ -734,7 +730,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     }
 
     PrepareBoxStates(line_info, break_token);
-    CreateLine(&line_info, exclusion_space.get());
+    CreateLine(&line_info, &exclusion_space);
 
     // We now can check the block-size of the fragment, and it fits within the
     // opportunity.
@@ -786,13 +782,13 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
       DCHECK_EQ(container_builder_.BlockSize(), 0);
     } else {
       // Place any remaining floats which couldn't fit on the line.
-      PositionPendingFloats(line_height, exclusion_space.get());
+      PositionPendingFloats(line_height, &exclusion_space);
 
       // A <br clear=both> will strech the line-box height, such that the
       // block-end edge will clear any floats.
       // TODO(ikilpatrick): Move this into ng_block_layout_algorithm.
       container_builder_.SetBlockSize(
-          ComputeContentSize(line_info, *exclusion_space, line_height));
+          ComputeContentSize(line_info, exclusion_space, line_height));
     }
     break;
   }
@@ -800,9 +796,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // We shouldn't have any unpositioned floats if we aren't empty.
   DCHECK(unpositioned_floats_.IsEmpty() || is_empty_inline);
   container_builder_.SwapPositionedFloats(&positioned_floats_);
-  container_builder_.SetExclusionSpace(
-      exclusion_space ? std::move(exclusion_space)
-                      : std::move(initial_exclusion_space));
+  container_builder_.SetExclusionSpace(std::move(exclusion_space));
   container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants(nullptr);
   return container_builder_.ToLineBoxFragment();
 }

@@ -34,7 +34,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetEndMarginStrut(
 }
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetExclusionSpace(
-    std::unique_ptr<const NGExclusionSpace> exclusion_space) {
+    NGExclusionSpace&& exclusion_space) {
   exclusion_space_ = std::move(exclusion_space);
   return *this;
 }

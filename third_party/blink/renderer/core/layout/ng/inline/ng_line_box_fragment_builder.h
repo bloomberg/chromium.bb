@@ -183,6 +183,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   scoped_refptr<NGInlineBreakToken> break_token_;
 
   TextDirection base_direction_;
+
+  DISALLOW_COPY_AND_ASSIGN(NGLineBoxFragmentBuilder);
 };
 
 }  // namespace blink

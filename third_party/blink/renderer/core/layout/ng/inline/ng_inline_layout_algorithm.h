@@ -19,6 +19,7 @@
 namespace blink {
 
 class NGConstraintSpace;
+class NGExclusionSpace;
 class NGInlineBreakToken;
 class NGInlineNode;
 class NGInlineItem;

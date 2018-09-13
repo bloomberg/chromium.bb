@@ -149,9 +149,10 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
                        : NGInlineBreakToken::Create(node_)));
 
   return base::AdoptRef(new NGLayoutResult(
-      std::move(fragment), oof_positioned_descendants_, positioned_floats_,
-      unpositioned_list_marker_, std::move(exclusion_space_), bfc_line_offset_,
-      bfc_block_offset_, end_margin_strut_,
+      std::move(fragment), std::move(oof_positioned_descendants_),
+      std::move(positioned_floats_), unpositioned_list_marker_,
+      std::move(exclusion_space_), bfc_line_offset_, bfc_block_offset_,
+      end_margin_strut_,
       /* intrinsic_block_size */ LayoutUnit(),
       /* minimal_space_shortage */ LayoutUnit::Max(), EBreakBetween::kAuto,
       EBreakBetween::kAuto, /* has_forced_break */ false, is_pushed_by_floats_,
