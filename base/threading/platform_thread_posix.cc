@@ -23,6 +23,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
+#if !defined(OS_MACOSX) && !defined(OS_FUCHSIA) && !defined(OS_NACL)
+#include "base/posix/can_lower_nice_to.h"
+#endif
+
 #if defined(OS_LINUX)
 #include <sys/syscall.h>
 #endif
@@ -244,13 +248,8 @@ bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 #if defined(OS_NACL)
   return false;
 #else
-  // TODO(fdoray): Also check if the target priority is within the range allowed
-  // by RLIMIT_NICE. https://crbug.com/816389
-
-  // Only root can raise thread priority on POSIX environment. On Linux, users
-  // who have CAP_SYS_NICE permission also can raise the thread priority, but
-  // libcap.so would be needed to check the capability.
-  return geteuid() == 0;
+  return internal::CanLowerNiceTo(
+      internal::ThreadPriorityToNiceValue(priority));
 #endif  // defined(OS_NACL)
 }
 
