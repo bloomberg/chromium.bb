@@ -5,7 +5,7 @@
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 
 #include "base/logging.h"
-#include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 
@@ -29,7 +29,7 @@ void TestSubresourceFilterObserver::OnSubresourceFilterGoingAway() {
 
 void TestSubresourceFilterObserver::OnPageActivationComputed(
     content::NavigationHandle* navigation_handle,
-    const ActivationState& activation_state) {
+    const mojom::ActivationState& activation_state) {
   DCHECK(navigation_handle->IsInMainFrame());
   mojom::ActivationLevel level = activation_state.activation_level;
   page_activations_[navigation_handle->GetURL()] = level;

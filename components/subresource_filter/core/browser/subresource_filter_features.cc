@@ -352,9 +352,10 @@ std::unique_ptr<base::trace_event::TracedValue> Configuration::ToTracedValue()
   return value;
 }
 
-ActivationState Configuration::GetActivationState(
+mojom::ActivationState Configuration::GetActivationState(
     mojom::ActivationLevel effective_activation_level) const {
-  ActivationState state = ActivationState(effective_activation_level);
+  mojom::ActivationState state;
+  state.activation_level = effective_activation_level;
 
   double measurement_rate = activation_options.performance_measurement_rate;
   state.measure_performance =

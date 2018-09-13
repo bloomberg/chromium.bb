@@ -15,7 +15,6 @@
 #include "base/strings/string_piece.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 
 namespace base {
@@ -106,11 +105,11 @@ struct Configuration {
 
   std::unique_ptr<base::trace_event::TracedValue> ToTracedValue() const;
 
-  // Returns the ActivationState that page loads that match this configuration
-  // should activate with. |effective_activation_level| can be different from
-  // this config's activation level due to things like warning mode or client
-  // whitelisting.
-  ActivationState GetActivationState(
+  // Returns the mojom::ActivationState that page loads that match this
+  // configuration should activate with. |effective_activation_level| can be
+  // different from this config's activation level due to things like warning
+  // mode or client whitelisting.
+  mojom::ActivationState GetActivationState(
       mojom::ActivationLevel effective_activation_level) const;
 
   // Factory methods for preset configurations.

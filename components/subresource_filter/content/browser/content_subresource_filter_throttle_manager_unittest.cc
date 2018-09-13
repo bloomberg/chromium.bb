@@ -21,7 +21,6 @@
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/subresource_filter/mojom/subresource_filter.mojom.h"
@@ -65,14 +64,17 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
       : content::NavigationThrottle(navigation_handle),
         activation_throttle_state_(activation_throttle_state) {
     // Add some default activations.
-    mock_page_activations_[GURL(kTestURLWithActivation)] =
-        ActivationState(mojom::ActivationLevel::kEnabled);
-    mock_page_activations_[GURL(kTestURLWithActivation2)] =
-        ActivationState(mojom::ActivationLevel::kEnabled);
-    mock_page_activations_[GURL(kTestURLWithDryRun)] =
-        ActivationState(mojom::ActivationLevel::kDryRun);
+    mojom::ActivationState enabled_state;
+    enabled_state.activation_level = mojom::ActivationLevel::kEnabled;
+
+    mojom::ActivationState dry_run_state;
+    dry_run_state.activation_level = mojom::ActivationLevel::kDryRun;
+
+    mock_page_activations_[GURL(kTestURLWithActivation)] = enabled_state;
+    mock_page_activations_[GURL(kTestURLWithActivation2)] = enabled_state;
+    mock_page_activations_[GURL(kTestURLWithDryRun)] = dry_run_state;
     mock_page_activations_[GURL(kTestURLWithNoActivation)] =
-        ActivationState(mojom::ActivationLevel::kDisabled);
+        mojom::ActivationState();
   }
   ~MockPageStateActivationThrottle() override {}
 
@@ -104,7 +106,7 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
     return content::NavigationThrottle::PROCEED;
   }
 
-  std::map<GURL, ActivationState> mock_page_activations_;
+  std::map<GURL, mojom::ActivationState> mock_page_activations_;
   PageActivationNotificationTiming activation_throttle_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPageStateActivationThrottle);
@@ -167,7 +169,7 @@ class ContentSubresourceFilterThrottleManagerTest
             SubresourceFilterMsg_ActivateForNextCommittedLoad::ID);
     ASSERT_EQ(expect_activation, !!message);
     if (expect_activation) {
-      std::tuple<ActivationState, bool> args;
+      std::tuple<mojom::ActivationState, bool> args;
       SubresourceFilterMsg_ActivateForNextCommittedLoad::Read(message, &args);
       mojom::ActivationLevel level = std::get<0>(args).activation_level;
       EXPECT_NE(mojom::ActivationLevel::kDisabled, level);

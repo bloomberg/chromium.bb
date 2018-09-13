@@ -11,8 +11,6 @@ static_library("common") {
     "activation_list.h",
     "activation_scope.cc",
     "activation_scope.h",
-    "activation_state.cc",
-    "activation_state.h",
     "common_features.cc",
     "common_features.h",
     "document_load_statistics.h",

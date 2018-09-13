@@ -40,7 +40,7 @@ class TestSubresourceFilterObserver : public SubresourceFilterObserver,
   void OnSubresourceFilterGoingAway() override;
   void OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      const ActivationState& activation_state) override;
+      const mojom::ActivationState& activation_state) override;
   void OnSubframeNavigationEvaluated(
       content::NavigationHandle* navigation_handle,
       LoadPolicy load_policy,

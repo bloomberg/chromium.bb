@@ -148,8 +148,9 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsReported) {
       ruleset_handle.get(), std::move(params), activation_state.GetCallback());
 
   RunUntilIdle();
-  activation_state.ExpectReceivedOnce(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  mojom::ActivationState expected_state;
+  expected_state.activation_level = mojom::ActivationLevel::kEnabled;
+  activation_state.ExpectReceivedOnce(expected_state);
 }
 
 TEST_F(AsyncDocumentSubresourceFilterTest, DeleteFilter_NoActivationCallback) {
@@ -187,7 +188,8 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
 
   RunUntilIdle();
 
-  ActivationState expected_activation_state(mojom::ActivationLevel::kEnabled);
+  mojom::ActivationState expected_activation_state;
+  expected_activation_state.activation_level = mojom::ActivationLevel::kEnabled;
   expected_activation_state.generic_blocking_rules_disabled = true;
   activation_state.ExpectReceivedOnce(expected_activation_state);
 }
@@ -207,8 +209,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, DisabledForCorruptRuleset) {
       ruleset_handle.get(), std::move(params), activation_state.GetCallback());
 
   RunUntilIdle();
-  activation_state.ExpectReceivedOnce(
-      ActivationState(mojom::ActivationLevel::kDisabled));
+  activation_state.ExpectReceivedOnce(mojom::ActivationState());
 }
 
 TEST_F(AsyncDocumentSubresourceFilterTest, GetLoadPolicyForSubdocument) {
@@ -285,12 +286,15 @@ TEST_F(AsyncDocumentSubresourceFilterTest, UpdateActivationState) {
 
   // Make sure the ADSF computes its initial activation before updating it.
   RunUntilIdle();
-  activation_state.ExpectReceivedOnce(
-      ActivationState(mojom::ActivationLevel::kDryRun));
+  mojom::ActivationState dry_run_state;
+  dry_run_state.activation_level = mojom::ActivationLevel::kDryRun;
+  activation_state.ExpectReceivedOnce(dry_run_state);
 
-  // Update the ActivationState before calling GetLoadPolicyForSubdocument.
-  filter->UpdateWithMoreAccurateState(
-      ActivationState(mojom::ActivationLevel::kEnabled));
+  // Update the mojom::ActivationState before calling
+  // GetLoadPolicyForSubdocument.
+  mojom::ActivationState enabled_state;
+  enabled_state.activation_level = mojom::ActivationLevel::kEnabled;
+  filter->UpdateWithMoreAccurateState(enabled_state);
 
   LoadPolicyCallbackReceiver load_policy_1;
   filter->GetLoadPolicyForSubdocument(GURL("http://example.com/allowed.html"),
@@ -332,11 +336,13 @@ class SubresourceFilterComputeActivationStateTest : public ::testing::Test {
         testing::TestRuleset::Open(test_ruleset_pair.indexed));
   }
 
-  static ActivationState MakeState(bool filtering_disabled_for_document,
-                                   bool generic_blocking_rules_disabled = false,
-                                   mojom::ActivationLevel activation_level =
-                                       mojom::ActivationLevel::kEnabled) {
-    ActivationState activation_state(activation_level);
+  static mojom::ActivationState MakeState(
+      bool filtering_disabled_for_document,
+      bool generic_blocking_rules_disabled = false,
+      mojom::ActivationLevel activation_level =
+          mojom::ActivationLevel::kEnabled) {
+    mojom::ActivationState activation_state;
+    activation_state.activation_level = activation_level;
     activation_state.filtering_disabled_for_document =
         filtering_disabled_for_document;
     activation_state.generic_blocking_rules_disabled =
@@ -355,16 +361,12 @@ class SubresourceFilterComputeActivationStateTest : public ::testing::Test {
 
 TEST_F(SubresourceFilterComputeActivationStateTest,
        ActivationBitsCorrectlyPropagateToChildDocument) {
-  // Make sure that the |generic_blocking_rules_disabled| flag is disregarded
-  // when |filtering_disabled_for_document| is true.
-  ASSERT_EQ(MakeState(true, false), MakeState(true, true));
-
   // TODO(pkalinnikov): Find a short way to express all these tests.
   const struct {
     const char* document_url;
     const char* parent_document_origin;
-    ActivationState parent_activation;
-    ActivationState expected_activation_state;
+    mojom::ActivationState parent_activation;
+    mojom::ActivationState expected_activation_state;
   } kTestCases[] = {
       {"http://example.com", "http://example.com", MakeState(false, false),
        MakeState(false, false)},
@@ -373,7 +375,7 @@ TEST_F(SubresourceFilterComputeActivationStateTest,
       {"http://example.com", "http://example.com", MakeState(true, false),
        MakeState(true)},
       {"http://example.com", "http://example.com", MakeState(true, true),
-       MakeState(true)},
+       MakeState(true, true)},
 
       {"http://child1.com", "http://parrrrent1.com", MakeState(false, false),
        MakeState(false, false)},
@@ -384,7 +386,7 @@ TEST_F(SubresourceFilterComputeActivationStateTest,
       {"http://child1.com", "http://parent2.com", MakeState(true, false),
        MakeState(true)},
       {"http://child1.com", "http://parent2.com", MakeState(false, true),
-       MakeState(true)},
+       MakeState(true, true)},
 
       {"http://child2.com", "http://parent1.com", MakeState(false, false),
        MakeState(false, true)},
@@ -393,16 +395,16 @@ TEST_F(SubresourceFilterComputeActivationStateTest,
       {"http://child2.com", "http://parent1.com", MakeState(true, false),
        MakeState(true)},
       {"http://child2.com", "http://parent1.com", MakeState(true, true),
-       MakeState(true)},
+       MakeState(true, true)},
 
       {"http://child3.com", "http://parent1.com", MakeState(false, false),
        MakeState(true)},
       {"http://child3.com", "http://parent1.com", MakeState(false, true),
-       MakeState(true)},
+       MakeState(true, true)},
       {"http://child3.com", "http://parent1.com", MakeState(true, false),
        MakeState(true)},
       {"http://child3.com", "http://parent1.com", MakeState(true, true),
-       MakeState(true)},
+       MakeState(true, true)},
   };
 
   for (size_t i = 0, size = arraysize(kTestCases); i != size; ++i) {
@@ -412,10 +414,12 @@ TEST_F(SubresourceFilterComputeActivationStateTest,
     GURL document_url(test_case.document_url);
     url::Origin parent_document_origin =
         url::Origin::Create(GURL(test_case.parent_document_origin));
-    ActivationState activation_state =
+    mojom::ActivationState activation_state =
         ComputeActivationState(document_url, parent_document_origin,
                                test_case.parent_activation, ruleset());
-    EXPECT_EQ(test_case.expected_activation_state, activation_state);
+    EXPECT_TRUE(test_case.expected_activation_state.Equals(activation_state))
+        << activation_state.filtering_disabled_for_document << " "
+        << activation_state.generic_blocking_rules_disabled;
   }
 }
 
