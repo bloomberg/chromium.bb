@@ -26,25 +26,17 @@ class SessionDataTypeController : public syncer::AsyncDirectoryTypeController {
 
   // AsyncDirectoryTypeController implementation.
   bool StartModels() override;
-  void StopModels() override;
   bool ReadyForStart() const override;
 
  private:
-  bool IsWaiting();
-  void MaybeCompleteLoading();
-  void OnLocalDeviceInfoInitialized();
   void OnSavingBrowserHistoryPrefChanged();
 
   syncer::SyncClient* const sync_client_;
 
   syncer::LocalDeviceInfoProvider* const local_device_;
-  std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription> subscription_;
 
   // Name of the pref that indicates whether saving history is disabled.
   const char* history_disabled_pref_name_;
-
-  // Flags that indicate the reason for pending loading models.
-  bool waiting_on_local_device_info_;
 
   PrefChangeRegistrar pref_registrar_;
 

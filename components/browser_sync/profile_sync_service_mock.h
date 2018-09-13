@@ -34,11 +34,12 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   ~ProfileSyncServiceMock() override;
 
-  MOCK_METHOD5(
+  MOCK_METHOD6(
       OnEngineInitialized,
       void(syncer::ModelTypeSet initial_types,
            const syncer::WeakHandle<syncer::JsBackend>&,
            const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
+           const std::string&,
            const std::string&,
            bool));
   MOCK_METHOD1(OnSyncCycleCompleted, void(const syncer::SyncCycleSnapshot&));
