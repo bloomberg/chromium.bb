@@ -3,6 +3,7 @@ include_rules = [
   "+components/arc/common/notifications.mojom.h",
   "+components/arc/connection_holder.h",
   "+components/arc/connection_observer.h",
+  "+components/arc/metrics/arc_metrics_constants.h",
   "+components/arc/mojo_channel.h",
   "+components/arc/test/connection_holder_util.h",
   "+components/arc/test/fake_notifications_instance.h",
