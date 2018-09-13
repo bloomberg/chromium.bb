@@ -15,10 +15,12 @@
 #include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/color_chooser/color_chooser_listener.h"
@@ -389,6 +391,8 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   textfield_ = new Textfield();
   textfield_->set_controller(this);
   textfield_->SetDefaultWidthInChars(kTextfieldLengthInChars);
+  textfield_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_COLOR_CHOOSER_HEX_INPUT));
   layout->AddView(textfield_);
   selected_color_patch_ = new SelectedColorPatchView();
   layout->AddView(selected_color_patch_);
