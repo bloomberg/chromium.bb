@@ -1292,7 +1292,8 @@ def resolution_tests_methods(effective_overloads):
     # ...
     try:
         method = next(method for idl_type, method in idl_types_methods
-                      if idl_type.is_string_type or idl_type.is_enum)
+                      if idl_type.is_string_type or idl_type.is_enum
+                      or (idl_type.is_union_type and idl_type.string_member_type))
         yield 'true', method
     except StopIteration:
         pass
