@@ -200,6 +200,9 @@
 -ManagedWithoutPermission/ManagedWithoutPermissionPlatformKeysTest.*
 -ManagedWithPermission/ManagedWithPermissionPlatformKeysTest.*
 
+# Timeout. https://crbug.com/883884
+-MediaEngagementBrowserTest.SessionNewTabNavigateSameURL
+
 # Full screen button tests.
 -PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
 
