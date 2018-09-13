@@ -208,6 +208,8 @@ viz_component("common") {
 }
 
 viz_source_set("unit_tests") {
+  # Not ready for jumbo compilation. Too much repeated test code.
+  never_build_jumbo = true
   testonly = true
   sources = [
     "frame_sinks/begin_frame_args_unittest.cc",
