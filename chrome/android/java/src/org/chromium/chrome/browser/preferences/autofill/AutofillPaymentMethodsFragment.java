@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.payments.AndroidPaymentAppFactory;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.MainPreferences;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 
 /**
@@ -29,9 +30,6 @@ import org.chromium.chrome.browser.preferences.PreferenceUtils;
  */
 public class AutofillPaymentMethodsFragment
         extends PreferenceFragment implements PersonalDataManager.PersonalDataManagerObserver {
-    private static final String PREF_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL =
-            "autofill_enable_credit_cards_toggle_label";
-
     private static final String PREF_PAYMENT_APPS = "payment_apps";
 
     @Override
@@ -59,13 +57,24 @@ public class AutofillPaymentMethodsFragment
         autofillSwitch.setTitle(R.string.autofill_enable_credit_cards_toggle_label);
         autofillSwitch.setSummary(
                 getActivity().getString(R.string.autofill_enable_credit_cards_toggle_sublabel));
-        autofillSwitch.setKey(PREF_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL); // For testing.
         autofillSwitch.setChecked(PersonalDataManager.isAutofillCreditCardEnabled());
         autofillSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 PersonalDataManager.setAutofillCreditCardEnabled((boolean) newValue);
                 return true;
+            }
+        });
+        autofillSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+            @Override
+            public boolean isPreferenceControlledByPolicy(Preference preference) {
+                return PersonalDataManager.isAutofillCreditCardManaged();
+            }
+
+            @Override
+            public boolean isPreferenceClickDisabledByPolicy(Preference preference) {
+                return PersonalDataManager.isAutofillCreditCardManaged()
+                        && !PersonalDataManager.isAutofillProfileEnabled();
             }
         });
         getPreferenceScreen().addPreference(autofillSwitch);
