@@ -97,7 +97,7 @@ set_aom_config_var(CONFIG_ACCOUNTING 0 NUMBER "Enables bit accounting.")
 set_aom_config_var(CONFIG_ANALYZER 0 NUMBER "Enables bit stream analyzer.")
 set_aom_config_var(CONFIG_COEFFICIENT_RANGE_CHECKING 0 NUMBER
                    "Coefficient range check.")
-set_aom_config_var(CONFIG_DENOISE 0 NUMBER
+set_aom_config_var(CONFIG_DENOISE 1 NUMBER
                    "Denoise/noise modeling support in encoder.")
 set_aom_config_var(CONFIG_FILEOPTIONS 1 NUMBER
                    "Enables encoder config file support.")
