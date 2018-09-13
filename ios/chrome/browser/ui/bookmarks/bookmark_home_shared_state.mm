@@ -35,6 +35,7 @@ const NSUInteger kMaxDownloadFaviconCount = 50;
 @synthesize addingNewFolder = _addingNewFolder;
 @synthesize bookmarkModel = _bookmarkModel;
 @synthesize currentlyInEditMode = _currentlyInEditMode;
+@synthesize currentlyShowingSearchResults = _currentlyShowingSearchResults;
 @synthesize editingFolderCell = _editingFolderCell;
 @synthesize editingFolderNode = _editingFolderNode;
 @synthesize faviconDownloadCount = _faviconDownloadCount;

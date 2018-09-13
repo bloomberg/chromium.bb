@@ -38,6 +38,10 @@ NSString* const kBookmarkHomeTrailingButtonIdentifier =
     @"kBookmarkHomeTrailingButtonIdentifier";
 NSString* const kBookmarkHomeUIToolbarIdentifier =
     @"kBookmarkHomeUIToolbarIdentifier";
+NSString* const kBookmarkHomeSearchBarIdentifier =
+    @"kBookmarkHomeSearchBarIdentifier";
+NSString* const kBookmarkHomeSearchScrimIdentifier =
+    @"kBookmarkHomeSearchScrimIdentifier";
 
 const CGFloat kBookmarkCellViewSpacing = 10.0f;
 const CGFloat kBookmarkCellVerticalInset = 11.0f;
