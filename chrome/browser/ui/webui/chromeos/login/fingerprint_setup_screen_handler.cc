@@ -111,7 +111,14 @@ void FingerprintSetupScreenHandler::Show() {
   ShowScreen(kScreenId);
 }
 
-void FingerprintSetupScreenHandler::Hide() {}
+void FingerprintSetupScreenHandler::Hide() {
+  // Clean up existing fingerprint enroll session.
+  if (enroll_session_started_) {
+    fp_service_->CancelCurrentEnrollSession(base::BindOnce(
+        &FingerprintSetupScreenHandler::OnCancelCurrentEnrollSession,
+        weak_ptr_factory_.GetWeakPtr()));
+  }
+}
 
 void FingerprintSetupScreenHandler::Initialize() {}
 
@@ -131,6 +138,8 @@ void FingerprintSetupScreenHandler::OnEnrollScanDone(
          enroll_session_complete, percent_complete);
 
   if (enroll_session_complete) {
+    enroll_session_started_ = false;
+
     ++enrolled_finger_count_;
     CallJS("enableAddAnotherFinger",
            enrolled_finger_count_ < kMaxAllowedFingerprints);
@@ -155,10 +164,16 @@ void FingerprintSetupScreenHandler::HandleStartEnroll(
     const base::ListValue* args) {
   DCHECK(enrolled_finger_count_ < kMaxAllowedFingerprints);
 
+  enroll_session_started_ = true;
   fp_service_->StartEnrollSession(
       ProfileHelper::Get()->GetUserIdHashFromProfile(
           ProfileManager::GetActiveUserProfile()),
       GetDefaultFingerprintName(enrolled_finger_count_));
+}
+
+void FingerprintSetupScreenHandler::OnCancelCurrentEnrollSession(bool success) {
+  if (!success)
+    LOG(ERROR) << "Failed to cancel current fingerprint enroll session.";
 }
 
 }  // namespace chromeos
