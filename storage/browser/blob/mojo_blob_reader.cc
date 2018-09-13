@@ -8,6 +8,7 @@
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace storage {
 
@@ -183,6 +184,8 @@ void MojoBlobReader::ReadMore() {
     NotifyCompletedAndDeleteIfNeeded(net::ERR_UNEXPECTED);
     return;
   }
+
+  num_bytes = std::min(num_bytes, blink::BlobUtils::GetDataPipeChunkSize());
 
   TRACE_EVENT_ASYNC_BEGIN0("Blob", "BlobReader::ReadMore", this);
   CHECK_GT(static_cast<uint32_t>(std::numeric_limits<int>::max()), num_bytes);

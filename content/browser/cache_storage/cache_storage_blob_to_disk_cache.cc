@@ -13,6 +13,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/common/storage_histograms.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace content {
 
@@ -38,13 +39,14 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
   DCHECK(!consumer_handle_.is_valid());
   DCHECK(!pending_read_);
 
-  mojo::ScopedDataPipeProducerHandle producer_handle;
-  MojoResult result =
-      CreateDataPipe(nullptr, &producer_handle, &consumer_handle_);
-  if (result != MOJO_RESULT_OK) {
+  mojo::DataPipe pipe(blink::BlobUtils::GetDataPipeCapacity());
+  if (!pipe.consumer_handle.is_valid()) {
     std::move(callback).Run(std::move(entry), false /* success */);
     return;
   }
+  DCHECK(pipe.producer_handle.is_valid());
+
+  consumer_handle_ = std::move(pipe.consumer_handle);
 
   disk_cache_body_index_ = disk_cache_body_index;
   entry_ = std::move(entry);
@@ -52,7 +54,7 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
 
   blink::mojom::BlobReaderClientPtr client;
   client_binding_.Bind(MakeRequest(&client));
-  blob->ReadAll(std::move(producer_handle), std::move(client));
+  blob->ReadAll(std::move(pipe.producer_handle), std::move(client));
 
   handle_watcher_.Watch(
       consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,

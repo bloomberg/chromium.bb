@@ -36,6 +36,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/system/wait.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
@@ -89,17 +90,16 @@ void FileReaderLoader::Start(scoped_refptr<BlobDataHandle> blob_data) {
   started_loading_ = true;
 #endif  // DCHECK_IS_ON()
 
-  mojo::ScopedDataPipeProducerHandle producer_handle;
-  MojoResult result =
-      CreateDataPipe(nullptr, &producer_handle, &consumer_handle_);
-  if (result != MOJO_RESULT_OK) {
+  mojo::DataPipe pipe(blink::BlobUtils::GetDataPipeCapacity());
+  if (!pipe.producer_handle.is_valid()) {
     Failed(FileError::kNotReadableErr, FailureType::kMojoPipeCreation);
     return;
   }
+  consumer_handle_ = std::move(pipe.consumer_handle);
 
   mojom::blink::BlobReaderClientPtr client_ptr;
   binding_.Bind(MakeRequest(&client_ptr));
-  blob_data->ReadAll(std::move(producer_handle), std::move(client_ptr));
+  blob_data->ReadAll(std::move(pipe.producer_handle), std::move(client_ptr));
 
   if (IsSyncLoad()) {
     // Wait for OnCalculatedSize, which will also synchronously drain the data

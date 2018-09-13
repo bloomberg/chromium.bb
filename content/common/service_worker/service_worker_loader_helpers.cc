@@ -18,6 +18,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -193,7 +194,7 @@ int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
     return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
   }
 
-  mojo::DataPipe data_pipe;
+  mojo::DataPipe data_pipe(blink::BlobUtils::GetDataPipeCapacity());
   blink::mojom::BlobReaderClientPtr blob_reader_client;
   mojo::MakeStrongBinding(
       std::make_unique<BlobCompleteCaller>(std::move(on_blob_read_complete)),
