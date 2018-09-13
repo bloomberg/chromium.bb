@@ -1071,6 +1071,8 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 
   // Notify subclasses that we initiated the paint operation.
   DidInitiatePaint();
+
+  Send(new ViewHostMsg_DidCommitAndDrawCompositorFrame(routing_id_));
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
