@@ -1565,6 +1565,8 @@ jumbo_component("base") {
         "allocator/partition_allocator/address_space_randomization.cc",
         "allocator/partition_allocator/address_space_randomization.h",
         "allocator/partition_allocator/oom.h",
+        "allocator/partition_allocator/oom_callback.cc",
+        "allocator/partition_allocator/oom_callback.h",
         "allocator/partition_allocator/page_allocator.cc",
         "allocator/partition_allocator/page_allocator.h",
         "allocator/partition_allocator/page_allocator_internal.h",
