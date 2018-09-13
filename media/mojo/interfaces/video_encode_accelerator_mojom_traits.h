@@ -76,6 +76,17 @@ class StructTraits<media::mojom::Vp8MetadataDataView, media::Vp8Metadata> {
 };
 
 template <>
+struct EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::ContentType,
+                  media::VideoEncodeAccelerator::Config::ContentType> {
+  static media::mojom::VideoEncodeAcceleratorConfig::ContentType ToMojom(
+      media::VideoEncodeAccelerator::Config::ContentType input);
+
+  static bool FromMojom(
+      media::mojom::VideoEncodeAcceleratorConfig::ContentType,
+      media::VideoEncodeAccelerator::Config::ContentType* output);
+};
+
+template <>
 struct StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
                     media::VideoEncodeAccelerator::Config> {
   static media::VideoPixelFormat input_format(
@@ -116,6 +127,11 @@ struct StructTraits<media::mojom::VideoEncodeAcceleratorConfigDataView,
   static bool has_h264_output_level(
       const media::VideoEncodeAccelerator::Config& input) {
     return input.h264_output_level.has_value();
+  }
+
+  static media::VideoEncodeAccelerator::Config::ContentType content_type(
+      const media::VideoEncodeAccelerator::Config& input) {
+    return input.content_type;
   }
 
   static bool Read(media::mojom::VideoEncodeAcceleratorConfigDataView input,

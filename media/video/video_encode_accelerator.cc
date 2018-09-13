@@ -27,7 +27,12 @@ BitstreamBufferMetadata::BitstreamBufferMetadata(size_t payload_size_bytes,
       timestamp(timestamp) {}
 BitstreamBufferMetadata::~BitstreamBufferMetadata() = default;
 
-VideoEncodeAccelerator::Config::Config() = default;
+VideoEncodeAccelerator::Config::Config()
+    : input_format(PIXEL_FORMAT_UNKNOWN),
+      output_profile(VIDEO_CODEC_PROFILE_UNKNOWN),
+      initial_bitrate(0),
+      content_type(ContentType::kCamera) {}
+
 VideoEncodeAccelerator::Config::Config(const Config& config) = default;
 
 VideoEncodeAccelerator::Config::Config(
@@ -36,13 +41,15 @@ VideoEncodeAccelerator::Config::Config(
     VideoCodecProfile output_profile,
     uint32_t initial_bitrate,
     base::Optional<uint32_t> initial_framerate,
-    base::Optional<uint8_t> h264_output_level)
+    base::Optional<uint8_t> h264_output_level,
+    ContentType content_type)
     : input_format(input_format),
       input_visible_size(input_visible_size),
       output_profile(output_profile),
       initial_bitrate(initial_bitrate),
       initial_framerate(initial_framerate),
-      h264_output_level(h264_output_level) {}
+      h264_output_level(h264_output_level),
+      content_type(content_type) {}
 
 VideoEncodeAccelerator::Config::~Config() = default;
 
