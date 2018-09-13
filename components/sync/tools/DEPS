@@ -8,5 +8,5 @@ include_rules = [
   "+google/cacheinvalidation",
   "+jingle/notifier/base",
   "+net",
-  "+services/network/test",
+  "+services/network",
 ]
