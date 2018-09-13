@@ -30,6 +30,7 @@ extern const base::Feature kOmniboxNewAnswerLayout;
 extern const base::Feature kOmniboxReverseAnswers;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestions;
+extern const base::Feature kExperimentalKeywordMode;
 extern const base::Feature kEnableClipboardProvider;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
 extern const base::Feature kZeroSuggestRedirectToChrome;
