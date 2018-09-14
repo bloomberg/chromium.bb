@@ -21,10 +21,10 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 
 /**
- * A {@link RecyclerView.ViewHolder} specifically meant to display an in-progress {@code
+ * A {@link RecyclerView.ViewHolder} specifically meant to display an in-progress video {@code
  * OfflineItem}.
  */
-public class InProgressViewHolder extends ListItemViewHolder {
+public class InProgressVideoViewHolder extends ListItemViewHolder {
     private final TextView mTitle;
     private final TextView mCaption;
     private final CircularProgressView mActionButton;
@@ -33,14 +33,14 @@ public class InProgressViewHolder extends ListItemViewHolder {
     /**
      * Creates a new {@link InProgressViewHolder} instance.
      */
-    public static InProgressViewHolder create(ViewGroup parent) {
+    public static InProgressVideoViewHolder create(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.download_manager_in_progress_item, null);
-        return new InProgressViewHolder(view);
+                            .inflate(R.layout.download_manager_in_progress_video_item, null);
+        return new InProgressVideoViewHolder(view);
     }
 
     /** Constructor. */
-    public InProgressViewHolder(View view) {
+    public InProgressVideoViewHolder(View view) {
         super(view);
 
         mTitle = view.findViewById(R.id.title);

@@ -49,6 +49,8 @@ public abstract class ListItemViewHolder extends ViewHolder {
                 return SeparatorViewHolder.create(parent, true);
             case ListUtils.ViewType.SEPARATOR_SECTION:
                 return SeparatorViewHolder.create(parent, false);
+            case ListUtils.ViewType.IN_PROGRESS_VIDEO:
+                return InProgressVideoViewHolder.create(parent);
         }
 
         assert false;

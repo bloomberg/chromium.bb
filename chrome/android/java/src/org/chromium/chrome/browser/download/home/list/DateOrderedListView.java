@@ -150,7 +150,8 @@ class DateOrderedListView {
                     outRect.top = mImagePaddingPx;
                     outRect.bottom = mImagePaddingPx;
                     break;
-                case ListUtils.ViewType.VIDEO:
+                case ListUtils.ViewType.VIDEO: // Intentional fallthrough.
+                case ListUtils.ViewType.IN_PROGRESS_VIDEO:
                     outRect.left = mPrefetchHorizontalPaddingPx;
                     outRect.right = mPrefetchHorizontalPaddingPx;
                     outRect.bottom = mPrefetchHorizontalPaddingPx;

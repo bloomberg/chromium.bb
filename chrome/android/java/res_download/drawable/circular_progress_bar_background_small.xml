@@ -4,10 +4,13 @@
      found in the LICENSE file. -->
 
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@android:id/background">
+    <item android:drawable="?attr/selectableItemBackground" />
+    <item>
         <shape
             android:shape="oval">
             <solid android:color="@color/modern_grey_300"  />
+            <size android:width="36dp"
+                android:height="36dp" />
         </shape>
     </item>
 </layer-list>

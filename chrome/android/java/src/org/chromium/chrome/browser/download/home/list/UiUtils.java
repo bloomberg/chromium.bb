@@ -13,9 +13,13 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.filter.Filters;
+import org.chromium.chrome.browser.download.home.list.view.CircularProgressView;
+import org.chromium.chrome.browser.download.home.list.view.CircularProgressView.UiState;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.util.Calendar;
@@ -125,5 +129,68 @@ public final class UiUtils {
     public static @DrawableRes int getIconForItem(OfflineItem item) {
         return DownloadUtils.getIconResId(Filters.offlineItemFilterToDownloadFilter(item.filter),
                 DownloadUtils.IconSize.DP_24);
+    }
+
+    /**
+     * Populates a {@link CircularProgressView} based on the contents of an {@link OfflineItem}.
+     * This is a helper glue method meant to consolidate the setting of {@link CircularProgressView}
+     * state.
+     * @param view The {@link CircularProgressView} to update.
+     * @param item The {@link OfflineItem} to use as the source of the update state.
+     */
+    public static void setProgressForOfflineItem(CircularProgressView view, OfflineItem item) {
+        Progress progress = item.progress;
+        final boolean indeterminate = progress != null && progress.isIndeterminate();
+        final int determinateProgress = progress != null ? progress.getPercentage() : 0;
+        final int activeProgress =
+                indeterminate ? CircularProgressView.INDETERMINATE : determinateProgress;
+        final int inactiveProgress = indeterminate ? 0 : determinateProgress;
+
+        @UiState
+        int shownState;
+        int shownProgress;
+
+        switch (item.state) {
+            case OfflineItemState.PENDING: // Intentional fallthrough.
+            case OfflineItemState.IN_PROGRESS:
+                shownState = CircularProgressView.UiState.RUNNING;
+                break;
+            case OfflineItemState.FAILED: // Intentional fallthrough.
+            case OfflineItemState.CANCELLED:
+                shownState = CircularProgressView.UiState.RETRY;
+                break;
+            case OfflineItemState.PAUSED:
+            case OfflineItemState.INTERRUPTED:
+                shownState = CircularProgressView.UiState.PAUSED;
+                break;
+            case OfflineItemState.COMPLETE: // Intentional fallthrough.
+            default:
+                assert false : "Unexpected state for progress bar.";
+                shownState = CircularProgressView.UiState.RETRY;
+                break;
+        }
+
+        switch (item.state) {
+            case OfflineItemState.INTERRUPTED: // Intentional fallthrough.
+            case OfflineItemState.PAUSED: // Intentional fallthrough.
+            case OfflineItemState.PENDING:
+                shownProgress = inactiveProgress;
+                break;
+            case OfflineItemState.IN_PROGRESS:
+                shownProgress = activeProgress;
+                break;
+            case OfflineItemState.FAILED: // Intentional fallthrough.
+            case OfflineItemState.CANCELLED: // Intentional fallthrough.
+                shownProgress = 0;
+                break;
+            case OfflineItemState.COMPLETE: // Intentional fallthrough.
+            default:
+                assert false : "Unexpected state for progress bar.";
+                shownProgress = 0;
+                break;
+        }
+
+        view.setState(shownState);
+        view.setProgress(shownProgress);
     }
 }
