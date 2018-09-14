@@ -695,6 +695,9 @@ GpuImageDecodeCache::GpuImageDecodeCache(
   }
   // Register this component with base::MemoryCoordinatorClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+  memory_pressure_listener_.reset(
+      new base::MemoryPressureListener(base::BindRepeating(
+          &GpuImageDecodeCache::OnMemoryPressure, base::Unretained(this))));
 }
 
 GpuImageDecodeCache::~GpuImageDecodeCache() {
@@ -710,10 +713,6 @@ GpuImageDecodeCache::~GpuImageDecodeCache() {
       this);
   // Unregister this component with memory_coordinator::ClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
-
-  memory_pressure_listener_.reset(
-      new base::MemoryPressureListener(base::BindRepeating(
-          &GpuImageDecodeCache::OnMemoryPressure, base::Unretained(this))));
 
   // TODO(vmpstr): If we don't have a client name, it may cause problems in
   // unittests, since most tests don't set the name but some do. The UMA system
