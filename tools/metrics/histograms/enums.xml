@@ -16696,6 +16696,8 @@ Called by update_net_error_codes.py.-->
   <int value="1273" label="AUTOTESTPRIVATE_SETCROSTINIENABLED"/>
   <int value="1274" label="AUTOTESTPRIVATE_GETHISTOGRAM"/>
   <int value="1275" label="TABCAPTURE_GETMEDIASTREAMID"/>
+  <int value="1276" label="WEBVIEWINTERNAL_SETSPATIALNAVIGATIONENABLED"/>
+  <int value="1277" label="WEBVIEWINTERNAL_ISSPATIALNAVIGATIONENABLED"/>
 </enum>
 
 <enum name="ExtensionIconState">

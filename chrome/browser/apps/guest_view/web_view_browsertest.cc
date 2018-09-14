@@ -1080,6 +1080,58 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoplayPolicy) {
       << message_;
 }
 
+// This test exercises the webview spatial navigation API
+IN_PROC_BROWSER_TEST_F(WebViewTest, SpatialNavigationJavascriptAPI) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableSpatialNavigation);
+
+  LoadAndLaunchPlatformApp("web_view/spatial_navigation_state_api",
+                           "WebViewTest.LAUNCHED");
+
+  ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED", false);
+  next_step_listener.set_failure_message("TEST_STEP_FAILED");
+
+  // Check that spatial navigation is initialized in the beginning
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+  next_step_listener.Reset();
+
+  content::WebContents* embedder = GetEmbedderWebContents();
+
+  // Spatial navigation enabled at this point, moves focus one element
+  content::SimulateKeyPress(embedder, ui::DomKey::ARROW_RIGHT,
+                            ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false,
+                            false, false, false);
+
+  // Check that focus has moved one element
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+  next_step_listener.Reset();
+
+  // Moves focus again
+  content::SimulateKeyPress(embedder, ui::DomKey::ARROW_RIGHT,
+                            ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false,
+                            false, false, false);
+
+  // Check that focus has moved one element
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+  next_step_listener.Reset();
+
+  // Check that spatial navigation was manually disabled
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+  next_step_listener.Reset();
+
+  // Spatial navigation disabled at this point, RIGHT key has no effect
+  content::SimulateKeyPress(embedder, ui::DomKey::ARROW_RIGHT,
+                            ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false,
+                            false, false, false);
+
+  // Move focus one element to the left via SHIFT+TAB
+  content::SimulateKeyPress(embedder, ui::DomKey::TAB, ui::DomCode::TAB,
+                            ui::VKEY_TAB, false, true, false, false);
+
+  // Check that focus has moved to the left
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+}
+
 // This test verifies that hiding the guest triggers WebContents::WasHidden().
 IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, GuestVisibilityChanged) {
   LoadAppWithGuest("web_view/visibility_changed");
