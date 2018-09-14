@@ -90,6 +90,11 @@
 -TabIndex/FilesAppBrowserTest.Test/tabindexSaveFileDialogDrive
 -TabIndex/FilesAppBrowserTest.Test/tabindexSaveFileDialogDrive_DriveFs
 
+# These tests are flaky on the Chromium OS MSAN bot.
+# See https://crbug.com/882606.
+-GalleryBrowserTest.*
+-GalleryBrowserTestInGuestMode.*
+
 # Passing tests
 #
 # For practical reasons, we don't run all browser_tests with the WebUIPolymer2
@@ -242,8 +247,6 @@ FileManagerJsTest.*
 FileManagerPathUtilConvertUrlTest.*
 FileManagerUITest.*
 FileTasksBrowserTest.*
-GalleryBrowserTest.*
-GalleryBrowserTestInGuestMode.*
 GalleryJsTest.*
 GPUSandboxStatusUITest.*
 ImageLoaderJsTest.*
