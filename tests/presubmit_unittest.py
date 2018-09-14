@@ -1777,7 +1777,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'GetCodereviewOwnerAndReviewers',
       'GetPythonUnitTests', 'GetPylint',
       'GetUnitTests', 'GetUnitTestsInDirectory', 'GetUnitTestsRecursively',
-      'CheckCIPDManifest', 'CheckCIPDPackages',
+      'CheckCIPDManifest', 'CheckCIPDPackages', 'CheckCIPDClientDigests',
       'CheckChangedLUCIConfigs',
     ]
     # If this test fails, you should add the relevant test.
@@ -2934,6 +2934,18 @@ class CannedChecksUnittest(PresubmitTestsBase):
         'stdout': subprocess.PIPE,
         'stderr': subprocess.STDOUT,
     })
+
+  def testCheckCIPDClientDigests(self):
+    input_api = self.MockInputApi(None, False)
+    input_api.verbose = True
+    self.mox.ReplayAll()
+
+    command = presubmit_canned_checks.CheckCIPDClientDigests(
+        input_api, presubmit.OutputApi, client_version_file='ver')
+    self.assertEquals(command.cmd, [
+      'cipd', 'selfupdate-roll', '-check', '-version-file', 'ver',
+      '-log-level', 'debug',
+    ])
 
   def testCannedCheckVPythonSpec(self):
     change = presubmit.Change('a', 'b', self.fake_root_dir, None, 0, 0, None)

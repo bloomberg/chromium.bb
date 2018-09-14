@@ -18,7 +18,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # This version is from Aug 2018. Digests were generated using:
 #   cipd selfupdate-roll -version-file tmp \
 #        -version git_revision:ea6c07cfcb596be6b63a1e6deb95bba79524b0c8
-#   cat tmp.cat
+#   cat tmp.digests
 OLD_VERSION = 'git_revision:ea6c07cfcb596be6b63a1e6deb95bba79524b0c8'
 OLD_DIGESTS = """
 linux-386       sha256  ee90bd655b90baf7586ab80c289c00233b96bfac3fa70e64cc5c48feb1998971

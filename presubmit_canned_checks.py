@@ -1181,6 +1181,29 @@ def CheckCIPDPackages(input_api, output_api, platforms, packages):
   return CheckCIPDManifest(input_api, output_api, content='\n'.join(manifest))
 
 
+def CheckCIPDClientDigests(input_api, output_api, client_version_file):
+  """Verifies that *.digests file was correctly regenerated.
+
+  <client_version_file>.digests file contains pinned hashes of the CIPD client.
+  It is consulted during CIPD client bootstrap and self-update. It should be
+  regenerated each time CIPD client version file changes.
+
+  Args:
+    client_version_file (str): Path to a text file with CIPD client version.
+  """
+  cmd = [
+    'cipd' if not input_api.is_windows else 'cipd.bat',
+    'selfupdate-roll', '-check', '-version-file', client_version_file,
+  ]
+  if input_api.verbose:
+    cmd += ['-log-level', 'debug']
+  return input_api.Command(
+      'Check CIPD client_version_file.digests file',
+      cmd,
+      {'shell': True} if input_api.is_windows else {},  # to resolve cipd.bat
+      output_api.PresubmitError)
+
+
 def CheckVPythonSpec(input_api, output_api, file_filter=None):
   """Validates any changed .vpython files with vpython verification tool.
 
