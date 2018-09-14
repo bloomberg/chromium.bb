@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/gpu/v4l2/v4l2_device.h"
+
 #include <libdrm/drm_fourcc.h>
 #include <linux/videodev2.h>
 #include <string.h>
 #include <sstream>
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "media/base/video_types.h"
@@ -410,6 +413,90 @@ std::string V4L2Device::V4L2FormatToString(const struct v4l2_format& format) {
     s << " unsupported yet.";
   }
   return s.str();
+}
+
+// static
+VideoFrameLayout V4L2Device::V4L2FormatToVideoFrameLayout(
+    const struct v4l2_format& format) {
+  if (!V4L2_TYPE_IS_MULTIPLANAR(format.type)) {
+    VLOGF(1) << "v4l2_buf_type is not multiplanar: " << std::hex << "0x"
+             << format.type;
+    return VideoFrameLayout();
+  }
+  const v4l2_pix_format_mplane& pix_mp = format.fmt.pix_mp;
+  const uint32_t& pix_fmt = pix_mp.pixelformat;
+  const VideoPixelFormat video_format =
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(pix_fmt);
+  if (video_format == PIXEL_FORMAT_UNKNOWN) {
+    VLOGF(1) << "Failed to convert pixel format to VideoPixelFormat: "
+             << FourccToString(pix_fmt);
+    return VideoFrameLayout();
+  }
+  const size_t num_buffers = pix_mp.num_planes;
+  const size_t num_color_planes = VideoFrame::NumPlanes(video_format);
+  if (num_color_planes == 0) {
+    VLOGF(1) << "Unsupported video format for NumPlanes(): "
+             << VideoPixelFormatToString(video_format);
+    return VideoFrameLayout();
+  }
+  if (num_buffers > num_color_planes) {
+    VLOG(1) << "pix_mp.num_planes: " << num_buffers << " should not be larger "
+            << "than NumPlanes(" << VideoPixelFormatToString(video_format)
+            << "): " << num_color_planes;
+    return VideoFrameLayout();
+  }
+  // Reserve capacity in advance to prevent unnecessary vector reallocation.
+  std::vector<VideoFrameLayout::Plane> planes;
+  std::vector<size_t> buffer_sizes;
+  planes.reserve(num_color_planes);
+  buffer_sizes.reserve(num_buffers);
+  for (size_t i = 0; i < num_buffers; ++i) {
+    const v4l2_plane_pix_format& plane_format = pix_mp.plane_fmt[i];
+    planes.emplace_back(static_cast<int32_t>(plane_format.bytesperline), 0u);
+    buffer_sizes.push_back(plane_format.sizeimage);
+  }
+  // For the case that #color planes > #buffers, it fills stride of color
+  // plane which does not map to buffer.
+  // Right now only some pixel formats are supported: NV12, YUV420, YVU420.
+  if (num_color_planes > num_buffers) {
+    const int32_t y_stride = planes[0].stride;
+    // Note that y_stride is from v4l2 bytesperline and its type is uint32_t.
+    // It is safe to cast to size_t.
+    const size_t y_stride_abs = static_cast<size_t>(y_stride);
+    switch (pix_fmt) {
+      case V4L2_PIX_FMT_NV12:
+        // The stride of UV is the same as Y in NV12.
+        planes.emplace_back(y_stride, y_stride_abs * pix_mp.height);
+        DCHECK_EQ(1u, buffer_sizes.size());
+        DCHECK_EQ(2u, planes.size());
+        break;
+      case V4L2_PIX_FMT_YUV420:
+      case V4L2_PIX_FMT_YVU420: {
+        // The spec claims that two Cx rows (including padding) is exactly as
+        // long as one Y row (including padding). So stride of Y must be even
+        // number.
+        if (y_stride % 2 != 0 || pix_mp.height % 2 != 0) {
+          VLOGF(1) << "Plane-Y stride and height should be even; stride: "
+                   << y_stride << ", height: " << pix_mp.height;
+          return VideoFrameLayout();
+        }
+        const int32_t half_stride = y_stride / 2;
+        const size_t plane_0_area = y_stride_abs * pix_mp.height;
+        const size_t plane_1_area = plane_0_area / 4;
+        planes.emplace_back(half_stride, plane_0_area);
+        planes.emplace_back(half_stride, plane_0_area + plane_1_area);
+        DCHECK_EQ(1u, buffer_sizes.size());
+        DCHECK_EQ(3u, planes.size());
+        break;
+      }
+      default:
+        VLOGF(1) << "Cannot derive stride for each plane for pixel format "
+                 << FourccToString(pix_fmt);
+        return VideoFrameLayout();
+    }
+  }
+  return VideoFrameLayout(video_format, gfx::Size(pix_mp.width, pix_mp.height),
+                          std::move(planes), std::move(buffer_sizes));
 }
 
 void V4L2Device::GetSupportedResolution(uint32_t pixelformat,
