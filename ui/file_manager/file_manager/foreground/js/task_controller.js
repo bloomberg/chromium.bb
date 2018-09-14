@@ -269,7 +269,11 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
 TaskController.prototype.executeDefaultTask = function() {
   this.getFileTasks()
       .then(function(tasks) {
-        tasks.execute(this.ui_.fileContextMenu.defaultTaskMenuItem);
+        var task = {
+          taskId: this.ui_.fileContextMenu.defaultTaskMenuItem.taskId,
+          title: this.ui_.fileContextMenu.defaultTaskMenuItem.label,
+        };
+        tasks.execute(task);
       }.bind(this))
       .catch(function(error) {
         if (error)

@@ -195,6 +195,57 @@ crostini.testErrorOpeningDownloadsWithCrostiniApp = (done) => {
       });
 };
 
+crostini.testErrorOpeningDownloadsWithDefaultCrostiniApp = (done) => {
+  // Save old fmp.getFileTasks and replace with version that returns
+  // crostini app and chrome Text app.
+  let oldGetFileTasks = chrome.fileManagerPrivate.getFileTasks;
+  chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
+    setTimeout(callback, 0, [{
+                 taskId: 'crostini-app-id|crostini|open-with',
+                 title: 'Crostini App',
+                 verb: 'open_with',
+                 isDefault: true,
+               }]);
+  };
+
+  test.setupAndWaitUntilReady()
+      .then(() => {
+        // Right click on 'world.ogv' file, wait for dialog with the default
+        // task action.
+        assertTrue(test.fakeMouseRightClick('[file-name="world.ogv"]'));
+        return test.repeatUntil(() => {
+          return document
+                     .querySelector(
+                         'cr-menu-item[command="#default-task"]:not([hidden])')
+                     .label === 'Crostini App' ||
+              test.pending('Waiting for default task menu item');
+        });
+      })
+      .then(() => {
+        // Click 'Open with', wait for picker.
+        assertTrue(
+            test.fakeMouseClick('cr-menu-item[command="#default-task"]'));
+        return test.waitForElement('.cr-dialog-container');
+      })
+      .then(() => {
+        // Validate error messages, click 'OK' to close.  Ensure dialog closes.
+        assertEquals(
+            'Unable to open with Crostini App',
+            document.querySelector('.cr-dialog-title').innerText);
+        assertEquals(
+            'To open files with Crostini App, ' +
+                'first copy to Linux files folder.',
+            document.querySelector('.cr-dialog-text').innerText);
+        assertTrue(test.fakeMouseClick('button.cr-dialog-ok'));
+        return test.waitForElementLost('.cr-dialog-container.shown');
+      })
+      .then(() => {
+        // Restore fmp.getFileTasks.
+        chrome.fileManagerPrivate.getFileTasks = oldGetFileTasks;
+        done();
+      });
+};
+
 crostini.testSharePathCrostiniSuccess = (done) => {
   let sharePathCalled = false;
   chrome.fileManagerPrivate.sharePathWithCrostini = (callback) => {
