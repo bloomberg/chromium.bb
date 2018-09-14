@@ -100,12 +100,28 @@ void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
   if (ui_mode == AssistantUiMode::kMiniUi)
     return;
 
-  // When the Assistant is not in mini state there should not be an active
-  // metalayer session. If we were in mini state when the UI mode was changed,
-  // we need to clean up the metalayer session and reset default input modality.
-  if (assistant_interaction_model_.input_modality() == InputModality::kStylus) {
-    Shell::Get()->highlighter_controller()->AbortSession();
-    assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+  switch (assistant_interaction_model_.input_modality()) {
+    case InputModality::kStylus:
+      // When the Assistant is not in mini state there should not be an active
+      // metalayer session. If we were in mini state when the UI mode was
+      // changed, we need to clean up the metalayer session and reset default
+      // input modality.
+      Shell::Get()->highlighter_controller()->AbortSession();
+      assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+      break;
+    case InputModality::kVoice:
+      // When transitioning to web UI we abort any in progress voice query. We
+      // do this to prevent Assistant from listening to the user while we
+      // navigate away from the main stage.
+      if (ui_mode == AssistantUiMode::kWebUi &&
+          assistant_interaction_model_.pending_query().type() ==
+              AssistantQueryType::kVoice) {
+        StopActiveInteraction();
+      }
+      break;
+    case InputModality::kKeyboard:
+      // No action necessary.
+      break;
   }
 }
 
