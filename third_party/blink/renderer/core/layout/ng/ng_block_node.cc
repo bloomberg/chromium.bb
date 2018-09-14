@@ -139,6 +139,32 @@ NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
       .SetFloatsBfcBlockOffset(LayoutUnit());
 }
 
+LayoutUnit CalculateAvailableInlineSizeForLegacy(
+    const LayoutBox& box,
+    const NGConstraintSpace& space) {
+  if (box.StyleRef().LogicalWidth().IsPercent()) {
+    if (box.ShouldComputeSizeAsReplaced())
+      return space.ReplacedPercentageResolutionSize().inline_size;
+
+    return space.PercentageResolutionSize().inline_size;
+  }
+
+  return space.AvailableSize().inline_size;
+}
+
+LayoutUnit CalculateAvailableBlockSizeForLegacy(
+    const LayoutBox& box,
+    const NGConstraintSpace& space) {
+  if (box.StyleRef().LogicalHeight().IsPercent()) {
+    if (box.ShouldComputeSizeAsReplaced())
+      return space.ReplacedPercentageResolutionSize().block_size;
+
+    return space.PercentageResolutionSize().block_size;
+  }
+
+  return space.AvailableSize().block_size;
+}
+
 }  // namespace
 
 scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
@@ -718,6 +744,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
           .SetAvailableSize(parent_constraint_space.AvailableSize())
           .SetPercentageResolutionSize(
               parent_constraint_space.PercentageResolutionSize())
+          .SetReplacedPercentageResolutionSize(
+              parent_constraint_space.ReplacedPercentageResolutionSize())
           .SetTextDirection(style.Direction())
           .ToConstraintSpace(style.GetWritingMode());
   return Layout(*constraint_space);
@@ -737,13 +765,10 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
                             : nullptr;
   if (!old_space || box_->NeedsLayout() || *old_space != constraint_space) {
     LayoutUnit inline_size =
-        Style().LogicalWidth().IsPercent()
-            ? constraint_space.PercentageResolutionSize().inline_size
-            : constraint_space.AvailableSize().inline_size;
+        CalculateAvailableInlineSizeForLegacy(*box_, constraint_space);
     LayoutUnit block_size =
-        Style().LogicalHeight().IsPercent()
-            ? constraint_space.PercentageResolutionSize().block_size
-            : constraint_space.AvailableSize().block_size;
+        CalculateAvailableBlockSizeForLegacy(*box_, constraint_space);
+
     LayoutObject* containing_block = box_->ContainingBlock();
     bool parallel_writing_mode;
     if (!containing_block) {

@@ -880,6 +880,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
     NGPositionedFloat positioned_float = PositionFloat(
         constraint_space_.AvailableSize(),
         constraint_space_.PercentageResolutionSize(),
+        constraint_space_.ReplacedPercentageResolutionSize(),
         {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
         constraint_space_.BfcOffset().block_offset, &unpositioned_float,
         constraint_space_, exclusion_space_);

@@ -30,6 +30,18 @@ enum NGFragmentationType {
   kFragmentRegion
 };
 
+// Tables have two passes, a "measure" phase (for determining the table row
+// height), and a "layout" phase.
+// See: https://drafts.csswg.org/css-tables-3/#row-layout
+//
+// This enum is used for communicating to *direct* children of table cells,
+// which layout phase the table cell is in.
+enum NGTableCellChildLayoutPhase {
+  kNone,     // The node isn't a table cell child.
+  kMeasure,  // The node is a table cell child, in the "measure" phase.
+  kLayout    // The node is a table cell child, in the "layout" phase.
+};
+
 // The NGConstraintSpace represents a set of constraints and available space
 // which a layout algorithm may produce a NGFragment within.
 class CORE_EXPORT NGConstraintSpace final
@@ -76,6 +88,11 @@ class CORE_EXPORT NGConstraintSpace final
   // See: https://drafts.csswg.org/css-sizing/#percentage-sizing
   NGLogicalSize PercentageResolutionSize() const {
     return percentage_resolution_size_;
+  }
+
+  // The size to use for percentage resolution of replaced elements.
+  NGLogicalSize ReplacedPercentageResolutionSize() const {
+    return replaced_percentage_resolution_size_;
   }
 
   // The size to use for percentage resolution for margin/border/padding.
@@ -162,10 +179,17 @@ class CORE_EXPORT NGConstraintSpace final
   // blockSize if possible.
   NGFragmentationType BlockFragmentationType() const;
 
-  // Return true if this contraint space participates in a fragmentation
+  // Return true if this constraint space participates in a fragmentation
   // context.
   bool HasBlockFragmentation() const {
     return BlockFragmentationType() != kFragmentNone;
+  }
+
+  // Returns if this node is a table cell child, and which table layout phase
+  // is occurring.
+  NGTableCellChildLayoutPhase TableCellChildLayoutPhase() const {
+    return static_cast<NGTableCellChildLayoutPhase>(
+        table_cell_child_layout_phase_);
   }
 
   NGMarginStrut MarginStrut() const { return margin_strut_; }
@@ -258,11 +282,13 @@ class CORE_EXPORT NGConstraintSpace final
                     TextDirection,
                     NGLogicalSize available_size,
                     NGLogicalSize percentage_resolution_size,
+                    NGLogicalSize replace_percentage_resolution_size,
                     LayoutUnit parent_percentage_resolution_inline_size,
                     NGPhysicalSize initial_containing_block_size,
                     LayoutUnit fragmentainer_block_size,
                     LayoutUnit fragmentainer_space_at_bfc_start,
                     NGFragmentationType block_direction_fragmentation_type,
+                    NGTableCellChildLayoutPhase,
                     NGFloatTypes adjoining_floats,
                     const NGMarginStrut& margin_strut,
                     const NGBfcOffset& bfc_offset,
@@ -278,6 +304,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGLogicalSize available_size_;
   NGLogicalSize percentage_resolution_size_;
+  NGLogicalSize replaced_percentage_resolution_size_;
   LayoutUnit parent_percentage_resolution_inline_size_;
   NGPhysicalSize initial_containing_block_size_;
 
@@ -285,7 +312,8 @@ class CORE_EXPORT NGConstraintSpace final
   LayoutUnit fragmentainer_space_at_bfc_start_;
 
   unsigned block_direction_fragmentation_type_ : 2;
-  unsigned adjoining_floats_ : 2;  //  NGFloatTypes
+  unsigned table_cell_child_layout_phase_ : 2;  // NGTableCellChildLayoutPhase
+  unsigned adjoining_floats_ : 2;               // NGFloatTypes
   unsigned writing_mode_ : 3;
   unsigned direction_ : 1;
   unsigned flags_ : kNumberOfConstraintSpaceFlags;  // ConstraintSpaceFlags

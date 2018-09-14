@@ -353,8 +353,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 
 scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
-  NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style()) +
-                       ComputeIntrinsicPadding(ConstraintSpace(), Node());
+  NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
+
   border_padding_ = borders + padding;
   NGLogicalSize border_box_size = CalculateBorderBoxSize(
       ConstraintSpace(), Node(), CalculateDefaultBlockSize(), border_padding_);
@@ -380,6 +380,15 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
   child_percentage_size_ = CalculateChildPercentageSize(
       ConstraintSpace(), Node(), child_available_size_);
+  replaced_child_percentage_size_ = CalculateReplacedChildPercentageSize(
+      ConstraintSpace(), Node(), border_box_size, border_scrollbar_padding_,
+      border_padding_);
+
+  // All of the above calculations with border_scrollbar_padding_ shouldn't
+  // include the table cell's intrinsic padding. We can now add this.
+  NGBoxStrut intrinsic_padding =
+      ComputeIntrinsicPadding(ConstraintSpace(), Node());
+  border_scrollbar_padding_ += intrinsic_padding;
 
   container_builder_.SetInlineSize(border_box_size.inline_size);
   container_builder_.SetBfcLineOffset(
@@ -605,8 +614,12 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     intrinsic_block_size_ = border_scrollbar_padding_.BlockSum();
 
   // Recompute the block-axis size now that we know our content size.
-  border_box_size.block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), intrinsic_block_size_, border_padding_);
+  // NOTE: For table cells, the block-size is just the intrinsic block-size.
+  border_box_size.block_size =
+      Node().IsTableCell()
+          ? intrinsic_block_size_
+          : ComputeBlockSizeForFragment(ConstraintSpace(), Style(),
+                                        intrinsic_block_size_, border_padding_);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
   // If our BFC block offset is still unknown, there's one last thing to take
@@ -1811,7 +1824,16 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   NGConstraintSpaceBuilder space_builder(ConstraintSpace());
 
   space_builder.SetAvailableSize(child_available_size)
-      .SetPercentageResolutionSize(child_percentage_size_);
+      .SetPercentageResolutionSize(child_percentage_size_)
+      .SetReplacedPercentageResolutionSize(replaced_child_percentage_size_);
+
+  if (Node().IsTableCell()) {
+    // If we have a fixed block-size we are in the "layout" phase.
+    space_builder.SetTableCellChildLayoutPhase(
+        ConstraintSpace().IsFixedSizeBlock()
+            ? NGTableCellChildLayoutPhase::kLayout
+            : NGTableCellChildLayoutPhase::kMeasure);
+  }
 
   if (NGBaseline::ShouldPropagateBaselines(child))
     space_builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
@@ -2045,10 +2067,10 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
           ? container_builder_.BfcBlockOffset().value()
           : ConstraintSpace().FloatsBfcBlockOffset().value();
 
-  const auto positioned_floats =
-      PositionFloats(child_available_size_, child_percentage_size_,
-                     origin_bfc_offset, bfc_block_offset, unpositioned_floats_,
-                     ConstraintSpace(), &exclusion_space_);
+  const auto positioned_floats = PositionFloats(
+      child_available_size_, child_percentage_size_,
+      replaced_child_percentage_size_, origin_bfc_offset, bfc_block_offset,
+      unpositioned_floats_, ConstraintSpace(), &exclusion_space_);
 
   AddPositionedFloats(positioned_floats);
 
