@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/common/content_security_policy/csp_context.h"
+#include "content/public/common/origin_util.h"
 
 namespace content {
 
@@ -65,7 +66,7 @@ bool CSPContext::ShouldModifyRequestUrlForCsp(
 }
 
 void CSPContext::ModifyRequestUrlForCsp(GURL* url) {
-  if (url->SchemeIs(url::kHttpScheme)) {
+  if (url->SchemeIs(url::kHttpScheme) && !IsOriginSecure(*url)) {
     // Updating the URL's scheme also implicitly updates the URL's port from 80
     // to 443 if needed.
     GURL::Replacements replacements;
