@@ -984,8 +984,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // Works for both mash and non-mash. https://crbug.com/839521
   window->SetEventTargetingPolicy(
       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
-  window->SetEventTargeter(std::make_unique<CustomWindowTargeter>(
-      widget_, client_controlled_move_resize_));
+  InstallCustomWindowTargeter();
   SetApplicationId(window, application_id_);
   SetStartupId(window, startup_id_);
   SetMainSurface(window, root_surface());
@@ -1126,6 +1125,12 @@ gfx::Rect ShellSurfaceBase::GetShadowBounds() const {
   return shadow_bounds_->IsEmpty()
              ? gfx::Rect(widget_->GetNativeWindow()->bounds().size())
              : gfx::ScaleToEnclosedRect(*shadow_bounds_, 1.f / GetScale());
+}
+
+void ShellSurfaceBase::InstallCustomWindowTargeter() {
+  aura::Window* window = widget_->GetNativeWindow();
+  window->SetEventTargeter(std::make_unique<CustomWindowTargeter>(
+      widget_, client_controlled_move_resize_));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

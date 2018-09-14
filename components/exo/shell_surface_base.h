@@ -250,6 +250,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   const gfx::Rect& geometry() const { return geometry_; }
 
+  // Install custom window targeter. Used to restore window targeter.
+  void InstallCustomWindowTargeter();
+
   views::Widget* widget_ = nullptr;
   aura::Window* parent_ = nullptr;
   bool movement_disabled_ = false;
