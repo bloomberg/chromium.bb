@@ -1120,6 +1120,35 @@
         ]
       },
       {
+        "name": "setSpatialNavigationEnabled",
+        "type": "function",
+        "description": "Sets spatial navigation state of the webview.",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "enabled",
+            "description": "Spatial navigation state value."
+          }
+        ]
+      },
+      {
+        "name": "isSpatialNavigationEnabled",
+        "type": "function",
+        "description": "Queries whether spatial navigation is enabled for the webview.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "enabled",
+                "type": "boolean"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "terminate",
         "type": "function",
         "description": "Forcibly kills the guest web page's renderer process. This may affect multiple <code>webview</code> tags in the current app if they share the same process, but it will not affect <code>webview</code> tags in other apps.",

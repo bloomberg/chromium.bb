@@ -522,6 +522,40 @@ class WebViewInternalClearDataFunction
   DISALLOW_COPY_AND_ASSIGN(WebViewInternalClearDataFunction);
 };
 
+class WebViewInternalSetSpatialNavigationEnabledFunction
+    : public WebViewInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.setSpatialNavigationEnabled",
+                             WEBVIEWINTERNAL_SETSPATIALNAVIGATIONENABLED);
+
+  WebViewInternalSetSpatialNavigationEnabledFunction();
+
+ protected:
+  ~WebViewInternalSetSpatialNavigationEnabledFunction() override;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewInternalSetSpatialNavigationEnabledFunction);
+};
+
+class WebViewInternalIsSpatialNavigationEnabledFunction
+    : public WebViewInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.isSpatialNavigationEnabled",
+                             WEBVIEWINTERNAL_ISSPATIALNAVIGATIONENABLED);
+
+  WebViewInternalIsSpatialNavigationEnabledFunction();
+
+ protected:
+  ~WebViewInternalIsSpatialNavigationEnabledFunction() override;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewInternalIsSpatialNavigationEnabledFunction);
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_GUEST_VIEW_WEB_VIEW_WEB_VIEW_INTERNAL_API_H_

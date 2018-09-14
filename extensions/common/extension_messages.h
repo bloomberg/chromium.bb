@@ -692,6 +692,10 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_TransferBlobs,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetWebViewPartitionID,
                      std::string /* webview_partition_id */)
 
+// Enable or disable spatial navigation.
+IPC_MESSAGE_ROUTED1(ExtensionMsg_SetSpatialNavigationEnabled,
+                    bool /* spatial_nav_enabled */)
+
 // Messages sent from the renderer to the browser:
 
 // A renderer sends this message when an extension process starts an API

@@ -28,6 +28,8 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/public/web/web_view.h"
 
 namespace extensions {
 
@@ -385,6 +387,8 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFrameName, OnSetFrameName)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AppWindowClosed, OnAppWindowClosed)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetSpatialNavigationEnabled,
+                        OnSetSpatialNavigationEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -481,6 +485,14 @@ void ExtensionFrameHelper::OnAppWindowClosed(bool send_onclosed) {
     return;
   script_context->module_system()->CallModuleMethodSafe("app.window",
                                                         "onAppWindowClosed");
+}
+
+void ExtensionFrameHelper::OnSetSpatialNavigationEnabled(bool enabled) {
+  render_frame()
+      ->GetRenderView()
+      ->GetWebView()
+      ->GetSettings()
+      ->SetSpatialNavigationEnabled(enabled);
 }
 
 void ExtensionFrameHelper::OnDestruct() {

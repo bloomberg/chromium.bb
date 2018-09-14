@@ -955,6 +955,39 @@ WebViewInternalClearDataFunction::WebViewInternalClearDataFunction()
 WebViewInternalClearDataFunction::~WebViewInternalClearDataFunction() {
 }
 
+WebViewInternalSetSpatialNavigationEnabledFunction::
+    WebViewInternalSetSpatialNavigationEnabledFunction() {}
+
+WebViewInternalSetSpatialNavigationEnabledFunction::
+    ~WebViewInternalSetSpatialNavigationEnabledFunction() {}
+
+ExtensionFunction::ResponseAction
+WebViewInternalSetSpatialNavigationEnabledFunction::Run() {
+  std::unique_ptr<web_view_internal::SetSpatialNavigationEnabled::Params>
+      params(web_view_internal::SetSpatialNavigationEnabled::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  guest_->SetSpatialNavigationEnabled(params->spatial_nav_enabled);
+  return RespondNow(NoArguments());
+}
+
+WebViewInternalIsSpatialNavigationEnabledFunction::
+    WebViewInternalIsSpatialNavigationEnabledFunction() {}
+
+WebViewInternalIsSpatialNavigationEnabledFunction::
+    ~WebViewInternalIsSpatialNavigationEnabledFunction() {}
+
+ExtensionFunction::ResponseAction
+WebViewInternalIsSpatialNavigationEnabledFunction::Run() {
+  std::unique_ptr<web_view_internal::IsSpatialNavigationEnabled::Params> params(
+      web_view_internal::IsSpatialNavigationEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  return RespondNow(OneArgument(
+      std::make_unique<base::Value>(guest_->IsSpatialNavigationEnabled())));
+}
+
 // Parses the |dataToRemove| argument to generate the remove mask. Sets
 // |bad_message_| (like EXTENSION_FUNCTION_VALIDATE would if this were a bool
 // method) if 'dataToRemove' is not present.

@@ -150,6 +150,12 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   ScriptExecutor* script_executor() { return script_executor_.get(); }
 
+  // Enables or disables spatial navigation.
+  void SetSpatialNavigationEnabled(bool enabled);
+
+  // Returns spatial navigation status.
+  bool IsSpatialNavigationEnabled() const;
+
  private:
   friend class WebViewPermissionHelper;
 
@@ -366,6 +372,9 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   // Whether the GuestView set an explicit zoom level.
   bool did_set_explicit_zoom_;
+
+  // Store spatial navigation status.
+  bool is_spatial_navigation_enabled_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

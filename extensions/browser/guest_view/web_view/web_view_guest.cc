@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
@@ -795,6 +797,9 @@ WebViewGuest::WebViewGuest(WebContents* owner_web_contents)
       last_fullscreen_permission_was_allowed_by_embedder_(false),
       pending_zoom_factor_(0.0),
       did_set_explicit_zoom_(false),
+      is_spatial_navigation_enabled_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableSpatialNavigation)),
       weak_ptr_factory_(this) {
   web_view_guest_delegate_.reset(
       ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
@@ -1177,6 +1182,20 @@ void WebViewGuest::SetName(const std::string& name) {
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
   main_frame->Send(
       new ExtensionMsg_SetFrameName(main_frame->GetRoutingID(), name_));
+}
+
+void WebViewGuest::SetSpatialNavigationEnabled(bool enabled) {
+  if (is_spatial_navigation_enabled_ == enabled)
+    return;
+  is_spatial_navigation_enabled_ = enabled;
+
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  main_frame->Send(new ExtensionMsg_SetSpatialNavigationEnabled(
+      main_frame->GetRoutingID(), enabled));
+}
+
+bool WebViewGuest::IsSpatialNavigationEnabled() const {
+  return is_spatial_navigation_enabled_;
 }
 
 void WebViewGuest::SetZoom(double zoom_factor) {
