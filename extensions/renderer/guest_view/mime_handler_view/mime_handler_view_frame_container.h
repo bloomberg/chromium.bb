@@ -16,7 +16,6 @@ class WebFrame;
 }  // namespace blink
 
 namespace content {
-class RenderFrame;
 struct WebPluginInfo;
 }  // namespace content
 
@@ -42,7 +41,6 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
   ~MimeHandlerViewFrameContainer() override;
 
   // MimeHandlerViewContainerBase overrides.
-  content::RenderFrame* GetEmbedderRenderFrame() const final;
   void CreateMimeHandlerViewGuestIfNecessary() final;
   blink::WebRemoteFrame* GetGuestProxyFrame() const final;
   int32_t GetInstanceId() const final;
@@ -64,7 +62,6 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
 
   void OnMessageReceived(const IPC::Message& message);
 
-  content::RenderFrame* const embedder_frame_;
   blink::WebElement plugin_element_;
   const int32_t element_instance_id_;
 
