@@ -17,7 +17,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
-    'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh'
+    'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2572
     'ChromeOptionsFunctionalTest.canAddExtensionFromFile',
