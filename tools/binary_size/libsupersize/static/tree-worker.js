@@ -506,7 +506,10 @@ class DataFetcher {
   async fetch(url) {
     if (this._controller) this._controller.abort();
     this._controller = new AbortController();
+    const headers = new Headers();
+    headers.append('cache-control', 'no-cache');
     return fetch(url, {
+      headers,
       credentials: 'same-origin',
       signal: this._controller.signal,
     });
