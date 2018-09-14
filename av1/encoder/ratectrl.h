@@ -29,6 +29,14 @@ extern "C" {
 #if CONFIG_FIX_GF_LENGTH
 #define FIXED_GF_LENGTH 16
 #define MAX_PYRAMID_LVL 4
+// We allow a frame to have at most two left/right descendants before changing
+// them into to a subtree, i.e., we allow the following structure:
+/*                    OUT_OF_ORDER_FRAME
+                     / /              \ \
+(two left children) F F                F F (two right children) */
+// Therefore the max gf size supported by 4 layer structure is
+// 1 (KEY/OVERLAY) + 1 + 2 + 4 + 16 (two children on both side of their parent)
+#define MAX_PYRAMID_SIZE 24
 #define USE_SYMM_MULTI_LAYER 1
 #define REDUCE_LAST_ALT_BOOST 1
 #define REDUCE_LAST_GF_LENGTH 1

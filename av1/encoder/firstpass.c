@@ -1695,7 +1695,8 @@ void define_customized_gf_group_structure(AV1_COMP *cpi) {
   GF_GROUP *const gf_group = &twopass->gf_group;
   const int key_frame = cpi->common.frame_type == KEY_FRAME;
 
-  assert(rc->baseline_gf_interval >= 4 && rc->baseline_gf_interval <= 16);
+  assert(rc->baseline_gf_interval >= 4 &&
+         rc->baseline_gf_interval <= MAX_PYRAMID_SIZE);
 
   const int gf_update_frames =
       construct_multi_layer_gf_structure(gf_group, rc->baseline_gf_interval);
@@ -1896,7 +1897,8 @@ static void define_gf_group_structure(AV1_COMP *cpi) {
 
 #if USE_SYMM_MULTI_LAYER
   const int valid_customized_gf_length =
-      rc->baseline_gf_interval >= 4 && rc->baseline_gf_interval <= 16;
+      rc->baseline_gf_interval >= 4 &&
+      rc->baseline_gf_interval <= MAX_PYRAMID_SIZE;
   // used the new structure only if extra_arf is allowed
   if (valid_customized_gf_length && rc->source_alt_ref_pending &&
       cpi->extra_arf_allowed > 0) {
@@ -2580,7 +2582,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
                 AOMMAX(MIN_FWD_KF_INTERVAL, rc->min_gf_interval)) &&
                (rc->frames_to_key != i)) {
       // if possible, merge the last two gf groups
-      if (rc->frames_to_key <= 16) {
+      if (rc->frames_to_key <= MAX_PYRAMID_SIZE) {
         rc->baseline_gf_interval = rc->frames_to_key;
         // if merging the last two gf groups creates a group that is too long,
         // split them and force the last gf group to be the MIN_FWD_KF_INTERVAL
