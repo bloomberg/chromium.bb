@@ -147,9 +147,6 @@ class FileSystem : public FileSystemInterface,
                      ReadDirectoryEntriesCallback entries_callback,
                      const FileOperationCallback& completion_callback) override;
   void GetAvailableSpace(GetAvailableSpaceCallback callback) override;
-  void GetShareUrl(const base::FilePath& file_path,
-                   const GURL& embed_origin,
-                   const GetShareUrlCallback& callback) override;
   void GetMetadata(GetFilesystemMetadataCallback callback) override;
   void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
                               MarkMountedCallback callback) override;
@@ -248,17 +245,6 @@ class FileSystem : public FileSystemInterface,
   void GetResourceEntryAfterRead(const base::FilePath& file_path,
                                  GetResourceEntryCallback callback,
                                  FileError error);
-
-  // Part of GetShareUrl. Resolves the resource entry to get the resource it,
-  // and then uses it to ask for the share url. |callback| must not be null.
-  void GetShareUrlAfterGetResourceEntry(const base::FilePath& file_path,
-                                        const GURL& embed_origin,
-                                        const GetShareUrlCallback& callback,
-                                        ResourceEntry* entry,
-                                        FileError error);
-  void OnGetResourceEntryForGetShareUrl(const GetShareUrlCallback& callback,
-                                        google_apis::DriveApiErrorCode status,
-                                        const GURL& share_url);
 
   void OnGetMetadata(
       GetFilesystemMetadataCallback callback,

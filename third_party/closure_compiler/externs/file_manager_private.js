@@ -798,13 +798,6 @@ chrome.fileManagerPrivate.requestAccessToken = function(refresh, callback) {};
 chrome.fileManagerPrivate.requestWebStoreAccessToken = function(callback) {};
 
 /**
- * Requests a share dialog url for the specified file.
- * @param {!Entry} entry
- * @param {function((string|undefined))} callback Callback with the result url.
- */
-chrome.fileManagerPrivate.getShareUrl = function(entry, callback) {};
-
-/**
  * Requests a download url to download the file contents.
  * @param {!Entry} entry
  * @param {function((string|undefined))} callback Callback with the result url.

@@ -89,12 +89,6 @@ class FakeDriveService : public DriveServiceInterface {
     default_max_results_ = default_max_results;
   }
 
-  // Sets the url to the test server to be used as a base for generated share
-  // urls to the share dialog.
-  void set_share_url_base(const GURL& share_url_base) {
-    share_url_base_ = share_url_base;
-  }
-
   // Changes the quota fields returned from GetAboutResource().
   void SetQuotaValue(int64_t used, int64_t total);
 
@@ -207,10 +201,6 @@ class FakeDriveService : public DriveServiceInterface {
   google_apis::CancelCallback GetFileResource(
       const std::string& resource_id,
       const google_apis::FileResourceCallback& callback) override;
-  google_apis::CancelCallback GetShareUrl(
-      const std::string& resource_id,
-      const GURL& embed_origin,
-      const google_apis::GetShareUrlCallback& callback) override;
   google_apis::CancelCallback GetAboutResource(
       const google_apis::AboutResourceCallback& callback) override;
   google_apis::CancelCallback GetStartPageToken(
@@ -478,7 +468,6 @@ class FakeDriveService : public DriveServiceInterface {
   bool offline_;
   bool never_return_all_file_list_;
   base::FilePath last_cancelled_file_;
-  GURL share_url_base_;
   std::string app_json_template_;
   std::string open_url_format_;
 

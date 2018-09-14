@@ -767,12 +767,6 @@ class DriveTestVolume : public TestVolume {
     }
   }
 
-  // Sets the url base for the test server to be used to generate share urls
-  // on the files and directories.
-  virtual void ConfigureShareUrlBase(const GURL& share_url_base) {
-    fake_drive_service_->set_share_url_base(share_url_base);
-  }
-
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
     if (!CreateRootDirectory(profile))
@@ -849,8 +843,6 @@ class DriveFsTestVolume : public DriveTestVolume {
 
     ASSERT_TRUE(UpdateModifiedTime(entry));
   }
-
-  void ConfigureShareUrlBase(const GURL& share_url_base) override {}
 
  private:
   base::RepeatingCallback<
@@ -1048,12 +1040,9 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   CHECK(local_volume_->Mount(profile()));
 
   if (!IsGuestModeTest()) {
-    // Start the embedded test server to serve the mocked share dialog.
+    // Start the embedded test server to serve the mocked CWS widget container.
     CHECK(embedded_test_server()->Start());
-    const GURL share_url_base(embedded_test_server()->GetURL(
-        "/chromeos/file_manager/share_dialog_mock/index.html"));
     drive_volume_ = drive_volumes_[profile()->GetOriginalProfile()].get();
-    drive_volume_->ConfigureShareUrlBase(share_url_base);
     test_util::WaitUntilDriveMountPointIsAdded(profile());
 
     // Init crostini.  Set prefs to enable crostini and register

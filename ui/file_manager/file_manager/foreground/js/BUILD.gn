@@ -56,7 +56,6 @@ js_type_check("closure_compile_module") {
     ":scan_controller",
     ":search_controller",
     ":selection_menu_controller",
-    ":share_client",
     ":sort_menu_controller",
     ":spinner_controller",
     ":task_controller",
@@ -117,11 +116,11 @@ js_library("actions_controller") {
 js_library("actions_model") {
   deps = [
     ":folder_shortcuts_data_model",
+    "../../common/js:util",
     "metadata:metadata_model",
     "ui:error_dialog",
     "ui:files_alert_dialog",
     "ui:list_container",
-    "ui:share_dialog",
     "//ui/webui/resources/js:cr",
   ]
 }
@@ -546,14 +545,6 @@ js_library("selection_menu_controller") {
     ":directory_model",
     ":file_manager_commands",
     "../elements:files_toggle_ripple",
-  ]
-}
-
-js_library("share_client") {
-  deps = [
-    "../../../externs:webview_tag",
-    "../../common/js:volume_manager_common",
-    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 

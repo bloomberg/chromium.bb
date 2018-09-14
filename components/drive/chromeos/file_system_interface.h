@@ -138,10 +138,6 @@ typedef base::OnceCallback<
     void(FileError error, int64_t bytes_total, int64_t bytes_used)>
     GetAvailableSpaceCallback;
 
-// Used to get the url to the sharing dialog.
-typedef base::Callback<void(FileError error,
-                            const GURL& share_url)> GetShareUrlCallback;
-
 // Used to get filesystem metadata.
 typedef base::OnceCallback<void(
     const FileSystemMetadata&,
@@ -436,13 +432,6 @@ class FileSystemInterface {
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
   virtual void GetAvailableSpace(GetAvailableSpaceCallback callback) = 0;
-
-  // Fetches the url to the sharing dialog to be embedded in |embed_origin|,
-  // for the specified file or directory. |callback| must not be null.
-  virtual void GetShareUrl(
-      const base::FilePath& file_path,
-      const GURL& embed_origin,
-      const GetShareUrlCallback& callback) = 0;
 
   // Returns miscellaneous metadata of the file system like the largest
   // timestamp. Used in chrome:drive-internals. |callback| must not be null.

@@ -20,10 +20,6 @@ typedef base::Callback<void(DriveApiErrorCode error,
                             std::unique_ptr<AboutResource> about_resource)>
     AboutResourceCallback;
 
-// Callback used for getting ShareUrl.
-typedef base::Callback<void(DriveApiErrorCode error,
-                            const GURL& share_url)> GetShareUrlCallback;
-
 // Callback used for getting AppList.
 typedef base::Callback<void(DriveApiErrorCode error,
                             std::unique_ptr<AppList> app_list)>

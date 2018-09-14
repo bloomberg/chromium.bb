@@ -210,24 +210,6 @@ class FileManagerPrivateRequestAccessTokenFunction
                             const std::string& access_token);
 };
 
-// Implements the chrome.fileManagerPrivate.getShareUrl method.
-class FileManagerPrivateInternalGetShareUrlFunction
-    : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getShareUrl",
-                             FILEMANAGERPRIVATEINTERNAL_GETSHAREURL)
-
- protected:
-  ~FileManagerPrivateInternalGetShareUrlFunction() override = default;
-
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
-
-  // Callback with an url to the sharing dialog as |share_url|, called by
-  // FileSystem::GetShareUrl.
-  void OnGetShareUrl(drive::FileError error, const GURL& share_url);
-};
-
 // Implements the chrome.fileManagerPrivate.requestDriveShare method.
 class FileManagerPrivateInternalRequestDriveShareFunction
     : public LoggedAsyncExtensionFunction {

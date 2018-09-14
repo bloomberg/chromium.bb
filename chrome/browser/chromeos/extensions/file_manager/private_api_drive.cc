@@ -1296,45 +1296,6 @@ void FileManagerPrivateRequestAccessTokenFunction::OnAccessTokenFetched(
   SendResponse(true);
 }
 
-bool FileManagerPrivateInternalGetShareUrlFunction::RunAsync() {
-  using extensions::api::file_manager_private_internal::GetShareUrl::Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  const base::FilePath path = file_manager::util::GetLocalPathFromURL(
-      render_frame_host(), GetProfile(), GURL(params->url));
-  DCHECK(drive::util::IsUnderDriveMountPoint(path));
-
-  const base::FilePath drive_path = drive::util::ExtractDrivePath(path);
-
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(GetProfile());
-  if (!file_system) {
-    // |file_system| is NULL if Drive is disabled.
-    return false;
-  }
-
-  file_system->GetShareUrl(
-      drive_path,
-      GURL("chrome-extension://" + extension_id()),  // embed origin
-      base::Bind(&FileManagerPrivateInternalGetShareUrlFunction::OnGetShareUrl,
-                 this));
-  return true;
-}
-
-void FileManagerPrivateInternalGetShareUrlFunction::OnGetShareUrl(
-    drive::FileError error,
-    const GURL& share_url) {
-  if (error != drive::FILE_ERROR_OK) {
-    SetError("Share Url for this item is not available.");
-    SendResponse(false);
-    return;
-  }
-
-  SetResult(std::make_unique<base::Value>(share_url.spec()));
-  SendResponse(true);
-}
-
 bool FileManagerPrivateInternalRequestDriveShareFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::RequestDriveShare::
       Params;
@@ -1398,7 +1359,7 @@ FileManagerPrivateInternalGetDownloadUrlFunction::
     ~FileManagerPrivateInternalGetDownloadUrlFunction() = default;
 
 bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsync() {
-  using extensions::api::file_manager_private_internal::GetShareUrl::Params;
+  using extensions::api::file_manager_private_internal::GetDownloadUrl::Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 

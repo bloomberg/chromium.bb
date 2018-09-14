@@ -151,11 +151,6 @@ binding.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.getFileTasks(urls, callback);
   });
 
-  apiFunctions.setHandleRequest('getShareUrl', function(entry, callback) {
-    var url = fileManagerPrivateNatives.GetEntryURL(entry);
-    fileManagerPrivateInternal.getShareUrl(url, callback);
-  });
-
   apiFunctions.setHandleRequest('getDownloadUrl', function(entry, callback) {
     var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.getDownloadUrl(url, callback);

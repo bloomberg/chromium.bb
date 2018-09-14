@@ -318,14 +318,6 @@ google_apis::CancelCallback DriveServiceOnWorker::Search(
   return google_apis::CancelCallback();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::GetShareUrl(
-    const std::string& resource_id,
-    const GURL& embed_origin,
-    const google_apis::GetShareUrlCallback& callback) {
-  NOTREACHED();
-  return google_apis::CancelCallback();
-}
-
 google_apis::CancelCallback DriveServiceOnWorker::GetAppList(
     const google_apis::AppListCallback& callback) {
   NOTREACHED();

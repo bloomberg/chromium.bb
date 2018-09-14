@@ -81,7 +81,6 @@ js_library("gallery") {
     "../../file_manager/common/js:util",
     "../../file_manager/foreground/js:volume_manager_wrapper",
     "../../file_manager/foreground/js/ui:files_confirm_dialog",
-    "../../file_manager/foreground/js/ui:share_dialog",
     "../../gallery/js:slide_mode",
     "//ui/webui/resources/js:i18n_template_no_process",
   ]

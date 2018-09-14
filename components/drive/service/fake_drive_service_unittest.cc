@@ -1048,22 +1048,6 @@ TEST_F(FakeDriveServiceTest, GetFileResource_Offline) {
   EXPECT_FALSE(entry);
 }
 
-TEST_F(FakeDriveServiceTest, GetShareUrl) {
-  ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
-
-  const std::string kResourceId = "2_file_resource_id";
-  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
-  GURL share_url;
-  fake_service_.GetShareUrl(
-      kResourceId,
-      GURL(),  // embed origin
-      test_util::CreateCopyResultCallback(&error, &share_url));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_FALSE(share_url.is_empty());
-}
-
 TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   ASSERT_TRUE(test_util::SetUpTestEntries(&fake_service_));
 

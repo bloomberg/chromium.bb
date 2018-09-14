@@ -34,7 +34,6 @@ Action.prototype.getTitle = function() {
  *  alertDialog: FilesAlertDialog,
  *  errorDialog: ErrorDialog,
  *  listContainer: ListContainer,
- *  shareDialog: ShareDialog,
  * }}
  */
 var ActionModelUI;
@@ -91,32 +90,25 @@ DriveShareAction.create = function(entries, metadataModel, volumeManager, ui) {
  * @override
  */
 DriveShareAction.prototype.execute = function() {
-  // For Team Drives entries, open the Sharing dialog in a new window.
-  if (util.isTeamDriveEntry(this.entry_)) {
-    chrome.fileManagerPrivate.getEntryProperties(
-        [this.entry_], ['shareUrl'], function(results) {
-          if (chrome.runtime.lastError) {
-            console.error(chrome.runtime.lastError.message);
-            return;
-          }
-          if (results.length != 1) {
-            console.error(
-                'getEntryProperties for shareUrl should return 1 entry ' +
-                '(returned ' + results.length + ')');
-            return;
-          }
-          if (results[0].shareUrl === undefined) {
-            console.error('getEntryProperties shareUrl is undefined');
-            return;
-          }
-          util.visitURL(results[0].shareUrl);
-        }.bind(this));
-    return;
-  }
-  this.ui_.shareDialog.showEntry(this.entry_, function(result) {
-    if (result == ShareDialog.Result.NETWORK_ERROR)
-      this.ui_.errorDialog.show(str('SHARE_ERROR'), null, null, null);
-  }.bind(this));
+  // Open the Sharing dialog in a new window.
+  chrome.fileManagerPrivate.getEntryProperties(
+      [this.entry_], ['shareUrl'], function(results) {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError.message);
+          return;
+        }
+        if (results.length != 1) {
+          console.error(
+              'getEntryProperties for shareUrl should return 1 entry ' +
+              '(returned ' + results.length + ')');
+          return;
+        }
+        if (results[0].shareUrl === undefined) {
+          console.error('getEntryProperties shareUrl is undefined');
+          return;
+        }
+        util.visitURL(results[0].shareUrl);
+      }.bind(this));
 };
 
 /**

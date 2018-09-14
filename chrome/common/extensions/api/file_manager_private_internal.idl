@@ -72,7 +72,6 @@ namespace fileManagerPrivateInternal {
                                SimpleCallback callback);
     static void getFileTasks(DOMString[] urls,
                              GetFileTasksCallback callback);
-    static void getShareUrl(DOMString  url, GetUrlCallback callback);
     static void getDownloadUrl(DOMString url, GetUrlCallback callback);
     static void requestDriveShare(DOMString url,
                                 fileManagerPrivate.DriveShareType shareType,

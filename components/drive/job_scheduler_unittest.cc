@@ -472,23 +472,6 @@ TEST_F(JobSchedulerTest, GetFileResource) {
   ASSERT_TRUE(entry);
 }
 
-TEST_F(JobSchedulerTest, GetShareUrl) {
-  ConnectToWifi();
-
-  google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
-  GURL share_url;
-
-  scheduler_->GetShareUrl(
-      "2_file_resource_id",  // resource ID
-      GURL("chrome-extension://test-id/"), // embed origin
-      ClientContext(USER_INITIATED),
-      google_apis::test_util::CreateCopyResultCallback(&error, &share_url));
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-  ASSERT_FALSE(share_url.is_empty());
-}
-
 TEST_F(JobSchedulerTest, TrashResource) {
   ConnectToWifi();
 

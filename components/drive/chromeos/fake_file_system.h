@@ -111,9 +111,6 @@ class FakeFileSystem : public FileSystemInterface {
   void SearchByHashes(const std::set<std::string>& hashes,
                       SearchByHashesCallback callback) override;
   void GetAvailableSpace(GetAvailableSpaceCallback callback) override;
-  void GetShareUrl(const base::FilePath& file_path,
-                   const GURL& embed_origin,
-                   const GetShareUrlCallback& callback) override;
   void GetMetadata(GetFilesystemMetadataCallback callback) override;
   void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
                               MarkMountedCallback callback) override;

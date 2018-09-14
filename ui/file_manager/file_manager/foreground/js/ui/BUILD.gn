@@ -38,7 +38,6 @@ js_type_check("closure_compile") {
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
-    ":share_dialog",
     ":suggest_apps_dialog",
   ]
 }
@@ -211,7 +210,6 @@ js_library("file_manager_ui") {
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
-    ":share_dialog",
     ":suggest_apps_dialog",
     "..:launch_param",
     "..:providers_model",
@@ -355,17 +353,6 @@ js_library("search_box") {
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr:ui",
     "//ui/webui/resources/js/cr/ui:autocomplete_list",
-  ]
-}
-
-# TODO(tapted): Move this into //ui/file_manager/base.
-js_library("share_dialog") {
-  visibility += [ "//ui/file_manager/gallery/*" ]
-  deps = [
-    ":file_manager_dialog_base",
-    "..:share_client",
-    "../../../common/js:async_util",
-    "../../../common/js:util",
   ]
 }
 

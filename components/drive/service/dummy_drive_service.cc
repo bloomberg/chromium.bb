@@ -19,7 +19,6 @@ using google_apis::EntryActionCallback;
 using google_apis::FileListCallback;
 using google_apis::FileResourceCallback;
 using google_apis::GetContentCallback;
-using google_apis::GetShareUrlCallback;
 using google_apis::InitiateUploadCallback;
 using google_apis::ProgressCallback;
 using google_apis::TeamDriveListCallback;
@@ -109,11 +108,6 @@ CancelCallback DummyDriveService::GetRemainingFileList(
 CancelCallback DummyDriveService::GetFileResource(
     const std::string& resource_id,
     const FileResourceCallback& callback) { return CancelCallback(); }
-
-CancelCallback DummyDriveService::GetShareUrl(
-    const std::string& resource_id,
-    const GURL& embed_origin,
-    const GetShareUrlCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::GetAboutResource(
     const AboutResourceCallback& callback) { return CancelCallback(); }
