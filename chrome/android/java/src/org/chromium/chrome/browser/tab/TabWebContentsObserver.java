@@ -292,6 +292,14 @@ public class TabWebContentsObserver extends WebContentsObserver {
     }
 
     @Override
+    public void didReloadLoFiImages() {
+        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().didReloadLoFiImages(mTab);
+        }
+    }
+
+    @Override
     public void destroy() {
         MediaCaptureNotificationService.updateMediaNotificationForTab(
                 mTab.getApplicationContext(), mTab.getId(), 0, mTab.getUrl());
