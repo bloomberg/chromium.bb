@@ -408,6 +408,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'multisampled-depth-renderbuffer-initialization.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
     self.Fail('conformance/uniforms/' +
+        'no-over-optimization-on-uniform-array-06.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=884210)
+    self.Fail('conformance/uniforms/' +
         'no-over-optimization-on-uniform-array-16.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
