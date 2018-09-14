@@ -39,6 +39,7 @@ class FocusHandler;
 class PointerWatcher;
 class ServerWindow;
 class TopmostWindowObserver;
+class WindowManagerInterface;
 class WindowService;
 
 // WindowTree manages a client connected to the Window Service. WindowTree
@@ -85,6 +86,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // received.
   void SendPointerWatcherEventToClient(int64_t display_id,
                                        std::unique_ptr<ui::Event> event);
+
+  // Returns the aura::Window associated with the specified transport id; null
+  // if |transport_window_id| is not a valid id for a window.
+  aura::Window* GetWindowByTransportId(Id transport_window_id);
 
   // Returns true if |window| was created by the client calling
   // NewTopLevelWindow().
@@ -190,7 +195,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void DeleteClientRootWithRoot(aura::Window* window);
 
   aura::Window* GetWindowByClientId(const ClientWindowId& id);
-  aura::Window* GetWindowByTransportId(Id transport_window_id);
 
   // Returns true if |this| created |window|.
   bool IsClientCreatedWindow(aura::Window* window);
@@ -440,7 +444,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void DeactivateWindow(Id transport_window_id) override;
   void StackAbove(uint32_t change_id, Id above_id, Id below_id) override;
   void StackAtTop(uint32_t change_id, Id window_id) override;
-  void PerformWmAction(Id window_id, const std::string& action) override;
+  void BindWindowManagerInterface(
+      const std::string& name,
+      mojom::WindowManagerAssociatedRequest window_manager) override;
   void GetCursorLocationMemory(
       GetCursorLocationMemoryCallback callback) override;
   void PerformWindowMove(uint32_t change_id,
@@ -525,6 +531,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   // Set while a drag loop is in progress.
   Id pending_drag_source_window_id_ = kInvalidTransportId;
+
+  std::vector<std::unique_ptr<WindowManagerInterface>>
+      window_manager_interfaces_;
 
   base::WeakPtrFactory<WindowTree> weak_factory_{this};
 

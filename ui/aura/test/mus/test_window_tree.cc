@@ -355,10 +355,9 @@ void TestWindowTree::StackAbove(uint32_t change_id,
 
 void TestWindowTree::StackAtTop(uint32_t change_id, ws::Id window_id) {}
 
-void TestWindowTree::PerformWmAction(ws::Id window_id,
-                                     const std::string& action) {
-  last_wm_action_ = action;
-}
+void TestWindowTree::BindWindowManagerInterface(
+    const std::string& name,
+    ws::mojom::WindowManagerAssociatedRequest window_manager) {}
 
 void TestWindowTree::GetCursorLocationMemory(
     GetCursorLocationMemoryCallback callback) {

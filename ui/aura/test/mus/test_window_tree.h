@@ -117,8 +117,6 @@ class TestWindowTree : public ws::mojom::WindowTree {
     return last_set_window_bounds_;
   }
 
-  const std::string& last_wm_action() const { return last_wm_action_; }
-
  private:
   struct Change {
     WindowTreeChangeType type;
@@ -223,7 +221,9 @@ class TestWindowTree : public ws::mojom::WindowTree {
                   ws::Id above_id,
                   ws::Id below_id) override;
   void StackAtTop(uint32_t change_id, ws::Id window_id) override;
-  void PerformWmAction(ws::Id window_id, const std::string& action) override;
+  void BindWindowManagerInterface(
+      const std::string& name,
+      ws::mojom::WindowManagerAssociatedRequest window_manager) override;
   void GetCursorLocationMemory(
       GetCursorLocationMemoryCallback callback) override;
   void PerformDragDrop(
@@ -271,8 +271,6 @@ class TestWindowTree : public ws::mojom::WindowTree {
   base::Optional<viz::LocalSurfaceId> last_local_surface_id_;
 
   gfx::Rect last_set_window_bounds_;
-
-  std::string last_wm_action_;
 
   // Support only one scheduled embed in test.
   base::UnguessableToken scheduled_embed_;

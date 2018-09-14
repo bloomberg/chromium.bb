@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -245,6 +246,9 @@ class MultiUserWindowManagerChromeOS
 
   // The animation between users.
   std::unique_ptr<UserSwitchAnimatorChromeOS> animation_;
+
+  // Only used in mash.
+  ash::mojom::AshWindowManagerAssociatedPtr ash_window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOS);
 };

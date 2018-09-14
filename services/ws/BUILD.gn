@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
@@ -20,6 +21,7 @@ component("lib") {
   public = [
     "ids.h",
     "window_delegate_impl.h",
+    "window_manager_interface.h",
     "window_properties.h",
     "window_service.h",
     "window_service_delegate.h",
@@ -196,6 +198,7 @@ source_set("tests") {
 
   deps = [
     ":lib",
+    ":test_mojom",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -229,4 +232,12 @@ source_set("tests") {
 service_manifest("manifest") {
   name = "ui"
   source = "manifest.json"
+}
+
+mojom("test_mojom") {
+  testonly = true
+
+  sources = [
+    "test_wm.mojom",
+  ]
 }

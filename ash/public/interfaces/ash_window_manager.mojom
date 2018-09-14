@@ -1,0 +1,12 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module ash.mojom;
+
+// Interface exposed via WindowTree::BindWindowManagerInterface(). This
+// interface is used for functionality specific to Ash that is associated with
+// windows created by the window service.
+interface AshWindowManager {
+  AddWindowToTabletMode(uint64 window_id);
+};

@@ -1305,6 +1305,8 @@ component("ash") {
     "wm/workspace_controller.h",
     "ws/ash_gpu_interface_provider.cc",
     "ws/ash_gpu_interface_provider.h",
+    "ws/ash_window_manager.cc",
+    "ws/ash_window_manager.h",
     "ws/window_service_delegate_impl.cc",
     "ws/window_service_delegate_impl.h",
     "ws/window_service_owner.cc",
@@ -1978,6 +1980,7 @@ test("ash_unittests") {
     "wm/workspace/workspace_layout_manager_unittest.cc",
     "wm/workspace/workspace_window_resizer_unittest.cc",
     "wm/workspace_controller_unittest.cc",
+    "ws/ash_window_manager_unittest.cc",
     "ws/window_service_delegate_impl_unittest.cc",
   ]
   configs += [

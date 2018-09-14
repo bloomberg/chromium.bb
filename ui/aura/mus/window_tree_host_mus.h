@@ -68,9 +68,6 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   // windows which we might not own.
   void StackAtTop();
 
-  // Requests that the window manager perform |action| on the window.
-  void PerformWmAction(const std::string& action);
-
   // Tells the window manager to take control of moving the window. Returns
   // true if the move wasn't canceled.
   void PerformWindowMove(ws::mojom::MoveLoopSource mus_source,

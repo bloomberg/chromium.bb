@@ -116,7 +116,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   // Changes to the underlying Window originating from the server must be done
   // in such a way that the same change is not applied back to the server. To
-  // accomplish this every changes from the server is associated with at least
+  // accomplish this every change from the server is associated with at least
   // one ServerChange. If the underlying Window ends up calling back to this
   // class and the change is expected then the change is ignored and not sent to
   // the server. For example, here's the flow when the server changes the

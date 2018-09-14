@@ -1604,13 +1604,6 @@ void WindowTreeClient::OnWindowTreeHostStackAtTop(
   tree_->StackAtTop(change_id, window->server_id());
 }
 
-void WindowTreeClient::OnWindowTreeHostPerformWmAction(
-    WindowTreeHostMus* window_tree_host,
-    const std::string& action) {
-  WindowMus* window = WindowMus::Get(window_tree_host->window());
-  tree_->PerformWmAction(window->server_id(), action);
-}
-
 void WindowTreeClient::OnWindowTreeHostPerformWindowMove(
     WindowTreeHostMus* window_tree_host,
     ws::mojom::MoveLoopSource source,

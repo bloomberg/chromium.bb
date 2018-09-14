@@ -47,6 +47,10 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
   aura::Window* GetTopmostWindowAtPoint(const gfx::Point& location_in_screen,
                                         const std::set<aura::Window*>& ignores,
                                         aura::Window** real_topmost) override;
+  std::unique_ptr<ws::WindowManagerInterface> CreateWindowManagerInterface(
+      ws::WindowTree* tree,
+      const std::string& name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
 
  private:
   std::unique_ptr<ui::SystemInputInjector> system_input_injector_;

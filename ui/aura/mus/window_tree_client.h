@@ -179,6 +179,17 @@ class AURA_EXPORT WindowTreeClient
       ws::mojom::MoveLoopSource source,
       aura::Window* initial_target);
 
+  // See mojom for details.
+  template <typename Interface>
+  mojo::AssociatedInterfacePtr<Interface> BindWindowManagerInterface() {
+    ws::mojom::WindowManagerAssociatedPtr interface_ptr;
+    tree_->BindWindowManagerInterface(Interface::Name_,
+                                      mojo::MakeRequest(&interface_ptr));
+    return mojo::AssociatedInterfacePtr<Interface>(
+        mojo::AssociatedInterfacePtrInfo<Interface>(
+            interface_ptr.PassInterface().PassHandle(), Interface::Version_));
+  }
+
   // Returns true if the specified window was created by this client.
   bool WasCreatedByThisClient(const WindowMus* window) const;
 
@@ -471,8 +482,6 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowTreeHostStackAbove(WindowTreeHostMus* window_tree_host,
                                   Window* window) override;
   void OnWindowTreeHostStackAtTop(WindowTreeHostMus* window_tree_host) override;
-  void OnWindowTreeHostPerformWmAction(WindowTreeHostMus* window_tree_host,
-                                       const std::string& action) override;
   void OnWindowTreeHostPerformWindowMove(
       WindowTreeHostMus* window_tree_host,
       ws::mojom::MoveLoopSource mus_source,
