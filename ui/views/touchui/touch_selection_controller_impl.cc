@@ -222,8 +222,12 @@ class TouchSelectionControllerImpl::EditingHandleView
         weak_ptr_factory_(this) {
     widget_.reset(CreateTouchSelectionPopupWidget(context, this));
 
-    aura::Window* window = widget_->GetNativeWindow();
     targeter_ = new aura::WindowTargeter();
+    aura::Window* window = widget_->GetNativeWindow();
+    // For Mus clients, adjust targeting of the handle's client root window,
+    // constructed by the window server for the handle's "content" window.
+    if (window->env()->mode() == aura::Env::Mode::MUS)
+      window = window->GetRootWindow();
     window->SetEventTargeter(std::unique_ptr<aura::WindowTargeter>(targeter_));
 
     // We are owned by the TouchSelectionControllerImpl.
