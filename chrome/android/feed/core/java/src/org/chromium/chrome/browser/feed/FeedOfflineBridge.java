@@ -44,8 +44,7 @@ public class FeedOfflineBridge
     public FeedOfflineBridge(Profile profile, KnownContentApi knownContentApi) {
         mNativeBridge = nativeInit(profile);
         mKnownContentApi = knownContentApi;
-        // TODO(skym): Remove this null check when a KnownContentApi is provided by Feed.
-        if (mKnownContentApi != null) mKnownContentApi.addListener(this);
+        mKnownContentApi.addListener(this);
     }
 
     @Override
@@ -53,8 +52,7 @@ public class FeedOfflineBridge
         assert mNativeBridge != 0;
         nativeDestroy(mNativeBridge);
         mNativeBridge = 0;
-        // TODO(skym): Remove this null check when a KnownContentApi is provided by Feed.
-        if (mKnownContentApi != null) mKnownContentApi.removeListener(this);
+        mKnownContentApi.removeListener(this);
     }
 
     @Override
