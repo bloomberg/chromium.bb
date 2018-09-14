@@ -8,7 +8,7 @@
 var test = test || {};
 
 // Update paths for testing.
-constants.FILES_QUICK_VIEW_HTML = 'test/gen/elements/files_quick_view.html';
+constants.FILES_QUICK_VIEW_HTML = 'test/gen/foreground/elements/files_quick_view.html';
 constants.DRIVE_WELCOME_CSS = FILE_MANAGER_ROOT + constants.DRIVE_WELCOME_CSS;
 
 // Stores Blobs loaded from src/chrome/test/data/chromeos/file_manager.
@@ -238,7 +238,12 @@ test.ENTRIES = {
   hiddenFile: new test.TestEntryInfo(
     test.EntryType.FILE, 'text.txt', '.hiddenfile.txt',
     'text/plain', test.SharedOption.NONE, 'Sep 30, 2014, 3:30 PM',
-    '.hiddenfile.txt', '51 bytes', 'Plain text')
+    '.hiddenfile.txt', '51 bytes', 'Plain text'),
+
+  mhtml: new test.TestEntryInfo(
+      test.EntryType.FILE, 'text.txt', 'hello.mhtml', 'text/html',
+      test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'hello.mhtml',
+      '51 bytes', 'HTML document'),
 };
 
 /**
