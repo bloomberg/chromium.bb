@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
@@ -1452,11 +1453,12 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
   } else if (type ==
              ContentSecurityPolicy::DirectiveType::kTreatAsPublicAddress) {
     TreatAsPublicAddress(name, value);
+  } else if (type == ContentSecurityPolicy::DirectiveType::kReportTo &&
+             base::FeatureList::IsEnabled(network::features::kReporting)) {
+    ParseReportTo(name, value);
   } else if (policy_->ExperimentalFeaturesEnabled()) {
     if (type == ContentSecurityPolicy::DirectiveType::kRequireSRIFor) {
       ParseRequireSRIFor(name, value);
-    } else if (type == ContentSecurityPolicy::DirectiveType::kReportTo) {
-      ParseReportTo(name, value);
     } else if (type == ContentSecurityPolicy::DirectiveType::kTrustedTypes &&
                RuntimeEnabledFeatures::TrustedDOMTypesEnabled()) {
       RequireTrustedTypes(name, value);
