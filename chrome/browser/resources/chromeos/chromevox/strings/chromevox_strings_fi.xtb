@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Valitse haluamasi merkki ja kirjoita se sitten nostamalla sormesi</translation>
 <translation id="1012173283529841972">Luettelokohde</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Pyyhkäise oikealle kahdella sormella</translation>
 <translation id="1022586497894531524">Käytätkö ChromeVoxin äänipalautetta ensimmäistä kertaa? Tämän ohjeen avulla voit tutustua ChromeVoxin perusteisiin nopeasti.</translation>
 <translation id="1023866615269196768">Kohdistettu.</translation>
 <translation id="1025074108959230262">Kiinnitetty tila pois käytöstä</translation>
@@ -21,6 +22,7 @@
 <translation id="1106741348836243114">Ota äänipalaute (earcon-äänimerkit) käyttöön tai poista se käytöstä.</translation>
 <translation id="1108651818222110612">alaots</translation>
 <translation id="1120743664840974483">{"a": "aarne", "b": "bertta", "c": "celcius", "d": "daavid", "e": "eemeli", "f": "faarao", "g": "gideon", "h": "heikki", "i": "iivari", "j": "jussi","k": "kalle", "l": "lauri", "m": "matti", "n": "niilo", "o": "otto","p": "paavo", "q": "kuu", "r": "risto", "s": "sakari", "t": "tyyne", "u": "urho", "v": "vihtori", "w": "wiski","x": "äksä", "y": "yrjö", "z": "tseta", "å": "åke", "ä": "äiti", "ö": "öljy"}</translation>
+<translation id="1120938014254001895">Pyyhkäise ylös kahdella sormella</translation>
 <translation id="1124771028211010580">Nykyinen näyttötyyli on rinnakkainen.</translation>
 <translation id="113582498867142724"><ph name="TAG" />-kokoelma, jossa <ph name="NUM" /> kohdetta</translation>
 <translation id="1155043339247954670">Ei seuraavia luettelokohteita.</translation>
@@ -91,6 +93,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="1722567105086139392">Linkki</translation>
 <translation id="1727806147743597030">footer</translation>
 <translation id="174268867904053074">Seuraava grafiikka</translation>
+<translation id="1765245556747822181">Pyyhkäise ylös yhdellä sormella</translation>
 <translation id="1781173782405573156">Ohitusnäppäin</translation>
 <translation id="1787176709638001873">Salasanan muokkausteksti</translation>
 <translation id="1802710350767629429">Näytä päivitysmerkinnät</translation>
@@ -137,6 +140,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2223693656926968778">Käsittele nykyistä kohdetta</translation>
 <translation id="225732394367814946">Lisää puhenopeutta</translation>
 <translation id="2267945578749931355">Seuraava merkki</translation>
+<translation id="2278490101488436824">Pyyhkäise vasemmalle kolmella sormella</translation>
 <translation id="2281234842553884450">Edellinen liukusäädin</translation>
 <translation id="2294136146931447363">Kursiivin alku</translation>
 <translation id="2311237334957139798">Palaa edelliseen tarkkuustasoon</translation>
@@ -209,17 +213,20 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2864481629947106776">Edellinen linkki</translation>
 <translation id="2867808975387772810">Lähdeluettelo</translation>
 <translation id="2873259058405069099">Siirry taulukon alkuun</translation>
+<translation id="2879867157561757640">Pyyhkäise alas kolmella sormella</translation>
 <translation id="288178314850623291">Siirtymiskomennoilla voit siirtyä tietyn tyyppisten elementtien välillä. Siirry seuraavaan otsikkoon painamalla haku + H tai edelliseen painamalla haku + vaihto + H.</translation>
 <translation id="2894654529758326923">Tiedot</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{vasen aaltosulje}other{# vasenta aaltosuljetta}}</translation>
 <translation id="2909478709401302630">Yläindeksin alku</translation>
 <translation id="2911433807131383493">Avaa ChromeVox-opetusohjelma</translation>
+<translation id="2912405967290226587">Pyyhkäise oikealle kolmella sormella</translation>
 <translation id="2932083475399492303">Vaihda linjatyyppiä rakenteellisen ja asettelun välillä</translation>
 <translation id="2944762337049891859">Lue sivu automaattisesti, kun se on latautunut.</translation>
 <translation id="2964026537669811554">Otsikkoryhmä</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{sarkain}other{# sarkainta}}</translation>
 <translation id="2972078295414139404">Ei edellisiä käytyjä linkkejä.</translation>
 <translation id="2972205263822847197">Työkaluvinkki</translation>
+<translation id="297825089465017871">Pyyhkäise vasemmalle kahdella sormella</translation>
 <translation id="2998131015536248178">Edellinen merkki</translation>
 <translation id="2999559350546931576">Vähennä äänenkorkeutta</translation>
 <translation id="2999945368667127852">Ei seuraavaa mediawidgetiä.</translation>
@@ -231,6 +238,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="3046838483509668188">ChromeVox-asetukset</translation>
 <translation id="3047143736589213134">Kokeellinen näppäinkartta</translation>
 <translation id="3060756054951570867"><ph name="TITLE" />-valikko avattu</translation>
+<translation id="3070245424257836917">Pyyhkäise ylös kolmella sormella</translation>
 <translation id="3078345202707391975">Seuraava tason 2 otsikko</translation>
 <translation id="3078740164268491126">taulukko</translation>
 <translation id="3082249673510793544">Vieritä taaksepäin</translation>
@@ -343,6 +351,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="3599054940393788245">Ei sovi math-rooliin</translation>
 <translation id="360241989769010433">Kiitokset</translation>
 <translation id="3616113530831147358">Ääni</translation>
+<translation id="3622350485154495700">Kaksoisnapauta yhdellä sormella</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{aksenttimerkki}other{# aksenttimerkkiä}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dollari}other{# dollarimerkkiä}}</translation>
@@ -462,6 +471,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4688873778442829762">ruud.</translation>
 <translation id="4693675773662933727">Edellinen maamerkki</translation>
 <translation id="4696413482802371445">Ei seuraavia tason 5 otsikoita.</translation>
+<translation id="4710166929009737753">Pyyhkäise oikealle yhdellä sormella</translation>
 <translation id="4729095194763193578">Edellinen taulukkorivi</translation>
 <translation id="4736221692378411923">elokuu</translation>
 <translation id="4740661827607246557">Apukomennot</translation>
@@ -474,6 +484,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="4826415162591436065">Siirry eteenpäin</translation>
 <translation id="4826604887384865800">Seuraava siirtyminen</translation>
 <translation id="4827410568042294688">ei valittu</translation>
+<translation id="4838490795649708173">Napauta neljällä sormella</translation>
 <translation id="4839925464551908214">Siirry edelliselle riville</translation>
 <translation id="4842108708071771135">Ei seuraavia lainauksia.</translation>
 <translation id="4844625982113518938">Opi nimi painamalla mitä tahansa näppäintä. Ctrl + W sulkee opettelutilan.</translation>
@@ -610,6 +621,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="5750633686117194034">Muokkausnäppäintä ei ole painettu. Paina yhtä tai useampaa näppäintä samanaikaisesti. Lopeta, kun olet valmis, niin kuulet asetetut näppäimet. Poistu sarkainnäppäimellä.</translation>
 <translation id="5760594853119905566">Liite</translation>
 <translation id="5788275253279308023">incognito-ikkuna <ph name="TITLE" /> välilehti</translation>
+<translation id="5805940204952508776">Napauta kahdella sormella</translation>
 <translation id="5806206155699461681">Paranna tiettyjä sivustoja (kuten Google-haku).</translation>
 <translation id="5819072574982403430">Puukohde</translation>
 <translation id="5826479389509458994">rivi <ph name="ROW" /> sarake <ph name="COL" /></translation>
@@ -714,8 +726,10 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="6786800275320335305">Artikkeli</translation>
 <translation id="6787839852456839824">Pikanäppäimet</translation>
 <translation id="6793101435925451627">luett.kenttä</translation>
+<translation id="6826226459053491773">Pyyhkäise alas kahdella sormella</translation>
 <translation id="6833103209700200188">Alaviite</translation>
 <translation id="6858047746862060282">Prologi</translation>
+<translation id="6859876496651143278">Pyyhkäise vasemmalle yhdellä sormella</translation>
 <translation id="6871161210040114857">Ohitetaan kirjainkoko.</translation>
 <translation id="6877435256196695200">Ei seuraavia kuvia.</translation>
 <translation id="6897341342232909480">Siirrä vasemmalle</translation>
@@ -965,6 +979,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="923331726185079994">ChromeVox päivitetty</translation>
 <translation id="930275611743429116">Aloita tai lopeta valinta.</translation>
 <translation id="948171205378458592">Vähennä puhenopeutta</translation>
+<translation id="958854023026327378">Pyyhkäise alas yhdellä sormella</translation>
 <translation id="962913030769097253">Seuraava tason 1 otsikko</translation>
 <translation id="973955474346881951">Kiinnitystilan ottaminen käyttöön / poistaminen käytöstä</translation>
 <translation id="976849232629612000">Ei kohteita</translation>

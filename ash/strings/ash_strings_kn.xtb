@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್‌ಗೆ ಪ್ಲಗ್ ಮಾಡಲಾಗಿದೆ. ಬ್ಯಾಟರಿ ಚಾರ್ಜಿಂಗ್ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲದಿರಬಹುದು.</translation>
 <translation id="2761704814324807722">ಸ್ಥಿತಿ ಟ್ರೇ, ಸಮಯ <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> ಗೆ ಮರುಸಂಪರ್ಕಪಡಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="2790844815106384441">ಸ್ಥಳ ಸೇವೆಗಳು ಅಥವಾ ಸಾಧನದ ಮೈಕ್ರೊಫೋನ್, ಕ್ಯಾಮರಾ ಅಥವಾ ಇತರ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ವೆಬ್‌ಸೈಟ್‌ಗಳು ಬಳಸಬಹುದೇ ಎಂಬುದನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="2792498699870441125">Alt+ಹುಡುಕಾಟ</translation>
 <translation id="2805756323405976993">ಆಪ್ಸ್‌‌</translation>
 <translation id="2808012452536866044">Better Together ಅನ್ನು ಹೊಸ ಫೋನ್‌ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
@@ -192,6 +193,7 @@
 <translation id="4200057768455216496">ಡಾಕ್ ಮಾಡಿದ ವರ್ಧಕದ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ನೀವು ಒತ್ತಿದ್ದೀರಿ. ಅದನ್ನು ಆನ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4217571870635786043">ಉಕ್ತಲೇಖನ</translation>
 <translation id="4261870227682513959">ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ. ಅಧಿಸೂಚನೆಗಳು ಆಫ್ ಆಗಿವೆ</translation>
+<translation id="4269883910223712419">ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರು ಈ ಕೆಳಗಿನ ಸಾಮರ್ಥ್ಯಗಳನ್ನು ಹೊಂದಿದ್ದಾರೆ:</translation>
 <translation id="4274921305979314545">ನಿಮ್ಮ ಫೋನ್‌‍ನ ಮೂಲಕ ನಿಮ್ಮ Chromebook ಅನ್ನು ಸಂಪರ್ಕಿಸಿ</translation>
 <translation id="4279490309300973883">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
@@ -219,6 +221,7 @@
 <translation id="4734965478015604180">ಅಡ್ಡ</translation>
 <translation id="476166673298332917">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹಾಗೂ ಸಂವಹನಗಳು ಸೇರಿದಂತೆ ಎಲ್ಲಾ ಚಟುವಟಿಕೆಗೆ, ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರು ಪ್ರವೇಶ ಹೊಂದಿರುತ್ತಾರೆ.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್</translation>
+<translation id="4778095205580009397">Google ಅಸಿಸ್ಟೆಂಟ್‌ ಡೆಮೊ ಸೆಶನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
 <translation id="4849058404725798627">ಕೀಬೋರ್ಡ್‌ ಫೋಕಸ್‌ ಮೂಲಕ ವಿಷಯವನ್ನು ಎದ್ದುಗಾಣಿಸಿ</translation>
@@ -335,6 +338,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6751826523481687655">ಕಾರ್ಯಕ್ಷಮತೆಯ ಟ್ರೇಸಿಂಗ್ ಅನ್ನು ಆನ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6785414152754474415">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE" />% ಪೂರ್ಣಗೊಂಡಿದೆ ಮತ್ತು ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ.</translation>
 <translation id="6803622936009808957">ಯಾವುದೇ ಬೆಂಬಲಿತ ಪರಿಹಾರಗಳು ಕಂಡುಬರದ ಕಾರಣ ಪ್ರದರ್ಶನಗಳನ್ನು ಪ್ರತಿಬಿಂಬಿಸಲಾಗಲಿಲ್ಲ. ಬದಲಿಗೆ ವಿಸ್ತರಿತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಅನ್ನು ನಮೂದಿಸಲಾಗಿದೆ.</translation>
+<translation id="6814658242098378692">ಆ್ಯಪ್‌ಗಳು, ವಿಸ್ತರಣೆಗಳು ಮತ್ತು ಥೀಮ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="6820676911989879663">ವಿರಾಮ ತೆಗೆದುಕೊಳ್ಳಿ!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">ಸಕ್ರಿಯಗೊಳಿಸಿ<ph name="NETWORKSERVICE" /></translation>
@@ -358,6 +362,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> ನಲ್ಲಿ ಹಳೆಯ ರೆಸಲ್ಯೂಷನ್‌ಗೆ ಹಿಂತಿರುಗಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7256634071279256947">ಹಿಂಭಾಗದ ಮೈಕ್ರೊಫೋನ್</translation>
 <translation id="726276584504105859">ವಿಭಜಿತ ಪರದೆಯನ್ನು ಬಳಸಲು ಇಲ್ಲಿ ಡ್ರ್ಯಾಗ್‌ ಮಾಡಿ</translation>
+<translation id="7303365578352795231">ಮತ್ತೊಂದು ಸಾಧನದಲ್ಲಿ ಉತ್ತರಿಸಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="7348093485538360975">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="735745346212279324">VPN ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7377169924702866686">CAPS LOCK ಆನ್ ಆಗಿದೆ.</translation>
@@ -390,6 +395,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7842569679327885685">ಎಚ್ಚರಿಕೆ: ಪ್ರಾಯೋಗಿಕ ವೈಶಿಷ್ಟ್ಯ</translation>
 <translation id="7846634333498149051">ಕೀಬೋರ್ಡ್</translation>
+<translation id="7886169021410746335">ಗೌಪ್ಯತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="7886277072580235377">ನೀವು ಸೈನ್ ಔಟ್ ಮಾಡುವಾಗ ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸೆಶನ್ ಅನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ಇಮೇಲ್‌ ಕಳುಹಿಸಿ</translation>
 <translation id="7904094684485781019">ಈ ಖಾತೆಗಾಗಿ ನಿರ್ವಾಹಕರು ಬಹುವಿಧದ ಸೈನ್ ಇನ್ ಅನುಮತಿಸಿಲ್ಲ.</translation>

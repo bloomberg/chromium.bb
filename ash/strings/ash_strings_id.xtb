@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">Perangkat USB-C (port sebelah kiri)</translation>
 <translation id="1294929383540927798">Ubah setelan notifikasi layar kunci</translation>
 <translation id="1302880136325416935">Tampilkan setelan Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">Selalu tampilkan rak</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351937230027495976">Ciutkan menu</translation>
 <translation id="1383876407941801731">Telusuri</translation>
@@ -93,6 +94,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Alihkan mode Jangan ganggu</translation>
 <translation id="2412593942846481727">Update tersedia</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> adalah sesi terkelola yang dikelola oleh <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Terhubung ke <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Sebelum menerima, konfirmasikan bahwa kunci sandi ini ditampilkan pada perangkat tersebut: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifikasi</translation>
@@ -306,6 +308,7 @@
 <translation id="6297287540776456956">Gunakan stilus untuk memilih wilayah</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> diputar ke <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Hamparan keyboard</translation>
+<translation id="6344698853700675736">Beralih Cahaya Malam</translation>
 <translation id="6376931439017688372">Bluetooth aktif</translation>
 <translation id="639644700271529076">CAPS LOCK tidak aktif</translation>
 <translation id="6406704438230478924">altgr</translation>

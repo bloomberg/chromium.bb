@@ -626,7 +626,7 @@
 <translation id="1897762215429052132">ตั้งค่าการเชื่อมต่อเครือข่าย ภาษา รูปแบบแป้นพิมพ์...</translation>
 <translation id="1901303067676059328">เลือก&amp;ทั้งหมด</translation>
 <translation id="1902576642799138955">ระยะเวลาที่มีผลบังคับใช้</translation>
-<translation id="1904518222538904133">มีบัตร 1 ใบที่ใช้ได้ในอุปกรณ์นี้เท่านั้น</translation>
+<translation id="1904518222538904133">คุณมีบัตรใบหนึ่งที่ใช้ได้ในอุปกรณ์นี้เท่านั้น</translation>
 <translation id="1905375423839394163">ชื่ออุปกรณ์ Chromebook</translation>
 <translation id="1905710495812624430">ลองทำเกินจำนวนครั้งที่กำหนดไว้แล้ว</translation>
 <translation id="1909880997794698664">คุณต้องการเก็บอุปกรณ์นี้ไว้ในโหมดคีออสก์อย่างถาวรหรือไม่</translation>
@@ -932,7 +932,6 @@
 <translation id="2378075407703503998">เลือก <ph name="SELCTED_FILE_COUNT" /> ไฟล์</translation>
 <translation id="237828693408258535">แปลหน้านี้ไหม</translation>
 <translation id="2378982052244864789">เลือกไดเรกทอรีของส่วนขยาย</translation>
-<translation id="2379281330731083556">พิมพ์โดยใช้ช่องโต้ตอบของระบบ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">ถามก่อนที่จะส่ง (แนะนำ)</translation>
 <translation id="2384436799579181135">เกิดข้อผิดพลาด โปรดตรวจสอบเครื่องพิมพ์และลองอีกครั้ง</translation>
 <translation id="2387458720915042159">ประเภทการเชื่อมต่อพร็อกซี</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">กำลังเล่นบน</translation>
 <translation id="2677748264148917807">ออก</translation>
 <translation id="2678063897982469759">เปิดการใช้งานอีกครั้ง</translation>
-<translation id="2679385451463308372">พิมพ์โดยใช้หน้าต่างระบบ…</translation>
 <translation id="268053382412112343">ประวั&amp;ติ</translation>
 <translation id="2683638487103917598">จัดเรียงโฟลเดอร์แล้ว</translation>
 <translation id="2684004000387153598">หากต้องการดำเนินการต่อ ให้คลิก "ตกลง" จากนั้นคลิก "เพิ่มบุคคล" เพื่อสร้างโปรไฟล์ใหม่สำหรับที่อยู่อีเมล</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">การเซ็นชื่อในเอกสารของ Microsoft</translation>
 <translation id="270516211545221798">ความเร็วทัชแพด</translation>
 <translation id="2705736684557713153">เลื่อนลงด้านล่างของหน้าจอ และเปิดการเชื่อมต่ออินเทอร์เน็ตผ่านมือถือแบบด่วนหากมีปรากฏขึ้นมา หากไม่มี แสดงว่าทุกอย่างเรียบร้อยแล้ว</translation>
-<translation id="2706954854267016964">ไม่รองรับอุปกรณ์ Google Cloud Print ที่เลือกอีกต่อไปแล้ว ลองตั้งค่าเครื่องพิมพ์ในการตั้งค่าระบบของคอมพิวเตอร์</translation>
 <translation id="2707024448553392710">คอมโพเนนต์กำลังดาวน์โหลด</translation>
 <translation id="270921614578699633">เฉลี่ยสูงกว่า</translation>
 <translation id="2709453993673701466">หากต้องการจัดการการซิงค์และการปรับเปลี่ยนในแบบของคุณก่อนเปิดใช้งาน ให้ไปที่<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">ผู้ดูแลระบบปิดใช้ผู้ใช้ภายใต้การดูแล</translation>
 <translation id="2724841811573117416">บันทึก WebRTC</translation>
 <translation id="2725200716980197196">กู้คืนการเชื่อมต่อเครือข่ายแล้ว</translation>
-<translation id="2726934403674109201">(ทั้งหมด <ph name="COUNT" /> รายการ)</translation>
 <translation id="2727176303594781056">ข้อผิดพลาดการเปิดใช้งานเครือข่าย</translation>
 <translation id="2727633948226935816">ไม่ต้องเตือนฉันอีก</translation>
 <translation id="2727712005121231835">ขนาดจริง</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">ตัวแยก</translation>
 <translation id="3389312115541230716">คลิกขวาที่ไอคอน <ph name="SMALL_PRODUCT_LOGO" /> ในแถบงาน</translation>
 <translation id="3391716558283801616">แท็บ 7</translation>
-<translation id="3396331542604645348">เครื่องพิมพ์ที่เลือกไว้ไม่สามารถใช้ได้หรือไม่ได้รับการติดตั้งอย่างถูกต้อง โปรดตรวจสอบเครื่องพิมพ์ของคุณหรือลองเลือกเครื่องพิมพ์อื่น</translation>
 <translation id="3396800784455899911">การคลิกปุ่ม "ยอมรับและดำเนินการต่อ" แสดงว่าคุณยอมรับการดำเนินการของบริการต่างๆ ของ Google ตามที่ชี้แจ้งไว้ด้านบน</translation>
 <translation id="3399432415385675819">ระบบจะปิดใช้การแจ้งเตือน</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -1737,7 +1732,7 @@
 <translation id="3606712892509067288">นำออกจาก Better Together</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">ตัวอย่างภาพผู้ใช้</translation>
-<translation id="3609446736023031597">รับข้อมูลอัปเดตและคำแนะนำล่าสุดเกี่ยวกับแอป Play Store</translation>
+<translation id="3609446736023031597">รับข้อมูลอัปเดตและคำแนะนำล่าสุดเกี่ยวกับแอปใน Play Store</translation>
 <translation id="3609785682760573515">กำลังซิงค์...</translation>
 <translation id="3609895557594655134">เพิ่ม Android VPN...</translation>
 <translation id="361106536627977100">ข้อมูล Flash</translation>
@@ -3370,7 +3365,7 @@
 <translation id="6075907793831890935">แลกเปลี่ยนข้อมูลกับอุปกรณ์ชื่อ <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">รวมภาพหน้าจอนี้</translation>
 <translation id="6077131872140550515">นำออกจากเครือข่ายที่ต้องการ</translation>
-<translation id="6077189836672154517">เคล็ดลับและข้อมูลอัปเดตใน <ph name="DEVICE_TYPE" /></translation>
+<translation id="6077189836672154517">เคล็ดลับและข้อมูลอัปเดตเกี่ยวกับ <ph name="DEVICE_TYPE" /></translation>
 <translation id="6078323886959318429">เพิ่มทางลัด</translation>
 <translation id="6078752646384677957">โปรดตรวจสอบไมโครโฟนและระดับเสียง</translation>
 <translation id="6080515710685820702">หากมีการใช้คอมพิวเตอร์ร่วมกัน ให้ลองเปิดหน้าต่างที่ไม่ระบุตัวตน</translation>
@@ -3630,7 +3625,7 @@
 <translation id="6456394469623773452">ดี</translation>
 <translation id="6456631036739229488">เปลี่ยนโทรศัพท์ที่เปิด Smart Lock แล้ว โปรดป้อนรหัสผ่านเพื่ออัปเดต Smart Lock โทรศัพท์จะปลดล็อก <ph name="DEVICE_TYPE" /> ของคุณในครั้งถัดไป คุณสามารถปิด Smart Lock ได้ใน "การตั้งค่า"</translation>
 <translation id="645705751491738698">บล็อกการเรียกใช้ JavaScript</translation>
-<translation id="6458701200018867744">อัปเดตไม่สำเร็จ (<ph name="WEBRTC_LOG_UPLOAD_TIME" />)</translation>
+<translation id="6458701200018867744">อัปโหลดไม่สำเร็จ (<ph name="WEBRTC_LOG_UPLOAD_TIME" />)</translation>
 <translation id="6459488832681039634">ใช้สิ่งที่เลือกเพื่อค้นหา</translation>
 <translation id="6459799433792303855">หน้าต่างที่ใช้งานย้ายไปอยู่หน้าจออื่น</translation>
 <translation id="6460601847208524483">ค้นหาถัดไป</translation>
@@ -4783,7 +4778,7 @@
 <translation id="8191453843330043793">ตัวแก้ไขพร็อกซี V8</translation>
 <translation id="8193175696669055101">รุ่นอุปกรณ์</translation>
 <translation id="8195027750202970175">ขนาดบนดิสก์</translation>
-<translation id="8198323535106903877">เราจะติดตั้งแอป <ph name="NUMBER_OF_APPS" /> แอปให้คุณ</translation>
+<translation id="8198323535106903877">เราจะติดตั้งแอป <ph name="NUMBER_OF_APPS" /> แอปนั้นให้คุณ</translation>
 <translation id="8199300056570174101">เครือข่าย (บริการ) และคุณสมบัติอุปกรณ์</translation>
 <translation id="8200772114523450471">ทำต่อ</translation>
 <translation id="8202160505685531999">โปรดป้อนรหัสผ่านใหม่เพื่ออัปเดตโปรไฟล์ <ph name="DEVICE_TYPE" /> ของคุณ</translation>

@@ -942,7 +942,7 @@
 <translation id="8441146129660941386">后退</translation>
 <translation id="8445448999790540984">无法导出密码</translation>
 <translation id="8447861592752582886">撤消设备权限</translation>
-<translation id="8477071352266846533">为 <ph name="SYNC_ACCOUNT_USER_NAME" /> 关闭同步功能</translation>
+<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> 已关闭同步功能</translation>
 <translation id="8487700953926739672">可离线使用</translation>
 <translation id="8489271220582375723">打开历史记录页</translation>
 <translation id="8493948351860045254">释放空间</translation>

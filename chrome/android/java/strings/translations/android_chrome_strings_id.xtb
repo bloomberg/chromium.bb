@@ -238,6 +238,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="2762000892062317888">baru saja</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> detik lagi</translation>
 <translation id="2781151931089541271">1 detik lagi</translation>
+<translation id="2803478378562657435">Menampilkan opsi sandi dan sandi yang disimpan</translation>
 <translation id="2810645512293415242">Halaman disederhanakan agar data disimpan dan dimuat lebih cepat.</translation>
 <translation id="281504910091592009">Lihat dan kelola sandi tersimpan di <ph name="BEGIN_LINK" />Akun Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Untuk mendapatkan bookmark di semua perangkat Anda, login dan aktifkan sinkronisasi</translation>
@@ -711,6 +712,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6573431926118603307">Tab yang telah dibuka di Chrome pada perangkat lainnya akan muncul di sini.</translation>
 <translation id="6575643671698722332">Gagal menyetel ulang. Pastikan perangkat tersambung ke internet dan coba lagi.</translation>
 <translation id="6583199322650523874">Membookmark halaman saat ini</translation>
+<translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Situs desktop</translation>
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +829,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="748127970106343339">Mengonfirmasi penghapusan kredensial perangkat</translation>
 <translation id="7481312909269577407">Maju</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Diperbarui <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Tampilkan sandi</translation>
 <translation id="7494974237137038751">data yang dihemat</translation>
 <translation id="7498271377022651285">Harap tunggu...</translation>
 <translation id="7514365320538308">Download</translation>
@@ -894,6 +897,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="802154636333426148">Download gagal</translation>
 <translation id="8026334261755873520">Hapus data browsing</translation>
 <translation id="8035133914807600019">Folder baru…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">Lainnya, yang seperti ini</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> hari lagi</translation>
 <translation id="804335162455518893">Kartu SD tidak ditemukan</translation>
@@ -950,6 +954,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8503559462189395349">Sandi Chrome</translation>
 <translation id="8503813439785031346">Nama Pengguna</translation>
 <translation id="8504988642345501642">Saat Anda scroll ke atas, link cepat ke halaman terkait akan ditampilkan. URL halaman yang Anda buka dikirimkan ke Google.</translation>
+<translation id="8507520749471379845">Sandi tersedia</translation>
 <translation id="8514477925623180633">Ekspor sandi yang disimpan dengan Chrome</translation>
 <translation id="8514577642972634246">Masuki mode penyamaran</translation>
 <translation id="851751545965956758">Blokir situs agar tidak terhubung ke perangkat</translation>

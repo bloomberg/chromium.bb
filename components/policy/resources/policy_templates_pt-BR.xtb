@@ -2338,7 +2338,7 @@
 <translation id="7617319494457709698">Esta política especifica as extensões que podem usar a função <ph name="CHALLENGE_USER_KEY_FUNCTION" /> da API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> para declaração remota. As extensões devem ser adicionadas a esta lista para usar a API.
 
           Se uma extensão não estiver na lista ou se a lista não for definida, a chamada para a API falhará com um código de erro.</translation>
-<translation id="7618907117929117943">Faça a reversão e permaneça na versão de destino se a versão do SO for mais recente que a de destino e se for possível transferir a configuração do dispositivo (incluindo as credenciais de rede) por meio da reversão, ignorando também a OOBE após a reversão. Não faça nem aborte a reversão se isso não for possível, seja porque a versão de destino não é compatível com a restauração de dados ou devido a uma alteração incompatível com versões anteriores.
+<translation id="7618907117929117943">Faça a reversão e permaneça na versão de destino se a versão do SO for mais recente que a de destino e se for possível transferir a configuração do dispositivo (incluindo as credenciais de rede) por meio da reversão, ignorando também a OOBE após a reversão. Não faça nem cancele a reversão se isso não for possível, seja porque a versão de destino não é compatível com a restauração de dados ou devido a uma alteração incompatível com versões anteriores.
           Compatível com o <ph name="PRODUCT_OS_NAME" /> 70 ou versões posteriores. Para clientes com versões anteriores, esse valor significa que a reversão está desativada.</translation>
 <translation id="7625444193696794922">Especifica o canal de liberação ao qual este dispositivo deve ser vinculado.</translation>
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
@@ -2603,26 +2603,6 @@ Não é necessário definir essas configurações manualmente. Modelos fáceis d
 
 O modo recomendado para configurar políticas no Windows é por meio de GPO, embora o aprovisionamento de políticas por meio de registro ainda seja compatível com instâncias do Windows que estejam vinculadas a um domínio <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Faz a limpeza do diretório inicial do ecryptfs do usuário e começa com um novo diretório inicial ext4-encrypted.</translation>
-<translation id="8279832363395120715">Retira as partes de privacidade e confidenciais de URLs https:// antes de repassá-los para scripts de PAC (Config. automática de proxy) usados pelo <ph name="PRODUCT_NAME" /> durante a resolução de proxy.
-
-      Quando a política é definida como True, o recurso de segurança é ativado. e os URLs https:// são
-      removidos antes de enviá-los a um script de PAC. Dessa forma, o script de
-      PAC não pode ver os dados que geralmente são protegidos por um
-      canal criptografado (como o caminho e a consulta do URL).
-
-      Quando a política é definida como False, o recurso de segurança é desativado, e os scripts de PAC podem
-      ver todos os componentes de um URL
-      https://. Essa configuração se aplica a todos os scripts de PAC, independentemente da origem (inclusive
-      aqueles adquiridos por um transporte não seguro, ou descobertos de forma não segura
-      por meio de WPAD).
-
-      O padrão é True (recurso de segurança ativado), exceto para usuários
-      corporativos do Chrome OS, para os quais esta política tem False como padrão no momento.
-
-      Recomendamos que a política seja definida como True. A única razão para defini-la como
-      False é por ela causar um problema de compatibilidade com os scripts de PAC já existentes.
-
-      Queremos remover essa substituição no futuro.</translation>
 <translation id="8285435910062771358">Lupa de tela inteira ativada</translation>
 <translation id="8288199156259560552">Ativar o Serviço de Localização do Google para Android</translation>
 <translation id="8294750666104911727">Normalmente as páginas com X-UA-Compatible configuradas para chrome=1 são renderizadas no <ph name="PRODUCT_FRAME_NAME" /> independentemente da política "ChromeFrameRendererSettings".

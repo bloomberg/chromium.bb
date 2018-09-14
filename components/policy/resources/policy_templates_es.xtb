@@ -2732,26 +2732,6 @@ No es necesario configurar estas opciones manualmente. En la página <ph name="P
 
 Te recomendamos que utilices GPO para configurar la política en Windows, aunque aún se admite la asignación de la política a través del registro para instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Borrar los eCryptfs del directorio principal del usuario y empezar con un nuevo directorio principal cifrado con ext4.</translation>
-<translation id="8279832363395120715">Elimina las partes de las URL de tipo https:// que contienen información confidencial sobre seguridad y privacidad antes de que se transfieran a las secuencias de comandos de PAC (configuración automática de proxy) que utiliza <ph name="PRODUCT_NAME" /> durante la resolución de proxy.
-
-      Si se le asigna el valor True, se habilita la función de seguridad y las URL de tipo https:// se
-      eliminan antes de su envío a la secuencia de comandos de PAC. De esta forma, esta
-      secuencia no puede ver los datos protegidos habitualmente por un
-      canal cifrado (como la ruta y la consulta de la URL).
-
-      Si se le asigna el valor False, se inhabilita esta función de seguridad y las secuencias de comandos de PAC
-      pueden ver de forma implícita todos los componentes de la URL de tipo https://.
-      Esto se aplica a todas las secuencias de comandos de PAC, independientemente de su origen. Por ejemplo,
-      se aplica a las secuencias que proceden de un método de transporte no seguro, así como a aquellas obtenidas
-      a través de WPAD.
-
-      El valor True se asigna de forma predeterminada (función de seguridad habilitada), excepto en los usuarios de empresas que utilizan Chrome OS,
-      para los que el valor asignado de forma predeterminada es False.
-
-      Se recomienda asignar el valor True. El único motivo para asignar el valor
-      False es que produzca un problema de compatibilidad relacionado con las secuencias de comandos de PAC.
-
-      Lo ideal es eliminar esta anulación en el futuro.</translation>
 <translation id="8285435910062771358">Lupa de pantalla completa habilitada</translation>
 <translation id="8288199156259560552">Habilitar los servicios de ubicación de Google para aplicaciones Android</translation>
 <translation id="8294750666104911727">Normalmente, las páginas con X-UA-Compatible establecido en chrome=1 se mostrarán en <ph name="PRODUCT_FRAME_NAME" />, independientemente de la política ChromeFrameRendererSettings.

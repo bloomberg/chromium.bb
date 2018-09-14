@@ -2601,26 +2601,6 @@ Te se postavke ne moraju konfigurirati ručno! Jednostavne predloške za Windows
 
 Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pružanje pravila putem registra i dalje podržava za instance Windowsa pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Briše početni direktorij korisnika za ecryptfs i započinje novi ext4-šifrirani početni direktorij.</translation>
-<translation id="8279832363395120715">Uklanja osjetljive dijelove https:// URL-ova koji se odnose na privatnost i sigurnost prije nego što se URL-ovi proslijede PAC skriptama (Proxy Auto Config) koje <ph name="PRODUCT_NAME" /> koristi tijekom razrješavanja proxyja.
-
-      Kada se pravilo postavi na True, sigurnosna je značajka omogućena i osjetljivi
-      se dijelovi https:// URL-ova uklanjaju prije slanja URL-ova PAC skriptama. Na taj
-      način PAC skripte ne mogu vidjeti podatke koji se obično štite kriptiranim
-      kanalom (kao što su put URL-a i upit).
-
-      Kada se postavi na False, sigurnosna je značajka onemogućena i PAC skriptama 
-      implicitno se dopušta prikaz svih komponenti https:// URL-a. To se primjenjuje
-      na sve PAC skripte bez obzira na porijeklo (uključujući one dohvaćene
-      u nezaštićenom prijenosu ili one koje su na nesiguran način otkrivene putem
-      WPAD-a).
-
-      Zadana je postavka True (omogućena sigurnosna značajka), osim za poslovne
-      korisnike OS-a Chrome za koje je trenutačna zadana postavka False.
-
-      Preporučena je postavka True. Na False bi se trebala postaviti jedino ako
-      uzrokuje problem s kompatibilnošću s postojećim PAC skriptama.
-
-      Namjera je da se to nadjačavanje ubuduće ukloni.</translation>
 <translation id="8285435910062771358">Omogućeno je povećalo cijelog zaslona</translation>
 <translation id="8288199156259560552">Omogući Googleovu uslugu lokacije na Androidu</translation>
 <translation id="8294750666104911727">Stranice čija je vrijednost X-UA-Compatible postavljena na chrome=1 uobičajeno će se generirati u okviru <ph name="PRODUCT_FRAME_NAME" /> bez obzira na pravilo "ChromeFrameRendererSettings".

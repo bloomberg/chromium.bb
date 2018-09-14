@@ -923,7 +923,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> קבצים נבחרו</translation>
 <translation id="237828693408258535">לתרגם את הדף הזה?</translation>
 <translation id="2378982052244864789">בחר את ספריית ההרחבה.</translation>
-<translation id="2379281330731083556">הדפס באמצעות תיבת דו-שיח של המערכת... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">שאל לפני שליחה (מומלץ)</translation>
 <translation id="2384436799579181135">אירעה שגיאה. יש לבדוק את המדפסת ולנסות שוב.</translation>
 <translation id="2387458720915042159">‏סוג חיבור לשרת proxy</translation>
@@ -1124,7 +1123,6 @@
 <translation id="2676946222714718093">מופעל ב-</translation>
 <translation id="2677748264148917807">יציאה</translation>
 <translation id="2678063897982469759">הפוך מחדש לפעיל</translation>
-<translation id="2679385451463308372">הדפס באמצעות תיבת דו-שיח של המערכת...</translation>
 <translation id="268053382412112343">הי&amp;סטוריה</translation>
 <translation id="2683638487103917598">התיקיה מוינה</translation>
 <translation id="2684004000387153598">כדי להמשיך יש ללחוץ על 'אישור' ולאחר מכן ללחוץ על 'הוספת משתמש' כדי ליצור פרופיל חדש בשביל כתובת האימייל שלך.</translation>
@@ -1137,7 +1135,6 @@
 <translation id="2704184184447774363">‏חתימה על מסמכים של Microsoft</translation>
 <translation id="270516211545221798">מהירות לוח מגע</translation>
 <translation id="2705736684557713153">גוללים לתחתית המסך ומפעילים את האפשרות 'שיתוף אינטרנט מיידי בין מכשירים', אם היא מופיעה. אם היא לא מופיעה, הכול מוכן.</translation>
-<translation id="2706954854267016964">‏מכשיר Google Cloud Print שנבחר כבר לא נתמך. אפשר לנסות להגדיר את המדפסת דרך הגדרות המערכת של המחשב.</translation>
 <translation id="2707024448553392710">הורדת הרכיב מתבצעת</translation>
 <translation id="270921614578699633">מעל לממוצע</translation>
 <translation id="2709453993673701466">רוצה לנהל את הסנכרון וההתאמה האישית לפני הפעלתם? אפשר לעשות זאת ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
@@ -1153,7 +1150,6 @@
 <translation id="2721695630904737430">מנהל המערכת שלך השבית את המשתמשים בפיקוח.</translation>
 <translation id="2724841811573117416">‏יומני WebRTC</translation>
 <translation id="2725200716980197196">קישוריות הרשת התחדשה</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> סך הכל)</translation>
 <translation id="2727176303594781056">שגיאה בהפעלת רשת</translation>
 <translation id="2727633948226935816">אל תזכיר לי שוב</translation>
 <translation id="2727712005121231835">גודל ממשי</translation>
@@ -1572,7 +1568,6 @@
 <translation id="338583716107319301">מפריד</translation>
 <translation id="3389312115541230716">לחץ לחיצה ימנית על הסמל <ph name="SMALL_PRODUCT_LOGO" /> בשורת המשימות</translation>
 <translation id="3391716558283801616">כרטיסייה 7</translation>
-<translation id="3396331542604645348">המדפסת שנבחרה אינה זמינה או שאינה מותקנת כראוי. בדוק את המדפסת או נסה לבחור מדפסת אחרת.</translation>
 <translation id="3396800784455899911">‏לחיצה על הלחצן "קבלה והמשך" מבטאת את הסכמתך לעיבוד שתואר קודם לכן לגבי השירותים האלה של Google.</translation>
 <translation id="3399432415385675819">הודעות יושבתו</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

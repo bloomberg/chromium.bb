@@ -686,7 +686,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis du deaktiverer denne indstilling eller ikke angiver en værdi, benytter Vis udskrift den senest brugte printer som standarddestination.
 
       Hvis du aktiverer denne indstilling, benytter Vis udskrift operativsystemets standardprinter som standarddestination.</translation>
-<translation id="2856674246949497058">Træk udgivelsen tilbage til, og behold målversionen, hvis OS-versionen er nyere end målversionen. Foretag en Powerwash under processen.</translation>
+<translation id="2856674246949497058">Træk udgivelsen tilbage, og behold målversionen, hvis OS-versionen er nyere end målversionen. Foretag en Powerwash under processen.</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="2873651257716068683">Tilsidesætter størrelsen på udskriftsiden. Hvis sidestørrelsen ikke er tilgængelig, ignoreres denne politik.</translation>
 <translation id="2874209944580848064">Bemærkning om <ph name="PRODUCT_OS_NAME" />-enheder, der understøtter Android-apps:</translation>
@@ -2603,21 +2603,6 @@ Du behøver ikke at konfigurere disse indstillinger manuelt. Du kan downloade ti
 
 Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via GPO, selvom provisionering af politikker via registreringsdatabasen fortsat understøttes for forekomster i Windows, der er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="8274603902181597201">Slet brugerens eCryptfs-hovedmapper, og start med en frisk ext4-krypteret hovedmappe.</translation>
-<translation id="8279832363395120715">Fjerner følsomme dele vedrørende personlige oplysninger og sikkerhed i webadresser af typen https://, før de overføres til PAC-scripter (Proxy Auto Config), som anvendes af <ph name="PRODUCT_NAME" /> i forbindelse med proxyopløsning.
-
-      Hvis politikken er angivet som Sand, er sikkerhedsfunktionen aktiveret, og webadresser af typen https:// fjernes,
-      før de sendes videre til et PAC-script. Dermed kan
-      PAC-scriptet ikke se data, der normalt beskyttes af en
-      krypteret kanal (som f.eks. webadressens sti og forespørgsel).
-
-      Hvis politikken er angivet som Falsk, er sikkerhedsfunktionen deaktiveret, og PAC-scripter kan implicit se alle komponenter af en webadresse af typen https://.
-      Dette gælder for alle PAC-scripter uanset oprindelse (herunder dem, der hentes via en usikker overførsel, eller som opdages via WPAD på en usikker måde).
-
-      Politikken angives som standard som Sand (sikkerhedsfunktion er aktiveret). Dette gælder dog ikke for Chrome OS-virksomhedsbrugere, hvor politikken i øjeblikket som standard er angivet som Falsk.
-
-      Vi anbefaler, at politikken angives som Sand. Politikken bør kun angives som Falsk, hvis den forårsager problemer med kompatibiliteten med eksisterende PAC-scripter.
-
-      Planen er at fjerne denne tilsidesættelse på et senere tidspunkt.</translation>
 <translation id="8285435910062771358">Lup i fuld skærm er aktiveret</translation>
 <translation id="8288199156259560552">Aktivér Googles placeringstjeneste til Android</translation>
 <translation id="8294750666104911727">Normalt vil sider, der er angivet med X-UAchrome=1, blive gengivet i <ph name="PRODUCT_FRAME_NAME" />, uanset politikken for 'ChromeFrameRendererSettings'.
@@ -2883,7 +2868,7 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="9084985621503260744">Angiv, om videoaktiviteten påvirker strømstyringen</translation>
 <translation id="9088433379343318874">Aktivér indholdsudbyderen for den administrerede bruger</translation>
 <translation id="9088444059179765143">Konfigurer metoden for automatisk registrering af tidszone.</translation>
-<translation id="9094064873808699479">Træk udgivelsen tilbage, og behold målversionen, hvis versionen af operativsystemet er nyere end målversionen. Forsøg at overføre konfigurationen på enhedsniveau (herunder loginoplysninger til netværket) via tilbagetrækningsprocessen, hvis det er muligt, men udfør tilbagetrækningen med en fuldstændig Powerwash, selvom det ikke er muligt at gendanne dataene (eftersom målversionen ikke understøtter gendannelse af data eller på grund af en ikke-kompatibel ændring tilbage). .
+<translation id="9094064873808699479">Træk udgivelsen tilbage, og behold målversionen, hvis versionen af operativsystemet er nyere end målversionen. Forsøg at overføre konfigurationen på enhedsniveau (herunder loginoplysninger til netværket) via tilbagetrækningsprocessen, hvis det er muligt, men udfør tilbagetrækningen med en fuldstændig Powerwash, selvom det ikke er muligt at gendanne dataene (eftersom målversionen ikke understøtter gendannelse af data eller på grund af en ikke-kompatibel ændring tilbage).
           Understøttes i <ph name="PRODUCT_OS_NAME" /> version 70 og nyere. Ved ældre klienter betyder denne værdi, at tilbagetrækning er deaktiveret.</translation>
 <translation id="9096086085182305205">Hvidliste til godkendelse af server</translation>
 <translation id="9098553063150791878">Politikker for HTTP-godkendelse</translation>

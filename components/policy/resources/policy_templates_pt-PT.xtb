@@ -2362,7 +2362,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7617319494457709698">Esta política especifica as extensões com permissão para utilizar a função <ph name="CHALLENGE_USER_KEY_FUNCTION" /> da <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> para a comprovação remota. As extensões têm de ser adicionadas a esta lista para poderem utilizar a API.
 
           Se uma extensão não estiver na lista ou a lista não estiver definida, a chamada para a API falha e resulta num código de erro.</translation>
-<translation id="7618907117929117943">Reverta e continue com a versão de destino se a versão do SO for mais recente do que a do destino; também é possível transferir a configuração ao nível do dispositivo (incluindo as credenciais da rede) através da reversão e ignorando OOBE após a reversão. Não execute nem cancele se tal não for possível (porque a versão do destino não é compatível com o restauro de dados ou devido a uma alteração incompatível com anterior.
+<translation id="7618907117929117943">Reverta e continue com a versão de destino se a versão do SO for mais recente do que a do destino; também é possível transferir a configuração ao nível do dispositivo (incluindo as credenciais da rede) através da reversão e ignorando OOBE após a reversão. Não execute nem cancele se tal não for possível (porque a versão do destino não é compatível com o restauro de dados ou devido a uma alteração incompatível com a anterior).
           Compatível com a versão 70 e superior do <ph name="PRODUCT_OS_NAME" />. Para clientes mais antigos, este valor significa que a reversão está desativada.</translation>
 <translation id="7625444193696794922">Especifica o canal de lançamento ao qual este aparelho deve estar bloqueado.</translation>
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
@@ -2629,28 +2629,6 @@ Não é necessário configurar estas definições manualmente. Existem modelos d
 
 A forma recomendada para configurar a política no Windows é através do GPO, embora o aprovisionamento da política através de registo ainda seja suportado para instâncias do Windows que estejam associadas a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Limpe o diretório principal de ecryptfs do utilizador e comece com um diretório principal novo com encriptação ext4.</translation>
-<translation id="8279832363395120715">Remove as partes sensíveis de privacidade e de segurança de URLs https:// antes de os passar para scripts de PAC (Configuração automática do proxy) utilizados pelo <ph name="PRODUCT_NAME" /> durante a resolução de proxy.
-
-     Quando definida como Verdadeira, a funcionalidade de segurança está ativada
-     e os URLs https:// são
-      removidos antes de serem enviados para um script de PAC.
-      Desta forma, o script de PAC não consegue ver dados normalmente protegidos
-      por um canal encriptado (como o caminho e a consulta do URL).
-     
-      Quando definida como Falsa, a funcionalidade de segurança está desativada
-      e é concedida, implicitamente, aos scripts de PAC a capacidade de verem todos os
-      componentes de um URL https://. Isto aplica-se a todos os scripts de PAC,
-      independentemente da origem (incluindo os que são obtidos através de um
-      transporte não protegido ou detetados através de WPAD inseguro).
-
-      A predefinição é Verdadeira (funcionalidade de segurança ativada), exceto para
-      os utilizadores empresariais do Chrome OS, na qual a predefinição é Falsa.
-
-      Recomenda-se que a política seja definida como Verdadeira. O único motivo
-      para a definir como Falsa é se provocar problemas de incompatibilidade com
-      scripts de PAC existentes.
-
-      O objetivo é remover esta substituição no futuro.</translation>
 <translation id="8285435910062771358">Lupa em ecrã inteiro ativada</translation>
 <translation id="8288199156259560552">Ativar os serviços de localização da Google para aplicações para Android</translation>
 <translation id="8294750666104911727">Normalmente, as páginas com X-UA-Compatible definido como chrome=1 serão processadas em <ph name="PRODUCT_FRAME_NAME" />, independentemente da política "ChromeFrameRendererSettings".
@@ -2933,7 +2911,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9084985621503260744">Especificar se a atividade do vídeo afeta a gestão da energia</translation>
 <translation id="9088433379343318874">Ativar o fornecedor de conteúdos do utilizador supervisionado</translation>
 <translation id="9088444059179765143">Configurar o método de deteção automática do fuso horário</translation>
-<translation id="9094064873808699479">Reverta e continue com a versão de destino se a versão do SO for mais recente do que a do destino. Tente transferir a configuração ao nível do dispositivo (incluindo as credenciais da rede) através do processo de reversão, se possível, mas efetue a reversão com Powerwash completo, mesmo que não seja possível restaurar os dados (porque a versão do destino não é compatível com o restauro de dados ou devido a uma alteração incompatível com anterior).
+<translation id="9094064873808699479">Reverta e continue com a versão de destino se a versão do SO for mais recente do que a do destino. Tente transferir a configuração ao nível do dispositivo (incluindo as credenciais da rede) através do processo de reversão, se possível, mas efetue a reversão com Powerwash completo, mesmo que não seja possível restaurar os dados (por a versão do destino não ser compatível com o restauro de dados ou devido a uma alteração incompatível com anterior).
           Compatível com a versão 70 e superior do <ph name="PRODUCT_OS_NAME" />. Para clientes mais antigos, este valor significa que a reversão está desativada.</translation>
 <translation id="9096086085182305205">Lista de permissões do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>

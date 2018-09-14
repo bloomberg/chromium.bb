@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജ്ജറിലേക്ക് പ്ലഗ് ചെയ്‌തിരിക്കുന്നു. ബാറ്ററി ചാർജുചെയ്യൽ വിശ്വസനീയമാകണമെന്നില്ല.</translation>
 <translation id="2761704814324807722">സ്‌റ്റാറ്റസ് ട്രേ, സമയം, <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> നെറ്റ്‌വർക്കിലേക്ക് വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു</translation>
+<translation id="2790844815106384441">ലൊക്കേഷൻ സേവനങ്ങൾ അല്ലെങ്കിൽ ഉപകരണത്തിന്റെ മൈക്രോഫോൺ, ക്യാമറ അല്ലെങ്കിൽ മറ്റ് ഫീച്ചറുകൾ എന്നിവ വെബ്‌സൈറ്റുകൾക്ക് ഉപയോഗിക്കാനാകുമോ എന്നത് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="2792498699870441125">Alt+തിരയൽ</translation>
 <translation id="2805756323405976993">ആപ്സ്</translation>
 <translation id="2808012452536866044">Better Together പുതിയ ഫോണിലേക്ക് സ്വിച്ച് ചെയ്‌തു</translation>
@@ -192,6 +193,7 @@
 <translation id="4200057768455216496">നിങ്ങൾ ഡോക്ക് ചെയ്‌ത മാഗ്നിഫയറിനുള്ള കുറുക്കുവഴി അമർത്തി. അത് ഓണാക്കണോ?</translation>
 <translation id="4217571870635786043">പറഞ്ഞ് കൊടുക്കൽ</translation>
 <translation id="4261870227682513959">അറിയിപ്പ് ക്രമീകരണം കാണിക്കുക. അറിയിപ്പുകൾ ഓഫാണ്</translation>
+<translation id="4269883910223712419">ഈ ഉപകരണത്തിന്റെ അഡ്‌മിന് ഇനിപ്പറയുന്ന കാര്യങ്ങൾ ചെയ്യാൻ കഴിയും:</translation>
 <translation id="4274921305979314545">നിങ്ങളുടെ ഫോൺ ഉപയോഗിച്ച് Chromebook കണക്റ്റ് ചെയ്യുക</translation>
 <translation id="4279490309300973883">മിററിംഗ്</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> സജീവമാക്കുന്നു</translation>
@@ -219,6 +221,7 @@
 <translation id="4734965478015604180">സമാന്തരം</translation>
 <translation id="476166673298332917">പാസ്‌വേഡുകളും ആശയവിനിമയങ്ങളും ഉൾപ്പെടെ, എല്ലാ ആക്‌റ്റിവിറ്റിയിലേക്കും ഈ ഉപകരണത്തിന്റെ അഡ്‌മിന് ആക്‌സസ് ഉണ്ട്.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനായുള്ള പാസ്‌വേഡ്</translation>
+<translation id="4778095205580009397">ഡെമോ സെഷനിൽ Google അസി‌സ്‌റ്റന്റ് ലഭ്യമല്ല.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">വിച്ഛേദിക്കുക</translation>
 <translation id="4849058404725798627">കീബോർഡ് ഫോക്കസ് ഉപയോഗിച്ച് ഒബ്‌ജക്‌റ്റിനെ ഹൈലൈറ്റുചെയ്യുക</translation>
@@ -334,6 +337,7 @@
 <translation id="6751826523481687655">പ്രകടനം പിന്തുടരൽ ഓണാണ്</translation>
 <translation id="6785414152754474415">ബാറ്ററി <ph name="PERCENTAGE" />% നിറഞ്ഞിരിക്കുന്നു, ചാർജുചെയ്യൽ തുടരുന്നു.</translation>
 <translation id="6803622936009808957">പിന്തുണയ്‌ക്കുന്ന മിഴിവുകൾ കണ്ടെത്താത്തതിനാൽ പ്രദർശനങ്ങൾ പ്രതിഫലിപ്പിക്കാനായില്ല. പകരം വിപുലീകൃത ഡെസ്‌ക്‌ടോപ്പ് നൽകി.</translation>
+<translation id="6814658242098378692">ആപ്പുകൾ, വിപുലീകരണങ്ങൾ, തീമുകൾ എന്നിവ മാനേജ് ചെയ്യുക</translation>
 <translation id="6820676911989879663">ഒരു ഇടവേള എടുക്കൂ!</translation>
 <translation id="683971173229319003">തിരയൽ+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> സജീവമാക്കുക</translation>
@@ -357,6 +361,7 @@
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
 <translation id="7256634071279256947">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
 <translation id="726276584504105859">സ്പ്ലിറ്റ് സ്ക്രീൻ ഉപയോഗിക്കുന്നതിന് ഇവിടെ വലിച്ചിടുക</translation>
+<translation id="7303365578352795231">മറ്റൊരു ഉപകരണത്തിൽ മറുപടി നൽകുന്നു.</translation>
 <translation id="7348093485538360975">ഓൺ-സ്‌ക്രീൻ കീബോർഡ്</translation>
 <translation id="735745346212279324">VPN വിച്ഛേദിച്ചു</translation>
 <translation id="7377169924702866686">Caps Lock ഓൺ ആണ്.</translation>
@@ -389,6 +394,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> നെറ്റ്‌വർക്കിലേക്ക് കണക്‌റ്റ് ചെയ്യുന്നു</translation>
 <translation id="7842569679327885685">മുന്നറിയിപ്പ്: പരീക്ഷണാത്മക ഫീച്ചർ</translation>
 <translation id="7846634333498149051">കീബോർഡ്</translation>
+<translation id="7886169021410746335">സ്വകാര്യതാ ക്രമീകരണം ശരിയാക്കുക</translation>
 <translation id="7886277072580235377">സൈൻ ഔട്ട് ചെയ്യുമ്പോൾ നിങ്ങളുടെ ഇന്റർനെറ്റ് സെഷൻ മായ്ക്കപ്പെടും. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ഒരു ഇമെയിൽ അയയ്ക്കുക</translation>
 <translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>

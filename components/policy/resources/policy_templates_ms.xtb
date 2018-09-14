@@ -143,6 +143,7 @@
 <translation id="1387596372902085462">Sama ada hendak mendayakan kepercayaan dalam Infrastruktur PKI Lama Symantec Corporation</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
 <translation id="1397855852561539316">Pembekal carian lalai mencadangkan URL</translation>
+<translation id="142346659686073702">Benarkan pengguna yang bukan ahli gabungan menggunakan Crostini</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL pelayan proksi</translation>
 <translation id="1435659902881071157">Konfigurasi rangkaian tahap peranti</translation>
@@ -394,6 +395,12 @@
 
       Jika dasar ini dibiarkan tanpa ditetapkan, keadaannya sama seperti tetapan ini didayakan, lihat huraian di atas.</translation>
 <translation id="2113068765175018713">Hadkan masa hidup peranti melalui but semula automatik.</translation>
+<translation id="2116790137063002724">Dasar ini mengawal sama ada hendak melaporkan maklumat yang boleh digunakan untuk mengenal pasti pengguna, seperti log masuk OS, Log masuk profil <ph name="PRODUCT_NAME" />, Nama profil <ph name="PRODUCT_NAME" />, Laluan profil <ph name="PRODUCT_NAME" /> dan laluan boleh laku <ph name="PRODUCT_NAME" />.
+
+      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, maklumat yang boleh digunakan untuk mengenal pasti pengguna akan dikumpulkan.
+      Apabila dasar ini ditetapkan kepada Palsu, maklumat yang boleh digunakan untuk mengenal pasti pengguna tidak akan dikumpulkan.
+
+      Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Benarkan pemberitahuan pada tapak ini</translation>
 <translation id="2131902621292742709">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="2132732175597591362">Mengawal senarai putih corak URL tempat automain akan sentiasa didayakan.
@@ -893,6 +900,22 @@
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultCookiesSetting' jika dasar ini ditetapkan, jika tidak, konfigurasi peribadi pengguna akan digunakan.
 
           Lihat dasar 'CookiesBlockedForUrls' dan 'CookiesSessionOnlyForUrls' juga. Harap maklum bahawa pola URL tidak boleh bercanggah antara ketiga-tiga dasar ini - dasar yang diberi keutamaan tidak dinyatakan.</translation>
+<translation id="3373364525435227558">Menetapkan satu atau beberapa penyetempatan yang disyorkan untuk sesi terurus, membolehkan para pengguna memilih satu daripada penyetempatan ini dengan mudah.
+
+      Pengguna boleh memilih satu penyetempatan dan reka letak papan kekunci sebelum memulakan sesi terurus. Secara lalai, semua penyetempatan yang disokong oleh <ph name="PRODUCT_OS_NAME" /> disenaraikan dalam urutan abjad. Anda boleh menggunakan dasar ini untuk mengalihkan beberapa penyetempatan yang disyorkan ke bahagian atas senarai.
+
+      Jika dasar ini tidak ditetapkan, penyetempatan UI semasa akan dipilih lebih awal.
+
+      Jika dasar ini ditetapkan, penyetempatan yang disyorkan akan dialihkan ke bahagian atas senarai dan akan dipisahkan secara visual daripada semua penyetempatan lain. Penyetempatan yang disyorkan akan disenaraikan mengikut urutan yang dipaparkan dalam dasar. Penyetempatan disyorkan yang pertama akan dipilih lebih awal.
+
+      Jika terdapat lebih daripada satu penyetempatan disyorkan, pengguna dianggap ingin memilih salah satu antara penyetempatan ini. Pemilihan penyetempatan dan reka letak papan kekunci akan ditawarkan dengan jelas semasa memulakan sesi terurus. Jika tidak, kebanyakan pengguna dianggap ingin menggunakan penyetempatan yang dipilih lebih awal. Pemilihan penyetempatan dan reka letak papan kekunci akan ditawarkan secara kurang jelas apabila memulakan sesi terurus.
+
+      Apabila dasar ini ditetapkan dan log masuk automatik didayakan (lihat dasar |DeviceLocalAccountAutoLoginId| dan |DeviceLocalAccountAutoLoginDelay|), sesi terurus yang dimulakan secara automatik akan menggunakan penyetempatan pertama yang disyorkan dan reka letak papan kekunci paling popular yang sepadan dengan penyetempatan ini.
+
+      Reka letak papan kekunci prapilih sentiasa akan menjadi reka letak paling popular yang sepadan dengan penyetempatan prapilih.
+
+      Dasar ini hanya boleh ditetapkan sebagai disyorkan. Anda boleh menggunakan dasar ini untuk mengalihkan beberapa penyetempatan yang disyorkan ke bahagian atas tetapi para pengguna sentiasa dibenarkan untuk memilih sebarang penyetempatan yang disokong oleh <ph name="PRODUCT_OS_NAME" /> untuk sesi mereka.
+      </translation>
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3414260318408232239">Jika dasar ini tidak dikonfigurasikan, maka <ph name="PRODUCT_NAME" /> menggunakan versi minimum lalai iaitu TLS 1.0.
 
@@ -1130,6 +1153,11 @@
       Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, pengguna dapat menebus tawaran melalui Pendaftaran OS Chrome.
 
       Jika dasar ini ditetapkan kepada palsu, pengguna tidak akan dapat menebus tawaran.</translation>
+<translation id="4008507541867797979">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan memaparkan pengguna yang sedia ada pada skrin log masuk dan membenarkan untuk memilih satu.
+
+      Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_OS_NAME" /> tidak akan menunjukkan pengguna yang sedia ada pada skrin log masuk. Skrin log masuk biasa (yang meminta e-mel dan kata laluan atau nombor telefon pengguna) atau skrin ruang antara SAML (jika didayakan melalui dasar <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) akan ditunjukkan, melainkan Sesi Terurus dikonfigurasikan. Apabila Sesi Terurus dikonfigurasikan, hanya akaun Sesi Terurus akan ditunjukkan dan salah satu akaun tersebut boleh dipilih.
+
+      Sila ambil perhatian bahawa dasar ini tidak mempengaruhi sama ada peranti menyimpan atau membuang data pengguna setempat.</translation>
 <translation id="4010738624545340900">Membenarkan permohonan dialog pemilihan fail</translation>
 <translation id="4012737788880122133">Melumpuhkan kemas kini automatik apabila ditetapkan kepada Benar.
 
@@ -1543,6 +1571,15 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultNotificationsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
 <translation id="5219844027738217407">Untuk apl Android, dasar ini memberi kesan kepada mikrofon sahaja. Apabila dasar ini ditetapkan kepada benar, mikrofon akan diredam untuk semua apl Android, tanpa pengecualian.</translation>
+<translation id="5228316810085661003">Penangguhan log masuk automatik akaun setempat peranti.
+
+      Jika dasar |DeviceLocalAccountAutoLoginId| tidak ditetapkan, dasar ini tidak mempunyai sebarang kesan. Jika tidak:
+
+      Jika dasar ini ditetapkan, dasar ini menentukan jumlah masa tanpa aktiviti pengguna yang harus berlalu sebelum log masuk automatik ke akaun setempat peranti yang dinyatakan oleh dasar |DeviceLocalAccountAutoLoginId| dilakukan.
+
+      Jika dasar ini tidak ditetapkan, 0 milisaat akan digunakan sebagai tamat masa.
+
+      Dasar ini dinyatakan dalam milisaat.</translation>
 <translation id="523505283826916779">Tetapan kebolehcapaian</translation>
 <translation id="5247006254130721952">Sekat muat turun berbahaya</translation>
 <translation id="5248863213023520115">Menetapkan jenis penyulitan yang dibenarkan apabila meminta tiket Kerberos daripada pelayan <ph name="MS_AD_NAME" />.
@@ -1563,6 +1600,12 @@
 <translation id="5272684451155669299">Jika benar, pengguna boleh menggunakan perkakasan pada peranti Chrome untuk membuktikan identitinya dari jauh pada CA privasi melalui <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> menggunakan <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Jika ditetapkan kepada palsu atau tidak ditetapkan, panggilan kepada API ini akan gagal dengan kod ralat.</translation>
+<translation id="5277806246014825877">Benarkan pengguna ini menjalankan Crostini.
+
+      Jika dasar ini ditetapkan kepada palsu, Crostini tidak didayakan untuk pengguna.
+      Jika ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, Crostini didayakan untuk pengguna asalkan tetapan lain memberi kebenaran juga.
+      Ketiga-tiga dasar, VirtualMachinesAllowed, CrostiniAllowed dan DeviceUnaffiliatedCrostiniAllowed perlu ditetapkan kepada benar apabila memohon kebenaran untuk menjalankan Crostini.
+      Apabila dasar ini ditukar kepada palsu, dasar ini digunakan untuk memulakan bekas Crostini baharu tetapi tidak menutup bekas yang sedang dijalankan.</translation>
 <translation id="5283457834853986457">Lumpuhkan pencari pemalam (ditamatkan)</translation>
 <translation id="5288772341821359899">Jika dasar ini ditetapkan, julat port UDP yang digunakan oleh WebRTC dihadkan kepada selang port yang ditentukan (termasuk titik akhir).
 
@@ -1601,6 +1644,7 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AskNotifications' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
 <translation id="538108065117008131">Benarkan <ph name="PRODUCT_FRAME_NAME" /> untuk menguruskan jenis kandungan berikut.</translation>
+<translation id="5391388690191341203">Akaun setempat peranti untuk log masuk automatik</translation>
 <translation id="5392172595902933844">Maklumat tentang status Android dihantar kembali ke
       pelayan.
 
@@ -1630,6 +1674,7 @@
           Tetapan lalai yang gunakan apabila dasar ini dibiarkan tanpa ditetapkan ialah untuk membenarkan penyemak imbas hos membuat paparan, tetapi anda boleh memilih untuk mengatasi hal ini dan membenarkan <ph name="PRODUCT_FRAME_NAME" /> memaparkan halaman HTML secara lalai.</translation>
 <translation id="5464816904705580310">Konfigurasikan tetapan untuk pengguna terurus.</translation>
 <translation id="546726650689747237">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa AC</translation>
+<translation id="5469143988693423708">Pengguna dibenarkan untuk menjalankan Crostini</translation>
 <translation id="5469825884154817306">Sekat imej pada tapak ini</translation>
 <translation id="5475361623548884387">Dayakan pencetakan</translation>
 <translation id="547601067149622666">Jangan benarkan iklan pada tapak yang mengandungi iklan yang mengganggu</translation>
@@ -1681,6 +1726,9 @@
       Harap maklum bahawa langkah ini tidak disyorkan kerana boleh membenarkan pintasan sambungan nameConstraints yang menyekat nama hos yang boleh diberi kebenaran oleh sijil tertentu.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, sijil pelayan yang ketiadaan sambungan subjectAlternativeName yang mengandungi sama ada nama DNS atau alamat IP tidak akan dipercayai.</translation>
+<translation id="5581292529942108810">Konfigurasikan dasar yang berkaitan dengan Sambungan Pelaporan Chrome.
+
+      Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Kawal Perkhidmatan lokasi Google Android</translation>
 <translation id="5586942249556966598">Jangan buat apa-apa</translation>
 <translation id="5630352020869108293">Pulihkan sesi terakhir</translation>
@@ -1928,6 +1976,11 @@
 <translation id="6310223829319187614">Dayakan autolengkap nama domain semasa log masuk pengguna</translation>
 <translation id="6315673513957120120">Chrome memaparkan halaman amaran apabila pengguna menavigasi ke tapak yang mempunyai ralat SSL. Secara lalai atau apabila dasar ini ditetapkan kepada benar, pengguna dibenarkan mengklik lalu halaman amaran ini.
       Pengguna tidak dibenarkan mengklik lalu sebarang halaman amaran apabila dasar ini ditetapkan kepada palsu.</translation>
+<translation id="6352543686437322588">Akaun setempat peranti untuk log masuk automatik selepas tertangguh.
+
+      Jika dasar ini ditetapkan, sesi yang dinyatakan akan log masuk secara automatik selepas berlalunya suatu tempoh pada skrin log masuk tanpa interaksi pengguna. Akaun setempat peranti hendaklah telah dikonfigurasikan (lihat |DeviceLocalAccounts|).
+
+      Jika dasar ini tidak ditetapkan, log masuk automatik tidak akan berlaku.</translation>
 <translation id="6353901068939575220">Menentukan parameter yang digunakan apabila mencari URL dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {searchTerms} dalam contoh di atas, nilai ini akan digantikan dengan data istilah carian sebenar.
 
           Dasar ini tidak wajib. Jika tidak ditetapkan, permintaan carian akan dihantar menggunakan kaedah GET.
@@ -2294,6 +2347,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna akan dapat menukar tetapan ini secara manual.</translation>
 <translation id="723103540848640830">Tetapkan panjang minimum PIN kunci skrin</translation>
+<translation id="7232816984286843471">Jika dasar ini ditetapkan kepada palsu, pengguna yang bukan ahli gabungan tidak akan dibenarkan untuk menggunakan Crostini.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada benar, semua pengguna dibenarkan untuk menggunakan Crostini asalkan tetapan lain memberi kebenaran juga.
+      Ketiga-tiga dasar, VirtualMachinesAllowed, CrostiniAllowed dan DeviceUnaffiliatedCrostiniAllowed perlu ditetapkan kepada benar apabila memohon kebenaran untuk menjalankan Crostini.
+      Apabila dasar ini ditukar kepada palsu, dasar ini digunakan untuk memulakan bekas Crostini baharu tetapi tidak menutup bekas yang sedang dijalankan.</translation>
 <translation id="7234280155140786597">Nama hos pemesejan natif yang dilarang (atau * untuk semua)</translation>
 <translation id="7236775576470542603">Menetapkan jenis penggadang skrin lalai yang didayakan pada skrin log masuk.
 
@@ -2341,6 +2399,12 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7311458740754205918">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, halaman Tab Baharu boleh menunjukkan cadangan kandungan berdasarkan sejarah penyemakan imbas, minat atau lokasi pengguna.
 
       Jika dasar ini ditetapkan kepada palsu, cadangan kandungan yang dihasilkan secara automatik tidak ditunjukkan pada halaman Tab Baharu.</translation>
+<translation id="7313793931637495417">Dasar ini mengawal sama ada hendak melaporkan maklumat versi, seperti versi OS, platform OS, seni bina OS, versi <ph name="PRODUCT_NAME" /> dan saluran <ph name="PRODUCT_NAME" />.
+
+      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, maklumat versi akan dikumpulkan.
+      Apabila dasar ini ditetapkan kepada Palsu, maklumat versi tidak akan dikumpulkan.
+
+      Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Parameter baris perintah tambahan untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Serupa dengan Wipe (nilai 2), tetapi cuba mengekalkan token log masuk supaya pengguna tidak perlu log masuk semula.</translation>
 <translation id="7329842439428490522">Menyatakan panjang masa tanpa input pengguna dan skrin akan dimatikan selepas masa ini tamat apabila dijalankan dengan kuasa bateri.
@@ -2373,6 +2437,12 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7349338075015720646">Menyatakan senarai tapak web yang dipasang secara senyap, tanpa interaksi pengguna dan tidak boleh dinyahpasang mahupun dilumpuhkan oleh pengguna.
 
       Setiap senarai item dasar ialah objek dengan dua ahli: "url" dan "launch_container". "url" ialah URL apl web yang hendak dipasang dan "launch_container" ialah "tetingkap" atau "tab" untuk menunjukkan cara Apl Web akan dibuka setelah dipasang. Jika "launch_container" tidak dimasukkan, apl akan dilancarkan dalam tetingkap jika Chrome menganggapnya sebagai Apl Web Progresif dan jika sebaliknya, apl akan dilancarkan dalam tab.</translation>
+<translation id="735902178936442460">Dasar ini mengawal sama ada hendak melaporkan maklumat yang boleh digunakan untuk mengenal pasti peranti, seperti nama peranti dan alamat rangkaian.
+
+      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, maklumat yang boleh digunakan untuk mengenal pasti peranti akan dikumpulkan.
+      Apabila dasar ini ditetapkan kepada Palsu, maklumat yang boleh digunakan untuk mengenal pasti peranti tidak akan dikumpulkan.
+
+      Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Perkhidmatan Penyemakan Imbas Selamat memaparkan halaman amaran apabila pengguna menavigasi ke tapak yang dibenderakan sebagai berkemungkinan bersifat hasad. Tindakan mendayakan tetapan ini akan menghalang pengguna daripada tetap meneruskan daripada halaman amaran ke tapak yang bersifat hasad tersebut.
 
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, maka pengguna boleh memilih untuk meneruskan ke tapak yang dibenderakan selepas amaran dipaparkan.
@@ -2628,6 +2698,14 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7976157349247117979">Nama destinasi <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Tiada sekatan khas</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Membolehkan anda mengawal sama ada peranti maya dibenarkan untuk dijalankan pada OS Chrome.
+
+      Jika dasar ditetapkan kepada Benar, peranti dibenarkan untuk menjalankan peranti maya.
+      Jika dasar ditetapkan kepada Palsu, peranti tidak akan dibenarkan untuk menjalankan peranti maya.
+      Ketiga-tiga dasar, VirtualMachinesAllowed, CrostiniAllowed dan DeviceUnaffiliatedCrostiniAllowed perlu ditetapkan kepada benar apabila memohon kebenaran untuk menjalankan Crostini.
+      Apabila dasar ini ditukar kepada Palsu, dasar ini digunakan apabila memulakan peranti maya baharu tetapi tidak mematikan peranti maya yang sedang dijalankan.
+      Apabila dasar ini tidak ditetapkan pada peranti terurus, peranti tidak dibenarkan untuk menjalankan peranti maya.
+      Peranti yang tidak terurus dibenarkan untuk menjalankan peranti maya.</translation>
 <translation id="802147957407376460">Putar skrin 0 darjah</translation>
 <translation id="8033913082323846868">Dasar ini dimansuhkan dalam M70. Sebagai ganti, sila gunakan AutofillAddressEnabled dan AutofillCreditCardEnabled.
 
@@ -2672,10 +2750,17 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Apabila dasar ini tidak ditetapkan, panjang masa lalai akan digunakan.
 
           Nilai dasar harus dinyatakan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan melahu.</translation>
+<translation id="8138009212169037227">Dasar ini mengawal sama ada hendak melaporkan data dasar dan masa pengambilan dasar.
+
+      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, data dasar dan masa pengambilan dasar akan dikumpulkan.
+      Apabila dasar ini ditetapkan kepada Palsu, data dasar dan masa pengambilan data tidak akan dikumpulkan.
+
+      Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Laporkan senarai antara muka rangkaian bersama jenis dan alamat perkakasan ke pelayan.
 
       Jika dasar ditetapkan sebagai tidak benar, senarai antara muka tidak akan dilaporkan.</translation>
 <translation id="8141795997560411818">Dasar ini tidak menghalang pengguna daripada menggunakan apl Google Drive Android. Jika anda mahu menghalang akses kepada Google Drive, anda tidak harus membenarkan pemasangan apl Google Drive Android juga.</translation>
+<translation id="8142894094385450823">Tetapkan penyetempatan yang disyorkan untuk sesi terurus</translation>
 <translation id="8146727383888924340">Benarkan pengguna menebus tawaran melalui Pendaftaran OS Chrome</translation>
 <translation id="8148785525797916822">Menyekat amaran yang dipaparkan semasa <ph name="PRODUCT_NAME" /> dijalankan pada komputer atau sistem pengendalian yang tidak disokong lagi.</translation>
 <translation id="8148901634826284024">Dayakan ciri kebolehcapaian mod kontras tinggi.
@@ -2723,27 +2808,30 @@ Tujuan dasar ini adalah semata-mata untuk digunakan dalam mengkonfigurasi tika <
 Tetapan ini tidak perlu dikonfigurasikan secara manual! Templat yang mudah digunakan untuk Windows, Mac dan Linux tersedia untuk dimuat turun daripada <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui GPO, walaupun memperuntukkan dasar melalui daftaran masih disokong untuk tika Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
+<translation id="8264653492961233132">Menyatakan senarai apl dan sambungan yang dipasang secara senyap,
+          tanpa interaksi pengguna dan tidak boleh dinyahpasang mahupun
+          dilumpuhkan oleh pengguna. Semua kebenaran yang diminta oleh
+          apl/sambungan diberikan secara tersirat, tanpa interaksi pengguna,
+          termasuk sebarang kebenaran tambahan yang diminta oleh versi apl/
+          sambungan pada masa hadapan. Di samping itu, kebenaran diberikan
+          untuk API sambungan enterprise.deviceAttributes dan enterprise.platformKeys.
+          (Kedua-dua API ini tidak tersedia kepada apl/sambungan yang tidak
+          dipasang secara paksa.)
+
+          Dasar ini diutamakan sekiranya berlaku percanggahan dasar <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jika apl atau sambungan yang dipasang secara paksa sebelum ini dialih keluar daripada senarai ini, maka apl atau sambungan tersebut akan dinyahpasang oleh <ph name="PRODUCT_NAME" /> secara automatik.
+
+          Untuk tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />, pemasangan paksa adalah terhad kepada apl dan sambungan yang disenaraikan di Gedung Web Chrome.
+
+          Sila ambil perhatian bahawa kod sumber mana-mana sambungan mungkin diubah oleh pengguna melalui Alatan Pembangun (berkemungkinan menyebabkan disfungsi pada sambungan). Jika perkara ini menimbulkan kebimbangan, maka dasar  <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> harus ditetapkan.
+
+          Setiap item senarai dasar ini ialah rentetan yang mengandungi ID sambungan dan, sebagai pilihan, URL "kemas kini" yang dipisahkan oleh koma bertitik  (<ph name="SEMICOLON" />). ID sambungan ialah rentetan 32 huruf yang didapati, contohnya, pada <ph name="CHROME_EXTENSIONS_LINK" /> apabila dalam mod pembangun. URL "kemas kini", jika dinyatakan, harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti yang dihuraikan di  <ph name="LINK_TO_EXTENSION_DOC1" />. Secara lalai, URL kemas kini Gedung Web Chrome digunakan (pada masa ini ialah "https://clients2.google.com/service/update2/crx"). Sila ambil perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini sambungan yang berikutnya menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan tersebut. Sila ambil perhatian juga bahawa menyatakan URL "kemas kini" secara jelas adalah mandatori dalam <ph name="PRODUCT_NAME" /> sehingga dan merangkumi versi 67.
+
+          Contohnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> memasang apl <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> daripada URL "kemas kini" standard Gedung Web Chrome. Untuk mendapatkan maklumat lanjut tentang mengehoskan sambungan, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, tiada apl mahupun sambungan dipasang secara automatik dan pengguna boleh menyahpasang sebarang apl dan sambungan dalam <ph name="PRODUCT_NAME" />.
+
+          Sila ambil perhatian bahawa dasar ini tidak dilaksanakan pada mod inkognito.</translation>
 <translation id="8274603902181597201">Padam bersih direktori laman utama ecryptfs pengguna dan mulakan dengan direktori laman utama disulitkan ext4 yang baharu.</translation>
-<translation id="8279832363395120715">Mengeluarkan bahagian privasi dan keselamatan yang sensitif daripada URL https:// sebelum menyerahkannya kepada skrip PAC (Konfigurasi Automatik Proksi) yang digunakan oleh <ph name="PRODUCT_NAME" /> semasa penyelesaian proksi.
-
-      Apabila Benar, ciri keselamatan didayakan dan URL https://
-      dibuang sebelum menyerahkannya kepada skrip PAC. Dalam cara ini,
-      skrip PAC tidak dapat melihat data yang lazimnya dilindungi oleh
-      saluran yang disulitkan (seperti laluan dan pertanyaan URL).
-
-      Apabila Palsu, ciri keselamatan dilumpuhkan dan skrip PAC
-      secara tersirat diberikan keupayaan untuk melihat semua komponen
-      URL https://. Tindakan ini terpakai kepada semua skrip PAC tanpa
-      mengambil kira asalnya (termasuk skrip yang diambil melalui pengangkutan
-      yang tidak selamat atau ditemui secara tidak selamat menerusi WPAD).
-
-      Ciri ini ditetapkan kepada Benar secara lalai (ciri keselamatan didayakan),
-      kecuali pengguna perusahaan OS Chrome yang ditetapkan kepada Palsu secara lalai.
-
-      Anda disyorkan supaya menetapkannya kepada Benar. Satu-satunya sebab  
-      untuk menetapkannya kepada Palsu adalah jika ciri ini menyebabkan masalah keserasian dengan skrip PAC sedia ada.
-
-     Hasrat kami adalah untuk mengalih keluar pembatalan ini pada masa hadapan.</translation>
 <translation id="8285435910062771358">Penggadang skrin penuh didayakan</translation>
 <translation id="8288199156259560552">Dayakan Perkhidmatan Lokasi Google Android</translation>
 <translation id="8294750666104911727">Biasanya, halaman dengan X-UA-Compatible ditetapkan kepada chrome=1 akan dipaparkan dalam <ph name="PRODUCT_FRAME_NAME" /> tanpa mengambil kira dasar 'ChromeFrameRendererSettings'.
@@ -3034,6 +3122,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
 <translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9077227880520270584">Pemasa log masuk automatik akaun setempat peranti</translation>
 <translation id="9084985621503260744">Menyatakan sama ada aktiviti video menjejaskan pengurusan kuasa</translation>
 <translation id="9088433379343318874">Dayakan penyedia kandungan pengguna di bawah seliaan</translation>
 <translation id="9088444059179765143">Konfigurasi kaedah pengesanan zon waktu automatik</translation>
@@ -3103,7 +3192,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
       Jika dasar ini ditetapkan kepada palsu, 'Pengepala dan pengaki' tidak dipilih dalam dialog prapaparan cetak dan pengguna tidak dapat mengubahnya.
 
-      Jika dasar ditetapkan kepada benar, 'Pengepala dan pengaki' di pilih dalam dialog prapaparan cetak dan pengguna tidak dapat mengubahnya.</translation>
+      Jika dasar ditetapkan kepada benar, 'Pengepala dan pengaki' dipilih dalam dialog prapaparan cetak dan pengguna tidak dapat mengubahnya.</translation>
 <translation id="9210953373038593554">Mengkonfigurasi jenis pengesahan untuk log masuk SAML.
 
       Apabila dasar ini tidak ditetapkan atau ditetapkan kepada Lalai (nilai 0), gelagat log masuk SAML ditentukan oleh penyemak imbas bergantung pada faktor lain. Dalam senario paling asas, pengesahan pengguna dan perlindungan data pengguna dicache adalah berdasarkan kata laluan yang dimasukkan secara manual oleh pengguna.

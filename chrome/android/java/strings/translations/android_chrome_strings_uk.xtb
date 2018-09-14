@@ -238,6 +238,7 @@
 <translation id="2762000892062317888">щойно</translation>
 <translation id="2777555524387840389">Залишилося <ph name="SECONDS" /> с</translation>
 <translation id="2781151931089541271">Залишилась 1 с</translation>
+<translation id="2803478378562657435">Показано збережені паролі та їх параметри</translation>
 <translation id="2810645512293415242">Спрощена сторінка для заощадження трафіку та швидшого завантаження.</translation>
 <translation id="281504910091592009">Переглядайте збережені паролі й керуйте ними в <ph name="BEGIN_LINK" />обліковому записі Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Щоб мати доступ до закладок на всіх своїх пристроях, увійдіть в обліковий запис і ввімкніть синхронізацію</translation>
@@ -711,6 +712,7 @@
 <translation id="6573431926118603307">Тут відображатимуться вкладки, відкриті в Chrome на інших ваших пристроях.</translation>
 <translation id="6575643671698722332">Помилка скидання. Перевірте, чи пристрій онлайн і спробуйте ще.</translation>
 <translation id="6583199322650523874">Зробити закладку поточної сторінки</translation>
+<translation id="6584721918629302382">Доповнена реальність</translation>
 <translation id="6593061639179217415">Версія для комп’ютера</translation>
 <translation id="6600954340915313787">Скопійовано в Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
@@ -827,6 +829,7 @@
 <translation id="748127970106343339">Підтвердити видалення облікових даних пристрою</translation>
 <translation id="7481312909269577407">Переслати</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (оновлено: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Показувати паролі</translation>
 <translation id="7494974237137038751">заощаджений трафік</translation>
 <translation id="7498271377022651285">Зачекайте…</translation>
 <translation id="7514365320538308">Завантажити</translation>
@@ -894,6 +897,7 @@
 <translation id="802154636333426148">Не вдалося завантажити</translation>
 <translation id="8026334261755873520">Очистити дані веб-перегляду</translation>
 <translation id="8035133914807600019">Нова папка…</translation>
+<translation id="8037411810184515274">Віртуальна реальність</translation>
 <translation id="8037686209485537503">Більше подібного</translation>
 <translation id="8037750541064988519">Залишилося <ph name="DAYS" /> дн.</translation>
 <translation id="804335162455518893">Карту SD не знайдено</translation>
@@ -950,6 +954,7 @@
 <translation id="8503559462189395349">Паролі Chrome</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
 <translation id="8504988642345501642">Під час прокручування вгору з’являються швидкі посилання на схожі сторінки. URL-адреси відвіданих сторінок надсилаються в Google.</translation>
+<translation id="8507520749471379845">Доступні паролі</translation>
 <translation id="8514477925623180633">Експортувати паролі, збережені в Chrome</translation>
 <translation id="8514577642972634246">Перейти в режим анонімного перегляду</translation>
 <translation id="851751545965956758">Заборонити сайтам підключатися до пристроїв</translation>

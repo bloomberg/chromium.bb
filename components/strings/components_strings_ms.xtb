@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Nombor telefon diperlukan</translation>
 <translation id="1517500485252541695">Kad kredit dan debit yang diterima</translation>
 <translation id="1519264250979466059">Tarikh Bina</translation>
+<translation id="1521655867290435174">Helaian Google</translation>
 <translation id="1527263332363067270">Menunggu sambungan...</translation>
 <translation id="1532118530259321453">Halaman ini menyatakan</translation>
 <translation id="153384715582417236">Itu sahaja buat masa ini</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Eksport MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Sambungan ditetapkan semula.</translation>
+<translation id="2785008241190445880">Penanda halaman diganti</translation>
 <translation id="2788784517760473862">Kad kredit yang diterima</translation>
 <translation id="2794233252405721443">Tapak disekat</translation>
 <translation id="2799020568854403057">Tapak yang akan disemak imbas mengandungi apl yang memudaratkan</translation>
@@ -540,6 +542,7 @@
 <translation id="4646534391647090355">Bawa saya ke sana sekarang</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mengandungi ralat. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda.</translation>
+<translation id="467809019005607715">Slaid Google</translation>
 <translation id="4690462567478992370">Berhenti menggunakan sijil tidak sah</translation>
 <translation id="4690954380545377795">Anda boleh kehilangan akses kepada Akaun Google anda atau mengalami kecurian identiti. Chrome mengesyorkan supaya kata laluan anda ditukar sekarang.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -645,6 +648,7 @@
 <translation id="5324080437450482387">Pilih Maklumat Hubungan</translation>
 <translation id="5327248766486351172">Nama</translation>
 <translation id="5332219387342487447">Kaedah Penghantaran</translation>
+<translation id="5344579389779391559">Halaman ini mungkin cuba mengenakan bayaran kepada anda</translation>
 <translation id="5355557959165512791">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana sijil tapak ini telah ditarik balik. Ralat dan serangan rangkaian biasanya bersifat sementara. Oleh sebab itu, halaman ini mungkin akan berfungsi semula kemudian.</translation>
 <translation id="536296301121032821">Gagal menyimpan tetapan dasar</translation>
 <translation id="5371425731340848620">Kemas kini kad</translation>
@@ -740,6 +744,7 @@
 <translation id="6015796118275082299">Tahun</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Halaman 1}other{Halaman #}}</translation>
 <translation id="6017850046339264347">Penyerang di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> boleh memasang apl yang mengelirukan yang menyamar menjadi sesuatu yang lain atau mengumpul data yang boleh digunakan untuk menjejak anda. <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Peribadikan Chrome anda</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (disegerakkan)</translation>
 <translation id="6027201098523975773">Masukkan nama</translation>
 <translation id="6039846035001940113">Jika masalah berterusan, hubungi pemilik tapak.</translation>
@@ -748,6 +753,7 @@
 <translation id="6047927260846328439">Kandungan ini mungkin menggunakan tipu muslihat supaya anda memasang perisian atau mendedahkan maklumat peribadi. <ph name="BEGIN_LINK" />Tunjukkan juga<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini menggunakan penyematan sijil. Ralat dan serangan rangkaian biasanya bersifat sementara. Oleh sebab itu, halaman ini mungkin akan berfungsi semula kemudian.</translation>
 <translation id="6059925163896151826">Peranti USB</translation>
+<translation id="6060991652695587932">Pilih perkhidmatan e-mel anda untuk akses pantas</translation>
 <translation id="6071091556643036997">Jenis dasar tidak sah.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Kad ini akan disimpan ke Akaun Google anda untuk mempercepat proses pembayaran pada semua peranti.}other{Kad ini akan disimpan ke Akaun Google anda untuk mempercepat proses pembayaran pada semua peranti.}}</translation>
 <translation id="6080696365213338172">Anda telah mengakses kandungan menggunakan perakuan yang disediakan oleh pentadbir. Data yang anda berikan kepada <ph name="DOMAIN" /> boleh dipintas oleh pentadbir anda.</translation>
@@ -905,6 +911,7 @@ Butiran tambahan:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Tidak</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Pembatalan sesi terurus</translation>
 <translation id="7390545607259442187">Sahkan Kad</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;Anda akan melihat ralat ini jika anda memasang perisian Superfish pada komputer Windows anda.&lt;/p&gt;
@@ -995,6 +1002,7 @@ Butiran tambahan:
 <translation id="7815407501681723534">Menemui <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> untuk '<ph name="SEARCH_STRING" />'</translation>
 <translation id="7818867226424560206">Pengurusan dasar</translation>
 <translation id="782886543891417279">Wi-Fi yang anda gunakan (<ph name="WIFI_NAME" />) mungkin memerlukan anda melawat halaman log masuknya.</translation>
+<translation id="7835178595033117206">Penanda halaman dialih keluar</translation>
 <translation id="785549533363645510">Walau bagaimanapun, anda tidak halimunan. Apabila anda menggunakan mod inkognito, penyemakan imbas anda tidak akan disembunyikan daripada majikan anda, penyedia perkhidmatan Internet anda atau tapak web yang anda lawati.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Tinggalkan tapak?</translation>
@@ -1131,6 +1139,7 @@ Butiran tambahan:
 <translation id="8874824191258364635">Masukkan nombor kad yang sah</translation>
 <translation id="8876793034577346603">Konfigurasi rangkaian gagal dihuraikan.</translation>
 <translation id="8891727572606052622">Mod proksi tidak sah.</translation>
+<translation id="8892964541482452187">Butang tukar tab, tekan enter untuk beralih ke tab ini</translation>
 <translation id="8903921497873541725">Zum masuk</translation>
 <translation id="8931333241327730545">Adakah anda mahu menyimpan kad ini ke Akaun Google anda?</translation>
 <translation id="8932102934695377596">Jam anda di belakang</translation>
@@ -1156,6 +1165,7 @@ Butiran tambahan:
 <translation id="9035022520814077154">Ralat keselamatan</translation>
 <translation id="9038649477754266430">Gunakan perkhidmatan ramalan untuk memuatkan halaman lebih cepat</translation>
 <translation id="9039213469156557790">Selain itu, halaman ini mengandungi sumber lain yang tidak selamat. Sumber ini boleh dilihat oleh orang lain semasa dalam transit dan boleh diubah oleh penyerang untuk menukar kelakuan halaman.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil tidak sah.</translation>
 <translation id="9050666287014529139">Frasa laluan</translation>
 <translation id="9065203028668620118">Edit</translation>
@@ -1179,6 +1189,7 @@ Butiran tambahan:
 <translation id="9170848237812810038">&amp;Buat asal</translation>
 <translation id="9171296965991013597">Tinggalkan apl?</translation>
 <translation id="917450738466192189">Sijil pelayan tidak sah.</translation>
+<translation id="9183302530794969518">Dokumen Google</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> menggunakan protokol yang tidak disokong.</translation>
 <translation id="9205078245616868884">Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memulakan penyegerakan.</translation>
 <translation id="9207861905230894330">Gagal menambahkan artikel.</translation>

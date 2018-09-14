@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> bestanden geselecteerd</translation>
 <translation id="237828693408258535">Deze pagina vertalen?</translation>
 <translation id="2378982052244864789">Selecteer de directory van de extensie.</translation>
-<translation id="2379281330731083556">Afdrukken via systeemdialoogvenster... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Vragen vóór verzenden (aanbevolen)</translation>
 <translation id="2384436799579181135">Er is een fout opgetreden. Controleer je printer en probeer het opnieuw.</translation>
 <translation id="2387458720915042159">Proxyverbindingstype</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Wordt afgespeeld op</translation>
 <translation id="2677748264148917807">Verlaten</translation>
 <translation id="2678063897982469759">Opnieuw inschakelen</translation>
-<translation id="2679385451463308372">Afdrukken via het dialoogvenster van het systeem…</translation>
 <translation id="268053382412112343">Geschi&amp;edenis</translation>
 <translation id="2683638487103917598">Map gesorteerd</translation>
 <translation id="2684004000387153598">Als je verder wilt gaan, klik je op 'OK' en vervolgens op 'Persoon toevoegen' om een nieuw profiel te maken voor je e-mailadres.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Microsoft-documentondertekening</translation>
 <translation id="270516211545221798">Snelheid touchpad</translation>
 <translation id="2705736684557713153">Scroll naar de onderkant van het scherm en schakel instant-tethering in als deze optie wordt weergegeven. Als de optie niet wordt weergegeven, ben je helemaal klaar.</translation>
-<translation id="2706954854267016964">Het geselecteerde Google Cloudprinter-apparaat wordt niet meer ondersteund. Stel de printer in via de systeeminstellingen van je computer.</translation>
 <translation id="2707024448553392710">Component downloaden</translation>
 <translation id="270921614578699633">Gemiddelde van</translation>
 <translation id="2709453993673701466">Wil je synchronisatie en personalisatie beheren voordat ze worden ingeschakeld? Ga naar <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">Gebruikers met beperkte rechten zijn uitgeschakeld door je beheerder.</translation>
 <translation id="2724841811573117416">WebRTC-logboeken</translation>
 <translation id="2725200716980197196">Netwerkverbinding hersteld</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> in totaal)</translation>
 <translation id="2727176303594781056">Fout bij netwerkactivering</translation>
 <translation id="2727633948226935816">Niet opnieuw herinneren</translation>
 <translation id="2727712005121231835">Normaal</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">Separator</translation>
 <translation id="3389312115541230716">Klik met de rechtermuisknop op het pictogram <ph name="SMALL_PRODUCT_LOGO" /> in de taakbalk</translation>
 <translation id="3391716558283801616">Tabblad 7</translation>
-<translation id="3396331542604645348">De geselecteerde printer is niet beschikbaar of niet correct geïnstalleerd. Controleer de printer of probeer een andere printer te selecteren.</translation>
 <translation id="3396800784455899911">Door op de knop 'Accepteren en doorgaan' te klikken, ga je akkoord met de bovengenoemde verwerking voor deze Google-services.</translation>
 <translation id="3399432415385675819">Meldingen worden uitgeschakeld</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3421,7 +3416,7 @@
 <translation id="6144938890088808325">Help ons Chromebooks te verbeteren</translation>
 <translation id="6146563240635539929">Video's</translation>
 <translation id="6147020289383635445">Kan afdrukvoorbeeld niet weergeven.</translation>
-<translation id="6148052338549899048">Geen geschikte apparaten. <ph name="LINK_BEGIN" />Meer informatie.<ph name="LINK_END" /></translation>
+<translation id="6148052338549899048">Geen geschikte apparaten. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Probeer het volgende:</translation>
 <translation id="6150853954427645995">Als je dit bestand wilt opslaan voor offline gebruik, ga je weer online, klik je met de rechtermuisknop op het bestand en selecteer je de optie <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Druk op <ph name="SEARCH_KEY" /> om <ph name="SITE_NAME" /> te doorzoeken</translation>
@@ -3441,7 +3436,7 @@
 <translation id="6169040057125497443">Controleer je microfoon</translation>
 <translation id="6169666352732958425">Kan desktop niet casten.</translation>
 <translation id="6171948306033499786">Afdrukken onderbreken</translation>
-<translation id="6173623053897475761">Typ je pincode nogmaals</translation>
+<translation id="6173623053897475761">Typ je pincode nog een keer</translation>
 <translation id="6175314957787328458">Microsoft-domein-GUID</translation>
 <translation id="6176043333338857209">Bluetooth wordt tijdelijk ingeschakeld om te communiceren met je beveiligingssleutel</translation>
 <translation id="6178664161104547336">Een certificaat selecteren</translation>

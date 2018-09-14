@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fișiere selectate</translation>
 <translation id="237828693408258535">Traduci această pagină?</translation>
 <translation id="2378982052244864789">Selectează directorul extensiei.</translation>
-<translation id="2379281330731083556">Printați utilizând caseta de dialog a sistemului... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Solicită permisiunea înainte de trimitere (recomandat)</translation>
 <translation id="2384436799579181135">A apărut o eroare. Verifică imprimanta și încearcă din nou.</translation>
 <translation id="2387458720915042159">Tip de conexiune prin proxy</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Se redă pe</translation>
 <translation id="2677748264148917807">Ieși</translation>
 <translation id="2678063897982469759">Reactivează</translation>
-<translation id="2679385451463308372">Printează utilizând caseta de dialog a sistemului...</translation>
 <translation id="268053382412112343">Is&amp;toric</translation>
 <translation id="2683638487103917598">Dosar sortat</translation>
 <translation id="2684004000387153598">Pentru a continua, dă clic pe OK, apoi pe Adaugă o persoană pentru a crea un profil nou pentru adresa de e-mail.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Semnare Microsoft a documentelor</translation>
 <translation id="270516211545221798">Viteza touchpadului</translation>
 <translation id="2705736684557713153">Derulează până în partea de jos a ecranului și activează Tethering instantaneu, dacă apare. Dacă nu, totul este gata.</translation>
-<translation id="2706954854267016964">Dispozitivul Google Cloud Print selectat nu mai este acceptat. Încearcă să configurezi imprimanta din setările de sistem ale computerului.</translation>
 <translation id="2707024448553392710">Componenta se descarcă</translation>
 <translation id="270921614578699633">Medie peste</translation>
 <translation id="2709453993673701466">Dorești să gestionezi sincronizarea și personalizarea înainte de a fi activate? Accesează <ph name="BEGIN_LINK" />Setările<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">Utilizatorii monitorizați au fost dezactivați de administrator.</translation>
 <translation id="2724841811573117416">Jurnale WebRTC</translation>
 <translation id="2725200716980197196">Conexiunea la rețea a fost restabilită</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> în total)</translation>
 <translation id="2727176303594781056">Eroare de activare a rețelei</translation>
 <translation id="2727633948226935816">Nu-mi mai reaminti</translation>
 <translation id="2727712005121231835">Dimensiunea actuală</translation>
@@ -1587,7 +1583,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="3389312115541230716">Dă clic dreapta pe pictograma <ph name="SMALL_PRODUCT_LOGO" /> din bara de activități</translation>
 <translation id="3391716558283801616">Fila 7</translation>
-<translation id="3396331542604645348">Imprimanta selectată nu este disponibilă sau nu este instalată corect. Verificați imprimanta sau încercați să selectați altă imprimantă.</translation>
 <translation id="3396800784455899911">Dacă dai clic pe butonul „Acceptă și continuă” înseamnă că ești de acord cu procesarea descrisă mai sus pentru aceste servicii Google.</translation>
 <translation id="3399432415385675819">Notificările vor fi dezactivate</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

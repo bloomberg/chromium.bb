@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> file selezionati</translation>
 <translation id="237828693408258535">Vuoi tradurre questa pagina?</translation>
 <translation id="2378982052244864789">Seleziona la directory dell'estensione.</translation>
-<translation id="2379281330731083556">Stampa utilizzando la finestra di dialogo di sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Chiedi prima di inviare (opzione consigliata)</translation>
 <translation id="2384436799579181135">Si è verificato un errore. Controlla la tua stampante e riprova.</translation>
 <translation id="2387458720915042159">Tipo di connessione proxy</translation>
@@ -1133,7 +1132,6 @@
 <translation id="2676946222714718093">In riproduzione su:</translation>
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2678063897982469759">Riattiva</translation>
-<translation id="2679385451463308372">Stampa utilizzando la finestra di dialogo di sistema…</translation>
 <translation id="268053382412112343">Cr&amp;onologia</translation>
 <translation id="2683638487103917598">Cartella ordinata</translation>
 <translation id="2684004000387153598">Per continuare, fai clic su OK, quindi fai clic su Aggiungi persona per creare un nuovo profilo per il tuo indirizzo email.</translation>
@@ -1146,7 +1144,6 @@
 <translation id="2704184184447774363">Firma del documento Microsoft</translation>
 <translation id="270516211545221798">Velocità touchpad</translation>
 <translation id="2705736684557713153">Scorri fino alla parte inferiore dello schermo e attiva la funzione Tethering istantaneo, se presente. In caso contrario non devi fare nulla.</translation>
-<translation id="2706954854267016964">Il dispositivo Google Cloud Print selezionato non è più supportato. Prova a configurare la stampante nelle impostazioni di sistema del computer.</translation>
 <translation id="2707024448553392710">Download del componente in corso...</translation>
 <translation id="270921614578699633">Media superiore a</translation>
 <translation id="2709453993673701466">Vuoi gestire la sincronizzazione e la personalizzazione prima di attivarle? Visita le <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
@@ -1162,7 +1159,6 @@
 <translation id="2721695630904737430">Gli utenti supervisionati sono stati disattivati dall'amministratore.</translation>
 <translation id="2724841811573117416">Log WebRTC</translation>
 <translation id="2725200716980197196">Connettività di rete ripristinata</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> totali)</translation>
 <translation id="2727176303594781056">Errore di attivazione della rete</translation>
 <translation id="2727633948226935816">Non visualizzare più il promemoria</translation>
 <translation id="2727712005121231835">Dimensioni reali</translation>
@@ -1584,7 +1580,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="338583716107319301">Separatore</translation>
 <translation id="3389312115541230716">Fai clic con il pulsante destro del mouse sull'icona <ph name="SMALL_PRODUCT_LOGO" /> nella barra delle applicazioni</translation>
 <translation id="3391716558283801616">Scheda 7</translation>
-<translation id="3396331542604645348">La stampante selezionata non è disponibile o non è installata correttamente. Controlla la stampante o prova a selezionarne un'altra.</translation>
 <translation id="3396800784455899911">Se fai clic sul pulsante "Accetta e continua", accetti l'elaborazione descritta in precedenza per questi servizi Google.</translation>
 <translation id="3399432415385675819">Le notifiche verranno disattivate</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

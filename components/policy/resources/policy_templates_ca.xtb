@@ -2578,26 +2578,6 @@ No cal que configuris aquestes opcions manualment. Pots baixar plantilles fàcil
 
 La manera recomanada de configurar la política a Windows és amb GPO, tot i que encara s'admet proporcionar la política mitjançant el registre per a instàncies de Windows vinculades a un domini de <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Esborra el directori d'inici eCryptfs de l'usuari i inicia un directori d'inici nou encriptat amb ext4.</translation>
-<translation id="8279832363395120715">Suprimeix les parts dels URL de tipus https:// que contenen informació sensible i de seguretat abans d'enviar-los als scripts PAC (configuració automàtica de servidor intermediari) que utilitza <ph name="PRODUCT_NAME" /> durant la resolució del servidor intermediari.
-
-      Quan s'estableix com a "true", s'activa la funció de seguretat i se suprimeixen els URL de tipus https://
-      abans d'enviar-los als scripts PAC. D'aquesta manera, l'script PAC
-      no podrà veure la informació que normalment està protegida per un
-      canal encriptat (com el camí i la consulta de l'URL).
-
-      Quan s'estableix com a "false", es desactiva la funció de seguretat i, per tant, implícitament els scripts
-      poden veure tots els components d'un URL
-      de tipus https://. Aquesta opció de configuració s'aplica a tots els scripts PAC independentment de l'origen (com ara
-      els scripts obtinguts amb un mètode de transport no segur o els obtinguts de manera no segura
-      amb l'optimització WPAD).
-
-      S'estableix com a "true" de manera predeterminada (funció de seguretat activada), excepte en el cas dels usuaris d'empreses
-      que utilitzen Chrome OS, per als quals s'estableix de manera predeterminada com a "false".
-
-      Es recomana establir-la com a "true". L'única raó per establir-la com a
-      "false" és que hi hagi problemes de compatibilitat amb els scripts PAC existents.
-
-      La voluntat és suprimir aquesta anul·lació en el futur.</translation>
 <translation id="8285435910062771358">Lupa de pantalla completa activada</translation>
 <translation id="8288199156259560552">Activa el servei d'ubicació de Google a Android</translation>
 <translation id="8294750666104911727">Normalment, les pàgines compatibles amb X-UA que s'estableixen com a chrome=1 es renderitzen a <ph name="PRODUCT_FRAME_NAME" />, independentment de la política "ChromeFrameRendererSettings".

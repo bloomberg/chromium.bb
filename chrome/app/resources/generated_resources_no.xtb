@@ -804,7 +804,7 @@
 <translation id="2190069059097339078">WiFi Credentials Getter</translation>
 <translation id="219008588003277019">Native Client-modul: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(tom)</translation>
-<translation id="2191223688506386601">En siste ting</translation>
+<translation id="2191223688506386601">Bare én ting til …</translation>
 <translation id="2192505247865591433">Fra:</translation>
 <translation id="2193365732679659387">Klareringsinnstillinger</translation>
 <translation id="2195729137168608510">Beskyttelse av e-post </translation>
@@ -929,7 +929,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer valgt</translation>
 <translation id="237828693408258535">Vil du oversette denne siden?</translation>
 <translation id="2378982052244864789">Velg katalog for utvidelsen.</translation>
-<translation id="2379281330731083556">Skriv ut med systemdialogen <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Spør før noe sendes (anbefales).</translation>
 <translation id="2384436799579181135">Det har oppstått en feil. Sjekk skriveren og prøv på nytt.</translation>
 <translation id="2387458720915042159">Tilkoblingstype for proxy-tjener</translation>
@@ -1130,7 +1129,6 @@
 <translation id="2676946222714718093">Spilles av på</translation>
 <translation id="2677748264148917807">Gå ut</translation>
 <translation id="2678063897982469759">Aktiver på nytt</translation>
-<translation id="2679385451463308372">Skriv ut ved bruk av systemdialogboksen</translation>
 <translation id="268053382412112343">Lo&amp;gg</translation>
 <translation id="2683638487103917598">Mappen er sortert</translation>
 <translation id="2684004000387153598">For å fortsette, klikk på OK. Klikk deretter på Legg til person for å opprette en ny profil for e-postadressen din.</translation>
@@ -1143,7 +1141,6 @@
 <translation id="2704184184447774363">Microsoft-dokumentsignering</translation>
 <translation id="270516211545221798">Styreflatehastighet</translation>
 <translation id="2705736684557713153">Rull til bunnen av skjermen, og trykk på Umiddelbar internettdeling hvis dette alternativet vises. Hvis ikke er alt klart.</translation>
-<translation id="2706954854267016964">Den valgte Google Cloud Print-enheten støttes ikke lenger. Prøv å konfigurere skriveren i datamaskinens systeminnstillinger.</translation>
 <translation id="2707024448553392710">Komponenten lastes ned</translation>
 <translation id="270921614578699633">Gjennomsnitt for</translation>
 <translation id="2709453993673701466">Vil du administrere synkronisering og personlig tilpasning før du slår det på? Gå til <ph name="BEGIN_LINK" />innstillingene<ph name="END_LINK" />.</translation>
@@ -1159,7 +1156,6 @@
 <translation id="2721695630904737430">Administratoren din har slått av administrerte brukere.</translation>
 <translation id="2724841811573117416">WebRTC-logger</translation>
 <translation id="2725200716980197196">Nettverkstilkoblingen er gjenopprettet</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> totalt)</translation>
 <translation id="2727176303594781056">Feil ved nettverksaktivering</translation>
 <translation id="2727633948226935816">Ikke minn meg på dette igjen</translation>
 <translation id="2727712005121231835">Faktisk størrelse</translation>
@@ -1582,7 +1578,6 @@
 <translation id="338583716107319301">Skillelinje</translation>
 <translation id="3389312115541230716">Høyreklikk på <ph name="SMALL_PRODUCT_LOGO" />-ikonet på oppgavelinjen</translation>
 <translation id="3391716558283801616">Fane 7</translation>
-<translation id="3396331542604645348">Den valgte skriveren er ikke tilgjengelig, eller har ikke blitt installert på riktig måte. Kontrollér skriveren din, eller prøv å velge en annen skriver.</translation>
 <translation id="3396800784455899911">Ved å klikke på «Godta og fortsett»-knappen godtar du behandlingen som beskrives ovenfor, for disse Google-tjenestene.</translation>
 <translation id="3399432415385675819">Varsler slås av</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -2241,7 +2236,7 @@
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">H&amp;jelp</translation>
 <translation id="4409697491990005945">Marger</translation>
-<translation id="4410545552906060960">Bruk et nummer (PIN-kode) i stedet for et passord for å låse opp enheten din. For å angi PIN-kode senere, gå til Innstillinger.</translation>
+<translation id="4410545552906060960">Bruk et tall (en PIN-kode) i stedet for et passord for å låse opp enheten din. For å angi PIN-kode senere, gå til Innstillinger.</translation>
 <translation id="4411578466613447185">Kodesignatar</translation>
 <translation id="4412698727486357573">Brukerstøtte</translation>
 <translation id="44141919652824029">Vil du gi «<ph name="APP_NAME" />» tilgang til listen over tilkoblede USB-enheter?</translation>
@@ -2333,7 +2328,7 @@
 <translation id="4555769855065597957">Skygge</translation>
 <translation id="4556110439722119938">Bokmerkene, loggoppføringene, passordene og de andre innstillingene dine blir synkronisert med Google-kontoen din, slik at du kan bruke dem på alle enhetene dine.</translation>
 <translation id="4558426062282641716">Tillatelse om autostart er forespurt</translation>
-<translation id="4558491878126948419">Få tips og oppdateringer for <ph name="DEVICE_TYPE" /> om Google-produkter og del tilbakemeldinger. Du kan avslutte abonnementet når som helst.</translation>
+<translation id="4558491878126948419">Få tips og oppdateringer for <ph name="DEVICE_TYPE" /> om Google-produkter, og del tilbakemeldinger. Du kan avslutte abonnementet når som helst.</translation>
 <translation id="4559617833001311418">Dette nettstedet bruker bevegelses- eller lyssensorene dine.</translation>
 <translation id="4562155214028662640">Legg til fingeravtrykk</translation>
 <translation id="4563880231729913339">Finger 3</translation>

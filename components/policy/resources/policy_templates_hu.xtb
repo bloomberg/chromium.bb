@@ -2613,26 +2613,6 @@ Nincs szükség a beállítások manuális konfigurációjára. A Windows, Mac �
 
 A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha a házirendek regisztrációs adatbázison keresztül történő létrehozása támogatott egyes Windows-példányoknál, amelyek csatlakoztak a <ph name="MS_AD_NAME" /> domainhez.</translation>
 <translation id="8274603902181597201">A felhasználó ecryptfs kezdőkönyvtárának törlése és tiszta lappal, ext4 titkosítású kezdőkönyvtárral való kezdés.</translation>
-<translation id="8279832363395120715">Törli a https:// URL-ek adatvédelem és biztonság szempontjából kényes részeit, mielőtt átadná őket a <ph name="PRODUCT_NAME" /> által a proxy feloldásához használt PAC (Proxy Auto Config)-szkripteknek.
-
-      Ha igaz értékre van állítva, a biztonsági funkció aktív, és a https:// URL-ek
-      le lesznek csupaszítva a PAC-szkriptnek történő átadás előtt, így az
-      nem fogja látni azokat az adatokat, amelyeket megszokott esetben a
-      titkosított csatorna véd (ilyen például az URL elérési útja és lekérdezése).
-
-      Hamis érték esetén ez a biztonsági funkció ki van kapcsolva, a
-      PAC-szkriptek pedig láthatják a https:// URL-ek mindegyik összetevőjét.
-      Ez az összes PAC-szkriptre érvényes, eredettől függetlenül (beleértve a
-      nem biztonságos átvitel révén lekért, valamint a WPAD protokollon
-      keresztül nem biztonságos módon felfedezett szkripteket is).
-
-      Az alapértelmezett érték Igaz (a funkció engedélyezett), kivéve a Chrome 
-      OS vállalati felhasználóinál, akiknél az alapértelmezés a Hamis érték.
-
-      Azt javasoljuk, hogy a funkció legyen engedélyezve. A tiltás egy esetben
-      ajánlott: ha kompatibilitási probléma lép fel a meglévő PAC-szkriptekkel.
-
-      A jövőre nézve a cél ennek a felülbírálási lehetőségnek az eltávolítása.</translation>
 <translation id="8285435910062771358">Teljes képernyős nagyító bekapcsolása</translation>
 <translation id="8288199156259560552">Engedélyezi az androidos Google Helyszolgáltatásokat</translation>
 <translation id="8294750666104911727">Általában a chrome=1 értékre állított X-UA-Compatible metacímkével rendelkező oldalak a(z) <ph name="PRODUCT_FRAME_NAME" /> környezetben lesznek megjelenítve a „ChromeFrameRendererSettings” szabálytól függetlenül.

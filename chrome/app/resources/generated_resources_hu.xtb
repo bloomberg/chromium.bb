@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fájl kiválasztva</translation>
 <translation id="237828693408258535">Szeretné kérni az oldal lefordítását?</translation>
 <translation id="2378982052244864789">A bővítmény könyvtárának kiválasztása.</translation>
-<translation id="2379281330731083556">Nyomtatás a rendszer párbeszédablakán keresztül... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Kérdezzen rá küldés előtt (ajánlott)</translation>
 <translation id="2384436799579181135">Hiba történt. Ellenőrizze a nyomtatót, majd próbálja újra.</translation>
 <translation id="2387458720915042159">Proxykapcsolat típusa</translation>
@@ -1135,7 +1134,6 @@
 <translation id="2676946222714718093">Lejátszás folyamatban a következőn:</translation>
 <translation id="2677748264148917807">Lap elhagyása</translation>
 <translation id="2678063897982469759">Újraengedélyezés</translation>
-<translation id="2679385451463308372">Nyomtatás a rendszer párbeszédablakának segítségével...</translation>
 <translation id="268053382412112343">Elő&amp;zmények</translation>
 <translation id="2683638487103917598">A mappa rendezése kész</translation>
 <translation id="2684004000387153598">A folytatáshoz kattintson az OK gombra, majd a Személy hozzáadása lehetőségre. Ekkor létrehozhatja az e-mail-címéhez tartozó új profilt.</translation>
@@ -1148,7 +1146,6 @@
 <translation id="2704184184447774363">Microsoft dokumentum-aláírás</translation>
 <translation id="270516211545221798">Érintőpad sebessége</translation>
 <translation id="2705736684557713153">Görgessen le a képernyő aljára, és kapcsolja be az Azonnali internetmegosztás lehetőséget (ha megjelenik). Ha nem találja ezt a lehetőséget, már készen is van.</translation>
-<translation id="2706954854267016964">A kiválasztott Google Cloud Print-eszköz már nem támogatott. Próbálkozzon a nyomtató beállításával a számítógép rendszerbeállításaiban.</translation>
 <translation id="2707024448553392710">Összetevő letöltése folyamatban</translation>
 <translation id="270921614578699633">Átlagában</translation>
 <translation id="2709453993673701466">Áttekinti a szinkronizálási és testreszabási beállításokat, mielőtt bekapcsolja őket? Keresse fel a <ph name="BEGIN_LINK" />Beállítások<ph name="END_LINK" /> oldalt.</translation>
@@ -1164,7 +1161,6 @@
 <translation id="2721695630904737430">Rendszergazdája letiltotta a felügyelt felhasználókat.</translation>
 <translation id="2724841811573117416">WebRTC-naplók</translation>
 <translation id="2725200716980197196">A hálózati kapcsolat helyreállt</translation>
-<translation id="2726934403674109201">(összesen <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Hálózati aktiválási hiba</translation>
 <translation id="2727633948226935816">Ne emlékeztessen újra</translation>
 <translation id="2727712005121231835">Valós méret</translation>
@@ -1588,7 +1584,6 @@
 <translation id="338583716107319301">Elválasztó</translation>
 <translation id="3389312115541230716">Kattintson a jobb gombbal a(z) <ph name="SMALL_PRODUCT_LOGO" /> ikonjára a tálcán</translation>
 <translation id="3391716558283801616">7. lap</translation>
-<translation id="3396331542604645348">A kiválasztott nyomtató nem érhető el, vagy nincs megfelelően telepítve. Ellenőrizze a nyomtatót, vagy válasszon egy másikat.</translation>
 <translation id="3396800784455899911">Az „Elfogadás és folytatás” gombra kattintva elfogadja az ezen Google-szolgáltatásokkal kapcsolatos, fent részletezett feldolgozási folyamatot.</translation>
 <translation id="3399432415385675819">Az értesítések le lesznek tiltva</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

@@ -238,6 +238,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2762000892062317888">just now</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> secs left</translation>
 <translation id="2781151931089541271">1 sec left</translation>
+<translation id="2803478378562657435">Showing saved passwords and password options</translation>
 <translation id="2810645512293415242">Simplified page to save data and load faster.</translation>
 <translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google account<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">To get your bookmarks on all your devices, sign in and turn on sync</translation>
@@ -711,6 +712,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
 <translation id="6575643671698722332">Reset failed. Ensure that your device is online and try again.</translation>
 <translation id="6583199322650523874">Bookmark the current page</translation>
+<translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Desktop site</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +829,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="748127970106343339">Confirm device credential deletion</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Updated <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Show passwords</translation>
 <translation id="7494974237137038751">data saved</translation>
 <translation id="7498271377022651285">Please wait…</translation>
 <translation id="7514365320538308">Download</translation>
@@ -894,6 +897,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="802154636333426148">Download failed</translation>
 <translation id="8026334261755873520">Clear browsing data</translation>
 <translation id="8035133914807600019">New folder…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">More like this</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> days left</translation>
 <translation id="804335162455518893">SD card not found</translation>
@@ -950,6 +954,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8503559462189395349">Chrome Passwords</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8504988642345501642">When you scroll up, show quick links to related pages. The URLs of pages that you visit are sent to Google.</translation>
+<translation id="8507520749471379845">Passwords available</translation>
 <translation id="8514477925623180633">Export passwords stored with Chrome</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="851751545965956758">Block sites from connecting to devices</translation>

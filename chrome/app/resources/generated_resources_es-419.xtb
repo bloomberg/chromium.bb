@@ -929,7 +929,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> archivos seleccionados</translation>
 <translation id="237828693408258535">¿Deseas traducir esta página?</translation>
 <translation id="2378982052244864789">Seleccionar el directorio de extensión.</translation>
-<translation id="2379281330731083556">Imprimir mediante el sistema de diálogo... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Preguntar antes de enviar (recomendado)</translation>
 <translation id="2384436799579181135">Se produjo un error. Revisa la impresora y vuelve a intentarlo.</translation>
 <translation id="2387458720915042159">Tipo de conexión proxy</translation>
@@ -1131,7 +1130,6 @@
 <translation id="2676946222714718093">Reproduciendo en</translation>
 <translation id="2677748264148917807">Abandonar</translation>
 <translation id="2678063897982469759">Permitir nuevamente</translation>
-<translation id="2679385451463308372">Imprimir utilizando el diálogo del sistema…</translation>
 <translation id="268053382412112343">Hi&amp;storial</translation>
 <translation id="2683638487103917598">Se ordenó la carpeta</translation>
 <translation id="2684004000387153598">Para continuar, haz clic en Aceptar y, luego, en Agregar un usuario para crear un nuevo perfil para tu dirección de correo electrónico.</translation>
@@ -1144,7 +1142,6 @@
 <translation id="2704184184447774363">Firma de documentos de Microsoft</translation>
 <translation id="270516211545221798">Velocidad del panel táctil</translation>
 <translation id="2705736684557713153">Desplázate hasta el final de la pantalla y, si aparece, activa la conexión instantánea mediante dispositivo portátil. Caso contrario, no debes realizar ninguna acción.</translation>
-<translation id="2706954854267016964">El dispositivo de Google Cloud Print ya no es compatible. Intenta configurar la impresora en la configuración de sistema de tu computadora.</translation>
 <translation id="2707024448553392710">Descarga de componente</translation>
 <translation id="270921614578699633">Por encima del promedio</translation>
 <translation id="2709453993673701466">¿Deseas administrar la sincronización y la personalización antes de activarlas? Accede a la <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
@@ -1160,7 +1157,6 @@
 <translation id="2721695630904737430">El administrador inhabilitó a los usuarios supervisados.</translation>
 <translation id="2724841811573117416">Registros de WebRTC</translation>
 <translation id="2725200716980197196">Conexión de red restaurada</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> en total)</translation>
 <translation id="2727176303594781056">Error de activación de red</translation>
 <translation id="2727633948226935816">No volver a recordarme</translation>
 <translation id="2727712005121231835">Tamaño real</translation>
@@ -1584,7 +1580,6 @@
 <translation id="338583716107319301">Separador</translation>
 <translation id="3389312115541230716">Haz clic con el botón derecho en el ícono <ph name="SMALL_PRODUCT_LOGO" /> en la barra de tareas</translation>
 <translation id="3391716558283801616">Pestaña 7</translation>
-<translation id="3396331542604645348">La impresora seleccionada no está disponible o no está instalada correctamente.  Comprueba tu impresora o selecciona otra.</translation>
 <translation id="3396800784455899911">Al hacer clic en el botón "Aceptar y continuar", confirmas el procesamiento descrito anteriormente para estos servicios de Google.</translation>
 <translation id="3399432415385675819">Se inhabilitarán las notificaciones</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3437,7 +3432,7 @@
 <translation id="6169040057125497443">Comprueba el micrófono.</translation>
 <translation id="6169666352732958425">No se puede transmitir el escritorio</translation>
 <translation id="6171948306033499786">Pausar impresión</translation>
-<translation id="6173623053897475761">Escribe tu PIN de nuevo</translation>
+<translation id="6173623053897475761">Vuelve a escribir tu PIN</translation>
 <translation id="6175314957787328458">GUID de dominio de Microsoft</translation>
 <translation id="6176043333338857209">Se activará la conexión Bluetooth de forma temporal para establecer la comunicación con la llave de seguridad</translation>
 <translation id="6178664161104547336">Seleccionar un certificado</translation>

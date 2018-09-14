@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">Zariadenie USB-C (port vľavo)</translation>
 <translation id="1294929383540927798">Zmeňte nastavenia upozornení na uzamknutej obrazovke</translation>
 <translation id="1302880136325416935">Zobraziť nastavenia Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">Vždy zobrazovať poličku</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1351937230027495976">Zbaliť ponuku</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
@@ -93,6 +94,7 @@
 <translation id="2391579633712104609">180 °</translation>
 <translation id="239188844683466770">Prepnúť režim Nerušiť</translation>
 <translation id="2412593942846481727">K dispozícii je aktualizácia</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> je spravovaná relácia riadená doménou <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Pripojené k sieti <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Skôr ako žiadosti vyhoviete, overte, či sa na danom zariadení zobrazuje nasledujúci prístupový kľúč: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Upozornenia</translation>

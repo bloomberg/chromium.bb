@@ -929,7 +929,6 @@
 <translation id="2378075407703503998">已选择 <ph name="SELCTED_FILE_COUNT" /> 个文件</translation>
 <translation id="237828693408258535">翻译此页？</translation>
 <translation id="2378982052244864789">选择扩展程序目录。</translation>
-<translation id="2379281330731083556">使用系统对话框进行打印...<ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">发送前先询问（推荐）</translation>
 <translation id="2384436799579181135">出错了。请检查您的打印机，然后重试。</translation>
 <translation id="2387458720915042159">代理连接类型</translation>
@@ -1130,7 +1129,6 @@
 <translation id="2676946222714718093">当前播放设备：</translation>
 <translation id="2677748264148917807">离开</translation>
 <translation id="2678063897982469759">重新启用</translation>
-<translation id="2679385451463308372">使用系统对话框进行打印...</translation>
 <translation id="268053382412112343">历史记录(&amp;S)</translation>
 <translation id="2683638487103917598">文件夹内容已排序</translation>
 <translation id="2684004000387153598">要想继续，请点击“确定”，然后点击“添加用户”为您的电子邮件地址创建一份新个人资料。</translation>
@@ -1143,7 +1141,6 @@
 <translation id="2704184184447774363">Microsoft 文档签名</translation>
 <translation id="270516211545221798">触控板速度</translation>
 <translation id="2705736684557713153">滚动到屏幕底部，如果看到“即时网络共享”，请将其开启。如果未看到该功能，则表示您已设置完毕。</translation>
-<translation id="2706954854267016964">所选的 Google 云打印设备已不再受支持。请尝试在您计算机的系统设置中设置该打印机。</translation>
 <translation id="2707024448553392710">正在下载组件</translation>
 <translation id="270921614578699633"> </translation>
 <translation id="2709453993673701466">想在启用同步和个性化之前管理这些功能？请访问<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />。</translation>
@@ -1159,7 +1156,6 @@
 <translation id="2721695630904737430">受监管用户已被您的管理员停用。</translation>
 <translation id="2724841811573117416">WebRTC日志</translation>
 <translation id="2725200716980197196">网络连接已恢复</translation>
-<translation id="2726934403674109201">（共 <ph name="COUNT" /> 个）</translation>
 <translation id="2727176303594781056">网络启用错误</translation>
 <translation id="2727633948226935816">不再提醒</translation>
 <translation id="2727712005121231835">实际大小</translation>
@@ -1581,7 +1577,6 @@
 <translation id="338583716107319301">分隔符</translation>
 <translation id="3389312115541230716">右键点击任务栏中的 <ph name="SMALL_PRODUCT_LOGO" /> 图标</translation>
 <translation id="3391716558283801616">标签页 7</translation>
-<translation id="3396331542604645348">所选打印机无法使用或未正确安装。请检查打印机，或尝试选择其他打印机。</translation>
 <translation id="3396800784455899911">点击“接受并继续”按钮，即表示您同意上述针对这些 Google 服务的处理方式。</translation>
 <translation id="3399432415385675819">通知将被停用</translation>
 <translation id="340282674066624">已下载 <ph name="DOWNLOAD_RECEIVED" />，还需 <ph name="TIME_LEFT" /></translation>

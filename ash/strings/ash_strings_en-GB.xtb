@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">USB-C device (left port)</translation>
 <translation id="1294929383540927798">Change the lock-screen notification settings</translation>
 <translation id="1302880136325416935">Show Bluetooth settings. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">Always show shelf</translation>
 <translation id="1346748346194534595">Right</translation>
 <translation id="1351937230027495976">Collapse menu</translation>
 <translation id="1383876407941801731">Search</translation>
@@ -93,6 +94,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Toggle Do not disturb</translation>
 <translation id="2412593942846481727">Update available</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> is a managed session managed by <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Connected to <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -306,6 +308,7 @@
 <translation id="6297287540776456956">Use the stylus to select a region</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> was rotated to <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Keyboard overlay</translation>
+<translation id="6344698853700675736">Toggle Night Light</translation>
 <translation id="6376931439017688372">Bluetooth is on</translation>
 <translation id="639644700271529076">CAPS LOCK is off</translation>
 <translation id="6406704438230478924">altgr</translation>

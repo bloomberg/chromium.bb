@@ -929,7 +929,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> فایل انتخاب شد</translation>
 <translation id="237828693408258535">این صفحه ترجمه شود؟</translation>
 <translation id="2378982052244864789">دایرکتوری برنامهٔ افزودنی را انتخاب کنید.</translation>
-<translation id="2379281330731083556">چاپ با استفاده از گفتگوی سیستم... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">قبل از ارسال سؤال شود (توصیه می‌شود)</translation>
 <translation id="2384436799579181135">خطایی روی داده است. لطفاً چاپگرتان را بررسی و دوباره امتحان کنید.</translation>
 <translation id="2387458720915042159">نوع اتصال پراکسی</translation>
@@ -1130,7 +1129,6 @@
 <translation id="2676946222714718093">در حال پخش در</translation>
 <translation id="2677748264148917807">خروج</translation>
 <translation id="2678063897982469759">فعال کردن مجدد</translation>
-<translation id="2679385451463308372">چاپ با استفاده از کادر گفتگوی سیستم...</translation>
 <translation id="268053382412112343">&amp;سابقه</translation>
 <translation id="2683638487103917598">پوشه مرتب شد</translation>
 <translation id="2684004000387153598">برای ادامه، روی «تأیید» کلیک کنید و سپس برای ایجاد نمایه‌ای جدید برای نشانی رایانامه‌تان، روی «افزودن شخص» کلیک کنید.</translation>
@@ -1143,7 +1141,6 @@
 <translation id="2704184184447774363">‏امضای مدرک Microsoft</translation>
 <translation id="270516211545221798">سرعت صفحه لمسی</translation>
 <translation id="2705736684557713153">به پایین صفحه نمایش پیمایش کنید و اگر «اتصال فوری به اینترنت با تلفن همراه» نمایان شد، آن را روشن کنید. اگر نمایان نشد، همه چیز آماده است.</translation>
-<translation id="2706954854267016964">‏دستگاه Google Cloud Print انتخاب‌شده دیگر پشتیبانی نمی‌شود. چاپگر را در تنظیمات سیستم رایانه‌تان راه‌اندازی کنید.</translation>
 <translation id="2707024448553392710">در حال بارگیری مؤلفه</translation>
 <translation id="270921614578699633">میانگین بالا</translation>
 <translation id="2709453993673701466">می‌خواهید همگام‌سازی و شخصی‌سازی را پیش از روشن کردن مدیریت کنید؟ از <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> بازدید کنید.</translation>
@@ -1159,7 +1156,6 @@
 <translation id="2721695630904737430">سرپرست سیستم شما کاربران تحت نظارت را غیرفعال کرده است.</translation>
 <translation id="2724841811573117416">‏گزارش‌های WebRTC</translation>
 <translation id="2725200716980197196">اتصال به شبکه بازیابی شد</translation>
-<translation id="2726934403674109201">(مجموعاً <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">خطای فعال‌سازی شبکه</translation>
 <translation id="2727633948226935816">دوباره به من یادآوری نشود</translation>
 <translation id="2727712005121231835">اندازه واقعی</translation>
@@ -1583,7 +1579,6 @@
 <translation id="338583716107319301">جداساز</translation>
 <translation id="3389312115541230716">روی نماد <ph name="SMALL_PRODUCT_LOGO" /> در نوار وظیفه کلیک راست کنید</translation>
 <translation id="3391716558283801616">برگه ۷</translation>
-<translation id="3396331542604645348">چاپگر انتخابی موجود نیست یا به درستی نصب نشده است. چاپگر خود را بررسی کرده یا چاپگر دیگری را انتخاب کنید.</translation>
 <translation id="3396800784455899911">‏با کلیک کردن روی دکمه «پذیرفتن و ادامه»، با پردازش مربوط به این سرویس‌های Google که در بالا توضیح داده شد موافقت می‌کنید.</translation>
 <translation id="3399432415385675819">اعلان‌ها غیرفعال خواهند شد</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />، <ph name="TIME_LEFT" /></translation>

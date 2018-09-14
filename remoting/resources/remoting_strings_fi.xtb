@@ -330,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Koko näyttö</translation>
 <translation id="8548209692293300397">Olet aiemmin kirjautunut sisään käyttäjänä <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Jos haluat käyttää tietokoneitasi tämän tilin kautta, <ph name="LINK_BEGIN" />kirjaudu Google Chromeen<ph name="LINK_END" /> kyseisellä tilillä ja asenna Chrome-etäkäyttö uudelleen.</translation>
 <translation id="8642984861538780905">Kohtalainen</translation>
+<translation id="8705151241155781642">• Lisätty Android 9.0 Pie ‑tuki
+• Android-laitteen näyttöä vastaava etäkäytön resoluution säätämisen tuki</translation>
 <translation id="8712909229180978490">Tallennetut Google Drive -tiedostoni eivät näy verkossa.</translation>
 <translation id="8743328882720071828">Haluatko sallia sen, että <ph name="CLIENT_USERNAME" /> voi nähdä ja ohjata tietokonettasi?</translation>
 <translation id="8747048596626351634">Istunto kaatui tai sen käynnistäminen epäonnistui. Jos ~/.chrome-remote-desktop-session on olemassa etätietokoneella, varmista, että se käynnistää pitkäkestoisen etualaprosessin, esim. työpöytäympäristön tai ikkunanhallinnan.</translation>

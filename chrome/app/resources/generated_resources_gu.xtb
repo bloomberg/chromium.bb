@@ -923,7 +923,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ફાઇલો પસંદ કરી</translation>
 <translation id="237828693408258535">આ પેજનો અનુવાદ કરીએ?</translation>
 <translation id="2378982052244864789">એક્સ્ટેંશન ડાયરેક્ટરી પસંદ કરો.</translation>
-<translation id="2379281330731083556">સિસ્ટમ સંવાદનો ઉપયોગ કરીને છાપો... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">મોકલતાં પહેલાં પૂછો (ભલામણ કરેલ)</translation>
 <translation id="2384436799579181135">એક ભૂલ આવી છે. કૃપા કરીને તમારું પ્રિન્ટર તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="2387458720915042159">પ્રૉક્સી કનેક્શનનો પ્રકાર</translation>
@@ -1124,7 +1123,6 @@
 <translation id="2676946222714718093">આ પર ચલાવી રહ્યાં છે</translation>
 <translation id="2677748264148917807">છોડો</translation>
 <translation id="2678063897982469759">ફરી સક્ષમ કરો</translation>
-<translation id="2679385451463308372">સિસ્ટમ સંવાદનો ઉપયોગ કરીને છાપો... </translation>
 <translation id="268053382412112343">Hi&amp;story</translation>
 <translation id="2683638487103917598">ફોલ્ડર સૉર્ટ કર્યુ</translation>
 <translation id="2684004000387153598">ચાલુ રાખવા માટે, ઓકે ક્લિક કરો, પછી તમારા ઇમેઇલ ઍડ્રેસ માટે નવી પ્રોફાઇલ બનાવવા માટે વ્યક્તિ ઉમેરો પર ક્લિક કરો.</translation>
@@ -1137,7 +1135,6 @@
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">ટચપેડની ગતિ</translation>
 <translation id="2705736684557713153">જો સ્ક્રીનના તળિયે સ્ક્રૉલ કરીને ઝટપટ ઇન્ટરનેટ શેર કરવાની સુવિધા દેખાય, તો તે ચાલુ કરો. જો તે નહીં દેખાય, તો તમે સેટ છો.</translation>
-<translation id="2706954854267016964">પસંદ કરેલ Google ક્લાઉડ પ્રિન્ટ ઉપકરણ હવે સમર્થિત રહ્યું નથી. તમારા કમ્પ્યુટરની સિસ્ટમ સેટિંગમાં પ્રિન્ટરને સેટ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="2707024448553392710">ઘટકો ડાઉનલોડ કરી રહ્યાં છે</translation>
 <translation id="270921614578699633">સંપૂર્ણ સરેરાશ</translation>
 <translation id="2709453993673701466">સિંક અને વૈયક્તિકરણ ચાલુ થાય તે પહેલાં તેને સંચાલિત કરવા માગો છો? <ph name="BEGIN_LINK" />સેટિંગ્સ <ph name="END_LINK" />ની મુલાકાત લો.</translation>
@@ -1153,7 +1150,6 @@
 <translation id="2721695630904737430">તમારા વ્યવસ્થાપક દ્વારા નિરીક્ષિત વપરાશકર્તાઓ અક્ષમ કરવામાં આવ્યાં છે.</translation>
 <translation id="2724841811573117416">WebRTC લૉગ્સ</translation>
 <translation id="2725200716980197196">નેટવર્ક કનેક્ટિવિટી પુનઃસ્થાપિત કરી</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> કુલ)</translation>
 <translation id="2727176303594781056">નેટવર્ક ચાલુ કરવામાં ભૂલ</translation>
 <translation id="2727633948226935816">મને ફરીથી યાદ કરાવશો નહીં</translation>
 <translation id="2727712005121231835">વાસ્તવિક કદ</translation>
@@ -1577,7 +1573,6 @@
 <translation id="338583716107319301">વિભાજક</translation>
 <translation id="3389312115541230716">ટાસ્કબારમાં <ph name="SMALL_PRODUCT_LOGO" /> આઇકનને રાઇટ ક્લિક કરો</translation>
 <translation id="3391716558283801616">ટૅબ 7</translation>
-<translation id="3396331542604645348">પસંદ કરેલું પ્રિંટર ઉપલબ્ધ નથી અથવા ઠીકથી ઇન્સ્ટોલ કરેલું નથી. તમારા પ્રિંટરને તપાસો અથવા બીજા પ્રિંટરને પસંદ કરી જુઓ.</translation>
 <translation id="3396800784455899911">"સ્વીકારો અને ચાલુ રાખો" બટન પર ક્લિક કરીને, તમે આ Google સેવાઓ માટે ઉપર વર્ણવેલી પ્રક્રિયા સાથે સંમત થાઓ છો.</translation>
 <translation id="3399432415385675819">સૂચનાઓ અક્ષમ કરવામાં આવશે</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Phone number required</translation>
 <translation id="1517500485252541695">Accepted credit and debit cards</translation>
 <translation id="1519264250979466059">Build Date</translation>
+<translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">Waiting for connection…</translation>
 <translation id="1532118530259321453">This page says</translation>
 <translation id="153384715582417236">That’s all for now</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Export MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">The connection was reset.</translation>
+<translation id="2785008241190445880">Bookmark replaced</translation>
 <translation id="2788784517760473862">Accepted credit cards</translation>
 <translation id="2794233252405721443">Site blocked</translation>
 <translation id="2799020568854403057">The site ahead contains harmful apps</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">Take me there now</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">This server could not prove that it is <ph name="DOMAIN" />; its security certificate contains errors. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
+<translation id="467809019005607715">Google Slides</translation>
 <translation id="4690462567478992370">Stop using an invalid certificate</translation>
 <translation id="4690954380545377795">You could lose access to your Google Account or experience identity theft. Chrome recommends that you change your password now.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">Choose contact info</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5332219387342487447">Delivery Method</translation>
+<translation id="5344579389779391559">This page may try to charge you money</translation>
 <translation id="5355557959165512791">You cannot visit <ph name="SITE" /> right now because its certificate has been revoked. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="536296301121032821">Failed to store policy settings</translation>
 <translation id="5371425731340848620">Update card</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">Year</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}other{Page #}}</translation>
 <translation id="6017850046339264347">Attackers on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> could install deceptive apps that pretend to be something else or collect data that may be used to track you. <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Make Chrome your own</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synced)</translation>
 <translation id="6027201098523975773">Enter a name</translation>
 <translation id="6039846035001940113">If the problem continues, contact the site owner.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">This content might try to trick you into installing software or revealing personal information. <ph name="BEGIN_LINK" />Show anyway<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">You cannot visit <ph name="SITE" /> right now because the website uses certificate pinning. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="6059925163896151826">USB devices</translation>
+<translation id="6060991652695587932">Choose your email service for quick access</translation>
 <translation id="6071091556643036997">The policy type is invalid.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{This card will be saved to your Google account for faster checkout across devices.}other{These cards will be saved to your Google account for faster checkout across devices.}}</translation>
 <translation id="6080696365213338172">You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN" /> can be intercepted by your administrator.</translation>
@@ -904,6 +910,7 @@ Additional details:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nope</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Managed session override</translation>
 <translation id="7390545607259442187">Confirm Card</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;You'll see this error if you have Superfish software on your Windows computer.&lt;/p&gt;
@@ -994,6 +1001,7 @@ Additional details:
 <translation id="7815407501681723534">Found <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for '<ph name="SEARCH_STRING" />'</translation>
 <translation id="7818867226424560206">Policy management</translation>
 <translation id="782886543891417279">The Wi-Fi that you are using (<ph name="WIFI_NAME" />) may require you to visit its login page.</translation>
+<translation id="7835178595033117206">Bookmark removed</translation>
 <translation id="785549533363645510">However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Leave site?</translation>
@@ -1129,6 +1137,7 @@ Additional details:
 <translation id="8874824191258364635">Enter a valid card number</translation>
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
+<translation id="8892964541482452187">Tab switch button, press enter to switch to this tab</translation>
 <translation id="8903921497873541725">Zoom in</translation>
 <translation id="8931333241327730545">Do you want to save this card to your Google Account?</translation>
 <translation id="8932102934695377596">Your clock is behind</translation>
@@ -1154,6 +1163,7 @@ Additional details:
 <translation id="9035022520814077154">Security error</translation>
 <translation id="9038649477754266430">Use a prediction service to load pages more quickly</translation>
 <translation id="9039213469156557790">Furthermore, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the behaviour of the page.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">You attempted to reach <ph name="DOMAIN" />, but the server presented an invalid certificate.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9065203028668620118">Edit</translation>
@@ -1177,6 +1187,7 @@ Additional details:
 <translation id="9170848237812810038">&amp;Undo</translation>
 <translation id="9171296965991013597">Leave app?</translation>
 <translation id="917450738466192189">Server's certificate is invalid.</translation>
+<translation id="9183302530794969518">Google Docs</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> uses an unsupported protocol.</translation>
 <translation id="9205078245616868884">Your data is encrypted with your sync passphrase. Enter it to start sync.</translation>
 <translation id="9207861905230894330">Failed to add article.</translation>

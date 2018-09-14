@@ -39,7 +39,7 @@
 <translation id="1550523713251050646">अधिक पर्यायांसाठी क्लिक करा</translation>
 <translation id="1567387640189251553">तुम्ही शेवटचा पासवर्ड टाकल्या नंतर वेगळा कीबोर्ड कनेक्ट करण्यात आला आहे. तो कदाचित तुमचे कीस्ट्रोक चोरण्याचा प्रयत्न करत असेल.</translation>
 <translation id="1570871743947603115">ब्लूटूथ टॉगल करा. <ph name="STATE_TEXT" /></translation>
-<translation id="1608626060424371292">हा वापरकर्ता काढा</translation>
+<translation id="1608626060424371292">हा वापरकर्ता काढून टाका</translation>
 <translation id="1621499497873603021">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">व्हॉइस क्वेरी सुरू करा</translation>
 <translation id="1658406695958299976">सॉरी, तुमच्या पासवर्डची पडताळणी अजूनही झालेली नाही. टीप: तुम्ही तुमचा पासवर्ड अलीकडेच बदलला असल्यास, तुम्ही साइन आउट केल्यानंतर तुमचा नवीन पासवर्ड लागू केला जाईल, कृपया येथे जुना पासवर्ड वापरा.</translation>
@@ -100,7 +100,7 @@
 <translation id="2501920221385095727">स्टिकी की</translation>
 <translation id="2509468283778169019">CAPS LOCK सुरु आहे</translation>
 <translation id="2532589005999780174">उच्च तीव्रता मोड</translation>
-<translation id="2575685495496069081">एकाहून अधिक साइन-इन बंद केले गेले आहे</translation>
+<translation id="2575685495496069081">एकाहून अधिक साइन इन बंद करण्यात आले आहे</translation>
 <translation id="2582112259361606227">अपडेट करण्यासाठी रीस्टार्ट करा</translation>
 <translation id="2597972630681408282">रात्रीचा प्रकाश: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">सिम कार्ड लॉक केले आहे</translation>
@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
 <translation id="2761704814324807722">स्थिती ट्रे, वेळ <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> शी पुन्हा कनेक्ट करीत आहे</translation>
+<translation id="2790844815106384441">वेबसायटी स्थान सेवा किंवा डिव्हाइसचा मायक्रोफोन, कॅमेरा किंवा इतर वैशिष्ट्ये वापरू शकतात की नाही ते निवडा</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">अॅप्लिकेशन</translation>
 <translation id="2808012452536866044">Better Together नवीन फोनवर स्विच केले</translation>
@@ -168,7 +169,7 @@
 <translation id="3712407551474845318">विभाग कॅप्‍चर करा</translation>
 <translation id="371370241367527062">समोरील मायक्रोफोन</translation>
 <translation id="3771549900096082774">उच्च कॉन्ट्रास्ट मोड</translation>
-<translation id="3773700760453577392">अॅडमिनिस्ट्रेटरने <ph name="USER_EMAIL" /> साठी एकाहून अधिक साइन-इन बंद केले आहे. सुरू ठेवण्यासाठी सर्व वापरकर्त्यांना साइन आउट करणे आवश्यक आहे.</translation>
+<translation id="3773700760453577392">अॅडमिनिस्ट्रेटरने <ph name="USER_EMAIL" /> साठी एकाहून अधिक साइन इन बंद केले आहे. सुरू ठेवण्यासाठी सर्व वापरकर्त्यांना साइन आउट करणे आवश्यक आहे.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">लॉक करा</translation>
 <translation id="3798670284305777884">स्पीकर (अंतर्गत)</translation>
@@ -192,6 +193,7 @@
 <translation id="4200057768455216496">तुम्ही डॉक मॅग्निफायरसाठीचा शॉर्टकट दाबला. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="4217571870635786043">डिक्टेशन</translation>
 <translation id="4261870227682513959">सूचना सेटिंग्ज दाखवा. सूचना बंद आहेत</translation>
+<translation id="4269883910223712419">या डिव्हाइसचे प्रशासन पुढील गोष्टी करू शकते:</translation>
 <translation id="4274921305979314545">तुमचे Chromebook तुमच्या फोनशी कनेक्ट करा</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> अ‍ॅक्टिव्हेट करत आहे</translation>
@@ -219,6 +221,7 @@
 <translation id="4734965478015604180">आडवा</translation>
 <translation id="476166673298332917">या डिव्हाइसच्या अॅडमिनिस्ट्रेटरकडे पासवर्ड आणि कम्युनिकेशनेसह सर्व अॅक्टिव्हिटीचा अॅक्सेस आहे.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> साठी पासवर्ड</translation>
+<translation id="4778095205580009397">डेमो सेशनमध्ये Google असिस्टंट उपलब्ध नाही.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">‍डिस्कनेक्ट</translation>
 <translation id="4849058404725798627">कीबोर्ड फोकससह ऑब्जेक्ट हायलाइट करा</translation>
@@ -326,7 +329,7 @@
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">तुमच्या वेगळ्या करण्यायोग्य कीबोर्डला महत्त्वाच्या अपडेटची आवश्यकता आहे</translation>
 <translation id="6700713906295497288">IME मेनू बटण</translation>
-<translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" ब्लूटूथ डिव्हाइस जोडले गेले आहे आणि सर्व वापरकर्त्यांसाठी आता उपलब्ध आहे. तुम्ही सेटिंग्ज वापरून हे पेअरिंग काढू शकता.</translation>
+<translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" ब्लूटूथ डिव्हाइस जोडले गेले आहे आणि सर्व वापरकर्त्यांसाठी आता उपलब्ध आहे. तुम्ही सेटिंग्ज वापरून ही जोडणी काढू शकता.</translation>
 <translation id="6715542151869432661">कोणतेही मोबाइल डिव्हाइस आढळले नाहीत.</translation>
 <translation id="671928215901716392">लॉक स्क्रीन</translation>
 <translation id="6723839937902243910">सामर्थ्य</translation>
@@ -334,6 +337,7 @@
 <translation id="6751826523481687655">परफॉर्मंस ट्रेसिंग चालू आहे</translation>
 <translation id="6785414152754474415">बॅटरी <ph name="PERCENTAGE" />% भरली आहे आणि चार्ज होत आहे.</translation>
 <translation id="6803622936009808957">समर्थित रिजोल्यूशन न आढळल्यामुळे प्रदर्शने मिरर करू शकली नाहीत. त्याऐवजी विस्तारित डेस्कटॉप एंटर केला.</translation>
+<translation id="6814658242098378692">अॅप्स, एक्स्टेंशन आणि थीम व्यवस्थापित करा</translation>
 <translation id="6820676911989879663">ब्रेक घ्या!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">सक्रिय करा<ph name="NETWORKSERVICE" /></translation>
@@ -357,6 +361,7 @@
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> मध्ये जुन्या रिजोल्यूशनवर परत करत आहे</translation>
 <translation id="7256634071279256947">मागील मायक्रोफोन</translation>
 <translation id="726276584504105859">विभाजित स्क्रीन वापरण्यासाठी येथे ड्रॅग करा</translation>
+<translation id="7303365578352795231">दुसऱ्या डिव्हाइसवर उत्तर देत आहे.</translation>
 <translation id="7348093485538360975">ऑन-स्क्रीन कीबोर्ड</translation>
 <translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
 <translation id="7377169924702866686">Caps Lock सुरू आहे.</translation>
@@ -389,14 +394,15 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> शी कनेक्ट करत आहे</translation>
 <translation id="7842569679327885685">चेतावणी: प्रयोगात्मक वैशिष्ट्य</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
+<translation id="7886169021410746335">गोपनीयता सेटिंग्ज अॅडजस्ट करा</translation>
 <translation id="7886277072580235377">तुम्ही साइन आउट केल्यावर तुमचे इंटरनेट सेशन साफ केले जाईल. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ईमेल पाठवा</translation>
-<translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
+<translation id="7904094684485781019">या खात्याच्या अॅडमिनिस्ट्रेटराने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="7933084174919150729">Google Assistant फक्त प्राथमिक प्रोफाइलवर उपलब्ध आहे.</translation>
 <translation id="79341161159229895">खाते <ph name="FIRST_PARENT_EMAIL" /> आणि <ph name="SECOND_PARENT_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क शोधत आहे...</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
-<translation id="7994370417837006925">एकाधिक साइन-इन</translation>
+<translation id="7994370417837006925">मल्टिपल साइन इन</translation>
 <translation id="8000066093800657092">कोणतेही नेटवर्क नाही</translation>
 <translation id="8029241286966751120">फुलस्क्रीन मॅग्निफायर सुरू केले आहे. ते टॉगल करून बंद करण्यासाठी पुन्हा Ctrl+Search+M दाबा.</translation>
 <translation id="8030169304546394654">डिस्कनेक्ट केलेले</translation>

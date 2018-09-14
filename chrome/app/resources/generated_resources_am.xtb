@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ፋይሎች ተመርጠዋል</translation>
 <translation id="237828693408258535">ይህ ገጽ ይተርጎም?</translation>
 <translation id="2378982052244864789">የቅጥያውን ማውጫ ይምረጡ።</translation>
-<translation id="2379281330731083556">የስርዓት መገናኛ ተጠቅመው ያትሙ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">ከመላክ በፊት ጠይቅ (የሚመከር)</translation>
 <translation id="2384436799579181135">አንድ ስህተት ተከስቷል። እባክዎ የእርስዎን አታሚ ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="2387458720915042159">የተኪ ግንኙነት አይነት</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">እየተጫወተ ያለው በ፦</translation>
 <translation id="2677748264148917807">ለቅቀህ ውጣ</translation>
 <translation id="2678063897982469759">እንደገና አንቃ</translation>
-<translation id="2679385451463308372">የስርዓት መልዕክቱን ተጠቅመው ያትሙ…</translation>
 <translation id="268053382412112343">&amp;ታሪክ</translation>
 <translation id="2683638487103917598">አቃፊ ተለይቶ ተደርድሯል</translation>
 <translation id="2684004000387153598">ለመቀጠል እሺን ጠቅ ያድርጉ፣ ከዚያ ለኢሜይል አድራሻዎ አዲስ መገለጫ ለመፍጠር ሰው አክልን ጠቅ ያድርጉ።</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">የመዳሰሻ ሰሌዳ ፍጥነት</translation>
 <translation id="2705736684557713153">ወደ ማያ ገጹ ግርጌ ወደ ታች ይሸብልሉና ብቅ ካለ ቅጽበታዊ እንደ ሞደም መሰካትን ያብሩ። ብቅ ካላለ ሙሉ በሙሉ ተዘጋጅተዋል።</translation>
-<translation id="2706954854267016964">የተመረጠው የGoogle ደመና ህትመት መሣሪያ ከእንግዲህ የሚደገፍ አይደለም። ማተሚያውን በእርስዎ ኮምፒውተር ሥርዓት ቅንብሮች ውስጥ ለማቀናበር ይሞክሩ።</translation>
 <translation id="2707024448553392710">ክፍለ አካል በማውረድ ላይ</translation>
 <translation id="270921614578699633">የዚህ አማካኝ፦</translation>
 <translation id="2709453993673701466">ስምረት እና ግላዊነት ማላበስ ከመብራታቸው በፊት ማቀናበር ይፈልጋሉ? <ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" />ን ይጎብኙ።</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">ክትትል የሚደረግባቸው ተጠቃሚዎች በእርስዎ አስተዳዳሪ ተሰናክልዋል።</translation>
 <translation id="2724841811573117416">የWebRTC ምዝግብ ማስታወሻዎች</translation>
 <translation id="2725200716980197196">የአውታረ መረብ ግንኙነት ወደነበረበት ተመልሷል</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> ጠቅላላ)</translation>
 <translation id="2727176303594781056">የአውታረ መረብ ማግበር ስህተት</translation>
 <translation id="2727633948226935816">ዳግም አታስታውሰኝ</translation>
 <translation id="2727712005121231835">ትክክለኛ መጠን</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">መለያ</translation>
 <translation id="3389312115541230716">በተግባር አሞሌው ላይ የ<ph name="SMALL_PRODUCT_LOGO" /> አዶን ቀኝ ጠቅ ያድርጉ</translation>
 <translation id="3391716558283801616">ትር 7</translation>
-<translation id="3396331542604645348">የተመረጠው አታሚ የለም ወይም በትክክል አልተጫነም። አታሚዎን ያረጋግጡ ወይም ሌላ አታሚ ለመምረጥ ይሞክሩ።</translation>
 <translation id="3396800784455899911">የ«እስማማለሁ እና ቀጥል» አዝራርን ጠቅ በማድረግ ለእነዚህ የGoogle አገልግሎቶች ከላይ በተብራራው ማስሄድ መስማማትዎን ያረጋግጣሉ።</translation>
 <translation id="3399432415385675819">ማሳወቂያዎች ይሰናከላሉ</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />፣ <ph name="TIME_LEFT" /></translation>

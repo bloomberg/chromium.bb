@@ -695,7 +695,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 <translation id="2873651257716068683">Inabatilisha ukubwa chaguomsingi wa ukurasa wa kuchapisha. Ikiwa ukubwa wa ukurasa haupatikani, sera hii haizingatiwi.</translation>
 <translation id="2874209944580848064">Kidokezo kwa vifaa vya <ph name="PRODUCT_OS_NAME" /> vinavyotumia programu za Android:</translation>
 <translation id="2877225735001246144">Lemaza kidokezo cha CNAME unapohawilisha uthibitishaji wa Kerberos</translation>
-<translation id="2892414556511568464">Inazuia uchapishaji katika hali rudufu. Sera isiyo na mipangilio na seti isiyokuwa na kitu chochote zinachukuliwa kama zisizo na vizuizi.</translation>
+<translation id="2892414556511568464">Inazuia uchapishaji kwenye pande mbili za kurasa. Sera isipowekwa na kusiwe na mipangilio, hali hizo zitachukuliwa kwamba hakuna kizuizi.</translation>
 <translation id="2893546967669465276">Tuma kumbukumbu za mfumo kwenye seva ya udhibiti</translation>
 <translation id="2899002520262095963">Programu za Android zinaweza kutumia usanidi wa mtandao na vyeti vya CA vilivyowekwa kupitia sera hii, lakini hazina idhini ya kufikia chaguo za kuweka mipangilio.</translation>
 <translation id="290002216614278247">Hukuruhusu ufunge kipindi cha mtumiaji kulingana na wakati wa mteja au mgawo wa nafasi ya siku hiyo.
@@ -2340,7 +2340,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Ikiwa mipangilio hii itazimwa au haitawekwa basi watumiaji wataweza kuchagua kuenda kwenye tovuti iliyoripotiwa baada ya kuonyeshwa onyo.
 
       Angalia https://developers.google.com/safe-browsing ili upate maelezo zaidi kuhusu Kuvinjari Salama.</translation>
-<translation id="737655323154569539">Hudhibiti uchapishaji wa ukubwa wa ukurasa. Usipoweka mipangilio ya sera itachukuliwa kuwa hamna kudhibiti.</translation>
+<translation id="737655323154569539">Hudhibiti ukubwa wa ukurasa wa kuchapisha. Usipoweka mipangilio ya sera itachukuliwa kuwa hamna kudhibiti.</translation>
 <translation id="7417728346887499628">Ikiwa sera imezimwa, itazuia Kipengele cha Kusafisha Chrome kisichanganue mfumo kubaini programu zisizotakikana na kuziondoa. Uwezo wa kuanzisha Kipengele cha Kusafisha Chrome kutoka chrome://settings/cleanup umezimwa.
 
       Ikiwa sera imewekwa kuwa ndivyo au haijawekwa, Kipengele cha Kusafisha Chrome kitakagua mfumo mara kwa mara ili kubaini programu zisizotakikana. Ikiwa programu yoyote itapatikana, kitamwuliza mtumiaji iwapo angependa kuiondoa. Uwezo wa kuanzisha Kipengele cha Kusafisha Chrome kutoka chrome://settings umewashwa.
@@ -2671,21 +2671,6 @@ Si lazima uweke mipangilio ya programu hizi kwa njia ya kawaida! Violezo vilivyo
 
 Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO, ingawa kuweka sera kupitia usajili bado kunatumika kwa matukio ya Windows ambayo yameunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Futa saraka ya nyumbani ya ecryptfs ya mtumiaji na uanze kutumia saraka mpya ya nyumbani ya ext4- iliyosimbwa kwa njia fiche.</translation>
-<translation id="8279832363395120715">Huondoa sehemu muhimu za faragha na usalama za URL za https:// kabla ya kuzituma kwenye hati za PAC (Uwekaji Mipangilio ya Seva Mbadala Kiotomatiki) zinazotumiwa na <ph name="PRODUCT_NAME" /> wakati wa utatuzi wa seva mbadala.
-
-      Kikiwa Ndivyo, kipengele cha usalama huwashwa na URL za https:// huondolewa kabla ya kuziwasilisha kwenye hati ya PAC. Katika hali hii, hati ya PAC haiwezi kuona data ambayo kwa kawaida imelindwa na kituo kilichosimbwa kwa njia fiche (kama vile njia na hoja ya URL).
-
-      Kikiwa Sivyo, kipengele cha usalama huzimwa, na hati za PAC
-      hupewa uwezo wa kuona sehemu zote za URL za https://.
-      Hali hii inatumika kwenye hati zote za PAC bila kuzingatia asili yake (pamoja
-      na zile zilizoletwa kupitia uchukuaji usio salama, au zilizogunduliwa kwa njia isiyo salama kupitia WPAD).
-
-      Hii hubadilika kuwa Ndivyo (kipengele cha usalama kimewashwa), isipokuwa kwa watumiaji wa mfumo wa uendeshaji wa Chrome wa biashara ambapo hubadilika kuwa Sivyo kwa sasa.
-
-      Inashauriwa kipengele hiki kiwekwe Ndivyo. Sababu pekee ya kuiweka kuwa
-      Sivyo ni ikiwa inasababisha tatizo la kuoana na hati za sasa za PAC.
-
-      Kuna lengo la kuondoa ubatilishaji huu siku za usoni.</translation>
 <translation id="8285435910062771358">Kikuza skrini nzima kimewashwa</translation>
 <translation id="8288199156259560552">Washa Huduma ya Mahali ya Android Google</translation>
 <translation id="8294750666104911727">Kwa kawaida kurasa Zinazooana na X-UA zilizowekwa kwa chrome=1  zitaonyeshwa katika <ph name="PRODUCT_FRAME_NAME" /> bila kujali sera ya 'ChromeFrameRendererSettings'.

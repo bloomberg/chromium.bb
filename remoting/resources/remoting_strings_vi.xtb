@@ -331,7 +331,7 @@ PC</translation>
 <translation id="8548209692293300397">Trước đó, bạn đã đăng nhập bằng <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Để truy cập máy tính của bạn bằng tài khoản đó, hãy <ph name="LINK_BEGIN" />đăng nhập vào Google Chrome<ph name="LINK_END" /> bằng tài khoản đó và cài đặt lại Chrome Remote Desktop.</translation>
 <translation id="8642984861538780905">Khá tốt</translation>
 <translation id="8705151241155781642">• Hiện hỗ trợ Android 9.0 Pie.
-• Hỗ trợ đổi kích thước độ phân giải của máy tính từ xa để phù hợp với màn hình thiết bị Android của bạn.</translation>
+• Bạn có thể thay đổi độ phân giải của máy tính từ xa để phù hợp với màn hình thiết bị Android của mình.</translation>
 <translation id="8712909229180978490">Tôi không thể xem các tệp đã lưu của mình trực tuyến trong Google Drive.</translation>
 <translation id="8743328882720071828">Bạn có muốn cho phép <ph name="CLIENT_USERNAME" /> xem và điều khiển máy tính của mình không?</translation>
 <translation id="8747048596626351634">Phiên bị lỗi hoặc không bắt đầu được. Nếu đã có ~/.chrome-remote-desktop-session trên máy tính từ xa, hãy đảm bảo rằng phiên này bắt đầu chạy một quy trình ở nền trước trong thời gian dài, chẳng hạn như môi trường máy tính để bàn hoặc trình quản lý cửa sổ.</translation>

@@ -929,7 +929,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> Dateien ausgewählt</translation>
 <translation id="237828693408258535">Diese Seite übersetzen?</translation>
 <translation id="2378982052244864789">Erweiterungsverzeichnis auswählen</translation>
-<translation id="2379281330731083556">Über das Systemdialogfeld drucken... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Vor dem Senden nachfragen (empfohlen)</translation>
 <translation id="2384436799579181135">Ein Fehler ist aufgetreten. Bitte überprüfen Sie Ihren Drucker und versuchen Sie es noch einmal.</translation>
 <translation id="2387458720915042159">Proxy-Verbindungstyp</translation>
@@ -1130,7 +1129,6 @@
 <translation id="2676946222714718093">Läuft gerade auf:</translation>
 <translation id="2677748264148917807">Verlassen</translation>
 <translation id="2678063897982469759">Wieder aktivieren</translation>
-<translation id="2679385451463308372">Über den Systemdialog drucken...</translation>
 <translation id="268053382412112343">Ve&amp;rlauf</translation>
 <translation id="2683638487103917598">Ordner sortiert</translation>
 <translation id="2684004000387153598">Um fortzufahren, klicken Sie auf OK. Klicken Sie dann auf "Person hinzufügen", um ein neues Profil für Ihre E-Mail-Adresse zu erstellen.</translation>
@@ -1143,7 +1141,6 @@
 <translation id="2704184184447774363">Microsoft-Dokumentsignatur</translation>
 <translation id="270516211545221798">Touchpad-Geschwindigkeit</translation>
 <translation id="2705736684557713153">Scrollen Sie auf dem Bildschirm nach unten und aktivieren Sie die Option "Instant Tethering", wenn diese angezeigt wird. Falls nicht, brauchen Sie nichts weiter zu tun.</translation>
-<translation id="2706954854267016964">Das ausgewählte Google Cloud Print-Gerät wird nicht mehr unterstützt. Versuchen Sie, den Drucker in den Systemeinstellungen Ihres Computers einzurichten.</translation>
 <translation id="2707024448553392710">Komponente wird heruntergeladen.</translation>
 <translation id="270921614578699633">Durchschnitt bilden</translation>
 <translation id="2709453993673701466">Möchten Sie die Einstellungen für Synchronisierung und Personalisierung verwalten, bevor diese Funktionen aktiviert werden? Rufen Sie die <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> auf.</translation>
@@ -1159,7 +1156,6 @@
 <translation id="2721695630904737430">Betreute Nutzer wurden von Ihrem Administrator deaktiviert.</translation>
 <translation id="2724841811573117416">WebRTC-Protokolle</translation>
 <translation id="2725200716980197196">Netzwerkverbindung wiederhergestellt</translation>
-<translation id="2726934403674109201">(insgesamt <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Fehler bei der Netzwerkaktivierung</translation>
 <translation id="2727633948226935816">Nicht mehr erinnern</translation>
 <translation id="2727712005121231835">Originalgröße</translation>
@@ -1583,7 +1579,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="338583716107319301">Trennzeichen</translation>
 <translation id="3389312115541230716">Klicken Sie mit der rechten Maustaste auf das Symbol <ph name="SMALL_PRODUCT_LOGO" /> in der Taskleiste</translation>
 <translation id="3391716558283801616">Tab 7</translation>
-<translation id="3396331542604645348">Der ausgewählte Drucker ist entweder nicht verfügbar oder nicht ordnungsgemäß installiert. Überprüfen Sie den Drucker oder wählen Sie einen anderen Drucker aus.</translation>
 <translation id="3396800784455899911">Wenn Sie auf die Schaltfläche "Akzeptieren und fortfahren" klicken, willigen Sie damit in die oben für diese Google-Dienste beschriebene Verarbeitung Ihrer Daten ein.</translation>
 <translation id="3399432415385675819">Benachrichtigungen werden deaktiviert</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3343,7 +3338,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" /> teilt einen Chrome-Tab mit <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> teilt einen Chrome-Tab und Audio mit <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">PIN zum Entsperren Ihres Geräts verwenden, wenn Sie abgemeldet sind</translation>
+<translation id="6047938872139769630">Sie können die PIN nun zum Entsperren Ihres Geräts verwenden, wenn Sie abgemeldet sind</translation>
 <translation id="6049004884579590341">|<ph name="ACCELERATOR" />| gedrückt halten, um den Vollbildmodus zu beenden</translation>
 <translation id="6049065490165456785">Foto von interner Kamera</translation>
 <translation id="6051354611314852653">Hoppla! Das System konnte das Gerät nicht für den API-Zugriff autorisieren.</translation>

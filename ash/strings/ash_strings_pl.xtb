@@ -110,7 +110,7 @@
 <translation id="2727977024730340865">Podłączono ładowarkę o małej mocy. Ładowanie baterii może być nieprawidłowe.</translation>
 <translation id="2761704814324807722">Pasek stanu, godzina <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Ponownie łączę z: <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Wybierz, czy strony mogą korzystać z usług lokalizacyjnych oraz z mikrofonu, aparatu fotograficznego i innych funkcji urządzenia</translation>
+<translation id="2790844815106384441">Decydować, czy strony mogą korzystać z usług lokalizacyjnych oraz z mikrofonu, aparatu fotograficznego i innych funkcji urządzenia</translation>
 <translation id="2792498699870441125">Alt+Szukaj</translation>
 <translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2808012452536866044">Telefon w Razem lepiej został zastąpiony</translation>
@@ -338,7 +338,7 @@
 <translation id="6751826523481687655">Śledzenie wydajności jest włączone</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="6803622936009808957">Nie można wyświetlić odbicia lustrzanego, ponieważ nie znaleziono obsługiwanych rozdzielczości. Zamiast tego został włączony pulpit rozszerzony.</translation>
-<translation id="6814658242098378692">Zarządzaj aplikacjami, rozszerzeniami i motywami</translation>
+<translation id="6814658242098378692">Zarządzać aplikacjami, rozszerzeniami i motywami</translation>
 <translation id="6820676911989879663">Zrób sobie przerwę</translation>
 <translation id="683971173229319003">Szukaj+L</translation>
 <translation id="6857811139397017780">Aktywuj sieć <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +378,7 @@
 <translation id="7564874036684306347">Przenoszenie okien na inny pulpit może spowodować nieoczekiwane zachowanie. Kolejne powiadomienia, okna i okna dialogowe mogą pojawiać się na różnych pulpitach.</translation>
 <translation id="7569509451529460200">Włączono Braille'a i ChromeVox</translation>
 <translation id="7593891976182323525">Szukaj lub Shift</translation>
-<translation id="7604942372593434070">Uzyskaj dostęp do swojej aktywności związanej z przeglądaniem</translation>
+<translation id="7604942372593434070">Uzyskać dostęp do Twojej aktywności związanej z przeglądaniem</translation>
 <translation id="7642778300616172920">Ukryj informacje poufne</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (właściciel)</translation>
 <translation id="7647488630410863958">Odblokuj urządzenie, by zobaczyć swoje powiadomienia</translation>
@@ -395,7 +395,7 @@
 <translation id="7842211907556571265">Łączę z siecią <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Ostrzeżenie: funkcja eksperymentalna</translation>
 <translation id="7846634333498149051">Klawiatura</translation>
-<translation id="7886169021410746335">Dostosuj ustawienia prywatności</translation>
+<translation id="7886169021410746335">Dostosowywać ustawienia prywatności</translation>
 <translation id="7886277072580235377">Twoja sesja internetowa zostanie wyczyszczona, gdy się wylogujesz. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Wyślij e-maila</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>

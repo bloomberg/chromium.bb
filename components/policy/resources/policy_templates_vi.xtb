@@ -418,7 +418,7 @@
       Nếu bạn bật cài đặt này, mọi trang xác thực cổng cố định (tức là tất cả các trang web bắt đầu từ trang đăng nhập cổng cố định cho đến khi <ph name="PRODUCT_NAME" /> phát hiện kết nối Internet thành công) sẽ hiển thị trong một cửa sổ riêng biệt bỏ qua tất cả các cài đặt và các hạn chế của chính sách đối với người dùng hiện tại.
 
       Nếu bạn tắt cài đặt này hoặc không thiết lập cài đặt, thì mọi trang xác thực cổng cố định sẽ hiển thị trong tab trình duyệt mới (thông thường), sử dụng cài đặt proxy của người dùng hiện tại.</translation>
-<translation id="214901426630414675">Hạn chế in ở chế độ hai mặt</translation>
+<translation id="214901426630414675">Hạn chế chế độ in hai mặt</translation>
 <translation id="2149330464730004005">Bật chế độ in màu</translation>
 <translation id="2156132677421487971">Định cấu hình các chính sách cho <ph name="PRODUCT_NAME" />, một tính năng cho phép người dùng gửi nội dung của các tab, trang web hoặc màn hình từ trình duyệt đến màn hình và hệ thống âm thanh từ xa.</translation>
 <translation id="2166472654199325139">Không lọc các trang web có nội dung người lớn</translation>
@@ -721,12 +721,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn tắt cài đặt này hoặc không đặt giá trị, tính năng Xem trước bản in sẽ chọn máy in đã sử dụng gần đây nhất làm máy in mặc định.
 
       Nếu bạn bật cài đặt này, tính năng Xem trước bản in sẽ chọn máy in có sẵn trong hệ điều hành làm máy in mặc định.</translation>
-<translation id="2856674246949497058">Khôi phục và sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Thực hiện powerwash trong quá trình này.</translation>
+<translation id="2856674246949497058">Hạ cấp và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Thực hiện powerwash trong quá trình này.</translation>
 <translation id="2872961005593481000">Tắt</translation>
-<translation id="2873651257716068683">Ghi đè kích thước trang in mặc định. Nếu không có kích thước trang in này thì sẽ bỏ qua chính sách này.</translation>
+<translation id="2873651257716068683">Ghi đè kích thước trang in mặc định. Nếu không có kích thước trang in này thì chính sách sẽ bị bỏ qua.</translation>
 <translation id="2874209944580848064">Lưu ý dành cho thiết bị <ph name="PRODUCT_OS_NAME" /> hỗ trợ ứng dụng Android:</translation>
 <translation id="2877225735001246144">Tắt tra cứu CNAME khi thỏa thuận xác thực Kerberos</translation>
-<translation id="2892414556511568464">Hạn chế in ở chế độ hai mặt. Khi bạn không đặt chính sách cũng như đặt chính sách thành giá trị rỗng thì sẽ không có hạn chế nào.</translation>
+<translation id="2892414556511568464">Hạn chế chế độ in hai mặt. Nếu bạn không đặt hoặc để trống chính sách, thì hệ thống sẽ coi là không có hạn chế.</translation>
 <translation id="2893546967669465276">Gửi nhật ký hệ thống đến máy chủ quản lý</translation>
 <translation id="2899002520262095963">Các ứng dụng Android có thể sử dụng cấu hình mạng và chứng chỉ CA được đặt qua chính sách này nhưng không có quyền truy cập vào một số tùy chọn cấu hình.</translation>
 <translation id="290002216614278247">Cho phép bạn khóa phiên của người dùng dựa vào thời gian của ứng dụng hoặc hạn mức sử dụng trong ngày.
@@ -1618,7 +1618,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="5423197884968724595">Tên giới hạn Android WebView:</translation>
-<translation id="5424147596523390018">Cho phép tất cả các chế độ in màu</translation>
+<translation id="5424147596523390018">Cho phép tất cả các chế độ màu</translation>
 <translation id="5442026853063570579">Chính sách này cũng kiểm soát quyền truy cập vào Tùy chọn của nhà phát triển Android. Nếu bạn đặt chính sách này thành 'DeveloperToolsDisallowed' (giá trị 2), người dùng sẽ không thể truy cập vào Tùy chọn của nhà phát triển. Nếu bạn đặt chính sách này thành một giá trị khác hoặc không đặt chính sách này thì người dùng có thể truy cập vào Tùy chọn của nhà phát triển bằng cách nhấn bảy lần vào số bản dựng trong ứng dụng cài đặt Android.</translation>
 <translation id="5447306928176905178">Bật báo cáo thông tin bộ nhớ (kích thước khối xếp JS) tới trang (không dùng nữa)</translation>
 <translation id="5457065417344056871">Bật chế độ khách trong trình duyệt</translation>
@@ -1899,7 +1899,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Chỉ khi đặt allowCorporateKeyUsage thành true cho một tiện ích thì tiện ích đó mới có thể sử dụng bất kỳ khóa nền tảng nào được đánh dấu để sử dụng kết hợp nhằm xác nhận dữ liệu tùy ý. Chỉ cấp quyền này nếu tiện ích được tin cậy để truy cập an toàn vào khóa chống lại kẻ tấn công.</translation>
 <translation id="6208896993204286313">Báo cáo thông tin chính sách của <ph name="PRODUCT_NAME" /></translation>
-<translation id="6210259502936598222">Báo cáo hệ điều hành và thông tin phiên bản của <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210259502936598222">Báo cáo thông tin hệ điều hành và phiên bản của <ph name="PRODUCT_NAME" /></translation>
 <translation id="6211428344788340116">Báo cáo số lần hoạt động của thiết bị.
 
       Nếu cài đặt này không được đặt hoặc được đặt thành Đúng, các thiết bị được đăng ký sẽ báo cáo các khoảng thời gian khi có người dùng sử dụng thiết bị. Nếu cài đặt này được đặt giá trị thành Sai, số lần thiết bị hoạt động sẽ không được ghi lại hay báo cáo.</translation>
@@ -1995,7 +1995,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6628646143828354685">Cho phép bạn đặt có cho phép trang web truy cập vào các thiết bị Bluetooth lân cận hay không. Quyền truy cập có thể bị chặn hoàn toàn hoặc người dùng có thể được hỏi mỗi lần trang web muốn truy cập vào các thiết bị Bluetooth lân cận.
 
           Nếu chính sách này không được đặt, '3' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
-<translation id="663685822663765995">Hạn chế in ở chế độ in màu</translation>
+<translation id="663685822663765995">Hạn chế chế độ in màu</translation>
 <translation id="6641981670621198190">Tắt hỗ trợ dành cho API đồ họa 3D</translation>
 <translation id="6647965994887675196">Nếu đặt thành đúng, bạn có thể tạo và sử dụng tài khoản người dùng bị giám sát.
 
@@ -2371,7 +2371,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đã tắt hoặc chưa định cấu hình mục cài đặt này, thì người dùng sẽ có thể chọn tiếp tục truy cập vào trang web bị gắn cờ sau khi cảnh báo hiển thị.
 
       Truy cập vào https://developers.google.com/safe-browsing để biết thêm thông tin về dịch vụ Duyệt web an toàn.</translation>
-<translation id="737655323154569539">Hạn chế kích thước trang in. Khi bạn không đặt chính sách cũng như đặt chính sách thành giá trị rỗng thì sẽ không có hạn chế nào.</translation>
+<translation id="737655323154569539">Hạn chế kích thước trang in. Nếu bạn không đặt hoặc để trống chính sách, thì hệ thống sẽ coi là không có hạn chế.</translation>
 <translation id="7417728346887499628">Nếu bạn tắt chính sách này thì tính năng Làm sạch Chrome sẽ không quét hệ thống để tìm phần mềm không mong muốn và thực hiện thao tác xóa. Tùy chọn kích hoạt thủ công tính năng Làm sạch Chrome trên trang web chrome://settings/cleanup sẽ bị tắt.
 
       Nếu bạn bật hoặc không đặt chính sách này, thì tính năng Làm sạch Chrome sẽ quét định kỳ hệ thống để tìm phần mềm không mong muốn. Khi tìm thấy phần mềm không mong muốn, tính năng này sẽ hỏi người dùng có muốn xóa phần mềm đó hay không. Tùy chọn kích hoạt thủ công tính năng Làm sạch Chrome trên trang web chrome://settings sẽ được bật.
@@ -2442,8 +2442,8 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7617319494457709698">Chính sách này nêu rõ các tiện ích được phép sử dụng chức năng <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> <ph name="CHALLENGE_USER_KEY_FUNCTION" /> cho chứng thực từ xa. Các tiện ích phải được thêm vào danh sách này để sử dụng API.
 
           Nếu tiện ích không có trong danh sách hoặc danh sách không được đặt thì lệnh gọi đến API sẽ không thực hiện được với mã lỗi.</translation>
-<translation id="7618907117929117943">Khôi phục và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích cũng như có thể chuyển sang cấu hình cấp thiết bị (bao gồm cả thông tin xác thực mạng) thông qua việc khôi phục, cũng như bỏ qua OOBE sau quá trình khôi phục. Nếu không khả thi thì không nên thực hiện hay hủy quá trình khôi phục (vì phiên bản đích không hỗ trợ khôi phục dữ liệu hoặc do quá trình thay đổi mang tính chất không tương thích ngược).
-          Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 70 trở lên. Với các ứng dụng cũ hơn, giá trị này cho thấy quá trình khôi phục đã bị vô hiệu hóa.</translation>
+<translation id="7618907117929117943">Hạ cấp và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích cũng như có thể chuyển sang cấu hình cấp thiết bị (bao gồm cả thông tin truy cập mạng) thông qua việc hạ cấp, cũng như bỏ qua OOBE sau khi hạ cấp. Nếu không khả thi thì không nên thực hiện hay hủy quá trình hạ cấp (vì phiên bản đích không hỗ trợ khôi phục dữ liệu hoặc do một sự thay đổi không tương thích ngược).
+          Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 70 trở lên. Với các ứng dụng cũ, giá trị này nghĩa là khả năng hạ cấp đã bị vô hiệu hóa.</translation>
 <translation id="7625444193696794922">Chỉ định kênh phát hành mà thiết bị này phải bị khóa.</translation>
 <translation id="7632724434767231364">Tên thư viện GSSAPI</translation>
 <translation id="7635471475589566552">Định cấu hình ngôn ngữ ứng dụng trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi ngôn ngữ này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ được chỉ định. Nếu ngôn ngữ được định cấu hình không được hỗ trợ, 'en-US' sẽ được sử dụng thay thế. Nếu bạn tắt hoặc không thiết lập cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ ưa thích do người dùng chỉ định (nếu được định cấu hình), ngôn ngữ hệ thống hoặc ngôn ngữ dự phòng 'en-US'.</translation>
@@ -2623,7 +2623,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn bật hoặc không đặt giá trị cho tùy chọn cài đặt này, thì người dùng vẫn có quyền kiểm soát đối với tính năng Tự động điền. Điều này sẽ cho phép họ định cấu hình cho hồ sơ Tự động điền và bật hoặc tắt tính năng này theo ý muốn.</translation>
 <translation id="8044493735196713914">Báo cáo chế độ khởi động thiết bị</translation>
 <translation id="8050080920415773384">In bản gốc</translation>
-<translation id="8053580360728293758">Ghi đè chế độ in màu mặc định. Nếu không có chế độ này thì sẽ bỏ qua chính sách này.</translation>
+<translation id="8053580360728293758">Ghi đè chế độ in màu mặc định. Nếu không có chế độ này thì chính sách này sẽ bị bỏ qua.</translation>
 <translation id="8059164285174960932">URL nơi ứng dụng truy cập từ xa sẽ lấy mã thông báo xác thực</translation>
 <translation id="8078366200175825572">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web không được phép đặt cookie.
 
@@ -2707,28 +2707,6 @@ Bạn không cần định cấu hình các cài đặt này theo cách thủ c�
 
 Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù việc cấp phép chính sách qua cổng đăng ký vẫn được hỗ trợ cho các phiên bản Windows tham gia miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Xóa thư mục chính ecryptf của người dùng và bắt đầu bằng một thư mục chính mới được mã hóa ext4.</translation>
-<translation id="8279832363395120715">Xóa phần thông tin nhạy cảm trong bảo mật và quyền riêng tư của URL https:// trước khi gửi URL này tới tập lệnh PAC (Tự động định cấu hình proxy) do <ph name="PRODUCT_NAME" /> sử dụng trong quá trình phân giải proxy.
-
-      Nếu cài đặt là True, tính năng bảo mật sẽ được bật và URL https:// sẽ bị
-      xóa trước khi được gửi tới tập lệnh PAC. Theo cách này, tập lệnh PAC
-      không thể xem dữ liệu do kênh được mã hóa bảo vệ ban đầu
-      (chẳng hạn như truy vấn và đường dẫn của URL).
-
-      Nếu cài đặt là False, tính năng bảo mật sẽ bị vô hiệu hóa và tập lệnh PAC
-      sẽ được cấp cho khả năng xem tất cả thành phần của URL https://.
-      Điều này áp dụng cho tất cả tập lệnh PAC bất kể nguồn gốc là gì (bao gồm
-      các tập lệnh được tìm nạp qua chuyển tuyến không an toàn hoặc bị phát
-      hiện là không an toàn thông qua WPAD).
-
-      Cài đặt này được đặt mặc định này là True (tính năng bảo mật được bật),
-      trừ những người dùng doanh nghiệp Chrome OS có cài đặt này hiện được 
-      đặt này là False.
-
-      Chúng tôi đề xuất đặt cài đặt này là True. Lý do duy nhất để đặt cài
-      đặt này thành False là liệu điều đó có gây ra sự cố tương thích
-      với tập lệnh PAC hiện có hay không.
-
-      Chúng tôi mong muốn xóa ghi đè này trong tương lai.</translation>
 <translation id="8285435910062771358">Đã bật kính lúp toàn màn hình</translation>
 <translation id="8288199156259560552">Bật Dịch vụ vị trí của Google trên thiết bị Android</translation>
 <translation id="8294750666104911727">Thông thường các trang có Tương thích với X-UA được đặt thành chrome=1 sẽ được hiển thị trong <ph name="PRODUCT_FRAME_NAME" /> bất kể chính sách 'ChromeFrameRendererSettings'.
@@ -2921,7 +2899,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Nếu bạn không thiết lập cài đặt này, người dùng có thể quyết định có sử dụng chức năng này hay không.</translation>
 <translation id="8870318296973696995">Trang chủ</translation>
-<translation id="8876188741456358123">Ghi đè chế độ in hai mặt mặc định. Nếu không có chế độ này thì sẽ bỏ qua chính sách này.</translation>
+<translation id="8876188741456358123">Ghi đè chế độ in hai mặt mặc định. Nếu không có chế độ này thì chính sách sẽ bị bỏ qua.</translation>
 <translation id="8882006618241293596">Chặn plugin <ph name="FLASH_PLUGIN_NAME" /> trên các trang web này</translation>
 <translation id="890403179930035128">Buộc bật tính năng kiểm tra chính tả ngôn ngữ. Các ngôn ngữ không xác định được trong danh sách đó sẽ bị bỏ qua.
 
@@ -3017,8 +2995,8 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9084985621503260744">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không</translation>
 <translation id="9088433379343318874">Cho phép nhà cung cấp nội dung của người dùng được giám sát</translation>
 <translation id="9088444059179765143">Định cấu hình phương thức phát hiện múi giờ tự động</translation>
-<translation id="9094064873808699479">Khôi phục và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Hãy tìm cách chuyển sang cấu hình cấp thiết bị (bao gồm thông tin xác thực mạng) thông qua quá trình khôi phục, nếu có thể, nhưng hãy thực hiện quá trình khôi phục bằng chức năng powerwash đầy đủ ngay cả khi không thể khôi phục dữ liệu (vì phiên bản đích không hỗ trợ khôi phục dữ liệu hoặc do quá trình thay đổi mang tính chất không tương thích ngược).
-          Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 70 trở lên. Với các ứng dụng cũ hơn, giá trị này cho thấy quá trình khôi phục đã bị vô hiệu hóa.</translation>
+<translation id="9094064873808699479">Hạ cấp và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Hãy tìm cách chuyển sang cấu hình cấp thiết bị (bao gồm cả thông tin truy cập mạng) thông qua quá trình hạ cấp, nếu có thể, nhưng hãy thực hiện quá trình hạ cấp bằng chức năng powerwash đầy đủ ngay cả khi không thể khôi phục dữ liệu (vì phiên bản đích không hỗ trợ khôi phục dữ liệu hoặc do một sự thay đổi không tương thích ngược).
+          Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 70 trở lên. Với các ứng dụng cũ, giá trị này nghĩa là khả năng hạ cấp đã bị vô hiệu hóa.</translation>
 <translation id="9096086085182305205">Danh sách trắng máy chủ xác thực</translation>
 <translation id="9098553063150791878">Chính sách xác thực HTTP</translation>
 <translation id="9105265795073104888">Chỉ một tập hợp con các tùy chọn cấu hình proxy được cung cấp cho các ứng dụng Android. Các ứng dụng Android có thể chọn sử dụng proxy một cách tự nguyện. Bạn không thể buộc các ứng dụng này sử dụng proxy.</translation>
@@ -3079,11 +3057,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9200828125069750521">Tham số cho URL hình ảnh sử dụng POST</translation>
 <translation id="920209539000507585">Buộc bật hoặc tắt tùy chọn 'đầu trang và chân trang' trong hộp thoại in.
 
-      Nếu chưa đặt chính sách này, thì người dùng có thể quyết định xem có in đầu trang và chân trang không.
+      Nếu không đặt chính sách này, thì người dùng có thể quyết định xem có in đầu trang và chân trang không.
 
-      Nếu đặt chính sách này thành sai, thì sẽ không chọn tùy chọn 'Đầu trang và chân trang' trong hộp thoại xem trước bản in và người dùng không thể thay đổi tùy chọn này.
+      Nếu đặt chính sách này thành false, thì tùy chọn 'Đầu trang và chân trang' sẽ không được chọn trong hộp thoại xem trước bản in và người dùng không thể thay đổi điều này.
 
-      Nếu đặt chính sách này thành đúng, thì sẽ chọn tùy chọn 'Đầu trang và chân trang' trong hộp thoại xem trước bản in và người dùng không thể thay đổi tùy chọn này.</translation>
+      Nếu đặt chính sách này thành true, thì tùy chọn 'Đầu trang và chân trang' sẽ được chọn trong hộp thoại xem trước bản in và người dùng không thể thay đổi điều này.</translation>
 <translation id="9210953373038593554">Định cấu hình loại xác thực cho đăng nhập SAML.
 
       Khi bạn đặt hoặc không đặt chính sách này thành Default (giá trị 0), hành vi đăng nhập SAML sẽ do trình duyệt xác định dựa trên các yếu tố khác. Trong tình huống cơ bản nhất, tính năng xác thực người dùng và bảo vệ dữ liệu người dùng đã lưu vào bộ nhớ đệm được dựa trên mật khẩu mà người dùng nhập theo cách thủ công.

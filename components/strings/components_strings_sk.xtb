@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Vyžaduje sa telefónne číslo</translation>
 <translation id="1517500485252541695">Akceptované kreditné a debetné karty</translation>
 <translation id="1519264250979466059">Dátum zostavenia</translation>
+<translation id="1521655867290435174">Tabuľky Google</translation>
 <translation id="1527263332363067270">Čaká sa na pripojenie...</translation>
 <translation id="1532118530259321453">Táto stránka hovorí</translation>
 <translation id="153384715582417236">To je zatiaľ všetko</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Exportovať pre MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Spojenie bolo resetované.</translation>
+<translation id="2785008241190445880">Záložka bola nahradená</translation>
 <translation id="2788784517760473862">Akceptované kreditné karty</translation>
 <translation id="2794233252405721443">Web je blokovaný</translation>
 <translation id="2799020568854403057">Web, ktorý chcete otvoriť, obsahuje škodlivé aplikácie</translation>
@@ -535,6 +537,7 @@
 <translation id="4646534391647090355">Prejsť do daného umiestnenia</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, jej bezpečnostný certifikát obsahuje chyby. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
+<translation id="467809019005607715">Prezentácie Google</translation>
 <translation id="4690462567478992370">Nepoužívať neplatné certifikáty</translation>
 <translation id="4690954380545377795">Môžete stratiť prístup do účtu Google alebo vám môže ukradnúť identitu. Chrome odporúča, aby ste si ihneď zmenili heslo.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -640,6 +643,7 @@
 <translation id="5324080437450482387">Vybrať kontaktné informácie</translation>
 <translation id="5327248766486351172">Názov</translation>
 <translation id="5332219387342487447">Spôsob dodania</translation>
+<translation id="5344579389779391559">Táto stránka sa vám môže pokúsiť účtovať poplatky</translation>
 <translation id="5355557959165512791">Web <ph name="SITE" /> momentálne nemôžete navštíviť, pretože tento certifikát bol odvolaný. Chyby siete a útoky sú zvyčajne dočasné, takže by táto stránka mala neskôr pravdepodobne fungovať.</translation>
 <translation id="536296301121032821">Nastavenia pravidla sa nepodarilo uložiť</translation>
 <translation id="5371425731340848620">Aktualizujte si kartu</translation>
@@ -735,6 +739,7 @@
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Strana 1}few{Strana #}many{Strana #}other{Strana #}}</translation>
 <translation id="6017850046339264347">Útočníci na webe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> by mohli nainštalovať klamlivé aplikácie vydávajúce sa za iné aplikácie alebo zhromažďujúce údaje, ktoré sa dajú použiť na sledovanie vašej osoby. <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Upravte si Chrome podľa seba</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synchronizované)</translation>
 <translation id="6027201098523975773">Zadajte meno</translation>
 <translation id="6039846035001940113">Ak problém naďalej pretrváva, kontaktujte vlastníka webu.</translation>
@@ -743,6 +748,7 @@
 <translation id="6047927260846328439">Tento obsah sa vás môže podvodom pokúsiť presvedčiť, aby ste si nainštalovali softvér alebo poskytli osobné informácie. <ph name="BEGIN_LINK" />Napriek tomu zobraziť<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Web <ph name="SITE" /> momentálne nemôžete navštíviť, pretože používa pripínanie certifikátov. Chyby siete a útoky sú zvyčajne dočasné, takže by táto stránka mala neskôr pravdepodobne fungovať.</translation>
 <translation id="6059925163896151826">Zariadenia USB</translation>
+<translation id="6060991652695587932">Vyberte e‑mailovú službu na rýchly prístup</translation>
 <translation id="6071091556643036997">Tento typ pravidiel je neplatný.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Táto karta bude uložená do vášho účtu Google na zrýchlenie platieb v zariadeniach.}few{Tieto karty budú uložené do vášho účtu Google na zrýchlenie platieb v zariadeniach.}many{Tieto karty budú uložené do vášho účtu Google na zrýchlenie platieb v zariadeniach.}other{Tieto karty budú uložené do vášho účtu Google na zrýchlenie platieb v zariadeniach.}}</translation>
 <translation id="6080696365213338172">K obsahu ste pristúpili pomocou certifikátu, ktorý poskytol správca. Údaje, ktoré poskytnete doméne <ph name="DOMAIN" /> môžu byť zachytené správcom.</translation>
@@ -899,6 +905,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nie</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Prepísanie spravovanej relácie</translation>
 <translation id="7390545607259442187">Overenie karty</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
 <translation id="7407424307057130981">&lt;p&gt;Táto chyba sa zobrazí, keď máte v počítači so systémom Windows softvér Superfish.&lt;/p&gt;
@@ -989,6 +996,7 @@
 <translation id="7815407501681723534">Nájdené výsledky (počet: <ph name="NUMBER_OF_RESULTS" />) pre dopyt „<ph name="SEARCH_STRING" />“: <ph name="SEARCH_RESULTS" /></translation>
 <translation id="7818867226424560206">Správa pravidiel</translation>
 <translation id="782886543891417279">Sieť Wi‑Fi (<ph name="WIFI_NAME" />), ktorú používate, môže vyžadovať, aby ste navštívili jej prihlasovaciu stránku</translation>
+<translation id="7835178595033117206">Záložka bola odstránená</translation>
 <translation id="785549533363645510">Nie ste však neviditeľný/-á. Prejdením do režimu inkognito neskryjete svoje prehliadanie pred zamestnávateľom, poskytovateľom internetových služieb ani pred navštívenými webmi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Chcete odísť z tohto webu?</translation>
@@ -1125,6 +1133,7 @@
 <translation id="8874824191258364635">Zadajte platné číslo karty</translation>
 <translation id="8876793034577346603">Konfiguráciu siete sa nepodarilo analyzovať.</translation>
 <translation id="8891727572606052622">Neplatný režim proxy.</translation>
+<translation id="8892964541482452187">Tlačidlo na prepnutie karty, stlačením klávesa Enter prepnite na túto kartu</translation>
 <translation id="8903921497873541725">Priblížiť</translation>
 <translation id="8931333241327730545">Chcete túto kartu uložiť do svojho účtu Google?</translation>
 <translation id="8932102934695377596">Vaše hodiny idú pozadu</translation>
@@ -1150,6 +1159,7 @@
 <translation id="9035022520814077154">Chyba zabezpečenia</translation>
 <translation id="9038649477754266430">Používať službu predpovedí na rýchlejšie načítanie stránok</translation>
 <translation id="9039213469156557790">Táto stránka obsahuje aj iné zdroje, ktoré nie sú zabezpečené. Tieto zdroje môžu pri prenose vidieť ostatní používatelia a útočník ich môže upraviť tak, aby zmenil správanie stránky.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Pokúšate sa otvoriť doménu <ph name="DOMAIN" />, ale server predložil neplatný certifikát.</translation>
 <translation id="9050666287014529139">Prístupová fráza</translation>
 <translation id="9065203028668620118">Upraviť</translation>
@@ -1173,6 +1183,7 @@
 <translation id="9170848237812810038">&amp;Naspäť</translation>
 <translation id="9171296965991013597">Opustiť aplikáciu?</translation>
 <translation id="917450738466192189">Certifikát servera je neplatný.</translation>
+<translation id="9183302530794969518">Dokumenty Google</translation>
 <translation id="9183425211371246419">Web <ph name="HOST_NAME" /> využíva nepodporovaný protokol.</translation>
 <translation id="9205078245616868884">Údaje sú šifrované pomocou vlastnej prístupovej frázy synchronizácie. Keď ju zadáte, synchronizácia sa spustí.</translation>
 <translation id="9207861905230894330">Článok sa nepodarilo pridať.</translation>

@@ -571,7 +571,7 @@
 <translation id="1817310072033858383">Skonfiguruj Smart Lock na urządzeniu <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Odzyskiwanie plików firmy Microsoft</translation>
 <translation id="1818007989243628752">Usuń hasło użytkownika <ph name="USERNAME" /></translation>
-<translation id="1818913467757368489">Trwa przesyłanie dziennika.</translation>
+<translation id="1818913467757368489">Trwa przesyłanie logu.</translation>
 <translation id="1819721979226826163">Kliknij Powiadomienia z aplikacji &gt; Usługi Google Play.</translation>
 <translation id="1826516787628120939">Sprawdzam</translation>
 <translation id="1828378091493947763">To urządzenie nie obsługuje tej wtyczki</translation>
@@ -663,7 +663,7 @@
 <translation id="1962969542251276847">Zablokuj ekran</translation>
 <translation id="1963227389609234879">Usuń wszystko</translation>
 <translation id="1965624977906726414">Nie ma specjalnych uprawnień.</translation>
-<translation id="1969654639948595766">Dzienniki tekstowe WebRTC (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
+<translation id="1969654639948595766">Logi tekstowe WebRTC (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1970368523891847084">Włączono tryb wideo</translation>
 <translation id="197288927597451399">Zachowaj</translation>
 <translation id="1974043046396539880">Punkty dystrybucji listy CRL</translation>
@@ -807,7 +807,7 @@
 <translation id="2190069059097339078">Program do pobierania danych logowania do Wi-Fi</translation>
 <translation id="219008588003277019">Moduł klienta natywnego: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(puste)</translation>
-<translation id="2191223688506386601">Jeszcze jedno</translation>
+<translation id="2191223688506386601">Ostatnia sprawa</translation>
 <translation id="2192505247865591433">Z:</translation>
 <translation id="2193365732679659387">Ustawienia zaufania</translation>
 <translation id="2195729137168608510">Ochrona poczty e-mail</translation>
@@ -932,7 +932,6 @@
 <translation id="2378075407703503998">Wybrano <ph name="SELCTED_FILE_COUNT" /> pliki(ów)</translation>
 <translation id="237828693408258535">Przetłumaczyć tę stronę?</translation>
 <translation id="2378982052244864789">Wybierz katalog rozszerzenia.</translation>
-<translation id="2379281330731083556">Drukuj w oknie systemowym <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Pytaj przed wysłaniem (zalecane)</translation>
 <translation id="2384436799579181135">Wystąpił błąd. Sprawdź drukarkę i spróbuj ponownie.</translation>
 <translation id="2387458720915042159">Typ połączenia z serwerem proxy</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Odtwarzane na</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
 <translation id="2678063897982469759">Włącz ponownie</translation>
-<translation id="2679385451463308372">Drukuj poprzez systemowe okno dialogowe</translation>
 <translation id="268053382412112343">Hi&amp;storia</translation>
 <translation id="2683638487103917598">Posortowano zawartość folderu</translation>
 <translation id="2684004000387153598">Aby kontynuować, kliknij OK, a potem kliknij Dodaj osobę, by utworzyć nowy profil dla swojego adresu e-mail.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Podpisywanie dokumentów firmy Microsoft</translation>
 <translation id="270516211545221798">Szybkość touchpada</translation>
 <translation id="2705736684557713153">Przewiń na dół ekranu i włącz Instant Tethering, jeśli taka opcja jest widoczna. Jeśli jej nie ma, wszystko jest już gotowe.</translation>
-<translation id="2706954854267016964">Wybrane urządzenie Google Cloud Print nie jest już obsługiwane. Skonfiguruj drukarkę w ustawieniach systemu na komputerze.</translation>
 <translation id="2707024448553392710">Pobieram składnik</translation>
 <translation id="270921614578699633">Średnia z</translation>
 <translation id="2709453993673701466">Chcesz dostosować ustawienia synchronizacji i personalizacji przed ich włączeniem? Wprowadź zmiany w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" />.</translation>
@@ -1161,9 +1158,8 @@
 <translation id="2721037002783622288">&amp;Szukaj obrazu w <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
 <translation id="2721695630904737430">Nadzorowanych użytkowników wyłączył administrator.</translation>
-<translation id="2724841811573117416">Dzienniki WebRTC</translation>
+<translation id="2724841811573117416">Logi WebRTC</translation>
 <translation id="2725200716980197196">Łączność z siecią przywrócona</translation>
-<translation id="2726934403674109201">(łącznie: <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Błąd aktywacji sieci</translation>
 <translation id="2727633948226935816">Nie przypominaj więcej</translation>
 <translation id="2727712005121231835">Rzeczywisty rozmiar</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">Separator</translation>
 <translation id="3389312115541230716">Kliknij prawym przyciskiem myszy ikonę <ph name="SMALL_PRODUCT_LOGO" /> na pasku zadań</translation>
 <translation id="3391716558283801616">Karta 7</translation>
-<translation id="3396331542604645348">Wybrana drukarka jest niedostępna lub nieprawidłowo zainstalowana. Sprawdź ją lub wybierz inną.</translation>
 <translation id="3396800784455899911">Klikając przycisk „Zaakceptuj i kontynuuj”, wyrażasz zgodę na opisane powyżej przetwarzanie danych w tych usługach Google.</translation>
 <translation id="3399432415385675819">Powiadomienia zostaną wyłączone</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -1770,7 +1765,7 @@
 <translation id="3645372836428131288">Przesuń odrobinę, by zeskanować inną część odcisku palca.</translation>
 <translation id="3648348069317717750">Wykryto <ph name="USB_DEVICE_NAME" /></translation>
 <translation id="3649138363871392317">Zdjęcie zostało zrobione</translation>
-<translation id="3650845953328929506">Dziennik oczekuje na przesłanie.</translation>
+<translation id="3650845953328929506">Log oczekuje na przesłanie.</translation>
 <translation id="3650952250015018111">Zezwól aplikacji „<ph name="APP_NAME" />” na dostęp do:</translation>
 <translation id="3651488188562686558">rozłączy się z siecią Wi-Fi</translation>
 <translation id="3652817283076144888">Inicjuję</translation>
@@ -1994,7 +1989,7 @@
 <translation id="3950820424414687140">Zaloguj się</translation>
 <translation id="3954354850384043518">W toku</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hz)</translation>
-<translation id="3954953195017194676">Nie ma zapisanych ostatnio dzienników zdarzeń WebRTC.</translation>
+<translation id="3954953195017194676">Nie ma zapisanych ostatnio logów zdarzeń WebRTC.</translation>
 <translation id="3955193568934677022">Zezwalaj witrynom na odtwarzanie treści chronionej (zalecane)</translation>
 <translation id="3956702100721821638">Nie udało się połączyć z Google Play</translation>
 <translation id="3958088479270651626">Importuj zakładki i ustawienia</translation>
@@ -2248,7 +2243,7 @@
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">Pomo&amp;c</translation>
 <translation id="4409697491990005945">Marginesy</translation>
-<translation id="4410545552906060960">Do odblokowywania urządzenia możesz używać numeru PIN zamiast hasła. Możesz ustawić PIN później w Ustawieniach.</translation>
+<translation id="4410545552906060960">Do odblokowywania urządzenia możesz używać numeru PIN zamiast hasła. Możesz podać PIN później w Ustawieniach.</translation>
 <translation id="4411578466613447185">Certyfikat do podpisywania kodu</translation>
 <translation id="4412698727486357573">Centrum pomocy</translation>
 <translation id="44141919652824029">Zezwolić aplikacji <ph name="APP_NAME" /> na odczyt listy podłączonych urządzeń USB?</translation>
@@ -2418,7 +2413,7 @@
 <translation id="4681930562518940301">Otwórz oryginalny &amp;obraz w nowej karcie</translation>
 <translation id="4682551433947286597">Na ekranie logowania są wyświetlane tapety.</translation>
 <translation id="4684427112815847243">Synchronizuj wszystko</translation>
-<translation id="4688036121858134881">Identyfikator dziennika lokalnego: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />.</translation>
+<translation id="4688036121858134881">Identyfikator logu lokalnego: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />.</translation>
 <translation id="4689235506267737042">Wybierz ustawienia trybu demonstracyjnego</translation>
 <translation id="4689421377817139245">Zsynchronizuj tę zakładkę ze swoim iPhonem</translation>
 <translation id="4690091457710545971">&lt;Cztery pliki wygenerowane przez oprogramowanie układowe Wi-Fi firmy Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Pierwsze trzy to pliki binarne zawierające zrzuty rejestru. Intel twierdzi, że nie zawierają żadnych danych umożliwiających identyfikację osoby lub urządzenia. Ostatni plik zawiera ślad wykonywania oprogramowania układowego firmy Intel. Wszelkie dane umożliwiające identyfikację osoby lub urządzenia zostały z niego usunięte, ale jest zbyt duży, by go tu wyświetlić. Te pliki zostały wygenerowane w reakcji na niedawne problemy z Wi-Fi na Twoim urządzeniu i zostaną przekazane firmie Intel, by pomóc w rozwiązaniu tych problemów.&gt;</translation>
@@ -3370,7 +3365,7 @@
 <translation id="6075907793831890935">Wymiana danych z urządzeniem o nazwie <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">Dołącz ten zrzut ekranu</translation>
 <translation id="6077131872140550515">Usuń z preferowanych</translation>
-<translation id="6077189836672154517">Wskazówki i wiadomości na temat <ph name="DEVICE_TYPE" /></translation>
+<translation id="6077189836672154517">Wskazówki i wiadomości na temat: <ph name="DEVICE_TYPE" /></translation>
 <translation id="6078323886959318429">Dodaj skrót</translation>
 <translation id="6078752646384677957">Sprawdź mikrofon i poziom dźwięku.</translation>
 <translation id="6080515710685820702">Korzystasz ze wspólnego komputera? Otwórz okno incognito.</translation>
@@ -3715,7 +3710,7 @@
 <translation id="6589660129740381104">Aby ułatwić Ci kontrolowanie działania <ph name="IDS_SHORT_PRODUCT_NAME" />, konfigurację funkcji związanych z synchronizacją i personalizacją umieściliśmy w jednym miejscu. Włączając tę opcję, możesz spowodować zmianę swoich bieżących ustawień.</translation>
 <translation id="6589706261477377614">Zwiększ jasność klawiszy</translation>
 <translation id="6590458744723262880">Zmień nazwę folderu</translation>
-<translation id="6592267180249644460">Zapisany dziennik WebRTC: <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
+<translation id="6592267180249644460">Zapisany log WebRTC: <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6594883168703494535">Używaj funkcji Smart Lock, by logować się na swoje konto Google</translation>
 <translation id="6596325263575161958">Opcje szyfrowania</translation>
 <translation id="6596745167571172521">Wyłącz Caps Lock</translation>
@@ -3895,7 +3890,7 @@
 <translation id="6860427144121307915">Otwórz na karcie</translation>
 <translation id="6862635236584086457">Wszystkie pliki przechowywane w tym folderze są automatycznie zapisywane online</translation>
 <translation id="6865313869410766144">Autouzupełnianie danych formularzy</translation>
-<translation id="6865708901122695652">Dzienniki zdarzeń WebRTC (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
+<translation id="6865708901122695652">Logi zdarzeń WebRTC (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">Temperatura kolorów</translation>
 <translation id="6870888490422746447">Wybierz aplikację docelową udostępniania:</translation>
 <translation id="6871644448911473373">Obiekt odpowiadający protokołu OCSP: <ph name="LOCATION" /></translation>
@@ -4129,7 +4124,7 @@
 <translation id="7222232353993864120">Adres e-mail</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7225179976675429563">Brak typu sieci</translation>
-<translation id="7228479291753472782">Zmień ustawienia określające, czy strony mogą korzystać z takich funkcji jak geolokalizacja, mikrofon, aparat itd.</translation>
+<translation id="7228479291753472782">Zmieniać ustawienia określające, czy strony mogą korzystać z takich funkcji jak geolokalizacja, mikrofon, aparat itd.</translation>
 <translation id="7228523857728654909">Blokada ekranu i logowanie</translation>
 <translation id="7229570126336867161">Wymagana technologia EVDO</translation>
 <translation id="7230787553283372882">Dostosuj rozmiar tekstu</translation>
@@ -4302,7 +4297,7 @@
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Nie pamiętasz starego hasła?</translation>
 <translation id="7497215489070763236">Certyfikat CA serwera</translation>
-<translation id="7497981768003291373">Nie ma zapisanych ostatnio dzienników tekstowych WebRTC.</translation>
+<translation id="7497981768003291373">Nie ma zapisanych ostatnio logów tekstowych WebRTC.</translation>
 <translation id="7502658306369382406">Adres IPv6</translation>
 <translation id="7503191893372251637">Typ certyfikatu firmy Netscape</translation>
 <translation id="7503821294401948377">Nie można wczytać ikony „<ph name="ICON" />” dla czynności wykonywanej w przeglądarce.</translation>
@@ -4367,7 +4362,7 @@
 <translation id="7600965453749440009">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="760197030861754408">Wejdź na <ph name="LANDING_PAGE" />, by połączyć.</translation>
 <translation id="7602079150116086782">Brak kart z innych urządzeń</translation>
-<translation id="7604942372593434070">Uzyskaj dostęp do swojej aktywności związanej z przeglądaniem</translation>
+<translation id="7604942372593434070">Uzyskać dostęp do Twojej aktywności związanej z przeglądaniem</translation>
 <translation id="7605594153474022051">Synchronizacja nie działa</translation>
 <translation id="7606992457248886637">Urzędy</translation>
 <translation id="7607002721634913082">Wstrzymano</translation>
@@ -5116,8 +5111,8 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8716931980467311658">Usunąć wszystkie aplikacje na Linuksa i dane z folderu Pliki Linuksa z tego urządzenia <ph name="DEVICE_TYPE" />?</translation>
 <translation id="8719653885894320876">Nie udało się pobrać wtyczki <ph name="PLUGIN_NAME" /></translation>
 <translation id="8723829621484579639">Ramki podrzędne incognito dla <ph name="PARENT_SITE" /></translation>
-<translation id="8724405322205516354">Gdy zobaczysz tę ikonę, możesz użyć odcisku palca, by się zidentyfikować lub zatwierdzić zakup.</translation>
-<translation id="8724409975248965964">Odcisk palca dodany</translation>
+<translation id="8724405322205516354">Gdy zobaczysz tę ikonę, możesz użyć odcisku palca, by się zalogować lub zatwierdzić zakup.</translation>
+<translation id="8724409975248965964">Odcisk palca został dodany</translation>
 <translation id="8724859055372736596">&amp;Pokaż w folderze</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8725178340343806893">Ulubione/Zakładki</translation>

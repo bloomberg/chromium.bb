@@ -536,7 +536,7 @@
 <translation id="4592951414987517459">Połączenie z <ph name="DOMAIN" /> jest szyfrowane przy użyciu nowoczesnego zestawu szyfrów.</translation>
 <translation id="4594403342090139922">&amp;Cofnij usunięcie</translation>
 <translation id="4619615317237390068">Karty z innych urządzeń</translation>
-<translation id="4646534391647090355">Otwórz tę stronę</translation>
+<translation id="4646534391647090355">Przejdź tam teraz</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa ma błędy. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="4690462567478992370">Przestań używać nieprawidłowego certyfikatu</translation>
@@ -750,7 +750,7 @@
 <translation id="6071091556643036997">Typ zasady jest nieprawidłowy.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Ta karta zostanie zapisana na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}few{Te karty zostaną zapisane na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}many{Te karty zostaną zapisane na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}other{Te karty zostaną zapisane na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}}</translation>
 <translation id="6080696365213338172">Masz dostęp do treści dzięki certyfikatowi dostarczonemu przez administratora. Administrator może odczytać dane, jakie udostępnisz w <ph name="DOMAIN" />.</translation>
-<translation id="6096619198407627433">Wylogowuje z większości stron internetowych. Nie wyloguje Cię z konta Google. Możesz stracić dostęp do treści chronionych na <ph name="SITE" /> i na niektórych innych stronach</translation>
+<translation id="6096619198407627433">Wylogowuje z większości stron internetowych. Nie wyloguje Cię z konta Google. Możesz stracić dostęp do treści chronionych na <ph name="SITE" /> i na niektórych innych stronach.</translation>
 <translation id="610911394827799129">Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Brak}=1{1 hasło (synchronizowane)}few{# hasła (synchronizowane)}many{# haseł (synchronizowanych)}other{# hasła (synchronizowanego)}}</translation>
 <translation id="6146055958333702838">Sprawdź wszystkie kable i uruchom ponownie wszelkie używane routery, modemy
@@ -821,7 +821,7 @@
 <translation id="6710594484020273272">&lt;Wpisz wyszukiwane słowa&gt;</translation>
 <translation id="6711464428925977395">Serwer proxy działa nieprawidłowo albo adres jest błędny.</translation>
 <translation id="674375294223700098">Nieznany błąd certyfikatu serwera.</translation>
-<translation id="6744009308914054259">Dopóki nie masz połączenia, możesz poczytać artykuły offline z folderu Pobrane.</translation>
+<translation id="6744009308914054259">Dopóki nie masz połączenia, możesz poczytać artykuły offline z Pobranych plików.</translation>
 <translation id="6753269504797312559">Wartość zasady</translation>
 <translation id="6757797048963528358">Twoje urządzenie przeszło w tryb uśpienia.</translation>
 <translation id="6778737459546443941">Twój rodzic jeszcze na to nie zezwolił</translation>

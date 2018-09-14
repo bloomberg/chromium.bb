@@ -929,7 +929,6 @@
 <translation id="2378075407703503998">Изабраних датотека: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="237828693408258535">Желите ли да преведете ову страницу?</translation>
 <translation id="2378982052244864789">Избор директоријума додатка.</translation>
-<translation id="2379281330731083556">Штампај помоћу системског дијалога... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Питај пре слања (препоручује се)</translation>
 <translation id="2384436799579181135">Дошло је до грешке. Проверите штампач и пробајте поново.</translation>
 <translation id="2387458720915042159">Тип везе са проксијем</translation>
@@ -1130,7 +1129,6 @@
 <translation id="2676946222714718093">Пуштено на</translation>
 <translation id="2677748264148917807">Затвори</translation>
 <translation id="2678063897982469759">Поново омогући</translation>
-<translation id="2679385451463308372">Одштампај помоћу системског дијалога…</translation>
 <translation id="268053382412112343">Hi&amp;story (Историја)</translation>
 <translation id="2683638487103917598">Директоријум је сортиран</translation>
 <translation id="2684004000387153598">Да бисте наставили, кликните на Потврди, па на Додај особу да бисте отворили нови профил за имејл адресу.</translation>
@@ -1143,7 +1141,6 @@
 <translation id="2704184184447774363">Microsoft потписивање докумената</translation>
 <translation id="270516211545221798">Брзина тачпеда</translation>
 <translation id="2705736684557713153">Померите до дна екрана и укључите тренутно привезивање ако се приказује. Ако се не прикаже, спремни сте.</translation>
-<translation id="2706954854267016964">Изабрани уређај за Google Cloud штампање више није подржан. Пробајте да подесите штампач у подешавањима система за рачунар.</translation>
 <translation id="2707024448553392710">Преузимање компоненте</translation>
 <translation id="270921614578699633">Просек преко</translation>
 <translation id="2709453993673701466">Желите ли да управљате синхронизацијом и персонализацијом пре него што их укључите? Посетите <ph name="BEGIN_LINK" />Подешавања<ph name="END_LINK" />.</translation>
@@ -1159,7 +1156,6 @@
 <translation id="2721695630904737430">Администратор је онемогућио кориснике под надзором.</translation>
 <translation id="2724841811573117416">WebRTC евиденције</translation>
 <translation id="2725200716980197196">Веза са мрежом је поново успостављена</translation>
-<translation id="2726934403674109201">(Укупно <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Грешка при активацији мреже</translation>
 <translation id="2727633948226935816">Не подсећај ме више</translation>
 <translation id="2727712005121231835">Стварна величина</translation>
@@ -1583,7 +1579,6 @@
 <translation id="338583716107319301">Разделник</translation>
 <translation id="3389312115541230716">Кликните десним тастером на икону <ph name="SMALL_PRODUCT_LOGO" /> на траци задатака</translation>
 <translation id="3391716558283801616">7. картица</translation>
-<translation id="3396331542604645348">Изабрани штампач није доступан или није правилно инсталиран. Проверите штампач или покушајте да изаберете неки други.</translation>
 <translation id="3396800784455899911">Ако кликнете на дугме „Прихвати и настави“, прихватате горенаведену обраду за ове Google услуге.</translation>
 <translation id="3399432415385675819">Обавештења ће бити онемогућена</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

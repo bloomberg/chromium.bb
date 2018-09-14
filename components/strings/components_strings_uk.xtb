@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Введіть номер телефону</translation>
 <translation id="1517500485252541695">Прийнятні кредитні та дебетові картки</translation>
 <translation id="1519264250979466059">Дата створення версії</translation>
+<translation id="1521655867290435174">Google Таблиці</translation>
 <translation id="1527263332363067270">Очікується з’єднання…</translation>
 <translation id="1532118530259321453">Повідомлення з цієї сторінки</translation>
 <translation id="153384715582417236">Більше нічого немає</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Експортувати для ОС Mac</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">З’єднання було скинуто.</translation>
+<translation id="2785008241190445880">Закладку замінено</translation>
 <translation id="2788784517760473862">Прийнятні кредитні картки</translation>
 <translation id="2794233252405721443">Сайт заблоковано</translation>
 <translation id="2799020568854403057">Сайт містить шкідливі додатки</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">Перейти зараз</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Його сертифікат безпеки містить помилки. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
+<translation id="467809019005607715">Google Презентації</translation>
 <translation id="4690462567478992370">Припинити використання недійсного сертифіката</translation>
 <translation id="4690954380545377795">Ви можете втратити доступ до облікового запису Google або хтось може викрасти вашу особисту інформацію. Chrome радить змінити пароль.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">Вибрати контактну інформацію</translation>
 <translation id="5327248766486351172">Назва</translation>
 <translation id="5332219387342487447">Спосіб доставки</translation>
+<translation id="5344579389779391559">Ця сторінка може спробувати стягнути плату</translation>
 <translation id="5355557959165512791">Зараз не можна перейти на сторінку <ph name="SITE" />, оскільки цей сертифікат відкликано. Помилки мережі й атаки зазвичай тимчасові, тому ця сторінка, скоріш за все, запрацює пізніше.</translation>
 <translation id="536296301121032821">Помилка збереження налаштувань правила</translation>
 <translation id="5371425731340848620">Оновити картку</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">Рік</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Сторінка 1}one{Сторінка #}few{Сторінка #}many{Сторінка #}other{Сторінка #}}</translation>
 <translation id="6017850046339264347">Зловмисники на сайті <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> можуть установити на ваш пристрій оманливі додатки, які видають себе за інший вміст або збирають дані для відстеження вашої активності. <ph name="BEGIN_LEARN_MORE_LINK" />Докладніше<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Ваш персональний Chrome</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (синхронізовано)</translation>
 <translation id="6027201098523975773">Введіть ім’я</translation>
 <translation id="6039846035001940113">Якщо проблема не зникла, зв’яжіться з власником сайту.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">Цей вміст може оманливим шляхом змусити вас установити програмну або надати особисту інформацію. <ph name="BEGIN_LINK" />Усе одно показати<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Зараз не можна перейти на сторінку <ph name="SITE" />, оскільки цей веб-сайт використовує закріплення сертифікатів. Помилки мережі й атаки зазвичай тимчасові, тому ця сторінка, скоріш за все, запрацює пізніше.</translation>
 <translation id="6059925163896151826">Пристрої USB</translation>
+<translation id="6060991652695587932">Виберіть сервіс електронної пошти для швидкого доступу</translation>
 <translation id="6071091556643036997">Це правило недійсне.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Цю картку буде збережено в обліковому записі Google для швидшої оплати на різних пристроях.}one{Ці картки буде збережено в обліковому записі Google для швидшої оплати на різних пристроях.}few{Ці картки буде збережено в обліковому записі Google для швидшої оплати на різних пристроях.}many{Ці картки буде збережено в обліковому записі Google для швидшої оплати на різних пристроях.}other{Ці картки буде збережено в обліковому записі Google для швидшої оплати на різних пристроях.}}</translation>
 <translation id="6080696365213338172">Ви отримали доступ до вмісту, використовуючи наданий адміністратором сертифікат. Адміністратор може перехоплювати дані, які ви надасте домену <ph name="DOMAIN" />.</translation>
@@ -904,6 +910,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Ні</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Заміна керованого сеансу</translation>
 <translation id="7390545607259442187">Підтвердити дані картки</translation>
 <translation id="7400418766976504921">URL-адреса</translation>
 <translation id="7407424307057130981">&lt;p&gt;Це повідомлення про помилку з’являється, якщо на комп’ютері Windows установлено програму Superfish.&lt;/p&gt;
@@ -994,6 +1001,7 @@
 <translation id="7815407501681723534">Знайдено результатів за запитом "<ph name="SEARCH_STRING" />": <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /></translation>
 <translation id="7818867226424560206">Правила</translation>
 <translation id="782886543891417279">Можливо, щоб під’єднатися до цієї мережі Wi-Fi (<ph name="WIFI_NAME" />), потрібно відвідати її сторінку входу.</translation>
+<translation id="7835178595033117206">Закладку видалено</translation>
 <translation id="785549533363645510">Навіть у режимі анонімного перегляду ваш роботодавець, постачальник послуг Інтернету чи веб-сайти, які ви відвідуєте, можуть бачити, що ви переглядаєте.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Залишити сайт?</translation>
@@ -1130,6 +1138,7 @@
 <translation id="8874824191258364635">Введіть дійсний номер картки</translation>
 <translation id="8876793034577346603">Помилка аналізу конфігурації мережі.</translation>
 <translation id="8891727572606052622">Недійсний режим проксі-сервера.</translation>
+<translation id="8892964541482452187">Кнопка перемикача вкладки: натисніть Enter, щоб перейти на цю вкладку</translation>
 <translation id="8903921497873541725">Збільшити масштаб</translation>
 <translation id="8931333241327730545">Зберегти цю картку у вашому обліковому записі Google?</translation>
 <translation id="8932102934695377596">Ваш годинник запізнюється</translation>
@@ -1155,6 +1164,7 @@
 <translation id="9035022520814077154">Помилка системи безпеки</translation>
 <translation id="9038649477754266430">Користуйтеся службою передбачення, щоб сторінки завантажувалися швидше</translation>
 <translation id="9039213469156557790">Окрім цього, сторінка містить незахищені ресурси. Інші особи можуть переглядати їх під час передавання даних, а зловмисники можуть змінювати роботу сторінки.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Ви пробували зв’язатися з доменом <ph name="DOMAIN" />, але сервер надав недійсний сертифікат.</translation>
 <translation id="9050666287014529139">Парольна фраза</translation>
 <translation id="9065203028668620118">Редагувати</translation>
@@ -1178,6 +1188,7 @@
 <translation id="9170848237812810038">&amp;Скасувати</translation>
 <translation id="9171296965991013597">Закрити додаток?</translation>
 <translation id="917450738466192189">Сертифікат сервера недійсний.</translation>
+<translation id="9183302530794969518">Google Документи</translation>
 <translation id="9183425211371246419">Протокол, який використовує хост <ph name="HOST_NAME" />, не підтримується.</translation>
 <translation id="9205078245616868884">Ваші дані зашифровано за допомогою парольної фрази. Введіть її, щоб почати синхронізацію.</translation>
 <translation id="9207861905230894330">Не вдалося додати статтю.</translation>

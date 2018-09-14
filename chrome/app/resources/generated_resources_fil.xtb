@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> (na) file ang pinili</translation>
 <translation id="237828693408258535">I-translate ang page na ito?</translation>
 <translation id="2378982052244864789">Piliin ang direktoryo ng extension.</translation>
-<translation id="2379281330731083556">I-print gamit ang dialog ng system... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Magtanong bago magpadala (inirerekomenda)</translation>
 <translation id="2384436799579181135">Nagka-error. Pakisuri ang iyong printer at subukang muli.</translation>
 <translation id="2387458720915042159">Uri ng koneksyon sa proxy</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Nagpe-play sa</translation>
 <translation id="2677748264148917807">Umalis</translation>
 <translation id="2678063897982469759">Muling paganahin</translation>
-<translation id="2679385451463308372">I-print gamit ang dialog ng system...</translation>
 <translation id="268053382412112343">Ka&amp;saysayan</translation>
 <translation id="2683638487103917598">Pinagbukod-bukod ang folder</translation>
 <translation id="2684004000387153598">Upang magpatuloy, i-click ang OK, tapos i-click ang Magdagdag ng Tao upang gumawa ng bagong profile para sa iyong email address.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">Bilis ng touchpad</translation>
 <translation id="2705736684557713153">Mag-scroll sa ibaba ng screen at i-on ang Instant na Pag-tether, kung lalabas ito. Kung hindi, handa na ang lahat.</translation>
-<translation id="2706954854267016964">Hindi na sinusuportahan ang Google Cloud Print device. Subukang i-set up ang printer sa mga setting ng system ng iyong computer.</translation>
 <translation id="2707024448553392710">Dina-download ang bahagi</translation>
 <translation id="270921614578699633">Average na Mahigit sa</translation>
 <translation id="2709453993673701466">Gusto mong pamahalaan ang pag-sync at pag-personalize bago i-on ang mga ito? Bisitahin ang <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">Na-disable ng iyong administrator ang mga pinangangasiwaang user.</translation>
 <translation id="2724841811573117416">Mga log ng WebRTC</translation>
 <translation id="2725200716980197196">Naipanumbalik ang connectivity ng network</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> sa kabuuan)</translation>
 <translation id="2727176303594781056">Error sa pag-activate ng network</translation>
 <translation id="2727633948226935816">Huwag akong paalalahanang muli</translation>
 <translation id="2727712005121231835">Actual Size</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">Separator</translation>
 <translation id="3389312115541230716">I-right click ang icon na <ph name="SMALL_PRODUCT_LOGO" /> sa taskbar</translation>
 <translation id="3391716558283801616">Tab 7</translation>
-<translation id="3396331542604645348">Ang napiling printer ay hindi available o hindi naka-install nang tama.  Tingnan ang iyong printer o subukang pumili ng isa pang printer.</translation>
 <translation id="3396800784455899911">Sa pamamagitan ng pag-click sa button na "Tanggapin at magpatuloy," sumasang-ayon ka sa pagpoproseso na inilarawan sa itaas para sa mga serbisyong ito ng Google.</translation>
 <translation id="3399432415385675819">Madi-disable ang mga notification</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
