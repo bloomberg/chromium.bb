@@ -37,7 +37,6 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_claim_callbacks.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_skip_waiting_callbacks.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_stream_handle.h"
@@ -63,6 +62,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClient);
 
  public:
+  using ClaimCallback = mojom::blink::ServiceWorkerHost::ClaimClientsCallback;
+
   static const char kSupplementName[];
 
   explicit ServiceWorkerGlobalScopeClient(WebServiceWorkerContextClient&);
@@ -81,7 +82,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
   void ClearCachedMetadata(const KURL&);
   void PostMessageToClient(const String& client_uuid, BlinkTransferableMessage);
   void SkipWaiting(std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>);
-  void Claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>);
+  void Claim(ClaimCallback);
   void Focus(const String& client_uuid,
              std::unique_ptr<WebServiceWorkerClientCallbacks>);
   void Navigate(const String& client_uuid,

@@ -152,19 +152,6 @@ void DidSkipWaiting(
   callbacks->OnSuccess();
 }
 
-void DidClaimClients(
-    std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks> callbacks,
-    mojom::blink::ServiceWorkerErrorType error,
-    const String& error_msg) {
-  if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
-    DCHECK(!error_msg.IsNull());
-    callbacks->OnError(blink::WebServiceWorkerError(error, error_msg));
-    return;
-  }
-  DCHECK(error_msg.IsNull());
-  callbacks->OnSuccess();
-}
-
 }  // namespace
 
 ServiceWorkerGlobalScopeClient::ServiceWorkerGlobalScopeClient(
@@ -228,11 +215,8 @@ void ServiceWorkerGlobalScopeClient::SkipWaiting(
       WTF::Bind(&DidSkipWaiting, std::move(callbacks)));
 }
 
-void ServiceWorkerGlobalScopeClient::Claim(
-    std::unique_ptr<WebServiceWorkerClientsClaimCallbacks> callbacks) {
-  DCHECK(callbacks);
-  service_worker_host_->ClaimClients(
-      WTF::Bind(&DidClaimClients, std::move(callbacks)));
+void ServiceWorkerGlobalScopeClient::Claim(ClaimCallback callback) {
+  service_worker_host_->ClaimClients(std::move(callback));
 }
 
 void ServiceWorkerGlobalScopeClient::Focus(
