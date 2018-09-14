@@ -99,21 +99,41 @@ __gCrWeb.message.invokeQueues = function() {
 };
 
 function sendQueue_(queueObject) {
-  // Do nothing if messaging is suspended or windowId has not been set.
-  if (messaging_suspended_ || typeof window.top.__gCrWeb.windowId != 'string') {
+  if (messaging_suspended_) {
+    // Leave messages queued if messaging is suspended.
     return;
   }
+
+  var windowId = null;
+  try {
+    windowId = window.top.__gCrWeb['windowId'];
+  } catch (e) {
+    // A SecurityError will be thrown if this is a cross origin iframe. Allow
+    // sending the message in this case and it will be filtered by frameID.
+    if (e.name !== 'SecurityError') {
+      throw e;
+    }
+  }
+
+  // Do nothing if windowId has not been set.
+  if (typeof windowId != 'string') {
+    return;
+  }
+
   // Some pages/plugins implement Object.prototype.toJSON, which can result
   // in serializing messageQueue_ to an invalid format.
   var originalObjectToJSON = Object.prototype.toJSON;
   if (originalObjectToJSON) delete Object.prototype.toJSON;
 
   queueObject.queue.forEach(function(command) {
-    __gCrWeb.common.sendWebKitMessage(queueObject.scheme, {
+    var message = {
       'crwCommand': command,
-      'crwFrameId': __gCrWeb.message['getFrameId'](),
-      'crwWindowId': window.top.__gCrWeb['windowId']
-    });
+      'crwFrameId': __gCrWeb.message['getFrameId']()
+    };
+    if (windowId) {
+      message['crwWindowId'] = windowId;
+    }
+    __gCrWeb.common.sendWebKitMessage(queueObject.scheme, message);
   });
   queueObject.reset();
 
