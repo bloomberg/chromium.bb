@@ -76,6 +76,7 @@ void AudioOutputStreamFuchsia::Stop() {
   callback_ = nullptr;
   reference_time_ = base::TimeTicks();
   audio_out_->PauseNoReply();
+  audio_out_->DiscardAllPacketsNoReply();
   timer_.Stop();
 }
 
@@ -182,47 +183,42 @@ void AudioOutputStreamFuchsia::PumpSamples() {
     delay = stream_time - now;
   }
 
+  // Start playback if the stream was previously stopped.
+  if (reference_time_.is_null()) {
+    stream_position_samples_ = 0;
+    reference_time_ = now + min_lead_time_;
+    audio_out_->PlayNoReply(reference_time_.ToZxTime(),
+                            stream_position_samples_);
+  }
+
+  // Request more samples from |callback_|.
   int frames_filled = callback_->OnMoreData(delay, now, 0, audio_bus_.get());
   DCHECK_EQ(frames_filled, audio_bus_->frames());
 
   audio_bus_->Scale(volume_);
 
+  // Save samples to the |payload_buffer_|.
   size_t packet_size = parameters_.GetBytesPerBuffer(kSampleFormatF32);
   DCHECK_LE(payload_buffer_pos_ + packet_size, payload_buffer_.mapped_size());
-
   audio_bus_->ToInterleaved<media::Float32SampleTypeTraits>(
       audio_bus_->frames(),
       reinterpret_cast<float*>(static_cast<uint8_t*>(payload_buffer_.memory()) +
                                payload_buffer_pos_));
 
+  // Send a new packet.
   fuchsia::media::StreamPacket packet;
   packet.pts = stream_position_samples_;
   packet.payload_buffer_id = kBufferId;
   packet.payload_offset = payload_buffer_pos_;
   packet.payload_size = packet_size;
   packet.flags = 0;
-
   audio_out_->SendPacketNoReply(std::move(packet));
 
   stream_position_samples_ += frames_filled;
   payload_buffer_pos_ =
       (payload_buffer_pos_ + packet_size) % payload_buffer_.mapped_size();
 
-  if (reference_time_.is_null()) {
-    audio_out_->Play(
-        fuchsia::media::NO_TIMESTAMP, stream_position_samples_ - frames_filled,
-        [this](int64_t reference_time, int64_t media_time) {
-          if (!callback_)
-            return;
-
-          reference_time_ = base::TimeTicks::FromZxTime(reference_time);
-          stream_position_samples_ = media_time;
-
-          SchedulePumpSamples(base::TimeTicks::Now());
-        });
-  } else {
-    SchedulePumpSamples(now);
-  }
+  SchedulePumpSamples(now);
 }
 
 void AudioOutputStreamFuchsia::SchedulePumpSamples(base::TimeTicks now) {
