@@ -3342,6 +3342,13 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
       SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
                         "invalid parameter name, WEBGL_multiview not enabled");
       return ScriptValue::CreateNull(script_state);
+    case GL_MAX_SHADER_COMPILER_THREADS_KHR:
+      if (ExtensionEnabled(kKHRParallelShaderCompileName))
+        return GetUnsignedIntParameter(script_state, pname);
+      SynthesizeGLError(
+          GL_INVALID_ENUM, "getParameter",
+          "invalid parameter name, KHR_parallel_shader_compile not enabled");
+      return ScriptValue::CreateNull(script_state);
     default:
       if ((ExtensionEnabled(kWebGLDrawBuffersName) || IsWebGL2OrHigher()) &&
           pname >= GL_DRAW_BUFFER0_EXT &&
@@ -3375,6 +3382,14 @@ ScriptValue WebGLRenderingContextBase::getProgramParameter(
       return WebGLAny(script_state, static_cast<bool>(value));
     case GL_LINK_STATUS:
       return WebGLAny(script_state, program->LinkStatus(this));
+    case GL_COMPLETION_STATUS_KHR:
+      if (!ExtensionEnabled(kKHRParallelShaderCompileName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, "getProgramParameter",
+                          "invalid parameter name");
+        return ScriptValue::CreateNull(script_state);
+      }
+
+      return WebGLAny(script_state, program->CompletionStatus(this));
     case GL_ACTIVE_UNIFORM_BLOCKS:
     case GL_TRANSFORM_FEEDBACK_VARYINGS:
       if (!IsWebGL2OrHigher()) {
@@ -3466,6 +3481,14 @@ ScriptValue WebGLRenderingContextBase::getShaderParameter(
     case GL_DELETE_STATUS:
       return WebGLAny(script_state, shader->IsDeleted());
     case GL_COMPILE_STATUS:
+      ContextGL()->GetShaderiv(ObjectOrZero(shader), pname, &value);
+      return WebGLAny(script_state, static_cast<bool>(value));
+    case GL_COMPLETION_STATUS_KHR:
+      if (!ExtensionEnabled(kKHRParallelShaderCompileName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, "getShaderParameter",
+                          "invalid parameter name");
+        return ScriptValue::CreateNull(script_state);
+      }
       ContextGL()->GetShaderiv(ObjectOrZero(shader), pname, &value);
       return WebGLAny(script_state, static_cast<bool>(value));
     case GL_SHADER_TYPE:
