@@ -12,6 +12,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "crypto/symmetric_key.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -43,6 +44,7 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
   std::string GetFrameId() const override;
   bool IsMainFrame() const override;
   GURL GetSecurityOrigin() const override;
+  bool CanCallJavaScriptFunction() const override;
 
   bool CallJavaScriptFunction(
       const std::string& name,
@@ -138,6 +140,8 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
   GURL security_origin_;
   // The associated web state.
   web::WebState* web_state_ = nullptr;
+
+  base::WeakPtrFactory<WebFrameImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameImpl);
 };

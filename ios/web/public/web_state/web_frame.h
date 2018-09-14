@@ -27,6 +27,9 @@ class WebFrame : public base::SupportsUserData {
   virtual bool IsMainFrame() const = 0;
   // The security origin associated with this frame.
   virtual GURL GetSecurityOrigin() const = 0;
+  // Whether or not the receiver represents a frame which supports calling
+  // JavaScript functions using |CallJavaScriptFunction()|.
+  virtual bool CanCallJavaScriptFunction() const = 0;
 
   // Calls the JavaScript function |name| in the frame context. For example, to
   // call __gCrWeb.form.trackFormMutations(delay), pass
@@ -38,7 +41,8 @@ class WebFrame : public base::SupportsUserData {
   // webpage DOM could change in a way which prevents the function from
   // executing.
   // Returns true if function call was requested, false otherwise. Function call
-  // may still fail even if this function returns true.
+  // may still fail even if this function returns true. Always returns false if
+  // |CanCallJavaScriptFunction| is false.
   virtual bool CallJavaScriptFunction(
       const std::string& name,
       const std::vector<base::Value>& parameters) = 0;
@@ -49,7 +53,8 @@ class WebFrame : public base::SupportsUserData {
   // If |timeout| is reached, callback is called with the nullptr parameter
   // and no result received later will be sent.
   // Returns true if function call was requested, false otherwise. Function call
-  // may still fail even if this function returns true.
+  // may still fail even if this function returns true. Always returns false if
+  // |CanCallJavaScriptFunction| is false.
   virtual bool CallJavaScriptFunction(
       std::string name,
       const std::vector<base::Value>& parameters,

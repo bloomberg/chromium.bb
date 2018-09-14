@@ -25,6 +25,9 @@ bool FakeWebFrame::IsMainFrame() const {
 GURL FakeWebFrame::GetSecurityOrigin() const {
   return security_origin_;
 }
+bool FakeWebFrame::CanCallJavaScriptFunction() const {
+  return false;
+}
 
 bool FakeWebFrame::CallJavaScriptFunction(
     const std::string& name,

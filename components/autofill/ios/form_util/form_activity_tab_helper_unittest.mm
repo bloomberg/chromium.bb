@@ -4,7 +4,6 @@
 
 #import "components/autofill/ios/form_util/form_activity_tab_helper.h"
 
-#include "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #import "components/autofill/ios/form_util/form_activity_observer.h"
 #import "components/autofill/ios/form_util/test_form_activity_observer.h"
@@ -63,16 +62,13 @@ TEST_F(FormActivityTabHelperTest, TestObserverDocumentSubmitted) {
   const std::string kTestFormName("form-name");
   bool has_user_gesture = false;
   bool form_in_main_frame = true;
-  web::WebFrame* main_frame = nullptr;
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    web::WebFramesManager* manager =
-        web::WebFramesManager::FromWebState(web_state());
-    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-        base::test::ios::kWaitForJSCompletionTimeout, ^bool {
-          return manager->GetMainWebFrame() != nullptr;
-        }));
-    main_frame = manager->GetMainWebFrame();
-  }
+  web::WebFramesManager* manager =
+      web::WebFramesManager::FromWebState(web_state());
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^bool {
+        return manager->GetMainWebFrame() != nullptr;
+      }));
+  web::WebFrame* main_frame = manager->GetMainWebFrame();
 
   ExecuteJavaScript(@"document.getElementById('submit').click();");
   ASSERT_TRUE(observer_->submit_document_info());
@@ -91,16 +87,13 @@ TEST_F(FormActivityTabHelperTest, TestObserverFormActivityFrameMessaging) {
       @"<form name='form-name'>"
        "<input type='input' name='field-name' id='fieldid'/>"
        "</form>");
-  web::WebFrame* main_frame = nullptr;
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    web::WebFramesManager* manager =
-        web::WebFramesManager::FromWebState(web_state());
-    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-        base::test::ios::kWaitForJSCompletionTimeout, ^bool {
-          return manager->GetMainWebFrame() != nullptr;
-        }));
-    main_frame = manager->GetMainWebFrame();
-  }
+  web::WebFramesManager* manager =
+      web::WebFramesManager::FromWebState(web_state());
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForJSCompletionTimeout, ^bool {
+        return manager->GetMainWebFrame() != nullptr;
+      }));
+  web::WebFrame* main_frame = manager->GetMainWebFrame();
   ASSERT_FALSE(observer_->form_activity_info());
   // First call will set document.activeElement (which is usually set by user
   // action. Second call will trigger the message.

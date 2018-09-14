@@ -75,7 +75,7 @@ namespace web {
 
 typedef web::WebTest WebFrameImplTest;
 
-// Tests creation of a WebFrame for the main frame.
+// Tests creation of a WebFrame for the main frame without an encryption key.
 TEST_F(WebFrameImplTest, CreateWebFrameForMainFrame) {
   TestWebState test_web_state;
   GURL security_origin;
@@ -84,11 +84,28 @@ TEST_F(WebFrameImplTest, CreateWebFrameForMainFrame) {
 
   EXPECT_EQ(&test_web_state, web_frame.GetWebState());
   EXPECT_TRUE(web_frame.IsMainFrame());
+  EXPECT_TRUE(web_frame.CanCallJavaScriptFunction());
   EXPECT_EQ(security_origin, web_frame.GetSecurityOrigin());
   EXPECT_EQ(kFrameId, web_frame.GetFrameId());
 }
 
-// Tests creation of a WebFrame for a frame which is not the main frame.
+// Tests creation of a WebFrame for the main frame with an encryption key.
+TEST_F(WebFrameImplTest, CreateWebFrameForMainFrameWithKey) {
+  TestWebState test_web_state;
+  GURL security_origin;
+  WebFrameImpl web_frame(kFrameId, /*is_main_frame=*/true, security_origin,
+                         &test_web_state);
+  web_frame.SetEncryptionKey(CreateKey());
+
+  EXPECT_EQ(&test_web_state, web_frame.GetWebState());
+  EXPECT_TRUE(web_frame.IsMainFrame());
+  EXPECT_TRUE(web_frame.CanCallJavaScriptFunction());
+  EXPECT_EQ(security_origin, web_frame.GetSecurityOrigin());
+  EXPECT_EQ(kFrameId, web_frame.GetFrameId());
+}
+
+// Tests creation of a WebFrame for a frame which is not the main frame without
+// an encryption key.
 TEST_F(WebFrameImplTest, CreateWebFrameForIFrame) {
   TestWebState test_web_state;
   GURL security_origin;
@@ -97,6 +114,23 @@ TEST_F(WebFrameImplTest, CreateWebFrameForIFrame) {
 
   EXPECT_EQ(&test_web_state, web_frame.GetWebState());
   EXPECT_FALSE(web_frame.IsMainFrame());
+  EXPECT_FALSE(web_frame.CanCallJavaScriptFunction());
+  EXPECT_EQ(security_origin, web_frame.GetSecurityOrigin());
+  EXPECT_EQ(kFrameId, web_frame.GetFrameId());
+}
+
+// Tests creation of a WebFrame for a frame which is not the main frame with an
+// encryption key.
+TEST_F(WebFrameImplTest, CreateWebFrameForIFrameWithKey) {
+  TestWebState test_web_state;
+  GURL security_origin;
+  WebFrameImpl web_frame(kFrameId, /*is_main_frame=*/false, security_origin,
+                         &test_web_state);
+  web_frame.SetEncryptionKey(CreateKey());
+
+  EXPECT_EQ(&test_web_state, web_frame.GetWebState());
+  EXPECT_FALSE(web_frame.IsMainFrame());
+  EXPECT_TRUE(web_frame.CanCallJavaScriptFunction());
   EXPECT_EQ(security_origin, web_frame.GetSecurityOrigin());
   EXPECT_EQ(kFrameId, web_frame.GetFrameId());
 }

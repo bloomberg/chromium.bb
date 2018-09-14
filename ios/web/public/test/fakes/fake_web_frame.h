@@ -19,6 +19,7 @@ class FakeWebFrame : public WebFrame {
   std::string GetFrameId() const override;
   bool IsMainFrame() const override;
   GURL GetSecurityOrigin() const override;
+  bool CanCallJavaScriptFunction() const override;
   // This method will not call JavaScript and immediately return false.
   bool CallJavaScriptFunction(
       const std::string& name,
