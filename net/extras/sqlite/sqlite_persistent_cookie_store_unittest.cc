@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -1297,6 +1298,102 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
   EXPECT_TRUE(set_cookie_callback.result());
 
   // Things should commit once going out of scope.
+}
+
+TEST_F(SQLitePersistentCookieStoreTest, Coalescing) {
+  enum class Op { kAdd, kDelete, kUpdate };
+
+  struct TestCase {
+    std::vector<Op> operations;
+    size_t expected_queue_length;
+  };
+
+  std::vector<TestCase> testcases = {
+      {{Op::kAdd, Op::kDelete}, 1u},
+      {{Op::kUpdate, Op::kDelete}, 1u},
+      {{Op::kAdd, Op::kUpdate, Op::kDelete}, 1u},
+      {{Op::kUpdate, Op::kUpdate}, 1u},
+      {{Op::kAdd, Op::kUpdate, Op::kUpdate}, 2u},
+      {{Op::kDelete, Op::kAdd}, 2u},
+      {{Op::kDelete, Op::kAdd, Op::kUpdate}, 3u},
+      {{Op::kDelete, Op::kAdd, Op::kUpdate, Op::kUpdate}, 3u},
+      {{Op::kDelete, Op::kDelete}, 1u},
+      {{Op::kDelete, Op::kAdd, Op::kDelete}, 1u},
+      {{Op::kDelete, Op::kAdd, Op::kUpdate, Op::kDelete}, 1u}};
+
+  std::unique_ptr<CanonicalCookie> cookie =
+      CanonicalCookie::Create(GURL("http://www.example.com/path"), "Tasty=Yes",
+                              base::Time::Now(), CookieOptions());
+
+  for (const TestCase& testcase : testcases) {
+    Create(false, false, true /* want current thread to invoke the store. */);
+
+    base::RunLoop run_loop;
+    store_->Load(base::BindLambdaForTesting(
+                     [&](CanonicalCookieVector cookies) { run_loop.Quit(); }),
+                 NetLogWithSource());
+    run_loop.Run();
+
+    // Wedge the background thread to make sure that it doesn't start consuming
+    // the queue.
+    background_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+                       base::Unretained(this)));
+
+    // Now run the ops, and check how much gets queued.
+    for (const Op op : testcase.operations) {
+      switch (op) {
+        case Op::kAdd:
+          store_->AddCookie(*cookie);
+          break;
+
+        case Op::kDelete:
+          store_->DeleteCookie(*cookie);
+          break;
+
+        case Op::kUpdate:
+          store_->UpdateCookieAccessTime(*cookie);
+          break;
+      }
+    }
+
+    EXPECT_EQ(testcase.expected_queue_length,
+              store_->GetQueueLengthForTesting());
+
+    db_thread_event_.Signal();
+  }
+}
+
+TEST_F(SQLitePersistentCookieStoreTest, NoCoalesceUnrelated) {
+  Create(false, false, true /* want current thread to invoke the store. */);
+
+  base::RunLoop run_loop;
+  store_->Load(base::BindLambdaForTesting(
+                   [&](CanonicalCookieVector cookies) { run_loop.Quit(); }),
+               NetLogWithSource());
+  run_loop.Run();
+
+  std::unique_ptr<CanonicalCookie> cookie1 =
+      CanonicalCookie::Create(GURL("http://www.example.com/path"), "Tasty=Yes",
+                              base::Time::Now(), CookieOptions());
+
+  std::unique_ptr<CanonicalCookie> cookie2 =
+      CanonicalCookie::Create(GURL("http://not.example.com/path"), "Tasty=No",
+                              base::Time::Now(), CookieOptions());
+
+  // Wedge the background thread to make sure that it doesn't start consuming
+  // the queue.
+  background_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+                                base::Unretained(this)));
+
+  store_->AddCookie(*cookie1);
+  store_->AddCookie(*cookie2);
+  // delete on cookie2 shouldn't cancel op on unrelated cookie1.
+  EXPECT_EQ(2u, store_->GetQueueLengthForTesting());
+
+  db_thread_event_.Signal();
 }
 
 }  // namespace net

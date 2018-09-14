@@ -60,6 +60,11 @@ class SQLitePersistentCookieStore
   void SetBeforeFlushCallback(base::RepeatingClosure callback) override;
   void Flush(base::OnceClosure callback) override;
 
+  // Returns how many operations are currently queued. For test use only;
+  // and the background thread needs to be wedged for accessing this to be
+  // non-racey. Also requires the client thread to be current.
+  size_t GetQueueLengthForTesting();
+
  private:
   ~SQLitePersistentCookieStore() override;
   void CompleteLoad(const LoadedCallback& callback,
