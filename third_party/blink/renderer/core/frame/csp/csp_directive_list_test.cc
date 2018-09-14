@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/test/scoped_feature_list.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
@@ -24,6 +26,7 @@ class CSPDirectiveListTest : public testing::Test {
  public:
   CSPDirectiveListTest() : csp(ContentSecurityPolicy::Create()) {}
   void SetUp() override {
+    scoped_feature_list_.InitWithFeatures({network::features::kReporting}, {});
     csp->SetupSelf(
         *SecurityOrigin::CreateFromString("https://example.test/image.png"));
   }
@@ -42,6 +45,7 @@ class CSPDirectiveListTest : public testing::Test {
 
  protected:
   Persistent<ContentSecurityPolicy> csp;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(CSPDirectiveListTest, Header) {
