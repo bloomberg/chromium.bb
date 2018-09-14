@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
-import android.graphics.Bitmap;
-
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -38,33 +36,6 @@ public class ExploreSitesBridge {
         nativeGetNtpCatalog(profile, result, callback);
     }
 
-    /* These methods for Experimental Explore Sites */
-
-    /**
-     * Fetches a JSON string from URL, returning the parsed JSONobject in a callback.
-     * This will cancel any pending JSON fetches.
-     */
-    public static void getNtpCategories(
-            Profile profile, final Callback<List<ExploreSitesCategoryTile>> callback) {
-        List<ExploreSitesCategoryTile> result = new ArrayList<>();
-        nativeGetNtpCategories(profile, result, callback);
-    }
-
-    /**
-     * Fetches an icon from a url and returns in a Bitmap image. The callback argument will be null
-     * if the operation fails.
-     */
-    public static void getIcon(
-            Profile profile, final String iconUrl, final Callback<Bitmap> callback) {
-        nativeGetIcon(profile, iconUrl, callback);
-    }
-
-    private static native void nativeGetNtpCategories(Profile profile,
-            List<ExploreSitesCategoryTile> result,
-            Callback<List<ExploreSitesCategoryTile>> callback);
-    private static native void nativeGetIcon(
-            Profile profile, String iconUrl, Callback<Bitmap> callback);
-    public static native String nativeGetCatalogUrl();
 
     private static native void nativeGetNtpCatalog(Profile profile,
             List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);

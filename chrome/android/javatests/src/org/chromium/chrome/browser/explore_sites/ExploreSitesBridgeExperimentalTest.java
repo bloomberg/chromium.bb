@@ -27,9 +27,9 @@ import org.chromium.net.test.EmbeddedTestServer;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-/** Tests for {@link ExploreSitesBridge}. */
+/** Tests for {@link ExploreSitesBridgeExperimental}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public final class ExploreSitesBridgeTest {
+public final class ExploreSitesBridgeExperimentalTest {
     @Rule
     public final ChromeBrowserTestRule mRule = new ChromeBrowserTestRule();
 
@@ -62,14 +62,15 @@ public final class ExploreSitesBridgeTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ExploreSitesBridge.getIcon(mProfile, testImageUrl, new Callback<Bitmap>() {
-                    @Override
-                    public void onResult(Bitmap icon) {
-                        Assert.assertNotNull(icon);
-                        Assert.assertTrue(expectedIcon.sameAs(icon));
-                        semaphore.release();
-                    }
-                });
+                ExploreSitesBridgeExperimental.getIcon(
+                        mProfile, testImageUrl, new Callback<Bitmap>() {
+                            @Override
+                            public void onResult(Bitmap icon) {
+                                Assert.assertNotNull(icon);
+                                Assert.assertTrue(expectedIcon.sameAs(icon));
+                                semaphore.release();
+                            }
+                        });
             }
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
