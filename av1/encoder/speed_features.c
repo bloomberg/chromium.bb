@@ -191,6 +191,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->prune_ref_frame_for_rect_partitions =
       !(boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame);
   sf->less_rectangular_check_level = 1;
+  sf->gm_search_type = GM_REDUCED_REF_SEARCH;
+  sf->gm_disable_recode = 1;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -467,6 +469,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   // Set this at the appropriate speed levels
   sf->use_transform_domain_distortion = 0;
   sf->gm_search_type = GM_FULL_SEARCH;
+  sf->gm_disable_recode = 0;
   sf->use_fast_interpolation_filter_search = 0;
   sf->skip_repeat_interpolation_filter_search = 0;
   sf->use_hash_based_trellis = 0;

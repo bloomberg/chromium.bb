@@ -4595,8 +4595,8 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
         rc->projected_frame_size < rc->max_frame_bandwidth)
       loop = 0;
 
-    if (recode_loop_test_global_motion(cpi)) {
-      loop = 1;
+    if (!cpi->sf.gm_disable_recode) {
+      if (recode_loop_test_global_motion(cpi)) loop = 1;
     }
 
     if (loop) {
