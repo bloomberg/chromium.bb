@@ -61,7 +61,11 @@ void WarnIfMissingPauseOrResumeListener(Profile* profile,
 
 TtsEngineDelegateImpl::TtsEngineDelegateImpl(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {}
+#if defined(OS_CHROMEOS)
+    : browser_context_(browser_context)
+#endif  // OS_CHROMEOS
+{
+}
 
 void TtsEngineDelegateImpl::GetVoices(content::BrowserContext* browser_context,
                                       std::vector<VoiceData>* out_voices) {
