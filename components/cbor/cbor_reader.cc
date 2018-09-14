@@ -33,7 +33,7 @@ uint8_t GetAdditionalInfo(uint8_t initial_data_byte) {
 }
 
 // Error messages that correspond to each of the error codes. There is 1
-// exception: we declare |kUnsupportedMajorType| cbor_constants.h in the
+// exception: we declare |kUnsupportedMajorType| in cbor_constants.h in the
 // `constants` namespace, because we use it in several files.
 const char kNoError[] = "Successfully deserialized to a CBOR value.";
 const char kUnknownAdditionalInfo[] =
