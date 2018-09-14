@@ -685,6 +685,14 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
           kUnavailableSuiteDisabled:
         return BETTER_TOGETHER_SUITE_DISABLED;
       case chromeos::multidevice_setup::mojom::FeatureState::
+          kNotSupportedByChromebook:
+        // CryptAuth may not yet know that this device supports
+        // MAGIC_TETHER_CLIENT (and the local device metadata is reflecting
+        // that). This should be resolved shortly once DeviceReenroller realizes
+        // reconciles the discrepancy. For now, fall through to mark as
+        // unavailable.
+        FALLTHROUGH;
+      case chromeos::multidevice_setup::mojom::FeatureState::
           kNotSupportedByPhone:
         FALLTHROUGH;
       case chromeos::multidevice_setup::mojom::FeatureState::
@@ -693,12 +701,11 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
         return NO_AVAILABLE_HOSTS;
       default:
         // Other FeatureStates:
-        //   *kNotSupportedByChromebook: Would result in TetherService not being
-        //      created at all.
         //   *kUnavailableInsufficientSecurity: Should never occur.
         PA_LOG(ERROR) << "Invalid MultiDevice FeatureState: "
                       << tether_multidevice_state;
         NOTREACHED();
+        return NO_AVAILABLE_HOSTS;
     }
   }
 
