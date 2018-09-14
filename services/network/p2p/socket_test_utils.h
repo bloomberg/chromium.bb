@@ -40,12 +40,12 @@ class FakeP2PSocketDelegate : public P2PSocket::Delegate {
   void DumpPacket(base::span<const uint8_t> data, bool incoming) override;
   void AddAcceptedConnection(std::unique_ptr<P2PSocket> accepted) override;
 
-  void ExpectDestroyed(P2PSocket* socket);
+  void ExpectDestruction(std::unique_ptr<P2PSocket> socket);
 
   std::unique_ptr<P2PSocket> pop_accepted_socket();
 
  private:
-  std::set<P2PSocket*> destroyed_sockets_;
+  std::vector<std::unique_ptr<P2PSocket>> sockets_to_be_destroyed_;
   std::list<std::unique_ptr<P2PSocket>> accepted_;
 };
 
@@ -123,21 +123,27 @@ class FakeSocketClient : public mojom::P2PSocketClient {
   MOCK_METHOD2(SocketCreated,
                void(const net::IPEndPoint&, const net::IPEndPoint&));
   MOCK_METHOD1(SendComplete, void(const P2PSendPacketMetrics&));
-  MOCK_METHOD3(IncomingTcpConnection,
-               void(const net::IPEndPoint&,
-                    network::mojom::P2PSocketPtr socket,
-                    network::mojom::P2PSocketClientRequest client_request));
+  void IncomingTcpConnection(
+      const net::IPEndPoint& endpoint,
+      network::mojom::P2PSocketPtr socket,
+      network::mojom::P2PSocketClientRequest client_request);
   MOCK_METHOD3(DataReceived,
                void(const net::IPEndPoint&,
                     const std::vector<int8_t>&,
                     base::TimeTicks));
 
   bool connection_error() { return connection_error_; }
+  size_t num_accepted() { return accepted_.size(); }
+  void CloseAccepted();
 
  private:
   mojom::P2PSocketPtr socket_;
   mojo::Binding<mojom::P2PSocketClient> binding_;
   bool connection_error_ = false;
+
+  std::list<std::pair<network::mojom::P2PSocketPtr,
+                      network::mojom::P2PSocketClientRequest>>
+      accepted_;
 };
 
 void CreateRandomPacket(std::vector<int8_t>* packet);

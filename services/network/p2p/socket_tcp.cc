@@ -206,8 +206,7 @@ bool P2PSocketTcpBase::DoSendSocketCreateMsg() {
 }
 
 void P2PSocketTcpBase::DoRead() {
-  int result;
-  do {
+  while (true) {
     if (!read_buffer_.get()) {
       read_buffer_ = base::MakeRefCounted<net::GrowableIOBuffer>();
       read_buffer_->SetCapacity(kTcpReadBufferSize);
@@ -219,21 +218,20 @@ void P2PSocketTcpBase::DoRead() {
       read_buffer_->SetCapacity(read_buffer_->capacity() + kTcpReadBufferSize -
                                 read_buffer_->RemainingCapacity());
     }
-    result = socket_->Read(
+    const int result = socket_->Read(
         read_buffer_.get(), read_buffer_->RemainingCapacity(),
         base::BindOnce(&P2PSocketTcp::OnRead, base::Unretained(this)));
-    DidCompleteRead(result);
-  } while (result > 0);
+    if (result == net::ERR_IO_PENDING || !HandleReadResult(result))
+      return;
+  }
 }
 
 void P2PSocketTcpBase::OnRead(int result) {
-  DidCompleteRead(result);
-  // DidCompleteRead() destroys the socket on error or EOF.
-  if (result > 0 && state_ == STATE_OPEN)
+  if (HandleReadResult(result))
     DoRead();
 }
 
-void P2PSocketTcpBase::OnPacket(std::vector<int8_t> data) {
+bool P2PSocketTcpBase::OnPacket(std::vector<int8_t> data) {
   if (!connected_) {
     P2PSocket::StunMessageType type;
     bool stun = GetStunPacketType(reinterpret_cast<uint8_t*>(&*data.begin()),
@@ -246,7 +244,7 @@ void P2PSocketTcpBase::OnPacket(std::vector<int8_t> data) {
                  << " before STUN binding is finished. "
                  << "Terminating connection.";
       OnError();
-      return;
+      return false;
     }
   }
 
@@ -256,6 +254,8 @@ void P2PSocketTcpBase::OnPacket(std::vector<int8_t> data) {
   delegate_->DumpPacket(
       base::make_span(reinterpret_cast<const uint8_t*>(&data[0]), data.size()),
       true);
+
+  return true;
 }
 
 void P2PSocketTcpBase::WriteOrQueue(SendBuffer& send_buffer) {
@@ -272,14 +272,17 @@ void P2PSocketTcpBase::WriteOrQueue(SendBuffer& send_buffer) {
 }
 
 void P2PSocketTcpBase::DoWrite() {
-  while (write_buffer_.buffer.get()) {
+  while (!write_pending_ && write_buffer_.buffer.get()) {
     int result = socket_->Write(
         write_buffer_.buffer.get(), write_buffer_.buffer->BytesRemaining(),
         base::BindOnce(&P2PSocketTcp::OnWritten, base::Unretained(this)),
         net::NetworkTrafficAnnotationTag(write_buffer_.traffic_annotation));
-    HandleWriteResult(result);
-    if (result < 0)
-      return;
+
+    if (result == net::ERR_IO_PENDING) {
+      write_pending_ = true;
+    } else if (!HandleWriteResult(result)) {
+      break;
+    }
   }
 }
 
@@ -288,63 +291,65 @@ void P2PSocketTcpBase::OnWritten(int result) {
   DCHECK_NE(result, net::ERR_IO_PENDING);
 
   write_pending_ = false;
-  HandleWriteResult(result);
-  // HandleWriteResult() destroys the socket on error.
-  if (result > 0)
+
+  if (HandleWriteResult(result))
     DoWrite();
 }
 
-void P2PSocketTcpBase::HandleWriteResult(int result) {
+bool P2PSocketTcpBase::HandleWriteResult(int result) {
   DCHECK(write_buffer_.buffer.get());
-  if (result >= 0) {
-    write_buffer_.buffer->DidConsume(result);
-    if (write_buffer_.buffer->BytesRemaining() == 0) {
-      base::TimeTicks send_time = base::TimeTicks::Now();
-      client_->SendComplete(
-          P2PSendPacketMetrics(0, write_buffer_.rtc_packet_id, send_time));
-      if (write_queue_.empty()) {
-        write_buffer_.buffer = nullptr;
-        write_buffer_.rtc_packet_id = -1;
-      } else {
-        write_buffer_ = write_queue_.front();
-        write_queue_.pop();
-        // Update how many bytes are still waiting to be sent.
-        DecrementDelayedBytes(write_buffer_.buffer->size());
-      }
-    }
-  } else if (result == net::ERR_IO_PENDING) {
-    write_pending_ = true;
-  } else {
+
+  if (result < 0) {
     ReportSocketError(result, "WebRTC.ICE.TcpSocketWriteErrorCode");
 
     LOG(ERROR) << "Error when sending data in TCP socket: " << result;
     OnError();
+    return false;
   }
+
+  write_buffer_.buffer->DidConsume(result);
+  if (write_buffer_.buffer->BytesRemaining() == 0) {
+    base::TimeTicks send_time = base::TimeTicks::Now();
+    client_->SendComplete(
+        P2PSendPacketMetrics(0, write_buffer_.rtc_packet_id, send_time));
+    if (write_queue_.empty()) {
+      write_buffer_.buffer = nullptr;
+      write_buffer_.rtc_packet_id = -1;
+    } else {
+      write_buffer_ = write_queue_.front();
+      write_queue_.pop();
+      // Update how many bytes are still waiting to be sent.
+      DecrementDelayedBytes(write_buffer_.buffer->size());
+    }
+  }
+  return true;
 }
 
-void P2PSocketTcpBase::DidCompleteRead(int result) {
+bool P2PSocketTcpBase::HandleReadResult(int result) {
   DCHECK_EQ(state_, STATE_OPEN);
 
-  if (result == net::ERR_IO_PENDING) {
-    return;
-  } else if (result < 0) {
+  if (result < 0) {
     LOG(ERROR) << "Error when reading from TCP socket: " << result;
     OnError();
-    return;
+    return false;
   } else if (result == 0) {
     LOG(WARNING) << "Remote peer has shutdown TCP socket.";
     OnError();
-    return;
+    return false;
   }
 
   read_buffer_->set_offset(read_buffer_->offset() + result);
   char* head = read_buffer_->StartOfBuffer();  // Purely a convenience.
   int pos = 0;
-  while (pos <= read_buffer_->offset() && state_ == STATE_OPEN) {
-    int consumed = ProcessInput(head + pos, read_buffer_->offset() - pos);
-    if (!consumed)
+  while (pos <= read_buffer_->offset()) {
+    size_t bytes_consumed = 0;
+    if (!ProcessInput(head + pos, read_buffer_->offset() - pos,
+                      &bytes_consumed)) {
+      return false;
+    }
+    if (!bytes_consumed)
       break;
-    pos += consumed;
+    pos += bytes_consumed;
   }
   // We've consumed all complete packets from the buffer; now move any remaining
   // bytes to the head of the buffer and set offset to reflect this.
@@ -352,6 +357,8 @@ void P2PSocketTcpBase::DidCompleteRead(int result) {
     memmove(head, head + pos, read_buffer_->offset() - pos);
     read_buffer_->set_offset(read_buffer_->offset() - pos);
   }
+
+  return true;
 }
 
 void P2PSocketTcpBase::Send(
@@ -416,18 +423,21 @@ P2PSocketTcp::P2PSocketTcp(
 
 P2PSocketTcp::~P2PSocketTcp() {}
 
-int P2PSocketTcp::ProcessInput(char* input, int input_len) {
+bool P2PSocketTcp::ProcessInput(char* input,
+                                int input_len,
+                                size_t* bytes_consumed) {
+  *bytes_consumed = 0;
   if (input_len < kPacketHeaderSize)
-    return 0;
+    return true;
+
   int packet_size = base::NetToHost16(*reinterpret_cast<uint16_t*>(input));
   if (input_len < packet_size + kPacketHeaderSize)
-    return 0;
+    return true;
 
-  int consumed = kPacketHeaderSize;
-  char* cur = input + consumed;
-  OnPacket(std::vector<int8_t>(cur, cur + packet_size));
-  consumed += packet_size;
-  return consumed;
+  char* cur = input + kPacketHeaderSize;
+  *bytes_consumed = kPacketHeaderSize + packet_size;
+
+  return OnPacket(std::vector<int8_t>(cur, cur + packet_size));
 }
 
 void P2PSocketTcp::DoSend(
@@ -473,24 +483,24 @@ P2PSocketStunTcp::P2PSocketStunTcp(
 
 P2PSocketStunTcp::~P2PSocketStunTcp() {}
 
-int P2PSocketStunTcp::ProcessInput(char* input, int input_len) {
+bool P2PSocketStunTcp::ProcessInput(char* input,
+                                    int input_len,
+                                    size_t* bytes_consumed) {
+  *bytes_consumed = 0;
   if (input_len < kPacketHeaderSize + kPacketLengthOffset)
-    return 0;
+    return true;
 
   int pad_bytes;
   int packet_size = GetExpectedPacketSize(
       reinterpret_cast<const uint8_t*>(input), input_len, &pad_bytes);
 
   if (input_len < packet_size + pad_bytes)
-    return 0;
+    return true;
 
   // We have a complete packet. Read through it.
-  int consumed = 0;
   char* cur = input;
-  OnPacket(std::vector<int8_t>(cur, cur + packet_size));
-  consumed += packet_size;
-  consumed += pad_bytes;
-  return consumed;
+  *bytes_consumed = packet_size + pad_bytes;
+  return OnPacket(std::vector<int8_t>(cur, cur + packet_size));
 }
 
 void P2PSocketStunTcp::DoSend(
