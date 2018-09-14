@@ -56,7 +56,7 @@
 <translation id="7003844668372540529">Ukjent produkt, <ph name="PRODUCT_ID" />, fra <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Manifestfilen er ugyldig</translation>
 <translation id="7217838517480956708">Administratoren til denne maskinen krever at <ph name="EXTENSION_NAME" /> blir installert. Utvidelsen kan ikke fjernes eller endres.</translation>
-<translation id="7612608473764576263">Inndataverdien for den private nøkkelen må ha et gyldig format (PKCS#8-format PEM-kodet RSA-nøkkel).</translation>
+<translation id="7612608473764576263">Inndataverdien for den private nøkkelen må ha et gyldig format (PEM-kodet RSA-nøkkel på PKCS#8-format).</translation>
 <translation id="7939686037314084444">Utvidelsen ble ikke lastet inn riktig. Den klarer kanskje ikke å fange opp nettverksforespørseler.</translation>
 <translation id="7972881773422714442">Alternativer: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Frontkamera</translation>

@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> 個のファイルを選択</translation>
 <translation id="237828693408258535">このページを翻訳しますか？</translation>
 <translation id="2378982052244864789">拡張機能のディレクトリを選択してください。</translation>
-<translation id="2379281330731083556">システム ダイアログを使用して印刷... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">送信する前に確認する（推奨）</translation>
 <translation id="2384436799579181135">エラーが発生しました。プリンタを確認してもう一度お試しください。</translation>
 <translation id="2387458720915042159">プロキシ接続タイプ</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">再生中:</translation>
 <translation id="2677748264148917807">このページを離れる</translation>
 <translation id="2678063897982469759">再度有効にする</translation>
-<translation id="2679385451463308372">システム ダイアログを使用して印刷...</translation>
 <translation id="268053382412112343">履歴(&amp;S)</translation>
 <translation id="2683638487103917598">フォルダが並べ替えられました</translation>
 <translation id="2684004000387153598">利用を続けるには、[OK]、[ユーザーを追加] の順にクリックして、お使いのメールアドレス用の新しいプロフィールを作成してください。</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Microsoft ドキュメントの署名</translation>
 <translation id="270516211545221798">タッチパッドの速度</translation>
 <translation id="2705736684557713153">画面の一番下までスクロールし、[インスタント テザリング] が表示される場合は有効にします。表示されない場合は、設定が完了しています。</translation>
-<translation id="2706954854267016964">選択した Google クラウド プリントのデバイスはサポートが終了しています。パソコンのシステムの設定でプリンタを設定してみてください。</translation>
 <translation id="2707024448553392710">コンポーネントのダウンロード中</translation>
 <translation id="270921614578699633">次の平均:</translation>
 <translation id="2709453993673701466">同期とパーソナライズを有効にする前に管理するには、[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] に移動します。</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">監視対象ユーザーは管理者によって無効にされています。</translation>
 <translation id="2724841811573117416">WebRTC ログ</translation>
 <translation id="2725200716980197196">ネットワーク接続を復元しました</translation>
-<translation id="2726934403674109201">（合計 <ph name="COUNT" /> 個）</translation>
 <translation id="2727176303594781056">ネットワーク有効化エラー</translation>
 <translation id="2727633948226935816">今後表示しない</translation>
 <translation id="2727712005121231835">実際のサイズ</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">セパレータ</translation>
 <translation id="3389312115541230716">タスクバーで <ph name="SMALL_PRODUCT_LOGO" /> アイコンを右クリックします</translation>
 <translation id="3391716558283801616">タブ 7</translation>
-<translation id="3396331542604645348">選択したプリンタは利用できないか、正しくインストールされていません。プリンタを確認するか、別のプリンタを選択してみてください。</translation>
 <translation id="3396800784455899911">[同意して続行] をクリックすると、これらの Google サービスに関する上記の処理内容に同意したことになります。</translation>
 <translation id="3399432415385675819">通知が無効になります</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />、<ph name="TIME_LEFT" /></translation>

@@ -41,7 +41,7 @@
 <translation id="2535480412977113886">మీ ఖాతా సైన్-ఇన్ వివరాల గడువు ముగిసినందున Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="2560420686485554789">ఫైల్‌లను డౌన్‌లోడ్ చేయడానికి Chromiumకు నిల్వ యాక్సెస్ అవసరం</translation>
 <translation id="2572494885440352020">Chromium సహాయకం</translation>
-<translation id="2587578672395088481">నవీకరణను వర్తింపజేయడానికి Chromium OSని పునఃప్రారంభించాలి.</translation>
+<translation id="2587578672395088481">అప్‌డేట్‌ను వర్తింపజేయడానికి Chromium OSని పునఃప్రారంభించాలి.</translation>
 <translation id="2647554856022461007">Chromium మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి వెబ్ సేవలను ఉపయోగించవచ్చు. మీరు ఈ సేవలను ఐచ్ఛికంగా నిలిపివేయవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">ఇన్‌స్టాలేషన్ సమయంలో ఆపరేటింగ్ సిస్టమ్ లోపం సంభవించింది. దయచేసి Chromiumని మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="2711502716910134313">Chromium ట్యాబ్</translation>
@@ -67,7 +67,7 @@
 <translation id="3258596308407688501">Chromium దీని డేటా డైరెక్టరీని చదవలేదు మరియు దీనిలో వ్రాయలేదు: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Google API కీలు లేవు. Chromium కార్యాచరణలో కొంత భాగం నిలిపివేయబడుతుంది.</translation>
 <translation id="3296368748942286671">Chromium మూసివేయబడినప్పుడు నేపథ్య అనువర్తనాలను అమలు చేయడాన్ని కొనసాగించు</translation>
-<translation id="331951419404882060">సైన్ ఇన్ చేయడంలో లోపం సంభవించినందున Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
+<translation id="331951419404882060">సైన్ ఇన్ చేయడంలో ఎర్రర్ సంభవించినందున Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="3474745554856756813">ఇది ఈ పరికరం నుండి <ph name="ITEMS_COUNT" /> అంశాలను తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromiumకి <ph name="USER_EMAIL" /> వలె సైన్ ఇన్ చేయండి.</translation>
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="3509308970982693815">దయచేసి అన్ని Chromium విండోలను మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
@@ -154,7 +154,7 @@
 <translation id="6295779123002464101"><ph name="FILE_NAME" /> హానికరం కావచ్చు, కావున Chromium దాన్ని బ్లాక్ చేసింది.</translation>
 <translation id="6309712487085796862">Chromium మీ కెమెరాను ఉపయోగిస్తోంది.</translation>
 <translation id="6333502561965082103">Chromiumలో మరొక వ్యవస్థాపన జరుగుతోంది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="6334986366598267305">ఇప్పుడు మీ Google ఖాతాతో మరియు భాగస్వామ్య కంప్యూటర్‌ల్లో Chromiumని సులభంగా ఉపయోగించవచ్చు.</translation>
+<translation id="6334986366598267305">ఇప్పుడు మీ Google ఖాతాతో మరియు షేర్ చేసిన కంప్యూటర్‌లలో Chromiumని సులభంగా ఉపయోగించవచ్చు.</translation>
 <translation id="6373523479360886564">మీరు Chromiumని అన్ఇన్‌స్టాల్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="6394232988457703198">మీరు ఇప్పుడే Chromiumని పునఃప్రారంభించాలి.</translation>
 <translation id="6400072781405947421">Chromiumకి ఇప్పుడు Mac OS X 10.9లో మద్దతు లేనందున ఇది సరిగ్గా పని చేయకపోవచ్చు.</translation>
@@ -162,7 +162,7 @@
 <translation id="641451971369018375">బ్రౌజింగ్ మరియు Chromiumను మెరుగుపరచడానికి Googleను సంప్రదిస్తుంది</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 1 సెకనులో పునఃప్రారంభమవుతుంది}other{Chromium # సెకన్లలో పునఃప్రారంభమవుతుంది}}</translation>
 <translation id="6475912303565314141">ఇది మీరు Chromiumని ప్రారంభించేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
-<translation id="6485906693002546646">మీరు మీ Chromium అంశాలను సమకాలీకరించడానికి <ph name="PROFILE_EMAIL" />ని ఉపయోగిస్తున్నారు. మీ సమకాలీకరణ ప్రాధాన్యతను నవీకరించడానికి లేదా Google ఖాతా లేకుండా Chromiumని ఉపయోగించడానికి, <ph name="SETTINGS_LINK" />ను సందర్శించండి.</translation>
+<translation id="6485906693002546646">మీరు మీ Chromium అంశాలను సమకాలీకరించడానికి <ph name="PROFILE_EMAIL" />ని ఉపయోగిస్తున్నారు. మీ సమకాలీకరణ ప్రాధాన్యతను అప్‌డేట్ చేయడానికి లేదా Google ఖాతా లేకుండా Chromiumని ఉపయోగించడానికి, <ph name="SETTINGS_LINK" />ను సందర్శించండి.</translation>
 <translation id="6510925080656968729">Chromiumని అన్ఇన్‌స్టాల్ చేయి</translation>
 <translation id="6570579332384693436">అక్షరక్రమ లోపాలను పరిష్కరించడానికి, మీరు వచన ఫీల్డ్‌లలో టైప్ చేసే వచనాన్ని, Chromium Googleకి పంపుతుంది</translation>
 <translation id="6598877126913850652">Chromium నోటిఫికేషన్ సెట్టింగ్‌లకు వెళ్లు</translation>
@@ -180,13 +180,13 @@
 <translation id="6970811910055250180">మీ పరికరాన్ని నవీకరిస్తోంది...</translation>
 <translation id="6990124437352146030">ఈ సైట్ కోసం మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం</translation>
 <translation id="705851970750939768">Chromiumని నవీకరించు</translation>
-<translation id="7066436765290594559">Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని నవీకరించండి.</translation>
-<translation id="7162152143154757523">మీరు బ్రౌజర్‌లో టైప్ చేసే వాటిని Google సర్వర్‌లకు పంపడం ద్వారా, Google శోధనలో ఉపయోగించేటటువంటి అక్షరక్రమ తనిఖీ సాంకేతికతను ఉపయోగించడానికి మిమ్మల్ని అనుమతించడం ద్వారా Chromium మరింత మెరుగైన అక్షరక్రమ తనిఖీని అందించగలదు.</translation>
+<translation id="7066436765290594559">Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని అప్‌డేట్ చేయండి.</translation>
+<translation id="7162152143154757523">మీరు బ్రౌజర్‌లో టైప్ చేసే వాటిని Google సర్వర్‌లకు పంపడం ద్వారా, Google శోధనలో ఉపయోగించేటటువంటి స్పెల్-చెకింగ్ సాంకేతికతను ఉపయోగించడానికి మిమ్మల్ని అనుమతించడం ద్వారా Chromium మరింత మెరుగైన స్పెల్-చెకింగ్ సాంకేతికతను అందించగలదు.</translation>
 <translation id="7196312274710523067">Chromiumను ప్రారంభించడం సాధ్యపడలేదు. మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="7205698830395646142">Chromium మెనులో దాచండి</translation>
 <translation id="7223968959479464213">విధి నిర్వాహకుడు - Chromium</translation>
 <translation id="722928257909516027">Chromium మెనును చూపు</translation>
-<translation id="731644333568559921">&amp;Chromium OSని నవీకరించండి</translation>
+<translation id="731644333568559921">&amp;Chromium OSని అప్‌డేట్ చేయండి</translation>
 <translation id="731795002583552498">Chromiumని నవీకరిస్తోంది</translation>
 <translation id="7318036098707714271">మీ ప్రాధాన్యతల ఫైల్ పాడైంది లేదా చెల్లదు. Chromium మీ సెట్టింగ్‌లను పునరుద్ధరించలేకపోయింది.</translation>
 <translation id="7331920710658926971">మీ ఫోన్‌లో Chromiumని ఇన్‌స్టాల్ చేయండి. మేము మీ ఫోన్ నంబర్‌కు SMSను పంపుతాము.</translation>

@@ -932,7 +932,6 @@
 <translation id="2378075407703503998">تم تحديد <ph name="SELCTED_FILE_COUNT" /> من الملفات</translation>
 <translation id="237828693408258535">هل تريد ترجمة هذه الصفحة؟</translation>
 <translation id="2378982052244864789">تحديد دليل الإضافة.</translation>
-<translation id="2379281330731083556">الطباعة باستخدام مربع حوار النظام... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">اسأل قبل الإرسال (موصى به)</translation>
 <translation id="2384436799579181135">حدث خطأ ما. يُرجى التحقق من الطابعة وإعادة المحاولة.</translation>
 <translation id="2387458720915042159">نوع الاتصال بالخادم الوكيل</translation>
@@ -1133,7 +1132,6 @@
 <translation id="2676946222714718093">التشغيل بواسطة</translation>
 <translation id="2677748264148917807">الخروج</translation>
 <translation id="2678063897982469759">إعادة تفعيل</translation>
-<translation id="2679385451463308372">مربع حوار الطباعة باستخدام النظام…</translation>
 <translation id="268053382412112343">ال&amp;سجل</translation>
 <translation id="2683638487103917598">تم تصنيف المجلد</translation>
 <translation id="2684004000387153598">للمتابعة، انقر على "موافقة" ثم انقر على "إضافة شخص" لإنشاء ملف شخصي جديد لعنوان بريدك الإلكتروني.</translation>
@@ -1146,7 +1144,6 @@
 <translation id="2704184184447774363">‏توقيع المستند لـ Microsoft</translation>
 <translation id="270516211545221798">سرعة لوحة اللمس</translation>
 <translation id="2705736684557713153">مرّر لأسفل الشاشة وفعّل التوصيل الفوري إذا كان ظاهرًا. وفي حال عدم ظهوره، تكون قد أنهيت الإجراءات.</translation>
-<translation id="2706954854267016964">‏لا يتم دعم جهاز الطباعة السحابية من Google المحدد بعد الآن. جرّب إعداد الطابعة في إعدادات النظام في جهاز الكمبيوتر.</translation>
 <translation id="2707024448553392710">تنزيل المُكوّن</translation>
 <translation id="270921614578699633">تم تجاوز المعدل</translation>
 <translation id="2709453993673701466">هل ترغب في إدارة المزامنة والتخصيص قبل تشغيلهما؟ انتقل إلى <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
@@ -1162,7 +1159,6 @@
 <translation id="2721695630904737430">تم إيقاف المستخدمين تحت الإشراف بواسطة المشرف.</translation>
 <translation id="2724841811573117416">‏سجلات WebRTC</translation>
 <translation id="2725200716980197196">تمت استعادة اتصال الشبكة</translation>
-<translation id="2726934403674109201">(الإجمالي: <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">خطأ في تفعيل الشبكة</translation>
 <translation id="2727633948226935816">لا تذكرني مرة أخرى</translation>
 <translation id="2727712005121231835">الحجم الفعلي</translation>
@@ -1585,7 +1581,6 @@
 <translation id="338583716107319301">فاصل</translation>
 <translation id="3389312115541230716">انقر بزر الماوس الأيمن على رمز <ph name="SMALL_PRODUCT_LOGO" /> في شريط المهام</translation>
 <translation id="3391716558283801616">علامة التبويب 7</translation>
-<translation id="3396331542604645348">الطابعة المحددة غير متاحة أو لم يتم تثبيتها بشكل صحيح. تحقق من الطابعة أو جرّب تحديد طابعة أخرى.</translation>
 <translation id="3396800784455899911">‏بالنقر على الزر "قبول ومتابعة"، فأنت توافق على المعالجة الموضّحة أعلاه لخدمات Google هذه.</translation>
 <translation id="3399432415385675819">سيتم إيقاف الإشعارات</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />، <ph name="TIME_LEFT" /></translation>

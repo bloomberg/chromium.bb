@@ -2702,26 +2702,6 @@ Je hoeft deze instellingen niet handmatig te configureren. Je kunt gebruiksvrien
 
 De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, maar het toewijzen van beleidsregels via een register wordt nog steeds ondersteund voor Windows-instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="8274603902181597201">De eCryptfs-hoofdmap van de gebruiker wissen en beginnen met een nieuwe hoofdmap die is versleuteld met ext4</translation>
-<translation id="8279832363395120715">Verwijdert privacy- en beveiligingsgerelateerde gedeelten van URL's met https:// voordat deze worden doorgegeven aan PAC-scripts (Proxy Auto Config) die tijdens proxyverwerking worden gebruikt door <ph name="PRODUCT_NAME" />.
-
-      Als dit is ingesteld op 'True' (waar), wordt de beveiligingsfunctie ingeschakeld en worden deze gegevens verwijderd
-      uit URL's met https:// voordat deze worden doorgegeven aan een PAC-script. Op deze manier kan het PAC-script
-      geen gegevens bekijken die normaal worden beschermd door een
-      versleuteld kanaal (zoals het pad of de query van de URL).
-
-      Als dit is ingesteld op 'False' (onwaar), wordt de beveiligingsfunctie uitgeschakeld en krijgen PAC-scripts.
-      impliciet de mogelijkheid om alle componenten van de URL met https://
-      te bekijken. Dit is van toepassing op alle PAC-scripts, ongeacht hun herkomst (waaronder
-      de scripts die worden opgehaald via een onbeveiligd transport of die onbeveiligd worden gevonden
-      via WPAD).
-
-      Deze functie staat standaard ingesteld op 'True' (waar) (beveiligingsfunctie ingeschakeld), behalve voor
-      zakelijke gebruikers van Chrome OS voor wie deze functie momenteel standaard is ingesteld op 'False' (onwaar).
-
-      Het wordt aanbevolen deze functie in te stellen op 'True' (waar). De enige reden om dit in te stellen op
-      'False' (onwaar), is als deze functie een compatibiliteitsprobleem veroorzaakt met bestaande PAC-scripts.
-
-      We hopen deze overschrijving in de toekomst te verwijderen.</translation>
 <translation id="8285435910062771358">Vergrootglas van volledig scherm ingeschakeld</translation>
 <translation id="8288199156259560552">Google-locatieservice voor Android inschakelen</translation>
 <translation id="8294750666104911727">Normaal worden pagina's waarvoor X-UA-Compatible is ingesteld op chrome=1, weergegeven in <ph name="PRODUCT_FRAME_NAME" /> ongeacht het beleid 'ChromeFrameRendererSettings'.

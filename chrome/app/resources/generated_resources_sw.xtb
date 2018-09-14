@@ -929,7 +929,6 @@
 <translation id="2378075407703503998">Faili <ph name="SELCTED_FILE_COUNT" /> zimezochaguliwa</translation>
 <translation id="237828693408258535">Ungependa kutafsiri ukurasa huu?</translation>
 <translation id="2378982052244864789">Chagua saraka ya kiendelezi.</translation>
-<translation id="2379281330731083556">Chapisha kwa kutumia kidadisi cha mfumo... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Uliza kabla ya kutuma (imependekezwa)</translation>
 <translation id="2384436799579181135">Hitilafu imetokea. Tafadhali angalia printa yako kisha ujaribu tena.</translation>
 <translation id="2387458720915042159">Aina ya muunganisho wa seva mbadala</translation>
@@ -1130,7 +1129,6 @@
 <translation id="2676946222714718093">Inacheza kwenye</translation>
 <translation id="2677748264148917807">Ondoka</translation>
 <translation id="2678063897982469759">Washa tena</translation>
-<translation id="2679385451463308372">Chapisha kwa kutumia kidadisi cha mfumo…</translation>
 <translation id="268053382412112343">Historia</translation>
 <translation id="2683638487103917598">Folda imepangwa</translation>
 <translation id="2684004000387153598">Ili uendelee, bofya SAWA, kisha ubofye Ongeza Mtu ili uunde wasifu mpya unaotumia anwani yako ya barua pepe.</translation>
@@ -1143,7 +1141,6 @@
 <translation id="2704184184447774363">Utiaji Sahihi wa Maandiko kutoka Microsoft </translation>
 <translation id="270516211545221798">Kasi ya padi ya kugusa</translation>
 <translation id="2705736684557713153">Sogeza hadi chini ya skrini na uwashe Mtandao wa Kusambaza Papo Hapo, iwapo unaonekana. Ikiwa hauonekani, inamaanisha kuwa uko tayari.</translation>
-<translation id="2706954854267016964">Kifaa cha Google Cloud Print kilichochaguliwa hakitumiki tena. Jaribu kuweka mipangilio ya printa katika mipangilio ya mfumo ya kompyuta yako.</translation>
 <translation id="2707024448553392710">Kipengele kinapakuliwa</translation>
 <translation id="270921614578699633">Wastani Juu Ya</translation>
 <translation id="2709453993673701466">Je, ungependa kudhibiti usawazishaji na kuuboresha zaidi kabla haujazimwa? Tembelea <ph name="BEGIN_LINK" />Mipangilio<ph name="END_LINK" />.</translation>
@@ -1159,7 +1156,6 @@
 <translation id="2721695630904737430">Watumiaji wanaosimamiwa wamezuiwa na msimamizi wako.</translation>
 <translation id="2724841811573117416">Kumbukumbu za WebRTC</translation>
 <translation id="2725200716980197196">Muunganisho wa mtandao umerejeshwa</translation>
-<translation id="2726934403674109201">(jumla<ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Hitilafu ya kuwasha mtandao</translation>
 <translation id="2727633948226935816">Usinikumbushe tena</translation>
 <translation id="2727712005121231835">Ukubwa Halisi</translation>
@@ -1580,7 +1576,6 @@
 <translation id="338583716107319301">Kitenganishi</translation>
 <translation id="3389312115541230716">Bofya kitufe cha kulia cha kipanya chako katika aikoni ya <ph name="SMALL_PRODUCT_LOGO" /> kilicho kwenye upau wakazi</translation>
 <translation id="3391716558283801616">Kichupo cha 7</translation>
-<translation id="3396331542604645348">Printa iliyochaguliwa haipatikani au haijasakinishwa vizuri. Angalia printa yako au ujaribu kuchagua printa nyingine.</translation>
 <translation id="3396800784455899911">Kwa kubofya kitufe cha "Kubali na uendelee", unakubali uchakataji uliobainishwa hapo juu katika huduma hizi za Google.</translation>
 <translation id="3399432415385675819">Arifa zitazimwa</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

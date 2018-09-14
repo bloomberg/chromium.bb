@@ -782,7 +782,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Se recomandă ca serverele să fie migrate la suitele de codificare ECDHE. Dacă acestea nu sunt disponibile, asigură-te că este activată o suită de codificare care folosește schimbul de chei RSA.</translation>
 <translation id="316778957754360075">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 29. Pentru a crea colecții de extensii/aplicații găzduite la nivel de organizație, se recomandă să includeți site-ul care găzduiește pachetele CRX în ExtensionInstallSources și să afișați pe o pagină web linkuri de descărcare directă spre pachete. Puteți crea un lansator pentru respectiva pagină web utilizând politica ExtensionInstallForcelist.</translation>
-<translation id="3171369832001535378">Șablon pentru numele de gazdă al rețelei de dispozitive</translation>
+<translation id="3171369832001535378">Șablon pentru numele de gazdă al dispozitivului din rețea</translation>
 <translation id="3185009703220253572">de la versiunea <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplicațiile Android nu pot obține accesul la certificatele companiei. Această politică nu are niciun efect asupra lor.</translation>
 <translation id="3201273385265130876">Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice setările de proxy.
@@ -1829,7 +1829,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Numai dacă allowCorporateKeyUsage este setat la „true” pentru o extensie, aceasta poate folosi orice certificat al platformei, marcat ca să fie folosit în cadrul companiei, pentru a semna date arbitrare. Această permisiune ar trebui acordată doar dacă ai încredere că extensia protejează accesul la certificat împotriva atacatorilor.</translation>
 <translation id="6208896993204286313">Raportează informații despre politica <ph name="PRODUCT_NAME" /></translation>
-<translation id="6210259502936598222">Raportează informații despre sistemul de operare și versiunea <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210259502936598222">Raportează informații despre versiunea <ph name="PRODUCT_NAME" /> și a sistemului de operare</translation>
 <translation id="6211428344788340116">Raportează perioadele de activitate ale dispozitivului.
 
       Dacă setarea nu este configurată sau dacă este activată, dispozitivele înscrise vor raporta perioadele când un utilizator este activ pe dispozitiv. Dacă setarea este dezactivată, perioadele de activitate ale dispozitivului nu vor fi înregistrate sau raportate.</translation>
@@ -1874,7 +1874,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă alegi opțiunea „detectează automat serverul proxy”, adresa URL pentru scripturi „http://wpad/wpad.dat” este oferită aplicațiilor Android. Nu este folosită nicio altă parte a protocolului pentru detectarea automată a proxy-ului.
 
           Dacă alegi opțiunea „script .pac pentru proxy”, adresa URL pentru scripturi este oferită aplicațiilor Android.</translation>
-<translation id="6430366557948788869">Extensie de raportare Chrome</translation>
+<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Permite site-urilor să navigheze și să deschidă ferestre pop-up în același timp</translation>
 <translation id="6447948611083700881">Crearea și restaurarea backupurilor a fost dezactivată</translation>
 <translation id="645425387487868471">Activează conectarea forțată pentru <ph name="PRODUCT_NAME" /></translation>
@@ -2615,25 +2615,6 @@ Nu e nevoie ca aceste setări să fie configurate manual! Poți să descarci șa
 
 Este recomandat să configurezi politica în Windows prin GPO, cu toate că gestionarea politicii prin registry este încă acceptată pentru instanțele Windows care sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Șterge directorul principal ecryptfs al utilizatorului și începe cu un nou director principal ext4-encrypted.</translation>
-<translation id="8279832363395120715">Elimină părțile sensibile legate de confidențialitate și de securitate din adresele URL https:// înainte să le trimită la scripturile PAC (Proxy Auto Config) folosite de <ph name="PRODUCT_NAME" /> în timpul rezolvării proxy-ului.
-
-      Când politica este activată, funcția de securitate este activată, iar părțile respective sunt eliminate din adresele URL https://
-      înainte să fie trimise la un script PAC. Astfel, scriptul PAC
-      nu poate vedea datele protejate de obicei
-      de un canal criptat (cum ar fi calea și interogarea adresei URL).
-
-      Când politica este dezactivată, funcția de securitate este dezactivată, iar scripturile PAC
-      au în mod prestabilit permisiunea să vadă toate componentele unei adrese URL https://.
-      Această setare se aplică tuturor scripturilor PAC indiferent de originea lor (inclusiv
-      celor obținute printr-un transport nesigur, precum și celor descoperite într-un mod nesigur prin WPAD).
-
-      Politica este activată în mod prestabilit (funcția de securitate este activată), mai puțin în cazul utilizatorilor
-      sistemului de operare Chrome din companii pentru care în prezent politica este dezactivată în mod prestabilit.
-
-      Se recomandă activarea acesteia. Singurul motiv de a o
-      dezactiva este în cazul în care apar probleme de compatibilitate cu scripturile PAC existente.
-
-      Se dorește eliminarea acestei modificări în viitor.</translation>
 <translation id="8285435910062771358">Lupă ecran complet activată</translation>
 <translation id="8288199156259560552">Activează Serviciul de localizare Google pentru Android</translation>
 <translation id="8294750666104911727">În mod normal, paginile cu X-UA-Compatible setate la chrome=1 vor fi redate în <ph name="PRODUCT_FRAME_NAME" />, indiferent de politica „ChromeFrameRendererSettings”.
@@ -2820,7 +2801,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
       Dacă această setare este lăsată nesetată, utilizatorul poate decide dacă folosește sau nu această funcție.</translation>
 <translation id="8870318296973696995">Pagina de pornire</translation>
-<translation id="8876188741456358123">Modifică modul de culoare prestabilit pentru printare. Dacă modul nu este disponibil, această politică este ignorată.</translation>
+<translation id="8876188741456358123">Modifică modul duplex prestabilit pentru printare. Dacă modul nu este disponibil, această politică este ignorată.</translation>
 <translation id="8882006618241293596">Blochează plunginul <ph name="FLASH_PLUGIN_NAME" /> pe aceste site-uri</translation>
 <translation id="890403179930035128">Forțează activarea verificării ortografice pentru limbi. Limbile nerecunoscute din listă vor fi ignorate.
 

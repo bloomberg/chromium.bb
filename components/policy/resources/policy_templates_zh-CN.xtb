@@ -2550,17 +2550,6 @@
 
 虽然您仍可在已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例上通过注册表配置政策，但我们建议您通过 GPO 在 Windows 上配置政策。</translation>
 <translation id="8274603902181597201">清空用户的 ecryptfs 主目录，并改用全新的 ext4 加密主目录。</translation>
-<translation id="8279832363395120715">先剔除 https:// 网址中的隐私和安全敏感部分，然后再将网址传递给 PAC（代理自动配置）脚本，以便 <ph name="PRODUCT_NAME" /> 在代理解析期间使用。
-
-      如果将此政策设置为 True，则系统会启用安全功能，并会先将 https:// 网址进行剔除处理，然后再将其提交给 PAC 脚本。如此一来，PAC 脚本便无法查看一般由加密渠道保护的数据（例如网址的路径和查询）。
-
-      如果将此政策设置为 False，则系统会停用安全功能，且 PAC 脚本将可暗中查看完整的 https:// 网址。此设置会应用于所有 PAC 脚本（无论这些脚本的来源为何），其中包括通过不安全的传输过程获取的 PAC 脚本，或以不安全的方式通过 WPAD 发现的 PAC 脚本。
-
-      此政策默认设置为 True（安全功能已启用），但 Chrome 操作系统企业版用户除外（对于这些用户，此政策目前默认设置为 False）。
-
-      建议您将此政策设置为 True。唯一需要将此政策设置为 False 的情况是，设置为 True 会导致与现有 PAC 脚本出现兼容性问题。
-
-      我们期望将来能够移除这项替换设置。</translation>
 <translation id="8285435910062771358">已启用全屏放大镜</translation>
 <translation id="8288199156259560552">启用 Android Google 位置信息服务</translation>
 <translation id="8294750666104911727">XX-UA-Compatible 设置为chrome=1的网页通常在“<ph name="PRODUCT_FRAME_NAME" />”中进行渲染，而不考虑“ChromeFrameRendererSettings”政策。

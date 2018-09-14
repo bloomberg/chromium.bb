@@ -15,7 +15,7 @@
 <translation id="1165039591588034296">एरर</translation>
 <translation id="1172898394251786223">पुढील फील्ड</translation>
 <translation id="1176932207622159128">इमेज सेव्ह करू शकत नाही</translation>
-<translation id="1181037720776840403">काढा</translation>
+<translation id="1181037720776840403">काढून टाका</translation>
 <translation id="1201530049782216880">नवीन गुप्त टॅब</translation>
 <translation id="1209206284964581585">आतासाठी लपवा</translation>
 <translation id="1219674500290482172">इंटरनेटशी कनेक्ट करण्यात अक्षम.</translation>
@@ -290,6 +290,7 @@
 <translation id="5957613098218939406">अधिक पर्याय</translation>
 <translation id="5964480694698977962">नवीन गुप्त टॅब तयार करा.</translation>
 <translation id="5965679971710331625">आपण साइन इन केले आहे</translation>
+<translation id="5979837087407522202">पासवर्ड शोधा</translation>
 <translation id="5982717868370722439">विद्यमान डेटा <ph name="USER_EMAIL" /> मध्ये जोडा.</translation>
 <translation id="6012140227487808125">कूटबद्ध करीत आहे...</translation>
 <translation id="6021332621416007159">यामध्ये उघडा...</translation>
@@ -452,7 +453,7 @@
 <translation id="8725066075913043281">पुन्हा प्रयत्न करा</translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>
 <translation id="8741995161408053644">आपल्या Google खात्यात ब्राउझिंग इतिहासाची इतर स्वरूपे  <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> वर असू शकतात.</translation>
-<translation id="8775144690796719618">अवैध URL</translation>
+<translation id="8775144690796719618">चुकीची URL</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8840513115188359703">आपल्याला आपल्या Google खात्यामधून साइन आउट केले जाणार नाही.</translation>
 <translation id="8870413625673593573">अलीकडे बंद</translation>

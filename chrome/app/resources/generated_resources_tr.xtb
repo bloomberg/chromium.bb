@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> dosya seçildi</translation>
 <translation id="237828693408258535">Bu sayfa çevrilsin mi?</translation>
 <translation id="2378982052244864789">Uzantı dizinini seçin.</translation>
-<translation id="2379281330731083556">Sistem iletişim kutusunu kullanarak yazdır... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Göndermeden önce sor (önerilir)</translation>
 <translation id="2384436799579181135">Bir hata oluştu. Lütfen yazıcınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="2387458720915042159">Proxy bağlantısı türü</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Şurada oynatılıyor:</translation>
 <translation id="2677748264148917807">Çık</translation>
 <translation id="2678063897982469759">Tekrar etkinleştir</translation>
-<translation id="2679385451463308372">Sistem iletişim kutusunu kullanarak yazdır…</translation>
 <translation id="268053382412112343">Geç&amp;miş</translation>
 <translation id="2683638487103917598">Klasör sıralandı</translation>
 <translation id="2684004000387153598">Devam etmek için Tamam'ı tıklayın, ardından Kişi Ekle'yi tıklayıp e-posta adresiniz için yeni profil oluşturun.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Microsoft Belge İmzalama</translation>
 <translation id="270516211545221798">Dokunmatik alan hızı</translation>
 <translation id="2705736684557713153">Ekranın alt kısmına gidin ve görüntülenirse Anında Tethering'i açın. Görüntülenmiyorsa her şey hazırdır.</translation>
-<translation id="2706954854267016964">Seçilen Google Cloud Print cihazı artık desteklenmiyor. Bilgisayarınızın sistem ayarlarında yazıcıyı kurmayı deneyin.</translation>
 <translation id="2707024448553392710">Bileşen indiriliyor</translation>
 <translation id="270921614578699633">Ortalamaya Dahil Olan Örnek Sayısı</translation>
 <translation id="2709453993673701466">Senkronizasyonu ve kişiselleştirmeyi açılmadan önce yönetmek ister misiniz? <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'ı ziyaret edin.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">Denetlenen kullanıcılar yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="2724841811573117416">WebRTC günlükleri</translation>
 <translation id="2725200716980197196">Ağ bağlantısı geri yüklendi</translation>
-<translation id="2726934403674109201">(Toplam <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Ağ etkinleştirme hatası</translation>
 <translation id="2727633948226935816">Bir daha hatırlatma</translation>
 <translation id="2727712005121231835">Gerçek Boyut</translation>
@@ -1587,7 +1583,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="338583716107319301">Ayırıcı</translation>
 <translation id="3389312115541230716">Görev çubuğunda <ph name="SMALL_PRODUCT_LOGO" /> simgesini sağ tıklayın</translation>
 <translation id="3391716558283801616">Sekme 7</translation>
-<translation id="3396331542604645348">Seçilen yazıcı kullanılamıyor veya doğru yüklenmemiş. Yazıcınızı kontrol edin veya başka yazıcı seçmeyi deneyin.</translation>
 <translation id="3396800784455899911">"Kabul et ve devam et" düğmesini tıklayarak bu Google hizmetleri ile ilgili yukarıda açıklanan işlemleri kabul etmiş olursunuz.</translation>
 <translation id="3399432415385675819">Bildirimler devre dışı bırakılacak</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -5196,7 +5191,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8838770651474809439">Hamburger</translation>
 <translation id="883911313571074303">Resme açıklama ekle</translation>
 <translation id="8845001906332463065">Yardım alın</translation>
-<translation id="8846132060409673887">Bu bilgisayarın üreticisini ve modelini okuyun</translation>
+<translation id="8846132060409673887">Bu bilgisayarın üreticisini ve modelini okuma</translation>
 <translation id="8846141544112579928">Klavye aranıyor...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8859057652521303089">Dilinizi seçin:</translation>

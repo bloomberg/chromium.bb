@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> arquivos selecionados</translation>
 <translation id="237828693408258535">Traduzir esta página?</translation>
 <translation id="2378982052244864789">Selecionar o diretório da extensão.</translation>
-<translation id="2379281330731083556">Imprimir utilizando caixa de diálogo de sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="2384436799579181135">Ocorreu um erro. Verifique sua impressora e tente novamente.</translation>
 <translation id="2387458720915042159">Tipo de conexão proxy</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Reproduzindo em</translation>
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2678063897982469759">Reativar</translation>
-<translation id="2679385451463308372">Imprimir usando a caixa de diálogo do sistema...</translation>
 <translation id="268053382412112343">Hi&amp;stórico</translation>
 <translation id="2683638487103917598">Pasta classificada</translation>
 <translation id="2684004000387153598">Para continuar, clique em OK e depois em Adicionar pessoa para criar um novo perfil para seu endereço de e-mail.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Assinatura de documentos da Microsoft</translation>
 <translation id="270516211545221798">Velocidade do touchpad</translation>
 <translation id="2705736684557713153">Role até a parte inferior da tela e ative o tethering instantâneo, se essa opção for exibida. Se não for, está tudo pronto.</translation>
-<translation id="2706954854267016964">O dispositivo Google Cloud Print selecionado não é mais compatível. Tente configurar a impressora nas configurações do seu computador.</translation>
 <translation id="2707024448553392710">Fazendo o download do componente</translation>
 <translation id="270921614578699633">Média</translation>
 <translation id="2709453993673701466">Quer gerenciar a sincronização e a personalização antes que elas sejam ativadas? Visite <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">Os usuários supervisionados foram desativados pelo administrador.</translation>
 <translation id="2724841811573117416">Registros WebRTC</translation>
 <translation id="2725200716980197196">Conectividade de rede restaurada</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> no total)</translation>
 <translation id="2727176303594781056">Erro de ativação de rede</translation>
 <translation id="2727633948226935816">Não me lembrar novamente</translation>
 <translation id="2727712005121231835">Tamanho real</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">Separador</translation>
 <translation id="3389312115541230716">Clique com o botão direito do mouse no ícone <ph name="SMALL_PRODUCT_LOGO" /> na barra de tarefas</translation>
 <translation id="3391716558283801616">Aba 7</translation>
-<translation id="3396331542604645348">A impressora selecionada não está disponível ou não foi instalada corretamente. Verifique sua impressora ou selecione outra.</translation>
 <translation id="3396800784455899911">Ao clicar no botão "Aceitar e concluir", você aceita o processo descrito acima para esses serviços do Google.</translation>
 <translation id="3399432415385675819">As notificações serão desativadas</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

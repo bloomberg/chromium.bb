@@ -932,7 +932,6 @@
 <translation id="2378075407703503998">Odabrane datoteke: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="237828693408258535">Želite li prevesti ovu stranicu?</translation>
 <translation id="2378982052244864789">Odaberi direktorij proširenja.</translation>
-<translation id="2379281330731083556">Ispis pomoću dijaloškog okvira sustava... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Pitanje prije slanja (preporučeno)</translation>
 <translation id="2384436799579181135">Došlo je do pogreške. Provjerite pisač i pokušajte opet.</translation>
 <translation id="2387458720915042159">Vrsta proxy veze</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Reprodukcija na uređaju</translation>
 <translation id="2677748264148917807">Napusti</translation>
 <translation id="2678063897982469759">Ponovo omogući</translation>
-<translation id="2679385451463308372">Ispiši upotrebom dijaloga sustava...</translation>
 <translation id="268053382412112343">Hi&amp;story (Povijest)</translation>
 <translation id="2683638487103917598">Mapa je sortirana</translation>
 <translation id="2684004000387153598">Za nastavak kliknite U radu, a zatim kliknite Dodaj osobu da biste izradili novi profil za svoju e-adresu.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Microsoftovo potpisivanje dokumenata</translation>
 <translation id="270516211545221798">Brzina dodirne podloge</translation>
 <translation id="2705736684557713153">Pomičite se se do dna zaslona i uključite Automatsko modemsko povezivanje ako je prikazano. Ako nije, sve je spremno.</translation>
-<translation id="2706954854267016964">Odabrani uređaj Google Cloud Printa više nije podržan. Probajte postaviti pisač u postavkama sustava računala.</translation>
 <translation id="2707024448553392710">Komponenta se preuzima</translation>
 <translation id="270921614578699633">Prosjek tijekom razdoblja</translation>
 <translation id="2709453993673701466">Želite li upravljati sinkronizacijom i prilagodbom prije uključivanja? Otvorite <ph name="BEGIN_LINK" />Postavke<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">Nadzirane korisnike onemogućio je administrator.</translation>
 <translation id="2724841811573117416">WebRTC zapisnici</translation>
 <translation id="2725200716980197196">Veza s mrežom ponovno je uspostavljena</translation>
-<translation id="2726934403674109201">(Ukupno: <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Pogreška aktivacije mreže</translation>
 <translation id="2727633948226935816">Nemoj me više podsjećati</translation>
 <translation id="2727712005121231835">Stvarna veličina</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">Separator</translation>
 <translation id="3389312115541230716">Desnom tipkom kliknite ikonu <ph name="SMALL_PRODUCT_LOGO" /> na programskoj traci</translation>
 <translation id="3391716558283801616">Kartica 7</translation>
-<translation id="3396331542604645348">Odabrani pisač nije dostupan ili nije ispravno instaliran. Provjerite pisač ili pokušajte odabrati neki drugi.</translation>
 <translation id="3396800784455899911">Klikom na gumb "Prihvati i nastavi" prihvaćate prethodno opisanu obradu za ove Googleove usluge.</translation>
 <translation id="3399432415385675819">Obavijesti će se onemogućiti</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

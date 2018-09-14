@@ -21,7 +21,7 @@
 <translation id="1591562245178063882">या महिन्यात</translation>
 <translation id="1637811476055996098">फायली निवडा</translation>
 <translation id="1650423536718072820">पुलकोट</translation>
-<translation id="1729654308190250600">कृपया एक रिक्त-नसलेला ईमेल अॅड्रेस एंटर करा.</translation>
+<translation id="1729654308190250600">कृपया एक रिक्त नसलेला ईमेल अॅड्रेस एंटर करा.</translation>
 <translation id="1758486001363313524">अन्य...</translation>
 <translation id="1806710327868736751">सूचना_संवाद</translation>
 <translation id="1821985195704844674">ट्री ग्रीड</translation>
@@ -65,7 +65,7 @@
 <translation id="2942448076852699108">हायलाइट केलेली सामग्री</translation>
 <translation id="3040011195152428237">दुवा</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
-<translation id="3075154866155599887">कृपया एक वैध मूल्य एंटर करा. फील्ड अपूर्ण आहे किंवा अवैध तारीख आहे.</translation>
+<translation id="3075154866155599887">कृपया एक वैध मूल्य एंटर करा. भाग अपूर्ण आहे किंवा चुकीची तारीख आहे.</translation>
 <translation id="3078740164268491126">सारणी</translation>
 <translation id="3086746722712840547">टीप</translation>
 <translation id="310520048233152454">कृपया एखादी URL एंटर करा.</translation>
@@ -207,7 +207,7 @@
 <translation id="819205353528511139">पूर्ण स्क्रीन मोडमध्ये चित्रपट प्ले करा</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8284326494547611709">मथळे</translation>
-<translation id="835897206747267392">अवैध मूल्य.</translation>
+<translation id="835897206747267392">चुकीचे मूल्य.</translation>
 <translation id="8415319359811155763">भाग</translation>
 <translation id="8433900881053900389">टूलबार</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> फायली</translation>

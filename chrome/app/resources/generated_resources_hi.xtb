@@ -247,7 +247,7 @@
 <translation id="1358741672408003399">वर्तनी और व्याकरण</translation>
 <translation id="1361164813881551742">मैन्युअल रूप से जोड़ें</translation>
 <translation id="1361655923249334273">अप्रयुक्त</translation>
-<translation id="1361872463926621533">स्टार्टअप पर ध्वनि चलाएं</translation>
+<translation id="1361872463926621533">शुरू होने पर आवाज़ चालू करें</translation>
 <translation id="1363028406613469049">ट्रैक</translation>
 <translation id="1367951781824006909">कोई फ़ाइल चुनें</translation>
 <translation id="1368265273904755308">समस्‍या की रिपोर्ट करें</translation>
@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> फ़ाइलें चयनित</translation>
 <translation id="237828693408258535">क्या इस पेज का अनुवाद करना चाहते हैं?</translation>
 <translation id="2378982052244864789">विस्तार निर्देशिका को चुनें.</translation>
-<translation id="2379281330731083556">सिस्‍टम डॉयलॉग का उपयोग करके प्रिंट करें… <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">भेजने से पहले पूछें (अनुशंसित)</translation>
 <translation id="2384436799579181135">कोई गड़बड़ी हुई है. कृपया अपना प्रिंटर देखें और दोबारा कोशिश करें.</translation>
 <translation id="2387458720915042159">प्रॉक्सी कनेक्शन प्रकार</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">इस पर चलाया जा रहा है:</translation>
 <translation id="2677748264148917807">छोड़ें</translation>
 <translation id="2678063897982469759">फिर से-सक्षम करें</translation>
-<translation id="2679385451463308372">सिस्‍टम डायलॉग का उपयोग करके प्रिंट करें…</translation>
 <translation id="268053382412112343">इति&amp;हास</translation>
 <translation id="2683638487103917598">फ़ोल्डर क्रमबद्ध किया गया</translation>
 <translation id="2684004000387153598">जारी रखने के लिए, ठीक पर क्लिक करें, फिर व्‍यक्ति जोड़ें पर क्लिक करें, ताकि आप अपने ईमेल पते के लिए नई प्रोफ़ाइल बना सकें.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">टचपैड की गति</translation>
 <translation id="2705736684557713153">स्क्रीन के सबसे नीचे तक स्क्रोल करें और अगर इंस्टैंट टेदरिंग दिखाई देता है तो, उसे चालू करें. अगर वह दिखाई नहीं देता है तो, आप पूरी तरह तैयार हैं.</translation>
-<translation id="2706954854267016964">चुना गया Google क्लाउड प्रिंट डिवाइस अब काम नहीं करता है. अपने कंप्यूटर की सिस्टम सेटिंग में प्रिंटर सेट अप करके देखें.</translation>
 <translation id="2707024448553392710">घटक डाउनलोड करना</translation>
 <translation id="270921614578699633">औसत से अधिक</translation>
 <translation id="2709453993673701466">सिंक और मनमुताबिक बनाने की सुविधा के चालू होने से पहले उन्हें प्रबंधित करना चाहते हैं? <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> पर जाएं.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">निगरानी में रखे गए उपयोगकर्ताओं को आपके व्यवस्थापक ने अक्षम कर दिया है.</translation>
 <translation id="2724841811573117416">WebRTC लॉग</translation>
 <translation id="2725200716980197196">नेटवर्क कनेक्टिविटी पुनर्स्थापित हो गई</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> कुल)</translation>
 <translation id="2727176303594781056">नेटवर्क चालू करने में गड़बड़ी</translation>
 <translation id="2727633948226935816">मुझे फिर से याद न दिलाएं</translation>
 <translation id="2727712005121231835">वास्तविक आकार</translation>
@@ -1263,7 +1259,7 @@
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> जोड़ें...</translation>
 <translation id="2874343608108773609">अपने सभी डिवाइस पर अपने पासवर्ड पाने के लिए, Chrome में साइन इन करें.</translation>
 <translation id="2875698561019555027">(Chrome गड़बड़ी पृष्‍ठ)</translation>
-<translation id="2876336351874743617">उंगली 2</translation>
+<translation id="2876336351874743617">उंगली दो</translation>
 <translation id="288042212351694283">अपने यूनीवर्सल सेकंड फ़ैक्टर डिवाइस एक्सेस करें</translation>
 <translation id="2881076733170862447">जब आप एक्सटेंशन को क्लिक करते हैं</translation>
 <translation id="2881966438216424900">अंतिम बार पहुंच प्राप्त करने की तिथि:</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">विभाजक</translation>
 <translation id="3389312115541230716">टास्कबार में <ph name="SMALL_PRODUCT_LOGO" /> आइकॉन पर राइट क्लिक करें</translation>
 <translation id="3391716558283801616">टैब 7</translation>
-<translation id="3396331542604645348">चयनित प्रिंटर उपलब्‍ध नहीं है या ठीक से इंस्‍टॉल नहीं किया गया है. अपना प्रिंटर जाँचें या किसी अन्‍य प्रिंटर का चयन करने का प्रयास करें.</translation>
 <translation id="3396800784455899911">"स्वीकार करें और जारी रखें" बटन पर क्लिक करके, आप पुष्टि करते हैं कि इन Google सेवाओं के लिए ऊपर बताई गई प्रोसेसिंग से आप सहमत हैं.</translation>
 <translation id="3399432415385675819">नोटिफ़िकेशन अक्षम हो जाएंगे</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -1737,7 +1732,7 @@
 <translation id="3606712892509067288">Better Together से हटाएं</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">उपयोगकर्ता के इमेज की झलक</translation>
-<translation id="3609446736023031597">Play स्टोर ऐप्लिकेशन के लिए नए अपडेट और सुझाव पाएं</translation>
+<translation id="3609446736023031597">'Play स्टोर' ऐप्लिकेशन के लिए नए अपडेट और सुझाव पाएं</translation>
 <translation id="3609785682760573515">समन्वयित हो रहा है...</translation>
 <translation id="3609895557594655134">Android VPN जोड़ें...</translation>
 <translation id="361106536627977100">फ़्लैश डेटा</translation>
@@ -2342,7 +2337,7 @@
 <translation id="4558491878126948419"><ph name="DEVICE_TYPE" /> इस्तेमाल करने से जुड़ी सलाह और Google के उत्पादों से जुड़े अपडेट पाएं. साथ ही, अपने सुझाव शेयर करें. जब चाहें सूचनाएं पाना बंद करें.</translation>
 <translation id="4559617833001311418">यह साइट आपके डिवाइस के गति या रोशनी के सेंसर एक्सेस कर रही है.</translation>
 <translation id="4562155214028662640">फ़िंगरप्रिंट जोड़ें</translation>
-<translation id="4563880231729913339">उंगली 3</translation>
+<translation id="4563880231729913339">उंगली तीन</translation>
 <translation id="4565377596337484307">पासवर्ड छिपाएं</translation>
 <translation id="4567772783389002344">शब्द जोड़ें</translation>
 <translation id="4568213207643490790">क्षमा करें, इस डिवाइस पर Google खातों की अनुमति नहीं है.</translation>
@@ -3246,7 +3241,7 @@
 <translation id="5882919346125742463">ज्ञात नेटवर्क</translation>
 <translation id="5884474295213649357">यह टैब किसी USB डिवाइस से कनेक्ट है.</translation>
 <translation id="5885324376209859881">मीडिया सेटिंग प्रबंधित करें...</translation>
-<translation id="5886009770935151472">उंगली 1</translation>
+<translation id="5886009770935151472">उंगली एक</translation>
 <translation id="5889282057229379085">मध्यवर्ती CA की अधिकतम संख्या: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">पुन: प्रारंभ करें</translation>
 <translation id="5895187275912066135">जारी करने की तिथि</translation>

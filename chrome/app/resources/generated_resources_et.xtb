@@ -932,7 +932,6 @@
 <translation id="2378075407703503998">Valitud on <ph name="SELCTED_FILE_COUNT" /> faili</translation>
 <translation id="237828693408258535">Kas tõlkida see leht?</translation>
 <translation id="2378982052244864789">Laiendi kataloogi valimine.</translation>
-<translation id="2379281330731083556">Prindi süsteemidialoogi abil ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Küsib enne saatmist (soovitatav)</translation>
 <translation id="2384436799579181135">Ilmnes viga. Kontrollige printerit ja proovige uuesti.</translation>
 <translation id="2387458720915042159">Puhverserveri ühenduse tüüp</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Mängib seadmes</translation>
 <translation id="2677748264148917807">Lahku</translation>
 <translation id="2678063897982469759">Luba uuesti</translation>
-<translation id="2679385451463308372">Prindi süsteemidialoogi abil ...</translation>
 <translation id="268053382412112343">&amp;Ajalugu</translation>
 <translation id="2683638487103917598">Kaust on sorditud</translation>
 <translation id="2684004000387153598">Jätkamiseks klõpsake nupul OK, seejärel klõpsake valikul Inimese lisamine, et luua oma e-posti aadressi jaoks uus profiil.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Microsofti dokumendi allkirjastamine</translation>
 <translation id="270516211545221798">Puuteplaadi kiirus</translation>
 <translation id="2705736684557713153">Kerige ekraani alaossa ja lülitage sisse automaatne jagamine, kui see kuvatakse. Muidu ei ole teil vaja rohkem midagi teha.</translation>
-<translation id="2706954854267016964">Valitud Google'i pilvprintimise seadet enam ei toetata. Proovige printer seadistada oma arvuti süsteemiseadetes.</translation>
 <translation id="2707024448553392710">Komponenti laaditakse alla</translation>
 <translation id="270921614578699633">Keskmine</translation>
 <translation id="2709453993673701466">Kas soovite sünkroonimist ja isikupärastamist enne nende sisselülitamist hallata? Avage jaotis <ph name="BEGIN_LINK" />Seaded<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">Administraator on jälgitavad kasutajad keelanud.</translation>
 <translation id="2724841811573117416">WebRTC logid</translation>
 <translation id="2725200716980197196">Võrguühendus on taastatud</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> kokku)</translation>
 <translation id="2727176303594781056">Võrgu aktiveerimise viga</translation>
 <translation id="2727633948226935816">Ära tuleta rohkem meelde</translation>
 <translation id="2727712005121231835">Tegelik suurus</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">Eraldaja</translation>
 <translation id="3389312115541230716">Paremklõpsake tegumiribal ikoonil <ph name="SMALL_PRODUCT_LOGO" /></translation>
 <translation id="3391716558283801616">Vahekaart 7</translation>
-<translation id="3396331542604645348">Valitud printer pole saadaval või pole õigesti installitud. Kontrollige printerit või valige teine ​​printer.</translation>
 <translation id="3396800784455899911">Kui klõpsate nupul „Nõustu ja jätka”, nõustute nende Google'i teenuste puhul andmete ülalkirjeldatud töötlemisega.</translation>
 <translation id="3399432415385675819">Märguanded keelatakse</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

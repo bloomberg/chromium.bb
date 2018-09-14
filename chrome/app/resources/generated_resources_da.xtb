@@ -929,7 +929,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer valgt</translation>
 <translation id="237828693408258535">Vil du oversætte denne side?</translation>
 <translation id="2378982052244864789">Vælg udvidelsens mappe.</translation>
-<translation id="2379281330731083556">Dialogboks til Udskriv via system... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Spørg inden afsendelse (anbefales)</translation>
 <translation id="2384436799579181135">Der opstod en fejl. Tjek din printer, og prøv igen.</translation>
 <translation id="2387458720915042159">Proxy-forbindelsestype</translation>
@@ -1132,7 +1131,6 @@
 <translation id="2676946222714718093">Afspilles i</translation>
 <translation id="2677748264148917807">Forlad</translation>
 <translation id="2678063897982469759">Genaktiver</translation>
-<translation id="2679385451463308372">Dialogboks til Udskriv via system...</translation>
 <translation id="268053382412112343">Over&amp;sigt</translation>
 <translation id="2683638487103917598">Mappen er sorteret</translation>
 <translation id="2684004000387153598">Hvis du vil fortsætte, skal du klikke på OK og derefter klikke på Tilføj person for at oprette en ny profil til din mailadresse.</translation>
@@ -1145,7 +1143,6 @@
 <translation id="2704184184447774363">Microsoft-signering af dokument</translation>
 <translation id="270516211545221798">Hastighed for touchpad</translation>
 <translation id="2705736684557713153">Rul til bunden af skærmen, og aktivér Øjeblikkelig netdeling, hvis det vises. Hvis det ikke vises, er alt som det skal være.</translation>
-<translation id="2706954854267016964">Den valgte Google Cloudprinter-enhed understøttes ikke længere. Prøv at konfigurere printeren i systemindstillingerne på din computer.</translation>
 <translation id="2707024448553392710">Komponenten downloades</translation>
 <translation id="270921614578699633">Gennemsnit op</translation>
 <translation id="2709453993673701466">Vil du administrere synkronisering og tilpasning, før disse funktioner er slået til? Gå til <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
@@ -1161,7 +1158,6 @@
 <translation id="2721695630904737430">Administrerede brugere er deaktiveret af din administrator.</translation>
 <translation id="2724841811573117416">WebRTC-logfiler</translation>
 <translation id="2725200716980197196">Forbindelsen til netværket er genoprettet</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> i alt)</translation>
 <translation id="2727176303594781056">Fejl ved aktivering af netværk</translation>
 <translation id="2727633948226935816">Påmind mig ikke igen</translation>
 <translation id="2727712005121231835">Faktisk størrelse</translation>
@@ -1585,7 +1581,6 @@
 <translation id="338583716107319301">Separator</translation>
 <translation id="3389312115541230716">Højreklik på <ph name="SMALL_PRODUCT_LOGO" />-ikonet på proceslinjen</translation>
 <translation id="3391716558283801616">Fane 7</translation>
-<translation id="3396331542604645348">Den valgte printer er ikke tilgængelig eller ikke installeret korrekt. Tjek din printer, eller vælg en anden printer.</translation>
 <translation id="3396800784455899911">Når du klikker på knappen "Acceptér og fortsæt", accepterer du den behandling, der er beskrevet ovenfor, for disse Google-tjenester.</translation>
 <translation id="3399432415385675819">Underretninger deaktiveres</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

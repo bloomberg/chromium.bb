@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fichiers sélectionnés</translation>
 <translation id="237828693408258535">Traduire cette page ?</translation>
 <translation id="2378982052244864789">Sélectionner le répertoire de l'extension</translation>
-<translation id="2379281330731083556">Imprimer via la boîte de dialogue du système... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Demander l'autorisation avant d'envoyer (recommandé)</translation>
 <translation id="2384436799579181135">Une erreur s'est produite. Veuillez vérifier l'imprimante, puis réessayer.</translation>
 <translation id="2387458720915042159">Type de connexion proxy</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Lecture en cours sur</translation>
 <translation id="2677748264148917807">Quitter</translation>
 <translation id="2678063897982469759">Réactiver</translation>
-<translation id="2679385451463308372">Imprimer depuis la boîte de dialogue système…</translation>
 <translation id="268053382412112343">&amp;Historique</translation>
 <translation id="2683638487103917598">Dossier trié</translation>
 <translation id="2684004000387153598">Pour continuer, cliquez sur "OK", puis sur "Ajouter une personne" afin de créer un profil pour votre adresse e-mail.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Signature de document Microsoft</translation>
 <translation id="270516211545221798">Vitesse du pavé tactile</translation>
 <translation id="2705736684557713153">Faites défiler l'écran vers le bas et activez le partage de connexion instantané si l'option correspondante s'affiche. Dans le cas contraire, vous avez terminé.</translation>
-<translation id="2706954854267016964">L'appareil Google Cloud Print sélectionné est désormais incompatible. Essayez de configurer l'imprimante dans les paramètres système de votre ordinateur.</translation>
 <translation id="2707024448553392710">Téléchargement de composants en cours…</translation>
 <translation id="270921614578699633">Moyenne de</translation>
 <translation id="2709453993673701466">Vous souhaitez gérer la synchronisation et la personnalisation avant de les activer ? Accédez aux <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">Votre administrateur a désactivé les utilisateurs supervisés.</translation>
 <translation id="2724841811573117416">Journaux WebRTC</translation>
 <translation id="2725200716980197196">La connectivité du réseau a été rétablie</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> au total)</translation>
 <translation id="2727176303594781056">Erreur d'activation réseau</translation>
 <translation id="2727633948226935816">Ne plus afficher ce rappel</translation>
 <translation id="2727712005121231835">Taille réelle</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">Séparateur</translation>
 <translation id="3389312115541230716">Faites un clic droit sur l'icône <ph name="SMALL_PRODUCT_LOGO" /> dans la barre des tâches.</translation>
 <translation id="3391716558283801616">Tab 7</translation>
-<translation id="3396331542604645348">L'imprimante sélectionnée n'est pas disponible ou n'est pas installée correctement. Veuillez vérifier votre imprimante ou en sélectionner une autre.</translation>
 <translation id="3396800784455899911">En cliquant sur le bouton "Accepter et continuer", vous acceptez le processus décrit ci-dessus pour ces services Google.</translation>
 <translation id="3399432415385675819">Les notifications seront désactivées</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -1941,7 +1936,7 @@
 <translation id="3873315167136380065">Pour activer cette fonctionnalité, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /> pour supprimer votre phrase secrète de synchronisation</translation>
 <translation id="3878840326289104869">Création de l'utilisateur supervisé en cours</translation>
 <translation id="3879748587602334249">Gestionnaire de téléchargement</translation>
-<translation id="3885455691202481064">Appuyez sur le capteur avec votre index. Il se trouve en haut à gauche de votre Chromebook.</translation>
+<translation id="3885455691202481064">Avec votre index, appuyez sur le capteur qui se trouve en haut à gauche de votre Chromebook.</translation>
 <translation id="3888550877729210209">Prise de notes avec <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Ajouter une connexion OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Consulter et modifier vos paramètres d'accessibilité</translation>

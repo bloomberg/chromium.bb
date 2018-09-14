@@ -2420,7 +2420,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
           Bir uzantı listede yoksa veya liste ayarlanmamışsa API'ye yapılan çağrılar başarısız olur ve hata kodu görüntülenir.</translation>
 <translation id="7618907117929117943">OS sürümü hedeften daha yeniyse ve geri alma, ayrıca geri alma sonrası OOBE'nin atlanması yoluyla cihaz düzeyinde yapılandırmanın (ağ kimlik bilgileri dahil) aktarılması mümkünse sürümü geri alın ev hedefin sürümünde kalın. Bu mümkün değilse (hedef sürüm geri yüklemeyi desteklememesi veya geriye dönük uyumluluğu olmayan bir değişiklik nedeniyle) geri alma işlemini yapmayın veya iptal etmeyin.
-          <ph name="PRODUCT_OS_NAME" /> sürüm 70 düzeyinde ve sonraki sürümlerde desteklenir. Daha eski istemciler için bu değer, geri yüklemenin devre dışı bırakıldığı anlamına gelir.</translation>
+          <ph name="PRODUCT_OS_NAME" /> sürüm 70'te ve sonraki sürümlerde desteklenir. Daha eski istemciler için bu değer, geri yüklemenin devre dışı bırakıldığı anlamına gelir.</translation>
 <translation id="7625444193696794922">Bu cihazın kilitlenmesi gereken yayın kanalını belirtir.</translation>
 <translation id="7632724434767231364">GSSAPI kitaplığı adı</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME" /> içindeki uygulama yerel ayarını yapılandırır ve kullanıcıların yerel ayarı değiştirmelerini önler.
@@ -2689,29 +2689,6 @@ Bu ayarların manuel olarak yapılandırılması gerekmez! Windows, Mac ve Linux
 
 Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak, bir <ph name="MS_AD_NAME" /> alanına katılmış Windows örnekleri için politikanın temel hazırlığının kayıt defteri kullanılarak yapılması da desteklenir.</translation>
 <translation id="8274603902181597201">Kullanıcının ecryptfs ana dizinini sil ve yeni bir ext4-encrypted ana diziniyle başla.</translation>
-<translation id="8279832363395120715">https:// URL'lerini, proxy çözümlemesi sırasında <ph name="PRODUCT_NAME" /> tarafından kullanılan PAC (Proxy Otomatik Yapılandırması) komut dosyalarına geçirmeden önce URL'lerin gizlilik ve güvenlik açısından hassas bölümlerini ayırır.
-
-     Doğru (True) değerine ayarlandığında güvenlik özelliği etkinleştirilir ve
-     https:// URL'leri bir PAC komut dosyasına gönderilmeden önce ayrılır.
-     Bu şekilde, PAC komut dosyası normalde şifrelenmiş kanalla korunan
-     verileri (URL'nin yolu ve sorgu gibi) görüntüleyemez.
-
-     Politika Yanlış (False) değerine ayarlandığında, güvenlik özelliği devre dışı
-     bırakılır ve PAC komut dosyalarına https:// URL'sinin tüm bileşenlerini
-     görüntüleme izni verilir. Bu ayar, kaynağından bağımsız olarak tüm
-     PAC komut dosyaları için geçerlidir (güvenli olmayan bir aktarım üzerinden
-     getirilenlerin yanı sıra WPAD üzerinden güvenli olmayan bir şekilde
-     keşfedilenler için de geçerlidir).
-
-     Bu politika varsayılan olarak Doğru (True) değerine ayarlanır (güvenlik
-     özelliği etkindir). Bunun tek istisnası, politikanın şu anda Yanlış (False)
-     değerinde çalıştırıldığı Chrome OS kurumsal kullanıcılarıdır.
-
-     Bu politikanın Doğru (True) değerine ayarlanması önerilir. Politikanın
-     Yanlış (False) değerine ayarlanmasının tek nedeni, mevcut PAC komut
-     dosyalarıyla bir uyumluluk sorununa neden olabilmesidir.
-
-     İleride bu geçersiz kılmanın kaldırılması istenmektedir.</translation>
 <translation id="8285435910062771358">Tam ekran büyüteci etkin</translation>
 <translation id="8288199156259560552">Android Google Konum Hizmetini Etkinleştir</translation>
 <translation id="8294750666104911727">Normalde, "ChromeFrameRendererSettings" politikası ne olursa olsun, chrome=1 olarak ayarlanmış X-UA Uyumlu sayfalar <ph name="PRODUCT_FRAME_NAME" /> ile oluşturulur.
@@ -2984,7 +2961,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="9088433379343318874">Denetlenen kullanıcı içerik sağlayıcısını etkinleştirme</translation>
 <translation id="9088444059179765143">Otomatik saat dilimi algılama yöntemini yapılandır</translation>
 <translation id="9094064873808699479">OS sürümü hedeften daha yeniyse geri alın ve hedefin sürümünde kalın. Mümkünse geri alma işlemiyle cihaz düzeyinde yapılandırmayı (ağ kimlik bilgileri dahil) aktarmayı deneyin, ancak (hedef sürümün verilerin geri yüklenmesini desteklememesi veya geriye dönük uyumluluğu olmayan bir değişiklik nedeniyle) verilerin geri yüklenmesi mümkün olmazsa bile geri yükleme işlemini tam powerwash yöntemiyle gerçekleştirin.
-          <ph name="PRODUCT_OS_NAME" /> sürüm 70 düzeyinde ve sonraki sürümlerde desteklenir. Daha eski istemciler için bu değer, geri yüklemenin devre dışı bırakıldığı anlamına gelir.</translation>
+          <ph name="PRODUCT_OS_NAME" /> sürüm 70'te ve sonraki sürümlerde desteklenir. Daha eski istemciler için bu değer, geri yüklemenin devre dışı bırakıldığı anlamına gelir.</translation>
 <translation id="9096086085182305205">Kimlik doğrulama sunucusu beyaz listesi</translation>
 <translation id="9098553063150791878">HTTP kimlik doğrulaması için politikalar</translation>
 <translation id="9105265795073104888">Sadece proxy yapılandırma seçeneklerinin bir alt kümesi Android uygulamalarında kullanılabilir. Android uygulamaları proxy kullamayı kendi tercihleriyle seçebilir. Uygulamaları proxy kullanmaya zorlayamazsınız.</translation>

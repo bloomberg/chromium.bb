@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> archivos seleccionados</translation>
 <translation id="237828693408258535">¿Quieres traducir esta página?</translation>
 <translation id="2378982052244864789">Selecciona el directorio de la extensión.</translation>
-<translation id="2379281330731083556">Imprimir utilizando el cuadro de diálogo del sistema <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Preguntar antes de enviar (recomendado)</translation>
 <translation id="2384436799579181135">Se ha producido un error. Comprueba tu impresora y vuelve a intentarlo.</translation>
 <translation id="2387458720915042159">Tipo de conexión con proxy</translation>
@@ -1134,7 +1133,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2676946222714718093">Reproduciendo en</translation>
 <translation id="2677748264148917807">Salir</translation>
 <translation id="2678063897982469759">Volver a habilitar</translation>
-<translation id="2679385451463308372">Imprimir usando el diálogo del sistema...</translation>
 <translation id="268053382412112343">Hi&amp;storial</translation>
 <translation id="2683638487103917598">Carpeta ordenada</translation>
 <translation id="2684004000387153598">Para continuar, haz clic en Aceptar y, a continuación, en Añadir perfil para crear un perfil con tu dirección de correo electrónico.</translation>
@@ -1147,7 +1145,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2704184184447774363">Firma de documentos de Microsoft</translation>
 <translation id="270516211545221798">Velocidad del panel táctil</translation>
 <translation id="2705736684557713153">Desplázate hasta el final de la pantalla y activa la opción Conexión compartida instantánea si aparece. Si no, ya has terminado.</translation>
-<translation id="2706954854267016964">El dispositivo de Google Cloud Print seleccionado ya no es compatible. Prueba a configurar la impresora desde la configuración del sistema de tu ordenador.</translation>
 <translation id="2707024448553392710">Descargando componente</translation>
 <translation id="270921614578699633">Por encima de la media</translation>
 <translation id="2709453993673701466">¿Quieres administrar la sincronización y personalización antes de que se activen? Accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2721695630904737430">El administrador ha inhabilitado a los usuarios supervisados.</translation>
 <translation id="2724841811573117416">Registros de WebRTC</translation>
 <translation id="2725200716980197196">Conexión de red restaurada</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> en total)</translation>
 <translation id="2727176303594781056">No se ha podido activar la red</translation>
 <translation id="2727633948226935816">No volver a recordármelo</translation>
 <translation id="2727712005121231835">Tamaño real</translation>
@@ -1321,7 +1317,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2961695502793809356">Haz clic para avanzar una página o pulsa unos segundos para ver el historial</translation>
 <translation id="2963151496262057773">El complemento <ph name="PLUGIN_NAME" /> no responde. ¿Quieres detenerlo?</translation>
 <translation id="2966449113954629791">Es posible que hayas agotado los datos de tu plan de datos móviles. Accede al portal de activación de <ph name="NAME" /> para comprar más datos.</translation>
-<translation id="2966937470348689686">Administrar las preferencias de Android</translation>
+<translation id="2966937470348689686">Gestionar las preferencias de Android</translation>
 <translation id="2971213274238188218">disminuir brillo</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
@@ -1585,7 +1581,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="338583716107319301">Separador</translation>
 <translation id="3389312115541230716">Haz clic con el botón derecho en el icono <ph name="SMALL_PRODUCT_LOGO" /> situado en la barra de tareas</translation>
 <translation id="3391716558283801616">Pestaña 7</translation>
-<translation id="3396331542604645348">La impresora seleccionada no se encuentra disponible o no está instalada correctamente. Comprueba tu impresora o prueba a seleccionar otra.</translation>
 <translation id="3396800784455899911">Al hacer clic en el botón "Aceptar y continuar", declaras que estás conforme con el proceso descrito anteriormente de estos servicios de Google.</translation>
 <translation id="3399432415385675819">Se inhabilitarán las notificaciones</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

@@ -10,7 +10,7 @@
 <translation id="110877069173485804">ఇది మీ Chrome</translation>
 <translation id="1142745911746664600">Chromeని అప్‌డేట్ చేయడం సాధ్యం కాదు</translation>
 <translation id="1154147086299354128">&amp;Chromeలో తెరువు</translation>
-<translation id="123620459398936149">Chrome OS మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని నవీకరించండి.</translation>
+<translation id="123620459398936149">Chrome OS మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని అప్‌డేట్ చేయండి.</translation>
 <translation id="127345590676626841">Chrome స్వయంచాలకంగా నవీకరించబడుతుంది కనుక మీరు ఎల్లప్పుడూ తాజా సంస్కరణని కలిగి ఉంటారు. ఈ డౌన్‌లోడ్ పూర్తయినప్పుడు, Chrome పునఃప్రారంభించబడుతుంది మరియు మీరు మీ పనిని కొనసాగించవచ్చు.</translation>
 <translation id="1302523850133262269">దయచేసి Chrome తాజా సిస్టమ్ నవీకరణలను ఇన్‌స్టాల్ చేస్తున్నప్పుడు వేచి ఉండండి.</translation>
 <translation id="1312676208694947750">{0,plural, =0{Chrome OS అప్‌డేట్ అందుబాటులో ఉంది}=1{Chrome OS అప్‌డేట్ అందుబాటులో ఉంది}other{# రోజులుగా Chrome OS అప్‌డేట్ అందుబాటులో ఉంది}}</translation>
@@ -40,7 +40,7 @@
 <translation id="1874309113135274312">Google Chrome బీటా (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome కాలం చెల్లినది</translation>
 <translation id="1915828456209461693">Chrome కోసం కొత్త అప్‌డేట్ అందుబాటులో ఉంది మరియు మీరు పునఃప్రారంభించిన వెంటనే వర్తించబడుతుంది.</translation>
-<translation id="2063848847527508675">నవీకరణను వర్తింపజేయడానికి Chrome OSని పునఃప్రారంభించాలి.</translation>
+<translation id="2063848847527508675">అప్‌డేట్‌ను వర్తింపజేయడానికి Chrome OSని పునఃప్రారంభించాలి.</translation>
 <translation id="2084710999043359739">Chromeకి జోడించు</translation>
 <translation id="2094919256425865063">ఏదేమైనా Chromeని మూసివేయాలా?</translation>
 <translation id="2120620239521071941">ఇది ఈ పరికరం నుండి <ph name="ITEMS_COUNT" /> అంశాలను తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromeకి <ph name="USER_EMAIL" /> వలె సైన్ ఇన్ చేయండి.</translation>
@@ -101,7 +101,7 @@
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="3503306920980160878">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromeకు మీ స్థాన యాక్సెస్ అవసరం</translation>
 <translation id="3582972582564653026">మీ పరికరాల అంతటా Chromeని సమకాలీకరించండి మరియు వ్యక్తిగతీకరించండి</translation>
-<translation id="3622797965165704966">ఇప్పుడు మీ Google ఖాతాతో మరియు భాగస్వామ్య కంప్యూటర్‌ల్లో Chromeని సులభంగా ఉపయోగించవచ్చు.</translation>
+<translation id="3622797965165704966">ఇప్పుడు మీ Google ఖాతాతో మరియు భాగస్వామ్య కంప్యూటర్‌లలో Chromeని సులభంగా ఉపయోగించవచ్చు.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />సేవా నిబంధనలు<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3716182511346448902">ఈ పేజీ చాలా మెమరీని ఉపయోగిస్తోంది, కాబట్టి దీన్ని Chrome పాజ్ చేయబడింది.</translation>
 <translation id="3718181793972440140">ఇది ఈ పరికరం నుండి 1 అంశాన్ని తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromeకి <ph name="USER_EMAIL" /> వలె సైన్ ఇన్ చేయండి.</translation>
@@ -129,7 +129,7 @@
 <translation id="4343195214584226067">Chromeకు <ph name="EXTENSION_NAME" /> జోడించబడింది</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">Google Chromeలో మరొక వ్యవస్థాపన జరుగుతోంది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="4480040274068703980">సైన్ ఇన్ చేయడంలో లోపం సంభవించినందున Chrome OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
+<translation id="4480040274068703980">సైన్ ఇన్ చేయడంలో ఎర్రర్ సంభవించినందున Chrome OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="4561051373932531560">Google Chrome వెబ్‌లో మిమ్మళ్ని ఫోన్ నంబర్ క్లిక్ చెయ్యనిస్తుంది మరియు Skypeతో కాల్ చేస్తుంది!</translation>
 <translation id="4567424176335768812">మీరు <ph name="USER_EMAIL_ADDRESS" />గా సైన్ ఇన్ చేసారు. ఇప్పుడు మీరు మీ సైన్ ఇన్ చేసిన అన్ని పరికరాల్లో మీ బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌లను ప్రాప్యత చేయవచ్చు.</translation>
 <translation id="4571503333518166079">Chrome నోటిఫికేషన్ సెట్టింగ్‌లలోకి వెళ్లు</translation>
@@ -184,16 +184,16 @@
 <translation id="6113794647360055231">Chrome ఇప్పుడు మెరుగైంది</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome బీటా</translation>
-<translation id="61852838583753520">&amp;Chrome OSను నవీకరించు</translation>
+<translation id="61852838583753520">&amp;Chrome OSను అప్‌డేట్ చేయి</translation>
 <translation id="6235018212288296708">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Google Chrome కోసం ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="6291089322031436445">Chrome డెవలపర్ అనువర్తనాలు</translation>
 <translation id="6291549208091401781">మీ కంప్యూటర్‌లోని వినియోగదారులందరికీ Google Chrome ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది.</translation>
 <translation id="6338556085225130112">Google Chromeని నవీకరిస్తోంది</translation>
-<translation id="6368958679917195344">అదనపు <ph name="BEGIN_LINK_CROS_OSS" />ఓపన్ సోర్స్ సాఫ్ట్‌వేర్‌<ph name="END_LINK_CROS_OSS" /> ద్వారా  Chrome OS సాధ్యం అవుతుంది.</translation>
+<translation id="6368958679917195344">అదనపు <ph name="BEGIN_LINK_CROS_OSS" />ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్‌<ph name="END_LINK_CROS_OSS" /> ద్వారా Chrome OS సాధ్యం అవుతుంది.</translation>
 <translation id="6468844726266617801">{0,plural, =1{ఒక రోజులో Chromeని తిరిగి ప్రారంభించండి}other{# రోజుల్లో Chromeని తిరిగి ప్రారంభించండి}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome నవీకరించబడుతోంది (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6598387184982954187">మీరు మీ Chrome అంశాలను సమకాలీకరించడానికి <ph name="PROFILE_EMAIL" />ని ఉపయోగిస్తున్నారు. మీ సమకాలీకరణ ప్రాధాన్యతను నవీకరించడానికి లేదా Google ఖాతా లేకుండా Chromeని ఉపయోగించడానికి, <ph name="SETTINGS_LINK" />ను సందర్శించండి.</translation>
+<translation id="6598387184982954187">మీరు మీ Chrome అంశాలను సమకాలీకరించడానికి <ph name="PROFILE_EMAIL" />ని ఉపయోగిస్తున్నారు. మీ సమకాలీకరణ ప్రాధాన్యతను అప్‌డేట్ చేయడానికి లేదా Google ఖాతా లేకుండా Chromeని ఉపయోగించడానికి, <ph name="SETTINGS_LINK" />ను సందర్శించండి.</translation>
 <translation id="6600954340915313787">Chromeకి కాపీ చేయబడింది</translation>
 <translation id="6634887557811630702">Google Chrome తాజాగా ఉంది.</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
@@ -258,7 +258,7 @@
 <translation id="8380166467911888159">అక్షరక్రమ లోపాలను పరిష్కరించడానికి, Chrome మీరు వచన ఫీల్డ్‌లలో టైప్ చేసే వచనాన్ని Googleకి పంపుతుంది</translation>
 <translation id="840084489713044809">Google Chrome మీ పాస్‌వర్డ్‌లను ఎగుమతి చేయాలనుకుంటోంది.</translation>
 <translation id="8406086379114794905">Chromeని మెరుగుపరచడంలో సహాయపడండి</translation>
-<translation id="8455999171311319804">ఐచ్ఛికం: విశ్లేషణ మరియు వినియోగ డేటాను స్వయంచాలకంగా Googleకి పంపడం ద్వారా Chrome OSని మెరుగుపరచడంలో సహాయం అందించండి.</translation>
+<translation id="8455999171311319804">ఐచ్ఛికం: విశ్లేషణ మరియు వినియోగ డేటాను ఆటోమేటిక్‌గా Googleకి పంపడం ద్వారా Chrome OSని మెరుగుపరచడంలో సహాయం అందించండి.</translation>
 <translation id="8478823064122749032">మీ ఫోన్‌లో Chromeను ఇన్‌స్టాల్ చేయండి. మేము మీ ఖాతా పునరుద్ధరణ ఫోన్ నంబర్‌కు SMSను పంపుతాము: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8521348052903287641">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Google Chrome డెవలపర్ కోసం ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

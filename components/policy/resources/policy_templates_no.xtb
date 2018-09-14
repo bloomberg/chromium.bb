@@ -404,8 +404,8 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis regelen ikke er angitt, er standardverdien 0 grader, og brukeren
       står fritt til å endre den. I dette tilfellet brukes ikke standardverdien igjen
       ved omstart.</translation>
-<translation id="214901426630414675">Begrens utskrift på begge sider (Duplex-modus)</translation>
-<translation id="2149330464730004005">Aktivér fargeutskrift</translation>
+<translation id="214901426630414675">Begrens utskrift på begge sider</translation>
+<translation id="2149330464730004005">Slå på fargeutskrift</translation>
 <translation id="2156132677421487971">Konfigurer retningslinjer for <ph name="PRODUCT_NAME" /> – en funksjon som gjør det mulig for brukere å sende skrivebords-, nettsteds- og faneinnhold fra nettleseren til eksterne skjermer og lydanlegg.</translation>
 <translation id="2166472654199325139">Ikke filtrer nettsteder for seksuelt innhold</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse når enheten kjører på vekselstrøm</translation>
@@ -569,7 +569,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2529880111512635313">Konfigurer listen over tvangsinstallerte programmer og utvidelser</translation>
 <translation id="253135976343875019">Forsinkelse for advarsel om inaktivitet når enheten kjører på AC-strøm</translation>
 <translation id="2536525645274582300">Brukeren avgjør om Googles posisjonstjenester skal aktiveres</translation>
-<translation id="2550593661567988768">Bare utskrift på én side (Simplex-modus)</translation>
+<translation id="2550593661567988768">Bare utskrift på én side</translation>
 <translation id="2552966063069741410">Tidssone</translation>
 <translation id="2562339630163277285">Spesifiserer nettadressen for søkemotoren som brukes, for å gi umiddelbare resultater. Nettadressen må inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes med teksten brukeren har skrevet inn hittil, når søket utføres.
 
@@ -701,12 +701,12 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis du deaktiverer denne innstillingen eller ikke angir noen verdi, brukes skriveren som ble brukt sist, som standard destinasjonsvalg i forhåndsvisningen for utskrifter.
 
       Hvis du aktiverer denne innstillingen, brukes skriveren som er standard for OS-et, som standard destinasjonsvalg.</translation>
-<translation id="2856674246949497058">Utfør rollback til og bli på målversjonen hvis OS-versjonen er nyere enn målet. Utfør en powerwash i løpet av prosessen.</translation>
+<translation id="2856674246949497058">Rull tilbake og behold målversjonen hvis OS-versjonen er nyere enn målet. Utfør en powerwash i løpet av prosessen.</translation>
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2873651257716068683">Overstyrer standard sidestørrelse for utskrift. Hvis sidestørrelsen ikke er tilgjengelig, ignoreres regelen.</translation>
 <translation id="2874209944580848064">Merknad for <ph name="PRODUCT_OS_NAME" />-enheter som støtter Android-apper:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
-<translation id="2892414556511568464">Begrenser bruk av Duplex-modus (automatisk utskrift på begge sider). Regler som ikke er konfigurert, regnes for å være uten begrensninger.</translation>
+<translation id="2892414556511568464">Begrenser bruk av utskrift på begge sider. Regler som ikke er konfigurert, regnes for å være uten begrensninger.</translation>
 <translation id="2893546967669465276">Send systemlogger til administrasjonstjeneren</translation>
 <translation id="2899002520262095963">Android-apper kan bruke nettverkskonfigurasjoner og CA-sertifikater som angis via denne regelen, men de har ikke tilgang til alle konfigurasjonsalternativene.</translation>
 <translation id="290002216614278247">Lar deg låse brukerens økt basert på klienttiden eller dagens brukskvote.
@@ -901,7 +901,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
         Verdien til denne regelen er et registreringstoken som kan hentes ut fra Google Administrasjonskonsoll.</translation>
 <translation id="3496296378755072552">Passordbehandling</translation>
-<translation id="3502555714327823858">Tillat alle Duplex-moduser</translation>
+<translation id="3502555714327823858">Tillat alle moduser for utskrift på begge sider</translation>
 <translation id="350443680860256679">Konfigurer ARC</translation>
 <translation id="3504791027627803580">Angir nettadressen for søkemotoren som brukes til bildesøk. Søkeforespørsler blir sendt via GET-metoden. Hvis DefaultSearchProviderImageURLPostParams-innstillingen er angitt, bruker bildesøkforespørsler POST-metoden i stedet.
 
@@ -935,7 +935,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="3577251398714997599">Annonseinnstillinger for nettsteder med forstyrrende annonser</translation>
 <translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
 <translation id="3627678165642179114">Aktiver eller deaktiver nett-tjeneste for stavekontroll</translation>
-<translation id="3628480121685794414">Aktivér Simplex-modus</translation>
+<translation id="3628480121685794414">Slå på ensidig utskrift</translation>
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
 <translation id="3653237928288822292">Ikon for standard søkeleverandør</translation>
 <translation id="3660562134618097814">Overfør SAML IdP-informasjonskapsler ved pålogging</translation>
@@ -1033,7 +1033,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis regelen settes til false (usann), rapporteres ikke
       informasjonen om kioskøkten. Hvis den settes til true (sann)
       eller ikke angis, rapporteres informasjonen om kioskøkten.</translation>
-<translation id="3858658082795336534">Utskrift i Duplex-modus som standard</translation>
+<translation id="3858658082795336534">Utskrift på begge sider som standard</translation>
 <translation id="3859780406608282662">Legg til en parameter i hentingen av Variasjoner-utgangsverdien i <ph name="PRODUCT_OS_NAME" />.
 
       Hvis dette er angitt, legges en søkeordsparameter kalt «restrict» til i nettadressen som blir brukt til Variasjoner-utgangsverdien. Verdien for parameteren er den samme som er angitt i denne regelen.
@@ -1699,7 +1699,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis dette er deaktivert, kan ikke sider åpnes i inkognitomodus.
 
       Hvis dette er angitt til Tvunget, kan sider åpnes BARE i inkognitomodus.</translation>
-<translation id="582857022372205358">Aktivér Duplex-utskrift på kortsiden</translation>
+<translation id="582857022372205358">Slå på tosidig utskrift (kortside)</translation>
 <translation id="583091600226586337">
       Hvis regelen er slått på, blir brukeren spurt hvor hver enkelt fil skal lagres, før nedlasting.
       Hvis regelen er slått av, starter nedlastinger umiddelbart, og brukeren blir ikke spurt hvor filen skal lagres.
@@ -1735,7 +1735,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
           Hvis denne innstillingen ikke er aktivert sendes ikke gnubby-godkjenningsforespørsler via en proxy-tjener.</translation>
 <translation id="5898486742390981550">Når flere brukere er logget på, er det bare hovedbrukeren som kan bruke Android-apper.</translation>
-<translation id="5901427587865226597">Bare Duplex-utskrift</translation>
+<translation id="5901427587865226597">Bare tosidig utskrift</translation>
 <translation id="5906199912611534122">Brukes til å slå reduksjon av nettverkshastighet av og på.
       Dette gjelder alle brukere og alle grensesnitt på enheten. Når regelen er angitt,
       varer reduksjonen helt til den slås av.
@@ -1994,7 +1994,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
           Nettadressemønstre i denne regelen må ikke kollidere med de som er konfigurert via WebUsbAskForUrls. Det er ikke spesifisert hvilken av reglene som har prioritet hvis en nettadresse samsvarer med begge.</translation>
 <translation id="6689792153960219308">Rapportér maskinvarestatus</translation>
-<translation id="6698632841807204978">Aktivér utskrift i svart/hvitt</translation>
+<translation id="6698632841807204978">Slå på utskrift i svart/hvitt</translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
 <translation id="6724842112053619797">Hvis du slår på denne innstillingen, blir innstillingene som er lagret i <ph name="PRODUCT_NAME" />-profiler (for eksempel bokmerker, autofylldata, passord også videre), også skrevet til en fil som lagres i mappen for roaming-brukerprofilen, eller på et sted som bestemmes av administratoren via regelen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Når du slår på denne regelen, deaktiveres skysynkronisering.
 
@@ -2136,7 +2136,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="6923366716660828830">Angir navnet på standard søkeleverandør. Hvis dette ikke angis, brukes vertsnavnet angitt av søkenettadressen.
 
           Denne retningslinjen tas bare i betraktning hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
-<translation id="6926703471186170050">Aktivér Duplex-utskrift på langsiden</translation>
+<translation id="6926703471186170050">Slå på tosidig utskrift (langside)</translation>
 <translation id="6931242315485576290">Deaktiver synkronisering av data med Google</translation>
 <translation id="6936894225179401731">Angir det maksimalt tillate antallet samtidige tilkoblinger til proxytjeneren.
 
@@ -2411,8 +2411,8 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7617319494457709698">Med denne retningslinjen kan du spesifisere hvilke utvidelser som kan bruke <ph name="ENTERPRISE_PLATFORM_KEYS_API" />-funksjonen <ph name="CHALLENGE_USER_KEY_FUNCTION" /> til ekstern attestering. Utvidelser må legges til i denne listen for å kunne bruke API-et.
 
           Hvis en utvidelse ikke er på listen, eller hvis listen ikke er angitt, kan ikke API-et kalles opp – i stedet vises en feilkode.</translation>
-<translation id="7618907117929117943">Utfør rollback til og bli på målversjonen hvis OS-versjonen er nyere enn målet og det er mulig å overføre konfigurering på enhetsnivå (inkludert nettverkslegitimasjon) gjennom rollback og å hoppe over OOBE etter rollback. Ikke gjennomfør eller avbryt rollback hvis det ikke er mulig (fordi målversjonen ikke støtter gjenoppretting av data eller på grunn av en bakoverinkompatibel endring). 
-          Støttes på <ph name="PRODUCT_OS_NAME" /> versjon 70 og nyere. Dette betyr at rollback er deaktivert for eldre klienter.</translation>
+<translation id="7618907117929117943">Rull tilbake og behold målversjonen hvis OS-versjonen er nyere enn målet og det er mulig å overføre konfigurering på enhetsnivå (inkludert nettverkslegitimasjon) gjennom rollback samt å unngå fabrikkny konfigurasjon etter rollback. Ikke gjennomfør eller avbryt rollback hvis dette ikke er mulig (fordi målversjonen ikke støtter gjenoppretting av data, eller på grunn av en bakover-inkompatibel endring). 
+          Støttes på <ph name="PRODUCT_OS_NAME" /> versjon 70 og nyere. For eldre klienter betyr denne verdien at rollback er deaktivert.</translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-bibliotek</translation>
 <translation id="7635471475589566552">Konfigurerer programmets språk i <ph name="PRODUCT_NAME" />, og hindrer brukeren i å endre på språket.
@@ -2685,28 +2685,6 @@ Disse innstillingene trenger ikke å konfigureres manuelt. Maler for Windows, Ma
 
 Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler via registeret støttes fortsatt for Windows-forekomster som er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="8274603902181597201">Visk ut brukerens ecryptfs-hjemmekatalog, og begynn med en ny ext4-kryptert hjemmekatalog.</translation>
-<translation id="8279832363395120715">Fjerner personvern- og sikkerhetsfølsomme deler av https://-nettadresser før de sendes videre til PAC-skript (Proxy Auto Config) som brukes av <ph name="PRODUCT_NAME" /> til å finne proxy-tjeneradresser.
-
-      Når den er satt til True (sann), slås sikkerhetsfunksjonen på, og https://-
-      nettadressene strippes før de sendes inn til et PAC-skript. Dermed kan ikke
-      PAC-skriptet se data som vanligvis er beskyttet av en kryptert kanal (for
-      eksempel banen og søket).
-
-      Når den er satt til False (usann), slås sikkerhetsfunksjonen av, og PAC-skript får
-      implisitt muligheten til å se alle komponentene til en https://-nettadresse. Dette
-      gjelder for alle PAC-skript, uansett opprinnelse (inkludert de som innhentes over
-      usikre transportkanaler, eller som oppdages usikkert via WPAD).
-
-      Denne er som standard True (sann) (sikkerhetsfunksjonen er på), unntatt for
-      brukere av Chrome OS for bedrifter, som for øyeblikket har standardverdien
-      False (usann).
-
-      Det anbefales at denne angis som True (sann). Den eneste grunnen til å angi
-      den som False (usann) er hvis den fører til kompatibilitetsproblemer med
-      eksisterende PAC-skript.
-
-
-      Det er ønskelig å fjerne denne overstyringen i fremtiden.</translation>
 <translation id="8285435910062771358">Fullskjermsforstørrelse aktivert</translation>
 <translation id="8288199156259560552">Slå på Googles posisjonstjeneste for Android</translation>
 <translation id="8294750666104911727">Vanligvis blir sider angitt med X-UA-Compatible til chrome=1 gjengitt i <ph name="PRODUCT_FRAME_NAME" /> uavhengig av innstillingen «ChromeFrameRendererSettings».
@@ -2894,7 +2872,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
       Hvis denne innstillingen ikke angis, kan brukeren velge å bruke denne funksjonen eller ikke.</translation>
 <translation id="8870318296973696995">Startside</translation>
-<translation id="8876188741456358123">Overstyrer utskrift i Duplex-modus som standard. Hvis modusen ikke er tilgjengelig, ignoreres regelen.</translation>
+<translation id="8876188741456358123">Overstyrer tosidig utskrift som standard. Hvis tosidig utskrift ikke er tilgjengelig, ignoreres regelen.</translation>
 <translation id="8882006618241293596">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget på disse nettstedene</translation>
 <translation id="890403179930035128">Tvinger aktivering av språk med stavekontroll. Språk som ikke gjenkjennes i listen, blir ignorert.
 
@@ -2975,8 +2953,8 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="9084985621503260744">Angi om videoaktivitet skal påvirke strømbehandling</translation>
 <translation id="9088433379343318874">Slå på innholdsleverandøren for administrerte brukere</translation>
 <translation id="9088444059179765143">Konfigurer metoden for automatisk påvisning av tidssoner</translation>
-<translation id="9094064873808699479">Utfør rollback til og bli på målversjonen hvis OS-versjonen er nyere enn målet. Prøv å overføre konfigurering på enhetsnivå (inkludert nettverkslegitimasjon) gjennom rollback-prosessen, hvis mulig, men gjennomfør rollback med full powerwash selv om gjenoppretting av data ikke er mulig (fordi målversjonen ikke støtter gjenoppretting av data eller på grunn av en bakoverinkompatibel endring).
-          Støttes på <ph name="PRODUCT_OS_NAME" /> versjon 70 og nyere. Dette betyr at rollback er deaktivert for eldre klienter.</translation>
+<translation id="9094064873808699479">Rull tilbake til og behold målversjonen hvis OS-versjonen er nyere enn målet. Prøv å overføre konfigurering på enhetsnivå (inkludert nettverkslegitimasjon) gjennom rollback-prosessen, hvis mulig, men gjennomfør rollback med full powerwash selv om gjenoppretting av data ikke er mulig (fordi målversjonen ikke støtter gjenoppretting av data, eller på grunn av en bakover-inkompatibel endring).
+          Støttes på <ph name="PRODUCT_OS_NAME" /> versjon 70 og nyere. For eldre klienter betyr denne verdien at rollback er deaktivert.</translation>
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>
 <translation id="9098553063150791878">Regler for HTTP-autentisering</translation>
 <translation id="9105265795073104888">Bare en undergruppe av konfigurasjonsalternativer for proxy-tjenere er gjort tilgjengelig for Android-apper. Android-apper kan velge å bruke proxy-tjeneren frivillig. Du kan ikke tvinge dem til å bruke proxy-tjenere.</translation>

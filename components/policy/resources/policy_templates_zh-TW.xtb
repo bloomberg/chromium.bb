@@ -2601,17 +2601,6 @@
 
 你仍可在已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體透過登錄檔佈建政策，但我們建議你在 Windows 透過 GPO 設定政策。</translation>
 <translation id="8274603902181597201">清除使用者的 eCryptfs 主目錄，改用全新的 Ext4 加密主目錄。</translation>
-<translation id="8279832363395120715">先將 https:// 網址中攸關隱私和安全性的敏感部分去除，再轉送給 PAC (Proxy Auto Config) 指令碼，供 <ph name="PRODUCT_NAME" /> 在 Proxy 解析期間使用。
-
-      設為 True 時會啟用安全性功能，先將 https:// 網址分解再提交給 PAC 指令碼。如此一來，PAC 指令碼便無法檢視原本受加密通道保護的資料 (例如網址的路徑和查詢)。
-
-      設為 False 時會停用安全性功能，PAC 指令碼將因此獲得檢視所有 https:// 網址元素的權限。所有 PAC 指令碼都會套用這項設定，無論來源為何 (包括從不安全的傳輸過程中擷取而來的 PAC 指令碼，或是以不安全的方式透過 WPAD 找到的 PAC 指令碼)。
-
-      這項政策預設為 True (啟用安全性功能)，但 Chrome 作業系統企業使用者除外 (目前預設為 False)。
-
-      建議您將這項政策設為 True。如果設為 True 會與現有的 PAC 指令碼衝突，造成相容性問題，才需要將這項政策設為 False。
-
-      按照我們的期望，日後將移除這項覆寫機制。</translation>
 <translation id="8285435910062771358">已啟用全螢幕放大鏡</translation>
 <translation id="8288199156259560552">啟用 Android Google 定位服務</translation>
 <translation id="8294750666104911727">無論「ChromeFrameRendererSettings」政策為何，一般而言，X-UA-Compatible 設為 chrome=1 的網頁將會在 <ph name="PRODUCT_FRAME_NAME" /> 中開啟。

@@ -2632,7 +2632,7 @@
       이 설정을 사용 설정하거나 값을 지정하지 않으면 사용자가 자동 완성을 제어할 수 있게 됩니다. 따라서 사용자가 자동 완성 프로필을 설정하고 원하는 대로 자동완성을 사용하거나 사용 중지할 수 있습니다.</translation>
 <translation id="8044493735196713914">기기 부팅 모드 보고</translation>
 <translation id="8050080920415773384">기본 인쇄</translation>
-<translation id="8053580360728293758">기본 컬러 인쇄 모드를 덮어씁니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
+<translation id="8053580360728293758">기본 컬러 인쇄 모드를 재정의합니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="8059164285174960932">원격 액세스 클라이언트가 인증 토큰을 확보해야 하는 URL</translation>
 <translation id="8078366200175825572">쿠키 설정이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
@@ -2718,26 +2718,6 @@
 
 Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하지만 <ph name="MS_AD_NAME" /> 도메인에 연결된 Windows 인스턴스의 경우 아직 레지스트리를 통한 정책 프로비저닝이 지원됩니다.</translation>
 <translation id="8274603902181597201">사용자의 ecryptfs 홈 디렉토리를 삭제하고 ext4로 암호화된 새 홈 디렉토리로 시작합니다.</translation>
-<translation id="8279832363395120715">프록시 해상도 과정에서 <ph name="PRODUCT_NAME" />에 사용되는 PAC 스크립트(프록시 자동 설정)로 https:// URL을 보내기 전에 개인정보 보호 및 보안에 민감한 부분을 삭제합니다.
-
-      True일 경우 보안 기능이 사용되며 https:// URL이
-      PAC 스크립트에 제출되기 전에 삭제됩니다.이러한 방식을 통해 PAC
-      스크립트가 일반적으로 암호화된 채널(URL 경로 및 검색)을 통해
-      보호되는 데이터를 볼 수 없게 됩니다.
-
-      False일 경우 보안 기능이 사용되지 않으며 PAC 스크립트에
-      https://URL의 모든 구성요소를 볼 수 있는 능력이 간접적으로 부여됩니다.
-      이는 출처(보안이 유지되지 않은 전송이나 WPAD를 통해
-      보안이 유지되지 않은 채 발견된 PAC 스크립트 포함)와 상관없이
-      모든 PAC 스크립트에 적용됩니다.
-
-      이 정책은 기본적으로 True(보안 기능 사용)로 설정되지만 현재 이 정책이
-      기본적으로 False로 설정되어 있는 Chrome OS 기업 사용자는 제외됩니다.
-
-      이 정책은 True로 설정되어 있는 것이 좋습니다. 이 정책이 기존 PAC 스크립트와
-      호환성 문제를 일으키는 경우에만 False로 설정하시기 바랍니다.
-
-      향후 이 중복 문제를 제거하는 것이 바람직합니다.</translation>
 <translation id="8285435910062771358">전체화면 돋보기 사용</translation>
 <translation id="8288199156259560552">Android Google 위치 서비스 사용</translation>
 <translation id="8294750666104911727">일반적으로 X-UA-호환성이 chrome=1로 설정된 페이지는 'ChromeFrameRendererSettings' 정책에 관계없이 <ph name="PRODUCT_FRAME_NAME" />에서 렌더링됩니다.
@@ -2930,7 +2910,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       이 정책을 설정하지 않는 경우 사용자가 이 기능의 사용 여부를 결정할 수 있습니다.</translation>
 <translation id="8870318296973696995">홈페이지</translation>
-<translation id="8876188741456358123">기본 양면 인쇄 모드를 덮어씁니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
+<translation id="8876188741456358123">기본 양면 인쇄 모드를 재정의합니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="8882006618241293596">이 사이트에서 <ph name="FLASH_PLUGIN_NAME" /> 플러그인 차단</translation>
 <translation id="890403179930035128">언어 맞춤법 검사를 강제 사용 설정합니다. 목록에서 인식할 수 없는 언어는 무시됩니다.
 

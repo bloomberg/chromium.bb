@@ -110,7 +110,7 @@
 <translation id="2727977024730340865">V-ați conectat la un încărcător de putere joasă. Încărcarea bateriei poate fi nesigură.</translation>
 <translation id="2761704814324807722">Bară de stare, durată <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Se reconectează la <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Alege dacă site-urile pot folosi serviciile de localizare sau microfonul, camera sau alte funcții ale dispozitivului</translation>
+<translation id="2790844815106384441">să aleagă dacă site-urile pot folosi serviciile de localizare sau microfonul, camera sau alte funcții ale dispozitivului</translation>
 <translation id="2792498699870441125">Alt+Căutare</translation>
 <translation id="2805756323405976993">Aplicații</translation>
 <translation id="2808012452536866044">Better Together a trecut la un nou telefon</translation>
@@ -193,7 +193,7 @@
 <translation id="4200057768455216496">Ai accesat comanda rapidă pentru lupa andocată. Vrei să o activezi?</translation>
 <translation id="4217571870635786043">Dictare</translation>
 <translation id="4261870227682513959">Afișează setările pentru notificări. Notificările sunt dezactivate</translation>
-<translation id="4269883910223712419">Administratorul acestui dispozitiv poate să:</translation>
+<translation id="4269883910223712419">Administratorul acestui dispozitiv poate:</translation>
 <translation id="4274921305979314545">Conectează Chromebookul la telefon</translation>
 <translation id="4279490309300973883">Oglindire</translation>
 <translation id="4292681942966152062">Se activează <ph name="NETWORK_NAME" /></translation>
@@ -337,7 +337,7 @@
 <translation id="6751826523481687655">Urmărirea performanțelor este activată</translation>
 <translation id="6785414152754474415">Nivelul bateriei este de <ph name="PERCENTAGE" />% și se încarcă.</translation>
 <translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>
-<translation id="6814658242098378692">Gestionează aplicații, extensii și teme</translation>
+<translation id="6814658242098378692">să gestioneze aplicații, extensii și teme</translation>
 <translation id="6820676911989879663">Fă o pauză!</translation>
 <translation id="683971173229319003">Tasta de căutare + L</translation>
 <translation id="6857811139397017780">Activează <ph name="NETWORKSERVICE" /></translation>
@@ -394,7 +394,7 @@
 <translation id="7842211907556571265">Se conectează la <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Avertisment: funcție experimentală</translation>
 <translation id="7846634333498149051">Tastatură</translation>
-<translation id="7886169021410746335">Ajustează setările de confidențialitate</translation>
+<translation id="7886169021410746335">să ajusteze setările de confidențialitate</translation>
 <translation id="7886277072580235377">Sesiunea de internet va fi anulată după ce te deconectezi. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Trimite un e-mail</translation>
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>

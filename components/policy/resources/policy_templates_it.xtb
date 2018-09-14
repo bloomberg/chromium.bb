@@ -1822,7 +1822,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Se si decide di rilevare automaticamente il server proxy, alle app Android viene fornito l'URL script "http://wpad/wpad.dat". Non viene utilizzata nessun'altra parte del protocollo di rilevamento automatico del server proxy.
 
           Se si decide di utilizzare uno script proxy .pac, alle app Android viene fornito l'URL script.</translation>
-<translation id="6430366557948788869">Estensione per la segnalazione di Chrome</translation>
+<translation id="6430366557948788869">Estensione Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Consenti ai siti di navigare e aprire popup contemporaneamente</translation>
 <translation id="6447948611083700881">Backup e ripristino disabilitati</translation>
 <translation id="645425387487868471">Attiva l'accesso forzato per <ph name="PRODUCT_NAME" /></translation>
@@ -2554,17 +2554,6 @@ Non è necessario configurare manualmente queste impostazioni. È possibile scar
 
 Su Windows è consigliabile configurare le norme tramite Criteri di gruppo, anche se la specifica di norme tramite il registro di sistema è ancora supportata per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Cancella la home directory ecryptfs dell'utente e inizia con una nuova home directory criptata tramite ext4</translation>
-<translation id="8279832363395120715">Consente di rimuovere le parti sensibili per la privacy e la sicurezza dagli URL https:// prima di trasmetterli agli script PAC (Proxy Auto Config) utilizzati da <ph name="PRODUCT_NAME" /> durante la risoluzione proxy.
-
-      Se la norma viene impostata su true, la funzione di sicurezza viene attivata e vengono rimosse le parti sensibili dagli URL https:// prima di inviarli allo script PAC. In questo modo lo script PAC non può visualizzare i dati solitamente protetti tramite un canale criptato (ad esempio il percorso e la query dell'URL).
-
-      Se la norma viene impostata su false, la funzione di sicurezza viene disattivata e gli script PAC possono visualizzare tutti i componenti di un URL https://. Questa impostazione viene applicata per tutti gli script PAC, a prescindere dall'origine (sono inclusi quelli recuperati tramite un metodo di trasporto non protetto o scoperti in modo non sicuro tramite WPAD).
-
-      Il valore predefinito della norma è true (funzione di sicurezza attivata), a eccezione degli utenti aziendali di Chrome OS, per i quali al momento il valore predefinito è false.
-
-      È consigliato impostare la norma su true. L'unico motivo per impostare la norma su false è in caso di problemi di compatibilità con gli script PAC esistenti.
-
-      In futuro vogliamo rimuovere la possibilità di ignorare la norma.</translation>
 <translation id="8285435910062771358">Ingrandimento a schermo intero attivo</translation>
 <translation id="8288199156259560552">Attiva il servizio di geolocalizzazione di Google per Android</translation>
 <translation id="8294750666104911727">In genere le pagine con X-UA-Compatible impostato su chrome=1 saranno visualizzate in <ph name="PRODUCT_FRAME_NAME" /> nonostante la norma "£ChromeFrameRendererSettings".

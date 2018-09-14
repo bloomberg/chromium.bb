@@ -42,7 +42,7 @@
 <translation id="1056775291175587022">Cap xarxa</translation>
 <translation id="1056898198331236512">Advertiment</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1059855432287631118">Registre de l'empremta digital</translation>
+<translation id="1059855432287631118">S'està registrant l'empremta digital</translation>
 <translation id="1061904396131502319">Ja gairebé és l'hora de fer una pausa</translation>
 <translation id="1062407476771304334">Substitueix</translation>
 <translation id="1067048845568873861">Creada</translation>
@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fitxers seleccionats</translation>
 <translation id="237828693408258535">Vols traduir aquesta pàgina?</translation>
 <translation id="2378982052244864789">Seleccioneu el directori de l'extensió.</translation>
-<translation id="2379281330731083556">Imprimeix des de la finestra de diàleg del sistema… <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Demana permís abans de fer cap enviament (recomanat)</translation>
 <translation id="2384436799579181135">S'ha produït un error. Comprova la impressora i torna-ho a provar.</translation>
 <translation id="2387458720915042159">Tipus de connexió del servidor intermediari</translation>
@@ -1133,7 +1132,6 @@
 <translation id="2676946222714718093">En reproducció</translation>
 <translation id="2677748264148917807">Surt</translation>
 <translation id="2678063897982469759">Torna a activar</translation>
-<translation id="2679385451463308372">Imprimeix des de la finestra de diàleg del sistema…</translation>
 <translation id="268053382412112343">Hi&amp;storial</translation>
 <translation id="2683638487103917598">Carpeta ordenada</translation>
 <translation id="2684004000387153598">Per continuar, fes clic a D'acord i, a continuació, a Afegeix una persona per crear un perfil per a la teva adreça electrònica.</translation>
@@ -1146,7 +1144,6 @@
 <translation id="2704184184447774363">Signatura de documents de Microsoft</translation>
 <translation id="270516211545221798">Velocitat del ratolí tàctil</translation>
 <translation id="2705736684557713153">Desplaça't fins a la part inferior de la pantalla i activa l'opció Compartició de xarxa instantània, si es mostra. Si no, vol dir que ho tens tot a punt.</translation>
-<translation id="2706954854267016964">El dispositiu Google Cloud Print seleccionat ja no és compatible. Prova de configurar la impressora a la configuració del sistema de l'ordinador.</translation>
 <translation id="2707024448553392710">S'està baixant el component.</translation>
 <translation id="270921614578699633">Mitjana finalitzada</translation>
 <translation id="2709453993673701466">Vols gestionar la sincronització i la personalització abans que s'activin? Ves a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
@@ -1162,7 +1159,6 @@
 <translation id="2721695630904737430">L'administrador ha desactivat els usuaris supervisats.</translation>
 <translation id="2724841811573117416">Registres de WebRTC</translation>
 <translation id="2725200716980197196">S'ha restablert la connectivitat de la xarxa</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> en total)</translation>
 <translation id="2727176303594781056">Error d'activació de la xarxa</translation>
 <translation id="2727633948226935816">No m'ho tornis a recordar</translation>
 <translation id="2727712005121231835">Mida real</translation>
@@ -1585,7 +1581,6 @@
 <translation id="338583716107319301">Separador</translation>
 <translation id="3389312115541230716">Fes clic a la icona <ph name="SMALL_PRODUCT_LOGO" /> de la barra de tasques</translation>
 <translation id="3391716558283801616">Pestanya 7</translation>
-<translation id="3396331542604645348">La impressora seleccionada no està disponible o no s'ha instal·lat correctament. Comproveu la impressora o proveu de seleccionar-ne una altra.</translation>
 <translation id="3396800784455899911">En fer clic al botó Accepta i continua, acceptes el processament descrit anteriorment per a aquests serveis de Google.</translation>
 <translation id="3399432415385675819">Les notificacions es desactivaran</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -5386,7 +5381,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9131487537093447019">Enviar missatges a dispositius Bluetooth i rebre'n</translation>
 <translation id="9131598836763251128">Seleccioneu un o diversos fitxers</translation>
 <translation id="9133055936679483811">S'ha produït un error en la compressió. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134304429738380103">Sí, ho accepto.</translation>
+<translation id="9134304429738380103">Sí, ho accepto</translation>
 <translation id="9134524245363717059">Aquest fitxer s'ha dissenyat per a un ordinador amb programari Macintosh. No és compatible amb el vostre dispositiu, que funciona amb Chrome OS. Cerqueu una aplicació opcional adequada a Chrome Web Store.</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9137916601698928395">Obre l'enllaç com a <ph name="USER" /></translation>

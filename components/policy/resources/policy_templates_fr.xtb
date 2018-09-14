@@ -2741,26 +2741,6 @@ Il est inutile de configurer manuellement ces paramètres. Vous pouvez télécha
 
 Il est conseillé de configurer les règles sur Windows via GPO, même si la gestion des règles via le registre reste possible pour les instances de Windows associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Nettoyer le répertoire d'accueil eCryptfs de l'utilisateur et employer un nouveau répertoire d'accueil chiffré avec ext4.</translation>
-<translation id="8279832363395120715">Cette règle permet de retirer les parties sensibles (informations confidentielles et de sécurité) des URL https:// avant de les transmettre aux scripts PAC (Proxy Auto Config) utilisés par <ph name="PRODUCT_NAME" /> pendant la résolution du proxy.
-
-      Si vous définissez cette règle sur "true", la fonctionnalité de sécurité est activée, et les informations sensibles sont retirées des URL https://
-      avant leur envoi à un script PAC. De cette manière, le script PAC
-      ne peut pas afficher des données qui sont normalement protégées
-      par un canal chiffré (comme le chemin d'accès et la requête de l'URL).
-
-      Si vous définissez cette règle sur "false", la fonctionnalité de sécurité est désactivée, et les scripts PAC
-      ont implicitement accès à tous les composants d'une URL https://.
-      Ceci s'applique à tous les scripts PAC, quelle que soit leur origine (y compris
-      ceux qui transitent sur un canal non sécurisé ou qui sont découverts de manière non sécurisée
-      via WPAD).
-
-      Cette règle est définie par défaut sur "true" (fonctionnalité de sécurité activée), sauf pour les utilisateurs de Chrome OS
-      en entreprise pour qui elle est actuellement définie sur "false".
-
-      Nous vous recommandons de définir cette règle sur "true". Ne la définissez sur
-      "false" qu'en cas de problème de compatibilité avec les scripts PAC existants.
-
-      Nous prévoyons à l'avenir de ne plus proposer la valeur "false" pour cette règle.</translation>
 <translation id="8285435910062771358">Loupe plein écran activée</translation>
 <translation id="8288199156259560552">Activer le service de localisation Google pour Android</translation>
 <translation id="8294750666104911727">Généralement, les pages dont la balise "X-UA-Compatible" est définie sur "chrome=1" sont rendues dans <ph name="PRODUCT_FRAME_NAME" /> indépendamment de la règle "ChromeFrameRendererSettings".

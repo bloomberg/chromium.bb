@@ -2607,17 +2607,6 @@ Diese Einstellungen müssen nicht manuell konfiguriert werden. Nutzerfreundliche
 
 Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte zu konfigurieren, die Bereitstellung von Richtlinien über die Registrierung wird jedoch auch weiterhin von Windows-Instanzen unterstützt, die Teil einer <ph name="MS_AD_NAME" />-Domain sind.</translation>
 <translation id="8274603902181597201">ecryptfs-Basisverzeichnis des Nutzers löschen und durch ein neues ext4-verschlüsseltes Basisverzeichnis ersetzen.</translation>
-<translation id="8279832363395120715">Entfernt datenschutz- und sicherheitsrelevante Teile aus https://-URLs, bevor diese an PAC-Skripts (Proxy Auto Config) weitergeleitet werden, die von <ph name="PRODUCT_NAME" /> während der Proxy-Auflösung verwendet werden.
-
-Wird diese Richtlinie nicht festgelegt oder auf "true" gesetzt, wird für https://-URLs vor der Weiterleitung an ein PAC-Skript standardmäßig ein Stripping durchgeführt. Auf diese Weise können für das PAC-Skript keine Daten eingesehen werden, die normalerweise durch einen verschlüsselten Kanal wie Pfad und Abfrage der URL geschützt sind.
-
-Wird die Richtlinie auf "false" gesetzt, ist diese Sicherheitsfunktion deaktiviert und für PAC-Skripts können alle Komponenten einer https://-URL eingesehen werden. Diese Einstellung gilt für alle PAC-Skripts, unabhängig von ihrem Ursprung. Sie gilt beispielsweise für PAC-Skripts, die über WPAD erlangt werden, sowie für solche, die über ein unsicheres Transportprotokoll abgerufen wurden.
-
-Diese Richtlinie ist standardmäßig auf "true", also Aktivierung der Sicherheitsfunktion, eingestellt, außer für Chrome OS Enterprise-Nutzer, für die diese Richtlinie standardmäßig auf "false" eingestellt ist.
-
-Es wird empfohlen, diese Richtlinie auf "true" einzustellen. Der einzige Grund, sie auf "false" einzustellen, besteht, wenn ein Kompatibilitätsproblem mit vorhandenen PAC-Skripts auftritt.
-
-Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="8285435910062771358">Vollbildlupe aktiviert</translation>
 <translation id="8288199156259560552">Google-Standortdienst für Android-Geräte aktivieren</translation>
 <translation id="8294750666104911727">Normalerweise werden Seiten, bei denen das Metatag "X-UA-Compatible" auf "chrome=1" gesetzt ist, unabhängig von der Richtlinie "ChromeFrameRendererSettings" in <ph name="PRODUCT_FRAME_NAME" /> gerendert.
@@ -2898,7 +2887,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
 <translation id="9088433379343318874">Contentanbieter für betreute Nutzer aktivieren</translation>
 <translation id="9088444059179765143">Methode für die automatische Erkennung der Zeitzone konfigurieren</translation>
-<translation id="9094064873808699479">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Versuchen Sie nach Möglichkeit, die Einstellungen auf Geräteebene (einschließlich der Anmeldedaten für das Netzwerk) per Rollback zu übertragen. Führen Sie den Rollback jedoch mit einem vollständigen Powerwash durch, selbst wenn das Wiederherstellen von Daten nicht möglich ist, weil rückwärtsinkompatible Änderungen vorliegen oder die Zielversion dies nicht unterstützt.
+<translation id="9094064873808699479">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Versuchen Sie nach Möglichkeit, die Einstellungen auf Geräteebene (einschließlich der Anmeldedaten für das Netzwerk) per Rollback zu übertragen. Führen Sie das Rollback jedoch mit einem vollständigen Powerwash durch, selbst wenn das Wiederherstellen von Daten nicht möglich ist, weil rückwärtsinkompatible Änderungen vorliegen oder die Zielversion dies nicht unterstützt.
 Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älteren Clients bedeutet dieser Wert, dass das Rollback deaktiviert ist.</translation>
 <translation id="9096086085182305205">Weiße Liste für Authentifizierungsserver</translation>
 <translation id="9098553063150791878">Richtlinien für die HTTP-Authentifizierung</translation>

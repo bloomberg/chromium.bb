@@ -932,7 +932,6 @@
 <translation id="2378075407703503998">Atlasīti <ph name="SELCTED_FILE_COUNT" /> faili.</translation>
 <translation id="237828693408258535">Vai tulkot šo lapu?</translation>
 <translation id="2378982052244864789">Atlasiet paplašinājuma direktoriju.</translation>
-<translation id="2379281330731083556">Drukāt, izmantojot sistēmas dialoglodziņu... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Jautāt pirms sūtīšanas (ieteicams)</translation>
 <translation id="2384436799579181135">Radās kļūda. Lūdzu, pārbaudiet printeri un mēģiniet vēlreiz.</translation>
 <translation id="2387458720915042159">Starpniekservera savienojuma veids</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Tiek atskaņots šeit:</translation>
 <translation id="2677748264148917807">Iziet</translation>
 <translation id="2678063897982469759">Atkārtoti iespējot</translation>
-<translation id="2679385451463308372">Drukāt ar sistēmas dialoglodziņu...</translation>
 <translation id="268053382412112343">Vēsture</translation>
 <translation id="2683638487103917598">Mape ir sakārtota</translation>
 <translation id="2684004000387153598">Lai turpinātu, noklikšķiniet uz “Labi”, pēc tam noklikšķiniet uz “Pievienot personu” vai izveidojiet jaunu profilu savai e-pasta adresei.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Microsoft dokumentu parakstīšana</translation>
 <translation id="270516211545221798">Skārienpaliktņa ātrums</translation>
 <translation id="2705736684557713153">Ritiniet līdz ekrāna apakšdaļai un ieslēdziet opciju “Tūlītējā piesaiste”, ja tā ir redzama. Ja šī opcija nav redzama, šis paziņojumu kanāls jau ir ieslēgts.</translation>
-<translation id="2706954854267016964">Atlasītā Google mākoņdrukas ierīce vairs netiek atbalstīta. Mēģiniet iestatīt printeri sava datora sistēmas iestatījumos.</translation>
 <translation id="2707024448553392710">Komponents tiek lejupielādēts</translation>
 <translation id="270921614578699633">Virs vidējā</translation>
 <translation id="2709453993673701466">Vai vēlaties pirms sinhronizēšanas un personalizēšanas ieslēgšanas pārvaldīt to iestatījumus? Apmeklējiet lapu <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">Jūsu administrators ir atspējojis uzraudzītus lietotājus.</translation>
 <translation id="2724841811573117416">WebRTC žurnāli</translation>
 <translation id="2725200716980197196">Tīkla savienojums atjaunots</translation>
-<translation id="2726934403674109201">(kopā: <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Tīkla aktivizācijas kļūda</translation>
 <translation id="2727633948226935816">Turpmāk vairs neatgādināt</translation>
 <translation id="2727712005121231835">Faktiskais izmērs</translation>
@@ -1587,7 +1583,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="338583716107319301">Atdalītājs</translation>
 <translation id="3389312115541230716">Uzdevumjoslā ar peles labo pogu noklikšķiniet uz ikonas <ph name="SMALL_PRODUCT_LOGO" />.</translation>
 <translation id="3391716558283801616">7. cilne</translation>
-<translation id="3396331542604645348">Atlasītais printeris nav pieejams vai nav instalēts pareizi. Pārbaudiet savu printeri vai pamēģiniet atlasīt citu printeri.</translation>
 <translation id="3396800784455899911">Noklikšķinot uz pogas “Piekrist un turpināt”, jūs piekrītat iepriekš aprakstītajai apstrādei šajos Google pakalpojumos.</translation>
 <translation id="3399432415385675819">Paziņojumi tiks atspējoti</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

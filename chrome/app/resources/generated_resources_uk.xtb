@@ -136,6 +136,7 @@
 <translation id="1189418886587279221">Увімкніть функції доступності, щоб полегшити користування своїм пристроєм.</translation>
 <translation id="1190144681599273207">Для отримання цього файлу буде використано приблизно <ph name="FILE_SIZE" /> мобільного передавання даних.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Доступ до одного файлу на вашому комп’ютері}one{Доступ до # файлу на вашому комп’ютері}few{Доступ до # файлів на вашому комп’ютері}many{Доступ до # файлів на вашому комп’ютері}other{Доступ до # файлу на вашому комп’ютері}}</translation>
+<translation id="1193273168751563528">Розпочати керований сеанс</translation>
 <translation id="1195076408729068893">Щоб запустити Smart Lock, введіть пароль. Наступного разу ви зможете розблокувати пристрій <ph name="DEVICE_TYPE" /> за допомогою свого телефона.</translation>
 <translation id="1195447618553298278">Невідома помилка.</translation>
 <translation id="119738088725604856">Зробити знімок екрана з вікна</translation>
@@ -932,7 +933,6 @@
 <translation id="2378075407703503998">Вибрано файлів: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="237828693408258535">Перекласти цю сторінку?</translation>
 <translation id="2378982052244864789">Виберіть каталог розширення.</translation>
-<translation id="2379281330731083556">Друкувати за допомогою діалогового вікна системи... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Запитувати, перш ніж надсилати (рекомендується)</translation>
 <translation id="2384436799579181135">Сталася помилка. Перевірте принтер і повторіть спробу.</translation>
 <translation id="2387458720915042159">Тип з’єднання з проксі-сервером</translation>
@@ -1134,7 +1134,6 @@
 <translation id="2676946222714718093">Відтворюється на пристрої</translation>
 <translation id="2677748264148917807">Вийти</translation>
 <translation id="2678063897982469759">Знову ввімкнути</translation>
-<translation id="2679385451463308372">Друкувати за допомогою діалогового вікна системи...</translation>
 <translation id="268053382412112343">Іс&amp;торія</translation>
 <translation id="2683638487103917598">Папку відсортовано</translation>
 <translation id="2684004000387153598">Натисніть OK і виберіть "Додати користувача", щоб створити новий профіль для своєї електронної адреси.</translation>
@@ -1147,7 +1146,6 @@
 <translation id="2704184184447774363">Підписування документа Microsoft</translation>
 <translation id="270516211545221798">Швидкість сенсорної панелі</translation>
 <translation id="2705736684557713153">Прокрутіть сторінку вниз і ввімкніть миттєву точку доступу (якщо ця опція відображається). Якщо ні, усе готово.</translation>
-<translation id="2706954854267016964">Вибраний пристрій Google Cloud Print більше не підтримується. Спробуйте налаштувати принтер у системних налаштуваннях комп’ютера.</translation>
 <translation id="2707024448553392710">Завантаження компонента</translation>
 <translation id="270921614578699633">Середнє значення за</translation>
 <translation id="2709453993673701466">Хочете налаштувати синхронізацію та персоналізацію, перш ніж їх буде ввімкнено? Перейдіть у меню <ph name="BEGIN_LINK" />Налаштування<ph name="END_LINK" />.</translation>
@@ -1163,7 +1161,6 @@
 <translation id="2721695630904737430">Ваш адміністратор вимкнув контрольованих користувачів.</translation>
 <translation id="2724841811573117416">Журнали WebRTC</translation>
 <translation id="2725200716980197196">З’єднання з мережею відновлено</translation>
-<translation id="2726934403674109201">(усього: <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Помилка активації мережі</translation>
 <translation id="2727633948226935816">Більше не нагадувати</translation>
 <translation id="2727712005121231835">Дійсний розмір</translation>
@@ -1317,6 +1314,7 @@
 <translation id="29488703364906173">Швидкий, простий і надійний веб-переглядач, створений для сучасного Інтернету.</translation>
 <translation id="2951247061394563839">Відцентрувати вікно</translation>
 <translation id="2958721676848865875">Застереження щодо пакування розширення</translation>
+<translation id="296026337010986570">Готово! Шкідливе програмне забезпечення видалено. Щоб знову ввімкнути розширення, перейдіть на сторінку &lt;a href="chrome://extensions"&gt;Розширення&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (розширення встановлено)</translation>
 <translation id="2961695502793809356">Натисніть, щоб перейти далі; утримуйте, щоб переглянути історію</translation>
 <translation id="2963151496262057773">Плагін <ph name="PLUGIN_NAME" /> не відповідає. Зупинити?</translation>
@@ -1587,7 +1585,6 @@
 <translation id="338583716107319301">Розділювач</translation>
 <translation id="3389312115541230716">Натисніть правою кнопкою миші значок <ph name="SMALL_PRODUCT_LOGO" /> на панелі завдань</translation>
 <translation id="3391716558283801616">Вкладка 7</translation>
-<translation id="3396331542604645348">Вибраний принтер недоступний або його неправильно встановлено. Перевірте принтер або спробуйте вибрати інший.</translation>
 <translation id="3396800784455899911">Натиснувши кнопку "Прийняти та продовжити", ви дозволяєте цим сервісам Google обробляти ваші дані, як описано вище.</translation>
 <translation id="3399432415385675819">Сповіщення будуть вимкнені</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -1722,6 +1719,7 @@
 <translation id="358796204584394954">Введіть цей код на пристрої <ph name="DEVICE_NAME" />, щоб підключити:</translation>
 <translation id="3589766037099229847">Незахищений вміст заблоковано</translation>
 <translation id="3590194807845837023">Розблокувати профіль і перезапустити</translation>
+<translation id="3590295622232282437">Починається керований сеанс.</translation>
 <translation id="3592260987370335752">&amp;Докладніше</translation>
 <translation id="359283478042092570">Увійти</translation>
 <translation id="3593965109698325041">Обмеження імені сертифіката</translation>
@@ -2665,6 +2663,7 @@
 <translation id="5039512255859636053">$1 ТБ</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="5045550434625856497">Неправильний пароль</translation>
+<translation id="504561833207953641">Відкривається в наявному сеансі веб-переглядача.</translation>
 <translation id="5047421709274785093">Заборонити сайтам доступ до датчиків руху й світла</translation>
 <translation id="5050042263972837708">Назва групи</translation>
 <translation id="5052499409147950210">Редагувати сайт</translation>
@@ -2873,6 +2872,7 @@
 <translation id="5341980496415249280">Пакування. Зачекайте…</translation>
 <translation id="5342091991439452114">Мінімальна кількість цифр у PIN-коді: <ph name="MINIMUM" /></translation>
 <translation id="5352033265844765294">Встановлення позначки часу</translation>
+<translation id="5352285283572729470">Цим налаштуванням можна керувати</translation>
 <translation id="5353252989841766347">Експортувати паролі з Chrome</translation>
 <translation id="5355097969896547230">Новий пошук</translation>
 <translation id="5355926466126177564">Розширення "<ph name="EXTENSION_NAME" />" змінило сторінку, яка відкривається під час пошуку в універсальному вікні пошуку.</translation>
@@ -3780,6 +3780,7 @@
 <translation id="6680650203439190394">Оцінити</translation>
 <translation id="6681668084120808868">Зробити фото</translation>
 <translation id="6681964764822470072"><ph name="APP_NAME" /> буде видалено.</translation>
+<translation id="6685083257944113180">Призупинити: <ph name="SINK_STATUS" /> (<ph name="SINK_NAME" />)</translation>
 <translation id="668599234725812620">Відкрити Google Play</translation>
 <translation id="6686490380836145850">Закрити вкладки праворуч</translation>
 <translation id="6686817083349815241">Зберегти пароль</translation>
@@ -4260,6 +4261,7 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{Відкрити всі у &amp;новому вікні}=1{Відкрити в &amp;новому вікні}one{Відкрити всі (#) у &amp;новому вікні}few{Відкрити всі (#) у &amp;новому вікні}many{Відкрити всі (#) у &amp;новому вікні}other{Відкрити всі (#) у &amp;новому вікні}}</translation>
 <translation id="7434509671034404296">Для розробників</translation>
 <translation id="7436921188514130341">От халепа! Сталася помилка під час перейменування.</translation>
+<translation id="7441736921018636843">Щоб змінити це налаштування, видаліть парольну фразу для синхронізації, <ph name="BEGIN_LINK" />скинувши параметри синхронізації<ph name="END_LINK" /></translation>
 <translation id="7441830548568730290">Інші користувачі</translation>
 <translation id="7442465037756169001">Обладнання Hangouts Meet hardware можна налаштовувати.</translation>
 <translation id="744341768939279100">Створити новий профіль</translation>

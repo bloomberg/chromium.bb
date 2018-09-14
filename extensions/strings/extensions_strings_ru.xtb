@@ -56,7 +56,7 @@
 <translation id="7003844668372540529">Неизвестный продукт <ph name="PRODUCT_ID" /> от <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Недопустимый файл манифеста</translation>
 <translation id="7217838517480956708">Удаление и изменение расширения <ph name="EXTENSION_NAME" /> на этом компьютере запрещено администратором.</translation>
-<translation id="7612608473764576263">Входное значение закрытого ключа должно быть в допустимом формате (закрытый ключ RSA в формате PKCS#8, PEM).</translation>
+<translation id="7612608473764576263">Введите закрытый ключ в допустимом формате (закрытый ключ RSA в формате PKCS#8, PEM).</translation>
 <translation id="7939686037314084444">Не удалось корректно загрузить расширение. Перехват запросов сети может быть нарушен.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Фронтальная</translation>

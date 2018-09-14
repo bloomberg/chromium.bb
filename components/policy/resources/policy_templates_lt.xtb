@@ -2724,26 +2724,6 @@
 
 Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačiau aprūpinimo politika naudojant registrą vis tiek palaikoma „Windows“ objektuose, kurie susieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="8274603902181597201">Panaikinamas naudotojo „eCryptfs“ pagrindinis katalogas ir pradedama naudoti naują „ext4“ šifruotą pagrindinį katalogą.</translation>
-<translation id="8279832363395120715">Perduodamos neskelbtinos https:// URL privatumo ir saugos dalys prieš pateikiant jas PAC (automatinės tarpinio serverio konfigūracijos) scenarijams, kuriuos „<ph name="PRODUCT_NAME" />“ naudoja per tarpinio serverio nustatymo procesą.
-
-      Kai politika nustatyta į „True“, saugos funkcija yra įgalinta, o https:// URL
-      perduodami prieš pateikiant juos į PAC scenarijų.Taip PAC scenarijus
-      negali peržiūrėti duomenų, kurie paprastai apsaugoti naudojant
-      šifruotą kanalą (pvz., URL kelią ir užklausą).
-
-      Kai politika nustatyta į „False“, saugos funkcija yra išjungta, o PAC
-      scenarijams suteikiama galimybė peržiūrėti visus https://
-      URL komponentus. Tai taikoma visiems PAC scenarijams, neatsižvelgiant
-      į kilmę (įskaitant perduotus naudojant nesaugų perdavimo protokolą ar
-      nesaugiai aptiktus naudojant WPAD).
-
-      Pagal numatytuosius nustatymus ši politika nustatyta į „True“ (saugos funkcija įgalinta), išskyrus „Chrome“ OS
-      įmonės naudotojams, kuriems šiuo metu numatytasis nustatymas yra „False“.
-
-      Rekomenduojama šią politiką nustatyti į „True“. Nustatyti į „False“ galima tik
-      kilus suderinamumo problemoms su esamais PAC scenarijais.
-
-      Ateityje ketinama pašalinti šią nepaisymo parinktį.</translation>
 <translation id="8285435910062771358">Viso ekrano didinimas įgalintas</translation>
 <translation id="8288199156259560552">„Android“ skirtos „Google“ vietovių paslaugos įgalinimas</translation>
 <translation id="8294750666104911727">Paprastai puslapiai, kuriuose „X-UA-Compatible“ nustatyta į „chrome=1“ bus pateikti „<ph name="PRODUCT_FRAME_NAME" />“, neatsižvelgiant į politiką „ChromeFrameRendererSettings“.

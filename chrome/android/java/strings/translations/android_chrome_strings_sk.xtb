@@ -24,7 +24,7 @@
 <translation id="1157102636231978136">Dáta prehliadania a aktivita sa synchronizujú do vášho účtu Google</translation>
 <translation id="116280672541001035">Použité</translation>
 <translation id="1172593791219290334">Stránka pri spustení</translation>
-<translation id="1175310183703641346">Záložky, história, heslá a ďalší obsah sa už nebudú synchronizovať do vášho účtu Google</translation>
+<translation id="1175310183703641346">Záložky, história, heslá a ďalší obsah sa už nebudú synchronizovať s vaším účtom Google</translation>
 <translation id="1178581264944972037">Pozastaviť</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
 <translation id="1197267115302279827">Presunúť záložky</translation>
@@ -238,6 +238,7 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="2762000892062317888">práve teraz</translation>
 <translation id="2777555524387840389">Zostáva: <ph name="SECONDS" /> s</translation>
 <translation id="2781151931089541271">Zostáva: 1 s</translation>
+<translation id="2803478378562657435">Zobrazujú sa uložené heslá a možnosti hesiel</translation>
 <translation id="2810645512293415242">Zjednodušená stránka vám pomôže ušetriť dáta a zrýchliť načítavanie.</translation>
 <translation id="281504910091592009">Zobrazenie a správa uložených hesiel v <ph name="BEGIN_LINK" />účte Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Ak chcete získať záložky vo všetkých zariadeniach, prihláste sa a zapnite synchronizáciu</translation>
@@ -711,6 +712,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6573431926118603307">Tu sa zobrazia karty, ktoré ste otvorili v Chrome na iných zariadeniach.</translation>
 <translation id="6575643671698722332">Resetovanie zlyhalo. Uistite sa, že je zariadenie online, a skúste to znova.</translation>
 <translation id="6583199322650523874">Pridanie aktuálnej stránky medzi záložky</translation>
+<translation id="6584721918629302382">RR</translation>
 <translation id="6593061639179217415">Web pre počítače</translation>
 <translation id="6600954340915313787">Skopírovaná do prehliadača Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +829,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="748127970106343339">Potvrdiť odstránenie poverení zariadenia</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Aktualizované <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Zobrazovať heslá</translation>
 <translation id="7494974237137038751">uložené dáta</translation>
 <translation id="7498271377022651285">Čakajte…</translation>
 <translation id="7514365320538308">Stiahnuť</translation>
@@ -894,6 +897,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="802154636333426148">Stiahnutie zlyhalo</translation>
 <translation id="8026334261755873520">Vymazať dáta prehliadania</translation>
 <translation id="8035133914807600019">Nový priečinok…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">Ďalšie podobné</translation>
 <translation id="8037750541064988519">Zostáva: <ph name="DAYS" /> d</translation>
 <translation id="804335162455518893">SD karta sa nenašla</translation>
@@ -950,6 +954,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8503559462189395349">Heslá Chromu</translation>
 <translation id="8503813439785031346">Meno používateľa</translation>
 <translation id="8504988642345501642">Zobrazte si rýchle odkazy na súvisiace stránky po posunutí zobrazenia nahor. Webové adresy navštívených stránok sa odosielajú Googlu.</translation>
+<translation id="8507520749471379845">K dispozícii sú heslá</translation>
 <translation id="8514477925623180633">Exportovať heslá uložené v Chrome</translation>
 <translation id="8514577642972634246">Spustiť režim inkognito</translation>
 <translation id="851751545965956758">Blokovanie pripojenia webov k zariadeniam</translation>

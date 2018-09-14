@@ -56,6 +56,7 @@
 <translation id="7003844668372540529">Tuntematon tuote <ph name="PRODUCT_ID" /> toimittajalta <ph name="VENDOR_NAME" /></translation>
 <translation id="7068383018033524534">Luettelotiedosto on virheellinen.</translation>
 <translation id="7217838517480956708">Koneen ylläpitäjä vaatii laajennuksen <ph name="EXTENSION_NAME" /> asennusta. Sitä ei voi poistaa tai muuttaa.</translation>
+<translation id="7612608473764576263">Yksityisen avaimen syöttöarvon on oltava kelvollisessa muodossa (PEM-merkkijärjestelmää käyttävä PKCS#8-muotoinen RSA-avain).</translation>
 <translation id="7939686037314084444">Laajennus ei latautunut oikein. Se ei välttämättä havaitse verkkopyyntöjä.</translation>
 <translation id="7972881773422714442">Vaihtoehdot: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Käyttäjää kuvaava</translation>

@@ -2727,26 +2727,6 @@ Du behöver inte konfigurera de här inställningarna manuellt. Lättanvända ma
 
 Det rekommenderade sättet att konfigurera principer på när du använder Windows är via grupprincipobjekt, men att göra det via registret stöds för Windows-instanser som har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="8274603902181597201">Rensa bort användarens ecryptfs-krypterade hemkatalog och börja om med en ny ext4-krypterad hemkatalog.</translation>
-<translation id="8279832363395120715">Tar bort sekretess- och säkerhetskänsliga delar av https://-adresser innan de skickas till PAC-skript (Proxy Auto Config) som används av <ph name="PRODUCT_NAME" /> under proxytolkning.
-
-      Om värdet är Sant är säkerhetsfunktionen aktiverad och https://-adresser
-      rensas innan de skickas till ett PAC-skript. Det innebär att PAC-skriptet
-      inte kan visa data som i vanliga fall skyddas av en
-      krypterad kanal (till exempel webbadressens sökväg och sökfråga).
-
-      Om värdet är Falskt är säkerhetsfunktionen inaktiverad och PAC-skript
-      kan implicit visa alla komponenter i en https://-adress.
-      Detta gäller alla PAC-skript oavsett ursprung (inklusive
-      skript som hämtas via en osäker anslutning eller upptäcks osäkert
-      via WPAD).
-
-      Standardvärdet är Sant (säkerhetsfunktionen är aktiverad), förutom för
-      företagsanvändare av Chrome OS, som har standardvärdet Falskt.
-
-      Den rekommenderade inställningen är Sant. Den enda orsaken att välja
-      Falskt är om det orsakar problem med befintliga PAC-skript.
-
-      Vi har för avsikt att ta bort åsidosättningsmöjligheten senare.</translation>
 <translation id="8285435910062771358">Helskärmsförstoraren är aktiverad</translation>
 <translation id="8288199156259560552">Aktivera Googles platstjänst för Android</translation>
 <translation id="8294750666104911727">Normalt kommer sidor med X-UA-Compatible som är inställda på chrome=1 att renderas i <ph name="PRODUCT_FRAME_NAME" /> trots policyn ChromeFrameRendererSettings.

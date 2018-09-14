@@ -27,6 +27,7 @@
 <translation id="1150979032973867961">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho počítače nedůvěřuje jeho bezpečnostnímu certifikátu.Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="1151972924205500581">Je vyžadováno heslo</translation>
 <translation id="1152921474424827756">Otevřete <ph name="BEGIN_LINK" />archivovanou kopii<ph name="END_LINK" /> stránky <ph name="URL" /></translation>
+<translation id="1156303062776767266">Prohlížíte si místní nebo sdílený soubor.</translation>
 <translation id="1158211211994409885">Web <ph name="HOST_NAME" /> neočekávaně ukončil připojení.</translation>
 <translation id="1161325031994447685">Obnovit připojení k síti Wi-Fi</translation>
 <translation id="1165039591588034296">Chyba</translation>
@@ -531,6 +532,7 @@
 <translation id="4592951414987517459">Vaše připojení k doméně <ph name="DOMAIN" /> je šifrováno za použití moderní šifrovací sady.</translation>
 <translation id="4594403342090139922">&amp;Vrátit smazání zpět</translation>
 <translation id="4619615317237390068">Karty z ostatních zařízení</translation>
+<translation id="4646534391647090355">Zobrazit</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />, protože jeho bezpečnostní certifikát obsahuje chyby. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="4690462567478992370">Přestat používat neplatný certifikát</translation>
@@ -577,6 +579,7 @@
 <translation id="4958444002117714549">Rozbalit seznam</translation>
 <translation id="4974590756084640048">Znovu zapnout upozornění</translation>
 <translation id="4988217478422488391">Urychluje placení za nákupy na internetu</translation>
+<translation id="4989163558385430922">Zobrazit vše</translation>
 <translation id="4989809363548539747">Tento plugin není podporován</translation>
 <translation id="5002932099480077015">Pokud je tato možnost aktivována, Chrome do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
 <translation id="5018422839182700155">Tuto stránku nelze otevřít</translation>
@@ -721,6 +724,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5922853866070715753">Téměř dokončeno</translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5951495562196540101">Pomocí běžného uživatelského účtu se nelze zaregistrovat (je k dispozici licence v balíčku).</translation>
+<translation id="5966151627327109289">Odhlásí vás z většiny webů. Můžete ztratit přístup k chráněnému obsahu z webu <ph name="SITE" /> a některých dalších webů.</translation>
 <translation id="5967592137238574583">Úprava kontaktních údajů</translation>
 <translation id="5967867314010545767">Odstranit z historie</translation>
 <translation id="5975083100439434680">Oddálit</translation>
@@ -742,6 +746,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6071091556643036997">Typ zásady je neplatný.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Tato karta se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}few{Tyto karty se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}many{Tyto karty se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}other{Tyto karty se kvůli zrychlení plateb na různých zařízeních uloží do vašeho účtu Google.}}</translation>
 <translation id="6080696365213338172">Získali jste přístup k obsahu pomocí certifikátu poskytnutého správcem. Údaje poskytovaná doméně <ph name="DOMAIN" /> bude správce moci zachytit.</translation>
+<translation id="6096619198407627433">Odhlásí vás z většiny webů. Nebudete odhlášeni od účtu Google. Můžete ztratit přístup k chráněnému obsahu z webu <ph name="SITE" /> a některých dalších webů.</translation>
 <translation id="610911394827799129">Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Žádné}=1{1 heslo (synchronizováno)}few{# hesla (synchronizováno)}many{# hesla (synchronizováno)}other{# hesel (synchronizováno)}}</translation>
 <translation id="6146055958333702838">Zkontrolujte všechny kabely a restartujte všechny směrovače, modemy a další síťová zařízení, která používáte.</translation>
@@ -811,6 +816,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6710594484020273272">&lt;Zadejte vyhledávací dotaz&gt;</translation>
 <translation id="6711464428925977395">Došlo k chybě proxy serveru nebo jste zadali nesprávnou adresu.</translation>
 <translation id="674375294223700098">Neznámá chyba certifikátu serveru.</translation>
+<translation id="6744009308914054259">Zatímco čekáte na připojení, v sekci Stažené soubory si můžete přečíst offline články.</translation>
 <translation id="6753269504797312559">Hodnota zásady</translation>
 <translation id="6757797048963528358">Zařízení přešlo do režimu spánku.</translation>
 <translation id="6778737459546443941">Rodič ti přístup na web dosud neschválil.</translation>
@@ -907,6 +913,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7416351320495623771">Spravovat hesla…</translation>
 <translation id="7419106976560586862">Cesta k profilu</translation>
 <translation id="7437289804838430631">Přidat kontaktní údaje</translation>
+<translation id="7440140511386898319">Prozkoumávejte i offline</translation>
 <translation id="7441627299479586546">Chybný předmět zásady</translation>
 <translation id="7444046173054089907">Tento web je blokován</translation>
 <translation id="7445762425076701745">Totožnost serveru, k němuž jste připojeni, nelze plně ověřit. Jste připojeni k serveru, který používá název platný pouze v rámci vaší sítě. Externí certifikační autorita nemůže vlastnictví názvu nijak ověřit. Některé certifikační autority však vydají certifikát i pro takové názvy, a nelze tedy zaručit, že jste připojeni k požadovanému webu a nikoli k webu útočníka.</translation>

@@ -136,6 +136,7 @@
 <translation id="1189418886587279221">Dayakan ciri kebolehcapaian untuk menjadikan peranti anda lebih mudah digunakan.</translation>
 <translation id="1190144681599273207">Pengambilan fail ini akan menggunakan kira-kira <ph name="FILE_SIZE" /> data mudah alih.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Akses fail yang disimpan pada komputer anda}other{Akses # fail yang disimpan pada komputer anda}}</translation>
+<translation id="1193273168751563528">Masukkan sesi terurus</translation>
 <translation id="1195076408729068893">Untuk memulakan Smart Lock, masukkan kata laluan anda. Selepas ini anda boleh menggunakan telefon untuk membuka kunci <ph name="DEVICE_TYPE" /> anda.</translation>
 <translation id="1195447618553298278">Ralat tidak diketahui.</translation>
 <translation id="119738088725604856">Tetingkap tangkapan skrin</translation>
@@ -932,7 +933,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fail dipilih</translation>
 <translation id="237828693408258535">Terjemah halaman ini?</translation>
 <translation id="2378982052244864789">Pilih direktori sambungan.</translation>
-<translation id="2379281330731083556">Cetak menggunakan dialog sistem... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Tanya sebelum menghantar (disyorkan)</translation>
 <translation id="2384436799579181135">Ralat telah berlaku. Sila periksa pencetak anda dan cuba lagi.</translation>
 <translation id="2387458720915042159">Jenis sambungan proksi</translation>
@@ -1135,7 +1135,6 @@
 <translation id="2676946222714718093">Dimainkan di</translation>
 <translation id="2677748264148917807">Tinggalkan</translation>
 <translation id="2678063897982469759">Dayakan semula</translation>
-<translation id="2679385451463308372">Cetak menggunakan dialog sistem…</translation>
 <translation id="268053382412112343">Se&amp;jarah</translation>
 <translation id="2683638487103917598">Folder diisih</translation>
 <translation id="2684004000387153598">Klik OK untuk meneruskan, kemudian klik Tambah Orang untuk membuat profil baharu untuk alamat e-mel anda.</translation>
@@ -1148,7 +1147,6 @@
 <translation id="2704184184447774363">Menandatangani Dokumen Microsoft</translation>
 <translation id="270516211545221798">Kelajuan pad sentuh</translation>
 <translation id="2705736684557713153">Tatal ke bahagian bawah skrin dan hidupkan Penambatan Segera jika dipaparkan. Jika tidak dipaparkan, itu menunjukkan anda sudah menghidupkannya.</translation>
-<translation id="2706954854267016964">Peranti Cetakan Awan Google yang dipilih tidak disokong lagi. Cuba tetapkan pencetak dalam tetapan sistem komputer anda.</translation>
 <translation id="2707024448553392710">Memuat turun komponen</translation>
 <translation id="270921614578699633">Purata</translation>
 <translation id="2709453993673701466">Ingin mengurus penyegerakan dan pemeribadian sebelum dihidupkan? Pergi ke <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" />.</translation>
@@ -1164,7 +1162,6 @@
 <translation id="2721695630904737430">Pengguna di bawah seliaan telah dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="2724841811573117416">Log WebRTC</translation>
 <translation id="2725200716980197196">Sambungan rangkaian dipulihkan</translation>
-<translation id="2726934403674109201">(Jumlah <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Ralat pengaktifan rangkaian</translation>
 <translation id="2727633948226935816">Jangan ingatkan saya lagi</translation>
 <translation id="2727712005121231835">Saiz Sebenar</translation>
@@ -1318,6 +1315,7 @@
 <translation id="29488703364906173">Penyemak imbas web yang pantas, mudah dan selamat, yang dibina untuk web moden.</translation>
 <translation id="2951247061394563839">Tetingkap tengah</translation>
 <translation id="2958721676848865875">Amaran sambungan pek</translation>
+<translation id="296026337010986570">Selesai! Perisian berbahaya telah dialih keluar. Untuk menghidupkan semula sambungan, lawati &lt;a href="chrome://extensions"&gt;Sambungan&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (sambungan disediakan)</translation>
 <translation id="2961695502793809356">Klik untuk ke hadapan, tahan untuk melihat sejarah</translation>
 <translation id="2963151496262057773">Pemalam berikut tidak responsif: <ph name="PLUGIN_NAME" />Adakah anda ingin menghentikannya?</translation>
@@ -1588,7 +1586,6 @@
 <translation id="338583716107319301">Pemisah</translation>
 <translation id="3389312115541230716">Klik kanan ikon <ph name="SMALL_PRODUCT_LOGO" /> dalam bar tugas</translation>
 <translation id="3391716558283801616">Tab 7</translation>
-<translation id="3396331542604645348">Pencetak yang dipilih tidak tersedia atau tidak dipasang dengan betul. Periksa pencetak anda atau cuba pilih pencetak lain.</translation>
 <translation id="3396800784455899911">Dengan mengklik butang "Terima dan teruskan", anda bersetuju membenarkan pemprosesan yang dihuraikan di atas untuk perkhidmatan Google ini.</translation>
 <translation id="3399432415385675819">Pemberitahuan akan dilumpuhkan</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -1723,6 +1720,7 @@
 <translation id="358796204584394954">Taip kod ini pada "<ph name="DEVICE_NAME" />" untuk digandingkan:</translation>
 <translation id="3589766037099229847">Kandungan tidak selamat disekat</translation>
 <translation id="3590194807845837023">Buka Profil dan Lancarkan Semula</translation>
+<translation id="3590295622232282437">Memasuki sesi terurus.</translation>
 <translation id="3592260987370335752">&amp;Ketahui lebih lanjut</translation>
 <translation id="359283478042092570">Masuk</translation>
 <translation id="3593965109698325041">Kekangan Nama Sijil</translation>
@@ -2666,6 +2664,7 @@
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="5039804452771397117">Benarkan</translation>
 <translation id="5045550434625856497">Kata laluan tidak sah</translation>
+<translation id="504561833207953641">Membuka sesi penyemak imbas yang sedia ada.</translation>
 <translation id="5047421709274785093">Sekat tapak daripada menggunakan penderia gerakan dan cahaya</translation>
 <translation id="5050042263972837708">Nama kumpulan</translation>
 <translation id="5052499409147950210">Edit tapak</translation>
@@ -2874,6 +2873,7 @@
 <translation id="5341980496415249280">Sila tunggu, membungkus...</translation>
 <translation id="5342091991439452114">PIN mestilah sekurang-kurangnya <ph name="MINIMUM" /> digit</translation>
 <translation id="5352033265844765294">Pengecopan Masa</translation>
+<translation id="5352285283572729470">Tetapan ini terurus</translation>
 <translation id="5353252989841766347">Eksport Kata Laluan Daripada Chrome</translation>
 <translation id="5355097969896547230">Cari lagi</translation>
 <translation id="5355926466126177564">Sambungan "<ph name="EXTENSION_NAME" />" telah menukar halaman yang ditunjukkan apabila anda membuat carian daripada Kotak Omni.</translation>
@@ -3781,6 +3781,7 @@
 <translation id="6680650203439190394">Kadar</translation>
 <translation id="6681668084120808868">Ambil foto</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" akan dinyahpasang.</translation>
+<translation id="6685083257944113180">Hentikan, <ph name="SINK_NAME" />, <ph name="SINK_STATUS" /></translation>
 <translation id="668599234725812620">Buka Google Play</translation>
 <translation id="6686490380836145850">Tutup tab di sebelah kanan</translation>
 <translation id="6686817083349815241">Simpan kata laluan anda</translation>
@@ -4261,6 +4262,7 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{Buka Semua dalam Tetingkap &amp;Baharu}=1{Buka dalam Tetingkap &amp;Baharu}other{Buka Semua (#) dalam Tetingkap &amp;Baharu}}</translation>
 <translation id="7434509671034404296">Pembangun</translation>
 <translation id="7436921188514130341">Oh, Tidak! Ralat berlaku semasa penamaan semula.</translation>
+<translation id="7441736921018636843">Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" /> untuk mengalih keluar ungkapan laluan penyegerakan anda</translation>
 <translation id="7441830548568730290">Pengguna lain</translation>
 <translation id="7442465037756169001">Hangouts Meet hardware anda sudah boleh disediakan.</translation>
 <translation id="744341768939279100">Buat profil baharu</translation>
@@ -4509,7 +4511,7 @@
     <ph name="LINE_BREAK2" />
     Cuba kurangkan foto yang dipilih.</translation>
 <translation id="782590969421016895">Gunakan halaman semasa</translation>
-<translation id="7826346148677309647">Anda boleh menemui pelbagai lagi apl untuk peranti anda di Gedung Play.</translation>
+<translation id="7826346148677309647">Anda boleh dapatkan pelbagai lagi apl untuk peranti anda di Gedung Play.</translation>
 <translation id="7826790948326204519"><ph name="BEGIN_H3" />Ciri Penyahpepijatan<ph name="END_H3" />
     <ph name="BR" />
     Anda boleh mendayakan ciri penyahpepijatan pada Peranti OS Chrome untuk memasang dan menguji kod tersuai pada peranti anda. Tindakan ini akan membolehkan anda untuk:<ph name="BR" />

@@ -136,6 +136,7 @@
 <translation id="1189418886587279221">Enable accessibility features to make your device easier to use.</translation>
 <translation id="1190144681599273207">Fetching this file will use approximately <ph name="FILE_SIZE" /> of mobile data.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Access a file stored on your computer}other{Access # files stored on your computer}}</translation>
+<translation id="1193273168751563528">Enter managed session</translation>
 <translation id="1195076408729068893">To start Smart Lock, enter your password. Next time, you can use your phone to unlock your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1195447618553298278">Unknown error.</translation>
 <translation id="119738088725604856">Screenshot window</translation>
@@ -932,7 +933,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> files selected</translation>
 <translation id="237828693408258535">Translate this page?</translation>
 <translation id="2378982052244864789">Select the extension directory.</translation>
-<translation id="2379281330731083556">Print using system dialogue... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Ask before sending (recommended)</translation>
 <translation id="2384436799579181135">An error has occurred. Please check your printer and try again.</translation>
 <translation id="2387458720915042159">Proxy connection type</translation>
@@ -1133,7 +1133,6 @@
 <translation id="2676946222714718093">Playing on</translation>
 <translation id="2677748264148917807">Leave</translation>
 <translation id="2678063897982469759">Re-enable</translation>
-<translation id="2679385451463308372">Print using system dialogue…</translation>
 <translation id="268053382412112343">Hi&amp;story</translation>
 <translation id="2683638487103917598">Folder sorted</translation>
 <translation id="2684004000387153598">To continue, click OK, then click Add Person to create a new profile for your email address.</translation>
@@ -1146,7 +1145,6 @@
 <translation id="2704184184447774363">Microsoft Document Signing</translation>
 <translation id="270516211545221798">Touchpad speed</translation>
 <translation id="2705736684557713153">Scroll to the bottom of the screen and if it appears, turn on Instant Tethering. If it doesn't, you're ready to go.</translation>
-<translation id="2706954854267016964">The selected Google Cloud Print device is no longer supported. Try setting up the printer in your computer's system settings.</translation>
 <translation id="2707024448553392710">Component downloading</translation>
 <translation id="270921614578699633">Average Over</translation>
 <translation id="2709453993673701466">Want to manage sync and personalisation before they’re turned on? Visit <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
@@ -1162,7 +1160,6 @@
 <translation id="2721695630904737430">Supervised users have been disabled by your administrator.</translation>
 <translation id="2724841811573117416">WebRTC logs</translation>
 <translation id="2725200716980197196">Network connectivity restored</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> total)</translation>
 <translation id="2727176303594781056">Network activation error</translation>
 <translation id="2727633948226935816">Don't remind me again</translation>
 <translation id="2727712005121231835">Actual Size</translation>
@@ -1316,6 +1313,7 @@
 <translation id="29488703364906173">A fast, simple and secure web browser, built for the modern web.</translation>
 <translation id="2951247061394563839">Centre window</translation>
 <translation id="2958721676848865875">Pack extension warning</translation>
+<translation id="296026337010986570">Finished! Harmful software removed. To turn extensions back on, visit &lt;a href="chrome://extensions"&gt;Extensions&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extension provided)</translation>
 <translation id="2961695502793809356">Click to go forward, hold to see history</translation>
 <translation id="2963151496262057773">The following plug-in is unresponsive: <ph name="PLUGIN_NAME" />Would you like to stop it?</translation>
@@ -1586,7 +1584,6 @@
 <translation id="338583716107319301">Separator</translation>
 <translation id="3389312115541230716">Right click the <ph name="SMALL_PRODUCT_LOGO" /> icon in the taskbar</translation>
 <translation id="3391716558283801616">Tab 7</translation>
-<translation id="3396331542604645348">The selected printer is not available or not installed correctly. Check your printer or try selecting another printer.</translation>
 <translation id="3396800784455899911">By clicking the 'Accept and continue' button, you agree to the processing described above for these Google services.</translation>
 <translation id="3399432415385675819">Notifications will be disabled</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -1721,6 +1718,7 @@
 <translation id="358796204584394954">Type this code on "<ph name="DEVICE_NAME" />" to pair:</translation>
 <translation id="3589766037099229847">Insecure content blocked</translation>
 <translation id="3590194807845837023">Unlock Profile and Relaunch</translation>
+<translation id="3590295622232282437">Entering managed session.</translation>
 <translation id="3592260987370335752">&amp;Learn more</translation>
 <translation id="359283478042092570">Enter</translation>
 <translation id="3593965109698325041">Certificate Name Constraints</translation>
@@ -2664,6 +2662,7 @@
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5045550434625856497">Incorrect password</translation>
+<translation id="504561833207953641">Opening in existing browser session.</translation>
 <translation id="5047421709274785093">Block sites from using motion and light sensors</translation>
 <translation id="5050042263972837708">Group name</translation>
 <translation id="5052499409147950210">Edit site</translation>
@@ -2872,6 +2871,7 @@
 <translation id="5341980496415249280">Please wait, packing…</translation>
 <translation id="5342091991439452114">PIN must be at least <ph name="MINIMUM" /> digits</translation>
 <translation id="5352033265844765294">Time Stamping</translation>
+<translation id="5352285283572729470">This setting is managed</translation>
 <translation id="5353252989841766347">Export Passwords From Chrome</translation>
 <translation id="5355097969896547230">Find again</translation>
 <translation id="5355926466126177564">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you search from the Omnibox.</translation>
@@ -3779,6 +3779,7 @@
 <translation id="6680650203439190394">Rate</translation>
 <translation id="6681668084120808868">Take photo</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" will be uninstalled.</translation>
+<translation id="6685083257944113180">Stop, <ph name="SINK_NAME" />, <ph name="SINK_STATUS" /></translation>
 <translation id="668599234725812620">Open Google Play</translation>
 <translation id="6686490380836145850">Close tabs to the right</translation>
 <translation id="6686817083349815241">Save your password</translation>
@@ -4259,6 +4260,7 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{Open All in &amp;New Window}=1{Open in &amp;New Window}other{Open All (#) in &amp;New Window}}</translation>
 <translation id="7434509671034404296">Developer</translation>
 <translation id="7436921188514130341">Oh no! There was an error during renaming.</translation>
+<translation id="7441736921018636843">To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /> to remove your sync passphrase</translation>
 <translation id="7441830548568730290">Other users</translation>
 <translation id="7442465037756169001">Your Hangouts Meet hardware is ready to be set up.</translation>
 <translation id="744341768939279100">Create a new profile</translation>

@@ -139,7 +139,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="1993768208584545658"><ph name="SITE" /> muốn ghép nối</translation>
 <translation id="1994173015038366702">URL trang web</translation>
 <translation id="2000419248597011803">Gửi một số cookie và nội dung tìm kiếm từ thanh địa chỉ cũng như hộp tìm kiếm tới công cụ tìm kiếm mặc định</translation>
-<translation id="2002537628803770967">Thẻ tín dụng và địa chỉ sử dụng Google Pay</translation>
+<translation id="2002537628803770967">Thẻ tín dụng và địa chỉ lưu trong Google Pay</translation>
 <translation id="200815880754187296">Các ứng dụng khác chiếm <ph name="KILOBYTES" /> KB</translation>
 <translation id="2017836877785168846">Xóa lịch sử và tự động hoàn thành trong thanh địa chỉ.</translation>
 <translation id="2021896219286479412">Kiểm soát trang toàn màn hình</translation>
@@ -160,7 +160,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="2131665479022868825">Đã tiết kiệm <ph name="DATA" /></translation>
 <translation id="213279576345780926">Đã đóng <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Thêm vào Màn hình chính</translation>
-<translation id="2142289305367051020">Các trang ưa thích của bạn đều ở đây</translation>
+<translation id="2142289305367051020">Các trang bạn yêu thích đều ở đây</translation>
 <translation id="2146738493024040262">Mở ứng dụng tức thì</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2154484045852737596">Chỉnh sửa thẻ</translation>
@@ -883,7 +883,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
 <translation id="7981313251711023384">Tải trước các trang để tìm kiếm và duyệt web nhanh hơn</translation>
 <translation id="79859296434321399">Để xem nội dung thực tế tăng cường, hãy cài đặt bộ công cụ ARCore</translation>
-<translation id="7986741934819883144">Chọn một liên hệ</translation>
+<translation id="7986741934819883144">Chọn một người liên hệ</translation>
 <translation id="7987073022710626672">Điều khoản dịch vụ của Chrome</translation>
 <translation id="7987764905897278458">Trải nghiệm thêm các tính năng thông minh của Google</translation>
 <translation id="7998918019931843664">Mở lại tab đã đóng</translation>
@@ -942,7 +942,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8441146129660941386">Tìm kiếm lùi</translation>
 <translation id="8445448999790540984">Không xuất được mật khẩu</translation>
 <translation id="8447861592752582886">Thu hồi quyền truy cập thiết bị</translation>
-<translation id="8477071352266846533">Tính năng đồng bộ hóa đang tắt với <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8477071352266846533">Đã tắt đồng bộ hóa cho <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
 <translation id="8489271220582375723">Mở trang lịch sử</translation>
 <translation id="8493948351860045254">Giải phóng dung lượng</translation>

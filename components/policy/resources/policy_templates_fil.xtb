@@ -2715,26 +2715,6 @@ Hindi kailangang i-configure nang manual ang mga setting na ito! May mga templat
 
 Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pamamagitan ng GPO, bagama't sinusuportahan pa rin ang pagbibigay ng patakaran sa pamamagitan ng registry para sa mga instance sa Windows na kasali sa isang domain ng <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Nagwa-wipe sa ecryptfs na home directory ng user at nagsisimula gamit ang isang bagong ext4-encrypted na home directory.</translation>
-<translation id="8279832363395120715">Inii-strip ang mga sensitibong bahagi ng privacy at security ng mga URL na https:// bago ipasa ang mga ito sa mga PAC script (Proxy Auto Config) na ginagamit ng <ph name="PRODUCT_NAME" /> sa panahon ng pagresolba sa proxy.
-
-      Kapag True, naka-enable ang feature na security, at inii-strip ang mga URL na https://
-      bago isumite ang mga ito sa PAC script. Sa ganitong paraan, hindi matitingnan ng PAC
-      script ang data na ordinaryong pinoprotektahan ng isang
-      naka-encrypt na channel (gaya ng path at query ng URL).
-
-      Kapag False, naka-disable ang feature na security, at hindi tahasang binibigyan ang mga PAC script
-      ng kakayahang tingnan ang lahat ng bahagi ng isang URL na https://.
-      Nalalapat ito sa lahat ng PAC script saanman ito nagmula (kabilang
-      ang mga nakuha sa hindi secure na paglilipat o natuklasan sa WPAD
-      sa paraang hindi secure).
-
-      Ang default nito ay True (naka-enable ang feature na security), maliban sa mga user ng enterprise
-      ng Chrome OS kung saan kasalukuyan itong naka-default sa False.
-
-      Inirerekomendang itakda ito sa True. Ang tanging dahilan para itakda ito sa
-      False ay kung nagdudulot ito ng problema sa compatibility sa mga kasalukuyang PAC script.
-
-      Ang layunin ay alisin ang pag-override na ito sa hinaharap.</translation>
 <translation id="8285435910062771358">Naka-enable ang magnifier na full-screen</translation>
 <translation id="8288199156259560552">I-enable ang Serbisyo sa Lokasyon ng Google sa Android</translation>
 <translation id="8294750666104911727">Karaniwang ire-render ang mga pahina na may X-UA-Compatible na nakatakda sa chrome=1 sa <ph name="PRODUCT_FRAME_NAME" /> hindi alintana ang patakaran sa 'ChromeFrameRendererSettings.'

@@ -56,6 +56,7 @@
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> ಅವರಿಂದ <ph name="PRODUCT_ID" /> ಅಪರಿಚಿತ ಉತ್ಪನ್ನ</translation>
 <translation id="7068383018033524534">ಮ್ಯಾನಿಫೆಸ್ಟ್ ಫೈಲ್ ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="7217838517480956708">ಈ ಯಂತ್ರದ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_NAME" /> ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಅಗತ್ಯವಿದೆ. ಇದನ್ನು ತೆಗೆದುಹಾಕಲು ಅಥವಾ ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
+<translation id="7612608473764576263">ಖಾಸಗಿ ಕೀಲಿಗಾಗಿ ಇನ್‌ಪುಟ್ ಮೌಲ್ಯವು ಮಾನ್ಯವಾದ ಫಾರ್ಮ್ಯಾಟ್‌ ಹೊಂದಿರಬೇಕು (PKCS#8-ಫಾರ್ಮ್ಯಾಟ್‌ PEM-ಎನ್‌ಕೋಡೆಡ್ RSA ಕೀ).</translation>
 <translation id="7939686037314084444">ವಿಸ್ತರಣೆಯನ್ನು ಸರಿಯಾಗಿ ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ಇದು ನೆಟ್‌ವರ್ಕ್‌ ವಿನಂತಿಗಳನ್ನು ಪ್ರತಿಬಂಧಿಸಲು ಸಾಧ್ಯವಾಗದಿರಬಹುದು.</translation>
 <translation id="7972881773422714442">ಆಯ್ಕೆಗಳು: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">ಬಳಕೆದಾರರಿಗೆ ಮುಖಮಾಡಿದೆ</translation>

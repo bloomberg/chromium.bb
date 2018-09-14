@@ -931,7 +931,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer har valts</translation>
 <translation id="237828693408258535">Vill du översätta den här sidan?</translation>
 <translation id="2378982052244864789">Välj tilläggets katalog.</translation>
-<translation id="2379281330731083556">Skriv ut via systemets dialogruta ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Fråga innan något skickas (rekommenderas)</translation>
 <translation id="2384436799579181135">Ett fel uppstod. Kontrollera skrivaren och försök igen.</translation>
 <translation id="2387458720915042159">Proxyanslutningstyp</translation>
@@ -1133,7 +1132,6 @@
 <translation id="2676946222714718093">Spelas på</translation>
 <translation id="2677748264148917807">Lämna</translation>
 <translation id="2678063897982469759">Aktivera igen</translation>
-<translation id="2679385451463308372">Skriv ut via systemets dialogruta ...</translation>
 <translation id="268053382412112343">Hi&amp;storik</translation>
 <translation id="2683638487103917598">Mappens innehåll har sorterats</translation>
 <translation id="2684004000387153598">Fortsätt genom att klicka på OK. Skapa sedan en ny profil för din e-postadress genom att klicka på Lägg till person.</translation>
@@ -1146,7 +1144,6 @@
 <translation id="2704184184447774363">Microsofts Signering av dokument</translation>
 <translation id="270516211545221798">Hastighet för styrplatta</translation>
 <translation id="2705736684557713153">Rulla längst ned på skärmen och aktivera Direktinternetdelning om det alternativet visas där. Om det inte visas behöver du inte göra något mer.</translation>
-<translation id="2706954854267016964">Den valda Google Cloud Print-enheten stöds inte längre. Testa att konfigurera skrivaren i systeminställningarna på datorn.</translation>
 <translation id="2707024448553392710">Komponenten laddas ned</translation>
 <translation id="270921614578699633">Medelvärde för</translation>
 <translation id="2709453993673701466">Vill du hantera synkronisering och anpassning innan du aktiverar det? Öppna <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
@@ -1162,7 +1159,6 @@
 <translation id="2721695630904737430">Kontrollerade användare har inaktiverats av administratören.</translation>
 <translation id="2724841811573117416">WebRTC-loggar</translation>
 <translation id="2725200716980197196">Nätverksanslutning har återställts</translation>
-<translation id="2726934403674109201">(<ph name="COUNT" /> totalt)</translation>
 <translation id="2727176303594781056">Fel vid nätverksaktivering</translation>
 <translation id="2727633948226935816">Påminn mig inte igen</translation>
 <translation id="2727712005121231835">Faktisk storlek</translation>
@@ -1586,7 +1582,6 @@
 <translation id="338583716107319301">Avgränsare</translation>
 <translation id="3389312115541230716">Högerklicka på ikonen för <ph name="SMALL_PRODUCT_LOGO" /> i aktivitetsfältet</translation>
 <translation id="3391716558283801616">Flik 7</translation>
-<translation id="3396331542604645348">Den valda skrivaren är inte tillgänglig eller har inte installerats korrekt. Kontrollera skrivaren eller välj en annan.</translation>
 <translation id="3396800784455899911">När du klickar på Godkänn och fortsätt samtycker du till att dessa tjänster från Google får bearbeta data enligt beskrivningen ovan.</translation>
 <translation id="3399432415385675819">Aviseringar inaktiveras</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

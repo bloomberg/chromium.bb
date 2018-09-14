@@ -698,7 +698,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli wyłączysz to ustawienie lub pozostawisz je puste, w podglądzie wydruku zostanie wybrana ostatnio użyta drukarka.
 
       Jeśli włączysz to ustawienie, w podglądzie wydruku zostanie wybrana domyślna drukarka systemowa.</translation>
-<translation id="2856674246949497058">Cofnięcie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. W trakcie tego procesu zostanie wykonana procedura Powerwash.</translation>
+<translation id="2856674246949497058">Przywróć i pozostaw docelową wersję systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. W trakcie tego procesu zostanie wykonana procedura Powerwash.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2873651257716068683">Zastępuje domyślny rozmiar drukowanej strony. Jeśli dany rozmiar strony jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
@@ -1818,7 +1818,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultPluginsSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="6190022522129724693">Domyślne ustawienie wyskakujących okienek</translation>
-<translation id="6190367314942602985">Zgłaszanie informacji identyfikujących użytkownika</translation>
+<translation id="6190367314942602985">Zgłaszaj informacje identyfikujące użytkownika</translation>
 <translation id="6197453924249895891">Przyznaje dostęp do kluczy firmowych do rozszerzeń.
 
       Klucze są przeznaczone do użytku firmowego, jeśli są wygenerowane przy użyciu interfejsu API chrome.platformKeys na koncie zarządzanym. Klucze importowane lub wygenerowane w inny sposób nie są przeznaczone do użytku firmowego.
@@ -1828,8 +1828,8 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Domyślnie rozszerzenie nie może używać klucza przeznaczonego do użytku firmowego. Jest to równoznaczne z wyłączeniem zasady allowCorporateKeyUsage dla tego rozszerzenia.
 
       Tylko jeśli zasada allowCorporateKeyUsage jest włączona dla rozszerzenia, może ono używać dowolnego klucza platformy oznaczonego jako do użytku firmowego, by podpisywać arbitralne dane. To uprawnienie należy przyznawać, tylko jeśli rozszerzenie jest zaufane, by uniemożliwić osobom niepowołanym dostęp do klucza.</translation>
-<translation id="6208896993204286313">Zgłaszanie informacji o zasadach <ph name="PRODUCT_NAME" /></translation>
-<translation id="6210259502936598222">Zgłaszanie informacji o wersji systemu operacyjnego i <ph name="PRODUCT_NAME" /></translation>
+<translation id="6208896993204286313">Zgłaszaj informacje o zasadach <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210259502936598222">Zgłaszaj informacje o wersji systemu operacyjnego i <ph name="PRODUCT_NAME" /></translation>
 <translation id="6211428344788340116">Zgłasza godziny aktywności urządzenia.
 
       Jeśli to ustawienie nie jest określone lub jego wartość to Prawda, zarejestrowane urządzenie zgłasza, kiedy korzysta z niego użytkownik. Jeśli ta zasada ma wartość Fałsz, godziny aktywności urządzenia nie są rejestrowane ani zgłaszane.</translation>
@@ -1843,7 +1843,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6233173491898450179">Ustaw katalog pobierania</translation>
 <translation id="6244210204546589761">Adresy URL otwierane po uruchomieniu</translation>
 <translation id="6258193603492867656">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos ma zawierać port niestandardowy. Po włączeniu tego ustawienia i wprowadzeniu portu niestandardowego (tzn. innego niż 80 i 443) jest on umieszczany w generowanej nazwie SPN w protokole Kerberos. Jeśli wyłączysz ustawienie, generowana nazwa SPN w protokole Kerberos nie będzie w żadnym przypadku zawierać portu.</translation>
-<translation id="6261643884958898336">Zgłaszanie informacji identyfikujących urządzenie</translation>
+<translation id="6261643884958898336">Zgłaszaj informacje identyfikujące urządzenie</translation>
 <translation id="6281043242780654992">Konfiguruje zasady wiadomości natywnych. Hosty wiadomości natywnych na czarnej liście nie będą dostępne, dopóki nie znajdą się na białej liście.</translation>
 <translation id="6282799760374509080">Zezwól lub nie na przechwytywanie dźwięku</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -2227,7 +2227,7 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 
       Automatyczne wyszukiwanie i instalowanie brakujących wtyczek nie jest już obsługiwane.</translation>
 <translation id="7267809745244694722">Klawisze multimediów domyślnie ustawione jako funkcyjne</translation>
-<translation id="7271085005502526897">Importuj stronę startową z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
+<translation id="7271085005502526897">Importuj stronę główną z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="7273823081800296768">Jeśli to ustawienie jest włączone lub nie jest skonfigurowane, użytkownicy mogą parować klienty i hosty w czasie połączenia, co wyklucza potrzebę wpisywania kodu PIN za każdym razem.
 
           Jeśli to ustawienie jest wyłączone, ta funkcja nie będzie dostępna.</translation>
@@ -2346,8 +2346,8 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7617319494457709698">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją <ph name="CHALLENGE_USER_KEY_FUNCTION" /> interfejsu <ph name="ENTERPRISE_PLATFORM_KEYS_API" />. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
 
           Jeśli rozszerzenie nie znajduje się na liście lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
-<translation id="7618907117929117943">Cofnięcie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa i jest możliwe zachowanie konfiguracji na poziomie urządzenia (w tym danych logowania do sieci) podczas cofnięcia. Po cofnięciu pomijana jest procedura pierwszego uruchomienia (OOBE). Jeśli nie jest to możliwe (ponieważ wersja docelowa nie umożliwia przywrócenia danych lub z powodu niezgodnej wstecznie zmiany), cofnięcie nie zostanie wykonane lub zostanie przerwane.
-          Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 70 lub nowszej. W przypadku starszych klientów ta wartość powoduje wyłączenie cofnięcia.</translation>
+<translation id="7618907117929117943">Przywrócenie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa i jest możliwe zachowanie konfiguracji na poziomie urządzenia (w tym danych logowania do sieci) podczas przywracania danej wersji. Po jej przywróceniu pomijana jest procedura pierwszego uruchomienia (OOBE). Jeśli nie jest to możliwe (ponieważ wersja docelowa nie umożliwia przywrócenia danych lub z powodu niezgodnej wstecznie zmiany), wybrana wersja nie zostanie przywrócona lub jej przywrócenie zostanie przerwane.
+          Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 70 lub nowszej. W przypadku starszych klientów ta wartość wyłącza możliwość przywrócenia wersji.</translation>
 <translation id="7625444193696794922">Określa kanał wersji, z którym to urządzenie powinno być powiązane na stałe.</translation>
 <translation id="7632724434767231364">Nazwa biblioteki GSSAPI</translation>
 <translation id="7635471475589566552">Pozwala skonfigurować język w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie używany określony język. W przypadku, gdy skonfigurowany język nie jest obsługiwany, wybierana jest opcja „en-US”. Jeśli ustawienie jest wyłączone lub nieskonfigurowane, w <ph name="PRODUCT_NAME" /> używany jest preferowany język określony przez użytkownika (jeśli został skonfigurowany), język ustawiony w systemie lub zastępcza opcja „en-US”.</translation>
@@ -2612,30 +2612,6 @@ Nie musisz konfigurować tych ustawień ręcznie. Możesz pobrać łatwe w użyc
 
 Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad grupy (GPO), mimo że obsługa zasady przez rejestr jest nadal możliwa w systemach Windows połączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Wyczyść katalog główny użytkownika zabezpieczony szyfrowaniem ecryptfs i zacznij korzystać z nowego katalogu głównego zaszyfrowanego przy użyciu ext4.</translation>
-<translation id="8279832363395120715">Wycina poufne pod względem prywatności i bezpieczeństwa fragmenty adresów URL https:// przed przekazaniem tych adresów do skryptów PAC (Proxy Auto Config), których <ph name="PRODUCT_NAME" /> używa podczas rozpoznawania serwerów proxy.
-
-      Jeśli ustawisz wartość prawda, funkcja zabezpieczeń zostanie
-      włączona, a fragmenty adresów URL https:// będą usuwane przed
-      przekazaniem tych adresów do skryptów PAC. w ten sposób skrypt PAC nie
-      będzie mógł odczytać danych, które są zwykle chronione przez
-      szyfrowany kanał (np. ścieżki lub zapytania adresu URL).
-
-      Jeśli ustawisz wartość fałsz, funkcja zabezpieczeń zostanie wyłączona,
-      a skrypty PAC będą domyślnie mogły odczytać wszystkie składniki 
-      adresu URL https://. Dotyczy to wszystkich skryptów PAC bez względu
-      na ich pochodzenie (włączając te pobrane przez niezabezpieczony
-      kanał lub odkryte w niezabezpieczony sposób przez protokół WPAD).
-
-      Domyślne ustawienie to prawda (włączona funkcja zabezpieczeń).
-      Wyjątek stanowią użytkownicy korporacyjni Chrome OS, w przypadku
-      których ta zasada jest domyślnie ustawiona na fałsz.
-
-
-      Zaleca się ustawienie tej zasady na wartość prawda. Wartość fałsz
-      należy ustawić tylko wtedy, gdy występuje problem ze zgodnością
-      z istniejącymi skryptami PAC.
-
-      Planujemy usunąć ten problem w przyszłości.</translation>
 <translation id="8285435910062771358">Lupa pełnoekranowa włączona</translation>
 <translation id="8288199156259560552">Włącz usługę lokalizacyjną Google na Androida</translation>
 <translation id="8294750666104911727">Normalnie strony, które w tagu X-UA-Compatible mają wartość chrome=1, będą renderowane w <ph name="PRODUCT_FRAME_NAME" /> niezależnie od ustawienia zasady „ChromeFrameRendererSettings”.
@@ -2674,7 +2650,7 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 <translation id="8424255554404582727">Ustaw domyślny obrót ekranu stosowany po każdym ponownym uruchomieniu</translation>
 <translation id="8426231401662877819">Obróć ekran w prawo o 90 stopni</translation>
 <translation id="8433423491036718210">Skonfiguruj listę adresów URL stron logowania aplikacji firmowych, na których usługa ochrony haseł ma rejestrować odciski cyfrowe haseł.</translation>
-<translation id="8451988835943702790">Używaj strony Nowa karta jako strony początkowej</translation>
+<translation id="8451988835943702790">Używaj strony Nowa karta jako strony głównej</translation>
 <translation id="8459216513698220096">Określa, czy i w jaki sposób przetwarzać zasady dotyczące użytkowników z obiektów zasad grupy komputera.
 
       Jeśli zasada ma ustawioną opcję „Domyślna” lub nie jest skonfigurowana, zasady dotyczące użytkowników są odczytywane tylko z obiektów zasad grupy użytkownika (obiekty zasad grupy komputera są ignorowane).
@@ -2919,8 +2895,8 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>
 <translation id="9088433379343318874">Włącz dostawcę treści dla nadzorowanego użytkownika</translation>
 <translation id="9088444059179765143">Konfigurowanie metody automatycznego wykrywania strefy czasowej</translation>
-<translation id="9094064873808699479">Cofnięcie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. Jeśli to możliwe, konfiguracja na poziomie urządzenia (w tym dane logowania do sieci) zostanie zachowana, ale jeśli nie jest to możliwe (ponieważ wersja docelowa nie umożliwia przywrócenia danych lub z powodu niezgodnej wstecznie zmiany), wykonane zostanie cofnięcie z pełną procedurą Powerwash.
-          Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 70 lub nowszej. W przypadku starszych klientów ta wartość powoduje wyłączenie cofnięcia.</translation>
+<translation id="9094064873808699479">Przywrócenie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. Jeśli to możliwe, konfiguracja na poziomie urządzenia (w tym dane logowania do sieci) zostanie zachowana, ale jeśli nie jest to możliwe (ponieważ wersja docelowa nie umożliwia przywrócenia danych lub z powodu niezgodnej wstecznie zmiany), wykonane zostanie przywrócenie z pełną procedurą Powerwash.
+          Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 70 lub nowszej. W przypadku starszych klientów ta wartość wyłącza możliwość przywrócenia wersji.</translation>
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>
 <translation id="9098553063150791878">Zasady uwierzytelniania HTTP</translation>
 <translation id="9105265795073104888">Aplikacje na Androida mają dostęp tylko do niektórych opcji konfiguracji serwera proxy. Nie można wymusić, by używały serwera proxy. Mogą go używać dobrowolnie.</translation>

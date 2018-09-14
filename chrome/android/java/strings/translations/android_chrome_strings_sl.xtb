@@ -238,6 +238,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="2762000892062317888">pravkar</translation>
 <translation id="2777555524387840389">Še <ph name="SECONDS" /> s</translation>
 <translation id="2781151931089541271">Še 1 s</translation>
+<translation id="2803478378562657435">Prikazovanje shranjenih gesel in možnosti za gesla</translation>
 <translation id="2810645512293415242">Poenostavljena stran zaradi prihranka pri prenosu podatkov in hitrejšega nalaganja.</translation>
 <translation id="281504910091592009">Ogled in upravljanje shranjenih gesel v <ph name="BEGIN_LINK" />Google Računu<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Če želite dostopati do zaznamkov v vseh napravah, se prijavite in vklopite sinhronizacijo</translation>
@@ -710,6 +711,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6573431926118603307">Zavihki, ki ste jih odprli v Chromu v drugih napravah, bodo prikazani tukaj.</translation>
 <translation id="6575643671698722332">Ponastavitev ni uspela. Vzpostavite povezavo in poskusite znova.</translation>
 <translation id="6583199322650523874">Dodajanje trenutne strani med zaznamke</translation>
+<translation id="6584721918629302382">RR</translation>
 <translation id="6593061639179217415">Spletno mesto za namizne računalnike</translation>
 <translation id="6600954340915313787">Kopirano v Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -826,6 +828,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="748127970106343339">Potrditev izbrisa poverilnice naprave</translation>
 <translation id="7481312909269577407">Naprej</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Posodobljeno: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Prikaz gesel</translation>
 <translation id="7494974237137038751">prihranjen prenos podatkov</translation>
 <translation id="7498271377022651285">Počakajte …</translation>
 <translation id="7514365320538308">Prenos</translation>
@@ -893,6 +896,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="802154636333426148">Prenos ni uspel</translation>
 <translation id="8026334261755873520">Izbriši podatke brskanja</translation>
 <translation id="8035133914807600019">Nova mapa …</translation>
+<translation id="8037411810184515274">NR</translation>
 <translation id="8037686209485537503">Več podobne vsebine</translation>
 <translation id="8037750541064988519">Še <ph name="DAYS" /> dni</translation>
 <translation id="804335162455518893">Kartice SD ni bilo mogoče najti</translation>
@@ -949,6 +953,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8503559462189395349">Gesla za Chrome</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>
 <translation id="8504988642345501642">Ko se pomaknete navzgor, prikaže hitre povezave do sorodnih strani. URL-ji obiskanih strani se pošljejo Googlu.</translation>
+<translation id="8507520749471379845">Gesla so na voljo</translation>
 <translation id="8514477925623180633">Izvoz gesel, shranjenih v Chromu</translation>
 <translation id="8514577642972634246">Vklop načina brez beleženja zgodovine</translation>
 <translation id="851751545965956758">Spletnim mestom prepreči povezovanje z napravami</translation>

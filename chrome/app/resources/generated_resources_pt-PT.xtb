@@ -932,7 +932,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ficheiros selecionados</translation>
 <translation id="237828693408258535">Pretende traduzir esta página?</translation>
 <translation id="2378982052244864789">Selecione o diretório da extensão.</translation>
-<translation id="2379281330731083556">Imprimir utilizando a caixa de diálogo do sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="2384436799579181135">Ocorreu um erro. Verifique a impressora e tente novamente.</translation>
 <translation id="2387458720915042159">Tipo de ligação proxy</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">A reproduzir em</translation>
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2678063897982469759">Reactivar</translation>
-<translation id="2679385451463308372">Imprimir utilizando o menu de diálogo do sistema...</translation>
 <translation id="268053382412112343">&amp;Histórico</translation>
 <translation id="2683638487103917598">Pasta ordenada</translation>
 <translation id="2684004000387153598">Para continuar, clique em OK e, de seguida, clique em Adicionar pessoa para criar um novo perfil para o seu endereço de email.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">Assinatura de documentos Microsoft</translation>
 <translation id="270516211545221798">Velocidade do touchpad</translation>
 <translation id="2705736684557713153">Desloque-se até à parte inferior do ecrã e ative a Ligação via telemóvel instantânea, se for apresentada. Caso contrário, está pronto para começar.</translation>
-<translation id="2706954854267016964">O dispositivo Google Cloud Print selecionado já não é suportado. Experimente configurar a impressora nas definições do sistema do computador.</translation>
 <translation id="2707024448553392710">A transferir o componente</translation>
 <translation id="270921614578699633">Média superior</translation>
 <translation id="2709453993673701466">Pretende gerir a sincronização e a personalização antes de serem ativadas? Aceda às <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">O gestor desativou os utilizadores supervisionados.</translation>
 <translation id="2724841811573117416">Registos de WebRTC</translation>
 <translation id="2725200716980197196">Conetividade de rede restaurada</translation>
-<translation id="2726934403674109201">(total de <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Erro na ativação de rede</translation>
 <translation id="2727633948226935816">Não lembrar novamente</translation>
 <translation id="2727712005121231835">Tamanho real</translation>
@@ -1588,7 +1584,6 @@ Pretende pará-lo?</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="3389312115541230716">Clique com o botão direito no símbolo <ph name="SMALL_PRODUCT_LOGO" /> na barra de tarefas.</translation>
 <translation id="3391716558283801616">Separador 7</translation>
-<translation id="3396331542604645348">A impressora selecionada não está disponível ou não está instalada corretamente. Verifique a impressora ou tente selecionar outra impressora.</translation>
 <translation id="3396800784455899911">Ao clicar no botão "Aceitar e continuar", está a aceitar o processamento descrito acima para estes serviços Google.</translation>
 <translation id="3399432415385675819">As notificações serão desativadas</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3978,7 +3973,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> pastas selecionadas</translation>
 <translation id="6998793565256476099">Inscrever dispositivo para videoconferência</translation>
 <translation id="7000347579424117903">Inclua Ctrl, Alt ou Pesquisar.</translation>
-<translation id="700203306553508933">Guardar atualizações para utilizar no Google Pay</translation>
+<translation id="700203306553508933">Guardar cartões para utilizar no Google Pay</translation>
 <translation id="7002055706763150362">Para configurar o Smart Lock para Chromebook, a Google tem de ter a certeza de que é o utilizador. Introduza a sua palavra-passe para começar.</translation>
 <translation id="7002454948392136538">Escolher o gestor para este utilizador supervisionado</translation>
 <translation id="7003339318920871147">Base de dados da Web</translation>

@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">Peranti USB-C (port kiri)</translation>
 <translation id="1294929383540927798">Tukar tetapan pemberitahuan kunci skrin</translation>
 <translation id="1302880136325416935">Tunjukkan tetapan Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">Sentiasa tunjukkan rak</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351937230027495976">Runtuhkan menu</translation>
 <translation id="1383876407941801731">Carian</translation>
@@ -93,6 +94,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Togol Jangan ganggu</translation>
 <translation id="2412593942846481727">Kemas kini tersedia</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ialah sesi terurus yang diurus oleh <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Disambungkan ke <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sebelum menerimanya, sila sahkan bahawa kekunci laluan ini dipaparkan pada peranti tersebut: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
@@ -307,6 +309,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6297287540776456956">Gunakan stilus untuk memilih bahagian</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> telah diputarkan ke <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Tindanan papan kekunci</translation>
+<translation id="6344698853700675736">Togol Cahaya Malam</translation>
 <translation id="6376931439017688372">Bluetooth dihidupkan</translation>
 <translation id="639644700271529076">Kekunci CAPS LOCK dimatikan</translation>
 <translation id="6406704438230478924">altgr</translation>

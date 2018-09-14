@@ -932,7 +932,6 @@
 <translation id="2378075407703503998">Pasirinkta failų: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="237828693408258535">Išversti šį puslapį?</translation>
 <translation id="2378982052244864789">Pasirinkti plėtinio katalogą.</translation>
-<translation id="2379281330731083556">Spausdinti naudojant sistemos dialogo langą... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Klausti prieš siunčiant (rekomenduojama)</translation>
 <translation id="2384436799579181135">Įvyko klaida. Patikrinkite spausdintuvą ir bandykite dar kartą.</translation>
 <translation id="2387458720915042159">Tarpinio serverio ryšio tipas</translation>
@@ -1134,7 +1133,6 @@
 <translation id="2676946222714718093">Leidžiama</translation>
 <translation id="2677748264148917807">Išeiti</translation>
 <translation id="2678063897982469759">Iš naujo įgalinti</translation>
-<translation id="2679385451463308372">Spausdinkite naudodami sistemos dialogo langą...</translation>
 <translation id="268053382412112343">Is&amp;torija</translation>
 <translation id="2683638487103917598">Aplankas surūšiuotas</translation>
 <translation id="2684004000387153598">Jei norite tęsti, spustelėkite „Gerai“, tada – „Pridėti asmenį“, kad sukurtumėte naują profilį naudodami savo el. pašto adresą.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="2704184184447774363">„Microsoft“ dokumentų pasirašymas</translation>
 <translation id="270516211545221798">Jutiklinės dalies greitis</translation>
 <translation id="2705736684557713153">Slinkite į ekrano apačią ir įjunkite momentinio įrenginio kaip modemo naudojimo funkciją, jei ji rodoma. Jei nerodoma, jau viską atlikote.</translation>
-<translation id="2706954854267016964">Pasirinktas „Google“ spausdinimo iš debesies įrenginys nebepalaikomas. Pabandykite nustatyti spausdintuvą kompiuterio sistemos nustatymuose.</translation>
 <translation id="2707024448553392710">Komponentas atsisiunčiamas</translation>
 <translation id="270921614578699633">Vidurkis</translation>
 <translation id="2709453993673701466">Norite tvarkyti sinchronizavimą ir suasmeninimą prieš įjungdami šias funkcijas? Apsilankykite skiltyje <ph name="BEGIN_LINK" />„Nustatymai“<ph name="END_LINK" />.</translation>
@@ -1163,7 +1160,6 @@
 <translation id="2721695630904737430">Jūsų administratorius neleido naudoti prižiūrimo naudotojo profilio.</translation>
 <translation id="2724841811573117416">„WebRTC“ žurnalai</translation>
 <translation id="2725200716980197196">Tinklo ryšys atkurtas</translation>
-<translation id="2726934403674109201">(Iš viso: <ph name="COUNT" />)</translation>
 <translation id="2727176303594781056">Tinklo aktyvinimo klaida</translation>
 <translation id="2727633948226935816">Nebepriminti</translation>
 <translation id="2727712005121231835">Faktinis dydis</translation>
@@ -1587,7 +1583,6 @@
 <translation id="338583716107319301">Skyriklis</translation>
 <translation id="3389312115541230716">Dešiniuoju pelės klavišu spustelėkite piktogramą <ph name="SMALL_PRODUCT_LOGO" /> užduočių juostoje</translation>
 <translation id="3391716558283801616">7 skirtukas</translation>
-<translation id="3396331542604645348">Pasirinktas spausdintuvas nepasiekiamas arba netinkamai įdiegtas. Patikrinkite spausdintuvą arba pabandykite pasirinkti kitą spausdintuvą.</translation>
 <translation id="3396800784455899911">Spustelėdami mygtuką „Sutikti ir tęsti“ sutinkate, kad šios „Google“ paslaugos būtų apdorojamos, kaip aprašyta anksčiau.</translation>
 <translation id="3399432415385675819">Pranešimai bus išjungti</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>

@@ -2719,27 +2719,6 @@ Neid seadeid ei pea käsitsi seadistama. Hõlpsalt kasutatavad mallid Windowsile
 
 Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegli varustamist registri kaudu toetatakse endiselt Windowsi eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Kasutaja süsteemi eCryptfs juurkataloogi tühjendamine ja uue ext4-krüpteeringuga juurkataloogiga alustamine.</translation>
-<translation id="8279832363395120715">Eemaldab protokolliga https:// URL-idelt privaatsed ja turvalisusega seotud tundlikud osad enne, kui need edastatakse PAC-skriptidele (puhverserveri automaatne seadistamine), mida <ph name="PRODUCT_NAME" /> kasutab puhverserveri lahendamisel.
-
-      Kui see on tõene, lubatakse turvafunktsioon ja protokolliga https:// URL-id
-      puhastatakse enne PAC-skripti saatmist. Sel moel ei saa PAC-skript
-      vaadata andmeid, mida tavaliselt kaitseb krüpteeritud kanal (nt URL-i tee
-      ja päring).
-
-      Kui see on väär, keelatakse turvafunktsioon ja PAC-skriptidele antakse
-      vaikimisi õigus vaadata protokolliga https:// URL-ide kõiki komponente.
-      See kehtib kõigi PAC-skriptide puhul päritolust olenemata (sh need,
-      mis toodi ebaturvalise transpordiga või tuvastati ebaturvaliselt WPAD-i
-      kaudu).
-
-      Vaikeseade on Tõene (turvafunktsioon on lubatud), v.a Chrome OS-i
-      ettevõtte kasutajate puhul, kelle vaikeseade on Väär.
-
-      Seade on soovitatav määrata väärtusele Tõene. See tuleks seada
-      väärtusele Väär vaid juhul, kui ilmnevad ühilduvusprobleemid
-      olemasolevate PAC-skriptidega.
-
-      Tulevikus on plaanis see alistusfunktsioon eemaldada.</translation>
 <translation id="8285435910062771358">Täisekraani luup on lubatud</translation>
 <translation id="8288199156259560552">Androidi Google'i asukohateenuse lubamine</translation>
 <translation id="8294750666104911727">Tavaliselt renderdatakse lehed, mille metasilt X-UA-Compatible on seatud väärtusele chrome=1 teenuses <ph name="PRODUCT_FRAME_NAME" />, olenemata reeglist „ChromeFrameRendererSettings”.

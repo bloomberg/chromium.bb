@@ -2707,26 +2707,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
 Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, taču Windows sistēmās, kas ir pievienotas <ph name="MS_AD_NAME" /> domēnam, politikas izvietošanai var izmantot arī reģistru.</translation>
 <translation id="8274603902181597201">Notīra lietotāja ecryptfs sākumdirektoriju un sāk ar jaunu ext4-encrypted sākumdirektoriju.</translation>
-<translation id="8279832363395120715">Noņem no vietrāžiem URL protokola https:// daļas, kurās ietverta neizpaužama konfidencialitātes un drošības informācija, pirms to nodošanas PAC (Proxy Auto Config — starpniekservera automātiskā konfigurēšana) skriptiem, ko <ph name="PRODUCT_NAME" /> izmanto starpniekservera atrisināšanas laikā.
-
-      Ja šīs politikas iestatījums ir “Patiesa”, drošības funkcija ir iespējota un protokola https:// daļas ir noņemtas no vietrāžiem URL
-      pirms to nodošanas PAC skriptam. Tādējādi
-      PAC skripts nevar skatīt datus, ko parasti aizsargā
-      šifrēts kanāls (piemēram, URL ceļu un vaicājumu).
-
-      Ja šīs politikas iestatījums ir “Nepatiesa”, drošības funkcija ir atspējota un PAC skriptiem ir
-      tieši piešķirta iespēja skatīt visus protokola https:// komponentus
-      vietrādī URL. Šis iestatījums attiecas uz visiem PAC skriptiem neatkarīgi no to izcelsmes (ieskaitot
-      skriptus, kas izgūti, izmantojot nedrošu pārsūtīšanu, vai atklāti nedrošā veidā,
-      izmantojot WPAD).
-
-      Šīs politikas noklusējuma iestatījums ir “Patiesa” (iespējota drošības funkcija), izņemot Chrome OS
-      korporatīvajiem lietotājiem, kuriem pašreizējais noklusējuma iestatījums ir “Nepatiesa”.
-
-      Ieteicams izmantot iestatījumu “Patiesa”. Vienīgais iemesls, lai izmantotu iestatījumu
-      “Nepatiesa”, ir saderības problēma ar esošajiem PAC skriptiem.
-
-      Ir paredzams nākotnē noņemt šo ignorēšanas iestatījumu.</translation>
 <translation id="8285435910062771358">Pilnekrāna režīma lupa ir iespējota</translation>
 <translation id="8288199156259560552">Google atrašanās vietas pakalpojuma iespējošana operētājsistēmai Android</translation>
 <translation id="8294750666104911727">Lapas, kurās X-UA-Compatible iestatījums ir chrome=1, parasti tiek renderētas spraudnī <ph name="PRODUCT_FRAME_NAME" /> neatkarīgi no politikas ChromeFrameRendererSettings iestatījuma.
