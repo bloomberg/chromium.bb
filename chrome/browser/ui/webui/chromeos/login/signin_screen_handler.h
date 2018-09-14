@@ -401,6 +401,7 @@ class SigninScreenHandler
   void HandleGetPublicSessionKeyboardLayouts(const AccountId& account_id,
                                              const std::string& locale);
   void HandleGetTabletModeState();
+  void HandleGetDemoModeState();
   void HandleLogRemoveUserWarningShown();
   void HandleFirstIncorrectPasswordAttempt(const AccountId& account_id);
   void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
