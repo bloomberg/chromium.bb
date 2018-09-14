@@ -5,8 +5,10 @@
 #include "extensions/renderer/script_context.h"
 
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -307,13 +309,18 @@ GURL ScriptContext::GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
   // hierarchy to find the closest non-about:-page and return its URL.
   blink::WebFrame* parent = frame;
   blink::WebDocument parent_document;
+  base::flat_set<blink::WebFrame*> already_visited_frames;
   do {
+    already_visited_frames.insert(parent);
     if (parent->Parent())
       parent = parent->Parent();
-    else if (parent->Opener() != parent)
-      parent = parent->Opener();
     else
-      parent = nullptr;
+      parent = parent->Opener();
+
+    // Avoid an infinite loop - see https://crbug.com/568432 and
+    // https://crbug.com/883526.
+    if (base::ContainsKey(already_visited_frames, parent))
+      return document_url;
 
     parent_document = parent && parent->IsWebLocalFrame()
                           ? parent->ToWebLocalFrame()->GetDocument()

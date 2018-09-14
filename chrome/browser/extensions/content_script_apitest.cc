@@ -876,6 +876,54 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, CrossOriginXhr) {
   }
 }
 
+// Regression test for https://crbug.com/883526.
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, InifiniteLoopInGetEffectiveURL) {
+  // Create an extension that injects content scripts into about:blank frames
+  // (and therefore has a chance to trigger an infinite loop in
+  // ScriptContext::GetEffectiveDocumentURL).
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "Content scripts everywhere",
+           "description": "Content scripts everywhere",
+           "version": "0.1",
+           "manifest_version": 2,
+           "content_scripts": [{
+             "matches": ["<all_urls>"],
+             "all_frames": true,
+             "match_about_blank": true,
+             "js": ["script.js"]
+           }],
+           "permissions": ["*://*/*"],
+         })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), "console.log('blah')");
+
+  // Create an "infinite" loop for hopping over parent/opener:
+  // subframe1 ---parent---> mainFrame ---opener--> subframe1 ...
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecJs(web_contents,
+                              R"(
+                                  var iframe = document.createElement('iframe');
+                                  document.body.appendChild(iframe);
+                                  window.name = 'main-frame'; )"));
+  content::RenderFrameHost* subframe1 = web_contents->GetAllFrames()[1];
+  ASSERT_TRUE(
+      content::ExecJs(subframe1, "var w = window.open('', 'main-frame');"));
+  EXPECT_EQ(subframe1, web_contents->GetOpener());
+
+  // Trigger GetEffectiveURL from another subframe:
+  ASSERT_TRUE(content::ExecJs(web_contents,
+                              R"(
+                                  var iframe = document.createElement('iframe');
+                                  document.body.appendChild(iframe); )"));
+
+  // Verify that the renderer is still responsive / that the renderer didn't
+  // enter an infinite loop.
+  EXPECT_EQ(123, content::EvalJs(web_contents, "123"));
+}
+
 // Test fixture which sets a custom NTP Page.
 // TODO(karandeepb): Similar logic to set up a custom NTP is used elsewhere as
 // well. Abstract this away into a reusable test fixture class.
