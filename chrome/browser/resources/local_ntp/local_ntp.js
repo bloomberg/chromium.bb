@@ -640,7 +640,7 @@ function onDeleteCustomLinkDone(success) {
 function showNotification(msg) {
   $(IDS.NOTIFICATION_MESSAGE).textContent = msg;
 
-  if (configData.isMDIconsEnabled) {
+  if (configData.isMDIconsEnabled && configData.isGooglePage) {
     floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
   } else {
     var notification = $(IDS.NOTIFICATION);
@@ -656,7 +656,7 @@ function showNotification(msg) {
  * Hides the Most Visited pop-up notification.
  */
 function hideNotification() {
-  if (configData.isMDIconsEnabled) {
+  if (configData.isMDIconsEnabled && configData.isGooglePage) {
     floatDownNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
   } else {
     var notification = $(IDS.NOTIFICATION);
