@@ -3455,8 +3455,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   params.duration_ms = 100;
   std::unique_ptr<SyntheticTapGesture> gesture(new SyntheticTapGesture(params));
 
-  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner();
-
   RenderWidgetHostImpl* render_widget_host =
       root->current_frame_host()->GetRenderWidgetHost();
   InputEventAckWaiter ack_waiter(child_frame_host->GetRenderWidgetHost(),
