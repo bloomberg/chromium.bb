@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.os.Process;
@@ -38,17 +39,19 @@ public class ModuleLoader {
     public ModuleLoader(ComponentName componentName) {
         mComponentName = componentName;
         String packageName = componentName.getPackageName();
-        String version = "";
+        int versionCode = 0;
+        String versionName = "";
         try {
-            version = ContextUtils.getApplicationContext()
-                              .getPackageManager()
-                              .getPackageInfo(packageName, 0)
-                              .versionName;
+            PackageInfo info = ContextUtils.getApplicationContext()
+                                     .getPackageManager()
+                                     .getPackageInfo(packageName, 0);
+            versionCode = info.versionCode;
+            versionName = info.versionName;
         } catch (PackageManager.NameNotFoundException ignored) {
             // Ignore the exception. Failure to find the package name will be handled in
             // getModuleContext() below.
         }
-        mModuleId = packageName + ":" + version;
+        mModuleId = String.format("%s v%s (%s)", packageName, versionCode, versionName);
     }
 
     public ComponentName getComponentName() {
