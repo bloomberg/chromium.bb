@@ -862,14 +862,9 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
                    'scheduled in this run. Will not publish uprevs.')
       return
 
-    overlays = portage_util.FindOverlays(
-        self._run.config.overlays, buildroot=self._build_root)
     push_overlays = portage_util.FindOverlays(
         self._run.config.push_overlays, buildroot=self._build_root)
 
-    # Sanity checks.
-    # We cannot push to overlays that we don't rev.
-    assert set(push_overlays).issubset(set(overlays))
     # Either has to be a master or not have any push overlays.
     assert self._run.config.master or not push_overlays
 
@@ -920,7 +915,8 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
 
       # Commit uprev and portage cache regeneration locally.
       if self._run.options.uprev and self._run.config.uprev:
-        commands.UprevPackages(self._build_root, self._boards, overlays)
+        commands.UprevPackages(self._build_root, self._boards,
+                               overlay_type=self._run.config.overlays)
         commands.RegenPortageCache(push_overlays)
 
     # When prebuilts is True, if it's a successful run or staging_branch is
