@@ -326,6 +326,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
   EXPECT_TRUE(RunExtensionSubtest(kExtensionPath, "test.html")) << message_;
 }
 
+// Tests if an extension clearing content settings for one content type leaves
+// the others unchanged.
+IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, ClearProperlyGranular) {
+  const char kExtensionPath[] = "content_settings/clearproperlygranular";
+  EXPECT_TRUE(RunExtensionSubtest(kExtensionPath, "test.html")) << message_;
+}
+
 // Tests if changing permissions in incognito mode keeps the previous state of
 // regular mode.
 IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest, IncognitoIsolation) {

@@ -235,13 +235,36 @@ void ContentSettingsStore::ClearContentSettingsForExtension(
   {
     base::AutoLock lock(lock_);
     OriginIdentifierValueMap* map = GetValueMap(ext_id, scope);
-    if (!map) {
-      // Fail gracefully in Release builds.
-      NOTREACHED();
-      return;
-    }
+    DCHECK(map);
     notify = !map->empty();
     map->clear();
+  }
+  if (notify) {
+    NotifyOfContentSettingChanged(ext_id, scope != kExtensionPrefsScopeRegular);
+  }
+}
+
+void ContentSettingsStore::ClearContentSettingsForExtensionAndContentType(
+    const std::string& ext_id,
+    ExtensionPrefsScope scope,
+    ContentSettingsType content_type) {
+  bool notify = false;
+  {
+    base::AutoLock lock(lock_);
+    OriginIdentifierValueMap* map = GetValueMap(ext_id, scope);
+    DCHECK(map);
+
+    // Get all of the resource identifiers for this |content_type|.
+    std::set<ResourceIdentifier> resource_identifiers;
+    for (const auto& entry : *map) {
+      if (entry.first.content_type == content_type)
+        resource_identifiers.insert(entry.first.resource_identifier);
+    }
+
+    notify = !resource_identifiers.empty();
+
+    for (const ResourceIdentifier& resource_identifier : resource_identifiers)
+      map->DeleteValues(content_type, resource_identifier);
   }
   if (notify) {
     NotifyOfContentSettingChanged(ext_id, scope != kExtensionPrefsScopeRegular);

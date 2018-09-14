@@ -99,7 +99,8 @@ ContentSettingsContentSettingClearFunction::Run() {
 
   scoped_refptr<ContentSettingsStore> store =
       ContentSettingsService::Get(browser_context())->content_settings_store();
-  store->ClearContentSettingsForExtension(extension_id(), scope);
+  store->ClearContentSettingsForExtensionAndContentType(extension_id(), scope,
+                                                        content_type);
 
   return RespondNow(NoArguments());
 }
