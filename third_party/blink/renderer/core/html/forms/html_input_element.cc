@@ -164,8 +164,7 @@ const AtomicString& HTMLInputElement::GetName() const {
   return name_.IsNull() ? g_empty_atom : name_;
 }
 
-Vector<FileChooserFileInfo>
-HTMLInputElement::FilesFromFileInputFormControlState(
+FileChooserFileInfoList HTMLInputElement::FilesFromFileInputFormControlState(
     const FormControlState& state) {
   return FileInputType::FilesFromFormControlState(state);
 }

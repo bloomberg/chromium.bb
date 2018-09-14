@@ -296,7 +296,7 @@ Vector<String> SavedFormState::GetReferencedFilePaths() const {
       continue;
     const Deque<FormControlState>& queue = form_control.value;
     for (const FormControlState& form_control_state : queue) {
-      const Vector<FileChooserFileInfo>& selected_files =
+      const FileChooserFileInfoList& selected_files =
           HTMLInputElement::FilesFromFileInputFormControlState(
               form_control_state);
       for (const auto& file : selected_files)

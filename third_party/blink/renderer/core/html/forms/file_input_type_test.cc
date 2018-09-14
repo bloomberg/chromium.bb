@@ -38,7 +38,7 @@ class WebKitDirectoryChromeClient : public EmptyChromeClient {
 }  // namespace
 
 TEST(FileInputTypeTest, createFileList) {
-  Vector<FileChooserFileInfo> files;
+  FileChooserFileInfoList files;
 
   // Native file.
   files.push_back(
