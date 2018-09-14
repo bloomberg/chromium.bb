@@ -274,6 +274,11 @@ const base::Feature kMojoVideoDecoder {
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow playback of encrypted media through the D3D11 decoder.  Requires
+// D3D11VideoDecoder to be enabled also.
+const base::Feature kD3D11EncryptedMedia{"D3D11EncryptedMedia",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
 const base::Feature kMseBufferByPts{"MseBufferByPts",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

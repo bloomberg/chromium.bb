@@ -9432,6 +9432,7 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="kCodecNotSupported">
     Video is using an unsupported codec.
   </int>
+  <int value="6" label="kEncryptedMedia">Video is encrypted.</int>
 </enum>
 
 <enum name="D3D12FeatureLevel">

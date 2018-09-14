@@ -124,10 +124,13 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
     // The video codec must be H264.
     kCodecNotSupported = 5,
 
+    // The media was encrypted.
+    kEncryptedMedia = 6,
+
     // For UMA. Must be the last entry. It should be initialized to the
     // numerically largest value above; if you add more entries, then please
     // update this to the last one.
-    kMaxValue = kCodecNotSupported
+    kMaxValue = kEncryptedMedia
   };
 
   std::unique_ptr<MediaLog> media_log_;
