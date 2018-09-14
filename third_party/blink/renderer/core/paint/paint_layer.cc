@@ -1878,29 +1878,29 @@ static double ComputeZOffset(const HitTestingTransformState& transform_state) {
   return backmapped_point.Z();
 }
 
-scoped_refptr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
+HitTestingTransformState PaintLayer::CreateLocalTransformState(
     PaintLayer* root_layer,
     PaintLayer* container_layer,
     const HitTestRecursionData& recursion_data,
     const HitTestingTransformState* container_transform_state,
     const LayoutPoint& translation_offset) const {
-  scoped_refptr<HitTestingTransformState> transform_state;
+  // If we're already computing transform state, then it's relative to the
+  // container (which we know is non-null).
+  // If this is the first time we need to make transform state, then base it
+  // off of hitTestLocation, which is relative to rootLayer.
+  HitTestingTransformState transform_state =
+      container_transform_state
+          ? *container_transform_state
+          : HitTestingTransformState(recursion_data.location.TransformedPoint(),
+                                     recursion_data.location.TransformedRect(),
+                                     FloatQuad(FloatRect(recursion_data.rect)));
+
   LayoutPoint offset;
-  if (container_transform_state) {
-    // If we're already computing transform state, then it's relative to the
-    // container (which we know is non-null).
-    transform_state =
-        HitTestingTransformState::Create(*container_transform_state);
+  if (container_transform_state)
     ConvertToLayerCoords(container_layer, offset);
-  } else {
-    // If this is the first time we need to make transform state, then base it
-    // off of hitTestLocation, which is relative to rootLayer.
-    transform_state = HitTestingTransformState::Create(
-        recursion_data.location.TransformedPoint(),
-        recursion_data.location.TransformedRect(),
-        FloatQuad(FloatRect(recursion_data.rect)));
+  else
     ConvertToLayerCoords(root_layer, offset);
-  }
+
   offset.MoveBy(translation_offset);
 
   LayoutObject* container_layout_object =
@@ -1910,11 +1910,11 @@ scoped_refptr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
     TransformationMatrix container_transform;
     GetLayoutObject().GetTransformFromContainer(
         container_layout_object, ToLayoutSize(offset), container_transform);
-    transform_state->ApplyTransform(
+    transform_state.ApplyTransform(
         container_transform, HitTestingTransformState::kAccumulateTransform);
   } else {
-    transform_state->Translate(offset.X().ToInt(), offset.Y().ToInt(),
-                               HitTestingTransformState::kAccumulateTransform);
+    transform_state.Translate(offset.X().ToInt(), offset.Y().ToInt(),
+                              HitTestingTransformState::kAccumulateTransform);
   }
 
   return transform_state;
@@ -1960,14 +1960,13 @@ static bool IsHitCandidate(const PaintLayer* hit_layer,
 // If zOffset is non-null (which indicates that the caller wants z offset
 // information), *zOffset on return is the z offset of the hit point relative to
 // the containing flattening layer.
-PaintLayer* PaintLayer::HitTestLayer(
-    PaintLayer* root_layer,
-    PaintLayer* container_layer,
-    HitTestResult& result,
-    const HitTestRecursionData& recursion_data,
-    bool applied_transform,
-    const HitTestingTransformState* transform_state,
-    double* z_offset) {
+PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
+                                     PaintLayer* container_layer,
+                                     HitTestResult& result,
+                                     const HitTestRecursionData& recursion_data,
+                                     bool applied_transform,
+                                     HitTestingTransformState* transform_state,
+                                     double* z_offset) {
   const LayoutObject& layout_object = GetLayoutObject();
   DCHECK_GE(layout_object.GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kCompositingClean);
@@ -2025,19 +2024,21 @@ PaintLayer* PaintLayer::HitTestLayer(
 
   // The natural thing would be to keep HitTestingTransformState on the stack,
   // but it's big, so we heap-allocate.
-  scoped_refptr<HitTestingTransformState> local_transform_state;
+  HitTestingTransformState* local_transform_state = nullptr;
+  base::Optional<HitTestingTransformState> storage;
+
   if (applied_transform) {
     // We computed the correct state in the caller (above code), so just
     // reference it.
     DCHECK(transform_state);
-    local_transform_state =
-        const_cast<HitTestingTransformState*>(transform_state);
+    local_transform_state = transform_state;
   } else if (transform_state || has3d_transformed_descendant_ ||
              Preserves3D()) {
     // We need transform state for the first time, or to offset the container
     // state, so create it here.
-    local_transform_state = CreateLocalTransformState(
-        root_layer, container_layer, recursion_data, transform_state);
+    storage = CreateLocalTransformState(root_layer, container_layer,
+                                        recursion_data, transform_state);
+    local_transform_state = &*storage;
   }
 
   // Check for hit test on backface if backface-visibility is 'hidden'
@@ -2051,13 +2052,13 @@ PaintLayer* PaintLayer::HitTestLayer(
       return nullptr;
   }
 
-  scoped_refptr<HitTestingTransformState> unflattened_transform_state =
-      local_transform_state;
+  HitTestingTransformState* unflattened_transform_state = local_transform_state;
+  base::Optional<HitTestingTransformState> unflattened_storage;
   if (local_transform_state && !Preserves3D()) {
     // Keep a copy of the pre-flattening state, for computing z-offsets for the
     // container
-    unflattened_transform_state =
-        HitTestingTransformState::Create(*local_transform_state);
+    unflattened_storage.emplace(*local_transform_state);
+    unflattened_transform_state = &*unflattened_storage;
     // This layer is flattening, so flatten the state passed to descendants.
     local_transform_state->Flatten();
   }
@@ -2088,8 +2089,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   // the lowest z-index.
   PaintLayer* hit_layer = HitTestChildren(
       kPositiveZOrderChildren, root_layer, result, recursion_data,
-      local_transform_state.get(), z_offset_for_descendants_ptr, z_offset,
-      unflattened_transform_state.get(), depth_sort_descendants);
+      local_transform_state, z_offset_for_descendants_ptr, z_offset,
+      unflattened_transform_state, depth_sort_descendants);
   if (hit_layer) {
     if (!depth_sort_descendants)
       return hit_layer;
@@ -2099,8 +2100,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   // Now check our overflow objects.
   hit_layer = HitTestChildren(
       kNormalFlowChildren, root_layer, result, recursion_data,
-      local_transform_state.get(), z_offset_for_descendants_ptr, z_offset,
-      unflattened_transform_state.get(), depth_sort_descendants);
+      local_transform_state, z_offset_for_descendants_ptr, z_offset,
+      unflattened_transform_state, depth_sort_descendants);
   if (hit_layer) {
     if (!depth_sort_descendants)
       return hit_layer;
@@ -2146,7 +2147,7 @@ PaintLayer* PaintLayer::HitTestLayer(
               *layer_fragments, offset, temp_result, recursion_data.location,
               kHitTestDescendants, inside_fragment_foreground_rect) &&
           IsHitCandidate(this, false, z_offset_for_contents_ptr,
-                         unflattened_transform_state.get())) {
+                         unflattened_transform_state)) {
         if (result.GetHitTestRequest().ListBased())
           result.Append(temp_result);
         else
@@ -2166,8 +2167,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   // Now check our negative z-index children.
   hit_layer = HitTestChildren(
       kNegativeZOrderChildren, root_layer, result, recursion_data,
-      local_transform_state.get(), z_offset_for_descendants_ptr, z_offset,
-      unflattened_transform_state.get(), depth_sort_descendants);
+      local_transform_state, z_offset_for_descendants_ptr, z_offset,
+      unflattened_transform_state, depth_sort_descendants);
   if (hit_layer) {
     if (!depth_sort_descendants)
       return hit_layer;
@@ -2187,7 +2188,7 @@ PaintLayer* PaintLayer::HitTestLayer(
                                     recursion_data.location, kHitTestSelf,
                                     inside_fragment_background_rect) &&
         IsHitCandidate(this, false, z_offset_for_contents_ptr,
-                       unflattened_transform_state.get())) {
+                       unflattened_transform_state)) {
       if (result.GetHitTestRequest().ListBased())
         result.Append(temp_result);
       else
@@ -2235,7 +2236,7 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
     PaintLayer* container_layer,
     HitTestResult& result,
     const HitTestRecursionData& recursion_data,
-    const HitTestingTransformState* transform_state,
+    HitTestingTransformState* transform_state,
     double* z_offset,
     ShouldRespectOverflowClipType clip_behavior) {
   PaintLayerFragments enclosing_pagination_fragments;
@@ -2268,16 +2269,16 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
     PaintLayer* container_layer,
     HitTestResult& result,
     const HitTestRecursionData& recursion_data,
-    const HitTestingTransformState* transform_state,
+    HitTestingTransformState* transform_state,
     double* z_offset,
     const LayoutPoint& translation_offset) {
   // Create a transform state to accumulate this transform.
-  scoped_refptr<HitTestingTransformState> new_transform_state =
+  HitTestingTransformState new_transform_state =
       CreateLocalTransformState(root_layer, container_layer, recursion_data,
                                 transform_state, translation_offset);
 
   // If the transform can't be inverted, then don't hit test this layer at all.
-  if (!new_transform_state->accumulated_transform_.IsInvertible())
+  if (!new_transform_state.accumulated_transform_.IsInvertible())
     return nullptr;
 
   // Compute the point and the hit test rect in the coords of this layer by
@@ -2287,9 +2288,9 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
   //
   // We can't just map hitTestLocation and hitTestRect because they may have
   // been flattened (losing z) by our container.
-  FloatPoint local_point = new_transform_state->MappedPoint();
-  FloatQuad local_point_quad = new_transform_state->MappedQuad();
-  LayoutRect bounds_of_mapped_area = new_transform_state->BoundsOfMappedArea();
+  FloatPoint local_point = new_transform_state.MappedPoint();
+  FloatQuad local_point_quad = new_transform_state.MappedQuad();
+  LayoutRect bounds_of_mapped_area = new_transform_state.BoundsOfMappedArea();
   base::Optional<HitTestLocation> new_location;
   if (recursion_data.location.IsRectBasedTest())
     new_location.emplace(local_point, local_point_quad);
@@ -2300,7 +2301,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
 
   // Now do a hit test with the root layer shifted to be us.
   return HitTestLayer(this, container_layer, result, new_recursion_data, true,
-                      new_transform_state.get(), z_offset);
+                      &new_transform_state, z_offset);
 }
 
 bool PaintLayer::HitTestContents(HitTestResult& result,
@@ -2375,10 +2376,10 @@ PaintLayer* PaintLayer::HitTestChildren(
     PaintLayer* root_layer,
     HitTestResult& result,
     const HitTestRecursionData& recursion_data,
-    const HitTestingTransformState* transform_state,
+    HitTestingTransformState* transform_state,
     double* z_offset_for_descendants,
     double* z_offset,
-    const HitTestingTransformState* unflattened_transform_state,
+    HitTestingTransformState* unflattened_transform_state,
     bool depth_sort_descendants) {
   if (!HasSelfPaintingLayerDescendant())
     return nullptr;
