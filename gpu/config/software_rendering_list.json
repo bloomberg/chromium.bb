@@ -1667,6 +1667,23 @@
       "features": [
         "oop_rasterization"
       ]
+    },
+    {
+      "id": 157,
+      "description": "VMware can crash with older drivers and WebGL content",
+      "cr_bugs": [879098],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x15ad",
+      "driver_version": {
+        "op": "<=",
+        "value": "7.14.1.1210"
+      },
+      "features": [
+        "accelerated_webgl",
+        "accelerated_webgl2"
+      ]
     }
   ]
 }
