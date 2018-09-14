@@ -19,51 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace {
-const char kTestUrl[] = "https://www.test.com/";
-}
-
-class PreviewsLitePageNavigationThrottleTest
-    : public ChromeRenderViewHostTestHarness {
- protected:
-  PreviewsLitePageNavigationThrottleTest() = default;
-
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-    test_handle_ = content::NavigationHandle::CreateNavigationHandleForTesting(
-        GURL(kTestUrl), main_rfh());
-
-    content::RenderFrameHostTester::For(main_rfh())
-        ->InitializeRenderFrameIfNeeded();
-  }
-
-  void SimulateCommit() {
-    test_handle_->CallDidCommitNavigationForTesting(test_handle_->GetURL());
-  }
-
-  void SimulateWillProcessResponse() {
-    std::string headers("HTTP/1.1 200 OK\n\n");
-    test_handle_->CallWillProcessResponseForTesting(
-        main_rfh(),
-        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
-    SimulateCommit();
-  }
-
-  void CallDidFinishNavigation() { test_handle_.reset(); }
-
-  content::NavigationHandle* handle() { return test_handle_.get(); }
-
-  content::NavigationHandle* handle_with_url(std::string url) {
-    test_handle_ = content::NavigationHandle::CreateNavigationHandleForTesting(
-        GURL(url), main_rfh());
-    return test_handle_.get();
-  }
-
- private:
-  std::unique_ptr<content::NavigationHandle> test_handle_;
-};
-
-TEST_F(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
+TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
   struct TestCase {
     std::string previews_host;
     std::string original_url;
@@ -122,21 +78,13 @@ TEST_F(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
         previews::features::kLitePageServerPreviews,
         {{"previews_host", test_case.previews_host}});
 
-    std::unique_ptr<PreviewsLitePageDecider> decider =
-        std::make_unique<PreviewsLitePageDecider>();
-    std::unique_ptr<PreviewsLitePageNavigationThrottle> throttle =
-        std::make_unique<PreviewsLitePageNavigationThrottle>(
-            handle_with_url(test_case.original_url), decider.get());
-
-    EXPECT_EQ(throttle->GetPreviewsURL(), test_case.previews_url);
+    EXPECT_EQ(PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
+                  GURL(test_case.original_url)),
+              GURL(test_case.previews_url));
   }
-
-  // Boilerplate navigation to keep the test harness happy.
-  SimulateWillProcessResponse();
-  CallDidFinishNavigation();
 }
 
-TEST_F(PreviewsLitePageNavigationThrottleTest, TestGetOriginalURL) {
+TEST(PreviewsLitePageNavigationThrottleTest, TestGetOriginalURL) {
   struct TestCase {
     std::string previews_host;
     std::string original_url;
@@ -175,8 +123,4 @@ TEST_F(PreviewsLitePageNavigationThrottleTest, TestGetOriginalURL) {
     EXPECT_EQ(got_ok, test_case.want_ok);
     EXPECT_EQ(original_url, test_case.original_url);
   }
-
-  // Boilerplate navigation to keep the test harness happy.
-  SimulateWillProcessResponse();
-  CallDidFinishNavigation();
 }

@@ -13,8 +13,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "components/base32/base32.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/previews/core/previews_experiments.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
@@ -25,8 +30,10 @@
 #include "net/base/escape.h"
 #include "net/base/ip_address.h"
 #include "net/base/url_util.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -55,11 +62,12 @@ bool IsPrivateDomain(const GURL& url) {
 }
 
 content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
-                                         GURL url) {
+                                         GURL url,
+                                         const std::string& headers) {
   content::OpenURLParams url_params(
       url, handle->GetReferrer(), WindowOpenDisposition::CURRENT_TAB,
       handle->GetPageTransition(), handle->IsRendererInitiated());
-  // TODO(crbug.com/864652): Add chrome-proxy headers if this is a Preview.
+  url_params.extra_headers = headers;
   url_params.redirect_chain = handle->GetRedirectChain();
   url_params.frame_tree_node_id = handle->GetFrameTreeNodeId();
   url_params.user_gesture = handle->HasUserGesture();
@@ -175,8 +183,9 @@ bool PreviewsLitePageNavigationThrottle::GetOriginalURL(
   return true;
 }
 
-GURL PreviewsLitePageNavigationThrottle::GetPreviewsURL() const {
-  GURL original_url = navigation_handle()->GetURL();
+// static
+GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
+    const GURL& original_url) {
   DCHECK(original_url.is_valid());
   DCHECK(!IsPreviewsDomain(original_url));
 
@@ -194,6 +203,10 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURL() const {
   DCHECK(previews_url.is_valid());
   DCHECK(previews_url.SchemeIs(url::kHttpsScheme));
   return previews_url;
+}
+
+GURL PreviewsLitePageNavigationThrottle::GetPreviewsURL() const {
+  return GetPreviewsURLForURL(navigation_handle()->GetURL());
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -217,8 +230,26 @@ PreviewsLitePageNavigationThrottle::CreateNewNavigation(
 
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::TriggerPreview() const {
-  content::OpenURLParams url_params =
-      MakeOpenURLParams(navigation_handle(), GetPreviewsURL());
+  net::HttpRequestHeaders request_headers;
+  content::BrowserContext* browser_context =
+      navigation_handle()->GetWebContents()->GetBrowserContext();
+
+  // Set DRP headers.
+  DataReductionProxyChromeSettings* drp_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          browser_context);
+  DCHECK(drp_settings);
+  request_headers.MergeFrom(drp_settings->GetProxyRequestHeaders());
+
+  // Set ECT header.
+  request_headers.SetHeader(data_reduction_proxy::chrome_proxy_ect_header(),
+                            net::GetNameForEffectiveConnectionType(
+                                g_browser_process->network_quality_tracker()
+                                    ->GetEffectiveConnectionType()));
+
+  // TODO(crbug.com/883955): Add in page id to the chrome-proxy header.
+  content::OpenURLParams url_params = MakeOpenURLParams(
+      navigation_handle(), GetPreviewsURL(), request_headers.ToString());
   return CreateNewNavigation(url_params);
 }
 
@@ -257,7 +288,7 @@ PreviewsLitePageNavigationThrottle::WillFailRequest() {
   // through the normal process for whatever error it is.
   manager_->AddSingleBypass(original_url);
   content::OpenURLParams url_params =
-      MakeOpenURLParams(navigation_handle(), GURL(original_url));
+      MakeOpenURLParams(navigation_handle(), GURL(original_url), std::string());
 
   return CreateNewNavigation(url_params);
 }
@@ -300,7 +331,7 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
                              penalty);
   manager_->AddSingleBypass(original_url);
   content::OpenURLParams original_url_params =
-      MakeOpenURLParams(navigation_handle(), GURL(original_url));
+      MakeOpenURLParams(navigation_handle(), GURL(original_url), std::string());
 
   if (response_code == net::HTTP_NOT_FOUND) {
     UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",

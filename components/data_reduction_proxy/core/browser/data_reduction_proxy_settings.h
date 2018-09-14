@@ -19,6 +19,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "components/prefs/pref_member.h"
+#include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -132,6 +133,9 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Configures data reduction proxy. |at_startup| is true when this method is
   // called in response to creating or loading a new profile.
   void MaybeActivateDataReductionProxy(bool at_startup);
+
+  // Returns headers to use for requests to the compression server.
+  const net::HttpRequestHeaders& GetProxyRequestHeaders() const;
 
   // Returns the event store being used. May be null if
   // InitDataReductionProxySettings has not been called.

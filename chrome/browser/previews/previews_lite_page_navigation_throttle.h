@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_NAVIGATION_THROTTLE_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_NAVIGATION_THROTTLE_H_
 
-#include "base/gtest_prod_util.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -65,10 +64,10 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   // |original_url| if you only want the boolean return value.
   static bool GetOriginalURL(const GURL& url, std::string* original_url);
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageNavigationThrottleTest,
-                           TestGetPreviewsURL);
+  // Returns the URL for a preview given by the url.
+  static GURL GetPreviewsURLForURL(const GURL& original_url);
 
+ private:
   // The current effective connection type;
   net::EffectiveConnectionType GetECT() const;
 

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -31,8 +33,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "url/gurl.h"
 
 class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
@@ -43,6 +47,8 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
+    cmd->AppendSwitchASCII("data-reduction-proxy-client-config",
+                           data_reduction_proxy::DummyBase64Config());
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
     // Resolve all localhost subdomains to plain localhost so that Chrome's Test
     // DNS resolver doesn't get upset.
@@ -124,6 +130,14 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
     InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
   }
 
   content::WebContents* GetWebContents() const {
@@ -229,6 +243,16 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
       return response;
     }
     GURL original_url = GURL(original_url_str);
+
+    // Reject anything that doesn't have the DataSaver headers.
+    const std::string want_headers[] = {"chrome-proxy-ect", "chrome-proxy"};
+    for (const std::string& header : want_headers) {
+      if (request.headers.find(header) == request.headers.end()) {
+        response->set_code(
+            net::HttpStatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED);
+        return response;
+      }
+    }
 
     std::string code_query_param;
     int return_code = 0;
@@ -614,6 +638,42 @@ class PreviewsLitePageServerDataSaverBrowserTest
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerDataSaverBrowserTest,
                        MAYBE_LitePagePreviewsDSTriggering) {
   // Verify the preview is not triggered on HTTPS pageloads without DataSaver.
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
+  VerifyPreviewNotLoaded();
+}
+
+class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
+    : public PreviewsLitePageServerBrowserTest {
+ public:
+  PreviewsLitePageServerNoDataSaverHeaderBrowserTest() = default;
+
+  ~PreviewsLitePageServerNoDataSaverHeaderBrowserTest() override = default;
+
+  // Overrides the command line in PreviewsLitePageServerBrowserTest to leave
+  // out the flag that manually adds the chrome-proxy header.
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitch("enable-spdy-proxy-auth");
+    cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
+    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
+    // DNS resolver doesn't get upset.
+    cmd->AppendSwitchASCII(
+        "host-rules", "MAP *.localhost 127.0.0.1, MAP *.127.0.0.1 127.0.0.1");
+  }
+};
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsDSNoHeaderTriggering \
+  LitePagePreviewsDSNoHeaderTriggering
+#else
+#define MAYBE_LitePagePreviewsDSNoHeaderTriggering \
+  DISABLED_LitePagePreviewsDSNoHeaderTriggering
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
+                       MAYBE_LitePagePreviewsDSNoHeaderTriggering) {
+  // Verify the preview is not triggered on HTTPS pageloads without data saver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200));
   VerifyPreviewNotLoaded();
 }
