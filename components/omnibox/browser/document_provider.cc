@@ -361,7 +361,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     return false;
   }
   size_t num_results = results_list->GetSize();
-  UMA_HISTOGRAM_COUNTS("Omnibox.DocumentSuggest.ResultCount", num_results);
+  UMA_HISTOGRAM_COUNTS_1M("Omnibox.DocumentSuggest.ResultCount", num_results);
 
   // Create a synthetic score, for when there's no signal from the API.
   // For now, allow setting of each of three scores from Finch.

@@ -445,8 +445,8 @@ void SyncManagerImpl::PurgePartiallySyncedTypes() {
 
   DVLOG(1) << "Purging partially synced types "
            << ModelTypeSetToString(partially_synced_types);
-  UMA_HISTOGRAM_COUNTS("Sync.PartiallySyncedTypes",
-                       partially_synced_types.Size());
+  UMA_HISTOGRAM_COUNTS_1M("Sync.PartiallySyncedTypes",
+                          partially_synced_types.Size());
   directory()->PurgeEntriesWithTypeIn(partially_synced_types, ModelTypeSet(),
                                       ModelTypeSet());
 }

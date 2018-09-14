@@ -371,8 +371,8 @@ void ReportAutoReloadSuccess(const error_page::Error& error, size_t count) {
   if (error.domain() != error_page::Error::kNetErrorDomain)
     return;
   base::UmaHistogramSparse("Net.AutoReload.ErrorAtSuccess", -error.reason());
-  UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess",
-                       static_cast<base::HistogramBase::Sample>(count));
+  UMA_HISTOGRAM_COUNTS_1M("Net.AutoReload.CountAtSuccess",
+                          static_cast<base::HistogramBase::Sample>(count));
   if (count == 1) {
     base::UmaHistogramSparse("Net.AutoReload.ErrorAtFirstSuccess",
                              -error.reason());
@@ -383,8 +383,8 @@ void ReportAutoReloadFailure(const error_page::Error& error, size_t count) {
   if (error.domain() != error_page::Error::kNetErrorDomain)
     return;
   base::UmaHistogramSparse("Net.AutoReload.ErrorAtStop", -error.reason());
-  UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop",
-                       static_cast<base::HistogramBase::Sample>(count));
+  UMA_HISTOGRAM_COUNTS_1M("Net.AutoReload.CountAtStop",
+                          static_cast<base::HistogramBase::Sample>(count));
 }
 
 // Tracks navigation correction service usage in UMA to enable more in depth

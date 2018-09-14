@@ -199,8 +199,8 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
     UMA_HISTOGRAM_ENUMERATION(
         "WebRTC.AudioInputSampleRate", asr, media::kAudioSampleRateMax + 1);
   } else {
-    UMA_HISTOGRAM_COUNTS("WebRTC.AudioInputSampleRateUnexpected",
-                         device().input.sample_rate());
+    UMA_HISTOGRAM_COUNTS_1M("WebRTC.AudioInputSampleRateUnexpected",
+                            device().input.sample_rate());
   }
 
   // Determine the audio format required of the AudioCapturerSource. Then, pass

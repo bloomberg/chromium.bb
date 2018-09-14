@@ -160,13 +160,13 @@ void HistoryDatabase::ComputeDatabaseMetrics(
   sql::Statement url_count(db_.GetUniqueStatement("SELECT count(*) FROM urls"));
   if (!url_count.Step())
     return;
-  UMA_HISTOGRAM_COUNTS("History.URLTableCount", url_count.ColumnInt(0));
+  UMA_HISTOGRAM_COUNTS_1M("History.URLTableCount", url_count.ColumnInt(0));
 
   sql::Statement visit_count(db_.GetUniqueStatement(
       "SELECT count(*) FROM visits"));
   if (!visit_count.Step())
     return;
-  UMA_HISTOGRAM_COUNTS("History.VisitTableCount", visit_count.ColumnInt(0));
+  UMA_HISTOGRAM_COUNTS_1M("History.VisitTableCount", visit_count.ColumnInt(0));
 
   base::Time one_week_ago = base::Time::Now() - base::TimeDelta::FromDays(7);
   sql::Statement weekly_visit_sql(db_.GetUniqueStatement(
@@ -175,7 +175,7 @@ void HistoryDatabase::ComputeDatabaseMetrics(
   int weekly_visit_count = 0;
   if (weekly_visit_sql.Step())
     weekly_visit_count = weekly_visit_sql.ColumnInt(0);
-  UMA_HISTOGRAM_COUNTS("History.WeeklyVisitCount", weekly_visit_count);
+  UMA_HISTOGRAM_COUNTS_1M("History.WeeklyVisitCount", weekly_visit_count);
 
   base::Time one_month_ago = base::Time::Now() - base::TimeDelta::FromDays(30);
   sql::Statement monthly_visit_sql(db_.GetUniqueStatement(
@@ -185,8 +185,8 @@ void HistoryDatabase::ComputeDatabaseMetrics(
   int older_visit_count = 0;
   if (monthly_visit_sql.Step())
     older_visit_count = monthly_visit_sql.ColumnInt(0);
-  UMA_HISTOGRAM_COUNTS("History.MonthlyVisitCount",
-                       older_visit_count + weekly_visit_count);
+  UMA_HISTOGRAM_COUNTS_1M("History.MonthlyVisitCount",
+                          older_visit_count + weekly_visit_count);
 
   UMA_HISTOGRAM_TIMES("History.DatabaseBasicMetricsTime",
                       base::TimeTicks::Now() - start_time);
@@ -218,10 +218,10 @@ void HistoryDatabase::ComputeDatabaseMetrics(
         week_hosts.insert(url.host());
       }
     }
-    UMA_HISTOGRAM_COUNTS("History.WeeklyURLCount", week_url_count);
+    UMA_HISTOGRAM_COUNTS_1M("History.WeeklyURLCount", week_url_count);
     UMA_HISTOGRAM_COUNTS_10000("History.WeeklyHostCount",
                                static_cast<int>(week_hosts.size()));
-    UMA_HISTOGRAM_COUNTS("History.MonthlyURLCount", month_url_count);
+    UMA_HISTOGRAM_COUNTS_1M("History.MonthlyURLCount", month_url_count);
     UMA_HISTOGRAM_COUNTS_10000("History.MonthlyHostCount",
                                static_cast<int>(month_hosts.size()));
     UMA_HISTOGRAM_TIMES("History.DatabaseAdvancedMetricsTime",

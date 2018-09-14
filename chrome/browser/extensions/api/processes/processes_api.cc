@@ -554,7 +554,7 @@ ProcessesTerminateFunction::TerminateIfAllowed(base::ProcessHandle handle) {
   const bool did_terminate =
       process.Terminate(content::RESULT_CODE_KILLED, true /* wait */);
   if (did_terminate)
-    UMA_HISTOGRAM_COUNTS("ChildProcess.KilledByExtensionAPI", 1);
+    UMA_HISTOGRAM_COUNTS_1M("ChildProcess.KilledByExtensionAPI", 1);
 
   return ArgumentList(
       api::processes::Terminate::Results::Create(did_terminate));

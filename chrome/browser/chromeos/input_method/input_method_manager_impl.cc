@@ -417,8 +417,8 @@ bool InputMethodManagerImpl::StateImpl::ReplaceEnabledInputMethods(
   ChangeInputMethod(current_input_method.id(), false);
 
   // Record histogram for active input method count.
-  UMA_HISTOGRAM_COUNTS("InputMethod.ActiveCount",
-                       active_input_method_ids.size());
+  UMA_HISTOGRAM_COUNTS_1M("InputMethod.ActiveCount",
+                          active_input_method_ids.size());
 
   return true;
 }

@@ -112,10 +112,10 @@ class ChangeListProcessor::ChangeListToEntryMapUMAStats {
   // Updates UMA histograms with file counts.
   void UpdateFileCountUmaHistograms() {
     const int num_total_files = num_hosted_documents_ + num_regular_files_;
-    UMA_HISTOGRAM_COUNTS("Drive.NumberOfRegularFiles", num_regular_files_);
-    UMA_HISTOGRAM_COUNTS("Drive.NumberOfHostedDocuments",
-                         num_hosted_documents_);
-    UMA_HISTOGRAM_COUNTS("Drive.NumberOfTotalFiles", num_total_files);
+    UMA_HISTOGRAM_COUNTS_1M("Drive.NumberOfRegularFiles", num_regular_files_);
+    UMA_HISTOGRAM_COUNTS_1M("Drive.NumberOfHostedDocuments",
+                            num_hosted_documents_);
+    UMA_HISTOGRAM_COUNTS_1M("Drive.NumberOfTotalFiles", num_total_files);
   }
 
  private:

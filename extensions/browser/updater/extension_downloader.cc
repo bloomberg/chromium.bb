@@ -468,7 +468,7 @@ void ExtensionDownloader::StartUpdateCheck(
   } else {
     UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateCalls",
                              fetch_data->extension_ids().size());
-    UMA_HISTOGRAM_COUNTS(
+    UMA_HISTOGRAM_COUNTS_1M(
         "Extensions.UpdateCheckUrlLength",
         fetch_data->full_url().possibly_invalid_spec().length());
 

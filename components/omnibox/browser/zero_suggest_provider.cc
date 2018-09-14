@@ -448,9 +448,9 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   const int num_query_results = map.size();
   const int num_nav_results = results_.navigation_results.size();
   const int num_results = num_query_results + num_nav_results;
-  UMA_HISTOGRAM_COUNTS("ZeroSuggest.QueryResults", num_query_results);
-  UMA_HISTOGRAM_COUNTS("ZeroSuggest.URLResults", num_nav_results);
-  UMA_HISTOGRAM_COUNTS("ZeroSuggest.AllResults", num_results);
+  UMA_HISTOGRAM_COUNTS_1M("ZeroSuggest.QueryResults", num_query_results);
+  UMA_HISTOGRAM_COUNTS_1M("ZeroSuggest.URLResults", num_nav_results);
+  UMA_HISTOGRAM_COUNTS_1M("ZeroSuggest.AllResults", num_results);
 
   // Show Most Visited results after ZeroSuggest response is received.
   if (result_type_running_ == MOST_VISITED) {
@@ -459,7 +459,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
     matches_.push_back(current_url_match_);
     int relevance = 600;
     if (num_results > 0) {
-      UMA_HISTOGRAM_COUNTS(
+      UMA_HISTOGRAM_COUNTS_1M(
           "Omnibox.ZeroSuggest.MostVisitedResultsCounterfactual",
           most_visited_urls_.size());
     }

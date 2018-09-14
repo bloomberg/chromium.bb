@@ -1084,8 +1084,8 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
   base::UmaHistogramSparse("NewTabPage.Snippets.NumArticles",
                            content.suggestions.size());
   if (content.suggestions.empty() && !content.dismissed.empty()) {
-    UMA_HISTOGRAM_COUNTS("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded",
-                         content.dismissed.size());
+    UMA_HISTOGRAM_COUNTS_1M("NewTabPage.Snippets.NumArticlesZeroDueToDiscarded",
+                            content.dismissed.size());
   }
 
   if (callback) {

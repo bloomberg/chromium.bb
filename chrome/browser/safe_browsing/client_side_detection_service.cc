@@ -307,7 +307,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
 
   std::string request_data;
   if (!request->SerializeToString(&request_data)) {
-    UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestNotSerialized", 1);
+    UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.RequestNotSerialized", 1);
     DVLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
     if (!callback.is_null())
       callback.Run(GURL(request->url()), false);
@@ -449,8 +449,8 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
   UMA_HISTOGRAM_ENUMERATION("SBClientMalware.SentReports", REPORT_SENT,
                             REPORT_RESULT_MAX);
 
-  UMA_HISTOGRAM_COUNTS("SBClientMalware.IPBlacklistRequestPayloadSize",
-                       request_data.size());
+  UMA_HISTOGRAM_COUNTS_1M("SBClientMalware.IPBlacklistRequestPayloadSize",
+                          request_data.size());
 
   // Record that we made a malware request
   malware_report_times_.push(base::Time::Now());

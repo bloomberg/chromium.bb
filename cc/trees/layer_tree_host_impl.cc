@@ -1216,11 +1216,11 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     UMA_HISTOGRAM_COUNTS_100(
         "Compositing.RenderPass.AppendQuadData.NumIncompleteTiles",
         num_incomplete_tiles);
-    UMA_HISTOGRAM_COUNTS(
+    UMA_HISTOGRAM_COUNTS_1M(
         "Compositing.RenderPass.AppendQuadData."
         "CheckerboardedNoRecordingContentArea",
         checkerboarded_no_recording_content_area);
-    UMA_HISTOGRAM_COUNTS(
+    UMA_HISTOGRAM_COUNTS_1M(
         "Compositing.RenderPass.AppendQuadData."
         "CheckerboardedNeedRasterContentArea",
         checkerboarded_needs_raster_content_area);
@@ -1303,7 +1303,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
       total_gpu_memory_for_tilings_in_bytes += layer->GPUMemoryUsageInBytes();
     }
     if (total_memory_in_bytes != 0) {
-      UMA_HISTOGRAM_COUNTS(
+      UMA_HISTOGRAM_COUNTS_1M(
           base::StringPrintf("Compositing.%s.PictureMemoryUsageKb",
                              client_name),
           base::saturated_cast<int>(total_memory_in_bytes / 1024));

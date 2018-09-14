@@ -281,7 +281,8 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
 
   void OnReadComplete(net::IOBuffer* buffer, int result) override {
     if (result >= 0)
-      UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.OnReadCompleteResult", result);
+      UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.OnReadCompleteResult",
+                              result);
     else
       base::UmaHistogramSparse("ExtensionUrlRequest.OnReadCompleteError",
                                -result);
@@ -300,8 +301,9 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
 
  private:
   ~URLRequestExtensionJob() override {
-    UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.TotalKbRead", bytes_read_ / 1024);
-    UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.SeekPosition", seek_position_);
+    UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.TotalKbRead",
+                            bytes_read_ / 1024);
+    UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.SeekPosition", seek_position_);
     if (request_timer_.get())
       UMA_HISTOGRAM_TIMES("ExtensionUrlRequest.Latency",
                           request_timer_->Elapsed());
@@ -679,8 +681,9 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
       : verify_job_(std::move(verify_job)) {}
   ~FileLoaderObserver() override {
     base::AutoLock auto_lock(lock_);
-    UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.TotalKbRead", bytes_read_ / 1024);
-    UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.SeekPosition", seek_position_);
+    UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.TotalKbRead",
+                            bytes_read_ / 1024);
+    UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.SeekPosition", seek_position_);
     if (request_timer_.get())
       UMA_HISTOGRAM_TIMES("ExtensionUrlRequest.Latency",
                           request_timer_->Elapsed());
@@ -705,8 +708,8 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
                    size_t num_bytes_read,
                    base::File::Error read_result) override {
     if (read_result == base::File::FILE_OK) {
-      UMA_HISTOGRAM_COUNTS("ExtensionUrlRequest.OnReadCompleteResult",
-                           read_result);
+      UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.OnReadCompleteResult",
+                              read_result);
       base::AutoLock auto_lock(lock_);
       bytes_read_ += num_bytes_read;
       if (verify_job_.get())

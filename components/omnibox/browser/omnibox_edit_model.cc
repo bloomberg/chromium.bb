@@ -472,7 +472,7 @@ bool OmniboxEditModel::CanPasteAndGo(const base::string16& text) const {
 void OmniboxEditModel::PasteAndGo(const base::string16& text,
                                   base::TimeTicks match_selection_timestamp) {
   DCHECK(CanPasteAndGo(text));
-  UMA_HISTOGRAM_COUNTS("Omnibox.PasteAndGo", 1);
+  UMA_HISTOGRAM_COUNTS_1M("Omnibox.PasteAndGo", 1);
 
   view_->RevertAll();
   AutocompleteMatch match;
@@ -1029,7 +1029,7 @@ void OmniboxEditModel::OnControlKeyChanged(bool pressed) {
 }
 
 void OmniboxEditModel::OnPaste() {
-  UMA_HISTOGRAM_COUNTS("Omnibox.Paste", 1);
+  UMA_HISTOGRAM_COUNTS_1M("Omnibox.Paste", 1);
   paste_state_ = PASTING;
 }
 

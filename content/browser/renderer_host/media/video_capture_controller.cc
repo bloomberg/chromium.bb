@@ -536,10 +536,10 @@ void VideoCaptureController::OnFrameReadyInBuffer(
   }
 
   if (!has_received_frames_) {
-    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Width",
-                         frame_info->coded_size.width());
-    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Height",
-                         frame_info->coded_size.height());
+    UMA_HISTOGRAM_COUNTS_1M("Media.VideoCapture.Width",
+                            frame_info->coded_size.width());
+    UMA_HISTOGRAM_COUNTS_1M("Media.VideoCapture.Height",
+                            frame_info->coded_size.height());
     UMA_HISTOGRAM_ASPECT_RATIO("Media.VideoCapture.AspectRatio",
                                frame_info->coded_size.width(),
                                frame_info->coded_size.height());
@@ -551,7 +551,7 @@ void VideoCaptureController::OnFrameReadyInBuffer(
         frame_rate = video_capture_format_->frame_rate;
       }
     }
-    UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate", frame_rate);
+    UMA_HISTOGRAM_COUNTS_1M("Media.VideoCapture.FrameRate", frame_rate);
     UMA_HISTOGRAM_TIMES("Media.VideoCapture.DelayUntilFirstFrame",
                         base::TimeTicks::Now() - time_of_start_request_);
     OnLog("First frame received at VideoCaptureController");

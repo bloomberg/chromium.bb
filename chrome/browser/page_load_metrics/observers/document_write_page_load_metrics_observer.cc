@@ -103,7 +103,7 @@ void DocumentWritePageLoadMetricsObserver::OnLoadingBehaviorObserved(
     DCHECK(!(
         info.main_frame_metadata.behavior_flags &
         blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock));
-    UMA_HISTOGRAM_COUNTS(internal::kHistogramDocWriteBlockReloadCount, 1);
+    UMA_HISTOGRAM_COUNTS_1M(internal::kHistogramDocWriteBlockReloadCount, 1);
     LogLoadingBehaviorMetrics(LOADING_BEHAVIOR_RELOAD, info.source_id);
     doc_write_block_reload_observed_ = true;
   }

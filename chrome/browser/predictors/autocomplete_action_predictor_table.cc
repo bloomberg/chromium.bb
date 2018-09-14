@@ -256,8 +256,8 @@ void AutocompleteActionPredictorTable::LogDatabaseStats()  {
                          kAutocompletePredictorTableName).c_str()));
   if (!count_statement.is_valid() || !count_statement.Step())
     return;
-  UMA_HISTOGRAM_COUNTS("AutocompleteActionPredictor.DatabaseRowCount",
-                       count_statement.ColumnInt(0));
+  UMA_HISTOGRAM_COUNTS_1M("AutocompleteActionPredictor.DatabaseRowCount",
+                          count_statement.ColumnInt(0));
 }
 
 }  // namespace predictors

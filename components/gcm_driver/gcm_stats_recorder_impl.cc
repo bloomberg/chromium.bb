@@ -324,7 +324,7 @@ void GCMStatsRecorderImpl::RecordRegistration(
 void GCMStatsRecorderImpl::RecordRegistrationSent(
     const std::string& app_id,
     const std::string& sender_ids) {
-  UMA_HISTOGRAM_COUNTS("GCM.RegistrationRequest", 1);
+  UMA_HISTOGRAM_COUNTS_1M("GCM.RegistrationRequest", 1);
   if (!is_recording_)
     return;
   RecordRegistration(app_id, sender_ids,
@@ -360,7 +360,7 @@ void GCMStatsRecorderImpl::RecordRegistrationRetryDelayed(
 
 void GCMStatsRecorderImpl::RecordUnregistrationSent(
     const std::string& app_id, const std::string& source) {
-  UMA_HISTOGRAM_COUNTS("GCM.UnregistrationRequest", 1);
+  UMA_HISTOGRAM_COUNTS_1M("GCM.UnregistrationRequest", 1);
   if (!is_recording_)
     return;
   RecordRegistration(app_id, source, "Unregistration request sent",
@@ -428,8 +428,8 @@ void GCMStatsRecorderImpl::RecordDataMessageReceived(
     UMA_HISTOGRAM_LONG_TIMES(
         "GCM.DataMessageBurstReceivedInterval",
         (new_timestamp - last_received_data_message_burst_start_time_));
-    UMA_HISTOGRAM_COUNTS("GCM.ReceivedDataMessageBurstSize",
-                         received_data_message_burst_size_);
+    UMA_HISTOGRAM_COUNTS_1M("GCM.ReceivedDataMessageBurstSize",
+                            received_data_message_burst_size_);
     last_received_data_message_burst_start_time_ = new_timestamp;
     last_received_data_message_time_within_burst_ = new_timestamp;
     received_data_message_burst_size_ = 1;
@@ -541,7 +541,7 @@ void GCMStatsRecorderImpl::RecordIncomingSendError(
     const std::string& app_id,
     const std::string& receiver_id,
     const std::string& message_id) {
-  UMA_HISTOGRAM_COUNTS("GCM.IncomingSendErrors", 1);
+  UMA_HISTOGRAM_COUNTS_1M("GCM.IncomingSendErrors", 1);
   if (!is_recording_)
     return;
   RecordSending(app_id, receiver_id, message_id, "Received 'send error' msg",

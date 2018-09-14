@@ -91,8 +91,8 @@ void PasswordImportConsumer::ConsumePassword(
   if (result != password_manager::PasswordImporter::SUCCESS)
     return;
 
-  UMA_HISTOGRAM_COUNTS("PasswordManager.ImportedPasswordsPerUserInCSV",
-                       forms.size());
+  UMA_HISTOGRAM_COUNTS_1M("PasswordManager.ImportedPasswordsPerUserInCSV",
+                          forms.size());
   scoped_refptr<password_manager::PasswordStore> store(
       PasswordStoreFactory::GetForProfile(profile_,
                                           ServiceAccessType::EXPLICIT_ACCESS));

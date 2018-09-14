@@ -176,9 +176,9 @@ void SpellCheckProvider::CheckSpelling(
         suggestions.begin(), suggestions.end(), web_suggestions.begin(),
         [](const base::string16& s) { return WebString::FromUTF16(s); });
     *optional_suggestions = web_suggestions;
-    UMA_HISTOGRAM_COUNTS("SpellCheck.api.check.suggestions", word.size());
+    UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check.suggestions", word.size());
   } else {
-    UMA_HISTOGRAM_COUNTS("SpellCheck.api.check", word.size());
+    UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check", word.size());
     // If optional_suggestions is not requested, the API is called
     // for marking.  So we use this for counting markable words.
     GetSpellCheckHost().NotifyChecked(word, 0 < length);
@@ -189,7 +189,7 @@ void SpellCheckProvider::RequestCheckingOfText(
     const WebString& text,
     WebTextCheckingCompletion* completion) {
   RequestTextChecking(text.Utf16(), completion);
-  UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());
+  UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.async", text.length());
 }
 
 void SpellCheckProvider::CancelAllPendingRequests() {

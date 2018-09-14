@@ -154,8 +154,8 @@ static void RecordAudioCodecStats(const AudioDecoderConfig& audio_config) {
     UMA_HISTOGRAM_ENUMERATION("Media.AudioSamplesPerSecond", asr,
                               kAudioSampleRateMax + 1);
   } else {
-    UMA_HISTOGRAM_COUNTS("Media.AudioSamplesPerSecondUnexpected",
-                         audio_config.samples_per_second());
+    UMA_HISTOGRAM_COUNTS_1M("Media.AudioSamplesPerSecondUnexpected",
+                            audio_config.samples_per_second());
   }
 }
 

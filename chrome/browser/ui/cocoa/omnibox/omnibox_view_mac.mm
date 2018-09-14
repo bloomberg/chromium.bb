@@ -899,7 +899,7 @@ base::scoped_nsobject<NSPasteboardItem> OmniboxViewMac::CreatePasteboardItem() {
   model()->AdjustTextForCopy(selection.location, &text, &url, &write_url);
 
   if (IsSelectAll())
-    UMA_HISTOGRAM_COUNTS(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
+    UMA_HISTOGRAM_COUNTS_1M(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
 
   NSString* nstext = base::SysUTF16ToNSString(text);
   if (write_url) {

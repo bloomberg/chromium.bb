@@ -152,8 +152,8 @@ ContentSettingsObserver::~ContentSettingsObserver() {
 void ContentSettingsObserver::SetContentSettingRules(
     const RendererContentSettingRules* content_setting_rules) {
   content_setting_rules_ = content_setting_rules;
-  UMA_HISTOGRAM_COUNTS("ClientHints.CountRulesReceived",
-                       content_setting_rules_->client_hints_rules.size());
+  UMA_HISTOGRAM_COUNTS_1M("ClientHints.CountRulesReceived",
+                          content_setting_rules_->client_hints_rules.size());
 }
 
 const RendererContentSettingRules*

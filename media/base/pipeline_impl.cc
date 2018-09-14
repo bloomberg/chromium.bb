@@ -271,8 +271,8 @@ void PipelineImpl::RendererWrapper::Stop(const base::Closure& stop_cb) {
   SetState(kStopping);
 
   if (shared_state_.statistics.video_frames_decoded > 0) {
-    UMA_HISTOGRAM_COUNTS("Media.DroppedFrameCount",
-                         shared_state_.statistics.video_frames_dropped);
+    UMA_HISTOGRAM_COUNTS_1M("Media.DroppedFrameCount",
+                            shared_state_.statistics.video_frames_dropped);
   }
 
   // If we stop during starting/seeking/suspending/resuming we don't want to

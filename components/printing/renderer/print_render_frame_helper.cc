@@ -1676,7 +1676,8 @@ void PrintRenderFrameHelper::PrintPages() {
   if (print_params.preview_ui_id < 0) {
     // Printing for system dialog.
     int printed_count = params.pages.empty() ? page_count : params.pages.size();
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", printed_count);
+    UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.SystemDialog",
+                            printed_count);
   }
 
   bool is_pdf = PrintingNodeOrPdfFrame(prep_frame_view_->frame(),

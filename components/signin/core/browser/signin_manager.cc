@@ -237,8 +237,8 @@ void SigninManager::DoSignOut(
   // Determine the duration the user was logged in and log that to UMA.
   if (!signin_time.is_null()) {
     base::TimeDelta signed_in_duration = base::Time::Now() - signin_time;
-    UMA_HISTOGRAM_COUNTS("Signin.SignedInDurationBeforeSignout",
-                         signed_in_duration.InMinutes());
+    UMA_HISTOGRAM_COUNTS_1M("Signin.SignedInDurationBeforeSignout",
+                            signed_in_duration.InMinutes());
   }
 
   // Revoke all tokens before sending signed_out notification, because there

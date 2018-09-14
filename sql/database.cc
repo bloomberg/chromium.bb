@@ -345,7 +345,7 @@ bool Database::Open(const base::FilePath& path) {
           base::HistogramBase::kUmaTargetedHistogramFlag);
       if (histogram)
         histogram->Add(sample);
-      UMA_HISTOGRAM_COUNTS("Sqlite.SizeKB", sample);
+      UMA_HISTOGRAM_COUNTS_1M("Sqlite.SizeKB", sample);
     }
   }
 

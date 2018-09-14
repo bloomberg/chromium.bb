@@ -401,8 +401,8 @@ void AUHALStream::ReportAndResetStats() {
     return;  // No stats gathered to report.
 
   // A value of 0 indicates that we got the buffer size we asked for.
-  UMA_HISTOGRAM_COUNTS("Media.Audio.Render.FramesRequested",
-                       number_of_frames_requested_);
+  UMA_HISTOGRAM_COUNTS_1M("Media.Audio.Render.FramesRequested",
+                          number_of_frames_requested_);
   // Even if there aren't any glitches, we want to record it to get a feel for
   // how often we get no glitches vs the alternative.
   UMA_HISTOGRAM_CUSTOM_COUNTS("Media.Audio.Render.Glitches", glitches_detected_,
@@ -418,11 +418,12 @@ void AUHALStream::ReportAndResetStats() {
     log_callback_.Run(log_message);
 
   if (glitches_detected_ != 0) {
-    UMA_HISTOGRAM_COUNTS("Media.Audio.Render.LostFramesInMs", lost_frames_ms);
+    UMA_HISTOGRAM_COUNTS_1M("Media.Audio.Render.LostFramesInMs",
+                            lost_frames_ms);
     auto largest_glitch_ms =
         (largest_glitch_frames_ * 1000) / params_.sample_rate();
-    UMA_HISTOGRAM_COUNTS("Media.Audio.Render.LargestGlitchMs",
-                         largest_glitch_ms);
+    UMA_HISTOGRAM_COUNTS_1M("Media.Audio.Render.LargestGlitchMs",
+                            largest_glitch_ms);
     DLOG(WARNING) << log_message;
   }
 

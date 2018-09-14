@@ -84,15 +84,15 @@ void RecordSuccessfulUnpackTimeHistograms(const base::FilePath& crx_path,
   // time for several increments of CRX size.
   int64_t crx_file_size;
   if (!base::GetFileSize(crx_path, &crx_file_size)) {
-    UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccessCantGetCrxSize", 1);
+    UMA_HISTOGRAM_COUNTS_1M("Extensions.SandboxUnpackSuccessCantGetCrxSize", 1);
     return;
   }
 
   // Cast is safe as long as the number of bytes in the CRX is less than
   // 2^31 * 2^10.
   int crx_file_size_kb = static_cast<int>(crx_file_size / kBytesPerKb);
-  UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccessCrxSize",
-                       crx_file_size_kb);
+  UMA_HISTOGRAM_COUNTS_1M("Extensions.SandboxUnpackSuccessCrxSize",
+                          crx_file_size_kb);
 
   // We have time in seconds and file size in bytes.  We want the rate bytes are
   // unpacked in kB/s.
@@ -917,7 +917,7 @@ void SandboxedUnpacker::ReportSuccess(
     const base::Optional<int>& dnr_ruleset_checksum) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
-  UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
+  UMA_HISTOGRAM_COUNTS_1M("Extensions.SandboxUnpackSuccess", 1);
 
   if (!crx_unpack_start_time_.is_null())
     RecordSuccessfulUnpackTimeHistograms(

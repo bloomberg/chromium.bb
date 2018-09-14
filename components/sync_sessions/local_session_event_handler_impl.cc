@@ -138,7 +138,8 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
   for (auto& window_iter_pair : windows) {
     const SyncedWindowDelegate* window_delegate = window_iter_pair.second;
     if (option == RELOAD_TABS) {
-      UMA_HISTOGRAM_COUNTS("Sync.SessionTabs", window_delegate->GetTabCount());
+      UMA_HISTOGRAM_COUNTS_1M("Sync.SessionTabs",
+                              window_delegate->GetTabCount());
     }
 
     // Make sure the window has tabs and a viewable window. The viewable

@@ -1216,7 +1216,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
         &render_surface_list_, &property_trees_, PageScaleTransformNode());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {
-      UMA_HISTOGRAM_COUNTS(
+      UMA_HISTOGRAM_COUNTS_1M(
           base::StringPrintf(
               "Compositing.%s.LayerTreeImpl.CalculateDrawPropertiesUs",
               client_name),

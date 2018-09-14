@@ -424,8 +424,8 @@ void MemoryProgramCache::SaveLinkedProgram(
       return;
     }
   }
-  UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.ProgramBinarySizeBytes",
-                       binary.size());
+  UMA_HISTOGRAM_COUNTS_1M("GPU.ProgramCache.ProgramBinarySizeBytes",
+                          binary.size());
 
   char a_sha[kHashLength];
   char b_sha[kHashLength];
@@ -445,8 +445,8 @@ void MemoryProgramCache::SaveLinkedProgram(
                      sha);
   const std::string sha_string(sha, sizeof(sha));
 
-  UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeBeforeKb",
-                       curr_size_bytes_ / 1024);
+  UMA_HISTOGRAM_COUNTS_1M("GPU.ProgramCache.MemorySizeBeforeKb",
+                          curr_size_bytes_ / 1024);
 
   // Evict any cached program with the same key in favor of the least recently
   // accessed.
@@ -484,8 +484,8 @@ void MemoryProgramCache::SaveLinkedProgram(
           shader_b->output_variable_list(), shader_b->interface_block_map(),
           this));
 
-  UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
-                       curr_size_bytes_ / 1024);
+  UMA_HISTOGRAM_COUNTS_1M("GPU.ProgramCache.MemorySizeAfterKb",
+                          curr_size_bytes_ / 1024);
 }
 
 void MemoryProgramCache::LoadProgram(const std::string& key,
@@ -563,8 +563,8 @@ void MemoryProgramCache::LoadProgram(const std::string& key,
             fragment_attribs, fragment_uniforms, fragment_varyings,
             fragment_output_variables, fragment_interface_blocks, this));
 
-    UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
-                         curr_size_bytes_ / 1024);
+    UMA_HISTOGRAM_COUNTS_1M("GPU.ProgramCache.MemorySizeAfterKb",
+                            curr_size_bytes_ / 1024);
   } else {
     LOG(ERROR) << "Failed to parse proto file.";
   }

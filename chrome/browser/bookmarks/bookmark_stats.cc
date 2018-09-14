@@ -30,7 +30,7 @@ void RecordBookmarkLaunch(const BookmarkNode* node,
   }
   // Record |depth - 2| to offset the invisible root node and permanent nodes
   // (Bookmark Bar, Mobile Bookmarks or Other Bookmarks)
-  UMA_HISTOGRAM_COUNTS("Bookmarks.LaunchDepth", depth - 2);
+  UMA_HISTOGRAM_COUNTS_1M("Bookmarks.LaunchDepth", depth - 2);
 }
 
 void RecordBookmarkFolderOpen(BookmarkLaunchLocation location) {

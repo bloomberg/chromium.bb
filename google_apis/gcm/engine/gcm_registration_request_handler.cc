@@ -39,7 +39,7 @@ void GCMRegistrationRequestHandler::ReportUMAs(
   if (status != RegistrationRequest::SUCCESS)
     return;
 
-  UMA_HISTOGRAM_COUNTS("GCM.RegistrationRetryCount", retry_count);
+  UMA_HISTOGRAM_COUNTS_1M("GCM.RegistrationRetryCount", retry_count);
   UMA_HISTOGRAM_TIMES("GCM.RegistrationCompleteTime", complete_time);
 }
 

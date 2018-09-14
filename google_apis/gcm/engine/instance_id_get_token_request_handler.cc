@@ -64,7 +64,7 @@ void InstanceIDGetTokenRequestHandler::ReportUMAs(
   if (status != RegistrationRequest::SUCCESS)
     return;
 
-  UMA_HISTOGRAM_COUNTS("InstanceID.GetToken.RetryCount", retry_count);
+  UMA_HISTOGRAM_COUNTS_1M("InstanceID.GetToken.RetryCount", retry_count);
   UMA_HISTOGRAM_TIMES("InstanceID.GetToken.CompleteTime", complete_time);
 }
 
