@@ -4,6 +4,8 @@
 
 #include "services/ws/window_service_delegate.h"
 
+#include "services/ws/window_manager_interface.h"
+
 namespace ws {
 
 bool WindowServiceDelegate::StoreAndSetCursor(aura::Window* window,
@@ -41,6 +43,14 @@ aura::Window* WindowServiceDelegate::GetTopmostWindowAtPoint(
     const gfx::Point& location_in_screen,
     const std::set<aura::Window*>& ignore,
     aura::Window** real_topmost) {
+  return nullptr;
+}
+
+std::unique_ptr<WindowManagerInterface>
+WindowServiceDelegate::CreateWindowManagerInterface(
+    WindowTree* window_tree,
+    const std::string& name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
   return nullptr;
 }
 

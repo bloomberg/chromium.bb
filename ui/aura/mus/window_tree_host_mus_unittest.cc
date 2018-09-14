@@ -23,14 +23,4 @@ TEST_F(WindowTreeHostMusTest, UpdateClientArea) {
   EXPECT_EQ(new_insets, window_tree()->last_client_area());
 }
 
-TEST_F(WindowTreeHostMusTest, PerformWmAction) {
-  std::unique_ptr<WindowTreeHostMus> window_tree_host_mus =
-      std::make_unique<WindowTreeHostMus>(
-          CreateInitParamsForTopLevel(window_tree_client_impl()));
-
-  const std::string test_action("test-action");
-  window_tree_host_mus->PerformWmAction(test_action);
-  EXPECT_EQ(test_action, window_tree()->last_wm_action());
-}
-
 }  // namespace aura

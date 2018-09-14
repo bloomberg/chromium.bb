@@ -12,6 +12,7 @@
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/client_change.h"
 #include "services/ws/client_change_tracker.h"
@@ -24,6 +25,7 @@
 #include "services/ws/server_window.h"
 #include "services/ws/topmost_window_observer.h"
 #include "services/ws/window_delegate_impl.h"
+#include "services/ws/window_manager_interface.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_delegate.h"
 #include "services/ws/window_service_observer.h"
@@ -225,6 +227,10 @@ bool WindowTree::IsTopLevel(aura::Window* window) {
   return iter != client_roots_.end() && (*iter)->is_top_level();
 }
 
+aura::Window* WindowTree::GetWindowByTransportId(Id transport_window_id) {
+  return GetWindowByClientId(MakeClientWindowId(transport_window_id));
+}
+
 void WindowTree::RequestClose(ServerWindow* window) {
   DCHECK(window->IsTopLevel());
   DCHECK_EQ(this, window->owning_window_tree());
@@ -403,10 +409,6 @@ void WindowTree::DeleteClientRootWithRoot(aura::Window* window) {
 aura::Window* WindowTree::GetWindowByClientId(const ClientWindowId& id) {
   auto iter = client_window_id_to_window_map_.find(id);
   return iter == client_window_id_to_window_map_.end() ? nullptr : iter->second;
-}
-
-aura::Window* WindowTree::GetWindowByTransportId(Id transport_window_id) {
-  return GetWindowByClientId(MakeClientWindowId(transport_window_id));
 }
 
 bool WindowTree::IsClientCreatedWindow(aura::Window* window) {
@@ -1794,8 +1796,13 @@ void WindowTree::StackAtTop(uint32_t change_id, Id window_id) {
   window_tree_client_->OnChangeCompleted(change_id, result);
 }
 
-void WindowTree::PerformWmAction(Id window_id, const std::string& action) {
-  NOTIMPLEMENTED_LOG_ONCE();
+void WindowTree::BindWindowManagerInterface(
+    const std::string& name,
+    mojom::WindowManagerAssociatedRequest window_manager) {
+  auto wm_interface = window_service_->delegate()->CreateWindowManagerInterface(
+      this, name, window_manager.PassHandle());
+  if (wm_interface)
+    window_manager_interfaces_.push_back(std::move(wm_interface));
 }
 
 void WindowTree::GetCursorLocationMemory(

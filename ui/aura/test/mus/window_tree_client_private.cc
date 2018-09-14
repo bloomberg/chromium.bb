@@ -101,6 +101,10 @@ bool WindowTreeClientPrivate::HasChangeInFlightOfType(ChangeType type) {
   return false;
 }
 
+void WindowTreeClientPrivate::FlushForTesting() {
+  tree_client_impl_->binding_.FlushForTesting();
+}
+
 ws::mojom::WindowDataPtr WindowTreeClientPrivate::CreateWindowDataForEmbed() {
   ws::mojom::WindowDataPtr root_data(ws::mojom::WindowData::New());
   root_data->parent_id = 0;

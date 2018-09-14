@@ -10,6 +10,7 @@ import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "services/ws/public/mojom/cursor/cursor.mojom";
+import "services/ws/public/mojom/window_manager.mojom";
 import "services/ws/public/mojom/screen_provider_observer.mojom";
 import "services/ws/public/mojom/window_tree_constants.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
@@ -323,8 +324,14 @@ interface WindowTree {
   // Stacks the window above all sibling windows.
   StackAtTop(uint32 change_id, uint64 window_id);
 
-  // Tells the window manager to perform |string_action| for |window_id|.
-  PerformWmAction(uint64 window_id, string action);
+  // Requests a window manager specific interface. |name| is the name of the
+  // interface. This function is typed to WindowManager, but that's purely
+  // by necessity. This function is used to request *any* interface known to
+  // the environment hosting the window service. If |name| is not the name of
+  // an interface known to the environment hosting the window service,
+  // |window_manager| is closed.
+  BindWindowManagerInterface(string name,
+                             associated WindowManager& window_manager);
 
   // Returns a shared memory segment that contains two 16-bit ints packed into a
   // single Atomic32, which represent the current location of the mouse cursor
