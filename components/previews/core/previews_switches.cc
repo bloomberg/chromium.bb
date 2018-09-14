@@ -10,5 +10,8 @@ namespace switches {
 // Ignore decisions made by PreviewsBlackList.
 const char kIgnorePreviewsBlacklist[] = "ignore-previews-blacklist";
 
+// Override the Lite Page Preview Host.
+const char kLitePageServerPreviewHost[] = "litepage-server-previews-host";
+
 }  // namespace switches
 }  // namespace previews

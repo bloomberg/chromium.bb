@@ -9,6 +9,7 @@ namespace previews {
 namespace switches {
 
 extern const char kIgnorePreviewsBlacklist[];
+extern const char kLitePageServerPreviewHost[];
 
 }  // namespace switches
 }  // namespace previews
