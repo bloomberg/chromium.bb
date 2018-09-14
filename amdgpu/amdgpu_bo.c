@@ -74,19 +74,14 @@ int amdgpu_bo_alloc(amdgpu_device_handle dev,
 		    amdgpu_bo_handle *buf_handle)
 {
 	union drm_amdgpu_gem_create args;
-	unsigned heap = alloc_buffer->preferred_heap;
-	int r = 0;
-
-	/* It's an error if the heap is not specified */
-	if (!(heap & (AMDGPU_GEM_DOMAIN_GTT | AMDGPU_GEM_DOMAIN_VRAM)))
-		return -EINVAL;
+	int r;
 
 	memset(&args, 0, sizeof(args));
 	args.in.bo_size = alloc_buffer->alloc_size;
 	args.in.alignment = alloc_buffer->phys_alignment;
 
 	/* Set the placement. */
-	args.in.domains = heap;
+	args.in.domains = alloc_buffer->preferred_heap;
 	args.in.domain_flags = alloc_buffer->flags;
 
 	/* Allocate the buffer with the preferred heap. */
