@@ -15,6 +15,7 @@
 #include "ui/display/display_export.h"
 #include "ui/display/screen.h"
 #include "ui/display/win/color_profile_reader.h"
+#include "ui/display/win/uwp_text_scale_factor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
@@ -33,7 +34,8 @@ class DisplayInfo;
 class ScreenWinDisplay;
 
 class DISPLAY_EXPORT ScreenWin : public Screen,
-                                 public ColorProfileReader::Client {
+                                 public ColorProfileReader::Client,
+                                 public UwpTextScaleFactor::Observer {
  public:
   ScreenWin();
   ~ScreenWin() override;
@@ -92,15 +94,14 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   // The DPI scale is performed relative to the display nearest to |hwnd|.
   static gfx::Size DIPToScreenSize(HWND hwnd, const gfx::Size& dip_size);
 
-  // Returns the result of GetSystemMetrics for |metric| scaled to |hwnd|'s DPI.
-  // Use this function if you're already working with screen pixels, as this
-  // helps reduce any cascading rounding errors from DIP to the |hwnd|'s DPI.
-  static int GetSystemMetricsForHwnd(HWND hwnd, int metric);
-
   // Returns the result of GetSystemMetrics for |metric| scaled to |monitor|'s
   // DPI. Use this function if you're already working with screen pixels, as
   // this helps reduce any cascading rounding errors from DIP to the |monitor|'s
   // DPI.
+  //
+  // Note that metrics which correspond to elements drawn by Windows
+  // (specifically frame and resize handles) will be scaled by DPI only and not
+  // by Text Zoom or other accessibility features.
   static int GetSystemMetricsForMonitor(HMONITOR monitor, int metric);
 
   // Returns the result of GetSystemMetrics for |metric| in DIP.
@@ -108,8 +109,15 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   // rounding errors towards screen pixels.
   static int GetSystemMetricsInDIP(int metric);
 
-  // Returns |hwnd|'s scale factor.
+  // Returns |hwnd|'s scale factor, including accessibility adjustments.
   static float GetScaleFactorForHWND(HWND hwnd);
+
+  // Returns the unmodified DPI for a particular |hwnd|, without accessibility
+  // adjustments.
+  static int GetDPIForHWND(HWND hwnd);
+
+  // Converts dpi to scale factor, including accessibility adjustments.
+  static float GetScaleFactorForDPI(int dpi);
 
   // Returns the system's global scale factor, ignoring the value of
   // --force-device-scale-factor. Only use this if you are working with Windows
@@ -214,6 +222,12 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
 
   void RecordDisplayScaleFactors() const;
 
+  //-----------------------------------------------------------------
+  // UwpTextScaleFactor::Observer:
+
+  void OnUwpTextScaleFactorChanged() override;
+  void OnUwpTextScaleFactorCleanup(UwpTextScaleFactor* source) override;
+
   // Helper implementing the DisplayObserver handling.
   DisplayChangeNotifier change_notifier_;
 
@@ -235,6 +249,8 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   // Whether or not HDR mode is enabled for any monitor via the "HDR and
   // advanced color" setting.
   bool hdr_enabled_ = false;
+
+  UwpTextScaleFactor* uwp_text_scale_factor_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenWin);
 };

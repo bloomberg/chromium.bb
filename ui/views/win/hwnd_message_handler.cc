@@ -1586,8 +1586,7 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
       base::Bind(&HWNDMessageHandler::OnSessionChange,
                  base::Unretained(this))));
 
-  float scale_factor = display::win::ScreenWin::GetScaleFactorForHWND(hwnd());
-  dpi_ = display::win::GetDPIFromScalingFactor(scale_factor);
+  dpi_ = display::win::ScreenWin::GetDPIForHWND(hwnd());
 
   // TODO(beng): move more of NWW::OnCreate here.
   return 0;
@@ -1642,7 +1641,7 @@ LRESULT HWNDMessageHandler::OnDpiChanged(UINT msg,
     dpi = display::win::GetDPIFromScalingFactor(scaling_factor);
   } else {
     dpi = LOWORD(w_param);
-    scaling_factor = display::win::GetScalingFactorFromDPI(dpi);
+    scaling_factor = display::win::ScreenWin::GetScaleFactorForDPI(dpi);
   }
 
   // The first WM_DPICHANGED originates from EnableChildWindowDpiMessage during

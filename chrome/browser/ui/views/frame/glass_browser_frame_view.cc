@@ -29,6 +29,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/win/hwnd_metrics.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/canvas.h"
@@ -567,23 +568,28 @@ int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
   // Mouse and touch locations are floored but GetSystemMetricsInDIP is rounded,
   // so we need to floor instead or else the difference will cause the hittest
   // to fail when it ought to succeed.
-  // TODO(robliao): Resolve this GetSystemMetrics call.
-  return std::floor(FrameTopBorderThicknessPx(restored) /
-                    display::win::GetDPIScale());
+  return std::floor(
+      FrameTopBorderThicknessPx(restored) /
+      display::win::ScreenWin::GetScaleFactorForHWND(HWNDForView(this)));
 }
 
 int GlassBrowserFrameView::FrameTopBorderThicknessPx(bool restored) const {
   // Distinct from FrameBorderThickness() because Windows gives maximized
-  // windows an offscreen CYSIZEFRAME-thick region around the edges. The
-  // left/right/bottom edges don't worry about this because we cancel them out
-  // in BrowserDesktopWindowTreeHostWin::GetClientAreaInsets() so the offscreen
+  // windows an offscreen region around the edges. The left/right/bottom edges
+  // don't worry about this because we cancel them out in
+  // BrowserDesktopWindowTreeHostWin::GetClientAreaInsets() so the offscreen
   // area is non-client as far as Windows is concerned. However we can't do this
   // with the top inset because otherwise Windows will give us a standard
   // titlebar. Thus we must compensate here to avoid having UI elements drift
   // off the top of the screen.
   if (frame()->IsFullscreen() && !restored)
     return 0;
-  return GetSystemMetrics(SM_CYSIZEFRAME);
+
+  // Note that this method assumes an equal resize handle thickness on all
+  // sides of the window.
+  // TODO(dfried): Consider having it return a gfx::Insets object instead.
+  return ui::GetFrameThickness(
+      MonitorFromWindow(HWNDForView(this), MONITOR_DEFAULTTONEAREST));
 }
 
 int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
