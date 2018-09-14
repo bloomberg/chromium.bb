@@ -59,7 +59,7 @@ VolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {};
 /**
  * Obtains location information from an entry.
  *
- * @param {!Entry|!FakeEntry|!FilesAppEntry} entry File or directory entry. It
+ * @param {!Entry|!FilesAppEntry} entry File or directory entry. It
  *     can be a fake entry.
  * @return {EntryLocation} Location information.
  */

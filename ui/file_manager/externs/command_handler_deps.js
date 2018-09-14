@@ -94,7 +94,7 @@ CommandHandlerDeps.prototype.ui;
 CommandHandlerDeps.prototype.volumeManager;
 
 /**
- * @return {DirectoryEntry|FakeEntry|FilesAppEntry}
+ * @return {DirectoryEntry|FilesAppEntry}
  */
 CommandHandlerDeps.prototype.getCurrentDirectoryEntry = function() {};
 

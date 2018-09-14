@@ -787,8 +787,8 @@ DirectoryContents.prototype.isSearch = function() {
 
 /**
  * @return {DirectoryEntry|FakeEntry|FilesAppDirEntry} A DirectoryEntry for
- *     current directory.
- *     In case of search -- the top directory from which search is run.
+ *     current directory. In case of search -- the top directory from which
+ *     search is run.
  */
 DirectoryContents.prototype.getDirectoryEntry = function() {
   return this.directoryEntry_;

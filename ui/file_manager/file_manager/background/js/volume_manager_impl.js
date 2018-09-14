@@ -290,7 +290,7 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
 
   if (util.isFakeEntry(entry)) {
     return new EntryLocationImpl(
-        volumeInfo, entry.rootType,
+        volumeInfo, assert(entry.rootType),
         true /* the entry points a root directory. */,
         true /* fake entries are read only. */);
   }
