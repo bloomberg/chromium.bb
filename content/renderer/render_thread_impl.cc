@@ -1366,6 +1366,9 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
        gpu_channel_host->gpu_info().supports_overlays);
 #endif  // defined(OS_WIN)
 
+  media::mojom::InterfaceFactoryPtr interface_factory;
+  GetConnector()->BindInterface(mojom::kBrowserServiceName, &interface_factory);
+
   media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider;
   gpu_->CreateVideoEncodeAcceleratorProvider(mojo::MakeRequest(&vea_provider));
 
@@ -1373,7 +1376,8 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
       GetMediaThreadTaskRunner(), std::move(media_context_provider),
       enable_video_gpu_memory_buffers, enable_media_stream_gpu_memory_buffers,
-      enable_video_accelerator, vea_provider.PassInterface()));
+      enable_video_accelerator, interface_factory.PassInterface(),
+      vea_provider.PassInterface()));
   gpu_factories_.back()->SetRenderingColorSpace(rendering_color_space_);
   return gpu_factories_.back().get();
 }

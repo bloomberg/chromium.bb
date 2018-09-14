@@ -96,6 +96,14 @@ int32_t BrowserGpuVideoAcceleratorFactories::GetCommandBufferRouteId() {
   return context_provider_->GetCommandBufferProxy()->route_id();
 }
 
+std::unique_ptr<media::VideoDecoder>
+BrowserGpuVideoAcceleratorFactories::CreateVideoDecoder(
+    media::MediaLog* media_log,
+    const media::RequestOverlayInfoCB& request_overlay_info_cb,
+    const gfx::ColorSpace& target_color_space) {
+  return nullptr;
+}
+
 std::unique_ptr<media::VideoDecodeAccelerator>
 BrowserGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   return nullptr;

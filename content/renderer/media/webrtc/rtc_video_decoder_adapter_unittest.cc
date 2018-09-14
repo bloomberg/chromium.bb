@@ -92,29 +92,35 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
         gpu_factories_(nullptr),
         decoded_image_callback_(decoded_cb_.Get()) {
     media_thread_.Start();
+
+    owned_video_decoder_ = std::make_unique<StrictMock<MockVideoDecoder>>();
+    video_decoder_ = owned_video_decoder_.get();
+
     ON_CALL(gpu_factories_, GetTaskRunner())
         .WillByDefault(Return(media_thread_.task_runner()));
     EXPECT_CALL(gpu_factories_, GetTaskRunner()).Times(AtLeast(0));
-    owned_video_decoder_ = std::make_unique<StrictMock<MockVideoDecoder>>();
-    video_decoder_ = owned_video_decoder_.get();
+
+    ON_CALL(gpu_factories_, CreateVideoDecoder(_, _, _))
+        .WillByDefault(
+            [this](media::MediaLog* media_log,
+                   const media::RequestOverlayInfoCB& request_overlay_info_cb,
+                   const gfx::ColorSpace& target_color_space) {
+              DCHECK(this->owned_video_decoder_);
+              return std::move(this->owned_video_decoder_);
+            });
+    EXPECT_CALL(gpu_factories_, CreateVideoDecoder(_, _, _)).Times(AtLeast(0));
   }
 
   ~RTCVideoDecoderAdapterTest() {
     if (!rtc_video_decoder_adapter_)
       return;
 
-    RTCVideoDecoderAdapter::DeleteSoonOnMediaThread(
-        std::move(rtc_video_decoder_adapter_), &gpu_factories_);
+    media_thread_.task_runner()->DeleteSoon(
+        FROM_HERE, std::move(rtc_video_decoder_adapter_));
     media_thread_.FlushForTesting();
   }
 
  protected:
-  std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
-      media::MediaLog* media_log) {
-    DCHECK(owned_video_decoder_);
-    return std::move(owned_video_decoder_);
-  }
-
   bool BasicSetup() {
     if (!CreateAndInitialize())
       return false;
@@ -135,10 +141,8 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
     EXPECT_CALL(*video_decoder_, Initialize(_, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<4>(&output_cb_),
                         media::RunCallback<3>(init_cb_result)));
-    rtc_video_decoder_adapter_ = RTCVideoDecoderAdapter::Create(
-        webrtc::kVideoCodecVP9, &gpu_factories_,
-        base::BindRepeating(&RTCVideoDecoderAdapterTest::CreateVideoDecoder,
-                            base::Unretained(this)));
+    rtc_video_decoder_adapter_ =
+        RTCVideoDecoderAdapter::Create(&gpu_factories_, webrtc::kVideoCodecVP9);
     return !!rtc_video_decoder_adapter_;
   }
 
