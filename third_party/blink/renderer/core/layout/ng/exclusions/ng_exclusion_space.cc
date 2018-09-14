@@ -288,7 +288,7 @@ void NGExclusionSpaceInternal::DerivedGeometry::Add(
     // the shelf if we need to insert a new shelf later in the loop.
     base::Optional<NGShelf> shelf_copy;
     if (is_between_shelves)
-      shelf_copy = shelves_[i];
+      shelf_copy.emplace(shelves_[i]);
 
     // A new scope is created as shelf may be removed.
     {
