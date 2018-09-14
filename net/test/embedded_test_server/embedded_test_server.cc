@@ -89,15 +89,15 @@ void EmbeddedTestServer::SetConnectionListener(
   connection_listener_ = listener;
 }
 
-bool EmbeddedTestServer::Start() {
-  bool success = InitializeAndListen();
+bool EmbeddedTestServer::Start(int port) {
+  bool success = InitializeAndListen(port);
   if (!success)
     return false;
   StartAcceptingConnections();
   return true;
 }
 
-bool EmbeddedTestServer::InitializeAndListen() {
+bool EmbeddedTestServer::InitializeAndListen(int port) {
   DCHECK(!Started());
 
   const int max_tries = 5;
@@ -114,7 +114,8 @@ bool EmbeddedTestServer::InitializeAndListen() {
 
     listen_socket_.reset(new TCPServerSocket(nullptr, NetLogSource()));
 
-    int result = listen_socket_->ListenWithAddressAndPort("127.0.0.1", 0, 10);
+    int result =
+        listen_socket_->ListenWithAddressAndPort("127.0.0.1", port, 10);
     if (result) {
       LOG(ERROR) << "Listen failed: " << ErrorToString(result);
       listen_socket_.reset();
