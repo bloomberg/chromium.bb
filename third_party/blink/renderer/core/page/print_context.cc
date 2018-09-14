@@ -192,10 +192,10 @@ int PrintContext::PageNumberForElement(Element* element,
 
   int top = box->PixelSnappedOffsetTop(box->OffsetParent());
   int left = box->PixelSnappedOffsetLeft(box->OffsetParent());
-  for (size_t page_number = 0; page_number < print_context->PageCount();
+  for (wtf_size_t page_number = 0; page_number < print_context->PageCount();
        ++page_number) {
     if (IsCoordinateInPage(top, left, print_context->PageRect(page_number)))
-      return page_number;
+      return static_cast<int>(page_number);
   }
   return -1;
 }
