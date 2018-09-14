@@ -1208,7 +1208,7 @@
     },
     {
       name: "TextUnderlinePositionLeftRight",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "TimerThrottlingForBackgroundTabs",
