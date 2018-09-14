@@ -48,6 +48,7 @@ source_set("unit_tests") {
     "bookmark_app_installation_task_unittest.cc",
     "bookmark_app_installer_unittest.cc",
     "pending_bookmark_app_manager_unittest.cc",
+    "web_app_extension_ids_map_unittest.cc",
   ]
 
   deps = [

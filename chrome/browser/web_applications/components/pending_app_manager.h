@@ -81,19 +81,22 @@ class PendingAppManager {
   // AndroidSmsAppHelperDelegateImpl::InstallAndroidSmsApp app (which will
   // correspond to kInternal).
   enum class InstallSource {
-    kInternal,
+    // Do not remove or re-order the names, only append to the end. Their
+    // integer values are persisted in the preferences.
+
+    kInternal = 0,
     // Installed by default on the system, such as "all such-and-such make and
     // model Chromebooks should have this app installed".
     //
     // The corresponding InstallUninstallApps call site is in
     // WebAppProvider::OnScanForExternalWebApps.
-    kExternalDefault,
+    kExternalDefault = 1,
     // Installed by sys-admin policy, such as "all example.com employees should
     // have this app installed".
     //
     // The corresponding InstallUninstallApps call site is in
     // WebAppPolicyManager::RefreshPolicyInstalledApps.
-    kExternalPolicy,
+    kExternalPolicy = 2,
   };
 
   struct AppInfo {

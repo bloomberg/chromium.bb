@@ -92,20 +92,19 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
     web_app::WebAppProvider::Get(profile())->Reset();
   }
 
-  void SimulatePreviouslyInstalledApp(GURL url,
-                                      extensions::Manifest::Location location) {
-    scoped_refptr<extensions::Extension> extension =
-        extensions::ExtensionBuilder("Dummy Name")
-            .SetLocation(location)
-            .SetID(
-                crx_file::id_util::GenerateId("fake_app_id_for:" + url.spec()))
-            .Build();
-    extensions::ExtensionRegistry* registry =
-        extensions::ExtensionRegistry::Get(profile());
-    registry->AddEnabled(extension);
+  std::string GenerateFakeExtensionId(GURL& url) {
+    return crx_file::id_util::GenerateId("fake_app_id_for:" + url.spec());
+  }
+
+  void SimulatePreviouslyInstalledApp(
+      GURL url,
+      PendingAppManager::InstallSource install_source) {
+    std::string id = GenerateFakeExtensionId(url);
+    extensions::ExtensionRegistry::Get(profile())->AddEnabled(
+        extensions::ExtensionBuilder("Dummy Name").SetID(id).Build());
 
     ExtensionIdsMap extension_ids_map(profile()->GetPrefs());
-    extension_ids_map.Insert(url, extension->id());
+    extension_ids_map.Insert(url, id, install_source);
   }
 
  private:
@@ -208,11 +207,11 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate two policy apps and a regular app that were installed in the
   // previous session.
   SimulatePreviouslyInstalledApp(
-      GURL(kWindowedUrl), extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
+      GURL(kWindowedUrl), PendingAppManager::InstallSource::kExternalPolicy);
   SimulatePreviouslyInstalledApp(
-      GURL(kTabbedUrl), extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
+      GURL(kTabbedUrl), PendingAppManager::InstallSource::kExternalPolicy);
   SimulatePreviouslyInstalledApp(GURL(kDefaultContainerUrl),
-                                 extensions::Manifest::INTERNAL);
+                                 PendingAppManager::InstallSource::kInternal);
 
   // Push a policy with only one of the apps.
   base::Value first_list(base::Value::Type::LIST);
