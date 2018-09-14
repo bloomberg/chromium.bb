@@ -1867,7 +1867,7 @@ StyleDifference LayoutObject::AdjustStyleDifference(
         (IsText() && !IsBR() && ToLayoutText(this)->HasTextBoxes()) ||
         (IsSVG() && StyleRef().SvgStyle().IsFillColorCurrentColor()) ||
         (IsSVG() && StyleRef().SvgStyle().IsStrokeColorCurrentColor()) ||
-        IsListMarker())
+        IsListMarker() || IsDetailsMarker())
       diff.SetNeedsPaintInvalidationObject();
   }
 
