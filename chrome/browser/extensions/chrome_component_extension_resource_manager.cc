@@ -25,8 +25,14 @@ namespace extensions {
 ChromeComponentExtensionResourceManager::
 ChromeComponentExtensionResourceManager() {
   static const GritResourceMap kExtraComponentExtensionResources[] = {
+#if defined(OS_CHROMEOS)
+    {"web_store/webstore_icon_128.png", IDR_WEBSTORE_APP_ICON_128},
+    {"web_store/webstore_icon_16.png", IDR_WEBSTORE_APP_ICON_16},
+#else
     {"web_store/webstore_icon_128.png", IDR_WEBSTORE_ICON},
     {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
+#endif
+
 #if defined(OS_CHROMEOS)
     {"chrome_app/chrome_app_icon_32.png", IDR_CHROME_APP_ICON_32},
     {"chrome_app/chrome_app_icon_192.png", IDR_CHROME_APP_ICON_192},

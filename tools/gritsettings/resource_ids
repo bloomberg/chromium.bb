@@ -74,7 +74,7 @@
 
   # Leave space for theme_resources since it has many structures.
   "chrome/app/theme/theme_resources.grd": {
-    "structures": [10200],
+    "structures": [10210],
   },
   # END chrome/app section.
 
