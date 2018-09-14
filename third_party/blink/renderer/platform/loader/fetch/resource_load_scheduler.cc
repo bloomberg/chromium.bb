@@ -426,7 +426,7 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
   ResourceLoadScheduler::ClientId client_id = *id;
   MaybeRun();
 
-  if (IsThrottledState() &&
+  if (!omit_console_log_ && IsThrottledState() &&
       pending_request_map_.find(client_id) != pending_request_map_.end()) {
     // Note that this doesn't show the message when a frame is stopped (vs.
     // this DOES when throttled).
@@ -437,6 +437,7 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
         "https://www.chromestatus.com/feature/5527160148197376 for more "
         "details",
         FetchContext::kOtherSource);
+    omit_console_log_ = true;
   }
 }
 
@@ -583,6 +584,8 @@ void ResourceLoadScheduler::OnLifecycleStateChanged(
     traffic_monitor_->OnLifecycleStateChanged(state);
 
   frame_scheduler_lifecycle_state_ = state;
+
+  omit_console_log_ = false;
 
   switch (state) {
     case scheduler::SchedulingLifecycleState::kHidden:
