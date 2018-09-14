@@ -198,9 +198,7 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     // chrome/common/pref_names.h
     prefs::kEnableHyperlinkAuditing,
 
-    // TODO(https://crbug.com/861722): Check with code owners why this pref is
-    // required in tests, if possible, update tests and remove.
-    prefs::kEnableReferrers, prefs::kEnableDoNotTrack,
+    prefs::kEnableDoNotTrack,
     prefs::kEnableEncryptedMedia,
 
 #if defined(OS_ANDROID)
@@ -210,7 +208,8 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kPushMessagingAppIdentifierMap,
 
-    prefs::kWebRTCMultipleRoutesEnabled, prefs::kWebRTCNonProxiedUdpEnabled,
+    prefs::kWebRTCMultipleRoutesEnabled,
+    prefs::kWebRTCNonProxiedUdpEnabled,
     prefs::kWebRTCIPHandlingPolicy,
 
 #if defined(OS_WIN)
@@ -226,11 +225,13 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kTrustedDownloadSources,
 
-    prefs::kDefaultTasksByMimeType, prefs::kDefaultTasksBySuffix,
+    prefs::kDefaultTasksByMimeType,
+    prefs::kDefaultTasksBySuffix,
 
     prefs::kLastKnownIntranetRedirectOrigin,
 
-    prefs::kShutdownType, prefs::kShutdownNumProcesses,
+    prefs::kShutdownType,
+    prefs::kShutdownNumProcesses,
     prefs::kShutdownNumProcessesSlow,
 
     prefs::kRestartLastSessionOnShutdown,
@@ -240,15 +241,19 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kGoogleServicesPasswordHash,
 
-    prefs::kWebAppCreateOnDesktop, prefs::kWebAppCreateInAppsMenu,
+    prefs::kWebAppCreateOnDesktop,
+    prefs::kWebAppCreateInAppsMenu,
     prefs::kWebAppCreateInQuickLaunchBar,
 
     prefs::kGeolocationAccessToken,
 
-    prefs::kDefaultAudioCaptureDevice, prefs::kDefaultVideoCaptureDevice,
-    prefs::kMediaDeviceIdSalt, prefs::kMediaStorageIdSalt,
+    prefs::kDefaultAudioCaptureDevice,
+    prefs::kDefaultVideoCaptureDevice,
+    prefs::kMediaDeviceIdSalt,
+    prefs::kMediaStorageIdSalt,
 
-    prefs::kClearPluginLSODataEnabled, prefs::kPepperFlashSettingsEnabled,
+    prefs::kClearPluginLSODataEnabled,
+    prefs::kPepperFlashSettingsEnabled,
 
     prefs::kPerformanceTracingEnabled,
 
@@ -263,32 +268,41 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kCertRevocationCheckingEnabled,
     prefs::kCertRevocationCheckingRequiredLocalAnchors,
     prefs::kCertEnableSha1LocalAnchors,
-    prefs::kCertEnableSymantecLegacyInfrastructure, prefs::kTLS13Variant,
+    prefs::kCertEnableSymantecLegacyInfrastructure,
+    prefs::kTLS13Variant,
     prefs::kCipherSuiteBlacklist,
 
-    prefs::kDnsOverHttpsServers, prefs::kDnsOverHttpsServerMethods,
+    prefs::kDnsOverHttpsServers,
+    prefs::kDnsOverHttpsServerMethods,
 
-    prefs::kRegisteredProtocolHandlers, prefs::kIgnoredProtocolHandlers,
+    prefs::kRegisteredProtocolHandlers,
+    prefs::kIgnoredProtocolHandlers,
     prefs::kCustomHandlersEnabled,
 
 #if defined(OS_MACOSX)
-    prefs::kUserRemovedLoginItem, prefs::kChromeCreatedLoginItem,
-    prefs::kMigratedLoginItemPref, prefs::kNotifyWhenAppsKeepChromeAlive,
+    prefs::kUserRemovedLoginItem,
+    prefs::kChromeCreatedLoginItem,
+    prefs::kMigratedLoginItemPref,
+    prefs::kNotifyWhenAppsKeepChromeAlive,
 #endif
 
-    prefs::kBackgroundModeEnabled, prefs::kHardwareAccelerationModePrevious,
+    prefs::kBackgroundModeEnabled,
+    prefs::kHardwareAccelerationModePrevious,
 
-    prefs::kFactoryResetRequested, prefs::kFactoryResetTPMFirmwareUpdateMode,
+    prefs::kFactoryResetRequested,
+    prefs::kFactoryResetTPMFirmwareUpdateMode,
     prefs::kDebuggingFeaturesRequested,
 
 #if !defined(OS_ANDROID)
     prefs::kAttemptedToEnableAutoupdate,
 
-    prefs::kMediaGalleriesUniqueId, prefs::kMediaGalleriesRememberedGalleries,
+    prefs::kMediaGalleriesUniqueId,
+    prefs::kMediaGalleriesRememberedGalleries,
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-    prefs::kNetworkProfileWarningsLeft, prefs::kNetworkProfileLastWarningTime,
+    prefs::kNetworkProfileWarningsLeft,
+    prefs::kNetworkProfileLastWarningTime,
 #endif
 
 #if BUILDFLAG(ENABLE_APP_LIST)
@@ -296,13 +310,15 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if defined(OS_WIN)
-    prefs::kAppLaunchForMetroRestart, prefs::kAppLaunchForMetroRestartProfile,
+    prefs::kAppLaunchForMetroRestart,
+    prefs::kAppLaunchForMetroRestartProfile,
 #endif
     prefs::kAppShortcutsVersion,
 
     prefs::kModuleConflictBubbleShown,
 
-    prefs::kDRMSalt, prefs::kEnableDRM,
+    prefs::kDRMSalt,
+    prefs::kEnableDRM,
 
     prefs::kWatchdogExtensionActive,
 
@@ -323,7 +339,8 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kBackgroundTracingLastUpload,
 
-    prefs::kOriginTrialPublicKey, prefs::kOriginTrialDisabledFeatures,
+    prefs::kOriginTrialPublicKey,
+    prefs::kOriginTrialDisabledFeatures,
     prefs::kOriginTrialDisabledTokens,
 
     prefs::kMediaEngagementSchemaVersion,
