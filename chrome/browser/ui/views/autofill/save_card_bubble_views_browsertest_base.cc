@@ -31,9 +31,12 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
+#include "ui/views/window/non_client_view.h"
 
 namespace autofill {
 
@@ -334,6 +337,16 @@ void SaveCardBubbleViewsBrowserTestBase::SetUploadDetailsRpcServerError() {
 }
 
 void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogView(views::View* view) {
+  GetSaveCardBubbleViews()
+      ->GetDialogClientView()
+      ->ResetViewShownTimeStampForTesting();
+  views::BubbleFrameView* bubble_frame_view =
+      static_cast<views::BubbleFrameView*>(GetSaveCardBubbleViews()
+                                               ->GetWidget()
+                                               ->non_client_view()
+                                               ->frame_view());
+  bubble_frame_view->ResetViewShownTimeStampForTesting();
+
   DCHECK(view);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,

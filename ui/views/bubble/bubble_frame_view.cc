@@ -28,6 +28,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/event_utils.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/paint_info.h"
@@ -407,6 +408,13 @@ void BubbleFrameView::ViewHierarchyChanged(
   }
 }
 
+void BubbleFrameView::VisibilityChanged(View* starting_from, bool is_visible) {
+  NonClientFrameView::VisibilityChanged(starting_from, is_visible);
+
+  if (is_visible)
+    view_shown_time_stamp_ = base::TimeTicks::Now();
+}
+
 void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
   // Border comes after children.
@@ -424,6 +432,9 @@ void BubbleFrameView::PaintChildren(const PaintInfo& paint_info) {
 }
 
 void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
+  if (IsPossiblyUnintendedInteraction(view_shown_time_stamp_, event))
+    return;
+
   if (sender == close_) {
     close_button_clicked_ = true;
     GetWidget()->Close();
@@ -475,6 +486,10 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
 
   // Calculate the bounds with the arrow in its updated location and offset.
   return bubble_border_->GetBounds(anchor_rect, size);
+}
+
+void BubbleFrameView::ResetViewShownTimeStampForTesting() {
+  view_shown_time_stamp_ = base::TimeTicks();
 }
 
 gfx::Rect BubbleFrameView::GetAvailableScreenBounds(

@@ -8,11 +8,16 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/event.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/metrics.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/test_layout_provider.h"
 #include "ui/views/test/test_views.h"
@@ -503,6 +508,26 @@ TEST_F(DialogClientViewTest, FocusChangingButtons) {
   // Remove buttons.
   SetDialogButtons(ui::DIALOG_BUTTON_NONE);
   EXPECT_EQ(nullptr, focus_manager->GetFocusedView());
+}
+
+// Ensures that clicks are ignored for short time after view has been shown.
+TEST_F(DialogClientViewTest, IgnorePossiblyUnintendedClicks) {
+  widget()->Show();
+  SetDialogButtons(ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK);
+
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  client_view()->ButtonPressed(client_view()->ok_button(), mouse_event);
+  client_view()->ButtonPressed(client_view()->cancel_button(), mouse_event);
+  EXPECT_FALSE(widget()->IsClosed());
+
+  client_view()->ButtonPressed(
+      client_view()->cancel_button(),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                     ui::EventTimeForNow() + base::TimeDelta::FromMilliseconds(
+                                                 GetDoubleClickInterval()),
+                     ui::EF_NONE, ui::EF_NONE));
+  EXPECT_TRUE(widget()->IsClosed());
 }
 
 }  // namespace views
