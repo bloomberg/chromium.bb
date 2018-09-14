@@ -1504,7 +1504,8 @@ void WebViewImpl::ResizeWithBrowserControls(
 
   bool is_rotation =
       GetPage()->GetSettings().GetMainFrameResizesAreOrientationChanges() &&
-      size_.width && ContentsSize().Width() && new_size.width != size_.width &&
+      size_.width && ContentsSize().Width() && new_size.width == size_.height &&
+      new_size.height == size_.width &&
       !fullscreen_controller_->IsFullscreenOrTransitioning();
   size_ = new_size;
 
