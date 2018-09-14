@@ -171,19 +171,19 @@ FileError IsCacheFileMarkedAsMountedInternal(
 }
 
 // Runs the callback with arguments.
-void RunMarkMountedCallback(const MarkMountedCallback& callback,
+void RunMarkMountedCallback(MarkMountedCallback callback,
                             base::FilePath* cache_file_path,
                             FileError error) {
   DCHECK(callback);
-  callback.Run(error, *cache_file_path);
+  std::move(callback).Run(error, *cache_file_path);
 }
 
 // Runs the callback with arguments.
-void RunIsMountedCallback(const IsMountedCallback& callback,
+void RunIsMountedCallback(IsMountedCallback callback,
                           bool* result,
                           FileError error) {
   DCHECK(callback);
-  callback.Run(error, *result);
+  std::move(callback).Run(error, *result);
 }
 
 // Callback for internals::GetStartPageToken.
@@ -1072,37 +1072,33 @@ void FileSystem::OnGetMetadata(
   std::move(callback).Run(*default_corpus_metadata, *team_drive_metadata);
 }
 
-void FileSystem::MarkCacheFileAsMounted(
-    const base::FilePath& drive_file_path,
-    const MarkMountedCallback& callback) {
+void FileSystem::MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
+                                        MarkMountedCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&MarkCacheFileAsMountedInternal,
-                 resource_metadata_,
-                 cache_,
-                 drive_file_path,
-                 cache_file_path),
-      base::Bind(
-          &RunMarkMountedCallback, callback, base::Owned(cache_file_path)));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&MarkCacheFileAsMountedInternal, resource_metadata_,
+                     cache_, drive_file_path, cache_file_path),
+      base::BindOnce(&RunMarkMountedCallback, std::move(callback),
+                     base::Owned(cache_file_path)));
 }
 
 void FileSystem::IsCacheFileMarkedAsMounted(
     const base::FilePath& drive_file_path,
-    const IsMountedCallback& callback) {
+    IsMountedCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   bool* is_mounted = new bool(false);
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&IsCacheFileMarkedAsMountedInternal, resource_metadata_,
-                 cache_, drive_file_path, is_mounted),
-      base::Bind(&RunIsMountedCallback, callback, base::Owned(is_mounted)));
+      base::BindOnce(&IsCacheFileMarkedAsMountedInternal, resource_metadata_,
+                     cache_, drive_file_path, is_mounted),
+      base::BindOnce(&RunIsMountedCallback, std::move(callback),
+                     base::Owned(is_mounted)));
 }
 
 void FileSystem::MarkCacheFileAsUnmounted(

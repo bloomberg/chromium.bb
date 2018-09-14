@@ -116,11 +116,11 @@ class FakeFileSystem : public FileSystemInterface {
                    const GetShareUrlCallback& callback) override;
   void GetMetadata(GetFilesystemMetadataCallback callback) override;
   void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
-                              const MarkMountedCallback& callback) override;
+                              MarkMountedCallback callback) override;
   void MarkCacheFileAsUnmounted(const base::FilePath& cache_file_path,
                                 const FileOperationCallback& callback) override;
   void IsCacheFileMarkedAsMounted(const base::FilePath& drive_file_path,
-                                  const IsMountedCallback& callback) override;
+                                  IsMountedCallback callback) override;
   void AddPermission(const base::FilePath& drive_file_path,
                      const std::string& email,
                      google_apis::drive::PermissionRole role,
