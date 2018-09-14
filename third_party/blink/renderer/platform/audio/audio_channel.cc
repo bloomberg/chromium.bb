@@ -26,9 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "third_party/blink/renderer/platform/audio/audio_channel.h"
+
 #include <math.h>
 #include <algorithm>
-#include "third_party/blink/renderer/platform/audio/audio_channel.h"
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 
 namespace blink {
@@ -58,7 +60,8 @@ void AudioChannel::CopyFrom(const AudioChannel* source_channel) {
     Zero();
     return;
   }
-  memcpy(MutableData(), source_channel->Data(), sizeof(float) * length());
+  memcpy(MutableData(), source_channel->Data(),
+         base::CheckMul(sizeof(float), length()).ValueOrDie());
 }
 
 void AudioChannel::CopyFromRange(const AudioChannel* source_channel,
@@ -84,13 +87,16 @@ void AudioChannel::CopyFromRange(const AudioChannel* source_channel,
   const float* source = source_channel->Data();
   float* destination = MutableData();
 
+  const size_t safe_length =
+      base::CheckMul(sizeof(float), range_length).ValueOrDie();
   if (source_channel->IsSilent()) {
     if (range_length == length())
       Zero();
     else
-      memset(destination, 0, sizeof(float) * range_length);
-  } else
-    memcpy(destination, source + start_frame, sizeof(float) * range_length);
+      memset(destination, 0, safe_length);
+  } else {
+    memcpy(destination, source + start_frame, safe_length);
+  }
 }
 
 void AudioChannel::SumFrom(const AudioChannel* source_channel) {

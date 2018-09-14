@@ -25,6 +25,7 @@
 
 #include <memory>
 
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/alignment.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
@@ -1604,7 +1605,7 @@ template <typename Key,
 Value*
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     AllocateTable(unsigned size) {
-  size_t alloc_size = size * sizeof(ValueType);
+  size_t alloc_size = base::CheckMul(size, sizeof(ValueType)).ValueOrDie();
   ValueType* result;
   // Assert that we will not use memset on things with a vtable entry.  The
   // compiler will also check this on some platforms. We would like to check
