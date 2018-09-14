@@ -444,7 +444,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
                                const mojom::CreateViewParams& params)
     : RenderWidget(params.main_frame_widget_routing_id,
                    compositor_deps,
-                   blink::kWebPopupTypeNone,
+                   WidgetType::kFrame,
                    params.visual_properties.screen_info,
                    params.visual_properties.display_mode,
                    params.swapped_out,
@@ -1522,11 +1522,9 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   return view->webview();
 }
 
-WebWidget* RenderViewImpl::CreatePopup(blink::WebLocalFrame* creator,
-                                       blink::WebPopupType popup_type) {
-  RenderWidget* popup_widget =
-      RenderWidget::CreateForPopup(this, GetWidget()->compositor_deps(),
-                                   popup_type, GetWidget()->screen_info());
+WebWidget* RenderViewImpl::CreatePopup(blink::WebLocalFrame* creator) {
+  RenderWidget* popup_widget = RenderWidget::CreateForPopup(
+      this, GetWidget()->compositor_deps(), GetWidget()->screen_info());
   if (!popup_widget)
     return nullptr;
   popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(GetWidget());

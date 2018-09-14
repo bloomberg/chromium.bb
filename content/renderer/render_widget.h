@@ -37,6 +37,7 @@
 #include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
+#include "content/public/common/widget_type.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator_delegate.h"
 #include "content/renderer/gpu/layer_tree_view_delegate.h"
 #include "content/renderer/input/main_thread_event_queue.h"
@@ -55,7 +56,6 @@
 #include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
-#include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -155,7 +155,6 @@ class CONTENT_EXPORT RenderWidget
   // this widget lives inside.
   static RenderWidget* CreateForPopup(RenderViewImpl* opener,
                                       CompositorDependencies* compositor_deps,
-                                      blink::WebPopupType popup_type,
                                       const ScreenInfo& screen_info);
 
   // Creates a new RenderWidget that will be attached to a RenderFrame.
@@ -170,7 +169,7 @@ class CONTENT_EXPORT RenderWidget
   using CreateRenderWidgetFunction =
       RenderWidget* (*)(int32_t,
                         CompositorDependencies*,
-                        blink::WebPopupType,
+                        WidgetType,
                         const ScreenInfo&,
                         blink::WebDisplayMode display_mode,
                         bool,
@@ -534,7 +533,7 @@ class CONTENT_EXPORT RenderWidget
  protected:
   RenderWidget(int32_t widget_routing_id,
                CompositorDependencies* compositor_deps,
-               blink::WebPopupType popup_type,
+               WidgetType popup_type,
                const ScreenInfo& screen_info,
                blink::WebDisplayMode display_mode,
                bool swapped_out,
@@ -548,9 +547,6 @@ class CONTENT_EXPORT RenderWidget
   static blink::WebFrameWidget* CreateWebFrameWidget(
       blink::WebWidgetClient* widget_client,
       blink::WebLocalFrame* frame);
-
-  // Creates a WebWidget based on the popup type.
-  static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);
 
   // Called by Create() functions and subclasses to finish initialization.
   // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
@@ -724,10 +720,6 @@ class CONTENT_EXPORT RenderWidget
   void ScreenRectToEmulatedIfNeeded(blink::WebRect* window_rect) const;
   void EmulatedToScreenRectIfNeeded(blink::WebRect* window_rect) const;
 
-  bool CreateWidget(int32_t opener_id,
-                    blink::WebPopupType popup_type,
-                    int32_t* routing_id);
-
   void UpdateSurfaceAndScreenInfo(
       const viz::LocalSurfaceId& new_local_surface_id,
       const gfx::Size& new_compositor_viewport_pixel_size,
@@ -893,7 +885,7 @@ class CONTENT_EXPORT RenderWidget
   gfx::Range composition_range_;
 
   // The kind of popup this widget represents, NONE if not a popup.
-  blink::WebPopupType popup_type_;
+  WidgetType popup_type_;
 
   // While we are waiting for the browser to update window sizes, we track the
   // pending size temporarily.

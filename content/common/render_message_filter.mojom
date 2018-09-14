@@ -5,7 +5,6 @@
 module content.mojom;
 
 import "content/common/input/input_handler.mojom";
-import "content/common/native_types.mojom";
 import "content/common/widget.mojom";
 import "content/public/common/renderer_preferences.mojom";
 import "mojo/public/mojom/base/thread_priority.mojom";
@@ -19,7 +18,7 @@ interface RenderMessageFilter {
 
   // Similar to CreateWindow, except used for sub-widgets, like <select>
   // dropdowns.
-  [Sync] CreateNewWidget(int32 opener_id, content.mojom.WebPopupType popup_type, Widget widget)
+  [Sync] CreateNewWidget(int32 opener_id, Widget widget)
       => (int32 route_id);
 
   // Similar to CreateWidget except the widget is a full screen window.

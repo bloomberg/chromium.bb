@@ -48,7 +48,7 @@ namespace content {
 RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
     : host_(RenderWidgetHostImpl::From(host)),
       is_fullscreen_(false),
-      popup_type_(blink::kWebPopupTypeNone),
+      popup_type_(WidgetType::kFrame),
       current_device_scale_factor_(0),
       current_display_rotation_(display::Display::ROTATE_0),
       text_input_manager_(nullptr),
@@ -443,11 +443,11 @@ bool RenderWidgetHostViewBase::HasFallbackSurface() const {
   return false;
 }
 
-void RenderWidgetHostViewBase::SetPopupType(blink::WebPopupType popup_type) {
+void RenderWidgetHostViewBase::SetPopupType(WidgetType popup_type) {
   popup_type_ = popup_type;
 }
 
-blink::WebPopupType RenderWidgetHostViewBase::GetPopupType() {
+WidgetType RenderWidgetHostViewBase::GetPopupType() {
   return popup_type_;
 }
 

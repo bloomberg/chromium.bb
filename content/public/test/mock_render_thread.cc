@@ -44,7 +44,6 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
   }
 
   void CreateNewWidget(int32_t opener_id,
-                       blink::WebPopupType popup_type,
                        mojom::WidgetPtr widget,
                        CreateNewWidgetCallback callback) override {
     // See comment in CreateNewWindow().
@@ -52,10 +51,9 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
   }
 
   bool CreateNewWidget(int32_t opener_id,
-                       blink::WebPopupType popup_type,
                        mojom::WidgetPtr widget,
                        int32_t* route_id) override {
-    thread_->OnCreateWidget(opener_id, popup_type, route_id);
+    thread_->OnCreateWidget(opener_id, route_id);
     return true;
   }
 
@@ -283,7 +281,6 @@ int32_t MockRenderThread::GetNextRoutingID() {
 
 // The Widget expects to be returned a valid route_id.
 void MockRenderThread::OnCreateWidget(int opener_id,
-                                      blink::WebPopupType popup_type,
                                       int* route_id) {
   *route_id = GetNextRoutingID();
 }

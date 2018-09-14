@@ -13,11 +13,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "content/public/common/widget_type.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
-#include "third_party/blink/public/web/web_popup_type.h"
 
 #if defined(OS_MACOSX)
 #include "mojo/public/cpp/system/buffer.h"
@@ -114,9 +114,7 @@ class MockRenderThread : public RenderThread {
                       mojom::CreateNewWindowReply* reply);
 
   // The Widget expects to be returned a valid route_id.
-  void OnCreateWidget(int opener_id,
-                      blink::WebPopupType popup_type,
-                      int* route_id);
+  void OnCreateWidget(int opener_id, int* route_id);
 
   // Returns the request end of the InterfaceProvider interface whose client end
   // was passed in to construct RenderFrame with |routing_id|; if any. The

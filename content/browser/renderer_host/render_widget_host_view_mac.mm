@@ -303,7 +303,8 @@ void RenderWidgetHostViewMac::InitAsPopup(
   popup_parent_host_view_->popup_child_host_view_ = this;
 
   // This path is used by the time/date picker.
-  ns_view_bridge_->InitAsPopup(pos, popup_type_);
+  DCHECK_EQ(popup_type_, WidgetType::kPopup);
+  ns_view_bridge_->InitAsPopup(pos);
 }
 
 void RenderWidgetHostViewMac::InitAsFullscreen(

@@ -27,11 +27,11 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/screen_info.h"
+#include "content/public/common/widget_type.h"
 #include "ipc/ipc_listener.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
-#include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
@@ -173,9 +173,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       float scale_factor,
       base::OnceCallback<void(const SkBitmap&)> callback);
 
-  void SetPopupType(blink::WebPopupType popup_type);
+  void SetPopupType(WidgetType popup_type);
 
-  blink::WebPopupType GetPopupType();
+  WidgetType GetPopupType();
 
   // Return a value that is incremented each time the renderer swaps a new frame
   // to the view.
@@ -631,9 +631,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Is this a fullscreen view?
   bool is_fullscreen_;
 
-  // Whether this view is a popup and what kind of popup it is (select,
-  // autofill...).
-  blink::WebPopupType popup_type_;
+  // Whether this view is a frame or a popup.
+  WidgetType popup_type_;
 
   // Indicates whether keyboard lock is active for this view.
   bool keyboard_locked_ = false;
