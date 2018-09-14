@@ -24,14 +24,14 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
     return PointerEvent::Create(type, initializer, CurrentTimeTicks());
   }
 
-  int pointerId() const { return pointer_id_; }
+  int32_t pointerId() const { return pointer_id_; }
   double width() const { return width_; }
   double height() const { return height_; }
   float pressure() const { return pressure_; }
-  long tiltX() const { return tilt_x_; }
-  long tiltY() const { return tilt_y_; }
+  int32_t tiltX() const { return tilt_x_; }
+  int32_t tiltY() const { return tilt_y_; }
   float tangentialPressure() const { return tangential_pressure_; }
-  long twist() const { return twist_; }
+  int32_t twist() const { return twist_; }
   const String& pointerType() const { return pointer_type_; }
   bool isPrimary() const { return is_primary_; }
 
@@ -70,14 +70,14 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
                const PointerEventInit&,
                TimeTicks platform_time_stamp);
 
-  int pointer_id_;
+  int32_t pointer_id_;
   double width_;
   double height_;
   float pressure_;
-  long tilt_x_;
-  long tilt_y_;
+  int32_t tilt_x_;
+  int32_t tilt_y_;
   float tangential_pressure_;
-  long twist_;
+  int32_t twist_;
   String pointer_type_;
   bool is_primary_;
 

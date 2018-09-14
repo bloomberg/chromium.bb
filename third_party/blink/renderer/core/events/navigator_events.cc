@@ -36,7 +36,7 @@
 
 namespace blink {
 
-long NavigatorEvents::maxTouchPoints(Navigator& navigator) {
+int32_t NavigatorEvents::maxTouchPoints(Navigator& navigator) {
   LocalFrame* frame = navigator.GetFrame();
   if (!frame)
     return 0;
