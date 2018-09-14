@@ -131,9 +131,9 @@ void ActivationStateComputingNavigationThrottle::CheckActivationState() {
   // will drop the message via weak pointer semantics.
   async_filter_ = std::make_unique<AsyncDocumentSubresourceFilter>(
       ruleset_handle_, std::move(params),
-      base::Bind(&ActivationStateComputingNavigationThrottle::
-                     OnActivationStateComputed,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ActivationStateComputingNavigationThrottle::
+                         OnActivationStateComputed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ActivationStateComputingNavigationThrottle::OnActivationStateComputed(

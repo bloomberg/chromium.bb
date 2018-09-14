@@ -78,8 +78,9 @@ SubframeNavigationFilteringThrottle::DeferToCalculateLoadPolicy() {
     return PROCEED;
   parent_frame_filter_->GetLoadPolicyForSubdocument(
       navigation_handle()->GetURL(),
-      base::Bind(&SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy,
+          weak_ptr_factory_.GetWeakPtr()));
   last_defer_timestamp_ = base::TimeTicks::Now();
   return DEFER;
 }

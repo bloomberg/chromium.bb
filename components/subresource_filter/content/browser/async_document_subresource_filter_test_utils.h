@@ -21,7 +21,7 @@ class TestActivationStateCallbackReceiver {
   TestActivationStateCallbackReceiver();
   ~TestActivationStateCallbackReceiver();
 
-  base::Callback<void(mojom::ActivationState)> GetCallback();
+  base::OnceCallback<void(mojom::ActivationState)> GetCallback();
   void WaitForActivationDecision();
   void ExpectReceivedOnce(const mojom::ActivationState& expected_state) const;
 
