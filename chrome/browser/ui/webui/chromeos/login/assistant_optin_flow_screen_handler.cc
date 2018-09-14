@@ -234,12 +234,18 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
   ui_audit_key_ = activity_control_ui.ui_audit_key();
 
   // Process activity control data.
-  if (!activity_control_ui.setting_zippy().size()) {
+  bool skip_activity_control = !activity_control_ui.setting_zippy().size();
+  if (skip_activity_control) {
     // No need to consent. Move to the next screen.
     activity_control_needed_ = false;
     PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                      true);
+    prefs->SetBoolean(
+        arc::prefs::kVoiceInteractionActivityControlAccepted,
+        (settings_ui.consent_flow_ui().consent_status() ==
+             assistant::ConsentFlowUi_ConsentStatus_ALREADY_CONSENTED ||
+         settings_ui.consent_flow_ui().consent_status() ==
+             assistant::ConsentFlowUi_ConsentStatus_ASK_FOR_CONSENT));
+    // Skip activity control and users will be in opted out mode.
     ShowNextScreen();
   } else {
     AddSettingZippy("settings",
@@ -247,14 +253,36 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
   }
 
   // Process third party disclosure data.
-  AddSettingZippy("disclosure", CreateDisclosureData(
-                                    third_party_disclosure_ui.disclosures()));
+  bool skip_third_party_disclosure =
+      skip_activity_control && !third_party_disclosure_ui.disclosures().size();
+  if (third_party_disclosure_ui.disclosures().size()) {
+    AddSettingZippy("disclosure", CreateDisclosureData(
+                                      third_party_disclosure_ui.disclosures()));
+  } else if (skip_third_party_disclosure) {
+    ShowNextScreen();
+  } else {
+    // TODO(llin): Show an error message and log it properly.
+    LOG(ERROR) << "Missing third Party disclosure data.";
+    return;
+  }
 
   // Process get more data.
   email_optin_needed_ = settings_ui.has_email_opt_in_ui() &&
                         settings_ui.email_opt_in_ui().has_title();
-  AddSettingZippy("get-more", CreateGetMoreData(email_optin_needed_,
-                                                settings_ui.email_opt_in_ui()));
+  auto get_more_data =
+      CreateGetMoreData(email_optin_needed_, settings_ui.email_opt_in_ui());
+
+  bool skip_get_more =
+      skip_third_party_disclosure && !get_more_data.GetList().size();
+  if (get_more_data.GetList().size()) {
+    AddSettingZippy("get-more", get_more_data);
+  } else if (skip_get_more) {
+    ShowNextScreen();
+  } else {
+    // TODO(llin): Show an error message and log it properly.
+    LOG(ERROR) << "Missing get more data.";
+    return;
+  }
 
   // Pass string constants dictionary.
   ReloadContent(GetSettingsUiStrings(settings_ui, activity_control_needed_));
