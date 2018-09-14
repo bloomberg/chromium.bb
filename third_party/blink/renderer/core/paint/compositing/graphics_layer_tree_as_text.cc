@@ -199,7 +199,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     std::unique_ptr<JSONArray> mask_layer_json = JSONArray::Create();
     mask_layer_json->PushObject(
         GraphicsLayerAsJSON(layer->MaskLayer(), flags, rendering_context_map,
-                            layer->MaskLayer()->GetPosition()));
+                            FloatPoint(layer->MaskLayer()->GetPosition())));
     json->SetArray("maskLayer", std::move(mask_layer_json));
   }
 
@@ -208,7 +208,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
         JSONArray::Create();
     contents_clipping_mask_layer_json->PushObject(GraphicsLayerAsJSON(
         layer->ContentsClippingMaskLayer(), flags, rendering_context_map,
-        layer->ContentsClippingMaskLayer()->GetPosition()));
+        FloatPoint(layer->ContentsClippingMaskLayer()->GetPosition())));
     json->SetArray("contentsClippingMaskLayer",
                    std::move(contents_clipping_mask_layer_json));
   }
@@ -305,7 +305,7 @@ class LayersAsJSONArray {
   void Walk(const GraphicsLayer& layer,
             int parent_transform_id,
             const FloatPoint& parent_position) {
-    FloatPoint position = parent_position + layer.GetPosition();
+    FloatPoint position = parent_position + FloatPoint(layer.GetPosition());
     int transform_id = parent_transform_id;
     AddLayer(layer, transform_id, position);
     for (auto* const child : layer.Children())
@@ -326,7 +326,7 @@ std::unique_ptr<JSONObject> GraphicsLayerTreeAsJSON(
     LayerTreeFlags flags,
     RenderingContextMap& rendering_context_map) {
   std::unique_ptr<JSONObject> json = GraphicsLayerAsJSON(
-      layer, flags, rendering_context_map, layer->GetPosition());
+      layer, flags, rendering_context_map, FloatPoint(layer->GetPosition()));
 
   if (layer->Children().size()) {
     std::unique_ptr<JSONArray> children_json = JSONArray::Create();

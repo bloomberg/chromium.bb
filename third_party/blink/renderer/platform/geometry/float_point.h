@@ -73,6 +73,7 @@ class PLATFORM_EXPORT FloatPoint {
   explicit FloatPoint(const LayoutSize&);
   constexpr explicit FloatPoint(const IntSize& size)
       : x_(size.Width()), y_(size.Height()) {}
+  explicit FloatPoint(const gfx::PointF&);
 
   static constexpr FloatPoint Zero() { return FloatPoint(); }
 

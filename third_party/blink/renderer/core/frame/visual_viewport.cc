@@ -221,8 +221,8 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     overlay_scrollbar_horizontal_->SetLayerState(
         PropertyTreeState(transform_parent, context.current.clip,
                           horizontal_scrollbar_effect_node_.get()),
-        IntPoint(overlay_scrollbar_horizontal_->GetPosition().X(),
-                 overlay_scrollbar_horizontal_->GetPosition().Y()));
+        IntPoint(overlay_scrollbar_horizontal_->GetPosition().x(),
+                 overlay_scrollbar_horizontal_->GetPosition().y()));
   }
 
   if (overlay_scrollbar_vertical_) {
@@ -242,8 +242,8 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     overlay_scrollbar_vertical_->SetLayerState(
         PropertyTreeState(transform_parent, context.current.clip,
                           vertical_scrollbar_effect_node_.get()),
-        IntPoint(overlay_scrollbar_vertical_->GetPosition().X(),
-                 overlay_scrollbar_vertical_->GetPosition().Y()));
+        IntPoint(overlay_scrollbar_vertical_->GetPosition().x(),
+                 overlay_scrollbar_vertical_->GetPosition().y()));
   }
 }
 
