@@ -3358,10 +3358,18 @@ BEGIN_PARTITION_SEARCH:
 
   // PARTITION_NONE
   if (partition_none_allowed) {
-    // TODO(Cherma) : Account for partition cost while passing best rd to
-    // rd_pick_sb_modes()
+    int pt_cost = 0;
+    if (bsize_at_least_8x8) {
+      pt_cost = partition_cost[PARTITION_NONE] < INT_MAX
+                    ? partition_cost[PARTITION_NONE]
+                    : 0;
+    }
+    int64_t partition_rd_cost = RDCOST(x->rdmult, pt_cost, 0);
+    int64_t best_remain_rdcost = (best_rdc.rdcost == INT64_MAX)
+                                     ? INT64_MAX
+                                     : (best_rdc.rdcost - partition_rd_cost);
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
-                     PARTITION_NONE, bsize, ctx_none, best_rdc.rdcost);
+                     PARTITION_NONE, bsize, ctx_none, best_remain_rdcost);
     pb_source_variance = x->source_variance;
     if (none_rd) *none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
@@ -3372,9 +3380,6 @@ BEGIN_PARTITION_SEARCH:
         }
       }
       if (bsize_at_least_8x8) {
-        const int pt_cost = partition_cost[PARTITION_NONE] < INT_MAX
-                                ? partition_cost[PARTITION_NONE]
-                                : 0;
         this_rdc.rate += pt_cost;
         this_rdc.rdcost = RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist);
       }
