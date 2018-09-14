@@ -1142,6 +1142,7 @@ ScriptPromise Document::createCSSStyleSheet(ScriptState* script_state,
   // TODO(rakina): Find a way to improve this.
   CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
   sheet->SetText(text);
+  sheet->SetAssociatedDocument(this);
   return ScriptPromise::Cast(script_state,
                              ScriptValue::From(script_state, sheet));
 }
@@ -1150,7 +1151,9 @@ CSSStyleSheet* Document::createEmptyCSSStyleSheet(
     ScriptState* script_state,
     const CSSStyleSheetInit& options,
     ExceptionState& exception_state) {
-  return CSSStyleSheet::Create(*this, options, exception_state);
+  CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
+  sheet->SetAssociatedDocument(this);
+  return sheet;
 }
 
 CSSStyleSheet* Document::createEmptyCSSStyleSheet(

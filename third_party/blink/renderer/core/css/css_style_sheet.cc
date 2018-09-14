@@ -575,6 +575,7 @@ void CSSStyleSheet::Trace(blink::Visitor* visitor) {
   visitor->Trace(child_rule_cssom_wrappers_);
   visitor->Trace(rule_list_cssom_wrapper_);
   visitor->Trace(adopted_tree_scopes_);
+  visitor->Trace(associated_document_);
   StyleSheet::Trace(visitor);
 }
 

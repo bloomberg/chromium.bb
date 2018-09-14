@@ -344,6 +344,34 @@ StyleSheetList& TreeScope::AdoptedStyleSheets() {
   return *adopted_style_sheets_;
 }
 
+void TreeScope::SetAdoptedStyleSheets(StyleSheetList* adopted_style_sheets,
+                                      ExceptionState& exception_state) {
+  unsigned style_sheets_count =
+      adopted_style_sheets ? adopted_style_sheets->length() : 0;
+  for (unsigned i = 0; i < style_sheets_count; ++i) {
+    CSSStyleSheet* style_sheet = ToCSSStyleSheet(adopted_style_sheets->item(i));
+    Document* associated_document = style_sheet->AssociatedDocument();
+    Node* owner_node = style_sheet->ownerNode();
+    if (associated_document && *associated_document != GetDocument()) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                        "Sharing constructable stylesheets in "
+                                        "multiple documents is not allowed");
+      return;
+    }
+    if (owner_node && owner_node->GetDocument() != GetDocument()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotAllowedError,
+          "When the style sheet's owner node and the AdoptedStyleSheets' tree "
+          "scope is not in the same Document tree, adding non-constructed "
+          "stylesheets to AdoptedStyleSheets is not allowed");
+      return;
+    }
+    // TODO(momon): Don't allow using non-constructed stylesheets, pending
+    // resolution of https://github.com/WICG/construct-stylesheets/issues/34
+  }
+  SetAdoptedStyleSheets(adopted_style_sheets);
+}
+
 void TreeScope::SetAdoptedStyleSheets(StyleSheetList* adopted_style_sheets) {
   GetDocument().GetStyleEngine().AdoptedStyleSheetsWillChange(
       *this, adopted_style_sheets_, adopted_style_sheets);
