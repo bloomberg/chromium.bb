@@ -1803,12 +1803,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, PopupsInsideHostedApp) {
     SCOPED_TRACE("... for isolated_url popup");
     TestPopupProcess(app, isolated_url_, false, false);
   }
-  // For cross-site, the resulting process is only in the app process if we
-  // don't swap processes.
+  // For cross-site, the resulting popup should swap processes and not be in
+  // the app process.
   {
     SCOPED_TRACE("... for cross_site popup");
-    TestPopupProcess(app, cross_site_url_, !should_swap_for_cross_site_,
-                     !should_swap_for_cross_site_);
+    TestPopupProcess(app, cross_site_url_, false, false);
   }
 
   // If the iframes open popups that are same-origin with themselves, the popups
@@ -2365,12 +2364,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
       foo_contents->GetMainFrame()->GetSiteInstance()->IsRelatedSiteInstance(
           foo_contents2->GetMainFrame()->GetSiteInstance()));
 
-  // The bar.com tab should be in the same process as the foo.com tabs only if
-  // we are not in --site-per-process mode.  --site-per-process should override
-  // the process-per-site behavior.
+  // The bar.com tab should be in a different process from the foo.com tabs.
   auto* bar_process = bar_contents->GetMainFrame()->GetProcess();
-  EXPECT_EQ(foo_process == bar_process,
-            !content::AreAllSitesIsolatedForTesting());
+  EXPECT_NE(foo_process, bar_process);
 
   // Ensure all tabs are in app processes.
   auto* process_map = extensions::ProcessMap::Get(browser()->profile());
