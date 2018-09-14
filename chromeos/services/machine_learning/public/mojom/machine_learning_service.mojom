@@ -13,8 +13,14 @@ module chromeos.machine_learning.mojom;
 
 import "chromeos/services/machine_learning/public/mojom/model.mojom";
 
+enum LoadModelResult {
+  OK = 0,
+  MODEL_SPEC_ERROR,
+  LOAD_MODEL_ERROR,
+};
+
 // Top-level interface between Chromium and the ML Service daemon.
 interface MachineLearningService {
   // The ModelId inside ModelSpec is used to specify the model to be loaded.
-  LoadModel(ModelSpec spec, Model& request);
+  LoadModel(ModelSpec spec, Model& request) => (LoadModelResult result);
 };
