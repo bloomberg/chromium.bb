@@ -168,7 +168,7 @@ void FeedOfflineHost::OnNewContentReceived() {
 }
 
 void FeedOfflineHost::OnNoListeners() {
-  // TODO(skym): Clear out local cache of offline data.
+  url_hash_to_id_.clear();
 }
 
 void FeedOfflineHost::OnGetKnownContentDone(
