@@ -47,6 +47,36 @@ base::string16 GetBatteryTimeText(base::TimeDelta time_left) {
                                   time_left);
 }
 
+int PowerSourceToDisplayId(
+    const power_manager::PowerSupplyProperties_PowerSource& source) {
+  switch (source.port()) {
+    case power_manager::PowerSupplyProperties_PowerSource_Port_UNKNOWN:
+      return IDS_POWER_SOURCE_PORT_UNKNOWN;
+    case power_manager::PowerSupplyProperties_PowerSource_Port_LEFT:
+      return IDS_POWER_SOURCE_PORT_LEFT;
+    case power_manager::PowerSupplyProperties_PowerSource_Port_RIGHT:
+      return IDS_POWER_SOURCE_PORT_RIGHT;
+    case power_manager::PowerSupplyProperties_PowerSource_Port_BACK:
+      return IDS_POWER_SOURCE_PORT_BACK;
+    case power_manager::PowerSupplyProperties_PowerSource_Port_FRONT:
+      return IDS_POWER_SOURCE_PORT_FRONT;
+    case power_manager::PowerSupplyProperties_PowerSource_Port_LEFT_FRONT:
+      return IDS_POWER_SOURCE_PORT_LEFT_FRONT;
+    case power_manager::PowerSupplyProperties_PowerSource_Port_LEFT_BACK:
+      return IDS_POWER_SOURCE_PORT_LEFT_BACK;
+    case power_manager::PowerSupplyProperties_PowerSource_Port_RIGHT_FRONT:
+      return IDS_POWER_SOURCE_PORT_RIGHT_FRONT;
+    case power_manager::PowerSupplyProperties_PowerSource_Port_RIGHT_BACK:
+      return IDS_POWER_SOURCE_PORT_RIGHT_BACK;
+    case power_manager::PowerSupplyProperties_PowerSource_Port_BACK_LEFT:
+      return IDS_POWER_SOURCE_PORT_BACK_LEFT;
+    case power_manager::PowerSupplyProperties_PowerSource_Port_BACK_RIGHT:
+      return IDS_POWER_SOURCE_PORT_BACK_RIGHT;
+  }
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace
 
 const char PowerHandler::kPowerManagementSettingsChangedName[] =
@@ -302,7 +332,7 @@ void PowerHandler::SendPowerSources() {
     dict->SetString("id", source.id());
     dict->SetBoolean("is_dedicated_charger", source.active_by_default());
     dict->SetString("description",
-                    ash::power_utils::PowerSourceToDisplayString(source));
+                    l10n_util::GetStringUTF16(PowerSourceToDisplayId(source)));
     sources_list.Append(std::move(dict));
   }
 

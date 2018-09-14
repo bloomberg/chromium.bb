@@ -93,8 +93,6 @@ include_rules = [
   # interfaces in //ash/public/interfaces. See //ash/README.md.
   "-ash",
   "+ash/public",
-  # Ash string IDs can be used in src/chrome.
-  "+ash/strings/grit/ash_strings.h",
   "+ash/components/quick_launch/public/mojom",
   "+ash/components/shortcut_viewer/public/mojom",
   "+ash/components/tap_visualizer/public/mojom",
@@ -220,7 +218,6 @@ specific_include_rules = {
     # The following are needed for classic mode to create the WindowService.
     # Once Ash runs out of process no longer needed.
     "+ash/shell.h",
-    "+ash/strings/grit/ash_strings.h",
 
     # Needed for classic mode.
     "+ash/ash_service.h",

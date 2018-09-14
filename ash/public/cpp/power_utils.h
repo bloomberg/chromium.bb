@@ -6,14 +6,9 @@
 #define ASH_PUBLIC_CPP_POWER_UTILS_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/strings/string16.h"
 
 namespace base {
 class TimeDelta;
-}
-
-namespace power_manager {
-class PowerSupplyProperties_PowerSource;
 }
 
 namespace ash {
@@ -35,9 +30,6 @@ int ASH_PUBLIC_EXPORT GetRoundedBatteryPercent(double battery_percent);
 void ASH_PUBLIC_EXPORT SplitTimeIntoHoursAndMinutes(const base::TimeDelta& time,
                                                     int* hours,
                                                     int* minutes);
-
-base::string16 ASH_PUBLIC_EXPORT PowerSourceToDisplayString(
-    const power_manager::PowerSupplyProperties_PowerSource& source);
 
 }  // namespace power_utils
 

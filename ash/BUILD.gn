@@ -1368,6 +1368,7 @@ component("ash") {
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/multidevice_setup/public/mojom",
+    "//chromeos/strings",
     "//components/account_id",
     "//components/device_event_log",
     "//components/discardable_memory/service",
@@ -1412,7 +1413,6 @@ component("ash") {
     "//ui/chromeos",
     "//ui/chromeos/events",
     "//ui/chromeos/resources",
-    "//ui/chromeos/strings",
     "//ui/compositor",
     "//ui/compositor_extra",
     "//ui/display",
@@ -2423,6 +2423,7 @@ repack("ash_service_resources") {
   sources = [
     "$root_gen_dir/ash/components/resources/ash_components_resources_100_percent.pak",
     "$root_gen_dir/ash/strings/ash_strings_en-US.pak",
+    "$root_gen_dir/chromeos/strings/chromeos_strings_en-US.pak",
     "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak",
     "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
@@ -2433,6 +2434,7 @@ repack("ash_service_resources") {
   deps = [
     "//ash/components/resources",
     "//ash/strings",
+    "//chromeos/strings",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
     "//ui/resources",
