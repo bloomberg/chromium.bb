@@ -137,10 +137,8 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
 
     @Override
     public void notifyDownloadFailed(DownloadInfo info, @FailState int failState) {
-        NotificationInfo notificationInfo =
-                new NotificationInfo(NotificationType.FAILED, info, NotificationPriority.HIGH);
-        notificationInfo.mFailState = failState;
-        addPendingNotification(notificationInfo);
+        mDownloadNotificationService.notifyDownloadFailed(info.getContentId(), info.getFileName(),
+                info.getIcon(), info.isOffTheRecord(), failState);
     }
 
     @Override
@@ -260,7 +258,8 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
                 break;
             case NotificationType.FAILED:
                 getDownloadNotificationService().notifyDownloadFailed(info.getContentId(),
-                        info.getFileName(), info.getIcon(), notificationInfo.mFailState);
+                        info.getFileName(), info.getIcon(), info.isOffTheRecord(),
+                        notificationInfo.mFailState);
                 break;
             case NotificationType.INTERRUPTED:
                 getDownloadNotificationService().notifyDownloadPaused(info.getContentId(),

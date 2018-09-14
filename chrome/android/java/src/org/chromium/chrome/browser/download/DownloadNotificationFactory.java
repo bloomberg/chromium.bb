@@ -48,10 +48,13 @@ public final class DownloadNotificationFactory {
     public static final int MAX_FILE_NAME_LENGTH = 25;
 
     /**
-     * Builds a downloads notification based on the status of the download and its information.
+     * Builds a downloads notification based on the status of the download and its information. All
+     * changes to this function should consider the difference between normal profile and off the
+     * record profile.
      * @param context of the download.
      * @param downloadStatus (in progress, paused, successful, failed, deleted, or summary).
-     * @param downloadUpdate information about the download (ie. contentId, fileName, icon, etc).
+     * @param downloadUpdate information about the download (ie. contentId, fileName, icon,
+     * isOffTheRecord, etc).
      * @return Notification that is built based on these parameters.
      */
     public static Notification buildNotification(Context context,
@@ -129,16 +132,12 @@ public final class DownloadNotificationFactory {
                 }
 
                 if (!downloadUpdate.getProgress().isIndeterminate()
+                        && !downloadUpdate.getIsOffTheRecord()
                         && downloadUpdate.getTimeRemainingInMillis() >= 0
                         && !LegacyHelpers.isLegacyOfflinePage(downloadUpdate.getContentId())) {
                     String subText = DownloadUtils.formatRemainingTime(
                             context, downloadUpdate.getTimeRemainingInMillis());
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        builder.setSubText(subText);
-                    } else {
-                        builder.setContentInfo(subText);
-                    }
+                    setSubText(builder, subText);
                 }
 
                 if (downloadUpdate.getStartTime() > 0) {
@@ -183,7 +182,8 @@ public final class DownloadNotificationFactory {
             case DownloadNotificationService2.DownloadStatus.COMPLETED:
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
 
-                if (downloadUpdate.getTotalBytes() > 0) {
+                // Don't show file size in incognito mode.
+                if (downloadUpdate.getTotalBytes() > 0 && !downloadUpdate.getIsOffTheRecord()) {
                     contentText = context.getResources().getString(
                             R.string.download_notification_completed_with_size,
                             DownloadUtils.getStringForBytes(
@@ -243,9 +243,17 @@ public final class DownloadNotificationFactory {
         Bundle extras = new Bundle();
         extras.putInt(EXTRA_NOTIFICATION_BUNDLE_ICON_ID, iconId);
 
-        builder.setContentText(contentText).setSmallIcon(iconId).addExtras(extras);
+        builder.setSmallIcon(iconId).addExtras(extras);
 
-        if (downloadUpdate.getFileName() != null) {
+        // Context text is shown as title in incognito mode as the file name is not shown.
+        if (downloadUpdate.getIsOffTheRecord()) {
+            builder.setContentTitle(contentText);
+        } else {
+            builder.setContentText(contentText);
+        }
+
+        // Don't show file name in incognito mode.
+        if (downloadUpdate.getFileName() != null && !downloadUpdate.getIsOffTheRecord()) {
             builder.setContentTitle(DownloadUtils.getAbbreviatedFileName(
                     downloadUpdate.getFileName(), MAX_FILE_NAME_LENGTH));
         }
@@ -260,6 +268,13 @@ public final class DownloadNotificationFactory {
                             downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
 
+        // A sub text to inform the users that they are using incognito mode.
+        if (downloadUpdate.getIsOffTheRecord()) {
+            setSubText(builder,
+                    context.getResources().getString(
+                            R.string.download_notification_incognito_subtext));
+        }
+
         return builder.build();
     }
 
@@ -272,6 +287,19 @@ public final class DownloadNotificationFactory {
             Context context, Intent intent, int notificationId) {
         return PendingIntent.getService(
                 context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    /**
+     * Helper method to set the sub text on different versions of Android.
+     * @param builder The builder to build notification.
+     * @param subText A string shown as sub text on the notification.
+     */
+    private static void setSubText(ChromeNotificationBuilder builder, String subText) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            builder.setSubText(subText);
+        } else {
+            builder.setContentInfo(subText);
+        }
     }
 
     /**
