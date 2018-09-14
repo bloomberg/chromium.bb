@@ -137,7 +137,7 @@ void FakeFileSystem::GetFileForSaving(const base::FilePath& file_path,
 
 void FakeFileSystem::IsCacheFileMarkedAsMounted(
     const base::FilePath& drive_file_path,
-    const IsMountedCallback& callback) {
+    IsMountedCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -221,7 +221,7 @@ void FakeFileSystem::GetMetadata(GetFilesystemMetadataCallback callback) {
 
 void FakeFileSystem::MarkCacheFileAsMounted(
     const base::FilePath& drive_file_path,
-    const MarkMountedCallback& callback) {
+    MarkMountedCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
