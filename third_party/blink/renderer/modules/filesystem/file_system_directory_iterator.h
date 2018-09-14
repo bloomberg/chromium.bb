@@ -16,11 +16,12 @@ class ScriptState;
 
 class FileSystemDirectoryIterator : public DirectoryReaderBase {
   DEFINE_WRAPPERTYPEINFO();
-
  public:
   FileSystemDirectoryIterator(DOMFileSystemBase*, const String& full_path);
 
   ScriptPromise next(ScriptState*);
+  // TODO(mek): This return method should cancel the backend directory iteration
+  // operation, to avoid doing useless work.
   void IteratorReturn() {}
 
   void Trace(Visitor*) override;
