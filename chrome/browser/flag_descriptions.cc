@@ -2801,6 +2801,12 @@ const char kAutofillDropdownLayoutName[] =
 const char kAutofillDropdownLayoutDescription[] =
     "Alternate visual designs for the Autofill dropdown.";
 
+const char kAutofillPrimaryInfoStyleExperimentName[] =
+    "Autofill experiment with primary info style";
+const char kAutofillPrimaryInfoStyleExperimentDescription[] =
+    "Allow experimentation with different typefaces for primary info on the "
+    "Autofill dropdown (addresses and payment methods)";
+
 const char kDoodlesOnLocalNtpName[] = "Enable doodles on the local NTP";
 const char kDoodlesOnLocalNtpDescription[] =
     "Show doodles on the local New Tab page if Google is the default search "

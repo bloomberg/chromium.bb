@@ -175,6 +175,11 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   // Creates a label matching the style of the description label.
   views::Label* CreateSecondaryLabel(const base::string16& text) const;
 
+  // Sets |font_weight| as the font weight to be used for primary information on
+  // the current item. Returns false if no custom font weight is undefined.
+  virtual bool ShouldUseCustomFontWeightForPrimaryInfo(
+      gfx::Font::Weight* font_weight) const = 0;
+
  private:
   void AddIcon(gfx::ImageSkia icon);
   void AddSpacerWithSize(int spacer_width,
@@ -201,6 +206,8 @@ class AutofillPopupSuggestionView : public AutofillPopupItemView {
   // AutofillPopupItemView:
   std::unique_ptr<views::Background> CreateBackground() override;
   int GetPrimaryTextStyle() override;
+  bool ShouldUseCustomFontWeightForPrimaryInfo(
+      gfx::Font::Weight* font_weight) const override;
 
   AutofillPopupSuggestionView(AutofillPopupViewNativeViews* popup_view,
                               int line_number);
@@ -222,6 +229,8 @@ class PasswordPopupSuggestionView : public AutofillPopupSuggestionView {
   views::View* CreateValueLabel() override;
   views::View* CreateSubtextLabel() override;
   views::View* CreateDescriptionLabel() override;
+  bool ShouldUseCustomFontWeightForPrimaryInfo(
+      gfx::Font::Weight* font_weight) const override;
 
  private:
   PasswordPopupSuggestionView(AutofillPopupViewNativeViews* popup_view,
@@ -245,6 +254,8 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
   void CreateContent() override;
   std::unique_ptr<views::Background> CreateBackground() override;
   int GetPrimaryTextStyle() override;
+  bool ShouldUseCustomFontWeightForPrimaryInfo(
+      gfx::Font::Weight* font_weight) const override;
 
  private:
   AutofillPopupFooterView(AutofillPopupViewNativeViews* popup_view,
@@ -439,10 +450,15 @@ views::View* AutofillPopupItemView::CreateValueLabel() {
           ->GetSuggestionAt(line_number_)
           .is_value_secondary)
     return CreateSecondaryLabel(text);
+
+  gfx::FontList font_list = views::style::GetFont(
+      ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, GetPrimaryTextStyle());
+  gfx::Font::Weight font_weight;
   views::Label* text_label = new views::Label(
       popup_view_->controller()->GetElidedValueAt(line_number_),
-      {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                             GetPrimaryTextStyle())});
+      {ShouldUseCustomFontWeightForPrimaryInfo(&font_weight)
+           ? font_list.DeriveWithWeight(font_weight)
+           : font_list});
   text_label->SetEnabledColor(
       views::style::GetColor(*this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
                              GetPrimaryTextStyle()));
@@ -513,6 +529,11 @@ int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
   return views::style::TextStyle::STYLE_PRIMARY;
 }
 
+bool AutofillPopupSuggestionView::ShouldUseCustomFontWeightForPrimaryInfo(
+    gfx::Font::Weight* font_weight) const {
+  return autofill::ShouldUseCustomFontWeightForPrimaryInfo(font_weight);
+}
+
 AutofillPopupSuggestionView::AutofillPopupSuggestionView(
     AutofillPopupViewNativeViews* popup_view,
     int line_number)
@@ -557,6 +578,11 @@ views::View* PasswordPopupSuggestionView::CreateDescriptionLabel() {
   return new ConstrainedWidthView(label, kAutofillPopupPasswordMaxWidth);
 }
 
+bool PasswordPopupSuggestionView::ShouldUseCustomFontWeightForPrimaryInfo(
+    gfx::Font::Weight* font_weight) const {
+  return false;
+}
+
 PasswordPopupSuggestionView::PasswordPopupSuggestionView(
     AutofillPopupViewNativeViews* popup_view,
     int line_number)
@@ -592,6 +618,11 @@ std::unique_ptr<views::Background> AutofillPopupFooterView::CreateBackground() {
 
 int AutofillPopupFooterView::GetPrimaryTextStyle() {
   return ChromeTextStyle::STYLE_SECONDARY;
+}
+
+bool AutofillPopupFooterView::ShouldUseCustomFontWeightForPrimaryInfo(
+    gfx::Font::Weight* font_weight) const {
+  return false;
 }
 
 AutofillPopupFooterView::AutofillPopupFooterView(

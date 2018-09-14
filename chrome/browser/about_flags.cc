@@ -841,6 +841,36 @@ const FeatureEntry::FeatureVariation kAutofillPreviewStyleVariations[] = {
     {"(Black on GoogleYellow050)", kAutofillPreviewStyleBlackOnYellow050,
      base::size(kAutofillPreviewStyleBlackOnYellow050), nullptr}};
 
+#if !defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kAutofillPrimaryInfoStyleMedium[] = {
+    {autofill::kAutofillPrimaryInfoFontWeightParameterName,
+     autofill::kAutofillPrimaryInfoFontWeightParameterMedium},
+};
+const FeatureEntry::FeatureParam kAutofillPrimaryInfoStyleSemiBold[] = {
+    {autofill::kAutofillPrimaryInfoFontWeightParameterName,
+     autofill::kAutofillPrimaryInfoFontWeightParameterSemiBold},
+};
+const FeatureEntry::FeatureParam kAutofillPrimaryInfoStyleBold[] = {
+    {autofill::kAutofillPrimaryInfoFontWeightParameterName,
+     autofill::kAutofillPrimaryInfoFontWeightParameterBold},
+};
+const FeatureEntry::FeatureParam kAutofillPrimaryInfoStyleExtraBold[] = {
+    {autofill::kAutofillPrimaryInfoFontWeightParameterName,
+     autofill::kAutofillPrimaryInfoFontWeightParameterExtraBold},
+};
+
+const FeatureEntry::FeatureVariation kAutofillPrimaryInfoStyleVariations[] = {
+    {"(Medium)", kAutofillPrimaryInfoStyleMedium,
+     base::size(kAutofillPrimaryInfoStyleMedium), nullptr},
+    {"(Semi-bold)", kAutofillPrimaryInfoStyleSemiBold,
+     base::size(kAutofillPrimaryInfoStyleSemiBold), nullptr},
+    {"(Bold)", kAutofillPrimaryInfoStyleBold,
+     base::size(kAutofillPrimaryInfoStyleBold), nullptr},
+    {"(Extra-bold)", kAutofillPrimaryInfoStyleExtraBold,
+     base::size(kAutofillPrimaryInfoStyleExtraBold), nullptr},
+};
+#endif  // !defined(OS_ANDROID)
+
 const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kAutoplayPolicyNoUserGestureRequired,
@@ -4072,6 +4102,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillCacheQueryResponsesName,
      flag_descriptions::kAutofillCacheQueryResponsesDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheQueryResponses)},
+
+#if !defined(OS_ANDROID)
+    {"autofill-primary-info-style",
+     flag_descriptions::kAutofillPrimaryInfoStyleExperimentName,
+     flag_descriptions::kAutofillPrimaryInfoStyleExperimentDescription,
+     kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         autofill::kAutofillPrimaryInfoStyleExperiment,
+         kAutofillPrimaryInfoStyleVariations,
+         "AutofillPrimaryInfoStyleExperiment")},
+#endif  // !defined(OS_ANDROID)
+
     {"autofill-enable-company-name",
      flag_descriptions::kAutofillEnableCompanyNameName,
      flag_descriptions::kAutofillEnableCompanyNameDescription, kOsAll,
