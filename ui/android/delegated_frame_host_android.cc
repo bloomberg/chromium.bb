@@ -94,7 +94,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
 
   viz::RenderPass* root_pass = frame.render_pass_list.back().get();
   const bool has_transparent_background = root_pass->has_transparent_background;
-  const bool active_device_scale_factor = frame.device_scale_factor();
+  const float active_device_scale_factor = frame.device_scale_factor();
   const gfx::Size pending_surface_size_in_pixels = frame.size_in_pixels();
   // Reset |content_layer_| only if surface-sync is not used. When surface-sync
   // is turned on, |content_layer_| is updated with the appropriate states (see
@@ -445,9 +445,6 @@ void DelegatedFrameHostAndroid::ProcessCopyOutputRequest(
     std::unique_ptr<viz::CopyOutputRequest> request) {
   if (!request->has_area())
     request->set_area(gfx::Rect(pending_surface_size_in_pixels_));
-
-  request->set_area(
-      gfx::ScaleToRoundedRect(request->area(), active_device_scale_factor_));
 
   if (request->has_result_selection()) {
     const gfx::Rect& area = request->area();
