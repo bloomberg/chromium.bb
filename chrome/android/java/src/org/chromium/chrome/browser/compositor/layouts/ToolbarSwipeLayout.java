@@ -131,7 +131,6 @@ public class ToolbarSwipeLayout extends Layout {
         prepareLayoutTabForSwipe(mFromTab, false);
     }
 
-    @Override
     public void swipeStarted(long time, @ScrollDirection int direction, float x, float y) {
         if (mTabModelSelector == null || mToTab != null || direction == ScrollDirection.DOWN) {
             return;
@@ -203,13 +202,11 @@ public class ToolbarSwipeLayout extends Layout {
         layoutTab.setAnonymizeToolbar(anonymizeToolbar && ANONYMIZE_NON_FOCUSED_TAB);
     }
 
-    @Override
     public void swipeUpdated(long time, float x, float y, float dx, float dy, float tx, float ty) {
         mOffsetTarget = MathUtils.clamp(mOffsetStart + tx, 0, getWidth()) - mOffsetStart;
         requestUpdate();
     }
 
-    @Override
     public void swipeFlingOccurred(
             long time, float x, float y, float tx, float ty, float vx, float vy) {
         // Use the velocity to add on final step which simulate a fling.
@@ -220,7 +217,6 @@ public class ToolbarSwipeLayout extends Layout {
         swipeUpdated(time, x, y, 0, 0, tx + kickX, ty + kickY);
     }
 
-    @Override
     public void swipeFinished(long time) {
         if (mFromTab == null || mTabModelSelector == null) return;
 
@@ -261,7 +257,6 @@ public class ToolbarSwipeLayout extends Layout {
         }
     }
 
-    @Override
     public void swipeCancelled(long time) {
         swipeFinished(time);
     }

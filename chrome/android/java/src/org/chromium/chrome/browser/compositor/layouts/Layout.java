@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
@@ -484,55 +483,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * Signal to the Layout to detach it's views from the container.
      */
     public void detachViews() { }
-
-    /**
-     * Called when the swipe animation get initiated. It gives a chance to initialize everything.
-     * @param time      The current time of the app in ms.
-     * @param direction The direction the swipe is in.
-     * @param x         The horizontal coordinate the swipe started at in dp.
-     * @param y         The vertical coordinate the swipe started at in dp.
-     */
-    public void swipeStarted(long time, @ScrollDirection int direction, float x, float y) {}
-
-    /**
-     * Updates a swipe gesture.
-     * @param time The current time of the app in ms.
-     * @param x    The horizontal coordinate the swipe is currently at in dp.
-     * @param y    The vertical coordinate the swipe is currently at in dp.
-     * @param dx   The horizontal delta since the last update in dp.
-     * @param dy   The vertical delta since the last update in dp.
-     * @param tx   The horizontal difference between the start and the current position in dp.
-     * @param ty   The vertical difference between the start and the current position in dp.
-     */
-    public void swipeUpdated(long time, float x, float y, float dx, float dy, float tx, float ty) {
-    }
-
-    /**
-     * Called when the swipe ends; most likely on finger up event. It gives a chance to start
-     * an ending animation to exit the mode gracefully.
-     * @param time The current time of the app in ms.
-     */
-    public void swipeFinished(long time) { }
-
-    /**
-     * Called when the user has cancelled a swipe; most likely if they have dragged their finger
-     * back to the starting position.  Some handlers will throw swipeFinished() instead.
-     * @param time The current time of the app in ms.
-     */
-    public void swipeCancelled(long time) { }
-
-    /**
-     * Fling from a swipe gesture.
-     * @param time The current time of the app in ms.
-     * @param x    The horizontal coordinate the swipe is currently at in dp.
-     * @param y    The vertical coordinate the swipe is currently at in dp.
-     * @param tx   The horizontal difference between the start and the current position in dp.
-     * @param ty   The vertical difference between the start and the current position in dp.
-     * @param vx   The horizontal velocity of the fling.
-     * @param vy   The vertical velocity of the fling.
-     */
-    public void swipeFlingOccurred(
-            long time, float x, float y, float tx, float ty, float vx, float vy) {}
 
     /**
      * Forces the current animation to finish and broadcasts the proper event.
