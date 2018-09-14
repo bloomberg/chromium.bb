@@ -51,6 +51,8 @@ class TestSessionObserver : public SessionObserver {
     user_session_account_ids_.push_back(account_id);
   }
 
+  void OnFirstSessionStarted() override { first_session_started_ = true; }
+
   void OnSessionStateChanged(SessionState state) override { state_ = state; }
 
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override {
@@ -67,6 +69,7 @@ class TestSessionObserver : public SessionObserver {
 
   SessionState state() const { return state_; }
   const AccountId& active_account_id() const { return active_account_id_; }
+  bool first_session_started() const { return first_session_started_; }
   const std::vector<AccountId>& user_session_account_ids() const {
     return user_session_account_ids_;
   }
@@ -78,6 +81,7 @@ class TestSessionObserver : public SessionObserver {
  private:
   SessionState state_ = SessionState::UNKNOWN;
   AccountId active_account_id_;
+  bool first_session_started_ = false;
   std::vector<AccountId> user_session_account_ids_;
   PrefService* last_user_pref_service_ = nullptr;
 
@@ -170,6 +174,18 @@ TEST_F(SessionControllerTest, SimpleSessionInfo) {
   EXPECT_FALSE(controller()->CanLockScreen());
   EXPECT_FALSE(controller()->ShouldLockScreenAutomatically());
   EXPECT_TRUE(controller()->IsRunningInAppMode());
+}
+
+TEST_F(SessionControllerTest, OnFirstSessionStarted) {
+  // Simulate chrome starting a user session.
+  mojom::SessionInfo info;
+  FillDefaultSessionInfo(&info);
+  SetSessionInfo(info);
+  UpdateSession(1u, "user1@test.com");
+  controller()->SetUserSessionOrder({1u});
+
+  // Observer is notified.
+  EXPECT_TRUE(observer()->first_session_started());
 }
 
 // Tests that the CanLockScreen is only true with an active user session.
