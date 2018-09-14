@@ -207,10 +207,8 @@ static inline amdgpu_bo_handle gpu_mem_alloc(
 					amdgpu_va_handle *va_handle)
 {
 	struct amdgpu_bo_alloc_request req = {0};
-	amdgpu_bo_handle buf_handle;
+	amdgpu_bo_handle buf_handle = NULL;
 	int r;
-
-	CU_ASSERT_NOT_EQUAL(vmc_addr, NULL);
 
 	req.alloc_size = size;
 	req.phys_alignment = alignment;
@@ -222,19 +220,21 @@ static inline amdgpu_bo_handle gpu_mem_alloc(
 	if (r)
 		return NULL;
 
-	r = amdgpu_va_range_alloc(device_handle,
-				  amdgpu_gpu_va_range_general,
-				  size, alignment, 0, vmc_addr,
-				  va_handle, 0);
-	CU_ASSERT_EQUAL(r, 0);
-	if (r)
-		goto error_free_bo;
+	if (vmc_addr && va_handle) {
+		r = amdgpu_va_range_alloc(device_handle,
+					  amdgpu_gpu_va_range_general,
+					  size, alignment, 0, vmc_addr,
+					  va_handle, 0);
+		CU_ASSERT_EQUAL(r, 0);
+		if (r)
+			goto error_free_bo;
 
-	r = amdgpu_bo_va_op(buf_handle, 0, size, *vmc_addr, 0,
-			    AMDGPU_VA_OP_MAP);
-	CU_ASSERT_EQUAL(r, 0);
-	if (r)
-		goto error_free_va;
+		r = amdgpu_bo_va_op(buf_handle, 0, size, *vmc_addr, 0,
+				    AMDGPU_VA_OP_MAP);
+		CU_ASSERT_EQUAL(r, 0);
+		if (r)
+			goto error_free_va;
+	}
 
 	return buf_handle;
 
@@ -259,15 +259,18 @@ static inline int gpu_mem_free(amdgpu_bo_handle bo,
 	if (!bo)
 		return 0;
 
-	r = amdgpu_bo_va_op(bo, 0, size, vmc_addr, 0, AMDGPU_VA_OP_UNMAP);
-	CU_ASSERT_EQUAL(r, 0);
-	if (r)
-		return r;
+	if (va_handle) {
+		r = amdgpu_bo_va_op(bo, 0, size, vmc_addr, 0,
+				    AMDGPU_VA_OP_UNMAP);
+		CU_ASSERT_EQUAL(r, 0);
+		if (r)
+			return r;
 
-	r = amdgpu_va_range_free(va_handle);
-	CU_ASSERT_EQUAL(r, 0);
-	if (r)
-		return r;
+		r = amdgpu_va_range_free(va_handle);
+		CU_ASSERT_EQUAL(r, 0);
+		if (r)
+			return r;
+	}
 
 	r = amdgpu_bo_free(bo);
 	CU_ASSERT_EQUAL(r, 0);

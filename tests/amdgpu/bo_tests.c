@@ -242,6 +242,27 @@ static void amdgpu_memory_alloc(void)
 
 	r = gpu_mem_free(bo, va_handle, bo_mc, 4096);
 	CU_ASSERT_EQUAL(r, 0);
+
+	/* Test GDS */
+	bo = gpu_mem_alloc(device_handle, 1024, 0,
+			AMDGPU_GEM_DOMAIN_GDS, 0,
+			NULL, NULL);
+	r = gpu_mem_free(bo, NULL, 0, 4096);
+	CU_ASSERT_EQUAL(r, 0);
+
+	/* Test GWS */
+	bo = gpu_mem_alloc(device_handle, 1, 0,
+			AMDGPU_GEM_DOMAIN_GWS, 0,
+			NULL, NULL);
+	r = gpu_mem_free(bo, NULL, 0, 4096);
+	CU_ASSERT_EQUAL(r, 0);
+
+	/* Test OA */
+	bo = gpu_mem_alloc(device_handle, 1, 0,
+			AMDGPU_GEM_DOMAIN_OA, 0,
+			NULL, NULL);
+	r = gpu_mem_free(bo, NULL, 0, 4096);
+	CU_ASSERT_EQUAL(r, 0);
 }
 
 static void amdgpu_mem_fail_alloc(void)
