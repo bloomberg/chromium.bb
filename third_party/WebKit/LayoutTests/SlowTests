@@ -708,7 +708,6 @@ crbug.com/874695 external/wpt/service-workers/service-worker/update-after-naviga
 crbug.com/874695 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Slow ]
 crbug.com/874695 external/wpt/speech-api/SpeechSynthesis-speak-ownership.html [ Slow ]
 crbug.com/874695 external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Slow ]
-crbug.com/874695 external/wpt/speech-api/SpeechSynthesis-speak-with-activation-succeeds.html [ Slow ]
 crbug.com/874695 external/wpt/speech-api/SpeechSynthesis-speak-without-activation-fails.tentative.html [ Slow ]
 crbug.com/874695 external/wpt/uievents/mouse/mouseevent_move_button-manual.html [ Slow ]
 crbug.com/874695 external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Slow ]
