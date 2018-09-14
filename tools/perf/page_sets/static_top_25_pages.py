@@ -14,7 +14,6 @@ class StaticTop25PageSet(story.StorySet):
 
   def __init__(self):
     super(StaticTop25PageSet, self).__init__(
-        serving_dirs=[STATIC_TOP_25_DIR],
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
     shared_desktop_state = shared_page_state.SharedDesktopPageState
