@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "build/build_config.h"
 #include "chrome/browser/speech/tts_engine_delegate.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -32,7 +33,9 @@ class TtsEngineDelegateImpl : public TtsEngineDelegate, public KeyedService {
   friend class TtsEngineDelegateFactoryImpl;
   explicit TtsEngineDelegateImpl(content::BrowserContext* browser_context);
 
+#if defined(OS_CHROMEOS)
   content::BrowserContext* browser_context_;
+#endif  // OS_CHROMEOS
 };
 
 #endif  // CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_ENGINE_DELEGATE_IMPL_H_
