@@ -171,14 +171,14 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
     @Override
     public void removeDownloadNotification(int notificationId, DownloadInfo info) {
         removePendingNotificationAndGetTimestamp(info.getContentId());
-        mDownloadNotificationService.cancelNotification(notificationId, info.getContentId());
+        getDownloadNotificationService().cancelNotification(notificationId, info.getContentId());
     }
 
     @Override
     public void resumePendingDownloads() {
         if (DownloadNotificationService2.isTrackingResumableDownloads(
                     ContextUtils.getApplicationContext())) {
-            mDownloadNotificationService.resumeAllPendingDownloads();
+            getDownloadNotificationService().resumeAllPendingDownloads();
         }
     }
 
@@ -244,11 +244,13 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
                         info.getPendingState());
                 break;
             case NotificationType.SUCCEEDED:
-                final int notificationId = mDownloadNotificationService.notifyDownloadSuccessful(
-                        info.getContentId(), info.getFilePath(), info.getFileName(),
-                        notificationInfo.mSystemDownloadId, info.isOffTheRecord(),
-                        notificationInfo.mIsSupportedMimeType, info.getIsOpenable(), info.getIcon(),
-                        info.getOriginalUrl(), info.getReferrer(), info.getBytesTotalSize());
+                final int notificationId =
+                        getDownloadNotificationService().notifyDownloadSuccessful(
+                                info.getContentId(), info.getFilePath(), info.getFileName(),
+                                notificationInfo.mSystemDownloadId, info.isOffTheRecord(),
+                                notificationInfo.mIsSupportedMimeType, info.getIsOpenable(),
+                                info.getIcon(), info.getOriginalUrl(), info.getReferrer(),
+                                info.getBytesTotalSize());
 
                 if (info.getIsOpenable()) {
                     DownloadManagerService.getDownloadManagerService().onSuccessNotificationShown(
