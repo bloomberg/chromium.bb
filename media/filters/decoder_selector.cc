@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/base/audio_decoder.h"
@@ -90,8 +91,42 @@ void DecoderSelector<StreamType>::FinalizeDecoderSelection() {
 
   is_selecting_decoders_ = false;
 
+  if (is_codec_changing_) {
+    is_codec_changing_ = false;
+
+    std::string stream_type;
+    switch (StreamType) {
+      case DemuxerStream::AUDIO:
+        stream_type = "Audio";
+        break;
+      case DemuxerStream::VIDEO:
+        stream_type = "Video";
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    std::string decoder_type = is_platform_decoder_ ? "HW" : "SW";
+
+    base::UmaHistogramTimes(
+        "Media.MSE.CodecChangeTime." + stream_type + "." + decoder_type,
+        base::TimeTicks::Now() - codec_change_start_);
+  }
+
   // Discard any remaining decoder instances, they won't be used.
   decoders_.clear();
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderSelector<StreamType>::NotifyConfigChanged() {
+  DVLOG(2) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  DecoderConfig config = traits_->GetDecoderConfig(stream_);
+  if (config.codec() != config_.codec()) {
+    is_codec_changing_ = true;
+    codec_change_start_ = base::TimeTicks::Now();
+  }
 }
 
 template <DemuxerStream::Type StreamType>
@@ -115,6 +150,7 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
   // Initialize the first decoder on the list.
   decoder_ = std::move(decoders_.front());
   decoders_.erase(decoders_.begin());
+  is_platform_decoder_ = decoder_->IsPlatformDecoder();
 
   DVLOG(2) << __func__ << ": initializing " << decoder_->GetDisplayName();
   const bool is_live = stream_->liveness() == DemuxerStream::LIVENESS_LIVE;

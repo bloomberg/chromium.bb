@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/pipeline_status.h"
 #include "media/filters/decoder_stream_traits.h"
@@ -85,6 +86,10 @@ class MEDIA_EXPORT DecoderSelector {
   // calls to SelectDecoder() will select from the full list of decoders.
   void FinalizeDecoderSelection();
 
+  // Signals that a config change has started being processed.
+  // Currently only for metric collection.
+  void NotifyConfigChanged();
+
  private:
   void InitializeDecoder();
   void OnDecoderInitializeDone(bool success);
@@ -111,6 +116,11 @@ class MEDIA_EXPORT DecoderSelector {
   typename Decoder::OutputCB output_cb_;
   std::unique_ptr<Decoder> decoder_;
   std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
+
+  // Metrics.
+  bool is_platform_decoder_ = false;
+  bool is_codec_changing_ = false;
+  base::TimeTicks codec_change_start_;
 
   base::WeakPtrFactory<DecoderSelector> weak_this_factory_;
 
