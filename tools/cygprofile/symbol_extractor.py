@@ -78,11 +78,24 @@ def _SymbolInfosFromStream(objdump_lines):
   Returns:
     A list of SymbolInfo.
   """
+  name_to_offsets = collections.defaultdict(list)
   symbol_infos = []
   for line in objdump_lines:
     symbol_info = _FromObjdumpLine(line)
     if symbol_info is not None:
+      name_to_offsets[symbol_info.name].append(symbol_info.offset)
       symbol_infos.append(symbol_info)
+
+  repeated_symbols = filter(lambda s: len(name_to_offsets[s]) > 1,
+                            name_to_offsets.iterkeys())
+  if repeated_symbols:
+    # Log the first 5 repeated offsets of the first 10 repeated symbols.
+    logging.warning('%d symbols repeated with multiple offsets:\n %s',
+                    len(repeated_symbols), '\n '.join(
+                        '{} {}'.format(sym, ' '.join(
+                            str(offset) for offset in name_to_offsets[sym][:5]))
+                        for sym in repeated_symbols[:10]))
+
   return symbol_infos
 
 
