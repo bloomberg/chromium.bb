@@ -13,9 +13,10 @@ interface IEmbeddedTestServerImpl {
 
     /** Start the server.
      *
+     *  @param port The port to use for the server, 0 to auto-select an unused port.
      *  @return Whether the server was successfully started.
      */
-    boolean start();
+    boolean start(int port);
 
     /** Get the path of the server's root certificate.
      *
