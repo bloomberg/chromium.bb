@@ -49,7 +49,6 @@
 namespace blink {
 
 struct WebPaymentHandlerResponse;
-struct WebServiceWorkerClientQueryOptions;
 class ExecutionContext;
 class WebServiceWorkerContextClient;
 class WebServiceWorkerResponse;
@@ -71,7 +70,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
   // Called from ServiceWorkerClients.
   void GetClient(const String&,
                  std::unique_ptr<WebServiceWorkerClientCallbacks>);
-  void GetClients(const WebServiceWorkerClientQueryOptions&,
+  void GetClients(mojom::blink::ServiceWorkerClientQueryOptionsPtr,
                   std::unique_ptr<WebServiceWorkerClientsCallbacks>);
   void OpenWindowForClients(const KURL&,
                             std::unique_ptr<WebServiceWorkerClientCallbacks>);

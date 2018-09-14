@@ -33,7 +33,6 @@
 #include <memory>
 #include <utility>
 #include "third_party/blink/public/platform/modules/payments/web_payment_handler_response.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_client_query_options.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
@@ -181,11 +180,9 @@ void ServiceWorkerGlobalScopeClient::GetClient(
 }
 
 void ServiceWorkerGlobalScopeClient::GetClients(
-    const WebServiceWorkerClientQueryOptions& web_options,
+    mojom::blink::ServiceWorkerClientQueryOptionsPtr options,
     std::unique_ptr<WebServiceWorkerClientsCallbacks> callbacks) {
   DCHECK(callbacks);
-  auto options = mojom::blink::ServiceWorkerClientQueryOptions::New(
-      web_options.include_uncontrolled, web_options.client_type);
   service_worker_host_->GetClients(
       std::move(options), WTF::Bind(&DidGetClients, std::move(callbacks)));
 }
