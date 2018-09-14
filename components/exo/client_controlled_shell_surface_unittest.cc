@@ -1490,6 +1490,7 @@ TEST_F(ClientControlledShellSurfaceTest, WideFrame) {
   std::unique_ptr<Buffer> desktop_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(64, 64))));
   surface->Attach(desktop_buffer.get());
+  surface->SetInputRegion(gfx::Rect(0, 0, 64, 64));
   shell_surface->SetGeometry(gfx::Rect(0, 0, 64, 64));
   shell_surface->SetMaximized();
   surface->SetFrame(SurfaceFrameType::NORMAL);
@@ -1498,6 +1499,36 @@ TEST_F(ClientControlledShellSurfaceTest, WideFrame) {
   auto* wide_frame = shell_surface->wide_frame_for_test();
   ASSERT_TRUE(wide_frame);
   EXPECT_FALSE(wide_frame->header_view()->in_immersive_mode());
+
+  // Check targeter is still CustomWindowTargeter.
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+
+  ASSERT_TRUE(window->parent());
+
+  auto* custom_targeter = window->targeter();
+  gfx::Point mouse_location(1, 50);
+
+  auto* root = window->GetRootWindow();
+  aura::WindowTargeter targeter;
+  aura::Window* target;
+  {
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, mouse_location, mouse_location,
+                         ui::EventTimeForNow(), 0, 0);
+    target =
+        static_cast<aura::Window*>(targeter.FindTargetForEvent(root, &event));
+  }
+  EXPECT_EQ(surface->window(), target);
+
+  // Disable input region and the targeter no longer find the surface.
+  surface->SetInputRegion(gfx::Rect(0, 0, 0, 0));
+  surface->Commit();
+  {
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, mouse_location, mouse_location,
+                         ui::EventTimeForNow(), 0, 0);
+    target =
+        static_cast<aura::Window*>(targeter.FindTargetForEvent(root, &event));
+  }
+  EXPECT_NE(surface->window(), target);
 
   // Test AUTOHIDE -> NORMAL
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
@@ -1508,6 +1539,8 @@ TEST_F(ClientControlledShellSurfaceTest, WideFrame) {
   surface->Commit();
   EXPECT_FALSE(wide_frame->header_view()->in_immersive_mode());
 
+  EXPECT_EQ(custom_targeter, window->targeter());
+
   // Test AUTOHIDE -> NONE
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
   surface->Commit();
@@ -1517,10 +1550,31 @@ TEST_F(ClientControlledShellSurfaceTest, WideFrame) {
   surface->Commit();
   EXPECT_FALSE(wide_frame->header_view()->in_immersive_mode());
 
+  EXPECT_EQ(custom_targeter, window->targeter());
+
   // Unmaximize it and the frame should be normal.
   shell_surface->SetRestored();
   surface->Commit();
+
   EXPECT_FALSE(shell_surface->wide_frame_for_test());
+  {
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, mouse_location, mouse_location,
+                         ui::EventTimeForNow(), 0, 0);
+    target =
+        static_cast<aura::Window*>(targeter.FindTargetForEvent(root, &event));
+  }
+  EXPECT_NE(surface->window(), target);
+
+  // Re-enable input region and the targeter should find the surface again.
+  surface->SetInputRegion(gfx::Rect(0, 0, 64, 64));
+  surface->Commit();
+  {
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, mouse_location, mouse_location,
+                         ui::EventTimeForNow(), 0, 0);
+    target =
+        static_cast<aura::Window*>(targeter.FindTargetForEvent(root, &event));
+  }
+  EXPECT_EQ(surface->window(), target);
 }
 
 TEST_F(ClientControlledShellSurfaceTest, NoFrameOnModalContainer) {

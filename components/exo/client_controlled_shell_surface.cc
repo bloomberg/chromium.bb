@@ -970,6 +970,9 @@ void ClientControlledShellSurface::UpdateFrame() {
       ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
       wide_frame_->Init(immersive_fullscreen_controller_.get());
       wide_frame_->GetWidget()->Show();
+      // Restoring window targeter replaced by ImmersiveFullscreenController.
+      InstallCustomWindowTargeter();
+
       UpdateCaptionButtonModel();
     }
   } else {
@@ -978,6 +981,9 @@ void ClientControlledShellSurface::UpdateFrame() {
       wide_frame_.reset();
       GetFrameView()->InitImmersiveFullscreenControllerForView(
           immersive_fullscreen_controller_.get());
+      // Restoring window targeter replaced by ImmersiveFullscreenController.
+      InstallCustomWindowTargeter();
+
       UpdateCaptionButtonModel();
     }
     UpdateFrameWidth();
