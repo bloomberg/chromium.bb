@@ -42,7 +42,7 @@
 <translation id="1056775291175587022">Cap xarxa</translation>
 <translation id="1056898198331236512">Advertiment</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1059855432287631118">Registre de l'empremta digital</translation>
+<translation id="1059855432287631118">S'està registrant l'empremta digital</translation>
 <translation id="1061904396131502319">Ja gairebé és l'hora de fer una pausa</translation>
 <translation id="1062407476771304334">Substitueix</translation>
 <translation id="1067048845568873861">Creada</translation>
@@ -3419,6 +3419,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6144938890088808325">Contribuïu a millorar els dispositius Chromebook</translation>
 <translation id="6146563240635539929">Vídeos</translation>
 <translation id="6147020289383635445">La previsualització d'impressió ha fallat.</translation>
+<translation id="6148052338549899048">No hi ha cap dispositiu apte. <ph name="LINK_BEGIN" />Obtén més informació.<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Prova el següent:</translation>
 <translation id="6150853954427645995">Per desar aquest fitxer per utilitzar-lo fora de línia, connecteu-vos a una xarxa, feu clic amb el botó dret al fitxer i seleccioneu l'opció <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Prem <ph name="SEARCH_KEY" /> per cercar <ph name="SITE_NAME" /></translation>
@@ -5386,7 +5387,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9131487537093447019">Enviar missatges a dispositius Bluetooth i rebre'n</translation>
 <translation id="9131598836763251128">Seleccioneu un o diversos fitxers</translation>
 <translation id="9133055936679483811">S'ha produït un error en la compressió. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134304429738380103">Sí, ho accepto.</translation>
+<translation id="9134304429738380103">Sí, ho accepto</translation>
 <translation id="9134524245363717059">Aquest fitxer s'ha dissenyat per a un ordinador amb programari Macintosh. No és compatible amb el vostre dispositiu, que funciona amb Chrome OS. Cerqueu una aplicació opcional adequada a Chrome Web Store.</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9137916601698928395">Obre l'enllaç com a <ph name="USER" /></translation>

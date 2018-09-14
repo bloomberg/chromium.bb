@@ -3420,6 +3420,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6144938890088808325">Chromebook'ları iyileştirmemize yardımcı olun</translation>
 <translation id="6146563240635539929">Videolar</translation>
 <translation id="6147020289383635445">Yazdırma önizleme başarısız oldu.</translation>
+<translation id="6148052338549899048">Uygun cihaz yok. <ph name="LINK_BEGIN" />Daha fazla bilgi.<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Aşağıdakileri deneyin:</translation>
 <translation id="6150853954427645995">Bu dosyayı çevrimdışı kullanım için kaydetmek üzere tekrar çevrimiçi olun, dosyayı sağ tıklayın ve <ph name="OFFLINE_CHECKBOX_NAME" /> seçeneğini belirleyin.</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> sitesinde arama yapmak için <ph name="SEARCH_KEY" /> düğmesine basın</translation>
@@ -5196,7 +5197,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="883911313571074303">Resme açıklama ekle</translation>
 <translation id="8844690305858050198">Bitti! Zararlı yazılım kaldırıldı. Uzantıları tekrar açmak için &lt;a href="chrome://extensions"&gt;Uzantılar&lt;/a&gt; sayfasını ziyaret edin.</translation>
 <translation id="8845001906332463065">Yardım alın</translation>
-<translation id="8846132060409673887">Bu bilgisayarın üreticisini ve modelini okuyun</translation>
+<translation id="8846132060409673887">Bu bilgisayarın üreticisini ve modelini okuma</translation>
 <translation id="8846141544112579928">Klavye aranıyor...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8859057652521303089">Dilinizi seçin:</translation>

@@ -931,7 +931,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="350797926066071931">Habilitar Traductor de Google</translation>
 <translation id="3512226956150568738">Si el modelo del dispositivo del cliente ya era compatible con ARC, la migración a ext4 era necesaria para ejecutar ARC y se establece la política ArcEnabled como verdadera, esta opción se comportará como AskUser (valor 3). En los demás casos (si el modelo del dispositivo no era compatible con ARC o se establece la política ArcEnabled como falsa), este valor es equivalente a DisallowArc (valor 0).</translation>
 <translation id="3524204464536655762">No permitir que ningún sitio solicite acceso a dispositivos USB a través de la API de WebUSB</translation>
-<translation id="3526752951628474302">Solo la impresión monocromática</translation>
+<translation id="3526752951628474302">Solo impresión monocromática</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3545457887306538845">Te permite controlar si se pueden usar las Herramientas para desarrolladores.
 
@@ -955,7 +955,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3577251398714997599">Configuración de anuncios para sitios con anuncios intrusivos</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
 <translation id="3627678165642179114">Habilita o inhabilita el servicio web de revisión ortográfica.</translation>
-<translation id="3628480121685794414">Permitir la impresión simple</translation>
+<translation id="3628480121685794414">Permitir impresión simple</translation>
 <translation id="3646859102161347133">Establece el tipo de lupa.</translation>
 <translation id="3653237928288822292">Ícono del proveedor de búsqueda predeterminado</translation>
 <translation id="3660562134618097814">Transferir cookies del IdP de SAML durante el acceso</translation>
@@ -2379,7 +2379,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7617319494457709698">Esta política especifica las extensiones con permiso para usar la API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> con la función <ph name="CHALLENGE_USER_KEY_FUNCTION" /> para la verificación remota. Para poder usar la API, las extensiones deben agregarse a esta lista.
 
           Si una extensión no está en la lista o no se establece la lista, las llamadas a la API fallarán y se mostrará un código de error.</translation>
-<translation id="7618907117929117943">Implementa la reversión y mantiene la versión objetivo si la versión del sistema operativo es más reciente que la objetivo y es posible llevar a cabo la configuración al nivel de dispositivos (incluidas las credenciales de red) mediante la reversión, además de omitir OOBE después de la reversión. No implementes ni anules la reversión si eso no es posible (porque la versión objetivo no admite el restablecimiento de los datos o porque un cambio no es compatible con las versiones anteriores).
+<translation id="7618907117929117943">Implementa la reversión y mantén la versión objetivo si la versión del sistema operativo es más reciente que la objetivo y es posible llevar a cabo la configuración al nivel de dispositivos (incluidas las credenciales de red) mediante la reversión, además de omitir OOBE después de la reversión. No implementes ni anules la reversión si eso no es posible (porque la versión objetivo no admite el restablecimiento de los datos o porque un cambio no es compatible con las versiones anteriores).
           Esta política es compatible con la versión 70 de <ph name="PRODUCT_OS_NAME" /> y versiones posteriores. Para los clientes anteriores, este valor significa que la reversión está inhabilitada.</translation>
 <translation id="7625444193696794922">Especifica el canal de publicaciones al que debe conectarse este dispositivo.</translation>
 <translation id="7632724434767231364">Nombre de la biblioteca GSSAPI</translation>
@@ -2973,7 +2973,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="9084985621503260744">Especificar si la actividad de video afecta a la administración de energía</translation>
 <translation id="9088433379343318874">Habilitar el proveedor de contenido de un usuario supervisado</translation>
 <translation id="9088444059179765143">Configurar el método de detección automática de la zona horaria</translation>
-<translation id="9094064873808699479">Implementa la reversión y mantiene la versión objetivo si la versión del sistema operativo es más reciente que la objetivo. Intenta llevar a cabo la configuración a nivel de dispositivos (incluidas las credenciales de red) mediante el proceso de reversión, si es posible, pero realiza la reversión con la función Powerwash por completo, incluso si no es posible restablecer los datos (porque la versión objetivo no admite el restablecimiento de los datos o porque un cambio no es compatible con las versiones anteriores).
+<translation id="9094064873808699479">Implementa la reversión y mantiene la versión objetivo si la versión del sistema operativo es más reciente que la objetivo. Intenta llevar a cabo la configuración a nivel de dispositivos (incluidas las credenciales de red) mediante el proceso de reversión, si es posible, pero realiza la reversión completa con la función Powerwash, incluso si no es posible restablecer los datos (porque la versión objetivo no admite el restablecimiento de los datos o porque un cambio no es compatible con las versiones anteriores).
           Esta política es compatible con la versión 70 de <ph name="PRODUCT_OS_NAME" /> y versiones posteriores. Para los clientes anteriores, este valor significa que la reversión está inhabilitada.</translation>
 <translation id="9096086085182305205">Lista blanca del servidor de autenticación</translation>
 <translation id="9098553063150791878">Políticas para la autenticación HTTP</translation>
@@ -3026,11 +3026,11 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="9187743794267626640">Inhabilitar la activación del almacenamiento externo</translation>
 <translation id="9197740283131855199">Indica el porcentaje en el que debe ajustarse el tiempo de espera de inactividad de la pantalla si el usuario vuelve a estar activo después de la inactividad.</translation>
 <translation id="9200828125069750521">Parámetros para URL de imagen que utiliza POST</translation>
-<translation id="920209539000507585">Forzar la activación o no de la opción "Encabezados y pies de página" en el diálogo de impresión.
+<translation id="920209539000507585">Fuerza la activación o no de la opción "Encabezados y pies de página" en el diálogo de impresión.
 
       Si no se establece la política, el usuario podrá decidir si quiere imprimir los encabezados y pies de página.
 
-      Si se establece como falsa, no aparecerá seleccionada la opción "Encabezados y pies de páginas" en el cuadro de vista previa de la impresión y el usuario no podrá cambiarla.
+      Si se establece como falsa, no aparecerá seleccionada la opción "Encabezados y pies de página" en el cuadro de vista previa de la impresión y el usuario no podrá cambiarla.
 
       Si se establece como verdadera, aparecerá seleccionada la opción "Encabezados y pies de página" en el cuadro de vista previa de la impresión y el usuario no podrá cambiarla.</translation>
 <translation id="9210953373038593554">Configura el tipo de autenticación para los accesos SAML.

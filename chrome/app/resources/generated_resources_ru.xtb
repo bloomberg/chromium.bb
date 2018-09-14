@@ -1943,7 +1943,7 @@
 <translation id="3873315167136380065">Чтобы включить эту настройку, <ph name="BEGIN_LINK" />сбросьте настройки синхронизации<ph name="END_LINK" /> и удалите кодовую фразу.</translation>
 <translation id="3878840326289104869">Создание контролируемого профиля</translation>
 <translation id="3879748587602334249">Диспетчер загрузки</translation>
-<translation id="3885455691202481064">Приложите указательный палец к сенсору в левом верхнем углу вашего Chromebook.</translation>
+<translation id="3885455691202481064">Приложите указательный палец к сенсору в левом верхнем углу устройства Chromebook.</translation>
 <translation id="3888550877729210209">Заметки в приложении "<ph name="LOCK_SCREEN_APP_NAME" />"</translation>
 <translation id="3892414795099177503">Включить OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Чтение и изменение настроек специальных возможностей</translation>
@@ -2420,7 +2420,7 @@
 <translation id="4681930562518940301">Открыть оригинальное изображение в новой вкладке</translation>
 <translation id="4682551433947286597">Обои устанавливаются на экран входа.</translation>
 <translation id="4684427112815847243">Синхронизировать все</translation>
-<translation id="4688036121858134881">Локальный ID журнала: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />.</translation>
+<translation id="4688036121858134881">Локальный идентификатор журнала: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />.</translation>
 <translation id="4689235506267737042">Выберите настройки демо-версии</translation>
 <translation id="4689421377817139245">Синхронизируйте эту закладку с iPhone</translation>
 <translation id="4690091457710545971">&lt;Встроенным ПО для Wi-Fi от Intel сгенерировано четыре файла: csr.lst, fh_regs.lst, radio_reg.lst и monitor.lst.sysmon. Первые три – бинарные файлы, содержащие дампы реестра, в которых, по данным компании Intel, нет персональных данных и информации об устройстве. Последний файл содержит трассировку выполнения кода встроенного ПО от Intel (из него также удалены все персональные данные и информация об устройстве). Так как этот файл слишком большой, мы не можем показать его здесь целиком. Эти файлы будут отправлены в Intel, чтобы помочь в устранении проблем с Wi-Fi на вашем устройстве.&gt;</translation>
@@ -3420,6 +3420,7 @@
 <translation id="6144938890088808325">Помогите нам улучшить Chromebook</translation>
 <translation id="6146563240635539929">Видео</translation>
 <translation id="6147020289383635445">Произошла ошибка предварительного просмотра печати.</translation>
+<translation id="6148052338549899048">Нет подходящих устройств. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Попробуйте сделать следующее:</translation>
 <translation id="6150853954427645995">Чтобы работать с этим файлом в офлайн-режиме, подключитесь к Интернету, нажмите правой кнопкой мыши на документ и выберите вариант "<ph name="OFFLINE_CHECKBOX_NAME" />".</translation>
 <translation id="6151323131516309312">Нажмите <ph name="SEARCH_KEY" /> для поиска на <ph name="SITE_NAME" /></translation>

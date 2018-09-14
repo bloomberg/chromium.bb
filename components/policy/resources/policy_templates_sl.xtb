@@ -141,6 +141,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
 <translation id="1397855852561539316">Privzeti URL iskalnika za predlog</translation>
+<translation id="142346659686073702">Omogočanje uporabe Crostinija nepovezanim uporabnikom</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Naslov ali URL strežnika proxy</translation>
 <translation id="1435659902881071157">Konfiguracija omrežja na ravni naprave</translation>
@@ -393,6 +394,12 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če ta pravilnik ni nastavljen, je enako, kot če je funkcija omogočena. Glejte zgornji opis.</translation>
 <translation id="2113068765175018713">Omejitev časa dejavnosti naprave samodejnim vnovičnim zagonom</translation>
+<translation id="2116790137063002724">Ta pravilnik nadzira, ali se sporočajo podatki, s katerimi je mogoče prepoznati uporabnike, kot so podatki za prijavo v operacijski sistem, podatki za prijavo v profil za <ph name="PRODUCT_NAME" />, ime profila za <ph name="PRODUCT_NAME" />, pot profila za <ph name="PRODUCT_NAME" /> in pot do izvedljive datoteke za <ph name="PRODUCT_NAME" />.
+
+      Če ta pravilnik ni nastavljen ali je omogočen, se zbirajo podatki, s katerimi je mogoče prepoznati uporabnike.
+      Če je ta pravilnik onemogočen, se podatki, s katerimi je mogoče prepoznati uporabnike, ne zbirajo.
+
+      Ta pravilnik se uporablja samo, če je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Dovoli obvestila na teh mestih</translation>
 <translation id="2131902621292742709">Časovni zamik zatemnitve zaslona ob napajanju iz akumulatorja</translation>
 <translation id="2132732175597591362">Nadzira seznam dovoljenih vzorcev URL, na katerih bo vedno vklopljeno samodejno predvajanje.
@@ -758,7 +765,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2873651257716068683">Preglasi privzeto velikost tiskanih strani. Če velikost strani ni na voljo, je ta pravilnik prezrt.</translation>
 <translation id="2874209944580848064">Opomba glede naprav s sistemom <ph name="PRODUCT_OS_NAME" />, ki podpirajo aplikacije za Android:</translation>
 <translation id="2877225735001246144">Onemogoči iskanje CNAME pri pogajanju o preverjanju pristnosti Kerberos</translation>
-<translation id="2892414556511568464">Omeji obojestransko tiskanje. Če pravilnik ni nastavljen ali je prazen nabor, ni omejitve.</translation>
+<translation id="2892414556511568464">Omeji obojestransko tiskanje. Če pravilnik ni nastavljen ali je nabor prazen, ni omejitve.</translation>
 <translation id="2893546967669465276">Pošiljanje sistemskih dnevnikov v strežnik za upravljanje</translation>
 <translation id="2899002520262095963">Aplikacije za Android lahko uporabljajo omrežne konfiguracije in potrdila overitelja potrdil, nastavljena s tem pravilnikom, vendar nimajo dostopa do nekaterih možnosti konfiguracij.</translation>
 <translation id="290002216614278247">Omogoča zaklepanje uporabnikove seje glede na čas odjemalca ali omejitev uporabe v dnevu.
@@ -1603,6 +1610,12 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5272684451155669299">Če je pravilnik omogočen, lahko uporabnik overitelju potrdil za zasebnost s strojno opremo v napravah Chrome na daljavo potrdi svojo identiteto z metodo <ph name="CHALLENGE_USER_KEY_FUNCTION" /> prek API-ja <ph name="ENTERPRISE_PLATFORM_KEYS_API" />.
 
           Če je onemogočen ali če ni nastavljen, pozivi API-ju ne bodo uspeli in bo vrnjena koda napake.</translation>
+<translation id="5277806246014825877">Omogočanje temu uporabniku, da lahko izvaja Crostini.
+
+      Če je pravilnik onemogočen, Crostini ni omogočen za uporabnika.
+      Če je pravilnik omogočen ali ni nastavljen, je Crostini omogočen za uporabnika, če to omogočajo tudi druge nastavitve.
+      Vsi trije pravilniki – VirtualMachinesAllowed, CrostiniAllowed in DeviceUnaffiliatedCrostiniAllowed – morajo biti omogočeni, ko se prijavijo za omogočanje izvajanja Crostinija.
+      Če je ta pravilnik spremenjen na onemogočeno stanje, se uporablja za zagon novih vsebnikov Crostinija, vendar ne ustavi vsebnikov, ki se že izvajajo.</translation>
 <translation id="5283457834853986457">Onemogočanje iskalnika vtičnikov (zastarelo)</translation>
 <translation id="5288772341821359899">Če je pravilnik nastavljen, je obseg vrat UDP, ki jih uporablja tehnologija WebRTC, omejen na navedeni interval vrat (vključno s končnimi točkami).
 
@@ -1670,6 +1683,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če ta pravilnik ni nastavljen, je gostiteljskemu brskalniku upodabljanje privzeto dovoljeno, vendar lahko po želji to preglasite in določite, da bo <ph name="PRODUCT_FRAME_NAME" /> privzeto upodabljal strani HTML.</translation>
 <translation id="5464816904705580310">Konfiguriranje nastavitev za upravljane uporabnike.</translation>
 <translation id="546726650689747237">Časovni zamik zatemnitve zaslona ob napajanju iz električnega omrežja</translation>
+<translation id="5469143988693423708">Uporabniku je omogočeno izvajanje Crostinija</translation>
 <translation id="5469825884154817306">Blokiranje slik na teh mestih</translation>
 <translation id="5475361623548884387">Omogoči tiskanje</translation>
 <translation id="547601067149622666">Ne dovoli oglasov na spletnih mestih z vsiljivimi oglasi</translation>
@@ -1726,6 +1740,9 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       To ni priporočljivo, saj morda omogoča zaobidenje razširitve nameConstraints, ki omejuje imena gostiteljev, za katera je lahko odobreno določeno potrdilo.
 
       Če ta pravilnik ni nastavljen ali je onemogočen, potrdila strežnika, ki jim manjka razširitev subjectAlternativeName, ki vsebuje ime DNS-ja ali naslov IP, ne bodo zaupanja vredna.</translation>
+<translation id="5581292529942108810">Konfiguriranje pravilnikov o razširitvi za poročanje za Chrome. 
+
+      Ta pravilnik se uporablja samo, ko je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Nadziranje Googlovih lokacijskih storitev za Android</translation>
 <translation id="5586942249556966598">Ne naredi nič</translation>
 <translation id="5630352020869108293">Obnovi zadnjo sejo</translation>
@@ -1937,7 +1954,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.</translation>
 <translation id="6190022522129724693">Privzeta nastavitev pojavnih oken</translation>
-<translation id="6190367314942602985">Prijava podatkov, s katerimi je mogoče prepoznati uporabnike</translation>
+<translation id="6190367314942602985">Sporočanje podatkov, s katerimi je mogoče prepoznati uporabnike</translation>
 <translation id="6197453924249895891">Razširitvam odobri dostop do ključev podjetja.
 
       Ključi so namenjeni rabi v podjetju, če so ustvarjeni z API-jem chrome.platformKeys API v upravljanem računu. Uvoženi ali kako drugače ustvarjeni ključi niso namenjeni za rabo v podjetju.
@@ -1947,8 +1964,8 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Razširitev privzeto ne more uporabljati ključa, namenjenega rabi v podjetju, kar je enakovredno onemogočanju pravilnika allowCorporateKeyUsage za to razširitev.
 
       Samo če je pravilnik allowCorporateKeyUsage za razširitev omogočen, lahko ta uporablja kateri koli ključ okolja, označen za rabo v podjetju, za podpisovanje poljubnih podatkov. To dovoljenje odobrite samo, če ste prepričani, da razširitev lahko zaščiti dostop do ključa pred napadalci.</translation>
-<translation id="6208896993204286313">Prijava podatkov pravilnika za <ph name="PRODUCT_NAME" /></translation>
-<translation id="6210259502936598222">Prijava podatkov o operacijskem sistemu in različici brskalnika <ph name="PRODUCT_NAME" /></translation>
+<translation id="6208896993204286313">Sporočanje podatkov pravilnika za <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210259502936598222">Sporočanje podatkov o operacijskem sistemu in različici brskalnika <ph name="PRODUCT_NAME" /></translation>
 <translation id="6211428344788340116">Poročanje o času dejavnosti v napravi.
 
       Če nastavitev ni nastavljena ali je nastavljena na »True«, včlanjene naprave poročajo o času, ko je uporabnik aktiven v napravi. Če je nastavitev nastavljena na »False«, se čas dejavnosti v napravi ne beleži in se o njem ne poroča.</translation>
@@ -1966,7 +1983,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
          Če to nastavitev omogočite in so vnesena nestandardna vrata (vrata, ki niso 80 ali 443), bodo vključena v ustvarjeni SPN za Kerberos.
 
           Če to nastavitev onemogočite ali je ne nastavite, ustvarjeni SPN za Kerberos v nobenem primeru ne bo vključeval vrat.</translation>
-<translation id="6261643884958898336">Prijava podatkov, s katerimi je mogoče prepoznati napravo</translation>
+<translation id="6261643884958898336">Sporočanje podatkov, s katerimi je mogoče prepoznati napravo</translation>
 <translation id="6281043242780654992">Konfigurira pravilnike za izvorno pošiljanje sporočil. Gostitelji izvornega pošiljanja sporočil s seznama blokiranih ne bodo dovoljeni, razen če bodo uvrščeni na seznam dovoljenih.</translation>
 <translation id="6282799760374509080">Omogočanje ali onemogočanje snemanja zvoka</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
@@ -2339,6 +2356,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če ta pravilnik ni nastavljen, bo lahko uporabnik to nastavitev spremenil ročno.</translation>
 <translation id="723103540848640830">Nastavi najmanjšo dolžino kode PIN za zaklenjen zaslon</translation>
+<translation id="7232816984286843471">Če je pravilnik onemogočen, nepovezanim uporabnikom ne bo dovoljeno uporabljati Crostinija.
+
+      Če pravilnik ni nastavljen ali je omogočen, je uporaba Crostinija omogočena za vse uporabnike, če to omogočajo tudi druge nastavitve.
+      Vsi trije pravilniki – VirtualMachinesAllowed, CrostiniAllowed in DeviceUnaffiliatedCrostiniAllowed – morajo biti omogočeni, ko se prijavijo za omogočanje izvajanja Crostinija.
+      Če je ta pravilnik spremenjen na onemogočeno stanje, se uporablja za zagon novih vsebnikov Crostinija, vendar ne ustavi vsebnikov, ki se že izvajajo.</translation>
 <translation id="7234280155140786597">Imena prepovedanih gostiteljev izvornega pošiljanja sporočil (ali * za vse)</translation>
 <translation id="7236775576470542603">Nastavitev privzete vrste lupe, omogočene na prijavnem zaslonu.
 
@@ -2386,6 +2408,12 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7311458740754205918">Če je ta pravilnik omogočen ali ni nastavljen, bodo na novem zavihku s povezavami morda prikazani predlogi vsebine na podlagi uporabnikove zgodovine brskanja, zanimanj ali lokacije.
 
       Če je ta pravilni onemogočen, samodejno ustvarjeni predlogi vsebine na novem zavihku s povezavami ne bodo prikazani.</translation>
+<translation id="7313793931637495417">Ta pravilnik nadzira, ali se sporočajo podatki o različici, kot so različica operacijskega sistema, okolje operacijskega sistema, arhitektura operacijskega sistema, različica izdelka <ph name="PRODUCT_NAME" /> in kanal izdelka <ph name="PRODUCT_NAME" />.
+
+      Če ta pravilnik ni nastavljen ali je omogočen, se zbirajo podatki o različici.
+      Če je ta pravilnik onemogočen, se podatki o različici ne zbirajo.
+
+      Ta pravilnik se uporablja samo, če je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Dodatni parametri ukazne vrstice za <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Podobno Wipe (vrednost 2), vendar poskuša ohraniti žetone za prijavo, da se uporabniku ni treba prijaviti znova.</translation>
 <translation id="7329842439428490522">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon izklopi, če se napaja iz akumulatorja.
@@ -2418,12 +2446,18 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7349338075015720646">Določa seznam spletnih aplikacij, ki se namestijo brez obveščanja in brez poseganja uporabnika ter ki jih uporabnik ne more ne odstraniti ne onemogočiti.
 
       Vsak element na seznamu pravilnika je predmet z dvema členoma: »url« in »launch_container«. »url« mora biti URL spletne aplikacije za namestitev, »launch_container« pa »window« (okno) ali »tab« (zavihek), s čimer je nakazano, kako se bo spletna aplikacija odprla po namestitvi. Če »launch_container« izpustite, se bo aplikacija zagnala v oknu, če jo bo Chrome obravnaval kot moderno spletno aplikacijo, v nasprotnem primeru pa na zavihku.</translation>
+<translation id="735902178936442460">Ta pravilnik nadzira, ali se sporočajo podatki, s katerimi je mogoče prepoznati naprave, na primer ime naprave in omrežni naslovi.
+
+      Če ta pravilnik ni nastavljen ali je omogočen, se zbirajo podatki, s katerimi je mogoče prepoznati naprave.
+      Če je ta pravilnik onemogočen, se podatki, s katerimi je mogoče prepoznati naprave, ne zbirajo.
+
+      Ta pravilnik se uporablja samo, če je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Storitev Varno brskanje prikaže opozorilno stran, ko uporabniki pridejo na spletna mesta, ki so označena kot potencialno zlonamerna. Če je ta nastavitev omogočena, uporabniki z opozorilne strani ne morejo na zlonamerno spletno mesto.
 
       Če je ta nastavitev onemogočena ali ni nastavljena, lahko uporabniki po prikazu opozorila nadaljujejo na označeno spletno mesto.
 
       Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
-<translation id="737655323154569539">Omeji velikost tiskanih strani. Če pravilnik ni nastavljen ali je prazen nabor, ni omejitve.</translation>
+<translation id="737655323154569539">Omeji velikost tiskanih strani. Če pravilnik ni nastavljen ali je nabor prazen, ni omejitve.</translation>
 <translation id="7417728346887499628">Če je pravilnik onemogočen, Chromovemu čiščenju prepreči pregledovanje, ali je v sistemu neželena programska oprema, in čiščenje. Ročna sprožitev Chromovega čiščenja v nastavitvah chrome://settings/cleanup je onemogočena.
 
       Če je pravilnik omogočen ali ni nastavljen, Chromovo čiščenje redno pregleduje, ali je v sistemu neželena programska oprema, in če jo najde, uporabnik prejme poziv, ali jo želi odstraniti. Ročna sprožitev Chromovega čiščenja v nastavitvah chrome://settings je omogočena.
@@ -2494,7 +2528,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7617319494457709698">Ta pravilnik določa dovoljene razširitve, ki lahko uporabljajo metodo <ph name="CHALLENGE_USER_KEY_FUNCTION" /> API-ja <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> za potrjevanje na daljavo. Razširitve, ki lahko uporabljajo API, morate dodati na ta seznam.
 
           Če razširitve ni na seznamu ali seznam ni nastavljen, poziv API-ju ne bo uspel in bo vrnjena koda napake.</translation>
-<translation id="7618907117929117943">Povrnite in ostanite na ciljni različici, če je različica operacijskega sistema novejša kot ciljna in je mogoče prenesti konfiguracijo na ravni napravi (vključno z omrežnimi poverilnicami) s povrnitvijo, prav tako preskakovanje prvega zagona po zagonu. Ne izvedite povrnitve ali je ne prekinite, če to ni mogoče (ker ciljna različica ne podpira obnovitve podatkov ali zaradi spremembe, ki ni združljiva s prejšnjo različico).
+<translation id="7618907117929117943">Povrnite na ciljno različico in ostanite na njej, če je različica operacijskega sistema novejša kot ciljna in je s povrnitvijo mogoče prenesti konfiguracijo na ravni naprave (vključno z omrežnimi poverilnicami), s čimer se tudi preskoči prvi zagon po povrnitvi. Ne izvedite povrnitve ali je ne prekinite, če to ni mogoče (ker ciljna različica ne podpira obnovitve podatkov ali zaradi spremembe, ki ni združljiva s prejšnjo različico).
           Podprto v brskalniku <ph name="PRODUCT_OS_NAME" /> različice 70 in novejših. Pri starejših odjemalcih ta vrednost pomeni, da je povrnitev onemogočena.</translation>
 <translation id="7625444193696794922">Določa kanal za izdajo, na katerega naj bo zaklenjena ta naprava.</translation>
 <translation id="7632724434767231364">Ime knjižnice GSSAPI</translation>
@@ -2687,6 +2721,14 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7976157349247117979">Ime cilja za napravo <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Ni posebnih omejitev</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Omogoči nadziranje, ali je v sistemu OS Chrome dovoljeno izvajanje navideznih računalnikov.
+
+      Če je pravilnik omogočen, je v napravi dovoljeno izvajanje navideznih računalnikov.
+      Če je pravilnik onemogočen, v napravi ni dovoljeno izvajanje navideznih računalnikov. 
+      Vsi trije pravilniki – VirtualMachinesAllowed, CrostiniAllowed in DeviceUnaffiliatedCrostiniAllowed – morajo biti omogočeni, ko se prijavijo za omogočanje izvajanja Crostinija.
+      Če je nastavitev tega pravilnika spremenjena na onemogočeno, se uporabi pri zagonu novih navideznih računalnikov, navideznih računalnikov, ki se že izvajajo, pa ne zaustavi.
+      Če ta pravilnik ni nastavljen v upravljani napravi, v napravi ni dovoljeno izvajanje navideznih računalnikov.
+      V napravah, ki niso upravljane, je dovoljeno izvajanje navideznih računalnikov.</translation>
 <translation id="802147957407376460">Sukanje zaslona za 0 stopinj</translation>
 <translation id="8033913082323846868">Ta pravilnik je zastarel v različici M70; namesto tega uporabite pravilnika AutofillAddressEnabled in AutofillCreditCardEnabled.
 
@@ -2731,6 +2773,12 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če pravilnik ni nastavljen, se uporabi privzeto trajanje.
 
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.</translation>
+<translation id="8138009212169037227">Ta pravilnik nadzira, ali se sporočajo podatki o pravilniku in času prenosa pravilnika.
+
+      Če ta pravilnik ni nastavljen ali je omogočen, se zbirajo podatki o pravilniku in času prenosa pravilnika.
+      Če je ta pravilnik onemogočen, se podatki o pravilniku in času prenosa pravilnika ne zbirajo.
+
+      Ta pravilnik se uporablja samo, če je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Poročanje strežniku o seznamu omrežnih vmesnikov z vrstami in naslovi strojne opreme.
 
       Če je pravilnik nastavljen na »False«, se o seznamu vmesnikov ne poroča.</translation>
@@ -2885,7 +2933,7 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
       »Različica« pomeni točno različico, na primer »61.0.3163.120«, ali predpono različice, na primer »61.0«.  </translation>
 <translation id="8544375438507658205">Privzeti upodabljalnik HTML-ja za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Dovolitev sinhroniziranja sporočil SMS med telefonom in Chromebookom.</translation>
-<translation id="8548832052135586762">Nastavi omejitev tiskanja na samo barvno, samo enobarvno ali brezbarvno. Če pravilnik ni nastavljen, ni omejitve.</translation>
+<translation id="8548832052135586762">Nastavi tiskanje na samo barvno, samo enobarvno ali brez omejitve barv. Če pravilnik ni nastavljen, ni omejitve.</translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
 <translation id="8566842294717252664">Skrivanje spletne trgovine na novem zavihku s povezavami in v zaganjalniku aplikacij</translation>
 <translation id="8586528890725660268">Določa tiskalnike, ki jih uporabnik ne more uporabljati.
@@ -3095,7 +3143,7 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
 <translation id="9084985621503260744">Navedite, ali videodejavnost vpliva na upravljanje napajanja</translation>
 <translation id="9088433379343318874">Omogočanje ponudnika vsebine za zaščitene uporabnike</translation>
 <translation id="9088444059179765143">Konfiguriranje načina samodejnega zaznavanja časovnega pasu</translation>
-<translation id="9094064873808699479">Povrnite in ostanite na ciljni različici, če je različica operacijskega sistema novejša kot ciljna. Pokusite prenesti konfiguracijo na ravni napravi (vključno z omrežnimi poverilnicami) s povrnitvijo, če je to mogoče, vendar ne izvedite povrnitve s popolnim Powerwashem, tudi če obnovitev podatkov ni mogoča (ker ciljna različica ne podpira obnovitve podatkov ali zaradi spremembe, ki ni združljiva s prejšnjo različico).
+<translation id="9094064873808699479">Povrnite na ciljno različico in ostanite na njej, če je različica operacijskega sistema novejša kot ciljna. S povrnitvijo pokusite prenesti konfiguracijo na ravni naprave (vključno z omrežnimi poverilnicami), če je to mogoče, vendar ne izvedite povrnitve s popolnim Powerwashem, tudi če obnovitev podatkov ni mogoča (ker ciljna različica ne podpira obnovitve podatkov ali zaradi spremembe, ki ni združljiva s prejšnjo različico).
           Podprto v brskalniku <ph name="PRODUCT_OS_NAME" /> različice 70 in novejših. Pri starejših odjemalcih ta vrednost pomeni, da je povrnitev onemogočena.</translation>
 <translation id="9096086085182305205">Seznam dovoljenih strežnikov za preverjanje pristnosti</translation>
 <translation id="9098553063150791878">Pravilniki za preverjanje pristnosti HTTP</translation>
@@ -3155,13 +3203,13 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
 <translation id="9187743794267626640">Onemogoči vpenjanje zunanjega pomnilnika</translation>
 <translation id="9197740283131855199">Odstotek prilagoditve zakasnitve zatemnitve zaslona, če je uporabnik dejaven po zatemnitvi</translation>
 <translation id="9200828125069750521">Parametri za slikovni URL, ki uporablja POST</translation>
-<translation id="920209539000507585">Vsiljena nastavitev, da so glave in noge vklopljene ali izklopljene v pogovornem oknu za tiskanje.
+<translation id="920209539000507585">Vsiljena nastavitev v pogovornem oknu za tiskanje, da so glave in noge vklopljene ali izklopljene.
 
       Če pravilnik ni nastavljen, se lahko uporabnik odloči, ali želi natisniti glave in noge.
 
-      Če je pravilnik onemogočen, glave in noge niso izbrane v pogovornem oknu za predogled tiskanja in uporabnik tega ne more spremeniti.
+      Če je pravilnik onemogočen, možnost za glave in noge v pogovornem oknu za predogled tiskanja ni izbrana in uporabnik tega ne more spremeniti.
 
-      Če je pravilnik omogočen, so glave in noge izbrane v pogovornem oknu za predogled tiskanja in uporabnik tega ne more spremeniti.</translation>
+      Če je pravilnik omogočen, je možnost za glave in noge v pogovornem oknu za predogled tiskanja izbrana in uporabnik tega ne more spremeniti.</translation>
 <translation id="9210953373038593554">Konfigurira vrsto preverjanja pristnosti za prijave SAML.
 
       Če ta pravilnik ni nastavljen ali je nastavljen na Default (privzeto, vrednost 0), delovanje prijav SAML določi brskalnik glede na druge dejavnike. V najbolj osnovnem scenariju preverjanje pristnosti uporabnikov in zaščita predpomnjenih uporabniških podatkov temeljita na geslih, ki jih uporabniki ročno vnesejo.

@@ -943,7 +943,7 @@
 <translation id="8441146129660941386">后退</translation>
 <translation id="8445448999790540984">无法导出密码</translation>
 <translation id="8447861592752582886">撤消设备权限</translation>
-<translation id="8477071352266846533">为 <ph name="SYNC_ACCOUNT_USER_NAME" /> 关闭同步功能</translation>
+<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> 已关闭同步功能</translation>
 <translation id="8487700953926739672">可离线使用</translation>
 <translation id="8489271220582375723">打开历史记录页</translation>
 <translation id="8493948351860045254">释放空间</translation>
@@ -1012,7 +1012,6 @@
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8993760627012879038">在无痕模式下打开新标签页</translation>
 <translation id="8998729206196772491">您正要登录由 <ph name="MANAGED_DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐号永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
-<translation id="9018881455348618200">搜索按钮</translation>
 <translation id="9019902583201351841">由您父母管理</translation>
 <translation id="9040142327097499898">允许显示通知。但此设备的位置信息功能已关闭。</translation>
 <translation id="9050666287014529139">密码</translation>

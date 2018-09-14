@@ -13,7 +13,7 @@
 <translation id="1038795173450935438">पेजवरील आयटम मधून पुढे जाण्याकरिता, शोध + उजवा बाण किंवा परत मागे जाण्यासाठी शोध + डावा बाण दाबा. पुढील ओळीवर जाण्यासाठी, शोध + खाली बाण दाबा. मागील ओळीवर जाण्यासाठी शोध + वर बाण वापरा. तुम्ही क्लिक करू इच्छित आयटमवर पोहचल्यास, शोध + Space दाबा.</translation>
 <translation id="1044777062731150180">कोणतेही शीर्षलेख नाहीत</translation>
 <translation id="106222400312645156">rwhdr</translation>
-<translation id="1065552602950927991">अवैध इनपुट</translation>
+<translation id="1065552602950927991">चुकीचे इनपुट</translation>
 <translation id="1080471004309605942">इटालिक संपले</translation>
 <translation id="1082209053475788238">मागील स्‍तर 6 मथळा नाही.</translation>
 <translation id="1087788677726983142">इव्हेंट स्ट्रीम फिल्टर लपवा</translation>
@@ -132,7 +132,7 @@
 <translation id="2188751878842439466">{COUNT,plural, =1{बंद कंस}one{# बंद कंस}other{# बंद कंस}}</translation>
 <translation id="2199994615414171367">मागील गणित</translation>
 <translation id="2203046366315513658">मूल्य कमी करा</translation>
-<translation id="2220529011494928058">समस्येचा अहवाल द्या</translation>
+<translation id="2220529011494928058">समस्येची तक्रार करा</translation>
 <translation id="2223693656926968778">वर्तमान आयटमवर कार्यवाही करा</translation>
 <translation id="225732394367814946">बोलण्‍याचा दर वाढवा</translation>
 <translation id="2267945578749931355">पुढील वर्ण</translation>
@@ -152,7 +152,7 @@
 <translation id="2417948780551741035">अंतिम नोंदी</translation>
 <translation id="2421113964388408478">हटवणे</translation>
 <translation id="2422937916923936891">मेनू आयटम चेक बॉक्‍स</translation>
-<translation id="2428534162001909979">आदेश मेनू</translation>
+<translation id="2428534162001909979">कमांड मेनू</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> आता नवीन ChromeVox सुधारक की आहे.</translation>
 <translation id="2450814015951372393">चेक बॉक्‍स</translation>
@@ -327,7 +327,7 @@
 <translation id="3457000393508828486">अंशत: दाबलेले</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, बंद करा</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, बटण</translation>
-<translation id="3466530247399808663">एक अवैध की दाबली</translation>
+<translation id="3466530247399808663">एक चुकीची की दाबली</translation>
 <translation id="3468959318854349468">शीर्षक नाही</translation>
 <translation id="3473644018603298796">sld <ph name="COUNT" /></translation>
 <translation id="3486232535569802404"><ph name="V1" /> ते <ph name="V2" /></translation>
@@ -528,7 +528,7 @@
 <translation id="5183440668879371625">ब्रेल मागील रेखा</translation>
 <translation id="5184944171021383281">पुढील फॉर्म फील्‍ड नाही.</translation>
 <translation id="5189244881767082992">रेखा</translation>
-<translation id="5203930734796605961"><ph name="KEY" /> आधीपासूनच एका आदेशामध्ये नियुक्त केली आहे.</translation>
+<translation id="5203930734796605961"><ph name="KEY" /> आधीपासूनच एका कमांडामध्ये नियुक्त केले आहे.</translation>
 <translation id="5205493599117157272"><ph name="TYPE" /> सूची.</translation>
 <translation id="520883772648104506">पुढील रेडिओ बटण नाही.</translation>
 <translation id="5263344797180442561">h2</translation>
@@ -891,7 +891,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8520472399088452386">स्पिन बटण</translation>
 <translation id="8538744478902126321">वर्तमान सेलच्या पंक्ती शीर्षलेखावर अंदाज करा</translation>
 <translation id="8540054775867439484">शीर्षस्थानी ओघ वळविला</translation>
-<translation id="8542271685829952264">सर्व ChromeVox आदेश आणि शॉर्टकट एक्सप्लोर करण्यासाठी, शोध + पूर्णविराम दाबा, नंतर मेनू मधून नेव्हिगेट करण्यासाठी बाण की चा आणि आदेश सक्रिय करण्यासाठी Enter चा वापर करा. Search+o नंतर t दाबून येथे परत या.</translation>
+<translation id="8542271685829952264">सर्व ChromeVox कमांड आणि शॉर्टकट एक्सप्लोर करण्यासाठी, शोध + पूर्णविराम दाबा, नंतर मेनू मधून नेव्हिगेट करण्यासाठी बाण की चा आणि कमांड सक्रिय करण्यासाठी Enter चा वापर करा. Search+o नंतर t दाबून येथे मागे या.</translation>
 <translation id="8548973727659841685">वर्ण</translation>
 <translation id="8561322612995434619">यास पॉप अप आहे</translation>
 <translation id="8571096049907249734">एकाधिक निवड</translation>

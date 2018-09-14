@@ -3406,6 +3406,7 @@
 <translation id="6144938890088808325">帮助我们改进 Chromebook</translation>
 <translation id="6146563240635539929">视频</translation>
 <translation id="6147020289383635445">打印预览失败。</translation>
+<translation id="6148052338549899048">没有任何符合条件的设备。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" />。</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6150853954427645995">要保存此文件以供离线使用，请恢复联网状态，右键点击文件，然后选择<ph name="OFFLINE_CHECKBOX_NAME" />选项。</translation>
 <translation id="6151323131516309312">按 <ph name="SEARCH_KEY" /> 可通过 <ph name="SITE_NAME" /> 进行搜索</translation>
@@ -4757,7 +4758,7 @@
 <translation id="8184318863960255706">更多信息</translation>
 <translation id="8185331656081929126">在网络中检测到新打印机时显示通知</translation>
 <translation id="8186609076106987817">服务器找不到该文件。</translation>
-<translation id="8186639008852027301">启动时播放音频指示器</translation>
+<translation id="8186639008852027301">启动时播放指示音频</translation>
 <translation id="8188120771410500975">检查文本字段的拼写(&amp;C)</translation>
 <translation id="8188389033983459049">请检查您的设备设置，并开启蓝牙以继续</translation>
 <translation id="8190193592390505034">正在连接到<ph name="PROVIDER_NAME" /></translation>

@@ -239,6 +239,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2762000892062317888">just now</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> secs left</translation>
 <translation id="2781151931089541271">1 sec left</translation>
+<translation id="2803478378562657435">Showing saved passwords and password options</translation>
 <translation id="2810645512293415242">Simplified page to save data and load faster.</translation>
 <translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google account<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">To get your bookmarks on all your devices, sign in and turn on sync</translation>
@@ -829,6 +830,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="748127970106343339">Confirm device credential deletion</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Updated <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Show passwords</translation>
 <translation id="7494974237137038751">data saved</translation>
 <translation id="7498271377022651285">Please wait…</translation>
 <translation id="7514365320538308">Download</translation>
@@ -951,6 +953,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8503559462189395349">Chrome Passwords</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8504988642345501642">When you scroll up, show quick links to related pages. The URLs of pages that you visit are sent to Google.</translation>
+<translation id="8507520749471379845">Passwords available</translation>
 <translation id="8514477925623180633">Export passwords stored with Chrome</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="851751545965956758">Block sites from connecting to devices</translation>
@@ -1010,7 +1013,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="8993760627012879038">Open a new tab in Incognito mode</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google account.</translation>
-<translation id="9018881455348618200">Search button</translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
 <translation id="9040142327097499898">Notifications are allowed. Location is off for this device.</translation>
 <translation id="9050666287014529139">Passphrase</translation>

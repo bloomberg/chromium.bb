@@ -3419,6 +3419,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6144938890088808325">Ajută-ne să îmbunătățim Chromebookurile</translation>
 <translation id="6146563240635539929">Videoclipuri</translation>
 <translation id="6147020289383635445">Previzualizarea înainte de printare nu a reușit.</translation>
+<translation id="6148052338549899048">Nu există dispozitive eligibile. <ph name="LINK_BEGIN" />Află mai multe.<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Încearcă:</translation>
 <translation id="6150853954427645995">Pentru a salva acest fișier pentru utilizare offline, revino online, dă clic dreapta pe fișier și selectează opțiunea <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Apasă pe <ph name="SEARCH_KEY" /> pentru a căuta în <ph name="SITE_NAME" /></translation>

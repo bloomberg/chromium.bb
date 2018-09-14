@@ -110,7 +110,7 @@
 <translation id="2727977024730340865">Aangesloten op een laag-vermogen-lader. Opladen van de batterij mogelijk niet betrouwbaar.</translation>
 <translation id="2761704814324807722">Statusvak, tijd <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Opnieuw verbinding maken met <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Kies of websites locatieservices of de microfoon, camera of andere functies van het apparaat kunnen gebruiken</translation>
+<translation id="2790844815106384441">Kies of websites mogen gebruikmaken van locatieservices of de microfoon, de camera of andere functies van het apparaat</translation>
 <translation id="2792498699870441125">Alt+Zoeken</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2808012452536866044">Better Together overgeschakeld naar een nieuwe telefoon</translation>
@@ -308,6 +308,7 @@
 <translation id="6297287540776456956">Gebruik de stylus om een gebied te selecteren</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> is gedraaid naar <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Overlay voor toetsenbord</translation>
+<translation id="6344698853700675736">Nachtverlichting schakelen</translation>
 <translation id="6376931439017688372">Bluetooth is ingeschakeld</translation>
 <translation id="639644700271529076">CAPS LOCK is uitgeschakeld</translation>
 <translation id="6406704438230478924">altgr</translation>

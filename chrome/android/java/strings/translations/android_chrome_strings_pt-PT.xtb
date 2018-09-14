@@ -49,7 +49,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="129553762522093515">Fechados recentemente</translation>
 <translation id="1326317727527857210">Para obter os separadores dos seus outros dispositivos, inicie sessão no Chrome.</translation>
 <translation id="1332501820983677155">Atalhos das funcionalidades do Google Chrome</translation>
-<translation id="1360432990279830238">Terminar sessão e desativar sincroniz.?</translation>
+<translation id="1360432990279830238">Terminar sessão e desativar a sincronização?</translation>
 <translation id="136248372334525878">Pré-carregar páginas para um carregamento mais rápido e para leitura offline</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> adicionado</translation>
 <translation id="1373696734384179344">Memória insuficiente para transferir o conteúdo selecionado.</translation>
@@ -1012,7 +1012,6 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8986494364107987395">Enviar automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>
 <translation id="8993760627012879038">Abrir novo separador no modo de navegação anónima</translation>
 <translation id="8998729206196772491">Está a iniciar sessão com uma conta gerida por <ph name="MANAGED_DOMAIN" /> e a conceder ao respetivo gestor o controlo dos seus dados do Chrome. Os dados ficarão permanentemente associados a esta conta. Terminar sessão no Chrome elimina os seus dados deste dispositivo, embora permaneçam armazenados na Conta Google.</translation>
-<translation id="9018881455348618200">Botão de pesquisa</translation>
 <translation id="9019902583201351841">Gerido pelos teus pais</translation>
 <translation id="9040142327097499898">As notificações são permitidas. A localização está desativada para este dispositivo.</translation>
 <translation id="9050666287014529139">Frase de acesso</translation>

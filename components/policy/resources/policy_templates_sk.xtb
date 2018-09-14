@@ -124,6 +124,7 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
 <translation id="1387596372902085462">Určuje, či sa má dôverovať starej infraštruktúre PKI spoločnosti Symantec Corporation</translation>
 <translation id="1393485621820363363">Povolené podnikové tlačiarne zariadenia</translation>
 <translation id="1397855852561539316">Webová adresa návrhu predvoleného poskytovateľa vyhľadávania</translation>
+<translation id="142346659686073702">Povoliť používať funkciu Crostini používateľom, ktorí nie sú partneri</translation>
 <translation id="1426410128494586442">Áno</translation>
 <translation id="1427655258943162134">Adresa alebo webová adresa servera proxy</translation>
 <translation id="1435659902881071157">Konfigurácia siete na úrovni zariadenia</translation>
@@ -368,6 +369,12 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak toto pravidlo nenastavíte, prehliadač sa bude správať rovnako, ako keby ste ho povolili (prečítajte si popis vyššie).</translation>
 <translation id="2113068765175018713">Obmedziť časové obdobie prevádzky zariadenia automatickým reštartovaním</translation>
+<translation id="2116790137063002724">Toto pravidlo ovláda, či sa majú nahlasovať informácie, ktoré sa dajú použiť na identifikáciu používateľov, ako sú napríklad prihlasovacie údaje operačného systému, prihlasovacie údaje profilu v prehliadači <ph name="PRODUCT_NAME" />, názov profilu v prehliadači <ph name="PRODUCT_NAME" />, cesta k profilu v prehliadači <ph name="PRODUCT_NAME" /> a spustiteľná cesta k prehliadaču <ph name="PRODUCT_NAME" />.
+
+      Keď ho nenastavíte alebo nastavíte na hodnotu true, informácie použiteľné na identifikáciu používateľov sa zhromažďujú.
+      Keď ho nastavíte na hodnotu false, informácie použiteľné na identifikáciu používateľov sa nezhromažďujú.
+
+      Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Povoliť upozornenia na týchto webových stránkach</translation>
 <translation id="2131902621292742709">Oneskorenie zníženia jasu obrazovky pri napájaní z batérie</translation>
 <translation id="2132732175597591362">Umožňuje ovládať bielu listinu vzorov webových adries, ktorých automatické prehrávanie bude vždy povolené.
@@ -1559,6 +1566,12 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Ak je nastavené na možnosť False alebo nie je nenastavené, 
 volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
+<translation id="5277806246014825877">Povoľte tomuto používateľovi spúšťať Crostini.
+
+      Ak toto pravidlo nastavíte na hodnotu false, funkcia Crostini nie je pre používateľa povolená.
+      Ak ho nastavíte na hodnotu true alebo ho nenastavíte, funkcia Crostini je pre používateľa povolená dovtedy, kým ju povoľujú aj ďalšie nastavenia.
+      Pre všetky tri pravidlá, VirtualMachinesAllowed, CrostiniAllowed a DeviceUnaffiliatedCrostiniAllowed, musíte nastaviť hodnotu true, keď žiadajú o funkciu Crostini, aby sa mohli spustiť.
+      Ak toto pravidlo zmeníte na hodnotu false, bude platiť pre nové kontajnery Crostini, ale nevypne už spustené kontajnery.</translation>
 <translation id="5283457834853986457">Deaktivácia nástroja na vyhľadávanie doplnkov (ukončená podpora)</translation>
 <translation id="5288772341821359899">Ak toto pravidlo nastavíte, rozsah portov UDP používaných rozhraním WebRTC bude obmedzovaný na špecifikovaný interval portov (vrátane koncových bodov).
 
@@ -1626,6 +1639,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           V predvolenom nastavení, ktoré sa používa v prípade, ak je toto pravidlo ponechané nenastavené, môže vykresľovanie vykonávať hostiteľský prehliadač. Toto nastavenie však môžete prepísať a namiesto toho vykresľovať stránky HTML pomocou doplnku <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="5464816904705580310">Umožňuje nakonfigurovať nastavenia pre spravovaných používateľov.</translation>
 <translation id="546726650689747237">Oneskorenie zníženia jasu obrazovky pri používaní napájacieho zdroja</translation>
+<translation id="5469143988693423708">Používateľ má povolené spustiť Crostini</translation>
 <translation id="5469825884154817306">Blokovať obrázky na týchto weboch</translation>
 <translation id="5475361623548884387">Povoliť tlač</translation>
 <translation id="547601067149622666">Zakázať reklamy na weboch s obťažujúcimi reklamami</translation>
@@ -1682,6 +1696,9 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Upozorňujeme, že toto nastavenie sa neodporúča, pretože môže dôjsť k obchádzaniu rozšírenia nameConstraints obmedzujúceho názvy hostiteľa, pre ktoré je možné autorizovať daný certifikát.
 
       Ak toto pravidlo nenastavíte alebo nastavíte na možnosť False, certifikáty servera bez rozšírenia subjectAlternativeName, ktoré obsahujú názov DNS alebo adresu IP, nebudú považované za dôveryhodné.</translation>
+<translation id="5581292529942108810">Umožňuje konfigurovať pravidlá súvisiace s rozšírením na nahlasovanie údajov o Chrome.
+
+      Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Ovládanie služieb určovania polohy od Googlu v Androide</translation>
 <translation id="5586942249556966598">Nevykonať žiadnu akciu</translation>
 <translation id="5630352020869108293">Obnoviť poslednú reláciu</translation>
@@ -2295,6 +2312,11 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak toto pravidlo nenastavíte, používateľ bude môcť nastavenie zmeniť ručne.</translation>
 <translation id="723103540848640830">Nastaviť minimálnu dĺžku kódu PIN na uzamknutej obrazovke</translation>
+<translation id="7232816984286843471">Ak toto pravidlo nastavíte na hodnotu false, používatelia, ktorí nie sú partneri, nebudú môcť používať funkciu Crostini.
+
+      Ak ho nenastavíte alebo nastavíte na hodnotu true, všetci používatelia môžu používať Crostini dovtedy, kým ju povoľujú aj ďalšie nastavenia.
+      Všetky tri pravidlá, VirtualMachinesAllowed, CrostiniAllowed a DeviceUnaffiliatedCrostiniAllowed, musíte nastaviť hodnotu true, keď žiadajú o funkciu Crostini, aby sa mohli spustiť.
+      Ak toto pravidlo zmeníte na hodnotu false, bude platiť pre nové kontajnery Crostini, ale nevypne už spustené kontajnery.</translation>
 <translation id="7234280155140786597">Názvy zakázaných hostiteľov pre odosielanie natívnych správ (všetkých označíte pomocou znaku *)</translation>
 <translation id="7236775576470542603">Nastaví predvolený typ lupy obrazovky, ktorý je povolený na prihlasovacej obrazovke.
 
@@ -2342,6 +2364,12 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="7311458740754205918">Ak toto pravidlo nastavíte na hodnotu True alebo ho nenastavíte, na stránke na novej karte sa môžu zobrazovať návrhy obsahu na základe používateľovej histórie prehliadania, záujmov alebo polohy.
 
       Ak toto pravidlo nastavíte na možnosť False, automaticky generované návrhy obsahu sa na stránke na novej karte nezobrazujú.</translation>
+<translation id="7313793931637495417">Toto pravidlo ovláda, či sa majú nahlasovať informácie o verzii, napríklad verzia, platforma, architektúra operačného systému, verzia prehliadača <ph name="PRODUCT_NAME" /> a kanál <ph name="PRODUCT_NAME" />.
+
+      Keď ho nenastavíte alebo nastavíte na hodnotu true, informácie o verzii sa zhromažďujú.
+      Keď ho nastavíte na hodnotu false, informácie o verzii sa nezhromažďujú.
+
+      Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Dodatočné parametre príkazového riadka pre <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Podobné možnosti Vymazať (hodnota 2), ale pokúsi sa uchovať prihlasovacie tokeny, aby sa používateľ nemusel znova prihlasovať.</translation>
 <translation id="7329842439428490522">Určuje dobu nečinnosti používateľa, po ktorej sa obrazovka pri napájaní z batérie vypne.
@@ -2374,6 +2402,12 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="7349338075015720646">Určuje zoznam webov inštalovaných na pozadí, bez interakcie s používateľom a ktoré používateľ nemôže odinštalovať ani deaktivovať.
 
       Jednotlivé položky zoznamu v danom pravidle sú objekty pozostávajúce z dvoch častí: „url“ a „launch_container“. „url“ by mala byť adresa webovej aplikácie, ktorá sa má nainštalovať, a „launch_container“ by malo byť „window“ (okno) alebo „tab“ (karta) (teda podoba, v akej sa webová aplikácia po inštalácii otvorí). Ak časť „launch_container“ vynecháte, aplikácia sa spustí v okne, keď ju Chrome bude považovať za progresívnu webovú aplikáciu. Inak sa zobrazí ako karta.</translation>
+<translation id="735902178936442460">Toto pravidlo ovláda, či sa majú nahlasovať informácie, ktoré sa dajú použiť na identifikáciu zariadení, ako napríklad názov zariadenia a sieťové adresy.
+
+      Keď ho nenastavíte alebo nastavíte na hodnotu true, informácie použiteľné na identifikáciu zariadení sa zhromažďujú.
+      Keď ho nastavíte na hodnotu false, informácie použiteľné na identifikáciu zariadení sa nezhromažďujú.
+
+      Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Keď používateľ prejde na weby, ktoré sú nahlásené ako potenciálne škodlivé, služba Bezpečné prehliadanie zobrazí stránku s upozornením. Povolenie tohto nastavenia zabráni používateľom pokračovať zo stránky s upozornením na škodlivý web.
 
       Ak je toto nastavenie zakázané alebo ak nie je nakonfigurované, používatelia môžu pokračovať na nahlásený web aj po zobrazení upozornenia.
@@ -2641,6 +2675,14 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
 <translation id="7976157349247117979">Názov cieľového priečinka <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Žiadne špeciálne obmedzenia</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Umožňuje ovládať, či sa môžu v systéme Chrome OS spúšťať virtuálne počítače.
+
+      Ak toto pravidlo nastavíte na hodnotu true, zariadenie bude môcť spúšťať virtuálne počítače.
+      Ak ho nastavíte na hodnotu False, zariadenie nebude môcť spúšťať virtuálne počítače.
+      Všetky tri pravidlá, VirtualMachinesAllowed, CrostiniAllowed a DeviceUnaffiliatedCrostiniAllowed, musíte nastaviť hodnotu true, keď žiadajú o funkciu Crostini, aby sa mohli spustiť.
+      Keď toto pravidlo zmeníte na hodnotu false, bude platiť pre nové virtuálne počítače, ale nevypne už spustené virtuálne počítače.
+      Ak toto pravidlo nenastavíte v spravovanom zariadení, nebude môcť spúšťať virtuálne počítače.
+      Nespravované zariadenia môžu spúšťať virtuálne počítače.</translation>
 <translation id="802147957407376460">Otočiť obrazovku o 0 stupňov</translation>
 <translation id="8033913082323846868">Podpora tohto pravidla bola ukončená vo verzii M70, použite namiesto neho AutofillAddressEnabled a AutofillCreditCardEnabled.
 
@@ -2685,6 +2727,12 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
           Ak toto pravidlo nastavené nie je, použije sa predvolená doba.
 
           Hodnota pravidla by mala byť uvedená v milisekundách. Hodnoty musia byť nižšie alebo rovnaké ako oneskorenie režimu nečinnosti.</translation>
+<translation id="8138009212169037227">Toto pravidlo ovláda, či sa majú nahlasovať údaje o pravidle a čas načítania pravidla.
+
+      Keď ho nenastavíte alebo nastavíte na hodnotu true, údaje o pravidle a čas jeho načítania sa zhromažďujú.
+      Keď ho nastavíte na hodnotu false, údaje o pravidle a čas jeho načítania sa nezhromažďujú.
+
+      Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujte prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Nahlásenie zoznamu sieťových rozhraní s typmi a adresami hardvéru pre server.
 
       Ak je pravidlo nastavené na hodnotu False, zoznam rozhraní sa nenahlási.</translation>

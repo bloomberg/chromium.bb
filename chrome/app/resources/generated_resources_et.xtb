@@ -3419,6 +3419,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6144938890088808325">Aidake meil Chromebooke täiustada</translation>
 <translation id="6146563240635539929">Videod</translation>
 <translation id="6147020289383635445">Prindi eelvaade nurjus.</translation>
+<translation id="6148052338549899048">Sobilikke seadmeid ei ole. <ph name="LINK_BEGIN" />Vaadake lisateavet.<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Proovige järgmist.</translation>
 <translation id="6150853954427645995">Kui soovite salvestada faili võrguühenduseta kasutamiseks, minge uuesti veebi, paremklõpsake failil ja tehke valik <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Vajutage <ph name="SEARCH_KEY" />, et otsida <ph name="SITE_NAME" />-st</translation>

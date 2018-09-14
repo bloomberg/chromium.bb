@@ -1942,7 +1942,7 @@
 <translation id="3873315167136380065">Pour activer cette fonctionnalité, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /> pour supprimer votre phrase secrète de synchronisation</translation>
 <translation id="3878840326289104869">Création de l'utilisateur supervisé en cours</translation>
 <translation id="3879748587602334249">Gestionnaire de téléchargement</translation>
-<translation id="3885455691202481064">Appuyez sur le capteur avec votre index. Il se trouve en haut à gauche de votre Chromebook.</translation>
+<translation id="3885455691202481064">Avec votre index, appuyez sur le capteur qui se trouve en haut à gauche de votre Chromebook.</translation>
 <translation id="3888550877729210209">Prise de notes avec <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Ajouter une connexion OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Consulter et modifier vos paramètres d'accessibilité</translation>
@@ -3420,6 +3420,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6144938890088808325">Aidez-nous à améliorer les Chromebooks</translation>
 <translation id="6146563240635539929">Vidéos</translation>
 <translation id="6147020289383635445">Échec de l'aperçu avant impression.</translation>
+<translation id="6148052338549899048">Aucun appareil éligible. <ph name="LINK_BEGIN" />En savoir plus.<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Essayez les suggestions ci-dessous :</translation>
 <translation id="6150853954427645995">Pour enregistrer ce fichier en vue d'une utilisation hors connexion, cliquez sur celui-ci avec le bouton droit de la souris, puis sélectionnez l'option <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Appuyez sur <ph name="SEARCH_KEY" /> pour rechercher sur <ph name="SITE_NAME" /></translation>

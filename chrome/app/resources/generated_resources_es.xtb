@@ -1322,7 +1322,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2961695502793809356">Haz clic para avanzar una página o pulsa unos segundos para ver el historial</translation>
 <translation id="2963151496262057773">El complemento <ph name="PLUGIN_NAME" /> no responde. ¿Quieres detenerlo?</translation>
 <translation id="2966449113954629791">Es posible que hayas agotado los datos de tu plan de datos móviles. Accede al portal de activación de <ph name="NAME" /> para comprar más datos.</translation>
-<translation id="2966937470348689686">Administrar las preferencias de Android</translation>
+<translation id="2966937470348689686">Gestionar las preferencias de Android</translation>
 <translation id="2971213274238188218">disminuir brillo</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
@@ -3415,6 +3415,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6144938890088808325">Ayúdanos a mejorar los Chromebooks</translation>
 <translation id="6146563240635539929">Vídeos</translation>
 <translation id="6147020289383635445">Error al obtener la vista previa de impresión</translation>
+<translation id="6148052338549899048">No hay ningún dispositivo apto. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Prueba a:</translation>
 <translation id="6150853954427645995">Para guardar este archivo y poder usarlo sin conexión, vuelve a conectarte a Internet, haz clic con el botón derecho en el archivo y selecciona la opción <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Pulsa <ph name="SEARCH_KEY" /> para buscar en <ph name="SITE_NAME" /></translation>

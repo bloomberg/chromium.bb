@@ -1866,7 +1866,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Numai dacă allowCorporateKeyUsage este setat la „true” pentru o extensie, aceasta poate folosi orice certificat al platformei, marcat ca să fie folosit în cadrul companiei, pentru a semna date arbitrare. Această permisiune ar trebui acordată doar dacă ai încredere că extensia protejează accesul la certificat împotriva atacatorilor.</translation>
 <translation id="6208896993204286313">Raportează informații despre politica <ph name="PRODUCT_NAME" /></translation>
-<translation id="6210259502936598222">Raportează informații despre sistemul de operare și versiunea <ph name="PRODUCT_NAME" /></translation>
+<translation id="6210259502936598222">Raportează informații despre versiunea <ph name="PRODUCT_NAME" /> și a sistemului de operare</translation>
 <translation id="6211428344788340116">Raportează perioadele de activitate ale dispozitivului.
 
       Dacă setarea nu este configurată sau dacă este activată, dispozitivele înscrise vor raporta perioadele când un utilizator este activ pe dispozitiv. Dacă setarea este dezactivată, perioadele de activitate ale dispozitivului nu vor fi înregistrate sau raportate.</translation>
@@ -1911,7 +1911,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă alegi opțiunea „detectează automat serverul proxy”, adresa URL pentru scripturi „http://wpad/wpad.dat” este oferită aplicațiilor Android. Nu este folosită nicio altă parte a protocolului pentru detectarea automată a proxy-ului.
 
           Dacă alegi opțiunea „script .pac pentru proxy”, adresa URL pentru scripturi este oferită aplicațiilor Android.</translation>
-<translation id="6430366557948788869">Extensie de raportare Chrome</translation>
+<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Permite site-urilor să navigheze și să deschidă ferestre pop-up în același timp</translation>
 <translation id="6447948611083700881">Crearea și restaurarea backupurilor a fost dezactivată</translation>
 <translation id="645425387487868471">Activează conectarea forțată pentru <ph name="PRODUCT_NAME" /></translation>
@@ -2873,7 +2873,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 
       Dacă această setare este lăsată nesetată, utilizatorul poate decide dacă folosește sau nu această funcție.</translation>
 <translation id="8870318296973696995">Pagina de pornire</translation>
-<translation id="8876188741456358123">Modifică modul de culoare prestabilit pentru printare. Dacă modul nu este disponibil, această politică este ignorată.</translation>
+<translation id="8876188741456358123">Modifică modul duplex prestabilit pentru printare. Dacă modul nu este disponibil, această politică este ignorată.</translation>
 <translation id="8882006618241293596">Blochează plunginul <ph name="FLASH_PLUGIN_NAME" /> pe aceste site-uri</translation>
 <translation id="890403179930035128">Forțează activarea verificării ortografice pentru limbi. Limbile nerecunoscute din listă vor fi ignorate.
 

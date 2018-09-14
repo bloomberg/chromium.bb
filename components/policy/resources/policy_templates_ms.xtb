@@ -143,6 +143,7 @@
 <translation id="1387596372902085462">Sama ada hendak mendayakan kepercayaan dalam Infrastruktur PKI Lama Symantec Corporation</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
 <translation id="1397855852561539316">Pembekal carian lalai mencadangkan URL</translation>
+<translation id="142346659686073702">Benarkan pengguna yang bukan ahli gabungan menggunakan Crostini</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL pelayan proksi</translation>
 <translation id="1435659902881071157">Konfigurasi rangkaian tahap peranti</translation>
@@ -395,6 +396,12 @@
 
       Jika dasar ini dibiarkan tanpa ditetapkan, keadaannya sama seperti tetapan ini didayakan, lihat huraian di atas.</translation>
 <translation id="2113068765175018713">Hadkan masa hidup peranti melalui but semula automatik.</translation>
+<translation id="2116790137063002724">Dasar ini mengawal sama ada hendak melaporkan maklumat yang boleh digunakan untuk mengenal pasti pengguna, seperti log masuk OS, Log masuk profil <ph name="PRODUCT_NAME" />, Nama profil <ph name="PRODUCT_NAME" />, Laluan profil <ph name="PRODUCT_NAME" /> dan laluan boleh laku <ph name="PRODUCT_NAME" />.
+
+      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, maklumat yang boleh digunakan untuk mengenal pasti pengguna akan dikumpulkan.
+      Apabila dasar ini ditetapkan kepada Palsu, maklumat yang boleh digunakan untuk mengenal pasti pengguna tidak akan dikumpulkan.
+
+      Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Benarkan pemberitahuan pada tapak ini</translation>
 <translation id="2131902621292742709">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="2132732175597591362">Mengawal senarai putih corak URL tempat automain akan sentiasa didayakan.
@@ -1595,6 +1602,12 @@
 <translation id="5272684451155669299">Jika benar, pengguna boleh menggunakan perkakasan pada peranti Chrome untuk membuktikan identitinya dari jauh pada CA privasi melalui <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> menggunakan <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Jika ditetapkan kepada palsu atau tidak ditetapkan, panggilan kepada API ini akan gagal dengan kod ralat.</translation>
+<translation id="5277806246014825877">Benarkan pengguna ini menjalankan Crostini.
+
+      Jika dasar ini ditetapkan kepada palsu, Crostini tidak didayakan untuk pengguna.
+      Jika ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, Crostini didayakan untuk pengguna asalkan tetapan lain memberi kebenaran juga.
+      Ketiga-tiga dasar, VirtualMachinesAllowed, CrostiniAllowed dan DeviceUnaffiliatedCrostiniAllowed perlu ditetapkan kepada benar apabila memohon kebenaran untuk menjalankan Crostini.
+      Apabila dasar ini ditukar kepada palsu, dasar ini digunakan untuk memulakan bekas Crostini baharu tetapi tidak menutup bekas yang sedang dijalankan.</translation>
 <translation id="5283457834853986457">Lumpuhkan pencari pemalam (ditamatkan)</translation>
 <translation id="5288772341821359899">Jika dasar ini ditetapkan, julat port UDP yang digunakan oleh WebRTC dihadkan kepada selang port yang ditentukan (termasuk titik akhir).
 
@@ -1662,6 +1675,7 @@
           Tetapan lalai yang gunakan apabila dasar ini dibiarkan tanpa ditetapkan ialah untuk membenarkan penyemak imbas hos membuat paparan, tetapi anda boleh memilih untuk mengatasi hal ini dan membenarkan <ph name="PRODUCT_FRAME_NAME" /> memaparkan halaman HTML secara lalai.</translation>
 <translation id="5464816904705580310">Konfigurasikan tetapan untuk pengguna terurus.</translation>
 <translation id="546726650689747237">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa AC</translation>
+<translation id="5469143988693423708">Pengguna dibenarkan untuk menjalankan Crostini</translation>
 <translation id="5469825884154817306">Sekat imej pada tapak ini</translation>
 <translation id="5475361623548884387">Dayakan pencetakan</translation>
 <translation id="547601067149622666">Jangan benarkan iklan pada tapak yang mengandungi iklan yang mengganggu</translation>
@@ -1718,6 +1732,9 @@
       Harap maklum bahawa langkah ini tidak disyorkan kerana boleh membenarkan pintasan sambungan nameConstraints yang menyekat nama hos yang boleh diberi kebenaran oleh sijil tertentu.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, sijil pelayan yang ketiadaan sambungan subjectAlternativeName yang mengandungi sama ada nama DNS atau alamat IP tidak akan dipercayai.</translation>
+<translation id="5581292529942108810">Konfigurasikan dasar yang berkaitan dengan Sambungan Pelaporan Chrome.
+
+      Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Kawal Perkhidmatan lokasi Google Android</translation>
 <translation id="5586942249556966598">Jangan buat apa-apa</translation>
 <translation id="5630352020869108293">Pulihkan sesi terakhir</translation>
@@ -2331,6 +2348,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna akan dapat menukar tetapan ini secara manual.</translation>
 <translation id="723103540848640830">Tetapkan panjang minimum PIN kunci skrin</translation>
+<translation id="7232816984286843471">Jika dasar ini ditetapkan kepada palsu, pengguna yang bukan ahli gabungan tidak akan dibenarkan untuk menggunakan Crostini.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada benar, semua pengguna dibenarkan untuk menggunakan Crostini asalkan tetapan lain memberi kebenaran juga.
+      Ketiga-tiga dasar, VirtualMachinesAllowed, CrostiniAllowed dan DeviceUnaffiliatedCrostiniAllowed perlu ditetapkan kepada benar apabila memohon kebenaran untuk menjalankan Crostini.
+      Apabila dasar ini ditukar kepada palsu, dasar ini digunakan untuk memulakan bekas Crostini baharu tetapi tidak menutup bekas yang sedang dijalankan.</translation>
 <translation id="7234280155140786597">Nama hos pemesejan natif yang dilarang (atau * untuk semua)</translation>
 <translation id="7236775576470542603">Menetapkan jenis penggadang skrin lalai yang didayakan pada skrin log masuk.
 
@@ -2378,6 +2400,12 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7311458740754205918">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, halaman Tab Baharu boleh menunjukkan cadangan kandungan berdasarkan sejarah penyemakan imbas, minat atau lokasi pengguna.
 
       Jika dasar ini ditetapkan kepada palsu, cadangan kandungan yang dihasilkan secara automatik tidak ditunjukkan pada halaman Tab Baharu.</translation>
+<translation id="7313793931637495417">Dasar ini mengawal sama ada hendak melaporkan maklumat versi, seperti versi OS, platform OS, seni bina OS, versi <ph name="PRODUCT_NAME" /> dan saluran <ph name="PRODUCT_NAME" />.
+
+      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, maklumat versi akan dikumpulkan.
+      Apabila dasar ini ditetapkan kepada Palsu, maklumat versi tidak akan dikumpulkan.
+
+      Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Parameter baris perintah tambahan untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Serupa dengan Wipe (nilai 2), tetapi cuba mengekalkan token log masuk supaya pengguna tidak perlu log masuk semula.</translation>
 <translation id="7329842439428490522">Menyatakan panjang masa tanpa input pengguna dan skrin akan dimatikan selepas masa ini tamat apabila dijalankan dengan kuasa bateri.
@@ -2410,6 +2438,12 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7349338075015720646">Menyatakan senarai tapak web yang dipasang secara senyap, tanpa interaksi pengguna dan tidak boleh dinyahpasang mahupun dilumpuhkan oleh pengguna.
 
       Setiap senarai item dasar ialah objek dengan dua ahli: "url" dan "launch_container". "url" ialah URL apl web yang hendak dipasang dan "launch_container" ialah "tetingkap" atau "tab" untuk menunjukkan cara Apl Web akan dibuka setelah dipasang. Jika "launch_container" tidak dimasukkan, apl akan dilancarkan dalam tetingkap jika Chrome menganggapnya sebagai Apl Web Progresif dan jika sebaliknya, apl akan dilancarkan dalam tab.</translation>
+<translation id="735902178936442460">Dasar ini mengawal sama ada hendak melaporkan maklumat yang boleh digunakan untuk mengenal pasti peranti, seperti nama peranti dan alamat rangkaian.
+
+      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, maklumat yang boleh digunakan untuk mengenal pasti peranti akan dikumpulkan.
+      Apabila dasar ini ditetapkan kepada Palsu, maklumat yang boleh digunakan untuk mengenal pasti peranti tidak akan dikumpulkan.
+
+      Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Perkhidmatan Penyemakan Imbas Selamat memaparkan halaman amaran apabila pengguna menavigasi ke tapak yang dibenderakan sebagai berkemungkinan bersifat hasad. Tindakan mendayakan tetapan ini akan menghalang pengguna daripada tetap meneruskan daripada halaman amaran ke tapak yang bersifat hasad tersebut.
 
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, maka pengguna boleh memilih untuk meneruskan ke tapak yang dibenderakan selepas amaran dipaparkan.
@@ -2681,6 +2715,14 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7976157349247117979">Nama destinasi <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Tiada sekatan khas</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Membolehkan anda mengawal sama ada peranti maya dibenarkan untuk dijalankan pada OS Chrome.
+
+      Jika dasar ditetapkan kepada Benar, peranti dibenarkan untuk menjalankan peranti maya.
+      Jika dasar ditetapkan kepada Palsu, peranti tidak akan dibenarkan untuk menjalankan peranti maya.
+      Ketiga-tiga dasar, VirtualMachinesAllowed, CrostiniAllowed dan DeviceUnaffiliatedCrostiniAllowed perlu ditetapkan kepada benar apabila memohon kebenaran untuk menjalankan Crostini.
+      Apabila dasar ini ditukar kepada Palsu, dasar ini digunakan apabila memulakan peranti maya baharu tetapi tidak mematikan peranti maya yang sedang dijalankan.
+      Apabila dasar ini tidak ditetapkan pada peranti terurus, peranti tidak dibenarkan untuk menjalankan peranti maya.
+      Peranti yang tidak terurus dibenarkan untuk menjalankan peranti maya.</translation>
 <translation id="802147957407376460">Putar skrin 0 darjah</translation>
 <translation id="8033913082323846868">Dasar ini dimansuhkan dalam M70. Sebagai ganti, sila gunakan AutofillAddressEnabled dan AutofillCreditCardEnabled.
 
@@ -2725,6 +2767,12 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Apabila dasar ini tidak ditetapkan, panjang masa lalai akan digunakan.
 
           Nilai dasar harus dinyatakan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan melahu.</translation>
+<translation id="8138009212169037227">Dasar ini mengawal sama ada hendak melaporkan data dasar dan masa pengambilan dasar.
+
+      Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, data dasar dan masa pengambilan dasar akan dikumpulkan.
+      Apabila dasar ini ditetapkan kepada Palsu, data dasar dan masa pengambilan data tidak akan dikumpulkan.
+
+      Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Laporkan senarai antara muka rangkaian bersama jenis dan alamat perkakasan ke pelayan.
 
       Jika dasar ditetapkan sebagai tidak benar, senarai antara muka tidak akan dilaporkan.</translation>
@@ -3157,7 +3205,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
       Jika dasar ini ditetapkan kepada palsu, 'Pengepala dan pengaki' tidak dipilih dalam dialog prapaparan cetak dan pengguna tidak dapat mengubahnya.
 
-      Jika dasar ditetapkan kepada benar, 'Pengepala dan pengaki' di pilih dalam dialog prapaparan cetak dan pengguna tidak dapat mengubahnya.</translation>
+      Jika dasar ditetapkan kepada benar, 'Pengepala dan pengaki' dipilih dalam dialog prapaparan cetak dan pengguna tidak dapat mengubahnya.</translation>
 <translation id="9210953373038593554">Mengkonfigurasi jenis pengesahan untuk log masuk SAML.
 
       Apabila dasar ini tidak ditetapkan atau ditetapkan kepada Lalai (nilai 0), gelagat log masuk SAML ditentukan oleh penyemak imbas bergantung pada faktor lain. Dalam senario paling asas, pengesahan pengguna dan perlindungan data pengguna dicache adalah berdasarkan kata laluan yang dimasukkan secara manual oleh pengguna.

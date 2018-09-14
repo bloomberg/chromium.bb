@@ -618,7 +618,7 @@
 <translation id="5190835502935405962">Thanh Dấu trang</translation>
 <translation id="5201306358585911203">Một trang được nhúng trên trang này cho biết</translation>
 <translation id="5205222826937269299">Cần có tên</translation>
-<translation id="5215116848420601511">Địa chỉ và phương thức thanh toán sử dụng Google Pay</translation>
+<translation id="5215116848420601511">Địa chỉ và phương thức thanh toán lưu trong Google Pay</translation>
 <translation id="5222812217790122047">Cần có email</translation>
 <translation id="5230733896359313003">Địa chỉ giao hàng</translation>
 <translation id="5250209940322997802">"Kết nối với mạng"</translation>
@@ -728,7 +728,7 @@
 <translation id="5922853866070715753">Sắp hoàn tất</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5951495562196540101">Không thể đăng ký bằng tài khoản người dùng thông thường (có sẵn giấy phép theo gói).</translation>
-<translation id="5966151627327109289">Làm bạn đăng xuất khỏi hầu hết các trang web. Bạn có thể mất quyền truy cập vào nội dung được bảo vệ từ <ph name="SITE" /> và một số trang web khác.</translation>
+<translation id="5966151627327109289">Bạn sẽ bị đăng xuất khỏi hầu hết các trang web và có thể mất quyền truy cập vào nội dung được bảo vệ trên <ph name="SITE" /> và một số trang web khác.</translation>
 <translation id="5967592137238574583">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="5967867314010545767">Xóa khỏi lịch sử</translation>
 <translation id="5975083100439434680">Thu nhỏ</translation>
@@ -750,7 +750,7 @@
 <translation id="6071091556643036997">Loại chính sách là không hợp lệ.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Thẻ này sẽ được lưu vào Tài khoản Google của bạn để thanh toán nhanh hơn trên các thiết bị.}other{Các thẻ này sẽ được lưu vào Tài khoản Google của bạn để thanh toán nhanh hơn trên các thiết bị.}}</translation>
 <translation id="6080696365213338172">Bạn đã truy cập nội dung bằng chứng chỉ do quản trị viên cấp. Dữ liệu mà bạn cung cấp cho <ph name="DOMAIN" /> có thể bị quản trị viên của bạn chặn.</translation>
-<translation id="6096619198407627433">Làm bạn đăng xuất khỏi hầu hết các trang web. Bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình. Bạn có thể mất quyền truy cập vào nội dung được bảo vệ từ <ph name="SITE" /> và một số trang web khác.</translation>
+<translation id="6096619198407627433">Bạn sẽ bị đăng xuất khỏi hầu hết các trang web, trừ Tài khoản Google của mình. Bạn có thể mất quyền truy cập vào nội dung được bảo vệ trên <ph name="SITE" /> và một số trang web khác.</translation>
 <translation id="610911394827799129">Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Không có}=1{1 mật khẩu (đã đồng bộ hóa)}other{# mật khẩu (đã đồng bộ hóa)}}</translation>
 <translation id="6146055958333702838">Kiểm tra mọi dây cáp rồi khởi động lại bộ định tuyến, modem hoặc các thiết bị
@@ -1140,7 +1140,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
 <translation id="8975012916872825179">Bao gồm các thông tin như số điện thoại, địa chỉ email và địa chỉ giao hàng</translation>
 <translation id="8978053250194585037">Tính năng Duyệt web an toàn của Google gần đây đã <ph name="BEGIN_LINK" />phát hiện dấu hiệu lừa đảo<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web lừa đảo sẽ giả mạo các trang web khác để đánh lừa bạn.</translation>
-<translation id="8983003182662520383">Địa chỉ và phương thức thanh toán sử dụng Google Pay</translation>
+<translation id="8983003182662520383">Địa chỉ và phương thức thanh toán lưu trong Google Pay</translation>
 <translation id="8987927404178983737">Tháng</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Trang web sắp truy cập chứa chương trình độc hại</translation>

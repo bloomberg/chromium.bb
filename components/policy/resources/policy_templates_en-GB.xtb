@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
+<translation id="142346659686073702">Allow unaffiliated users to use Crostini</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
@@ -393,6 +394,12 @@
 
       If this policy is left not set, it is equivalent to being enabled, see description above.</translation>
 <translation id="2113068765175018713">Limit device uptime by automatically rebooting</translation>
+<translation id="2116790137063002724">This policy controls whether to report information that can be used to identify users, such as OS login, <ph name="PRODUCT_NAME" /> Profile login, <ph name="PRODUCT_NAME" /> Profile name, <ph name="PRODUCT_NAME" /> Profile path and <ph name="PRODUCT_NAME" /> executable path.
+
+      When this policy is left unset or set to True, information that can be used to identify users is gathered.
+      When this policy is set to False, information that can be used to identify users is not gathered.
+
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
 <translation id="2132732175597591362">Controls the whitelist of URL patterns on which auto-play will always be enabled.
@@ -1601,6 +1608,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5272684451155669299">If true, the user can use the hardware on Chrome devices to remotely attest its identity to the privacy CA via the <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> using <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           If it is set to false, or if it is not set, calls to the API will fail with an error code.</translation>
+<translation id="5277806246014825877">Enable this user to run Crostini.
+
+      If the policy is set to false, Crostini is not enabled for the user.
+      If set to true or left unset, Crostini is enabled for the user as long as other settings also allow it.
+      All three policies, VirtualMachinesAllowed, CrostiniAllowed and DeviceUnaffiliatedCrostiniAllowed need to be true when they apply for Crostini to be allowed to run.
+      When this policy is changed to false, it applies to starting new Crostini containers but does not shut down containers which are already running.</translation>
 <translation id="5283457834853986457">Disable plug-in finder (deprecated)</translation>
 <translation id="5288772341821359899">If the policy is set, the UDP port range used by WebRTC is restricted to the specified port interval (endpoints included).
 
@@ -1668,6 +1681,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The default setting used when this policy is left unset is to allow the host browser do the rendering, but you can optionally override this and have <ph name="PRODUCT_FRAME_NAME" /> render HTML pages by default.</translation>
 <translation id="5464816904705580310">Configure settings for managed users.</translation>
 <translation id="546726650689747237">Screen dim delay when running on AC power</translation>
+<translation id="5469143988693423708">User is enabled to run Crostini</translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
 <translation id="5475361623548884387">Enable printing</translation>
 <translation id="547601067149622666">Do not allow ads on sites with intrusive ads</translation>
@@ -1724,6 +1738,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Note that this is not recommended, as this may allow bypassing the nameConstraints extension that restricts the hostnames that a given certificate can be authorised for.
 
       If this policy is not set, or is set to false, server certificates that lack a subjectAlternativeName extension containing either a DNS name or IP address will not be trusted.</translation>
+<translation id="5581292529942108810">Configure Chrome Reporting Extension related policies.
+
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Control Android Google Location services</translation>
 <translation id="5586942249556966598">Do nothing</translation>
 <translation id="5630352020869108293">Restore the last session</translation>
@@ -2333,6 +2350,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left not set, the user will be able to change this setting manually.</translation>
 <translation id="723103540848640830">Set the minimum length of the lock screen PIN</translation>
+<translation id="7232816984286843471">If the policy is set to false, unaffiliated users will not be allowed to use Crostini.
+
+      If the policy is unset or set to true, all users are allowed to use Crostini as long as other settings also allow it.
+      All three policies, VirtualMachinesAllowed, CrostiniAllowed and DeviceUnaffiliatedCrostiniAllowed need to be true when they apply for Crostini to be allowed to run.
+      When this policy is changed to false, it applies to starting new Crostini containers but does not shut down containers which are already running.</translation>
 <translation id="7234280155140786597">Names of the forbidden native messaging hosts (or * for all)</translation>
 <translation id="7236775576470542603">Set the default type of screen magnifier that is enabled on the login screen.
 
@@ -2380,6 +2402,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7311458740754205918">If this is set to true or not set, the New Tab page may show content suggestions based on the user's browsing history, interests or location.
 
       If this is set to false, automatically-generated content suggestions are not shown on the New Tab page.</translation>
+<translation id="7313793931637495417">This policy controls whether to report version information, such as OS version, OS platform, OS architecture, <ph name="PRODUCT_NAME" /> version and <ph name="PRODUCT_NAME" /> channel.
+
+      When this policy is left unset or set to True, version information is gathered.
+      When this policy is set to False, version information is not gathered.
+
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Additional command line parameters for <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Similar to Wipe (value 2), but tries to preserve login tokens so that the user does not have to sign in again.</translation>
 <translation id="7329842439428490522">Specifies the length of time without user input after which the screen is turned off when running on battery power.
@@ -2412,6 +2440,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7349338075015720646">Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled or disabled by the user.
 
       Each list item of the policy is an object with two members: 'url' and 'launch_container'. 'url' should be the URL of the web app to install and 'launch_container' should be either 'window' or 'tab' to indicate how the web app will be opened once installed. If 'launch_container' is omitted, the app will launch in a window if Chrome considers it a progressive web app, and in a tab otherwise.</translation>
+<translation id="735902178936442460">This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
+
+      When this policy is left unset or set to True, information that can be used to identify machines is gathered.
+      When this policy is set to False, information that can be used to identify machines is not gathered.
+
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
 
       If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
@@ -2682,6 +2716,14 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7976157349247117979">Name of the <ph name="PRODUCT_NAME" /> destination</translation>
 <translation id="7980227303582973781">No special restrictions</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Allows you to control whether virtual machines are allowed to run on Chrome OS.
+
+      If the policy is set to True, the device is allowed to run virtual machines.
+      If the policy is set to False, the device will not be allowed to run virtual machines.
+      All three policies, VirtualMachinesAllowed, CrostiniAllowed and DeviceUnaffiliatedCrostiniAllowed need to be true when they apply for Crostini to be allowed to run.
+      When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
+      When this policy is not set on a managed device, the device is not allowed to run virtual machines.
+      Unmanaged devices are allowed to run virtual machines.</translation>
 <translation id="802147957407376460">Rotate screen by 0 degrees</translation>
 <translation id="8033913082323846868">This policy is deprecated in M70, please use AutofillAddressEnabled and AutofillCreditCardEnabled instead.
 
@@ -2726,6 +2768,12 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal to the idle delay.</translation>
+<translation id="8138009212169037227">This policy controls whether to report policy data and time of policy fetch.
+
+      When this policy is left unset or set to True, policy data and time of policy fetch are gathered.
+      When this policy is set to False, policy data and time of policy fetch are not gathered.
+
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Report list of network interfaces with their types and hardware addresses to the server.
 
       If the policy is set to false, the interface list will not be reported.</translation>

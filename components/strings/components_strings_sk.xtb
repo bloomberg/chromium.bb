@@ -272,6 +272,7 @@
 <translation id="2781030394888168909">Exportovať pre MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Spojenie bolo resetované.</translation>
+<translation id="2785008241190445880">Záložka bola nahradená</translation>
 <translation id="2788784517760473862">Akceptované kreditné karty</translation>
 <translation id="2794233252405721443">Web je blokovaný</translation>
 <translation id="2799020568854403057">Web, ktorý chcete otvoriť, obsahuje škodlivé aplikácie</translation>
@@ -640,6 +641,7 @@
 <translation id="5324080437450482387">Vybrať kontaktné informácie</translation>
 <translation id="5327248766486351172">Názov</translation>
 <translation id="5332219387342487447">Spôsob dodania</translation>
+<translation id="5344579389779391559">Táto stránka sa vám môže pokúsiť účtovať poplatky</translation>
 <translation id="5355557959165512791">Web <ph name="SITE" /> momentálne nemôžete navštíviť, pretože tento certifikát bol odvolaný. Chyby siete a útoky sú zvyčajne dočasné, takže by táto stránka mala neskôr pravdepodobne fungovať.</translation>
 <translation id="536296301121032821">Nastavenia pravidla sa nepodarilo uložiť</translation>
 <translation id="5371425731340848620">Aktualizujte si kartu</translation>
@@ -735,6 +737,7 @@
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Strana 1}few{Strana #}many{Strana #}other{Strana #}}</translation>
 <translation id="6017850046339264347">Útočníci na webe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> by mohli nainštalovať klamlivé aplikácie vydávajúce sa za iné aplikácie alebo zhromažďujúce údaje, ktoré sa dajú použiť na sledovanie vašej osoby. <ph name="BEGIN_LEARN_MORE_LINK" />Ďalšie informácie<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Upravte si Chrome podľa seba</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synchronizované)</translation>
 <translation id="6027201098523975773">Zadajte meno</translation>
 <translation id="6039846035001940113">Ak problém naďalej pretrváva, kontaktujte vlastníka webu.</translation>
@@ -743,6 +746,7 @@
 <translation id="6047927260846328439">Tento obsah sa vás môže podvodom pokúsiť presvedčiť, aby ste si nainštalovali softvér alebo poskytli osobné informácie. <ph name="BEGIN_LINK" />Napriek tomu zobraziť<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Web <ph name="SITE" /> momentálne nemôžete navštíviť, pretože používa pripínanie certifikátov. Chyby siete a útoky sú zvyčajne dočasné, takže by táto stránka mala neskôr pravdepodobne fungovať.</translation>
 <translation id="6059925163896151826">Zariadenia USB</translation>
+<translation id="6060991652695587932">Vyberte e‑mailovú službu na rýchly prístup</translation>
 <translation id="6071091556643036997">Tento typ pravidiel je neplatný.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Táto karta bude uložená do vášho účtu Google na zrýchlenie platieb v zariadeniach.}few{Tieto karty budú uložené do vášho účtu Google na zrýchlenie platieb v zariadeniach.}many{Tieto karty budú uložené do vášho účtu Google na zrýchlenie platieb v zariadeniach.}other{Tieto karty budú uložené do vášho účtu Google na zrýchlenie platieb v zariadeniach.}}</translation>
 <translation id="6080696365213338172">K obsahu ste pristúpili pomocou certifikátu, ktorý poskytol správca. Údaje, ktoré poskytnete doméne <ph name="DOMAIN" /> môžu byť zachytené správcom.</translation>
@@ -989,6 +993,7 @@
 <translation id="7815407501681723534">Nájdené výsledky (počet: <ph name="NUMBER_OF_RESULTS" />) pre dopyt „<ph name="SEARCH_STRING" />“: <ph name="SEARCH_RESULTS" /></translation>
 <translation id="7818867226424560206">Správa pravidiel</translation>
 <translation id="782886543891417279">Sieť Wi‑Fi (<ph name="WIFI_NAME" />), ktorú používate, môže vyžadovať, aby ste navštívili jej prihlasovaciu stránku</translation>
+<translation id="7835178595033117206">Záložka bola odstránená</translation>
 <translation id="785549533363645510">Nie ste však neviditeľný/-á. Prejdením do režimu inkognito neskryjete svoje prehliadanie pred zamestnávateľom, poskytovateľom internetových služieb ani pred navštívenými webmi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Chcete odísť z tohto webu?</translation>
