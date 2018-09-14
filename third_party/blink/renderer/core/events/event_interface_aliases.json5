@@ -35,9 +35,5 @@
       name: "UIEvents",
       ImplementedAs: "UIEvent",
     },
-    {
-      name: "WebKitTransitionEvent",
-      ImplementedAs: "TransitionEvent",
-    },
   ],
 }

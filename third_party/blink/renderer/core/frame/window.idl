@@ -197,7 +197,6 @@
     [MeasureAs=StyleMedia] readonly attribute StyleMedia styleMedia;
     [DeprecateAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(FrameRequestCallback callback);
     [DeprecateAs=PrefixedCancelAnimationFrame, ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
-    [MeasureAs=PrefixedTransitionEventConstructor] attribute TransitionEventConstructor WebKitTransitionEvent;
     [Measure] attribute AnimationEventConstructor WebKitAnimationEvent;
     [DeprecateAs=PrefixedWindowURL] attribute URLConstructor webkitURL;
     [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
