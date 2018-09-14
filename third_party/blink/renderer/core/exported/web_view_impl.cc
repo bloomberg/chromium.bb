@@ -1739,11 +1739,6 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     return WebInputEventResult::kHandledSystem;
   }
 
-  // TODO(nzolghadr): Add pointerrawmove in pointerlock path as well.
-  if (is_pointer_locked &&
-      input_event.GetType() == WebInputEvent::kPointerRawMove)
-    return WebInputEventResult::kHandledSystem;
-
   Document& main_frame_document = *MainFrameImpl()->GetFrame()->GetDocument();
 
   if (input_event.GetType() != WebInputEvent::kMouseMove) {
@@ -1760,9 +1755,13 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     }
   }
 
+  // Skip the pointerrawmove for mouse capture case.
   if (mouse_capture_node_ &&
-      (WebInputEvent::IsMouseEventType(input_event.GetType()) ||
-       input_event.GetType() == WebInputEvent::kPointerRawMove)) {
+      input_event.GetType() == WebInputEvent::kPointerRawMove)
+    return WebInputEventResult::kHandledSystem;
+
+  if (mouse_capture_node_ &&
+      WebInputEvent::IsMouseEventType(input_event.GetType())) {
     TRACE_EVENT1("input", "captured mouse event", "type",
                  input_event.GetType());
     // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
@@ -1781,10 +1780,6 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
         break;
       case WebInputEvent::kMouseMove:
         event_type = EventTypeNames::mousemove;
-        break;
-      case WebInputEvent::kPointerRawMove:
-        // There will be no mouse event for raw move events.
-        event_type = EventTypeNames::pointerrawmove;
         break;
       case WebInputEvent::kMouseLeave:
         event_type = EventTypeNames::mouseout;

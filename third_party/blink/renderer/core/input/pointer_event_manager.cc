@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 
 namespace blink {
 
@@ -49,6 +50,14 @@ const AtomicString& MouseEventNameForPointerEventInputType(
       NOTREACHED();
       return g_empty_atom;
   }
+}
+
+Element* GetPointerLockedElement(LocalFrame* frame) {
+  if (Page* p = frame->GetPage()) {
+    if (!p->GetPointerLockController().LockPending())
+      return p->GetPointerLockController().GetElement();
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -482,11 +491,35 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
             EventHandlerRegistry::kPointerRawMoveEvent))
       return WebInputEventResult::kHandledSystem;
 
-    EventHandlingUtil::PointerEventTarget target =
-        ComputePointerEventTarget(event);
+    // If the page has pointer lock active and the event was from
+    // mouse use the locked target as the target.
+    // TODO(nzolghadr): Consideration for locked element might fit
+    // better in ComputerPointerEventTarget but at this point it is
+    // not quite possible as we haven't merged the locked event
+    // dispatch with this path.
+    Node* target;
+    Element* pointer_locked_element = GetPointerLockedElement(frame_);
+    if (pointer_locked_element &&
+        event.pointer_type == WebPointerProperties::PointerType::kMouse) {
+      // The locked element could be in another frame. So we need to delegate
+      // sending the event to that frame.
+      LocalFrame* target_frame =
+          pointer_locked_element->GetDocument().GetFrame();
+      if (!target_frame)
+        return WebInputEventResult::kHandledSystem;
+      if (target_frame != frame_) {
+        target_frame->GetEventHandler().HandlePointerEvent(event,
+                                                           coalesced_events);
+        return WebInputEventResult::kHandledSystem;
+      }
+      target = pointer_locked_element;
+    } else {
+      target = ComputePointerEventTarget(event).target_node;
+    }
+
     PointerEvent* pointer_event = pointer_event_factory_.Create(
         event, coalesced_events, frame_->GetDocument()->domWindow());
-    DispatchPointerEvent(target.target_node, pointer_event);
+    DispatchPointerEvent(target, pointer_event);
     return WebInputEventResult::kHandledSystem;
   }
 
