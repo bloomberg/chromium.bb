@@ -1462,13 +1462,6 @@ bool AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
       std::min(GridIndex(pagination_model_.selected_page(), row * cols_ + col),
                GetLastTargetIndexOfPage(pagination_model_.selected_page()));
 
-  // Dragging to a full page is not allowed when apps grid gap is enabled.
-  if (IsAppsGridGapEnabled() && view_structure_.IsFullPage(drop_target->page) &&
-      (drag_start_page_ != drop_target->page ||
-       IsDraggingForReparentInRootLevelGridView())) {
-    return false;
-  }
-
   DCHECK(IsValidReorderTargetIndex(*drop_target));
   return true;
 }
@@ -2389,10 +2382,8 @@ void AppsGridView::DeleteItemViewAtIndex(int index, bool sanitize) {
   AppListItemView* item_view = GetItemViewAt(index);
   view_model_.Remove(index);
   if (IsAppsGridGapEnabled()) {
-    if (sanitize)
-      view_structure_.Remove(item_view);
-    else
-      view_structure_.RemoveWithoutSanitize(item_view);
+    view_structure_.Remove(item_view, sanitize /* clear_overflow */,
+                           sanitize /* clear_empty_pages */);
   }
   if (item_view == drag_view_)
     drag_view_ = nullptr;
@@ -2797,12 +2788,17 @@ void AppsGridView::CalculateIdealBoundsWithGridGap() {
   PagedViewStructure copied_view_structure(view_structure_);
 
   // Remove the item view being dragged.
-  if (drag_view_)
-    copied_view_structure.RemoveWithoutSanitize(drag_view_);
+  if (drag_view_) {
+    copied_view_structure.Remove(drag_view_, false /* clear_overflow */,
+                                 false /* clear_empty_pages */);
+  }
 
   // Leaves a blank space in the grid for the current reorder placeholder.
-  if (IsValidIndex(reorder_placeholder_))
-    copied_view_structure.AddWithoutSanitize(nullptr, reorder_placeholder_);
+  if (IsValidIndex(reorder_placeholder_)) {
+    copied_view_structure.Add(nullptr, reorder_placeholder_,
+                              true /* clear_overflow */,
+                              false /* clear_empty_pages */);
+  }
 
   // Convert visual index to ideal bounds.
   const auto& pages = copied_view_structure.pages();

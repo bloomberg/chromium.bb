@@ -109,6 +109,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override;
   void OnPageBreakItemAdded(const std::string& id,
                             const syncer::StringOrdinal& position) override;
+  void OnPageBreakItemDeleted(const std::string& id) override;
 
   void SetDelegate(AppListModelUpdaterDelegate* delegate) override;
 

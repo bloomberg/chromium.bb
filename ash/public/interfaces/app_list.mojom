@@ -359,6 +359,8 @@ interface AppListClient {
   OnItemUpdated(AppListItemMetadata folder);
   // Invoked when a "page break" item is added with |id| and |position|.
   OnPageBreakItemAdded(string id, syncer.mojom.StringOrdinal position);
+  // Invoked when a "page break" item with |id| is deleted.
+  OnPageBreakItemDeleted(string id);
 
   //////////////////////////////////////////////////////////////////////////////
   // Interfaces on voice interaction:
