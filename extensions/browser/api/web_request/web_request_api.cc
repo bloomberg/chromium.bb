@@ -38,6 +38,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/resource_type.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
+#include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
@@ -405,6 +406,25 @@ void MaybeProxyAuthRequestOnIO(
                                  request_id, std::move(callback));
 }
 
+// Checks whether the extension has any permissions that would use the web
+// request API.
+bool HasAnyWebRequestPermissions(const Extension* extension) {
+  static const APIPermission::ID kWebRequestPermissions[] = {
+      APIPermission::ID::kWebRequest,
+      APIPermission::ID::kWebRequestBlocking,
+      APIPermission::ID::kDeclarativeWebRequest,
+      APIPermission::ID::kDeclarativeNetRequest,
+      APIPermission::ID::kWebView,
+  };
+
+  const PermissionsData* permissions = extension->permissions_data();
+  for (auto permission : kWebRequestPermissions) {
+    if (permissions->HasAPIPermission(permission))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 void WebRequestAPI::Proxy::HandleAuthRequest(
@@ -511,9 +531,7 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     : browser_context_(context),
       info_map_(ExtensionSystem::Get(browser_context_)->info_map()),
       request_id_generator_(base::MakeRefCounted<RequestIDGenerator>()),
-      may_have_proxies_(MayHaveProxies()),
-      rules_monitor_observer_(this),
-      rules_registry_observer_(this) {
+      may_have_proxies_(MayHaveProxies()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   for (size_t i = 0; i < arraysize(kWebRequestEvents); ++i) {
     // Observe the webRequest event.
@@ -525,13 +543,7 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
         0, sizeof(kWebRequestEventPrefix) - 1, webview::kWebViewEventPrefix);
     event_router->RegisterObserver(this, event_name);
   }
-
-  rules_monitor_observer_.Add(
-      BrowserContextKeyedAPIFactory<
-          declarative_net_request::RulesMonitorService>::Get(browser_context_));
-  rules_registry_observer_.Add(
-      BrowserContextKeyedAPIFactory<RulesRegistryService>::Get(
-          browser_context_));
+  extensions::ExtensionRegistry::Get(browser_context_)->AddObserver(this);
 }
 
 WebRequestAPI::~WebRequestAPI() {
@@ -539,8 +551,7 @@ WebRequestAPI::~WebRequestAPI() {
 
 void WebRequestAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
-  rules_monitor_observer_.RemoveAll();
-  rules_registry_observer_.RemoveAll();
+  extensions::ExtensionRegistry::Get(browser_context_)->RemoveObserver(this);
 }
 
 static base::LazyInstance<
@@ -553,18 +564,8 @@ WebRequestAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-void WebRequestAPI::OnListenerAdded(const EventListenerInfo& details) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ++listener_count_;
-  UpdateMayHaveProxies();
-}
-
 void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  --listener_count_;
-  DCHECK_GE(listener_count_, 0);
-  UpdateMayHaveProxies();
-
   // Note that details.event_name includes the sub-event details (e.g. "/123").
   // TODO(fsamuel): <webview> events will not be removed through this code path.
   // <webview> events will be removed in RemoveWebViewEventListeners. Ideally,
@@ -679,21 +680,17 @@ void WebRequestAPI::MaybeProxyWebSocket(
           std::move(proxied_request), std::move(authentication_request)));
 }
 
+void WebRequestAPI::ForceProxyForTesting() {
+  ++web_request_extension_count_;
+  UpdateMayHaveProxies();
+}
+
 bool WebRequestAPI::MayHaveProxies() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return false;
 
-  // If any other conditions are added here, make sure to call
-  // |UpdateMayHaveProxies()| when those conditions may change.
-  const auto* rules_registry_service =
-      BrowserContextKeyedAPIFactory<RulesRegistryService>::Get(
-          browser_context_);
-  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
-      declarative_net_request::RulesMonitorService>::Get(browser_context_);
-  return listener_count_ > 0 ||
-         rules_registry_service->HasAnyRegisteredRules() ||
-         rules_monitor_service->HasAnyRegisteredRulesets();
+  return web_request_extension_count_ > 0;
 }
 
 void WebRequestAPI::UpdateMayHaveProxies() {
@@ -708,12 +705,22 @@ void WebRequestAPI::UpdateMayHaveProxies() {
   may_have_proxies_ = may_have_proxies;
 }
 
-void WebRequestAPI::OnRulesetLoaded() {
-  UpdateMayHaveProxies();
+void WebRequestAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                      const Extension* extension) {
+  if (HasAnyWebRequestPermissions(extension)) {
+    ++web_request_extension_count_;
+    UpdateMayHaveProxies();
+  }
 }
 
-void WebRequestAPI::OnUpdateRules() {
-  UpdateMayHaveProxies();
+void WebRequestAPI::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionReason reason) {
+  if (HasAnyWebRequestPermissions(extension)) {
+    --web_request_extension_count_;
+    UpdateMayHaveProxies();
+  }
 }
 
 // Represents a single unique listener to an event, along with whatever filter

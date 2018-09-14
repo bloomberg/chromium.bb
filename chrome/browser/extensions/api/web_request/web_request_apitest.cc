@@ -287,6 +287,24 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
                                  std::move(params));
     return loader_factory;
   }
+
+  void InstallWebRequestExtension(const std::string& name) {
+    constexpr char kManifest[] = R"({
+      "name": "%s",
+      "version": "1",
+      "manifest_version": 2,
+      "permissions": [
+        "webRequest"
+      ]
+    })";
+    auto dir = std::make_unique<TestExtensionDir>();
+    dir->WriteManifest(base::StringPrintf(kManifest, name.c_str()));
+    LoadExtension(dir->UnpackedPath());
+    test_dirs_.push_back(std::move(dir));
+  }
+
+ private:
+  std::vector<std::unique_ptr<TestExtensionDir>> test_dirs_;
 };
 
 class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
@@ -1302,18 +1320,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
 
-  auto* web_request_api =
-      extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
-          profile());
-  web_request_api->OnListenerAdded(
-      EventListenerInfo("name", "id1", GURL(), profile()));
+  InstallWebRequestExtension("extension");
 
   network::mojom::WebSocketPtr web_socket;
   network::mojom::WebSocketRequest request = mojo::MakeRequest(&web_socket);
   network::mojom::AuthenticationHandlerPtr auth_handler;
   content::RenderFrameHost* host =
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-  web_request_api->MaybeProxyWebSocket(host, &request, &auth_handler);
+  extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
+      profile())
+      ->MaybeProxyWebSocket(host, &request, &auth_handler);
   content::BrowserContext::GetDefaultStoragePartition(profile())
       ->GetNetworkContext()
       ->CreateWebSocket(std::move(request), network::mojom::kBrowserProcessId,
@@ -1544,11 +1560,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   loader_factory.set_connection_error_handler(
       base::BindLambdaForTesting([&]() { has_connection_error = true; }));
 
-  auto* web_request_api =
-      extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
-          profile());
-  web_request_api->OnListenerAdded(
-      EventListenerInfo("name", "id1", GURL(), profile()));
+  InstallWebRequestExtension("extension1");
   content::BrowserContext::GetDefaultStoragePartition(profile())
       ->FlushNetworkInterfaceForTesting();
   EXPECT_TRUE(has_connection_error);
@@ -1558,8 +1570,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   has_connection_error = false;
   loader_factory.set_connection_error_handler(
       base::BindLambdaForTesting([&]() { has_connection_error = true; }));
-  web_request_api->OnListenerAdded(
-      EventListenerInfo("name", "id2", GURL(), profile()));
+  InstallWebRequestExtension("extension2");
   content::BrowserContext::GetDefaultStoragePartition(profile())
       ->FlushNetworkInterfaceForTesting();
   EXPECT_FALSE(has_connection_error);
@@ -1582,14 +1593,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
   // Create a WebRequestAPI instance that we can control the lifetime of.
   auto api = std::make_unique<WebRequestAPI>(tmp_profile);
-  // Add a listener to make sure we proxy.
-  api->OnListenerAdded(EventListenerInfo("name", "id1", GURL(), tmp_profile));
+  // Make sure we are proxying for |tmp_profile|.
+  api->ForceProxyForTesting();
   content::BrowserContext::GetDefaultStoragePartition(tmp_profile)
       ->FlushNetworkInterfaceForTesting();
 
   network::mojom::URLLoaderFactoryPtr factory;
   auto request = mojo::MakeRequest(&factory);
-  api->MaybeProxyURLLoaderFactory(nullptr, false, &request);
+  EXPECT_TRUE(api->MaybeProxyURLLoaderFactory(nullptr, false, &request));
   auto params = network::mojom::URLLoaderFactoryParams::New();
   params->process_id = 0;
   content::BrowserContext::GetDefaultStoragePartition(tmp_profile)
