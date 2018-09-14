@@ -101,15 +101,37 @@ base::LazyInstance<base::flat_map<DevToolsAgentHost*,
                                   std::unique_ptr<BrowserToPageConnector>>>::
     Leaky g_browser_to_page_connectors;
 
-class BrowserToPageConnector : public DevToolsAgentHostClient {
+class BrowserToPageConnector {
  public:
+  class BrowserConnectorHostClient : public DevToolsAgentHostClient {
+   public:
+    BrowserConnectorHostClient(BrowserToPageConnector* connector,
+                               DevToolsAgentHost* host)
+        : connector_(connector) {
+      // TODO(dgozman): handle return value of AttachClient.
+      host->AttachClient(this);
+    }
+    void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
+                                 const std::string& message) override {
+      connector_->DispatchProtocolMessage(agent_host, message);
+    }
+    void AgentHostClosed(DevToolsAgentHost* agent_host) override {
+      connector_->AgentHostClosed(agent_host);
+    }
+
+   private:
+    BrowserToPageConnector* connector_;
+    DISALLOW_COPY_AND_ASSIGN(BrowserConnectorHostClient);
+  };
+
   BrowserToPageConnector(const std::string& binding_name,
                          DevToolsAgentHost* page_host)
       : binding_name_(binding_name), page_host_(page_host) {
     browser_host_ = BrowserDevToolsAgentHost::CreateForDiscovery();
-    browser_host_->AttachClient(this);
-    // TODO(dgozman): handle return value of AttachClient.
-    page_host_->AttachClient(this);
+    browser_host_client_ =
+        std::make_unique<BrowserConnectorHostClient>(this, browser_host_.get());
+    page_host_client_ =
+        std::make_unique<BrowserConnectorHostClient>(this, page_host_.get());
 
     SendProtocolMessageToPage("Page.enable", std::make_unique<base::Value>());
     SendProtocolMessageToPage("Runtime.enable",
@@ -146,11 +168,11 @@ class BrowserToPageConnector : public DevToolsAgentHostClient {
     message.Set("params", std::move(params));
     std::string json_message;
     base::JSONWriter::Write(message, &json_message);
-    page_host_->DispatchProtocolMessage(this, json_message);
+    page_host_->DispatchProtocolMessage(page_host_client_.get(), json_message);
   }
 
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
+                               const std::string& message) {
     if (agent_host == page_host_.get()) {
       std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
       if (!value || !value->is_dict())
@@ -169,7 +191,8 @@ class BrowserToPageConnector : public DevToolsAgentHostClient {
       base::Value* payload = params->FindKey("payload");
       if (!payload || !payload->is_string())
         return;
-      browser_host_->DispatchProtocolMessage(this, payload->GetString());
+      browser_host_->DispatchProtocolMessage(browser_host_client_.get(),
+                                             payload->GetString());
       return;
     }
     DCHECK(agent_host == browser_host_.get());
@@ -188,12 +211,12 @@ class BrowserToPageConnector : public DevToolsAgentHostClient {
     SendProtocolMessageToPage("Runtime.evaluate", std::move(params));
   }
 
-  void AgentHostClosed(DevToolsAgentHost* agent_host) override {
+  void AgentHostClosed(DevToolsAgentHost* agent_host) {
     if (agent_host == browser_host_.get()) {
-      page_host_->DetachClient(this);
+      page_host_->DetachClient(page_host_client_.get());
     } else {
       DCHECK(agent_host == page_host_.get());
-      browser_host_->DetachClient(this);
+      browser_host_->DetachClient(browser_host_client_.get());
     }
     g_browser_to_page_connectors.Get().erase(page_host_.get());
   }
@@ -201,6 +224,8 @@ class BrowserToPageConnector : public DevToolsAgentHostClient {
   std::string binding_name_;
   scoped_refptr<DevToolsAgentHost> browser_host_;
   scoped_refptr<DevToolsAgentHost> page_host_;
+  std::unique_ptr<BrowserConnectorHostClient> browser_host_client_;
+  std::unique_ptr<BrowserConnectorHostClient> page_host_client_;
   int page_message_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserToPageConnector);
