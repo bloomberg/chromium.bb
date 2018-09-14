@@ -33,10 +33,10 @@
       <div slot="subtitle" class="update-subtitle" id="checkingForUpdateCancelHint"
           i18n-content="cancelUpdateHint" hidden="[[!cancelAllowed]]">
       </div>
-      <div slot="footer" class="flex layout vertical">
-        <paper-progress id="checking-progress" hidden="[[!checkingForUpdate]]">
-        </paper-progress>
-        <div class="flex"></div>
+      <paper-progress slot="progress" id="checking-progress"
+          hidden="[[!checkingForUpdate]]">
+      </paper-progress>
+      <div slot="footer" class="flex layout vertical end-justified">
         <img class="update-illustration"
             srcset="images/1x/updating_1x.png 1x,
                     images/2x/updating_2x.png 2x">
@@ -56,10 +56,10 @@
       </div>
       <div slot="subtitle" class="update-subtitle" i18n-content="updateCompeletedMsg"
           hidden="[[!updateCompleted]]"></div>
+      <paper-progress slot="progress" min="0" max="100"
+          value="[[progressValue]]" hidden="[[updateCompleted]]">
+      </paper-progress>
       <div slot="footer" class="flex layout vertical">
-        <paper-progress min="0" max="100" value="[[progressValue]]"
-          hidden="[[updateCompleted]]">
-        </paper-progress>
         <div id="estimated-time-left" class="progress-message text"
             hidden="[[isNotAllowedOrUpdateCompleted_(estimatedTimeLeftShown,
                                                      updateCompleted)]]">

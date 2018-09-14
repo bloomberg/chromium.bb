@@ -31,8 +31,6 @@
 // <include src="encryption_migration.js">
 // <include src="oobe_voice_interaction_value_prop.js">
 // <include src="oobe_wait_for_container_ready.js">
-// <include src="enterprise_card.js">
-// <include src="enterprise_header.js">
 // <include src="enrollment_license_card.js">
 // <include src="sync_consent.js">
 // <include src="fingerprint_setup.js">
