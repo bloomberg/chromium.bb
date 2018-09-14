@@ -12,3 +12,4 @@ Description:
 
 Local Modifications:
   Removed many unused files, e.g. all non-OpenSSL cipher implementations.
+  Renamed VERSION to LIBSRTP_VERSION.
