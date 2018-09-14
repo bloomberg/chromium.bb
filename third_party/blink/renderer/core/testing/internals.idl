@@ -411,4 +411,10 @@ enum EffectiveConnectionType {
     // The number of calls to update the blink lifecycle (see:
     // LocalFrameView::UpdateLifecyclePhasesInternal).
     unsigned long LifecycleUpdateCount();
+
+    // This disables the 100-millisecond frequency throttling for computing
+    // IntersectionObserver notifications. This eliminates the need to add
+    // setTimeout(..., 100) calls to layout tests to wait for notifications
+    // to be generated.
+    void DisableIntersectionObserverV2Throttle();
 };

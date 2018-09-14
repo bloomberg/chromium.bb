@@ -30,11 +30,11 @@ var entries = [];
 var target;
 var occluder;
 
-if (window.internals && internals.runtimeFlags) {
-  internals.runtimeFlags.intersectionObserverV2Enabled = true;
+if (window.internals) {
+  internals.DisableIntersectionObserverV2Throttle();
 }
 
-runTestCycleV2(function() {
+runTestCycle(function() {
   target = document.getElementById("target");
   occluder = document.getElementById("box-shadow");
   assert_true(!!target, "target exists");
@@ -45,19 +45,19 @@ runTestCycleV2(function() {
   observer.observe(target);
   entries = entries.concat(observer.takeRecords());
   assert_equals(entries.length, 0, "No initial notifications.");
-  runTestCycleV2(step0, "First rAF.");
+  runTestCycle(step0, "First rAF.");
 }, "IntersectionObserverV2 observing an iframe element.");
 
 function step0() {
   occluder.style.boxShadow = "none";
-  runTestCycleV2(step1, 'occluder.style.boxShadow = "none"');
+  runTestCycle(step1, 'occluder.style.boxShadow = "none"');
   assert_equals(entries.length, 1, "Initial notification.");
   assert_equals(entries[0].isVisible, false, "Initially occluded.");
 }
 
 function step1() {
   occluder.style.boxShadow = "";
-  runTestCycleV2(step2, 'occluder.style.boxShadow = ""');
+  runTestCycle(step2, 'occluder.style.boxShadow = ""');
   assert_equals(entries.length, 2, "Notification after removing box shadow.");
   assert_equals(entries[1].isVisible, true, "Visible when box shadow removed.");
 }

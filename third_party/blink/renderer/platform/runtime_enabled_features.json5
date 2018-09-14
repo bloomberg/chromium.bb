@@ -604,7 +604,6 @@
     },
     {
       name: "IntersectionObserverV2",
-      settable_from_internals: true,
     },
     {
       name: "InterventionReporting",

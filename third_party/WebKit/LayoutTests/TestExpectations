@@ -4774,11 +4774,6 @@ crbug.com/853360 [ Mac ] fast/forms/select/menulist-appearance-rtl.html [ Failur
 #   they can be run via virtual/origin-policy instead.
 crbug.com/751996 external/wpt/origin-policy [ Skip ]
 
-# IntersectionObserverV2: Skip tests that rely on
-#     --enable-blink-features=IntersectionObserverV2
-crbug.com/869049 http/tests/intersection-observer/v2/cross-origin-effects.html [ Skip ]
-crbug.com/869049 http/tests/intersection-observer/v2/cross-origin-occlusion.html [ Skip ]
-
 # Sheriff 2018-06-18
 crbug.com/853852 [ Win7 Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-wheel-block-manual.tentative.html [ Pass Timeout ]
 crbug.com/853852 [ Linux ] virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
@@ -5014,6 +5009,10 @@ crbug.com/873873 virtual/service-worker-servicification/external/wpt/service-wor
 
 # Tests that work only when LazyImageLoading feature is enabled.
 crbug.com/846170 http/tests/lazyload/lazy.html [ Skip ]
+
+# IntersectionObserverV2 tests run in a virtual test suite
+crbug.com/827639 intersection-observer/v2 [ Skip ]
+crbug.com/827639 http/tests/intersection-observer/v2 [ Skip ]
 
 crbug.com/875884 [ Linux Win ] lifecycle/background-change-lifecycle-count.html [ Pass Failure ]
 

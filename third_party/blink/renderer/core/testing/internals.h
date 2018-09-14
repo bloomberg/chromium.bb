@@ -591,6 +591,8 @@ class Internals final : public ScriptWrappable {
   // LocalFrameView::UpdateLifecyclePhasesInternal).
   unsigned LifecycleUpdateCount() const;
 
+  void DisableIntersectionObserverV2Throttle() const;
+
  private:
   explicit Internals(ExecutionContext*);
   Document* ContextDocument() const;

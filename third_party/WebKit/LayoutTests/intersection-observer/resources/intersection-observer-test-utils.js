@@ -41,20 +41,6 @@ function runTestCycle(f, description) {
   }, description);
 }
 
-// This wraps waitForNotification in a 100ms setTimeout. The extra delay is
-// necessary to ensure that notifications have been generated when the observer
-// is tracking visibility; see:
-//   http://szager-chromium.github.io/IntersectionObserver/#dom-intersectionobserver-trackvisibility
-function waitForNotificationV2(f) {
-  setTimeout(() => { waitForNotification(f) }, 100);
-}
-
-function runTestCycleV2(f, description) {
-  async_test(function(t) {
-    waitForNotificationV2(t.step_func_done(f));
-  }, description);
-}
-
 // Root bounds for a root with an overflow clip as defined by:
 //   http://wicg.github.io/IntersectionObserver/#intersectionobserver-root-intersection-rectangle
 function contentBounds(root) {
