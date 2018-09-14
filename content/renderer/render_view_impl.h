@@ -77,7 +77,6 @@ class RendererDateTimePicker;
 class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
-struct FileChooserParams;
 
 namespace mojom {
 class CreateViewParams;
@@ -150,15 +149,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   StatsCollectionObserver* GetStatsCollectionObserver() {
     return stats_collection_observer_.get();
   }
-
-  // Adds the given file chooser request to the file_chooser_completion_ queue
-  // (see that var for more) and requests the chooser be displayed if there are
-  // no other waiting items in the queue.
-  //
-  // Returns true if the chooser was successfully scheduled. False means we
-  // didn't schedule anything.
-  bool ScheduleFileChooser(const FileChooserParams& params,
-                           blink::WebFileChooserCompletion* completion);
 
 #if defined(OS_ANDROID)
   void DismissDateTimeDialog();

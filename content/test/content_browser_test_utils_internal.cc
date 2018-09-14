@@ -314,17 +314,21 @@ void NavigationStallDelegate::RequestBeginning(
 FileChooserDelegate::FileChooserDelegate(const base::FilePath& file)
       : file_(file), file_chosen_(false) {}
 
-void FileChooserDelegate::RunFileChooser(RenderFrameHost* render_frame_host,
-                                         const FileChooserParams& params) {
+FileChooserDelegate::~FileChooserDelegate() = default;
+
+void FileChooserDelegate::RunFileChooser(
+    RenderFrameHost* render_frame_host,
+    const blink::mojom::FileChooserParams& params) {
   // Send the selected file to the renderer process.
   FileChooserFileInfo file_info;
   file_info.file_path = file_;
   std::vector<FileChooserFileInfo> files;
   files.push_back(file_info);
-  render_frame_host->FilesSelectedInChooser(files, FileChooserParams::Open);
+  render_frame_host->FilesSelectedInChooser(
+      files, blink::mojom::FileChooserParams::Mode::kOpen);
 
   file_chosen_ = true;
-  params_ = params;
+  params_ = params.Clone();
 }
 
 FrameTestNavigationManager::FrameTestNavigationManager(

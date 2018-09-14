@@ -5199,8 +5199,9 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   }
 }
 
-void WebContentsImpl::RunFileChooser(RenderFrameHost* render_frame_host,
-                                     const FileChooserParams& params) {
+void WebContentsImpl::RunFileChooser(
+    RenderFrameHost* render_frame_host,
+    const blink::mojom::FileChooserParams& params) {
   // Any explicit focusing of another window while this WebContents is in
   // fullscreen can be used to confuse the user, so drop fullscreen.
   ForSecurityDropFullscreen();

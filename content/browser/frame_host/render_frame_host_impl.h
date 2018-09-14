@@ -146,7 +146,6 @@ class TimeoutMonitor;
 class WebBluetoothServiceImpl;
 struct CommonNavigationParams;
 struct ContextMenuParams;
-struct FileChooserParams;
 struct FrameOwnerProperties;
 struct PendingNavigation;
 struct RequestNavigationParams;
@@ -231,8 +230,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsRenderFrameLive() override;
   bool IsCurrent() override;
   int GetProxyCount() override;
-  void FilesSelectedInChooser(const std::vector<FileChooserFileInfo>& files,
-                              FileChooserParams::Mode permissions) override;
+  void FilesSelectedInChooser(
+      const std::vector<FileChooserFileInfo>& files,
+      blink::mojom::FileChooserParams::Mode permissions) override;
   bool HasSelection() override;
   void RequestTextSurroundingSelection(
       const TextSurroundingSelectionCallback& callback,
@@ -896,7 +896,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                              JavaScriptDialogType dialog_type,
                              IPC::Message* reply_msg);
   void OnRunBeforeUnloadConfirm(bool is_reload, IPC::Message* reply_msg);
-  void OnRunFileChooser(const FileChooserParams& params);
+  void OnRunFileChooser(const blink::mojom::FileChooserParams& params);
   void OnTextSurroundingSelectionResponse(const base::string16& content,
                                           uint32_t start_offset,
                                           uint32_t end_offset);

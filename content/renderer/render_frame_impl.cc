@@ -75,7 +75,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/service_manager_connection.h"
@@ -173,6 +172,7 @@
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -4654,29 +4654,20 @@ bool RenderFrameImpl::RunModalBeforeUnloadDialog(bool is_reload) {
 bool RenderFrameImpl::RunFileChooser(
     const blink::WebFileChooserParams& params,
     blink::WebFileChooserCompletion* chooser_completion) {
-  FileChooserParams ipc_params;
-  if (params.directory)
-    ipc_params.mode = FileChooserParams::UploadFolder;
-  else if (params.multi_select)
-    ipc_params.mode = FileChooserParams::OpenMultiple;
-  else if (params.save_as)
-    ipc_params.mode = FileChooserParams::Save;
-  else
-    ipc_params.mode = FileChooserParams::Open;
+  blink::mojom::FileChooserParams ipc_params;
+  ipc_params.mode = params.mode;
   ipc_params.title = params.title.Utf16();
   ipc_params.accept_types.reserve(params.accept_types.size());
   for (const auto& type : params.accept_types)
     ipc_params.accept_types.push_back(type.Utf16());
   ipc_params.need_local_path = params.need_local_path;
-#if defined(OS_ANDROID)
-  ipc_params.capture = params.use_media_capture;
-#endif
+  ipc_params.use_media_capture = params.use_media_capture;
   ipc_params.requestor = params.requestor;
   return RunFileChooser(ipc_params, chooser_completion);
 }
 
 bool RenderFrameImpl::RunFileChooser(
-    const FileChooserParams& params,
+    const blink::mojom::FileChooserParams& params,
     blink::WebFileChooserCompletion* chooser_completion) {
   // Do not open the file dialog in a hidden RenderFrame.
   if (IsHidden())

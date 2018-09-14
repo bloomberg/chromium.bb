@@ -51,7 +51,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/media_stream_request.h"
 #include "jni/TabWebContentsDelegateAndroid_jni.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -61,8 +60,8 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using blink::mojom::FileChooserParams;
 using content::BluetoothChooser;
-using content::FileChooserParams;
 using content::WebContents;
 
 namespace {

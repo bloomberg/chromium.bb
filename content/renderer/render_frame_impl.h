@@ -128,6 +128,10 @@ struct WebNavigationParams;
 struct WebMediaPlayerAction;
 struct WebImeTextSpan;
 struct WebScrollIntoViewParams;
+
+namespace mojom {
+class FileChooserParams;
+}
 }  // namespace blink
 
 namespace gfx {
@@ -177,7 +181,6 @@ struct CSPViolationParams;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
 struct FileChooserFileInfo;
-struct FileChooserParams;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
 struct RequestNavigationParams;
@@ -801,7 +804,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Another RunFileChooser() for content::FileChooserParams.
   // Returns true if the chooser was successfully requested. False means we
   // didn't request anything.
-  bool RunFileChooser(const FileChooserParams& params,
+  bool RunFileChooser(const blink::mojom::FileChooserParams& params,
                       blink::WebFileChooserCompletion* completion);
 
   // Internal version of DidFailProvisionalLoad() that allows specifying

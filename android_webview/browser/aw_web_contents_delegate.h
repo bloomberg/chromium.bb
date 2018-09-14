@@ -29,7 +29,7 @@ class AwWebContentsDelegate
                    const std::string& request_method,
                    const base::Callback<void(bool)>& callback) override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      const content::FileChooserParams& params) override;
+                      const blink::mojom::FileChooserParams& params) override;
   void AddNewContents(content::WebContents* source,
                       std::unique_ptr<content::WebContents> new_contents,
                       WindowOpenDisposition disposition,

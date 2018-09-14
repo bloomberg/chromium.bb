@@ -55,7 +55,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -212,27 +211,27 @@ class FileChooserDelegate : public content::WebContentsDelegate {
   bool file_chosen() const { return file_chosen_; }
 
   // Copy of the params passed to RunFileChooser.
-  content::FileChooserParams params() const { return params_; }
+  const blink::mojom::FileChooserParams& params() const { return *params_; }
 
   // WebContentsDelegate:
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      const content::FileChooserParams& params) override {
+                      const blink::mojom::FileChooserParams& params) override {
     // Send the selected file to the renderer process.
     content::FileChooserFileInfo file_info;
     file_info.file_path = file_;
     std::vector<content::FileChooserFileInfo> files;
     files.push_back(file_info);
-    render_frame_host->FilesSelectedInChooser(files,
-                                              content::FileChooserParams::Open);
+    render_frame_host->FilesSelectedInChooser(
+        files, blink::mojom::FileChooserParams::Mode::kOpen);
 
     file_chosen_ = true;
-    params_ = params;
+    params_ = params.Clone();
   }
 
  private:
   base::FilePath file_;
   bool file_chosen_;
-  content::FileChooserParams params_;
+  blink::mojom::FileChooserParamsPtr params_;
 
   DISALLOW_COPY_AND_ASSIGN(FileChooserDelegate);
 };

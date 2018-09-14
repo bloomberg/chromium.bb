@@ -12,10 +12,10 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
-#include "content/public/common/file_chooser_params.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
@@ -254,7 +254,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // selection mode in which the chooser dialog was created.
   virtual void FilesSelectedInChooser(
       const std::vector<content::FileChooserFileInfo>& files,
-      FileChooserParams::Mode permissions) = 0;
+      blink::mojom::FileChooserParams::Mode permissions) = 0;
 
   // Returns true if the frame has a selection.
   virtual bool HasSelection() = 0;

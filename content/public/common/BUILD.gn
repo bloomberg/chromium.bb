@@ -149,8 +149,6 @@ jumbo_source_set("common_sources") {
     "favicon_url.h",
     "file_chooser_file_info.cc",
     "file_chooser_file_info.h",
-    "file_chooser_params.cc",
-    "file_chooser_params.h",
     "font_cache_dispatcher_win.h",
     "frame_navigate_params.cc",
     "frame_navigate_params.h",

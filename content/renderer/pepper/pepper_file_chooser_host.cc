@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/render_view_impl.h"
@@ -17,11 +16,14 @@
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_file_chooser_completion.h"
 
 namespace content {
+
+using blink::mojom::FileChooserParams;
 
 class PepperFileChooserHost::CompletionHandler
     : public blink::WebFileChooserCompletion {
@@ -137,12 +139,12 @@ int32_t PepperFileChooserHost::OnShow(
 
   FileChooserParams params;
   if (save_as) {
-    params.mode = FileChooserParams::Save;
+    params.mode = FileChooserParams::Mode::kSave;
     params.default_file_name =
         base::FilePath::FromUTF8Unsafe(suggested_file_name).BaseName();
   } else {
-    params.mode = open_multiple ? FileChooserParams::OpenMultiple
-                                : FileChooserParams::Open;
+    params.mode = open_multiple ? FileChooserParams::Mode::kOpenMultiple
+                                : FileChooserParams::Mode::kOpen;
   }
   params.accept_types.reserve(accept_mime_types.size());
   for (const auto& mime_type : accept_mime_types)

@@ -887,7 +887,7 @@ content::ColorChooser* AppWindow::OpenColorChooser(
 }
 
 void AppWindow::RunFileChooser(content::RenderFrameHost* render_frame_host,
-                               const content::FileChooserParams& params) {
+                               const blink::mojom::FileChooserParams& params) {
   app_delegate_->RunFileChooser(render_frame_host, params);
 }
 

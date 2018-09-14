@@ -132,7 +132,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -2364,7 +2363,8 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
   delegate_->RunBeforeUnloadConfirm(this, is_reload, reply_msg);
 }
 
-void RenderFrameHostImpl::OnRunFileChooser(const FileChooserParams& params) {
+void RenderFrameHostImpl::OnRunFileChooser(
+    const blink::mojom::FileChooserParams& params) {
   // Do not allow messages with absolute paths in them as this can permit a
   // renderer to coerce the browser to perform I/O on a renderer controlled
   // path.
@@ -4648,14 +4648,14 @@ int RenderFrameHostImpl::GetProxyCount() {
 
 void RenderFrameHostImpl::FilesSelectedInChooser(
     const std::vector<content::FileChooserFileInfo>& files,
-    FileChooserParams::Mode permissions) {
+    blink::mojom::FileChooserParams::Mode permissions) {
   storage::FileSystemContext* const file_system_context =
       BrowserContext::GetStoragePartition(GetProcess()->GetBrowserContext(),
                                           GetSiteInstance())
           ->GetFileSystemContext();
   // Grant the security access requested to the given files.
   for (const auto& file : files) {
-    if (permissions == FileChooserParams::Save) {
+    if (permissions == blink::mojom::FileChooserParams::Mode::kSave) {
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantCreateReadWriteFile(
           GetProcess()->GetID(), file.file_path);
     } else {

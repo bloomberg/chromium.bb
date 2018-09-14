@@ -667,8 +667,9 @@ void GuestViewBase::ResizeDueToAutoResize(WebContents* web_contents,
   UpdateGuestSize(new_size, auto_size_enabled_);
 }
 
-void GuestViewBase::RunFileChooser(content::RenderFrameHost* render_frame_host,
-                                   const content::FileChooserParams& params) {
+void GuestViewBase::RunFileChooser(
+    content::RenderFrameHost* render_frame_host,
+    const blink::mojom::FileChooserParams& params) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
     return;
 
