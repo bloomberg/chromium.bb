@@ -8187,12 +8187,6 @@ interface WebKitMutationObserver
     method disconnect
     method observe
     method takeRecords
-interface WebKitTransitionEvent : Event
-    attribute @@toStringTag
-    getter elapsedTime
-    getter propertyName
-    getter pseudoElement
-    method constructor
 interface WebSocket : EventTarget
     attribute @@toStringTag
     attribute CLOSED
