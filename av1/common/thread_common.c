@@ -716,10 +716,12 @@ static void foreach_rest_unit_in_planes_mt(AV1LrStruct *lr_ctxt,
   int num_rows_lr = 0;
 
   for (int plane = 0; plane < num_planes; plane++) {
+    if (cm->rst_info[plane].frame_restoration_type == RESTORE_NONE) continue;
+
     const AV1PixelRect tile_rect = ctxt[plane].tile_rect;
     const int max_tile_h = tile_rect.bottom - tile_rect.top;
 
-    const int unit_size = cm->seq_params.sb_size == BLOCK_128X128 ? 128 : 64;
+    const int unit_size = cm->rst_info[plane].restoration_unit_size;
 
     num_rows_lr =
         AOMMAX(num_rows_lr, av1_lr_count_units_in_tile(unit_size, max_tile_h));
