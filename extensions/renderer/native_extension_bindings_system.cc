@@ -42,6 +42,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 
 namespace extensions {
 
@@ -342,15 +343,19 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
     std::unique_ptr<IPCMessageSender> ipc_message_sender)
     : ipc_message_sender_(std::move(ipc_message_sender)),
       api_system_(
-          base::Bind(&GetAPISchema),
-          base::Bind(&IsAPIFeatureAvailable),
-          base::Bind(&NativeExtensionBindingsSystem::SendRequest,
-                     base::Unretained(this)),
-          base::Bind(&NativeExtensionBindingsSystem::OnEventListenerChanged,
-                     base::Unretained(this)),
-          base::Bind(&GetContextOwner),
-          base::Bind(&APIActivityLogger::LogAPICall),
-          base::Bind(&AddConsoleError),
+          base::BindRepeating(&GetAPISchema),
+          base::BindRepeating(&IsAPIFeatureAvailable),
+          base::BindRepeating(&NativeExtensionBindingsSystem::SendRequest,
+                              base::Unretained(this)),
+          base::BindRepeating(
+              &NativeExtensionBindingsSystem::GetUserActivationState,
+              base::Unretained(this)),
+          base::BindRepeating(
+              &NativeExtensionBindingsSystem::OnEventListenerChanged,
+              base::Unretained(this)),
+          base::BindRepeating(&GetContextOwner),
+          base::BindRepeating(&APIActivityLogger::LogAPICall),
+          base::BindRepeating(&AddConsoleError),
           APILastError(base::Bind(&GetLastErrorParents),
                        base::Bind(&AddConsoleError))),
       messaging_service_(this),
@@ -756,6 +761,13 @@ void NativeExtensionBindingsSystem::SendRequest(
 
   ipc_message_sender_->SendRequestIPC(script_context, std::move(params),
                                       request->thread);
+}
+
+bool NativeExtensionBindingsSystem::GetUserActivationState(
+    v8::Local<v8::Context> context) {
+  ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
+  return blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe(
+      script_context->web_frame());
 }
 
 void NativeExtensionBindingsSystem::OnEventListenerChanged(

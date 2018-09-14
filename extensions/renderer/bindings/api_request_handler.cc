@@ -5,8 +5,10 @@
 #include "extensions/renderer/bindings/api_request_handler.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/values.h"
+#include "content/public/common/content_features.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/renderer/bindings/api_response_validator.h"
 #include "extensions/renderer/bindings/exception_handler.h"
@@ -95,12 +97,15 @@ APIRequestHandler::PendingRequest::PendingRequest(PendingRequest&&) = default;
 APIRequestHandler::PendingRequest& APIRequestHandler::PendingRequest::operator=(
     PendingRequest&&) = default;
 
-APIRequestHandler::APIRequestHandler(const SendRequestMethod& send_request,
-                                     APILastError last_error,
-                                     ExceptionHandler* exception_handler)
+APIRequestHandler::APIRequestHandler(
+    const SendRequestMethod& send_request,
+    APILastError last_error,
+    ExceptionHandler* exception_handler,
+    const GetUserActivationState& get_user_activation_state_callback)
     : send_request_(send_request),
       last_error_(std::move(last_error)),
-      exception_handler_(exception_handler) {}
+      exception_handler_(exception_handler),
+      get_user_activation_state_callback_(get_user_activation_state_callback) {}
 
 APIRequestHandler::~APIRequestHandler() {}
 
@@ -155,8 +160,7 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
       request_id,
       PendingRequest(isolate, context, method, callback, callback_args)));
 
-  request->has_user_gesture =
-      blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe();
+  request->has_user_gesture = get_user_activation_state_callback_.Run(context);
   request->arguments = std::move(arguments);
   request->method_name = method;
   request->thread = thread;
@@ -253,7 +257,14 @@ void APIRequestHandler::CompleteRequestImpl(int request_id,
   }
   full_args.insert(full_args.end(), response_args.begin(), response_args.end());
 
-  blink::WebScopedUserGesture user_gesture(*pending_request.user_gesture_token);
+  std::unique_ptr<blink::WebScopedUserGesture> user_gesture;
+  // UserActivationV2 replaces the concept of (scoped) tokens with a frame-wide
+  // state, hence skips token forwarding.
+  if (!base::FeatureList::IsEnabled(features::kUserActivationV2)) {
+    user_gesture = std::make_unique<blink::WebScopedUserGesture>(
+        *pending_request.user_gesture_token);
+  }
+
   if (!error.empty())
     last_error_.SetError(context, error);
 

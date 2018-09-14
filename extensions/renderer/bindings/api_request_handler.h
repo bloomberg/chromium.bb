@@ -50,9 +50,14 @@ class APIRequestHandler {
   using SendRequestMethod =
       base::Callback<void(std::unique_ptr<Request>, v8::Local<v8::Context>)>;
 
-  APIRequestHandler(const SendRequestMethod& send_request,
-                    APILastError last_error,
-                    ExceptionHandler* exception_handler);
+  using GetUserActivationState =
+      base::RepeatingCallback<bool(v8::Local<v8::Context>)>;
+
+  APIRequestHandler(
+      const SendRequestMethod& send_request,
+      APILastError last_error,
+      ExceptionHandler* exception_handler,
+      const GetUserActivationState& get_user_activation_state_callback);
   ~APIRequestHandler();
 
   // Begins the process of processing the request. Returns the identifier of the
@@ -147,6 +152,9 @@ class APIRequestHandler {
   // The response validator used to check the responses for resolved requests.
   // Null if response validation is disabled.
   std::unique_ptr<APIResponseValidator> response_validator_;
+
+  // The callback to determine transient user activation state of the context.
+  GetUserActivationState get_user_activation_state_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(APIRequestHandler);
 };
