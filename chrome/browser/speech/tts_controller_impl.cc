@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/speech/tts_engine_delegate.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -156,7 +157,7 @@ TtsControllerImpl::TtsControllerImpl()
     : current_utterance_(nullptr),
       paused_(false),
       platform_impl_(nullptr),
-      tts_engine_delegate_(nullptr) {}
+      tts_engine_delegate_factory_(nullptr) {}
 
 TtsControllerImpl::~TtsControllerImpl() {
   if (current_utterance_) {
@@ -231,8 +232,8 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
     DCHECK(!voice.extension_id.empty());
     current_utterance_ = utterance;
     utterance->set_extension_id(voice.extension_id);
-    if (tts_engine_delegate_)
-      tts_engine_delegate_->Speak(utterance, voice);
+    if (TtsEngineDelegate* delegate = GetTtsEngineDelegate(utterance))
+      delegate->Speak(utterance, voice);
     bool sends_end_event =
         voice.events.find(TTS_EVENT_END) != voice.events.end();
     if (!sends_end_event) {
@@ -277,8 +278,8 @@ void TtsControllerImpl::Stop() {
 
   paused_ = false;
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
-    if (tts_engine_delegate_)
-      tts_engine_delegate_->Stop(current_utterance_);
+    if (TtsEngineDelegate* delegate = GetTtsEngineDelegate(current_utterance_))
+      delegate->Stop(current_utterance_);
   } else {
     GetPlatformImpl()->clear_error();
     GetPlatformImpl()->StopSpeaking();
@@ -296,8 +297,8 @@ void TtsControllerImpl::Pause() {
 
   paused_ = true;
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
-    if (tts_engine_delegate_)
-      tts_engine_delegate_->Pause(current_utterance_);
+    if (TtsEngineDelegate* delegate = GetTtsEngineDelegate(current_utterance_))
+      delegate->Pause(current_utterance_);
   } else if (current_utterance_) {
     GetPlatformImpl()->clear_error();
     GetPlatformImpl()->Pause();
@@ -309,8 +310,8 @@ void TtsControllerImpl::Resume() {
 
   paused_ = false;
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
-    if (tts_engine_delegate_)
-      tts_engine_delegate_->Resume(current_utterance_);
+    if (TtsEngineDelegate* delegate = GetTtsEngineDelegate(current_utterance_))
+      delegate->Resume(current_utterance_);
   } else if (current_utterance_) {
     GetPlatformImpl()->clear_error();
     GetPlatformImpl()->Resume();
@@ -378,7 +379,7 @@ void TtsControllerImpl::OnTtsEvent(int utterance_id,
 }
 
 void TtsControllerImpl::GetVoices(content::BrowserContext* browser_context,
-                              std::vector<VoiceData>* out_voices) {
+                                  std::vector<VoiceData>* out_voices) {
   TtsPlatformImpl* platform_impl = GetPlatformImpl();
   if (platform_impl) {
     // Ensure we have all built-in voices loaded. This is a no-op if already
@@ -388,8 +389,13 @@ void TtsControllerImpl::GetVoices(content::BrowserContext* browser_context,
       platform_impl->GetVoices(out_voices);
   }
 
-  if (browser_context && tts_engine_delegate_)
-    tts_engine_delegate_->GetVoices(browser_context, out_voices);
+  if (browser_context && tts_engine_delegate_factory_) {
+    TtsEngineDelegate* delegate =
+        tts_engine_delegate_factory_->GetTtsEngineDelegateForBrowserContext(
+            browser_context);
+    if (delegate)
+      delegate->GetVoices(browser_context, out_voices);
+  }
 }
 
 bool TtsControllerImpl::IsSpeaking() {
@@ -605,6 +611,15 @@ void TtsControllerImpl::UpdateUtteranceDefaults(Utterance* utterance) {
   utterance->set_continuous_parameters(rate, pitch, volume);
 }
 
+TtsEngineDelegate* TtsControllerImpl::GetTtsEngineDelegate(
+    Utterance* utterance) {
+  if (!utterance->browser_context() || !tts_engine_delegate_factory_)
+    return nullptr;
+
+  return tts_engine_delegate_factory_->GetTtsEngineDelegateForBrowserContext(
+      utterance->browser_context());
+}
+
 const PrefService* TtsControllerImpl::GetPrefService(
     const Utterance* utterance) {
   const PrefService* prefs = nullptr;
@@ -658,8 +673,9 @@ void TtsControllerImpl::RemoveUtteranceEventDelegate(
   if (current_utterance_ && current_utterance_->event_delegate() == delegate) {
     current_utterance_->set_event_delegate(nullptr);
     if (!current_utterance_->extension_id().empty()) {
-      if (tts_engine_delegate_)
-        tts_engine_delegate_->Stop(current_utterance_);
+      if (TtsEngineDelegate* delegate =
+              GetTtsEngineDelegate(current_utterance_))
+        delegate->Stop(current_utterance_);
     } else {
       GetPlatformImpl()->clear_error();
       GetPlatformImpl()->StopSpeaking();
@@ -671,11 +687,13 @@ void TtsControllerImpl::RemoveUtteranceEventDelegate(
   }
 }
 
-void TtsControllerImpl::SetTtsEngineDelegate(
-    TtsEngineDelegate* delegate) {
-  tts_engine_delegate_ = delegate;
+void TtsControllerImpl::SetTtsEngineDelegateFactory(
+    TtsEngineDelegateFactory* factory) {
+  tts_engine_delegate_factory_ = factory;
 }
 
-TtsEngineDelegate* TtsControllerImpl::GetTtsEngineDelegate() {
-  return tts_engine_delegate_;
+TtsEngineDelegate* TtsControllerImpl::GetTtsEngineDelegate(
+    content::BrowserContext* browser_context) {
+  return tts_engine_delegate_factory_->GetTtsEngineDelegateForBrowserContext(
+      browser_context);
 }
