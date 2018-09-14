@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_BROWSER_SHELL_DEVTOOLS_MANAGER_DELEGATE_H_
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
@@ -27,9 +28,14 @@ class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
   scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
   bool HasBundledFrontendResources() override;
+  void ClientAttached(content::DevToolsAgentHost* agent_host,
+                      content::DevToolsAgentHostClient* client) override;
+  void ClientDetached(content::DevToolsAgentHost* agent_host,
+                      content::DevToolsAgentHostClient* client) override;
 
  private:
   BrowserContext* browser_context_;
+  base::flat_set<content::DevToolsAgentHostClient*> clients_;
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsManagerDelegate);
 };
 
