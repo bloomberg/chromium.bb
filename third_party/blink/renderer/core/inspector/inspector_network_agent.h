@@ -142,8 +142,6 @@ class CORE_EXPORT InspectorNetworkAgent final
                    bool include_crendentials);
   void DidFinishXHR(XMLHttpRequest*);
 
-  void WillStartFetch(ThreadableLoaderClient*);
-
   void WillSendEventSourceRequest(ThreadableLoaderClient*);
   void WillDispatchEventSourceEvent(unsigned long identifier,
                                     const AtomicString& event_name,

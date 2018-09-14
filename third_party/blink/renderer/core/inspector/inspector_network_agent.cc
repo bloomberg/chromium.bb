@@ -752,9 +752,12 @@ void InspectorNetworkAgent::WillSendRequestInternal(
                                    request.Url(), post_data);
   if (initiator_info.name == FetchInitiatorTypeNames::xmlhttprequest)
     type = InspectorPageAgent::kXHRResource;
+  else if (initiator_info.name == FetchInitiatorTypeNames::fetch)
+    type = InspectorPageAgent::kFetchResource;
 
-  resources_data_->SetResourceType(
-      request_id, pending_request_ ? pending_request_type_ : type);
+  if (pending_request_)
+    type = pending_request_type_;
+  resources_data_->SetResourceType(request_id, type);
 
   if (is_navigation)
     return;
@@ -1074,8 +1077,6 @@ void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
                                         bool include_credentials) {
   DCHECK(xhr);
   DCHECK(!pending_request_);
-  pending_request_ = client;
-  pending_request_type_ = InspectorPageAgent::kXHRResource;
   pending_xhr_replay_data_ = XHRReplayData::Create(
       method, UrlWithoutFragment(url), async, include_credentials);
   for (const auto& header : headers)
@@ -1090,12 +1091,6 @@ void InspectorNetworkAgent::DidFinishXHR(XMLHttpRequest* xhr) {
   replay_xhrs_to_be_deleted_.insert(xhr);
   replay_xhrs_.erase(xhr);
   remove_finished_replay_xhr_timer_.StartOneShot(TimeDelta(), FROM_HERE);
-}
-
-void InspectorNetworkAgent::WillStartFetch(ThreadableLoaderClient* client) {
-  DCHECK(!pending_request_);
-  pending_request_ = client;
-  pending_request_type_ = InspectorPageAgent::kFetchResource;
 }
 
 void InspectorNetworkAgent::WillSendEventSourceRequest(
