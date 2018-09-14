@@ -104,6 +104,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/keyboard_event_manager.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
@@ -278,6 +279,8 @@ void Internals::ResetToConsistentState(Page* page) {
 
   KeyboardEventManager::SetCurrentCapsLockState(
       OverrideCapsLockState::kDefault);
+
+  IntersectionObserver::SetV2ThrottleDelayEnabledForTesting(true);
 }
 
 Internals::Internals(ExecutionContext* context)
@@ -3461,6 +3464,11 @@ void Internals::BypassLongCompileThresholdOnce(
 
 unsigned Internals::LifecycleUpdateCount() const {
   return document_->View()->LifecycleUpdateCountForTesting();
+}
+
+void Internals::DisableIntersectionObserverV2Throttle() const {
+  // This gets reset by Internals::ResetToConsistentState
+  IntersectionObserver::SetV2ThrottleDelayEnabledForTesting(false);
 }
 
 }  // namespace blink
