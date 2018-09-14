@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -255,6 +256,13 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
       performAction:grey_tap()];
 
+  if (IsUIRefreshPhase1Enabled()) {
+    // Verify that scrim is visible.
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            kHistorySearchScrimIdentifier)]
+        assertWithMatcher:grey_notNil()];
+  }
+
   NSString* searchString =
       [NSString stringWithFormat:@"%s", _URL1.path().c_str()];
   if (IsUIRefreshPhase1Enabled()) {
@@ -264,6 +272,14 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
     [[EarlGrey selectElementWithMatcher:grey_keyWindow()]
         performAction:grey_typeText(searchString)];
   }
+
+  if (IsUIRefreshPhase1Enabled()) {
+    // Verify that scrim is not visible.
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            kHistorySearchScrimIdentifier)]
+        assertWithMatcher:grey_nil()];
+  }
+
   [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL2, kTitle2)]
