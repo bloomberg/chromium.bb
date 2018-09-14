@@ -33,6 +33,8 @@ AppListItem* AppListItemList::FindItem(const std::string& id) {
   return nullptr;
 }
 
+// TODO(https://crbug.com/883971): Make it return iterator to avoid unnecessary
+// check in this code.
 bool AppListItemList::FindItemIndex(const std::string& id, size_t* index) {
   for (size_t i = 0; i < app_list_items_.size(); ++i) {
     if (app_list_items_[i]->id() == id) {

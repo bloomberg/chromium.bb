@@ -406,8 +406,14 @@ void AppListControllerImpl::OnActiveUserPrefServiceChanged(
 
 void AppListControllerImpl::OnAppListItemWillBeDeleted(
     app_list::AppListItem* item) {
-  if (client_ && item->is_folder())
+  if (!client_)
+    return;
+
+  if (item->is_folder())
     client_->OnFolderDeleted(item->CloneMetadata());
+
+  if (item->is_page_break())
+    client_->OnPageBreakItemDeleted(item->id());
 }
 
 void AppListControllerImpl::OnAppListItemUpdated(app_list::AppListItem* item) {

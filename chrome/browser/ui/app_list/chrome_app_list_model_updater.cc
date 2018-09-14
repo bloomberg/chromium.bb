@@ -533,3 +533,17 @@ void ChromeAppListModelUpdater::OnPageBreakItemAdded(
   if (delegate_)
     delegate_->OnAppListItemAdded(chrome_item);
 }
+
+void ChromeAppListModelUpdater::OnPageBreakItemDeleted(const std::string& id) {
+  ChromeAppListItem* chrome_item = FindItem(id);
+
+  if (!chrome_item) {
+    LOG(ERROR) << "OnPageBreakItemDeleted: " << id << " does not exist.";
+    return;
+  }
+
+  DCHECK(chrome_item->is_page_break());
+  if (delegate_)
+    delegate_->OnAppListItemWillBeDeleted(chrome_item);
+  items_.erase(id);
+}
