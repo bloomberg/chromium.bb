@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "components/feed/core/content_metadata.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"
 
@@ -32,11 +33,19 @@ namespace feed {
 class FeedOfflineHost : public offline_pages::SuggestionsProvider,
                         public offline_pages::OfflinePageModel::Observer {
  public:
+  using GetKnownContentCallback =
+      base::OnceCallback<void(std::vector<ContentMetadata>)>;
+
   FeedOfflineHost(offline_pages::OfflinePageModel* offline_page_model,
                   offline_pages::PrefetchService* prefetch_service,
                   base::RepeatingClosure on_suggestion_consumed,
                   base::RepeatingClosure on_suggestions_shown);
   ~FeedOfflineHost() override;
+
+  // Initialize with callbacks to call into bridge/Java side. Should only be
+  // called once, and done as soon as the bridge is ready. The FeedOfflineHost
+  // will not be fully ready to perform its function without these dependencies.
+  void Initialize(const base::RepeatingClosure& trigger_get_known_content);
 
   // Synchronously returns the offline id of the given page. The host will only
   // have knowledge of the page if it had previously returned status about it
@@ -63,6 +72,10 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
   // displaying articles and listening to our notifications. This signal is used
   // to clear local tracking of offlined items.
   void OnNoListeners();
+
+  // Should be called when async GetKnownContent is completed. Broadcasts to all
+  // waiting consumers in |pending_known_content_callbacks_|.
+  void OnGetKnownContentDone(std::vector<ContentMetadata> suggestions);
 
   // offline_pages::SuggestionsProvider:
   void GetCurrentArticleSuggestions(
@@ -99,7 +112,16 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
   // is the offline id for the given page.
   base::flat_map<uint32_t, int64_t> url_hash_to_id_;
 
-  base::WeakPtrFactory<FeedOfflineHost> weak_ptr_factory_;
+  // Starts an the async request for ContentMetadata through KnownContentApi's
+  // GetKnownContent(). Will only be invoked when there isn't already an
+  // outstanding GetKnownContent().
+  base::RepeatingClosure trigger_get_known_content_;
+
+  // Holds all consumers of GetKnownContent(). It is assumed that there's an
+  // outstanding GetKnownContent() if and only if this vector is not empty.
+  std::vector<GetKnownContentCallback> pending_known_content_callbacks_;
+
+  base::WeakPtrFactory<FeedOfflineHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedOfflineHost);
 };

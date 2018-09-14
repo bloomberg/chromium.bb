@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
+import com.google.android.libraries.feed.api.knowncontent.ContentMetadata;
 import com.google.android.libraries.feed.api.knowncontent.ContentRemoval;
 import com.google.android.libraries.feed.api.knowncontent.KnownContentApi;
 import com.google.android.libraries.feed.common.functional.Consumer;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /** Provides access to native implementations of OfflineIndicatorApi. */
 @JNINamespace("feed")
@@ -102,7 +104,7 @@ public class FeedOfflineBridge
      * Filters out any {@link ContentRemoval} that was not user driven, such as old articles being
      * garbage collected.
      *
-     * @param contentRemovd The articles being removed, may or may not be user driven.
+     * @param contentRemoved The articles being removed, may or may not be user driven.
      * @return All and only the user driven removals.
      */
     @VisibleForTesting
@@ -121,6 +123,19 @@ public class FeedOfflineBridge
         return Long.valueOf(id);
     }
 
+    @CalledByNative
+    private void getKnownContent() {
+        mKnownContentApi.getKnownContent((List<ContentMetadata> metadataList) -> {
+            for (ContentMetadata metadata : metadataList) {
+                long time_published_ms = TimeUnit.SECONDS.toMillis(metadata.getTimePublished());
+                nativeAppendContentMetadata(mNativeBridge, metadata.getUrl(), metadata.getTitle(),
+                        time_published_ms, metadata.getImageUrl(), metadata.getPublisher(),
+                        metadata.getFaviconUrl(), metadata.getSnippet());
+            }
+            nativeOnGetKnownContentDone(mNativeBridge);
+        });
+    }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedOfflineBridge);
     private native Object nativeGetOfflineId(long nativeFeedOfflineBridge, String url);
@@ -129,4 +144,8 @@ public class FeedOfflineBridge
     private native void nativeOnContentRemoved(long nativeFeedOfflineBridge, String[] urlsRemoved);
     private native void nativeOnNewContentReceived(long nativeFeedOfflineBridge);
     private native void nativeOnNoListeners(long nativeFeedOfflineBridge);
+    private native void nativeAppendContentMetadata(long nativeFeedOfflineBridge, String url,
+            String title, long timePublishedMs, String imageUrl, String publisher,
+            String faviconUrl, String snippet);
+    private native void nativeOnGetKnownContentDone(long nativeFeedOfflineBridge);
 }

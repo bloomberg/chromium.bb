@@ -19,7 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/feed/content/feed_host_service.h"
-#include "components/offline_pages/core/offline_page_model.h"
+#include "components/feed/core/content_metadata.h"
 #include "jni/FeedOfflineBridge_jni.h"
 
 using base::android::JavaRef;
@@ -55,8 +55,11 @@ static jlong JNI_FeedOfflineBridge_Init(
 FeedOfflineBridge::FeedOfflineBridge(const JavaRef<jobject>& j_this,
                                      FeedOfflineHost* offline_host)
     : j_this_(ScopedJavaGlobalRef<jobject>(j_this)),
-      offline_host_(offline_host) {
+      offline_host_(offline_host),
+      weak_factory_(this) {
   DCHECK(offline_host_);
+  offline_host_->Initialize(base::BindRepeating(
+      &FeedOfflineBridge::TriggerGetKnownContent, weak_factory_.GetWeakPtr()));
 }
 
 FeedOfflineBridge::~FeedOfflineBridge() = default;
@@ -104,6 +107,41 @@ void FeedOfflineBridge::OnNoListeners(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& j_this) {
   offline_host_->OnNoListeners();
+}
+
+void FeedOfflineBridge::AppendContentMetadata(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_this,
+    const base::android::JavaRef<jstring>& j_url,
+    const base::android::JavaRef<jstring>& j_title,
+    const jlong j_time_published_ms,
+    const base::android::JavaRef<jstring>& j_image_url,
+    const base::android::JavaRef<jstring>& j_publisher,
+    const base::android::JavaRef<jstring>& j_favicon_url,
+    const base::android::JavaRef<jstring>& j_snippet) {
+  ContentMetadata metadata;
+  metadata.url = base::android::ConvertJavaStringToUTF8(env, j_url);
+  metadata.title = base::android::ConvertJavaStringToUTF8(env, j_title);
+  metadata.time_published = base::Time::FromJavaTime(j_time_published_ms);
+  metadata.image_url = base::android::ConvertJavaStringToUTF8(env, j_image_url);
+  metadata.publisher = base::android::ConvertJavaStringToUTF8(env, j_publisher);
+  metadata.favicon_url =
+      base::android::ConvertJavaStringToUTF8(env, j_favicon_url);
+  metadata.snippet = base::android::ConvertJavaStringToUTF8(env, j_snippet);
+  known_content_metadata_buffer_.push_back(std::move(metadata));
+}
+
+void FeedOfflineBridge::OnGetKnownContentDone(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_this) {
+  offline_host_->OnGetKnownContentDone(
+      std::move(known_content_metadata_buffer_));
+}
+
+void FeedOfflineBridge::TriggerGetKnownContent() {
+  DCHECK(known_content_metadata_buffer_.empty());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_FeedOfflineBridge_getKnownContent(env, j_this_);
 }
 
 }  // namespace feed
