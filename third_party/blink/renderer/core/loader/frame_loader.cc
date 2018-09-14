@@ -913,7 +913,14 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
          policy == kNavigationPolicyHandledByClient ||
          policy == kNavigationPolicyHandledByClientForInitialHistory);
 
-  if (!CancelProvisionalLoaderForNewNavigation(policy))
+  bool cancel_scheduled_navigations = policy != kNavigationPolicyCurrentTab;
+  if (!CancelProvisionalLoaderForNewNavigation(cancel_scheduled_navigations))
+    return;
+
+  // TODO(japhet): This case wants to flag the frame as loading and do nothing
+  // else. It'd be nice if it could go through the placeholder DocumentLoader
+  // path, too.
+  if (policy == kNavigationPolicyHandledByClientForInitialHistory)
     return;
 
   provisional_document_loader_ = CreateDocumentLoader(
@@ -1009,8 +1016,10 @@ void FrameLoader::CommitNavigation(
 
   RecordLatestRequiredCSP();
 
-  if (!CancelProvisionalLoaderForNewNavigation(kNavigationPolicyCurrentTab))
+  if (!CancelProvisionalLoaderForNewNavigation(
+          false /* cancel_scheduled_navigations */)) {
     return;
+  }
 
   // TODO(dgozman): navigation type should probably be passed by the caller.
   // It seems incorrect to pass |false| for |have_event| and then use
@@ -1502,7 +1511,7 @@ void FrameLoader::ClientDroppedNavigation() {
 }
 
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
-    NavigationPolicy navigation_policy) {
+    bool cancel_scheduled_navigations) {
   bool had_placeholder_client_document_loader =
       provisional_document_loader_ && !provisional_document_loader_->DidStart();
 
@@ -1529,19 +1538,10 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
     return false;
 
   progress_tracker_->ProgressStarted();
-  // TODO(japhet): This case wants to flag the frame as loading and do nothing
-  // else. It'd be nice if it could go through the placeholder DocumentLoader
-  // path, too.
-  if (navigation_policy == kNavigationPolicyHandledByClientForInitialHistory)
-    return false;
-  DCHECK(navigation_policy == kNavigationPolicyCurrentTab ||
-         navigation_policy == kNavigationPolicyHandledByClient);
 
   // We need to ensure that script initiated navigations are honored.
-  if (!had_placeholder_client_document_loader ||
-      navigation_policy == kNavigationPolicyHandledByClient) {
+  if (!had_placeholder_client_document_loader || cancel_scheduled_navigations)
     frame_->GetNavigationScheduler().Cancel();
-  }
 
   return true;
 }
