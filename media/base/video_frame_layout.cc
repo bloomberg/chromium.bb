@@ -11,18 +11,12 @@ namespace media {
 
 namespace {
 
-std::ostringstream& operator<<(std::ostringstream& ostrm,
-                               const media::VideoFrameLayout::Plane& plane) {
-  ostrm << "(" << plane.stride << ", " << plane.offset << ")";
-  return ostrm;
-}
-
 template <class T>
 std::string VectorToString(const std::vector<T>& vec) {
   std::ostringstream result;
   std::string delim;
   result << "[";
-  for (auto v : vec) {
+  for (auto& v : vec) {
     result << delim;
     result << v;
     if (delim.size() == 0)
@@ -85,6 +79,12 @@ std::string VideoFrameLayout::ToString() const {
     << ", num_planes: " << num_planes()
     << ", planes (stride, offset): " << VectorToString(planes_);
   return s.str();
+}
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const VideoFrameLayout::Plane& plane) {
+  ostream << "(" << plane.stride << ", " << plane.offset << ")";
+  return ostream;
 }
 
 }  // namespace media

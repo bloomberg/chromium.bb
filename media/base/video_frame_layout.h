@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -29,6 +30,13 @@ namespace media {
 class MEDIA_EXPORT VideoFrameLayout {
  public:
   struct Plane {
+    Plane() = default;
+    Plane(int32_t stride, size_t offset) : stride(stride), offset(offset) {}
+
+    bool operator==(const Plane& rhs) const {
+      return stride == rhs.stride && offset == rhs.offset;
+    }
+
     // Strides of a plane, typically greater or equal to the
     // width of the surface divided by the horizontal sampling period. Note that
     // strides can be negative if the image layout is bottom-up.
@@ -60,13 +68,13 @@ class MEDIA_EXPORT VideoFrameLayout {
                    const gfx::Size& coded_size,
                    std::vector<Plane> planes,
                    std::vector<size_t> buffer_sizes =
-                       std::vector<size_t>(kDefaultBufferCount));
+                       std::vector<size_t>(kDefaultBufferCount, 0));
 
   VideoFrameLayout();
-  ~VideoFrameLayout();
   VideoFrameLayout(const VideoFrameLayout&);
   VideoFrameLayout(VideoFrameLayout&&);
   VideoFrameLayout& operator=(const VideoFrameLayout&);
+  ~VideoFrameLayout();
 
   VideoPixelFormat format() const { return format_; }
   const gfx::Size& coded_size() const { return coded_size_; }
@@ -86,6 +94,9 @@ class MEDIA_EXPORT VideoFrameLayout {
   // Composes VideoFrameLayout as human readable string.
   std::string ToString() const;
 
+  // Returns false if it is invalid.
+  bool IsValid() const { return format_ != PIXEL_FORMAT_UNKNOWN; }
+
  private:
   VideoPixelFormat format_;
 
@@ -103,6 +114,10 @@ class MEDIA_EXPORT VideoFrameLayout {
   // |coded_size_|.
   std::vector<size_t> buffer_sizes_;
 };
+
+// Outputs VideoFrameLayout::Plane to stream.
+std::ostream& operator<<(std::ostream& ostream,
+                         const VideoFrameLayout::Plane& plane);
 
 }  // namespace media
 

@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_layout.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
@@ -55,6 +56,12 @@ class MEDIA_GPU_EXPORT V4L2Device
 
   // Composes human readable string of v4l2_format.
   static std::string V4L2FormatToString(const struct v4l2_format& format);
+
+  // Composes VideoFrameLayout based on v4l2_format.
+  // If error occurs, it returns invalid VideoFrameLayout, which is
+  // VideoFrameLayout(PIXEL_FORMAT_UNKNOWN, gfx::Size()).
+  static VideoFrameLayout V4L2FormatToVideoFrameLayout(
+      const struct v4l2_format& format);
 
   enum class Type {
     kDecoder,
