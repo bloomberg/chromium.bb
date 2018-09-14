@@ -514,6 +514,10 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
   void RecalcStyle(StyleRecalcChange);
+  void RecalcStyleForTraversalRootAncestor();
+  void RebuildLayoutTreeForTraversalRootAncestor() {
+    RebuildFirstLetterLayoutTree();
+  }
   bool NeedsRebuildLayoutTree(
       const WhitespaceAttacher& whitespace_attacher) const {
     // TODO(futhark@chromium.org): !CanParticipateInFlatTree() can be removed

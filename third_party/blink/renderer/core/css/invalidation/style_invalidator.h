@@ -16,7 +16,6 @@
 namespace blink {
 
 class ContainerNode;
-class Document;
 class Element;
 class HTMLSlotElement;
 class InvalidationSet;
@@ -32,7 +31,7 @@ class CORE_EXPORT StyleInvalidator {
   StyleInvalidator(PendingInvalidationMap&);
 
   ~StyleInvalidator();
-  void Invalidate(Document&);
+  void Invalidate(Element& invalidation_root);
 
  private:
   class SiblingData;

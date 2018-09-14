@@ -1886,6 +1886,10 @@ bool Document::NeedsLayoutTreeUpdate() const {
     return true;
   if (ChildNeedsStyleInvalidation())
     return true;
+  if (ChildNeedsReattachLayoutTree()) {
+    DCHECK(InStyleRecalc());
+    return true;
+  }
   if (GetLayoutView() && GetLayoutView()->WasNotifiedOfSubtreeChange())
     return true;
   return false;

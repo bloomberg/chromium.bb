@@ -982,6 +982,9 @@ class CORE_EXPORT Node : public EventTarget {
   void SetTreeScope(TreeScope* scope) { tree_scope_ = scope; }
 
   void MarkAncestorsWithChildNeedsStyleRecalc();
+  static void MarkAncestorsWithChildNeedsStyleRecalc(Node* child) {
+    child->MarkAncestorsWithChildNeedsStyleRecalc();
+  }
 
   void SetIsFinishedParsingChildren(bool value) {
     SetFlag(value, kIsFinishedParsingChildrenFlag);

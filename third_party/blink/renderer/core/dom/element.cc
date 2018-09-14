@@ -2357,6 +2357,13 @@ bool Element::ShouldCallRecalcStyleForChildren(StyleRecalcChange change) {
   return !CanParticipateInFlatTree();
 }
 
+void Element::RecalcStyleForTraversalRootAncestor() {
+  if (!ChildNeedsReattachLayoutTree())
+    UpdateFirstLetterPseudoElement(StyleUpdatePhase::kRecalc);
+  if (HasCustomStyleCallbacks())
+    DidRecalcStyle(kNoChange);
+}
+
 void Element::RecalcStyle(StyleRecalcChange change) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().Lifecycle().InDetach());

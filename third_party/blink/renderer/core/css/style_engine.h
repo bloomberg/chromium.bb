@@ -40,9 +40,12 @@
 #include "third_party/blink/renderer/core/css/document_style_sheet_collection.h"
 #include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
+#include "third_party/blink/renderer/core/css/layout_tree_rebuild_root.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
 #include "third_party/blink/renderer/core/css/style_engine_context.h"
+#include "third_party/blink/renderer/core/css/style_invalidation_root.h"
+#include "third_party/blink/renderer/core/css/style_recalc_root.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/tree_ordered_list.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
@@ -234,6 +237,10 @@ class CORE_EXPORT StyleEngine final
                 .IsEmpty();
   }
 
+  void UpdateStyleInvalidationRoot(ContainerNode* ancestor, Node* dirty_node);
+  void UpdateStyleRecalcRoot(ContainerNode* ancestor, Node* dirty_node);
+  void UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor, Node* dirty_node);
+
   CSSFontSelector* GetFontSelector() { return font_selector_; }
   void SetFontSelector(CSSFontSelector*);
 
@@ -292,6 +299,7 @@ class CORE_EXPORT StyleEngine final
                                             kInvalidateCurrentScope);
 
   void NodeWillBeRemoved(Node&);
+  void ChildrenRemoved(ContainerNode& parent);
 
   unsigned StyleForElementCount() const { return style_for_element_count_; }
   void IncStyleForElementCount() { style_for_element_count_++; }
@@ -460,7 +468,12 @@ class CORE_EXPORT StyleEngine final
   Member<ViewportStyleResolver> viewport_resolver_;
   Member<MediaQueryEvaluator> media_query_evaluator_;
   Member<CSSGlobalRuleSet> global_rule_set_;
+
   PendingInvalidations pending_invalidations_;
+
+  StyleInvalidationRoot style_invalidation_root_;
+  StyleRecalcRoot style_recalc_root_;
+  LayoutTreeRebuildRoot layout_tree_rebuild_root_;
 
   // This is a set of rendered elements which had one or more of its rendered
   // children removed since the last lifecycle update. For such elements we need

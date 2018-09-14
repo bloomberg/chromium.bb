@@ -1005,10 +1005,11 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
   GetDocument().IncDOMTreeVersion();
   GetDocument().NotifyChangeChildren(*this);
   InvalidateNodeListCachesInAncestors(nullptr, nullptr, &change);
-  if (!ChildNeedsStyleRecalc() && change.IsChildInsertion() &&
-      change.sibling_changed->NeedsStyleRecalc()) {
-    SetChildNeedsStyleRecalc();
-    MarkAncestorsWithChildNeedsStyleRecalc();
+  if (change.IsChildInsertion()) {
+    if (change.sibling_changed->NeedsStyleRecalc())
+      MarkAncestorsWithChildNeedsStyleRecalc(change.sibling_changed);
+  } else if (change.IsChildRemoval() || change.type == kAllChildrenRemoved) {
+    GetDocument().GetStyleEngine().ChildrenRemoved(*this);
   }
 }
 

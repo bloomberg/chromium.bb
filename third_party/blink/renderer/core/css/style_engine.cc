@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
+#include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
 #include "third_party/blink/renderer/core/css/resolver/viewport_style_resolver.h"
 #include "third_party/blink/renderer/core/css/shadow_tree_style_sheet_collection.h"
@@ -48,6 +49,7 @@
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
@@ -82,6 +84,8 @@ StyleEngine::StyleEngine(Document& document)
     viewport_resolver_ = ViewportStyleResolver::Create(document);
   if (IsMaster())
     global_rule_set_ = CSSGlobalRuleSet::Create();
+  // Document is initially style dirty.
+  style_recalc_root_.Update(nullptr, &document);
 }
 
 StyleEngine::~StyleEngine() = default;
@@ -578,6 +582,9 @@ void StyleEngine::DidDetach() {
   active_tree_scopes_.clear();
   viewport_resolver_ = nullptr;
   media_query_evaluator_ = nullptr;
+  style_invalidation_root_.Clear();
+  style_recalc_root_.Clear();
+  layout_tree_rebuild_root_.Clear();
   if (font_selector_)
     font_selector_->GetFontFaceCache()->ClearAll();
   font_selector_ = nullptr;
@@ -1065,7 +1072,8 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
 void StyleEngine::InvalidateStyle() {
   StyleInvalidator style_invalidator(
       pending_invalidations_.GetPendingInvalidationMap());
-  style_invalidator.Invalidate(*document_);
+  style_invalidator.Invalidate(style_invalidation_root_.RootElement());
+  style_invalidation_root_.Clear();
 }
 
 void StyleEngine::InvalidateSlottedElements(HTMLSlotElement& slot) {
@@ -1488,6 +1496,24 @@ void StyleEngine::NodeWillBeRemoved(Node& node) {
   }
 }
 
+void StyleEngine::ChildrenRemoved(ContainerNode& parent) {
+  if (!parent.isConnected())
+    return;
+  if (parent.IsShadowRoot() && ToShadowRoot(parent).IsUserAgent() &&
+      ToShadowRoot(parent).host().IsMediaControlElement()) {
+    // TODO(crbug.com/882869):
+    // This is a workaround for MediaControlLoadingPanelElement which removes
+    // its shadow root children as part of RemovedFrom() which means we do a
+    // removal from within another removal where isConnected() is not completely
+    // up to date which would confuse the code. Instead we will clean traversal
+    // roots properly in the outer remove.
+    return;
+  }
+  style_invalidation_root_.ChildrenRemoved(parent);
+  style_recalc_root_.ChildrenRemoved(parent);
+  style_invalidation_root_.ChildrenRemoved(parent);
+}
+
 void StyleEngine::CollectMatchingUserRules(
     ElementRuleCollector& collector) const {
   for (unsigned i = 0; i < active_user_style_sheets_.size(); ++i) {
@@ -1557,7 +1583,22 @@ void StyleEngine::RecalcStyle(StyleRecalcChange change) {
   DCHECK(GetDocument().documentElement());
   DCHECK(GetDocument().ChildNeedsStyleRecalc() || change == kForce);
 
-  GetDocument().documentElement()->RecalcStyle(change);
+  Element& root_element = style_recalc_root_.RootElement();
+  if (change == kForce || &root_element == GetDocument().documentElement()) {
+    GetDocument().documentElement()->RecalcStyle(change);
+  } else {
+    Element* parent = root_element.ParentOrShadowHostElement();
+    DCHECK(parent);
+    SelectorFilterAncestorScope filter_scope(*parent);
+    root_element.RecalcStyle(change);
+  }
+  for (ContainerNode* ancestor = root_element.ParentOrShadowHostNode();
+       ancestor; ancestor = ancestor->ParentOrShadowHostNode()) {
+    if (ancestor->IsElementNode())
+      ToElement(ancestor)->RecalcStyleForTraversalRootAncestor();
+    ancestor->ClearChildNeedsStyleRecalc();
+  }
+  style_recalc_root_.Clear();
 }
 
 void StyleEngine::RebuildLayoutTree() {
@@ -1566,9 +1607,49 @@ void StyleEngine::RebuildLayoutTree() {
   DCHECK(!InRebuildLayoutTree());
   in_layout_tree_rebuild_ = true;
 
-  WhitespaceAttacher whitespace_attacher;
-  GetDocument().documentElement()->RebuildLayoutTree(whitespace_attacher);
+  Element& root_element = layout_tree_rebuild_root_.RootElement();
+  {
+    WhitespaceAttacher whitespace_attacher;
+    root_element.RebuildLayoutTree(whitespace_attacher);
+  }
+
+  for (ContainerNode* ancestor = root_element.GetReattachParent(); ancestor;
+       ancestor = ancestor->GetReattachParent()) {
+    if (ancestor->IsElementNode())
+      ToElement(ancestor)->RebuildLayoutTreeForTraversalRootAncestor();
+    ancestor->ClearChildNeedsStyleRecalc();
+    ancestor->ClearChildNeedsReattachLayoutTree();
+  }
+  layout_tree_rebuild_root_.Clear();
   in_layout_tree_rebuild_ = false;
+}
+
+void StyleEngine::UpdateStyleInvalidationRoot(ContainerNode* ancestor,
+                                              Node* dirty_node) {
+  DCHECK(IsMaster());
+  if (GetDocument().IsActive())
+    style_invalidation_root_.Update(ancestor, dirty_node);
+}
+
+void StyleEngine::UpdateStyleRecalcRoot(ContainerNode* ancestor,
+                                        Node* dirty_node) {
+  if (!GetDocument().IsActive())
+    return;
+  if (in_layout_tree_rebuild_) {
+    // TODO(futhark@chromium.org): This happens because we call
+    // LazyReattachIfAttached() from HTMLSlotElement::DetachLayoutTree(). We
+    // probably want to get rid of LazyReattachIfAttached() altogether and call
+    // DetachLayoutTree on assigned nodes instead.
+    DCHECK_EQ(dirty_node->GetStyleChangeType(), kNeedsReattachStyleChange);
+    return;
+  }
+  style_recalc_root_.Update(ancestor, dirty_node);
+}
+
+void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
+                                              Node* dirty_node) {
+  if (GetDocument().IsActive())
+    layout_tree_rebuild_root_.Update(ancestor, dirty_node);
 }
 
 void StyleEngine::Trace(blink::Visitor* visitor) {
@@ -1589,6 +1670,9 @@ void StyleEngine::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_query_evaluator_);
   visitor->Trace(global_rule_set_);
   visitor->Trace(pending_invalidations_);
+  visitor->Trace(style_invalidation_root_);
+  visitor->Trace(style_recalc_root_);
+  visitor->Trace(layout_tree_rebuild_root_);
   visitor->Trace(whitespace_reattach_set_);
   visitor->Trace(font_selector_);
   visitor->Trace(text_to_sheet_cache_);
