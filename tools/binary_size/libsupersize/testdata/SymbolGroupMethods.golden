@@ -4,7 +4,8 @@ Histogram of symbols based on PSS:
       {0}: 6    [8,16): 3    [64,128): 2      [65536,131072): 1   [33554432,67108864): 2
     [2,4): 2   [16,32): 9   [128,256): 1    [524288,1048576): 2
     [4,8): 5   [32,64): 7   [256,512): 1   [1048576,2097152): 2
-.text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=32.4mb     total=74.2mb
+Sizes: .text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=32.4mb     total=74.2mb
+Counts: .text=19 .rodata=12 .data.rel.ro=4 .data=6 .bss=6 .other=1
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, o=.other
@@ -58,7 +59,8 @@ Showing 35 symbols (35 unique) with total pss: 77769551 bytes
 Histogram of symbols based on PSS:
       {0}: 6    [8,16): 4    [32,64): 6   [128,256): 2     [65536,131072): 1     [1048576,2097152): 2
     [2,4): 2   [16,32): 6   [64,128): 1   [256,512): 1   [524288,1048576): 2   [33554432,67108864): 2
-.text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=32.4mb     total=74.2mb
+Sizes: .text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=32.4mb     total=74.2mb
+Counts: .text=19 .rodata=12 .data.rel.ro=4 .data=6 .bss=6 .other=1
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, o=.other
@@ -105,7 +107,8 @@ Histogram of symbols based on PSS:
       {0}: 6    [8,16): 4    [64,128): 2      [65536,131072): 1   [33554432,67108864): 2
     [2,4): 2   [16,32): 6   [128,256): 1    [524288,1048576): 2
     [4,8): 1   [32,64): 8   [256,512): 1   [1048576,2097152): 2
-.text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=32.4mb     total=74.2mb
+Sizes: .text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=32.4mb     total=74.2mb
+Counts: .text=19 .rodata=12 .data.rel.ro=4 .data=6 .bss=6 .other=1
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, o=.other
@@ -155,7 +158,8 @@ Histogram of symbols based on PSS:
      [2,4): 2    [16,32): 7        [128,256): 3    [131072,262144): 2     [1048576,2097152): 2
      [4,8): 1    [32,64): 6        [256,512): 1    [262144,524288): 1   [33554432,67108864): 2
     [8,16): 4   [64,128): 1   [65536,131072): 1   [524288,1048576): 2
-.text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=32.4mb     total=74.2mb
+Sizes: .text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=32.4mb     total=74.2mb
+Counts: .text=19 .rodata=12 .data.rel.ro=4 .data=6 .bss=6 .other=1
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, o=.other

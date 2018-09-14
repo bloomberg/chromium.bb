@@ -61,7 +61,7 @@ def _GetSectionSizeInfo(section_sizes):
   max_bytes = max(abs(v) for k, v in section_sizes.iteritems()
                   if _IncludeInTotals(k))
 
-  def is_relevant_section(name, size):
+  def is_significant_section(name, size):
     # Show all sections containing symbols, plus relocations.
     # As a catch-all, also include any section that comprises > 4% of the
     # largest section. Use largest section rather than total so that it still
@@ -71,7 +71,7 @@ def _GetSectionSizeInfo(section_sizes):
             _IncludeInTotals(name) and abs(_Divide(size, max_bytes)) > .04)
 
   section_names = sorted(k for k, v  in section_sizes.iteritems()
-                         if is_relevant_section(k, v))
+                         if is_significant_section(k, v))
 
   return (total_bytes, section_names)
 
@@ -318,12 +318,24 @@ class DescriberText(Describer):
         for l in self._DescribeSymbolGroupChildren(s, indent=indent + 1):
           yield l
 
+  @staticmethod
+  def _RelevantSections(section_names):
+    relevant_sections = [
+        s for s in models.SECTION_TO_SECTION_NAME.itervalues()
+        if s in section_names]
+    if models.SECTION_MULTIPLE in relevant_sections:
+      relevant_sections.remove(models.SECTION_MULTIPLE)
+    return relevant_sections
+
   def _DescribeSymbolGroup(self, group):
     if self.summarize:
       total_size = group.pss
-      section_sizes = collections.defaultdict(float)
+      pss_by_section = collections.defaultdict(float)
+      counts_by_section = collections.defaultdict(int)
       for s in group.IterLeafSymbols():
-        section_sizes[s.section_name] += s.pss
+        pss_by_section[s.section_name] += s.pss
+        if not s.IsDelta() or s.diff_status is not models.DIFF_STATUS_UNCHANGED:
+          counts_by_section[s.section_name] += 1
 
     # Apply this filter after calcualating size since an alias being removed
     # causes some symbols to be UNCHANGED, yet have pss != 0.
@@ -346,16 +358,15 @@ class DescriberText(Describer):
       else:
         unique_part = '{:,} unique'.format(group.CountUniqueSymbols())
 
-      relevant_sections = [
-          s for s in models.SECTION_TO_SECTION_NAME.itervalues()
-          if s in section_sizes]
-      if models.SECTION_MULTIPLE in relevant_sections:
-        relevant_sections.remove(models.SECTION_MULTIPLE)
+      relevant_sections = self._RelevantSections(pss_by_section)
 
-      size_summary = ' '.join(
-          '{}={:<10}'.format(k, _PrettySize(int(section_sizes[k])))
+      size_summary = 'Sizes: ' + ' '.join(
+          '{}={:<10}'.format(k, _PrettySize(int(pss_by_section[k])))
           for k in relevant_sections)
       size_summary += ' total={:<10}'.format(_PrettySize(int(total_size)))
+
+      counts_summary = 'Counts: ' + ' '.join(
+          '{}={}'.format(k, counts_by_section[k]) for k in relevant_sections)
 
       section_legend = ', '.join(
           '{}={}'.format(models.SECTION_NAME_TO_SECTION[k], k)
@@ -366,6 +377,7 @@ class DescriberText(Describer):
               len(group), unique_part, int(total_size))],
           histogram.Generate(),
           [size_summary.rstrip()],
+          [counts_summary],
           ['Number of unique paths: {}'.format(len(unique_paths))],
           [''],
           ['Section Legend: {}'.format(section_legend)],
@@ -423,30 +435,45 @@ class DescriberText(Describer):
 
   def _DescribeDeltaSymbolGroup(self, delta_group):
     if self.summarize:
-      header_template = ('{} symbols added (+), {} changed (~), '
-                         '{} removed (-), {} unchanged (not shown)')
-      # Apply this filter since an alias being removed causes some symbols to be
-      # UNCHANGED, yet have pss != 0.
-      changed_delta_group = delta_group.WhereDiffStatusIs(
-          models.DIFF_STATUS_UNCHANGED).Inverted()
-      num_inc = sum(1 for s in changed_delta_group if s.pss > 0)
-      num_dec = sum(1 for s in changed_delta_group if s.pss < 0)
+      num_inc = 0
+      num_dec = 0
+      counts_by_section = collections.defaultdict(int)
+      for sym in delta_group.IterLeafSymbols():
+        if sym.pss > 0:
+          num_inc += 1
+        elif sym.pss < 0:
+          num_dec += 1
+
+        status = sym.diff_status
+        if status == models.DIFF_STATUS_ADDED:
+          counts_by_section[sym.section_name] += 1
+        elif status == models.DIFF_STATUS_REMOVED:
+          counts_by_section[sym.section_name] -= 1
+
+      relevant_sections = self._RelevantSections(counts_by_section)
       counts = delta_group.CountsByDiffStatus()
+      diff_status_msg = ('{} symbols added (+), {} changed (~), '
+                         '{} removed (-), {} unchanged (not shown)').format(
+          counts[models.DIFF_STATUS_ADDED],
+          counts[models.DIFF_STATUS_CHANGED],
+          counts[models.DIFF_STATUS_REMOVED],
+          counts[models.DIFF_STATUS_UNCHANGED])
+      counts_by_section_msg = 'Added/Removed by section: ' + ' '.join(
+          '{}: {:+}'.format(k, counts_by_section[k]) for k in relevant_sections)
+
       num_unique_before_symbols, num_unique_after_symbols = (
           delta_group.CountUniqueSymbols())
       diff_summary_desc = [
-          header_template.format(
-              counts[models.DIFF_STATUS_ADDED],
-              counts[models.DIFF_STATUS_CHANGED],
-              counts[models.DIFF_STATUS_REMOVED],
-              counts[models.DIFF_STATUS_UNCHANGED]),
+          diff_status_msg,
+          counts_by_section_msg,
           'Of changed symbols, {} grew, {} shrank'.format(num_inc, num_dec),
           'Number of unique symbols {} -> {} ({:+})'.format(
               num_unique_before_symbols, num_unique_after_symbols,
               num_unique_after_symbols - num_unique_before_symbols),
           ]
       path_delta_desc = itertools.chain(
-          self._DescribeDiffObjectPaths(delta_group), ('',))
+          self._DescribeDiffObjectPaths(delta_group),
+          ('',))
     else:
       diff_summary_desc = ()
       path_delta_desc = ()
@@ -558,18 +585,18 @@ class DescriberCsv(Describer):
     return self.stringio.getvalue().rstrip()
 
   def _DescribeSectionSizes(self, section_sizes):
-    relevant_section_names = _GetSectionSizeInfo(section_sizes)[1]
+    significant_section_names = _GetSectionSizeInfo(section_sizes)[1]
 
     if self.verbose:
-      relevant_set = set(relevant_section_names)
+      significant_set = set(significant_section_names)
       section_names = sorted(section_sizes.iterkeys())
-      yield self._RenderCsv(['Name', 'Size', 'IsRelevant'])
+      yield self._RenderCsv(['Name', 'Size', 'IsSignificant'])
       for name in section_names:
         size = section_sizes[name]
-        yield self._RenderCsv([name, size, int(name in relevant_set)])
+        yield self._RenderCsv([name, size, int(name in significant_set)])
     else:
       yield self._RenderCsv(['Name', 'Size'])
-      for name in relevant_section_names:
+      for name in significant_section_names:
         size = section_sizes[name]
         yield self._RenderCsv([name, size])
 

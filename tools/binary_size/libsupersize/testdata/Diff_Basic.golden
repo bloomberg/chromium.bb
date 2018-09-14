@@ -40,6 +40,7 @@ Other section sizes:
     .symtab: 0 bytes (0 bytes)
 
 2 symbols added (+), 2 changed (~), 3 removed (-), 241 unchanged (not shown)
+Added/Removed by section: .data: +2 .pak.translations: -3
 Of changed symbols, 3 grew, 4 shrank
 Number of unique symbols 251 -> 250 (-1)
 0 paths added, 0 removed, 2 changed
@@ -50,7 +51,8 @@ Changed files:
 Showing 7 symbols (5 -> 4 unique) with total pss: -112 bytes
 Histogram of symbols based on PSS:
     (-128,-64]: 1   (-32,-16]: 2   (-16,-8]: 1   [4,8): 2   [8,16): 1
-.text=0 bytes    .rodata=10 bytes   .data.rel.ro=0 bytes    .data=8 bytes    .bss=0 bytes    .pak.translations=-130 bytes total=-112 bytes
+Sizes: .text=0 bytes    .rodata=10 bytes   .data.rel.ro=0 bytes    .data=8 bytes    .bss=0 bytes    .pak.translations=-130 bytes total=-112 bytes
+Counts: .text=0 .rodata=1 .data.rel.ro=0 .data=2 .bss=0 .pak.translations=4
 Number of unique paths: 3
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, p=.pak.translations

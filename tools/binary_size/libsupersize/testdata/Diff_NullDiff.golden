@@ -21,12 +21,14 @@ Section Sizes (Total=0 bytes (0 bytes)):
     .text: 0 bytes (0 bytes) (0.0%)
 
 0 symbols added (+), 0 changed (~), 0 removed (-), 50 unchanged (not shown)
+Added/Removed by section: 
 Of changed symbols, 0 grew, 0 shrank
 Number of unique symbols 48 -> 48 (+0)
 0 paths added, 0 removed, 0 changed
 
 Showing 0 symbols (0 -> 0 unique) with total pss: 0 bytes
-.text=0 bytes    .rodata=0 bytes    .data.rel.ro=0 bytes    .data=0 bytes    .bss=0 bytes    .other=0 bytes    total=0 bytes
+Sizes: .text=0 bytes    .rodata=0 bytes    .data.rel.ro=0 bytes    .data=0 bytes    .bss=0 bytes    .other=0 bytes    total=0 bytes
+Counts: .text=0 .rodata=0 .data.rel.ro=0 .data=0 .bss=0 .other=0
 Number of unique paths: 0
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, o=.other
