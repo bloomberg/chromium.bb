@@ -38,6 +38,7 @@
 #include "chrome/browser/page_load_metrics/observers/scheme_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/security_state_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/signed_exchange_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
@@ -115,6 +116,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(std::make_unique<previews::PreviewsUKMObserver>());
     tracker->AddObserver(
         std::make_unique<ServiceWorkerPageLoadMetricsObserver>());
+    tracker->AddObserver(
+        std::make_unique<SignedExchangePageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<HttpsEngagementPageLoadMetricsObserver>(
             web_contents_->GetBrowserContext()));

@@ -441,7 +441,8 @@ void NavigationSimulator::ReadyToCommit() {
   PrepareCompleteCallbackOnHandle();
   if (frame_tree_node_->navigation_request()) {
     static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host())
-        ->PrepareForCommitWithSocketAddress(socket_address_);
+        ->PrepareForCommitDeprecatedForNavigationSimulator(
+            socket_address_, is_signed_exchange_inner_response_);
   }
 
   // Synchronous failure can cause the navigation to finish here.
@@ -768,6 +769,13 @@ void NavigationSimulator::SetSocketAddress(
   CHECK_LE(state_, STARTED) << "The socket address cannot be set after the "
                                "navigation has committed or failed";
   socket_address_ = socket_address;
+}
+
+void NavigationSimulator::SetIsSignedExchangeInnerResponse(
+    bool is_signed_exchange_inner_response) {
+  CHECK_LE(state_, STARTED) << "The signed exchange flag cannot be set after "
+                               "the navigation has committed or failed";
+  is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
 }
 
 void NavigationSimulator::SetInterfaceProviderRequest(

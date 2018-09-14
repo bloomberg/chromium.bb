@@ -495,22 +495,27 @@ void TestRenderFrameHost::DidEnforceInsecureRequestPolicy(
 }
 
 void TestRenderFrameHost::PrepareForCommit() {
-  PrepareForCommitInternal(GURL(), net::HostPortPair());
+  PrepareForCommitInternal(GURL(), net::HostPortPair(),
+                           /* is_signed_exchange_inner_response=*/false);
 }
 
-void TestRenderFrameHost::PrepareForCommitWithSocketAddress(
-    const net::HostPortPair& socket_address) {
-  PrepareForCommitInternal(GURL(), socket_address);
+void TestRenderFrameHost::PrepareForCommitDeprecatedForNavigationSimulator(
+    const net::HostPortPair& socket_address,
+    bool is_signed_exchange_inner_response) {
+  PrepareForCommitInternal(GURL(), socket_address,
+                           is_signed_exchange_inner_response);
 }
 
 void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
     const GURL& redirect_url) {
-  PrepareForCommitInternal(redirect_url, net::HostPortPair());
+  PrepareForCommitInternal(redirect_url, net::HostPortPair(),
+                           /* is_signed_exchange_inner_response=*/false);
 }
 
 void TestRenderFrameHost::PrepareForCommitInternal(
     const GURL& redirect_url,
-    const net::HostPortPair& socket_address) {
+    const net::HostPortPair& socket_address,
+    bool is_signed_exchange_inner_response) {
   NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request);
   bool have_to_make_network_request =
@@ -549,6 +554,8 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   scoped_refptr<network::ResourceResponse> response(
       new network::ResourceResponse);
   response->head.socket_address = socket_address;
+  response->head.is_signed_exchange_inner_response =
+      is_signed_exchange_inner_response;
   // TODO(carlosk): Ideally, it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(response, nullptr);
