@@ -32,12 +32,6 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
     // contains one of the allowedCredentials.
     if (transport_availability.has_recognized_mac_touch_id_credential)
       return device::FidoTransportProtocol::kInternal;
-
-    // Otherwise make sure we never return Touch ID (unless there is no other
-    // option, in which case we auto advance to a special error screen).
-    candidate_transports.erase(device::FidoTransportProtocol::kInternal);
-    if (candidate_transports.empty())
-      return device::FidoTransportProtocol::kInternal;
   }
 
   // If caBLE is listed as one of the allowed transports, it indicates that the
@@ -52,11 +46,14 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
   }
 
   // Otherwise, for GetAssertion calls, if the |last_used_transport| is
-  // available, use that.
+  // available, use that. Unless the preference is Touch ID, because Touch ID
+  // at this point is guaranteed to not have the credential and would go
+  // straight to its special error screen.
   if (transport_availability.request_type ==
           device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
       last_used_transport &&
-      base::ContainsKey(candidate_transports, *last_used_transport)) {
+      base::ContainsKey(candidate_transports, *last_used_transport) &&
+      *last_used_transport != device::FidoTransportProtocol::kInternal) {
     return *last_used_transport;
   }
 
