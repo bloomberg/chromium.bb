@@ -747,8 +747,8 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
 
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
     std::string dump_name =
-        base::StringPrintf("gpu/gl/buffers/share_group_0x%" PRIX64 "",
-                           memory_tracker_->ShareGroupTracingGUID());
+        base::StringPrintf("gpu/gl/buffers/context_group_0x%" PRIX64 "",
+                           memory_tracker_->ContextGroupTracingId());
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes, mem_represented());
@@ -757,15 +757,13 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     return true;
   }
 
-  const uint64_t share_group_tracing_guid =
-      memory_tracker_->ShareGroupTracingGUID();
   for (const auto& buffer_entry : buffers_) {
     const auto& client_buffer_id = buffer_entry.first;
     const auto& buffer = buffer_entry.second;
 
     std::string dump_name = base::StringPrintf(
-        "gpu/gl/buffers/share_group_0x%" PRIX64 "/buffer_0x%" PRIX32,
-        share_group_tracing_guid, client_buffer_id);
+        "gpu/gl/buffers/context_group_0x%" PRIX64 "/buffer_0x%" PRIX32,
+        memory_tracker_->ContextGroupTracingId(), client_buffer_id);
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes,
@@ -779,8 +777,8 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
       pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
                                            0 /* importance */);
     } else {
-      auto guid = gl::GetGLBufferGUIDForTracing(share_group_tracing_guid,
-                                                client_buffer_id);
+      auto guid = gl::GetGLBufferGUIDForTracing(
+          memory_tracker_->ContextGroupTracingId(), client_buffer_id);
       pmd->CreateSharedGlobalAllocatorDump(guid);
       pmd->AddOwnershipEdge(dump->guid(), guid);
     }
