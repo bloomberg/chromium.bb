@@ -205,7 +205,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchQuickActionControl.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchTermControl.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/ChromeAnimation.java",
-  "java/src/org/chromium/chrome/browser/compositor/layouts/EdgeSwipeHandlerLayoutDelegate.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/EmptyOverviewModeObserver.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/Layout.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/LayoutManager.java",

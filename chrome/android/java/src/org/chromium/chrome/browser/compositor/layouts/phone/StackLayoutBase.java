@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.NonOverlappingStack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.OverlappingStack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
@@ -848,32 +847,6 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
         // We will render before we get a call to updateLayout.  Need to make sure all of the tabs
         // we need to render are up to date.
         updateLayout(time, 0);
-    }
-
-    @Override
-    public void swipeStarted(long time, @ScrollDirection int direction, float x, float y) {
-        mStacks.get(getTabStackIndex()).swipeStarted(time, direction, x, y);
-    }
-
-    @Override
-    public void swipeUpdated(long time, float x, float y, float dx, float dy, float tx, float ty) {
-        mStacks.get(getTabStackIndex()).swipeUpdated(time, x, y, dx, dy, tx, ty);
-    }
-
-    @Override
-    public void swipeFinished(long time) {
-        mStacks.get(getTabStackIndex()).swipeFinished(time);
-    }
-
-    @Override
-    public void swipeCancelled(long time) {
-        mStacks.get(getTabStackIndex()).swipeCancelled(time);
-    }
-
-    @Override
-    public void swipeFlingOccurred(
-            long time, float x, float y, float tx, float ty, float vx, float vy) {
-        mStacks.get(getTabStackIndex()).swipeFlingOccurred(time, x, y, tx, ty, vx, vy);
     }
 
     @Override
