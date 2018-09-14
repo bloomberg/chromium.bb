@@ -54,6 +54,8 @@ bool ConvertHdcpVersion(const blink::WebString& hdcp_version_string,
     *hdcp_version = HdcpVersion::kHdcpVersion2_1;
   else if (hdcp_version_ascii == "hdcp-2.2")
     *hdcp_version = HdcpVersion::kHdcpVersion2_2;
+  else if (hdcp_version_ascii == "hdcp-2.3")
+    *hdcp_version = HdcpVersion::kHdcpVersion2_3;
   else
     return false;
 
