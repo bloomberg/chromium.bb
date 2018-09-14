@@ -18,6 +18,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_component_creator.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -55,15 +56,11 @@ class TestOptimizationGuideServiceObserver
 
 class PreviewsBrowserTest : public InProcessBrowserTest {
  public:
-  PreviewsBrowserTest()
-      : noscript_css_requested_(false), noscript_js_requested_(false) {}
+  PreviewsBrowserTest() = default;
 
-  ~PreviewsBrowserTest() override {}
+  ~PreviewsBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    noscript_css_requested_ = false;
-    noscript_js_requested_ = false;
-
     // Set up https server with resource monitor.
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
@@ -98,6 +95,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
+    // Due to race conditions, it's possible that blacklist data is not loaded
+    // at the time of first navigation. That may prevent Preview from
+    // triggering, and causing the test to flake.
+    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
   }
 
@@ -105,12 +106,37 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   const GURL& https_no_transform_url() const { return https_no_transform_url_; }
   const GURL& http_url() const { return http_url_; }
   const GURL& redirect_url() const { return redirect_url_; }
-  bool noscript_css_requested() const { return noscript_css_requested_; }
-  bool noscript_js_requested() const { return noscript_js_requested_; }
+  bool noscript_css_requested() const {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return noscript_css_requested_;
+  }
+  bool noscript_js_requested() const {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    return noscript_js_requested_;
+  }
 
  private:
+  void TearDownOnMainThread() override {
+    EXPECT_TRUE(https_server_->ShutdownAndWaitUntilComplete());
+    EXPECT_TRUE(http_server_->ShutdownAndWaitUntilComplete());
+
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
+
   // Called by |https_server_|.
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
+    // This method is called on embedded test server thread. Post the
+    // information on UI thread.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&PreviewsBrowserTest::MonitorResourceRequestOnUIThread,
+                       base::Unretained(this), request));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void MonitorResourceRequestOnUIThread(
+      const net::test_server::HttpRequest& request) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (request.GetURL().spec().find("noscript_test.css") !=
         std::string::npos) {
       noscript_css_requested_ = true;
@@ -137,8 +163,12 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   GURL https_no_transform_url_;
   GURL http_url_;
   GURL redirect_url_;
-  bool noscript_css_requested_;
-  bool noscript_js_requested_;
+
+  // Should be accessed only on UI thread.
+  bool noscript_css_requested_ = false;
+  bool noscript_js_requested_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(PreviewsBrowserTest);
 };
 
 // Loads a webpage that has both script and noscript tags and also requests
@@ -178,8 +208,7 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See https://crbug.com/782322 for detail.
 // Also occasional flakes on win7 (https://crbug.com/789542).
-// Also occasional flakes on Linux Xenial (https://crbug.com/869781).
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
 #define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
   NoScriptPreviewsEnabledHttpRedirectToHttps
@@ -216,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 
 // Flaky in all platforms except Android. See https://crbug.com/803626 for
 // detail.
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_NoScriptPreviewsEnabledButNoTransformDirective \
   NoScriptPreviewsEnabledButNoTransformDirective
 #else
@@ -284,6 +313,7 @@ class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   optimization_guide::testing::TestComponentCreator test_component_creator_;
+  DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideBrowserTest);
 };
 
 // Previews InfoBar (which this test triggers) does not work on Mac.
