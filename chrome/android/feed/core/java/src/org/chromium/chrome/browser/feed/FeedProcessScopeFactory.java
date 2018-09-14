@@ -68,7 +68,7 @@ public class FeedProcessScopeFactory {
         schedulerBridge.initializeFeedDependencies(
                 sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
 
-        // TODO(skym): Pass on the KnownContentApi when the FeedProcessScope provides one.
+        // TODO(skym): Use sFeedProcessScope.getKnownContentApi().
         sFeedOfflineIndicator = new FeedOfflineBridge(profile, null);
     }
 

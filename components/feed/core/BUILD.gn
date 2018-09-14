@@ -8,6 +8,8 @@ if (is_android) {
 
 source_set("feed_core") {
   sources = [
+    "content_metadata.cc",
+    "content_metadata.h",
     "feed_content_database.cc",
     "feed_content_database.h",
     "feed_content_mutation.cc",

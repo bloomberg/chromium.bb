@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_ANDROID_FEED_FEED_OFFLINE_BRIDGE_H_
 
 #include <jni.h>
-#include <stdint.h>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/feed/content/feed_offline_host.h"
+#include "components/feed/core/content_metadata.h"
 
 namespace feed {
 
@@ -48,12 +49,44 @@ class FeedOfflineBridge {
   void OnNoListeners(JNIEnv* env,
                      const base::android::JavaRef<jobject>& j_this);
 
+  // Used to convert from Java ContentMetadata to a native ContentMetadata, and
+  // put the resulting object into |known_content_metadata_buffer_|. When a
+  // GetKnownContent() call finishes, this method should be synchronously called
+  // for every piece of data, and then OnGetKnownContentDone() should be called.
+  void AppendContentMetadata(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& j_this,
+      const base::android::JavaRef<jstring>& j_url,
+      const base::android::JavaRef<jstring>& j_title,
+      const jlong j_time_published_ms,
+      const base::android::JavaRef<jstring>& j_image_url,
+      const base::android::JavaRef<jstring>& j_publisher,
+      const base::android::JavaRef<jstring>& j_favicon_url,
+      const base::android::JavaRef<jstring>& j_snippet);
+
+  // Called to flush the contents of |known_content_metadata_buffer_| to the
+  // |offline_host_|. This should happen at the end of a GetKnownContent() call,
+  // and after AppendContentMetadata() is called for all data.
+  void OnGetKnownContentDone(JNIEnv* env,
+                             const base::android::JavaRef<jobject>& j_this);
+
  private:
+  // Starts an the async request for ContentMetadata through KnownContentApi's
+  // GetKnownContent(). Assumes the caller was FeedOfflineHost and will directly
+  // call FeedOfflineHost::OnGetKnownContentDone() on async completion.
+  void TriggerGetKnownContent();
+
   // Reference to the Java half of this bridge. Always valid.
   base::android::ScopedJavaGlobalRef<jobject> j_this_;
 
   // Object to which all Java to native calls are delegated.
   FeedOfflineHost* offline_host_;
+
+  // Temporarily holds ContentMetadata objects during the completion of a
+  // GetKnownContent call.
+  std::vector<ContentMetadata> known_content_metadata_buffer_;
+
+  base::WeakPtrFactory<FeedOfflineBridge> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedOfflineBridge);
 };
