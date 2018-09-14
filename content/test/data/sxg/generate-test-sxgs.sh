@@ -60,7 +60,8 @@ xxd -p test.example.org_test.sxg |
 # 0x82 : start array of 2 elements.
 # 0xa1 : start map of 1 element -> 0xa4 : 4 elements.
 xxd -p test.example.org_test.sxg |
-  sed '1s/82a1/82a4/' |
+  tr -d '\n' |
+  sed 's/82a1/82a4/' |
   xxd -r -p > test.example.org_test_invalid_cbor_header.sxg
 
 # Generate the signed exchange file with noext certificate
