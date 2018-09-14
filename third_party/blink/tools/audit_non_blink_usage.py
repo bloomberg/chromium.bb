@@ -521,6 +521,8 @@ def check(path, contents):
         A list of line number, disallowed identifier tuples.
     """
     results = []
+    # Because Windows.
+    path = path.replace('\\', '/')
     basename, ext = os.path.splitext(path)
     # Only check code. Ignore tests.
     # TODO(tkent): Remove 'Test' after the great mv.
