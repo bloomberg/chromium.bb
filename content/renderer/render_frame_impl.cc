@@ -2534,17 +2534,19 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
 
   int32_t message_length = static_cast<int32_t>(message.length());
   if (WebUserGestureIndicator::ProcessedUserGestureSinceLoad(frame_)) {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.UserGestureSinceLoad",
-                         message_length);
+    UMA_HISTOGRAM_COUNTS_1M("JSDialogs.CharacterCount.UserGestureSinceLoad",
+                            message_length);
   } else {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.NoUserGestureSinceLoad",
-                         message_length);
+    UMA_HISTOGRAM_COUNTS_1M("JSDialogs.CharacterCount.NoUserGestureSinceLoad",
+                            message_length);
   }
 
   if (is_main_frame_)
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.MainFrame", message_length);
+    UMA_HISTOGRAM_COUNTS_1M("JSDialogs.CharacterCount.MainFrame",
+                            message_length);
   else
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.Subframe", message_length);
+    UMA_HISTOGRAM_COUNTS_1M("JSDialogs.CharacterCount.Subframe",
+                            message_length);
 
   // 10k ought to be enough for anyone.
   const base::string16::size_type kMaxMessageSize = 10 * 1024;

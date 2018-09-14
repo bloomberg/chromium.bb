@@ -812,8 +812,8 @@ bool FileCache::RecoverFilesFromCacheDirectory(
       return false;
     }
   }
-  UMA_HISTOGRAM_COUNTS("Drive.NumberOfCacheFilesRecoveredAfterDBCorruption",
-                       file_number - 1);
+  UMA_HISTOGRAM_COUNTS_1M("Drive.NumberOfCacheFilesRecoveredAfterDBCorruption",
+                          file_number - 1);
   return true;
 }
 

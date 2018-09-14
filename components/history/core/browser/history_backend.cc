@@ -1503,8 +1503,8 @@ void HistoryBackend::DeleteFTSIndexDatabases() {
     if (sql::Database::Delete(current_file))
       num_databases_deleted++;
   }
-  UMA_HISTOGRAM_COUNTS("History.DeleteFTSIndexDatabases",
-                       num_databases_deleted);
+  UMA_HISTOGRAM_COUNTS_1M("History.DeleteFTSIndexDatabases",
+                          num_databases_deleted);
 }
 
 void HistoryBackend::GetFavicon(

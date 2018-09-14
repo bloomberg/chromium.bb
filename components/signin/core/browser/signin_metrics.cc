@@ -696,8 +696,8 @@ void LogSigninProfile(bool is_first_run, base::Time install_date) {
   // Determine how much time passed since install when this profile was signed
   // in.
   base::TimeDelta elapsed_time = base::Time::Now() - install_date;
-  UMA_HISTOGRAM_COUNTS("Signin.ElapsedTimeFromInstallToSignin",
-                       elapsed_time.InMinutes());
+  UMA_HISTOGRAM_COUNTS_1M("Signin.ElapsedTimeFromInstallToSignin",
+                          elapsed_time.InMinutes());
 }
 
 void LogSigninAddAccount() {

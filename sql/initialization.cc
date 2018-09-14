@@ -20,25 +20,25 @@ namespace {
 void RecordSqliteMemory10Min() {
   const int32_t used =
       base::saturated_cast<int32_t>(sqlite3_memory_used() / 1024);
-  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.TenMinutes", used);
+  UMA_HISTOGRAM_COUNTS_1M("Sqlite.MemoryKB.TenMinutes", used);
 }
 
 void RecordSqliteMemoryHour() {
   const int32_t used =
       base::saturated_cast<int32_t>(sqlite3_memory_used() / 1024);
-  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneHour", used);
+  UMA_HISTOGRAM_COUNTS_1M("Sqlite.MemoryKB.OneHour", used);
 }
 
 void RecordSqliteMemoryDay() {
   const int32_t used =
       base::saturated_cast<int32_t>(sqlite3_memory_used() / 1024);
-  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneDay", used);
+  UMA_HISTOGRAM_COUNTS_1M("Sqlite.MemoryKB.OneDay", used);
 }
 
 void RecordSqliteMemoryWeek() {
   const int32_t used =
       base::saturated_cast<int32_t>(sqlite3_memory_used() / 1024);
-  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneWeek", used);
+  UMA_HISTOGRAM_COUNTS_1M("Sqlite.MemoryKB.OneWeek", used);
 }
 #endif  // !defined(OS_IOS)
 

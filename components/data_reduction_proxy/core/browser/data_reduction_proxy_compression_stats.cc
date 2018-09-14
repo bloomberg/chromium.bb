@@ -38,12 +38,12 @@ namespace {
 // CONCAT1 provides extra level of indirection so that __LINE__ macro expands.
 #define CONCAT1(a, b) CONCAT(a, b)
 #define UNIQUE_VARNAME CONCAT1(var_, __LINE__)
-// We need to use a macro instead of a method because UMA_HISTOGRAM_COUNTS
+// We need to use a macro instead of a method because UMA_HISTOGRAM_COUNTS_1M
 // requires its first argument to be an inline string and not a variable.
-#define RECORD_INT64PREF_TO_HISTOGRAM(pref, uma)     \
-  int64_t UNIQUE_VARNAME = GetInt64(pref);           \
-  if (UNIQUE_VARNAME > 0) {                          \
-    UMA_HISTOGRAM_COUNTS(uma, UNIQUE_VARNAME >> 10); \
+#define RECORD_INT64PREF_TO_HISTOGRAM(pref, uma)        \
+  int64_t UNIQUE_VARNAME = GetInt64(pref);              \
+  if (UNIQUE_VARNAME > 0) {                             \
+    UMA_HISTOGRAM_COUNTS_1M(uma, UNIQUE_VARNAME >> 10); \
   }
 
 const double kSecondsPerWeek =
@@ -105,10 +105,9 @@ void RecordDailyContentLengthHistograms(
     return;
 
   // Record metrics in KB.
-  UMA_HISTOGRAM_COUNTS(
-      "Net.DailyOriginalContentLength", original_length >> 10);
-  UMA_HISTOGRAM_COUNTS(
-      "Net.DailyContentLength", received_length >> 10);
+  UMA_HISTOGRAM_COUNTS_1M("Net.DailyOriginalContentLength",
+                          original_length >> 10);
+  UMA_HISTOGRAM_COUNTS_1M("Net.DailyContentLength", received_length >> 10);
 
   int percent = 0;
   // UMA percentage cannot be negative.
@@ -122,12 +121,11 @@ void RecordDailyContentLengthHistograms(
     return;
   }
 
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "Net.DailyOriginalContentLength_DataReductionProxyEnabled",
       original_length_with_data_reduction_enabled >> 10);
-  UMA_HISTOGRAM_COUNTS(
-      "Net.DailyContentLength_DataReductionProxyEnabled",
-      received_length_with_data_reduction_enabled >> 10);
+  UMA_HISTOGRAM_COUNTS_1M("Net.DailyContentLength_DataReductionProxyEnabled",
+                          received_length_with_data_reduction_enabled >> 10);
 
   int percent_data_reduction_proxy_enabled = 0;
   // UMA percentage cannot be negative.
@@ -147,7 +145,7 @@ void RecordDailyContentLengthHistograms(
       (100 * received_length_with_data_reduction_enabled) / received_length);
 
   DCHECK_GE(https_length_with_data_reduction_enabled, 0);
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "Net.DailyContentLength_DataReductionProxyEnabled_Https",
       https_length_with_data_reduction_enabled >> 10);
   UMA_HISTOGRAM_PERCENTAGE(
@@ -155,7 +153,7 @@ void RecordDailyContentLengthHistograms(
       (100 * https_length_with_data_reduction_enabled) / received_length);
 
   DCHECK_GE(short_bypass_length_with_data_reduction_enabled, 0);
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "Net.DailyContentLength_DataReductionProxyEnabled_ShortBypass",
       short_bypass_length_with_data_reduction_enabled >> 10);
   UMA_HISTOGRAM_PERCENTAGE(
@@ -164,7 +162,7 @@ void RecordDailyContentLengthHistograms(
        received_length));
 
   DCHECK_GE(long_bypass_length_with_data_reduction_enabled, 0);
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "Net.DailyContentLength_DataReductionProxyEnabled_LongBypass",
       long_bypass_length_with_data_reduction_enabled >> 10);
   UMA_HISTOGRAM_PERCENTAGE(
@@ -173,7 +171,7 @@ void RecordDailyContentLengthHistograms(
        received_length));
 
   DCHECK_GE(unknown_length_with_data_reduction_enabled, 0);
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "Net.DailyContentLength_DataReductionProxyEnabled_UnknownBypass",
       unknown_length_with_data_reduction_enabled >> 10);
   UMA_HISTOGRAM_PERCENTAGE(
@@ -182,13 +180,12 @@ void RecordDailyContentLengthHistograms(
        received_length));
 
   DCHECK_GE(original_length_via_data_reduction_proxy, 0);
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "Net.DailyOriginalContentLength_ViaDataReductionProxy",
       original_length_via_data_reduction_proxy >> 10);
   DCHECK_GE(received_length_via_data_reduction_proxy, 0);
-  UMA_HISTOGRAM_COUNTS(
-      "Net.DailyContentLength_ViaDataReductionProxy",
-      received_length_via_data_reduction_proxy >> 10);
+  UMA_HISTOGRAM_COUNTS_1M("Net.DailyContentLength_ViaDataReductionProxy",
+                          received_length_via_data_reduction_proxy >> 10);
   UMA_HISTOGRAM_PERCENTAGE(
       "Net.DailyContentPercent_ViaDataReductionProxy",
       (100 * received_length_via_data_reduction_proxy) / received_length);

@@ -711,7 +711,7 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
       }
 
       if (!IsDragDropInProgress()) {
-        UMA_HISTOGRAM_COUNTS("Event.DragDrop.ExternalOriginDrop", 1);
+        UMA_HISTOGRAM_COUNTS_1M("Event.DragDrop.ExternalOriginDrop", 1);
       }
 
       drag_operation = delegate->OnPerformDrop(event);

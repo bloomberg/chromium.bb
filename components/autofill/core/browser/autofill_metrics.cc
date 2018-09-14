@@ -1194,7 +1194,7 @@ void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(bool enabled) {
 
 // static
 void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) {
-  UMA_HISTOGRAM_COUNTS("Autofill.StoredProfileCount", num_profiles);
+  UMA_HISTOGRAM_COUNTS_1M("Autofill.StoredProfileCount", num_profiles);
 }
 
 // static
@@ -1319,7 +1319,8 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
   //     AutofillMetricsTest.StoredServerCreditCardCount_Unmasked
   // TODO(crbug/762131): Delete these in 2018/Q2 once enough UMA history is
   // established for the new names.
-  UMA_HISTOGRAM_COUNTS("Autofill.StoredLocalCreditCardCount", num_local_cards);
+  UMA_HISTOGRAM_COUNTS_1M("Autofill.StoredLocalCreditCardCount",
+                          num_local_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Masked",
                             num_masked_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Unmasked",
@@ -1347,7 +1348,7 @@ void AutofillMetrics::LogHiddenOrPresentationalSelectFieldsFilled() {
 // static
 void AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
     size_t num_profiles) {
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "Autofill.StoredProfileCountAtAutofillableFormSubmission", num_profiles);
 }
 
@@ -1373,7 +1374,7 @@ void AutofillMetrics::LogNumberOfAddressesDeletedForDisuse(
 
 // static
 void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
-  UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
+  UMA_HISTOGRAM_COUNTS_1M("Autofill.AddressSuggestionsCount", num_suggestions);
 }
 
 // static

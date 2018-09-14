@@ -819,8 +819,8 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldReportBlockedResponse()
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogBytesReadForSniffing() {
   if (bytes_read_for_sniffing_ >= 0) {
-    UMA_HISTOGRAM_COUNTS("SiteIsolation.XSD.Browser.BytesReadForSniffing",
-                         bytes_read_for_sniffing_);
+    UMA_HISTOGRAM_COUNTS_1M("SiteIsolation.XSD.Browser.BytesReadForSniffing",
+                            bytes_read_for_sniffing_);
   }
 }
 

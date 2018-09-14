@@ -236,7 +236,7 @@ void OomInterventionTabHelper::OnCrashDumpProcessed(
     time_since_last_navigation =
         base::TimeTicks::Now() - last_navigation_timestamp_;
   }
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "Memory.Experimental.OomIntervention."
       "RendererTimeSinceLastNavigationAtOOM",
       time_since_last_navigation.InSeconds());

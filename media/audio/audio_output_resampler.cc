@@ -106,9 +106,8 @@ static void RecordStats(const AudioParameters& output_params) {
     UMA_HISTOGRAM_ENUMERATION(
         "Media.HardwareAudioSamplesPerSecond", asr, kAudioSampleRateMax + 1);
   } else {
-    UMA_HISTOGRAM_COUNTS(
-        "Media.HardwareAudioSamplesPerSecondUnexpected",
-        output_params.sample_rate());
+    UMA_HISTOGRAM_COUNTS_1M("Media.HardwareAudioSamplesPerSecondUnexpected",
+                            output_params.sample_rate());
   }
 }
 
@@ -128,7 +127,7 @@ static void RecordFallbackStats(const AudioParameters& output_params) {
         "Media.FallbackHardwareAudioSamplesPerSecond",
         asr, kAudioSampleRateMax + 1);
   } else {
-    UMA_HISTOGRAM_COUNTS(
+    UMA_HISTOGRAM_COUNTS_1M(
         "Media.FallbackHardwareAudioSamplesPerSecondUnexpected",
         output_params.sample_rate());
   }

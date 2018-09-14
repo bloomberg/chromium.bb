@@ -99,8 +99,8 @@ void DownloadFeedbackService::MaybeStorePingsForDownload(
   if (!upload_requested)
     return;
 
-  UMA_HISTOGRAM_COUNTS("SBDownloadFeedback.SizeEligibleKB",
-                       download->GetReceivedBytes() / 1024);
+  UMA_HISTOGRAM_COUNTS_1M("SBDownloadFeedback.SizeEligibleKB",
+                          download->GetReceivedBytes() / 1024);
   if (download->GetReceivedBytes() > DownloadFeedback::kMaxUploadSize)
     return;
 

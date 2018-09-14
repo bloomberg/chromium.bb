@@ -418,7 +418,7 @@ void ConnectionFactoryImpl::OnConnectDone(
   }
 
   UMA_HISTOGRAM_BOOLEAN("GCM.ConnectionSuccessRate", true);
-  UMA_HISTOGRAM_COUNTS("GCM.ConnectionEndpoint", next_endpoint_);
+  UMA_HISTOGRAM_COUNTS_1M("GCM.ConnectionEndpoint", next_endpoint_);
   recorder_->RecordConnectionSuccess();
 
   // Reset the endpoint back to the default.

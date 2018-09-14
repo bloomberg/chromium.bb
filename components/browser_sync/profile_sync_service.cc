@@ -2270,11 +2270,11 @@ void ProfileSyncService::ReportPreviousSessionMemoryWarningCount() {
   if (-1 != warning_received) {
     // -1 means it is new client.
     if (!sync_prefs_.DidSyncShutdownCleanly()) {
-      UMA_HISTOGRAM_COUNTS("Sync.MemoryPressureWarningBeforeUncleanShutdown",
-                           warning_received);
+      UMA_HISTOGRAM_COUNTS_1M("Sync.MemoryPressureWarningBeforeUncleanShutdown",
+                              warning_received);
     } else {
-      UMA_HISTOGRAM_COUNTS("Sync.MemoryPressureWarningBeforeCleanShutdown",
-                           warning_received);
+      UMA_HISTOGRAM_COUNTS_1M("Sync.MemoryPressureWarningBeforeCleanShutdown",
+                              warning_received);
     }
   }
   sync_prefs_.SetMemoryPressureWarningCount(0);

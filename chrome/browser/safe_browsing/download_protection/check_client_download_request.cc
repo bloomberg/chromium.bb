@@ -616,8 +616,8 @@ void CheckClientDownloadRequest::OnZipAnalysisFinished(
            << ", success=" << results.success;
 
   if (archived_executable_) {
-    UMA_HISTOGRAM_COUNTS("SBClientDownload.ZipFileArchivedBinariesCount",
-                         results.archived_binary.size());
+    UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.ZipFileArchivedBinariesCount",
+                            results.archived_binary.size());
   }
   UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileSuccess", results.success);
   UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasExecutable",
@@ -734,8 +734,8 @@ void CheckClientDownloadRequest::OnDmgAnalysisFinished(
   if (archived_executable_) {
     base::UmaHistogramSparse("SBClientDownload.DmgFileHasExecutableByType",
                              uma_file_type);
-    UMA_HISTOGRAM_COUNTS("SBClientDownload.DmgFileArchivedBinariesCount",
-                         results.archived_binary.size());
+    UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.DmgFileArchivedBinariesCount",
+                            results.archived_binary.size());
   } else {
     base::UmaHistogramSparse("SBClientDownload.DmgFileHasNoExecutableByType",
                              uma_file_type);
@@ -1085,8 +1085,8 @@ void CheckClientDownloadRequest::SendRequest() {
       base::BindOnce(&CheckClientDownloadRequest::OnURLLoaderComplete,
                      base::Unretained(this)));
   request_start_time_ = base::TimeTicks::Now();
-  UMA_HISTOGRAM_COUNTS("SBClientDownload.DownloadRequestPayloadSize",
-                       client_download_request_data_.size());
+  UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.DownloadRequestPayloadSize",
+                          client_download_request_data_.size());
 
   // The following is to log this ClientDownloadRequest on any open
   // chrome://safe-browsing pages. If no such page is open, the request is

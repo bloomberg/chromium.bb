@@ -299,8 +299,9 @@ void LogRequestStartHistograms() {
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
   const base::Time process_creation_time =
       base::CurrentProcessInfo::CreationTime();
-  UMA_HISTOGRAM_COUNTS("ExtensionInstallSigner.UptimeAtTimeOfRequest",
-                       (base::Time::Now() - process_creation_time).InSeconds());
+  UMA_HISTOGRAM_COUNTS_1M(
+      "ExtensionInstallSigner.UptimeAtTimeOfRequest",
+      (base::Time::Now() - process_creation_time).InSeconds());
 #endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 
   base::TimeDelta delta;
@@ -308,8 +309,8 @@ void LogRequestStartHistograms() {
   if (!g_last_request_time.Get().is_null())
     delta = now - g_last_request_time.Get();
   g_last_request_time.Get() = now;
-  UMA_HISTOGRAM_COUNTS("ExtensionInstallSigner.SecondsSinceLastRequest",
-                       delta.InSeconds());
+  UMA_HISTOGRAM_COUNTS_1M("ExtensionInstallSigner.SecondsSinceLastRequest",
+                          delta.InSeconds());
 
   g_request_count += 1;
   UMA_HISTOGRAM_COUNTS_100("ExtensionInstallSigner.RequestCount",

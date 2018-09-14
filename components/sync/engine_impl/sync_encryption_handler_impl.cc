@@ -1226,8 +1226,8 @@ void SyncEncryptionHandlerImpl::WriteEncryptionStateToNigori(
         // a possible looping of two clients constantly overwriting each other,
         // we limit the absolute number of overwrites per client instantiation.
         nigori_overwrite_count_++;
-        UMA_HISTOGRAM_COUNTS("Sync.AutoNigoriOverwrites",
-                             nigori_overwrite_count_);
+        UMA_HISTOGRAM_COUNTS_1M("Sync.AutoNigoriOverwrites",
+                                nigori_overwrite_count_);
       }
 
       // Note: we don't try to set keybag_is_frozen here since if that

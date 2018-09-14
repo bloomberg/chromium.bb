@@ -930,7 +930,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   for (size_t i = 0; i < params.redirects.size(); ++i) {
     redirect_chain_size += params.redirects[i].spec().length();
   }
-  UMA_HISTOGRAM_COUNTS("Navigation.RedirectChainSize", redirect_chain_size);
+  UMA_HISTOGRAM_COUNTS_1M("Navigation.RedirectChainSize", redirect_chain_size);
 
   // Once it is committed, we no longer need to track several pieces of state on
   // the entry.
@@ -1840,8 +1840,8 @@ bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
     const char kFramePathPrefix[] = "<!--framePath ";
     if (base::StartsWith(unique_name, kFramePathPrefix,
                          base::CompareCase::SENSITIVE)) {
-      UMA_HISTOGRAM_COUNTS("SessionRestore.RestoreSubframeFramePathLength",
-                           unique_name.size());
+      UMA_HISTOGRAM_COUNTS_1M("SessionRestore.RestoreSubframeFramePathLength",
+                              unique_name.size());
     }
   }
 

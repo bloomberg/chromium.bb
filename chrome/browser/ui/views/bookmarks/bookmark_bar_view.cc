@@ -1290,11 +1290,11 @@ void BookmarkBarView::OnImportBookmarks() {
   int64_t install_time = g_browser_process->metrics_service()->GetInstallDate();
   int64_t time_from_install = base::Time::Now().ToTimeT() - install_time;
   if (bookmark_bar_state_ == BookmarkBar::SHOW) {
-    UMA_HISTOGRAM_COUNTS("Import.ShowDialog.FromBookmarkBarView",
-                         time_from_install);
+    UMA_HISTOGRAM_COUNTS_1M("Import.ShowDialog.FromBookmarkBarView",
+                            time_from_install);
   } else if (bookmark_bar_state_ == BookmarkBar::DETACHED) {
-    UMA_HISTOGRAM_COUNTS("Import.ShowDialog.FromFloatingBookmarkBarView",
-                         time_from_install);
+    UMA_HISTOGRAM_COUNTS_1M("Import.ShowDialog.FromFloatingBookmarkBarView",
+                            time_from_install);
   }
 
   chrome::ShowImportDialog(browser_);

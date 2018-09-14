@@ -662,7 +662,8 @@ void WebRtcAudioRenderer::PrepareSink() {
     UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputSampleRate", asr,
                               media::kAudioSampleRateMax + 1);
   } else {
-    UMA_HISTOGRAM_COUNTS("WebRTC.AudioOutputSampleRateUnexpected", sample_rate);
+    UMA_HISTOGRAM_COUNTS_1M("WebRTC.AudioOutputSampleRateUnexpected",
+                            sample_rate);
   }
 
   // Calculate the frames per buffer for the source, i.e. the WebRTC client. We

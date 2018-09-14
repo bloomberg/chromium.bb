@@ -340,32 +340,30 @@ void DataReductionProxyBypassStats::RecordBypassedBytes(
   // remove outliers that would skew the sum of bypassed bytes for each type.
   switch (bypassed_bytes_type) {
     case DataReductionProxyBypassStats::NOT_BYPASSED:
-      UMA_HISTOGRAM_COUNTS(
-          "DataReductionProxy.BypassedBytes.NotBypassed", content_length);
+      UMA_HISTOGRAM_COUNTS_1M("DataReductionProxy.BypassedBytes.NotBypassed",
+                              content_length);
       break;
     case DataReductionProxyBypassStats::SSL:
-      UMA_HISTOGRAM_COUNTS(
-          "DataReductionProxy.BypassedBytes.SSL", content_length);
+      UMA_HISTOGRAM_COUNTS_1M("DataReductionProxy.BypassedBytes.SSL",
+                              content_length);
       break;
     case DataReductionProxyBypassStats::LOCAL_BYPASS_RULES:
-      UMA_HISTOGRAM_COUNTS(
-          "DataReductionProxy.BypassedBytes.LocalBypassRules",
-          content_length);
+      UMA_HISTOGRAM_COUNTS_1M(
+          "DataReductionProxy.BypassedBytes.LocalBypassRules", content_length);
       break;
     case DataReductionProxyBypassStats::PROXY_OVERRIDDEN:
-      UMA_HISTOGRAM_COUNTS(
-          "DataReductionProxy.BypassedBytes.ProxyOverridden",
-          content_length);
+      UMA_HISTOGRAM_COUNTS_1M(
+          "DataReductionProxy.BypassedBytes.ProxyOverridden", content_length);
       break;
     case DataReductionProxyBypassStats::AUDIO_VIDEO:
       switch (bypass_type) {
         case BYPASS_EVENT_TYPE_CURRENT:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes.CurrentAudioVideo",
               content_length);
           break;
         case BYPASS_EVENT_TYPE_SHORT:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes.ShortAudioVideo",
               content_length);
           break;
@@ -376,7 +374,7 @@ void DataReductionProxyBypassStats::RecordBypassedBytes(
     case DataReductionProxyBypassStats::APPLICATION_OCTET_STREAM:
       switch (bypass_type) {
         case BYPASS_EVENT_TYPE_CURRENT:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes.CurrentApplicationOctetStream",
               content_length);
           break;
@@ -387,17 +385,17 @@ void DataReductionProxyBypassStats::RecordBypassedBytes(
     case DataReductionProxyBypassStats::TRIGGERING_REQUEST:
       switch (bypass_type) {
         case BYPASS_EVENT_TYPE_SHORT:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes.ShortTriggeringRequest",
               content_length);
           break;
         case BYPASS_EVENT_TYPE_MEDIUM:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes.MediumTriggeringRequest",
               content_length);
           break;
         case BYPASS_EVENT_TYPE_LONG:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes.LongTriggeringRequest",
               content_length);
           break;
@@ -406,61 +404,60 @@ void DataReductionProxyBypassStats::RecordBypassedBytes(
       }
       break;
     case DataReductionProxyBypassStats::NETWORK_ERROR:
-      UMA_HISTOGRAM_COUNTS(
-          "DataReductionProxy.BypassedBytes.NetworkErrorOther",
-          content_length);
+      UMA_HISTOGRAM_COUNTS_1M(
+          "DataReductionProxy.BypassedBytes.NetworkErrorOther", content_length);
       break;
     case DataReductionProxyBypassStats::BYPASSED_BYTES_TYPE_MAX:
       switch (bypass_type) {
         case BYPASS_EVENT_TYPE_CURRENT:
-          UMA_HISTOGRAM_COUNTS("DataReductionProxy.BypassedBytes.Current",
-                               content_length);
+          UMA_HISTOGRAM_COUNTS_1M("DataReductionProxy.BypassedBytes.Current",
+                                  content_length);
           break;
         case BYPASS_EVENT_TYPE_SHORT:
-          UMA_HISTOGRAM_COUNTS("DataReductionProxy.BypassedBytes.ShortAll",
-                               content_length);
+          UMA_HISTOGRAM_COUNTS_1M("DataReductionProxy.BypassedBytes.ShortAll",
+                                  content_length);
           break;
         case BYPASS_EVENT_TYPE_MEDIUM:
-          UMA_HISTOGRAM_COUNTS("DataReductionProxy.BypassedBytes.MediumAll",
-                               content_length);
+          UMA_HISTOGRAM_COUNTS_1M("DataReductionProxy.BypassedBytes.MediumAll",
+                                  content_length);
           break;
         case BYPASS_EVENT_TYPE_LONG:
-          UMA_HISTOGRAM_COUNTS("DataReductionProxy.BypassedBytes.LongAll",
-                               content_length);
+          UMA_HISTOGRAM_COUNTS_1M("DataReductionProxy.BypassedBytes.LongAll",
+                                  content_length);
           break;
         case BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes.MissingViaHeader4xx",
               content_length);
           break;
         case BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes.MissingViaHeaderOther",
               content_length);
           break;
         case BYPASS_EVENT_TYPE_MALFORMED_407:
-          UMA_HISTOGRAM_COUNTS("DataReductionProxy.BypassedBytes.Malformed407",
-                               content_length);
+          UMA_HISTOGRAM_COUNTS_1M(
+              "DataReductionProxy.BypassedBytes.Malformed407", content_length);
           break;
         case BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes."
               "Status500HttpInternalServerError",
               content_length);
           break;
         case BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes.Status502HttpBadGateway",
               content_length);
           break;
         case BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes."
               "Status503HttpServiceUnavailable",
               content_length);
           break;
         case BYPASS_EVENT_TYPE_URL_REDIRECT_CYCLE:
-          UMA_HISTOGRAM_COUNTS(
+          UMA_HISTOGRAM_COUNTS_1M(
               "DataReductionProxy.BypassedBytes.URLRedirectCycle",
               content_length);
           break;

@@ -164,7 +164,7 @@ void Store(Profile* profile, const base::DictionaryValue* incidents_sent) {
 #if defined(USE_PLATFORM_STATE_STORE)
   std::string data;
   SerializeIncidentsSent(incidents_sent, &data);
-  UMA_HISTOGRAM_COUNTS("SBIRS.PSSDataStoreSize", data.size());
+  UMA_HISTOGRAM_COUNTS_1M("SBIRS.PSSDataStoreSize", data.size());
   WriteStoreData(profile, data);
 #endif
 }

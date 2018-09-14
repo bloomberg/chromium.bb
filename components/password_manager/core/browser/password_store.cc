@@ -489,13 +489,13 @@ void PasswordStore::GetLoginsImpl(const FormDigest& form,
 
 
 void PasswordStore::LogStatsForBulkDeletion(int num_deletions) {
-  UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsDeletedByBulkDelete",
-                       num_deletions);
+  UMA_HISTOGRAM_COUNTS_1M("PasswordManager.NumPasswordsDeletedByBulkDelete",
+                          num_deletions);
 }
 
 void PasswordStore::LogStatsForBulkDeletionDuringRollback(int num_deletions) {
-  UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsDeletedDuringRollback",
-                       num_deletions);
+  UMA_HISTOGRAM_COUNTS_1M("PasswordManager.NumPasswordsDeletedDuringRollback",
+                          num_deletions);
 }
 
 PasswordStoreChangeList PasswordStore::AddLoginSync(const PasswordForm& form) {

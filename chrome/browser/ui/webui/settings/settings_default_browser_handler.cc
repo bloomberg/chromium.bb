@@ -76,7 +76,7 @@ void DefaultBrowserHandler::SetAsDefaultBrowser(const base::ListValue* args) {
   CHECK(!DefaultBrowserIsDisabledByPolicy());
 
   base::RecordAction(base::UserMetricsAction("Options_SetAsDefaultBrowser"));
-  UMA_HISTOGRAM_COUNTS("Settings.StartSetAsDefault", true);
+  UMA_HISTOGRAM_COUNTS_1M("Settings.StartSetAsDefault", true);
 
   default_browser_worker_->StartSetAsDefault();
 

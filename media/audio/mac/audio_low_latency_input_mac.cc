@@ -148,11 +148,11 @@ static int NumberOfPhysicalProcessors() {
 // as expected.
 static void AddSystemInfoToUMA() {
   // Number of logical processors/cores on the current machine.
-  UMA_HISTOGRAM_COUNTS("Media.Audio.LogicalProcessorsMac",
-                       base::SysInfo::NumberOfProcessors());
+  UMA_HISTOGRAM_COUNTS_1M("Media.Audio.LogicalProcessorsMac",
+                          base::SysInfo::NumberOfProcessors());
   // Number of physical processors/cores on the current machine.
-  UMA_HISTOGRAM_COUNTS("Media.Audio.PhysicalProcessorsMac",
-                       NumberOfPhysicalProcessors());
+  UMA_HISTOGRAM_COUNTS_1M("Media.Audio.PhysicalProcessorsMac",
+                          NumberOfPhysicalProcessors());
   DVLOG(1) << "logical processors: " << base::SysInfo::NumberOfProcessors();
   DVLOG(1) << "physical processors: " << NumberOfPhysicalProcessors();
 }
@@ -1411,7 +1411,7 @@ void AUAudioInputStream::ReportAndResetStats() {
                              number_of_frames_provided_);
   // Even if there aren't any glitches, we want to record it to get a feel for
   // how often we get no glitches vs the alternative.
-  UMA_HISTOGRAM_COUNTS("Media.Audio.Capture.Glitches", glitches_detected_);
+  UMA_HISTOGRAM_COUNTS_1M("Media.Audio.Capture.Glitches", glitches_detected_);
 
   auto lost_frames_ms = (total_lost_frames_ * 1000) / format_.mSampleRate;
   std::string log_message = base::StringPrintf(

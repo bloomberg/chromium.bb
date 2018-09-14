@@ -398,9 +398,9 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
 
   UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexRestoreCacheTime",
                       base::TimeTicks::Now() - beginning_time);
-  UMA_HISTOGRAM_COUNTS("History.InMemoryURLHistoryItems",
-                       restored_data->history_id_word_map_.size());
-  UMA_HISTOGRAM_COUNTS("History.InMemoryURLCacheSize", data.size());
+  UMA_HISTOGRAM_COUNTS_1M("History.InMemoryURLHistoryItems",
+                          restored_data->history_id_word_map_.size());
+  UMA_HISTOGRAM_COUNTS_1M("History.InMemoryURLCacheSize", data.size());
   UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLWords",
                              restored_data->word_map_.size());
   UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars",
@@ -445,8 +445,8 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
 
   UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime",
                       base::TimeTicks::Now() - beginning_time);
-  UMA_HISTOGRAM_COUNTS("History.InMemoryURLHistoryItems",
-                       rebuilt_data->history_id_word_map_.size());
+  UMA_HISTOGRAM_COUNTS_1M("History.InMemoryURLHistoryItems",
+                          rebuilt_data->history_id_word_map_.size());
   UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLWords",
                              rebuilt_data->word_map_.size());
   UMA_HISTOGRAM_COUNTS_10000("History.InMemoryURLChars",

@@ -638,10 +638,10 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(Context* context) {
   BookmarkChangeProcessor::UpdateTransactionVersion(
       new_version, bookmark_model_, context->bookmarks_for_version_update());
 
-  UMA_HISTOGRAM_COUNTS("Sync.BookmarksDuplicationsAtAssociation",
-                       context->duplicate_count());
-  UMA_HISTOGRAM_COUNTS("Sync.BookmarksNewDuplicationsAtAssociation",
-                       context->duplicate_count() - initial_duplicate_count);
+  UMA_HISTOGRAM_COUNTS_1M("Sync.BookmarksDuplicationsAtAssociation",
+                          context->duplicate_count());
+  UMA_HISTOGRAM_COUNTS_1M("Sync.BookmarksNewDuplicationsAtAssociation",
+                          context->duplicate_count() - initial_duplicate_count);
 
   if (context->duplicate_count() > initial_duplicate_count) {
     UMA_HISTOGRAM_ENUMERATION("Sync.BookmarksModelSyncStateAtNewDuplication",

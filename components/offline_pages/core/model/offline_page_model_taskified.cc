@@ -759,8 +759,8 @@ void OfflinePageModelTaskified::OnClearCachedPagesDone(
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.ClearTemporaryPages.Result", result,
                             ClearStorageResult::RESULT_COUNT);
   if (deleted_page_count > 0) {
-    UMA_HISTOGRAM_COUNTS("OfflinePages.ClearTemporaryPages.BatchSize",
-                         deleted_page_count);
+    UMA_HISTOGRAM_COUNTS_1M("OfflinePages.ClearTemporaryPages.BatchSize",
+                            deleted_page_count);
   }
 }
 

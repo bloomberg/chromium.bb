@@ -100,8 +100,8 @@ void ProfileWriter::AddHistoryPage(const history::URLRows& page,
   // Measure the size of the history page after Auto Import on first run.
   if (first_run::IsChromeFirstRun() &&
       visit_source == history::SOURCE_IE_IMPORTED) {
-    UMA_HISTOGRAM_COUNTS("Import.ImportedHistorySize.AutoImportFromIE",
-                         page.size());
+    UMA_HISTOGRAM_COUNTS_1M("Import.ImportedHistorySize.AutoImportFromIE",
+                            page.size());
   }
 }
 

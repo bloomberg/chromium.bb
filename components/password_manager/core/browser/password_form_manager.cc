@@ -521,7 +521,7 @@ void PasswordFormManager::ProcessMatches(
         return form->blacklisted_by_user && !form->is_public_suffix_match;
       });
 
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "PasswordManager.NumPasswordsNotShown",
       non_federated.size() + filtered_count - best_matches_.size());
 

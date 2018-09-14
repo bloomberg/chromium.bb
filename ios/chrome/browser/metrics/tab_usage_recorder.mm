@@ -200,7 +200,7 @@ void TabUsageRecorder::RecordTabSwitched(web::WebState* old_web_state,
     // Keep track of the current 'evicted' tab.
     evicted_web_state_ = new_web_state;
     evicted_web_state_state_ = web_state_state;
-    UMA_HISTOGRAM_COUNTS(kPageLoadsBeforeEvictedTabSelected, page_loads_);
+    UMA_HISTOGRAM_COUNTS_1M(kPageLoadsBeforeEvictedTabSelected, page_loads_);
     ResetPageLoads();
   }
 

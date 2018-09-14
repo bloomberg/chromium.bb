@@ -93,7 +93,7 @@ void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads& gamepads) {
     if (contention_count == kMaximumContentionCount)
       break;
   } while (gamepad_hardware_buffer_->seqlock.ReadRetry(version));
-  UMA_HISTOGRAM_COUNTS("Gamepad.ReadContentionCount", contention_count);
+  UMA_HISTOGRAM_COUNTS_1M("Gamepad.ReadContentionCount", contention_count);
 
   if (contention_count >= kMaximumContentionCount) {
     // We failed to successfully read, presumably because the hardware

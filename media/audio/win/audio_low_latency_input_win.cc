@@ -1588,12 +1588,13 @@ void WASAPIAudioInputStream::ReportDelayStatsAndUpdateGlitchCount(
 }
 
 void WASAPIAudioInputStream::ReportAndResetGlitchStats() {
-  UMA_HISTOGRAM_COUNTS("Media.Audio.Capture.Glitches", total_glitches_);
-  UMA_HISTOGRAM_COUNTS("Media.Audio.Capture.Win.DevicePositionLessThanExpected",
-                       total_device_position_less_than_expected_);
-  UMA_HISTOGRAM_COUNTS("Media.Audio.Capture.Win.Discontinuities",
-                       total_discontinuities_);
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M("Media.Audio.Capture.Glitches", total_glitches_);
+  UMA_HISTOGRAM_COUNTS_1M(
+      "Media.Audio.Capture.Win.DevicePositionLessThanExpected",
+      total_device_position_less_than_expected_);
+  UMA_HISTOGRAM_COUNTS_1M("Media.Audio.Capture.Win.Discontinuities",
+                          total_discontinuities_);
+  UMA_HISTOGRAM_COUNTS_1M(
       "Media.Audio.Capture.Win.ConcurrentGlitchAndDiscontinuities",
       total_concurrent_glitch_and_discontinuities_);
 

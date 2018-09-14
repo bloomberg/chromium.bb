@@ -127,8 +127,8 @@ class HistogramSynchronizer::RequestContext {
 
     UMA_HISTOGRAM_BOOLEAN("Histogram.ReceivedProcessGroupCount",
                           received_process_group_count);
-    UMA_HISTOGRAM_COUNTS("Histogram.PendingProcessNotResponding",
-                         unresponsive_processes);
+    UMA_HISTOGRAM_COUNTS_1M("Histogram.PendingProcessNotResponding",
+                            unresponsive_processes);
   }
 
   // Delete all the entries in |outstanding_requests_| map.

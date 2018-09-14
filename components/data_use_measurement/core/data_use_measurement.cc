@@ -156,7 +156,7 @@ void DataUseMeasurement::OnHeadersReceived(
 
 void DataUseMeasurement::OnNetworkBytesReceived(const net::URLRequest& request,
                                                 int64_t bytes_received) {
-  UMA_HISTOGRAM_COUNTS("DataUse.BytesReceived.Delegate", bytes_received);
+  UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.Delegate", bytes_received);
   ReportDataUseUMA(request, DOWNSTREAM, bytes_received);
 #if defined(OS_ANDROID)
   bytes_transferred_since_last_traffic_stats_query_ += bytes_received;
@@ -165,7 +165,7 @@ void DataUseMeasurement::OnNetworkBytesReceived(const net::URLRequest& request,
 
 void DataUseMeasurement::OnNetworkBytesSent(const net::URLRequest& request,
                                             int64_t bytes_sent) {
-  UMA_HISTOGRAM_COUNTS("DataUse.BytesSent.Delegate", bytes_sent);
+  UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.Delegate", bytes_sent);
   ReportDataUseUMA(request, UPSTREAM, bytes_sent);
 #if defined(OS_ANDROID)
   bytes_transferred_since_last_traffic_stats_query_ += bytes_sent;
@@ -360,7 +360,8 @@ void DataUseMeasurement::MaybeRecordNetworkBytesOS() {
       DCHECK_GE(bytes, rx_bytes_os_);
       if (bytes > rx_bytes_os_) {
         // Do not record samples with value 0.
-        UMA_HISTOGRAM_COUNTS("DataUse.BytesReceived.OS", bytes - rx_bytes_os_);
+        UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.OS",
+                                bytes - rx_bytes_os_);
       }
     }
     rx_bytes_os_ = bytes;
@@ -371,7 +372,7 @@ void DataUseMeasurement::MaybeRecordNetworkBytesOS() {
       DCHECK_GE(bytes, tx_bytes_os_);
       if (bytes > tx_bytes_os_) {
         // Do not record samples with value 0.
-        UMA_HISTOGRAM_COUNTS("DataUse.BytesSent.OS", bytes - tx_bytes_os_);
+        UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.OS", bytes - tx_bytes_os_);
       }
     }
     tx_bytes_os_ = bytes;
