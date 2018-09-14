@@ -106,7 +106,6 @@ IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, DefaultHandlerChangeDetector) {
       },
       run_loop.QuitClosure(), &remaining);
 
-  const drive::DriveAppRegistry* const kDriveAppRegistry = nullptr;
   const base::FilePath prefix = base::FilePath().AppendASCII("file");
 
   for (const auto& test : kExpectations) {
@@ -121,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, DefaultHandlerChangeDetector) {
     std::vector<extensions::EntryInfo> entries = {{path, mime_type, false}};
     std::vector<GURL> file_urls{GURL()};
     FindAllTypesOfTasks(
-        browser()->profile(), kDriveAppRegistry, entries, file_urls,
+        browser()->profile(), entries, file_urls,
         base::BindRepeating(callback, test.file_extension, test.app_id));
   }
   run_loop.Run();

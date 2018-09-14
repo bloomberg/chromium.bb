@@ -78,10 +78,6 @@ class JobScheduler : public net::NetworkChangeNotifier::NetworkChangeObserver,
   void CancelJob(JobID job_id) override;
   void CancelAllJobs() override;
 
-  // Adds a GetAppList operation to the queue.
-  // |callback| must not be null.
-  void GetAppList(const google_apis::AppListCallback& callback);
-
   // Adds a GetAboutResource operation to the queue.
   // |callback| must not be null.
   void GetAboutResource(const google_apis::AboutResourceCallback& callback);
@@ -335,12 +331,6 @@ class JobScheduler : public net::NetworkChangeNotifier::NetworkChangeObserver,
       const google_apis::StartPageTokenCallback& callback,
       google_apis::DriveApiErrorCode error,
       std::unique_ptr<google_apis::StartPageToken> start_page_token);
-
-  // Callback for job finishing with a AppListCallback.
-  void OnGetAppListJobDone(JobID job_id,
-                           const google_apis::AppListCallback& callback,
-                           google_apis::DriveApiErrorCode error,
-                           std::unique_ptr<google_apis::AppList> app_list);
 
   // Callback for job finishing with a EntryActionCallback.
   void OnEntryActionJobDone(JobID job_id,

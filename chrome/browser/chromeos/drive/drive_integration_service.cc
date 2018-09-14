@@ -45,7 +45,6 @@
 #include "components/drive/chromeos/file_system_observer.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive_api_util.h"
-#include "components/drive/drive_app_registry.h"
 #include "components/drive/drive_notification_manager.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
@@ -561,8 +560,6 @@ DriveIntegrationService::DriveIntegrationService(
       metadata_storage_.get(),
       cache_root_directory_.Append(kCacheFileDirectory),
       blocking_task_runner_.get(), nullptr /* free_disk_space_getter */));
-  drive_app_registry_ =
-      std::make_unique<DriveAppRegistry>(drive_service_.get());
 
   resource_metadata_.reset(new internal::ResourceMetadata(
       metadata_storage_.get(), cache_.get(), blocking_task_runner_));
@@ -605,7 +602,6 @@ void DriveIntegrationService::Shutdown() {
   debug_info_collector_.reset();
   download_handler_.reset();
   file_system_.reset();
-  drive_app_registry_.reset();
   scheduler_.reset();
   drive_service_.reset();
 }
@@ -708,20 +704,15 @@ void DriveIntegrationService::OnNotificationReceived(
   logger_->Log(logging::LOG_INFO,
                "Received Drive update notification. Will check for update.");
   file_system_->CheckForUpdates(ids);
-  drive_app_registry_->Update();
 }
 
 void DriveIntegrationService::OnNotificationTimerFired() {
   logger_->Log(logging::LOG_INFO,
                "Drive notification timer erpired. Will check all for update.");
   file_system_->CheckForUpdates();
-  drive_app_registry_->Update();
 }
 
 void DriveIntegrationService::OnPushNotificationEnabled(bool enabled) {
-  if (enabled)
-    drive_app_registry_->Update();
-
   const char* status = (enabled ? "enabled" : "disabled");
   logger_->Log(logging::LOG_INFO, "Push notification is %s", status);
 }
@@ -744,8 +735,6 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystem(
   RemoveDriveMountPoint();
 
   state_ = REMOUNTING;
-  // Reloads the Drive app registry.
-  drive_app_registry_->Update();
   // Resetting the file system clears resource metadata and cache.
   file_system_->Reset(base::Bind(
       &DriveIntegrationService::AddBackDriveMountPoint,
@@ -975,9 +964,6 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
         drive_notification_manager->push_notification_registered();
     const char* status = (registered ? "registered" : "not registered");
     logger_->Log(logging::LOG_INFO, "Push notification is %s", status);
-
-    if (drive_notification_manager->push_notification_enabled())
-      drive_app_registry_->Update();
   }
 
   state_ = INITIALIZED;

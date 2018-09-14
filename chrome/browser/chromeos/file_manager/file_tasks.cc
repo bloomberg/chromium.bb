@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/file_task_executor.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/arc_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/crostini_file_tasks.h"
@@ -33,7 +32,6 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/drive/drive_api_util.h"
-#include "components/drive/drive_app_registry.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
@@ -61,12 +59,8 @@ namespace {
 // these are used in default task IDs stored in preferences.
 const char kFileBrowserHandlerTaskType[] = "file";
 const char kFileHandlerTaskType[] = "app";
-const char kDriveAppTaskType[] = "drive";
 const char kArcAppTaskType[] = "arc";
 const char kCrostiniAppTaskType[] = "crostini";
-
-// Drive apps always use the action ID.
-const char kDriveAppActionID[] = "open-with";
 
 // Converts a TaskType to a string.
 std::string TaskTypeToString(TaskType task_type) {
@@ -75,13 +69,12 @@ std::string TaskTypeToString(TaskType task_type) {
       return kFileBrowserHandlerTaskType;
     case TASK_TYPE_FILE_HANDLER:
       return kFileHandlerTaskType;
-    case TASK_TYPE_DRIVE_APP:
-      return kDriveAppTaskType;
     case TASK_TYPE_ARC_APP:
       return kArcAppTaskType;
     case TASK_TYPE_CROSTINI_APP:
       return kCrostiniAppTaskType;
     case TASK_TYPE_UNKNOWN:
+    case DEPRECATED_TASK_TYPE_DRIVE_APP:
     case NUM_TASK_TYPE:
       break;
   }
@@ -95,19 +88,12 @@ TaskType StringToTaskType(const std::string& str) {
     return TASK_TYPE_FILE_BROWSER_HANDLER;
   if (str == kFileHandlerTaskType)
     return TASK_TYPE_FILE_HANDLER;
-  if (str == kDriveAppTaskType)
-    return TASK_TYPE_DRIVE_APP;
   if (str == kArcAppTaskType)
     return TASK_TYPE_ARC_APP;
   if (str == kCrostiniAppTaskType)
     return TASK_TYPE_CROSTINI_APP;
   return TASK_TYPE_UNKNOWN;
 }
-
-// Legacy Drive task extension prefix, used by CrackTaskID.
-const char kDriveTaskExtensionPrefix[] = "drive-app:";
-const size_t kDriveTaskExtensionPrefixLength =
-    arraysize(kDriveTaskExtensionPrefix) - 1;
 
 // Returns true if path_mime_set contains a Google document.
 bool ContainsGoogleDocument(const std::vector<extensions::EntryInfo>& entries) {
@@ -292,19 +278,11 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
   std::vector<std::string> result = base::SplitString(
       task_id, "|", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  // Parse a legacy task ID that only contain two parts. Drive tasks are
-  // identified by a prefix "drive-app:" on the extension ID. The legacy task
-  // IDs can be stored in preferences.
+  // Parse a legacy task ID that only contain two parts. The legacy task IDs
+  // can be stored in preferences.
   if (result.size() == 2) {
-    if (base::StartsWith(result[0], kDriveTaskExtensionPrefix,
-                         base::CompareCase::SENSITIVE)) {
-      task->task_type = TASK_TYPE_DRIVE_APP;
-      task->app_id = result[0].substr(kDriveTaskExtensionPrefixLength);
-    } else {
-      task->task_type = TASK_TYPE_FILE_BROWSER_HANDLER;
-      task->app_id = result[0];
-    }
-
+    task->task_type = TASK_TYPE_FILE_BROWSER_HANDLER;
+    task->app_id = result[0];
     task->action_id = result[1];
 
     return true;
@@ -349,15 +327,6 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   }
 
-  // drive::FileTaskExecutor is responsible to handle drive tasks.
-  if (task.task_type == TASK_TYPE_DRIVE_APP) {
-    DCHECK_EQ(kDriveAppActionID, task.action_id);
-    drive::FileTaskExecutor* executor =
-        new drive::FileTaskExecutor(profile, task.app_id);
-    executor->Execute(file_urls, std::move(done));
-    return true;
-  }
-
   // Get the extension.
   const Extension* extension = extensions::ExtensionRegistry::Get(
       profile)->enabled_extensions().GetByID(task.app_id);
@@ -385,68 +354,6 @@ bool ExecuteFileTask(Profile* profile,
   }
   NOTREACHED();
   return false;
-}
-
-void FindDriveAppTasks(const drive::DriveAppRegistry& drive_app_registry,
-                       const std::vector<extensions::EntryInfo>& entries,
-                       std::vector<FullTaskDescriptor>* result_list) {
-  DCHECK(result_list);
-
-  bool is_first = true;
-  typedef std::map<std::string, drive::DriveAppInfo> DriveAppInfoMap;
-  DriveAppInfoMap drive_app_map;
-
-  for (std::vector<extensions::EntryInfo>::const_iterator it = entries.begin();
-       it != entries.end(); ++it) {
-    const base::FilePath& file_path = it->path;
-    const std::string& mime_type = it->mime_type;
-    // Return immediately if a file not on Drive is found, as Drive app tasks
-    // work only if all files are on Drive.
-    if (!drive::util::IsUnderDriveMountPoint(file_path))
-      return;
-
-    std::vector<drive::DriveAppInfo> app_info_list;
-    drive_app_registry.GetAppsForFile(file_path.Extension(),
-                                      mime_type,
-                                      &app_info_list);
-
-    if (is_first) {
-      // For the first file, we store all the info.
-      for (size_t j = 0; j < app_info_list.size(); ++j)
-        drive_app_map[app_info_list[j].app_id] = app_info_list[j];
-    } else {
-      // For remaining files, take the intersection with the current
-      // result, based on the app id.
-      std::set<std::string> app_id_set;
-      for (size_t j = 0; j < app_info_list.size(); ++j)
-        app_id_set.insert(app_info_list[j].app_id);
-      for (DriveAppInfoMap::iterator iter = drive_app_map.begin();
-           iter != drive_app_map.end();) {
-        if (app_id_set.count(iter->first) == 0) {
-          drive_app_map.erase(iter++);
-        } else {
-          ++iter;
-        }
-      }
-    }
-
-    is_first = false;
-  }
-
-  for (DriveAppInfoMap::const_iterator iter = drive_app_map.begin();
-       iter != drive_app_map.end(); ++iter) {
-    const drive::DriveAppInfo& app_info = iter->second;
-    TaskDescriptor descriptor(app_info.app_id,
-                              TASK_TYPE_DRIVE_APP,
-                              kDriveAppActionID);
-    GURL icon_url = drive::util::FindPreferredIcon(
-        app_info.app_icons,
-        drive::util::kPreferredIconSize);
-
-    result_list->push_back(FullTaskDescriptor(
-        descriptor, app_info.app_name, Verb::VERB_OPEN_WITH, icon_url,
-        false /* is_default */, false /* is_generic_file_handler */));
-  }
 }
 
 bool IsGoodMatchFileHandler(
@@ -537,7 +444,7 @@ void FindFileHandlerTasks(Profile* profile,
           extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, handler->id);
 
       GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
-          extension, drive::util::kPreferredIconSize,
+          extension, extension_misc::EXTENSION_ICON_SMALL,
           ExtensionIconSet::MATCH_BIGGER,
           false);  // grayscale
 
@@ -614,15 +521,15 @@ void FindExtensionAndAppTasks(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list) {
   std::vector<FullTaskDescriptor>* result_list_ptr = result_list.get();
 
-  // 3. Continues from FindAllTypesOfTasks. Find and append file handler tasks.
+  // 2. Continues from FindAllTypesOfTasks. Find and append file handler tasks.
   FindFileHandlerTasks(profile, entries, result_list_ptr);
 
-  // 4. Find and append file browser handler tasks. We know there aren't
+  // 3. Find and append file browser handler tasks. We know there aren't
   // duplicates because "file_browser_handlers" and "file_handlers" shouldn't
   // be used in the same manifest.json.
   FindFileBrowserHandlerTasks(profile, file_urls, result_list_ptr);
 
-  // 5. Find and append Crostini tasks.
+  // 4. Find and append Crostini tasks.
   FindCrostiniTasks(
       profile, entries, result_list_ptr,
       // Done. Apply post-filtering and callback.
@@ -631,7 +538,6 @@ void FindExtensionAndAppTasks(
 }
 
 void FindAllTypesOfTasks(Profile* profile,
-                         const drive::DriveAppRegistry* drive_app_registry,
                          const std::vector<extensions::EntryInfo>& entries,
                          const std::vector<GURL>& file_urls,
                          FindTasksCallback callback) {
@@ -639,11 +545,7 @@ void FindAllTypesOfTasks(Profile* profile,
   std::unique_ptr<std::vector<FullTaskDescriptor>> result_list(
       new std::vector<FullTaskDescriptor>);
 
-  // 1. Find Drive app tasks, if the drive app registry is present.
-  if (drive_app_registry)
-    FindDriveAppTasks(*drive_app_registry, entries, result_list.get());
-
-  // 2. Find and append ARC handler tasks.
+  // Find and append ARC handler tasks.
   FindArcTasks(profile, entries, file_urls, std::move(result_list),
                base::BindOnce(&FindExtensionAndAppTasks, profile, entries,
                               file_urls, std::move(callback)));

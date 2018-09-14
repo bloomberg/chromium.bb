@@ -766,33 +766,6 @@ TEST_F(DriveApiRequestsTest, AboutGetRequest_InvalidJson) {
   EXPECT_FALSE(about_resource);
 }
 
-TEST_F(DriveApiRequestsTest, AppsListRequest) {
-  // Set an expected data file containing valid result.
-  expected_data_file_path_ = test_util::GetTestFilePath(
-      "drive/applist.json");
-
-  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
-  std::unique_ptr<AppList> app_list;
-
-  {
-    base::RunLoop run_loop;
-    std::unique_ptr<drive::AppsListRequest> request =
-        std::make_unique<drive::AppsListRequest>(
-            request_sender_.get(), *url_generator_,
-            false,  // use_internal_endpoint
-            test_util::CreateQuitCallback(
-                &run_loop,
-                test_util::CreateCopyResultCallback(&error, &app_list)));
-    request_sender_->StartRequestWithAuthRetry(std::move(request));
-    run_loop.Run();
-  }
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/drive/v2/apps", http_request_.relative_url);
-  EXPECT_TRUE(app_list);
-}
-
 TEST_F(DriveApiRequestsTest, ChangesListRequest) {
   EnableTeamDrivesIntegration();
   // Set an expected data file containing valid result.

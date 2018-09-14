@@ -35,7 +35,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/drive/drive_app_registry.h"
 #include "components/drive/event_logger.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -392,10 +391,8 @@ class SingleEntryPropertiesGetterForDrive {
 
     drive::FileSystemInterface* const file_system =
         drive::util::GetFileSystemByProfile(file_owner_profile_);
-    drive::DriveAppRegistry* const app_registry =
-        drive::util::GetDriveAppRegistryByProfile(file_owner_profile_);
-    if (!file_system || !app_registry) {
-      // |file_system| or |app_registry| is NULL if Drive is disabled.
+    if (!file_system) {
+      // |file_system| is NULL if Drive is disabled.
       CompleteGetEntryProperties(drive::FILE_ERROR_FAILED);
       return;
     }
@@ -405,37 +402,6 @@ class SingleEntryPropertiesGetterForDrive {
     if (!owner_resource_entry_->has_file_specific_info()) {
       CompleteGetEntryProperties(drive::FILE_ERROR_OK);
       return;
-    }
-
-    const drive::FileSpecificInfo& file_specific_info =
-        owner_resource_entry_->file_specific_info();
-
-    // Get drive WebApps that can accept this file. We just need to extract the
-    // doc icon for the drive app, which is set as default.
-    std::vector<drive::DriveAppInfo> drive_apps;
-    app_registry->GetAppsForFile(file_path_.Extension(),
-                                 file_specific_info.content_mime_type(),
-                                 &drive_apps);
-    if (!drive_apps.empty()) {
-      std::string default_task_id =
-          file_manager::file_tasks::GetDefaultTaskIdFromPrefs(
-              *file_owner_profile_->GetPrefs(),
-              file_specific_info.content_mime_type(),
-              file_path_.Extension());
-      file_manager::file_tasks::TaskDescriptor default_task;
-      file_manager::file_tasks::ParseTaskID(default_task_id, &default_task);
-      DCHECK(default_task_id.empty() || !default_task.app_id.empty());
-      for (size_t i = 0; i < drive_apps.size(); ++i) {
-        const drive::DriveAppInfo& app_info = drive_apps[i];
-        if (default_task.app_id == app_info.app_id) {
-          // The drive app is set as default. The Files app should use the doc
-          // icon.
-          const GURL doc_icon = drive::util::FindPreferredIcon(
-              app_info.document_icons, drive::util::kPreferredIconSize);
-          properties_->custom_icon_url =
-              std::make_unique<std::string>(doc_icon.spec());
-        }
-      }
     }
 
     CompleteGetEntryProperties(drive::FILE_ERROR_OK);

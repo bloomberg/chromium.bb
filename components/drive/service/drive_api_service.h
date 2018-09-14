@@ -166,8 +166,6 @@ class DriveAPIService : public DriveServiceInterface,
   google_apis::CancelCallback GetStartPageToken(
       const std::string& team_drive_id,
       const google_apis::StartPageTokenCallback& callback) override;
-  google_apis::CancelCallback GetAppList(
-      const google_apis::AppListCallback& callback) override;
   google_apis::CancelCallback DeleteResource(
       const std::string& resource_id,
       const std::string& etag,
@@ -251,13 +249,6 @@ class DriveAPIService : public DriveServiceInterface,
       const drive::UploadExistingFileOptions& options,
       const google_apis::FileResourceCallback& callback,
       const google_apis::ProgressCallback& progress_callback) override;
-  google_apis::CancelCallback AuthorizeApp(
-      const std::string& resource_id,
-      const std::string& app_id,
-      const google_apis::AuthorizeAppCallback& callback) override;
-  google_apis::CancelCallback UninstallApp(
-      const std::string& app_id,
-      const google_apis::EntryActionCallback& callback) override;
   google_apis::CancelCallback AddPermission(
       const std::string& resource_id,
       const std::string& email,

@@ -329,27 +329,6 @@ GURL FilesGetRequest::GetURLInternal() const {
                                        embed_origin_);
 }
 
-//============================ FilesAuthorizeRequest ===========================
-
-FilesAuthorizeRequest::FilesAuthorizeRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const FileResourceCallback& callback)
-    : DriveApiDataRequest<FileResource>(sender, callback),
-      url_generator_(url_generator) {
-  DCHECK(!callback.is_null());
-}
-
-FilesAuthorizeRequest::~FilesAuthorizeRequest() {}
-
-std::string FilesAuthorizeRequest::GetRequestType() const {
-  return "POST";
-}
-
-GURL FilesAuthorizeRequest::GetURLInternal() const {
-  return url_generator_.GetFilesAuthorizeUrl(file_id_, app_id_);
-}
-
 //============================ FilesInsertRequest ============================
 
 FilesInsertRequest::FilesInsertRequest(
@@ -708,45 +687,6 @@ ChangesListNextPageRequest::~ChangesListNextPageRequest() {
 
 GURL ChangesListNextPageRequest::GetURLInternal() const {
   return next_link_;
-}
-
-//============================== AppsListRequest ===========================
-
-AppsListRequest::AppsListRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    bool use_internal_endpoint,
-    const AppListCallback& callback)
-    : DriveApiDataRequest<AppList>(sender, callback),
-      url_generator_(url_generator),
-      use_internal_endpoint_(use_internal_endpoint) {
-  DCHECK(!callback.is_null());
-}
-
-AppsListRequest::~AppsListRequest() {}
-
-GURL AppsListRequest::GetURLInternal() const {
-  return url_generator_.GetAppsListUrl(use_internal_endpoint_);
-}
-
-//============================== AppsDeleteRequest ===========================
-
-AppsDeleteRequest::AppsDeleteRequest(RequestSender* sender,
-                                     const DriveApiUrlGenerator& url_generator,
-                                     const EntryActionCallback& callback)
-    : EntryActionRequest(sender, callback),
-      url_generator_(url_generator) {
-  DCHECK(!callback.is_null());
-}
-
-AppsDeleteRequest::~AppsDeleteRequest() {}
-
-std::string AppsDeleteRequest::GetRequestType() const {
-  return "DELETE";
-}
-
-GURL AppsDeleteRequest::GetURL() const {
-  return url_generator_.GetAppsDeleteUrl(app_id_);
 }
 
 //========================== ChildrenInsertRequest ============================

@@ -119,8 +119,7 @@ void OpenFileWithMimeType(Profile* profile,
   file_urls.push_back(url);
 
   file_tasks::FindAllTypesOfTasks(
-      profile, drive::util::GetDriveAppRegistryByProfile(profile), entries,
-      file_urls,
+      profile, entries, file_urls,
       base::Bind(&OpenFileMimeTypeAfterTasksListed, profile, url, callback));
 }
 
