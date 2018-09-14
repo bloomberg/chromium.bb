@@ -18,6 +18,10 @@ struct CORE_EXPORT NGPositionedFloat {
   NGPositionedFloat(scoped_refptr<NGLayoutResult> layout_result,
                     const NGBfcOffset& bfc_offset);
   ~NGPositionedFloat();
+  NGPositionedFloat(NGPositionedFloat&&) noexcept = default;
+  NGPositionedFloat(const NGPositionedFloat&) = default;
+  NGPositionedFloat& operator=(NGPositionedFloat&&) = default;
+  NGPositionedFloat& operator=(const NGPositionedFloat&) = default;
 
   scoped_refptr<NGLayoutResult> layout_result;
   NGBfcOffset bfc_offset;

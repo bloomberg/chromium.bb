@@ -31,7 +31,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   NGExclusionSpaceInternal(const NGExclusionSpaceInternal&);
   NGExclusionSpaceInternal(NGExclusionSpaceInternal&&) noexcept;
   NGExclusionSpaceInternal& operator=(const NGExclusionSpaceInternal&);
-  ~NGExclusionSpaceInternal(){};
+  NGExclusionSpaceInternal& operator=(NGExclusionSpaceInternal&&);
+  ~NGExclusionSpaceInternal() {}
 
   void Add(scoped_refptr<const NGExclusion> exclusion);
 
@@ -138,25 +139,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
               base::AdoptRef(new NGShapeExclusions(*other.shape_exclusions))),
           has_shape_exclusions(other.has_shape_exclusions) {}
 
-    NGShelf(NGShelf&& other) noexcept
-        : block_offset(other.block_offset),
-          line_left(other.line_left),
-          line_right(other.line_right),
-          line_left_edges(std::move(other.line_left_edges)),
-          line_right_edges(std::move(other.line_right_edges)),
-          shape_exclusions(std::move(other.shape_exclusions)),
-          has_shape_exclusions(other.has_shape_exclusions) {}
-
-    NGShelf& operator=(NGShelf&& other) noexcept {
-      block_offset = other.block_offset;
-      line_left = other.line_left;
-      line_right = other.line_right;
-      line_left_edges = std::move(other.line_left_edges);
-      line_right_edges = std::move(other.line_right_edges);
-      shape_exclusions = std::move(other.shape_exclusions);
-      has_shape_exclusions = other.has_shape_exclusions;
-      return *this;
-    }
+    NGShelf(NGShelf&& other) noexcept = default;
+    NGShelf& operator=(NGShelf&& other) noexcept = default;
 
     LayoutUnit block_offset;
     LayoutUnit line_left;
@@ -207,12 +191,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // derived_geometry_ data-structure.
   struct DerivedGeometry {
     DerivedGeometry();
-    DerivedGeometry(DerivedGeometry&& o) noexcept
-        : shelves_(std::move(o.shelves_)),
-          opportunities_(std::move(o.opportunities_)),
-          last_float_block_start_(o.last_float_block_start_),
-          left_float_clear_offset_(o.left_float_clear_offset_),
-          right_float_clear_offset_(o.right_float_clear_offset_) {}
+    DerivedGeometry(DerivedGeometry&& o) noexcept = default;
 
     void Add(const NGExclusion& exclusion);
 
@@ -296,8 +275,7 @@ class CORE_EXPORT NGExclusionSpace {
       : exclusion_space_(other.exclusion_space_ ? new NGExclusionSpaceInternal(
                                                       *other.exclusion_space_)
                                                 : nullptr) {}
-  NGExclusionSpace(NGExclusionSpace&& other) noexcept
-      : exclusion_space_(std::move(other.exclusion_space_)) {}
+  NGExclusionSpace(NGExclusionSpace&& other) noexcept = default;
 
   NGExclusionSpace& operator=(const NGExclusionSpace& other) {
     exclusion_space_ = other.exclusion_space_
@@ -306,11 +284,12 @@ class CORE_EXPORT NGExclusionSpace {
                            : nullptr;
     return *this;
   }
+  NGExclusionSpace& operator=(NGExclusionSpace&& other) = default;
 
   void Add(scoped_refptr<const NGExclusion> exclusion) {
     if (!exclusion_space_)
       exclusion_space_ = std::make_unique<NGExclusionSpaceInternal>();
-    exclusion_space_->Add(exclusion);
+    exclusion_space_->Add(std::move(exclusion));
   }
 
   // Returns a layout opportunity, within the BFC.

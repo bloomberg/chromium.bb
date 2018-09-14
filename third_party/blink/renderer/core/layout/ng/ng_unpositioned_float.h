@@ -22,6 +22,11 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   NGUnpositionedFloat(NGBlockNode node, NGBlockBreakToken* token);
   ~NGUnpositionedFloat();
 
+  NGUnpositionedFloat(NGUnpositionedFloat&&) noexcept = default;
+  NGUnpositionedFloat(const NGUnpositionedFloat&) noexcept = default;
+  NGUnpositionedFloat& operator=(NGUnpositionedFloat&&) = default;
+  NGUnpositionedFloat& operator=(const NGUnpositionedFloat&) = default;
+
   NGBlockNode node;
   scoped_refptr<NGBlockBreakToken> token;
 
