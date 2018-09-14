@@ -236,6 +236,14 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
+    public void didReloadLoFiImages() {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().didReloadLoFiImages();
+        }
+    }
+
+    @Override
+    @CalledByNative
     public void destroy() {
         // Super destruction semantics (removing the observer from the
         // Java-based WebContents) are quite different, so we explicitly avoid

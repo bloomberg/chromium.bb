@@ -363,6 +363,11 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
+            public void didReloadLoFiImages(Tab tab) {
+                mLocationBar.updateSecurityIcon();
+            }
+
+            @Override
             public void onTitleUpdated(Tab tab) {
                 mLocationBar.setTitleToPageTitle();
             }

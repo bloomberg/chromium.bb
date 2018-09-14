@@ -277,4 +277,9 @@ void WebContentsObserverProxy::ViewportFitChanged(
       env, java_observer_, as_jint(static_cast<int>(value)));
 }
 
+void WebContentsObserverProxy::DidReloadLoFiImages() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_didReloadLoFiImages(env, java_observer_);
+}
+
 }  // namespace content

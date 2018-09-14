@@ -181,6 +181,11 @@ public abstract class WebContentsObserver {
     public void viewportFitChanged(@ViewportFitType int value) {}
 
     /**
+     * This method is invoked when the WebContents reloads the LoFi images on the page.
+     */
+    public void didReloadLoFiImages() {}
+
+    /**
      * Stop observing the web contents and clean up associated references.
      */
     public void destroy() {
