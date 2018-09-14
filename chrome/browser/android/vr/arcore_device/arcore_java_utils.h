@@ -21,6 +21,8 @@ class ArCoreJavaUtils {
   static bool EnsureLoaded();
   explicit ArCoreJavaUtils(device::ARCoreDevice* arcore_device);
   ~ArCoreJavaUtils();
+  bool ShouldRequestInstallArModule();
+  void RequestInstallArModule();
   bool ShouldRequestInstallSupportedArCore();
   void RequestInstallSupportedArCore(
       base::android::ScopedJavaLocalRef<jobject> j_tab_android);
