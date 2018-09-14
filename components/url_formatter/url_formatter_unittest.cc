@@ -624,6 +624,13 @@ const IDNTestCase idn_cases[] = {
      L"\x0ed0\x0e9a.com",
      false},
 
+    // Lao character that looks like n.
+    // ก11.com
+    {"xn--11-lqi.com",
+     L"\x0e01"
+     L"11.com",
+     false},
+
     // At one point the skeleton of 'w' was 'vv', ensure that
     // that it's treated as 'w'.
     {"xn--wder-qqa.com",
