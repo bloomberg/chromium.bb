@@ -8,15 +8,12 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "ui/base/accelerators/accelerator_manager_delegate.h"
 
 namespace ui {
 
-AcceleratorManager::AcceleratorManager(AcceleratorManagerDelegate* delegate)
-    : delegate_(delegate) {}
+AcceleratorManager::AcceleratorManager() = default;
 
-AcceleratorManager::~AcceleratorManager() {
-}
+AcceleratorManager::~AcceleratorManager() = default;
 
 void AcceleratorManager::Register(
     const std::vector<ui::Accelerator>& accelerators,
@@ -24,14 +21,10 @@ void AcceleratorManager::Register(
     AcceleratorTarget* target) {
   DCHECK(target);
 
-  // Accelerators which haven't already been registered with any target.
-  std::vector<ui::Accelerator> new_accelerators;
-
   for (const ui::Accelerator& accelerator : accelerators) {
     AcceleratorTargetList& targets = accelerators_[accelerator].second;
     DCHECK(!base::ContainsValue(targets, target))
         << "Registering the same target multiple times";
-    const bool is_first_target_for_accelerator = targets.empty();
 
     // All priority accelerators go to the front of the line.
     if (priority == kHighPriority) {
@@ -50,11 +43,7 @@ void AcceleratorManager::Register(
       else
         targets.insert(++targets.begin(), target);
     }
-    if (is_first_target_for_accelerator)
-      new_accelerators.push_back(accelerator);
   }
-  if (delegate_ && !new_accelerators.empty())
-    delegate_->OnAcceleratorsRegistered(new_accelerators);
 }
 
 void AcceleratorManager::Unregister(const Accelerator& accelerator,
@@ -139,10 +128,7 @@ void AcceleratorManager::UnregisterImpl(AcceleratorMap::iterator map_iter,
   targets->remove(target);
   if (!targets->empty())
     return;
-  const ui::Accelerator accelerator = map_iter->first;
   accelerators_.erase(map_iter);
-  if (delegate_)
-    delegate_->OnAcceleratorUnregistered(accelerator);
 }
 
 }  // namespace ui
