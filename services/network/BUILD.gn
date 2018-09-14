@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 
-component("network_service") {
+jumbo_component("network_service") {
   sources = [
     "cert_verifier_config_type_converter.cc",
     "cert_verifier_config_type_converter.h",
@@ -311,7 +312,7 @@ source_set("tests") {
   ]
 }
 
-source_set("test_support") {
+jumbo_source_set("test_support") {
   testonly = true
 
   sources = [

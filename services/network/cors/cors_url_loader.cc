@@ -17,15 +17,6 @@ namespace cors {
 
 namespace {
 
-base::Optional<std::string> GetHeaderString(
-    const scoped_refptr<net::HttpResponseHeaders>& headers,
-    const std::string& header_name) {
-  std::string header_value;
-  if (!headers->GetNormalizedHeader(header_name, &header_value))
-    return base::nullopt;
-  return header_value;
-}
-
 bool NeedsPreflight(const ResourceRequest& request) {
   if (!IsCORSEnabledRequestMode(request.fetch_request_mode))
     return false;
@@ -197,9 +188,8 @@ void CORSURLLoader::OnReceiveResponse(
     // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
     const auto error_status = CheckAccess(
         request_.url, response_head.headers->response_code(),
-        GetHeaderString(response_head.headers,
-                        header_names::kAccessControlAllowOrigin),
-        GetHeaderString(response_head.headers,
+        GetHeaderString(response_head, header_names::kAccessControlAllowOrigin),
+        GetHeaderString(response_head,
                         header_names::kAccessControlAllowCredentials),
         request_.fetch_credentials_mode,
         tainted_ ? url::Origin() : *request_.request_initiator);
@@ -234,9 +224,8 @@ void CORSURLLoader::OnReceiveRedirect(
     // TODO(toyoshim): Reflect --allow-file-access-from-files flag.
     const auto error_status = CheckAccess(
         request_.url, response_head.headers->response_code(),
-        GetHeaderString(response_head.headers,
-                        header_names::kAccessControlAllowOrigin),
-        GetHeaderString(response_head.headers,
+        GetHeaderString(response_head, header_names::kAccessControlAllowOrigin),
+        GetHeaderString(response_head,
                         header_names::kAccessControlAllowCredentials),
         request_.fetch_credentials_mode,
         tainted_ ? url::Origin() : *request_.request_initiator);
@@ -473,6 +462,15 @@ void CORSURLLoader::SetCORSFlagIfNeeded() {
   }
 
   fetch_cors_flag_ = true;
+}
+
+base::Optional<std::string> CORSURLLoader::GetHeaderString(
+    const ResourceResponseHead& response,
+    const std::string& header_name) {
+  std::string header_value;
+  if (!response.headers->GetNormalizedHeader(header_name, &header_value))
+    return base::nullopt;
+  return header_value;
 }
 
 }  // namespace cors

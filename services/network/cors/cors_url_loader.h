@@ -94,6 +94,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   void SetCORSFlagIfNeeded();
 
+  static base::Optional<std::string> GetHeaderString(
+      const ResourceResponseHead& response,
+      const std::string& header_name);
+
   mojo::Binding<mojom::URLLoader> binding_;
 
   // We need to save these for redirect.
