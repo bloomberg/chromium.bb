@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
@@ -543,6 +544,7 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts);
   AddCallback("getTabletModeState",
               &SigninScreenHandler::HandleGetTabletModeState);
+  AddCallback("getDemoModeState", &SigninScreenHandler::HandleGetDemoModeState);
   AddCallback("logRemoveUserWarningShown",
               &SigninScreenHandler::HandleLogRemoveUserWarningShown);
   AddCallback("firstIncorrectPasswordAttempt",
@@ -1600,6 +1602,11 @@ void SigninScreenHandler::HandleLaunchArcKioskApp(
 void SigninScreenHandler::HandleGetTabletModeState() {
   CallJS("login.AccountPickerScreen.setTabletModeState",
          TabletModeClient::Get()->tablet_mode_enabled());
+}
+
+void SigninScreenHandler::HandleGetDemoModeState() {
+  CallJS("login.AccountPickerScreen.setDemoModeState",
+         DemoSession::IsDeviceInDemoMode());
 }
 
 void SigninScreenHandler::HandleLogRemoveUserWarningShown() {
