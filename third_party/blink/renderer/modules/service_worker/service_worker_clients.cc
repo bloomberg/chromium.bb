@@ -94,6 +94,22 @@ class GetCallback : public WebServiceWorkerClientCallbacks {
   DISALLOW_COPY_AND_ASSIGN(GetCallback);
 };
 
+void DidClaim(ScriptPromiseResolver* resolver,
+              mojom::blink::ServiceWorkerErrorType error,
+              const String& error_msg) {
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed())
+    return;
+  if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
+    DCHECK(!error_msg.IsNull());
+    resolver->Reject(
+        ServiceWorkerError::GetException(resolver, error, error_msg));
+    return;
+  }
+  DCHECK(error_msg.IsNull());
+  resolver->Resolve();
+}
+
 }  // namespace
 
 ServiceWorkerClients* ServiceWorkerClients::Create() {
@@ -147,14 +163,9 @@ ScriptPromise ServiceWorkerClients::claim(ScriptState* script_state) {
     return ScriptPromise();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  auto callbacks =
-      std::make_unique<CallbackPromiseAdapter<void, ServiceWorkerError>>(
-          resolver);
   ServiceWorkerGlobalScopeClient::From(execution_context)
-      ->Claim(std::move(callbacks));
-  return promise;
+      ->Claim(WTF::Bind(&DidClaim, WrapPersistent(resolver)));
+  return resolver->Promise();
 }
 
 ScriptPromise ServiceWorkerClients::openWindow(ScriptState* script_state,
