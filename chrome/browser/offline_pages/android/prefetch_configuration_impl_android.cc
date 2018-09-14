@@ -3,51 +3,29 @@
 // found in the LICENSE file.
 
 #include "base/android/jni_android.h"
-#include "chrome/browser/offline_pages/prefetch/prefetch_configuration_impl.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/offline_pages/core/offline_page_feature.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "jni/PrefetchConfiguration_jni.h"
 
 using base::android::JavaParamRef;
 
 // These functions fulfill the Java to native link between
-// PrefetchConfiguration.java and PrefetchConfigurationImpl.
+// PrefetchConfiguration.java and prefetch_prefs.
 
 namespace offline_pages {
 namespace android {
-
-namespace {
-
-PrefetchConfigurationImpl* PrefetchConfigurationImplFromJProfile(
-    const JavaParamRef<jobject>& jprofile) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  if (!profile)
-    return nullptr;
-
-  PrefetchService* prefetch_service =
-      PrefetchServiceFactory::GetForBrowserContext(profile);
-  if (!prefetch_service)
-    return nullptr;
-
-  // The cast below is safe because PrefetchConfigurationImpl is Chrome's
-  // implementation of PrefetchConfiguration.
-  return static_cast<PrefetchConfigurationImpl*>(
-      prefetch_service->GetPrefetchConfiguration());
-}
-
-}  // namespace
 
 JNI_EXPORT jboolean JNI_PrefetchConfiguration_IsPrefetchingEnabled(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jprofile) {
-  PrefetchConfigurationImpl* config_impl =
-      PrefetchConfigurationImplFromJProfile(jprofile);
-  if (config_impl)
-    return static_cast<jboolean>(config_impl->IsPrefetchingEnabled());
-  return false;
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  return profile &&
+         static_cast<jboolean>(prefetch_prefs::IsEnabled(profile->GetPrefs()));
 }
 
 JNI_EXPORT void JNI_PrefetchConfiguration_SetPrefetchingEnabledInSettings(
@@ -55,10 +33,11 @@ JNI_EXPORT void JNI_PrefetchConfiguration_SetPrefetchingEnabledInSettings(
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& jprofile,
     jboolean enabled) {
-  PrefetchConfigurationImpl* config_impl =
-      PrefetchConfigurationImplFromJProfile(jprofile);
-  if (config_impl)
-    config_impl->SetPrefetchingEnabledInSettings(enabled);
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  if (!profile)
+    return;
+
+  prefetch_prefs::SetPrefetchingEnabledInSettings(profile->GetPrefs(), enabled);
 }
 
 }  // namespace android

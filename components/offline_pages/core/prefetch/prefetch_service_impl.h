@@ -28,7 +28,6 @@ class PrefetchServiceImpl : public PrefetchService {
       std::unique_ptr<PrefetchDownloader> prefetch_downloader,
       std::unique_ptr<PrefetchImporter> prefetch_importer,
       std::unique_ptr<PrefetchBackgroundTaskHandler> background_task_handler,
-      std::unique_ptr<PrefetchConfiguration> prefetch_configuration,
       std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher);
 
   ~PrefetchServiceImpl() override;
@@ -53,7 +52,6 @@ class PrefetchServiceImpl : public PrefetchService {
   PrefetchDownloader* GetPrefetchDownloader() override;
   PrefetchImporter* GetPrefetchImporter() override;
   PrefetchBackgroundTaskHandler* GetPrefetchBackgroundTaskHandler() override;
-  PrefetchConfiguration* GetPrefetchConfiguration() override;
   ThumbnailFetcher* GetThumbnailFetcher() override;
 
   // KeyedService implementation:
@@ -73,7 +71,6 @@ class PrefetchServiceImpl : public PrefetchService {
   std::unique_ptr<PrefetchImporter> prefetch_importer_;
   std::unique_ptr<PrefetchBackgroundTaskHandler>
       prefetch_background_task_handler_;
-  std::unique_ptr<PrefetchConfiguration> prefetch_configuration_;
   std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchServiceImpl);

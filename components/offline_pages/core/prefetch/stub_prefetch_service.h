@@ -27,7 +27,6 @@ class StubPrefetchService : public PrefetchService {
   PrefetchStore* GetPrefetchStore() override;
   PrefetchImporter* GetPrefetchImporter() override;
   PrefetchBackgroundTaskHandler* GetPrefetchBackgroundTaskHandler() override;
-  PrefetchConfiguration* GetPrefetchConfiguration() override;
   ThumbnailFetcher* GetThumbnailFetcher() override;
   OfflinePageModel* GetOfflinePageModel() override;
   SuggestedArticlesObserver* GetSuggestedArticlesObserver() override;

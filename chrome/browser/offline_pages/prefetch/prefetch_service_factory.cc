@@ -16,7 +16,6 @@
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/offline_metrics_collector_impl.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_background_task_handler_impl.h"
-#include "chrome/browser/offline_pages/prefetch/prefetch_configuration_impl.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_instance_id_proxy.h"
 #include "chrome/browser/offline_pages/prefetch/thumbnail_fetcher_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,7 +67,8 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
   auto offline_metrics_collector =
       std::make_unique<OfflineMetricsCollectorImpl>(profile->GetPrefs());
 
-  auto prefetch_dispatcher = std::make_unique<PrefetchDispatcherImpl>();
+  auto prefetch_dispatcher =
+      std::make_unique<PrefetchDispatcherImpl>(profile->GetPrefs());
 
   auto prefetch_gcm_app_handler = std::make_unique<PrefetchGCMAppHandler>(
       std::make_unique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
@@ -98,9 +98,6 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
   auto prefetch_background_task_handler =
       std::make_unique<PrefetchBackgroundTaskHandlerImpl>(profile->GetPrefs());
 
-  auto configuration =
-      std::make_unique<PrefetchConfigurationImpl>(profile->GetPrefs());
-
   auto thumbnail_fetcher = std::make_unique<ThumbnailFetcherImpl>();
 
   return new PrefetchServiceImpl(
@@ -109,7 +106,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
       std::move(prefetch_network_request_factory), offline_page_model,
       std::move(prefetch_store), std::move(suggested_articles_observer),
       std::move(prefetch_downloader), std::move(prefetch_importer),
-      std::move(prefetch_background_task_handler), std::move(configuration),
+      std::move(prefetch_background_task_handler),
       std::move(thumbnail_fetcher));
 }
 

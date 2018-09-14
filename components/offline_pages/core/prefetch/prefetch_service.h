@@ -18,7 +18,6 @@ class OfflineEventLogger;
 class OfflineMetricsCollector;
 class OfflinePageModel;
 class PrefetchBackgroundTaskHandler;
-class PrefetchConfiguration;
 class PrefetchDispatcher;
 class PrefetchDownloader;
 class PrefetchGCMHandler;
@@ -82,7 +81,6 @@ class PrefetchService : public KeyedService {
   virtual PrefetchStore* GetPrefetchStore() = 0;
   virtual PrefetchImporter* GetPrefetchImporter() = 0;
   virtual PrefetchBackgroundTaskHandler* GetPrefetchBackgroundTaskHandler() = 0;
-  virtual PrefetchConfiguration* GetPrefetchConfiguration() = 0;
   virtual ThumbnailFetcher* GetThumbnailFetcher() = 0;
   virtual OfflinePageModel* GetOfflinePageModel() = 0;
 

@@ -56,10 +56,6 @@ StubPrefetchService::GetPrefetchBackgroundTaskHandler() {
   return nullptr;
 }
 
-PrefetchConfiguration* StubPrefetchService::GetPrefetchConfiguration() {
-  return nullptr;
-}
-
 ThumbnailFetcher* StubPrefetchService::GetThumbnailFetcher() {
   return nullptr;
 }

@@ -16,11 +16,11 @@
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
 #include "components/offline_pages/core/prefetch/mock_thumbnail_fetcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task.h"
-#include "components/offline_pages/core/prefetch/prefetch_configuration.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_importer_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_request_test_base.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
@@ -30,6 +30,7 @@
 #include "components/offline_pages/core/prefetch/test_download_service.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/version_info/channel.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_test_util.h"
@@ -102,16 +103,6 @@ class TestPrefetchBackgroundTask : public PrefetchBackgroundTask {
   base::RepeatingCallback<void(PrefetchBackgroundTaskRescheduleType)> callback_;
 };
 
-class TestPrefetchConfiguration : public PrefetchConfiguration {
- public:
-  bool IsPrefetchingEnabledBySettings() override { return enabled_; };
-
-  void set_enabled(bool enabled) { enabled_ = enabled; }
-
- private:
-  bool enabled_ = true;
-};
-
 class FakePrefetchNetworkRequestFactory
     : public TestPrefetchNetworkRequestFactory {
  public:
@@ -177,9 +168,7 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
   }
 
   void DisablePrefetchingInSettings() {
-    static_cast<TestPrefetchConfiguration*>(
-        taco_->prefetch_service()->GetPrefetchConfiguration())
-        ->set_enabled(false);
+    prefetch_prefs::SetPrefetchingEnabledInSettings(&prefs_, false);
   }
 
   bool dispatcher_suspended() const { return dispatcher_->suspended_; }
@@ -234,6 +223,7 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
 
   PrefetchStoreTestUtil store_util_{task_runner()};
   base::ScopedTempDir archive_directory_;
+  TestingPrefServiceSimple prefs_;
 
  private:
   std::unique_ptr<PrefetchServiceTestTaco> taco_;
@@ -257,17 +247,16 @@ PrefetchDispatcherTest::PrefetchDispatcherTest() {
 void PrefetchDispatcherTest::SetUp() {
   ASSERT_TRUE(archive_directory_.CreateUniqueTempDir());
 
-  dispatcher_ = new PrefetchDispatcherImpl();
+  dispatcher_ = new PrefetchDispatcherImpl(&prefs_);
   network_request_factory_ =
       new FakePrefetchNetworkRequestFactory(shared_url_loader_factory());
+  prefetch_prefs::RegisterPrefs(prefs_.registry());
   taco_.reset(new PrefetchServiceTestTaco);
   store_util_.BuildStore();
   taco_->SetPrefetchStore(store_util_.ReleaseStore());
   taco_->SetPrefetchDispatcher(base::WrapUnique(dispatcher_));
   taco_->SetPrefetchNetworkRequestFactory(
       base::WrapUnique(network_request_factory_));
-  taco_->SetPrefetchConfiguration(
-      std::make_unique<TestPrefetchConfiguration>());
   auto thumbnail_fetcher = std::make_unique<MockThumbnailFetcher>();
   thumbnail_fetcher_ = thumbnail_fetcher.get();
   taco_->SetThumbnailFetcher(std::move(thumbnail_fetcher));

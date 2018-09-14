@@ -13,6 +13,7 @@
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
 #include "components/offline_pages/task/task_test_base.h"
+#include "components/prefs/testing_pref_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
@@ -67,7 +68,10 @@ class PrefetchTaskTestBase : public TaskTestBase {
 
   MockPrefetchItemGenerator* item_generator() { return &item_generator_; }
 
+  TestingPrefServiceSimple* prefs() { return &prefs_; }
+
  private:
+  TestingPrefServiceSimple prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
