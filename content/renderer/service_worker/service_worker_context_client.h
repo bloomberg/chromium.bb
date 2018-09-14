@@ -388,6 +388,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // the last task finished.
   void OnIdleTimeout();
 
+  void OnRequestedTermination(bool will_be_terminated);
+
   // Returns true if the worker has requested to be terminated by the browser
   // process. It does this due to idle timeout.
   bool RequestedTermination() const;

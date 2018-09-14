@@ -253,7 +253,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Implements mojom::EmbeddedWorkerInstanceHost.
   // These functions all run on the IO thread.
-  void RequestTermination() override;
+  void RequestTermination(RequestTerminationCallback callback) override;
   void CountFeature(blink::mojom::WebFeature feature) override;
   void OnReadyForInspection() override;
   void OnScriptLoaded() override;

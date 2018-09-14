@@ -1740,6 +1740,90 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {
   run_loop.Run();
 }
 
+// Test when the renderer requests termination because the service worker is
+// idle, and the browser ignores the request because DevTools is attached. The
+// renderer should continue processing events on the service worker instead of
+// waiting for termination or an event from the browser. Regression test for
+// https://crbug.com/878667.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, IdleTimerWithDevTools) {
+  StartServerAndNavigateToSetup();
+
+  // This test is based on a new idle timer mechanism which is available only
+  // when S13nServiceWorker or NetworkService is enabled.
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    LOG(WARNING)
+        << "This test requires NetworkService or ServiceWorkerServicification.";
+    return;
+  }
+
+  // Register a service worker.
+  scoped_refptr<WorkerActivatedObserver> observer =
+      new WorkerActivatedObserver(wrapper());
+  observer->Init();
+  const GURL scope =
+      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html");
+  const GURL worker_url = embedded_test_server()->GetURL(
+      "/service_worker/fetch_event_respond_with_fetch.js");
+
+  blink::mojom::ServiceWorkerRegistrationOptions options(
+      scope, blink::mojom::ServiceWorkerUpdateViaCache::kNone);
+  public_context()->RegisterServiceWorker(
+      worker_url, options,
+      base::BindOnce(&ExpectResultAndRun, true, base::DoNothing()));
+  observer->Wait();
+
+  // Navigate to a new page and request a sub resource. This should succeed
+  // normally.
+  {
+    const GURL url = embedded_test_server()->GetURL(
+        "/service_worker/fetch_from_page.html?url=/service_worker/empty.html");
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+    const base::string16 title = base::ASCIIToUTF16("DONE");
+    TitleWatcher watcher(shell()->web_contents(), title);
+    EXPECT_EQ(title, watcher.WaitAndGetTitle());
+  }
+
+  // Simulate to attach DevTools.
+  base::RunLoop loop;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          [](base::OnceClosure done, ServiceWorkerContextWrapper* wrapper,
+             int64_t version_id) {
+            ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+            scoped_refptr<ServiceWorkerVersion> version =
+                wrapper->GetLiveVersion(version_id);
+            version->SetDevToolsAttached(true);
+
+            // Set the idle timer delay to zero for making the service worker
+            // idle immediately. This may cause infinite loop of IPCs when no
+            // event was queued in the renderer because a callback of
+            // RequestTermination() is called and it triggers another
+            // RequestTermination() immediately. However, this is unusual
+            // situation happening only in testing so it's acceptable.
+            // In production code, WakeUp() as the result of
+            // RequestTermination() doesn't happen when the idle timer delay is
+            // set to zero. Instead, activating a new worker will be triggered.
+            version->endpoint()->SetIdleTimerDelayToZero();
+            std::move(done).Run();
+          },
+          loop.QuitClosure(), base::Unretained(wrapper()),
+          observer->version_id()));
+  loop.Run();
+
+  // Trigger another sub resource request. The sub resource request will
+  // directly go to the worker thread and be queued because the worker is
+  // idle. However, the browser process notifies the renderer to let it continue
+  // to work because DevTools is attached, and it'll result in running all
+  // queued events.
+  EXPECT_EQ(200, EvalJs(shell(), R"(
+      (async () => {
+         let response = await fetch(params.get('url'));
+         return response.status;
+      })()
+  )"));
+}
+
 class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
  public:
   using self = ServiceWorkerNavigationPreloadTest;
