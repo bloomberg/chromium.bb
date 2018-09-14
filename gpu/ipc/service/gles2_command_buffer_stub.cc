@@ -231,7 +231,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     if (share_command_buffer_stub) {
       share_group_ = share_command_buffer_stub->share_group();
     } else {
-      share_group_ = new gl::GLShareGroup();
+      share_group_ = base::MakeRefCounted<gl::GLShareGroup>();
     }
   } else {
     // When using the validating command decoder, always use the global share

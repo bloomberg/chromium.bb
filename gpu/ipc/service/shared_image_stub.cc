@@ -132,7 +132,7 @@ int SharedImageStub::ClientId() const {
   return channel_->client_id();
 }
 
-uint64_t SharedImageStub::ShareGroupTracingGUID() const {
+uint64_t SharedImageStub::ContextGroupTracingId() const {
   return sync_point_client_state_->command_buffer_id().GetUnsafeValue();
 }
 

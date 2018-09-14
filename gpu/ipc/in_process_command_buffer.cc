@@ -25,6 +25,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -38,6 +39,7 @@
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gpu_command_buffer_memory_tracker.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
@@ -59,6 +61,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
+#include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
@@ -84,8 +87,13 @@ namespace gpu {
 
 namespace {
 
-base::AtomicSequenceNumber g_next_command_buffer_id;
+base::AtomicSequenceNumber g_next_route_id;
 base::AtomicSequenceNumber g_next_image_id;
+
+CommandBufferId NextCommandBufferId() {
+  return CommandBufferIdFromChannelAndRoute(kInProcessCommandBufferClientId,
+                                            g_next_route_id.GetNext() + 1);
+}
 
 template <typename T>
 base::OnceClosure WrapTaskWithResult(base::OnceCallback<T(void)> task,
@@ -190,9 +198,7 @@ class InProcessCommandBuffer::SharedImageInterface
     : public gpu::SharedImageInterface {
  public:
   explicit SharedImageInterface(InProcessCommandBuffer* parent)
-      : parent_(parent),
-        command_buffer_id_(CommandBufferId::FromUnsafeValue(
-            g_next_command_buffer_id.GetNext() + 1)) {}
+      : parent_(parent), command_buffer_id_(NextCommandBufferId()) {}
 
   ~SharedImageInterface() override = default;
 
@@ -253,8 +259,7 @@ class InProcessCommandBuffer::SharedImageInterface
 
 InProcessCommandBuffer::InProcessCommandBuffer(
     scoped_refptr<CommandBufferTaskExecutor> task_executer)
-    : command_buffer_id_(CommandBufferId::FromUnsafeValue(
-          g_next_command_buffer_id.GetNext() + 1)),
+    : command_buffer_id_(NextCommandBufferId()),
       flush_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       task_executor_(MaybeGetDefaultTaskExecutor(std::move(task_executer))),
@@ -384,16 +389,28 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
 
   GpuDriverBugWorkarounds workarounds(
       task_executor_->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
+
   if (params.share_command_buffer) {
     context_group_ = params.share_command_buffer->context_group_;
   } else {
+    std::unique_ptr<gles2::MemoryTracker> memory_tracker;
+    // Android WebView won't have a memory tracker.
+    if (task_executor_->ShouldCreateMemoryTracker()) {
+      const uint64_t client_tracing_id =
+          base::trace_event::MemoryDumpManager::GetInstance()
+              ->GetTracingProcessId();
+      memory_tracker = std::make_unique<GpuCommandBufferMemoryTracker>(
+          kInProcessCommandBufferClientId, client_tracing_id,
+          command_buffer_id_.GetUnsafeValue(), params.attribs.context_type,
+          base::ThreadTaskRunnerHandle::Get());
+    }
+
     auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
         workarounds, task_executor_->gpu_feature_info());
-
     context_group_ = base::MakeRefCounted<gles2::ContextGroup>(
         task_executor_->gpu_preferences(),
         gles2::PassthroughCommandDecoderSupported(),
-        task_executor_->mailbox_manager(), nullptr /* memory_tracker */,
+        task_executor_->mailbox_manager(), std::move(memory_tracker),
         task_executor_->shader_translator_cache(),
         task_executor_->framebuffer_completeness_cache(), feature_info,
         params.attribs.bind_generates_resource, task_executor_->image_manager(),
@@ -502,7 +519,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     if (params.share_command_buffer) {
       gl_share_group_ = params.share_command_buffer->gl_share_group_;
     } else {
-      gl_share_group_ = new gl::GLShareGroup();
+      gl_share_group_ = base::MakeRefCounted<gl::GLShareGroup>();
     }
   } else {
     // When using the validating command decoder, always use the global share

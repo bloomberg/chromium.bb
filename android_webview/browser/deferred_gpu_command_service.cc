@@ -256,8 +256,12 @@ void DeferredGpuCommandService::PerformAllIdleWork() {
   }
 }
 
-bool DeferredGpuCommandService::ForceVirtualizedGLContexts() {
+bool DeferredGpuCommandService::ForceVirtualizedGLContexts() const {
   return true;
+}
+
+bool DeferredGpuCommandService::ShouldCreateMemoryTracker() const {
+  return false;
 }
 
 void DeferredGpuCommandService::RunTasks() {
@@ -283,7 +287,7 @@ void DeferredGpuCommandService::RunTasks() {
   }
 }
 
-bool DeferredGpuCommandService::BlockThreadOnWaitSyncToken() {
+bool DeferredGpuCommandService::BlockThreadOnWaitSyncToken() const {
   return true;
 }
 

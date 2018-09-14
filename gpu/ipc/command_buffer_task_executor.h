@@ -76,11 +76,14 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
                             gl::GLSurfaceFormat share_group_surface_format);
 
   // Always use virtualized GL contexts if this returns true.
-  virtual bool ForceVirtualizedGLContexts() = 0;
+  virtual bool ForceVirtualizedGLContexts() const = 0;
+
+  // Creates a memory tracker for the context group if this returns true.
+  virtual bool ShouldCreateMemoryTracker() const = 0;
 
   // Block thread when a WaitSyncToken command is encountered instead of calling
   // OnWaitSyncToken().
-  virtual bool BlockThreadOnWaitSyncToken() = 0;
+  virtual bool BlockThreadOnWaitSyncToken() const = 0;
 
   // Schedules |task| to run out of order with respect to other sequenced tasks.
   virtual void ScheduleOutOfOrderTask(base::OnceClosure task) = 0;

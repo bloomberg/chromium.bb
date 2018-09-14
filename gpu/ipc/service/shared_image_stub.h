@@ -34,7 +34,7 @@ class SharedImageStub : public IPC::Listener, public gles2::MemoryTracker {
   uint64_t GetSize() const override;
   uint64_t ClientTracingId() const override;
   int ClientId() const override;
-  uint64_t ShareGroupTracingGUID() const override;
+  uint64_t ContextGroupTracingId() const override;
 
   SequenceId sequence() const { return sequence_; }
 

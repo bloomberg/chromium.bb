@@ -13,7 +13,6 @@
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
@@ -39,21 +38,6 @@ namespace {
 const GLsizei kWidth = 10;
 const GLsizei kHeight = 20;
 const GLint kImageId = 1;
-
-class MockMemoryTracker : public gles2::MemoryTracker {
- public:
-  MockMemoryTracker() {}
-
-  void TrackMemoryAllocatedChange(uint64_t delta) override {}
-  uint64_t GetSize() const override { return 0; }
-
-  uint64_t ClientTracingId() const override { return 0; }
-  int ClientId() const override { return 0; }
-  uint64_t ShareGroupTracingGUID() const override { return 0; }
-
- private:
-  ~MockMemoryTracker() override = default;
-};
 
 }  // namespace
 

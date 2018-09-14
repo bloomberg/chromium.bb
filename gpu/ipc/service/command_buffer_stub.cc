@@ -11,10 +11,8 @@
 #include "base/hash.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -26,6 +24,7 @@
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
+#include "gpu/command_buffer/service/gpu_command_buffer_memory_tracker.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
@@ -62,30 +61,6 @@
 #include "gpu/ipc/service/stream_texture_android.h"
 #endif
 
-// Macro to reduce code duplication when logging memory in
-// GpuCommandBufferMemoryTracker. This is needed as the UMA_HISTOGRAM_* macros
-// require a unique call-site per histogram (you can't funnel multiple strings
-// into the same call-site).
-#define GPU_COMMAND_BUFFER_MEMORY_BLOCK(category)                          \
-  do {                                                                     \
-    size_t mb_used = size_ / (1024 * 1024);                                \
-    switch (context_type_) {                                               \
-      case CONTEXT_TYPE_WEBGL1:                                            \
-      case CONTEXT_TYPE_WEBGL2:                                            \
-      case CONTEXT_TYPE_WEBGL2_COMPUTE:                                    \
-        UMA_HISTOGRAM_MEMORY_LARGE_MB("GPU.ContextMemory.WebGL." category, \
-                                      mb_used);                            \
-        break;                                                             \
-      case CONTEXT_TYPE_OPENGLES2:                                         \
-      case CONTEXT_TYPE_OPENGLES3:                                         \
-        UMA_HISTOGRAM_MEMORY_LARGE_MB("GPU.ContextMemory.GLES." category,  \
-                                      mb_used);                            \
-        break;                                                             \
-      case CONTEXT_TYPE_WEBGPU:                                            \
-        break;                                                             \
-    }                                                                      \
-  } while (false)
-
 namespace gpu {
 struct WaitForCommandState {
   WaitForCommandState(int32_t start, int32_t end, IPC::Message* reply)
@@ -97,64 +72,6 @@ struct WaitForCommandState {
 };
 
 namespace {
-
-class GpuCommandBufferMemoryTracker : public gles2::MemoryTracker {
- public:
-  explicit GpuCommandBufferMemoryTracker(
-      GpuChannel* channel,
-      uint64_t share_group_tracing_guid,
-      ContextType context_type,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : client_tracing_id_(channel->client_tracing_id()),
-        client_id_(channel->client_id()),
-        share_group_tracing_guid_(share_group_tracing_guid),
-        context_type_(context_type),
-        memory_pressure_listener_(new base::MemoryPressureListener(
-            base::Bind(&GpuCommandBufferMemoryTracker::LogMemoryStatsPressure,
-                       base::Unretained(this)))) {
-    // Set up |memory_stats_timer_| to call LogMemoryPeriodic periodically
-    // via the provided |task_runner|.
-    memory_stats_timer_.SetTaskRunner(std::move(task_runner));
-    memory_stats_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(30), this,
-        &GpuCommandBufferMemoryTracker::LogMemoryStatsPeriodic);
-  }
-  ~GpuCommandBufferMemoryTracker() override { LogMemoryStatsShutdown(); }
-
-  void TrackMemoryAllocatedChange(uint64_t delta) override { size_ += delta; }
-
-  uint64_t GetSize() const override { return size_; }
-
-  uint64_t ClientTracingId() const override { return client_tracing_id_; }
-  int ClientId() const override { return client_id_; }
-  uint64_t ShareGroupTracingGUID() const override {
-    return share_group_tracing_guid_;
-  }
-
- private:
-  void LogMemoryStatsPeriodic() { GPU_COMMAND_BUFFER_MEMORY_BLOCK("Periodic"); }
-  void LogMemoryStatsShutdown() { GPU_COMMAND_BUFFER_MEMORY_BLOCK("Shutdown"); }
-  void LogMemoryStatsPressure(
-      base::MemoryPressureListener::MemoryPressureLevel pressure_level) {
-    // Only log on CRITICAL memory pressure.
-    if (pressure_level ==
-        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-      GPU_COMMAND_BUFFER_MEMORY_BLOCK("Pressure");
-    }
-  }
-
-  uint64_t size_ = 0;
-  const uint64_t client_tracing_id_;
-  const int client_id_;
-  const uint64_t share_group_tracing_guid_;
-
-  // Variables used in memory stat histogram logging.
-  const ContextType context_type_;
-  base::RepeatingTimer memory_stats_timer_;
-  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferMemoryTracker);
-};
 
 // The first time polling a fence, delay some extra time to allow other
 // stubs to process some work, or else the timing of the fences could
@@ -885,8 +802,9 @@ void CommandBufferStub::RemoveDestructionObserver(
 std::unique_ptr<gles2::MemoryTracker> CommandBufferStub::CreateMemoryTracker(
     const GPUCreateCommandBufferConfig init_params) const {
   return std::make_unique<GpuCommandBufferMemoryTracker>(
-      channel_, command_buffer_id_.GetUnsafeValue(),
-      init_params.attribs.context_type, channel_->task_runner());
+      channel_->client_id(), channel_->client_tracing_id(),
+      command_buffer_id_.GetUnsafeValue(), init_params.attribs.context_type,
+      channel_->task_runner());
 }
 
 gles2::MemoryTracker* CommandBufferStub::GetMemoryTracker() const {
