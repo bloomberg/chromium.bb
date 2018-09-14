@@ -51,13 +51,13 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateFilterEffect(
     const TransformPaintPropertyNode* local_transform_space,
     const ClipPaintPropertyNode* output_clip,
     CompositorFilterOperations filter,
-    const FloatPoint& paint_offset = FloatPoint(),
+    const FloatPoint& filters_origin = FloatPoint(),
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
   EffectPaintPropertyNode::State state;
   state.local_transform_space = local_transform_space;
   state.output_clip = output_clip;
   state.filter = std::move(filter);
-  state.paint_offset = paint_offset;
+  state.filters_origin = filters_origin;
   state.direct_compositing_reasons = compositing_reasons;
   return EffectPaintPropertyNode::Create(parent, std::move(state));
 }

@@ -661,7 +661,7 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
                                            nullptr)));
   } else {
     effect_node.filters = next_effect->Filter().AsCcFilterOperations();
-    effect_node.filters_origin = next_effect->PaintOffset();
+    effect_node.filters_origin = next_effect->FiltersOrigin();
     effect_node.transform_id =
         EnsureCompositorTransformNode(next_effect->LocalTransformSpace());
   }

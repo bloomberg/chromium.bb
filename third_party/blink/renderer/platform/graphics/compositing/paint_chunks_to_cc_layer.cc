@@ -512,7 +512,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
     saved_count++;
   } else {
     // Handle filter effect.
-    FloatPoint filter_origin = effect->PaintOffset();
+    FloatPoint filter_origin = effect->FiltersOrigin();
     if (filter_origin != FloatPoint()) {
       cc_list_.push<cc::SaveOp>();
       cc_list_.push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
@@ -577,7 +577,7 @@ void ConversionContext::EndEffect() {
       // before the filter is applied, in the space of the TranslateOp which was
       // emitted before the SaveLayer[Alpha]Op.
       auto save_layer_bounds = bounds;
-      save_layer_bounds.MoveBy(-current_effect_->PaintOffset());
+      save_layer_bounds.MoveBy(-current_effect_->FiltersOrigin());
       cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id,
                                      save_layer_bounds);
       // We need to propagate the filtered bounds to the parent.

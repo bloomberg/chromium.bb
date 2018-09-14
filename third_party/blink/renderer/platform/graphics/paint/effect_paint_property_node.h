@@ -47,10 +47,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     // === End of effects ===
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
-    // The offset of the effect's local space in m_localTransformSpace. Some
-    // effects e.g. reflection need this to apply geometry effects in the local
-    // space.
-    FloatPoint paint_offset = FloatPoint();
+    // The offset of the origin of filters in local_transform_space.
+    FloatPoint filters_origin;
 
     bool operator==(const State& o) const {
       return local_transform_space == o.local_transform_space &&
@@ -59,7 +57,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
              blend_mode == o.blend_mode &&
              direct_compositing_reasons == o.direct_compositing_reasons &&
              compositor_element_id == o.compositor_element_id &&
-             paint_offset == o.paint_offset;
+             filters_origin == o.filters_origin;
     }
   };
 
@@ -131,9 +129,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     return state_.filter.HasFilterThatMovesPixels();
   }
 
-  FloatPoint PaintOffset() const {
+  FloatPoint FiltersOrigin() const {
     DCHECK(!Parent() || !IsParentAlias());
-    return state_.paint_offset;
+    return state_.filters_origin;
   }
 
   // Returns a rect covering the pixels that can be affected by pixels in

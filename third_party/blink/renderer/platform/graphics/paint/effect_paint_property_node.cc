@@ -19,10 +19,13 @@ const EffectPaintPropertyNode& EffectPaintPropertyNode::Root() {
 }
 
 FloatRect EffectPaintPropertyNode::MapRect(const FloatRect& input_rect) const {
+  if (state_.filter.IsEmpty())
+    return input_rect;
+
   FloatRect rect = input_rect;
-  rect.MoveBy(-state_.paint_offset);
+  rect.MoveBy(-state_.filters_origin);
   FloatRect result = state_.filter.MapRect(rect);
-  result.MoveBy(state_.paint_offset);
+  result.MoveBy(state_.filters_origin);
   return result;
 }
 
@@ -79,8 +82,8 @@ std::unique_ptr<JSONObject> EffectPaintPropertyNode::ToJSON() const {
     json->SetString("compositorElementId",
                     state_.compositor_element_id.ToString().c_str());
   }
-  if (state_.paint_offset != FloatPoint())
-    json->SetString("paintOffset", state_.paint_offset.ToString());
+  if (state_.filters_origin != FloatPoint())
+    json->SetString("filtersOrigin", state_.filters_origin.ToString());
   return json;
 }
 
