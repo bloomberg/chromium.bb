@@ -10379,14 +10379,13 @@
       'name': 'PacHttpsUrlStrippingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': [ 'chrome.*:52-', 'chrome_os:52-' ],
+      'supported_on': [ 'chrome.*:52-74', 'chrome_os:52-74' ],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
-      'example_value': False,
+      'example_value': True,
       'id': 332,
-      'default_for_enterprise_users': False,
       'caption': '''Enable PAC URL stripping (for https://)''',
       'tags': ['system-security'],
       'desc': '''Strips privacy and security sensitive parts of https:// URLs before passing them on to PAC scripts (Proxy Auto Config) used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> during proxy resolution.
@@ -10402,13 +10401,12 @@
       those fetched over an insecure transport, or discovered insecurely
       through WPAD).
 
-      This defaults to True (security feature enabled), except for Chrome OS
-      enterprise users for which this currently defaults to False.
+      This defaults to True (security feature enabled).
 
       It is recommended that this be set to True. The only reason to set it to
       False is if it causes a compatibility problem with existing PAC scripts.
 
-      The desire is to remove this override in the future.''',
+      The policy will be removed in M75.''',
     },
     {
       'name': 'EnableMediaRouter',
