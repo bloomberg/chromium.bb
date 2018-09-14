@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/length.h"
@@ -169,6 +170,16 @@ LayoutUnit ResolveBlockLength(
   if (type == LengthResolveType::kMinSize && length.IsAuto())
     return border_and_padding.BlockSum();
 
+  // Scrollable percentage-sized children of table cells, in the table
+  // "measure" phase contribute nothing to the row height measurement.
+  // See: https://drafts.csswg.org/css-tables-3/#row-layout
+  if (length.IsPercentOrCalc() &&
+      constraint_space.TableCellChildLayoutPhase() ==
+          NGTableCellChildLayoutPhase::kMeasure &&
+      (style.OverflowY() == EOverflow::kAuto ||
+       style.OverflowY() == EOverflow::kScroll))
+    return border_and_padding.BlockSum();
+
   bool is_percentage_indefinite =
       constraint_space.PercentageResolutionSize().block_size ==
       NGSizeIndefinite;
@@ -204,10 +215,18 @@ LayoutUnit ResolveBlockLength(
       LayoutUnit percentage_resolution_size =
           constraint_space.PercentageResolutionSize().block_size;
       LayoutUnit value = ValueForLength(length, percentage_resolution_size);
-      if (style.BoxSizing() == EBoxSizing::kContentBox) {
-        value += border_and_padding.BlockSum();
-      } else {
+
+      // Percentage-sized children of table cells, in the table "layout" phase,
+      // pretend they have box-sizing: border-box.
+      // TODO(crbug.com/285744): FF/Edge don't do this. Determine if there
+      // would be compat issues for matching their behavior.
+      if (style.BoxSizing() == EBoxSizing::kBorderBox ||
+          (length.IsPercentOrCalc() &&
+           constraint_space.TableCellChildLayoutPhase() ==
+               NGTableCellChildLayoutPhase::kLayout)) {
         value = std::max(border_and_padding.BlockSum(), value);
+      } else {
+        value += border_and_padding.BlockSum();
       }
       return value;
     }
@@ -460,19 +479,14 @@ LayoutUnit ComputeInlineSizeForFragment(
   return ConstrainByMinMax(extent, min, max);
 }
 
-LayoutUnit ComputeBlockSizeForFragment(
+namespace {
+
+// Computes the block-size for a fragment, ignoring the fixed block-size if set.
+LayoutUnit ComputeBlockSizeForFragmentInternal(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
     LayoutUnit content_size,
     const base::Optional<NGBoxStrut>& border_padding) {
-  if (constraint_space.IsFixedSizeBlock())
-    return constraint_space.AvailableSize().block_size;
-
-  if (style.Display() == EDisplay::kTableCell) {
-    // All handled by the table layout code or not applicable.
-    return content_size;
-  }
-
   LayoutUnit extent =
       ResolveBlockLength(constraint_space, style, style.LogicalHeight(),
                          content_size, LengthResolveType::kContentSize,
@@ -490,6 +504,20 @@ LayoutUnit ComputeBlockSizeForFragment(
       LengthResolveType::kMinSize, LengthResolvePhase::kLayout, border_padding);
 
   return ConstrainByMinMax(extent, min, max);
+}
+
+}  // namespace
+
+LayoutUnit ComputeBlockSizeForFragment(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    LayoutUnit content_size,
+    const base::Optional<NGBoxStrut>& border_padding) {
+  if (constraint_space.IsFixedSizeBlock())
+    return constraint_space.AvailableSize().block_size;
+
+  return ComputeBlockSizeForFragmentInternal(constraint_space, style,
+                                             content_size, border_padding);
 }
 
 // Computes size for a replaced element.
@@ -954,6 +982,37 @@ NGLogicalSize CalculateContentBoxSize(
   return size;
 }
 
+namespace {
+
+// Implements the common part of the child percentage size calculation. Deals
+// with how percentages are propagated from parent to child in quirks mode.
+NGLogicalSize AdjustChildPercentageSizeForQuirksAndFlex(
+    const NGConstraintSpace& space,
+    const NGBlockNode node,
+    NGLogicalSize child_percentage_size,
+    LayoutUnit parent_percentage_block_size) {
+  // Flex items may have a fixed block-size, but children shouldn't resolve
+  // their percentages against this.
+  if (space.IsFixedSizeBlock() && !space.FixedSizeBlockIsDefinite()) {
+    DCHECK(node.IsFlexItem());
+    child_percentage_size.block_size = NGSizeIndefinite;
+    return child_percentage_size;
+  }
+
+  // In quirks mode the percentage resolution height is passed from parent to
+  // child.
+  // https://quirks.spec.whatwg.org/#the-percentage-height-calculation-quirk
+  if (child_percentage_size.block_size == NGSizeIndefinite &&
+      node.GetDocument().InQuirksMode() && !node.Style().IsDisplayTableType() &&
+      !node.Style().HasOutOfFlowPosition()) {
+    child_percentage_size.block_size = parent_percentage_block_size;
+  }
+
+  return child_percentage_size;
+}
+
+}  // namespace
+
 NGLogicalSize CalculateChildPercentageSize(
     const NGConstraintSpace& space,
     const NGBlockNode node,
@@ -964,20 +1023,60 @@ NGLogicalSize CalculateChildPercentageSize(
 
   NGLogicalSize child_percentage_size = child_available_size;
 
-  if (space.IsFixedSizeBlock() && !space.FixedSizeBlockIsDefinite())
-    child_percentage_size.block_size = NGSizeIndefinite;
+  bool is_table_cell_in_measure_phase =
+      node.IsTableCell() && !space.IsFixedSizeBlock();
 
-  // In quirks mode the percentage resolution height is passed from parent to
-  // child.
-  // https://quirks.spec.whatwg.org/#the-percentage-height-calculation-quirk
-  if (child_percentage_size.block_size == NGSizeIndefinite &&
-      node.GetDocument().InQuirksMode() && !node.Style().IsDisplayTableType() &&
-      !node.Style().HasOutOfFlowPosition()) {
-    child_percentage_size.block_size =
-        space.PercentageResolutionSize().block_size;
+  // Table cells which are measuring their content, force their children to
+  // have an indefinite percentage resolution size.
+  if (is_table_cell_in_measure_phase) {
+    child_percentage_size.block_size = NGSizeIndefinite;
+    return child_percentage_size;
   }
 
-  return child_percentage_size;
+  // Table cell children don't apply the "percentage-quirk". I.e. if their
+  // percentage resolution block-size is indefinite, they don't pass through
+  // their parent's percentage resolution block-size.
+  if (space.TableCellChildLayoutPhase() != NGTableCellChildLayoutPhase::kNone)
+    return child_percentage_size;
+
+  return AdjustChildPercentageSizeForQuirksAndFlex(
+      space, node, child_percentage_size,
+      space.PercentageResolutionSize().block_size);
+}
+
+NGLogicalSize CalculateReplacedChildPercentageSize(
+    const NGConstraintSpace& space,
+    const NGBlockNode node,
+    NGLogicalSize border_box_size,
+    const NGBoxStrut& border_scrollbar_padding,
+    const NGBoxStrut& border_padding) {
+  // Anonymous block or spaces should pass the percent size straight through.
+  if (space.IsAnonymous() || node.IsAnonymousBlock())
+    return space.ReplacedPercentageResolutionSize();
+
+  bool has_resolvable_block_size = !node.Style().LogicalHeight().IsAuto() ||
+                                   !node.Style().LogicalMinHeight().IsAuto();
+
+  bool is_table_cell_in_layout_phase =
+      node.IsTableCell() && space.IsFixedSizeBlock();
+
+  // Table cells in the "layout" phase have a fixed block-size. However
+  // replaced children should resolve their percentages against the size given
+  // in the "measure" phase.
+  //
+  // To handle this we recalculate the border-box block-size, ignoring the
+  // fixed size constraint.
+  if (is_table_cell_in_layout_phase && has_resolvable_block_size) {
+    border_box_size.block_size = ComputeBlockSizeForFragmentInternal(
+        space, node.Style(), NGSizeIndefinite, border_padding);
+  }
+
+  NGLogicalSize child_percentage_size =
+      CalculateContentBoxSize(border_box_size, border_scrollbar_padding);
+
+  return AdjustChildPercentageSizeForQuirksAndFlex(
+      space, node, child_percentage_size,
+      space.ReplacedPercentageResolutionSize().block_size);
 }
 
 }  // namespace blink

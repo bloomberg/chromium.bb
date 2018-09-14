@@ -31,8 +31,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size);
 
-  NGConstraintSpaceBuilder& SetPercentageResolutionSize(
-      NGLogicalSize percentage_resolution_size);
+  NGConstraintSpaceBuilder& SetPercentageResolutionSize(NGLogicalSize);
+
+  NGConstraintSpaceBuilder& SetReplacedPercentageResolutionSize(NGLogicalSize);
 
   NGConstraintSpaceBuilder& SetFragmentainerBlockSize(LayoutUnit size) {
     fragmentainer_block_size_ = size;
@@ -110,6 +111,12 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
+  NGConstraintSpaceBuilder& SetTableCellChildLayoutPhase(
+      NGTableCellChildLayoutPhase table_cell_child_layout_phase) {
+    table_cell_child_layout_phase_ = table_cell_child_layout_phase;
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetExclusionSpace(
       const NGExclusionSpace& exclusion_space);
 
@@ -132,10 +139,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
              (-(int32_t)value & static_cast<unsigned>(mask));
   }
 
-  // Relative to parent_writing_mode_.
+  // NOTE: The below NGLogicalSizes are relative to parent_writing_mode_.
   NGLogicalSize available_size_;
-  // Relative to parent_writing_mode_.
   NGLogicalSize percentage_resolution_size_;
+  NGLogicalSize replaced_percentage_resolution_size_;
+
   base::Optional<NGLogicalSize> parent_percentage_resolution_size_;
   NGPhysicalSize initial_containing_block_size_;
   LayoutUnit fragmentainer_block_size_ = NGSizeIndefinite;
@@ -143,6 +151,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   WritingMode parent_writing_mode_;
   NGFragmentationType fragmentation_type_ = kFragmentNone;
+  NGTableCellChildLayoutPhase table_cell_child_layout_phase_ = kNone;
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
   TextDirection text_direction_ = TextDirection::kLtr;
 

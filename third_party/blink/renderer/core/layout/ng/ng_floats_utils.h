@@ -42,6 +42,7 @@ CORE_EXPORT LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
 CORE_EXPORT NGPositionedFloat
 PositionFloat(const NGLogicalSize& float_available_size,
               const NGLogicalSize& float_percentage_size,
+              const NGLogicalSize& float_replaced_percentage_size,
               const NGBfcOffset& origin_bfc_offset,
               LayoutUnit parent_bfc_block_offset,
               NGUnpositionedFloat*,
@@ -53,6 +54,7 @@ PositionFloat(const NGLogicalSize& float_available_size,
 CORE_EXPORT const Vector<NGPositionedFloat> PositionFloats(
     const NGLogicalSize& float_available_size,
     const NGLogicalSize& float_percentage_size,
+    const NGLogicalSize& float_replaced_percentage_size,
     const NGBfcOffset& origin_bfc_offset,
     LayoutUnit container_block_offset,
     NGUnpositionedFloatVector& unpositioned_floats,

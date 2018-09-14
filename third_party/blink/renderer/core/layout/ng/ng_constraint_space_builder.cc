@@ -38,6 +38,13 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
   return *this;
 }
 
+NGConstraintSpaceBuilder&
+NGConstraintSpaceBuilder::SetReplacedPercentageResolutionSize(
+    NGLogicalSize replaced_percentage_resolution_size) {
+  replaced_percentage_resolution_size_ = replaced_percentage_resolution_size;
+  return *this;
+}
+
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetTextDirection(
     TextDirection text_direction) {
   text_direction_ = text_direction;
@@ -105,6 +112,8 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
 
   NGLogicalSize available_size = available_size_;
   NGLogicalSize percentage_resolution_size = percentage_resolution_size_;
+  NGLogicalSize replaced_percentage_resolution_size =
+      replaced_percentage_resolution_size_;
   NGLogicalSize parent_percentage_resolution_size =
       parent_percentage_resolution_size_.value_or(percentage_resolution_size);
 
@@ -116,6 +125,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   if (!is_in_parallel_flow) {
     available_size.Flip();
     percentage_resolution_size.Flip();
+    replaced_percentage_resolution_size.Flip();
     parent_percentage_resolution_size.Flip();
     SetResolvedFlag(NGConstraintSpace::kFixedSizeInline,
                     flags_ & NGConstraintSpace::kFixedSizeBlock);
@@ -147,6 +157,16 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
           initial_containing_block_size_.height;
     }
   }
+  if (replaced_percentage_resolution_size.inline_size == NGSizeIndefinite) {
+    DCHECK(!is_in_parallel_flow);
+    if (out_writing_mode == WritingMode::kHorizontalTb) {
+      replaced_percentage_resolution_size.inline_size =
+          initial_containing_block_size_.width;
+    } else {
+      replaced_percentage_resolution_size.inline_size =
+          initial_containing_block_size_.height;
+    }
+  }
 
   bool is_new_fc_ = flags_ & NGConstraintSpace::kNewFormattingContext;
   DCHECK(!is_new_fc_ || !adjoining_floats_);
@@ -163,11 +183,13 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
 
   return base::AdoptRef(new NGConstraintSpace(
       out_writing_mode, text_direction_, available_size,
-      percentage_resolution_size, parent_percentage_resolution_size.inline_size,
+      percentage_resolution_size, replaced_percentage_resolution_size,
+      parent_percentage_resolution_size.inline_size,
       initial_containing_block_size_, fragmentainer_block_size_,
-      fragmentainer_space_at_bfc_start_, fragmentation_type_, adjoining_floats_,
-      margin_strut, bfc_offset, floats_bfc_block_offset, exclusion_space,
-      clearance_offset, baseline_requests_, resolved_flags));
+      fragmentainer_space_at_bfc_start_, fragmentation_type_,
+      table_cell_child_layout_phase_, adjoining_floats_, margin_strut,
+      bfc_offset, floats_bfc_block_offset, exclusion_space, clearance_offset,
+      baseline_requests_, resolved_flags));
 }
 
 }  // namespace blink

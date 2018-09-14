@@ -132,6 +132,10 @@ bool NGLayoutInputNode::IsDocumentElement() const {
   return box_->IsDocumentElement();
 }
 
+bool NGLayoutInputNode::IsFlexItem() const {
+  return IsBlock() && box_->IsFlexItem();
+}
+
 bool NGLayoutInputNode::CreatesNewFormattingContext() const {
   return IsBlock() && box_->AvoidsFloats();
 }

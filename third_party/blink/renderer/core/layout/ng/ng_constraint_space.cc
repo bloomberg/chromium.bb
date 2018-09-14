@@ -20,11 +20,13 @@ NGConstraintSpace::NGConstraintSpace(
     TextDirection direction,
     NGLogicalSize available_size,
     NGLogicalSize percentage_resolution_size,
+    NGLogicalSize replaced_percentage_resolution_size,
     LayoutUnit parent_percentage_resolution_inline_size,
     NGPhysicalSize initial_containing_block_size,
     LayoutUnit fragmentainer_block_size,
     LayoutUnit fragmentainer_space_at_bfc_start,
     NGFragmentationType block_direction_fragmentation_type,
+    NGTableCellChildLayoutPhase table_cell_child_layout_phase,
     NGFloatTypes adjoining_floats,
     const NGMarginStrut& margin_strut,
     const NGBfcOffset& bfc_offset,
@@ -35,12 +37,14 @@ NGConstraintSpace::NGConstraintSpace(
     unsigned flags)
     : available_size_(available_size),
       percentage_resolution_size_(percentage_resolution_size),
+      replaced_percentage_resolution_size_(replaced_percentage_resolution_size),
       parent_percentage_resolution_inline_size_(
           parent_percentage_resolution_inline_size),
       initial_containing_block_size_(initial_containing_block_size),
       fragmentainer_block_size_(fragmentainer_block_size),
       fragmentainer_space_at_bfc_start_(fragmentainer_space_at_bfc_start),
       block_direction_fragmentation_type_(block_direction_fragmentation_type),
+      table_cell_child_layout_phase_(table_cell_child_layout_phase),
       adjoining_floats_(adjoining_floats),
       writing_mode_(static_cast<unsigned>(writing_mode)),
       direction_(static_cast<unsigned>(direction)),
@@ -186,6 +190,8 @@ NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
   return available_size_ == other.available_size_ &&
          percentage_resolution_size_ == other.percentage_resolution_size_ &&
+         replaced_percentage_resolution_size_ ==
+             other.replaced_percentage_resolution_size_ &&
          parent_percentage_resolution_inline_size_ ==
              other.parent_percentage_resolution_inline_size_ &&
          initial_containing_block_size_ ==
@@ -195,6 +201,8 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
              other.fragmentainer_space_at_bfc_start_ &&
          block_direction_fragmentation_type_ ==
              other.block_direction_fragmentation_type_ &&
+         table_cell_child_layout_phase_ ==
+             other.table_cell_child_layout_phase_ &&
          flags_ == other.flags_ &&
          adjoining_floats_ == other.adjoining_floats_ &&
          writing_mode_ == other.writing_mode_ &&

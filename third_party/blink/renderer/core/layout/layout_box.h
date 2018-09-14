@@ -1012,6 +1012,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual LayoutUnit ComputeReplacedLogicalHeight(
       LayoutUnit estimated_used_width = LayoutUnit()) const;
 
+  virtual bool ShouldComputeSizeAsReplaced() const {
+    return IsAtomicInlineLevel() && !IsInlineBlockOrInlineTable();
+  }
+
   // Returns the size that percentage logical heights of this box should be
   // resolved against. This function will walk the ancestor chain of this
   // object to determine this size.
@@ -1569,10 +1573,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const Length& logical_height_length,
       LayoutUnit intrinsic_content_height,
       LayoutUnit border_and_padding) const;
-
-  virtual bool ShouldComputeSizeAsReplaced() const {
-    return IsAtomicInlineLevel() && !IsInlineBlockOrInlineTable();
-  }
 
   LayoutObject* SplitAnonymousBoxesAroundChild(LayoutObject* before_child);
 

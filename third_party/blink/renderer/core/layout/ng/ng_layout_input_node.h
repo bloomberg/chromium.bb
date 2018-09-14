@@ -67,6 +67,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsFixedContainer() const;
   bool IsBody() const;
   bool IsDocumentElement() const;
+  bool IsFlexItem() const;
   bool ShouldBeConsideredAsReplaced() const;
   bool IsListItem() const;
   bool IsListMarker() const;

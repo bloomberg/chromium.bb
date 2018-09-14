@@ -257,11 +257,21 @@ NGLogicalSize CalculateContentBoxSize(
     const NGLogicalSize border_box_size,
     const NGBoxStrut& border_scrollbar_padding);
 
-// Calculates the percentage resolution size children of node should use.
+// Calculates the percentage resolution size that children of the node should
+// use.
 NGLogicalSize CalculateChildPercentageSize(
     const NGConstraintSpace&,
     const NGBlockNode node,
     const NGLogicalSize& child_available_size);
+
+// Calculates the percentage resolution size that replaced children of the node
+// should use.
+NGLogicalSize CalculateReplacedChildPercentageSize(
+    const NGConstraintSpace&,
+    const NGBlockNode node,
+    NGLogicalSize border_box_size,
+    const NGBoxStrut& border_scrollbar_padding,
+    const NGBoxStrut& border_padding);
 
 }  // namespace blink
 

@@ -271,6 +271,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   NGLogicalSize child_available_size_;
   NGLogicalSize child_percentage_size_;
+  NGLogicalSize replaced_child_percentage_size_;
 
   NGBoxStrut border_padding_;
   NGBoxStrut border_scrollbar_padding_;
