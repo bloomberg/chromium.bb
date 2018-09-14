@@ -69,7 +69,6 @@ RenderWidgetHelper* RenderWidgetHelper::FromProcessHostID(
 }
 
 void RenderWidgetHelper::CreateNewWidget(int opener_id,
-                                         blink::WebPopupType popup_type,
                                          mojom::WidgetPtr widget,
                                          int* route_id) {
   *route_id = GetNextRoutingID();
@@ -77,7 +76,7 @@ void RenderWidgetHelper::CreateNewWidget(int opener_id,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&RenderWidgetHelper::OnCreateWidgetOnUI, this, opener_id,
-                     *route_id, widget.PassInterface(), popup_type));
+                     *route_id, widget.PassInterface()));
 }
 
 void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
@@ -92,14 +91,13 @@ void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
 
 void RenderWidgetHelper::OnCreateWidgetOnUI(int32_t opener_id,
                                             int32_t route_id,
-                                            mojom::WidgetPtrInfo widget_info,
-                                            blink::WebPopupType popup_type) {
+                                            mojom::WidgetPtrInfo widget_info) {
   mojom::WidgetPtr widget;
   widget.Bind(std::move(widget_info));
   RenderViewHostImpl* host = RenderViewHostImpl::FromID(
       render_process_id_, opener_id);
   if (host)
-    host->CreateNewWidget(route_id, std::move(widget), popup_type);
+    host->CreateNewWidget(route_id, std::move(widget));
 }
 
 void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(

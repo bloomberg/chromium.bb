@@ -144,7 +144,7 @@ class InteractiveRenderWidget : public RenderWidget {
   explicit InteractiveRenderWidget(CompositorDependencies* compositor_deps)
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
-                     blink::kWebPopupTypeNone,
+                     WidgetType::kFrame,
                      ScreenInfo(),
                      blink::kWebDisplayModeUndefined,
                      false,
@@ -389,7 +389,7 @@ class PopupRenderWidget : public RenderWidget {
   explicit PopupRenderWidget(CompositorDependencies* compositor_deps)
       : RenderWidget(routing_id_++,
                      compositor_deps,
-                     blink::kWebPopupTypePage,
+                     WidgetType::kPopup,
                      ScreenInfo(),
                      blink::kWebDisplayModeUndefined,
                      false,

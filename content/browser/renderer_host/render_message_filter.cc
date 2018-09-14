@@ -174,12 +174,11 @@ void RenderMessageFilter::GenerateRoutingID(
 }
 
 void RenderMessageFilter::CreateNewWidget(int32_t opener_id,
-                                          blink::WebPopupType popup_type,
                                           mojom::WidgetPtr widget,
                                           CreateNewWidgetCallback callback) {
   int route_id = MSG_ROUTING_NONE;
-  render_widget_helper_->CreateNewWidget(opener_id, popup_type,
-                                         std::move(widget), &route_id);
+  render_widget_helper_->CreateNewWidget(opener_id, std::move(widget),
+                                         &route_id);
   std::move(callback).Run(route_id);
 }
 

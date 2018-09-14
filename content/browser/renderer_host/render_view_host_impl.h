@@ -31,7 +31,6 @@
 #include "net/base/load_states.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/public/web/web_console_message.h"
-#include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
@@ -193,11 +192,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
     sudden_termination_allowed_ = enabled;
   }
 
-  // Creates a new RenderWidget with the given route id.  |popup_type| indicates
-  // if this widget is a popup and what kind of popup it is (select, autofill).
-  void CreateNewWidget(int32_t route_id,
-                       mojom::WidgetPtr widget,
-                       blink::WebPopupType popup_type);
+  // Creates a new RenderWidget with the given route id.
+  void CreateNewWidget(int32_t route_id, mojom::WidgetPtr widget);
 
   // Creates a full screen RenderWidget.
   void CreateNewFullscreenWidget(int32_t route_id, mojom::WidgetPtr widget);

@@ -1243,7 +1243,7 @@ PagePopup* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
 
   WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
       client->OwnerElement().GetDocument().GetFrame()->LocalFrameRoot());
-  WebWidget* popup_widget = client_->CreatePopup(frame, kWebPopupTypePage);
+  WebWidget* popup_widget = client_->CreatePopup(frame);
   // CreatePopup returns nullptr if this renderer process is about to die.
   if (!popup_widget)
     return nullptr;

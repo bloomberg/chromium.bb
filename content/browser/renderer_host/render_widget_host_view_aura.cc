@@ -1567,7 +1567,7 @@ bool RenderWidgetHostViewAura::ShouldDescendIntoChildForEventHandling(
 }
 
 bool RenderWidgetHostViewAura::CanFocus() {
-  return popup_type_ == blink::kWebPopupTypeNone;
+  return popup_type_ == WidgetType::kFrame;
 }
 
 void RenderWidgetHostViewAura::OnCaptureLost() {
@@ -2129,7 +2129,7 @@ RenderWidgetHostViewAura::GetTouchSelectionControllerClientManager() {
 }
 
 bool RenderWidgetHostViewAura::NeedsInputGrab() {
-  return popup_type_ == blink::kWebPopupTypePage;
+  return popup_type_ == WidgetType::kPopup;
 }
 
 bool RenderWidgetHostViewAura::NeedsMouseCapture() {

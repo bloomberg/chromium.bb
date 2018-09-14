@@ -22,8 +22,7 @@ import "ui/platform_window/mojo/text_input_state.mojom";
 interface RenderWidgetHostNSViewBridge {
   // Specify that the NSView will a popup (e.g, date/time picker) that will
   // create its own NSWindow.
-  InitAsPopup(gfx.mojom.Rect content_rect,
-              content.mojom.WebPopupType popup_type);
+  InitAsPopup(gfx.mojom.Rect content_rect);
 
   // Disable displaying any content (including the background color). This is
   // to be called on views that are to be displayed via a parent ui::Compositor.

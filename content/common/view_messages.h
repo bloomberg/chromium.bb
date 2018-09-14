@@ -52,7 +52,6 @@
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_plugin_action.h"
-#include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -81,8 +80,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDeviceEmulationParams::ScreenPosition,
                           blink::WebDeviceEmulationParams::kScreenPositionLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPluginAction::Type,
                           blink::WebPluginAction::Type::kTypeLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPopupType,
-                          blink::WebPopupType::kWebPopupTypeLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationType,
                               blink::kWebScreenOrientationUndefined,
                               blink::WebScreenOrientationTypeLast)

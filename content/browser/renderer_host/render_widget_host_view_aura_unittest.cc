@@ -1296,7 +1296,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PopupRetainsCaptureAfterMouseRelease) {
       parent_view_->GetNativeView()->GetRootWindow(), gfx::Point(300, 300));
   generator.PressLeftButton();
 
-  view_->SetPopupType(blink::kWebPopupTypePage);
+  view_->SetPopupType(WidgetType::kPopup);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
   ASSERT_TRUE(view_->NeedsMouseCapture());
   aura::Window* window = view_->GetNativeView();
@@ -1314,7 +1314,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PopupClosesWhenParentLosesFocus) {
   parent_view_->Focus();
   EXPECT_TRUE(parent_view_->HasFocus());
 
-  view_->SetPopupType(blink::kWebPopupTypePage);
+  view_->SetPopupType(WidgetType::kPopup);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
 
   aura::Window* popup_window = view_->GetNativeView();
@@ -1742,8 +1742,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
   parent_view_->Focus();
   ASSERT_TRUE(parent_view_->HasFocus());
 
-  // kWebPopupTypePage means the child view (popup) will receive input.
-  view_->SetPopupType(blink::kWebPopupTypePage);
+  // WidgetType::kPopup means the child view (popup) will receive input.
+  view_->SetPopupType(WidgetType::kPopup);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
   ASSERT_NE(nullptr, view_->GetNativeView());
   view_->Show();
@@ -1807,8 +1807,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
   parent_view_->Focus();
   ASSERT_TRUE(parent_view_->HasFocus());
 
-  // kWebPopupTypeNone means the child view (popup) will not receive input.
-  view_->SetPopupType(blink::kWebPopupTypeNone);
+  // WidgetType::kFrame means the child view (popup) will not receive input.
+  view_->SetPopupType(WidgetType::kFrame);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
   ASSERT_NE(nullptr, view_->GetNativeView());
   view_->Show();

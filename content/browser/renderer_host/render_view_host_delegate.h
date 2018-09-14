@@ -16,7 +16,6 @@
 #include "content/common/content_export.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "net/base/load_states.h"
-#include "third_party/blink/public/web/web_popup_type.h"
 
 class GURL;
 
@@ -125,12 +124,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // widget should be created associated with the given |route_id| in the
   // process |render_process_id|, but it should not be shown yet. That should
   // happen in response to ShowCreatedWidget.
-  // |popup_type| indicates if the widget is a popup and what kind of popup it
-  // is (select, autofill...).
   virtual void CreateNewWidget(int32_t render_process_id,
                                int32_t route_id,
-                               mojom::WidgetPtr widget,
-                               blink::WebPopupType popup_type) {}
+                               mojom::WidgetPtr widget) {}
 
   // Creates a full screen RenderWidget. Similar to above.
   virtual void CreateNewFullscreenWidget(int32_t render_process_id,

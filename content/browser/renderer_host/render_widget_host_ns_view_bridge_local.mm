@@ -51,11 +51,8 @@ RenderWidgetHostNSViewBridgeLocal::GetRenderWidgetHostViewCocoa() {
 }
 
 void RenderWidgetHostNSViewBridgeLocal::InitAsPopup(
-    const gfx::Rect& content_rect,
-    blink::WebPopupType popup_type) {
-  popup_type_ = popup_type;
-  popup_window_ =
-      std::make_unique<PopupWindowMac>(content_rect, popup_type_, cocoa_view_);
+    const gfx::Rect& content_rect) {
+  popup_window_ = std::make_unique<PopupWindowMac>(content_rect, cocoa_view_);
 }
 
 void RenderWidgetHostNSViewBridgeLocal::MakeFirstResponder() {

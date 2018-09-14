@@ -805,8 +805,7 @@ Visibility InterstitialPageImpl::GetVisibility() const {
 
 void InterstitialPageImpl::CreateNewWidget(int32_t render_process_id,
                                            int32_t route_id,
-                                           mojom::WidgetPtr widget,
-                                           blink::WebPopupType popup_type) {
+                                           mojom::WidgetPtr widget) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs.";
 }
 

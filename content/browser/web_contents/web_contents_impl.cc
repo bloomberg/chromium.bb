@@ -2753,24 +2753,22 @@ void WebContentsImpl::CreateNewWindow(
 
 void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
                                       int32_t route_id,
-                                      mojom::WidgetPtr widget,
-                                      blink::WebPopupType popup_type) {
-  CreateNewWidget(render_process_id, route_id, false, std::move(widget),
-                  popup_type);
+                                      mojom::WidgetPtr widget) {
+  CreateNewWidget(render_process_id, route_id, /*is_fullscreen=*/false,
+                  std::move(widget));
 }
 
 void WebContentsImpl::CreateNewFullscreenWidget(int32_t render_process_id,
                                                 int32_t route_id,
                                                 mojom::WidgetPtr widget) {
-  CreateNewWidget(render_process_id, route_id, true, std::move(widget),
-                  blink::kWebPopupTypeNone);
+  CreateNewWidget(render_process_id, route_id, /*is_fullscreen=*/true,
+                  std::move(widget));
 }
 
 void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
                                       int32_t route_id,
                                       bool is_fullscreen,
-                                      mojom::WidgetPtr widget,
-                                      blink::WebPopupType popup_type) {
+                                      mojom::WidgetPtr widget) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
   // A message to create a new widget can only come from an active process for
   // this WebContentsImpl instance. If any other process sends the request,
@@ -2790,7 +2788,7 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
     return;
   if (!is_fullscreen) {
     // Popups should not get activated.
-    widget_view->SetPopupType(popup_type);
+    widget_view->SetPopupType(WidgetType::kPopup);
   }
   // Save the created widget associated with the route so we can show it later.
   pending_widget_views_[GlobalRoutingID(render_process_id, route_id)] =
