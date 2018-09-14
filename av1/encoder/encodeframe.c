@@ -3117,6 +3117,12 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   int vert_ctx_is_ready = 0;
   BLOCK_SIZE bsize2 = get_partition_subsize(bsize, PARTITION_SPLIT);
 
+  if (best_rd < 0) {
+    pc_tree->none.rdcost = INT64_MAX;
+    pc_tree->none.skip = 0;
+    av1_invalid_rd_stats(rd_cost);
+    return;
+  }
   if (bsize == cm->seq_params.sb_size) x->must_find_valid_partition = 0;
 
   // Override skipping rectangular partition operations for edge blocks
@@ -3140,13 +3146,6 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   int partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8;
 
   (void)*tp_orig;
-
-  if (best_rd < 0) {
-    pc_tree->none.rdcost = INT64_MAX;
-    pc_tree->none.skip = 0;
-    av1_invalid_rd_stats(rd_cost);
-    return;
-  }
 
   // Override partition costs at the edges of the frame in the same
   // way as in read_partition (see decodeframe.c)
@@ -3476,8 +3475,8 @@ BEGIN_PARTITION_SEARCH:
   if (do_square_split) {
     av1_init_rd_stats(&sum_rdc);
     subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
-    // TODO(Cherma) : Account for partition cost while passing best rd to
-    // rd_pick_partition()
+    sum_rdc.rate = partition_cost[PARTITION_SPLIT];
+    sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
 
     int idx;
     for (idx = 0; idx < 4 && sum_rdc.rdcost < best_rdc.rdcost; ++idx) {
@@ -3491,10 +3490,13 @@ BEGIN_PARTITION_SEARCH:
 
       pc_tree->split[idx]->index = idx;
       int64_t *p_split_rd = &split_rd[idx];
+      int64_t best_remain_rdcost = best_rdc.rdcost == INT64_MAX
+                                       ? INT64_MAX
+                                       : (best_rdc.rdcost - sum_rdc.rdcost);
       if (cpi->sf.prune_ref_frame_for_rect_partitions)
         pc_tree->split[idx]->none.rate = INT_MAX;
       rd_pick_partition(cpi, td, tile_data, tp, mi_row + y_idx, mi_col + x_idx,
-                        subsize, &this_rdc, best_rdc.rdcost - sum_rdc.rdcost,
+                        subsize, &this_rdc, best_remain_rdcost,
                         pc_tree->split[idx], p_split_rd);
 
       if (this_rdc.rate == INT_MAX) {
@@ -3524,7 +3526,6 @@ BEGIN_PARTITION_SEARCH:
     const int reached_last_index = (idx == 4);
 
     if (reached_last_index && sum_rdc.rdcost < best_rdc.rdcost) {
-      sum_rdc.rate += partition_cost[PARTITION_SPLIT];
       sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
 
       if (sum_rdc.rdcost < best_rdc.rdcost) {
@@ -3568,12 +3569,23 @@ BEGIN_PARTITION_SEARCH:
       pc_tree->horizontal[0].pred_interp_filter =
           av1_extract_interp_filter(ctx_none->mic.interp_filters, 0);
     }
-    // TODO(Cherma) : Account for partition cost while passing best rd to
-    // rd_pick_sb_modes()
-    rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &sum_rdc,
+    int64_t best_remain_rdcost = best_rdc.rdcost == INT64_MAX
+                                     ? INT64_MAX
+                                     : (best_rdc.rdcost - sum_rdc.rdcost);
+    sum_rdc.rate = partition_cost[PARTITION_HORZ];
+    sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
+    rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
                      PARTITION_HORZ, subsize, &pc_tree->horizontal[0],
-                     best_rdc.rdcost);
-    horz_rd[0] = sum_rdc.rdcost;
+                     best_remain_rdcost);
+
+    if (this_rdc.rate == INT_MAX) {
+      sum_rdc.rdcost = INT64_MAX;
+    } else {
+      sum_rdc.rate += this_rdc.rate;
+      sum_rdc.dist += this_rdc.dist;
+      sum_rdc.rdcost += this_rdc.rdcost;
+    }
+    horz_rd[0] = this_rdc.rdcost;
 
     if (sum_rdc.rdcost < best_rdc.rdcost && has_rows) {
       const PICK_MODE_CONTEXT *const ctx_h = &pc_tree->horizontal[0];
@@ -3609,7 +3621,6 @@ BEGIN_PARTITION_SEARCH:
     }
 
     if (sum_rdc.rdcost < best_rdc.rdcost) {
-      sum_rdc.rate += partition_cost[PARTITION_HORZ];
       sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       if (sum_rdc.rdcost < best_rdc.rdcost) {
         best_rdc = sum_rdc;
@@ -3633,12 +3644,23 @@ BEGIN_PARTITION_SEARCH:
       pc_tree->vertical[0].pred_interp_filter =
           av1_extract_interp_filter(ctx_none->mic.interp_filters, 0);
     }
-    // TODO(Cherma) : Account for partition cost while passing best rd to
-    // rd_pick_sb_modes()
-    rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &sum_rdc,
+    sum_rdc.rate = partition_cost[PARTITION_VERT];
+    sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
+    int64_t best_remain_rdcost = best_rdc.rdcost == INT64_MAX
+                                     ? INT64_MAX
+                                     : (best_rdc.rdcost - sum_rdc.rdcost);
+    rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
                      PARTITION_VERT, subsize, &pc_tree->vertical[0],
-                     best_rdc.rdcost);
-    vert_rd[0] = sum_rdc.rdcost;
+                     best_remain_rdcost);
+
+    if (this_rdc.rate == INT_MAX) {
+      sum_rdc.rdcost = INT64_MAX;
+    } else {
+      sum_rdc.rate += this_rdc.rate;
+      sum_rdc.dist += this_rdc.dist;
+      sum_rdc.rdcost += this_rdc.rdcost;
+    }
+    vert_rd[0] = this_rdc.rdcost;
     const int64_t vert_max_rdcost = best_rdc.rdcost;
     if (sum_rdc.rdcost < vert_max_rdcost && has_cols) {
       const MB_MODE_INFO *const mbmi = &pc_tree->vertical[0].mic;
@@ -3674,7 +3696,6 @@ BEGIN_PARTITION_SEARCH:
     }
 
     if (sum_rdc.rdcost < best_rdc.rdcost) {
-      sum_rdc.rate += partition_cost[PARTITION_VERT];
       sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       if (sum_rdc.rdcost < best_rdc.rdcost) {
         best_rdc = sum_rdc;
