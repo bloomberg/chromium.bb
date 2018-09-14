@@ -13,11 +13,11 @@ GEN_INCLUDE(['../../testing/mock_feedback.js']);
  * @constructor
  * @extends {ChromeVoxNextE2ETest}
  */
-function LiveRegionsTest() {
+function ChromeVoxLiveRegionsTest() {
   ChromeVoxNextE2ETest.call(this);
 }
 
-LiveRegionsTest.prototype = {
+ChromeVoxLiveRegionsTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
   /** @override */
@@ -48,7 +48,7 @@ LiveRegionsTest.prototype = {
   },
 };
 
-TEST_F('LiveRegionsTest', 'LiveRegionAddElement', function() {
+TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionAddElement', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
@@ -69,7 +69,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionAddElement', function() {
     });
 });
 
-TEST_F('LiveRegionsTest', 'LiveRegionRemoveElement', function() {
+TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionRemoveElement', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
@@ -91,7 +91,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionRemoveElement', function() {
     });
 });
 
-TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
+TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionChangeAtomic', function() {
   LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 0;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
@@ -116,7 +116,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
 });
 
 // Flaky test: https://crbug.com/819696
-TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeAtomicText', function() {
+TEST_F('ChromeVoxLiveRegionsTest', 'DISABLED_LiveRegionChangeAtomicText', function() {
   LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 0;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
@@ -138,7 +138,7 @@ TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeAtomicText', function() {
 });
 
 // Flaky. See https://crbug.com/847028.
-TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeImageAlt', function() {
+TEST_F('ChromeVoxLiveRegionsTest', 'DISABLED_LiveRegionChangeImageAlt', function() {
   // Note that there is a live region outputted as a result of page load; the
   // test expects a live region announcement after a click on the button, but
   // the LiveRegions module has a half second filter for live region
@@ -167,7 +167,7 @@ TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeImageAlt', function() {
     });
 });
 
-TEST_F('LiveRegionsTest', 'LiveRegionThenFocus', function() {
+TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionThenFocus', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
@@ -192,7 +192,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionThenFocus', function() {
     });
 });
 
-TEST_F('LiveRegionsTest', 'FocusThenLiveRegion', function() {
+TEST_F('ChromeVoxLiveRegionsTest', 'FocusThenLiveRegion', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
@@ -217,7 +217,7 @@ TEST_F('LiveRegionsTest', 'FocusThenLiveRegion', function() {
     });
 });
 
-TEST_F('LiveRegionsTest', 'LiveRegionCategoryFlush', function() {
+TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionCategoryFlush', function() {
   // Adjust the live region queue time to be shorter (i.e. flushes happen for
   // live regions coming 1 ms in time). Also, can help with flakeyness.
   LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 1;
@@ -246,7 +246,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionCategoryFlush', function() {
     });
 });
 
-TEST_F('LiveRegionsTest', 'SilentOnNodeChange', function() {
+TEST_F('ChromeVoxLiveRegionsTest', 'SilentOnNodeChange', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p>start</p>
@@ -275,7 +275,7 @@ TEST_F('LiveRegionsTest', 'SilentOnNodeChange', function() {
   });
 });
 
-TEST_F('LiveRegionsTest', 'SimulateTreeChanges', function() {
+TEST_F('ChromeVoxLiveRegionsTest', 'SimulateTreeChanges', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <button></button>

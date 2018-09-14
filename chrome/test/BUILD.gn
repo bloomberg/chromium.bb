@@ -4908,6 +4908,23 @@ if (!is_android) {
 
     if (include_js_tests) {
       deps += [ "//chrome/test/data/webui:interactive_ui_tests_js_webui" ]
+      if (is_chromeos) {
+        data += [
+          "$root_out_dir/resources/chromeos/chromevox/",
+          "$root_out_dir/test_data/chrome/browser/resources/chromeos/chromevox/",
+          "//chrome/browser/resources/chromeos/chromevox/",
+          "//chrome/test/data/webui/test_api.js",
+          "//third_party/chromevox/",
+          "//chrome/third_party/mock4js/",
+          "//third_party/accessibility-audit/axs_testing.js",
+          "//third_party/chaijs/chai.js",
+        ]
+
+        deps += [
+          ":extension_js_test_support",
+          "//chrome/browser/resources/chromeos/chromevox:chromevox_extjs_tests",
+        ]
+      }
     }
 
     # Runtime dependencies
@@ -5857,6 +5874,31 @@ if (!is_android && !is_fuchsia) {
       "//testing/scripts/common.py",
       "//testing/xvfb.py",
       "//testing/scripts/run_telemetry_as_googletest.py",
+    ]
+  }
+}
+
+if (is_chromeos) {
+  source_set("extension_js_test_support") {
+    testonly = true
+
+    sources = [
+      "//chrome/browser/ui/webui/web_ui_test_handler.cc",
+      "//chrome/browser/ui/webui/web_ui_test_handler.h",
+      "//chrome/test/base/extension_js_browser_test.cc",
+      "//chrome/test/base/extension_js_browser_test.h",
+      "//chrome/test/base/extension_load_waiter_one_shot.cc",
+      "//chrome/test/base/extension_load_waiter_one_shot.h",
+      "//chrome/test/base/javascript_browser_test.cc",
+      "//chrome/test/base/javascript_browser_test.h",
+      "//chrome/test/base/test_chrome_web_ui_controller_factory.cc",
+      "//chrome/test/base/test_chrome_web_ui_controller_factory.h",
+      "//chrome/test/base/web_ui_browser_test.cc",
+      "//chrome/test/base/web_ui_browser_test.h",
+    ]
+
+    deps = [
+      ":test_support",
     ]
   }
 }
