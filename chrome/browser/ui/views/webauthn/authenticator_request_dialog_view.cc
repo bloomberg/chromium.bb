@@ -248,7 +248,7 @@ void AuthenticatorRequestDialogView::ButtonPressed(views::Button* sender,
   gfx::Rect anchor_bounds = other_transports_button_->GetBoundsInScreen();
   other_transports_menu_runner_->RunMenuAt(
       other_transports_button_->GetWidget(), nullptr /* menu_button */,
-      anchor_bounds, views::MENU_ANCHOR_BUBBLE_BELOW, ui::MENU_SOURCE_MOUSE);
+      anchor_bounds, views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_MOUSE);
 }
 
 void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(
