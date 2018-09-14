@@ -67,7 +67,7 @@ Status ExecuteSetAlertText(Session* session,
                            std::unique_ptr<base::Value>* value) {
   std::string text;
   if (!params.GetString("text", &text))
-    return Status(kUnknownError, "missing or invalid 'text'");
+    return Status(kInvalidArgument, "missing or invalid 'text'");
 
   JavaScriptDialogManager* dialog_manager =
       web_view->GetJavaScriptDialogManager();

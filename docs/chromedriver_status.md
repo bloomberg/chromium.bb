@@ -55,6 +55,6 @@ Below is a list of all WebDriver commands and their current support in ChromeDri
 | POST   | /session/{session id}/alert/dismiss                            | Dismiss Alert              | Complete           |
 | POST   | /session/{session id}/alert/accept                             | Accept Alert               | Complete           |
 | GET    | /session/{session id}/alert/text                               | Get Alert Text             | Complete           |
-| POST   | /session/{session id}/alert/text                               | Send Alert Text            | Partially Complete | [2003](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2003)
+| POST   | /session/{session id}/alert/text                               | Send Alert Text            | Complete           |
 | GET    | /session/{session id}/screenshot                               | Take Screenshot            |                    |
 | GET    | /session/{session id}/element/{element id}/screenshot          | Take Element Screenshot    | Complete           |
