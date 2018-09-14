@@ -31,8 +31,6 @@ class AssistantFooterView : public views::View,
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
-  void ChildPreferredSizeChanged(views::View* child) override;
-  void ChildVisibilityChanged(views::View* child) override;
 
   // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(

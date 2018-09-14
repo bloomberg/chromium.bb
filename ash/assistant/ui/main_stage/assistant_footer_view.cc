@@ -67,14 +67,6 @@ int AssistantFooterView::GetHeightForWidth(int width) const {
   return kPreferredHeightDip;
 }
 
-void AssistantFooterView::ChildPreferredSizeChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
-void AssistantFooterView::ChildVisibilityChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
 void AssistantFooterView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
