@@ -50,12 +50,12 @@ void AssistantInteractionController::SetAssistant(
 
 void AssistantInteractionController::AddModelObserver(
     AssistantInteractionModelObserver* observer) {
-  assistant_interaction_model_.AddObserver(observer);
+  model_.AddObserver(observer);
 }
 
 void AssistantInteractionController::RemoveModelObserver(
     AssistantInteractionModelObserver* observer) {
-  assistant_interaction_model_.RemoveObserver(observer);
+  model_.RemoveObserver(observer);
 }
 
 void AssistantInteractionController::OnAssistantControllerConstructed() {
@@ -100,22 +100,21 @@ void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
   if (ui_mode == AssistantUiMode::kMiniUi)
     return;
 
-  switch (assistant_interaction_model_.input_modality()) {
+  switch (model_.input_modality()) {
     case InputModality::kStylus:
       // When the Assistant is not in mini state there should not be an active
       // metalayer session. If we were in mini state when the UI mode was
       // changed, we need to clean up the metalayer session and reset default
       // input modality.
       Shell::Get()->highlighter_controller()->AbortSession();
-      assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+      model_.SetInputModality(InputModality::kKeyboard);
       break;
     case InputModality::kVoice:
       // When transitioning to web UI we abort any in progress voice query. We
       // do this to prevent Assistant from listening to the user while we
       // navigate away from the main stage.
       if (ui_mode == AssistantUiMode::kWebUi &&
-          assistant_interaction_model_.pending_query().type() ==
-              AssistantQueryType::kVoice) {
+          model_.pending_query().type() == AssistantQueryType::kVoice) {
         StopActiveInteraction();
       }
       break;
@@ -134,24 +133,23 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       // When the UI is closed we need to stop any active interaction. We also
       // reset the interaction state and restore the default input modality.
       StopActiveInteraction();
-      assistant_interaction_model_.ClearInteraction();
-      assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+      model_.ClearInteraction();
+      model_.SetInputModality(InputModality::kKeyboard);
       break;
     case AssistantVisibility::kHidden:
       // When the UI is hidden we stop any voice query in progress so that we
       // don't listen to the user while not visible. We also restore the default
       // input modality for the next launch.
-      if (assistant_interaction_model_.pending_query().type() ==
-          AssistantQueryType::kVoice) {
+      if (model_.pending_query().type() == AssistantQueryType::kVoice) {
         StopActiveInteraction();
       }
-      assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+      model_.SetInputModality(InputModality::kKeyboard);
       break;
     case AssistantVisibility::kVisible:
       if (source == AssistantSource::kLongPressLauncher) {
         StartVoiceInteraction();
       } else if (source == AssistantSource::kStylus) {
-        assistant_interaction_model_.SetInputModality(InputModality::kStylus);
+        model_.SetInputModality(InputModality::kStylus);
       }
       break;
   }
@@ -161,12 +159,12 @@ void AssistantInteractionController::OnHighlighterEnabledChanged(
     HighlighterEnabledState state) {
   switch (state) {
     case HighlighterEnabledState::kEnabled:
-      assistant_interaction_model_.SetInputModality(InputModality::kStylus);
+      model_.SetInputModality(InputModality::kStylus);
       break;
     case HighlighterEnabledState::kDisabledByUser:
       FALLTHROUGH;
     case HighlighterEnabledState::kDisabledBySessionComplete:
-      assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+      model_.SetInputModality(InputModality::kKeyboard);
       break;
     case HighlighterEnabledState::kDisabledBySessionAbort:
       // When metalayer mode has been aborted, no action necessary. Abort occurs
@@ -212,20 +210,18 @@ void AssistantInteractionController::OnInputModalityChanged(
 
 void AssistantInteractionController::OnInteractionStarted(
     bool is_voice_interaction) {
-  assistant_interaction_model_.SetInteractionState(InteractionState::kActive);
+  model_.SetInteractionState(InteractionState::kActive);
 
   // In the case of a voice interaction, we assume that the mic is open and
   // transition to voice input modality.
   if (is_voice_interaction) {
-    assistant_interaction_model_.SetInputModality(InputModality::kVoice);
-    assistant_interaction_model_.SetMicState(MicState::kOpen);
+    model_.SetInputModality(InputModality::kVoice);
+    model_.SetMicState(MicState::kOpen);
 
     // When a voice interaction is initiated by hotword, we haven't yet set a
     // pending query so this is our earliest opportunity.
-    if (assistant_interaction_model_.pending_query().type() ==
-        AssistantQueryType::kNull) {
-      assistant_interaction_model_.SetPendingQuery(
-          std::make_unique<AssistantVoiceQuery>());
+    if (model_.pending_query().type() == AssistantQueryType::kNull) {
+      model_.SetPendingQuery(std::make_unique<AssistantVoiceQuery>());
     }
   } else {
     // TODO(b/112000321): It should not be possible to reach this code without
@@ -234,31 +230,28 @@ void AssistantInteractionController::OnInteractionStarted(
     // AssistantInteractionController when beginning an interaction. To address
     // this, we temporarily pend an empty text query to commit until we can do
     // development to expose something more meaningful.
-    if (assistant_interaction_model_.pending_query().type() ==
-        AssistantQueryType::kNull) {
-      assistant_interaction_model_.SetPendingQuery(
-          std::make_unique<AssistantTextQuery>());
+    if (model_.pending_query().type() == AssistantQueryType::kNull) {
+      model_.SetPendingQuery(std::make_unique<AssistantTextQuery>());
     }
 
-    assistant_interaction_model_.CommitPendingQuery();
-    assistant_interaction_model_.SetMicState(MicState::kClosed);
+    model_.CommitPendingQuery();
+    model_.SetMicState(MicState::kClosed);
   }
 
   // Start caching a new Assistant response for the interaction.
-  assistant_interaction_model_.SetPendingResponse(
-      std::make_unique<AssistantResponse>());
+  model_.SetPendingResponse(std::make_unique<AssistantResponse>());
 }
 
 void AssistantInteractionController::OnInteractionFinished(
     AssistantInteractionResolution resolution) {
-  assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
-  assistant_interaction_model_.SetMicState(MicState::kClosed);
+  model_.SetInteractionState(InteractionState::kInactive);
+  model_.SetMicState(MicState::kClosed);
 
   // If the interaction was finished due to mic timeout, we only want to clear
   // the pending query/response state for that interaction.
   if (resolution == AssistantInteractionResolution::kMicTimeout) {
-    assistant_interaction_model_.ClearPendingQuery();
-    assistant_interaction_model_.ClearPendingResponse();
+    model_.ClearPendingQuery();
+    model_.ClearPendingResponse();
     return;
   }
 
@@ -267,40 +260,38 @@ void AssistantInteractionController::OnInteractionFinished(
   // device hotword loss, for example, but can also occur if the interaction
   // errors out. In these cases we still need to commit the pending query as
   // this is a prerequisite step to being able to finalize the pending response.
-  if (assistant_interaction_model_.pending_query().type() !=
-      AssistantQueryType::kNull) {
-    assistant_interaction_model_.CommitPendingQuery();
+  if (model_.pending_query().type() != AssistantQueryType::kNull) {
+    model_.CommitPendingQuery();
   }
 
   // If the interaction was finished due to multi-device hotword loss, we want
   // to show an appropriate message to the user.
   if (resolution == AssistantInteractionResolution::kMultiDeviceHotwordLoss) {
-    assistant_interaction_model_.pending_response()->AddUiElement(
+    model_.pending_response()->AddUiElement(
         std::make_unique<AssistantTextElement>(l10n_util::GetStringUTF8(
             IDS_ASH_ASSISTANT_MULTI_DEVICE_HOTWORD_LOSS)));
   }
 
   // The interaction has finished, so we finalize the pending response if it
   // hasn't already been finalized.
-  if (assistant_interaction_model_.pending_response())
-    assistant_interaction_model_.FinalizePendingResponse();
+  if (model_.pending_response())
+    model_.FinalizePendingResponse();
 }
 
 void AssistantInteractionController::OnHtmlResponse(
     const std::string& response) {
-  if (assistant_interaction_model_.interaction_state() !=
-      InteractionState::kActive) {
+  if (model_.interaction_state() != InteractionState::kActive) {
     return;
   }
 
   // If this occurs, the server has broken our response ordering agreement. We
   // should not crash but we cannot handle the response so we ignore it.
-  if (!assistant_interaction_model_.pending_response()) {
+  if (!model_.pending_response()) {
     NOTREACHED();
     return;
   }
 
-  assistant_interaction_model_.pending_response()->AddUiElement(
+  model_.pending_response()->AddUiElement(
       std::make_unique<AssistantCardElement>(response));
 }
 
@@ -319,37 +310,34 @@ void AssistantInteractionController::OnSuggestionChipPressed(
 
 void AssistantInteractionController::OnSuggestionsResponse(
     std::vector<AssistantSuggestionPtr> response) {
-  if (assistant_interaction_model_.interaction_state() !=
-      InteractionState::kActive) {
+  if (model_.interaction_state() != InteractionState::kActive) {
     return;
   }
 
   // If this occurs, the server has broken our response ordering agreement. We
   // should not crash but we cannot handle the response so we ignore it.
-  if (!assistant_interaction_model_.pending_response()) {
+  if (!model_.pending_response()) {
     NOTREACHED();
     return;
   }
 
-  assistant_interaction_model_.pending_response()->AddSuggestions(
-      std::move(response));
+  model_.pending_response()->AddSuggestions(std::move(response));
 }
 
 void AssistantInteractionController::OnTextResponse(
     const std::string& response) {
-  if (assistant_interaction_model_.interaction_state() !=
-      InteractionState::kActive) {
+  if (model_.interaction_state() != InteractionState::kActive) {
     return;
   }
 
   // If this occurs, the server has broken our response ordering agreement. We
   // should not crash but we cannot handle the response so we ignore it.
-  if (!assistant_interaction_model_.pending_response()) {
+  if (!model_.pending_response()) {
     NOTREACHED();
     return;
   }
 
-  assistant_interaction_model_.pending_response()->AddUiElement(
+  model_.pending_response()->AddUiElement(
       std::make_unique<AssistantTextElement>(response));
 }
 
@@ -358,13 +346,12 @@ void AssistantInteractionController::OnSpeechRecognitionStarted() {}
 void AssistantInteractionController::OnSpeechRecognitionIntermediateResult(
     const std::string& high_confidence_text,
     const std::string& low_confidence_text) {
-  assistant_interaction_model_.SetPendingQuery(
-      std::make_unique<AssistantVoiceQuery>(high_confidence_text,
-                                            low_confidence_text));
+  model_.SetPendingQuery(std::make_unique<AssistantVoiceQuery>(
+      high_confidence_text, low_confidence_text));
 }
 
 void AssistantInteractionController::OnSpeechRecognitionEndOfUtterance() {
-  assistant_interaction_model_.SetMicState(MicState::kClosed);
+  model_.SetMicState(MicState::kClosed);
 }
 
 void AssistantInteractionController::OnSpeechRecognitionFinalResult(
@@ -375,36 +362,33 @@ void AssistantInteractionController::OnSpeechRecognitionFinalResult(
   if (final_result.empty())
     return;
 
-  assistant_interaction_model_.SetPendingQuery(
-      std::make_unique<AssistantVoiceQuery>(final_result));
-  assistant_interaction_model_.CommitPendingQuery();
+  model_.SetPendingQuery(std::make_unique<AssistantVoiceQuery>(final_result));
+  model_.CommitPendingQuery();
 }
 
 void AssistantInteractionController::OnSpeechLevelUpdated(float speech_level) {
-  assistant_interaction_model_.SetSpeechLevel(speech_level);
+  model_.SetSpeechLevel(speech_level);
 }
 
 void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
-  if (assistant_interaction_model_.interaction_state() !=
-      InteractionState::kActive) {
+  if (model_.interaction_state() != InteractionState::kActive) {
     return;
   }
 
   // Commit the pending query in whatever state it's in. In most cases the
   // pending query is already committed, but we must always commit the pending
   // query before finalizing a pending result.
-  if (assistant_interaction_model_.pending_query().type() !=
-      AssistantQueryType::kNull) {
-    assistant_interaction_model_.CommitPendingQuery();
+  if (model_.pending_query().type() != AssistantQueryType::kNull) {
+    model_.CommitPendingQuery();
   }
 
   if (due_to_error) {
     // In the case of an error occurring during a voice interaction, this is our
     // earliest indication that the mic has closed.
-    assistant_interaction_model_.SetMicState(MicState::kClosed);
+    model_.SetMicState(MicState::kClosed);
 
     // Add an error message to the response.
-    assistant_interaction_model_.pending_response()->AddUiElement(
+    model_.pending_response()->AddUiElement(
         std::make_unique<AssistantTextElement>(
             l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_ERROR_GENERIC)));
   }
@@ -413,12 +397,11 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
   // of an interaction to be processed. To be timely in updating UI, we use
   // this as an opportunity to finalize the Assistant response and update the
   // interaction model.
-  assistant_interaction_model_.FinalizePendingResponse();
+  model_.FinalizePendingResponse();
 }
 
 void AssistantInteractionController::OnOpenUrlResponse(const GURL& url) {
-  if (assistant_interaction_model_.interaction_state() !=
-      InteractionState::kActive) {
+  if (model_.interaction_state() != InteractionState::kActive) {
     return;
   }
   assistant_controller_->OpenUrl(url);
@@ -427,14 +410,14 @@ void AssistantInteractionController::OnOpenUrlResponse(const GURL& url) {
 void AssistantInteractionController::OnDialogPlateButtonPressed(
     DialogPlateButtonId id) {
   if (id == DialogPlateButtonId::kKeyboardInputToggle) {
-    assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+    model_.SetInputModality(InputModality::kKeyboard);
     return;
   }
 
   if (id != DialogPlateButtonId::kVoiceInputToggle)
     return;
 
-  switch (assistant_interaction_model_.mic_state()) {
+  switch (model_.mic_state()) {
     case MicState::kClosed:
       StartVoiceInteraction();
       break;
@@ -454,9 +437,8 @@ void AssistantInteractionController::StartMetalayerInteraction(
     const gfx::Rect& region) {
   StopActiveInteraction();
 
-  assistant_interaction_model_.SetPendingQuery(
-      std::make_unique<AssistantTextQuery>(
-          l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN)));
+  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
+      l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN)));
 
   assistant_->StartMetalayerInteraction(region);
 }
@@ -464,9 +446,8 @@ void AssistantInteractionController::StartMetalayerInteraction(
 void AssistantInteractionController::StartScreenContextInteraction() {
   StopActiveInteraction();
 
-  assistant_interaction_model_.SetPendingQuery(
-      std::make_unique<AssistantTextQuery>(
-          l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN)));
+  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
+      l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN)));
 
   // Note that screen context was cached when the UI was launched.
   assistant_->StartCachedScreenContextInteraction();
@@ -476,8 +457,7 @@ void AssistantInteractionController::StartTextInteraction(
     const std::string text) {
   StopActiveInteraction();
 
-  assistant_interaction_model_.SetPendingQuery(
-      std::make_unique<AssistantTextQuery>(text));
+  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(text));
 
   assistant_->SendTextQuery(text);
 }
@@ -485,8 +465,7 @@ void AssistantInteractionController::StartTextInteraction(
 void AssistantInteractionController::StartVoiceInteraction() {
   StopActiveInteraction();
 
-  assistant_interaction_model_.SetPendingQuery(
-      std::make_unique<AssistantVoiceQuery>());
+  model_.SetPendingQuery(std::make_unique<AssistantVoiceQuery>());
 
   assistant_->StartVoiceInteraction();
 }
@@ -496,15 +475,15 @@ void AssistantInteractionController::StopActiveInteraction() {
   // via a call to OnInteractionFinished(Resolution), we explicitly set it to
   // inactive here to prevent processing any additional UI related service
   // events belonging to the interaction being stopped.
-  assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
-  assistant_interaction_model_.ClearPendingQuery();
+  model_.SetInteractionState(InteractionState::kInactive);
+  model_.ClearPendingQuery();
 
   assistant_->StopActiveInteraction();
 
   // Because we are stopping an interaction in progress, we discard any pending
   // response for it that is cached to prevent it from being finalized when the
   // interaction is finished.
-  assistant_interaction_model_.ClearPendingResponse();
+  model_.ClearPendingResponse();
 }
 
 }  // namespace ash

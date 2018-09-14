@@ -62,12 +62,12 @@ void AssistantUiController::SetAssistant(
 
 void AssistantUiController::AddModelObserver(
     AssistantUiModelObserver* observer) {
-  assistant_ui_model_.AddObserver(observer);
+  model_.AddObserver(observer);
 }
 
 void AssistantUiController::RemoveModelObserver(
     AssistantUiModelObserver* observer) {
-  assistant_ui_model_.RemoveObserver(observer);
+  model_.RemoveObserver(observer);
 }
 
 void AssistantUiController::OnWidgetActivationChanged(views::Widget* widget,
@@ -90,8 +90,8 @@ void AssistantUiController::OnWidgetDestroying(views::Widget* widget) {
   // We need to update the model when the widget is destroyed as this may have
   // happened outside our control. This can occur as the result of pressing the
   // ESC key, for example.
-  assistant_ui_model_.SetVisibility(AssistantVisibility::kClosed,
-                                    AssistantSource::kUnspecified);
+  model_.SetVisibility(AssistantVisibility::kClosed,
+                       AssistantSource::kUnspecified);
 
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
@@ -123,7 +123,7 @@ void AssistantUiController::OnMicStateChanged(MicState mic_state) {
 
 void AssistantUiController::OnScreenContextRequestStateChanged(
     ScreenContextRequestState request_state) {
-  if (assistant_ui_model_.visibility() != AssistantVisibility::kVisible)
+  if (model_.visibility() != AssistantVisibility::kVisible)
     return;
 
   // Once screen context request state has become idle, it is safe to activate
@@ -172,11 +172,11 @@ void AssistantUiController::OnHighlighterEnabledChanged(
     HighlighterEnabledState state) {
   switch (state) {
     case HighlighterEnabledState::kEnabled:
-      if (assistant_ui_model_.visibility() != AssistantVisibility::kVisible)
+      if (model_.visibility() != AssistantVisibility::kVisible)
         ShowUi(AssistantSource::kStylus);
       break;
     case HighlighterEnabledState::kDisabledByUser:
-      if (assistant_ui_model_.visibility() == AssistantVisibility::kVisible)
+      if (model_.visibility() == AssistantVisibility::kVisible)
         HideUi(AssistantSource::kStylus);
       break;
     case HighlighterEnabledState::kDisabledBySessionComplete:
@@ -214,7 +214,7 @@ void AssistantUiController::OnDeepLinkReceived(
 
 void AssistantUiController::OnUrlOpened(const GURL& url) {
   // We hide Assistant UI when opening a URL in a new tab.
-  if (assistant_ui_model_.visibility() == AssistantVisibility::kVisible)
+  if (model_.visibility() == AssistantVisibility::kVisible)
     HideUi(AssistantSource::kUnspecified);
 }
 
@@ -260,7 +260,7 @@ void AssistantUiController::ShowUi(AssistantSource source) {
     return;
   }
 
-  if (assistant_ui_model_.visibility() == AssistantVisibility::kVisible) {
+  if (model_.visibility() == AssistantVisibility::kVisible) {
     // If Assistant window is already visible, we just try to retake focus.
     container_view_->GetWidget()->Activate();
     return;
@@ -275,24 +275,24 @@ void AssistantUiController::ShowUi(AssistantSource source) {
   // necessary due to limitations imposed by retrieving screen context. Once we
   // have finished retrieving screen context, the Assistant widget is activated.
   container_view_->GetWidget()->ShowInactive();
-  assistant_ui_model_.SetVisibility(AssistantVisibility::kVisible, source);
+  model_.SetVisibility(AssistantVisibility::kVisible, source);
 }
 
 void AssistantUiController::HideUi(AssistantSource source) {
-  if (assistant_ui_model_.visibility() == AssistantVisibility::kHidden)
+  if (model_.visibility() == AssistantVisibility::kHidden)
     return;
 
   if (container_view_)
     container_view_->GetWidget()->Hide();
 
-  assistant_ui_model_.SetVisibility(AssistantVisibility::kHidden, source);
+  model_.SetVisibility(AssistantVisibility::kHidden, source);
 }
 
 void AssistantUiController::CloseUi(AssistantSource source) {
-  if (assistant_ui_model_.visibility() == AssistantVisibility::kClosed)
+  if (model_.visibility() == AssistantVisibility::kClosed)
     return;
 
-  assistant_ui_model_.SetVisibility(AssistantVisibility::kClosed, source);
+  model_.SetVisibility(AssistantVisibility::kClosed, source);
 
   if (container_view_) {
     container_view_->GetWidget()->CloseNow();
@@ -302,13 +302,13 @@ void AssistantUiController::CloseUi(AssistantSource source) {
 
 void AssistantUiController::ToggleUi(AssistantSource source) {
   // When not visible, toggling will show the UI.
-  if (assistant_ui_model_.visibility() != AssistantVisibility::kVisible) {
+  if (model_.visibility() != AssistantVisibility::kVisible) {
     ShowUi(source);
     return;
   }
 
   // When in mini state, toggling will restore the main UI.
-  if (assistant_ui_model_.ui_mode() == AssistantUiMode::kMiniUi) {
+  if (model_.ui_mode() == AssistantUiMode::kMiniUi) {
     UpdateUiMode(AssistantUiMode::kMainUi);
     return;
   }
@@ -322,7 +322,7 @@ void AssistantUiController::UpdateUiMode(
   // If a UI mode is provided, we will use it in lieu of updating UI mode on the
   // basis of interaction/widget visibility state.
   if (ui_mode.has_value()) {
-    assistant_ui_model_.SetUiMode(ui_mode.value());
+    model_.SetUiMode(ui_mode.value());
     return;
   }
 
@@ -332,9 +332,9 @@ void AssistantUiController::UpdateUiMode(
 
   // When stylus input modality is selected, we should be in mini UI mode.
   // Otherwise we fall back to main UI mode.
-  assistant_ui_model_.SetUiMode(input_modality == InputModality::kStylus
-                                    ? AssistantUiMode::kMiniUi
-                                    : AssistantUiMode::kMainUi);
+  model_.SetUiMode(input_modality == InputModality::kStylus
+                       ? AssistantUiMode::kMiniUi
+                       : AssistantUiMode::kMainUi);
 }
 
 AssistantContainerView* AssistantUiController::GetViewForTest() {
