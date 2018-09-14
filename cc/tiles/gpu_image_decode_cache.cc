@@ -193,7 +193,7 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
                               draw_image.frame_index(), client_id);
   }
 
-  // If we can't decode/scale directly, we will handle this in up to 3 steps.
+  // If we can't decode/scale directly, we will handle this in 2 steps.
   // Step 1: Decode at the nearest (larger) directly supported size or the
   // original size if nearest neighbor quality is requested.
   SkISize decode_size =
@@ -201,39 +201,19 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
           ? SkISize::Make(paint_image.width(), paint_image.height())
           : supported_size;
   SkImageInfo decode_info =
-      SkImageInfo::MakeN32Premul(decode_size.width(), decode_size.height());
+      pixmap.info().makeWH(decode_size.width(), decode_size.height());
   SkBitmap decode_bitmap;
   if (!decode_bitmap.tryAllocPixels(decode_info))
     return false;
-  SkPixmap decode_pixmap(decode_bitmap.info(), decode_bitmap.getPixels(),
-                         decode_bitmap.rowBytes());
+  SkPixmap decode_pixmap = decode_bitmap.pixmap();
   if (!paint_image.Decode(decode_pixmap.writable_addr(), &decode_info,
                           color_space, draw_image.frame_index(), client_id)) {
     return false;
   }
 
-  // Step 2a: Scale to |pixmap| directly if kN32_SkColorType.
-  if (pixmap.info().colorType() == kN32_SkColorType) {
-    return decode_pixmap.scalePixels(pixmap,
-                                     CalculateDesiredFilterQuality(draw_image));
-  }
-
-  // Step 2b: Scale to temporary pixmap of kN32_SkColorType.
-  SkImageInfo scaled_info = pixmap.info().makeColorType(kN32_SkColorType);
-  SkBitmap scaled_bitmap;
-  if (!scaled_bitmap.tryAllocPixels(scaled_info))
-    return false;
-  SkPixmap scaled_pixmap(scaled_bitmap.info(), scaled_bitmap.getPixels(),
-                         scaled_bitmap.rowBytes());
-  if (!decode_pixmap.scalePixels(scaled_pixmap,
-                                 CalculateDesiredFilterQuality(draw_image))) {
-    return false;
-  }
-
-  // Step 3: Copy the temporary scaled pixmap to |pixmap|, performing
-  // color type conversion. We can't do the color conversion in step 1, as
-  // the scale in step 2 must happen in kN32_SkColorType.
-  return scaled_pixmap.readPixels(pixmap);
+  // Step 2: Scale to |pixmap| size.
+  return decode_pixmap.scalePixels(pixmap,
+                                   CalculateDesiredFilterQuality(draw_image));
 }
 
 // Takes ownership of the backing texture of an SkImage. This allows us to

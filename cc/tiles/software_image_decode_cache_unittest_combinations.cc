@@ -360,61 +360,6 @@ TEST_F(SoftwareImageDecodeCacheTest_AtRaster,
   EXPECT_EQ(3u, cache().GetNumCacheEntriesForTesting());
 }
 
-class SoftwareImageDecodeCacheTest_RGBA4444 : public RGBA4444Cache,
-                                              public Predecode,
-                                              public NoDecodeToScaleSupport,
-                                              public DefaultColorSpace {};
-
-TEST_F(SoftwareImageDecodeCacheTest_RGBA4444, AlwaysUseOriginalDecode) {
-  auto draw_image_50 = CreateDrawImageForScale(0.5f);
-  auto result = GenerateCacheEntry(draw_image_50);
-  EXPECT_TRUE(result.has_task);
-  EXPECT_TRUE(result.needs_unref);
-
-  cache().ClearCache();
-  VerifyEntryExists(__LINE__, draw_image_50, gfx::Size(512, 512));
-  EXPECT_EQ(1u, cache().GetNumCacheEntriesForTesting());
-
-  auto draw_image_125 = CreateDrawImageForScale(0.125f);
-  result = GenerateCacheEntry(draw_image_125);
-  EXPECT_FALSE(result.has_task);
-  EXPECT_TRUE(result.needs_unref);
-  VerifyEntryExists(__LINE__, draw_image_125, gfx::Size(512, 512));
-
-  // We didn't clear the cache the second time, and should only expect to find
-  // one entry: 1.0 scale.
-  EXPECT_EQ(1u, cache().GetNumCacheEntriesForTesting());
-
-  cache().UnrefImage(draw_image_50);
-  cache().UnrefImage(draw_image_125);
-}
-
-TEST_F(SoftwareImageDecodeCacheTest_RGBA4444,
-       AlwaysUseOriginalDecodeEvenSubrected) {
-  auto draw_image_50 = CreateDrawImageForScale(0.5f, SkIRect::MakeWH(10, 10));
-  auto result = GenerateCacheEntry(draw_image_50);
-  EXPECT_TRUE(result.has_task);
-  EXPECT_TRUE(result.needs_unref);
-
-  cache().ClearCache();
-  VerifyEntryExists(__LINE__, draw_image_50, gfx::Size(512, 512));
-  EXPECT_EQ(1u, cache().GetNumCacheEntriesForTesting());
-
-  auto draw_image_125 =
-      CreateDrawImageForScale(0.125f, SkIRect::MakeWH(20, 20));
-  result = GenerateCacheEntry(draw_image_125);
-  EXPECT_FALSE(result.has_task);
-  EXPECT_TRUE(result.needs_unref);
-  VerifyEntryExists(__LINE__, draw_image_125, gfx::Size(512, 512));
-
-  // We didn't clear the cache the second time, and should only expect to find
-  // one entry: 1.0 scale.
-  EXPECT_EQ(1u, cache().GetNumCacheEntriesForTesting());
-
-  cache().UnrefImage(draw_image_50);
-  cache().UnrefImage(draw_image_125);
-}
-
 class SoftwareImageDecodeCacheTest_ExoticColorSpace
     : public N32Cache,
       public Predecode,
