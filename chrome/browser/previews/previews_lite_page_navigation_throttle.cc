@@ -201,7 +201,7 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
       (previews_host.has_port() ? (":" + previews_host.port()) : "") + "/p?u=" +
       net::EscapeQueryParamValue(original_url.spec(), true /* use_plus */));
   DCHECK(previews_url.is_valid());
-  DCHECK(previews_url.SchemeIs(url::kHttpsScheme));
+  DCHECK_EQ(previews_host.scheme(), previews_url.scheme());
   return previews_url;
 }
 
