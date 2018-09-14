@@ -127,18 +127,6 @@ void AvSyncVideo::UpkeepAvSync() {
     return;
   }
 
-  int64_t timestamp_for_0_vpts = new_vpts_timestamp - new_raw_vpts;
-  int64_t timestamp_for_0_apts = new_apts_timestamp - new_raw_apts;
-
-  // Positive difference means it looks like the audio started playing before
-  // the video, which means the audio is ahead the video.
-  int64_t raw_difference = timestamp_for_0_vpts - timestamp_for_0_apts;
-
-  if (abs(raw_difference) > kHardCorrectionThresholdUs) {
-    HardCorrection(now, new_raw_vpts, new_vpts_timestamp, raw_difference);
-    return;
-  }
-
   int64_t linear_regression_vpts = 0;
   int64_t linear_regression_apts = 0;
   double vpts_slope = 0.0;
@@ -155,6 +143,27 @@ void AvSyncVideo::UpkeepAvSync() {
     return;
   }
 
+  // Positive difference means it looks like the audio started playing before
+  // the video, which means the audio is ahead the video.
+  int64_t linear_regression_difference =
+      linear_regression_apts - linear_regression_vpts;
+
+  // TODO(almasrymina): Hard correction don't seem to work in playback where the
+  // playback rate has been changed. I.e. after the hard correction the
+  // difference is either pretty much the same or increased, and we get stuck
+  // in a loop doing hard corrections.
+  //
+  // Note hard corrections need to be done based on the
+  // linear_regression_difference and not the raw_difference. This is because
+  // if there is even 1 bad apts sample or vpts sample and we follow the
+  // raw_difference, we will do a hard correction and ruin the playback.
+  if (abs(linear_regression_difference) > kHardCorrectionThresholdUs &&
+      current_media_playback_rate_ == 1.0) {
+    HardCorrection(now, new_raw_vpts, new_vpts_timestamp,
+                   linear_regression_difference);
+    return;
+  }
+
   if (vpts_slope_error > 0.00001) {
     VLOG(3) << "vpts slope estimate error too big=" << vpts_slope_error;
     return;
@@ -166,17 +175,21 @@ void AvSyncVideo::UpkeepAvSync() {
     return;
   }
 
-  if (abs(vpts_slope - current_video_playback_rate_) > kExpectedSlopeVariance) {
+  if (abs(vpts_slope - current_media_playback_rate_) > kExpectedSlopeVariance) {
     LOG(ERROR) << "Calculated bad vpts_slope=" << vpts_slope
-               << ". Expected value close to=" << current_video_playback_rate_
+               << ". Expected value close to=" << current_media_playback_rate_
                << ". Flushing...";
     FlushVideoPts();
     return;
   }
 
-  if (abs(apts_slope - current_audio_playback_rate_) > kExpectedSlopeVariance) {
+  if (abs(apts_slope - (current_media_playback_rate_ *
+                        current_av_sync_audio_playback_rate_)) >
+      kExpectedSlopeVariance) {
     LOG(ERROR) << "Calculated bad apts_slope=" << apts_slope
-               << ". Expected value close to=" << current_audio_playback_rate_
+               << ". Expected value close to="
+               << (current_media_playback_rate_ *
+                   current_av_sync_audio_playback_rate_)
                << ". Flushing...";
     FlushAudioPts();
     return;
@@ -196,15 +209,11 @@ void AvSyncVideo::UpkeepAvSync() {
     first_audio_pts_received_ = true;
   }
 
-  // Positive difference means it looks like the audio started playing before
-  // the video, which means the audio is ahead the video.
-  int64_t linear_regression_difference =
-      linear_regression_apts - linear_regression_vpts;
-
   VLOG(3) << "Pts_monitor."
           << " linear_regression_difference=" << linear_regression_difference
           << " apts_slope=" << apts_slope
-          << " current_audio_playback_rate_=" << current_audio_playback_rate_
+          << " current_av_sync_audio_playback_rate_="
+          << current_av_sync_audio_playback_rate_
           << " new_raw_vpts=" << new_raw_vpts
           << " new_raw_apts=" << new_raw_apts
           << " current_time=" << backend_->MonotonicClockNow()
@@ -257,7 +266,7 @@ void AvSyncVideo::FlushVideoPts() {
 void AvSyncVideo::HardCorrection(int64_t now,
                                  int64_t new_raw_vpts,
                                  int64_t new_vpts_timestamp,
-                                 int64_t raw_difference) {
+                                 int64_t linear_regression_difference) {
   backend_->audio_decoder()->RestartPlaybackAt(new_vpts_timestamp,
                                                new_raw_vpts);
 
@@ -265,9 +274,10 @@ void AvSyncVideo::HardCorrection(int64_t now,
       new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
 
   LOG(INFO) << "Hard correction."
-            << " raw_difference=" << raw_difference
+            << " linear_regression_difference=" << linear_regression_difference
             << " new_raw_vpts=" << new_raw_vpts
-            << " current_audio_playback_rate_=" << current_audio_playback_rate_;
+            << " current_av_sync_audio_playback_rate_="
+            << current_av_sync_audio_playback_rate_;
 }
 
 // We calculate the desired audio playback rate, and set the rate to that if
@@ -288,9 +298,10 @@ void AvSyncVideo::AudioRateUpkeep(int64_t now,
   // Don't update  the audio playback rate unless the apts_slope is off by 1ppm
   // from the desired value.
   if (abs(apts_slope - (vpts_slope * factor)) >= 0.000001) {
-    current_audio_playback_rate_ =
+    current_av_sync_audio_playback_rate_ =
         backend_->audio_decoder()->SetAvSyncPlaybackRate(
-            current_audio_playback_rate_ * vpts_slope * factor / apts_slope);
+            current_av_sync_audio_playback_rate_ * vpts_slope * factor /
+            apts_slope);
 
     audio_pts_.reset(
         new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
@@ -301,8 +312,8 @@ void AvSyncVideo::AudioRateUpkeep(int64_t now,
               << " vpts_slope=" << vpts_slope
               << " new_raw_apts=" << new_raw_apts
               << " new_raw_vpts=" << new_raw_vpts << " factor=" << factor
-              << " current_audio_playback_rate_="
-              << current_audio_playback_rate_;
+              << " current_av_sync_audio_playback_rate_="
+              << current_av_sync_audio_playback_rate_;
   }
 }
 
@@ -389,6 +400,10 @@ void AvSyncVideo::GatherPlaybackStatistics() {
 
 void AvSyncVideo::NotifyStart(int64_t timestamp, int64_t pts) {
   playback_start_timestamp_us_ = timestamp;
+
+  current_media_playback_rate_ = 1.0;
+  current_av_sync_audio_playback_rate_ = 1.0;
+
   playback_start_pts_us_ = pts;
   LOG(INFO) << __func__
             << " playback_start_timestamp_us_=" << playback_start_timestamp_us_
@@ -422,13 +437,21 @@ void AvSyncVideo::NotifyResume() {
 }
 
 void AvSyncVideo::NotifyPlaybackRateChange(float rate) {
-  current_audio_playback_rate_ =
-      backend_->audio_decoder()->SetAvSyncPlaybackRate(rate);
+  DCHECK(backend_->video_decoder());
+  DCHECK(backend_->audio_decoder());
 
-  current_video_playback_rate_ = rate;
+  current_media_playback_rate_ =
+      backend_->audio_decoder()->SetPlaybackRate(rate);
+
+  backend_->video_decoder()->SetPlaybackRate(current_media_playback_rate_);
 
   FlushAudioPts();
   FlushVideoPts();
+
+  LOG(INFO) << __func__
+            << " current_media_playback_rate_=" << current_media_playback_rate_
+            << " current_av_sync_audio_playback_rate_="
+            << current_av_sync_audio_playback_rate_;
 }
 
 void AvSyncVideo::StartAvSync() {

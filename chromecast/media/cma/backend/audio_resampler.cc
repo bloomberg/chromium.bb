@@ -64,6 +64,9 @@ scoped_refptr<media::DecoderBufferBase> AudioResampler::LengthenBuffer(
   auto delayed_buffer = base::MakeRefCounted<::media::DecoderBuffer>(
       new_num_frames * kFrameSizeBytes);
 
+  delayed_buffer->set_timestamp(
+      base::TimeDelta::FromMicroseconds(buffer->timestamp()));
+
   const Sample* old_channels[kNumChannels];
   Sample* new_channels[kNumChannels];
   for (int c = 0; c < kNumChannels; ++c) {
@@ -96,6 +99,9 @@ scoped_refptr<media::DecoderBufferBase> AudioResampler::ShortenBuffer(
   const int new_num_frames = num_frames - 1;
   auto cut_buffer = base::MakeRefCounted<::media::DecoderBuffer>(
       new_num_frames * kFrameSizeBytes);
+
+  cut_buffer->set_timestamp(
+      base::TimeDelta::FromMicroseconds(buffer->timestamp()));
 
   const Sample* old_channels[kNumChannels];
   Sample* new_channels[kNumChannels];
