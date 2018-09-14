@@ -1124,6 +1124,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_PRIVACY_POLICY_URL" translateable="false">
         http://www.google.com/intl/[GRITLANGCODE]/chrome/browser/privacy/
       </message>
+      <message name="IDS_IOS_PROGRESS_BAR_ACCESSIBILITY" desc="Text read by voice over to inform the user about the progress of the page load. [Read by Text To Speech].">
+        Page load progress bar, <ph name="EMAIL">$1<ex>20%</ex></ph> loaded.
+      </message>
       <message name="IDS_IOS_QR_SCANNER_ALERT_CANCEL" desc="Title for a button to cancel a QR Scanner error dialog. The dialog will be dismissed and no action will be taken. [Length: 20em] [iOS only]" meaning="A button to cancel a QR Scanner error dialog.">
         Cancel
       </message>

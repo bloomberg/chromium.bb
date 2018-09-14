@@ -6,6 +6,7 @@
 
 #import "base/ios/ios_util.h"
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/toolbar_progress_bar.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
@@ -15,7 +16,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -52,7 +52,7 @@
 @property(nonatomic, strong) NSArray<ToolbarButton*>* trailingStackViewButtons;
 
 // Progress bar displayed below the toolbar, redefined as readwrite.
-@property(nonatomic, strong, readwrite) MDCProgressView* progressBar;
+@property(nonatomic, strong, readwrite) ToolbarProgressBar* progressBar;
 
 #pragma mark** Buttons in the leading stack view. **
 // Button to navigate back, redefined as readwrite.
@@ -290,7 +290,7 @@
 
 // Sets the progress bar up.
 - (void)setUpProgressBar {
-  self.progressBar = [[MDCProgressView alloc] init];
+  self.progressBar = [[ToolbarProgressBar alloc] init];
   self.progressBar.translatesAutoresizingMaskIntoConstraints = NO;
   self.progressBar.hidden = YES;
   [self addSubview:self.progressBar];
