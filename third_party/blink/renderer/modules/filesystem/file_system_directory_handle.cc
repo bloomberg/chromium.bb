@@ -81,7 +81,7 @@ ScriptValue FileSystemDirectoryHandle::getEntries(ScriptState* script_state) {
                  v8::Function::New(context, &ReturnDataFunction,
                                    ToV8(iterator, script_state))
                      .ToLocalChecked())
-           .FromMaybe(false)) {
+           .ToChecked()) {
     return ScriptValue();
   }
   return ScriptValue(script_state, result);
