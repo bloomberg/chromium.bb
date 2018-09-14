@@ -32,13 +32,16 @@
 
 #include "third_party/blink/renderer/core/frame/dom_window_timers.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 
 namespace blink {
@@ -100,9 +103,27 @@ int setTimeout(ScriptState* script_state,
 
 int setTimeout(ScriptState* script_state,
                EventTarget& event_target,
-               const String& handler,
+               const StringOrTrustedScript& string_or_trusted_script,
                int timeout,
-               const Vector<ScriptValue>&) {
+               const Vector<ScriptValue>& arguments,
+               ExceptionState& exception_state) {
+  ExecutionContext* execution_context = event_target.GetExecutionContext();
+  Document* document = execution_context->IsDocument()
+                           ? static_cast<Document*>(execution_context)
+                           : nullptr;
+  String handler = GetStringFromTrustedScript(string_or_trusted_script,
+                                              document, exception_state);
+  if (exception_state.HadException())
+    return 0;
+  return setTimeoutFromString(script_state, event_target, handler, timeout,
+                              arguments);
+}
+
+int setTimeoutFromString(ScriptState* script_state,
+                         EventTarget& event_target,
+                         const String& handler,
+                         int timeout,
+                         const Vector<ScriptValue>&) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(script_state, execution_context, true, handler))
     return 0;
@@ -137,9 +158,27 @@ int setInterval(ScriptState* script_state,
 
 int setInterval(ScriptState* script_state,
                 EventTarget& event_target,
-                const String& handler,
+                const StringOrTrustedScript& string_or_trusted_script,
                 int timeout,
-                const Vector<ScriptValue>&) {
+                const Vector<ScriptValue>& arguments,
+                ExceptionState& exception_state) {
+  ExecutionContext* execution_context = event_target.GetExecutionContext();
+  Document* document = execution_context->IsDocument()
+                           ? static_cast<Document*>(execution_context)
+                           : nullptr;
+  String handler = GetStringFromTrustedScript(string_or_trusted_script,
+                                              document, exception_state);
+  if (exception_state.HadException())
+    return 0;
+  return setIntervalFromString(script_state, event_target, handler, timeout,
+                               arguments);
+}
+
+int setIntervalFromString(ScriptState* script_state,
+                          EventTarget& event_target,
+                          const String& handler,
+                          int timeout,
+                          const Vector<ScriptValue>&) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(script_state, execution_context, true, handler))
     return 0;
