@@ -52,8 +52,8 @@
 #include "ui/gfx/color_utils.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/strings/grit/ash_strings.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #endif
 
 #if defined(OS_MACOSX)

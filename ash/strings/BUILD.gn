@@ -81,6 +81,7 @@ template("repack_one_locale_ash") {
     sources = [
       "$root_gen_dir/ash/components/strings/ash_components_strings_${locale}.pak",
       "$root_gen_dir/ash/strings/ash_strings_${locale}.pak",
+      "$root_gen_dir/chromeos/strings/chromeos_strings_${locale}.pak",
       "$root_gen_dir/components/strings/components_strings_${locale}.pak",
       "$root_gen_dir/device/bluetooth/strings/bluetooth_strings_${locale}.pak",
       "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_${locale}.pak",
@@ -91,6 +92,7 @@ template("repack_one_locale_ash") {
     deps = [
       "//ash/components/strings",
       "//ash/strings",
+      "//chromeos/strings",
       "//components/strings",
       "//device/bluetooth/strings",
       "//ui/chromeos/strings",

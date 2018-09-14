@@ -4438,4 +4438,19 @@
   <message name="IDS_PAGE_NOT_AVAILABLE_FOR_GUEST_HEADING" desc="This is the heading for the page not available for guest.">
     <ph name="PAGE_NAME">$1<ex>Bookmarks</ex></ph> is not available to Guest users.
   </message>
+
+  <if expr="chromeos">
+    <message name="IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_TITLE" desc="The title of options to change the behavior of notifications on the lock screen.">
+      On the lock screen
+    </message>
+    <message name="IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_SHOW" desc="One of options of the lock screen notification mode to show all the notifications and its contents on the lock screen.">
+      Show all notification content
+    </message>
+    <message name="IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_HIDE" desc="One of options of the lock screen notification mode to hide all the notifications on the lock screen.">
+      Don't show notifications at all
+    </message>
+    <message name="IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_HIDE_SENSITIVE" desc="One of options of the lock screen notification mode to hide sensitive contents and show the others on the lock screen.">
+      Hide sensitive content
+    </message>
+  </if>
 </grit-part>

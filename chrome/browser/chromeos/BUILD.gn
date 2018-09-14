@@ -33,6 +33,7 @@ source_set("chromeos") {
     "//chromeos:power_manager_proto",
     "//chromeos:seneschal_proto",
     "//chromeos:vm_applications_apps_proto",
+    "//chromeos/strings",
     "//components/policy/proto",
     "//content/app/resources",
     "//ui/accessibility/mojom",

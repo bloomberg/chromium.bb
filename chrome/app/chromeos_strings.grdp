@@ -3600,12 +3600,6 @@
   <message name="IDS_ASSISTANT_ACTIVITY_CONTROL_POPUP_LINK" desc="Link text for activity control details popup.">
     Learn more
   </message>
-  <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE" desc="Title for assistant timer notification.">
-    Timer done
-  </message>
-  <message name="IDS_ASSISTANT_STOP_TIMER_QUERY" desc="Query for stopping assistant timer.">
-    stop timer
-  </message>
 
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE" desc="The context title of printing notification.">
@@ -4197,5 +4191,56 @@
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_TRY_AGAIN" desc="Text in the fingerprint setup screen telling users what to scan their finger again.">
     Try again.
+  </message>
+
+  <!-- Mojo service names (displayed in task manager) -->
+  <message name="IDS_ASH_ASH_SERVICE_NAME" desc="Name of the internal software service that manages windows. Appears in the task manager.">
+    Window manager
+  </message>
+  <message name="IDS_ASH_QUICK_LAUNCH_APP_NAME" desc="Name of the app used to launch other apps by typing an app name. Appears in the task manager.">
+    Quick launch
+  </message>
+  <message name="IDS_ASH_SHORTCUT_VIEWER_APP_NAME" desc="Name of the app that shows the list of keyboard shortcuts. Appears in the task manager.">
+    Shortcut viewer
+  </message>
+  <message name="IDS_ASH_TAP_VISUALIZER_APP_NAME" desc="Name of the app that displays touch tap points on the screen. Appears in the task manager.">
+    Show taps
+  </message>
+  <message name="IDS_ASH_UI_SERVICE_NAME" desc="Name of the internal software service that manages the user interface (UI). Appears in the task manager.">
+    UI service
+  </message>
+
+  <message name="IDS_POWER_SOURCE_PORT_LEFT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the left side of this device.">
+    USB-C device (left port)
+  </message>
+  <message name="IDS_POWER_SOURCE_PORT_RIGHT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the right side of this device.">
+    USB-C device (right port)
+  </message>
+  <message name="IDS_POWER_SOURCE_PORT_BACK" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the back of this device.">
+    USB-C device (rear port)
+  </message>
+  <message name="IDS_POWER_SOURCE_PORT_FRONT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the front of this device.">
+    USB-C device (front port)
+  </message>
+  <message name="IDS_POWER_SOURCE_PORT_LEFT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
+    USB-C device (left side front port)
+  </message>
+  <message name="IDS_POWER_SOURCE_PORT_LEFT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the left side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
+    USB-C device (left side back port)
+  </message>
+  <message name="IDS_POWER_SOURCE_PORT_RIGHT_FRONT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the front one on that side.">
+    USB-C device (right side front port)
+  </message>
+  <message name="IDS_POWER_SOURCE_PORT_RIGHT_BACK" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the right side of this device. In this case there are two ports on that side, so this text should refer to the back one on that side.">
+    USB-C device (right side back port)
+  </message>
+  <message name="IDS_POWER_SOURCE_PORT_BACK_LEFT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the left.">
+    USB-C device (left port in the back)
+  </message>
+  <message name="IDS_POWER_SOURCE_PORT_BACK_RIGHT" desc="The text identifying an external device, when that device is connected to a USB Type-C port on the back of this device. In this case there are two ports on the back, so this text should refer to the one on the right.">
+    USB-C device (right port in the back)
+  </message>
+  <message name="IDS_POWER_SOURCE_PORT_UNKNOWN" desc="The text referring to the device to charge from, when its port location cannot be determined.">
+    USB-C device
   </message>
 </grit-part>

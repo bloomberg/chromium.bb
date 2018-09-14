@@ -83,6 +83,7 @@ include_rules = [
   "+chromeos/services/multidevice_setup/public",
   # TODO(jamescook): Eliminate this. http://crbug.com/644361
   "+chromeos/settings/timezone_settings.h",
+  "+chromeos/strings",
   "+chromeos/system",
 
   # InputMethodManager lives in the browser process. Use ImeController.
