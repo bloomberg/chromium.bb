@@ -19,6 +19,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
 #include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
@@ -3824,14 +3825,14 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       scroll_status.thread = SCROLL_IGNORED;
       scroll_status.main_thread_scrolling_reasons =
           MainThreadScrollingReason::kNotScrollable;
-      // Adding NOTREACHED to debug https://crbug.com/797708, based on the
+      // Dump without crashing to debug https://crbug.com/797708, based on the
       // traces on the bug scrolling gets stuck in a situation where the
       // layout_tree_host_impl assumes that there is an ongoing scroll animation
       // since scroll_node exists but the
       // ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget returns false
       // since no keyframe_model exists. TODO(sahel):remove this once the issue
       // is fixed.
-      NOTREACHED();
+      base::debug::DumpWithoutCrashing();
     }
     return scroll_status;
   }
