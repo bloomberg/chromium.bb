@@ -75,7 +75,6 @@ NSString* const kReadingListActivityType =
 }
 
 - (void)performActivity {
-  base::RecordAction(base::UserMetricsAction("MobileShareActionReadLater"));
   ReadingListAddCommand* command =
       [[ReadingListAddCommand alloc] initWithURL:_activityURL title:_title];
   [_dispatcher addToReadingList:command];
