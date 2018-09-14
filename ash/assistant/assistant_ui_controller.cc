@@ -114,7 +114,11 @@ void AssistantUiController::OnInteractionStateChanged(
 }
 
 void AssistantUiController::OnMicStateChanged(MicState mic_state) {
-  UpdateUiMode();
+  // When the mic is opened we update the UI mode to ensure that the user is
+  // being presented with the main stage. When closing the mic it is appropriate
+  // to stay in whatever UI mode we are currently in.
+  if (mic_state == MicState::kOpen)
+    UpdateUiMode();
 }
 
 void AssistantUiController::OnScreenContextRequestStateChanged(
