@@ -57,7 +57,7 @@ class ASH_EXPORT AssistantUiController
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
   // Returns the underlying model.
-  const AssistantUiModel* model() const { return &assistant_ui_model_; }
+  const AssistantUiModel* model() const { return &model_; }
 
   // Adds/removes the specified model |observer|.
   void AddModelObserver(AssistantUiModelObserver* observer);
@@ -119,7 +119,7 @@ class ASH_EXPORT AssistantUiController
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
 
-  AssistantUiModel assistant_ui_model_;
+  AssistantUiModel model_;
 
   AssistantContainerView* container_view_ =
       nullptr;  // Owned by view hierarchy.

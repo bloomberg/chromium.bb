@@ -46,9 +46,7 @@ class AssistantInteractionController
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
   // Returns a reference to the underlying model.
-  const AssistantInteractionModel* model() const {
-    return &assistant_interaction_model_;
-  }
+  const AssistantInteractionModel* model() const { return &model_; }
 
   // Adds/removes the specified interaction model |observer|.
   void AddModelObserver(AssistantInteractionModelObserver* observer);
@@ -117,7 +115,7 @@ class AssistantInteractionController
   mojo::Binding<chromeos::assistant::mojom::AssistantInteractionSubscriber>
       assistant_interaction_subscriber_binding_;
 
-  AssistantInteractionModel assistant_interaction_model_;
+  AssistantInteractionModel model_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantInteractionController);
 };
