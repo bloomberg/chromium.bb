@@ -52,14 +52,14 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
 
     // Default time in seconds to wait until the offline state is stablized in the case of flaky
     // connections.
-    private static final int STABLE_OFFLINE_DEFAULT_WAIT_SECONDS = 3 * 60;
+    private static final int STABLE_OFFLINE_DEFAULT_WAIT_SECONDS = 20;
 
     @SuppressLint("StaticFieldLeak")
     private static OfflineIndicatorController sInstance;
 
     private boolean mIsShowingOfflineIndicator;
-    // Set to true if the offline indicator has been shown once.
-    private boolean mHasOfflineIndicatorShown = false;
+    // Set to true if the offline indicator has been shown once since the activity has resumed.
+    private boolean mHasOfflineIndicatorShownSinceActivityResumed;
     private ConnectivityDetector mConnectivityDetector;
     private ChromeActivity mObservedActivity = null;
 
@@ -121,6 +121,7 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
     public void onApplicationStateChange(int newState) {
         // If the application is resumed, update the connection state and show indicator if needed.
         if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+            mHasOfflineIndicatorShownSinceActivityResumed = false;
             mConnectivityDetector.detect();
             updateOfflineIndicator(mConnectivityDetector.getConnectionState()
                     == ConnectivityDetector.ConnectionState.VALIDATED);
@@ -222,7 +223,7 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
         // be shown if the user has been continuously online for the required duration, then goes
         // back to being offline.
         // TODO(jianli): keep these values in shared prefernces. (http://crbug.com/879725)
-        if (mHasOfflineIndicatorShown
+        if (mHasOfflineIndicatorShownSinceActivityResumed
                 && SystemClock.elapsedRealtime() - mLastOnlineTime
                         < getTimeToWaitForStableOffline()) {
             return;
@@ -252,7 +253,7 @@ public class OfflineIndicatorController implements ConnectivityDetector.Observer
         RecordHistogram.recordEnumeratedHistogram("OfflineIndicator.CTR",
                 OFFLINE_INDICATOR_CTR_DISPLAYED, OFFLINE_INDICATOR_CTR_COUNT);
         mIsShowingOfflineIndicator = true;
-        mHasOfflineIndicatorShown = true;
+        mHasOfflineIndicatorShownSinceActivityResumed = true;
     }
 
     private void hideOfflineIndicator(Activity activity) {
