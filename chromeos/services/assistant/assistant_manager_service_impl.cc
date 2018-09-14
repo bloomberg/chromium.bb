@@ -346,6 +346,7 @@ void AssistantManagerServiceImpl::OnShowContextualQueryFallback() {
          <body>
            <style>
              * {
+               box-sizing: border-box;
                cursor: default;
                font-family: Google Sans, sans-serif;
                user-select: none;
