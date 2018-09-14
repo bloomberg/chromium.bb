@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -60,7 +61,7 @@
         width: 311px;
       }
 
-      #settingsSections {
+      #container {
         color: var(--google-grey-900);
         flex: 1;
         overflow: overlay;
@@ -70,6 +71,21 @@
         align-items: center;
         background-color: var(--google-grey-200);
         flex: 1;
+      }
+
+      #cr-container-shadow {
+        background-color: rgb(232, 234, 237);
+        height: 1px;
+        margin-bottom: -1px;
+        opacity: 0.3;
+      }
+
+      #cr-container-shadow.has-shadow {
+        background-color: white;
+        box-shadow: inset 0 1px 2px 0 rgba(60, 64, 67, .3),
+                    inset 0 1px 3px -1px rgba(60, 64, 67, .15);
+        height: 3px;
+        margin-bottom: -3px;
       }
     </style>
     <print-preview-state id="state" state="{{state}}"></print-preview-state>
@@ -84,7 +100,7 @@
           on-print-requested="onPrintRequested_"
           on-cancel-requested="onCancelRequested_">
       </print-preview-header>
-      <div id="settingsSections">
+      <div id="container">
         <print-preview-destination-settings id="destinationSettings"
             destination="[[destination_]]"
             destination-store="[[destinationStore_]]"
