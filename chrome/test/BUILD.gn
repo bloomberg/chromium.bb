@@ -1009,6 +1009,7 @@ test("browser_tests") {
       "//components/autofill/content/common:mojo_interfaces",
       "//components/autofill/content/renderer:test_support",
       "//components/captive_portal:test_support",
+      "//components/data_reduction_proxy/core/browser:test_support",
       "//components/dom_distiller/content/browser",
       "//components/dom_distiller/content/renderer",
       "//components/dom_distiller/core:test_support",

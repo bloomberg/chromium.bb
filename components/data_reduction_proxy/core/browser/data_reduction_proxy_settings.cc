@@ -23,6 +23,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/features.h"
 
 namespace {
@@ -273,6 +274,12 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
     deferred_initialization_ = true;
   else
     UpdateIOData(at_startup);
+}
+
+const net::HttpRequestHeaders&
+DataReductionProxySettings::GetProxyRequestHeaders() const {
+  DCHECK(data_reduction_proxy_service_);
+  return data_reduction_proxy_service_->GetProxyRequestHeaders();
 }
 
 DataReductionProxyEventStore* DataReductionProxySettings::GetEventStore()

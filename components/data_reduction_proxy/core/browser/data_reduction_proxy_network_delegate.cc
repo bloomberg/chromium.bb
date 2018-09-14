@@ -396,6 +396,14 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   if (data_reduction_proxy_io_data_)
     lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
 
+  // The headers below were speculatively added for caching for HTTP requests
+  // when DRP is enabled. Before modifying them, make sure that this is a
+  // DRP-eligible request so that the below headers are not removed when they
+  // are included by other Chrome or Preview features, currently limited to
+  // HTTPS.
+  if (request->url().SchemeIsCryptographic())
+    return;
+
   if (!using_data_reduction_proxy) {
     if (lofi_decider) {
       // If not using the data reduction proxy, strip the

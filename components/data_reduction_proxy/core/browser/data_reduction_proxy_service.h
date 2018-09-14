@@ -154,7 +154,7 @@ class DataReductionProxyService
 
   // Returns |proxy_request_headers_|. Note: The chrome-proxy header does not
   // include the page id.
-  const net::HttpRequestHeaders GetProxyRequestHeaders() const {
+  const net::HttpRequestHeaders& GetProxyRequestHeaders() const {
     return proxy_request_headers_;
   }
 
