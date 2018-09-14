@@ -95,8 +95,9 @@ class TestCallbackReceiver {
  public:
   TestCallbackReceiver() = default;
 
-  base::Closure GetClosure() {
-    return base::Bind(&TestCallbackReceiver::Callback, base::Unretained(this));
+  base::OnceClosure GetClosure() {
+    return base::BindOnce(&TestCallbackReceiver::Callback,
+                          base::Unretained(this));
   }
   int callback_count() const { return callback_count_; }
 
@@ -113,8 +114,8 @@ class LoadPolicyCallbackReceiver {
   LoadPolicyCallbackReceiver() = default;
 
   AsyncDocumentSubresourceFilter::LoadPolicyCallback GetCallback() {
-    return base::Bind(&LoadPolicyCallbackReceiver::Callback,
-                      base::Unretained(this));
+    return base::BindOnce(&LoadPolicyCallbackReceiver::Callback,
+                          base::Unretained(this));
   }
   void ExpectReceivedOnce(LoadPolicy load_policy) const {
     ASSERT_EQ(1, callback_count_);

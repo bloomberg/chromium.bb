@@ -45,7 +45,7 @@ mojom::ActivationState ComputeActivationState(
 // while the DSF is retrieved on the |task_runner| in a deferred manner.
 class AsyncDocumentSubresourceFilter {
  public:
-  using LoadPolicyCallback = base::Callback<void(LoadPolicy)>;
+  using LoadPolicyCallback = base::OnceCallback<void(LoadPolicy)>;
 
   class Core;
 
@@ -101,7 +101,8 @@ class AsyncDocumentSubresourceFilter {
   AsyncDocumentSubresourceFilter(
       VerifiedRuleset::Handle* ruleset_handle,
       InitializationParams params,
-      base::Callback<void(mojom::ActivationState)> activation_state_callback);
+      base::OnceCallback<void(mojom::ActivationState)>
+          activation_state_callback);
 
   ~AsyncDocumentSubresourceFilter();
 
@@ -140,7 +141,8 @@ class AsyncDocumentSubresourceFilter {
 
  private:
   void OnActivateStateCalculated(
-      base::Callback<void(mojom::ActivationState)> activation_state_callback,
+      base::OnceCallback<void(mojom::ActivationState)>
+          activation_state_callback,
       mojom::ActivationState activation_state);
 
   // Note: Raw pointer, |core_| already holds a reference to |task_runner_|.

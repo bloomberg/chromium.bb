@@ -102,7 +102,7 @@ InitializationParams& InitializationParams::operator=(InitializationParams&&) =
 AsyncDocumentSubresourceFilter::AsyncDocumentSubresourceFilter(
     VerifiedRuleset::Handle* ruleset_handle,
     InitializationParams params,
-    base::Callback<void(mojom::ActivationState)> activation_state_callback)
+    base::OnceCallback<void(mojom::ActivationState)> activation_state_callback)
     : task_runner_(ruleset_handle->task_runner()),
       core_(new Core(), base::OnTaskRunnerDeleter(task_runner_)),
       weak_ptr_factory_(this) {
@@ -127,10 +127,10 @@ AsyncDocumentSubresourceFilter::~AsyncDocumentSubresourceFilter() {
 }
 
 void AsyncDocumentSubresourceFilter::OnActivateStateCalculated(
-    base::Callback<void(mojom::ActivationState)> activation_state_callback,
+    base::OnceCallback<void(mojom::ActivationState)> activation_state_callback,
     mojom::ActivationState activation_state) {
   activation_state_ = activation_state;
-  activation_state_callback.Run(activation_state);
+  std::move(activation_state_callback).Run(activation_state);
 }
 
 void AsyncDocumentSubresourceFilter::GetLoadPolicyForSubdocument(
@@ -142,7 +142,7 @@ void AsyncDocumentSubresourceFilter::GetLoadPolicyForSubdocument(
   // too big and won't be allowed anyway (e.g., it's a data: URI).
   base::PostTaskAndReplyWithResult(
       task_runner_, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           [](AsyncDocumentSubresourceFilter::Core* core,
              const GURL& subdocument_url) {
             DCHECK(core);

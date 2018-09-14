@@ -17,10 +17,10 @@ TestActivationStateCallbackReceiver::TestActivationStateCallbackReceiver() =
 TestActivationStateCallbackReceiver::~TestActivationStateCallbackReceiver() =
     default;
 
-base::Callback<void(mojom::ActivationState)>
+base::OnceCallback<void(mojom::ActivationState)>
 TestActivationStateCallbackReceiver::GetCallback() {
-  return base::Bind(&TestActivationStateCallbackReceiver::Callback,
-                    base::Unretained(this));
+  return base::BindOnce(&TestActivationStateCallbackReceiver::Callback,
+                        base::Unretained(this));
 }
 
 void TestActivationStateCallbackReceiver::WaitForActivationDecision() {
