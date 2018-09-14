@@ -4465,7 +4465,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Reflection) {
   EXPECT_EQ(DocScrollTranslation(),
             filter_properties->Filter()->LocalTransformSpace());
   EXPECT_EQ(DocContentClip(), filter_properties->Filter()->OutputClip());
-  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
+  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->FiltersOrigin());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SimpleFilter) {
@@ -4478,7 +4478,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleFilter) {
   EXPECT_EQ(DocScrollTranslation(),
             filter_properties->Filter()->LocalTransformSpace());
   EXPECT_EQ(DocContentClip(), filter_properties->Filter()->OutputClip());
-  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
+  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->FiltersOrigin());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
@@ -4498,7 +4498,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
             filter_properties->Filter()->OutputClip());
   EXPECT_EQ(DocScrollTranslation(),
             filter_properties->Filter()->LocalTransformSpace());
-  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
+  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->FiltersOrigin());
 
   const PropertyTreeState& child_paint_state =
       GetLayoutObjectByElementId("child")

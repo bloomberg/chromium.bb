@@ -891,7 +891,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
     if (NeedsFilter(object_)) {
       EffectPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
-      state.paint_offset = FloatPoint(context_.current.paint_offset);
+      state.filters_origin = FloatPoint(context_.current.paint_offset);
 
       auto* layer = ToLayoutBoxModelObject(object_).Layer();
       if (layer) {
