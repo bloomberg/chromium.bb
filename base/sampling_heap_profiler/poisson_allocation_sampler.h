@@ -47,6 +47,16 @@ class BASE_EXPORT PoissonAllocationSampler {
     virtual void SampleRemoved(void* address) = 0;
   };
 
+  // The instance of this class makes sampler do not report samples generated
+  // within the object scope for the current thread.
+  // It allows observers to allocate/deallocate memory while holding a lock
+  // without a chance to get into reentrancy problems.
+  class BASE_EXPORT MuteThreadSamplesScope {
+   public:
+    MuteThreadSamplesScope();
+    ~MuteThreadSamplesScope();
+  };
+
   // Must be called early during the process initialization. It creates and
   // reserves a TLS slot.
   static void Init();
@@ -102,6 +112,7 @@ class BASE_EXPORT PoissonAllocationSampler {
 
   static PoissonAllocationSampler* instance_;
 
+  friend class MuteThreadSamplesScope;
   friend class NoDestructor<PoissonAllocationSampler>;
 
   DISALLOW_COPY_AND_ASSIGN(PoissonAllocationSampler);

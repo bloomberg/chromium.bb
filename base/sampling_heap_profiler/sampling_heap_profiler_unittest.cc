@@ -62,8 +62,27 @@ TEST_F(SamplingHeapProfilerTest, SampleObserver) {
   free(p);
   sampler->Stop();
   sampler->RemoveSamplesObserver(&collector);
-  CHECK(collector.sample_added);
-  CHECK(collector.sample_removed);
+  EXPECT_TRUE(collector.sample_added);
+  EXPECT_TRUE(collector.sample_removed);
+}
+
+TEST_F(SamplingHeapProfilerTest, SampleObserverMuted) {
+  PoissonAllocationSampler::Init();
+  SamplesCollector collector(10000);
+  auto* sampler = PoissonAllocationSampler::Get();
+  sampler->SuppressRandomnessForTest(true);
+  sampler->SetSamplingInterval(1024);
+  sampler->Start();
+  sampler->AddSamplesObserver(&collector);
+  {
+    PoissonAllocationSampler::MuteThreadSamplesScope muted_scope;
+    void* volatile p = malloc(10000);
+    free(p);
+  }
+  sampler->Stop();
+  sampler->RemoveSamplesObserver(&collector);
+  EXPECT_FALSE(collector.sample_added);
+  EXPECT_FALSE(collector.sample_removed);
 }
 
 const int kNumberOfAllocations = 10000;

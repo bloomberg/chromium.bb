@@ -100,46 +100,39 @@ void SamplingHeapProfiler::SampleAdded(void* address,
                                        size_t total,
                                        PoissonAllocationSampler::AllocatorType,
                                        const char*) {
-  if (entered_.Get())
-    return;
-  entered_.Set(true);
   AutoLock lock(mutex_);
   Sample sample(size, total, ++last_sample_ordinal_);
   RecordStackTrace(&sample);
   samples_.emplace(address, std::move(sample));
-  entered_.Set(false);
 }
 
 void SamplingHeapProfiler::SampleRemoved(void* address) {
-  if (entered_.Get())
-    return;
-  entered_.Set(true);
   AutoLock lock(mutex_);
   auto it = samples_.find(address);
   if (it != samples_.end())
     samples_.erase(it);
-  entered_.Set(false);
 }
 
 std::vector<SamplingHeapProfiler::Sample> SamplingHeapProfiler::GetSamples(
     uint32_t profile_id) {
-  CHECK(!entered_.Get());
-  entered_.Set(true);
+  // Make sure the sampler does not invoke |SampleAdded| or |SampleRemoved|
+  // on this thread. Otherwise it could have end up with a deadlock.
+  // See crbug.com/882495
+  PoissonAllocationSampler::MuteThreadSamplesScope no_samples_scope;
   AutoLock lock(mutex_);
   std::vector<Sample> samples;
+  samples.reserve(samples_.size());
   for (auto& it : samples_) {
     Sample& sample = it.second;
     if (sample.ordinal > profile_id)
       samples.push_back(sample);
   }
-  entered_.Set(false);
   return samples;
 }
 
 // static
 void SamplingHeapProfiler::Init() {
   PoissonAllocationSampler::Init();
-  ignore_result(SamplingHeapProfiler::Get()->entered_.Get());
 }
 
 // static
