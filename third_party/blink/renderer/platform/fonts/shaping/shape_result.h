@@ -97,6 +97,13 @@ typedef void (*GlyphCallback)(void* context,
                               CanvasRotationInVertical,
                               const SimpleFontData*);
 
+typedef void (*GraphemeClusterCallback)(void* context,
+                                        unsigned character_index,
+                                        float total_advance,
+                                        unsigned graphemes_in_cluster,
+                                        float cluster_advance,
+                                        CanvasRotationInVertical);
+
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:
   static scoped_refptr<ShapeResult> Create(const Font* font,
@@ -257,6 +264,21 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                      unsigned index_offset,
                      GlyphCallback,
                      void* context) const;
+
+  // Iterates over, and calls the specified callback function, for all the
+  // grapheme clusters. As ShapeResuls do not contain the original text content
+  // a StringView with the text must be supplied and must match the text that
+  // was used generate the ShapeResult.
+  // Also tracks (and returns) a seeded total advance.
+  // The context parameter will be given as the first parameter for the callback
+  // function.
+  float ForEachGraphemeClusters(const StringView& text,
+                                float initial_advance,
+                                unsigned from,
+                                unsigned to,
+                                unsigned index_offset,
+                                GraphemeClusterCallback,
+                                void* context) const;
 
   String ToString() const;
   void ToString(StringBuilder*) const;

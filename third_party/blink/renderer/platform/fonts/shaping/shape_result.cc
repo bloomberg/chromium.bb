@@ -710,6 +710,105 @@ float ShapeResult::ForEachGlyph(float initial_advance,
   return total_advance;
 }
 
+namespace {
+
+inline unsigned CountGraphemesInCluster(const UChar* str,
+                                        unsigned str_length,
+                                        uint16_t start_index,
+                                        uint16_t end_index) {
+  if (start_index > end_index)
+    std::swap(start_index, end_index);
+  uint16_t length = end_index - start_index;
+  DCHECK_LE(static_cast<unsigned>(start_index + length), str_length);
+  TextBreakIterator* cursor_pos_iterator =
+      CursorMovementIterator(&str[start_index], length);
+
+  int cursor_pos = cursor_pos_iterator->current();
+  int num_graphemes = -1;
+  while (0 <= cursor_pos) {
+    cursor_pos = cursor_pos_iterator->next();
+    num_graphemes++;
+  }
+  return std::max(0, num_graphemes);
+}
+
+}  // anonymous namespace
+
+float ShapeResult::ForEachGraphemeClusters(const StringView& text,
+                                           float initial_advance,
+                                           unsigned from,
+                                           unsigned to,
+                                           unsigned index_offset,
+                                           GraphemeClusterCallback callback,
+                                           void* context) const {
+  unsigned run_offset = index_offset;
+  float advance_so_far = initial_advance;
+  for (const auto& run : runs_) {
+    unsigned graphemes_in_cluster = 1;
+    float cluster_advance = 0;
+
+    // FIXME: should this be run->direction_?
+    bool rtl = Direction() == TextDirection::kRtl;
+
+    // A "cluster" in this context means a cluster as it is used by HarfBuzz:
+    // The minimal group of characters and corresponding glyphs, that cannot be
+    // broken down further from a text shaping point of view.  A cluster can
+    // contain multiple glyphs and grapheme clusters, with mutually overlapping
+    // boundaries.
+    uint16_t cluster_start = static_cast<uint16_t>(
+        rtl ? run->start_index_ + run->num_characters_ + run_offset
+            : run->GlyphToCharacterIndex(0) + run_offset);
+
+    const unsigned num_glyphs = run->glyph_data_.size();
+    for (unsigned i = 0; i < num_glyphs; ++i) {
+      const HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
+      uint16_t current_character_index =
+          run->start_index_ + glyph_data.character_index + run_offset;
+      bool is_run_end = (i + 1 == num_glyphs);
+      bool is_cluster_end =
+          is_run_end || (run->GlyphToCharacterIndex(i + 1) + run_offset !=
+                         current_character_index);
+
+      if ((rtl && current_character_index >= to) ||
+          (!rtl && current_character_index < from)) {
+        advance_so_far += glyph_data.advance;
+        rtl ? --cluster_start : ++cluster_start;
+        continue;
+      }
+
+      cluster_advance += glyph_data.advance;
+
+      if (text.Is8Bit()) {
+        callback(context, current_character_index, advance_so_far, 1,
+                 glyph_data.advance, run->canvas_rotation_);
+
+        advance_so_far += glyph_data.advance;
+      } else if (is_cluster_end) {
+        uint16_t cluster_end;
+        if (rtl) {
+          cluster_end = current_character_index;
+        } else {
+          cluster_end = static_cast<uint16_t>(
+              is_run_end ? run->start_index_ + run->num_characters_ + run_offset
+                         : run->GlyphToCharacterIndex(i + 1) + run_offset);
+        }
+        graphemes_in_cluster = CountGraphemesInCluster(
+            text.Characters16(), text.length(), cluster_start, cluster_end);
+        if (!graphemes_in_cluster || !cluster_advance)
+          continue;
+
+        callback(context, current_character_index, advance_so_far,
+                 graphemes_in_cluster, cluster_advance, run->canvas_rotation_);
+        advance_so_far += cluster_advance;
+
+        cluster_start = cluster_end;
+        cluster_advance = 0;
+      }
+    }
+  }
+  return advance_so_far;
+}
+
 // TODO(kojii): VC2015 fails to explicit instantiation of a member function.
 // Typed functions + this private function are to instantiate instances.
 template <typename TextContainerType>
