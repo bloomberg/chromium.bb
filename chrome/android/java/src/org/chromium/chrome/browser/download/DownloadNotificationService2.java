@@ -300,7 +300,7 @@ public class DownloadNotificationService2 {
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(id);
         if (!isResumable) {
             // TODO(cmsy): Use correct FailState.
-            notifyDownloadFailed(id, fileName, icon, FailState.CANNOT_DOWNLOAD);
+            notifyDownloadFailed(id, fileName, icon, isOffTheRecord, FailState.CANNOT_DOWNLOAD);
             return;
         }
         // If download is already paused, do nothing.
@@ -391,13 +391,15 @@ public class DownloadNotificationService2 {
 
     /**
      * Add a download failed notification.
-     * @param id       The {@link ContentId} of the download.
-     * @param fileName Filename of the download.
-     * @param icon     A {@link Bitmap} to be used as the large icon for display.
+     * @param id             The {@link ContentId} of the download.
+     * @param fileName       Filename of the download.
+     * @param icon           A {@link Bitmap} to be used as the large icon for display.
+     * @param isOffTheRecord If the profile is off the record.
+     * @param failState      Reason why download failed.
      */
     @VisibleForTesting
-    public void notifyDownloadFailed(
-            ContentId id, String fileName, Bitmap icon, @FailState int failState) {
+    public void notifyDownloadFailed(ContentId id, String fileName, Bitmap icon,
+            boolean isOffTheRecord, @FailState int failState) {
         // If the download is not in history db, fileName could be empty. Get it from
         // SharedPreferences.
         if (TextUtils.isEmpty(fileName)) {
@@ -414,6 +416,7 @@ public class DownloadNotificationService2 {
                                                 .setContentId(id)
                                                 .setFileName(fileName)
                                                 .setIcon(icon)
+                                                .setIsOffTheRecord(isOffTheRecord)
                                                 .setFailState(failState)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(

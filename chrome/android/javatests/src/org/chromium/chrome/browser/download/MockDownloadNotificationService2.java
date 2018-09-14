@@ -98,11 +98,11 @@ public class MockDownloadNotificationService2 extends DownloadNotificationServic
 
     @Override
     public void notifyDownloadFailed(final ContentId id, final String fileName, final Bitmap icon,
-            @FailState int failState) {
+            boolean isOffTheRecord, @FailState int failState) {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> MockDownloadNotificationService2.super.notifyDownloadFailed(
-                                id, fileName, icon, failState));
+                                id, fileName, icon, isOffTheRecord, failState));
     }
 
     @Override
