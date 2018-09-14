@@ -35,6 +35,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_claim_callbacks.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
@@ -43,6 +44,7 @@
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -51,13 +53,13 @@ struct WebServiceWorkerClientQueryOptions;
 class ExecutionContext;
 class WebServiceWorkerContextClient;
 class WebServiceWorkerResponse;
-class WebURL;
+class KURL;
 class WorkerClients;
 
 // See WebServiceWorkerContextClient for documentation for the methods in this
 // class.
-class MODULES_EXPORT ServiceWorkerGlobalScopeClient
-    : public GarbageCollected<ServiceWorkerGlobalScopeClient>,
+class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
+    : public GarbageCollectedFinalized<ServiceWorkerGlobalScopeClient>,
       public Supplement<WorkerClients> {
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClient);
 
@@ -67,17 +69,25 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   explicit ServiceWorkerGlobalScopeClient(WebServiceWorkerContextClient&);
 
   // Called from ServiceWorkerClients.
-  void GetClient(const WebString&,
+  void GetClient(const String&,
                  std::unique_ptr<WebServiceWorkerClientCallbacks>);
   void GetClients(const WebServiceWorkerClientQueryOptions&,
                   std::unique_ptr<WebServiceWorkerClientsCallbacks>);
-  void OpenWindowForClients(const WebURL&,
+  void OpenWindowForClients(const KURL&,
                             std::unique_ptr<WebServiceWorkerClientCallbacks>);
   void OpenWindowForPaymentHandler(
-      const WebURL&,
+      const KURL&,
       std::unique_ptr<WebServiceWorkerClientCallbacks>);
-  void SetCachedMetadata(const WebURL&, const char*, size_t);
-  void ClearCachedMetadata(const WebURL&);
+  void SetCachedMetadata(const KURL&, const char*, size_t);
+  void ClearCachedMetadata(const KURL&);
+  void PostMessageToClient(const String& client_uuid, BlinkTransferableMessage);
+  void SkipWaiting(std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>);
+  void Claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>);
+  void Focus(const String& client_uuid,
+             std::unique_ptr<WebServiceWorkerClientCallbacks>);
+  void Navigate(const String& client_uuid,
+                const KURL&,
+                std::unique_ptr<WebServiceWorkerClientCallbacks>);
 
   void DidHandleActivateEvent(int event_id,
                               mojom::ServiceWorkerEventStatus,
@@ -145,14 +155,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   void DidHandlePaymentRequestEvent(int payment_request_event_id,
                                     mojom::ServiceWorkerEventStatus,
                                     double event_dispatch_time);
-  void PostMessageToClient(const WebString& client_uuid, TransferableMessage);
-  void SkipWaiting(std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>);
-  void Claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>);
-  void Focus(const WebString& client_uuid,
-             std::unique_ptr<WebServiceWorkerClientCallbacks>);
-  void Navigate(const WebString& client_uuid,
-                const WebURL&,
-                std::unique_ptr<WebServiceWorkerClientCallbacks>);
+
+  void BindServiceWorkerHost(
+      mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host);
+
+  void WillDestroyWorkerContext();
 
   static ServiceWorkerGlobalScopeClient* From(ExecutionContext*);
 
@@ -160,6 +167,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
 
  private:
   WebServiceWorkerContextClient& client_;
+
+  // Lives on the service worker thread, is bound by BindServiceWorkerHost()
+  // which is triggered by the first Mojo call received on the service worker
+  // thread content::mojom::ServiceWorker::InitializeGlobalScope(), and is
+  // closed by WillDestroyWorkerContext().
+  mojom::blink::ServiceWorkerHostAssociatedPtr service_worker_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerGlobalScopeClient);
 };

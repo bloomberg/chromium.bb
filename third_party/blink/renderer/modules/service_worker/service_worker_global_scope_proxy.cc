@@ -182,14 +182,23 @@ void ServiceWorkerGlobalScopeProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_execution_context_task_runners_);
 }
 
-void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
-  WorkerGlobalScope()->ReadyToEvaluateScript();
+void ServiceWorkerGlobalScopeProxy::BindServiceWorkerHost(
+    mojo::ScopedInterfaceEndpointHandle service_worker_host) {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+  WorkerGlobalScope()->BindServiceWorkerHost(
+      mojom::blink::ServiceWorkerHostAssociatedPtrInfo(
+          std::move(service_worker_host),
+          mojom::blink::ServiceWorkerHost::Version_));
 }
 
 void ServiceWorkerGlobalScopeProxy::SetRegistration(
     std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WorkerGlobalScope()->SetRegistration(std::move(handle));
+}
+
+void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
+  WorkerGlobalScope()->ReadyToEvaluateScript();
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(

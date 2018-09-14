@@ -46,7 +46,6 @@ class TaskRunner;
 
 namespace blink {
 struct PlatformNotificationData;
-struct WebServiceWorkerClientQueryOptions;
 class WebDataConsumerHandle;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerProvider;
@@ -111,22 +110,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::mojom::ServiceWorkerObjectInfoPtr info);
 
   // WebServiceWorkerContextClient overrides.
-  void GetClient(
-      const blink::WebString& client_id,
-      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void GetClients(
-      const blink::WebServiceWorkerClientQueryOptions&,
-      std::unique_ptr<blink::WebServiceWorkerClientsCallbacks>) override;
-  void OpenNewTab(
-      const blink::WebURL&,
-      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void OpenPaymentHandlerWindow(
-      const blink::WebURL&,
-      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void SetCachedMetadata(const blink::WebURL&,
-                         const char* data,
-                         size_t size) override;
-  void ClearCachedMetadata(const blink::WebURL&) override;
   void WorkerReadyForInspection() override;
   void WorkerContextFailedToStart() override;
   void FailedToLoadInstalledScript() override;
@@ -231,18 +214,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::WebServiceWorkerNetworkProvider*) override;
   std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
-  void PostMessageToClient(const blink::WebString& uuid,
-                           blink::TransferableMessage message) override;
-  void Focus(const blink::WebString& uuid,
-             std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void Navigate(
-      const blink::WebString& uuid,
-      const blink::WebURL&,
-      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void SkipWaiting(std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks>
-                       callbacks) override;
-  void Claim(std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks>
-                 callbacks) override;
 
   // Dispatches the fetch event if the worker is running normally, and queues it
   // instead if the worker has already requested to be terminated by the

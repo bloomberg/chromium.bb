@@ -120,7 +120,7 @@ void ServiceWorkerClient::postMessage(ScriptState* script_state,
     return;
 
   ServiceWorkerGlobalScopeClient::From(context)->PostMessageToClient(
-      uuid_, ToTransferableMessage(std::move(msg)));
+      uuid_, std::move(msg));
 }
 
 }  // namespace blink

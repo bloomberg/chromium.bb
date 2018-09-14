@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_CONTEXT_PROXY_H_
 
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
@@ -59,6 +60,9 @@ class WebURLResponse;
 class WebServiceWorkerContextProxy {
  public:
   virtual ~WebServiceWorkerContextProxy() = default;
+
+  virtual void BindServiceWorkerHost(
+      mojo::ScopedInterfaceEndpointHandle service_worker_host) = 0;
 
   virtual void SetRegistration(
       std::unique_ptr<WebServiceWorkerRegistration::Handle>) = 0;

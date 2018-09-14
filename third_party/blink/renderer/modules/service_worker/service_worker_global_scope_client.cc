@@ -33,51 +33,226 @@
 #include <memory>
 #include <utility>
 #include "third_party/blink/public/platform/modules/payments/web_payment_handler_response.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_client_query_options.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
-#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
+namespace {
+
+// TODO(leonhsl): Remove this function, pass ServiceWorkerClientInfoPtr through
+// to replace WebServiceWorkerClientInfo.
+blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
+    mojom::blink::ServiceWorkerClientInfoPtr client_info) {
+  DCHECK(!client_info->client_uuid.IsEmpty());
+
+  blink::WebServiceWorkerClientInfo web_client_info;
+
+  web_client_info.uuid = client_info->client_uuid;
+  web_client_info.page_visibility_state = client_info->page_visibility_state;
+  web_client_info.is_focused = client_info->is_focused;
+  web_client_info.url = client_info->url;
+  web_client_info.frame_type = client_info->frame_type;
+  web_client_info.client_type = client_info->client_type;
+
+  return web_client_info;
+}
+
+void DidGetClient(
+    std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks,
+    mojom::blink::ServiceWorkerClientInfoPtr client) {
+  std::unique_ptr<blink::WebServiceWorkerClientInfo> web_client;
+  if (client) {
+    web_client = std::make_unique<blink::WebServiceWorkerClientInfo>(
+        ToWebServiceWorkerClientInfo(std::move(client)));
+  }
+  callbacks->OnSuccess(std::move(web_client));
+}
+
+void DidGetClients(
+    std::unique_ptr<blink::WebServiceWorkerClientsCallbacks> callbacks,
+    Vector<mojom::blink::ServiceWorkerClientInfoPtr> clients) {
+  blink::WebServiceWorkerClientsInfo info;
+  blink::WebVector<blink::WebServiceWorkerClientInfo> web_clients(
+      clients.size());
+  for (size_t i = 0; i < clients.size(); ++i)
+    web_clients[i] = ToWebServiceWorkerClientInfo(std::move(clients[i]));
+  info.clients.Swap(web_clients);
+  callbacks->OnSuccess(info);
+}
+
+void DidOpenWindow(
+    std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks,
+    bool success,
+    mojom::blink::ServiceWorkerClientInfoPtr client,
+    const String& error_msg) {
+  if (!success) {
+    DCHECK(!client);
+    DCHECK(!error_msg.IsNull());
+    callbacks->OnError(blink::WebServiceWorkerError(
+        mojom::blink::ServiceWorkerErrorType::kNavigation, error_msg));
+    return;
+  }
+
+  std::unique_ptr<blink::WebServiceWorkerClientInfo> web_client;
+  if (client) {
+    web_client = std::make_unique<blink::WebServiceWorkerClientInfo>(
+        ToWebServiceWorkerClientInfo(std::move(client)));
+  }
+  callbacks->OnSuccess(std::move(web_client));
+}
+
+void DidFocusClient(
+    std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks,
+    mojom::blink::ServiceWorkerClientInfoPtr client) {
+  if (!client) {
+    callbacks->OnError(blink::WebServiceWorkerError(
+        mojom::blink::ServiceWorkerErrorType::kNotFound,
+        "The client was not found."));
+    return;
+  }
+  auto web_client = std::make_unique<blink::WebServiceWorkerClientInfo>(
+      ToWebServiceWorkerClientInfo(std::move(client)));
+  callbacks->OnSuccess(std::move(web_client));
+}
+
+void DidNavigateClient(
+    std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks,
+    bool success,
+    mojom::blink::ServiceWorkerClientInfoPtr client,
+    const String& error_msg) {
+  if (!success) {
+    DCHECK(!client);
+    DCHECK(!error_msg.IsNull());
+    callbacks->OnError(blink::WebServiceWorkerError(
+        mojom::blink::ServiceWorkerErrorType::kNavigation, error_msg));
+    return;
+  }
+
+  std::unique_ptr<blink::WebServiceWorkerClientInfo> web_client;
+  if (client) {
+    web_client = std::make_unique<blink::WebServiceWorkerClientInfo>(
+        ToWebServiceWorkerClientInfo(std::move(client)));
+  }
+  callbacks->OnSuccess(std::move(web_client));
+}
+
+void DidSkipWaiting(
+    std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks> callbacks,
+    bool success) {
+  // OnError() should not be called here since per spec the promise returned by
+  // skipWaiting() can never reject.
+  if (!success)
+    return;
+  callbacks->OnSuccess();
+}
+
+void DidClaimClients(
+    std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks> callbacks,
+    mojom::blink::ServiceWorkerErrorType error,
+    const String& error_msg) {
+  if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
+    DCHECK(!error_msg.IsNull());
+    callbacks->OnError(blink::WebServiceWorkerError(error, error_msg));
+    return;
+  }
+  DCHECK(error_msg.IsNull());
+  callbacks->OnSuccess();
+}
+
+}  // namespace
 
 ServiceWorkerGlobalScopeClient::ServiceWorkerGlobalScopeClient(
     WebServiceWorkerContextClient& client)
     : client_(client) {}
 
 void ServiceWorkerGlobalScopeClient::GetClient(
-    const WebString& id,
+    const String& id,
     std::unique_ptr<WebServiceWorkerClientCallbacks> callbacks) {
-  client_.GetClient(id, std::move(callbacks));
+  DCHECK(callbacks);
+  service_worker_host_->GetClient(
+      id, WTF::Bind(&DidGetClient, std::move(callbacks)));
 }
 
 void ServiceWorkerGlobalScopeClient::GetClients(
-    const WebServiceWorkerClientQueryOptions& options,
+    const WebServiceWorkerClientQueryOptions& web_options,
     std::unique_ptr<WebServiceWorkerClientsCallbacks> callbacks) {
-  client_.GetClients(options, std::move(callbacks));
+  DCHECK(callbacks);
+  auto options = mojom::blink::ServiceWorkerClientQueryOptions::New(
+      web_options.include_uncontrolled, web_options.client_type);
+  service_worker_host_->GetClients(
+      std::move(options), WTF::Bind(&DidGetClients, std::move(callbacks)));
 }
 
 void ServiceWorkerGlobalScopeClient::OpenWindowForClients(
-    const WebURL& url,
+    const KURL& url,
     std::unique_ptr<WebServiceWorkerClientCallbacks> callbacks) {
-  client_.OpenNewTab(url, std::move(callbacks));
+  DCHECK(callbacks);
+  service_worker_host_->OpenNewTab(
+      url, WTF::Bind(&DidOpenWindow, std::move(callbacks)));
 }
 
 void ServiceWorkerGlobalScopeClient::OpenWindowForPaymentHandler(
-    const WebURL& url,
+    const KURL& url,
     std::unique_ptr<WebServiceWorkerClientCallbacks> callbacks) {
-  client_.OpenPaymentHandlerWindow(url, std::move(callbacks));
+  DCHECK(callbacks);
+  service_worker_host_->OpenPaymentHandlerWindow(
+      url, WTF::Bind(&DidOpenWindow, std::move(callbacks)));
 }
 
-void ServiceWorkerGlobalScopeClient::SetCachedMetadata(const WebURL& url,
+void ServiceWorkerGlobalScopeClient::SetCachedMetadata(const KURL& url,
                                                        const char* data,
                                                        size_t size) {
-  client_.SetCachedMetadata(url, data, size);
+  Vector<uint8_t> meta_data;
+  meta_data.Append(data, size);
+  service_worker_host_->SetCachedMetadata(url, meta_data);
 }
 
-void ServiceWorkerGlobalScopeClient::ClearCachedMetadata(const WebURL& url) {
-  client_.ClearCachedMetadata(url);
+void ServiceWorkerGlobalScopeClient::ClearCachedMetadata(const KURL& url) {
+  service_worker_host_->ClearCachedMetadata(url);
+}
+
+void ServiceWorkerGlobalScopeClient::PostMessageToClient(
+    const String& client_uuid,
+    BlinkTransferableMessage message) {
+  service_worker_host_->PostMessageToClient(client_uuid, std::move(message));
+}
+
+void ServiceWorkerGlobalScopeClient::SkipWaiting(
+    std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks> callbacks) {
+  DCHECK(callbacks);
+  service_worker_host_->SkipWaiting(
+      WTF::Bind(&DidSkipWaiting, std::move(callbacks)));
+}
+
+void ServiceWorkerGlobalScopeClient::Claim(
+    std::unique_ptr<WebServiceWorkerClientsClaimCallbacks> callbacks) {
+  DCHECK(callbacks);
+  service_worker_host_->ClaimClients(
+      WTF::Bind(&DidClaimClients, std::move(callbacks)));
+}
+
+void ServiceWorkerGlobalScopeClient::Focus(
+    const String& client_uuid,
+    std::unique_ptr<WebServiceWorkerClientCallbacks> callbacks) {
+  DCHECK(callbacks);
+  service_worker_host_->FocusClient(
+      client_uuid, WTF::Bind(&DidFocusClient, std::move(callbacks)));
+}
+
+void ServiceWorkerGlobalScopeClient::Navigate(
+    const String& client_uuid,
+    const KURL& url,
+    std::unique_ptr<WebServiceWorkerClientCallbacks> callbacks) {
+  DCHECK(callbacks);
+  service_worker_host_->NavigateClient(
+      client_uuid, url, WTF::Bind(&DidNavigateClient, std::move(callbacks)));
 }
 
 void ServiceWorkerGlobalScopeClient::DidHandleActivateEvent(
@@ -247,33 +422,15 @@ void ServiceWorkerGlobalScopeClient::DidHandlePaymentRequestEvent(
                                        event_dispatch_time);
 }
 
-void ServiceWorkerGlobalScopeClient::PostMessageToClient(
-    const WebString& client_uuid,
-    TransferableMessage message) {
-  client_.PostMessageToClient(client_uuid, std::move(message));
+void ServiceWorkerGlobalScopeClient::BindServiceWorkerHost(
+    mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host) {
+  DCHECK(service_worker_host.is_valid());
+  DCHECK(!service_worker_host_);
+  service_worker_host_.Bind(std::move(service_worker_host));
 }
 
-void ServiceWorkerGlobalScopeClient::SkipWaiting(
-    std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks> callbacks) {
-  client_.SkipWaiting(std::move(callbacks));
-}
-
-void ServiceWorkerGlobalScopeClient::Claim(
-    std::unique_ptr<WebServiceWorkerClientsClaimCallbacks> callbacks) {
-  client_.Claim(std::move(callbacks));
-}
-
-void ServiceWorkerGlobalScopeClient::Focus(
-    const WebString& client_uuid,
-    std::unique_ptr<WebServiceWorkerClientCallbacks> callback) {
-  client_.Focus(client_uuid, std::move(callback));
-}
-
-void ServiceWorkerGlobalScopeClient::Navigate(
-    const WebString& client_uuid,
-    const WebURL& url,
-    std::unique_ptr<WebServiceWorkerClientCallbacks> callback) {
-  client_.Navigate(client_uuid, url, std::move(callback));
+void ServiceWorkerGlobalScopeClient::WillDestroyWorkerContext() {
+  service_worker_host_.reset();
 }
 
 const char ServiceWorkerGlobalScopeClient::kSupplementName[] =
