@@ -75,6 +75,7 @@ void NetBiosHostLocator::FindHosts(FindHostsCallback callback) {
     // no valid interfaces.
     running_ = false;
     std::move(callback_).Run(false /* success */, results_);
+    return;
   }
 
   timer_->Start(FROM_HERE,
