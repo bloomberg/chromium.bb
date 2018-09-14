@@ -195,6 +195,14 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
       return;
     }
 
+    // importScripts always uses "no-cors", so simply checking the origin is
+    // enough.
+    // TODO(yhirano): Remove this ad-hoc logic and use the response type.
+    const AccessControlStatus access_control_status =
+        execution_context.GetSecurityOrigin()->CanReadContent(response_url)
+            ? kSharableCrossOrigin
+            : kOpaqueResource;
+
     ErrorEvent* error_event = nullptr;
     SingleCachedMetadataHandler* handler(
         CreateWorkerScriptCachedMetadataHandler(complete_url,
@@ -204,7 +212,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     ScriptController()->Evaluate(
         ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown,
                          handler, response_url),
-        &error_event, v8_cache_options_);
+        access_control_status, &error_event, v8_cache_options_);
     if (error_event) {
       ScriptController()->RethrowExceptionFromImportedScript(error_event,
                                                              exception_state);
@@ -322,20 +330,22 @@ void WorkerGlobalScope::TasksWereUnpaused() {
 
 void WorkerGlobalScope::EvaluateClassicScriptPausable(
     const KURL& script_url,
+    AccessControlStatus access_control_status,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   if (IsContextPaused()) {
-    paused_calls_.push_back(
-        WTF::Bind(&WorkerGlobalScope::EvaluateClassicScriptPausable,
-                  WrapWeakPersistent(this), script_url, source_code,
-                  WTF::Passed(std::move(cached_meta_data)), stack_id));
+    paused_calls_.push_back(WTF::Bind(
+        &WorkerGlobalScope::EvaluateClassicScriptPausable,
+        WrapWeakPersistent(this), script_url, access_control_status,
+        source_code, WTF::Passed(std::move(cached_meta_data)), stack_id));
     return;
   }
   ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
   if (debugger)
     debugger->ExternalAsyncTaskStarted(stack_id);
-  EvaluateClassicScript(script_url, source_code, std::move(cached_meta_data));
+  EvaluateClassicScript(script_url, access_control_status, source_code,
+                        std::move(cached_meta_data));
   if (debugger)
     debugger->ExternalAsyncTaskFinished(stack_id);
 }
@@ -382,6 +392,7 @@ void WorkerGlobalScope::ReceiveMessagePausable(
 
 void WorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
+    AccessControlStatus access_control_status,
     String source_code,
     std::unique_ptr<Vector<char>> cached_meta_data) {
   DCHECK(IsContextThread());
@@ -395,7 +406,7 @@ void WorkerGlobalScope::EvaluateClassicScript(
   bool success = ScriptController()->Evaluate(
       ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown, handler,
                        script_url),
-      nullptr /* error_event */, v8_cache_options_);
+      access_control_status, nullptr /* error_event */, v8_cache_options_);
   ReportingProxy().DidEvaluateClassicScript(success);
 }
 

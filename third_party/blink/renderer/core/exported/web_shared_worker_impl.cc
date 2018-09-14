@@ -367,9 +367,10 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   worker_inspector_proxy_->WorkerThreadCreated(document, GetWorkerThread(),
                                                script_response_url);
   // TODO(nhiroki): Support module workers (https://crbug.com/680046).
-  GetWorkerThread()->EvaluateClassicScript(script_response_url, source_code,
-                                           nullptr /* cached_meta_data */,
-                                           v8_inspector::V8StackTraceId());
+  // Shared worker is origin-bound, so use kSharableCrossOrigin.
+  GetWorkerThread()->EvaluateClassicScript(
+      script_response_url, kSharableCrossOrigin, source_code,
+      nullptr /* cached_meta_data */, v8_inspector::V8StackTraceId());
   client_->WorkerScriptLoaded();
 }
 

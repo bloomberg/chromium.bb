@@ -138,6 +138,7 @@ class CORE_EXPORT WorkerGlobalScope
   // so that WorkerGlobalScope can be paused.
   void EvaluateClassicScriptPausable(
       const KURL& script_url,
+      AccessControlStatus access_control_status,
       String source_code,
       std::unique_ptr<Vector<char>> cached_meta_data,
       const v8_inspector::V8StackTraceId& stack_id);
@@ -177,6 +178,7 @@ class CORE_EXPORT WorkerGlobalScope
   // Evaluates the given top-level classic script.
   virtual void EvaluateClassicScript(
       const KURL& script_url,
+      AccessControlStatus access_control_status,
       String source_code,
       std::unique_ptr<Vector<char>> cached_meta_data);
 
