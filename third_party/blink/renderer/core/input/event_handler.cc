@@ -1535,7 +1535,7 @@ void EventHandler::UpdateGestureHoverActiveState(const HitTestRequest& request,
   Element* new_innermost_hover_element = inner_element;
 
   if (new_innermost_hover_element != old_hover_element_in_cur_doc) {
-    size_t index_frame_chain = new_hover_frame_chain.size();
+    wtf_size_t index_frame_chain = new_hover_frame_chain.size();
 
     // Clear the hover state on any frames which are no longer in the frame
     // chain of the hovered element.
@@ -1601,7 +1601,7 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
                                     : nullptr;
   }
 
-  size_t index_entered_frame_chain = entered_frame_chain.size();
+  wtf_size_t index_entered_frame_chain = entered_frame_chain.size();
   LocalFrame* exited_frame_in_document = frame_;
   HeapVector<Member<LocalFrame>, 2> exited_frame_chain;
   // Insert the frame from the disagreement between last frames and entered
@@ -1645,7 +1645,7 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
       gesture_event.TimeStamp());
 
   // Update the mouseout/mouseleave event
-  size_t index_exited_frame_chain = exited_frame_chain.size();
+  wtf_size_t index_exited_frame_chain = exited_frame_chain.size();
   while (index_exited_frame_chain) {
     LocalFrame* leave_frame = exited_frame_chain[--index_exited_frame_chain];
     leave_frame->GetEventHandler().mouse_event_manager_->SetNodeUnderMouse(

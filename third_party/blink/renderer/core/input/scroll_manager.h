@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -122,7 +123,7 @@ class CORE_EXPORT ScrollManager
 
   void RecomputeScrollChain(const Node& start_node,
                             const ScrollState&,
-                            std::deque<int>& scroll_chain);
+                            std::deque<DOMNodeId>& scroll_chain);
   bool CanScroll(const ScrollState&, const Element& current_element);
 
   // scroller_size is set only when scrolling non root scroller.
@@ -146,7 +147,7 @@ class CORE_EXPORT ScrollManager
   const Member<LocalFrame> frame_;
 
   // Only used with the ScrollCustomization runtime enabled feature.
-  std::deque<int> current_scroll_chain_;
+  std::deque<DOMNodeId> current_scroll_chain_;
 
   Member<Node> scroll_gesture_handling_node_;
 

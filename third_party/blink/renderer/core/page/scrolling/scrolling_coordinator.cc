@@ -685,7 +685,7 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
     }
 
     // Transform each rect to the co-ordinate space of the graphicsLayer.
-    for (size_t i = 0; i < layer_iter->value.size(); ++i) {
+    for (wtf_size_t i = 0; i < layer_iter->value.size(); ++i) {
       TouchActionRect rect = layer_iter->value[i];
       if (composited_layer != cur_layer) {
         FloatQuad compositor_quad = geometry_map.MapToAncestor(
@@ -723,7 +723,7 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
   // an updated frame map).
   LayerFrameMap::iterator map_iter = layer_child_frame_map.find(cur_layer);
   if (map_iter != layer_child_frame_map.end()) {
-    for (size_t i = 0; i < map_iter->value.size(); i++) {
+    for (wtf_size_t i = 0; i < map_iter->value.size(); i++) {
       const LocalFrame* child_frame = map_iter->value[i];
       if (child_frame->ShouldThrottleRendering())
         continue;
