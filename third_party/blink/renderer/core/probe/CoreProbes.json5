@@ -147,7 +147,6 @@
         "willSendEventSourceRequest",
         "willSendRequest",
         "willSendWebSocketHandshakeRequest",
-        "willStartFetch",
       ]
     },
     InspectorPageAgent: {
