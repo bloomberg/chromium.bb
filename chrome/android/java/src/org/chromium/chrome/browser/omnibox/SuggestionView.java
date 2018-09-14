@@ -311,10 +311,7 @@ class SuggestionView extends ViewGroup {
         // Reset old computations.
         mContentsView.resetTextWidths();
         mContentsView.mAnswerImage.setVisibility(GONE);
-        mContentsView.mAnswerImage.getLayoutParams().height = 0;
-        mContentsView.mAnswerImage.getLayoutParams().width = 0;
         mContentsView.mAnswerImage.setImageDrawable(null);
-        mContentsView.mAnswerImageMaxSize = 0;
         mContentsView.mTextLine1.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources()
                 .getDimension(R.dimen.omnibox_suggestion_first_line_text_size));
         mContentsView.mTextLine2.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources()
@@ -607,13 +604,6 @@ class SuggestionView extends ViewGroup {
 
         if (secondLine.hasImage()) {
             mContentsView.mAnswerImage.setVisibility(VISIBLE);
-
-            float textSize = mContentsView.mTextLine2.getTextSize();
-            int imageSize = (int) (textSize * ANSWER_IMAGE_SCALING_FACTOR);
-            mContentsView.mAnswerImage.getLayoutParams().height = imageSize;
-            mContentsView.mAnswerImage.getLayoutParams().width = imageSize;
-            mContentsView.mAnswerImageMaxSize = imageSize;
-
             updateAnswerImage(answerImage);
         }
     }
@@ -660,7 +650,6 @@ class SuggestionView extends ViewGroup {
         private final TextView mTextLine2;
         private final ImageView mAnswerImage;
 
-        private int mAnswerImageMaxSize;  // getMaxWidth() is API 16+, so store it locally.
         private float mRequiredWidth;
         private float mMatchContentsWidth;
         private boolean mForceIsFocused;
@@ -753,8 +742,6 @@ class SuggestionView extends ViewGroup {
             mAnswerImage = new ImageView(context);
             mAnswerImage.setVisibility(GONE);
             mAnswerImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            mAnswerImage.setLayoutParams(new LayoutParams(0, 0));
-            mAnswerImageMaxSize = 0;
             addView(mAnswerImage);
         }
 
@@ -780,62 +767,6 @@ class SuggestionView extends ViewGroup {
                 mSuggestionIcon.draw(canvas);
                 canvas.restore();
             }
-        }
-
-        @Override
-        protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-            if (child != mTextLine1 && child != mTextLine2 && child != mAnswerImage) {
-                return super.drawChild(canvas, child, drawingTime);
-            }
-
-            int height = getMeasuredHeight();
-            int line1Height = mTextLine1.getMeasuredHeight();
-            int line2Height = mTextLine2.getVisibility() == VISIBLE
-                    ? mTextLine2.getMeasuredHeight() : 0;
-
-            int verticalOffset = 0;
-            if (line1Height + line2Height > height) {
-                // The text lines total height is larger than this view, snap them to the top and
-                // bottom of the view.
-                if (child != mTextLine1) {
-                    verticalOffset = height - line2Height;
-                }
-            } else {
-                // The text lines fit comfortably, so vertically center them.
-                verticalOffset = (height - line1Height - line2Height) / 2;
-                if (child == mTextLine2) {
-                    verticalOffset += line1Height;
-                    if (mSuggestion.hasAnswer()
-                            && mSuggestion.getAnswer().getSecondLine().hasImage()) {
-                        verticalOffset += getResources().getDimensionPixelOffset(
-                                R.dimen.omnibox_suggestion_answer_line2_vertical_spacing);
-                    }
-                }
-                // When one line is larger than the other, it contains extra vertical padding. This
-                // produces more apparent whitespace above or below the text lines.  Add a small
-                // offset to compensate.
-                if (line1Height != line2Height) {
-                    verticalOffset += (line2Height - line1Height) / 10;
-                }
-
-                // The image is positioned vertically aligned with the second text line but
-                // requires a small additional offset to align with the ascent of the text instead
-                // of the top of the text which includes some whitespace.
-                if (child == mAnswerImage) {
-                    verticalOffset += getResources().getDimensionPixelOffset(
-                            R.dimen.omnibox_suggestion_answer_image_vertical_spacing);
-                }
-
-                if (child != mTextLine1 && verticalOffset + line2Height > height) {
-                    verticalOffset = height - line2Height;
-                }
-            }
-
-            canvas.save();
-            canvas.translate(0, verticalOffset);
-            boolean retVal = super.drawChild(canvas, child, drawingTime);
-            canvas.restore();
-            return retVal;
         }
 
         @Override
@@ -865,24 +796,71 @@ class SuggestionView extends ViewGroup {
                         mTextLine1.getPaddingTop(), 0, mTextLine1.getPaddingBottom());
             }
 
-            int imageWidth = mAnswerImageMaxSize;
+            int imageWidth = mAnswerImage.getMeasuredWidth();
             int imageSpacing = 0;
             if (mAnswerImage.getVisibility() == VISIBLE && imageWidth > 0) {
                 imageSpacing = getResources().getDimensionPixelOffset(
                         R.dimen.omnibox_suggestion_answer_image_horizontal_spacing);
             }
 
+            final int height = getMeasuredHeight();
+            final int line1Height = mTextLine1.getMeasuredHeight();
+            final int line2Height =
+                    mTextLine2.getVisibility() == VISIBLE ? mTextLine2.getMeasuredHeight() : 0;
+
+            // Center the text lines vertically.
+            int line1VerticalOffset = Math.max(0, (height - line1Height - line2Height) / 2);
+            // When one line is larger than the other, it contains extra vertical padding. This
+            // produces more apparent whitespace above or below the text lines.  Add a small
+            // offset to compensate.
+            if (line1Height != line2Height) {
+                line1VerticalOffset += (line2Height - line1Height) / 10;
+            }
+
+            int line2VerticalOffset = line1VerticalOffset + line1Height;
+            int answerVerticalOffset = line2VerticalOffset;
+            if (mSuggestion.hasAnswer() && mSuggestion.getAnswer().getSecondLine().hasImage()) {
+                // The image is positioned vertically aligned with the second text line but
+                // requires a small additional offset to align with the ascent of the text
+                // instead of the top of the text which includes some whitespace.
+                answerVerticalOffset += getResources().getDimensionPixelOffset(
+                        R.dimen.omnibox_suggestion_answer_image_vertical_spacing);
+
+                line2VerticalOffset += getResources().getDimensionPixelOffset(
+                        R.dimen.omnibox_suggestion_answer_line2_vertical_spacing);
+            }
+
+            // The text lines total height is larger than this view, snap them to the top and
+            // bottom of the view.
+            if (line2VerticalOffset + line2Height > height) {
+                // The text lines total height is larger than this view, snap them to the top and
+                // bottom of the view.
+                line1VerticalOffset = 0;
+                line2VerticalOffset = height - line2Height;
+                answerVerticalOffset = line2VerticalOffset;
+            }
+
+            final int line1Top = t + line1VerticalOffset;
+            final int line1Bottom = line1Top + line1Height;
+            final int line2Top = t + line2VerticalOffset;
+            final int line2Bottom = line2Top + line2Height;
+            final int answerImageTop = t + answerVerticalOffset;
+            final int answerImageBottom = answerImageTop + mAnswerImage.getMeasuredHeight();
+
             if (isRTL) {
-                mTextLine1.layout(0, t, mTextRight, b);
-                mAnswerImage.layout(mTextRight - imageWidth, t, mTextRight, b);
-                mTextLine2.layout(0, t, mTextRight - (imageWidth + imageSpacing), b);
-            } else {
-                mTextLine1.layout(mTextLeft + mSuggestionViewStartOffset, t, r - l, b);
+                mTextLine1.layout(0, line1Top, mTextRight, line1Bottom);
                 mAnswerImage.layout(
-                        mTextLeft + mSuggestionViewStartOffset, t, mTextLeft + imageWidth, b);
+                        mTextRight - imageWidth, answerImageTop, mTextRight, answerImageBottom);
                 mTextLine2.layout(
-                        mTextLeft + imageWidth + imageSpacing + mSuggestionViewStartOffset, t,
-                        r - l, b);
+                        0, line2Top, mTextRight - (imageWidth + imageSpacing), line2Bottom);
+            } else {
+                mTextLine1.layout(
+                        mTextLeft + mSuggestionViewStartOffset, line1Top, r - l, line1Bottom);
+                mAnswerImage.layout(mTextLeft + mSuggestionViewStartOffset, answerImageTop,
+                        mTextLeft + imageWidth, answerImageBottom);
+                mTextLine2.layout(
+                        mTextLeft + imageWidth + imageSpacing + mSuggestionViewStartOffset,
+                        line2Top, r - l, line2Bottom);
             }
 
             int suggestionIconPosition = getSuggestionIconLeftPosition();
@@ -962,6 +940,10 @@ class SuggestionView extends ViewGroup {
             mTextLeft = getSuggestionTextLeftPosition();
             mTextRight = getSuggestionTextRightPosition();
 
+            // TODO(tedchoc): Instead of comparing width/height, compare the last text (including
+            //                style spans) measured and if that remains the same along with the
+            //                height/width of this view, then we should be able to skip measure
+            //                properly.
             int maxWidth = width - (isRTL ? mTextRight : mTextLeft);
             if (mTextLine1.getMeasuredWidth() != width
                     || mTextLine1.getMeasuredHeight() != height) {
@@ -974,6 +956,14 @@ class SuggestionView extends ViewGroup {
                 mTextLine2.measure(MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST),
                         MeasureSpec.makeMeasureSpec(mSuggestionHeight, MeasureSpec.AT_MOST));
             }
+
+            if (mAnswerImage.getVisibility() == VISIBLE) {
+                float textSize = mContentsView.mTextLine2.getTextSize();
+                int imageSize = (int) (textSize * ANSWER_IMAGE_SCALING_FACTOR);
+                mAnswerImage.measure(MeasureSpec.makeMeasureSpec(imageSize, MeasureSpec.EXACTLY),
+                        MeasureSpec.makeMeasureSpec(imageSize, MeasureSpec.EXACTLY));
+            }
+
             if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.AT_MOST) {
                 int desiredHeight = mTextLine1.getMeasuredHeight() + mTextLine2.getMeasuredHeight();
                 int additionalPadding = (int) getResources().getDimension(
