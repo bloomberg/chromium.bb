@@ -116,11 +116,14 @@ void APIBindingsSystemTest::SetUp() {
     return std::string("context");
   };
   bindings_system_ = std::make_unique<APIBindingsSystem>(
-      base::Bind(&APIBindingsSystemTest::GetAPISchema, base::Unretained(this)),
-      base::Bind(&AllowAllAPIs),
-      base::Bind(&APIBindingsSystemTest::OnAPIRequest, base::Unretained(this)),
-      base::Bind(&APIBindingsSystemTest::OnEventListenersChanged,
-                 base::Unretained(this)),
+      base::BindRepeating(&APIBindingsSystemTest::GetAPISchema,
+                          base::Unretained(this)),
+      base::BindRepeating(&AllowAllAPIs),
+      base::BindRepeating(&APIBindingsSystemTest::OnAPIRequest,
+                          base::Unretained(this)),
+      base::BindRepeating(&GetTestUserActivationState),
+      base::BindRepeating(&APIBindingsSystemTest::OnEventListenersChanged,
+                          base::Unretained(this)),
       base::BindRepeating(get_context_owner), base::DoNothing(),
       add_console_error,
       APILastError(base::Bind(&APIBindingsSystemTest::GetLastErrorParent,

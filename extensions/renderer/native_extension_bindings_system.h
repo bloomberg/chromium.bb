@@ -69,6 +69,9 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
   void SendRequest(std::unique_ptr<APIRequestHandler::Request> request,
                    v8::Local<v8::Context> context);
 
+  // Returns the transient user activation state for the |context|.
+  bool GetUserActivationState(v8::Local<v8::Context> context);
+
   // Called when listeners for a given event have changed, and forwards it along
   // to |send_event_listener_ipc_|.
   void OnEventListenerChanged(const std::string& event_name,

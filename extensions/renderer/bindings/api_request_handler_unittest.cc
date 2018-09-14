@@ -18,8 +18,6 @@
 #include "gin/public/context_holder.h"
 #include "gin/public/isolate_holder.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 
 namespace extensions {
 
@@ -43,8 +41,12 @@ class APIRequestHandlerTest : public APIBindingTest {
     return std::make_unique<APIRequestHandler>(
         base::DoNothing(),
         APILastError(APILastError::GetParent(), binding::AddConsoleError()),
-        nullptr);
+        nullptr, base::BindRepeating(&GetTestUserActivationState));
   }
+
+  void SaveUserActivationState(base::Optional<bool>* ran_with_user_gesture) {
+    *ran_with_user_gesture = GetTestUserActivationState(MainContext());
+  };
 
  protected:
   APIRequestHandlerTest() {}
@@ -52,7 +54,7 @@ class APIRequestHandlerTest : public APIBindingTest {
 
   std::unique_ptr<TestJSRunner::Scope> CreateTestJSRunner() override {
     return std::make_unique<TestJSRunner::Scope>(
-        std::make_unique<TestJSRunner>(base::Bind(
+        std::make_unique<TestJSRunner>(base::BindRepeating(
             &APIRequestHandlerTest::SetDidRunJS, base::Unretained(this))));
   }
 
@@ -278,17 +280,14 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
 
   std::unique_ptr<APIRequestHandler> request_handler = CreateRequestHandler();
 
-  auto callback = [](base::Optional<bool>* ran_with_user_gesture) {
-    *ran_with_user_gesture =
-        blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe();
-  };
-
   // Set up a callback to be used with the request so we can check if a user
   // gesture was active.
   base::Optional<bool> ran_with_user_gesture;
   v8::Local<v8::FunctionTemplate> function_template =
-      gin::CreateFunctionTemplate(isolate(),
-                                  base::Bind(callback, &ran_with_user_gesture));
+      gin::CreateFunctionTemplate(
+          isolate(),
+          base::BindRepeating(&APIRequestHandlerTest::SaveUserActivationState,
+                              base::Unretained(this), &ran_with_user_gesture));
   v8::Local<v8::Function> v8_callback =
       function_template->GetFunction(context).ToLocalChecked();
 
@@ -305,25 +304,24 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
 
   // Next try calling with a user gesture. Since a gesture will be active at the
   // time of the call, it should also be active during the callback.
-  {
-    blink::WebScopedUserGesture user_gesture(nullptr);
-    EXPECT_TRUE(
-        blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe());
-    request_id = request_handler->StartRequest(
-        context, kMethod, std::make_unique<base::ListValue>(), v8_callback,
-        v8::Local<v8::Function>(), binding::RequestThread::UI);
-  }
-  EXPECT_FALSE(
-      blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe());
 
+  ScopedTestUserActivation test_user_activation;
+  // TODO(devlin): This isn't quite right with UAv1/UAv2.  V1 should properly
+  // activate a new user gesture on the stack, and v2 should rely on the gesture
+  // being persisted (or generated from the browser). We should clean this up.
+
+  EXPECT_TRUE(GetTestUserActivationState(MainContext()));
+
+  request_id = request_handler->StartRequest(
+      context, kMethod, std::make_unique<base::ListValue>(), v8_callback,
+      v8::Local<v8::Function>(), binding::RequestThread::UI);
   request_handler->CompleteRequest(request_id, *ListValueFromString("[]"),
                                    std::string());
   ASSERT_TRUE(ran_with_user_gesture);
   EXPECT_TRUE(*ran_with_user_gesture);
-  // Sanity check - after the callback ran, there shouldn't be an active
-  // gesture.
-  EXPECT_FALSE(
-      blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe());
+
+  // Sanity check: the callback doesn't change the state
+  EXPECT_TRUE(GetTestUserActivationState(MainContext()));
 }
 
 TEST_F(APIRequestHandlerTest, RequestThread) {
@@ -338,9 +336,9 @@ TEST_F(APIRequestHandlerTest, RequestThread) {
   };
 
   APIRequestHandler request_handler(
-      base::Bind(on_request, &thread),
+      base::BindRepeating(on_request, &thread),
       APILastError(APILastError::GetParent(), binding::AddConsoleError()),
-      nullptr);
+      nullptr, base::BindRepeating(&GetTestUserActivationState));
 
   request_handler.StartRequest(
       context, kMethod, std::make_unique<base::ListValue>(),
@@ -375,9 +373,9 @@ TEST_F(APIRequestHandlerTest, SettingLastError) {
 
   APIRequestHandler request_handler(
       base::DoNothing(),
-      APILastError(base::Bind(get_parent),
-                   base::Bind(log_error, &logged_error)),
-      nullptr);
+      APILastError(base::BindRepeating(get_parent),
+                   base::BindRepeating(log_error, &logged_error)),
+      nullptr, base::BindRepeating(&GetTestUserActivationState));
 
   const char kReportExposedLastError[] =
       "(function() {\n"
@@ -477,9 +475,9 @@ TEST_F(APIRequestHandlerTest, AddPendingRequest) {
   };
 
   APIRequestHandler request_handler(
-      base::Bind(handle_request, &dispatched_request),
+      base::BindRepeating(handle_request, &dispatched_request),
       APILastError(APILastError::GetParent(), binding::AddConsoleError()),
-      nullptr);
+      nullptr, base::BindRepeating(&GetTestUserActivationState));
 
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
   v8::Local<v8::Function> function = FunctionFromString(context, kEchoArgs);
@@ -517,12 +515,12 @@ TEST_F(APIRequestHandlerTest, ThrowExceptionInCallback) {
 
   base::Optional<std::string> logged_error;
   ExceptionHandler exception_handler(
-      base::Bind(add_console_error, &logged_error));
+      base::BindRepeating(add_console_error, &logged_error));
 
   APIRequestHandler request_handler(
       base::DoNothing(),
       APILastError(APILastError::GetParent(), binding::AddConsoleError()),
-      &exception_handler);
+      &exception_handler, base::BindRepeating(&GetTestUserActivationState));
 
   v8::TryCatch outer_try_catch(isolate());
   v8::Local<v8::Function> callback_throwing_error =
