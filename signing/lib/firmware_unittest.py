@@ -69,6 +69,24 @@ class TestBiosSigner(cros_test_lib.RunCommandTempDirTestCase):
                           '--devkeyblock', dev_fw_key.keyblock,
                           bios_bin, bios_out])
 
+  def testGetCmdArgsWithPreamble(self):
+    bs = firmware.BiosSigner(preamble_flags=1)
+    ks = signer_unittest.KeysetFromSigner(bs, self.tempdir)
+
+    bios_bin = os.path.join(self.tempdir, 'bios.bin')
+    bios_out = os.path.join(self.tempdir, 'bios.out')
+
+    # Add 'dev_firmware' keys and keyblock
+    dev_fw_key = keys.KeyPair('dev_firmware_data_key', keydir=self.tempdir)
+    ks.AddKey(dev_fw_key)
+    keys_unittest.CreateDummyPrivateKey(dev_fw_key)
+    keys_unittest.CreateDummyKeyblock(dev_fw_key)
+
+    args = bs.GetFutilityArgs(ks, bios_bin, bios_out)
+
+    self.assertIn('--flags', args)
+    self.assertEqual(args[args.index('--flags') + 1], '1')
+
   def testGetCmdArgsWithSig(self):
     loem_dir = os.path.join(self.tempdir, 'loem1', 'keyset')
     loem_id = 'loem1'

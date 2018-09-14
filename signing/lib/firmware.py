@@ -28,15 +28,17 @@ class BiosSigner(signer.FutilitySigner):
   required_keys_public = ('kernel_subkey',)
   required_keyblocks = ('firmware_data_key',)
 
-  def __init__(self, sig_id='', sig_dir=''):
+  def __init__(self, sig_id='', sig_dir='', preamble_flags=None):
     """Init BiosSigner
 
     Args:
       sig_id: Signature ID (aka loem id)
       sig_dir: Signature Output Directory (i.e shellball/keyset)
+      preamble_flags: preamble flags passed to futility
     """
     self.sig_id = sig_id
     self.sig_dir = sig_dir
+    self.preamble_flags = preamble_flags
 
   def GetFutilityArgs(self, keyset, input_name, output_name):
     """Returns futility arguments for signing bios
@@ -58,6 +60,9 @@ class BiosSigner(signer.FutilitySigner):
             '--version', fw_key.version,
             '--devsign', dev_fw_key.private,
             '--devkeyblock', dev_fw_key.keyblock]
+
+    if self.preamble_flags is not None:
+      args += ['--flags', str(self.preamble_flags)]
 
     # Add loem related arguments
     if self.sig_id and self.sig_dir:
