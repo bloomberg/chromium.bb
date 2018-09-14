@@ -56,9 +56,10 @@ void MojoCdmProxyService::CreateMediaCryptoSession(
 
 void MojoCdmProxyService::SetKey(uint32_t crypto_session_id,
                                  const std::vector<uint8_t>& key_id,
+                                 media::CdmProxy::KeyType key_type,
                                  const std::vector<uint8_t>& key_blob) {
   DVLOG(3) << __func__;
-  cdm_proxy_->SetKey(crypto_session_id, key_id, key_blob);
+  cdm_proxy_->SetKey(crypto_session_id, key_id, key_type, key_blob);
 }
 
 void MojoCdmProxyService::RemoveKey(uint32_t crypto_session_id,

@@ -59,6 +59,12 @@ class MEDIA_EXPORT CdmProxy {
     kMaxValue = kIntelNegotiateCryptoSessionKeyExchange,
   };
 
+  enum class KeyType {
+    kDecryptOnly,
+    kDecryptAndDecode,
+    kMaxValue = kDecryptAndDecode,
+  };
+
   CdmProxy();
   virtual ~CdmProxy();
 
@@ -109,9 +115,11 @@ class MEDIA_EXPORT CdmProxy {
   // Sets a key in the proxy.
   // |crypto_session_id| is the crypto session for decryption.
   // |key_id| is the ID of the key.
+  // |key_type| is the type of the key.
   // |key_blob| is the opaque key blob for decrypting or decoding.
   virtual void SetKey(uint32_t crypto_session_id,
                       const std::vector<uint8_t>& key_id,
+                      KeyType key_type,
                       const std::vector<uint8_t>& key_blob) = 0;
 
   // Removes a key from the proxy.

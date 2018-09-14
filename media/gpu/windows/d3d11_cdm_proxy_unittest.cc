@@ -56,6 +56,8 @@ class MockPowerMonitorSource : public base::PowerMonitorSource {
 const CdmProxy::Protocol kTestProtocol = CdmProxy::Protocol::kIntel;
 const CdmProxy::Function kTestFunction =
     CdmProxy::Function::kIntelNegotiateCryptoSessionKeyExchange;
+// TODO(rkuroiwa): Add test cases for KeyType.
+const CdmProxy::KeyType kTestKeyType = CdmProxy::KeyType::kDecryptOnly;
 const uint32_t kTestFunctionId = 123;
 // clang-format off
 DEFINE_GUID(CRYPTO_TYPE_GUID,
@@ -708,7 +710,8 @@ TEST_F(D3D11CdmProxyTest, SetKeyAndGetDecryptContext) {
       0xab, 0x01, 0x20, 0xd3, 0xee, 0x05, 0x99, 0x87,
       0xff, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x7F,
   };
-  proxy_->SetKey(crypto_session_id_from_initialize, kKeyId, kKeyBlob);
+  proxy_->SetKey(crypto_session_id_from_initialize, kKeyId, kTestKeyType,
+                 kKeyBlob);
 
   std::string key_id_str(kKeyId.begin(), kKeyId.end());
   auto decrypt_context = proxy_context->GetD3D11DecryptContext(key_id_str);
@@ -753,7 +756,8 @@ TEST_F(D3D11CdmProxyTest, ClearKeysAfterHardwareContentProtectionTeardown) {
       0xab, 0x01, 0x20, 0xd3, 0xee, 0x05, 0x99, 0x87,
       0xff, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x7F,
   };
-  proxy_->SetKey(crypto_session_id_from_initialize, kKeyId, kKeyBlob);
+  proxy_->SetKey(crypto_session_id_from_initialize, kKeyId, kTestKeyType,
+                 kKeyBlob);
 
   SetEvent(teardown_event_);
   run_loop.Run();
@@ -786,7 +790,8 @@ TEST_F(D3D11CdmProxyTest, RemoveKey) {
       0xab, 0x01, 0x20, 0xd3, 0xee, 0x05, 0x99, 0x87,
       0xff, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x7F,
   };
-  proxy_->SetKey(crypto_session_id_from_initialize, kKeyId, kKeyBlob);
+  proxy_->SetKey(crypto_session_id_from_initialize, kKeyId, kTestKeyType,
+                 kKeyBlob);
   proxy_->RemoveKey(crypto_session_id_from_initialize, kKeyId);
 
   std::string keyblob_str(kKeyId.begin(), kKeyId.end());
@@ -800,7 +805,7 @@ TEST_F(D3D11CdmProxyTest, SetRemoveKeyWrongCryptoSessionId) {
   const uint32_t kAnyCryptoSessionId = 0x9238;
   const std::vector<uint8_t> kEmpty;
   proxy_->RemoveKey(kAnyCryptoSessionId, kEmpty);
-  proxy_->SetKey(kAnyCryptoSessionId, kEmpty, kEmpty);
+  proxy_->SetKey(kAnyCryptoSessionId, kEmpty, kTestKeyType, kEmpty);
 }
 
 TEST_F(D3D11CdmProxyTest, ProxyInvalidationInvalidatesCdmContext) {

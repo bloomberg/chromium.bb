@@ -62,8 +62,10 @@ class D3D11CdmProxyContext : public CdmProxyContext {
   ~D3D11CdmProxyContext() override = default;
 
   // The pointers are owned by the caller.
+  // TODO(rkuroiwa): Handle |key_type|.
   void SetKey(ID3D11CryptoSession* crypto_session,
               const std::vector<uint8_t>& key_id,
+              CdmProxy::KeyType /* key_type */,
               const std::vector<uint8_t>& key_blob) {
     std::string key_id_str(key_id.begin(), key_id.end());
     KeyInfo key_info(crypto_session, key_blob);
@@ -106,6 +108,7 @@ class D3D11CdmProxyContext : public CdmProxyContext {
         : crypto_session(crypto_session), key_blob(std::move(key_blob)) {}
     KeyInfo(const KeyInfo&) = default;
     ~KeyInfo() = default;
+
     ID3D11CryptoSession* crypto_session;
     std::vector<uint8_t> key_blob;
   };
@@ -190,8 +193,9 @@ class D3D11CdmContext : public CdmContext {
   // The pointers are owned by the caller.
   void SetKey(ID3D11CryptoSession* crypto_session,
               const std::vector<uint8_t>& key_id,
+              CdmProxy::KeyType key_type,
               const std::vector<uint8_t>& key_blob) {
-    cdm_proxy_context_.SetKey(crypto_session, key_id, key_blob);
+    cdm_proxy_context_.SetKey(crypto_session, key_id, key_type, key_blob);
     new_key_callbacks_.Notify();
   }
   void RemoveKey(ID3D11CryptoSession* crypto_session,
@@ -486,6 +490,7 @@ void D3D11CdmProxy::CreateMediaCryptoSession(
 
 void D3D11CdmProxy::SetKey(uint32_t crypto_session_id,
                            const std::vector<uint8_t>& key_id,
+                           KeyType key_type,
                            const std::vector<uint8_t>& key_blob) {
   auto crypto_session_it = crypto_session_map_.find(crypto_session_id);
   if (crypto_session_it == crypto_session_map_.end()) {
@@ -493,7 +498,8 @@ void D3D11CdmProxy::SetKey(uint32_t crypto_session_id,
                   << " did not map to a crypto session instance.";
     return;
   }
-  cdm_context_->SetKey(crypto_session_it->second.Get(), key_id, key_blob);
+  cdm_context_->SetKey(crypto_session_it->second.Get(), key_id, key_type,
+                       key_blob);
 }
 
 void D3D11CdmProxy::RemoveKey(uint32_t crypto_session_id,

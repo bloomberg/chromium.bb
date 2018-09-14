@@ -66,9 +66,10 @@ class MockCdmProxy : public media::CdmProxy, public media::CdmContext {
                void(const std::vector<uint8_t>& input_data,
                     CreateMediaCryptoSessionCB create_media_crypto_session_cb));
 
-  MOCK_METHOD3(SetKey,
+  MOCK_METHOD4(SetKey,
                void(uint32_t crypto_session_id,
                     const std::vector<uint8_t>& key_id,
+                    KeyType key_type,
                     const std::vector<uint8_t>& key_blob));
   MOCK_METHOD2(RemoveKey,
                void(uint32_t crypto_session_id,
@@ -212,9 +213,11 @@ class MojoCdmProxyTest : public ::testing::Test {
   void SetKey() {
     const std::vector<uint8_t> key_id = {8, 9};
     const std::vector<uint8_t> key_blob = {10, 11, 12};
-    EXPECT_CALL(*mock_cdm_proxy_, SetKey(crypto_session_id_, key_id, key_blob));
+    EXPECT_CALL(*mock_cdm_proxy_,
+                SetKey(crypto_session_id_, key_id, _, key_blob));
     cdm_proxy_->SetKey(crypto_session_id_, key_id.data(), key_id.size(),
-                       key_blob.data(), key_blob.size());
+                       cdm::CdmProxy::KeyType::kDecryptOnly, key_blob.data(),
+                       key_blob.size());
     base::RunLoop().RunUntilIdle();
   }
 
