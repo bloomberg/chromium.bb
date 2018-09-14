@@ -39,6 +39,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -906,6 +908,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             result += "Platform_App";
           } else if (app == arc_support_host_->id()) {
             result += "Play Store";
+          } else if (app == kCrostiniTerminalId) {
+            result += "Terminal";
           } else {
             bool arc_app_found = false;
             for (const auto& arc_app : arc_test_.fake_apps()) {
@@ -4614,4 +4618,38 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOffline) {
   EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
   EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
             GetPinnableForAppID(online_only_app_id, profile()));
+}
+
+TEST_F(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
+  InitLauncherController();
+
+  const std::string app_id = kCrostiniTerminalId;
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
+
+  // Load pinned Terminal from prefs without Crostini UI being allowed
+  base::ListValue value;
+  InsertPrefValue(&value, 0, app_id);
+  StartPrefSyncServiceForPins(value);
+  EXPECT_EQ("Back, AppList, Chrome", GetPinnedAppStatus());
+
+  // Reload after allowing Crostini UI
+  crostini::CrostiniTestHelper test_helper(profile());
+  StopPrefSyncService();
+  StartPrefSyncServiceForPins(value);
+  EXPECT_EQ("Back, AppList, Chrome, Terminal", GetPinnedAppStatus());
+  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[3].type);
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[3].status);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
+
+  // Unpin the Terminal
+  launcher_controller_->UnpinAppWithID(app_id);
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
+
+  // Pin Terminal again.
+  launcher_controller_->PinAppWithID(app_id);
+  EXPECT_EQ("Back, AppList, Chrome, Terminal", GetPinnedAppStatus());
+  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[3].type);
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[3].status);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
 }
