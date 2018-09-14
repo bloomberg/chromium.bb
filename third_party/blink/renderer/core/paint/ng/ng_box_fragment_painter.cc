@@ -625,8 +625,11 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
     return PaintObject(local_paint_info, paint_offset);
 
   if (paint_info.phase == PaintPhase::kSelfBlockBackgroundOnly &&
-      is_self_painting)
-    return PaintObject(local_paint_info, paint_offset);
+      is_self_painting) {
+    PaintObject(local_paint_info, paint_offset);
+    PaintOverflowControlsIfNeeded(local_paint_info, paint_offset);
+    return;
+  }
 
   if (phase != PaintPhase::kForeground)
     return;
@@ -651,8 +654,10 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
   local_paint_info.phase = PaintPhase::kOutline;
   PaintObject(local_paint_info, paint_offset);
 
-  local_paint_info.phase = PaintPhase::kBlockBackground;
-  PaintOverflowControlsIfNeeded(local_paint_info, paint_offset);
+  if (!is_self_painting) {
+    local_paint_info.phase = PaintPhase::kBlockBackground;
+    PaintOverflowControlsIfNeeded(local_paint_info, paint_offset);
+  }
 }
 
 void NGBoxFragmentPainter::PaintLineBoxChildren(
