@@ -4376,14 +4376,6 @@ crbug.com/856700 external/wpt/client-hints/accept_ch_lifetime.tentative.https.ht
 crbug.com/856700 external/wpt/client-hints/http_equiv_accept_ch_lifetime_same_origin_iframe.tentative.https.html [ Skip ]
 crbug.com/856700 external/wpt/client-hints/http_equiv_accept_ch_lifetime.tentative.https.html [ Skip ]
 
-crbug.com/v8/8092 inspector-protocol/runtime/runtime-compileScript.js [ Skip ]
-crbug.com/v8/8092 external/wpt/html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setInterval.html [ Skip ]
-crbug.com/v8/8092 external/wpt/html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setTimeout.html [ Skip ]
-crbug.com/v8/8092 fast/events/window-onerror-04.html [ Skip ]
-crbug.com/v8/8092 svg/dom/SVGViewSpec.html [ Skip ]
-crbug.com/v8/8092 virtual/mouseevent_fractional/fast/events/window-onerror-04.html [ Skip ]
-crbug.com/v8/8092 virtual/user-activation-v2/fast/events/window-onerror-04.html [ Skip ]
-
 # Sheriff failures 2017-11-15
 crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Skip ]
 
