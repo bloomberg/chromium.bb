@@ -2069,12 +2069,6 @@ int main(int argc, const char **argv_) {
           default: break;
         }
       }
-      /* Automatically set the codec bit depth to match the input bit depth.
-       * Upgrade the profile if required. */
-      if (stream->config.cfg.g_input_bit_depth >
-          (unsigned int)stream->config.cfg.g_bit_depth) {
-        stream->config.cfg.g_bit_depth = stream->config.cfg.g_input_bit_depth;
-      }
       if (stream->config.cfg.g_bit_depth > 10) {
         switch (stream->config.cfg.g_profile) {
           case 0:
