@@ -4470,6 +4470,108 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 #endif
 }
 
+// Verify that scrolling the main frame correctly updates the position to
+// a nested child frame. See issue https://crbug.com/878703 for more
+// information.
+// On Mac and Android, the reported menu coordinates are relative to the
+// OOPIF, and its screen position is computed later, so this test isn't
+// relevant on those platforms.
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       ScrolledNestedPopupMenuTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_tall_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child_node = root->child_at(0);
+
+  GURL child_url(embedded_test_server()->GetURL(
+      "b.com", "/frame_tree/page_with_positioned_frame.html"));
+  NavigateFrameToURL(child_node, child_url);
+
+  FrameTreeNode* grandchild_node = child_node->child_at(0);
+
+  GURL grandchild_url(embedded_test_server()->GetURL(
+      "c.com", "/site_isolation/page-with-select.html"));
+  NavigateFrameToURL(grandchild_node, grandchild_url);
+
+  WaitForHitTestDataOrChildSurfaceReady(grandchild_node->current_frame_host());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/\n"
+      "      C = http://c.com/",
+      DepictFrameTree(root));
+
+  RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_grandchild =
+      static_cast<RenderWidgetHostViewBase*>(
+          grandchild_node->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetView());
+
+  scoped_refptr<ShowWidgetMessageFilter> filter = new ShowWidgetMessageFilter();
+  grandchild_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Target left-click event to the select element in the innermost frame.
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), rwhv_grandchild,
+                                         gfx::PointF(15, 15), rwhv_grandchild,
+                                         gfx::PointF(15, 15));
+
+  // Prompt the WebContents to dismiss the popup by clicking elsewhere.
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), rwhv_grandchild,
+                                         gfx::PointF(2, 2), rwhv_grandchild,
+                                         gfx::PointF(2, 2));
+  filter->Wait();
+
+  // This test isn't verifying correctness of these coordinates, this is just
+  // to ensure that they change after scroll.
+  gfx::Rect unscrolled_popup_rect = filter->last_initial_rect();
+  gfx::Rect initial_grandchild_view_bounds = rwhv_grandchild->GetViewBounds();
+
+  // Scroll the main frame.
+  EXPECT_TRUE(ExecuteScript(root, "window.scrollTo(0, 20);"));
+
+  // Wait until the OOPIF positions have been updated in the browser process.
+  while (true) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+    if (initial_grandchild_view_bounds.y() ==
+        rwhv_grandchild->GetViewBounds().y() + 20)
+      break;
+  }
+
+  filter->Reset();
+  // This sends the message directly to the rwhv_grandchild, avoiding using
+  // the helper methods, to avert a race condition with the surfaces or
+  // HitTestRegions needing to update post-scroll. The event won't hit test
+  // correctly if it gets sent before a fresh compositor frame is received.
+  blink::WebMouseEvent down_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  down_event.button = blink::WebPointerProperties::Button::kLeft;
+  down_event.click_count = 1;
+  down_event.SetPositionInWidget(15, 15);
+  rwhv_grandchild->ProcessMouseEvent(down_event, ui::LatencyInfo());
+
+  // Dismiss the popup again. This time there is no need to worry about
+  // compositor frame updates because it is sufficient to send the click to
+  // the root frame.
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), rwhv_root,
+                                         gfx::PointF(1, 1), rwhv_root,
+                                         gfx::PointF(1, 1));
+  filter->Wait();
+  EXPECT_EQ(unscrolled_popup_rect.y(), filter->last_initial_rect().y() + 20);
+}
+#endif  // !defined(OS_ANDROID)
+
 #if defined(USE_AURA)
 class SitePerProcessGestureHitTestBrowserTest
     : public SitePerProcessHitTestBrowserTest {
