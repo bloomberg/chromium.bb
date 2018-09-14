@@ -11,7 +11,6 @@
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_local.h"
 
 namespace base {
 
@@ -51,10 +50,10 @@ class BASE_EXPORT PoissonAllocationSampler {
   // within the object scope for the current thread.
   // It allows observers to allocate/deallocate memory while holding a lock
   // without a chance to get into reentrancy problems.
-  class BASE_EXPORT MuteThreadSamplesScope {
+  class BASE_EXPORT ScopedMuteThreadSamples {
    public:
-    MuteThreadSamplesScope();
-    ~MuteThreadSamplesScope();
+    ScopedMuteThreadSamples();
+    ~ScopedMuteThreadSamples();
   };
 
   // Must be called early during the process initialization. It creates and
@@ -105,14 +104,13 @@ class BASE_EXPORT PoissonAllocationSampler {
 
   void BalanceAddressesHashSet();
 
-  ThreadLocalBoolean entered_;
   Lock mutex_;
   std::vector<std::unique_ptr<LockFreeAddressHashSet>> sampled_addresses_stack_;
   std::vector<SamplesObserver*> observers_;
 
   static PoissonAllocationSampler* instance_;
 
-  friend class MuteThreadSamplesScope;
+  friend class ScopedMuteThreadSamples;
   friend class NoDestructor<PoissonAllocationSampler>;
 
   DISALLOW_COPY_AND_ASSIGN(PoissonAllocationSampler);

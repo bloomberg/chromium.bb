@@ -17,11 +17,14 @@
 #include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
 #include "base/sampling_heap_profiler/lock_free_address_hash_set.h"
-#include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
 #include <pthread.h>
+#endif
+
+#if defined(OS_WIN)
+#include <windows.h>
 #endif
 
 namespace base {
@@ -32,35 +35,73 @@ using subtle::AtomicWord;
 
 namespace {
 
-#if defined(OS_MACOSX)
+// PoissonAllocationSampler cannot use ThreadLocalStorage, as during thread
+// exiting when TLS storage is already released, there might be a call to
+// |free| which would trigger the profiler hook and would make it access TLS.
+// It instead uses OS primitives directly. As it only stores POD types it
+// does not need thread exit callbacks.
+#if defined(OS_WIN)
+
+using TLSKey = DWORD;
+
+void TLSInit(TLSKey* key) {
+  *key = ::TlsAlloc();
+  CHECK_NE(TLS_OUT_OF_INDEXES, *key);
+}
+
+uintptr_t TLSGetValue(const TLSKey& key) {
+  return reinterpret_cast<uintptr_t>(::TlsGetValue(key));
+}
+
+void TLSSetValue(const TLSKey& key, uintptr_t value) {
+  ::TlsSetValue(key, reinterpret_cast<LPVOID>(value));
+}
+
+#else  // defined(OS_WIN)
+
+using TLSKey = pthread_key_t;
+
+void TLSInit(TLSKey* key) {
+  int result = pthread_key_create(key, nullptr);
+  CHECK_EQ(0, result);
+}
+
+uintptr_t TLSGetValue(const TLSKey& key) {
+  return reinterpret_cast<uintptr_t>(pthread_getspecific(key));
+}
+
+void TLSSetValue(const TLSKey& key, uintptr_t value) {
+  pthread_setspecific(key, reinterpret_cast<void*>(value));
+}
+
+#endif
 
 // On MacOS the implementation of libmalloc sometimes calls malloc recursively,
 // delegating allocations between zones. That causes our hooks being called
 // twice. The scoped guard allows us to detect that.
+#if defined(OS_MACOSX)
+
 class ReentryGuard {
  public:
-  ReentryGuard() : allowed_(!pthread_getspecific(entered_key_)) {
-    pthread_setspecific(entered_key_, reinterpret_cast<void*>(1));
+  ReentryGuard() : allowed_(!TLSGetValue(entered_key_)) {
+    TLSSetValue(entered_key_, true);
   }
 
   ~ReentryGuard() {
     if (LIKELY(allowed_))
-      pthread_setspecific(entered_key_, reinterpret_cast<void*>(0));
+      TLSSetValue(entered_key_, false);
   }
 
   operator bool() { return allowed_; }
 
-  static void Init() {
-    int result = pthread_key_create(&entered_key_, nullptr);
-    DCHECK(!result);
-  }
+  static void Init() { TLSInit(&entered_key_); }
 
  private:
   bool allowed_;
-  static pthread_key_t entered_key_;
+  static TLSKey entered_key_;
 };
 
-pthread_key_t ReentryGuard::entered_key_;
+TLSKey ReentryGuard::entered_key_;
 
 #else
 
@@ -72,7 +113,12 @@ class ReentryGuard {
 
 #endif
 
+TLSKey g_internal_reentry_guard;
+
 const size_t kDefaultSamplingIntervalBytes = 128 * 1024;
+
+// Accumulated bytes towards sample thread local key.
+TLSKey g_accumulated_bytes_tls;
 
 // Controls if sample intervals should not be randomized. Used for testing.
 bool g_deterministic;
@@ -217,27 +263,24 @@ void PartitionFreeHook(void* address) {
 
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
 
-ThreadLocalStorage::Slot& AccumulatedBytesTLS() {
-  static NoDestructor<ThreadLocalStorage::Slot> accumulated_bytes_tls;
-  return *accumulated_bytes_tls;
-}
-
 }  // namespace
 
-PoissonAllocationSampler::MuteThreadSamplesScope::MuteThreadSamplesScope() {
-  CHECK(!Get()->entered_.Get());
-  Get()->entered_.Set(true);
+PoissonAllocationSampler::ScopedMuteThreadSamples::ScopedMuteThreadSamples() {
+  DCHECK(!TLSGetValue(g_internal_reentry_guard));
+  TLSSetValue(g_internal_reentry_guard, true);
 }
 
-PoissonAllocationSampler::MuteThreadSamplesScope::~MuteThreadSamplesScope() {
-  CHECK(Get()->entered_.Get());
-  Get()->entered_.Set(false);
+PoissonAllocationSampler::ScopedMuteThreadSamples::~ScopedMuteThreadSamples() {
+  DCHECK(TLSGetValue(g_internal_reentry_guard));
+  TLSSetValue(g_internal_reentry_guard, false);
 }
 
 PoissonAllocationSampler* PoissonAllocationSampler::instance_;
 
 PoissonAllocationSampler::PoissonAllocationSampler() {
+  CHECK_EQ(nullptr, instance_);
   instance_ = this;
+  Init();
   auto sampled_addresses = std::make_unique<LockFreeAddressHashSet>(64);
   subtle::NoBarrier_Store(
       &g_sampled_addresses_set,
@@ -247,10 +290,13 @@ PoissonAllocationSampler::PoissonAllocationSampler() {
 
 // static
 void PoissonAllocationSampler::Init() {
-  // Preallocate the TLS slot early, so it can't cause reentracy issues
-  // when sampling is started.
-  ignore_result(AccumulatedBytesTLS().Get());
-  ReentryGuard::Init();
+  static bool init_once = []() {
+    ReentryGuard::Init();
+    TLSInit(&g_internal_reentry_guard);
+    TLSInit(&g_accumulated_bytes_tls);
+    return true;
+  }();
+  ignore_result(init_once);
 }
 
 // static
@@ -342,14 +388,11 @@ void PoissonAllocationSampler::RecordAlloc(void* address,
                                            const char* context) {
   if (UNLIKELY(!subtle::NoBarrier_Load(&g_running)))
     return;
-  if (UNLIKELY(ThreadLocalStorage::HasBeenDestroyed()))
-    return;
 
-  intptr_t accumulated_bytes =
-      reinterpret_cast<intptr_t>(AccumulatedBytesTLS().Get());
+  intptr_t accumulated_bytes = TLSGetValue(g_accumulated_bytes_tls);
   accumulated_bytes += size;
   if (LIKELY(accumulated_bytes < 0)) {
-    AccumulatedBytesTLS().Set(reinterpret_cast<void*>(accumulated_bytes));
+    TLSSetValue(g_accumulated_bytes_tls, accumulated_bytes);
     return;
   }
 
@@ -362,7 +405,7 @@ void PoissonAllocationSampler::RecordAlloc(void* address,
     ++samples;
   } while (accumulated_bytes >= 0);
 
-  AccumulatedBytesTLS().Set(reinterpret_cast<void*>(accumulated_bytes));
+  TLSSetValue(g_accumulated_bytes_tls, accumulated_bytes);
 
   instance_->DoRecordAlloc(samples * mean_interval, size, address, type,
                            context);
@@ -373,9 +416,9 @@ void PoissonAllocationSampler::DoRecordAlloc(size_t total_allocated,
                                              void* address,
                                              AllocatorType type,
                                              const char* context) {
-  if (entered_.Get())
+  if (UNLIKELY(TLSGetValue(g_internal_reentry_guard)))
     return;
-  MuteThreadSamplesScope no_reentrancy_scope;
+  ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
   // TODO(alph): Sometimes RecordAlloc is called twice in a row without
   // a RecordFree in between. Investigate it.
@@ -396,11 +439,9 @@ void PoissonAllocationSampler::RecordFree(void* address) {
 }
 
 void PoissonAllocationSampler::DoRecordFree(void* address) {
-  if (UNLIKELY(ThreadLocalStorage::HasBeenDestroyed()))
+  if (UNLIKELY(TLSGetValue(g_internal_reentry_guard)))
     return;
-  if (entered_.Get())
-    return;
-  MuteThreadSamplesScope no_reentrancy_scope;
+  ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
   for (auto* observer : observers_)
     observer->SampleRemoved(address);
@@ -448,14 +489,14 @@ void PoissonAllocationSampler::SuppressRandomnessForTest(bool suppress) {
 }
 
 void PoissonAllocationSampler::AddSamplesObserver(SamplesObserver* observer) {
-  MuteThreadSamplesScope no_reentrancy_scope;
+  ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
   observers_.push_back(observer);
 }
 
 void PoissonAllocationSampler::RemoveSamplesObserver(
     SamplesObserver* observer) {
-  MuteThreadSamplesScope no_reentrancy_scope;
+  ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
   auto it = std::find(observers_.begin(), observers_.end(), observer);
   CHECK(it != observers_.end());
