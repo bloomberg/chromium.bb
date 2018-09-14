@@ -71,7 +71,7 @@ constexpr float kShelfInkDropVisibleOpacity = 0.2f;
 ASH_EXPORT constexpr SkColor kShelfIconColor = SK_ColorWHITE;
 
 // The alpha value for the shelf background.
-ASH_EXPORT constexpr int kShelfTranslucentOverAppList = 77;            // 30%
+ASH_EXPORT constexpr int kShelfTranslucentOverAppList = 51;            // 20%
 ASH_EXPORT constexpr int kShelfTranslucentAlpha = 153;                 // 60%
 ASH_EXPORT constexpr int kShelfTranslucentMaximizedWindowNewUi = 230;  // 90%
 
