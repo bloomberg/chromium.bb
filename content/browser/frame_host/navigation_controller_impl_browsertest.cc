@@ -6765,7 +6765,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Verify the expected origin through JavaScript. It also has the additional
   // verification of the process also being still alive.
   EXPECT_EQ(url::Origin::Create(start_url).Serialize(),
-            EvalJs(web_contents, "document.origin"));
+            EvalJs(web_contents, "self.origin"));
 }
 
 // Helper to trigger a history-back navigation in the WebContents after the
@@ -6854,7 +6854,7 @@ IN_PROC_BROWSER_TEST_F(
   // Verify the expected origin through JavaScript. It also has the additional
   // verification of the process also being still alive.
   EXPECT_EQ(url::Origin::Create(start_url).Serialize(),
-            EvalJs(web_contents, "document.origin"));
+            EvalJs(web_contents, "self.origin"));
 }
 
 // Test that verifies that Referer and Origin http headers are correctly sent

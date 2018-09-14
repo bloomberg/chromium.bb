@@ -3353,11 +3353,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_NE(new_shell->web_contents()->GetSiteInstance(),
               shell()->web_contents()->GetSiteInstance());
 
-    // Check that the popup is sandboxed by checking its document.origin, which
+    // Check that the popup is sandboxed by checking its self.origin, which
     // should be unique.
     std::string origin;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
-        new_shell, "domAutomationController.send(document.origin)", &origin));
+        new_shell, "domAutomationController.send(self.origin)", &origin));
     EXPECT_EQ("null", origin);
   };
 

@@ -2,7 +2,7 @@
 <script>
 function openWindow() {
   var iframe = document.getElementsByTagName('iframe')[0];
-  iframe.contentWindow.postMessage('', document.origin);
+  iframe.contentWindow.postMessage('', self.origin);
 }
 
 window.addEventListener('message', function() {

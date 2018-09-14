@@ -32,7 +32,7 @@ namespace content {
 namespace {
 
 EvalJsResult GetOriginFromRenderer(FrameTreeNode* node) {
-  return EvalJs(node, "document.origin");
+  return EvalJs(node, "self.origin");
 }
 
 }  // namespace
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateGrandchildToBlob) {
   std::string html =
       "<html><body><div>This is blob content.</div>"
       "<script>"
-      "window.parent.parent.postMessage('HI', document.origin);"
+      "window.parent.parent.postMessage('HI', self.origin);"
       "</script></body></html>";
   std::string script = JsReplace(
       "new Promise((resolve) => {"
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateChildToAboutBlank) {
       "      frames[0].document.write('Hi from ' + document.domain);"
       "    } catch (e) { return; }"
       "    clearInterval(intervalID);"
-      "    resolve(frames[0].document.origin);"
+      "    resolve(frames[0].self.origin);"
       "  }, 16);"
       "});");
   EXPECT_EQ(target->current_origin(), about_blank_origin);
@@ -421,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
              "      frames[0][0].document.write('Hi from ' + document.domain);"
              "    } catch (e) { return; }"
              "    clearInterval(intervalID);"
-             "    resolve(frames[0][0].document.origin);"
+             "    resolve(frames[0][0].self.origin);"
              "  }, 16);"
              "});");
   EXPECT_EQ(target->current_origin(), about_blank_origin);
@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
   EXPECT_EQ(1U, root->child_count());
 
   FrameTreeNode* child = root->child_at(0);
-  std::string frame_origin = EvalJs(child, "document.origin;").ExtractString();
+  std::string frame_origin = EvalJs(child, "self.origin;").ExtractString();
   EXPECT_TRUE(
       child->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
           url::Origin::Create(GURL(frame_origin))));
@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
     observer.Wait();
 
     EXPECT_EQ(GURL(kAboutSrcDocURL), root->child_at(1)->current_url());
-    EvalJsResult frame_origin = EvalJs(root->child_at(1), "document.origin");
+    EvalJsResult frame_origin = EvalJs(root->child_at(1), "self.origin");
     EXPECT_EQ(root->current_frame_host()->GetLastCommittedURL().GetOrigin(),
               GURL(frame_origin.ExtractString()));
     EXPECT_NE(child->current_frame_host()->GetLastCommittedURL().GetOrigin(),
@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
     EXPECT_EQ(
         url::Origin::Create(root->current_frame_host()->GetLastCommittedURL())
             .Serialize(),
-        EvalJs(child, "document.origin"));
+        EvalJs(child, "self.origin"));
   }
 }
 
