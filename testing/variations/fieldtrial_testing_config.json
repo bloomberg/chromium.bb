@@ -1,4 +1,19 @@
 {
+    "AImageReaderVideoOutput": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Use_AImageReaderVideoOutput_V2",
+                    "enable_features": [
+                        "AImageReaderVideoOutput"
+                    ]
+                }
+            ]
+        }
+    ],
     "AccountConsistencyVariations": [
         {
             "platforms": [
@@ -4504,21 +4519,6 @@
                     "name": "UsePdfCompositorServiceForPrint",
                     "enable_features": [
                         "UsePdfCompositorServiceForPrint"
-                    ]
-                }
-            ]
-        }
-    ],
-    "Use_AImageReaderVideoOutput_V1": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Use_AImageReaderVideoOutput_V1",
-                    "enable_features": [
-                        "AImageReaderVideoOutput"
                     ]
                 }
             ]
