@@ -449,9 +449,9 @@ bool Display::DrawAndSwap() {
       }
     }
 
-    ++last_acked_trace_id_;
-    TRACE_EVENT_ASYNC_END0("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
-                           last_acked_trace_id_);
+    TRACE_EVENT_ASYNC_END1("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
+                           swapped_trace_id_, "status", "canceled");
+    --swapped_trace_id_;
     if (scheduler_) {
       scheduler_->DidSwapBuffers();
       scheduler_->DidReceiveSwapBuffersAck();
