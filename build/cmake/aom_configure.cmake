@@ -260,12 +260,14 @@ else()
   add_compiler_flag_if_supported("-Wlogical-op")
   add_compiler_flag_if_supported("-Wpointer-arith")
   add_compiler_flag_if_supported("-Wsign-compare")
-  add_compiler_flag_if_supported("-Wstack-usage=360000")
   add_compiler_flag_if_supported("-Wstring-conversion")
   add_compiler_flag_if_supported("-Wtype-limits")
   add_compiler_flag_if_supported("-Wuninitialized")
   add_compiler_flag_if_supported("-Wunused")
   add_compiler_flag_if_supported("-Wvla")
+
+  add_c_flag_if_supported("-Wstack-usage=100000")
+  add_cxx_flag_if_supported("-Wstack-usage=360000")
 
   # TODO(jzern): this could be added as a cxx flags for test/*.cc only, avoiding
   # third_party.
