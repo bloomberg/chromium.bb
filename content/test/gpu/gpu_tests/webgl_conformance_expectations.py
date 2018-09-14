@@ -59,6 +59,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'], bug=808744)
     self.Fail('WebglExtension_EXT_disjoint_timer_query',
         ['linux', 'intel'], bug=867675)
+    self.Skip('WebglExtension_KHR_parallel_shader_compile',
+        ['no_passthrough'], bug=849576)
 
     # Extensions not available under D3D9
     self.Fail('WebglExtension_EXT_sRGB',

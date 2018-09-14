@@ -18,6 +18,7 @@ class OESTextureFloatLinear;
 class WebGLDebugRendererInfo;
 class WebGLLoseContext;
 class WebGLMultiview;
+class KHRParallelShaderCompile;
 
 class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -60,6 +61,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<EXTColorBufferFloat> ext_color_buffer_float_;
   Member<EXTDisjointTimerQueryWebGL2> ext_disjoint_timer_query_web_gl2_;
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
+  Member<KHRParallelShaderCompile> khr_parallel_shader_compile_;
   Member<OESTextureFloatLinear> oes_texture_float_linear_;
   Member<WebGLCompressedTextureASTC> webgl_compressed_texture_astc_;
   Member<WebGLCompressedTextureETC> webgl_compressed_texture_etc_;

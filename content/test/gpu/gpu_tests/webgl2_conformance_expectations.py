@@ -41,6 +41,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android'], bug=808744)
     self.Fail('WebglExtension_EXT_disjoint_timer_query_webgl2',
         ['linux', 'intel'], bug=867675)
+    self.Skip('WebglExtension_KHR_parallel_shader_compile',
+        ['no_passthrough'], bug=849576)
 
     # ========================
     # Conformance expectations
