@@ -403,11 +403,7 @@ TEST(VideoFrame, WrapExternalDmabufs) {
   }
   auto timestamp = base::TimeDelta::FromMilliseconds(1);
   VideoFrameLayout layout(PIXEL_FORMAT_I420, coded_size, planes, buffer_sizes);
-  std::vector<int> dummy_fds = {10, 11, 12};
-  std::vector<base::ScopedFD> dmabuf_fds;
-  for (int fd : dummy_fds) {
-    dmabuf_fds.emplace_back(fd);
-  }
+  std::vector<base::ScopedFD> dmabuf_fds(3u);
   auto frame =
       VideoFrame::WrapExternalDmabufs(layout, visible_rect, visible_rect.size(),
                                       std::move(dmabuf_fds), timestamp);
@@ -423,11 +419,7 @@ TEST(VideoFrame, WrapExternalDmabufs) {
     EXPECT_EQ(frame->layout().buffer_sizes()[i], buffer_sizes[i]);
   }
   EXPECT_TRUE(frame->HasDmaBufs());
-  const auto& fds = frame->DmabufFds();
-  EXPECT_EQ(fds.size(), dummy_fds.size());
-  for (size_t i = 0; i < fds.size(); i++) {
-    EXPECT_EQ(fds[i].get(), dummy_fds[i]);
-  }
+  EXPECT_EQ(frame->DmabufFds().size(), 3u);
   EXPECT_EQ(frame->coded_size(), coded_size);
   EXPECT_EQ(frame->visible_rect(), visible_rect);
   EXPECT_EQ(frame->timestamp(), timestamp);
