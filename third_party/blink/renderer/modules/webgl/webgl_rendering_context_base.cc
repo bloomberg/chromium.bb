@@ -4547,6 +4547,7 @@ void WebGLRenderingContextBase::TexImage2DBase(GLenum target,
                           height, border, format, type, pixels);
 }
 
+// Software-based upload of Image* to WebGL texture.
 void WebGLRenderingContextBase::TexImageImpl(
     TexImageFunctionID function_id,
     GLenum target,
@@ -5076,8 +5077,8 @@ void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
                                  SentinelEmptyRect(), 1, 0, exception_state);
 }
 
-bool WebGLRenderingContextBase::CanUseTexImageByGPU(GLenum format,
-                                                    GLenum type) {
+bool WebGLRenderingContextBase::CanUseTexImageViaGPU(GLenum format,
+                                                     GLenum type) {
 #if defined(OS_MACOSX)
   // RGB5_A1 is not color-renderable on NVIDIA Mac, see crbug.com/676209.
   // Though, glCopyTextureCHROMIUM can handle RGB5_A1 internalformat by doing a
@@ -5112,49 +5113,7 @@ bool WebGLRenderingContextBase::CanUseTexImageByGPU(GLenum format,
   return true;
 }
 
-void WebGLRenderingContextBase::TexImageCanvasByGPU(
-    TexImageFunctionID function_id,
-    CanvasRenderingContextHost* canvas,
-    GLenum target,
-    GLuint target_texture,
-    GLint xoffset,
-    GLint yoffset,
-    const IntRect& source_sub_rectangle) {
-  if (!canvas->Is3d()) {
-    if (Extensions3DUtil::CanUseCopyTextureCHROMIUM(target) &&
-        canvas->GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
-      SourceImageStatus source_image_status = kInvalidSourceImageStatus;
-      scoped_refptr<Image> image = canvas->GetSourceImageForCanvas(
-          &source_image_status, kPreferAcceleration,
-          FloatSize(source_sub_rectangle.Width(),
-                    source_sub_rectangle.Height()));
-      if (!!image &&
-          ToStaticBitmapImage(image.get())
-              ->CopyToTexture(ContextGL(), target, target_texture,
-                              unpack_premultiply_alpha_, unpack_flip_y_,
-                              IntPoint(xoffset, yoffset),
-                              source_sub_rectangle)) {
-        return;
-      }
-    }
-    NOTREACHED();
-  } else {
-    bool flip_y = unpack_flip_y_;
-    if (is_origin_top_left_)
-      flip_y = !flip_y;
-    WebGLRenderingContextBase* gl =
-        ToWebGLRenderingContextBase(canvas->RenderingContext());
-    ScopedTexture2DRestorer restorer(gl);
-    if (!gl->GetDrawingBuffer()->CopyToPlatformTexture(
-            ContextGL(), target, target_texture, unpack_premultiply_alpha_,
-            !flip_y, IntPoint(xoffset, yoffset), source_sub_rectangle,
-            kBackBuffer)) {
-      NOTREACHED();
-    }
-  }
-}
-
-void WebGLRenderingContextBase::TexImageByGPU(
+void WebGLRenderingContextBase::TexImageViaGPU(
     TexImageFunctionID function_id,
     WebGLTexture* texture,
     GLenum target,
@@ -5162,10 +5121,15 @@ void WebGLRenderingContextBase::TexImageByGPU(
     GLint xoffset,
     GLint yoffset,
     GLint zoffset,
-    CanvasImageSource* image,
-    const IntRect& source_sub_rectangle) {
-  DCHECK(image->IsCanvasElement() || image->IsImageBitmap() ||
-         image->IsOffscreenCanvas());
+    AcceleratedStaticBitmapImage* source_image,
+    WebGLRenderingContextBase* source_canvas_webgl_context,
+    const IntRect& source_sub_rectangle,
+    bool premultiply_alpha,
+    bool flip_y) {
+  bool have_source_image = source_image;
+  bool have_source_canvas_webgl_context = source_canvas_webgl_context;
+  DCHECK(have_source_image ^ have_source_canvas_webgl_context);
+
   int width = source_sub_rectangle.Width();
   int height = source_sub_rectangle.Height();
 
@@ -5205,15 +5169,21 @@ void WebGLRenderingContextBase::TexImageByGPU(
     // glCopyTextureCHROMIUM has a DRAW_AND_READBACK path which will call
     // texImage2D. So, reset unpack buffer parameters before that.
     ScopedUnpackParametersResetRestore temporaryResetUnpack(this);
-    if (image->IsCanvasElement() || image->IsOffscreenCanvas()) {
-      TexImageCanvasByGPU(function_id,
-                          static_cast<CanvasRenderingContextHost*>(image),
-                          copy_target, target_texture, copy_x_offset,
-                          copy_y_offset, source_sub_rectangle);
+    if (source_image) {
+      source_image->CopyToTexture(
+          ContextGL(), target, target_texture, premultiply_alpha, flip_y,
+          IntPoint(xoffset, yoffset), source_sub_rectangle);
     } else {
-      TexImageBitmapByGPU(static_cast<ImageBitmap*>(image), copy_target,
-                          target_texture, copy_x_offset, copy_y_offset,
-                          source_sub_rectangle);
+      WebGLRenderingContextBase* gl = source_canvas_webgl_context;
+      if (gl->is_origin_top_left_)
+        flip_y = !flip_y;
+      ScopedTexture2DRestorer restorer(gl);
+      if (!gl->GetDrawingBuffer()->CopyToPlatformTexture(
+              ContextGL(), target, target_texture, unpack_premultiply_alpha_,
+              !flip_y, IntPoint(xoffset, yoffset), source_sub_rectangle,
+              kBackBuffer)) {
+        NOTREACHED();
+      }
     }
   }
 
@@ -5290,24 +5260,40 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
     return;
   }
 
-  if (function_id == kTexImage2D || function_id == kTexSubImage2D) {
-    // texImageByGPU relies on copyTextureCHROMIUM which doesn't support
-    // float/integer/sRGB internal format.
-    // TODO(crbug.com/622958): relax the constrains if copyTextureCHROMIUM is
-    // upgraded to handle more formats.
-    if (!context_host->IsAccelerated() || !CanUseTexImageByGPU(format, type)) {
-      SourceImageStatus source_image_status = kInvalidSourceImageStatus;
-      scoped_refptr<Image> image = context_host->GetSourceImageForCanvas(
-          &source_image_status, kPreferAcceleration,
-          FloatSize(source_sub_rectangle.Width(),
-                    source_sub_rectangle.Height()));
-      if (source_image_status != kNormalSourceImageStatus)
-        return;
-      TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
-                   zoffset, format, type, image.get(),
-                   WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
-                   unpack_premultiply_alpha_, source_sub_rectangle, 1, 0);
+  bool is_webgl_canvas = context_host->Is3d();
+  WebGLRenderingContextBase* source_canvas_webgl_context = nullptr;
+  SourceImageStatus source_image_status = kInvalidSourceImageStatus;
+  scoped_refptr<Image> image;
+
+  bool upload_via_gpu =
+      (function_id == kTexImage2D || function_id == kTexSubImage2D) &&
+      CanUseTexImageViaGPU(format, type);
+
+  // The Image-based upload path may still be used for WebGL-rendered
+  // canvases in the case of driver bug workarounds
+  // (e.g. CanUseTexImageViaGPU returning false).
+  if (is_webgl_canvas && upload_via_gpu) {
+    source_canvas_webgl_context =
+        ToWebGLRenderingContextBase(context_host->RenderingContext());
+  } else {
+    image = context_host->GetSourceImageForCanvas(
+        &source_image_status, kPreferAcceleration,
+        FloatSize(source_sub_rectangle.Width(), source_sub_rectangle.Height()));
+    if (source_image_status != kNormalSourceImageStatus)
       return;
+  }
+
+  // Still not clear whether we will take the accelerated upload path
+  // at this point; it depends on what came back from
+  // CanUseTexImageViaGPU, for example.
+  upload_via_gpu &= source_canvas_webgl_context ||
+                    (image->IsStaticBitmapImage() && image->IsTextureBacked());
+
+  if (upload_via_gpu) {
+    AcceleratedStaticBitmapImage* accel_image = nullptr;
+    if (image) {
+      accel_image = static_cast<AcceleratedStaticBitmapImage*>(
+          ToStaticBitmapImage(image.get()));
     }
 
     // The GPU-GPU copy path uses the Y-up coordinate system.
@@ -5321,24 +5307,25 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
       TexImage2DBase(target, level, internalformat,
                      source_sub_rectangle.Width(),
                      source_sub_rectangle.Height(), 0, format, type, nullptr);
-      TexImageByGPU(function_id, texture, target, level, 0, 0, 0, context_host,
-                    adjusted_source_sub_rectangle);
+      TexImageViaGPU(function_id, texture, target, level, 0, 0, 0, accel_image,
+                     source_canvas_webgl_context, adjusted_source_sub_rectangle,
+                     unpack_premultiply_alpha_, unpack_flip_y_);
     } else {
-      TexImageByGPU(function_id, texture, target, level, xoffset, yoffset, 0,
-                    context_host, adjusted_source_sub_rectangle);
+      TexImageViaGPU(function_id, texture, target, level, xoffset, yoffset, 0,
+                     accel_image, source_canvas_webgl_context,
+                     adjusted_source_sub_rectangle, unpack_premultiply_alpha_,
+                     unpack_flip_y_);
     }
   } else {
-    // 3D functions.
-
-    // TODO(zmo): Implement GPU-to-GPU copy path (crbug.com/612542).
-    // Note that code will also be needed to copy to layers of 3D
-    // textures, and elements of 2D texture arrays.
-    SourceImageStatus source_image_status = kInvalidSourceImageStatus;
-    scoped_refptr<Image> image = context_host->GetSourceImageForCanvas(
-        &source_image_status, kPreferAcceleration,
-        FloatSize(source_sub_rectangle.Width(), source_sub_rectangle.Height()));
-    if (source_image_status != kNormalSourceImageStatus)
-      return;
+    // If these are the 2D functions, the caller must have passed in 1
+    // for the depth and 0 for the unpack_image_height.
+    DCHECK(!(function_id == kTexSubImage2D || function_id == kTexSubImage2D) ||
+           (depth == 1 && unpack_image_height == 0));
+    // We expect an Image at this point, not a WebGL-rendered canvas.
+    DCHECK(image);
+    // TODO(crbug.com/612542): Implement GPU-to-GPU copy path for more
+    // cases, like copying to layers of 3D textures, and elements of
+    // 2D texture arrays.
     TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
                  zoffset, format, type, image.get(),
                  WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
@@ -5444,7 +5431,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
   const bool use_copyTextureCHROMIUM = function_id == kTexImage2D &&
                                        source_image_rect_is_default &&
                                        depth == 1 && GL_TEXTURE_2D == target &&
-                                       CanUseTexImageByGPU(format, type);
+                                       CanUseTexImageViaGPU(format, type);
   // Format of source video may be 16-bit format, e.g. Y16 format.
   // glCopyTextureCHROMIUM requires the source texture to be in 8-bit format.
   // Converting 16-bits formated source texture to 8-bits formated texture will
@@ -5508,21 +5495,6 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
   texture->UpdateLastUploadedFrame(frame_metadata);
 }
 
-void WebGLRenderingContextBase::TexImageBitmapByGPU(
-    ImageBitmap* bitmap,
-    GLenum target,
-    GLuint target_texture,
-    GLint xoffset,
-    GLint yoffset,
-    const IntRect& source_sub_rect) {
-  // We hard-code premultiply_alpha and flip_y values because these values
-  // should have been already manipulated during construction of ImageBitmap.
-  bitmap->BitmapImage()->CopyToTexture(
-      GetDrawingBuffer()->ContextProvider()->ContextGL(), target,
-      target_texture, true /* unpack_premultiply_alpha */,
-      false /* unpack_flip_y_ */, IntPoint(xoffset, yoffset), source_sub_rect);
-}
-
 void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
                                            GLenum target,
                                            GLint level,
@@ -5581,24 +5553,33 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
                        level, internalformat, width, height, depth, 0, format,
                        type, xoffset, yoffset, zoffset))
     return;
-  DCHECK(bitmap->BitmapImage());
+  scoped_refptr<StaticBitmapImage> image = bitmap->BitmapImage();
+  DCHECK(image);
 
   // TODO(kbr): make this work for sub-rectangles of ImageBitmaps.
   if (function_id != kTexSubImage3D && function_id != kTexImage3D &&
-      bitmap->IsAccelerated() && CanUseTexImageByGPU(format, type) &&
+      image->IsTextureBacked() && CanUseTexImageViaGPU(format, type) &&
       !selecting_sub_rectangle) {
+    AcceleratedStaticBitmapImage* accel_image =
+        static_cast<AcceleratedStaticBitmapImage*>(image.get());
+    // We hard-code premultiply_alpha and flip_y values because these should
+    // have already been manipulated during construction of the ImageBitmap.
+    bool premultiply_alpha = true;  // TODO(kbr): this looks wrong!
+    bool flip_y = false;
     if (function_id == kTexImage2D) {
       TexImage2DBase(target, level, internalformat, width, height, 0, format,
                      type, nullptr);
-      TexImageByGPU(function_id, texture, target, level, 0, 0, 0, bitmap,
-                    source_sub_rect);
+      TexImageViaGPU(function_id, texture, target, level, 0, 0, 0, accel_image,
+                     nullptr, source_sub_rect, premultiply_alpha, flip_y);
     } else if (function_id == kTexSubImage2D) {
-      TexImageByGPU(function_id, texture, target, level, xoffset, yoffset, 0,
-                    bitmap, source_sub_rect);
+      TexImageViaGPU(function_id, texture, target, level, xoffset, yoffset, 0,
+                     accel_image, nullptr, source_sub_rect, premultiply_alpha,
+                     flip_y);
     }
     return;
   }
 
+  // TODO(kbr): refactor this away to use TexImageImpl on image.
   sk_sp<SkImage> sk_image =
       bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
   if (!sk_image) {
