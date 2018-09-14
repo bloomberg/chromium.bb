@@ -260,6 +260,12 @@ void PasswordAutofillManager::OnAddPasswordFillData(
   RequestFavicon(fill_data.origin);
 }
 
+void PasswordAutofillManager::DeleteFillData() {
+  fill_data_.reset();
+  if (autofill_client_)
+    autofill_client_->HideAutofillPopup();
+}
+
 void PasswordAutofillManager::OnShowPasswordSuggestions(
     base::i18n::TextDirection text_direction,
     const base::string16& typed_username,
@@ -267,8 +273,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     const gfx::RectF& bounds) {
   std::vector<autofill::Suggestion> suggestions;
   if (!fill_data_) {
-    // Probably a compromised renderer.
-    NOTREACHED();
+    // Probably the credential was deleted in the mean time.
     return;
   }
   GetSuggestions(*fill_data_, typed_username, page_favicon_,

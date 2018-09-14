@@ -25,6 +25,8 @@
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/login/login_handler.h"
@@ -3804,6 +3806,72 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   // Expects no requests to the password store. So no filling.
   EXPECT_EQ(0, password_store->fill_matching_logins_calls());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       DeleteCredentialsUpdateDropdow) {
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+
+  // Start with two logins in the password store.
+  autofill::PasswordForm admin_form;
+  admin_form.signon_realm = embedded_test_server()->base_url().spec();
+  admin_form.origin = embedded_test_server()->base_url();
+  admin_form.username_value = base::ASCIIToUTF16("admin");
+  admin_form.password_value = base::ASCIIToUTF16("random_secret");
+  admin_form.preferred = true;
+  password_store->AddLogin(admin_form);
+
+  autofill::PasswordForm user_form = admin_form;
+  user_form.username_value = base::ASCIIToUTF16("user");
+  user_form.preferred = false;
+  password_store->AddLogin(user_form);
+
+  NavigateToFile("/password/password_form.html");
+
+  autofill::mojom::PasswordManagerDriver* driver =
+      ChromePasswordManagerClient::FromWebContents(WebContents());
+  // Instruct Chrome to show the password dropdown.
+  driver->ShowPasswordSuggestions(base::i18n::LEFT_TO_RIGHT, base::string16(),
+                                  0, gfx::RectF());
+  autofill::ChromeAutofillClient* autofill_client =
+      autofill::ChromeAutofillClient::FromWebContents(WebContents());
+  autofill::AutofillPopupController* controller =
+      autofill_client->popup_controller_for_testing().get();
+  ASSERT_TRUE(controller);
+  // Two credentials and "Manage passwords" should be displyed.
+  EXPECT_EQ(3, controller->GetLineCount());
+
+  // Delete one credential. It should not be in the dropdown.
+  password_store->RemoveLogin(admin_form);
+  WaitForPasswordStore();
+
+  // Wait wor the refetch to finish.
+  EXPECT_FALSE(autofill_client->popup_controller_for_testing());
+  WaitForPasswordStore();
+  // Reshow the dropdown.
+  driver->ShowPasswordSuggestions(base::i18n::LEFT_TO_RIGHT, base::string16(),
+                                  0, gfx::RectF());
+  controller = autofill_client->popup_controller_for_testing().get();
+  ASSERT_TRUE(controller);
+  EXPECT_EQ(2, controller->GetLineCount());
+  EXPECT_EQ(base::ASCIIToUTF16("user"), controller->GetElidedValueAt(0));
+  EXPECT_NE(base::ASCIIToUTF16("admin"), controller->GetElidedValueAt(1));
+
+  // Delete all the credentials.
+  password_store->RemoveLogin(user_form);
+  WaitForPasswordStore();
+
+  // Wait wor the refetch to finish.
+  EXPECT_FALSE(autofill_client->popup_controller_for_testing());
+  WaitForPasswordStore();
+  // Reshow the dropdown won't work because there is nothing to suggest.
+  driver->ShowPasswordSuggestions(base::i18n::LEFT_TO_RIGHT, base::string16(),
+                                  0, gfx::RectF());
+  EXPECT_FALSE(autofill_client->popup_controller_for_testing());
 }
 
 }  // namespace password_manager

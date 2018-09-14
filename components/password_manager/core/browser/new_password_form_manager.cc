@@ -325,14 +325,21 @@ bool NewPasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
 bool NewPasswordFormManager::HasGeneratedPassword() const {
   return has_generated_password_;
 }
+
 bool NewPasswordFormManager::IsPossibleChangePasswordFormWithoutUsername()
     const {
   // TODO(https://crbug.com/831123): Implement as in PasswordFormManager.
   return false;
 }
+
 bool NewPasswordFormManager::RetryPasswordFormPasswordUpdate() const {
   // TODO(https://crbug.com/831123): Implement as in PasswordFormManager.
   return false;
+}
+
+std::vector<base::WeakPtr<PasswordManagerDriver>>
+NewPasswordFormManager::GetDrivers() const {
+  return {driver_};
 }
 
 void NewPasswordFormManager::ProcessMatches(

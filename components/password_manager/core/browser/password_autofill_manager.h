@@ -59,6 +59,9 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // Invoked when a password mapping is added.
   void OnAddPasswordFillData(const autofill::PasswordFormFillData& fill_data);
 
+  // Removes the credentials previously saved via OnAddPasswordFormMapping.
+  void DeleteFillData();
+
   // Handles a request from the renderer to show a popup with the suggestions
   // from the password manager. |options| should be a bitwise mask of
   // autofill::ShowPasswordSuggestionsOptions values.

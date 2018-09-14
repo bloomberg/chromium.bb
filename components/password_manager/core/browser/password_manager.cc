@@ -458,9 +458,40 @@ void PasswordManager::ProvisionallySavePassword(
 }
 
 void PasswordManager::UpdateFormManagers() {
-  for (const auto& form_manager : pending_login_managers_) {
-    form_manager->GetFormFetcher()->Fetch();
+  std::vector<PasswordFormManagerInterface*> form_managers;
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kNewPasswordFormParsing)) {
+    for (const auto& form_manager : form_managers_)
+      form_managers.push_back(form_manager.get());
+  } else {
+    for (const auto& form_manager : pending_login_managers_)
+      form_managers.push_back(form_manager.get());
   }
+
+  // Get the fetchers and all the drivers.
+  std::vector<FormFetcher*> fetchers;
+  std::vector<PasswordManagerDriver*> drivers;
+  for (PasswordFormManagerInterface* form_manager : form_managers) {
+    fetchers.push_back(form_manager->GetFormFetcher());
+    for (const auto& driver : form_manager->GetDrivers()) {
+      if (driver)
+        drivers.push_back(driver.get());
+    }
+  }
+
+  // Remove the duplicates.
+  std::sort(fetchers.begin(), fetchers.end());
+  fetchers.erase(std::unique(fetchers.begin(), fetchers.end()), fetchers.end());
+  std::sort(drivers.begin(), drivers.end());
+  drivers.erase(std::unique(drivers.begin(), drivers.end()), drivers.end());
+  // Refetch credentials for all the forms and update the drivers.
+  for (FormFetcher* fetcher : fetchers)
+    fetcher->Fetch();
+
+  // The autofill manager will be repopulated again when the credentials
+  // are retrieved.
+  for (PasswordManagerDriver* driver : drivers)
+    driver->GetPasswordAutofillManager()->DeleteFillData();
 }
 
 void PasswordManager::DropFormManagers() {

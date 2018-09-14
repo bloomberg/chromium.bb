@@ -120,6 +120,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   bool HasGeneratedPassword() const override;
   bool IsPossibleChangePasswordFormWithoutUsername() const override;
   bool RetryPasswordFormPasswordUpdate() const override;
+  std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const override;
 
 #if defined(UNIT_TEST)
   static void set_wait_for_server_predictions_for_filling(bool value) {
