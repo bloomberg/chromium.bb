@@ -49,6 +49,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/hit_testing_transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/paint/clip_rects_cache.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_clipper.h"
@@ -1131,14 +1132,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                            HitTestResult&,
                            const HitTestRecursionData& recursion_data,
                            bool applied_transform,
-                           const HitTestingTransformState* = nullptr,
+                           HitTestingTransformState* = nullptr,
                            double* z_offset = nullptr);
   PaintLayer* HitTestLayerByApplyingTransform(
       PaintLayer* root_layer,
       PaintLayer* container_layer,
       HitTestResult&,
       const HitTestRecursionData& recursion_data,
-      const HitTestingTransformState* = nullptr,
+      HitTestingTransformState* = nullptr,
       double* z_offset = nullptr,
       const LayoutPoint& translation_offset = LayoutPoint());
   PaintLayer* HitTestChildren(
@@ -1146,13 +1147,13 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       PaintLayer* root_layer,
       HitTestResult&,
       const HitTestRecursionData& recursion_data,
-      const HitTestingTransformState*,
+      HitTestingTransformState*,
       double* z_offset_for_descendants,
       double* z_offset,
-      const HitTestingTransformState* unflattened_transform_state,
+      HitTestingTransformState* unflattened_transform_state,
       bool depth_sort_descendants);
 
-  scoped_refptr<HitTestingTransformState> CreateLocalTransformState(
+  HitTestingTransformState CreateLocalTransformState(
       PaintLayer* root_layer,
       PaintLayer* container_layer,
       const HitTestRecursionData& recursion_data,
@@ -1169,14 +1170,13 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                                    const HitTestLocation&,
                                    HitTestFilter,
                                    bool& inside_clip_rect) const;
-  PaintLayer* HitTestTransformedLayerInFragments(
-      PaintLayer* root_layer,
-      PaintLayer* container_layer,
-      HitTestResult&,
-      const HitTestRecursionData&,
-      const HitTestingTransformState*,
-      double* z_offset,
-      ShouldRespectOverflowClipType);
+  PaintLayer* HitTestTransformedLayerInFragments(PaintLayer* root_layer,
+                                                 PaintLayer* container_layer,
+                                                 HitTestResult&,
+                                                 const HitTestRecursionData&,
+                                                 HitTestingTransformState*,
+                                                 double* z_offset,
+                                                 ShouldRespectOverflowClipType);
   bool HitTestClippedOutByClipPath(PaintLayer* root_layer,
                                    const HitTestLocation&) const;
 
