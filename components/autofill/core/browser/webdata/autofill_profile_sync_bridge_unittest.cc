@@ -190,7 +190,7 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
                      ASCIIToUTF16("Santa Clara"));
   profile.set_language_code("en");
-  profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   return profile;
 }
 
@@ -388,7 +388,7 @@ TEST_F(AutofillProfileSyncBridgeTest,
   StartSyncing({});
 
   AutofillProfile local(kGuidA, kHttpsOrigin);
-  local.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  local.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   AutofillProfileChange change(AutofillProfileChange::ADD, kGuidA, &local);
 
   EXPECT_CALL(
@@ -1029,7 +1029,7 @@ TEST_F(AutofillProfileSyncBridgeTest,
 TEST_F(AutofillProfileSyncBridgeTest,
        RemoteWithSameGuid_ValidityState_DefaultValueNoSync) {
   AutofillProfile local(kGuidA, kHttpsOrigin);
-  ASSERT_EQ(0, local.GetValidityBitfieldValue());
+  ASSERT_EQ(0, local.GetClientValidityBitfieldValue());
   AddAutofillProfilesToTable({local});
 
   // Remote data does not have a validity state bitfield value.
@@ -1047,7 +1047,7 @@ TEST_F(AutofillProfileSyncBridgeTest,
 TEST_F(AutofillProfileSyncBridgeTest,
        RemoteWithSameGuid_ValidityState_ExistingRemoteWinsOverMissingLocal) {
   AutofillProfile local(kGuidA, kHttpsOrigin);
-  ASSERT_EQ(0, local.GetValidityBitfieldValue());
+  ASSERT_EQ(0, local.GetClientValidityBitfieldValue());
   AddAutofillProfilesToTable({local});
 
   // Remote data has a non default validity state bitfield value.
@@ -1066,7 +1066,7 @@ TEST_F(AutofillProfileSyncBridgeTest,
 TEST_F(AutofillProfileSyncBridgeTest,
        RemoteWithSameGuid_ValidityState_ExistingRemoteWinsOverExistingLocal) {
   AutofillProfile local(kGuidA, kHttpsOrigin);
-  local.SetValidityFromBitfieldValue(kValidityStateBitfield + 1);
+  local.SetClientValidityFromBitfieldValue(kValidityStateBitfield + 1);
   AddAutofillProfilesToTable({local});
 
   // Remote data has a non default validity state bitfield value.
@@ -1086,7 +1086,7 @@ TEST_F(AutofillProfileSyncBridgeTest,
 TEST_F(AutofillProfileSyncBridgeTest,
        RemoteWithSameGuid_ValidityState_ExistingLocalWinsOverMissingRemote) {
   AutofillProfile local(kGuidA, kHttpsOrigin);
-  local.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  local.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   AddAutofillProfilesToTable({local});
 
   // Remote data has a non default validity state bitfield value.

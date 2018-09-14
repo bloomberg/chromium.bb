@@ -1939,14 +1939,16 @@ TEST_F(PersonalDataManagerTest,
 }
 
 // Tests that suggestions based on invalid data are handled correctly.
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_InvalidData) {
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_InvalidDataBasedOnClient) {
   // Set up 2 different profiles.
   AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
                        "Hollywood", "CA", "91601", "US", "9876543210");
-  profile1.SetValidityState(PHONE_HOME_WHOLE_NUMBER, AutofillProfile::INVALID);
+  profile1.SetValidityState(PHONE_HOME_WHOLE_NUMBER, AutofillProfile::INVALID,
+                            AutofillProfile::CLIENT);
   profile1.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(20));
   personal_data_->AddProfile(profile1);
 

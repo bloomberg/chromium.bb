@@ -51,6 +51,13 @@ class AutofillProfile : public AutofillDataModel,
     UNSUPPORTED = 4,
   };
 
+  enum ValidationSource {
+    // The validity state is according to the client validation.
+    CLIENT = 0,
+    // The validity state is according to the server validation.
+    SERVER = 1,
+  };
+
   AutofillProfile(const std::string& guid, const std::string& origin);
 
   // Server profile constructor. The type must be SERVER_PROFILE (this serves
@@ -205,20 +212,29 @@ class AutofillProfile : public AutofillDataModel,
   void set_has_converted(bool has_converted) { has_converted_ = has_converted; }
 
   // Returns the validity state of the specified autofill type.
-  ValidityState GetValidityState(ServerFieldType type) const;
+  ValidityState GetValidityState(ServerFieldType type,
+                                 ValidationSource source) const;
 
-  // Sets the validity state of the specified autofill type.
-  void SetValidityState(ServerFieldType type, ValidityState validity);
+  // Sets the validity state of the specified autofill type based on
+  // |validation_source|.
+  void SetValidityState(ServerFieldType type,
+                        ValidityState validity,
+                        ValidationSource validation_source);
 
   // Returns whether autofill does the validation of the specified |type|.
-  static bool IsValidationSupportedForType(ServerFieldType type);
+  static bool IsClientValidationSupportedForType(ServerFieldType type);
 
-  // Returns the bitfield value representing the validity state of this profile.
-  int GetValidityBitfieldValue() const;
+  // Returns the bitfield value representing the validity state of this profile
+  // based on client validation source.
+  int GetClientValidityBitfieldValue() const;
 
   // Sets the validity state of the profile based on the specified
-  // |bitfield_value|.
-  void SetValidityFromBitfieldValue(int bitfield_value);
+  // |bitfield_value| based on client validation source.
+  void SetClientValidityFromBitfieldValue(int bitfield_value);
+
+  // Returns true if type is a phone type and it's invalid, either explicitly,
+  // or by looking at its components.
+  bool IsAnInvalidPhoneNumber(ServerFieldType type) const;
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
@@ -275,8 +291,11 @@ class AutofillProfile : public AutofillDataModel,
   // converted to a local profile.
   bool has_converted_;
 
-  // A map identifying what fields are valid.
-  std::map<ServerFieldType, ValidityState> validity_states_;
+  // A map identifying what fields are valid according to server validation.
+  std::map<ServerFieldType, ValidityState> server_validity_states_;
+
+  // A map identifying what fields are valid according to client validation.
+  std::map<ServerFieldType, ValidityState> client_validity_states_;
 };
 
 // So we can compare AutofillProfiles with EXPECT_EQ().

@@ -170,7 +170,7 @@ std::unique_ptr<AutofillProfile> ConstructCompleteProfile() {
   profile->SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
                       ASCIIToUTF16("Santa Clara"));
   profile->set_language_code("en");
-  profile->SetValidityFromBitfieldValue(kValidityStateBitfield);
+  profile->SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   return profile;
 }
 
@@ -1122,7 +1122,7 @@ TEST_F(AutofillProfileSyncableServiceTest, DefaultValidityStateNoSync) {
 
   // Local autofill profile has a default validity state bitfield.
   AutofillProfile profile(kGuid1, kEmptyOrigin);
-  EXPECT_EQ(0, profile.GetValidityBitfieldValue());
+  EXPECT_EQ(0, profile.GetClientValidityBitfieldValue());
   profiles_from_web_db.push_back(std::make_unique<AutofillProfile>(profile));
 
   // Remote data does not have a validity state bitfield value.
@@ -1160,7 +1160,7 @@ TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesDefaultValidityBitfield) {
 
   // Local autofill profile has a default validity state.
   AutofillProfile profile(kGuid1, kEmptyOrigin);
-  EXPECT_EQ(0, profile.GetValidityBitfieldValue());
+  EXPECT_EQ(0, profile.GetClientValidityBitfieldValue());
   profiles_from_web_db.push_back(std::make_unique<AutofillProfile>(profile));
 
   // Remote data has a non default validity state bitfield value.
@@ -1186,7 +1186,7 @@ TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesDefaultValidityBitfield) {
   // bitfield after sync.
   MockAutofillProfileSyncableService::DataBundle expected_bundle;
   AutofillProfile expected_profile(kGuid1, kEmptyOrigin);
-  expected_profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  expected_profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   expected_bundle.profiles_to_update.push_back(&expected_profile);
 
   // Expect no changes to remote data.
@@ -1203,7 +1203,7 @@ TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesLocalValidityBitfield) {
 
   // Local autofill profile has a non default validity state bitfield value.
   AutofillProfile profile(kGuid1, kEmptyOrigin);
-  profile.SetValidityFromBitfieldValue(kValidityStateBitfield + 1);
+  profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield + 1);
   profiles_from_web_db.push_back(std::make_unique<AutofillProfile>(profile));
 
   // Remote data has a different non default validity state bitfield value.
@@ -1229,7 +1229,7 @@ TEST_F(AutofillProfileSyncableServiceTest, SyncUpdatesLocalValidityBitfield) {
   // bitfield value after sync.
   MockAutofillProfileSyncableService::DataBundle expected_bundle;
   AutofillProfile expected_profile(kGuid1, kEmptyOrigin);
-  expected_profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  expected_profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   expected_bundle.profiles_to_update.push_back(&expected_profile);
 
   // Expect no changes to remote data.
@@ -1248,7 +1248,7 @@ TEST_F(AutofillProfileSyncableServiceTest,
 
   // Local autofill profile has a non default validity state bitfield value.
   AutofillProfile profile(kGuid1, kEmptyOrigin);
-  profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   profiles_from_web_db.push_back(std::make_unique<AutofillProfile>(profile));
 
   // Remote data does not has no validity state bitfield value.
@@ -1273,7 +1273,7 @@ TEST_F(AutofillProfileSyncableServiceTest,
   // language code after sync.
   MockAutofillProfileSyncableService::DataBundle expected_bundle;
   AutofillProfile expected_profile(profile.guid(), profile.origin());
-  expected_profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  expected_profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   expected_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
   expected_bundle.profiles_to_update.push_back(&expected_profile);
 
@@ -1291,7 +1291,7 @@ TEST_F(AutofillProfileSyncableServiceTest, LocalValidityBitfieldPropagates) {
   autofill_syncable_service_.set_sync_processor(sync_change_processor);
 
   AutofillProfile profile(kGuid1, kEmptyOrigin);
-  profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   AutofillProfileChange change(AutofillProfileChange::ADD, kGuid1, &profile);
   autofill_syncable_service_.AutofillProfileChanged(change);
 

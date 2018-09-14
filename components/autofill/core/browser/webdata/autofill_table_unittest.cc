@@ -793,7 +793,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   home_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   home_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
   home_profile.set_language_code("en");
-  home_profile.SetValidityFromBitfieldValue(6);
+  home_profile.SetClientValidityFromBitfieldValue(6);
 
   Time pre_creation_time = Time::Now();
   EXPECT_TRUE(table_->AddAutofillProfile(home_profile));
@@ -877,7 +877,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   billing_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   billing_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                              ASCIIToUTF16("18181230000"));
-  billing_profile.SetValidityFromBitfieldValue(54);
+  billing_profile.SetClientValidityFromBitfieldValue(54);
   Time pre_modification_time_2 = Time::Now();
   EXPECT_TRUE(table_->UpdateAutofillProfile(billing_profile));
   Time post_modification_time_2 = Time::Now();
@@ -1828,7 +1828,7 @@ TEST_F(AutofillTableTest, AutofillProfileValidityBitfield) {
   profile.set_origin(std::string());
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
   profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
-  profile.SetValidityFromBitfieldValue(kValidityBitfieldValue);
+  profile.SetClientValidityFromBitfieldValue(kValidityBitfieldValue);
 
   // Add the profile to the table.
   EXPECT_TRUE(table_->AddAutofillProfile(profile));
@@ -1837,11 +1837,12 @@ TEST_F(AutofillTableTest, AutofillProfileValidityBitfield) {
   std::unique_ptr<AutofillProfile> db_profile =
       table_->GetAutofillProfile(profile.guid());
   ASSERT_TRUE(db_profile);
-  EXPECT_EQ(kValidityBitfieldValue, db_profile->GetValidityBitfieldValue());
+  EXPECT_EQ(kValidityBitfieldValue,
+            db_profile->GetClientValidityBitfieldValue());
 
   // Modify the validity of the profile.
   const int kOtherValidityBitfieldValue = 1999;
-  profile.SetValidityFromBitfieldValue(kOtherValidityBitfieldValue);
+  profile.SetClientValidityFromBitfieldValue(kOtherValidityBitfieldValue);
 
   // Update the profile in the table.
   EXPECT_TRUE(table_->UpdateAutofillProfile(profile));
@@ -1850,7 +1851,7 @@ TEST_F(AutofillTableTest, AutofillProfileValidityBitfield) {
   db_profile = table_->GetAutofillProfile(profile.guid());
   ASSERT_TRUE(db_profile);
   EXPECT_EQ(kOtherValidityBitfieldValue,
-            db_profile->GetValidityBitfieldValue());
+            db_profile->GetClientValidityBitfieldValue());
 }
 
 TEST_F(AutofillTableTest, SetGetServerCards) {

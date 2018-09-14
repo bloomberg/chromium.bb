@@ -61,7 +61,7 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
                      ASCIIToUTF16("Santa Clara"));
   profile.set_language_code("en");
-  profile.SetValidityFromBitfieldValue(1984);
+  profile.SetClientValidityFromBitfieldValue(1984);
   return profile;
 }
 

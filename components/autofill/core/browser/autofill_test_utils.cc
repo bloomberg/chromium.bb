@@ -353,7 +353,7 @@ AutofillProfile GetServerProfile() {
                      ASCIIToUTF16("Santa Clara"));
 
   profile.set_language_code("en");
-  profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   profile.set_use_count(7);
   profile.set_use_date(base::Time::FromTimeT(54321));
 
@@ -375,7 +375,7 @@ AutofillProfile GetServerProfile2() {
                      ASCIIToUTF16("Santa Monica"));
 
   profile.set_language_code("en");
-  profile.SetValidityFromBitfieldValue(kValidityStateBitfield);
+  profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
   profile.set_use_count(14);
   profile.set_use_date(base::Time::FromTimeT(98765));
 

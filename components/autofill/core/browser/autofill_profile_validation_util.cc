@@ -60,7 +60,7 @@ bool SetValidityStateForAddressField(AutofillProfile* profile,
   if (server_field == UNKNOWN_TYPE)
     return false;
   DCHECK(profile);
-  profile->SetValidityState(server_field, state);
+  profile->SetValidityState(server_field, state, AutofillProfile::CLIENT);
   return true;
 }
 
@@ -109,16 +109,20 @@ void InitializeAddressFromProfile(const AutofillProfile& profile,
 
 void SetEmptyValidityIfEmpty(AutofillProfile* profile) {
   if (profile->GetRawInfo(ADDRESS_HOME_COUNTRY).empty())
-    profile->SetValidityState(ADDRESS_HOME_COUNTRY, AutofillProfile::EMPTY);
+    profile->SetValidityState(ADDRESS_HOME_COUNTRY, AutofillProfile::EMPTY,
+                              AutofillProfile::CLIENT);
   if (profile->GetRawInfo(ADDRESS_HOME_STATE).empty())
-    profile->SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::EMPTY);
+    profile->SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::EMPTY,
+                              AutofillProfile::CLIENT);
   if (profile->GetRawInfo(ADDRESS_HOME_CITY).empty())
-    profile->SetValidityState(ADDRESS_HOME_CITY, AutofillProfile::EMPTY);
+    profile->SetValidityState(ADDRESS_HOME_CITY, AutofillProfile::EMPTY,
+                              AutofillProfile::CLIENT);
   if (profile->GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY).empty())
     profile->SetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
-                              AutofillProfile::EMPTY);
+                              AutofillProfile::EMPTY, AutofillProfile::CLIENT);
   if (profile->GetRawInfo(ADDRESS_HOME_ZIP).empty())
-    profile->SetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::EMPTY);
+    profile->SetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::EMPTY,
+                              AutofillProfile::CLIENT);
 }
 
 }  // namespace
@@ -182,20 +186,24 @@ void ValidateAddress(AutofillProfile* profile,
 void ValidateEmailAddress(AutofillProfile* profile) {
   const base::string16& email = profile->GetRawInfo(EMAIL_ADDRESS);
   if (email.empty()) {
-    profile->SetValidityState(EMAIL_ADDRESS, AutofillProfile::EMPTY);
+    profile->SetValidityState(EMAIL_ADDRESS, AutofillProfile::EMPTY,
+                              AutofillProfile::CLIENT);
     return;
   }
 
-  profile->SetValidityState(EMAIL_ADDRESS, autofill::IsValidEmailAddress(email)
-                                               ? AutofillProfile::VALID
-                                               : AutofillProfile::INVALID);
+  profile->SetValidityState(EMAIL_ADDRESS,
+                            autofill::IsValidEmailAddress(email)
+                                ? AutofillProfile::VALID
+                                : AutofillProfile::INVALID,
+                            AutofillProfile::CLIENT);
 }
 
 void ValidatePhoneNumber(AutofillProfile* profile) {
   const std::string& phone_number =
       base::UTF16ToUTF8(profile->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
   if (phone_number.empty()) {
-    profile->SetValidityState(PHONE_HOME_WHOLE_NUMBER, AutofillProfile::EMPTY);
+    profile->SetValidityState(PHONE_HOME_WHOLE_NUMBER, AutofillProfile::EMPTY,
+                              AutofillProfile::CLIENT);
     return;
   }
 
@@ -206,7 +214,8 @@ void ValidatePhoneNumber(AutofillProfile* profile) {
     // If the country code is not in the database, the phone number cannot be
     // validated.
     profile->SetValidityState(PHONE_HOME_WHOLE_NUMBER,
-                              AutofillProfile::UNVALIDATED);
+                              AutofillProfile::UNVALIDATED,
+                              AutofillProfile::CLIENT);
     return;
   }
 
@@ -215,7 +224,8 @@ void ValidatePhoneNumber(AutofillProfile* profile) {
       PHONE_HOME_WHOLE_NUMBER,
       phone_util->IsPossibleNumberForString(phone_number, country_code)
           ? AutofillProfile::VALID
-          : AutofillProfile::INVALID);
+          : AutofillProfile::INVALID,
+      AutofillProfile::CLIENT);
 }
 
 }  // namespace profile_validation_util
