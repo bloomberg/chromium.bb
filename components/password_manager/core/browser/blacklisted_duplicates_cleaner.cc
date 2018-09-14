@@ -18,11 +18,16 @@ namespace password_manager {
 BlacklistedDuplicatesCleaner::BlacklistedDuplicatesCleaner(
     scoped_refptr<PasswordStore> store,
     PrefService* prefs)
-    : store_(std::move(store)), prefs_(prefs) {
-  store_->GetBlacklistLogins(this);
-}
+    : store_(std::move(store)), prefs_(prefs) {}
 
 BlacklistedDuplicatesCleaner::~BlacklistedDuplicatesCleaner() = default;
+
+void BlacklistedDuplicatesCleaner::StartCleaning(Observer* observer) {
+  DCHECK(observer);
+  DCHECK(!observer_);
+  observer_ = observer;
+  store_->GetBlacklistLogins(this);
+}
 
 void BlacklistedDuplicatesCleaner::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
@@ -36,7 +41,8 @@ void BlacklistedDuplicatesCleaner::OnGetPasswordStoreResults(
   }
   prefs_->SetBoolean(prefs::kDuplicatedBlacklistedCredentialsRemoved,
                      results.size() == signon_realms.size());
-  delete this;
+
+  observer_->CleaningCompleted();
 }
 
 }  // namespace password_manager

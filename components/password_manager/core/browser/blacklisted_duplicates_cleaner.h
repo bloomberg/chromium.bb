@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
 namespace autofill {
@@ -23,15 +24,17 @@ class PasswordStore;
 
 // This class is responsible for deleting blacklisted duplicates. Two
 // blacklisted forms are considered equal if they have the same signon_realm.
-// Important note: The object will delete itself once the credentials are
-// cleared.
 // TODO(https://crbug.com/866794): Remove the code once majority of the users
 // executed it.
-class BlacklistedDuplicatesCleaner : public PasswordStoreConsumer {
+class BlacklistedDuplicatesCleaner : public PasswordStoreConsumer,
+                                     public CredentialsCleaner {
  public:
   BlacklistedDuplicatesCleaner(scoped_refptr<PasswordStore> store,
                                PrefService* prefs);
   ~BlacklistedDuplicatesCleaner() override;
+
+  // CredentialsCleaner:
+  void StartCleaning(Observer* observer) override;
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
@@ -40,6 +43,10 @@ class BlacklistedDuplicatesCleaner : public PasswordStoreConsumer {
  private:
   scoped_refptr<PasswordStore> store_;
   PrefService* prefs_;
+
+  // Used to signal completion of the clean-up task. It is null until
+  // StartCleaning is called.
+  Observer* observer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BlacklistedDuplicatesCleaner);
 };
