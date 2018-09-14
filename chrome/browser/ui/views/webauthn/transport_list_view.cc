@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/webauthn/transport_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -36,7 +38,7 @@ std::unique_ptr<HoverButton> CreateTransportListItemView(
   const SkColor icon_color = color_utils::DeriveDefaultIconColor(
       color_reference_label->enabled_color());
 
-  constexpr int kTransportIconSize = 24;
+  constexpr int kTransportIconSize = 20;
   auto transport_image = std::make_unique<views::ImageView>();
   transport_image->SetImage(gfx::CreateVectorIcon(
       GetTransportVectorIcon(transport), kTransportIconSize, icon_color));
@@ -44,14 +46,29 @@ std::unique_ptr<HoverButton> CreateTransportListItemView(
   const base::string16 transport_name = GetTransportHumanReadableName(
       transport, TransportSelectionContext::kTransportSelectionSheet);
 
+  constexpr int kChevronSize = 8;
+  constexpr int kChevronPadding = (kTransportIconSize - kChevronSize) / 2;
   auto chevron_image = std::make_unique<views::ImageView>();
-  chevron_image->SetImage(
-      gfx::CreateVectorIcon(views::kSubmenuArrowIcon, icon_color));
+  chevron_image->SetImage(gfx::CreateVectorIcon(views::kSubmenuArrowIcon,
+                                                kChevronSize, icon_color));
+  chevron_image->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kChevronPadding)));
 
   auto hover_button = std::make_unique<HoverButton>(
       listener, std::move(transport_image), transport_name,
       base::string16() /* subtitle */, std::move(chevron_image));
   hover_button->set_tag(static_cast<int>(transport));
+
+  // Because there is an icon on both sides, set a custom border that has only
+  // half of the normal padding horizontally.
+  constexpr int kExtraVerticalPadding = 2;
+  constexpr int kHorizontalPadding = 8;
+  gfx::Insets padding(views::LayoutProvider::Get()->GetDistanceMetric(
+                          DISTANCE_CONTROL_LIST_VERTICAL) +
+                          kExtraVerticalPadding,
+                      kHorizontalPadding);
+  hover_button->SetBorder(views::CreateEmptyBorder(padding));
+
   return hover_button;
 }
 
