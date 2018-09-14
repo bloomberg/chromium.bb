@@ -395,8 +395,6 @@ jumbo_split_static_library("ui") {
       "cocoa/rect_path_utils.mm",
       "cocoa/restart_browser.h",
       "cocoa/restart_browser.mm",
-      "cocoa/screen_capture_notification_ui_cocoa.h",
-      "cocoa/screen_capture_notification_ui_cocoa.mm",
       "cocoa/separate_fullscreen_window.h",
       "cocoa/separate_fullscreen_window.mm",
       "cocoa/simple_message_box_cocoa.h",
