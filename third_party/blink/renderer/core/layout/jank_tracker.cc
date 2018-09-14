@@ -62,7 +62,6 @@ static const TransformPaintPropertyNode* TransformNodeFor(
   return object.FirstFragment().LocalBorderBoxProperties().Transform();
 }
 
-#ifdef TRACE_JANK_REGIONS
 static void RegionToTracedValue(const Region& region,
                                 double granularity_scale,
                                 TracedValue& value) {
@@ -77,7 +76,6 @@ static void RegionToTracedValue(const Region& region,
   }
   value.EndArray();
 }
-#endif  // TRACE_JANK_REGIONS
 
 JankTracker::JankTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
@@ -223,14 +221,7 @@ std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
   value->SetDouble("jank_fraction", jank_fraction);
   value->SetDouble("cumulative_score", score_);
   value->SetDouble("max_distance", max_distance_);
-
-#ifdef TRACE_JANK_REGIONS
-  // Jank regions can be included in trace event by defining TRACE_JANK_REGIONS
-  // at the top of this file. This is useful for debugging and visualizing, but
-  // might impact performance negatively.
   RegionToTracedValue(region_, granularity_scale, *value);
-#endif
-
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   return value;
 }
