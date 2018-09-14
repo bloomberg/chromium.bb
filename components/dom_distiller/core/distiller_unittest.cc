@@ -211,8 +211,12 @@ void VerifyArticleProtoMatchesMultipageData(
               static_cast<size_t>(page.image_size()));
     const vector<int>& image_ids_for_page = distiller_data->image_ids[page_num];
     for (size_t img_num = 0; img_num < image_ids_for_page.size(); ++img_num) {
-      EXPECT_EQ(kImageData[image_ids_for_page[img_num]],
-                page.image(img_num).data());
+      if (dom_distiller::DistillerImpl::DoesFetchImages()) {
+        EXPECT_EQ(kImageData[image_ids_for_page[img_num]],
+                  page.image(img_num).data());
+      } else {
+        EXPECT_EQ("", page.image(img_num).data());
+      }
       EXPECT_EQ(GetImageName(page_num + 1, img_num),
                 page.image(img_num).name());
     }
@@ -440,10 +444,20 @@ TEST_F(DistillerTest, DistillPageWithImages) {
   EXPECT_EQ(kContent, first_page.html());
   EXPECT_EQ(kURL, first_page.url());
   ASSERT_EQ(2, first_page.image_size());
-  EXPECT_EQ(kImageData[0], first_page.image(0).data());
+
+  if (DistillerImpl::DoesFetchImages()) {
+    EXPECT_EQ(kImageData[0], first_page.image(0).data());
+  } else {
+    EXPECT_EQ("", first_page.image(0).data());
+  }
   EXPECT_EQ(kImageURLs[0], first_page.image(0).url());
   EXPECT_EQ(GetImageName(1, 0), first_page.image(0).name());
-  EXPECT_EQ(kImageData[1], first_page.image(1).data());
+
+  if (DistillerImpl::DoesFetchImages()) {
+    EXPECT_EQ(kImageData[1], first_page.image(1).data());
+  } else {
+    EXPECT_EQ("", first_page.image(1).data());
+  }
   EXPECT_EQ(kImageURLs[1], first_page.image(1).url());
   EXPECT_EQ(GetImageName(1, 1), first_page.image(1).name());
 }
@@ -732,6 +746,8 @@ TEST_F(DistillerTest, DeletingArticleDoesNotInterfereWithUpdates) {
 }
 
 TEST_F(DistillerTest, CancelWithDelayedImageFetchCallback) {
+  if (!DistillerImpl::DoesFetchImages())
+    return;
   base::MessageLoopForUI loop;
   vector<int> image_indices;
   image_indices.push_back(0);

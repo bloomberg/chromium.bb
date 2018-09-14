@@ -84,6 +84,8 @@ class DistillerImpl : public Distiller {
 
   void SetMaxNumPagesInArticle(size_t max_num_pages);
 
+  static bool DoesFetchImages();
+
  private:
   // In case of multiple pages, the Distiller maintains state of multiple pages
   // as page numbers relative to the page number where distillation started.
@@ -116,9 +118,9 @@ class DistillerImpl : public Distiller {
       std::unique_ptr<proto::DomDistillerResult> distilled_page,
       bool distillation_successful);
 
-  virtual void FetchImage(int page_num,
-                          const std::string& image_id,
-                          const std::string& image_url);
+  virtual void MaybeFetchImage(int page_num,
+                               const std::string& image_id,
+                               const std::string& image_url);
 
   // Distills the next page.
   void DistillNextPage();
