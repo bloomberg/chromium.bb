@@ -211,7 +211,7 @@ class WorkspaceInitSDKStage(WorkspaceStageBase):
     cmd = ['cros_sdk', '--create']
     commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True)
 
-    post_ver = cros_sdk_lib.GetChrootVersion(chroot=chroot_path)
+    post_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
     logging.PrintBuildbotStepText(post_ver)
 
 

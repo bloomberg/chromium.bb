@@ -415,7 +415,7 @@ class InitSDKStage(generic_stages.BuilderStage):
     pre_ver = post_ver = None
     if os.path.isdir(self._build_root) and not replace:
       try:
-        pre_ver = cros_sdk_lib.GetChrootVersion(chroot=chroot_path)
+        pre_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
         if pre_ver is not None:
           commands.RunChrootUpgradeHooks(
               self._build_root, chrome_root=self._run.options.chrome_root,
@@ -435,7 +435,7 @@ class InitSDKStage(generic_stages.BuilderStage):
           extra_env=self._portage_extra_env,
           use_image=self._run.config.chroot_use_image)
 
-    post_ver = cros_sdk_lib.GetChrootVersion(chroot=chroot_path)
+    post_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
     if pre_ver is not None and pre_ver != post_ver:
       logging.PrintBuildbotStepText('%s->%s' % (pre_ver, post_ver))
     else:
