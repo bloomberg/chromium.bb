@@ -5,7 +5,6 @@
 #include "chrome/browser/android/feed/feed_offline_bridge.h"
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/android/callback_android.h"
@@ -58,8 +57,11 @@ FeedOfflineBridge::FeedOfflineBridge(const JavaRef<jobject>& j_this,
       offline_host_(offline_host),
       weak_factory_(this) {
   DCHECK(offline_host_);
-  offline_host_->Initialize(base::BindRepeating(
-      &FeedOfflineBridge::TriggerGetKnownContent, weak_factory_.GetWeakPtr()));
+  offline_host_->Initialize(
+      base::BindRepeating(&FeedOfflineBridge::TriggerGetKnownContent,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&FeedOfflineBridge::NotifyStatusChange,
+                          weak_factory_.GetWeakPtr()));
 }
 
 FeedOfflineBridge::~FeedOfflineBridge() = default;
@@ -142,6 +144,15 @@ void FeedOfflineBridge::TriggerGetKnownContent() {
   DCHECK(known_content_metadata_buffer_.empty());
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_FeedOfflineBridge_getKnownContent(env, j_this_);
+}
+
+void FeedOfflineBridge::NotifyStatusChange(const std::string& url,
+                                           bool available_offline) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_string =
+      base::android::ConvertUTF8ToJavaString(env, url);
+  Java_FeedOfflineBridge_notifyStatusChange(env, j_this_, j_string,
+                                            available_offline);
 }
 
 }  // namespace feed

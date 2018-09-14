@@ -35,6 +35,8 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
  public:
   using GetKnownContentCallback =
       base::OnceCallback<void(std::vector<ContentMetadata>)>;
+  using NotifyStatusChangeCallback =
+      base::RepeatingCallback<void(const std::string&, bool)>;
 
   FeedOfflineHost(offline_pages::OfflinePageModel* offline_page_model,
                   offline_pages::PrefetchService* prefetch_service,
@@ -45,7 +47,8 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
   // Initialize with callbacks to call into bridge/Java side. Should only be
   // called once, and done as soon as the bridge is ready. The FeedOfflineHost
   // will not be fully ready to perform its function without these dependencies.
-  void Initialize(const base::RepeatingClosure& trigger_get_known_content);
+  void Initialize(const base::RepeatingClosure& trigger_get_known_content,
+                  const NotifyStatusChangeCallback& notify_status_change);
 
   // Synchronously returns the offline id of the given page. The host will only
   // have knowledge of the page if it had previously returned status about it
@@ -96,7 +99,10 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
  private:
   // Stores the given record in |url_hash_to_id_|. If there's a conflict, the
   // new id will overwrite the old value.
-  void CacheOfflinePageAndId(const std::string& url, int64_t id);
+  void CacheOfflinePageUrlAndId(const std::string& url, int64_t id);
+
+  // Removes a previously cached |id| for the given |url| if there was one.
+  void EvictOfflinePageUrl(const std::string& url);
 
   // The following objects all outlive us, so it is safe to hold raw pointers to
   // them. This is guaranteed by the FeedHostServiceFactory.
@@ -120,6 +126,9 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
   // Holds all consumers of GetKnownContent(). It is assumed that there's an
   // outstanding GetKnownContent() if and only if this vector is not empty.
   std::vector<GetKnownContentCallback> pending_known_content_callbacks_;
+
+  // Calls all OfflineStatusListeners with the updated status.
+  NotifyStatusChangeCallback notify_status_change_;
 
   base::WeakPtrFactory<FeedOfflineHost> weak_factory_;
 

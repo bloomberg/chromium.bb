@@ -27,6 +27,7 @@ namespace feed {
 namespace {
 
 using offline_pages::OfflinePageItem;
+using offline_pages::OfflinePageModel;
 using offline_pages::StubOfflinePageModel;
 using offline_pages::MultipleOfflinePageItemCallback;
 using offline_pages::PrefetchSuggestion;
@@ -79,6 +80,8 @@ class TestOfflinePageModel : public StubOfflinePageModel {
   std::multimap<std::string, OfflinePageItem> url_to_offline_page_item_;
 };
 
+void IgnoreStatus(std::vector<std::string> result) {}
+
 void CopyStatus(std::vector<std::string>* out,
                 std::vector<std::string> result) {
   *out = std::move(result);
@@ -98,6 +101,9 @@ class FeedOfflineHostTest : public ::testing::Test {
   int get_suggestion_consumed_count() { return suggestion_consumed_count_; }
   int get_suggestions_shown_count() { return suggestions_shown_count_; }
   int get_get_known_content_count() { return get_known_content_count_; }
+  const std::vector<std::pair<std::string, bool>>& get_status_notifications() {
+    return status_notifications_;
+  }
 
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
@@ -108,17 +114,24 @@ class FeedOfflineHostTest : public ::testing::Test {
                             base::Unretained(this)),
         base::BindRepeating(&FeedOfflineHostTest::OnSuggestionsShown,
                             base::Unretained(this)));
-    host_->Initialize(
+    host()->Initialize(
         base::BindRepeating(&FeedOfflineHostTest::OnGetKnownContentRequested,
+                            base::Unretained(this)),
+        base::BindRepeating(&FeedOfflineHostTest::NotifyStatusChange,
                             base::Unretained(this)));
   }
 
  protected:
   FeedOfflineHostTest() { ResetHost(); }
 
+ private:
   void OnSuggestionConsumed() { ++suggestion_consumed_count_; }
   void OnSuggestionsShown() { ++suggestions_shown_count_; }
   void OnGetKnownContentRequested() { ++get_known_content_count_; }
+
+  void NotifyStatusChange(const std::string& url, bool available_offline) {
+    status_notifications_.emplace_back(url, available_offline);
+  }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestOfflinePageModel offline_page_model_;
@@ -127,6 +140,7 @@ class FeedOfflineHostTest : public ::testing::Test {
   int suggestion_consumed_count_ = 0;
   int suggestions_shown_count_ = 0;
   int get_known_content_count_ = 0;
+  std::vector<std::pair<std::string, bool>> status_notifications_;
 };
 
 TEST_F(FeedOfflineHostTest, ReportArticleListViewed) {
@@ -290,6 +304,36 @@ TEST_F(FeedOfflineHostTest, GetCurrentArticleSuggestionsMultiple) {
   EXPECT_EQ(1U, suggestions3.size());
   EXPECT_EQ(kUrl3, suggestions3[0].article_url.spec());
   EXPECT_EQ(kThree, suggestions3[0].article_title);
+}
+
+TEST_F(FeedOfflineHostTest, OfflinePageAdded) {
+  OfflinePageItem added_page;
+  added_page.url = GURL(kUrl1);
+  added_page.original_url = GURL(kUrl2);
+  added_page.offline_id = 4;
+
+  host()->OfflinePageAdded(nullptr, added_page);
+
+  EXPECT_EQ(1U, get_status_notifications().size());
+  EXPECT_EQ(kUrl2, get_status_notifications()[0].first);
+  EXPECT_TRUE(get_status_notifications()[0].second);
+  EXPECT_EQ(host()->GetOfflineId(kUrl2).value(), 4);
+}
+
+TEST_F(FeedOfflineHostTest, OfflinePageDeleted) {
+  offline_page_model()->AddOfflinedPage(kUrl1, 4);
+  host()->GetOfflineStatus({kUrl1}, base::BindOnce(&IgnoreStatus));
+  RunUntilIdle();
+  EXPECT_EQ(host()->GetOfflineId(kUrl1).value(), 4);
+  OfflinePageModel::DeletedPageInfo page_info;
+  page_info.url = GURL(kUrl1);
+
+  host()->OfflinePageDeleted(page_info);
+
+  EXPECT_EQ(1U, get_status_notifications().size());
+  EXPECT_EQ(kUrl1, get_status_notifications()[0].first);
+  EXPECT_FALSE(get_status_notifications()[0].second);
+  EXPECT_FALSE(host()->GetOfflineId(kUrl1).has_value());
 }
 
 }  // namespace feed

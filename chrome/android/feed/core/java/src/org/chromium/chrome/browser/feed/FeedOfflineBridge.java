@@ -134,6 +134,13 @@ public class FeedOfflineBridge
         });
     }
 
+    @CalledByNative
+    private void notifyStatusChange(String url, boolean availableOffline) {
+        for (OfflineStatusListener listener : mListeners) {
+            listener.updateOfflineStatus(url, availableOffline);
+        }
+    }
+
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedOfflineBridge);
     private native Object nativeGetOfflineId(long nativeFeedOfflineBridge, String url);
