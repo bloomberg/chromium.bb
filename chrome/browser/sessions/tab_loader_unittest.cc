@@ -350,16 +350,20 @@ TEST_F(TabLoaderTest, DelegatePolicyIsApplied) {
   // it such that there are 2 max simultaneous tab loads, and 3 maximum tabs to
   // restore.
   std::map<std::string, std::string> params;
-  params[rc::kInfiniteSessionRestore_MinSimultaneousTabLoads] = "2";
-  params[rc::kInfiniteSessionRestore_MaxSimultaneousTabLoads] = "2";
-  params[rc::kInfiniteSessionRestore_CoresPerSimultaneousTabLoad] = "0";
-  params[rc::kInfiniteSessionRestore_MinTabsToRestore] = "1";
-  params[rc::kInfiniteSessionRestore_MaxTabsToRestore] = "3";
+  params[rc::InfiniteSessionRestoreParams::kMinSimultaneousTabLoads.name] = "2";
+  params[rc::InfiniteSessionRestoreParams::kMaxSimultaneousTabLoads.name] = "2";
+  params[rc::InfiniteSessionRestoreParams::kCoresPerSimultaneousTabLoad.name] =
+      "0";
+  params[rc::InfiniteSessionRestoreParams::kMinTabsToRestore.name] = "1";
+  params[rc::InfiniteSessionRestoreParams::kMaxTabsToRestore.name] = "3";
 
   // Disable these policy features.
-  params[rc::kInfiniteSessionRestore_MbFreeMemoryPerTabToRestore] = "0";
-  params[rc::kInfiniteSessionRestore_MaxTimeSinceLastUseToRestore] = "0";
-  params[rc::kInfiniteSessionRestore_MinSiteEngagementToRestore] = "0";
+  params[rc::InfiniteSessionRestoreParams::kMbFreeMemoryPerTabToRestore.name] =
+      "0";
+  params[rc::InfiniteSessionRestoreParams::kMaxTimeSinceLastUseToRestore.name] =
+      "0";
+  params[rc::InfiniteSessionRestoreParams::kMinSiteEngagementToRestore.name] =
+      "0";
 
   variations::testing::VariationParamsManager variations_manager;
   variations_manager.SetVariationParamsWithFeatureAssociations(
