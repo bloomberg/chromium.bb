@@ -83,8 +83,6 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   void RemoveObserver(Observer* observer);
 
   // Overridden from views::WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override;
-  void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetDestroyed(views::Widget* widget) override;
 
  private:
