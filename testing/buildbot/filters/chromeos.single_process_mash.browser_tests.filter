@@ -189,6 +189,9 @@
 # Immersive mode tests.
 -ImmersiveModeBrowserViewTest.TabNavigationAcceleratorsFullscreenBrowser/material
 
+# Flaky on ASAN bot. crbug.com/884216
+-KeyboardOverlayUIBrowserTest.*
+
 # Lock screen tests.
 -LockScreenNoteTakingTest.Launch
 
