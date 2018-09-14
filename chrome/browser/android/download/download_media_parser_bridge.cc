@@ -8,13 +8,35 @@
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
 #include "base/task/post_task.h"
+#include "jni/DownloadMediaData_jni.h"
 #include "jni/DownloadMediaParserBridge_jni.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/android/java_bitmap.h"
+
+using base::android::ConvertUTF8ToJavaString;
 
 namespace {
 
 void OnMediaParsed(const base::android::ScopedJavaGlobalRef<jobject> jcallback,
-                   bool success) {
-  base::android::RunBooleanCallbackAndroid(jcallback, success);
+                   bool success,
+                   chrome::mojom::MediaMetadataPtr metadata,
+                   SkBitmap thumbnail_bitmap) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(metadata);
+
+  // Copy the thumbnail bitmap to a Java Bitmap object.
+  base::android::ScopedJavaLocalRef<jobject> java_bitmap;
+  if (!thumbnail_bitmap.isNull())
+    java_bitmap = gfx::ConvertToJavaBitmap(&thumbnail_bitmap);
+
+  base::android::ScopedJavaLocalRef<jobject> media_data;
+  if (success) {
+    media_data = Java_DownloadMediaData_Constructor(
+        env, metadata->duration, ConvertUTF8ToJavaString(env, metadata->title),
+        ConvertUTF8ToJavaString(env, metadata->artist), std::move(java_bitmap));
+  }
+
+  base::android::RunObjectCallbackAndroid(jcallback, std::move(media_data));
 }
 
 }  // namespace

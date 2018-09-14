@@ -10,6 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/android/download/local_media_data_source_factory.h"
+#include "chrome/browser/android/download/video_frame_thumbnail_converter.h"
 #include "content/public/browser/android/gpu_video_accelerator_factories_provider.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/base/overlay_info.h"
@@ -19,6 +20,8 @@
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 
@@ -91,6 +94,7 @@ void DownloadMediaParser::OnMediaMetadataParsed(
     return;
   }
   metadata_ = std::move(metadata);
+  DCHECK(metadata_);
 
   // TODO(xingliu): Make |attached_images| movable and use this as a thumbnail
   // source as well as video frame.
@@ -99,14 +103,14 @@ void DownloadMediaParser::OnMediaMetadataParsed(
   // For audio file, we only need metadata and poster.
   if (base::StartsWith(mime_type_, "audio/",
                        base::CompareCase::INSENSITIVE_ASCII)) {
-    NotifyComplete();
+    NotifyComplete(SkBitmap());
     return;
   }
 
   DCHECK(base::StartsWith(mime_type_, "video/",
                           base::CompareCase::INSENSITIVE_ASCII));
 
-  // Retrieves video thumbnail if needed.
+  // Start to retrieve video thumbnail.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&DownloadMediaParser::RetrieveEncodedVideoFrame,
                                 weak_factory_.GetWeakPtr()));
@@ -213,9 +217,29 @@ void DownloadMediaParser::OnVideoFrameDecoded(
   DCHECK(frame->HasTextures());
   decode_done_ = true;
 
-  // TODO(xingliu): render the |frame| in the browser process, with cc or skia
-  // or gl. The |frame| is associated with a native texture in GPU process.
-  NotifyComplete();
+  RenderVideoFrame(frame);
+}
+
+void DownloadMediaParser::RenderVideoFrame(
+    const scoped_refptr<media::VideoFrame>& video_frame) {
+  auto converter = VideoFrameThumbnailConverter::Create(
+      config_.codec(), gpu_factories_->GetMediaContextProvider());
+  converter->ConvertToBitmap(
+      video_frame,
+      base::BindOnce(&DownloadMediaParser::OnBitmapGenerated,
+                     weak_factory_.GetWeakPtr(), std::move(converter)));
+}
+
+void DownloadMediaParser::OnBitmapGenerated(
+    std::unique_ptr<VideoFrameThumbnailConverter>,
+    bool success,
+    SkBitmap bitmap) {
+  if (!success) {
+    OnError();
+    return;
+  }
+
+  NotifyComplete(std::move(bitmap));
 }
 
 media::mojom::InterfaceFactory*
@@ -250,14 +274,17 @@ void DownloadMediaParser::OnMediaDataReady(
     std::move(callback).Run(std::vector<uint8_t>(data->begin(), data->end()));
 }
 
-void DownloadMediaParser::NotifyComplete() {
+void DownloadMediaParser::NotifyComplete(SkBitmap bitmap) {
   // TODO(xingliu): Return the metadata and video thumbnail data in
   // |parse_complete_cb_|.
+  DCHECK(metadata_);
   if (parse_complete_cb_)
-    std::move(parse_complete_cb_).Run(true);
+    std::move(parse_complete_cb_)
+        .Run(true, std::move(metadata_), std::move(bitmap));
 }
 
 void DownloadMediaParser::OnError() {
   if (parse_complete_cb_)
-    std::move(parse_complete_cb_).Run(false);
+    std::move(parse_complete_cb_)
+        .Run(false, chrome::mojom::MediaMetadata::New(), SkBitmap());
 }

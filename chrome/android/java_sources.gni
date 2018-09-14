@@ -440,6 +440,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/DownloadLocationDialogBridge.java",
   "java/src/org/chromium/chrome/browser/download/DownloadManagerDelegate.java",
   "java/src/org/chromium/chrome/browser/download/DownloadManagerService.java",
+  "java/src/org/chromium/chrome/browser/download/DownloadMediaData.java",
   "java/src/org/chromium/chrome/browser/download/DownloadMediaParserBridge.java",
   "java/src/org/chromium/chrome/browser/download/DownloadMetrics.java",
   "java/src/org/chromium/chrome/browser/download/DownloadNotificationFactory.java",

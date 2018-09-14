@@ -41,7 +41,7 @@ void OnGpuChannelEstablished(
 
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
-  constexpr bool support_grcontext = false;
+  constexpr bool support_grcontext = true;
 
   auto context_provider =
       base::MakeRefCounted<ws::ContextProviderCommandBuffer>(
@@ -187,7 +187,7 @@ BrowserGpuVideoAcceleratorFactories::
 
 scoped_refptr<ws::ContextProviderCommandBuffer>
 BrowserGpuVideoAcceleratorFactories::GetMediaContextProvider() {
-  return nullptr;
+  return context_provider_;
 }
 
 void BrowserGpuVideoAcceleratorFactories::SetRenderingColorSpace(
