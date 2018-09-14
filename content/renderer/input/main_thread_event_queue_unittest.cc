@@ -1314,6 +1314,35 @@ TEST_F(MainThreadEventQueueTest, UnbufferedDispatchTouchEvent) {
   EXPECT_FALSE(needs_main_frame_);
 }
 
+TEST_F(MainThreadEventQueueTest, PointerEventsCoalescing) {
+  queue_->HasPointerRawMoveEventHandlers(true);
+  WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
+      WebInputEvent::kMouseMove, 10, 10, 0);
+  SyntheticWebTouchEvent touch_move;
+  touch_move.PressPoint(10, 10);
+  touch_move.MovePoint(0, 50, 50);
+
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+
+  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  EXPECT_EQ(4u, event_queue().size());
+
+  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  EXPECT_EQ(4u, event_queue().size());
+
+  main_task_runner_->RunUntilIdle();
+  EXPECT_EQ(2u, event_queue().size());
+
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_FALSE(needs_main_frame_);
+}
+
 TEST_F(MainThreadEventQueueTest, PointerRawMoveEvents) {
   WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
       WebInputEvent::kMouseMove, 10, 10, 0);
@@ -1326,16 +1355,33 @@ TEST_F(MainThreadEventQueueTest, PointerRawMoveEvents) {
       .Times(0);
 
   HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->RequestUnbufferedInputEvents();
   EXPECT_EQ(1u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
+  EXPECT_EQ(0u, event_queue().size());
   EXPECT_FALSE(needs_main_frame_);
 
   queue_->HasPointerRawMoveEventHandlers(true);
   HandleEvent(mouse_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
-  queue_->RequestUnbufferedInputEvents();
   EXPECT_EQ(2u, event_queue().size());
   RunPendingTasksWithSimulatedRaf();
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_FALSE(needs_main_frame_);
+
+  queue_->HasPointerRawMoveEventHandlers(false);
+  SyntheticWebTouchEvent touch_move;
+  touch_move.PressPoint(10, 10);
+  touch_move.MovePoint(0, 50, 50);
+  HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  EXPECT_EQ(1u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_FALSE(needs_main_frame_);
+
+  queue_->HasPointerRawMoveEventHandlers(true);
+  HandleEvent(touch_move, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+  EXPECT_EQ(2u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_EQ(0u, event_queue().size());
   EXPECT_FALSE(needs_main_frame_);
 }
 
