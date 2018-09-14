@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/leveldb/public/cpp/util.h"
@@ -1336,6 +1337,45 @@ TEST_F(StoragePartitionImplTest, ClearCodeCache) {
   run_loop.Run();
 
   EXPECT_FALSE(tester.ContainsEntry(kResourceURL, origin));
+}
+
+TEST_F(StoragePartitionImplTest, ClearCodeCacheNoIsolatedCodeCache) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kIsolatedCodeCache);
+  ASSERT_FALSE(base::FeatureList::IsEnabled(features::kIsolatedCodeCache));
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  base::RunLoop().RunUntilIdle();
+  // We should not create GeneratedCodeCacheContext when IsolatedCodeCache
+  // is disabled.
+  EXPECT_EQ(nullptr, partition->GetGeneratedCodeCacheContext());
+
+  base::RunLoop run_loop;
+  // This shouldn't crash.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ClearCodeCache, partition, &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(StoragePartitionImplTest, ClearCodeCacheIncognito) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kIsolatedCodeCache);
+  ASSERT_TRUE(base::FeatureList::IsEnabled(features::kIsolatedCodeCache));
+
+  browser_context()->set_is_off_the_record(true);
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  base::RunLoop().RunUntilIdle();
+  // We should not create GeneratedCodeCacheContext for off the record mode.
+  EXPECT_EQ(nullptr, partition->GetGeneratedCodeCacheContext());
+
+  base::RunLoop run_loop;
+  // This shouldn't crash.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ClearCodeCache, partition, &run_loop));
+  run_loop.Run();
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

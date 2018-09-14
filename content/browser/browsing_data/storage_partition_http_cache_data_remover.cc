@@ -172,8 +172,8 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
       }
       case CacheState::DELETE_CODE: {
         next_cache_state_ = CacheState::DONE;
-        if (base::FeatureList::IsEnabled(features::kIsolatedCodeCache)) {
-          DCHECK(generated_code_cache_context_);
+        // Embedders can disable code caches.
+        if (generated_code_cache_context_) {
           GeneratedCodeCache* code_cache =
               generated_code_cache_context_->generated_code_cache();
           if (code_cache) {
