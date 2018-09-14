@@ -114,11 +114,10 @@ void LocalCardMigrationDialogView::AddedToWidget() {
 }
 
 views::View* LocalCardMigrationDialogView::CreateExtraView() {
-  close_migration_dialog_button_.reset(
-      views::MdTextButton::CreateSecondaryUiButton(
-          this, l10n_util::GetStringUTF16(IDS_CLOSE)));
+  close_migration_dialog_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_CLOSE));
   close_migration_dialog_button_->SetVisible(false);
-  return close_migration_dialog_button_.get();
+  return close_migration_dialog_button_;
 }
 
 bool LocalCardMigrationDialogView::ShouldShowCloseButton() const {
@@ -171,7 +170,7 @@ void LocalCardMigrationDialogView::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
   // If button clicked is the |close_migration_dialog_button_|, close the
   // dialog.
-  if (sender == close_migration_dialog_button_.get()) {
+  if (sender == close_migration_dialog_button_) {
     CloseDialog();
   } else {
     // Checkbox is clicked.
@@ -199,27 +198,26 @@ void LocalCardMigrationDialogView::Init() {
 
   // Set up main contents container.
   std::unique_ptr<views::View> main_container = std::make_unique<views::View>();
-  constexpr int kMigrationDialogUnrelatedControlVerticalDistance = 24;
+  constexpr int kMainContainerChildSpacing = 24;
   main_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
-      kMigrationDialogUnrelatedControlVerticalDistance));
+      views::BoxLayout::kVertical, gfx::Insets(), kMainContainerChildSpacing));
 
   std::unique_ptr<views::View> image_container =
       std::make_unique<views::View>();
   image_container->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  constexpr int kMigrationDialogImageBorderBottom = 16;
+  constexpr int kImageBorderBottom = 16;
   image_container->SetBorder(
-      views::CreateEmptyBorder(0, 0, kMigrationDialogImageBorderBottom, 0));
+      views::CreateEmptyBorder(0, 0, kImageBorderBottom, 0));
   std::unique_ptr<views::ImageView> image =
       std::make_unique<views::ImageView>();
   image->SetImage(rb.GetImageSkiaNamed(GetHeaderImageId()));
   image_container->AddChildView(image.release());
   main_container->AddChildView(image_container.release());
 
-  title_ = std::make_unique<views::Label>(GetDialogTitle(),
-                                          views::style::CONTEXT_DIALOG_TITLE);
-  main_container->AddChildView(title_.get());
+  title_ =
+      new views::Label(GetDialogTitle(), views::style::CONTEXT_DIALOG_TITLE);
+  main_container->AddChildView(title_);
 
   std::unique_ptr<views::View> contents_container =
       std::make_unique<views::View>();
@@ -231,14 +229,14 @@ void LocalCardMigrationDialogView::Init() {
   contents_container->SetBorder(
       views::CreateEmptyBorder(migration_dialog_insets));
 
-  explanation_text_ = std::make_unique<views::Label>(
-      GetDialogInstruction(), CONTEXT_BODY_TEXT_LARGE,
-      ChromeTextStyle::STYLE_SECONDARY);
+  explanation_text_ =
+      new views::Label(GetDialogInstruction(), CONTEXT_BODY_TEXT_LARGE,
+                       ChromeTextStyle::STYLE_SECONDARY);
   explanation_text_->SetMultiLine(true);
   explanation_text_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  contents_container->AddChildView(explanation_text_.get());
+  contents_container->AddChildView(explanation_text_);
 
-  card_list_view_ = std::make_unique<views::View>();
+  card_list_view_ = new views::View();
   const std::vector<MigratableCreditCard>& migratable_credit_cards =
       controller_->GetCardList();
   views::BoxLayout* card_list_view_layout_ =
@@ -249,33 +247,30 @@ void LocalCardMigrationDialogView::Init() {
   card_list_view_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   for (size_t index = 0; index < migratable_credit_cards.size(); index++) {
-    card_list_view_->AddChildView(
-        std::make_unique<MigratableCardView>(migratable_credit_cards[index],
-                                             this, static_cast<int>(index))
-            .release());
+    card_list_view_->AddChildView(new MigratableCardView(
+        migratable_credit_cards[index], this, static_cast<int>(index)));
   }
 
   std::unique_ptr<views::ScrollView> card_list_scroll_bar =
       std::make_unique<views::ScrollView>();
   card_list_scroll_bar->set_hide_horizontal_scrollbar(true);
-  card_list_scroll_bar->SetContents(card_list_view_.get());
+  card_list_scroll_bar->SetContents(card_list_view_);
   card_list_scroll_bar->set_draw_overflow_indicator(false);
   constexpr int kCardListScrollViewHeight = 140;
   card_list_scroll_bar->ClipHeightTo(0, kCardListScrollViewHeight);
   contents_container->AddChildView(card_list_scroll_bar.release());
   main_container->AddChildView(contents_container.release());
 
-  separator_ = std::make_unique<views::Separator>();
-  main_container->AddChildView(separator_.get());
+  separator_ = new views::Separator();
+  main_container->AddChildView(separator_);
 
-  legal_message_container_ = std::make_unique<LegalMessageView>(
-      controller_->GetLegalMessageLines(), this);
-  constexpr int kMigrationDialogContentMarginBottomText = 48;
-  legal_message_container_->SetBorder(
-      views::CreateEmptyBorder(0, migration_dialog_insets.left(),
-                               kMigrationDialogContentMarginBottomText,
-                               migration_dialog_insets.right()));
-  main_container->AddChildView(legal_message_container_.get());
+  legal_message_container_ =
+      new LegalMessageView(controller_->GetLegalMessageLines(), this);
+  constexpr int kContentBottomMargin = 48;
+  legal_message_container_->SetBorder(views::CreateEmptyBorder(
+      0, migration_dialog_insets.left(), kContentBottomMargin,
+      migration_dialog_insets.right()));
+  main_container->AddChildView(legal_message_container_);
 
   AddChildView(main_container.release());
 }

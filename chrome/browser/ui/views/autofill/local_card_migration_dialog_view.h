@@ -84,26 +84,28 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
 
   content::WebContents* web_contents_;
 
-  std::unique_ptr<views::Label> title_;
+  views::Label* title_ = nullptr;
 
-  std::unique_ptr<views::Label> explanation_text_;
+  views::Label* explanation_text_ = nullptr;
 
   // A list of MigratableCardView.
-  std::unique_ptr<views::View> card_list_view_;
+  views::View* card_list_view_ = nullptr;
 
   // Separates the card scroll bar view and the legal message.
-  std::unique_ptr<views::Separator> separator_;
+  views::Separator* separator_ = nullptr;
 
   // The button displays "Close". If clicked, will close the dialog
   // in pending state.
-  std::unique_ptr<views::View> close_migration_dialog_button_;
+  views::View* close_migration_dialog_button_ = nullptr;
+
+  // The view that contains legal message and handles legal message links
+  // clicking.
+  LegalMessageView* legal_message_container_ = nullptr;
 
   // Timer that will call ShowCloseButton() after the migration process
   // has started and is pending for acertain amount of time which can be
   // configured through Finch.
   base::OneShotTimer show_close_button_timer_;
-
-  std::unique_ptr<LegalMessageView> legal_message_container_;
 
   // Whether the uploading is in progress and results are
   // pending.

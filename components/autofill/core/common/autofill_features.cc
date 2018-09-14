@@ -107,7 +107,9 @@ const base::Feature kAutofillExpandedPopupViews{
 const base::Feature kAutofillGetPaymentsIdentityFromSync{
     "AutofillGetPaymentsIdentityFromSync", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether Autofill Local Card Migration will show result dialogs.
+// When enabled, the local card migration dialog will show the progress
+// and result of the migration after starting the migration. When disabled,
+// there is no feedback for the migration.
 const base::Feature kAutofillLocalCardMigrationShowFeedback{
     "AutofillLocalCardMigrationShowFeedback",
     base::FEATURE_DISABLED_BY_DEFAULT};
