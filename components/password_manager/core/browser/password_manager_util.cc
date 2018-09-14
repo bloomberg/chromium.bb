@@ -17,6 +17,8 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/blacklisted_duplicates_cleaner.h"
+#include "components/password_manager/core/browser/credentials_cleaner.h"
+#include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
@@ -30,17 +32,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "url/gurl.h"
+
 using autofill::PasswordForm;
 
 namespace password_manager_util {
 namespace {
-
-void StartDeletingBlacklistedDuplicates(
-    scoped_refptr<password_manager::PasswordStore> store,
-    PrefService* prefs) {
-  // The object will delete itself once the credentials are retrieved.
-  new password_manager::BlacklistedDuplicatesCleaner(std::move(store), prefs);
-}
 
 // Return true if
 // 1.|lhs| is non-PSL match, |rhs| is PSL match or
@@ -350,12 +346,22 @@ void DeleteBlacklistedDuplicates(
   base::UmaHistogramBoolean(
       "PasswordManager.BlacklistedSites.NeedRemoveBlacklistDuplicates",
       need_to_remove_blacklisted_duplicates);
-  if (need_to_remove_blacklisted_duplicates)
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&StartDeletingBlacklistedDuplicates, std::move(store),
-                       prefs),
-        base::TimeDelta::FromSeconds(delay_in_seconds));
+
+  // The object will delete itself once the clearing tasks are done.
+  auto* cleaning_tasks_runner =
+      new password_manager::CredentialsCleanerRunner();
+
+  if (need_to_remove_blacklisted_duplicates) {
+    cleaning_tasks_runner->AddCleaningTask(
+        std::make_unique<password_manager::BlacklistedDuplicatesCleaner>(
+            store, prefs));
+  }
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&password_manager::CredentialsCleanerRunner::StartCleaning,
+                     base::Unretained(cleaning_tasks_runner)),
+      base::TimeDelta::FromSeconds(delay_in_seconds));
 }
 
 void FindBestMatches(
