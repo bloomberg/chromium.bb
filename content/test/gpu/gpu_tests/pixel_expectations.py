@@ -130,3 +130,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CanvasLowLatencyWebGL', ['android', 'nvidia'], bug=868596)
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
               ['android', 'nvidia'], bug=868596)
+
+    # TODO(vikassoni): Suppress new test first time to generate reference image.
+    self.Fail('Pixel_BackgroundImage', bug=883500)
