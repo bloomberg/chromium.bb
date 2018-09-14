@@ -38,17 +38,17 @@ class UrlPattern {
     ~UrlInfo();
 
     base::StringPiece spec() const { return spec_; }
-    base::StringPiece lower_case_spec() const {
-      return lower_case_spec_ ? *lower_case_spec_ : spec_;
-    }
+    base::StringPiece GetLowerCaseSpec() const;
     url::Component host() const { return host_; }
 
    private:
     // The url spec.
     const base::StringPiece spec_;
-    // Lower-cased url spec. Only populated if |spec_| contains upper case
-    // characters.
-    const base::Optional<std::string> lower_case_spec_;
+    // String to hold the lazily computed lower cased spec.
+    mutable std::string lower_case_spec_owner_;
+    // Reference to the lower case spec. Computed lazily.
+    mutable base::Optional<base::StringPiece> lower_case_spec_cached_;
+
     // The url host component.
     const url::Component host_;
 

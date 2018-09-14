@@ -238,11 +238,21 @@ bool IsCaseSensitiveMatch(base::StringPiece url_pattern,
 
 UrlPattern::UrlInfo::UrlInfo(const GURL& url)
     : spec_(url.possibly_invalid_spec()),
-      lower_case_spec_(HasAnyUpperAscii(spec_) ? base::Optional<std::string>(
-                                                     base::ToLowerASCII(spec_))
-                                               : base::nullopt),
       host_(url.parsed_for_possibly_invalid_spec().host) {
   DCHECK(url.is_valid());
+}
+
+base::StringPiece UrlPattern::UrlInfo::GetLowerCaseSpec() const {
+  if (lower_case_spec_cached_)
+    return *lower_case_spec_cached_;
+
+  if (!HasAnyUpperAscii(spec_)) {
+    lower_case_spec_cached_ = spec_;
+  } else {
+    lower_case_spec_owner_ = base::ToLowerASCII(spec_);
+    lower_case_spec_cached_ = lower_case_spec_owner_;
+  }
+  return *lower_case_spec_cached_;
 }
 
 UrlPattern::UrlInfo::~UrlInfo() = default;
@@ -278,7 +288,7 @@ bool UrlPattern::MatchesUrl(const UrlInfo& url) const {
          type_ == proto::URL_PATTERN_TYPE_WILDCARDED);
   DCHECK(base::IsStringASCII(url_pattern_));
   DCHECK(base::IsStringASCII(url.spec()));
-  DCHECK(base::IsStringASCII(url.lower_case_spec()));
+  DCHECK(base::IsStringASCII(url.GetLowerCaseSpec()));
 
   if (match_case()) {
     return IsCaseSensitiveMatch(url_pattern_, anchor_left_, anchor_right_,
@@ -287,7 +297,8 @@ bool UrlPattern::MatchesUrl(const UrlInfo& url) const {
 
   // For case-insensitive matching, convert both pattern and url to lower case.
   return IsCaseSensitiveMatch(base::ToLowerASCII(url_pattern_), anchor_left_,
-                              anchor_right_, url.lower_case_spec(), url.host());
+                              anchor_right_, url.GetLowerCaseSpec(),
+                              url.host());
 }
 
 std::ostream& operator<<(std::ostream& out, const UrlPattern& pattern) {
