@@ -426,12 +426,6 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // considered potentially trustworthy.
   IPC_STRUCT_MEMBER(bool, has_potentially_trustworthy_unique_origin)
 
-  // See WebSearchableFormData for a description of these.
-  // Not used by PlzNavigate: in that case these fields are sent to the browser
-  // in mojom::BeginNavigationParams.
-  IPC_STRUCT_MEMBER(GURL, searchable_form_url)
-  IPC_STRUCT_MEMBER(std::string, searchable_form_encoding)
-
   // This is a non-decreasing value that the browser process can use to
   // identify and discard compositor frames that correspond to now-unloaded
   // web content.
