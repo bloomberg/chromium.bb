@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/speech/extension_api/tts_engine_delegate_factory_impl.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer.h"
 #include "chrome/browser/speech/tts_controller.h"
@@ -172,7 +173,9 @@ int TtsHandler::GetVoiceLangMatchScore(const VoiceData* voice,
 
 void TtsHandler::WakeTtsEngine(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  TtsExtensionEngine::GetInstance()->LoadBuiltInTtsExtension(profile);
+  TtsEngineDelegateFactoryImpl::GetInstance()
+      ->GetForBrowserContext(profile)
+      ->LoadBuiltInTtsExtension();
   extensions::ProcessManager::Get(profile)->WakeEventPage(
       extension_misc::kSpeechSynthesisExtensionId,
       base::BindOnce(&TtsHandler::OnTtsEngineAwake,
