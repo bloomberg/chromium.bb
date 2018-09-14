@@ -63,9 +63,12 @@ source_set("adaptive_ui") {
     "secondary_toolbar_view.mm",
     "secondary_toolbar_view_controller.h",
     "secondary_toolbar_view_controller.mm",
+    "toolbar_progress_bar.h",
+    "toolbar_progress_bar.mm",
   ]
   deps = [
     "//base",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui:ui",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/activity_services/requirements",
@@ -82,6 +85,7 @@ source_set("adaptive_ui") {
     "//ios/chrome/common:timing",
     "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios",
+    "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
