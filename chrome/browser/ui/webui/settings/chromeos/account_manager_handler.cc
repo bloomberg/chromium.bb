@@ -55,18 +55,14 @@ AccountManagerUIHandler::AccountManagerUIHandler(
     : account_manager_(account_manager),
       account_tracker_service_(account_tracker_service),
       account_mapper_util_(account_tracker_service_),
+      account_manager_observer_(this),
+      account_tracker_service_observer_(this),
       weak_factory_(this) {
   DCHECK(account_manager_);
   DCHECK(account_tracker_service_);
-
-  account_manager_->AddObserver(this);
-  account_tracker_service_->AddObserver(this);
 }
 
-AccountManagerUIHandler::~AccountManagerUIHandler() {
-  account_manager_->RemoveObserver(this);
-  account_tracker_service_->RemoveObserver(this);
-}
+AccountManagerUIHandler::~AccountManagerUIHandler() = default;
 
 void AccountManagerUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -173,9 +169,15 @@ void AccountManagerUIHandler::HandleRemoveAccount(const base::ListValue* args) {
   account_manager_->RemoveAccount(account_key);
 }
 
-void AccountManagerUIHandler::OnJavascriptAllowed() {}
+void AccountManagerUIHandler::OnJavascriptAllowed() {
+  account_manager_observer_.Add(account_manager_);
+  account_tracker_service_observer_.Add(account_tracker_service_);
+}
 
-void AccountManagerUIHandler::OnJavascriptDisallowed() {}
+void AccountManagerUIHandler::OnJavascriptDisallowed() {
+  account_manager_observer_.RemoveAll();
+  account_tracker_service_observer_.RemoveAll();
+}
 
 // |AccountManager::Observer| overrides.
 // Note: We need to listen on |AccountManager| in addition to
@@ -212,10 +214,6 @@ void AccountManagerUIHandler::OnAccountRemoved(const AccountInfo& account_key) {
 }
 
 void AccountManagerUIHandler::RefreshUI() {
-  if (!IsJavascriptAllowed()) {
-    return;
-  }
-
   FireWebUIListener("accounts-changed");
 }
 
