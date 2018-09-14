@@ -336,4 +336,15 @@ TEST_F(FeedOfflineHostTest, OfflinePageDeleted) {
   EXPECT_FALSE(host()->GetOfflineId(kUrl1).has_value());
 }
 
+TEST_F(FeedOfflineHostTest, OnNoListeners) {
+  offline_page_model()->AddOfflinedPage(kUrl1, 4);
+  host()->GetOfflineStatus({kUrl1}, base::BindOnce(&IgnoreStatus));
+  RunUntilIdle();
+  EXPECT_EQ(host()->GetOfflineId(kUrl1).value(), 4);
+
+  host()->OnNoListeners();
+
+  EXPECT_FALSE(host()->GetOfflineId(kUrl1).has_value());
+}
+
 }  // namespace feed
