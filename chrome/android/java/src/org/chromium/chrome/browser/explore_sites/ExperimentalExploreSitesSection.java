@@ -41,14 +41,14 @@ public class ExperimentalExploreSitesSection {
 
     private void initialize() {
         mCategorySection = mExploreSection.findViewById(R.id.explore_sites_tiles);
-        ExploreSitesBridge.getNtpCategories(mProfile, this::initializeTiles);
+        ExploreSitesBridgeExperimental.getNtpCategories(mProfile, this::initializeTiles);
 
         View moreCategoriesButton = mExploreSection.findViewById(R.id.explore_sites_more_button);
         moreCategoriesButton.setOnClickListener(
                 (View v)
                         -> mNavigationDelegate.navigateToSuggestionUrl(
                                 WindowOpenDisposition.CURRENT_TAB,
-                                ExploreSitesBridge.nativeGetCatalogUrl()));
+                                ExploreSitesBridgeExperimental.nativeGetCatalogUrl()));
     }
 
     private void initializeTiles(List<ExploreSitesCategoryTile> tileList) {
@@ -84,7 +84,7 @@ public class ExperimentalExploreSitesSection {
                     (View v)
                             -> mNavigationDelegate.navigateToSuggestionUrl(
                                     WindowOpenDisposition.CURRENT_TAB, tile.getNavigationUrl()));
-            ExploreSitesBridge.getIcon(
+            ExploreSitesBridgeExperimental.getIcon(
                     mProfile, tile.getIconUrl(), (Bitmap icon) -> onIconRetrieved(tileView, icon));
         }
     }
