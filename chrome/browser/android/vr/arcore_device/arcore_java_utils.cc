@@ -51,6 +51,15 @@ void ArCoreJavaUtils::OnRequestInstallSupportedArCoreCanceled(
   arcore_device_->OnRequestInstallSupportedARCoreCanceled();
 }
 
+bool ArCoreJavaUtils::ShouldRequestInstallArModule() {
+  // TODO(crbug.com/863068): Check whether AR module is already installed.
+  return false;
+}
+
+void ArCoreJavaUtils::RequestInstallArModule() {
+  // TODO(crbug.com/863068): On-demand install AR module.
+}
+
 bool ArCoreJavaUtils::ShouldRequestInstallSupportedArCore() {
   JNIEnv* env = AttachCurrentThread();
   return Java_ArCoreJavaUtils_shouldRequestInstallSupportedArCore(
