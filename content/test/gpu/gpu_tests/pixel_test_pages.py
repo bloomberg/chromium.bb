@@ -93,6 +93,12 @@ SCALE_FACTOR_OVERRIDES = {
 def DefaultPages(base_name):
   return [
     PixelTestPage(
+      'pixel_background_image.html',
+      base_name + '_BackgroundImage',
+      test_rect=[20, 20, 370, 370],
+      revision=0),
+
+    PixelTestPage(
       'pixel_canvas2d.html',
       base_name + '_Canvas2DRedBox',
       test_rect=[0, 0, 300, 300],
