@@ -55,6 +55,8 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kPrefixedVideoEnterFullScreen,
           WebFeature::kPrefixedVideoExitFullScreen,
           WebFeature::kDocumentLevelPassiveDefaultEventListenerPreventedWheel,
+          WebFeature::kDocumentDomainBlockedCrossOriginAccess,
+          WebFeature::kDocumentDomainEnabledCrossOriginAccess,
       }));
   return opt_in_features.count(feature);
 }
