@@ -1188,6 +1188,12 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        EnableReferrers) {
   const GURL kReferrer("http://referrer/");
 
+  // The preference is expected to be reset in incognito mode.
+  if (is_incognito()) {
+    EXPECT_TRUE(GetPrefService()->GetBoolean(prefs::kEnableReferrers));
+    return;
+  }
+
   // Referrers should still be disabled.
   EXPECT_FALSE(GetPrefService()->GetBoolean(prefs::kEnableReferrers));
 
