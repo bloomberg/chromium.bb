@@ -26,7 +26,6 @@
 
 namespace ui {
 class AcceleratorManager;
-class AcceleratorManagerDelegate;
 }
 
 namespace ash {
@@ -45,9 +44,7 @@ ASH_EXPORT extern const char kFullscreenMagnifierToggleAccelNotificationId[];
 class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
                                          public mojom::AcceleratorController {
  public:
-  // TODO(jamescook): Remove |manager_delegate|. https://crbug.com/842365
-  explicit AcceleratorController(
-      ui::AcceleratorManagerDelegate* manager_delegate);
+  AcceleratorController();
   ~AcceleratorController() override;
 
   // A list of possible ways in which an accelerator should be restricted before

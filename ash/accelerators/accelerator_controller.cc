@@ -1034,10 +1034,9 @@ void HandleTouchHudModeChange() {
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, public:
 
-AcceleratorController::AcceleratorController(
-    ui::AcceleratorManagerDelegate* manager_delegate)
-    : accelerator_manager_(new ui::AcceleratorManager(manager_delegate)),
-      accelerator_history_(new ui::AcceleratorHistory) {
+AcceleratorController::AcceleratorController()
+    : accelerator_manager_(std::make_unique<ui::AcceleratorManager>()),
+      accelerator_history_(std::make_unique<ui::AcceleratorHistory>()) {
   Init();
 }
 

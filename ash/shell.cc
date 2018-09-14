@@ -1104,7 +1104,7 @@ void Shell::Init(
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
-  accelerator_controller_ = std::make_unique<AcceleratorController>(nullptr);
+  accelerator_controller_ = std::make_unique<AcceleratorController>();
   voice_interaction_controller_ =
       std::make_unique<VoiceInteractionController>();
 
