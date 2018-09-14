@@ -51048,6 +51048,14 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Source Node start()"/>
 </enum>
 
+<enum name="WebAuthenticationAttestationPromptResult">
+  <int value="0" label="Queried"/>
+  <int value="1" label="Timeout"/>
+  <int value="2" label="Allowed"/>
+  <int value="3" label="Blocked"/>
+  <int value="4" label="Abandoned"/>
+</enum>
+
 <enum name="WebBluetoothConnectGATTOutcome">
   <int value="0" label="Success"/>
   <int value="1" label="Device no longer in range"/>

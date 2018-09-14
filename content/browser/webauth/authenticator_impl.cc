@@ -12,6 +12,7 @@
 #include "base/base64url.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
@@ -66,6 +67,29 @@ const char kGetType[] = "webauthn.get";
 }  // namespace client_data
 
 namespace {
+
+// AttestationPromptResult enumerates events related to attestation prompts.
+// These values are recorded in an UMA histogram and so should not be
+// reassigned.
+enum class AttestationPromptResult {
+  // kQueried indicates that the embedder was queried in order to determine
+  // whether attestation information should be returned to the origin.
+  kQueried = 0,
+  // kTimeout indicates that a timeout occured while awaiting the result of an
+  // attestation query.
+  kTimeout = 1,
+  // kAllowed indicates that the query to the embedder was resolved positively.
+  // (E.g. the user clicked to allow, or the embedded allowed immediately by
+  // policy.)
+  kAllowed = 2,
+  // kBlocked indicates that the query to the embedder was resolved negatively.
+  // (E.g. the user clicked to block, or closed the dialog.)
+  kBlocked = 3,
+  // kAbandoned indications that the user closed the tab or navigated away while
+  // the attestation prompt was showing.
+  kAbandoned = 4,
+  kMaxValue = kAbandoned,
+};
 
 // Ensure that the origin's effective domain is a valid domain.
 // Only the domain format of host is valid.
@@ -770,6 +794,9 @@ void AuthenticatorImpl::OnRegisterResponse(
 
       if (attestation_preference_ !=
           blink::mojom::AttestationConveyancePreference::NONE) {
+        UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                                  AttestationPromptResult::kQueried);
+        awaiting_attestation_response_ = true;
         request_delegate_->ShouldReturnAttestation(
             relying_party_id_,
             base::BindOnce(
@@ -794,6 +821,7 @@ void AuthenticatorImpl::OnRegisterResponse(
 void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     device::AuthenticatorMakeCredentialResponse response_data,
     bool attestation_permitted) {
+  awaiting_attestation_response_ = false;
   if (!request_) {
     // The request has already been cleaned up, probably because a navigation
     // occured while the permissions prompt was pending.
@@ -804,6 +832,8 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
          blink::mojom::AttestationConveyancePreference::NONE);
 
   if (!attestation_permitted) {
+    UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                              AttestationPromptResult::kBlocked);
     InvokeCallbackAndCleanup(
         std::move(make_credential_response_callback_),
         blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
@@ -811,6 +841,8 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                            AttestationPromptResult::kAllowed);
   bool include_attestation = true;
 
   // The check for IsAttestationCertificateInappropriatelyIdentifying is
@@ -916,6 +948,12 @@ void AuthenticatorImpl::FailWithNotAllowedErrorAndCleanup() {
 
 void AuthenticatorImpl::OnTimeout() {
   DCHECK(request_delegate_);
+  if (awaiting_attestation_response_) {
+    UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                              AttestationPromptResult::kTimeout);
+    awaiting_attestation_response_ = false;
+  }
+
   request_delegate_->DidFailWithInterestingReason(
       AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout);
 
@@ -956,6 +994,12 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
 }
 
 void AuthenticatorImpl::Cleanup() {
+  if (awaiting_attestation_response_) {
+    UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
+                              AttestationPromptResult::kAbandoned);
+    awaiting_attestation_response_ = false;
+  }
+
   timer_->Stop();
   request_.reset();
   request_delegate_.reset();
