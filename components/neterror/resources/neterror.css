@@ -522,11 +522,8 @@ html[subframe] body {
 
 /* download-button shows both icon and text. */
 #download-button {
-  height: 48px;
-}
-
-#download-button {
-  box-shadow: none;
+  padding-bottom: 4px;
+  padding-top: 4px;
   position: relative;
 }
 
@@ -540,6 +537,7 @@ html[subframe] body {
   width: 24px;
   height: 24px;
   margin-inline-end: 4px;
+  margin-inline-start: -4px;
   vertical-align: middle;
 }
 
@@ -632,6 +630,11 @@ TODO(https://crbug.com/852872): UI for offline suggested content is incomplete.
 }
 
 @media (max-width: 420px) {
+  #download-button {
+    padding-bottom: 12px;
+    padding-top: 12px;
+  }
+
   .suggested-left > #control-buttons,
   .suggested-right > #control-buttons {
     float: none;
