@@ -38,9 +38,9 @@
     // setTimeout and setInterval.
     // https://html.spec.whatwg.org/C/webappapis.html#windoworworkerglobalscope-mixin
     [CallWith=ScriptState, RuntimeCallStatsCounter=WindowSetTimeout] long setTimeout(CallbackFunctionTreatedAsScriptValue handler, optional long timeout = 0, any... arguments);
-    [CallWith=ScriptState] long setTimeout(DOMString handler, optional long timeout = 0, any... arguments);
+    [CallWith=ScriptState, RaisesException] long setTimeout(ScriptString handler, optional long timeout = 0, any... arguments);
     void clearTimeout(optional long handle = 0);
     [CallWith=ScriptState] long setInterval(CallbackFunctionTreatedAsScriptValue handler, optional long timeout = 0, any... arguments);
-    [CallWith=ScriptState] long setInterval(DOMString handler, optional long timeout = 0, any... arguments);
+    [CallWith=ScriptState, RaisesException] long setInterval(ScriptString handler, optional long timeout = 0, any... arguments);
     void clearInterval(optional long handle = 0);
 };
