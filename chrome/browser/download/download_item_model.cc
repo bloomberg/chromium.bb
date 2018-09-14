@@ -306,6 +306,16 @@ DownloadItemModel::DownloadItemModel(DownloadItem* download)
 
 DownloadItemModel::~DownloadItemModel() {}
 
+void DownloadItemModel::AddObserver(DownloadUIModel::Observer* observer) {
+  DownloadUIModel::AddObserver(observer);
+  download_->AddObserver(this);
+}
+
+void DownloadItemModel::RemoveObserver(DownloadUIModel::Observer* observer) {
+  DownloadUIModel::RemoveObserver(observer);
+  download_->RemoveObserver(this);
+}
+
 base::string16 DownloadItemModel::GetInterruptReasonText() const {
   if (download_->GetState() != DownloadItem::INTERRUPTED ||
       download_->GetLastReason() ==
@@ -692,6 +702,10 @@ void DownloadItemModel::SetIsBeingRevived(bool is_being_revived) {
   data->is_being_revived_ = is_being_revived;
 }
 
+download::DownloadItem* DownloadItemModel::download() {
+  return download_;
+}
+
 base::string16 DownloadItemModel::GetProgressSizesString() const {
   base::string16 size_ratio;
   int64_t size = GetCompletedBytes();
@@ -713,6 +727,21 @@ base::string16 DownloadItemModel::GetProgressSizesString() const {
     size_ratio = ui::FormatBytes(size);
   }
   return size_ratio;
+}
+
+void DownloadItemModel::OnDownloadUpdated(DownloadItem* download) {
+  for (auto& obs : observers_)
+    obs.OnDownloadUpdated();
+}
+
+void DownloadItemModel::OnDownloadOpened(DownloadItem* download) {
+  for (auto& obs : observers_)
+    obs.OnDownloadOpened();
+}
+
+void DownloadItemModel::OnDownloadDestroyed(DownloadItem* download) {
+  for (auto& obs : observers_)
+    obs.OnDownloadDestroyed();
 }
 
 base::string16 DownloadItemModel::GetInProgressStatusString() const {

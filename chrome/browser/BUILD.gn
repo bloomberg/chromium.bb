@@ -436,6 +436,8 @@ jumbo_split_static_library("browser") {
     "download/download_task_scheduler_impl.h",
     "download/download_ui_controller.cc",
     "download/download_ui_controller.h",
+    "download/download_ui_model.cc",
+    "download/download_ui_model.h",
     "download/drag_download_item.h",
     "download/image_thumbnail_request.cc",
     "download/image_thumbnail_request.h",
