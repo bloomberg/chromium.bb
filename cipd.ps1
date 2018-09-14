@@ -2,6 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Note: to run this on e.g. OSX for adhoc testing or debugging in case Windows
+# is not around:
+#
+# pwsh cipd.ps1 \
+#     -CipdBinary _cipd.exe \
+#     -BackendURL https://chrome-infra-packages.appspot.com \
+#     -VersionFile ./cipd_client_version
+# file _cipd.exe
+
 Param(
   # Path to download the CIPD binary to.
   [parameter(Mandatory=$true)][string]$CipdBinary,
@@ -82,37 +91,39 @@ $Version = (Get-Content $VersionFile).Trim()
 $URL = "$BackendURL/client?platform=$Platform&version=$Version"
 
 
-# Use a lock file to prevent simultaneous processes from stepping on each other.
+# Grab a lock to prevent simultaneous processes from stepping on each other.
+# This depends on "exclusive write" file sharing mode used by OpenWrite.
 $CipdLockPath = Join-Path $DepotToolsPath -ChildPath ".cipd_client.lock"
-$TmpPath = $CipdBinary + ".tmp"
-while ($true) {
-  $CipdLockFile = $null
+$CipdLockFile = $null
+while ($CipdLockFile -eq $null) {
   try {
     $CipdLockFile = [System.IO.File]::OpenWrite($CipdLockPath)
-
-    echo "Downloading CIPD client for $Platform from $URL..."
-    $wc = (New-Object System.Net.WebClient)
-    $wc.Headers.Add("User-Agent", $UserAgent)
-    $wc.DownloadFile($URL, $TmpPath)
-
-    $ActualSHA256 = Get-Actual-SHA256 $TmpPath
-    if ($ActualSHA256 -ne $ExpectedSHA256) {
-      throw "Invalid SHA256 digest: $ActualSHA256 != $ExpectedSHA256"
-    }
-
-    Move-Item -LiteralPath $TmpPath -Destination $CipdBinary -Force
-    break
-
   } catch [System.IO.IOException] {
     echo "CIPD bootstrap lock is held, trying again after delay..."
     Start-Sleep -s 1
-  } catch {
-    throw  # for some reason this is needed to exit while(...) loop on errors
-  } finally {
-    Delete-If-Possible $TmpPath
-    if ($CipdLockFile) {
-      $CipdLockFile.Close()
-      Delete-If-Possible $CipdLockPath
-    }
   }
+}
+
+# Fetch the binary now that the lock is ours.
+$TmpPath = $CipdBinary + ".tmp"
+try {
+  echo "Downloading CIPD client for $Platform from $URL..."
+  $wc = (New-Object System.Net.WebClient)
+  $wc.Headers.Add("User-Agent", $UserAgent)
+  try {
+    $wc.DownloadFile($URL, $TmpPath)
+  } catch {
+    throw "Failed to download the file, check your network connection"
+  }
+
+  $ActualSHA256 = Get-Actual-SHA256 $TmpPath
+  if ($ActualSHA256 -ne $ExpectedSHA256) {
+    throw "Invalid SHA256 digest: $ActualSHA256 != $ExpectedSHA256"
+  }
+
+  Move-Item -LiteralPath $TmpPath -Destination $CipdBinary -Force
+} finally {
+  $CipdLockFile.Close()
+  Delete-If-Possible $CipdLockPath
+  Delete-If-Possible $TmpPath
 }
