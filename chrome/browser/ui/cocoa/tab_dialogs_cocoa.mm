@@ -6,28 +6,12 @@
 
 #include <memory>
 
-#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/hung_renderer_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_signin_confirmation_dialog_cocoa.h"
 #include "chrome/browser/ui/cocoa/tab_dialogs_views_mac.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/ui_features.h"
-
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
-// static
-void TabDialogs::CreateForWebContents(content::WebContents* contents) {
-  DCHECK(contents);
-
-  if (!FromWebContents(contents)) {
-    std::unique_ptr<TabDialogs> tab_dialogs =
-        chrome::ShowAllDialogsWithViewsToolkit()
-            ? std::make_unique<TabDialogsViewsMac>(contents)
-            : std::make_unique<TabDialogsCocoa>(contents);
-    contents->SetUserData(UserDataKey(), std::move(tab_dialogs));
-  }
-}
-#endif
 
 TabDialogsCocoa::TabDialogsCocoa(content::WebContents* contents)
     : web_contents_(contents) {

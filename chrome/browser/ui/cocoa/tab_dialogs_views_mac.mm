@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -31,7 +30,6 @@ gfx::Point ScreenPointFromBrowser(Browser* browser, NSPoint ns_point) {
 }
 }
 
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
 // static
 void TabDialogs::CreateForWebContents(content::WebContents* contents) {
   DCHECK(contents);
@@ -55,8 +53,6 @@ void TabDialogs::CreateForWebContents(content::WebContents* contents) {
     contents->SetUserData(UserDataKey(), std::move(tab_dialogs));
   }
 }
-#endif
-
 TabDialogsViewsMac::TabDialogsViewsMac(content::WebContents* contents)
     : TabDialogsCocoa(contents) {}
 
@@ -77,10 +73,6 @@ void TabDialogsViewsMac::ShowProfileSigninConfirmation(
 }
 
 void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
-  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
-    TabDialogsCocoa::ShowManagePasswordsBubble(user_action);
-    return;
-  }
   NSWindow* window = [web_contents()->GetNativeView() window];
   if (!window) {
     // The tab isn't active right now.
