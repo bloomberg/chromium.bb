@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 
 // Interface for screen capture notification UI shown when content of the screen
@@ -24,13 +23,6 @@ class ScreenCaptureNotificationUI : public MediaStreamUI {
       const base::string16& text);
 
  private:
-#if defined(OS_MACOSX)
-  // Returns a ScreenCaptureNotificationUI or nullptr if the Views version
-  // should be used instead.
-  static std::unique_ptr<ScreenCaptureNotificationUI> CreateCocoa(
-      const base::string16& text);
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUI);
 };
 
