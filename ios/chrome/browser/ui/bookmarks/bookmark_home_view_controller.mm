@@ -51,6 +51,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -140,16 +141,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 const CGFloat kShadowOpacity = 0.12f;
 // Shadow radius for the NavigationController Toolbar.
 const CGFloat kShadowRadius = 12.0f;
-// Vertical offset from the top, to center search bar and cancel button in the
-// header.
-const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
-// The Alpha value used by the SearchBar when disabled.
-const CGFloat kAlphaForDisabledSearchBar = 0.5f;
-// The Alpha (on white) used for the scrim covering current data until data
-// is filtered out.
-const CGFloat kWhiteAlphaForSearchScrim = 0.2f;
-// The duration for scrim to fade in or out.
-const NSTimeInterval kScrimFadeDuration = 0.2;
 }  // namespace
 
 // An AlertCoordinator with the "Action Sheet" style that does not provide an
@@ -440,7 +431,8 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
     self.scrimView = [[UIControl alloc] initWithFrame:self.tableView.bounds];
     self.scrimView.backgroundColor =
-        [UIColor colorWithWhite:0 alpha:kWhiteAlphaForSearchScrim];
+        [UIColor colorWithWhite:0
+                          alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
     self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
     self.scrimView.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -458,7 +450,8 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
       // Center search bar vertically so it looks centered in the header when
       // searching.  The cancel button is centered / decentered on
       // viewWillAppear and viewDidDisappear.
-      UIOffset offset = UIOffsetMake(0.0f, kVerticalOffsetForSearchHeader);
+      UIOffset offset =
+          UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
       self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
           offset;
     } else {
@@ -495,7 +488,8 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
     // Center search bar's cancel button vertically so it looks centered.
     // We change the cancel button proxy styles, so we will return it to
     // default in viewDidDisappear.
-    UIOffset offset = UIOffsetMake(0.0f, kVerticalOffsetForSearchHeader);
+    UIOffset offset =
+        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
     UIBarButtonItem* cancelButton = [UIBarButtonItem
         appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
     [cancelButton setTitlePositionAdjustment:offset
@@ -1006,7 +1000,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
     // Early return if the controller has been deallocated.
     if (!strongSelf)
       return;
-    [UIView animateWithDuration:kScrimFadeDuration
+    [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
         animations:^{
           strongSelf.spinnerView.alpha = 0.0;
         }
@@ -1229,7 +1223,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
   if (experimental_flags::IsBookmarksUIRebootEnabled()) {
     self.searchController.searchBar.userInteractionEnabled = !editing;
     self.searchController.searchBar.alpha =
-        editing ? kAlphaForDisabledSearchBar : 1.0;
+        editing ? kTableViewNavigationAlphaForDisabledSearchBar : 1.0;
   }
 }
 
@@ -1370,7 +1364,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
       CGRectMake(0.0f, 0.0f, contentSize.width,
                  std::max(contentSize.height, self.view.bounds.size.height));
   [self.tableView addSubview:self.scrimView];
-  [UIView animateWithDuration:kScrimFadeDuration
+  [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
                    animations:^{
                      self.scrimView.alpha = 1.0f;
                    }];
@@ -1378,7 +1372,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
 // Hide scrim and restore toolbar.
 - (void)hideScrim {
-  [UIView animateWithDuration:kScrimFadeDuration
+  [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
       animations:^{
         self.scrimView.alpha = 0.0f;
       }

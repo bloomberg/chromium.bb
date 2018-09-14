@@ -7,6 +7,17 @@
 
 #import <Foundation/Foundation.h>
 
+// Vertical offset from the top, to center search bar and cancel button in the
+// header.
+extern const float kTableViewNavigationVerticalOffsetForSearchHeader;
+// The Alpha value used by the SearchBar when disabled.
+extern const float kTableViewNavigationAlphaForDisabledSearchBar;
+// The Alpha (on white) used for the scrim covering current data until data
+// is filtered out.
+extern const float kTableViewNavigationWhiteAlphaForSearchScrim;
+// The duration for scrim to fade in or out.
+extern const NSTimeInterval kTableViewNavigationScrimFadeDuration;
+
 // Accessibility ID for the "Done" button on TableView NavigationController bar.
 extern NSString* const kTableViewNavigationDismissButtonId;
 

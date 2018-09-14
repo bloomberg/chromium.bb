@@ -190,6 +190,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/bookmarks:bookmarks",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/popup_menu:constants",
+    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/legacy",
     "//ios/chrome/browser/ui/toolbar/public",

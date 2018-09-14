@@ -19,5 +19,7 @@ extern NSString* const kHistoryToolbarClearBrowsingButtonIdentifier;
 extern NSString* const kHistoryToolbarEditButtonIdentifier;
 // Accessibility identifier of the cancel toolbar button.
 extern NSString* const kHistoryToolbarCancelButtonIdentifier;
+// Accessibility ID for the scrim over TableView.
+extern NSString* const kHistorySearchScrimIdentifier;
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_UI_CONSTANTS_H_

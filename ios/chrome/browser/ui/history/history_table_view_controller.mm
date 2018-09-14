@@ -63,21 +63,17 @@ const NSInteger kEntriesStatusSectionIdentifier = kSectionIdentifierEnumZero;
 const int kMaxFetchCount = 100;
 // Separation space between sections.
 const CGFloat kSeparationSpaceBetweenSections = 9;
-// The Alpha value used by the SearchBar when disabled.
-const CGFloat kAlphaForDisabledSearchBar = 0.5;
 // The default UIButton font size used by UIKit.
 const CGFloat kButtonDefaultFontSize = 15.0;
 // Horizontal width representing UIButton's padding.
 const CGFloat kButtonHorizontalPadding = 30.0;
-// Vertical offset from the top, to center search bar and cancel button in the
-// header.
-const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
 }  // namespace
 
 @interface HistoryTableViewController ()<HistoryEntriesStatusItemDelegate,
                                          HistoryEntryInserterDelegate,
                                          HistoryEntryItemDelegate,
                                          TableViewTextLinkCellDelegate,
+                                         UISearchControllerDelegate,
                                          UISearchResultsUpdating,
                                          UISearchBarDelegate> {
   // Closure to request next page of history.
@@ -117,6 +113,8 @@ const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
 @property(nonatomic, strong) UIBarButtonItem* clearBrowsingDataButton;
 @property(nonatomic, strong) UIBarButtonItem* deleteButton;
 @property(nonatomic, strong) UIBarButtonItem* editButton;
+// Scrim when search box in focused.
+@property(nonatomic, strong) UIControl* scrimView;
 @end
 
 @implementation HistoryTableViewController
@@ -128,6 +126,7 @@ const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
 @synthesize currentStatusMessage = _currentStatusMessage;
 @synthesize deleteButton = _deleteButton;
 @synthesize editButton = _editButton;
+@synthesize scrimView = _scrimView;
 @synthesize empty = _empty;
 @synthesize entryInserter = _entryInserter;
 @synthesize filteredOutEntriesIndexPaths = _filteredOutEntriesIndexPaths;
@@ -149,6 +148,34 @@ const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
 - (instancetype)init {
   return [super initWithTableViewStyle:UITableViewStylePlain
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+
+  if (@available(iOS 11, *)) {
+    // Center search bar's cancel button vertically so it looks centered.
+    // We change the cancel button proxy styles, so we will return it to
+    // default in viewDidDisappear.
+    UIOffset offset =
+        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+    UIBarButtonItem* cancelButton = [UIBarButtonItem
+        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
+    [cancelButton setTitlePositionAdjustment:offset
+                               forBarMetrics:UIBarMetricsDefault];
+  }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+
+  if (@available(iOS 11, *)) {
+    // Restore to default origin offset for cancel button proxy style.
+    UIBarButtonItem* cancelButton = [UIBarButtonItem
+        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
+    [cancelButton setTitlePositionAdjustment:UIOffsetZero
+                               forBarMetrics:UIBarMetricsDefault];
+  }
 }
 
 - (void)viewDidLoad {
@@ -204,6 +231,19 @@ const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
   // SearchController is active will fail.
   self.definesPresentationContext = YES;
 
+  self.scrimView = [[UIControl alloc] initWithFrame:self.tableView.bounds];
+  self.scrimView.alpha = 0.0f;
+  self.scrimView.backgroundColor =
+      [UIColor colorWithWhite:0
+                        alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
+  self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.scrimView.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  self.scrimView.accessibilityIdentifier = kHistorySearchScrimIdentifier;
+  [self.scrimView addTarget:self
+                     action:@selector(dismissSearchController:)
+           forControlEvents:UIControlEventAllTouchEvents];
+
   // For iOS 11 and later, place the search bar in the navigation bar. Otherwise
   // place the search bar in the table view's header.
   if (@available(iOS 11, *)) {
@@ -212,13 +252,10 @@ const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
 
     // Center search bar and cancel button vertically so it looks centered
     // in the header when searching.
-    UIOffset offset = UIOffsetMake(0.0f, kVerticalOffsetForSearchHeader);
+    UIOffset offset =
+        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
     self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
         offset;
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-    [cancelButton setTitlePositionAdjustment:offset
-                               forBarMetrics:UIBarMetricsDefault];
   } else {
     self.tableView.tableHeaderView = self.searchController.searchBar;
   }
@@ -439,7 +476,25 @@ const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
 - (void)updateSearchResultsForSearchController:
     (UISearchController*)searchController {
   DCHECK_EQ(self.searchController, searchController);
-  [self showHistoryMatchingQuery:searchController.searchBar.text];
+  NSString* text = searchController.searchBar.text;
+
+  if (text.length == 0 && self.searchController.active) {
+    [self showScrim];
+  } else {
+    [self hideScrim];
+  }
+
+  [self showHistoryMatchingQuery:text];
+}
+
+#pragma mark UISearchControllerDelegate
+
+- (void)willPresentSearchController:(UISearchController*)searchController {
+  [self showScrim];
+}
+
+- (void)didDismissSearchController:(UISearchController*)searchController {
+  [self hideScrim];
 }
 
 #pragma mark UISearchBarDelegate
@@ -851,6 +906,44 @@ const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
   }
 }
 
+// Dismisses the search controller when there's a touch event on the scrim.
+- (void)dismissSearchController:(UIControl*)sender {
+  if (self.searchController.active) {
+    self.searchController.active = NO;
+  }
+}
+
+// Shows scrim overlay and hide toolbar.
+- (void)showScrim {
+  if (self.scrimView.alpha < 1.0f) {
+    self.navigationController.toolbarHidden = YES;
+    self.scrimView.alpha = 0.0f;
+    CGSize contentSize = self.tableView.contentSize;
+    self.scrimView.frame =
+        CGRectMake(0.0f, 0.0f, contentSize.width,
+                   std::max(contentSize.height, self.view.bounds.size.height));
+    [self.tableView addSubview:self.scrimView];
+    [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
+                     animations:^{
+                       self.scrimView.alpha = 1.0f;
+                     }];
+  }
+}
+
+// Hides scrim and restore toolbar.
+- (void)hideScrim {
+  if (self.scrimView.alpha > 0.0f) {
+    self.navigationController.toolbarHidden = NO;
+    [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
+        animations:^{
+          self.scrimView.alpha = 0.0f;
+        }
+        completion:^(BOOL finished) {
+          [self.scrimView removeFromSuperview];
+        }];
+  }
+}
+
 #pragma mark Navigation Toolbar Configuration
 
 // Animates the view configuration after flipping the current status of |[self
@@ -889,7 +982,8 @@ const CGFloat kVerticalOffsetForSearchHeader = 6.0f;
   [self setToolbarItems:@[ self.deleteButton, spaceButton, self.cancelButton ]
                animated:animated];
   [self.searchController.searchBar setUserInteractionEnabled:NO];
-  self.searchController.searchBar.alpha = kAlphaForDisabledSearchBar;
+  self.searchController.searchBar.alpha =
+      kTableViewNavigationAlphaForDisabledSearchBar;
   [self updateToolbarButtons];
 }
 
