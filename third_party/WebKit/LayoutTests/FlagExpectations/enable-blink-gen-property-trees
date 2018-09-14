@@ -211,11 +211,12 @@ crbug.com/879173 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nes
 crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
+crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Failure Pass ]
 
 crbug.com/879169 transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
 
 crbug.com/882973 http/tests/devtools/layers/layer-tree-model.js [ Failure ]
 
-# Check failed: 1u == property_trees()->element_id_to_effect_node_index.count(element_id) (1 vs. 0)
-crbug.com/882974 virtual/threaded/fast/animationworklet/animation-worklet-inside-iframe.html [ Crash ]
-crbug.com/882974 virtual/threaded/fast/animationworklet/worklet-animation-local-time-undefined.html [ Crash ]
+crbug.com/884239 virtual/threaded/fast/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
+
+crbug.com/884240 images/cross-fade-invalidation.html [ Pass Failure ]
