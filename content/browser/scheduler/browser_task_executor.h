@@ -8,6 +8,7 @@
 #include "base/task/task_executor.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_task_traits.h"
 
 namespace content {
 
@@ -51,6 +52,9 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       const base::TaskTraits& traits);
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+      const BrowserTaskTraitsExtension& extension);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTaskExecutor);
 };
