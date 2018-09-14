@@ -58,28 +58,30 @@ static_assert(kCurrentStorageIdVersion < 0x80000000,
 
 cdm::HdcpVersion ToCdmHdcpVersion(HdcpVersion hdcp_version) {
   switch (hdcp_version) {
-    case media::HdcpVersion::kHdcpVersionNone:
+    case HdcpVersion::kHdcpVersionNone:
       return cdm::kHdcpVersionNone;
-    case media::HdcpVersion::kHdcpVersion1_0:
+    case HdcpVersion::kHdcpVersion1_0:
       return cdm::kHdcpVersion1_0;
-    case media::HdcpVersion::kHdcpVersion1_1:
+    case HdcpVersion::kHdcpVersion1_1:
       return cdm::kHdcpVersion1_1;
-    case media::HdcpVersion::kHdcpVersion1_2:
+    case HdcpVersion::kHdcpVersion1_2:
       return cdm::kHdcpVersion1_2;
-    case media::HdcpVersion::kHdcpVersion1_3:
+    case HdcpVersion::kHdcpVersion1_3:
       return cdm::kHdcpVersion1_3;
-    case media::HdcpVersion::kHdcpVersion1_4:
+    case HdcpVersion::kHdcpVersion1_4:
       return cdm::kHdcpVersion1_4;
-    case media::HdcpVersion::kHdcpVersion2_0:
+    case HdcpVersion::kHdcpVersion2_0:
       return cdm::kHdcpVersion2_0;
-    case media::HdcpVersion::kHdcpVersion2_1:
+    case HdcpVersion::kHdcpVersion2_1:
       return cdm::kHdcpVersion2_1;
-    case media::HdcpVersion::kHdcpVersion2_2:
+    case HdcpVersion::kHdcpVersion2_2:
       return cdm::kHdcpVersion2_2;
+    case HdcpVersion::kHdcpVersion2_3:
+      return cdm::kHdcpVersion2_3;
   }
 
   NOTREACHED();
-  return cdm::kHdcpVersion2_2;
+  return cdm::kHdcpVersion2_3;
 }
 
 cdm::SessionType ToCdmSessionType(CdmSessionType session_type) {

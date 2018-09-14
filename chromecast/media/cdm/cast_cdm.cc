@@ -90,6 +90,8 @@ int HdcpVersionX10(::media::HdcpVersion hdcp_version) {
       return 21;
     case ::media::HdcpVersion::kHdcpVersion2_2:
       return 22;
+    case ::media::HdcpVersion::kHdcpVersion2_3:
+      return 23;
 
     default:
       NOTREACHED();
