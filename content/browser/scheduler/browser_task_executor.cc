@@ -4,8 +4,6 @@
 
 #include "content/browser/scheduler/browser_task_executor.h"
 
-#include "content/public/browser/browser_task_traits.h"
-
 namespace content {
 namespace {
 
@@ -40,8 +38,16 @@ bool BrowserTaskExecutor::PostDelayedTaskWithTraits(
     const base::TaskTraits& traits,
     base::OnceClosure task,
     base::TimeDelta delay) {
-  return GetTaskRunner(traits)->PostDelayedTask(from_here, std::move(task),
-                                                delay);
+  DCHECK_EQ(BrowserTaskTraitsExtension::kExtensionId, traits.extension_id());
+  const BrowserTaskTraitsExtension& extension =
+      traits.GetExtension<BrowserTaskTraitsExtension>();
+  if (extension.nestable()) {
+    return GetTaskRunner(extension)->PostDelayedTask(from_here, std::move(task),
+                                                     delay);
+  } else {
+    return GetTaskRunner(extension)->PostNonNestableDelayedTask(
+        from_here, std::move(task), delay);
+  }
 }
 
 scoped_refptr<base::TaskRunner> BrowserTaskExecutor::CreateTaskRunnerWithTraits(
@@ -76,6 +82,11 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
   DCHECK_EQ(BrowserTaskTraitsExtension::kExtensionId, traits.extension_id());
   const BrowserTaskTraitsExtension& extension =
       traits.GetExtension<BrowserTaskTraitsExtension>();
+  return GetTaskRunner(extension);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
+    const BrowserTaskTraitsExtension& extension) {
   BrowserThread::ID thread_id = extension.browser_thread();
   DCHECK_LT(thread_id, BrowserThread::ID::ID_COUNT);
   return BrowserThread::GetTaskRunnerForThread(thread_id);
