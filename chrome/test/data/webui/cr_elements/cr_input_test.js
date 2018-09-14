@@ -23,7 +23,6 @@ suite('cr-input', function() {
       // [externalName, internalName, defaultValue, testValue]
       ['autofocus', 'autofocus', false, true],
       ['disabled', 'disabled', false, true],
-      ['incremental', 'incremental', false, true],
       ['max', 'max', '', '100'],
       ['min', 'min', '', '1'],
       ['maxlength', 'maxLength', -1, 5],
