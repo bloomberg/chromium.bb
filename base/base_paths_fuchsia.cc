@@ -9,13 +9,17 @@
 #include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
 
 namespace base {
 
-base::FilePath GetPackageRoot() {
-  return base::FilePath("/pkg");
+base::LazyInstance<base::FilePath>::Leaky g_data_path =
+    LAZY_INSTANCE_INITIALIZER;
+
+void SetPersistentDataPath(const base::FilePath path) {
+  g_data_path.Get() = path;
 }
 
 bool PathProviderFuchsia(int key, FilePath* result) {
@@ -27,18 +31,12 @@ bool PathProviderFuchsia(int key, FilePath* result) {
       *result = CommandLine::ForCurrentProcess()->GetProgram();
       return true;
     case DIR_APP_DATA:
-      // TODO(https://crbug.com/840598): Switch to /data when minfs supports
-      // mmap().
-      DLOG(WARNING) << "Using /tmp as app data dir, changes will NOT be "
-                       "persisted! (crbug.com/840598)";
-      *result = FilePath("/tmp");
-      return true;
     case DIR_CACHE:
-      *result = FilePath("/data");
+      *result = g_data_path.Get();
       return true;
     case DIR_ASSETS:
     case DIR_SOURCE_ROOT:
-      *result = GetPackageRoot();
+      *result = base::FilePath("/pkg");
       return true;
   }
   return false;

@@ -40,8 +40,7 @@ void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
   display::Screen::SetScreenInstance(screen_.get());
 
   DCHECK(!browser_context_);
-  browser_context_ =
-      std::make_unique<WebRunnerBrowserContext>(GetWebContextDataDir());
+  browser_context_ = std::make_unique<WebRunnerBrowserContext>();
 
   context_service_ = std::make_unique<ContextImpl>(browser_context_.get());
 

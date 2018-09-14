@@ -30,6 +30,9 @@ class WebRunnerBrowserTest : public content::BrowserTestBase {
   // object by WebRunnerBrowserTest.
   static void SetContextClientChannel(zx::channel channel);
 
+  // Sets up the browser to use a persistent data directory.
+  virtual void ConfigurePersistentDataDirectory();
+
   // Gets the client object for the Context service.
   chromium::web::ContextPtr& context() { return context_; }
 
