@@ -22,6 +22,7 @@
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
+#include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "third_party/libyuv/include/libyuv.h"
 
@@ -336,28 +337,28 @@ bool VaapiJpegDecodeAccelerator::OutputPicture(
             << " into video_frame associated with input buffer id "
             << input_buffer_id;
 
-  VAImage image = {};
-  uint8_t* mem = nullptr;
-  gfx::Size coded_size = video_frame->coded_size();
+  const gfx::Size coded_size = video_frame->coded_size();
   DCHECK(va_image_format_);
-  if (!vaapi_wrapper_->GetVaImage(va_surface_id, va_image_format_.get(),
-                                  coded_size, &image,
-                                  reinterpret_cast<void**>(&mem))) {
+  auto scoped_image = vaapi_wrapper_->CreateVaImage(
+      va_surface_id, va_image_format_.get(), coded_size);
+  if (!scoped_image) {
     VLOGF(1) << "Cannot get VAImage";
     return false;
   }
+  const VAImage* image = scoped_image->image();
+  auto* mem = static_cast<uint8_t*>(scoped_image->va_buffer()->data());
 
   // Copy image content from VAImage to VideoFrame.
   // The component order of VAImage I420 are Y, U, and V.
-  DCHECK_EQ(image.num_planes, 3u);
-  DCHECK_GE(image.width, coded_size.width());
-  DCHECK_GE(image.height, coded_size.height());
-  const uint8_t* src_y = mem + image.offsets[0];
-  const uint8_t* src_u = mem + image.offsets[1];
-  const uint8_t* src_v = mem + image.offsets[2];
-  size_t src_y_stride = image.pitches[0];
-  size_t src_u_stride = image.pitches[1];
-  size_t src_v_stride = image.pitches[2];
+  DCHECK_EQ(image->num_planes, 3u);
+  DCHECK_GE(image->width, coded_size.width());
+  DCHECK_GE(image->height, coded_size.height());
+  const uint8_t* src_y = mem + image->offsets[0];
+  const uint8_t* src_u = mem + image->offsets[1];
+  const uint8_t* src_v = mem + image->offsets[2];
+  size_t src_y_stride = image->pitches[0];
+  size_t src_u_stride = image->pitches[1];
+  size_t src_v_stride = image->pitches[2];
   uint8_t* dst_y = video_frame->data(VideoFrame::kYPlane);
   uint8_t* dst_u = video_frame->data(VideoFrame::kUPlane);
   uint8_t* dst_v = video_frame->data(VideoFrame::kVPlane);
@@ -375,8 +376,6 @@ bool VaapiJpegDecodeAccelerator::OutputPicture(
     VLOGF(1) << "I420Copy failed";
     return false;
   }
-
-  vaapi_wrapper_->ReturnVaImage(&image);
 
   task_runner_->PostTask(
       FROM_HERE,

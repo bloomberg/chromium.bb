@@ -18,12 +18,13 @@
 #include "base/md5.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
+#include "base/test/gtest_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator.h"
+#include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-#include "mojo/core/embedder/embedder.h"
 
 namespace media {
 namespace {
@@ -69,6 +70,9 @@ class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
               const JpegParseResult& parse_result,
               VASurfaceID va_surface);
 
+  base::Lock* GetVaapiWrapperLock() const { return wrapper_->va_lock_; }
+  VADisplay GetVaapiWrapperVaDisplay() const { return wrapper_->va_display_; }
+
  protected:
   scoped_refptr<VaapiWrapper> wrapper_;
   std::string jpeg_data_;
@@ -89,27 +93,23 @@ bool VaapiJpegDecodeAcceleratorTest::VerifyDecode(
     return false;
   }
 
-  VAImage image;
-  VAImageFormat format;
-  const uint32_t kI420Fourcc = VA_FOURCC('I', '4', '2', '0');
-  memset(&image, 0, sizeof(image));
-  memset(&format, 0, sizeof(format));
-  format.fourcc = kI420Fourcc;
+  VAImageFormat format{};
+  format.fourcc = VA_FOURCC_I420;
   format.byte_order = VA_LSB_FIRST;
   format.bits_per_pixel = 12;  // 12 for I420
 
-  void* mem;
-  if (!wrapper_->GetVaImage(va_surfaces[0], &format, size, &image, &mem)) {
+  auto scoped_image = wrapper_->CreateVaImage(va_surfaces[0], &format, size);
+  if (!scoped_image) {
     LOG(ERROR) << "Cannot get VAImage";
     return false;
   }
-  EXPECT_EQ(kI420Fourcc, image.format.fourcc);
 
-  base::StringPiece result(reinterpret_cast<const char*>(mem),
+  EXPECT_TRUE(VA_FOURCC_I420 == scoped_image->image()->format.fourcc);
+  const auto* mem = static_cast<char*>(scoped_image->va_buffer()->data());
+
+  base::StringPiece result(mem,
                            VideoFrame::AllocationSize(PIXEL_FORMAT_I420, size));
   EXPECT_EQ(expected_md5sum, base::MD5String(result));
-
-  wrapper_->ReturnVaImage(&image);
 
   return true;
 }
@@ -148,6 +148,75 @@ TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeFail) {
       wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, size, 1, &va_surfaces));
 
   EXPECT_FALSE(Decode(wrapper_.get(), parse_result, va_surfaces[0]));
+}
+
+// This test exercises the usual ScopedVAImage lifetime.
+TEST_F(VaapiJpegDecodeAcceleratorTest, ScopedVAImage) {
+  std::vector<VASurfaceID> va_surfaces;
+  const gfx::Size coded_size(64, 64);
+  ASSERT_TRUE(wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, coded_size, 1,
+                                       &va_surfaces));
+  ASSERT_EQ(va_surfaces.size(), 1u);
+
+  VAImageFormat va_image_format{.fourcc = VA_FOURCC_I420,
+                                .byte_order = VA_LSB_FIRST,
+                                .bits_per_pixel = 12};
+  ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(va_image_format));
+
+  std::unique_ptr<ScopedVAImage> scoped_image;
+  {
+    base::AutoLock auto_lock(*GetVaapiWrapperLock());
+    scoped_image = std::make_unique<ScopedVAImage>(
+        GetVaapiWrapperLock(), GetVaapiWrapperVaDisplay(), va_surfaces[0],
+        &va_image_format, coded_size);
+
+    EXPECT_TRUE(scoped_image->image());
+    ASSERT_TRUE(scoped_image->IsValid());
+    EXPECT_TRUE(scoped_image->va_buffer()->IsValid());
+    EXPECT_TRUE(scoped_image->va_buffer()->data());
+  }
+}
+
+// This test exercises creation of a ScopedVAImage with a bad VASurfaceID.
+TEST_F(VaapiJpegDecodeAcceleratorTest, BadScopedVAImage) {
+  const std::vector<VASurfaceID> va_surfaces = {VA_INVALID_ID};
+  const gfx::Size coded_size(64, 64);
+
+  VAImageFormat va_image_format{.fourcc = VA_FOURCC_I420,
+                                .byte_order = VA_LSB_FIRST,
+                                .bits_per_pixel = 12};
+  ASSERT_TRUE(VaapiWrapper::IsImageFormatSupported(va_image_format));
+
+  std::unique_ptr<ScopedVAImage> scoped_image;
+  {
+    base::AutoLock auto_lock(*GetVaapiWrapperLock());
+    scoped_image = std::make_unique<ScopedVAImage>(
+        GetVaapiWrapperLock(), GetVaapiWrapperVaDisplay(), va_surfaces[0],
+        &va_image_format, coded_size);
+
+    EXPECT_TRUE(scoped_image->image());
+    EXPECT_FALSE(scoped_image->IsValid());
+#if DCHECK_IS_ON()
+    EXPECT_DCHECK_DEATH(scoped_image->va_buffer());
+#else
+    EXPECT_FALSE(scoped_image->va_buffer());
+#endif
+  }
+}
+
+// This test exercises creation of a ScopedVABufferMapping with bad VABufferIDs.
+TEST_F(VaapiJpegDecodeAcceleratorTest, BadScopedVABufferMapping) {
+  base::AutoLock auto_lock(*GetVaapiWrapperLock());
+
+  // A ScopedVABufferMapping with a VA_INVALID_ID VABufferID is DCHECK()ed.
+  EXPECT_DCHECK_DEATH(std::make_unique<ScopedVABufferMapping>(
+      GetVaapiWrapperLock(), GetVaapiWrapperVaDisplay(), VA_INVALID_ID));
+
+  // This should not hit any DCHECK() but will create an invalid
+  // ScopedVABufferMapping.
+  auto scoped_buffer = std::make_unique<ScopedVABufferMapping>(
+      GetVaapiWrapperLock(), GetVaapiWrapperVaDisplay(), VA_INVALID_ID - 1);
+  EXPECT_FALSE(scoped_buffer->IsValid());
 }
 
 }  // namespace media
