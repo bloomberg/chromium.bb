@@ -55,8 +55,6 @@ class ContextLostExpectations(GpuTestExpectations):
               ['android'], bug=609629)
 
     # Flaking on Nexus 5X
-    self.Flaky('ContextLost_WebGLBlockedAfterJSNavigation',
-               ['android'], bug=882103)
     self.Flaky('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
               ['android'], bug=879423)
     self.Fail('ContextLost_WorkerRAFAfterGPUCrash',
