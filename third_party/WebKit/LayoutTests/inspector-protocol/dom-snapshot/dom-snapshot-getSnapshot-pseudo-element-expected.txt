@@ -282,8 +282,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
         "width": 200,
         "height": 200
       },
-      "styleIndex": 0,
-      "isStackingContext": true
+      "styleIndex": 0
     },
     {
       "domNodeIndex": 11,
@@ -349,8 +348,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
           "numCharacters": 7
         }
       ],
-      "styleIndex": 0,
-      "isStackingContext": true
+      "styleIndex": 0
     },
     {
       "domNodeIndex": 14,
@@ -360,8 +358,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
         "width": 200,
         "height": 200
       },
-      "styleIndex": 0,
-      "isStackingContext": true
+      "styleIndex": 0
     },
     {
       "domNodeIndex": 15,
@@ -457,8 +454,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
         "width": 200,
         "height": 200
       },
-      "styleIndex": 0,
-      "isStackingContext": true
+      "styleIndex": 0
     },
     {
       "domNodeIndex": 20,
@@ -623,8 +619,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
           "numCharacters": 13
         }
       ],
-      "styleIndex": 0,
-      "isStackingContext": true
+      "styleIndex": 0
     }
   ],
   "computedStyles": [
