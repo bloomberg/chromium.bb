@@ -55,6 +55,9 @@ FloatPoint::FloatPoint(const LayoutPoint& p)
 FloatPoint::FloatPoint(const LayoutSize& size)
     : x_(size.Width().ToFloat()), y_(size.Height().ToFloat()) {}
 
+FloatPoint::FloatPoint(const gfx::PointF& point)
+    : x_(point.x()), y_(point.y()) {}
+
 float FloatPoint::SlopeAngleRadians() const {
   return atan2f(y_, x_);
 }

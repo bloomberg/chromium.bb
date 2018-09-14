@@ -136,8 +136,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   // The position of the layer (the location of its top-left corner in its
   // parent).
-  const FloatPoint& GetPosition() const { return position_; }
-  void SetPosition(const FloatPoint&);
+  const gfx::PointF& GetPosition() const;
+  void SetPosition(const gfx::PointF&);
 
   const FloatPoint3D& TransformOrigin() const { return transform_origin_; }
   void SetTransformOrigin(const FloatPoint3D&);
@@ -369,8 +369,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // Offset from the owning layoutObject
   IntSize offset_from_layout_object_;
 
-  // Position is relative to the parent GraphicsLayer
-  FloatPoint position_;
   IntSize size_;
 
   TransformationMatrix transform_;

@@ -561,9 +561,10 @@ GraphicsLayer* CompositedLayerMapping::FrameContentsGraphicsLayer() const {
 void CompositedLayerMapping::UpdateAfterPartResize() {
   if (GetLayoutObject().IsLayoutEmbeddedContent()) {
     if (GraphicsLayer* document_layer = FrameContentsGraphicsLayer()) {
-      FloatPoint parent_position = child_containment_layer_
-                                       ? child_containment_layer_->GetPosition()
-                                       : FloatPoint();
+      FloatPoint parent_position =
+          child_containment_layer_
+              ? FloatPoint(child_containment_layer_->GetPosition())
+              : FloatPoint();
       document_layer->SetPosition(FloatPoint(FlooredIntPoint(
           FloatPoint(ContentsBox().Location()) - parent_position)));
     }
@@ -1316,7 +1317,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
     const IntRect& relative_compositing_bounds,
     const IntRect& local_compositing_bounds,
     const IntPoint& graphics_layer_parent_location) {
-  FloatPoint old_position = graphics_layer_->GetPosition();
+  FloatPoint old_position(graphics_layer_->GetPosition());
   IntSize old_size = graphics_layer_->Size();
   FloatPoint new_position = FloatPoint(relative_compositing_bounds.Location() -
                                        graphics_layer_parent_location);
@@ -1512,7 +1513,7 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
 
       FloatPoint position;
       if (compositing_stacking_context == compositing_container) {
-        position = ancestor_clipping_layer_->GetPosition();
+        position = FloatPoint(ancestor_clipping_layer_->GetPosition());
       } else {
         // graphicsLayerParentLocation is the location of
         // m_ancestorClippingLayer relative to compositingContainer (including
@@ -1691,7 +1692,8 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
       ToIntSize(overflow_clip_rect.Location()));
 
   if (child_clipping_mask_layer_ && !GetLayoutObject().StyleRef().ClipPath()) {
-    child_clipping_mask_layer_->SetPosition(scrolling_layer_->GetPosition());
+    child_clipping_mask_layer_->SetPosition(
+        FloatPoint(scrolling_layer_->GetPosition()));
     if (child_clipping_mask_layer_->Size() != scrolling_layer_->Size()) {
       child_clipping_mask_layer_->SetSize(scrolling_layer_->Size());
       child_clipping_mask_layer_->SetNeedsDisplay();
@@ -1736,7 +1738,8 @@ void CompositedLayerMapping::UpdateChildClippingMaskLayerGeometry() {
   LayoutBox& layout_box = ToLayoutBox(GetLayoutObject());
   IntRect padding_box = EnclosingIntRect(layout_box.PhysicalPaddingBoxRect());
 
-  child_clipping_mask_layer_->SetPosition(graphics_layer_->GetPosition());
+  child_clipping_mask_layer_->SetPosition(
+      FloatPoint(graphics_layer_->GetPosition()));
   if (child_clipping_mask_layer_->Size() != graphics_layer_->Size()) {
     child_clipping_mask_layer_->SetSize(graphics_layer_->Size());
     child_clipping_mask_layer_->SetNeedsDisplay();
@@ -1955,7 +1958,8 @@ void CompositedLayerMapping::UpdateContentsOffsetInCompositingLayer(
   // accumulation of this CLM already (through its own
   // graphicsLayerParentLocation it appears).
   FloatPoint offset_due_to_ancestor_graphics_layers =
-      graphics_layer_->GetPosition() + graphics_layer_parent_location;
+      FloatPoint(graphics_layer_->GetPosition()) +
+      graphics_layer_parent_location;
   content_offset_in_compositing_layer_ =
       LayoutSize(snapped_offset_from_composited_ancestor -
                  offset_due_to_ancestor_graphics_layers);
