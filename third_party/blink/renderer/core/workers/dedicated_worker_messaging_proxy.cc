@@ -56,8 +56,10 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
       CreateBackingThreadStartupData(ToIsolate(GetExecutionContext())));
 
   if (options.type() == "classic") {
+    // Dedicated worker is origin-bound, so use kSharableCrossOrigin.
     GetWorkerThread()->EvaluateClassicScript(
-        script_url, source_code, nullptr /* cached_meta_data */, stack_id);
+        script_url, kSharableCrossOrigin, source_code,
+        nullptr /* cached_meta_data */, stack_id);
   } else if (options.type() == "module") {
     network::mojom::FetchCredentialsMode credentials_mode;
     bool result =

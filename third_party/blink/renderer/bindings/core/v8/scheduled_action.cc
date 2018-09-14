@@ -206,8 +206,10 @@ void ScheduledAction::Execute(WorkerGlobalScope* worker) {
         function, worker, script_state_->GetContext()->Global(), info.size(),
         info.data(), script_state_->GetIsolate());
   } else {
-    worker->ScriptController()->Evaluate(ScriptSourceCode(
-        code_, ScriptSourceLocationType::kEvalForScheduledAction));
+    worker->ScriptController()->Evaluate(
+        ScriptSourceCode(code_,
+                         ScriptSourceLocationType::kEvalForScheduledAction),
+        kNotSharableCrossOrigin);
   }
 }
 

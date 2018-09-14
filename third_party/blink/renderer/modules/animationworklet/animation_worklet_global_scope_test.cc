@@ -262,13 +262,14 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
 
     ScriptState::Scope scope(script_state);
     global_scope->ScriptController()->Evaluate(ScriptSourceCode(
-        R"JS(
+                                                   R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
-          )JS"));
+          )JS"),
+                                               kSharableCrossOrigin);
 
     // Passing a new input state with a new animation id should cause the
     // worklet to create and animate an animator.
@@ -307,13 +308,14 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
 
     ScriptState::Scope scope(script_state);
     global_scope->ScriptController()->Evaluate(ScriptSourceCode(
-        R"JS(
+                                                   R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
-          )JS"));
+          )JS"),
+                                               kSharableCrossOrigin);
 
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;
@@ -355,13 +357,14 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
 
     ScriptState::Scope scope(script_state);
     global_scope->ScriptController()->Evaluate(ScriptSourceCode(
-        R"JS(
+                                                   R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
-          )JS"));
+          )JS"),
+                                               kSharableCrossOrigin);
 
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;

@@ -469,9 +469,10 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // > "classic": Fetch a classic worker script given job’s serialized script
     // > url, job’s client, "serviceworker", and the to-be-created environment
     // > settings object for this service worker.
+    // Service worker is origin-bound, so use kSharableCrossOrigin.
     worker_thread_->EvaluateClassicScript(
-        worker_start_data_.script_url, source_code, std::move(cached_meta_data),
-        v8_inspector::V8StackTraceId());
+        worker_start_data_.script_url, kSharableCrossOrigin, source_code,
+        std::move(cached_meta_data), v8_inspector::V8StackTraceId());
   } else {
     // > "module": Fetch a module worker script graph given job’s serialized
     // > script url, job’s client, "serviceworker", "omit", and the

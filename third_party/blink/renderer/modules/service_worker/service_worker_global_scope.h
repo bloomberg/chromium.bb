@@ -71,6 +71,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   // Implements WorkerGlobalScope.
   void EvaluateClassicScript(
       const KURL& script_url,
+      AccessControlStatus access_control_status,
       String source_code,
       std::unique_ptr<Vector<char>> cached_meta_data) override;
   void ImportModuleScript(

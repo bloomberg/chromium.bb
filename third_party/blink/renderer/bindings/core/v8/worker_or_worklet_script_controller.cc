@@ -261,6 +261,7 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
 
 ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
     const ScriptSourceCode& source_code,
+    AccessControlStatus access_control_status,
     V8CacheOptions v8_cache_options) {
   DCHECK(IsContextInitialized());
 
@@ -284,7 +285,7 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   std::tie(compile_options, produce_cache_options, no_cache_reason) =
       V8CodeCache::GetCompileOptions(v8_cache_options, source_code);
   if (V8ScriptRunner::CompileScript(script_state_, source_code,
-                                    kSharableCrossOrigin, compile_options,
+                                    access_control_status, compile_options,
                                     no_cache_reason, referrer_info)
           .ToLocal(&compiled_script)) {
     maybe_result = V8ScriptRunner::RunCompiledScript(isolate_, compiled_script,
@@ -319,13 +320,14 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
 
 bool WorkerOrWorkletScriptController::Evaluate(
     const ScriptSourceCode& source_code,
+    AccessControlStatus access_control_status,
     ErrorEvent** error_event,
     V8CacheOptions v8_cache_options) {
   if (IsExecutionForbidden())
     return false;
 
   ExecutionState state(this);
-  EvaluateInternal(source_code, v8_cache_options);
+  EvaluateInternal(source_code, access_control_status, v8_cache_options);
   if (IsExecutionForbidden())
     return false;
 
@@ -338,19 +340,19 @@ bool WorkerOrWorkletScriptController::Evaluate(
         return false;
       }
       if (global_scope_->ShouldSanitizeScriptError(state.location_->Url(),
-                                                   kNotSharableCrossOrigin)) {
+                                                   access_control_status)) {
         *error_event = ErrorEvent::CreateSanitizedError(world_.get());
       } else {
         *error_event =
             ErrorEvent::Create(state.error_message, state.location_->Clone(),
                                state.exception, world_.get());
+        StoreExceptionForInspector(script_state_, *error_event,
+                                   state.exception.V8Value(),
+                                   script_state_->GetContext()->Global());
       }
-      StoreExceptionForInspector(script_state_, *error_event,
-                                 state.exception.V8Value(),
-                                 script_state_->GetContext()->Global());
     } else {
-      DCHECK(!global_scope_->ShouldSanitizeScriptError(
-          state.location_->Url(), kNotSharableCrossOrigin));
+      DCHECK(!global_scope_->ShouldSanitizeScriptError(state.location_->Url(),
+                                                       access_control_status));
       ErrorEvent* event = nullptr;
       if (state.error_event_from_imported_script_) {
         event = state.error_event_from_imported_script_.Release();
@@ -359,7 +361,7 @@ bool WorkerOrWorkletScriptController::Evaluate(
             ErrorEvent::Create(state.error_message, state.location_->Clone(),
                                state.exception, world_.get());
       }
-      global_scope_->DispatchErrorEvent(event, kNotSharableCrossOrigin);
+      global_scope_->DispatchErrorEvent(event, access_control_status);
     }
     return false;
   }
@@ -369,7 +371,7 @@ bool WorkerOrWorkletScriptController::Evaluate(
 ScriptValue WorkerOrWorkletScriptController::EvaluateAndReturnValueForTest(
     const ScriptSourceCode& source_code) {
   ExecutionState state(this);
-  return EvaluateInternal(source_code, kV8CacheOptionsDefault);
+  return EvaluateInternal(source_code, kOpaqueResource, kV8CacheOptionsDefault);
 }
 
 void WorkerOrWorkletScriptController::ForbidExecution() {

@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -106,6 +107,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Posts a task to evaluate a top-level classic script on the worker thread.
   // Called on the main thread after Start().
   void EvaluateClassicScript(const KURL& script_url,
+                             AccessControlStatus access_control_status,
                              const String& source_code,
                              std::unique_ptr<Vector<char>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
@@ -281,6 +283,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   void EvaluateClassicScriptOnWorkerThread(
       const KURL& script_url,
+      AccessControlStatus access_control_status,
       String source_code,
       std::unique_ptr<Vector<char>> cached_meta_data,
       const v8_inspector::V8StackTraceId& stack_id);
