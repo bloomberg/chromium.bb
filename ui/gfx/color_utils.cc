@@ -307,6 +307,22 @@ SkColor BlendTowardOppositeLuma(SkColor color, SkAlpha alpha) {
                     color, alpha);
 }
 
+SkColor GetThemedAssetColor(SkColor theme_color) {
+  // Minimum theme light color contrast.
+  constexpr float kContrastLightItemThreshold = 3;
+
+  // The amount to darken a light theme color by for use as foreground color.
+  constexpr float kThemedForegroundBlackFraction = 0.64;
+
+  // This mimics |shouldUseLightForegroundOnBackground| from ColorUtils.java.
+  bool use_light_color = GetContrastRatio(SK_ColorWHITE, theme_color) >=
+                         kContrastLightItemThreshold;
+  if (use_light_color)
+    return SK_ColorWHITE;
+  return AlphaBlend(SK_ColorBLACK, theme_color,
+                    255 * kThemedForegroundBlackFraction);
+}
+
 SkColor GetReadableColor(SkColor foreground, SkColor background) {
   return PickContrastingColor(foreground, LightnessInvertColor(foreground),
                               background);
