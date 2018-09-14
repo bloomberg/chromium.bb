@@ -354,22 +354,27 @@ html[dir=rtl] .is-img-sel #bg-sel-title {
   height: 64px;
   padding-left: 0;
   position: absolute;
+  text-align: right;
   user-select: none;
   width: 100%;
+}
+
+html[dir=rtl] #bg-sel-footer {
+  text-align: left;
 }
 
 .bg-sel-footer-button {
   border: none;
   border-radius: 4px;
-  bottom: 16px;
   font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
   font-weight: 500;
   height: 32px;
   line-height: normal;
+  margin-top: 16px;
   min-width: 60px;
   padding: 0 16px;
-  position: absolute;
+  position: relative;
   text-align: center;
   transition-duration: 200ms;
   transition-property: background-color, color, box-shadow, border;
@@ -384,12 +389,12 @@ html[dir=rtl] .is-img-sel #bg-sel-title {
 #bg-sel-footer-done {
   background-color: rgb(241, 243, 244);
   color: rgb(128, 134, 139);
-  right: 16px;
+  margin-right: 16px;
 }
 
 html[dir=rtl] #bg-sel-footer-done {
-  left: 16px;
-  right: auto;
+  margin-left: 16px;
+  margin-right: 0;
 }
 
 #bg-sel-footer-cancel {
@@ -397,13 +402,10 @@ html[dir=rtl] #bg-sel-footer-done {
   border: 1px solid rgb(218, 220, 224);
   color: rgb(26, 115, 232);
   margin-right: 8px;
-  right: 78px;
 }
 
 html[dir=rtl] #bg-sel-footer-cancel {
-  left: 78px;
   margin-left: 8px;
-  right: auto;
 }
 
 #bg-sel-footer-cancel:hover {
