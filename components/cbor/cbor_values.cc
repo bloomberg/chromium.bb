@@ -9,6 +9,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
+#include "components/cbor/cbor_constants.h"
 
 namespace cbor {
 
@@ -36,6 +37,9 @@ CBORValue::CBORValue(Type type) : type_(type) {
       return;
     case Type::MAP:
       new (&map_value_) MapValue();
+      return;
+    case Type::TAG:
+      NOTREACHED() << constants::kUnsupportedMajorType;
       return;
     case Type::SIMPLE_VALUE:
       simple_value_ = CBORValue::SimpleValue::UNDEFINED;
@@ -152,6 +156,9 @@ CBORValue CBORValue::Clone() const {
       return CBORValue(array_value_);
     case Type::MAP:
       return CBORValue(map_value_);
+    case Type::TAG:
+      NOTREACHED() << constants::kUnsupportedMajorType;
+      return CBORValue();
     case Type::SIMPLE_VALUE:
       return CBORValue(simple_value_);
   }
@@ -235,6 +242,9 @@ void CBORValue::InternalMoveConstructFrom(CBORValue&& that) {
     case Type::MAP:
       new (&map_value_) MapValue(std::move(that.map_value_));
       return;
+    case Type::TAG:
+      NOTREACHED() << constants::kUnsupportedMajorType;
+      return;
     case Type::SIMPLE_VALUE:
       simple_value_ = that.simple_value_;
       return;
@@ -257,6 +267,9 @@ void CBORValue::InternalCleanup() {
       break;
     case Type::MAP:
       map_value_.~MapValue();
+      break;
+    case Type::TAG:
+      NOTREACHED() << constants::kUnsupportedMajorType;
       break;
     case Type::NONE:
     case Type::UNSIGNED:

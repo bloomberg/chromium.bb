@@ -91,6 +91,7 @@ class CBOR_EXPORT CBORValue {
     STRING = 3,
     ARRAY = 4,
     MAP = 5,
+    TAG = 6,
     SIMPLE_VALUE = 7,
     NONE = -1,
   };

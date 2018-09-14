@@ -1054,7 +1054,7 @@ TEST(CBORReaderTest, TestOutOfOrderKeyError) {
       // clang-format off
       {0xa2,  // map with 2 keys with same major type and length
          0x61, 0x62,  // key "b"
-         0x61, 0x42,  // value :"B"
+         0x61, 0x42,  // value "B"
 
          0x61, 0x61,  // key "a" (out of order byte-wise lexically)
          0x61, 0x45   // value "E"
@@ -1197,7 +1197,7 @@ TEST(CBORReaderTest, TestExtraneousCBORDataError) {
   }
 }
 
-TEST(CBORReaderTest, TestUnsupportedSimplevalue) {
+TEST(CBORReaderTest, TestUnsupportedSimpleValue) {
   static const std::vector<uint8_t> unsupported_simple_values[] = {
       // Simple value (0, unassigned)
       {0xE0},
