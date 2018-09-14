@@ -3544,6 +3544,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Show dialog"/>
 </enum>
 
+<enum name="BillingIdStatus">
+  <int value="0" label="Missing value"/>
+  <int value="1" label="Parse Error"/>
+  <int value="2" label="Valid"/>
+</enum>
+
 <enum name="BiquadFilterType">
   <int value="0" label="lowpass"/>
   <int value="1" label="highpass"/>

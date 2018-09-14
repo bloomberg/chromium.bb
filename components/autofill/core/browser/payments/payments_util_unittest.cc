@@ -6,6 +6,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -48,7 +49,23 @@ TEST_F(PaymentsUtilTest, GetBillingCustomerId_PaymentsCustomerData_Normal) {
             GetBillingCustomerId(&personal_data_manager_, &pref_service_));
 
   histogram_tester.ExpectUniqueSample(
-      "Autofill.PaymentsCustomerDataBillingIdIsValid", true, 1);
+      "Autofill.PaymentsCustomerDataBillingIdStatus",
+      AutofillMetrics::BillingIdStatus::VALID, 1);
+}
+
+TEST_F(PaymentsUtilTest, GetBillingCustomerId_PaymentsCustomerData_Garbage) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUsePaymentsCustomerData);
+  base::HistogramTester histogram_tester;
+
+  personal_data_manager_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"garbage"));
+
+  EXPECT_EQ(0, GetBillingCustomerId(&personal_data_manager_, &pref_service_));
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.PaymentsCustomerDataBillingIdStatus",
+      AutofillMetrics::BillingIdStatus::PARSE_ERROR, 1);
 }
 
 TEST_F(PaymentsUtilTest, GetBillingCustomerId_PaymentsCustomerData_NoData) {
@@ -60,7 +77,8 @@ TEST_F(PaymentsUtilTest, GetBillingCustomerId_PaymentsCustomerData_NoData) {
   // customer ID is 0.
   EXPECT_EQ(0, GetBillingCustomerId(&personal_data_manager_, &pref_service_));
   histogram_tester.ExpectUniqueSample(
-      "Autofill.PaymentsCustomerDataBillingIdIsValid", false, 1);
+      "Autofill.PaymentsCustomerDataBillingIdStatus",
+      AutofillMetrics::BillingIdStatus::MISSING, 1);
 }
 
 TEST_F(PaymentsUtilTest,
@@ -77,7 +95,8 @@ TEST_F(PaymentsUtilTest,
   EXPECT_EQ(123456,
             GetBillingCustomerId(&personal_data_manager_, &pref_service_));
   histogram_tester.ExpectUniqueSample(
-      "Autofill.PaymentsCustomerDataBillingIdIsValid", false, 1);
+      "Autofill.PaymentsCustomerDataBillingIdStatus",
+      AutofillMetrics::BillingIdStatus::MISSING, 1);
 }
 
 TEST_F(PaymentsUtilTest, GetBillingCustomerId_PriorityPrefs_Normal) {

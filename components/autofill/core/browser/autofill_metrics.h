@@ -46,6 +46,13 @@ class AutofillMetrics {
     AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE,
   };
 
+  enum class BillingIdStatus {
+    MISSING = 0,
+    PARSE_ERROR = 1,
+    VALID = 2,
+    kMaxValue = VALID,
+  };
+
   enum CardUploadDecisionMetric {
     // All the required conditions were satisfied using either the form fields
     // or we prompted the user to fix one or more conditions in the card upload
@@ -849,9 +856,8 @@ class AutofillMetrics {
   // from its prefilled value or not.
   static void LogSaveCardCardholderNameWasEdited(bool edited);
 
-  // Logs whether the PaymentsCustomerData's billing ID was valid at the time of
-  // use.
-  static void LogPaymentsCustomerDataBillingIdIsValid(bool valid);
+  // Logs the PaymentsCustomerData billing ID status at the time of use.
+  static void LogPaymentsCustomerDataBillingIdStatus(BillingIdStatus status);
 
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
   static void LogCardUploadDecisionMetrics(int upload_decision_metrics);
