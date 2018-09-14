@@ -153,6 +153,8 @@ extern const char kPageInfoHelpCenterURL[];
 
 extern const char kPasswordManagerLearnMoreURL[];
 
+extern const char kPaymentMethodsLearnMoreURL[];
+
 // "Learn more" URL for the Privacy section under Options.
 extern const char kPrivacyLearnMoreURL[];
 

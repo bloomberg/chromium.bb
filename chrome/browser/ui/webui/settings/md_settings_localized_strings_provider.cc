@@ -1497,6 +1497,8 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source,
                          autofill::payments::GetManageAddressesUrl(0).spec());
   html_source->AddString("manageCreditCardsUrl",
                          autofill::payments::GetManageInstrumentsUrl(0).spec());
+  html_source->AddString("paymentMethodsLearnMoreURL",
+                         chrome::kPaymentMethodsLearnMoreURL);
   html_source->AddBoolean(
       "migrationEnabled",
       autofill::features::GetLocalCardMigrationExperimentalFlag() ==
