@@ -1436,21 +1436,23 @@ bool RenderFrameHostManager::IsBrowsingInstanceSwapAllowedForPageTransition(
 bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
     RenderFrameHostImpl* rfh,
     const GURL& dest_url) {
+  // Always attempt a process transfer if the SiteInstance has a process that's
+  // unsuitable for |dest_url|.  For example, this might happen when reloading
+  // a URL for which a hosted app was just installed or uninstalled.
+  //
+  // This might also happen for a siteless SiteInstance which may have a
+  // process that's unsuitable for |dest_url|.  For example, another navigation
+  // could share that process when over process limit and lock it to a
+  // different site before this SiteInstance sets its site.  See
+  // https://crbug.com/773809.
+  if (rfh->GetSiteInstance()->HasWrongProcessForURL(dest_url))
+    return true;
+
   // A transfer is not needed if the current SiteInstance doesn't yet have a
-  // site.  This is the case for tests that use NavigateToURL.
-  //
-  // One exception is that a siteless SiteInstance may still have a process,
-  // which might be unsuitable for |dest_url|.  For example, another navigation
-  // could share that process (e.g., when over process limit) and lock it to a
-  // different origin before this SiteInstance sets its site.  Hence, we also
-  // check for cases like this.  See https://crbug.com/773809.
-  //
-  // TODO(alexmos): We should always check HasWrongProcessForURL regardless of
-  // HasSite, but currently we cannot do that because of hosted app workarounds
-  // (see https://crbug.com/92669).  Revisit this once hosted apps swap
-  // processes for cross-site web iframes and popups.
+  // site.  For example, this happens when tests use NavigateToURL or when
+  // navigating a blank window in some cases.
   if (!rfh->GetSiteInstance()->HasSite())
-    return rfh->GetSiteInstance()->HasWrongProcessForURL(dest_url);
+    return false;
 
   // We do not currently swap processes for navigations in webview tag guests.
   if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
