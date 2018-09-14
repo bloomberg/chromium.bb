@@ -141,13 +141,12 @@ void SendResponseOnCmdThread(
 
 void HandleRequestOnCmdThread(
     HttpHandler* handler,
-    const std::vector<std::string>& whitelisted_ips,
+    const std::vector<net::IPAddress>& whitelisted_ips,
     const net::HttpServerRequestInfo& request,
     const HttpResponseSenderFunc& send_response_func) {
   if (!whitelisted_ips.empty()) {
-    std::string peer_address = request.peer.ToStringWithoutPort();
-    if (peer_address != net::IPAddress::IPv4Localhost().ToString() &&
-        !base::ContainsValue(whitelisted_ips, peer_address)) {
+    const net::IPAddress& peer_address = request.peer.address();
+    if (!base::ContainsValue(whitelisted_ips, peer_address)) {
       LOG(WARNING) << "unauthorized access from " << request.peer.ToString();
       std::unique_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_UNAUTHORIZED));
@@ -294,7 +293,7 @@ void StartServerOnIOThread(uint16_t port,
 
 void RunServer(uint16_t port,
                bool allow_remote,
-               const std::vector<std::string>& whitelisted_ips,
+               const std::vector<net::IPAddress>& whitelisted_ips,
                const std::string& url_base,
                int adb_port) {
   base::Thread io_thread("ChromeDriver IO");
@@ -342,7 +341,7 @@ int main(int argc, char *argv[]) {
   uint16_t port = 9515;
   int adb_port = 5037;
   bool allow_remote = false;
-  std::vector<std::string> whitelisted_ips;
+  std::vector<net::IPAddress> whitelisted_ips;
   std::string url_base;
   if (cmd_line->HasSwitch("h") || cmd_line->HasSwitch("help")) {
     std::string options;
@@ -369,7 +368,7 @@ int main(int argc, char *argv[]) {
         "url-base",
         "base URL path prefix for commands, e.g. wd/url",
         "whitelisted-ips",
-        "comma-separated whitelist of remote IPv4 addresses "
+        "comma-separated whitelist of remote IP addresses "
         "which are allowed to connect to ChromeDriver",
     };
     for (size_t i = 0; i < arraysize(kOptionAndDescriptions) - 1; i += 2) {
@@ -410,8 +409,34 @@ int main(int argc, char *argv[]) {
   if (cmd_line->HasSwitch("whitelisted-ips")) {
     allow_remote = true;
     std::string whitelist = cmd_line->GetSwitchValueASCII("whitelisted-ips");
-    whitelisted_ips = base::SplitString(
+    std::vector<std::string> whitelist_ip_strs = base::SplitString(
         whitelist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    if (!whitelist_ip_strs.empty()) {
+      // Convert IP address strings into net::IPAddress objects.
+      for (const auto& ip_str : whitelist_ip_strs) {
+        base::StringPiece ip_str_piece(ip_str);
+        if (ip_str_piece.size() >= 2 && ip_str_piece.front() == '[' &&
+            ip_str_piece.back() == ']') {
+          ip_str_piece.remove_prefix(1);
+          ip_str_piece.remove_suffix(1);
+        }
+        net::IPAddress ip;
+        if (!ip.AssignFromIPLiteral(ip_str_piece)) {
+          printf("Invalid IP address %s. Exiting...\n", ip_str.c_str());
+          return 1;
+        }
+        whitelisted_ips.push_back(ip);
+        if (ip.IsIPv4()) {
+          whitelisted_ips.push_back(net::ConvertIPv4ToIPv4MappedIPv6(ip));
+        } else if (ip.IsIPv4MappedIPv6()) {
+          whitelisted_ips.push_back(net::ConvertIPv4MappedIPv6ToIPv4(ip));
+        }
+      }
+      whitelisted_ips.push_back(net::IPAddress::IPv4Localhost());
+      whitelisted_ips.push_back(net::IPAddress::IPv6Localhost());
+      whitelisted_ips.push_back(
+          net::ConvertIPv4ToIPv4MappedIPv6(net::IPAddress::IPv4Localhost()));
+    }
   }
   if (!cmd_line->HasSwitch("silent") &&
       cmd_line->GetSwitchValueASCII("log-level") != "OFF") {
