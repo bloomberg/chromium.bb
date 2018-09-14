@@ -316,9 +316,6 @@ const char kEnableConsumerKiosk[] = "enable-consumer-kiosk";
 // Enables Data Saver prompt on cellular networks.
 const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 
-// Enables demo mode feature.
-const char kEnableDemoMode[] = "enable-demo-mode";
-
 // Enables encryption migration for user's cryptohome to run latest Arc.
 const char kEnableEncryptionMigration[] = "enable-encryption-migration";
 
@@ -340,8 +337,7 @@ const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
 
-// Enables offline demo mode. Offline demo mode is a part of demo mode feature
-// and it requires |kEnableDemoMode| flag to be enabled to take effect.
+// Enables offline demo mode. Demo mode still requires ARC++.
 const char kEnableOfflineDemoMode[] = "enable-offline-demo-mode";
 
 // Enables suggestions while typing on a physical keyboard.

@@ -111,9 +111,7 @@ void DemoSetupController::RegisterLocalStatePrefs(
 // static
 bool DemoSetupController::IsDemoModeAllowed() {
   // Demo mode is only allowed on devices that support ARC++.
-  return arc::IsArcAvailable() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableDemoMode);
+  return arc::IsArcAvailable();
 }
 
 // static

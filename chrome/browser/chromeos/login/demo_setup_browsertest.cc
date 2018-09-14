@@ -172,7 +172,6 @@ class DemoSetupTest : public LoginManagerTest {
   // LoginTestManager:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
     command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
     command_line->AppendSwitchASCII(switches::kArcAvailability,
                                     "officially-supported");
@@ -812,8 +811,8 @@ class DemoSetupOfflineDisabledTest : public DemoSetupTest {
 
   // DemoSetupTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Don't add kEnableOfflineDemoMode.
     LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
   }
 
  private:
@@ -834,7 +833,6 @@ class DemoSetupArcUnsupportedTest : public DemoSetupTest {
   // DemoSetupTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
     command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
     command_line->AppendSwitchASCII(switches::kArcAvailability, "none");
     ASSERT_FALSE(arc::IsArcAvailable());
