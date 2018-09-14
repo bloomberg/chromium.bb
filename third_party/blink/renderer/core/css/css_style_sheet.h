@@ -134,6 +134,12 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     adopted_tree_scopes_.erase(&tree_scope);
   }
 
+  Document* AssociatedDocument() { return associated_document_; }
+
+  void SetAssociatedDocument(Document* document) {
+    associated_document_ = document;
+  }
+
   class RuleMutationScope {
     STACK_ALLOCATED();
 
@@ -235,6 +241,8 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   Member<Node> owner_node_;
   Member<CSSRule> owner_rule_;
   HeapHashSet<Member<TreeScope>> adopted_tree_scopes_;
+
+  Member<Document> associated_document_;
 
   TextPosition start_position_;
   Member<MediaList> media_cssom_wrapper_;

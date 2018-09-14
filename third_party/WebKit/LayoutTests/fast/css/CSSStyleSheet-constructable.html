@@ -270,9 +270,9 @@ promise_test(() => {
 }, 'Constructed stylesheet can be used and modified in multiple TreeScopes');
 
 promise_test(() => {
-  var iframe = document.createElement("iframe");
+  const iframe = document.createElement("iframe");
   document.body.appendChild(iframe);
-  var thirdDiv = firstDiv.cloneNode(true);
+  const thirdDiv = firstDiv.cloneNode(true);
   iframe.contentDocument.body.appendChild(thirdDiv);
   const greenIframeSpan = thirdDiv.children[0];
   const redIframeSpan = thirdDiv.children[1];
@@ -282,40 +282,119 @@ promise_test(() => {
 
   const redStyleSheetPromise = document.createCSSStyleSheet(redStyleTexts[0]);
   return redStyleSheetPromise.then(function(redStyleSheet) {
-    iframe.contentDocument.adoptedStyleSheets = new StyleSheetList([redStyleSheet]);
+    assert_throws('NotAllowedError', () => { iframe.contentDocument.adoptedStyleSheets = new StyleSheetList([redStyleSheet]); });
     assert_equals(getComputedStyle(greenIframeSpan).color, "rgb(0, 0, 0)");
-    assert_equals(getComputedStyle(redIframeSpan).color, "rgb(255, 0, 0)");
+    assert_equals(getComputedStyle(redIframeSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(blueIframeSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(whiteIframeSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(yellowIframeSpan).color, "rgb(0, 0, 0)");
 
     document.adoptedStyleSheets = new StyleSheetList([redStyleSheet]);
+    assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
+    assert_equals(getComputedStyle(redSpan).color, "rgb(255, 0, 0)");
+    assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
+    assert_equals(getComputedStyle(whiteSpan).color, "rgb(0, 0, 0)");
+    assert_equals(getComputedStyle(yellowSpan).color, "rgb(0, 0, 0)");
+
     document.adoptedStyleSheets[0].insertRule(redStyleTexts[1]);
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(whiteSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(yellowSpan).color, "rgb(0, 0, 0)");
+  });
+}, 'Stylesheets constructed on the main Document cannot be used in iframes');
 
+promise_test(() => {
+  const iframe = document.createElement("iframe");
+  document.body.appendChild(iframe);
+  const thirdDiv = firstDiv.cloneNode(true);
+  iframe.contentDocument.body.appendChild(thirdDiv);
+  const greenIframeSpan = thirdDiv.children[0];
+  const redIframeSpan = thirdDiv.children[1];
+  const blueIframeSpan = thirdDiv.children[2];
+  const whiteIframeSpan = thirdDiv.children[3];
+  const yellowIframeSpan = thirdDiv.children[4];
+
+  // Make sure both the main Document and the iframe are not styled
+  const emptyStyleSheet = document.createEmptyCSSStyleSheet();
+  document.adoptedStyleSheets = new StyleSheetList([emptyStyleSheet]);
+  assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
+  assert_equals(getComputedStyle(redSpan).color, "rgb(0, 0, 0)");
+  assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
+  assert_equals(getComputedStyle(whiteSpan).color, "rgb(0, 0, 0)");
+  assert_equals(getComputedStyle(yellowSpan).color, "rgb(0, 0, 0)");
+
+  assert_equals(getComputedStyle(greenIframeSpan).color, "rgb(0, 0, 0)");
+  assert_equals(getComputedStyle(redIframeSpan).color, "rgb(0, 0, 0)");
+  assert_equals(getComputedStyle(blueIframeSpan).color, "rgb(0, 0, 0)");
+  assert_equals(getComputedStyle(whiteIframeSpan).color, "rgb(0, 0, 0)");
+  assert_equals(getComputedStyle(yellowIframeSpan).color, "rgb(0, 0, 0)");
+
+  const iframeRedStyleSheetPromise = iframe.contentDocument.createCSSStyleSheet(redStyleTexts[0]);
+  return iframeRedStyleSheetPromise.then(function(iframeRedStyleSheet) {
+    assert_throws('NotAllowedError', () => { document.adoptedStyleSheets = new StyleSheetList([iframeRedStyleSheet]); });
+    assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
+    assert_equals(getComputedStyle(redSpan).color, "rgb(0, 0, 0)");
+    assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
+    assert_equals(getComputedStyle(whiteSpan).color, "rgb(0, 0, 0)");
+    assert_equals(getComputedStyle(yellowSpan).color, "rgb(0, 0, 0)");
+
+    iframe.contentDocument.adoptedStyleSheets = new StyleSheetList([iframeRedStyleSheet]);
+    assert_equals(getComputedStyle(greenIframeSpan).color, "rgb(0, 0, 0)");
+    assert_equals(getComputedStyle(redIframeSpan).color, "rgb(255, 0, 0)");
+    assert_equals(getComputedStyle(blueIframeSpan).color, "rgb(0, 0, 0)");
+    assert_equals(getComputedStyle(whiteIframeSpan).color, "rgb(0, 0, 0)");
+    assert_equals(getComputedStyle(yellowIframeSpan).color, "rgb(0, 0, 0)");
+
+    iframe.contentDocument.adoptedStyleSheets[0].insertRule(redStyleTexts[1]);
     assert_equals(getComputedStyle(greenIframeSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redIframeSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(blueIframeSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(whiteIframeSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(yellowIframeSpan).color, "rgb(0, 0, 0)");
-
-    iframe.contentDocument.adoptedStyleSheets[0].cssRules[0].style.color = "white";
-    assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
-    assert_equals(getComputedStyle(redSpan).color, "rgb(255, 0, 0)"); 
-    assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
-    assert_equals(getComputedStyle(whiteSpan).color, "rgb(255, 255, 255)");
-    assert_equals(getComputedStyle(yellowSpan).color, "rgb(0, 0, 0)");
-
-    assert_equals(getComputedStyle(greenIframeSpan).color, "rgb(0, 0, 0)");
-    assert_equals(getComputedStyle(redIframeSpan).color, "rgb(255, 0, 0)");
-    assert_equals(getComputedStyle(blueIframeSpan).color, "rgb(0, 0, 0)");
-    assert_equals(getComputedStyle(whiteIframeSpan).color, "rgb(255, 255, 255)");
-    assert_equals(getComputedStyle(yellowIframeSpan).color, "rgb(0, 0, 0)");
   });
-}, 'Constructed stylesheet can be used and modified in multiple Documents');
+}, 'Stylesheet constructed on iframe cannot be used in the main Document');
+</script>
 
+<div id="divNonConstructed" class="nonConstructed">
+</div>
+
+<script>
+`use strict`;
+const shadowRootNonConstructed = divNonConstructed.attachShadow({mode:'open'})
+nonConstructedStyle = document.createElement("style");
+shadowRootNonConstructed.appendChild(nonConstructedStyle);
+nonConstructedStyle.sheet.insertRule(".nonConstructed { color: red; }", 0);
+const nonConstructedStyleSheet = nonConstructedStyle.sheet;
+
+test(() => {
+  assert_equals(getComputedStyle(divNonConstructed).color, "rgb(0, 0, 0)");
+  document.adoptedStyleSheets = new StyleSheetList([nonConstructedStyleSheet]);
+  assert_equals(getComputedStyle(divNonConstructed).color, "rgb(255, 0, 0)");
+}, 'Adding non-constructed stylesheet to AdoptedStyleSheets is allowed when the owner document of the stylesheet is in the same document tree as the AdoptedStyleSheets');
+
+test(() => {
+  const iframe = document.createElement("iframe");
+  document.body.appendChild(iframe);
+  iframeDiv = iframe.contentDocument.createElement("div");
+  iframeDiv.classList.add("nonConstructed");
+  iframe.contentDocument.body.appendChild(iframeDiv);
+
+  assert_equals(getComputedStyle(iframeDiv).color, "rgb(0, 0, 0)");
+  assert_throws('NotAllowedError', () => { iframe.contentDocument.adoptedStyleSheets = new StyleSheetList([nonConstructedStyleSheet]); });
+  assert_equals(getComputedStyle(iframeDiv).color, "rgb(0, 0, 0)");
+
+  iframeStyle = iframe.contentDocument.createElement("style");
+  iframe.contentDocument.body.appendChild(iframeStyle);
+  iframeStyle.sheet.insertRule(".nonConstructedSpan { color: red; }");
+  const iframeStyleSheet = iframeStyle.sheet;
+  nonConstructedSpan = document.createElement("span");
+  nonConstructedSpan.classList.add(".nonConstructedSpan");
+  divNonConstructed.appendChild(nonConstructedSpan);
+
+  assert_equals(getComputedStyle(iframeDiv).color, "rgb(0, 0, 0)");
+  assert_throws('NotAllowedError', () => { document.adoptedStyleSheets = new StyleSheetList([iframeStyleSheet]); });
+  assert_equals(getComputedStyle(iframeDiv).color, "rgb(0, 0, 0)");
+}, 'Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when the owner document of the stylesheet and the AdoptedStyleSheets are in different document trees');
 </script>
