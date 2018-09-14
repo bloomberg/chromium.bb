@@ -25,5 +25,5 @@ SK_API sk_sp<SkFontMgr> SkFontMgr::Factory() {
   }
   return sk_make_sp<skia::FuchsiaFontManager>(
       base::fuchsia::ComponentContext::GetDefault()
-          ->ConnectToServiceSync<fuchsia::fonts::FontProvider>());
+          ->ConnectToServiceSync<fuchsia::fonts::Provider>());
 }

@@ -3,7 +3,7 @@
       "vulkan" ],
   "dev": ["null", "zero"],
   "services": [
-      "fuchsia.fonts.FontProvider",
+      "fuchsia.fonts.Provider",
       "fuchsia.media.Audio",
       "fuchsia.net.LegacySocketProvider",
       "fuchsia.netstack.Netstack",

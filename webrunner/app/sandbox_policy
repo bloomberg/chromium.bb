@@ -2,7 +2,7 @@
   "features": [],
   "services": [
       "chromium.web.ContextProvider",
-      "fuchsia.fonts.FontProvider",
+      "fuchsia.fonts.Provider",
       "fuchsia.media.Audio",
       "fuchsia.net.LegacySocketProvider",
       "fuchsia.netstack.Netstack",

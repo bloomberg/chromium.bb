@@ -29,7 +29,7 @@ namespace content {
 namespace {
 
 constexpr const char* const kRendererServices[] = {
-    fuchsia::fonts::FontProvider::Name_};
+    fuchsia::fonts::Provider::Name_};
 
 constexpr const char* const kGpuServices[] = {
     fuchsia::ui::scenic::Scenic::Name_};
