@@ -47,7 +47,7 @@ VolumeInfoList.prototype.findIndex = function(volumeId) {};
 
 /**
  * Searches the information of the volume that contains the passed entry.
- * @param {!Entry|!FakeEntry|!FilesAppEntry} entry Entry on the volume to be
+ * @param {!Entry|!FilesAppEntry} entry Entry on the volume to be
  *     found.
  * @return {VolumeInfo} The volume's information, or null if not found.
  */

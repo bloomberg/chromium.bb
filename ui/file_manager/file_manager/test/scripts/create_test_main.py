@@ -129,6 +129,7 @@ scripts += ['<script src="%s%s"></script>' % (ROOT, s) for s in [
     '../../webui/resources/js/load_time_data.js',
     '../../webui/resources/js/webui_resource_test.js',
     'test/js/strings.js',
+    'common/js/files_app_entry_types.js',
     'common/js/util.js',
     'common/js/mock_entry.js',
     'common/js/volume_manager_common.js',

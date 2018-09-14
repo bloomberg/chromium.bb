@@ -59,7 +59,7 @@ MockVolumeManager.prototype.createVolumeInfo =
 /**
  * Returns the corresponding VolumeInfo.
  *
- * @param {!Entry|!FakeEntry|!FilesAppEntry} entry FileEntry pointing anywhere
+ * @param {!Entry|!FilesAppEntry} entry FileEntry pointing anywhere
  *     on a volume.
  * @return {VolumeInfo} Corresponding VolumeInfo.
  */
@@ -71,13 +71,13 @@ MockVolumeManager.prototype.getVolumeInfo = function(entry) {
  * Obtains location information from an entry.
  * Current implementation can handle only fake entries.
  *
- * @param {!Entry|!FakeEntry|!FilesAppEntry} entry A fake entry.
+ * @param {!Entry|!FilesAppEntry} entry A fake entry.
  * @return {EntryLocation} Location information.
  */
 MockVolumeManager.prototype.getLocationInfo = function(entry) {
   if (util.isFakeEntry(entry)) {
     return new EntryLocationImpl(
-        this.volumeInfoList.item(0), entry.rootType, true, true);
+        this.volumeInfoList.item(0), assert(entry.rootType), true, true);
   }
 
   if (entry.filesystem.name === VolumeManagerCommon.VolumeType.DRIVE) {
@@ -242,7 +242,7 @@ MockVolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
  * Obtains location information from an entry.
  * Current implementation can handle only fake entries.
  *
- * @param {!Entry} entry A fake entry.
+ * @param {!Entry|!FilesAppEntry} entry A fake entry.
  * @return {EntryLocation} Location information.
  */
 MockVolumeManagerWrapper.prototype.getLocationInfo = function(entry) {

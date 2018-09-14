@@ -341,7 +341,7 @@ VolumeManagerCommon.VolumeInfoProvider = function() {};
 
 /**
  * Obtains a volume info containing the passed entry.
- * @param {!Entry|!FakeEntry|!FilesAppEntry} entry Entry on the volume to be
+ * @param {!Entry|!FilesAppEntry} entry Entry on the volume to be
  *     returned. Can be fake.
  * @return {?VolumeInfo} The VolumeInfo instance or null if not found.
  */
@@ -371,19 +371,6 @@ VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = function(volumeId) {
   return /** @type {VolumeManagerCommon.MediaViewRootType} */ (
       volumeId.split(':', 2)[1]);
 };
-
-/**
- * Fake entries for virtual folders which hold Google Drive offline files,
- * Google Drive "Shared with me" files, and mixed Recent files.
- * |sourceRestriction| is valid only for the Recent folder.
- * @typedef {{
- *   isDirectory: boolean,
- *   rootType: VolumeManagerCommon.RootType,
- *   toURL: function(): string,
- *   sourceRestriction: (string|undefined)
- * }}
- */
-var FakeEntry;
 
 /**
   * An event name trigerred when a user tries to mount the volume which is

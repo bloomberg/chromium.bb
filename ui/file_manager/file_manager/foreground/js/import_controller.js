@@ -1071,7 +1071,7 @@ importer.ControllerEnvironment.prototype.getSelection;
 
 /**
  * Returns the directory entry for the current directory.
- * @return {DirectoryEntry|FakeEntry|FilesAppEntry}
+ * @return {DirectoryEntry|FilesAppEntry}
  */
 importer.ControllerEnvironment.prototype.getCurrentDirectory;
 

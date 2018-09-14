@@ -69,7 +69,7 @@ CommandUtil.getCommandEntries = function(element) {
  *
  * @param {EventTarget} element Element which is the command event's target.
  * @param {DirectoryModel} directoryModel
- * @return {DirectoryEntry|FakeEntry|FilesAppEntry} The extracted parent entry.
+ * @return {DirectoryEntry|FilesAppEntry} The extracted parent entry.
  */
 CommandUtil.getParentEntry = function(element, directoryModel) {
   if (element instanceof DirectoryTree) {
