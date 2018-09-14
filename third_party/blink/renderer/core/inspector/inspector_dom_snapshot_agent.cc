@@ -850,7 +850,7 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
   if (style_index != -1)
     layout_tree_node->setStyleIndex(style_index);
 
-  if (layout_object->Style() && layout_object->Style()->IsStacked())
+  if (layout_object->Style() && layout_object->Style()->IsStackingContext())
     layout_tree_node->setIsStackingContext(true);
 
   if (paint_order_map_) {
@@ -902,7 +902,7 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   layout_tree_snapshot->getBounds()->addItem(
       BuildRectForLayoutRect2(RectInDocument(layout_object)));
 
-  if (layout_object->Style() && layout_object->Style()->IsStacked())
+  if (layout_object->Style() && layout_object->Style()->IsStackingContext())
     SetRare(layout_tree_snapshot->getStackingContexts(), layout_index);
 
   String text = layout_object->IsText() ? ToLayoutText(layout_object)->GetText()
