@@ -37,7 +37,7 @@ void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
     new_has_filter_that_moves_pixels = false;
     for (const auto* effect = new_chunk_state.Effect();
          effect && effect != layer_state_.Effect();
-         effect = effect->Parent()->Unalias()) {
+         effect = effect->Parent() ? effect->Parent()->Unalias() : nullptr) {
       if (effect->HasFilterThatMovesPixels()) {
         new_has_filter_that_moves_pixels = true;
         break;
