@@ -181,6 +181,13 @@ void ServiceWorkerGlobalScope::ImportModuleScript(
                     new WorkerModuleTreeClient(modulator));
 }
 
+void ServiceWorkerGlobalScope::Dispose() {
+  DCHECK(IsContextThread());
+  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+      ->WillDestroyWorkerContext();
+  WorkerGlobalScope::Dispose();
+}
+
 void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
                                                  size_t cached_metadata_size) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -259,6 +266,12 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
       ->SkipWaiting(
           std::make_unique<CallbackPromiseAdapter<void, void>>(resolver));
   return promise;
+}
+
+void ServiceWorkerGlobalScope::BindServiceWorkerHost(
+    mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host) {
+  ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
+      ->BindServiceWorkerHost(std::move(service_worker_host));
 }
 
 void ServiceWorkerGlobalScope::SetRegistration(

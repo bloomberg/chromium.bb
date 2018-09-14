@@ -31,6 +31,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
@@ -76,6 +77,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       const KURL& module_url_record,
       FetchClientSettingsObjectSnapshot* outside_settings_object,
       network::mojom::FetchCredentialsMode) override;
+  void Dispose() override;
 
   // Counts an evaluated script and its size. Called for the main worker script.
   void CountWorkerScript(size_t script_size, size_t cached_metadata_size);
@@ -97,6 +99,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
                       ExceptionState&);
 
   ScriptPromise skipWaiting(ScriptState*);
+
+  void BindServiceWorkerHost(mojom::blink::ServiceWorkerHostAssociatedPtrInfo);
 
   void SetRegistration(std::unique_ptr<WebServiceWorkerRegistration::Handle>);
 

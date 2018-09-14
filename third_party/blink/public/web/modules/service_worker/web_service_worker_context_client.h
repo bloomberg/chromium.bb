@@ -33,11 +33,7 @@
 
 #include <memory>
 
-#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-shared.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_claim_callbacks.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_skip_waiting_callbacks.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_stream_handle.h"
 #include "third_party/blink/public/platform/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -47,7 +43,6 @@
 namespace blink {
 
 struct WebPaymentHandlerResponse;
-struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
 class WebServiceWorkerNetworkProvider;
 class WebServiceWorkerProvider;
@@ -65,33 +60,6 @@ class WebString;
 class WebServiceWorkerContextClient {
  public:
   virtual ~WebServiceWorkerContextClient() = default;
-
-  // For Clients#get(id). Requests the embedder to return the specified Client.
-  virtual void GetClient(const WebString& client_id,
-                         std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-
-  // For Clients#matchAll(options). Requests the embedder to return all matching
-  // Clients.
-  virtual void GetClients(
-      const WebServiceWorkerClientQueryOptions&,
-      std::unique_ptr<WebServiceWorkerClientsCallbacks>) = 0;
-
-  // For Clients#openWindow(url). Requests the embedder to open a tab.
-  virtual void OpenNewTab(const WebURL&,
-                          std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-
-  // Similar to OpenNewTab above. For PaymentRequestEvent#openWindow().
-  virtual void OpenPaymentHandlerWindow(
-      const WebURL&,
-      std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-
-  // A suggestion to cache this metadata in association with this URL.
-  virtual void SetCachedMetadata(const WebURL& url,
-                                 const char* data,
-                                 size_t size) {}
-
-  // A suggestion to clear the cached metadata in association with this URL.
-  virtual void ClearCachedMetadata(const WebURL& url) {}
 
   // ServiceWorker has prepared everything for script loading and is now ready
   // for DevTools inspection.
@@ -315,28 +283,6 @@ class WebServiceWorkerContextClient {
   // Called on the main thread.
   virtual std::unique_ptr<WebServiceWorkerProvider>
   CreateServiceWorkerProvider() = 0;
-
-  // The message is only valid during this method call, unless callee calls
-  // EnsureDataIsOwned on the message.
-  virtual void PostMessageToClient(const WebString& uuid,
-                                   TransferableMessage) = 0;
-
-  // For WindowClient#focus(). Requests the embedder to focus a window.
-  virtual void Focus(const WebString& uuid,
-                     std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-
-  // For WindowClient#navigate(). Requests the embedder to navigate to a URL.
-  virtual void Navigate(const WebString& uuid,
-                        const WebURL&,
-                        std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-
-  // For ServiceWorkerGlobalScope#skipWaiting().
-  virtual void SkipWaiting(
-      std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>) = 0;
-
-  // For Clients#claim().
-  virtual void Claim(
-      std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>) = 0;
 };
 
 }  // namespace blink

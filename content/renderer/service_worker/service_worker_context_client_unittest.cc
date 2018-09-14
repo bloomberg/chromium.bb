@@ -66,12 +66,14 @@ class MockWebServiceWorkerContextProxy
  public:
   ~MockWebServiceWorkerContextProxy() override = default;
 
-  void ReadyToEvaluateScript() override {}
+  void BindServiceWorkerHost(
+      mojo::ScopedInterfaceEndpointHandle service_worker_host) override {}
   void SetRegistration(
       std::unique_ptr<blink::WebServiceWorkerRegistration::Handle> handle)
       override {
     registration_handle_ = std::move(handle);
   }
+  void ReadyToEvaluateScript() override {}
   bool HasFetchEventHandler() override { return false; }
   void DispatchFetchEvent(int fetch_event_id,
                           const blink::WebServiceWorkerRequest& web_request,

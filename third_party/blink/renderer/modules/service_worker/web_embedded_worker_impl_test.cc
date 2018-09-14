@@ -64,43 +64,6 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
     return std::unique_ptr<WebServiceWorkerProvider>(
         CreateServiceWorkerProviderProxy());
   }
-  void GetClient(const WebString&,
-                 std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
-    NOTREACHED();
-  }
-  void GetClients(const WebServiceWorkerClientQueryOptions&,
-                  std::unique_ptr<WebServiceWorkerClientsCallbacks>) override {
-    NOTREACHED();
-  }
-  void OpenNewTab(const WebURL&,
-                  std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
-    NOTREACHED();
-  }
-  void OpenPaymentHandlerWindow(
-      const WebURL&,
-      std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
-    NOTREACHED();
-  }
-  void PostMessageToClient(const WebString& uuid,
-                           TransferableMessage) override {
-    NOTREACHED();
-  }
-  void SkipWaiting(
-      std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>) override {
-    NOTREACHED();
-  }
-  void Claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>) override {
-    NOTREACHED();
-  }
-  void Focus(const WebString& uuid,
-             std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
-    NOTREACHED();
-  }
-  void Navigate(const WebString& uuid,
-                const WebURL&,
-                std::unique_ptr<WebServiceWorkerClientCallbacks>) override {
-    NOTREACHED();
-  }
   void WorkerContextDestroyed() override { termination_event_.Signal(); }
 
   void WaitUntilScriptEvaluated() { script_evaluated_event_.Wait(); }
