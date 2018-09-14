@@ -65,9 +65,11 @@ struct FileChooserFileInfo {
   const FileMetadata metadata;
 };
 
+using FileChooserFileInfoList = Vector<FileChooserFileInfo>;
+
 class CORE_EXPORT FileChooserClient : public PopupOpeningObserver {
  public:
-  virtual void FilesChosen(const Vector<FileChooserFileInfo>&) = 0;
+  virtual void FilesChosen(const FileChooserFileInfoList&) = 0;
   virtual LocalFrame* FrameOrNull() const = 0;
   ~FileChooserClient() override;
 
@@ -110,7 +112,7 @@ class FileChooser : public RefCounted<FileChooser>,
 
   // FIXME: We should probably just pass file paths that could be virtual paths
   // with proper display names rather than passing structs.
-  void ChooseFiles(const Vector<FileChooserFileInfo>& files);
+  void ChooseFiles(const FileChooserFileInfoList& files);
 
   WeakPersistent<FileChooserClient> client_;
   WebFileChooserParams params_;

@@ -83,9 +83,9 @@ InputTypeView* FileInputType::CreateView() {
   return this;
 }
 
-Vector<FileChooserFileInfo> FileInputType::FilesFromFormControlState(
+FileChooserFileInfoList FileInputType::FilesFromFormControlState(
     const FormControlState& state) {
-  Vector<FileChooserFileInfo> files;
+  FileChooserFileInfoList files;
   for (size_t i = 0; i < state.ValueSize(); i += 2) {
     if (!state[i + 1].IsEmpty())
       files.push_back(FileChooserFileInfo(state[i], state[i + 1]));
@@ -227,9 +227,8 @@ void FileInputType::SetValue(const String&,
   GetElement().SetNeedsValidityCheck();
 }
 
-FileList* FileInputType::CreateFileList(
-    const Vector<FileChooserFileInfo>& files,
-    bool has_webkit_directory_attr) {
+FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
+                                        bool has_webkit_directory_attr) {
   FileList* file_list(FileList::Create());
   size_t size = files.size();
 
@@ -345,7 +344,7 @@ void FileInputType::SetFiles(FileList* files) {
   }
 }
 
-void FileInputType::FilesChosen(const Vector<FileChooserFileInfo>& files) {
+void FileInputType::FilesChosen(const FileChooserFileInfoList& files) {
   SetFiles(CreateFileList(files,
                           GetElement().FastHasAttribute(webkitdirectoryAttr)));
   if (HasConnectedFileChooser())
@@ -380,14 +379,14 @@ void FileInputType::SetFilesFromPaths(const Vector<String>& paths) {
     return;
   }
 
-  Vector<FileChooserFileInfo> files;
+  FileChooserFileInfoList files;
   for (const auto& path : paths)
     files.push_back(FileChooserFileInfo(path));
 
   if (input.FastHasAttribute(multipleAttr)) {
     FilesChosen(files);
   } else {
-    Vector<FileChooserFileInfo> first_file_only;
+    FileChooserFileInfoList first_file_only;
     first_file_only.push_back(files[0]);
     FilesChosen(first_file_only);
   }

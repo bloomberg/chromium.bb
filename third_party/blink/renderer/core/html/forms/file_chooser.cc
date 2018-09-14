@@ -81,14 +81,14 @@ bool FileChooser::OpenFileChooser(ChromeClientImpl& chrome_client_impl) {
 }
 
 void FileChooser::DidChooseFile(const WebVector<WebString>& file_names) {
-  Vector<FileChooserFileInfo> file_info;
+  FileChooserFileInfoList file_info;
   for (size_t i = 0; i < file_names.size(); ++i)
     file_info.push_back(FileChooserFileInfo(file_names[i]));
   ChooseFiles(file_info);
 }
 
 void FileChooser::DidChooseFile(const WebVector<SelectedFileInfo>& files) {
-  Vector<FileChooserFileInfo> file_info;
+  FileChooserFileInfoList file_info;
   for (size_t i = 0; i < files.size(); ++i) {
     if (files[i].file_system_url.IsEmpty()) {
       file_info.push_back(
@@ -106,7 +106,7 @@ void FileChooser::DidChooseFile(const WebVector<SelectedFileInfo>& files) {
   ChooseFiles(file_info);
 }
 
-void FileChooser::ChooseFiles(const Vector<FileChooserFileInfo>& files) {
+void FileChooser::ChooseFiles(const FileChooserFileInfoList& files) {
   // FIXME: This is inelegant. We should not be looking at params_ here.
   if (params_.selected_files.size() == files.size()) {
     bool was_changed = false;
