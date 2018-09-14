@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_client_query_options.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -130,14 +129,13 @@ ScriptPromise ServiceWorkerClients::matchAll(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  WebServiceWorkerClientQueryOptions web_options;
-  web_options.client_type = GetClientType(options.type());
-  web_options.include_uncontrolled = options.includeUncontrolled();
   ServiceWorkerGlobalScopeClient::From(execution_context)
-      ->GetClients(web_options,
-                   std::make_unique<
-                       CallbackPromiseAdapter<ClientArray, ServiceWorkerError>>(
-                       resolver));
+      ->GetClients(
+          mojom::blink::ServiceWorkerClientQueryOptions::New(
+              options.includeUncontrolled(), GetClientType(options.type())),
+          std::make_unique<
+              CallbackPromiseAdapter<ClientArray, ServiceWorkerError>>(
+              resolver));
   return promise;
 }
 
