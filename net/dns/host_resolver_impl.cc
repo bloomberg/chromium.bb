@@ -2069,14 +2069,15 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
     defined(OS_FUCHSIA)
   RunLoopbackProbeJob();
 #endif
-  NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  NetworkChangeNotifier::AddIPAddressObserver(this);
+  NetworkChangeNotifier::AddConnectionTypeObserver(this);
   NetworkChangeNotifier::AddDNSObserver(this);
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) && \
     !defined(OS_ANDROID)
   EnsureDnsReloaderInit();
 #endif
 
-  UpdateProcParams(NetworkChangeNotifier::GetConnectionType());
+  OnConnectionTypeChanged(NetworkChangeNotifier::GetConnectionType());
 
   {
     DnsConfig dns_config;
@@ -2097,7 +2098,8 @@ HostResolverImpl::~HostResolverImpl() {
   // OnJobComplete will not start any new jobs.
   jobs_.clear();
 
-  NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   NetworkChangeNotifier::RemoveDNSObserver(this);
 }
 
@@ -2753,9 +2755,7 @@ void HostResolverImpl::TryServingAllJobsFromHosts() {
   }
 }
 
-void HostResolverImpl::OnNetworkChanged(
-    NetworkChangeNotifier::ConnectionType type) {
-  UpdateProcParams(type);
+void HostResolverImpl::OnIPAddressChanged() {
   last_ipv6_probe_time_ = base::TimeTicks();
   // Abandon all ProbeJobs.
   probe_weak_ptr_factory_.InvalidateWeakPtrs();
@@ -2769,7 +2769,7 @@ void HostResolverImpl::OnNetworkChanged(
   // |this| may be deleted inside AbortAllInProgressJobs().
 }
 
-void HostResolverImpl::UpdateProcParams(
+void HostResolverImpl::OnConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
   proc_params_.unresponsive_delay =
       GetTimeDeltaForConnectionTypeFromFieldTrialOrDefault(
