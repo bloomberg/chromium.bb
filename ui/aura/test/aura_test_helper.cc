@@ -47,8 +47,10 @@ AuraTestHelper* g_instance = nullptr;
 
 }  // namespace
 
-AuraTestHelper::AuraTestHelper()
-    : setup_called_(false), teardown_called_(false) {
+AuraTestHelper::AuraTestHelper() : AuraTestHelper(nullptr) {}
+
+AuraTestHelper::AuraTestHelper(std::unique_ptr<Env> env)
+    : setup_called_(false), teardown_called_(false), env_(std::move(env)) {
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
@@ -94,10 +96,12 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
       window_tree_client_ ? window_tree_client_->connector() : nullptr;
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&EventGeneratorDelegateAura::Create, connector));
+
+  Env* env = GetEnv();
+
   // If Env has been configured with MUS, but |mode_| is still |LOCAL|, switch
   // to MUS. This is used for tests suites that setup Env globally.
-  if (Env::HasInstance() && Env::GetInstance()->mode() == Env::Mode::MUS &&
-      mode_ == Mode::LOCAL) {
+  if (env && env->mode() == Env::Mode::MUS && mode_ == Mode::LOCAL) {
     test_window_tree_client_delegate_ =
         std::make_unique<TestWindowTreeClientDelegate>();
     EnableMusWithTestWindowTree(test_window_tree_client_delegate_.get());
@@ -119,16 +123,17 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT)
     InitWindowTreeClient();
 
-  if (Env::HasInstance()) {
+  if (env) {
     // Some tests suites create Env globally rather than per test. In this case
     // make sure Env is configured with the right mode.
-    env_mode_to_restore_ = Env::GetInstance()->mode();
-    EnvTestHelper().SetMode(env_mode);
+    env_mode_to_restore_ = env->mode();
+    EnvTestHelper(env).SetMode(env_mode);
   } else {
     env_ = Env::CreateInstance(env_mode);
+    env = env_.get();
   }
 
-  EnvTestHelper env_helper;
+  EnvTestHelper env_helper(env);
   if (env_mode == Env::Mode::MUS) {
     env_window_tree_client_setter_ =
         std::make_unique<EnvWindowTreeClientSetter>(window_tree_client_);
@@ -136,11 +141,10 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   // Tests assume they can set the mouse location on Env() and have it reflected
   // in tests.
   env_helper.SetAlwaysUseLastMouseLocation(true);
-  context_factory_to_restore_ = Env::GetInstance()->context_factory();
-  context_factory_private_to_restore_ =
-      Env::GetInstance()->context_factory_private();
-  Env::GetInstance()->set_context_factory(context_factory);
-  Env::GetInstance()->set_context_factory_private(context_factory_private);
+  context_factory_to_restore_ = env->context_factory();
+  context_factory_private_to_restore_ = env->context_factory_private();
+  env->set_context_factory(context_factory);
+  env->set_context_factory_private(context_factory_private);
   // Unit tests generally don't want to query the system, rather use the state
   // from RootWindow.
   env_helper.SetInputStateLookup(nullptr);
@@ -157,7 +161,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   test_screen_.reset(TestScreen::Create(host_size, window_tree_client_));
   if (!screen)
     display::Screen::SetScreenInstance(test_screen_.get());
-  host_.reset(test_screen_->CreateHostForPrimaryDisplay());
+  host_.reset(test_screen_->CreateHostForPrimaryDisplay(env));
   host_->window()->SetEventTargeter(std::make_unique<WindowTargeter>());
 
   client::SetFocusClient(root_window(), focus_client_.get());
@@ -199,10 +203,10 @@ void AuraTestHelper::TearDown() {
   if (env_) {
     env_.reset();
   } else {
-    Env::GetInstance()->set_context_factory(context_factory_to_restore_);
-    Env::GetInstance()->set_context_factory_private(
-        context_factory_private_to_restore_);
-    EnvTestHelper().SetMode(env_mode_to_restore_);
+    Env* env = GetEnv();
+    env->set_context_factory(context_factory_to_restore_);
+    env->set_context_factory_private(context_factory_private_to_restore_);
+    EnvTestHelper(env).SetMode(env_mode_to_restore_);
   }
   wm_state_.reset();
 
@@ -227,6 +231,10 @@ WindowTreeClient* AuraTestHelper::window_tree_client() {
 
 client::CaptureClient* AuraTestHelper::capture_client() {
   return capture_client_.get();
+}
+
+Env* AuraTestHelper::GetEnv() {
+  return env_ ? env_.get() : Env::HasInstance() ? Env::GetInstance() : nullptr;
 }
 
 void AuraTestHelper::InitWindowTreeClient() {
