@@ -638,8 +638,9 @@ Status WebViewImpl::CaptureScreenshot(
     std::string* screenshot,
     const base::DictionaryValue& params) {
   std::unique_ptr<base::DictionaryValue> result;
-  Status status = client_->SendCommandAndGetResult("Page.captureScreenshot",
-                                                   params, &result);
+  Timeout timeout(base::TimeDelta::FromSeconds(10));
+  Status status = client_->SendCommandAndGetResultWithTimeout(
+      "Page.captureScreenshot", params, &timeout, &result);
   if (status.IsError())
     return status;
   if (!result->GetString("data", screenshot))
