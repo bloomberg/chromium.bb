@@ -815,11 +815,9 @@ class UprevStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     # Perform other uprevs.
-    overlays = portage_util.FindOverlays(
-        self._run.config.overlays, buildroot=self._build_root)
     commands.UprevPackages(self._build_root,
                            self._boards,
-                           overlays)
+                           overlay_type=self._run.config.overlays)
 
 
 class RegenPortageCacheStage(generic_stages.BuilderStage):
