@@ -200,8 +200,8 @@ HeadlessContentBrowserClient::CreateQuotaPermissionContext() {
 void HeadlessContentBrowserClient::GetQuotaSettings(
     content::BrowserContext* context,
     content::StoragePartition* partition,
-    storage::OptionalQuotaSettingsCallback callback) {
-  storage::GetNominalDynamicSettings(
+    ::storage::OptionalQuotaSettingsCallback callback) {
+  ::storage::GetNominalDynamicSettings(
       partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
 }
 

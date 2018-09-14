@@ -31,7 +31,7 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   void GetQuotaSettings(
       content::BrowserContext* context,
       content::StoragePartition* partition,
-      storage::OptionalQuotaSettingsCallback callback) override;
+      ::storage::OptionalQuotaSettingsCallback callback) override;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
