@@ -65,7 +65,6 @@ NSString* const kFindInPageActivityType =
 }
 
 - (void)performActivity {
-  base::RecordAction(base::UserMetricsAction("MobileShareActionFindInPage"));
   [self.dispatcher showFindInPage];
   [self activityDidFinish:YES];
 }
