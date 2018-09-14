@@ -461,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, NavigationObserverDisconnected) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(ContextImplTest, DelayedNavigationEventAck) {
+IN_PROC_BROWSER_TEST_F(ContextImplTest, DISABLED_DelayedNavigationEventAck) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
