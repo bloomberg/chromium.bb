@@ -55,8 +55,6 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
                                    plugin_info,
                                    mime_type,
                                    resource_url),
-      embedder_frame_(content::RenderFrame::FromWebFrame(
-          plugin_element.GetDocument().GetFrame())),
       plugin_element_(plugin_element),
       element_instance_id_(element_instance_id) {
   is_embedded_ = IsEmbedded();
@@ -71,12 +69,6 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
 }
 
 MimeHandlerViewFrameContainer::~MimeHandlerViewFrameContainer() {}
-
-// Returns the frame which is embedding the corresponding plugin element.
-content::RenderFrame* MimeHandlerViewFrameContainer::GetEmbedderRenderFrame()
-    const {
-  return embedder_frame_;
-}
 
 void MimeHandlerViewFrameContainer::CreateMimeHandlerViewGuestIfNecessary() {
   if (auto* frame = GetContentFrame()) {

@@ -71,8 +71,6 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   void DidFinishLoading() override;
 
  protected:
-  // Returns the frame which is embedding the corresponding plugin element.
-  virtual content::RenderFrame* GetEmbedderRenderFrame() const;
   virtual void CreateMimeHandlerViewGuestIfNecessary();
   virtual blink::WebRemoteFrame* GetGuestProxyFrame() const = 0;
   virtual int32_t GetInstanceId() const = 0;
@@ -101,6 +99,9 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
 
  private:
   class PluginResourceThrottle;
+
+  // Returns the frame which is embedding the corresponding plugin element.
+  content::RenderFrame* GetEmbedderRenderFrame() const;
 
   // Called for embedded plugins when network service is enabled. This is called
   // by the URLLoaderThrottle which intercepts the resource load, which is then
@@ -139,6 +140,9 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   // True if the guest page has fully loaded and its JavaScript onload function
   // has been called.
   bool guest_loaded_ = false;
+
+  // The routing ID of the frame which contains the plugin element.
+  const int32_t embedder_render_frame_routing_id_;
 
   mojo::Binding<mime_handler::BeforeUnloadControl>
       before_unload_control_binding_;

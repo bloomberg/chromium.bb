@@ -108,10 +108,6 @@ void MimeHandlerViewContainer::OnGuestAttached(int /* unused */,
   guest_proxy_routing_id_ = guest_proxy_routing_id;
 }
 
-content::RenderFrame* MimeHandlerViewContainer::GetEmbedderRenderFrame() const {
-  return render_frame();
-}
-
 void MimeHandlerViewContainer::CreateMimeHandlerViewGuestIfNecessary() {
   if (!element_size_.has_value())
     return;
