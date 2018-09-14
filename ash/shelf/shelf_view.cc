@@ -454,6 +454,12 @@ bool ShelfView::IsShowingOverflowBubble() const {
   return overflow_bubble_.get() && overflow_bubble_->IsShowing();
 }
 
+bool ShelfView::ShouldShowAppListButtonHighlight() const {
+  // In tablet mode, the app list is always shown as the home-cher, so we do
+  // not want to show a permanent highlight.
+  return !IsTabletModeEnabled();
+}
+
 AppListButton* ShelfView::GetAppListButton() const {
   for (int i = 0; i < model_->item_count(); ++i) {
     if (model_->items()[i].type == TYPE_APP_LIST) {
