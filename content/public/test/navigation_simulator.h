@@ -251,6 +251,9 @@ class NavigationSimulator : public WebContentsObserver {
   // commits. They should be specified before calling |Fail| or |Commit|.
   virtual void SetSocketAddress(const net::HostPortPair& socket_address);
 
+  // Pretend the navigation is against an inner response of a signed exchange.
+  void SetIsSignedExchangeInnerResponse(bool is_signed_exchange_inner_response);
+
   // Sets the InterfaceProvider interface request to pass in as an argument to
   // DidCommitProvisionalLoad for cross-document navigations. If not called,
   // a stub will be passed in (which will never receive any interface requests).
@@ -388,6 +391,7 @@ class NavigationSimulator : public WebContentsObserver {
   // initialized (if needed) in InitializeFromStartedRequest.
   GURL navigation_url_;
   net::HostPortPair socket_address_;
+  bool is_signed_exchange_inner_response_ = false;
   std::string initial_method_;
   bool browser_initiated_;
   bool same_document_ = false;
