@@ -392,6 +392,7 @@ aom_dsp_common_intrin_sse2 = [
   "//third_party/libaom/source/libaom/aom_dsp/x86/mem_sse2.h",
   "//third_party/libaom/source/libaom/aom_dsp/x86/transpose_sse2.h",
   "//third_party/libaom/source/libaom/aom_dsp/x86/txfm_common_sse2.h",
+  "//third_party/libaom/source/libaom/aom_dsp/x86/sum_squares_sse2.h",
 ]
 
 aom_dsp_common_intrin_sse4_1 = [

@@ -1383,16 +1383,7 @@ void av1_inv_txfm2d_add_32x32_c(const int32_t* input,
                                 int stride,
                                 TX_TYPE tx_type,
                                 int bd);
-void av1_inv_txfm2d_add_32x32_avx2(const int32_t* input,
-                                   uint16_t* output,
-                                   int stride,
-                                   TX_TYPE tx_type,
-                                   int bd);
-RTCD_EXTERN void (*av1_inv_txfm2d_add_32x32)(const int32_t* input,
-                                             uint16_t* output,
-                                             int stride,
-                                             TX_TYPE tx_type,
-                                             int bd);
+#define av1_inv_txfm2d_add_32x32 av1_inv_txfm2d_add_32x32_c
 
 void av1_inv_txfm2d_add_32x64_c(const int32_t* input,
                                 uint16_t* output,
@@ -2202,9 +2193,6 @@ static void setup_rtcd_internal(void) {
   if (flags & HAS_AVX2)
     av1_highbd_wiener_convolve_add_src =
         av1_highbd_wiener_convolve_add_src_avx2;
-  av1_inv_txfm2d_add_32x32 = av1_inv_txfm2d_add_32x32_c;
-  if (flags & HAS_AVX2)
-    av1_inv_txfm2d_add_32x32 = av1_inv_txfm2d_add_32x32_avx2;
   av1_inv_txfm2d_add_4x4 = av1_inv_txfm2d_add_4x4_c;
   if (flags & HAS_SSE4_1)
     av1_inv_txfm2d_add_4x4 = av1_inv_txfm2d_add_4x4_sse4_1;
