@@ -220,6 +220,8 @@ class SQLitePersistentCookieStore::Backend
   // Commit pending operations as soon as possible.
   void Flush(base::OnceClosure callback);
 
+  size_t GetQueueLengthForTesting();
+
   // Commit any pending operations and close the database.  This must be called
   // before the object is destructed.
   void Close();
@@ -340,9 +342,12 @@ class SQLitePersistentCookieStore::Backend
   std::unique_ptr<sql::Database> db_;
   sql::MetaTable meta_table_;
 
-  typedef std::list<std::unique_ptr<PendingOperation>> PendingOperationsList;
-  PendingOperationsList pending_;
-  PendingOperationsList::size_type num_pending_;
+  typedef std::list<std::unique_ptr<PendingOperation>> PendingOperationsForKey;
+  typedef std::map<std::tuple<std::string, std::string, std::string>,
+                   PendingOperationsForKey>
+      PendingOperationsMap;
+  PendingOperationsMap pending_;
+  PendingOperationsMap::size_type num_pending_;
   // Guard |cookies_|, |pending_|, |num_pending_|.
   base::Lock lock_;
 
@@ -1276,10 +1281,40 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
   // We do a full copy of the cookie here, and hopefully just here.
   std::unique_ptr<PendingOperation> po(new PendingOperation(op, cc));
 
-  PendingOperationsList::size_type num_pending;
+  PendingOperationsMap::size_type num_pending;
   {
     base::AutoLock locked(lock_);
-    pending_.push_back(std::move(po));
+    // When queueing the operation, see if it overwrites any already pending
+    // ones for the same row.
+    auto key = cc.UniqueKey();
+    auto iter_and_result =
+        pending_.insert(std::make_pair(key, PendingOperationsForKey()));
+    PendingOperationsForKey& ops_for_key = iter_and_result.first->second;
+    if (!iter_and_result.second) {
+      // Insert failed -> already have ops.
+      if (po->op() == PendingOperation::COOKIE_DELETE) {
+        // A delete op makes all the previous ones irrelevant.
+        ops_for_key.clear();
+      } else if (po->op() == PendingOperation::COOKIE_UPDATEACCESS) {
+        if (!ops_for_key.empty() &&
+            ops_for_key.back()->op() == PendingOperation::COOKIE_UPDATEACCESS) {
+          // If access timestamp is updated twice in a row, can dump the earlier
+          // one.
+          ops_for_key.pop_back();
+        }
+        // At most delete + add before (and no access time updates after above
+        // conditional).
+        DCHECK_LE(ops_for_key.size(), 2u);
+      } else {
+        // Nothing special is done for adds, since if they're overwriting,
+        // they'll be preceded by deletes anyway.
+        DCHECK_LE(ops_for_key.size(), 1u);
+      }
+    }
+    ops_for_key.push_back(std::move(po));
+    // Note that num_pending_ counts number of calls to BatchOperation(), not
+    // the current length of the queue; this is intentional to guarantee
+    // progress, as the length of the queue may decrease in some cases.
     num_pending = ++num_pending_;
   }
 
@@ -1315,7 +1350,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
       before_flush_callback_.Run();
   }
 
-  PendingOperationsList ops;
+  PendingOperationsMap ops;
   {
     base::AutoLock locked(lock_);
     pending_.swap(ops);
@@ -1354,80 +1389,81 @@ void SQLitePersistentCookieStore::Backend::Commit() {
     return;
 
   bool trouble = false;
-  for (PendingOperationsList::iterator it = ops.begin(); it != ops.end();
-       ++it) {
-    // Free the cookies as we commit them to the database.
-    std::unique_ptr<PendingOperation> po(std::move(*it));
-    switch (po->op()) {
-      case PendingOperation::COOKIE_ADD:
-        add_smt.Reset(true);
-        add_smt.BindInt64(0, po->cc().CreationDate().ToInternalValue());
-        add_smt.BindString(1, po->cc().Domain());
-        add_smt.BindString(2, po->cc().Name());
-        if (crypto_ && crypto_->ShouldEncrypt()) {
-          std::string encrypted_value;
-          if (!crypto_->EncryptString(po->cc().Value(), &encrypted_value)) {
-            DLOG(WARNING) << "Could not encrypt a cookie, skipping add.";
-            RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_ENCRYPT_FAILED);
-            trouble = true;
-            continue;
+  for (auto& kv : ops) {
+    for (std::unique_ptr<PendingOperation>& po_entry : kv.second) {
+      // Free the cookies as we commit them to the database.
+      std::unique_ptr<PendingOperation> po(std::move(po_entry));
+      switch (po->op()) {
+        case PendingOperation::COOKIE_ADD:
+          add_smt.Reset(true);
+          add_smt.BindInt64(0, po->cc().CreationDate().ToInternalValue());
+          add_smt.BindString(1, po->cc().Domain());
+          add_smt.BindString(2, po->cc().Name());
+          if (crypto_ && crypto_->ShouldEncrypt()) {
+            std::string encrypted_value;
+            if (!crypto_->EncryptString(po->cc().Value(), &encrypted_value)) {
+              DLOG(WARNING) << "Could not encrypt a cookie, skipping add.";
+              RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_ENCRYPT_FAILED);
+              trouble = true;
+              continue;
+            }
+            add_smt.BindCString(3, "");  // value
+            // BindBlob() immediately makes an internal copy of the data.
+            add_smt.BindBlob(4, encrypted_value.data(),
+                             static_cast<int>(encrypted_value.length()));
+          } else {
+            add_smt.BindString(3, po->cc().Value());
+            add_smt.BindBlob(4, "", 0);  // encrypted_value
           }
-          add_smt.BindCString(3, "");  // value
-          // BindBlob() immediately makes an internal copy of the data.
-          add_smt.BindBlob(4, encrypted_value.data(),
-                           static_cast<int>(encrypted_value.length()));
-        } else {
-          add_smt.BindString(3, po->cc().Value());
-          add_smt.BindBlob(4, "", 0);  // encrypted_value
-        }
-        add_smt.BindString(5, po->cc().Path());
-        add_smt.BindInt64(6, po->cc().ExpiryDate().ToInternalValue());
-        add_smt.BindInt(7, po->cc().IsSecure());
-        add_smt.BindInt(8, po->cc().IsHttpOnly());
-        add_smt.BindInt(9,
-                        CookieSameSiteToDBCookieSameSite(po->cc().SameSite()));
-        add_smt.BindInt64(10, po->cc().LastAccessDate().ToInternalValue());
-        add_smt.BindInt(11, po->cc().IsPersistent());
-        add_smt.BindInt(12, po->cc().IsPersistent());
-        add_smt.BindInt(13,
-                        CookiePriorityToDBCookiePriority(po->cc().Priority()));
-        if (!add_smt.Run()) {
-          DLOG(WARNING) << "Could not add a cookie to the DB.";
-          RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_ADD);
-          trouble = true;
-        }
-        break;
+          add_smt.BindString(5, po->cc().Path());
+          add_smt.BindInt64(6, po->cc().ExpiryDate().ToInternalValue());
+          add_smt.BindInt(7, po->cc().IsSecure());
+          add_smt.BindInt(8, po->cc().IsHttpOnly());
+          add_smt.BindInt(
+              9, CookieSameSiteToDBCookieSameSite(po->cc().SameSite()));
+          add_smt.BindInt64(10, po->cc().LastAccessDate().ToInternalValue());
+          add_smt.BindInt(11, po->cc().IsPersistent());
+          add_smt.BindInt(12, po->cc().IsPersistent());
+          add_smt.BindInt(
+              13, CookiePriorityToDBCookiePriority(po->cc().Priority()));
+          if (!add_smt.Run()) {
+            DLOG(WARNING) << "Could not add a cookie to the DB.";
+            RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_ADD);
+            trouble = true;
+          }
+          break;
 
-      case PendingOperation::COOKIE_UPDATEACCESS:
-        update_access_smt.Reset(true);
-        update_access_smt.BindInt64(
-            0, po->cc().LastAccessDate().ToInternalValue());
-        update_access_smt.BindString(1, po->cc().Name());
-        update_access_smt.BindString(2, po->cc().Domain());
-        update_access_smt.BindString(3, po->cc().Path());
-        if (!update_access_smt.Run()) {
-          DLOG(WARNING)
-              << "Could not update cookie last access time in the DB.";
-          RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_UPDATE_ACCESS);
-          trouble = true;
-        }
-        break;
+        case PendingOperation::COOKIE_UPDATEACCESS:
+          update_access_smt.Reset(true);
+          update_access_smt.BindInt64(
+              0, po->cc().LastAccessDate().ToInternalValue());
+          update_access_smt.BindString(1, po->cc().Name());
+          update_access_smt.BindString(2, po->cc().Domain());
+          update_access_smt.BindString(3, po->cc().Path());
+          if (!update_access_smt.Run()) {
+            DLOG(WARNING)
+                << "Could not update cookie last access time in the DB.";
+            RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_UPDATE_ACCESS);
+            trouble = true;
+          }
+          break;
 
-      case PendingOperation::COOKIE_DELETE:
-        del_smt.Reset(true);
-        del_smt.BindString(0, po->cc().Name());
-        del_smt.BindString(1, po->cc().Domain());
-        del_smt.BindString(2, po->cc().Path());
-        if (!del_smt.Run()) {
-          DLOG(WARNING) << "Could not delete a cookie from the DB.";
-          RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_DELETE);
-          trouble = true;
-        }
-        break;
+        case PendingOperation::COOKIE_DELETE:
+          del_smt.Reset(true);
+          del_smt.BindString(0, po->cc().Name());
+          del_smt.BindString(1, po->cc().Domain());
+          del_smt.BindString(2, po->cc().Path());
+          if (!del_smt.Run()) {
+            DLOG(WARNING) << "Could not delete a cookie from the DB.";
+            RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_DELETE);
+            trouble = true;
+          }
+          break;
 
-      default:
-        NOTREACHED();
-        break;
+        default:
+          NOTREACHED();
+          break;
+      }
     }
   }
   bool succeeded = transaction.Commit();
@@ -1443,6 +1479,18 @@ void SQLitePersistentCookieStore::Backend::SetBeforeFlushCallback(
     base::RepeatingClosure callback) {
   base::AutoLock locked(before_flush_callback_lock_);
   before_flush_callback_ = std::move(callback);
+}
+
+size_t SQLitePersistentCookieStore::Backend::GetQueueLengthForTesting() {
+  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
+  size_t total = 0u;
+  {
+    base::AutoLock locked(lock_);
+    for (const auto& key_val : pending_) {
+      total += key_val.second.size();
+    }
+  }
+  return total;
 }
 
 void SQLitePersistentCookieStore::Backend::Flush(base::OnceClosure callback) {
@@ -1675,6 +1723,10 @@ void SQLitePersistentCookieStore::SetBeforeFlushCallback(
 
 void SQLitePersistentCookieStore::Flush(base::OnceClosure callback) {
   backend_->Flush(std::move(callback));
+}
+
+size_t SQLitePersistentCookieStore::GetQueueLengthForTesting() {
+  return backend_->GetQueueLengthForTesting();
 }
 
 SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
