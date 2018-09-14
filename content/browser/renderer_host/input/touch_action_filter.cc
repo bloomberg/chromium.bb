@@ -9,6 +9,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 
 using blink::WebInputEvent;
@@ -186,9 +187,11 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         SetTouchAction(cc::kTouchActionAuto);
       scrolling_touch_action_ = allowed_touch_action_;
       if (scrolling_touch_action_.has_value())
-        gesture_sequence_.append("O1");
+        gesture_sequence_.append("OY");
       else
-        gesture_sequence_.append("O2");
+        gesture_sequence_.append("ON");
+      gesture_sequence_.append(
+          base::NumberToString(gesture_event->unique_touch_event_id));
       DCHECK(!drop_current_tap_ending_event_);
       break;
 
@@ -255,9 +258,9 @@ void TouchActionFilter::DecreaseActiveTouches() {
 
 void TouchActionFilter::ReportAndResetTouchAction() {
   if (has_touch_event_handler_)
-    gesture_sequence_.append("R1");
+    gesture_sequence_.append("RY");
   else
-    gesture_sequence_.append("R0");
+    gesture_sequence_.append("RN");
   ReportTouchAction();
   if (num_of_active_touches_ <= 0)
     ResetTouchAction();
@@ -366,9 +369,9 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
     return;
   has_touch_event_handler_ = has_handlers;
   if (has_touch_event_handler_)
-    gesture_sequence_.append("L1");
+    gesture_sequence_.append("LY");
   else
-    gesture_sequence_.append("L0");
+    gesture_sequence_.append("LN");
   // We have set the associated touch action if the touch start already happened
   // or there is a gesture in progress. In these cases, we should not reset the
   // associated touch action.

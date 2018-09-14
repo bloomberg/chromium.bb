@@ -338,7 +338,9 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
   if (WebTouchEventTraits::IsTouchSequenceStart(event.event)) {
     touch_action_filter_.AppendToGestureSequenceForDebugging("T");
     touch_action_filter_.AppendToGestureSequenceForDebugging(
-        std::to_string(ack_result).c_str());
+        base::NumberToString(ack_result).c_str());
+    touch_action_filter_.AppendToGestureSequenceForDebugging(
+        base::NumberToString(event.event.unique_touch_event_id).c_str());
     touch_action_filter_.IncreaseActiveTouches();
     // Touchstart events sent to the renderer indicate a new touch sequence, but
     // in some cases we may filter out sending the touchstart - catch those
@@ -353,6 +355,9 @@ void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
   disposition_handler_->OnTouchEventAck(event, ack_source, ack_result);
 
   if (WebTouchEventTraits::IsTouchSequenceEnd(event.event)) {
+    touch_action_filter_.AppendToGestureSequenceForDebugging("E");
+    touch_action_filter_.AppendToGestureSequenceForDebugging(
+        base::NumberToString(event.event.unique_touch_event_id).c_str());
     touch_action_filter_.DecreaseActiveTouches();
     touch_action_filter_.ReportAndResetTouchAction();
     UpdateTouchAckTimeoutEnabled();
@@ -618,7 +623,7 @@ void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
 
   touch_action_filter_.AppendToGestureSequenceForDebugging("S");
   touch_action_filter_.AppendToGestureSequenceForDebugging(
-      std::to_string(touch_action).c_str());
+      base::NumberToString(touch_action).c_str());
   touch_action_filter_.OnSetTouchAction(touch_action);
 
   // kTouchActionNone should disable the touch ack timeout.
