@@ -845,10 +845,21 @@ void Node::SetNeedsStyleInvalidation() {
 
 void Node::MarkAncestorsWithChildNeedsStyleInvalidation() {
   ScriptForbiddenScope forbid_script_during_raw_iteration;
-  for (Node* node = ParentOrShadowHostNode();
-       node && !node->ChildNeedsStyleInvalidation();
-       node = node->ParentOrShadowHostNode())
-    node->SetChildNeedsStyleInvalidation();
+  ContainerNode* ancestor = ParentOrShadowHostNode();
+  bool parent_dirty = ancestor && ancestor->NeedsStyleInvalidation();
+  for (; ancestor && !ancestor->ChildNeedsStyleInvalidation();
+       ancestor = ancestor->ParentOrShadowHostNode()) {
+    ancestor->SetChildNeedsStyleInvalidation();
+    if (ancestor->NeedsStyleInvalidation())
+      break;
+  }
+  if (!isConnected())
+    return;
+  // If the parent node is already dirty, we can keep the same invalidation
+  // root. The early return here is a performance optimization.
+  if (parent_dirty)
+    return;
+  GetDocument().GetStyleEngine().UpdateStyleInvalidationRoot(ancestor, this);
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
@@ -866,9 +877,21 @@ inline void Node::SetStyleChange(StyleChangeType change_type) {
 }
 
 void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
-  for (ContainerNode* p = ParentOrShadowHostNode();
-       p && !p->ChildNeedsStyleRecalc(); p = p->ParentOrShadowHostNode())
-    p->SetChildNeedsStyleRecalc();
+  ContainerNode* ancestor = ParentOrShadowHostNode();
+  bool parent_dirty = ancestor && ancestor->NeedsStyleRecalc();
+  for (; ancestor && !ancestor->ChildNeedsStyleRecalc();
+       ancestor = ancestor->ParentOrShadowHostNode()) {
+    ancestor->SetChildNeedsStyleRecalc();
+    if (ancestor->NeedsStyleRecalc())
+      break;
+  }
+  if (!isConnected())
+    return;
+  // If the parent node is already dirty, we can keep the same recalc root. The
+  // early return here is a performance optimization.
+  if (parent_dirty)
+    return;
+  GetDocument().GetStyleEngine().UpdateStyleRecalcRoot(ancestor, this);
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
@@ -891,9 +914,20 @@ ContainerNode* Node::GetReattachParent() const {
 }
 
 void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {
-  for (ContainerNode* p = GetReattachParent();
-       p && !p->ChildNeedsReattachLayoutTree(); p = p->GetReattachParent())
-    p->SetChildNeedsReattachLayoutTree();
+  DCHECK(isConnected());
+  ContainerNode* ancestor = GetReattachParent();
+  bool parent_dirty = ancestor && ancestor->NeedsReattachLayoutTree();
+  for (; ancestor && !ancestor->ChildNeedsReattachLayoutTree();
+       ancestor = ancestor->GetReattachParent()) {
+    ancestor->SetChildNeedsReattachLayoutTree();
+    if (ancestor->NeedsReattachLayoutTree())
+      break;
+  }
+  // If the parent node is already dirty, we can keep the same rebuild root. The
+  // early return here is a performance optimization.
+  if (parent_dirty)
+    return;
+  GetDocument().GetStyleEngine().UpdateLayoutTreeRebuildRoot(ancestor, this);
 }
 
 void Node::SetNeedsReattachLayoutTree() {
