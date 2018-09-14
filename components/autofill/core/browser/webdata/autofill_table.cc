@@ -93,7 +93,7 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
   s->BindInt64(index++, modification_date.ToTimeT());
   s->BindString(index++, profile.origin());
   s->BindString(index++, profile.language_code());
-  s->BindInt64(index++, profile.GetValidityBitfieldValue());
+  s->BindInt64(index++, profile.GetClientValidityBitfieldValue());
 }
 
 std::unique_ptr<AutofillProfile> AutofillProfileFromStatement(
@@ -117,7 +117,7 @@ std::unique_ptr<AutofillProfile> AutofillProfileFromStatement(
   profile->set_modification_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
   profile->set_origin(s.ColumnString(index++));
   profile->set_language_code(s.ColumnString(index++));
-  profile->SetValidityFromBitfieldValue(s.ColumnInt64(index++));
+  profile->SetClientValidityFromBitfieldValue(s.ColumnInt64(index++));
 
   return profile;
 }

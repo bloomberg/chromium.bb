@@ -1246,14 +1246,21 @@ void PersonalDataManager::MaybeRemoveInvalidSuggestions(
       features::kAutofillSuggestInvalidProfileData);
 
   for (size_t i = 0; i < profiles->size(); ++i) {
-    bool is_invalid = (*profiles)[i]->GetValidityState(
-                          type.GetStorableType()) == AutofillProfile::INVALID;
-    if (is_invalid) {
+    bool is_client_invalid =
+        (*profiles)[i]->GetValidityState(type.GetStorableType(),
+                                         AutofillProfile::CLIENT) ==
+        AutofillProfile::INVALID;
+
+    bool is_server_invalid =
+        (*profiles)[i]->GetValidityState(type.GetStorableType(),
+                                         AutofillProfile::SERVER) ==
+        AutofillProfile::INVALID;
+
+    if ((is_server_invalid || is_client_invalid) && !suggest_invalid)
+      (*profiles)[i] = nullptr;
+    if (is_server_invalid || is_client_invalid)
       UMA_HISTOGRAM_BOOLEAN("Autofill.InvalidProfileData.UsedForSuggestion",
                             suggest_invalid);
-      if (!suggest_invalid)
-        (*profiles)[i] = nullptr;
-    }
   }
 
   if (!suggest_invalid) {

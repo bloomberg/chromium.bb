@@ -415,8 +415,9 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
   // Update the validity state bitfield.
   if (specifics.has_validity_state_bitfield() &&
       specifics.validity_state_bitfield() !=
-          profile->GetValidityBitfieldValue()) {
-    profile->SetValidityFromBitfieldValue(specifics.validity_state_bitfield());
+          profile->GetClientValidityBitfieldValue()) {
+    profile->SetClientValidityFromBitfieldValue(
+        specifics.validity_state_bitfield());
     diff = true;
   }
 
@@ -484,7 +485,8 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
       LimitData(
           UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))));
   specifics->set_address_home_language_code(LimitData(profile.language_code()));
-  specifics->set_validity_state_bitfield(profile.GetValidityBitfieldValue());
+  specifics->set_validity_state_bitfield(
+      profile.GetClientValidityBitfieldValue());
 
   // TODO(estade): this should be set_email_address.
   specifics->add_email_address(

@@ -48,7 +48,8 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillProfile(
   specifics->set_use_date(entry.use_date().ToTimeT());
   specifics->set_address_home_language_code(
       TruncateUTF8(entry.language_code()));
-  specifics->set_validity_state_bitfield(entry.GetValidityBitfieldValue());
+  specifics->set_validity_state_bitfield(
+      entry.GetClientValidityBitfieldValue());
 
   // Set repeated fields.
   if (entry.HasRawInfo(NAME_FIRST)) {
@@ -134,7 +135,8 @@ std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
   profile->set_use_count(specifics.use_count());
   profile->set_use_date(base::Time::FromTimeT(specifics.use_date()));
   profile->set_language_code(specifics.address_home_language_code());
-  profile->SetValidityFromBitfieldValue(specifics.validity_state_bitfield());
+  profile->SetClientValidityFromBitfieldValue(
+      specifics.validity_state_bitfield());
 
   // Set repeated fields.
   if (specifics.name_first_size() > 0) {
