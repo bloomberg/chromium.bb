@@ -183,8 +183,6 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   params.origin = url::Origin();
   params.insecure_request_policy = blink::kLeaveInsecureRequestsAlone;
   params.has_potentially_trustworthy_unique_origin = false;
-  params.searchable_form_url = GURL();
-  params.searchable_form_encoding = std::string();
 
   rfh->SendNavigateWithParams(&params, was_within_same_document);
 }

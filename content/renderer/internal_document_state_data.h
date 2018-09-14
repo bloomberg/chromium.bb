@@ -36,15 +36,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
     http_status_code_ = http_status_code;
   }
 
-  const GURL& searchable_form_url() const { return searchable_form_url_; }
-  void set_searchable_form_url(const GURL& url) { searchable_form_url_ = url; }
-  const std::string& searchable_form_encoding() const {
-    return searchable_form_encoding_;
-  }
-  void set_searchable_form_encoding(const std::string& encoding) {
-    searchable_form_encoding_ = encoding;
-  }
-
   // True if the user agent was overridden for this page.
   bool is_overriding_user_agent() const { return is_overriding_user_agent_; }
   void set_is_overriding_user_agent(bool state) {
@@ -80,8 +71,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
 
  private:
   int http_status_code_;
-  GURL searchable_form_url_;
-  std::string searchable_form_encoding_;
   bool is_overriding_user_agent_;
   bool must_reset_scroll_and_scale_state_;
   bool cache_policy_override_set_;

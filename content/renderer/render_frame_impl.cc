@@ -4027,19 +4027,11 @@ void RenderFrameImpl::WillSubmitForm(const blink::WebFormElement& form) {
       DocumentState::FromDocumentLoader(frame_->GetProvisionalDocumentLoader());
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
 
   if (ui::PageTransitionCoreTypeIs(navigation_state->GetTransitionType(),
                                    ui::PAGE_TRANSITION_LINK)) {
     navigation_state->set_transition_type(ui::PAGE_TRANSITION_FORM_SUBMIT);
   }
-
-  // Save these to be processed when the ensuing navigation is committed.
-  WebSearchableFormData web_searchable_form_data(form);
-  internal_data->set_searchable_form_url(web_searchable_form_data.Url());
-  internal_data->set_searchable_form_encoding(
-      web_searchable_form_data.Encoding().Utf8());
 
   for (auto& observer : observers_)
     observer.WillSubmitForm(form);
@@ -5457,9 +5449,6 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   GetRedirectChain(document_loader, &params->redirects);
   params->should_update_history =
       !document_loader->HasUnreachableURL() && response.HttpStatusCode() != 404;
-
-  params->searchable_form_url = internal_data->searchable_form_url();
-  params->searchable_form_encoding = internal_data->searchable_form_encoding();
 
   params->gesture = document_loader->HadUserGesture() ? NavigationGestureUser
                                                       : NavigationGestureAuto;

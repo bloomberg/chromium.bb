@@ -5515,7 +5515,6 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
        it != validated_params->redirects.end(); ++it) {
     process->FilterURL(false, &(*it));
   }
-  process->FilterURL(true, &validated_params->searchable_form_url);
 
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.

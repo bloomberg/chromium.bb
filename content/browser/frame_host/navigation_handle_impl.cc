@@ -580,8 +580,6 @@ void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
   params.transition = ui::PAGE_TRANSITION_TYPED;
   params.redirects = std::vector<GURL>();
   params.should_update_history = false;
-  params.searchable_form_url = GURL();
-  params.searchable_form_encoding = std::string();
   params.did_create_new_entry = false;
   params.gesture = NavigationGestureUser;
   params.method = "GET";
