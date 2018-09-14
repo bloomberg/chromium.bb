@@ -54,6 +54,8 @@ class CONTENT_EXPORT AudioServiceAudioProcessorProxy
   void OnDisableAecDump() override;
   void OnIpcClosing() override;
 
+  // Set the AudioProcessorControls which to proxy to. Must only be called once
+  // and |controls| cannot be nullptr.
   void SetControls(media::AudioProcessorControls* controls);
 
  protected:
