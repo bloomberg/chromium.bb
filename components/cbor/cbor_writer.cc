@@ -8,7 +8,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
-#include "components/cbor/cbor_binary.h"
+#include "components/cbor/cbor_constants.h"
 
 namespace cbor {
 
@@ -95,6 +95,10 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
       }
       return true;
     }
+
+    case CBORValue::Type::TAG:
+      NOTREACHED() << constants::kUnsupportedMajorType;
+      return false;
 
     // Represents a simple value.
     case CBORValue::Type::SIMPLE_VALUE: {

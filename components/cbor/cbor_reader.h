@@ -16,37 +16,40 @@
 #include "components/cbor/cbor_values.h"
 
 // Concise Binary Object Representation (CBOR) decoder as defined by
-// https://tools.ietf.org/html/rfc7049. This decoder only accepts canonical
-// CBOR as defined by section 3.9.
-// Supported:
-//  * Major types:
-//     * 0: Unsigned integers, up to 64-bit.
-//     * 2: Byte strings.
-//     * 3: UTF-8 strings.
-//     * 4: Definite-length arrays.
-//     * 5: Definite-length maps.
-//     * 7: Simple values.
+// https://tools.ietf.org/html/rfc7049. This decoder only accepts canonical CBOR
+// as defined by section 3.9.
+//
+// This implementation supports the following major types:
+//  - 0: Unsigned integers, up to 64-bit values.
+//  - 1: Signed integers, up to 64-bit values.
+//  - 2: Byte strings.
+//  - 3: UTF-8 strings.
+//  - 4: Definite-length arrays.
+//  - 5: Definite-length maps.
+//  - 7: Simple values.
 //
 // Requirements for canonical CBOR representation:
-//  - Duplicate keys for map are not allowed.
-//  - Keys for map must be sorted first by length and then by byte-wise
+//  - Duplicate keys in maps are not allowed.
+//  - Keys for maps must be sorted first by length and then by byte-wise
 //    lexical order.
 //
-// Known limitations and interpretations of the RFC:
-//  - Does not support negative integers, indefinite data streams and tagging.
-//  - Floating point representations and BREAK stop code in major
-//    type 7 are not supported.
-//  - Non-character codepoint are not supported for Major type 3.
-//  - Incomplete CBOR data items are treated as syntax errors.
-//  - Trailing data bytes are treated as errors.
-//  - Unknown additional information formats are treated as syntax errors.
-//  - Callers can decode CBOR values with at most 16 nested depth layer. More
-//    strict restrictions on nesting layer size of CBOR values can be enforced
-//    by setting |max_nesting_level|.
-//  - Only CBOR maps with integer or string type keys are supported due to the
-//    cost of serialization when sorting map keys.
-//  - Simple values that are unassigned/reserved as per RFC 7049 are not
-//    supported and treated as errors.
+// Known limitations and interpretations of the RFC (and the reasons):
+//  - Does not support indefinite-length data streams or semantic tags (major
+//    type 6). (Simplicity; security)
+//  - Does not support the floating point and BREAK stop code value types in
+//    major type 7. (Simplicity)
+//  - Does not support non-character codepoints in major type 3. (Security)
+//  - Treats incomplete CBOR data items as syntax errors. (Security)
+//  - Treats trailing data bytes as errors. (Security)
+//  - Treats unknown additional information formats as syntax errors.
+//    (Simplicity; security)
+//  - Limits CBOR value inputs to at most 16 layers of nesting. Callers can
+//    enforce more shallow nesting by setting |max_nesting_level|. (Efficiency;
+//    security)
+//  - Only supports CBOR maps with integer or string type keys, due to the
+//    cost of serialization when sorting map keys. (Efficiency; simplicity)
+//  - Does not support simple values that are unassigned/reserved as per RFC
+//    7049, and treats them as errors. (Security)
 
 namespace cbor {
 
@@ -74,14 +77,18 @@ class CBOR_EXPORT CBORReader {
 
   ~CBORReader();
 
-  // Reads and parses |input_data| into a CBORValue. If any one of the syntax
-  // formats is violated -including unknown additional info and incomplete
-  // CBOR data- then an empty optional is returned. Optional |error_code_out|
-  // can be provided by the caller to obtain additional information about
-  // decoding failures, which is always available if an empty value is returned.
+  // Reads and parses |input_data| into a CBORValue. Returns an empty Optional
+  // if the input violates any one of the syntax requirements (including unknown
+  // additional info and incomplete CBOR data).
   //
-  // Fails if not all the data was consumed and sets |error_code_out| to
-  // EXTRANEOUS_DATA in this case.
+  // The caller can optionally provide |error_code_out| to obtain additional
+  // information about decoding failures.
+  //
+  // If the caller provides it, |max_nesting_level| cannot exceed
+  // |kCBORMaxDepth|.
+  //
+  // Returns an empty Optional if not all the data was consumed, and sets
+  // |error_code_out| to EXTRANEOUS_DATA in this case.
   static base::Optional<CBORValue> Read(base::span<const uint8_t> input_data,
                                         DecoderError* error_code_out = nullptr,
                                         int max_nesting_level = kCBORMaxDepth);
@@ -119,7 +126,7 @@ class CBOR_EXPORT CBORReader {
   base::Optional<CBORValue> DecodeValueToNegative(uint64_t value);
   base::Optional<CBORValue> DecodeValueToUnsigned(uint64_t value);
   base::Optional<CBORValue> DecodeToSimpleValue(const DataItemHeader& header);
-  bool ReadVariadicLengthInteger(uint8_t additional_info, uint64_t* value);
+  base::Optional<uint64_t> ReadVariadicLengthInteger(uint8_t additional_info);
   base::Optional<CBORValue> ReadByteStringContent(const DataItemHeader& header);
   base::Optional<CBORValue> ReadStringContent(const DataItemHeader& header);
   base::Optional<CBORValue> ReadArrayContent(const DataItemHeader& header,
@@ -128,6 +135,9 @@ class CBOR_EXPORT CBORReader {
                                            int max_nesting_level);
   base::Optional<uint8_t> ReadByte();
   base::Optional<base::span<const uint8_t>> ReadBytes(uint64_t num_bytes);
+  // TODO(crbug/879237): This function's only caller has to make a copy of a
+  // `span<uint8_t>` to satisfy this function's interface. Maybe we can make
+  // this function take a `const span<const uint8_t>` and avoid copying?
   bool HasValidUTF8Format(const std::string& string_data);
   bool CheckOutOfOrderKey(const CBORValue& new_key, CBORValue::MapValue* map);
   bool CheckMinimalEncoding(uint8_t additional_bytes, uint64_t uint_data);
