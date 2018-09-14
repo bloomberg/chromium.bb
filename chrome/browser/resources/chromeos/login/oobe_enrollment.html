@@ -1,13 +1,13 @@
-<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 
-<!-- Icons to use in enterprise-header -->
+<!-- Icons to use during enterprise enrollment -->
 
-<iron-iconset-svg name="enterprise-header-32" size="32">
+<iron-iconset-svg name="oobe-enrollment-32" size="32">
   <svg>
     <defs>
       <g id="briefcase" fill="none" fill-rule="evenodd">
@@ -20,7 +20,7 @@
   </svg>
 </iron-iconset-svg>
 
-<iron-iconset-svg name="enterprise-header-64" size="64">
+<iron-iconset-svg name="oobe-enrollment-64" size="64">
   <svg>
     <defs>
       <g id="briefcase" fill="none" fill-rule="evenodd">
@@ -32,24 +32,3 @@
     </defs>
   </svg>
 </iron-iconset-svg>
-
-
-<!--
-  Header for enterprise-card.
--->
-<dom-module id="enterprise-header">
-  <link rel="stylesheet" href="enterprise_header.css">
-  <link rel="stylesheet" href="oobe_flex_layout.css">
-
-  <template>
-    <div class="flex vertical layout start start-justified">
-        <div id="icon-container" class="vertical layout center">
-          <slot name="enterprise-icon"></slot>
-        </div>
-      <div class="header-title" hidden$="{{!headerTitle}}">
-        <span>[[headerTitle]]</span>
-      </div>
-      <slot name="header-comment"></slot>
-    </div>
-  </template>
-</dom-module>

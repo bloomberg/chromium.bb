@@ -387,15 +387,15 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       if (step == STEP_SIGNIN) {
         $('oauth-enroll-auth-view').focus();
       } else if (step == STEP_LICENSE_TYPE) {
-        $('oauth-enroll-license-ui').submitButton.focus();
+        $('oauth-enroll-license-ui').show();
       } else if (step == STEP_ERROR) {
         $('oauth-enroll-error-card').submitButton.focus();
       } else if (step == STEP_SUCCESS) {
-        $('oauth-enroll-success-card').focus();
+        $('oauth-enroll-success-card').show();
       } else if (step == STEP_ABE_SUCCESS) {
-        $('oauth-enroll-abe-success-card').focus();
+        $('oauth-enroll-abe-success-card').show();
       } else if (step == STEP_ATTRIBUTE_PROMPT) {
-        $('oauth-enroll-step-attribute-prompt').focus();
+        $('oauth-enroll-attribute-prompt-card').show();
       } else if (step == STEP_ATTRIBUTE_PROMPT_ERROR) {
         $('oauth-enroll-attribute-prompt-error-card').submitButton.focus();
       } else if (step == STEP_ACTIVE_DIRECTORY_JOIN_ERROR) {
