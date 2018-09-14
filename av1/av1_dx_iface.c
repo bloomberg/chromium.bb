@@ -47,6 +47,7 @@ struct aom_codec_alg_priv {
   int last_show_frame;  // Index of last output frame.
   int byte_alignment;
   int skip_loop_filter;
+  int skip_film_grain;
   int decode_tile_row;
   int decode_tile_col;
   unsigned int tile_mode;
@@ -323,6 +324,7 @@ static void init_buffer_callbacks(aom_codec_alg_priv_t *ctx) {
     cm->new_fb_idx = INVALID_IDX;
     cm->byte_alignment = ctx->byte_alignment;
     cm->skip_loop_filter = ctx->skip_loop_filter;
+    cm->skip_film_grain = ctx->skip_film_grain;
 
     if (ctx->get_ext_fb_cb != NULL && ctx->release_ext_fb_cb != NULL) {
       pool->get_fb_cb = ctx->get_ext_fb_cb;
@@ -737,6 +739,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           img = &ctx->img;
           img->temporal_id = cm->temporal_layer_id;
           img->spatial_id = cm->spatial_layer_id;
+          if (cm->skip_film_grain) grain_params->apply_grain = 0;
           aom_image_t *res = add_grain_if_needed(
               img, &ctx->image_with_grain[*index], grain_params);
           if (!res) {
@@ -1149,6 +1152,19 @@ static aom_codec_err_t ctrl_set_skip_loop_filter(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
+static aom_codec_err_t ctrl_set_skip_film_grain(aom_codec_alg_priv_t *ctx,
+                                                va_list args) {
+  ctx->skip_film_grain = va_arg(args, int);
+
+  if (ctx->frame_workers) {
+    AVxWorker *const worker = ctx->frame_workers;
+    FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
+    frame_worker_data->pbi->common.skip_film_grain = ctx->skip_film_grain;
+  }
+
+  return AOM_CODEC_OK;
+}
+
 static aom_codec_err_t ctrl_get_accounting(aom_codec_alg_priv_t *ctx,
                                            va_list args) {
 #if !CONFIG_ACCOUNTING
@@ -1252,6 +1268,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1D_EXT_TILE_DEBUG, ctrl_ext_tile_debug },
   { AV1D_SET_ROW_MT, ctrl_set_row_mt },
   { AV1D_SET_EXT_REF_PTR, ctrl_set_ext_ref_ptr },
+  { AV1D_SET_SKIP_FILM_GRAIN, ctrl_set_skip_film_grain },
 
   // Getters
   { AOMD_GET_FRAME_CORRUPTED, ctrl_get_frame_corrupted },
