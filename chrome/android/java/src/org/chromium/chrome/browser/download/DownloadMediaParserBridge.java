@@ -19,8 +19,8 @@ public class DownloadMediaParserBridge {
      * @param totalSize Total size of the media file.
      * @param callback Callback to get the result.
      */
-    public DownloadMediaParserBridge(
-            String mimeType, String filePath, long totalSize, Callback<Boolean> callback) {
+    public DownloadMediaParserBridge(String mimeType, String filePath, long totalSize,
+            Callback<DownloadMediaData> callback) {
         mNativeDownloadMediaParserBridge = nativeInit(mimeType, filePath, totalSize, callback);
     }
 
@@ -43,7 +43,7 @@ public class DownloadMediaParserBridge {
     }
 
     private native long nativeInit(
-            String mimeType, String filePath, long totalSize, Callback<Boolean> callback);
+            String mimeType, String filePath, long totalSize, Callback<DownloadMediaData> callback);
     private native void nativeDestory(long nativeDownloadMediaParserBridge);
     private native void nativeStart(long nativeDownloadMediaParserBridge);
 }

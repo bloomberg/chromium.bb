@@ -28,11 +28,21 @@ class MojoVideoDecoder;
 class VideoDecoderConfig;
 }  // namespace media
 
-// Local media files parser is used to process local media files. This object
-// lives on main thread in browser process.
+class SkBitmap;
+class VideoFrameThumbnailConverter;
+
+// Parse local media files, including media metadata and thumbnails.
+// Metadata is always parsed in utility process for both audio and video files.
+//
+// For video file, the thumbnail may be poster image in metadata or extracted
+// video frame. The frame extraction always happens in utility process. The
+// decoding may happen in utility or GPU process based on video codec.
 class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
  public:
-  using ParseCompleteCB = base::OnceCallback<void(bool)>;
+  using ParseCompleteCB =
+      base::OnceCallback<void(bool success,
+                              chrome::mojom::MediaMetadataPtr media_metadata,
+                              SkBitmap bitmap)>;
 
   DownloadMediaParser(int64_t size,
                       const std::string& mime_type,
@@ -42,8 +52,8 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
 
   // Parse media metadata in a local file. All file IO will run on
   // |file_task_runner|. The metadata is parsed in an utility process safely.
-  // However, the result is still comes from user-defined input, thus should be
-  // used with caution.
+  // The thumbnail is retrieved from GPU process or utility process based on
+  // different codec.
   void Start();
 
  private:
@@ -75,12 +85,18 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
   void OnDecoderConnectionError();
 
+  // Renders the video frame to bitmap.
+  void RenderVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame);
+  void OnBitmapGenerated(std::unique_ptr<VideoFrameThumbnailConverter>,
+                         bool success,
+                         SkBitmap bitmap);
+
   // Overlays media data source read operation. Gradually read data from media
   // file.
   void OnMediaDataReady(chrome::mojom::MediaDataSource::ReadCallback callback,
                         std::unique_ptr<std::string> data);
 
-  void NotifyComplete();
+  void NotifyComplete(SkBitmap bitmap);
   void OnError();
 
   int64_t size_;
@@ -89,6 +105,8 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
 
   ParseCompleteCB parse_complete_cb_;
   chrome::mojom::MediaMetadataPtr metadata_;
+
+  // Poster images obtained with |metadata_|.
   std::vector<metadata::AttachedImage> attached_images_;
 
   std::unique_ptr<chrome::mojom::MediaDataSource> media_data_source_;
@@ -96,9 +114,8 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
   // The task runner to do blocking disk IO.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
-  // Encoded frame to be decoded. The data comes from a safe sandboxed process.
-  // This data can be large for high resolution video, should be std::move or
-  // cleared whenever possible.
+  // Encoded video frame to be decoded. This data can be large for high
+  // resolution video, should be std::move or cleared whenever possible.
   std::vector<uint8_t> encoded_data_;
 
   // Objects used to decode the video into media::VideoFrame.

@@ -46,7 +46,7 @@ public class DownloadMediaParserTest {
      */
     public static class MediaParseResult {
         public boolean done;
-        public boolean success;
+        public DownloadMediaData mediaData;
     }
 
     @Before
@@ -68,8 +68,8 @@ public class DownloadMediaParserTest {
         // The native DownloadMediaParser needs to be created on UI thread.
         ThreadUtils.runOnUiThreadBlocking(() -> {
             DownloadMediaParserBridge parser = new DownloadMediaParserBridge(
-                    "audio/mp3", filePath, audioFile.length(), (success) -> {
-                        result.success = success;
+                    "audio/mp3", filePath, audioFile.length(), (DownloadMediaData mediaData) -> {
+                        result.mediaData = mediaData;
                         result.done = true;
                     });
             parser.start();
@@ -82,7 +82,7 @@ public class DownloadMediaParserTest {
             }
         }, MAX_MEDIA_PARSER_POLL_TIME_MS, MEDIA_PARSER_POLL_INTERVAL_MS);
 
-        Assert.assertTrue("Failed to parse audio metadata.", result.success);
+        Assert.assertTrue("Failed to parse audio metadata.", result.mediaData != null);
     }
 
     @Test
@@ -99,8 +99,8 @@ public class DownloadMediaParserTest {
         // The native DownloadMediaParser needs to be created on UI thread.
         ThreadUtils.runOnUiThreadBlocking(() -> {
             DownloadMediaParserBridge parser = new DownloadMediaParserBridge(
-                    "video/mp4", filePath, videoFile.length(), (success) -> {
-                        result.success = success;
+                    "video/mp4", filePath, videoFile.length(), (DownloadMediaData mediaData) -> {
+                        result.mediaData = mediaData;
                         result.done = true;
                     });
             parser.start();
@@ -113,6 +113,10 @@ public class DownloadMediaParserTest {
             }
         }, MAX_MEDIA_PARSER_POLL_TIME_MS, MEDIA_PARSER_POLL_INTERVAL_MS);
 
-        Assert.assertTrue("Failed to parse video file.", result.success);
+        Assert.assertTrue("Failed to parse video file.", result.mediaData != null);
+        Assert.assertTrue(
+                "Failed to retrieve thumbnail.", result.mediaData.thumbnail.getWidth() > 0);
+        Assert.assertTrue(
+                "Failed to retrieve thumbnail.", result.mediaData.thumbnail.getHeight() > 0);
     }
 }
