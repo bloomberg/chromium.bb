@@ -777,7 +777,6 @@ class DriveTestVolume : public TestVolume {
 
     EXPECT_FALSE(fake_drive_service_);
     fake_drive_service_ = new drive::FakeDriveService;
-    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
     EXPECT_FALSE(integration_service_);
     integration_service_ = new drive::DriveIntegrationService(

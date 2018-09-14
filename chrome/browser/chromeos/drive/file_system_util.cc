@@ -128,15 +128,6 @@ FileSystemInterface* GetFileSystemByProfileId(void* profile_id) {
   return GetFileSystemByProfile(profile);
 }
 
-DriveAppRegistry* GetDriveAppRegistryByProfile(Profile* profile) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  DriveIntegrationService* integration_service =
-      GetIntegrationServiceByProfile(profile);
-  return integration_service ? integration_service->drive_app_registry()
-                             : nullptr;
-}
-
 DriveServiceInterface* GetDriveServiceByProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

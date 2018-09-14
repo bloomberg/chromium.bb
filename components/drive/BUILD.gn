@@ -8,9 +8,6 @@ static_library("drive") {
   sources = [
     "drive_api_util.cc",
     "drive_api_util.h",
-    "drive_app_registry.cc",
-    "drive_app_registry.h",
-    "drive_app_registry_observer.h",
     "drive_notification_manager.cc",
     "drive_notification_manager.h",
     "drive_notification_observer.h",

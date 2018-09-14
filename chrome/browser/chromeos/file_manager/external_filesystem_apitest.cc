@@ -222,7 +222,6 @@ void AddDirectoryToDriveService(drive::FakeDriveService* fake_drive_service,
 // The hierarchy is the same as for the local file system.
 drive::FakeDriveService* CreateDriveService() {
   drive::FakeDriveService* service = new drive::FakeDriveService;
-  service->LoadAppListForDriveApi("drive/applist.json");
   AddDirectoryToDriveService(service, service->GetRootResourceId(), "test_dir",
                              "2012-01-02T00:00:00.000Z",
                              "2012-01-02T00:00:01.000Z");

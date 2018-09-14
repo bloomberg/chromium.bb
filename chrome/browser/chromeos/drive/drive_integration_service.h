@@ -44,7 +44,6 @@ namespace drive {
 
 class DebugInfoCollector;
 class DownloadHandler;
-class DriveAppRegistry;
 class DriveServiceInterface;
 class EventLogger;
 class FileSystemInterface;
@@ -143,7 +142,6 @@ class DriveIntegrationService : public KeyedService,
   }
   FileSystemInterface* file_system() { return file_system_.get(); }
   DownloadHandler* download_handler() { return download_handler_.get(); }
-  DriveAppRegistry* drive_app_registry() { return drive_app_registry_.get(); }
   JobListInterface* job_list() { return scheduler_.get(); }
 
   // Clears all the local cache file, the local resource metadata, and
@@ -238,7 +236,6 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<internal::FileCache, util::DestroyHelper> cache_;
   std::unique_ptr<DriveServiceInterface> drive_service_;
   std::unique_ptr<JobScheduler> scheduler_;
-  std::unique_ptr<DriveAppRegistry> drive_app_registry_;
   std::unique_ptr<internal::ResourceMetadata, util::DestroyHelper>
       resource_metadata_;
   std::unique_ptr<FileSystemInterface> file_system_;

@@ -3474,7 +3474,6 @@ test("unit_tests") {
     sources += [
       "../../apps/saved_files_service_unittest.cc",
       "../../components/drive/drive_api_util_unittest.cc",
-      "../../components/drive/drive_app_registry_unittest.cc",
       "../../components/drive/drive_uploader_unittest.cc",
       "../../components/drive/event_logger_unittest.cc",
       "../../components/drive/service/drive_api_service_unittest.cc",

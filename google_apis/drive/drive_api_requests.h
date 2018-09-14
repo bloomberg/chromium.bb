@@ -237,38 +237,6 @@ class FilesGetRequest : public DriveApiDataRequest<FileResource> {
   DISALLOW_COPY_AND_ASSIGN(FilesGetRequest);
 };
 
-//============================ FilesAuthorizeRequest ===========================
-
-// This class performs request for authorizing an app to access a file.
-// This request is mapped to /drive/v2internal/file/authorize internal endpoint.
-class FilesAuthorizeRequest : public DriveApiDataRequest<FileResource> {
- public:
-  FilesAuthorizeRequest(RequestSender* sender,
-                        const DriveApiUrlGenerator& url_generator,
-                        const FileResourceCallback& callback);
-  ~FilesAuthorizeRequest() override;
-
-  // Required parameter.
-  const std::string& file_id() const { return file_id_; }
-  void set_file_id(const std::string& file_id) { file_id_ = file_id; }
-  const std::string& app_id() const { return app_id_; }
-  void set_app_id(const std::string& app_id) { app_id_ = app_id; }
-
- protected:
-  // Overridden from GetDataRequest.
-  std::string GetRequestType() const override;
-
-  // Overridden from DriveApiDataRequest.
-  GURL GetURLInternal() const override;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-  std::string file_id_;
-  std::string app_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(FilesAuthorizeRequest);
-};
-
 //============================ FilesInsertRequest =============================
 
 // Enumeration type for specifying visibility of files.
@@ -783,58 +751,6 @@ class ChangesListNextPageRequest : public DriveApiDataRequest<ChangeList> {
   GURL next_link_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangesListNextPageRequest);
-};
-
-//============================= AppsListRequest ============================
-
-// This class performs the request for fetching AppList.
-// This request is mapped to
-// https://developers.google.com/drive/v2/reference/apps/list
-class AppsListRequest : public DriveApiDataRequest<AppList> {
- public:
-  AppsListRequest(RequestSender* sender,
-                  const DriveApiUrlGenerator& url_generator,
-                  bool use_internal_endpoint,
-                  const AppListCallback& callback);
-  ~AppsListRequest() override;
-
- protected:
-  // Overridden from DriveApiDataRequest.
-  GURL GetURLInternal() const override;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-  const bool use_internal_endpoint_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppsListRequest);
-};
-
-//============================= AppsDeleteRequest ==============================
-
-// This class performs the request for deleting a Drive app.
-// This request is mapped to
-// https://developers.google.com/drive/v2/reference/files/trash
-class AppsDeleteRequest : public EntryActionRequest {
- public:
-  AppsDeleteRequest(RequestSender* sender,
-                    const DriveApiUrlGenerator& url_generator,
-                    const EntryActionCallback& callback);
-  ~AppsDeleteRequest() override;
-
-  // Required parameter.
-  const std::string& app_id() const { return app_id_; }
-  void set_app_id(const std::string& app_id) { app_id_ = app_id; }
-
- protected:
-  // Overridden from UrlFetchRequestBase.
-  std::string GetRequestType() const override;
-  GURL GetURL() const override;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-  std::string app_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppsDeleteRequest);
 };
 
 //========================== ChildrenInsertRequest ============================

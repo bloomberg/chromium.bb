@@ -166,7 +166,6 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     // exist simultaneously.
     DCHECK(!fake_drive_service_);
     fake_drive_service_ = new drive::FakeDriveService;
-    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
     SetUpTestFileHierarchy();
 

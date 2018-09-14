@@ -20,7 +20,6 @@ class FileSystemURL;
 
 namespace drive {
 
-class DriveAppRegistry;
 class DriveIntegrationService;
 class DriveServiceInterface;
 class FileSystemInterface;
@@ -60,10 +59,6 @@ FileSystemInterface* GetFileSystemByProfile(Profile* profile);
 // NULL for such a case).
 // This function must be called on UI thread.
 FileSystemInterface* GetFileSystemByProfileId(void* profile_id);
-
-// Returns the DriveAppRegistry for the |profile|. If not available (not
-// mounted or disabled), returns NULL.
-DriveAppRegistry* GetDriveAppRegistryByProfile(Profile* profile);
 
 // Returns the DriveService for the |profile|. If not available (not mounted
 // or disabled), returns NULL.
