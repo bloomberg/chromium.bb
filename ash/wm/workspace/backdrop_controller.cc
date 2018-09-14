@@ -124,23 +124,6 @@ void BackdropController::UpdateBackdrop() {
     return;
   }
 
-  AppListControllerImpl* app_list_controller =
-      Shell::Get()->app_list_controller();
-  // Hide the backdrop when it is in the same display of launcher and
-  // launcher is not in home launcher mode.
-  if (app_list_controller &&
-      !app_list_controller->IsHomeLauncherEnabledInTabletMode() &&
-      app_list_controller->GetTargetVisibility() &&
-      app_list_controller->presenter()->GetView() &&
-      container_->GetRootWindow() == app_list_controller->presenter()
-                                         ->GetView()
-                                         ->GetWidget()
-                                         ->GetNativeView()
-                                         ->GetRootWindow()) {
-    Hide();
-    return;
-  }
-
   aura::Window* window = GetTopmostWindowWithBackdrop();
   if (!window) {
     // Hide backdrop since no suitable window was found.
