@@ -1665,9 +1665,7 @@ static int construct_multi_layer_gf_structure(GF_GROUP *const gf_group,
 
   assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL);
 
-  for (int lvl = 0; lvl < MAX_PYRAMID_LVL; ++lvl) {
-    gf_group->pyramid_lvl_nodes[lvl] = 0;
-  }
+  av1_zero_array(gf_group->pyramid_lvl_nodes, MAX_PYRAMID_LVL);
 
   // At the beginning of each GF group it will be a key or overlay frame,
   gf_group->update_type[frame_index] = OVERLAY_UPDATE;
@@ -2254,9 +2252,8 @@ static void allocate_gf_group_bits(AV1_COMP *cpi, int64_t gf_group_bits,
       gf_group->bit_allocation[frame_index] = target_frame_size;
 #if MULTI_LVL_BOOST_VBR_CQ
       if (cpi->new_bwdref_update_rule) {
-        float_t reduced_factor = LEAF_REDUCTION_FACTOR;
         gf_group->bit_allocation[frame_index] -=
-            (int)(target_frame_size * reduced_factor);
+            (int)(target_frame_size * LEAF_REDUCTION_FACTOR);
       }
 #endif  // MULTI_LVL_BOOST_VBR_CQ
     }
