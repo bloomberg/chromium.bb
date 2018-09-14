@@ -10,6 +10,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_command_line.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/scheduler/browser_task_executor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -22,7 +23,7 @@ namespace content {
 TEST(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
   {
     base::TaskScheduler::Create("Browser");
-    BrowserThreadImpl::CreateTaskExecutor();
+    BrowserTaskExecutor::Create();
     base::test::ScopedCommandLine scoped_command_line;
     scoped_command_line.GetProcessCommandLine()->AppendSwitch(
         switches::kSingleProcess);
@@ -36,13 +37,13 @@ TEST(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
                   ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                       {base::TaskPriority::USER_VISIBLE}),
               base::SysInfo::NumberOfProcessors() - 1);
+    BrowserTaskExecutor::ResetForTesting();
     browser_main_loop.ShutdownThreadsAndCleanUp();
   }
   for (int id = BrowserThread::UI; id < BrowserThread::ID_COUNT; ++id) {
     BrowserThreadImpl::ResetGlobalsForTesting(
         static_cast<BrowserThread::ID>(id));
   }
-  BrowserThreadImpl::ResetTaskExecutorForTesting();
   base::TaskScheduler::GetInstance()->JoinForTesting();
   base::TaskScheduler::SetInstance(nullptr);
 }

@@ -19,7 +19,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace content {
@@ -162,68 +161,6 @@ bool PostTaskHelper(BrowserThread::ID identifier,
         from_here, std::move(task), delay);
   }
 }
-
-class BrowserThreadTaskExecutor : public base::TaskExecutor {
- public:
-  BrowserThreadTaskExecutor() {}
-  ~BrowserThreadTaskExecutor() override {}
-
-  // base::TaskExecutor implementation.
-  bool PostDelayedTaskWithTraits(const base::Location& from_here,
-                                 const base::TaskTraits& traits,
-                                 base::OnceClosure task,
-                                 base::TimeDelta delay) override {
-    return PostTaskHelper(
-        GetBrowserThreadIdentifier(traits), from_here, std::move(task), delay,
-        traits.GetExtension<BrowserTaskTraitsExtension>().nestable());
-  }
-
-  scoped_refptr<base::TaskRunner> CreateTaskRunnerWithTraits(
-      const base::TaskTraits& traits) override {
-    return GetTaskRunnerForThread(GetBrowserThreadIdentifier(traits));
-  }
-
-  scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
-      const base::TaskTraits& traits) override {
-    return GetTaskRunnerForThread(GetBrowserThreadIdentifier(traits));
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner>
-  CreateSingleThreadTaskRunnerWithTraits(
-      const base::TaskTraits& traits,
-      base::SingleThreadTaskRunnerThreadMode thread_mode) override {
-    // It's not possible to request DEDICATED access to a BrowserThread.
-    DCHECK_EQ(thread_mode, base::SingleThreadTaskRunnerThreadMode::SHARED);
-    return GetTaskRunnerForThread(GetBrowserThreadIdentifier(traits));
-  }
-
-#if defined(OS_WIN)
-  scoped_refptr<base::SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
-      const base::TaskTraits& traits,
-      base::SingleThreadTaskRunnerThreadMode thread_mode) override {
-    // Only the UI thread supports COM.
-    DCHECK_EQ(GetBrowserThreadIdentifier(traits), BrowserThread::UI);
-    return CreateSingleThreadTaskRunnerWithTraits(traits, thread_mode);
-  }
-#endif  // defined(OS_WIN)
-
- private:
-  BrowserThread::ID GetBrowserThreadIdentifier(const base::TaskTraits& traits) {
-    DCHECK_EQ(traits.extension_id(), BrowserTaskTraitsExtension::kExtensionId);
-    BrowserThread::ID id =
-        traits.GetExtension<BrowserTaskTraitsExtension>().browser_thread();
-    DCHECK_LT(id, BrowserThread::ID_COUNT);
-    return id;
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForThread(
-      BrowserThread::ID identifier) {
-    return g_task_runners.Get().proxies[identifier];
-  }
-};
-
-// |g_browser_thread_task_executor| is intentionally leaked on shutdown.
-BrowserThreadTaskExecutor* g_browser_thread_task_executor = nullptr;
 
 }  // namespace
 
@@ -401,23 +338,6 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
 scoped_refptr<base::SingleThreadTaskRunner>
 BrowserThread::GetTaskRunnerForThread(ID identifier) {
   return g_task_runners.Get().proxies[identifier];
-}
-
-// static
-void BrowserThreadImpl::CreateTaskExecutor() {
-  DCHECK(!g_browser_thread_task_executor);
-  g_browser_thread_task_executor = new BrowserThreadTaskExecutor();
-  base::RegisterTaskExecutor(BrowserTaskTraitsExtension::kExtensionId,
-                             g_browser_thread_task_executor);
-}
-
-// static
-void BrowserThreadImpl::ResetTaskExecutorForTesting() {
-  DCHECK(g_browser_thread_task_executor);
-  base::UnregisterTaskExecutorForTesting(
-      BrowserTaskTraitsExtension::kExtensionId);
-  delete g_browser_thread_task_executor;
-  g_browser_thread_task_executor = nullptr;
 }
 
 }  // namespace content

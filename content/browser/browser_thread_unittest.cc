@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/scheduler/browser_task_executor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +38,7 @@ class BrowserThreadTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    BrowserThreadImpl::CreateTaskExecutor();
+    BrowserTaskExecutor::Create();
 
     ui_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::UI);
     ui_thread_->Start();
@@ -57,7 +58,7 @@ class BrowserThreadTest : public testing::Test {
 
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::UI);
     BrowserThreadImpl::ResetGlobalsForTesting(BrowserThread::IO);
-    BrowserThreadImpl::ResetTaskExecutorForTesting();
+    BrowserTaskExecutor::ResetForTesting();
   }
 
   // Prepares this BrowserThreadTest for Release() to be invoked. |on_release|

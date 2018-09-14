@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
@@ -323,7 +324,7 @@ void BrowserTestBase::SetUp() {
   params.ui_task = ui_task.release();
   params.created_main_parts_closure = created_main_parts_closure.release();
   base::TaskScheduler::Create("Browser");
-  BrowserThreadImpl::CreateTaskExecutor();
+  BrowserTaskExecutor::Create();
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
   BrowserMain(params);
 #else
