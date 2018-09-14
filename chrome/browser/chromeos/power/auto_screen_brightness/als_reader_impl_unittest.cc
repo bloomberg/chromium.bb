@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader_impl.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -50,9 +50,9 @@ class TestObserver : public AlsReader::Observer {
 };
 }  // namespace
 
-class AlsReaderTest : public testing::Test {
+class AlsReaderImplTest : public testing::Test {
  public:
-  AlsReaderTest()
+  AlsReaderImplTest()
       : scoped_task_environment_(
             std::make_unique<base::test::ScopedTaskEnvironment>(
                 base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME)) {
@@ -63,7 +63,7 @@ class AlsReaderTest : public testing::Test {
     als_reader_.InitForTesting(ambient_light_path_);
   }
 
-  ~AlsReaderTest() override = default;
+  ~AlsReaderImplTest() override { als_reader_.RemoveObserver(&test_observer_); }
 
  protected:
   void WriteLux(int lux) {
@@ -81,39 +81,39 @@ class AlsReaderTest : public testing::Test {
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
   TestObserver test_observer_;
-  AlsReader als_reader_;
+  AlsReaderImpl als_reader_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AlsReaderTest);
+  DISALLOW_COPY_AND_ASSIGN(AlsReaderImplTest);
 };
 
-TEST_F(AlsReaderTest, CheckInitStatusAlsFileFound) {
+TEST_F(AlsReaderImplTest, CheckInitStatusAlsFileFound) {
   EXPECT_EQ(AlsReader::AlsInitStatus::kSuccess, als_reader_.GetInitStatus());
 }
 
-TEST_F(AlsReaderTest, OnAlsReaderInitialized) {
+TEST_F(AlsReaderImplTest, OnAlsReaderInitialized) {
   EXPECT_EQ(AlsReader::AlsInitStatus::kSuccess, test_observer_.get_status());
 }
 
-TEST_F(AlsReaderTest, OneAlsValue) {
+TEST_F(AlsReaderImplTest, OneAlsValue) {
   WriteLux(10);
   scoped_task_environment_->RunUntilIdle();
   EXPECT_EQ(10, test_observer_.get_ambient_light());
   EXPECT_EQ(1, test_observer_.get_num_received_ambient_lights());
 }
 
-TEST_F(AlsReaderTest, TwoAlsValues) {
+TEST_F(AlsReaderImplTest, TwoAlsValues) {
   WriteLux(10);
   // Ambient light is read immediately after initialization, and then
   // periodically every |kAlsPollInterval|. Below we move time for half of
   // |kAlsPollInterval| to ensure there is only one reading attempt.
-  scoped_task_environment_->FastForwardBy(AlsReader::kAlsPollInterval / 2);
+  scoped_task_environment_->FastForwardBy(AlsReaderImpl::kAlsPollInterval / 2);
   EXPECT_EQ(10, test_observer_.get_ambient_light());
   EXPECT_EQ(1, test_observer_.get_num_received_ambient_lights());
 
   WriteLux(20);
   // Now move time for another |kAlsPollInterval| to trigger another read.
-  scoped_task_environment_->FastForwardBy(AlsReader::kAlsPollInterval);
+  scoped_task_environment_->FastForwardBy(AlsReaderImpl::kAlsPollInterval);
   EXPECT_EQ(20, test_observer_.get_ambient_light());
   EXPECT_EQ(2, test_observer_.get_num_received_ambient_lights());
 }
