@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 
@@ -69,6 +70,11 @@ class CONTENT_EXPORT CursorManager {
   // cursor needs to change.
   RenderWidgetHostViewBase* root_view_;
 
+#if defined(OS_WIN)
+  // Added to help diagnose http://crbug.com/882458. This will be removed before
+  // the branch promotes to stable.
+  bool enable_logging_for_test_;
+#endif
   TooltipObserver* tooltip_observer_for_testing_;
 };
 
