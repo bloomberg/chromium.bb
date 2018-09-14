@@ -208,13 +208,6 @@ void FakeFileSystem::GetAvailableSpace(GetAvailableSpaceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void FakeFileSystem::GetShareUrl(
-    const base::FilePath& file_path,
-    const GURL& embed_origin,
-    const GetShareUrlCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
 void FakeFileSystem::GetMetadata(GetFilesystemMetadataCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }

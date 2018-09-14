@@ -434,7 +434,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ShareAndManageDialog, /* share_and_manage_dialog.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("shareFileDrive"),
+                      TestCase("shareFileDrive").EnableDriveFs(),
                       TestCase("shareDirectoryDrive"),
+                      TestCase("shareDirectoryDrive").EnableDriveFs(),
                       TestCase("manageHostedFileDrive"),
                       TestCase("manageHostedFileDrive").EnableDriveFs(),
                       TestCase("manageFileDrive"),

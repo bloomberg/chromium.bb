@@ -1010,13 +1010,6 @@ interface Functions {
   static void requestWebStoreAccessToken(
       RequestWebStoreAccessTokenCallback callback);
 
-  // Requests a share dialog url for the specified file.
-  // |entry| The entry to share.
-  // |callback|
-  [nocompile]
-  static void getShareUrl([instanceof=Entry] object entry,
-                          GetUrlCallback callback);
-
   // Requests a download url to download the file contents.
   // |entry| The entry to download.
   // |callback|

@@ -89,13 +89,6 @@ function FileManagerUI(providersModel, element, launchParam) {
   this.copyConfirmDialog.setOkLabel(str('CONFIRM_COPY_BUTTON_LABEL'));
 
   /**
-   * Share dialog.
-   * @type {!ShareDialog}
-   * @const
-   */
-  this.shareDialog = new ShareDialog(this.element);
-
-  /**
    * Multi-profile share dialog.
    * @type {!MultiProfileShareDialog}
    * @const

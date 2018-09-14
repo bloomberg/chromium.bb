@@ -474,7 +474,6 @@ MainWindowComponent.prototype.onDirectoryChanged_ = function(event) {
 MainWindowComponent.prototype.onDriveConnectionChanged_ = function() {
   var connection = this.volumeManager_.getDriveConnectionState();
   this.ui_.dialogContainer.setAttribute('connection', connection.type);
-  this.ui_.shareDialog.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
   this.ui_.suggestAppsDialog.onDriveConnectionChanged(connection.type);
 };
 

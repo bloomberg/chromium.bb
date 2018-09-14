@@ -321,15 +321,6 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       const std::string& resource_id,
       const google_apis::FileResourceCallback& callback) = 0;
 
-  // Fetches an url for the sharing dialog for a single entry with id
-  // |resource_id|, to be embedded in a webview or an iframe with origin
-  // |embed_origin|. The url is returned via |callback| with results on the
-  // calling thread. |callback| must not be null.
-  virtual google_apis::CancelCallback GetShareUrl(
-      const std::string& resource_id,
-      const GURL& embed_origin,
-      const google_apis::GetShareUrlCallback& callback) = 0;
-
   // Gets the about resource information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.

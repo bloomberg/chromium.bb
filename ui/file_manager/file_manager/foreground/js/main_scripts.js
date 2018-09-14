@@ -152,7 +152,6 @@
 // <include src="scan_controller.js">
 // <include src="search_controller.js">
 // <include src="selection_menu_controller.js">
-// <include src="share_client.js">
 // <include src="spinner_controller.js">
 // <include src="task_controller.js">
 // <include src="task_history.js">
@@ -186,7 +185,6 @@
 // <include src="ui/progress_center_panel.js">
 // <include src="ui/providers_menu.js">
 // <include src="ui/search_box.js">
-// <include src="ui/share_dialog.js">
 // <include src="ui/suggest_apps_dialog.js">
 // <include src="main_window_component.js">
 // <include src="volume_manager_wrapper.js">

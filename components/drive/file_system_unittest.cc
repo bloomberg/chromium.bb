@@ -1301,26 +1301,6 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   EXPECT_EQ(FILE_ERROR_OK, cache_->Remove(entry->local_id()));
 }
 
-TEST_F(FileSystemTest, GetShareUrl) {
-  ASSERT_TRUE(LoadFullResourceList());
-
-  const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  const GURL kEmbedOrigin("chrome-extension://test-id");
-
-  // Try to fetch the URL for the sharing dialog.
-  FileError error = FILE_ERROR_FAILED;
-  GURL share_url;
-  file_system_->GetShareUrl(
-      kFileInRoot,
-      kEmbedOrigin,
-      google_apis::test_util::CreateCopyResultCallback(&error, &share_url));
-  content::RunAllTasksUntilIdle();
-
-  // Verify the share url to the sharing dialog.
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_TRUE(share_url.is_valid());
-}
-
 TEST_F(FileSystemTest, FreeDiskSpaceIfNeededFor) {
   ASSERT_TRUE(LoadFullResourceList());
 

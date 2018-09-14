@@ -181,8 +181,6 @@ function Gallery(volumeManager) {
   this.selectionModel_.addEventListener('change', this.onSelection_.bind(this));
   this.slideMode_.addEventListener('useraction', this.onUserAction_.bind(this));
 
-  this.shareDialog_ = new ShareDialog(this.container_);
-
   // -----------------------------------------------------------------
   // Initialize listeners.
 
@@ -739,10 +737,6 @@ Gallery.prototype.onKeyDown_ = function(event) {
       break;
   }
 
-  // Do not capture keys when share dialog is shown.
-  if (this.shareDialog_.isShowing())
-    return;
-
   // Show UIs when user types any key.
   this.dimmableUIController_.kick();
 
@@ -991,7 +985,24 @@ Gallery.prototype.onShareButtonClick_ = function() {
   var item = this.getSingleSelectedItem();
   if (!item)
     return;
-  this.shareDialog_.showEntry(item.getEntry(), function() {});
+  chrome.fileManagerPrivate.getEntryProperties(
+      [item.getEntry()], ['shareUrl'], results => {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError.message);
+          return;
+        }
+        if (results.length != 1) {
+          console.error(
+              'getEntryProperties for shareUrl should return 1 entry ' +
+              '(returned ' + results.length + ')');
+          return;
+        }
+        if (results[0].shareUrl === undefined) {
+          console.error('getEntryProperties shareUrl is undefined');
+          return;
+        }
+        util.visitURL(assert(results[0].shareUrl));
+      });
 };
 
 /**

@@ -44,7 +44,6 @@ using google_apis::FileResourceCallback;
 using google_apis::FilesListCorpora;
 using google_apis::FilesListRequestRunner;
 using google_apis::GetContentCallback;
-using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_NOT_IMPLEMENTED;
 using google_apis::HTTP_SUCCESS;
 using google_apis::InitiateUploadCallback;
@@ -85,7 +84,6 @@ const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
 const char kDriveAppsReadonlyScope[] =
     "https://www.googleapis.com/auth/drive.apps.readonly";
 const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
-const char kDocsListScope[] = "https://docs.google.com/feeds/";
 
 // Mime type to create a directory.
 const char kFolderMimeType[] = "application/vnd.google-apps.folder";
@@ -117,8 +115,6 @@ const char kFileResourceFields[] =
     "modifiedDate,lastViewedByMeDate,shared,modifiedByMeDate";
 const char kFileResourceOpenWithLinksFields[] =
     "kind,id,openWithLinks/*";
-const char kFileResourceShareLinkFields[] =
-    "kind,id,shareLink";
 const char kFileListFields[] =
     "kind,items(kind,id,title,createdDate,sharedWithMeDate,"
     "mimeType,md5Checksum,fileSize,labels/trashed,labels/starred,"
@@ -162,12 +158,6 @@ void ExtractOpenUrlAndRun(const std::string& app_id,
 
   // Not found.
   callback.Run(DRIVE_OTHER_ERROR, GURL());
-}
-
-void ExtractShareUrlAndRun(const GetShareUrlCallback& callback,
-                           DriveApiErrorCode error,
-                           std::unique_ptr<FileResource> value) {
-  callback.Run(error, value ? value->share_link() : GURL());
 }
 
 // Ignores the |entry|, and runs the |callback|.
@@ -294,11 +284,6 @@ void DriveAPIService::Initialize(const std::string& account_id) {
   scopes.push_back(kDriveScope);
   scopes.push_back(kDriveAppsReadonlyScope);
   scopes.push_back(kDriveAppsScope);
-
-  // Note: The following scope is used to support GetShareUrl on Drive API v2.
-  // Unfortunately, there is no support on Drive API v2, so we need to fall back
-  // to GData WAPI for the GetShareUrl.
-  scopes.push_back(kDocsListScope);
 
   sender_ = std::make_unique<RequestSender>(
       std::make_unique<google_apis::AuthService>(
@@ -531,27 +516,6 @@ CancelCallback DriveAPIService::GetFileResource(
       callback);
   request->set_file_id(resource_id);
   request->set_fields(kFileResourceFields);
-  return sender_->StartRequestWithAuthRetry(std::move(request));
-}
-
-CancelCallback DriveAPIService::GetShareUrl(
-    const std::string& resource_id,
-    const GURL& embed_origin,
-    const GetShareUrlCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  if (!google_apis::IsGoogleChromeAPIKeyUsed()) {
-    LOG(ERROR) << "Only the official build of Chrome OS can open share dialogs "
-               << "from the file manager.";
-  }
-
-  std::unique_ptr<FilesGetRequest> request = std::make_unique<FilesGetRequest>(
-      sender_.get(), url_generator_, google_apis::IsGoogleChromeAPIKeyUsed(),
-      base::Bind(&ExtractShareUrlAndRun, callback));
-  request->set_file_id(resource_id);
-  request->set_fields(kFileResourceShareLinkFields);
-  request->set_embed_origin(embed_origin);
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 

@@ -53,7 +53,6 @@ using google_apis::FileListCallback;
 using google_apis::FileResource;
 using google_apis::FileResourceCallback;
 using google_apis::GetContentCallback;
-using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_BAD_REQUEST;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_FORBIDDEN;
@@ -269,7 +268,6 @@ FakeDriveService::FakeDriveService()
       start_page_token_load_count_(0),
       offline_(false),
       never_return_all_file_list_(false),
-      share_url_base_("https://share_url/"),
       weak_ptr_factory_(this) {
   UpdateLatestChangelistId(largest_changestamp_, std::string());
   about_resource_->set_quota_bytes_total(9876543210);
@@ -699,31 +697,6 @@ CancelCallback FakeDriveService::GetFileResource(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND,
                                 std::unique_ptr<FileResource>()));
-  return CancelCallback();
-}
-
-CancelCallback FakeDriveService::GetShareUrl(
-    const std::string& resource_id,
-    const GURL& /* embed_origin */,
-    const GetShareUrlCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(callback);
-
-  if (offline_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION, GURL()));
-    return CancelCallback();
-  }
-
-  EntryInfo* entry = FindEntryByResourceId(resource_id);
-  if (entry) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, entry->share_url));
-    return CancelCallback();
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND, GURL()));
   return CancelCallback();
 }
 
@@ -1869,9 +1842,6 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
     *new_file->mutable_parents() = parents;
   }
 
-  new_entry->share_url = net::AppendOrReplaceQueryParameter(
-      share_url_base_, "name", title);
-
   AddNewChangestamp(new_change, team_drive_id);
   UpdateETag(new_file);
 
@@ -1908,9 +1878,6 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewTeamDriveEntry(
   team_drive->set_id(team_drive_id);
   team_drive->set_name(team_drive_name);
   change.set_team_drive(std::move(team_drive));
-
-  new_entry->share_url = net::AppendOrReplaceQueryParameter(
-      share_url_base_, "name", team_drive_name);
 
   AddNewChangestamp(&change, std::string());
 

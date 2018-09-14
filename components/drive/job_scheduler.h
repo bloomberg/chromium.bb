@@ -150,12 +150,6 @@ class JobScheduler : public net::NetworkChangeNotifier::NetworkChangeObserver,
                        const ClientContext& context,
                        const google_apis::FileResourceCallback& callback);
 
-  // Adds a GetShareUrl operation to the queue.
-  void GetShareUrl(const std::string& resource_id,
-                   const GURL& embed_origin,
-                   const ClientContext& context,
-                   const google_apis::GetShareUrlCallback& callback);
-
   // Adds a TrashResource operation to the queue.
   void TrashResource(const std::string& resource_id,
                      const ClientContext& context,
@@ -341,13 +335,6 @@ class JobScheduler : public net::NetworkChangeNotifier::NetworkChangeObserver,
       const google_apis::StartPageTokenCallback& callback,
       google_apis::DriveApiErrorCode error,
       std::unique_ptr<google_apis::StartPageToken> start_page_token);
-
-  // Callback for job finishing with a GetShareUrlCallback.
-  void OnGetShareUrlJobDone(
-      JobID job_id,
-      const google_apis::GetShareUrlCallback& callback,
-      google_apis::DriveApiErrorCode error,
-      const GURL& share_url);
 
   // Callback for job finishing with a AppListCallback.
   void OnGetAppListJobDone(JobID job_id,
