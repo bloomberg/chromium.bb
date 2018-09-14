@@ -330,9 +330,7 @@ function init() {
   let finishEditOrClose = (event) => {
     if (event.keyCode === KEYCODES.ENTER) {
       event.preventDefault();
-      if ($(IDS.DONE).disabled)
-        closeDialog();
-      else
+      if (!$(IDS.DONE).disabled)
         finishEditLink();
     }
   };
