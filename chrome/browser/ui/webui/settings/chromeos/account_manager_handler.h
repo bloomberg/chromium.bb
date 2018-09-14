@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/account_manager/account_manager.h"
@@ -70,6 +71,16 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   AccountTrackerService* const account_tracker_service_;
 
   chromeos::AccountMapperUtil account_mapper_util_;
+
+  // An observer for |AccountManager|. Automatically deregisters when |this| is
+  // destructed.
+  ScopedObserver<AccountManager, AccountManager::Observer>
+      account_manager_observer_;
+
+  // An observer for |AccountTrackerService|. Automatically deregisters when
+  // |this| is destructed.
+  ScopedObserver<AccountTrackerService, AccountTrackerService::Observer>
+      account_tracker_service_observer_;
 
   base::WeakPtrFactory<AccountManagerUIHandler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AccountManagerUIHandler);
