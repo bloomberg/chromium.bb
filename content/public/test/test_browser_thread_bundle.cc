@@ -10,7 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/after_startup_task_utils.h"
-#include "content/browser/browser_thread_impl.h"
+#include "content/browser/scheduler/browser_task_executor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -73,12 +73,12 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
     CHECK(!scoped_task_environment_->MainThreadHasPendingTask());
   }
 
+  BrowserTaskExecutor::ResetForTesting();
+
   // |scoped_task_environment_| needs to explicitly go away before fake threads
   // in order for DestructionObservers hooked to the main MessageLoop to be able
   // to invoke BrowserThread::CurrentlyOn() -- ref. ~TestBrowserThread().
   scoped_task_environment_.reset();
-
-  BrowserThreadImpl::ResetTaskExecutorForTesting();
 
 #if defined(OS_WIN)
   com_initializer_.reset();
@@ -105,7 +105,7 @@ void TestBrowserThreadBundle::Init() {
   CHECK(com_initializer_->Succeeded());
 #endif
 
-  BrowserThreadImpl::CreateTaskExecutor();
+  BrowserTaskExecutor::Create();
 
   // Create the ScopedTaskEnvironment if it doesn't already exist. A
   // ScopedTaskEnvironment may already exist if this TestBrowserThreadBundle is

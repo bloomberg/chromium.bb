@@ -43,6 +43,7 @@
 #include "content/app/mojo/mojo_init.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/url_schemes.h"
@@ -880,7 +881,7 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
 
     // Register the TaskExecutor for posting task to the BrowserThreads. It is
     // incorrect to post to a BrowserThread before this point.
-    BrowserThreadImpl::CreateTaskExecutor();
+    BrowserTaskExecutor::Create();
 
     delegate_->PreCreateMainMessageLoop();
 
