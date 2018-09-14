@@ -7,6 +7,7 @@
 #include "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
+#import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "ios/web/web_state/web_frames_manager_impl.h"
@@ -57,11 +58,6 @@ typedef web::WebTestWithWebState WebFrameImplIntTest;
 // Tests that the expected result is received from executing a JavaScript
 // function via |CallJavaScriptFunction| on the main frame.
 TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionOnMainFrame) {
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // Frame messaging is not supported on iOS 10.
-    return;
-  }
-
   ASSERT_TRUE(LoadHtml("<p>"));
 
   WebFrame* main_frame = GetMainWebFrameForWebState(web_state());
@@ -87,7 +83,7 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionOnMainFrame) {
 
 TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionOnIframe) {
   if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // Frame messaging is not supported on iOS 10.
+    // WebFrame will not have a key on iOS 10, so function cannot be called.
     return;
   }
 
@@ -121,18 +117,13 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionOnIframe) {
 }
 
 TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionTimeout) {
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // Frame messaging is not supported on iOS 10.
-    return;
-  }
+  ASSERT_TRUE(LoadHtml("<p>"));
 
   // Inject a function which will never return in order to test feature timeout.
   ExecuteJavaScript(
       @"__gCrWeb.testFunctionNeverReturns = function() {"
        "  while(true) {}"
        "};");
-
-  ASSERT_TRUE(LoadHtml("<p>"));
 
   WebFrame* main_frame = GetMainWebFrameForWebState(web_state());
   ASSERT_TRUE(main_frame);
@@ -149,9 +140,10 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionTimeout) {
       // case tests the timeout, it will take at least this long to execute.
       // This value should be very small to avoid increasing test suite
       // execution time, but long enough to avoid flake.
-      base::TimeDelta::FromMilliseconds(100));
+      base::TimeDelta::FromMilliseconds(5));
 
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
     return called;
   }));
 }
@@ -159,7 +151,7 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionTimeout) {
 // Tests that messages routed through CallJavaScriptFunction cannot be replayed.
 TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
   if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // Frame messaging is not supported on iOS 10.
+    // |_gCrWeb.frameMessaging.routeMessage| is not supported on iOS 10.
     return;
   }
 

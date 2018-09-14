@@ -36,7 +36,8 @@ WebFrameImpl::WebFrameImpl(const std::string& frame_id,
     : frame_id_(frame_id),
       is_main_frame_(is_main_frame),
       security_origin_(security_origin),
-      web_state_(web_state) {
+      web_state_(web_state),
+      weak_ptr_factory_(this) {
   DCHECK(web_state);
   web_state->AddObserver(this);
 
@@ -76,10 +77,22 @@ GURL WebFrameImpl::GetSecurityOrigin() const {
   return security_origin_;
 }
 
+bool WebFrameImpl::CanCallJavaScriptFunction() const {
+  // JavaScript can always be called on the main frame without encryption
+  // because calling the function directly on the webstate with
+  // |ExecuteJavaScript| is secure. However, iframes require an encryption key
+  // in order to securely pass the function name and parameters to the frame.
+  return is_main_frame_ || frame_key_;
+}
+
 bool WebFrameImpl::CallJavaScriptFunction(
     const std::string& name,
     const std::vector<base::Value>& parameters,
     bool reply_with_result) {
+  if (!CanCallJavaScriptFunction()) {
+    return false;
+  }
+
   int message_id = next_message_id_;
   next_message_id_++;
 
@@ -138,13 +151,13 @@ bool WebFrameImpl::CallJavaScriptFunction(
 
   auto timeout_callback = std::make_unique<TimeoutCallback>(base::BindOnce(
       &WebFrameImpl::CancelRequest, base::Unretained(this), message_id));
-  TimeoutCallback* timeout_callback_ptr = timeout_callback.get();
   auto callbacks = std::make_unique<struct RequestCallbacks>(
       std::move(callback), std::move(timeout_callback));
   pending_requests_[message_id] = std::move(callbacks);
 
-  base::PostDelayedTaskWithTraits(FROM_HERE, {web::WebThread::UI},
-                                  timeout_callback_ptr->callback(), timeout);
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {web::WebThread::UI},
+      pending_requests_[message_id]->timeout_callback->callback(), timeout);
   bool called =
       CallJavaScriptFunction(name, parameters, /*reply_with_result=*/true);
   if (!called) {
@@ -167,7 +180,6 @@ bool WebFrameImpl::ExecuteJavaScriptFunction(
   }
 
   NSMutableArray* parameter_strings = [[NSMutableArray alloc] init];
-  //  std::string parameters_string;
   for (const auto& value : parameters) {
     std::string string_value;
     base::JSONWriter::Write(value, &string_value);
@@ -177,9 +189,13 @@ bool WebFrameImpl::ExecuteJavaScriptFunction(
   NSString* script = [NSString
       stringWithFormat:@"__gCrWeb.%s(%@)", name.c_str(),
                        [parameter_strings componentsJoinedByString:@","]];
+  base::WeakPtr<WebFrameImpl> weak_frame = weak_ptr_factory_.GetWeakPtr();
   GetWebState()->ExecuteJavaScript(base::SysNSStringToUTF16(script),
                                    base::BindOnce(^(const base::Value* result) {
-                                     CompleteRequest(message_id, result);
+                                     if (weak_frame) {
+                                       weak_frame->CompleteRequest(message_id,
+                                                                   result);
+                                     }
                                    }));
 
   return true;

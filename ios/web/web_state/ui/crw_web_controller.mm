@@ -2495,13 +2495,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // this message.
   // TODO(crbug.com/881816): Create a WebFrame even if key is empty.
   if (_isBeingDestroyed || ![message.body isKindOfClass:[NSDictionary class]] ||
-      ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]] ||
-      ![message.body[@"crwFrameKey"] isKindOfClass:[NSString class]] ||
-      [message.body[@"crwFrameKey"] length] == 0 ||
-      ![message.body[@"crwFrameLastReceivedMessageId"]
-          isKindOfClass:[NSNumber class]]) {
-    // WebController is being destroyed, message is invalid, or frame does not
-    // have a key.
+      ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]]) {
+    // WebController is being destroyed or the message is invalid.
     return;
   }
 
@@ -2513,28 +2508,33 @@ registerLoadRequestForURL:(const GURL&)requestURL
     GURL messageFrameOrigin =
         web::GURLOriginWithWKSecurityOrigin(message.frameInfo.securityOrigin);
 
-    std::string decodedFrameKeyString;
-    std::string encodedFrameKeyString =
-        base::SysNSStringToUTF8(message.body[@"crwFrameKey"]);
-    base::Base64Decode(encodedFrameKeyString, &decodedFrameKeyString);
-    std::unique_ptr<crypto::SymmetricKey> frameKey =
-        crypto::SymmetricKey::Import(crypto::SymmetricKey::Algorithm::AES,
-                                     decodedFrameKeyString);
-    if (frameKey) {
-      auto newFrame = std::make_unique<web::WebFrameImpl>(
-          frameID, message.frameInfo.mainFrame, messageFrameOrigin,
-          self.webState);
-      newFrame->SetEncryptionKey(std::move(frameKey));
+    std::unique_ptr<crypto::SymmetricKey> frameKey;
+    if ([message.body[@"crwFrameKey"] isKindOfClass:[NSString class]] &&
+        [message.body[@"crwFrameKey"] length] > 0) {
+      std::string decodedFrameKeyString;
+      std::string encodedFrameKeyString =
+          base::SysNSStringToUTF8(message.body[@"crwFrameKey"]);
+      base::Base64Decode(encodedFrameKeyString, &decodedFrameKeyString);
+      frameKey = crypto::SymmetricKey::Import(
+          crypto::SymmetricKey::Algorithm::AES, decodedFrameKeyString);
+    }
 
-      NSNumber* lastSentMessageID =
-          message.body[@"crwFrameLastReceivedMessageId"];
+    auto newFrame = std::make_unique<web::WebFrameImpl>(
+        frameID, message.frameInfo.mainFrame, messageFrameOrigin,
+        self.webState);
+    if (frameKey) {
+      newFrame->SetEncryptionKey(std::move(frameKey));
+    }
+
+    NSNumber* lastSentMessageID =
+        message.body[@"crwFrameLastReceivedMessageId"];
+    if ([lastSentMessageID isKindOfClass:[NSNumber class]]) {
       int nextMessageID = std::max(0, lastSentMessageID.intValue + 1);
       newFrame->SetNextMessageId(nextMessageID);
-
-      framesManager->AddFrame(std::move(newFrame));
-      _webStateImpl->OnWebFrameAvailable(
-          framesManager->GetFrameWithId(frameID));
     }
+
+    framesManager->AddFrame(std::move(newFrame));
+    _webStateImpl->OnWebFrameAvailable(framesManager->GetFrameWithId(frameID));
   }
 }
 
