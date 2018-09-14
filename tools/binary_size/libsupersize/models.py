@@ -873,7 +873,7 @@ class SymbolGroup(BaseSymbol):
     """
     return self._CreateTransformed(
         self._filtered_symbols, filtered_symbols=self._symbols,
-        section_name=SECTION_MULTIPLE, is_default_sorted=False)
+        section_name=SECTION_MULTIPLE)
 
   def GroupedBy(self, func, min_count=0, group_factory=None):
     """Returns a SymbolGroup of SymbolGroups, indexed by |func|.
