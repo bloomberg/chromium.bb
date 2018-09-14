@@ -655,6 +655,7 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
 
             if (animationsWasDone || jumpToEnd) {
                 mLayoutAnimations = null;
+                onAnimationFinished();
             }
         }
 
