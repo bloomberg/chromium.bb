@@ -281,17 +281,23 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   }
 
   void SetUp() override {
-    SetUp(std::make_unique<network::TestNetworkConnectionTracker>(
-        true, network::mojom::ConnectionType::CONNECTION_ETHERNET));
-  }
-
-  void SetUp(std::unique_ptr<network::NetworkConnectionTracker> tracker) {
-    network_connection_tracker_ = std::move(tracker);
-    content::SetNetworkConnectionTrackerForTesting(
-        network_connection_tracker_.get());
+    SetUpNetworkConnection(true,
+                           network::mojom::ConnectionType::CONNECTION_ETHERNET);
     SetLocalLogsObserver(&local_observer_);
     SetRemoteLogsObserver(&remote_observer_);
     LoadMainTestProfile();
+  }
+
+  void SetUpNetworkConnection(bool respond_synchronously,
+                              network::mojom::ConnectionType connection_type) {
+    auto* tracker = network::TestNetworkConnectionTracker::GetInstance();
+    tracker->SetRespondSynchronously(respond_synchronously);
+    tracker->SetConnectionType(connection_type);
+  }
+
+  void SetConnectionType(network::mojom::ConnectionType connection_type) {
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        connection_type);
   }
 
   void CreateWebRtcEventLogManager(
@@ -755,10 +761,6 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
   // Unit under test.
   std::unique_ptr<WebRtcEventLogManager> event_log_manager_;
 
-  // The NetworkConnectionTracker instance used by the WebRtcEventLogManager.
-  std::unique_ptr<network::NetworkConnectionTracker>
-      network_connection_tracker_;
-
   // Extensions associated with local/remote-bound event logs. Depends on
   // whether they're compressed.
   base::FilePath::StringPieceType local_log_extension_;
@@ -833,9 +835,7 @@ class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase,
   void SetUp() override {
     CreateWebRtcEventLogManager(Compression::GZIP_PERFECT_ESTIMATION);
 
-    auto tracker = std::make_unique<network::TestNetworkConnectionTracker>(
-        true, network::mojom::ConnectionType::CONNECTION_ETHERNET);
-    WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
+    WebRtcEventLogManagerTestBase::SetUp();
 
     SetWebRtcEventLogUploaderFactoryForTesting(
         std::make_unique<NullWebRtcEventLogUploader::Factory>(false));
@@ -1024,11 +1024,6 @@ class WebRtcEventLogManagerTestForNetworkConnectivity
 
   ~WebRtcEventLogManagerTestForNetworkConnectivity() override = default;
 
-  void SetUp() override {
-    // Do nothing; the test body itself will call the super-class's SetUp
-    // with the correct MockNetworkConnectionTracker.
-  }
-
   void UnloadProfileAndSeedPendingLog() {
     DCHECK(browser_context_path_.empty()) << "Not expected to be called twice.";
 
@@ -1114,9 +1109,7 @@ class WebRtcEventLogManagerTestCompression
                 base::Optional<WebRtcEventLogCompression>()) {
     CreateWebRtcEventLogManager(remote_compression);
 
-    auto tracker = std::make_unique<network::TestNetworkConnectionTracker>(
-        true, network::mojom::ConnectionType::CONNECTION_ETHERNET);
-    WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
+    WebRtcEventLogManagerTestBase::SetUp();
   }
 };
 
@@ -4077,9 +4070,7 @@ TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,
 
 TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
        DoNotUploadPendingLogsIfConnectedToUnsupportedNetworkType) {
-  WebRtcEventLogManagerTestBase::SetUp(
-      std::make_unique<network::TestNetworkConnectionTracker>(
-          get_conn_type_is_sync_, unsupported_type_));
+  SetUpNetworkConnection(get_conn_type_is_sync_, unsupported_type_);
 
   const auto key = GetPeerConnectionKey(rph_.get(), 1);
   base::Optional<base::FilePath> log_file;
@@ -4103,9 +4094,7 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
 
 TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
        UploadPendingLogsIfConnectedToSupportedNetworkType) {
-  WebRtcEventLogManagerTestBase::SetUp(
-      std::make_unique<network::TestNetworkConnectionTracker>(
-          get_conn_type_is_sync_, supported_type_));
+  SetUpNetworkConnection(get_conn_type_is_sync_, supported_type_);
 
   const auto key = GetPeerConnectionKey(rph_.get(), 1);
   base::Optional<base::FilePath> log_file;
@@ -4130,10 +4119,7 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
 
 TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
        UploadPendingLogsIfConnectionTypeChangesFromUnsupportedToSupported) {
-  auto tracker = std::make_unique<network::TestNetworkConnectionTracker>(
-      get_conn_type_is_sync_, unsupported_type_);
-  network::TestNetworkConnectionTracker* mock = tracker.get();
-  WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
+  SetUpNetworkConnection(get_conn_type_is_sync_, unsupported_type_);
 
   const auto key = GetPeerConnectionKey(rph_.get(), 1);
   base::Optional<base::FilePath> log_file;
@@ -4155,16 +4141,14 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
   SetWebRtcEventLogUploaderFactoryForTesting(
       std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
           &expected_files, true, &run_loop));
-  mock->SetConnectionType(supported_type_);
+  SetConnectionType(supported_type_);
 
   WaitForPendingTasks(&run_loop);
 }
 
 TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
        DoNotUploadPendingLogsAtStartupIfConnectedToUnsupportedNetworkType) {
-  WebRtcEventLogManagerTestBase::SetUp(
-      std::make_unique<network::TestNetworkConnectionTracker>(
-          get_conn_type_is_sync_, unsupported_type_));
+  SetUpNetworkConnection(get_conn_type_is_sync_, unsupported_type_);
 
   UnloadProfileAndSeedPendingLog();
 
@@ -4184,9 +4168,7 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
 
 TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
        UploadPendingLogsAtStartupIfConnectedToSupportedNetworkType) {
-  WebRtcEventLogManagerTestBase::SetUp(
-      std::make_unique<network::TestNetworkConnectionTracker>(
-          get_conn_type_is_sync_, supported_type_));
+  SetUpNetworkConnection(get_conn_type_is_sync_, supported_type_);
 
   UnloadProfileAndSeedPendingLog();
 

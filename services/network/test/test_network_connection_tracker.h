@@ -15,21 +15,36 @@ namespace network {
 // either.
 class TestNetworkConnectionTracker : public NetworkConnectionTracker {
  public:
-  TestNetworkConnectionTracker(bool respond_synchronously,
-                               network::mojom::ConnectionType initial_type);
-  ~TestNetworkConnectionTracker() override = default;
+  // Creates and returns a new TestNetworkConnectionTracker instance.
+  // The instance is owned by the caller of this function, and there can only
+  // be one live instance at a time.
+  // This is intended to be called towards the beginning of each test suite.
+  static std::unique_ptr<TestNetworkConnectionTracker> CreateInstance();
+
+  // Returns the currently active TestNetworkConnectionTracker instance.
+  // CreateInstance() must have been called before calling this.
+  static TestNetworkConnectionTracker* GetInstance();
+
+  ~TestNetworkConnectionTracker() override;
 
   bool GetConnectionType(network::mojom::ConnectionType* type,
                          ConnectionTypeCallback callback) override;
 
+  // Sets the current connection type and notifies all observers.
   void SetConnectionType(network::mojom::ConnectionType);
 
+  // Sets whether or not GetConnectionType() will respond synchronously.
+  void SetRespondSynchronously(bool respond_synchronously);
+
  private:
+  TestNetworkConnectionTracker();
+
   // Whether GetConnectionType() will respond synchronously.
-  bool respond_synchronously_;
+  bool respond_synchronously_ = true;
 
   // Keep local copy of the type, for when a synchronous response is requested.
-  network::mojom::ConnectionType type_;
+  network::mojom::ConnectionType type_ =
+      network::mojom::ConnectionType::CONNECTION_UNKNOWN;
 };
 
 }  // namespace network

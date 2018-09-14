@@ -59,6 +59,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -148,7 +149,7 @@ class DataReductionProxyConfigTest : public testing::Test {
       SecureProxyCheckFetchResult expected_fetch_result,
       const std::vector<net::ProxyServer>& expected_proxies_for_http) {
     base::HistogramTester histogram_tester;
-    test_network_connection_tracker()->SetConnectionType(connection_type);
+    SetConnectionType(connection_type);
 
     TestResponder responder;
     responder.response = response;
@@ -182,7 +183,7 @@ class DataReductionProxyConfigTest : public testing::Test {
       std::unique_ptr<DataReductionProxyParams> params) {
     return std::make_unique<DataReductionProxyConfig>(
         task_runner(), test_context_->net_log(),
-        test_context_->test_network_connection_tracker(), std::move(params),
+        network::TestNetworkConnectionTracker::GetInstance(), std::move(params),
         test_context_->configurator(), test_context_->event_creator());
   }
 
@@ -210,9 +211,9 @@ class DataReductionProxyConfigTest : public testing::Test {
 
   net::NetLog* net_log() const { return test_context_->net_log(); }
 
-  network::TestNetworkConnectionTracker* test_network_connection_tracker()
-      const {
-    return test_context_->test_network_connection_tracker();
+  void SetConnectionType(network::mojom::ConnectionType connection_type) {
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        connection_type);
   }
 
   std::vector<net::ProxyServer> GetConfiguredProxiesForHttp() const {
@@ -263,8 +264,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
             GetConfiguredProxiesForHttp());
 
   test_config()->SetCurrentNetworkID("wifi,test");
-  test_network_connection_tracker()->SetConnectionType(
-      network::mojom::ConnectionType::CONNECTION_WIFI);
+  SetConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   base::RunLoop().RunUntilIdle();
   test_config()->UpdateConfigForTesting(true /* enabled */,
                                         false /* secure_proxies_allowed */,
@@ -275,8 +275,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
   base::RunLoop().RunUntilIdle();
 
   test_config()->SetCurrentNetworkID("cell,test");
-  test_network_connection_tracker()->SetConnectionType(
-      network::mojom::ConnectionType::CONNECTION_2G);
+  SetConnectionType(network::mojom::ConnectionType::CONNECTION_2G);
   base::RunLoop().RunUntilIdle();
   test_config()->UpdateConfigForTesting(true /* enabled */,
                                         false /* secure_proxies_allowed */,
@@ -286,8 +285,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
 
   // On network change, persisted config should be read, and config reloaded.
   test_config()->SetCurrentNetworkID("wifi,test");
-  test_network_connection_tracker()->SetConnectionType(
-      network::mojom::ConnectionType::CONNECTION_WIFI);
+  SetConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
             GetConfiguredProxiesForHttp());
@@ -432,7 +430,6 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
 
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
     TestDataReductionProxyConfig config(task_runner(), nullptr,
-                                        test_network_connection_tracker(),
                                         configurator(), event_creator());
 
     NetworkPropertiesManager network_properties_manager(
@@ -470,8 +467,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
       // Set the connection type to 4G so that warm up URL is fetched even if
       // the test device does not have connectivity.
 
-      test_network_connection_tracker()->SetConnectionType(
-          network::mojom::ConnectionType::CONNECTION_4G);
+      SetConnectionType(network::mojom::ConnectionType::CONNECTION_4G);
       RunUntilIdle();
 
       if (test.data_reduction_proxy_enabled) {
@@ -500,8 +496,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
       base::HistogramTester histogram_tester;
       // Warm up URL should not be fetched since the device does not have
       // connectivity.
-      test_network_connection_tracker()->SetConnectionType(
-          network::mojom::ConnectionType::CONNECTION_NONE);
+      SetConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
       RunUntilIdle();
 
       if (test.data_reduction_proxy_enabled) {
@@ -788,8 +783,9 @@ TEST_F(DataReductionProxyConfigTest,
   ASSERT_LT(0U, expected_proxies.size());
 
   DataReductionProxyConfig config(
-      task_runner(), net_log(), test_network_connection_tracker(),
-      std::move(params), configurator(), event_creator());
+      task_runner(), net_log(),
+      network::TestNetworkConnectionTracker::GetInstance(), std::move(params),
+      configurator(), event_creator());
 
   for (size_t expected_proxy_index = 0U;
        expected_proxy_index < expected_proxies.size(); ++expected_proxy_index) {
@@ -862,7 +858,8 @@ TEST_F(DataReductionProxyConfigTest,
 
   config_values->UpdateValues(proxies_for_http);
   std::unique_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
-      task_runner(), net_log(), test_network_connection_tracker(),
+      task_runner(), net_log(),
+      network::TestNetworkConnectionTracker::GetInstance(),
       std::move(config_values), configurator(), event_creator()));
   for (const auto& test : tests) {
     base::Optional<DataReductionProxyTypeInfo> proxy_type_info =
@@ -1430,8 +1427,7 @@ TEST_F(DataReductionProxyConfigTest,
   // A change in the connection type should reset the probe fetch attempt count,
   // and trigger fetching of the probe URL.
   test_config()->SetCurrentNetworkID("wifi,test");
-  test_network_connection_tracker()->SetConnectionType(
-      network::mojom::ConnectionType::CONNECTION_WIFI);
+  SetConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::make_pair(true, false),
             test_config()->GetInFlightWarmupProxyDetails());

@@ -131,6 +131,7 @@ network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
 
 void SetNetworkConnectionTrackerForTesting(
     network::NetworkConnectionTracker* network_connection_tracker) {
+  DCHECK(!g_network_connection_tracker || !network_connection_tracker);
   g_network_connection_tracker = network_connection_tracker;
 }
 

@@ -104,12 +104,10 @@ class DataReductionProxyIODataTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyIODataTest, TestConstruction) {
-  network::TestNetworkConnectionTracker network_connection_tracker(
-      true, network::mojom::ConnectionType::CONNECTION_UNKNOWN);
-
   std::unique_ptr<DataReductionProxyIOData> io_data(
       new DataReductionProxyIOData(
-          Client::UNKNOWN, prefs(), net_log(), &network_connection_tracker,
+          Client::UNKNOWN, prefs(), net_log(),
+          network::TestNetworkConnectionTracker::GetInstance(),
           scoped_task_environment_.GetMainThreadTaskRunner(),
           scoped_task_environment_.GetMainThreadTaskRunner(),
           false /* enabled */, std::string() /* user_agent */,

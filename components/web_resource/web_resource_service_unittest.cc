@@ -94,10 +94,6 @@ class TestWebResourceService : public WebResourceService {
 
 class WebResourceServiceTest : public testing::Test {
  public:
-  WebResourceServiceTest()
-      : network_tracker_(true,
-                         network::mojom::ConnectionType::CONNECTION_UNKNOWN) {}
-
   void SetUp() override {
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -108,11 +104,12 @@ class WebResourceServiceTest : public testing::Test {
         local_state_.get(), GURL(kTestUrl), "", kCacheUpdatePath.c_str(), 100,
         5000, test_shared_loader_factory_, nullptr,
         base::BindRepeating(web_resource::WebResourceServiceTest::Parse),
-        &network_tracker_));
+        network::TestNetworkConnectionTracker::GetInstance()));
     error_message_ = "";
     TestResourceRequestAllowedNotifier* notifier =
-        new TestResourceRequestAllowedNotifier(local_state_.get(), nullptr,
-                                               &network_tracker_);
+        new TestResourceRequestAllowedNotifier(
+            local_state_.get(), nullptr,
+            network::TestNetworkConnectionTracker::GetInstance());
     notifier->SetState(ResourceRequestAllowedNotifier::ALLOWED);
     test_web_resource_service_->SetResourceRequestAllowedNotifier(
         std::unique_ptr<ResourceRequestAllowedNotifier>(notifier));
@@ -152,7 +149,6 @@ class WebResourceServiceTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
-  network::TestNetworkConnectionTracker network_tracker_;
   std::unique_ptr<TestWebResourceService> test_web_resource_service_;
 };
 

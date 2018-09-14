@@ -6,15 +6,21 @@
 
 #include "build/build_config.h"
 #include "content/browser/notification_service_impl.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_view_host_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 
 namespace content {
 
 TestContentClientInitializer::TestContentClientInitializer() {
+  test_network_connection_tracker_ =
+      network::TestNetworkConnectionTracker::CreateInstance();
+  SetNetworkConnectionTrackerForTesting(test_network_connection_tracker_.get());
+
   notification_service_.reset(new NotificationServiceImpl());
 
   content_client_.reset(new TestContentClient);
@@ -33,6 +39,9 @@ TestContentClientInitializer::~TestContentClientInitializer() {
   content_client_.reset();
 
   content_browser_client_.reset();
+
+  SetNetworkConnectionTrackerForTesting(nullptr);
+  test_network_connection_tracker_.reset();
 }
 
 void TestContentClientInitializer::CreateTestRenderViewHosts() {
