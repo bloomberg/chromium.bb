@@ -205,9 +205,9 @@ void SimulateMouseClick(RenderWidgetHost* rwh, int x, int y) {
   rwh->ForwardMouseEvent(mouse_event);
 }
 
-// Retrieve document.origin for the frame |ftn|.
-EvalJsResult GetDocumentOrigin(FrameTreeNode* ftn) {
-  return EvalJs(ftn, "document.origin;");
+// Retrieve self.origin for the frame |ftn|.
+EvalJsResult GetOriginFromRenderer(FrameTreeNode* ftn) {
+  return EvalJs(ftn, "self.origin;");
 }
 
 double GetFrameDeviceScaleFactor(const ToRenderFrameHost& adapter) {
@@ -6409,9 +6409,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsInheritance) {
 
   // Check whether each frame is sandboxed on the renderer side, by seeing if
   // each frame's origin is unique ("null").
-  EXPECT_EQ("null", GetDocumentOrigin(b_child));
-  EXPECT_EQ("null", GetDocumentOrigin(c_child));
-  EXPECT_EQ("null", GetDocumentOrigin(d_child));
+  EXPECT_EQ("null", GetOriginFromRenderer(b_child));
+  EXPECT_EQ("null", GetOriginFromRenderer(c_child));
+  EXPECT_EQ("null", GetOriginFromRenderer(d_child));
 }
 
 // Check that sandbox flags are not inherited before they take effect.  Create
@@ -6463,7 +6463,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Check that the grandchild frame isn't sandboxed on the renderer side.  If
   // sandboxed, its origin would be unique ("null").
   std::string expected_origin = url::Origin::Create(frame_url).Serialize();
-  EXPECT_EQ(expected_origin, GetDocumentOrigin(grandchild));
+  EXPECT_EQ(expected_origin, GetOriginFromRenderer(grandchild));
 }
 
 // Verify that popups opened from sandboxed frames inherit sandbox flags from
@@ -6503,7 +6503,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Verify that they've also taken effect on the renderer side.  The sandboxed
   // frame's origin should be unique.
-  EXPECT_EQ("null", GetDocumentOrigin(root->child_at(0)));
+  EXPECT_EQ("null", GetOriginFromRenderer(root->child_at(0)));
 
   // Open a popup named "foo" from the sandboxed child frame.
   Shell* foo_shell =
@@ -6520,7 +6520,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_flags, foo_root->effective_frame_policy().sandbox_flags);
 
   // The popup's origin should be unique, since it's sandboxed.
-  EXPECT_EQ("null", GetDocumentOrigin(foo_root));
+  EXPECT_EQ("null", GetOriginFromRenderer(foo_root));
 
   // Navigate the popup cross-site.  This should keep the unique origin and the
   // inherited sandbox flags.
@@ -6536,7 +6536,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Confirm that the popup is still sandboxed, both on browser and renderer
   // sides.
   EXPECT_EQ(expected_flags, foo_root->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ("null", GetDocumentOrigin(foo_root));
+  EXPECT_EQ("null", GetOriginFromRenderer(foo_root));
 
   // Navigate the popup back to b.com.  The popup should perform a
   // remote-to-local navigation in the b.com process, and keep the unique
@@ -6552,7 +6552,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Confirm that the popup is still sandboxed, both on browser and renderer
   // sides.
   EXPECT_EQ(expected_flags, foo_root->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ("null", GetDocumentOrigin(foo_root));
+  EXPECT_EQ("null", GetOriginFromRenderer(foo_root));
 }
 
 // Verify that popups opened from frames sandboxed with the
@@ -6610,7 +6610,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // The popup's origin should match |b_url|, since it's not sandboxed.
   EXPECT_EQ(url::Origin::Create(b_url).Serialize(),
-            EvalJs(foo_root, "document.origin;"));
+            EvalJs(foo_root, "self.origin;"));
 }
 
 // Tests that the WebContents is notified when passive mixed content is

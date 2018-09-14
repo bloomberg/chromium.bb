@@ -1347,7 +1347,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DevtoolsInDevTools) {
 
   std::string message;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      devtools_iframe_rfh, "domAutomationController.send(document.origin)",
+      devtools_iframe_rfh, "domAutomationController.send(self.origin)",
       &message));
   EXPECT_EQ(devtools_url.GetOrigin().spec(), message + "/");
 }

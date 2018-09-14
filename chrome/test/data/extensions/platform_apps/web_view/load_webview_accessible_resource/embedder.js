@@ -95,7 +95,7 @@ function testLoadWebviewInaccessibleResource() {
     if (didNavigate)
       return;
 
-    var inaccessibleURL = document.origin + "/inaccessible.html";
+    var inaccessibleURL = self.origin + "/inaccessible.html";
     webview.executeScript({code: 'location="' + inaccessibleURL + '";'});
     didNavigate = true;
   });

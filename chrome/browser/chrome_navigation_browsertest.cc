@@ -538,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // The error page should have a unique origin.
   std::string origin;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      error_host, "domAutomationController.send(document.origin);", &origin));
+      error_host, "domAutomationController.send(self.origin);", &origin));
   EXPECT_EQ("null", origin);
 }
 
