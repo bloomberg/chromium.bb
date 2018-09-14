@@ -362,6 +362,7 @@ TEST_F(BubbleDialogDelegateViewTest, CloseMethods) {
         BubbleDialogDelegateView::CreateBubble(bubble_delegate);
     bubble_widget->Show();
     BubbleFrameView* frame_view = bubble_delegate->GetBubbleFrameView();
+    frame_view->ResetViewShownTimeStampForTesting();
     Button* close_button = frame_view->close_;
     ASSERT_TRUE(close_button);
     frame_view->ButtonPressed(
