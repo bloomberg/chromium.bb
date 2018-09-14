@@ -379,6 +379,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   load5.Wait();
   EXPECT_EQ(3, tsm()->count());
 
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
   // Discard a tab.
   EXPECT_TRUE(
       tab_manager()->DiscardTabImpl(LifecycleUnitDiscardReason::URGENT));
@@ -413,6 +416,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
 
   // Kill the third tab after making second tab active.
   tsm()->ActivateTabAt(1, true);
+
+  // Advance time so everything is urgent discardable again.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
 
   EXPECT_EQ(1, tsm()->active_index());
   EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
@@ -498,6 +504,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
   EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
   EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
 
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
   // Nothing should happen with a moderate memory pressure event.
   base::MemoryPressureListener::NotifyMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
@@ -579,6 +588,55 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectPDFPages) {
   EXPECT_FALSE(
       tab_manager()->DiscardTabImpl(LifecycleUnitDiscardReason::PROACTIVE));
 }
+
+#if !defined(OS_CHROMEOS)
+// Makes sure that recently opened or used tabs are protected.
+IN_PROC_BROWSER_TEST_F(TabManagerTest,
+                       ProtectRecentlyUsedTabsFromUrgentDiscarding) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+
+  auto* tsm = browser()->tab_strip_model();
+
+  // Open 2 tabs, the second one being in the background.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUIAboutURL),
+      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_EQ(2, tsm->count());
+
+  // Advance the clock for less than the protection time.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime / 2);
+
+  // Should not be able to discard a tab.
+  ASSERT_FALSE(tab_manager->DiscardTabImpl(LifecycleUnitDiscardReason::URGENT));
+
+  // Advance the clock for more than the protection time.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime / 2 +
+                      base::TimeDelta::FromSeconds(1));
+
+  // Should be able to discard the background tab now.
+  EXPECT_TRUE(tab_manager->DiscardTabImpl(LifecycleUnitDiscardReason::URGENT));
+
+  // Activate the 2nd tab.
+  tsm->ActivateTabAt(1, true);
+  EXPECT_EQ(1, tsm->active_index());
+
+  // Advance the clock for less than the protection time.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime / 2);
+
+  // Should not be able to urgent discard the tab.
+  ASSERT_FALSE(tab_manager->DiscardTabImpl(LifecycleUnitDiscardReason::URGENT));
+
+  // But should be able to proactive discard the tab.
+  EXPECT_TRUE(
+      tab_manager->DiscardTabImpl(LifecycleUnitDiscardReason::PROACTIVE));
+
+  // This is necessary otherwise the test crashes in
+  // WebContentsData::WebContentsDestroyed.
+  tsm->CloseAllTabs();
+}
+#endif  // !defined(OS_CHROMEOS)
 
 // Makes sure that tabs using media devices are protected.
 IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
@@ -851,6 +909,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllSources());
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
   base::HistogramTester tester;
   EXPECT_TRUE(
       tab_manager()->DiscardTabImpl(LifecycleUnitDiscardReason::URGENT));
@@ -886,6 +946,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, UrgentFastShutdownSharedTabProcess) {
   OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
               GURL(chrome::kChromeUICreditsURL));
 
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
   // The Tab Manager will not be able to fast-kill either of the tabs since they
   // share the same process regardless of the discard reason. An unsafe attempt
   // will be made on some platforms.
@@ -908,6 +971,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
               GURL(embedded_test_server()->GetURL("/unload.html")));
 
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
   base::HistogramTester tester;
   // The Tab Manager will not be able to safely fast-kill either of the tabs as
   // one of them is current, and the other has an unload handler. No unsafe
@@ -925,6 +991,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, UrgentFastShutdownWithUnloadHandler) {
   // Disable the protection of recent tabs.
   OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
               GURL(embedded_test_server()->GetURL("/unload.html")));
+
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
 
   // The Tab Manager will not be able to safely fast-kill either of the tabs as
   // one of them is current, and the other has an unload handler. An unsafe
@@ -959,6 +1028,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
               GURL(embedded_test_server()->GetURL("/beforeunload.html")));
 
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
   // The Tab Manager will not be able to safely fast-kill either of the tabs as
   // one of them is current, and the other has a beforeunload handler. No unsafe
   // attempts will be made.
@@ -977,6 +1049,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   // Disable the protection of recent tabs.
   OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
               GURL(embedded_test_server()->GetURL("/beforeunload.html")));
+
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
 
   // The Tab Manager will not be able to safely fast-kill either of the tabs as
   // one of them is current, and the other has a beforeunload handler. An unsafe
@@ -1076,6 +1151,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
 // - Discard(kUrgent): PENDING_FREEZE->DISCARDED
 IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
                        TabFreezeAndUrgentDiscardBeforeFreezeCompletes) {
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
   // Freeze the background tab.
   EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
   EXPECT_TRUE(GetLifecycleUnitAt(1)->Freeze());
@@ -1094,6 +1172,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTestWithTwoTabs,
 // - Freeze happens in renderer: PENDING_FREEZE->FROZEN
 // - Discard(kUrgent): FROZEN->DISCARDED
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndUrgentDiscard) {
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
   TestTransitionFromActiveToFrozen();
 
   // Urgently discard the background tab.
@@ -1424,6 +1505,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   EXPECT_NE(browser1, browser4);
   EXPECT_NE(browser2, browser4);
   EXPECT_NE(browser3, browser4);
+
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
 
   for (int i = 0; i < 8; ++i)
     tab_manager()->DiscardTab(LifecycleUnitDiscardReason::PROACTIVE);

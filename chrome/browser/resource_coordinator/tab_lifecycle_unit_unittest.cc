@@ -191,6 +191,9 @@ void TabLifecycleUnitTest::TestCannotDiscardBasedOnHeuristicUsage(
   TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
   auto* observer = ResourceCoordinatorTabHelper::FromWebContents(web_contents_)
                        ->local_site_characteristics_wc_observer_for_testing();
   test_clock_.Advance(base::TimeDelta::FromSeconds(1));
@@ -243,6 +246,8 @@ TEST_F(TabLifecycleUnitTest, CanDiscardByDefault) {
   TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 
@@ -251,6 +256,8 @@ TEST_F(TabLifecycleUnitTest, SetFocused) {
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
   EXPECT_EQ(NowTicks(), tab_lifecycle_unit.GetLastFocusedTime());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   tab_lifecycle_unit.SetFocused(true);
@@ -264,6 +271,8 @@ TEST_F(TabLifecycleUnitTest, SetFocused) {
   tab_strip_model_->ActivateTabAt(1, false);
   web_contents_->WasHidden();
   EXPECT_EQ(test_clock_.NowTicks(), tab_lifecycle_unit.GetLastFocusedTime());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 
@@ -272,6 +281,8 @@ TEST_F(TabLifecycleUnitTest, AutoDiscardable) {
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
 
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
   EXPECT_TRUE(tab_lifecycle_unit.IsAutoDiscardable());
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
@@ -307,8 +318,47 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardActive) {
 
   tab_strip_model_->ActivateTabAt(0, false);
 
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
   ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
                                   DecisionFailureReason::LIVE_STATE_VISIBLE);
+}
+
+TEST_F(TabLifecycleUnitTest, UrgentDiscardProtections) {
+  TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
+                                      usage_clock_.get(), web_contents_,
+                                      tab_strip_model_.get());
+  // Initial external and proactive discarding are fine, but urgent discarding
+  // is blocked because the tab is too recent.
+  ExpectCanDiscardTrue(&tab_lifecycle_unit,
+                       LifecycleUnitDiscardReason::EXTERNAL);
+  ExpectCanDiscardTrue(&tab_lifecycle_unit,
+                       LifecycleUnitDiscardReason::PROACTIVE);
+  ExpectCanDiscardFalseTrivial(&tab_lifecycle_unit,
+                               LifecycleUnitDiscardReason::URGENT);
+
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
+  // The tab should now be discardable for all reasons.
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
+
+  // Mark the tab as having been discarded.
+  tab_lifecycle_unit.SetDiscardCountForTesting(1);
+
+  // Advance time enough that the time protection no longer applies. The tab
+  // should still not be urgent discardable at this point, because it has
+  // already been discarded at least once.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
+  // Proactive and external discarding should be fine, but not urgent.
+  ExpectCanDiscardTrue(&tab_lifecycle_unit,
+                       LifecycleUnitDiscardReason::EXTERNAL);
+  ExpectCanDiscardTrue(&tab_lifecycle_unit,
+                       LifecycleUnitDiscardReason::PROACTIVE);
+  ExpectCanDiscardFalseTrivial(&tab_lifecycle_unit,
+                               LifecycleUnitDiscardReason::URGENT);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -339,6 +389,9 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardVideoCapture) {
   TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   content::MediaStreamDevices video_devices{
       content::MediaStreamDevice(content::MEDIA_DEVICE_VIDEO_CAPTURE,
@@ -359,6 +412,9 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardDesktopCapture) {
   TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   content::MediaStreamDevices desktop_capture_devices{
       content::MediaStreamDevice(content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
@@ -379,6 +435,9 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardRecentlyAudible) {
   TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   // Cannot discard when the "recently audible" bit is set.
   tab_lifecycle_unit.SetRecentlyAudible(true);
@@ -414,6 +473,9 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardWebUsbConnectionsOpen) {
                                       tab_strip_model_.get());
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
                                                    LoadingState::LOADED);
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   // Make sure there is a DeviceClient instance.
   device::MockDeviceClient device_client;
@@ -452,6 +514,9 @@ TEST_F(TabLifecycleUnitTest, CanDiscardNeverAudibleTab) {
   TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   tab_lifecycle_unit.SetRecentlyAudible(false);
   // Since the tab was never audible, it should be possible to discard it,
@@ -463,6 +528,9 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardPDF) {
   TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   content::WebContentsTester::For(web_contents_)
       ->SetMainFrameMimeType("application/pdf");
@@ -511,6 +579,9 @@ TEST_F(TabLifecycleUnitTest, CannotProactivelyDiscardTabIfOriginOptedOut) {
   TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
   // Proactive discarding shouldn't be possible, urgent and external discarding
   // should still be possible.
   {
@@ -706,6 +777,9 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardIfEnterpriseOptOutUsed) {
   TabLifecycleUnit tab_lifecycle_unit(GetSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
+  // Advance time enough that the tab is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 

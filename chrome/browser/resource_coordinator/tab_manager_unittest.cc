@@ -523,6 +523,9 @@ TEST_F(TabManagerTest, MAYBE_DiscardTabWithNonVisibleTabs) {
   tab_strip2->GetWebContentsAt(0)->WasHidden();
   tab_strip2->GetWebContentsAt(1)->WasHidden();
 
+  // Advance time enough that the tabs are urgent discardable.
+  task_runner_->AdvanceMockTickClock(kBackgroundUrgentProtectionTime);
+
   for (int i = 0; i < 4; ++i)
     tab_manager_->DiscardTab(LifecycleUnitDiscardReason::URGENT);
 
