@@ -11,7 +11,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/pepper/mock_renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
@@ -97,10 +96,11 @@ TEST_F(PepperFileChooserHostTest, Show) {
   ASSERT_TRUE(msg);
   FrameHostMsg_RunFileChooser::Schema::Param call_msg_param;
   ASSERT_TRUE(FrameHostMsg_RunFileChooser::Read(msg, &call_msg_param));
-  const FileChooserParams& chooser_params = std::get<0>(call_msg_param);
+  const blink::mojom::FileChooserParams& chooser_params =
+      std::get<0>(call_msg_param);
 
   // Basic validation of request.
-  EXPECT_EQ(FileChooserParams::Open, chooser_params.mode);
+  EXPECT_EQ(blink::mojom::FileChooserParams::Mode::kOpen, chooser_params.mode);
   ASSERT_EQ(1u, chooser_params.accept_types.size());
   EXPECT_EQ(accept[0], base::UTF16ToUTF8(chooser_params.accept_types[0]));
 

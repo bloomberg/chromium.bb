@@ -17,8 +17,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/file_chooser_params.h"
 #include "net/base/directory_lister.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class Profile;
@@ -50,7 +50,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
  public:
   // Show the file chooser dialog.
   static void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                             const content::FileChooserParams& params);
+                             const blink::mojom::FileChooserParams& params);
 
   // Enumerates all the files in directory.
   static void EnumerateDirectory(content::WebContents* tab,
@@ -71,23 +71,20 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   ~FileSelectHelper() override;
 
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      std::unique_ptr<content::FileChooserParams> params);
-  void GetFileTypesInThreadPool(
-      std::unique_ptr<content::FileChooserParams> params);
+                      blink::mojom::FileChooserParamsPtr params);
+  void GetFileTypesInThreadPool(blink::mojom::FileChooserParamsPtr params);
   void GetSanitizedFilenameOnUIThread(
-      std::unique_ptr<content::FileChooserParams> params);
+      blink::mojom::FileChooserParamsPtr params);
 #if defined(FULL_SAFE_BROWSING)
   void CheckDownloadRequestWithSafeBrowsing(
       const base::FilePath& default_path,
-      std::unique_ptr<content::FileChooserParams> params);
-  void ProceedWithSafeBrowsingVerdict(
-      const base::FilePath& default_path,
-      std::unique_ptr<content::FileChooserParams> params,
-      bool allowed_by_safe_browsing);
+      blink::mojom::FileChooserParamsPtr params);
+  void ProceedWithSafeBrowsingVerdict(const base::FilePath& default_path,
+                                      blink::mojom::FileChooserParamsPtr params,
+                                      bool allowed_by_safe_browsing);
 #endif
-  void RunFileChooserOnUIThread(
-      const base::FilePath& default_path,
-      std::unique_ptr<content::FileChooserParams> params);
+  void RunFileChooserOnUIThread(const base::FilePath& default_path,
+                                blink::mojom::FileChooserParamsPtr params);
 
   // Cleans up and releases this instance. This must be called after the last
   // callback is received from the file chooser dialog.
@@ -221,7 +218,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   ui::SelectFileDialog::Type dialog_type_;
 
   // The mode of file dialog last shown.
-  content::FileChooserParams::Mode dialog_mode_;
+  blink::mojom::FileChooserParams::Mode dialog_mode_;
 
   // Maintain an active directory enumeration.  These could come from the file
   // select dialog or from drag-and-drop of directories.  There could not be

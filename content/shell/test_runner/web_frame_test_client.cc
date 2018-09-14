@@ -698,11 +698,14 @@ void WebFrameTestClient::DidClearWindowObject() {
 bool WebFrameTestClient::RunFileChooser(
     const blink::WebFileChooserParams& params,
     blink::WebFileChooserCompletion* completion) {
-  delegate_->PrintMessage(
-      base::StringPrintf("FileChooser: opened; multiple=%s directory=%s\n",
-                         params.multi_select ? "true" : "false",
-                         params.directory ? "true" : "false"));
-  if (params.directory) {
+  using Mode = blink::WebFileChooserParams::Mode;
+  bool is_multiple =
+      params.mode == Mode::kOpenMultiple || params.mode == Mode::kUploadFolder;
+  delegate_->PrintMessage(base::StringPrintf(
+      "FileChooser: opened; multiple=%s directory=%s\n",
+      is_multiple ? "true" : "false",
+      params.mode == Mode::kUploadFolder ? "true" : "false"));
+  if (params.mode == Mode::kUploadFolder) {
     delegate_->PrintMessage(
         "FileChooser: testRunner doesn't support directory selection yet.\n");
     return false;
@@ -714,7 +717,7 @@ bool WebFrameTestClient::RunFileChooser(
     return false;
   }
   std::vector<std::string> paths(optional_paths.value());
-  if (!params.multi_select && paths.size() > 1)
+  if (params.mode == Mode::kOpen && paths.size() > 1)
     paths.resize(1);
   delegate_->PostTask(base::BindOnce(&WebFrameTestClient::ChooseFiles,
                                      weak_factory_.GetWeakPtr(), completion,

@@ -2200,7 +2200,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FileChooserEndsFullscreen) {
 
   wc->EnterFullscreenMode(url, blink::WebFullscreenOptions());
   EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
-  wc->RunFileChooser(wc->GetMainFrame(), FileChooserParams());
+  wc->RunFileChooser(wc->GetMainFrame(), blink::mojom::FileChooserParams());
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
 
   wc->SetDelegate(nullptr);

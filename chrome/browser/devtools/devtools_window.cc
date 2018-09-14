@@ -1274,8 +1274,9 @@ content::ColorChooser* DevToolsWindow::OpenColorChooser(
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
-void DevToolsWindow::RunFileChooser(content::RenderFrameHost* render_frame_host,
-                                    const content::FileChooserParams& params) {
+void DevToolsWindow::RunFileChooser(
+    content::RenderFrameHost* render_frame_host,
+    const blink::mojom::FileChooserParams& params) {
   FileSelectHelper::RunFileChooser(render_frame_host, params);
 }
 

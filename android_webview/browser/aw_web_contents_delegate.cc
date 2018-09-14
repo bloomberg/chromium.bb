@@ -26,7 +26,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/media_stream_request.h"
 #include "jni/AwWebContentsDelegate_jni.h"
 #include "net/base/escape.h"
@@ -36,7 +35,7 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
-using content::FileChooserParams;
+using blink::mojom::FileChooserParams;
 using content::WebContents;
 
 namespace android_webview {
@@ -95,18 +94,18 @@ void AwWebContentsDelegate::RunFileChooser(
     return;
 
   int mode_flags = 0;
-  if (params.mode == FileChooserParams::OpenMultiple) {
+  if (params.mode == FileChooserParams::Mode::kOpenMultiple) {
     mode_flags |= kFileChooserModeOpenMultiple;
-  } else if (params.mode == FileChooserParams::UploadFolder) {
+  } else if (params.mode == FileChooserParams::Mode::kUploadFolder) {
     // Folder implies multiple in Chrome.
     mode_flags |= kFileChooserModeOpenMultiple | kFileChooserModeOpenFolder;
-  } else if (params.mode == FileChooserParams::Save) {
+  } else if (params.mode == FileChooserParams::Mode::kSave) {
     // Save not supported, so cancel it.
     render_frame_host->FilesSelectedInChooser(
         std::vector<content::FileChooserFileInfo>(), params.mode);
     return;
   } else {
-    DCHECK_EQ(FileChooserParams::Open, params.mode);
+    DCHECK_EQ(FileChooserParams::Mode::kOpen, params.mode);
   }
   Java_AwWebContentsDelegate_runFileChooser(
       env, java_delegate, render_frame_host->GetProcess()->GetID(),
@@ -118,7 +117,7 @@ void AwWebContentsDelegate::RunFileChooser(
       params.default_file_name.empty()
           ? nullptr
           : ConvertUTF8ToJavaString(env, params.default_file_name.value()),
-      params.capture);
+      params.use_media_capture);
 }
 
 void AwWebContentsDelegate::AddNewContents(
@@ -308,11 +307,11 @@ static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
   }
   FileChooserParams::Mode mode;
   if (mode_flags & kFileChooserModeOpenFolder) {
-    mode = FileChooserParams::UploadFolder;
+    mode = FileChooserParams::Mode::kUploadFolder;
   } else if (mode_flags & kFileChooserModeOpenMultiple) {
-    mode = FileChooserParams::OpenMultiple;
+    mode = FileChooserParams::Mode::kOpenMultiple;
   } else {
-    mode = FileChooserParams::Open;
+    mode = FileChooserParams::Mode::kOpen;
   }
   DVLOG(0) << "File Chooser result: mode = " << mode
            << ", file paths = " << base::JoinString(file_path_str, ":");

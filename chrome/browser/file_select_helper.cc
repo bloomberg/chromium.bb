@@ -34,7 +34,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,8 +50,9 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
+using blink::mojom::FileChooserParams;
+using blink::mojom::FileChooserParamsPtr;
 using content::BrowserThread;
-using content::FileChooserParams;
 using content::RenderViewHost;
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -138,7 +138,7 @@ FileSelectHelper::FileSelectHelper(Profile* profile)
       select_file_dialog_(),
       select_file_types_(),
       dialog_type_(ui::SelectFileDialog::SELECT_OPEN_FILE),
-      dialog_mode_(FileChooserParams::Open),
+      dialog_mode_(FileChooserParams::Mode::kOpen),
       observer_(this) {}
 
 FileSelectHelper::~FileSelectHelper() {
@@ -159,7 +159,7 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
     void* params) {
   if (IsValidProfile(profile_)) {
     base::FilePath path = file.file_path;
-    if (dialog_mode_ != FileChooserParams::UploadFolder)
+    if (dialog_mode_ != FileChooserParams::Mode::kUploadFolder)
       path = path.DirName();
     profile_->set_last_selected_directory(path);
   }
@@ -203,7 +203,7 @@ void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
     void* params) {
   if (!files.empty() && IsValidProfile(profile_)) {
     base::FilePath path = files[0].file_path;
-    if (dialog_mode_ != FileChooserParams::UploadFolder)
+    if (dialog_mode_ != FileChooserParams::Mode::kUploadFolder)
       path = path.DirName();
     profile_->set_last_selected_directory(path);
   }
@@ -425,8 +425,7 @@ void FileSelectHelper::RunFileChooser(
   // FileSelectHelper will keep itself alive until it sends the result message.
   scoped_refptr<FileSelectHelper> file_select_helper(
       new FileSelectHelper(profile));
-  file_select_helper->RunFileChooser(
-      render_frame_host, std::make_unique<content::FileChooserParams>(params));
+  file_select_helper->RunFileChooser(render_frame_host, params.Clone());
 }
 
 // static
@@ -443,11 +442,11 @@ void FileSelectHelper::EnumerateDirectory(content::WebContents* tab,
 
 void FileSelectHelper::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
-    std::unique_ptr<FileChooserParams> params) {
+    FileChooserParamsPtr params) {
   DCHECK(!render_frame_host_);
   DCHECK(!web_contents_);
   DCHECK(params->default_file_name.empty() ||
-         params->mode == FileChooserParams::Save)
+         params->mode == FileChooserParams::Mode::kSave)
       << "The default_file_name parameter should only be specified for Save "
          "file choosers";
   DCHECK(params->default_file_name == params->default_file_name.BaseName())
@@ -472,8 +471,7 @@ void FileSelectHelper::RunFileChooser(
   AddRef();
 }
 
-void FileSelectHelper::GetFileTypesInThreadPool(
-    std::unique_ptr<FileChooserParams> params) {
+void FileSelectHelper::GetFileTypesInThreadPool(FileChooserParamsPtr params) {
   select_file_types_ = GetFileTypesFromAcceptType(params->accept_types);
   select_file_types_->allowed_paths =
       params->need_local_path ? ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH
@@ -486,14 +484,14 @@ void FileSelectHelper::GetFileTypesInThreadPool(
 }
 
 void FileSelectHelper::GetSanitizedFilenameOnUIThread(
-    std::unique_ptr<FileChooserParams> params) {
+    FileChooserParamsPtr params) {
   if (AbortIfWebContentsDestroyed())
     return;
 
   base::FilePath default_file_path = profile_->last_selected_directory().Append(
       GetSanitizedFileName(params->default_file_name));
 #if defined(FULL_SAFE_BROWSING)
-  if (params->mode == FileChooserParams::Save) {
+  if (params->mode == FileChooserParams::Mode::kSave) {
     CheckDownloadRequestWithSafeBrowsing(default_file_path, std::move(params));
     return;
   }
@@ -504,7 +502,7 @@ void FileSelectHelper::GetSanitizedFilenameOnUIThread(
 #if defined(FULL_SAFE_BROWSING)
 void FileSelectHelper::CheckDownloadRequestWithSafeBrowsing(
     const base::FilePath& default_file_path,
-    std::unique_ptr<FileChooserParams> params) {
+    FileChooserParamsPtr params) {
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
 
@@ -539,7 +537,7 @@ void FileSelectHelper::CheckDownloadRequestWithSafeBrowsing(
 
 void FileSelectHelper::ProceedWithSafeBrowsingVerdict(
     const base::FilePath& default_file_path,
-    std::unique_ptr<content::FileChooserParams> params,
+    FileChooserParamsPtr params,
     bool allowed_by_safe_browsing) {
   if (!allowed_by_safe_browsing) {
     NotifyRenderFrameHostAndEnd(std::vector<ui::SelectedFileInfo>());
@@ -551,7 +549,7 @@ void FileSelectHelper::ProceedWithSafeBrowsingVerdict(
 
 void FileSelectHelper::RunFileChooserOnUIThread(
     const base::FilePath& default_file_path,
-    std::unique_ptr<FileChooserParams> params) {
+    FileChooserParamsPtr params) {
   DCHECK(params);
   if (AbortIfWebContentsDestroyed())
     return;
@@ -563,16 +561,16 @@ void FileSelectHelper::RunFileChooserOnUIThread(
 
   dialog_mode_ = params->mode;
   switch (params->mode) {
-    case FileChooserParams::Open:
+    case FileChooserParams::Mode::kOpen:
       dialog_type_ = ui::SelectFileDialog::SELECT_OPEN_FILE;
       break;
-    case FileChooserParams::OpenMultiple:
+    case FileChooserParams::Mode::kOpenMultiple:
       dialog_type_ = ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE;
       break;
-    case FileChooserParams::UploadFolder:
+    case FileChooserParams::Mode::kUploadFolder:
       dialog_type_ = ui::SelectFileDialog::SELECT_UPLOAD_FOLDER;
       break;
-    case FileChooserParams::Save:
+    case FileChooserParams::Mode::kSave:
       dialog_type_ = ui::SelectFileDialog::SELECT_SAVEAS_FILE;
       break;
     default:
@@ -587,7 +585,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
 #if defined(OS_ANDROID)
   // Android needs the original MIME types and an additional capture value.
   std::pair<std::vector<base::string16>, bool> accept_types =
-      std::make_pair(params->accept_types, params->capture);
+      std::make_pair(params->accept_types, params->use_media_capture);
 #endif
 
   select_file_dialog_->SelectFile(

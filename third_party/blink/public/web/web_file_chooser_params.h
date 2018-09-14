@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FILE_CHOOSER_PARAMS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FILE_CHOOSER_PARAMS_H_
 
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom-shared.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -38,14 +39,9 @@
 namespace blink {
 
 struct WebFileChooserParams {
-  // If |multi_select| is true, the dialog allows the user to select multiple
-  // files.
-  bool multi_select;
-  // If |directory| is true, the dialog allows the user to select a directory.
-  bool directory;
-  // If |save_as| is true, the dialog allows the user to select a possibly
-  // non-existent file. This can be used for a "Save As" dialog.
-  bool save_as;
+  // See FileChooserParams in file_chooser.mojom.
+  using Mode = mojom::FileChooserParams_Mode;
+  Mode mode = Mode::kOpen;
   // |title| is the title for a file chooser dialog. It can be an empty string.
   WebString title;
   // This contains MIME type strings such as "audio/*" "text/plain" or file
@@ -66,22 +62,15 @@ struct WebFileChooserParams {
   // capture attribute. If |use_media_capture| is true, the media types
   // indicated in |accept_types| should be obtained from the device's
   // environment using a media capture mechanism.
-  bool use_media_capture;
+  bool use_media_capture = false;
   // Whether WebFileChooserCompletion needs local paths or not. If the result
   // of file chooser is handled by the implementation of
   // WebFileChooserCompletion that can handle files without local paths,
   // 'false' should be specified to the flag.
-  bool need_local_path;
+  bool need_local_path = true;
   // If non-empty, represents the URL of the requestor if the request was
   // initiated by a document.
   WebURL requestor;
-
-  WebFileChooserParams()
-      : multi_select(false),
-        directory(false),
-        save_as(false),
-        use_media_capture(false),
-        need_local_path(true) {}
 };
 
 }  // namespace blink

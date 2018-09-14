@@ -20,7 +20,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::FileChooserParams;
+using blink::mojom::FileChooserParams;
 
 class FileSelectHelperTest : public testing::Test {
  public:
@@ -143,9 +143,8 @@ TEST_F(FileSelectHelperTest, LastSelectedDirectory) {
 
   // Modes where the parent of the selection is remembered.
   const std::vector<FileChooserParams::Mode> modes = {
-    FileChooserParams::Open,
-    FileChooserParams::OpenMultiple,
-    FileChooserParams::Save,
+      FileChooserParams::Mode::kOpen, FileChooserParams::Mode::kOpenMultiple,
+      FileChooserParams::Mode::kSave,
   };
 
   for (const auto& mode : modes) {
@@ -169,7 +168,7 @@ TEST_F(FileSelectHelperTest, LastSelectedDirectory) {
   }
 
   // Type where the selected folder itself is remembered.
-  file_select_helper->dialog_mode_ = FileChooserParams::UploadFolder;
+  file_select_helper->dialog_mode_ = FileChooserParams::Mode::kUploadFolder;
 
   file_select_helper->AddRef();  // Normally called by RunFileChooser().
   file_select_helper->FileSelected(dir_path_1, index, params);

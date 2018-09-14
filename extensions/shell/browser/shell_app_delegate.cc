@@ -59,7 +59,7 @@ content::ColorChooser* ShellAppDelegate::ShowColorChooser(
 
 void ShellAppDelegate::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
-    const content::FileChooserParams& params) {
+    const blink::mojom::FileChooserParams& params) {
   NOTIMPLEMENTED();
 }
 

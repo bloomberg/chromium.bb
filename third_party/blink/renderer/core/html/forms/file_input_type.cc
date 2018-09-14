@@ -156,9 +156,13 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
     HTMLInputElement& input = GetElement();
     Document& document = input.GetDocument();
     bool is_directory = input.FastHasAttribute(webkitdirectoryAttr);
-    params.directory = is_directory;
+    if (is_directory)
+      params.mode = WebFileChooserParams::Mode::kUploadFolder;
+    else if (input.FastHasAttribute(multipleAttr))
+      params.mode = WebFileChooserParams::Mode::kOpenMultiple;
+    else
+      params.mode = WebFileChooserParams::Mode::kOpen;
     params.need_local_path = is_directory;
-    params.multi_select = is_directory || input.FastHasAttribute(multipleAttr);
     params.accept_types = CollectAcceptTypes(input);
     params.selected_files = file_list_->PathsForUserVisibleFiles();
     params.use_media_capture = RuntimeEnabledFeatures::MediaCaptureEnabled() &&
@@ -360,8 +364,7 @@ void FileInputType::SetFilesFromDirectory(const String& path) {
     Vector<String> files;
     files.push_back(path);
     WebFileChooserParams params;
-    params.directory = true;
-    params.multi_select = true;
+    params.mode = WebFileChooserParams::Mode::kUploadFolder;
     params.selected_files = files;
     params.accept_types = CollectAcceptTypes(GetElement());
     params.requestor = GetElement().GetDocument().Url();

@@ -56,6 +56,9 @@ class Origin;
 
 namespace blink {
 struct WebFullscreenOptions;
+namespace mojom {
+class FileChooserParams;
+}
 }
 
 namespace content {
@@ -69,7 +72,6 @@ class WebContents;
 struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct ContextMenuParams;
-struct FileChooserParams;
 struct GlobalRequestID;
 
 namespace mojom {
@@ -136,7 +138,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Called when a file selection is to be done.
   virtual void RunFileChooser(RenderFrameHost* render_frame_host,
-                              const FileChooserParams& params) {}
+                              const blink::mojom::FileChooserParams& params) {}
 
   // The pending page load was canceled, so the address bar should be updated.
   virtual void DidCancelLoading() {}

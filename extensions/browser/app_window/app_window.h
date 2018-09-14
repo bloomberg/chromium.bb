@@ -399,7 +399,7 @@ class AppWindow : public content::WebContentsDelegate,
       const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
       override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      const content::FileChooserParams& params) override;
+                      const blink::mojom::FileChooserParams& params) override;
   void SetContentsBounds(content::WebContents* source,
                          const gfx::Rect& bounds) override;
   void NavigationStateChanged(content::WebContents* source,
