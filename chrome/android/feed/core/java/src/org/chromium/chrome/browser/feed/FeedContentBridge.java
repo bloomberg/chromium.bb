@@ -49,20 +49,24 @@ public class FeedContentBridge {
         mNativeFeedContentBridge = 0;
     }
 
-    public void loadContent(List<String> keys, Callback<Map<String, byte[]>> callback) {
+    public void loadContent(List<String> keys, Callback<Map<String, byte[]>> successCallback,
+            Callback<Map<String, byte[]>> failureCallback) {
         assert mNativeFeedContentBridge != 0;
         String[] keysArray = keys.toArray(new String[keys.size()]);
-        nativeLoadContent(mNativeFeedContentBridge, keysArray, callback);
+        nativeLoadContent(mNativeFeedContentBridge, keysArray, successCallback, failureCallback);
     }
 
-    public void loadContentByPrefix(String prefix, Callback<Map<String, byte[]>> callback) {
+    public void loadContentByPrefix(String prefix, Callback<Map<String, byte[]>> successCallback,
+            Callback<Map<String, byte[]>> failureCallback) {
         assert mNativeFeedContentBridge != 0;
-        nativeLoadContentByPrefix(mNativeFeedContentBridge, prefix, callback);
+        nativeLoadContentByPrefix(
+                mNativeFeedContentBridge, prefix, successCallback, failureCallback);
     }
 
-    public void loadAllContentKeys(Callback<String[]> callback) {
+    public void loadAllContentKeys(
+            Callback<String[]> successCallback, Callback<String[]> failureCallback) {
         assert mNativeFeedContentBridge != 0;
-        nativeLoadAllContentKeys(mNativeFeedContentBridge, callback);
+        nativeLoadAllContentKeys(mNativeFeedContentBridge, successCallback, failureCallback);
     }
 
     public void commitContentMutation(ContentMutation contentMutation, Callback<Boolean> callback) {
@@ -111,12 +115,14 @@ public class FeedContentBridge {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedContentBridge);
-    private native void nativeLoadContent(
-            long nativeFeedContentBridge, String[] keys, Callback<Map<String, byte[]>> callback);
-    private native void nativeLoadContentByPrefix(
-            long nativeFeedContentBridge, String prefix, Callback<Map<String, byte[]>> callback);
-    private native void nativeLoadAllContentKeys(
-            long nativeFeedContentBridge, Callback<String[]> callback);
+    private native void nativeLoadContent(long nativeFeedContentBridge, String[] keys,
+            Callback<Map<String, byte[]>> successCallback,
+            Callback<Map<String, byte[]>> failureCallback);
+    private native void nativeLoadContentByPrefix(long nativeFeedContentBridge, String prefix,
+            Callback<Map<String, byte[]>> successCallback,
+            Callback<Map<String, byte[]>> failureCallback);
+    private native void nativeLoadAllContentKeys(long nativeFeedContentBridge,
+            Callback<String[]> successCallback, Callback<String[]> failureCallback);
     private native void nativeCommitContentMutation(
             long nativeFeedContentBridge, Callback<Boolean> callback);
     private native void nativeCreateContentMutation(long nativeFeedContentBridge);

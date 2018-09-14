@@ -34,10 +34,12 @@ class FeedContentDatabase {
 
   // Returns the storage data as a vector of key-value pairs when calling
   // loading data.
-  using ContentLoadCallback = base::OnceCallback<void(std::vector<KeyAndData>)>;
+  using ContentLoadCallback =
+      base::OnceCallback<void(bool, std::vector<KeyAndData>)>;
 
   // Returns the content keys as a vector when calling loading all content keys.
-  using ContentKeyCallback = base::OnceCallback<void(std::vector<std::string>)>;
+  using ContentKeyCallback =
+      base::OnceCallback<void(bool, std::vector<std::string>)>;
 
   // Returns whether the commit operation succeeded when calling for database
   // operations, or return whether the entry exists when calling for checking

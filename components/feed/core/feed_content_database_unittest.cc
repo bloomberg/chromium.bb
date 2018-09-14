@@ -66,9 +66,9 @@ class FeedContentDatabaseTest : public testing::Test {
 
   FeedContentDatabase* db() { return feed_db_.get(); }
 
-  MOCK_METHOD1(OnContentEntriesReceived,
-               void(std::vector<std::pair<std::string, std::string>>));
-  MOCK_METHOD1(OnContentKeyReceived, void(std::vector<std::string>));
+  MOCK_METHOD2(OnContentEntriesReceived,
+               void(bool, std::vector<std::pair<std::string, std::string>>));
+  MOCK_METHOD2(OnContentKeyReceived, void(bool, std::vector<std::string>));
   MOCK_METHOD1(OnStorageCommitted, void(bool));
 
  private:
@@ -96,7 +96,7 @@ TEST_F(FeedContentDatabaseTest, Init) {
 TEST_F(FeedContentDatabaseTest, LoadContentAfterInitSuccess) {
   CreateDatabase(/*init_database=*/true);
 
-  EXPECT_CALL(*this, OnContentEntriesReceived(_));
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _));
   db()->LoadContent(
       {kContentKey1},
       base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
@@ -113,8 +113,10 @@ TEST_F(FeedContentDatabaseTest, LoadContentsEntries) {
 
   // Try to Load |kContentKey2| and |kContentKey3|, only |kContentKey2| should
   // return.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 1U);
         EXPECT_EQ(results[0].first, kContentKey2);
         EXPECT_EQ(results[0].second, kContentData2);
@@ -135,8 +137,10 @@ TEST_F(FeedContentDatabaseTest, LoadContentsEntriesByPrefix) {
 
   // Try to Load "ContentKey", both |kContentKey1| and |kContentKey2| should
   // return.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 2U);
         EXPECT_EQ(results[0].first, kContentKey1);
         EXPECT_EQ(results[0].second, kContentData1);
@@ -157,8 +161,9 @@ TEST_F(FeedContentDatabaseTest, LoadAllContentKeys) {
   InjectContentStorageProto(kContentKey1, kContentData1);
   InjectContentStorageProto(kContentKey2, kContentData2);
 
-  EXPECT_CALL(*this, OnContentKeyReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnContentKeyReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 2U);
         EXPECT_EQ(results[0], kContentKey1);
         EXPECT_EQ(results[1], kContentKey2);
@@ -185,8 +190,10 @@ TEST_F(FeedContentDatabaseTest, SaveContent) {
   storage_db()->UpdateCallback(true);
 
   // Make sure they're there.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 2U);
         EXPECT_EQ(results[0].first, kContentKey1);
         EXPECT_EQ(results[0].second, kContentData1);
@@ -221,8 +228,10 @@ TEST_F(FeedContentDatabaseTest, DeleteContent) {
   storage_db()->UpdateCallback(true);
 
   // Make sure only |kContentKey2| got deleted.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         EXPECT_EQ(results.size(), 1U);
         EXPECT_EQ(results[0].first, kContentKey1);
         EXPECT_EQ(results[0].second, kContentData1);
@@ -253,8 +262,10 @@ TEST_F(FeedContentDatabaseTest, DeleteContentByPrefix) {
   storage_db()->UpdateCallback(true);
 
   // Make sure |kContentKey1| and |kContentKey2| got deleted.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         EXPECT_EQ(results.size(), 0U);
       });
   db()->LoadContent(
@@ -284,8 +295,10 @@ TEST_F(FeedContentDatabaseTest, DeleteAllContent) {
   storage_db()->UpdateCallback(true);
 
   // Make sure |kContentKey1| and |kContentKey2| got deleted.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         EXPECT_EQ(results.size(), 0U);
       });
   db()->LoadContent(
@@ -316,8 +329,10 @@ TEST_F(FeedContentDatabaseTest, SaveAndDeleteContent) {
   storage_db()->UpdateCallback(true);
 
   // Make sure only |kContentKey2| got deleted.
-  EXPECT_CALL(*this, OnContentEntriesReceived(_))
-      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_TRUE(success);
         EXPECT_EQ(results.size(), 1U);
         EXPECT_EQ(results[0].first, kContentKey1);
         EXPECT_EQ(results[0].second, kContentData1);
@@ -327,6 +342,42 @@ TEST_F(FeedContentDatabaseTest, SaveAndDeleteContent) {
       base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
                      base::Unretained(this)));
   storage_db()->LoadCallback(true);
+}
+
+TEST_F(FeedContentDatabaseTest, LoadContentsFail) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Store |kContentKey1| and |kContentKey2|.
+  InjectContentStorageProto(kContentKey1, kContentData1);
+  InjectContentStorageProto(kContentKey2, kContentData2);
+
+  // Try to Load |kContentKey2| and |kContentKey3|,.
+  EXPECT_CALL(*this, OnContentEntriesReceived(_, _))
+      .WillOnce([](bool success,
+                   std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_FALSE(success);
+      });
+  db()->LoadContent(
+      {kContentKey2, kContentKey3},
+      base::BindOnce(&FeedContentDatabaseTest::OnContentEntriesReceived,
+                     base::Unretained(this)));
+  storage_db()->LoadCallback(false);
+}
+
+TEST_F(FeedContentDatabaseTest, LoadAllContentKeysFail) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Store |kContentKey1|, |kContentKey2|.
+  InjectContentStorageProto(kContentKey1, kContentData1);
+  InjectContentStorageProto(kContentKey2, kContentData2);
+
+  EXPECT_CALL(*this, OnContentKeyReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_FALSE(success);
+      });
+  db()->LoadAllContentKeys(base::BindOnce(
+      &FeedContentDatabaseTest::OnContentKeyReceived, base::Unretained(this)));
+  storage_db()->LoadKeysCallback(false);
 }
 
 }  // namespace feed

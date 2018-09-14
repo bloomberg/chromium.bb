@@ -236,14 +236,9 @@ void FeedContentDatabase::OnLoadEntriesForLoadContent(
     ContentLoadCallback callback,
     bool success,
     std::unique_ptr<std::vector<ContentStorageProto>> content) {
+  DVLOG_IF(1, !success) << "FeedContentDatabase load content failed.";
+
   std::vector<KeyAndData> results;
-
-  if (!success || !content) {
-    DVLOG_IF(1, !success) << "FeedContentDatabase load content failed.";
-    std::move(callback).Run(std::move(results));
-    return;
-  }
-
   for (const auto& proto : *content) {
     DCHECK(proto.has_key());
     DCHECK(proto.has_content_data());
@@ -251,24 +246,19 @@ void FeedContentDatabase::OnLoadEntriesForLoadContent(
     results.emplace_back(proto.key(), proto.content_data());
   }
 
-  std::move(callback).Run(std::move(results));
+  std::move(callback).Run(success, std::move(results));
 }
 
 void FeedContentDatabase::OnLoadKeysForLoadAllContentKeys(
     ContentKeyCallback callback,
     bool success,
     std::unique_ptr<std::vector<std::string>> keys) {
-  if (!success || !keys) {
-    DVLOG_IF(1, !success) << "FeedContentDatabase load content keys failed.";
-    std::vector<std::string> results;
-    std::move(callback).Run(std::move(results));
-    return;
-  }
+  DVLOG_IF(1, !success) << "FeedContentDatabase load content keys failed.";
 
   // We std::move the |*keys|'s entries to |callback|, after that, |keys| become
   // a pointer holding an empty vector, then we can safely delete unique_ptr
   // |keys| when it out of scope.
-  std::move(callback).Run(std::move(*keys));
+  std::move(callback).Run(success, std::move(*keys));
 }
 
 void FeedContentDatabase::OnOperationCommitted(

@@ -10,7 +10,8 @@ import com.google.android.libraries.feed.host.storage.CommitResult;
 import com.google.android.libraries.feed.host.storage.ContentMutation;
 import com.google.android.libraries.feed.host.storage.ContentStorage;
 
-import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,56 +23,22 @@ import java.util.Map;
 public class FeedContentStorage implements ContentStorage {
     private FeedContentBridge mFeedContentBridge;
 
-    private static class StorageCallback<T> implements Callback<T> {
-        private final Consumer<Result<T>> mConsumer;
-
-        public StorageCallback(Consumer<Result<T>> consumer) {
-            mConsumer = consumer;
-        }
-
-        @Override
-        public void onResult(T data) {
-            // TODO(gangwu): Need to handle failure case.
-            mConsumer.accept(Result.success(data));
-        }
-    }
-
-    private static class GetAllKeysCallback implements Callback<String[]> {
-        private final Consumer < Result < List<String>>> mConsumer;
-
-        public GetAllKeysCallback(Consumer < Result < List<String>>> consumer) {
-            mConsumer = consumer;
-        }
-
-        @Override
-        public void onResult(String[] keys) {
-            // TODO(gangwu): Need to handle failure case.
-            mConsumer.accept(Result.success(Arrays.asList(keys)));
-        }
-    }
-
-    private static class CommitCallback implements Callback<Boolean> {
-        private final Consumer<CommitResult> mConsumer;
-
-        CommitCallback(Consumer<CommitResult> consumer) {
-            mConsumer = consumer;
-        }
-
-        @Override
-        public void onResult(Boolean result) {
-            if (result) {
-                mConsumer.accept(CommitResult.SUCCESS);
-            } else {
-                mConsumer.accept(CommitResult.FAILURE);
-            }
-        }
-    }
-
     /**
      * Creates a {@link FeedContentStorage} for storing content for the current user.
      *
+     * @param profile {@link Profile} of the user we are rendering the Feed for.
+     */
+    public FeedContentStorage(Profile profile) {
+        mFeedContentBridge = new FeedContentBridge();
+        mFeedContentBridge.init(profile);
+    }
+
+    /**
+     * Creates a {@link FeedContentStorage} for testing.
+     *
      * @param bridge {@link FeedContentBridge} implementation can handle content storage request.
      */
+    @VisibleForTesting
     public FeedContentStorage(FeedContentBridge bridge) {
         mFeedContentBridge = bridge;
     }
@@ -86,25 +53,35 @@ public class FeedContentStorage implements ContentStorage {
     @Override
     public void get(List<String> keys, Consumer < Result < Map<String, byte[]>>> consumer) {
         assert mFeedContentBridge != null;
-        mFeedContentBridge.loadContent(keys, new StorageCallback<Map<String, byte[]>>(consumer));
+        mFeedContentBridge.loadContent(keys,
+                (Map<String, byte[]> data)
+                        -> { consumer.accept(Result.success(data)); },
+                (Map<String, byte[]> data) -> { consumer.accept(Result.failure()); });
     }
 
     @Override
     public void getAll(String prefix, Consumer < Result < Map<String, byte[]>>> consumer) {
         assert mFeedContentBridge != null;
-        mFeedContentBridge.loadContentByPrefix(
-                prefix, new StorageCallback<Map<String, byte[]>>(consumer));
+        mFeedContentBridge.loadContentByPrefix(prefix,
+                (Map<String, byte[]> data)
+                        -> { consumer.accept(Result.success(data)); },
+                (Map<String, byte[]> data) -> { consumer.accept(Result.failure()); });
     }
 
     @Override
     public void commit(ContentMutation mutation, Consumer<CommitResult> consumer) {
         assert mFeedContentBridge != null;
-        mFeedContentBridge.commitContentMutation(mutation, new CommitCallback(consumer));
+        mFeedContentBridge.commitContentMutation(mutation, (Boolean result) -> {
+            consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE);
+        });
     }
 
     @Override
     public void getAllKeys(Consumer < Result < List<String>>> consumer) {
         assert mFeedContentBridge != null;
-        mFeedContentBridge.loadAllContentKeys(new GetAllKeysCallback(consumer));
+        mFeedContentBridge.loadAllContentKeys(
+                (String[] keys)
+                        -> { consumer.accept(Result.success(Arrays.asList(keys))); },
+                (String[] keys) -> { consumer.accept(Result.failure()); });
     }
 }
