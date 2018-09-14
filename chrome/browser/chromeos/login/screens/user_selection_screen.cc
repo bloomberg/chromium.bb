@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
@@ -846,6 +847,9 @@ UserSelectionScreen::UpdateAndReturnUserListForMojo() {
               std::move(available_locales));
       user_info->public_account_info->default_locale = selected_locale;
       user_info->public_account_info->show_advanced_view = has_multiple_locales;
+      // Do not show expanded view when in demo mode.
+      user_info->public_account_info->show_expanded_view =
+          !DemoSession::IsDeviceInDemoMode();
     }
 
     user_info->can_remove = CanRemoveUser(user);

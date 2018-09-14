@@ -71,6 +71,7 @@ mojom::LoginUserInfoPtr CreatePublicAccountUser(const std::string& email) {
   user->basic_user_info->type = user_manager::USER_TYPE_PUBLIC_ACCOUNT;
   user->public_account_info = ash::mojom::PublicAccountInfo::New();
   user->public_account_info->enterprise_domain = email_parts[1];
+  user->public_account_info->show_expanded_view = true;
   return user;
 }
 

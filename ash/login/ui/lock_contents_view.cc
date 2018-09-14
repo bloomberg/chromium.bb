@@ -1538,6 +1538,25 @@ keyboard::KeyboardController* LockContentsView::GetKeyboardController() const {
 }
 
 void LockContentsView::OnPublicAccountTapped(bool is_primary) {
+  const LoginBigUserView* user = CurrentBigUserView();
+  // If the pod should not show an expanded view, tapping on it will launch
+  // Public Session immediately.
+  if (!user->GetCurrentUser()->public_account_info->show_expanded_view) {
+    std::string default_input_method;
+    for (const auto& keyboard :
+         user->GetCurrentUser()->public_account_info->keyboard_layouts) {
+      if (keyboard->selected) {
+        default_input_method = keyboard->ime_id;
+        break;
+      }
+    }
+    Shell::Get()->login_screen_controller()->LaunchPublicSession(
+        user->GetCurrentUser()->basic_user_info->account_id,
+        user->GetCurrentUser()->public_account_info->default_locale,
+        default_input_method);
+    return;
+  }
+
   // Set the public account user to be the active user.
   SwapActiveAuthBetweenPrimaryAndSecondary(is_primary);
 
@@ -1547,7 +1566,7 @@ void LockContentsView::OnPublicAccountTapped(bool is_primary) {
   // primary to secondary.
   // 2. LoginUserInfo in the big user could be changed if we get updates from
   // OnPublicSessionDisplayNameChanged and OnPublicSessionLocalesChanged.
-  expanded_view_->UpdateForUser(CurrentBigUserView()->GetCurrentUser());
+  expanded_view_->UpdateForUser(user->GetCurrentUser());
   SetDisplayStyle(DisplayStyle::kExclusivePublicAccountExpandedView);
 }
 

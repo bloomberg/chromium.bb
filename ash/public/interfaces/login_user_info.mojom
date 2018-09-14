@@ -123,6 +123,10 @@ struct PublicAccountInfo {
   // Default locale for this user.
   string default_locale;
 
+  // Show expanded user view that contains session information/warnings and
+  // locale selection.
+  bool show_expanded_view;
+
   // Show the advanced expanded user view if there are at least two recommended
   // locales. This will be the case in multilingual environments where users
   // are likely to want to choose among locales.
