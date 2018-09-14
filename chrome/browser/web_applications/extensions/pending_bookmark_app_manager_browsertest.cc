@@ -49,7 +49,8 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, InstallSucceeds) {
   ASSERT_TRUE(result_code.has_value());
   EXPECT_EQ(web_app::InstallResultCode::kSuccess, result_code.value());
   base::Optional<std::string> id =
-      web_app::ExtensionIdsMap(browser()->profile()->GetPrefs()).Lookup(url);
+      web_app::ExtensionIdsMap(browser()->profile()->GetPrefs())
+          .LookupExtensionId(url);
   ASSERT_TRUE(id.has_value());
   const Extension* app = ExtensionRegistry::Get(browser()->profile())
                              ->enabled_extensions()

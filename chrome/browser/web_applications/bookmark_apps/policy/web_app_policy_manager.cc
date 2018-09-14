@@ -73,7 +73,8 @@ void WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicyInstalledApps() {
 
   // Populate `last_app_urls_` with the current policy-installed apps so that
   // we can uninstall any apps that are no longer in the policy.
-  last_app_urls_ = ExtensionIdsMap::GetPolicyInstalledAppUrls(profile_);
+  last_app_urls_ = ExtensionIdsMap::GetInstalledAppUrls(
+      profile_, PendingAppManager::InstallSource::kExternalPolicy);
 
   // Sort so that we can later use base::STLSetDifference.
   std::sort(last_app_urls_.begin(), last_app_urls_.end());

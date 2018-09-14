@@ -102,7 +102,7 @@ void PendingBookmarkAppManager::UninstallApps(
     const UninstallCallback& callback) {
   for (auto& app_to_uninstall : apps_to_uninstall) {
     base::Optional<std::string> extension_id =
-        extension_ids_map_.Lookup(app_to_uninstall);
+        extension_ids_map_.LookupExtensionId(app_to_uninstall);
     if (!extension_id) {
       callback.Run(app_to_uninstall, false);
       continue;
@@ -170,7 +170,7 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
     pending_tasks_and_callbacks_.pop_front();
 
     base::Optional<std::string> extension_id =
-        extension_ids_map_.Lookup(front->task->app_info().url);
+        extension_ids_map_.LookupExtensionId(front->task->app_info().url);
 
     if (extension_id) {
       base::Optional<bool> opt =
@@ -240,8 +240,8 @@ void PendingBookmarkAppManager::CurrentInstallationFinished(
   auto install_result_code = web_app::InstallResultCode::kFailedUnknownReason;
   if (app_id) {
     install_result_code = web_app::InstallResultCode::kSuccess;
-    extension_ids_map_.Insert(current_task_and_callback_->task->app_info().url,
-                              app_id.value());
+    const auto& info = current_task_and_callback_->task->app_info();
+    extension_ids_map_.Insert(info.url, app_id.value(), info.install_source);
   }
 
   std::unique_ptr<TaskAndCallback> task_and_callback;
