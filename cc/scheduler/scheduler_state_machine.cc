@@ -1123,6 +1123,9 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   if (active_tree_needs_first_draw_)
     return true;
 
+  if (!needs_redraw_)
+    return false;
+
   // This is used to prioritize impl-thread draws when the main thread isn't
   // producing anything, e.g., after an aborted commit. We also check that we
   // don't have a pending tree -- otherwise we should give it a chance to
@@ -1132,7 +1135,7 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
     return true;
 
   // Prioritize impl-thread draws in ImplLatencyTakesPriority mode.
-  if (needs_redraw_ && ImplLatencyTakesPriority())
+  if (ImplLatencyTakesPriority())
     return true;
 
   return false;
