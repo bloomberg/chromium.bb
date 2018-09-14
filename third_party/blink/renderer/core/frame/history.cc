@@ -89,30 +89,21 @@ SerializedScriptValue* History::state(ExceptionState& exception_state) {
 }
 
 SerializedScriptValue* History::StateInternal() const {
-  LocalFrame* frame = GetFrame();
-  if (!frame)
+  if (!GetFrame())
     return nullptr;
 
-  // TODO(kouhei, dcheng): The DocumentLoader null check should be unnecessary.
-  // Investigate and see if it can be removed.
-  DocumentLoader* document_loader = frame->Loader().GetDocumentLoader();
-  if (!document_loader)
-    return nullptr;
+  if (HistoryItem* history_item =
+          GetFrame()->Loader().GetDocumentLoader()->GetHistoryItem()) {
+    return history_item->StateObject();
+  }
 
-  HistoryItem* history_item = document_loader->GetHistoryItem();
-  if (!history_item)
-    return nullptr;
-
-  return history_item->StateObject();
+  return nullptr;
 }
 
 void History::setScrollRestoration(const String& value,
                                    ExceptionState& exception_state) {
   DCHECK(value == "manual" || value == "auto");
-  // TODO(kouhei, dcheng): The DocumentLoader null check should be unnecessary.
-  // Investigate and see if it can be removed.
-  if (!GetFrame() || !GetFrame()->Client() ||
-      !GetFrame()->Loader().GetDocumentLoader()) {
+  if (!GetFrame() || !GetFrame()->Client()) {
     exception_state.ThrowSecurityError(
         "May not use a History object associated with a Document that is not "
         "fully active");
@@ -149,8 +140,6 @@ HistoryScrollRestorationType History::ScrollRestorationInternal() const {
   if (!frame)
     return default_type;
 
-  // TODO(kouhei, dcheng): The DocumentLoader null check should be unnecessary.
-  // Investigate and see if it can be removed.
   DocumentLoader* document_loader = frame->Loader().GetDocumentLoader();
   if (!document_loader)
     return default_type;
