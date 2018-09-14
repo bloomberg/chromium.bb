@@ -114,11 +114,6 @@ class ExtensionDownloader : public OAuth2TokenService::Consumer {
   // AddExtension() and AddPendingExtension().
   void StartAllPending(ExtensionCache* cache);
 
-  // Schedules an update check of the blacklist.
-  void StartBlacklistUpdate(const std::string& version,
-                            const ManifestFetchData::PingData& ping_data,
-                            int request_id);
-
   // Sets GetWebstoreAccountCallback and TokenService instances to be used for
   // OAuth2 authentication on protected Webstore downloads. Both objects must be
   // valid to use for the lifetime of this object.
@@ -146,9 +141,6 @@ class ExtensionDownloader : public OAuth2TokenService::Consumer {
   // URLFetcher objects.
   static const int kManifestFetcherId = 1;
   static const int kExtensionFetcherId = 2;
-
-  // Update AppID for extension blacklist.
-  static const char kBlacklistAppID[];
 
   static const int kMaxRetries = 10;
 

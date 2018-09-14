@@ -52,8 +52,6 @@ using update_client::UpdateQueryParams;
 
 namespace extensions {
 
-const char ExtensionDownloader::kBlacklistAppID[] = "com.google.crx.blacklist";
-
 namespace {
 
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
@@ -89,7 +87,6 @@ const int kMaxOAuth2Attempts = 3;
 
 const char kNotFromWebstoreInstallSource[] = "notfromwebstore";
 const char kDefaultInstallSource[] = "";
-const char kDefaultInstallLocation[] = "";
 const char kReinstallInstallSource[] = "reinstall";
 
 const char kGoogleDotCom[] = "google.com";
@@ -302,24 +299,6 @@ void ExtensionDownloader::DoStartAllPending() {
       StartUpdateCheck(std::move(list[i]));
   }
   fetches_preparing_.clear();
-}
-
-void ExtensionDownloader::StartBlacklistUpdate(
-    const std::string& version,
-    const ManifestFetchData::PingData& ping_data,
-    int request_id) {
-  // Note: it is very important that we use the https version of the update
-  // url here to avoid DNS hijacking of the blacklist, which is not validated
-  // by a public key signature like .crx files are.
-  std::unique_ptr<ManifestFetchData> blacklist_fetch(
-      CreateManifestFetchData(extension_urls::GetWebstoreUpdateUrl(),
-                              request_id, ManifestFetchData::BACKGROUND));
-  DCHECK(blacklist_fetch->base_url().SchemeIsCryptographic());
-  blacklist_fetch->AddExtension(kBlacklistAppID, version, &ping_data,
-                                std::string(), kDefaultInstallSource,
-                                kDefaultInstallLocation,
-                                ManifestFetchData::FetchPriority::BACKGROUND);
-  StartUpdateCheck(std::move(blacklist_fetch));
 }
 
 void ExtensionDownloader::SetWebstoreAuthenticationCapabilities(
@@ -670,23 +649,7 @@ void ExtensionDownloader::HandleManifestResults(
     const std::string& extension_id = update->extension_id;
 
     GURL crx_url = update->crx_url;
-    if (extension_id != kBlacklistAppID) {
-      NotifyUpdateFound(extension_id, update->version);
-    } else {
-      // The URL of the blacklist file is returned by the server and we need to
-      // be sure that we continue to be able to reliably detect whether a URL
-      // references a blacklist file.
-      DCHECK(extension_urls::IsBlacklistUpdateUrl(crx_url)) << crx_url;
-
-      // Force https (crbug.com/129587).
-      if (!crx_url.SchemeIsCryptographic()) {
-        url::Replacements<char> replacements;
-        std::string scheme("https");
-        replacements.SetScheme(scheme.c_str(),
-                               url::Component(0, scheme.size()));
-        crx_url = crx_url.ReplaceComponents(replacements);
-      }
-    }
+    NotifyUpdateFound(extension_id, update->version);
     FetchUpdatedExtension(std::make_unique<ExtensionFetch>(
         update->extension_id, crx_url, update->package_hash, update->version,
         fetch_data->request_ids()));
