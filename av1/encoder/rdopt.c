@@ -8349,8 +8349,14 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   const int64_t mode_rd = RDCOST(x->rdmult, mode_rate, 0);
   const int64_t rd_thresh =
       ref_best_rd == INT64_MAX ? INT64_MAX : ref_best_rd - mode_rd;
+  const int skip_ctx = av1_get_skip_context(xd);
+  const int64_t min_header_rate =
+      mode_rate + AOMMIN(x->skip_cost[skip_ctx][0], x->skip_cost[skip_ctx][1]);
+  // Account for minimum skip and non_skip rd.
+  // Eventually either one of them will be added to mode_rate
+  const int64_t min_header_rd_possible = RDCOST(x->rdmult, min_header_rate, 0);
 
-  if (mode_rd >= ref_best_rd) {
+  if (min_header_rd_possible > ref_best_rd) {
     av1_invalid_rd_stats(rd_stats_y);
     av1_invalid_rd_stats(rd_stats);
     return 0;
@@ -8393,7 +8399,6 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     }
 
     av1_merge_rd_stats(rd_stats, rd_stats_y);
-    const int skip_ctx = av1_get_skip_context(xd);
 
     non_skip_rdcosty = RDCOST(
         x->rdmult, rd_stats->rate + x->skip_cost[skip_ctx][0], rd_stats->dist);
@@ -8462,7 +8467,7 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     mbmi->tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode);
     // The cost of skip bit needs to be added.
     mbmi->skip = 0;
-    rd_stats->rate += x->skip_cost[av1_get_skip_context(xd)][1];
+    rd_stats->rate += x->skip_cost[skip_ctx][1];
 
     rd_stats->dist = 0;
     rd_stats->sse = 0;
@@ -8863,11 +8868,6 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     } else {
 #endif
       int mode_rate = rd_stats->rate;
-      const int64_t tmp_mode_rd = RDCOST(x->rdmult, rd_stats->rate, 0);
-      if (ref_best_rd < INT64_MAX && tmp_mode_rd > ref_best_rd) {
-        if (mode_index == 0) return INT64_MAX;
-        continue;
-      }
       if (!txfm_search(cpi, x, bsize, mi_row, mi_col, rd_stats, rd_stats_y,
                        rd_stats_uv, mode_rate, ref_best_rd)) {
         if (rd_stats_y->rate == INT_MAX && mode_index == 0) {
