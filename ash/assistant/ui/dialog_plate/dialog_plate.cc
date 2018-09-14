@@ -100,14 +100,6 @@ int DialogPlate::GetHeightForWidth(int width) const {
   return kPreferredHeightDip;
 }
 
-void DialogPlate::ChildPreferredSizeChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
-void DialogPlate::ChildVisibilityChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
 void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
   OnButtonPressed(static_cast<DialogPlateButtonId>(sender->id()));
 }
