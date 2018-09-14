@@ -2426,17 +2426,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
-  GURL messageFrameOrigin = web::GURLOriginWithWKSecurityOrigin(
-      scriptMessage.frameInfo.securityOrigin);
-  if (!scriptMessage.frameInfo.mainFrame &&
-      messageFrameOrigin.GetOrigin() != _documentURL.GetOrigin()) {
-    // Messages from cross-origin iframes are not currently supported.
-    // |scriptMessage.frameInfo.securityOrigin| returns opener's origin for
-    // about:blank pages, so it is important to allow all messages coming from
-    // the main frame, even if messageFrameOrigin and _documentURL have
-    // different origins.
-    return NO;
-  }
   if (![scriptMessage.name isEqualToString:kScriptMessageName]) {
     return NO;
   }
@@ -2447,15 +2436,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (!messageAsValue || !messageAsValue->GetAsDictionary(&message)) {
     return NO;
   }
-  std::string windowID;
-  message->GetString("crwWindowId", &windowID);
-  // Check for correct windowID
-  if (base::SysNSStringToUTF8([_windowIDJSManager windowID]) != windowID) {
-    DLOG(WARNING) << "Message from JS ignored due to non-matching windowID: " <<
-        [_windowIDJSManager windowID]
-                  << " != " << base::SysUTF8ToNSString(windowID);
-    return NO;
-  }
+
   web::WebFrame* senderFrame = nullptr;
   std::string frameID;
   if (message->GetString("crwFrameId", &frameID)) {
@@ -2463,6 +2444,38 @@ registerLoadRequestForURL:(const GURL&)requestURL
         web::WebFramesManagerImpl::FromWebState([self webState]);
     senderFrame = framesManager->GetFrameWithId(frameID);
   }
+
+  if (base::FeatureList::IsEnabled(web::features::kWebFrameMessaging)) {
+    // Message must be associated with a current frame.
+    if (!senderFrame) {
+      return NO;
+    }
+  } else {
+    GURL messageFrameOrigin = web::GURLOriginWithWKSecurityOrigin(
+        scriptMessage.frameInfo.securityOrigin);
+    if (!scriptMessage.frameInfo.mainFrame &&
+        messageFrameOrigin.GetOrigin() != _documentURL.GetOrigin()) {
+      // Messages from cross-origin iframes are not currently supported.
+      // |scriptMessage.frameInfo.securityOrigin| returns opener's origin for
+      // about:blank pages, so it is important to allow all messages coming from
+      // the main frame, even if messageFrameOrigin and _documentURL have
+      // different origins.
+      return NO;
+    }
+
+    std::string windowID;
+    // If windowID exists, it must match the ID from the main frame.
+    if (message->GetString("crwWindowId", &windowID)) {
+      if (base::SysNSStringToUTF8([_windowIDJSManager windowID]) != windowID) {
+        DLOG(WARNING)
+            << "Message from JS ignored due to non-matching windowID: "
+            << base::SysNSStringToUTF8([_windowIDJSManager windowID])
+            << " != " << windowID;
+        return NO;
+      }
+    }
+  }
+
   base::DictionaryValue* command = nullptr;
   if (!message->GetDictionary("crwCommand", &command)) {
     return NO;
