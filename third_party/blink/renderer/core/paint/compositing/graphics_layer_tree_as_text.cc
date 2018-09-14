@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
 
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -68,8 +69,12 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     const FloatPoint& position) {
   std::unique_ptr<JSONObject> json = JSONObject::Create();
 
-  if (flags & kLayerTreeIncludesDebugInfo)
+  if (flags & kLayerTreeIncludesDebugInfo) {
     json->SetString("this", PointerAsString(layer));
+    json->SetInteger("ccLayerId", layer->CcLayer()->id());
+    if (layer->HasContentsLayer())
+      json->SetInteger("ccContentsLayerId", layer->ContentsLayer()->id());
+  }
 
   json->SetString("name", layer->DebugName());
 
