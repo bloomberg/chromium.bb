@@ -29,6 +29,7 @@ TEST(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
             EXPECT_LE(1, profile.call_stack_profile().deprecated_sample_size());
             ++profiles_collected;
           }));
+  base::PoissonAllocationSampler::Init();
   HeapProfilerController controller;
   controller.SetTaskRunnerForTest(task_runner.get());
   controller.StartIfEnabled();

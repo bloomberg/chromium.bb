@@ -75,7 +75,7 @@ TEST_F(SamplingHeapProfilerTest, SampleObserverMuted) {
   sampler->Start();
   sampler->AddSamplesObserver(&collector);
   {
-    PoissonAllocationSampler::MuteThreadSamplesScope muted_scope;
+    PoissonAllocationSampler::ScopedMuteThreadSamples muted_scope;
     void* volatile p = malloc(10000);
     free(p);
   }
