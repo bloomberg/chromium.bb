@@ -89,9 +89,7 @@ TestingBrowserProcess::TestingBrowserProcess()
       rappor_service_(nullptr),
       platform_part_(new TestingBrowserProcessPlatformPart()),
       test_network_connection_tracker_(
-          new network::TestNetworkConnectionTracker(
-              true /* respond_synchronously */,
-              network::mojom::ConnectionType::CONNECTION_UNKNOWN)) {
+          network::TestNetworkConnectionTracker::CreateInstance()) {
   content::SetNetworkConnectionTrackerForTesting(
       test_network_connection_tracker_.get());
 

@@ -53,6 +53,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -284,7 +285,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
     context_->set_http_user_agent_settings(&http_user_agent_settings_);
     bypass_stats_.reset(new DataReductionProxyBypassStats(
         test_context_->config(), test_context_->unreachable_callback(),
-        test_context_->test_network_connection_tracker()));
+        network::TestNetworkConnectionTracker::GetInstance()));
 
     DataReductionProxyInterceptor* interceptor =
         new DataReductionProxyInterceptor(

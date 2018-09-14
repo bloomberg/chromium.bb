@@ -93,12 +93,17 @@ class ResourceRequestAllowedNotifierTest
       public testing::WithParamInterface<TestCase> {
  public:
   ResourceRequestAllowedNotifierTest()
-      : network_tracker_(GetParam().response_mode ==
-                             ConnectionTrackerResponseMode::kSynchronous,
-                         network::mojom::ConnectionType::CONNECTION_WIFI),
-        resource_request_allowed_notifier_(&prefs_, &network_tracker_),
+      : resource_request_allowed_notifier_(
+            &prefs_,
+            network::TestNetworkConnectionTracker::GetInstance()),
         eula_notifier_(new TestEulaAcceptedNotifier),
         was_notified_(false) {
+    auto* tracker = network::TestNetworkConnectionTracker::GetInstance();
+    tracker->SetRespondSynchronously(
+        GetParam().response_mode ==
+        ConnectionTrackerResponseMode::kSynchronous);
+    tracker->SetConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
+
     if (GetParam().migration_state == MigrationState::kEnabled)
       feature_list_.InitAndEnableFeature(kResourceRequestAllowedMigration);
     resource_request_allowed_notifier_.InitWithEulaAcceptNotifier(
@@ -113,7 +118,8 @@ class ResourceRequestAllowedNotifierTest
 
   void SimulateNetworkConnectionChange(network::mojom::ConnectionType type) {
     if (GetParam().migration_state == MigrationState::kEnabled) {
-      network_tracker_.SetConnectionType(type);
+      network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+          type);
       base::RunLoop().RunUntilIdle();
     } else {
       network_notifier_.SimulateNetworkConnectionChange(
@@ -162,7 +168,6 @@ class ResourceRequestAllowedNotifierTest
  private:
   base::test::ScopedFeatureList feature_list_;
   base::MessageLoopForUI message_loop_;
-  network::TestNetworkConnectionTracker network_tracker_;
   TestRequestAllowedNotifier resource_request_allowed_notifier_;
   TestNetworkChangeNotifier network_notifier_;
   TestingPrefServiceSimple prefs_;

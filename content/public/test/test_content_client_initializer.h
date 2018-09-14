@@ -9,6 +9,10 @@
 
 #include "base/macros.h"
 
+namespace network {
+class TestNetworkConnectionTracker;
+}
+
 namespace content {
 
 class ContentClient;
@@ -31,6 +35,8 @@ class TestContentClientInitializer {
   void CreateTestRenderViewHosts();
 
  private:
+  std::unique_ptr<network::TestNetworkConnectionTracker>
+      test_network_connection_tracker_;
   std::unique_ptr<NotificationServiceImpl> notification_service_;
   std::unique_ptr<ContentClient> content_client_;
   std::unique_ptr<TestContentBrowserClient> content_browser_client_;

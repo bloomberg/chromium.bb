@@ -52,6 +52,7 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,7 +113,7 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
   std::unique_ptr<DataReductionProxyBypassStats> BuildBypassStats() {
     return std::make_unique<DataReductionProxyBypassStats>(
         test_context_->config(), test_context_->unreachable_callback(),
-        test_context_->test_network_connection_tracker());
+        network::TestNetworkConnectionTracker::GetInstance());
   }
 
   MockDataReductionProxyConfig* config() const {

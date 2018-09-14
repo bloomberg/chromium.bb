@@ -146,8 +146,6 @@ class GoogleURLTrackerTest : public testing::Test {
   TestingPrefServiceSimple prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
-  std::unique_ptr<network::TestNetworkConnectionTracker>
-      test_network_connection_tracker_;
   GoogleURLTrackerClient* client_;
 
   std::unique_ptr<GoogleURLTracker> google_url_tracker_;
@@ -156,11 +154,7 @@ class GoogleURLTrackerTest : public testing::Test {
   bool handled_request_ = false;
 };
 
-GoogleURLTrackerTest::GoogleURLTrackerTest()
-    : test_network_connection_tracker_(
-          new network::TestNetworkConnectionTracker(
-              true /* respond_synchronously */,
-              network::mojom::ConnectionType::CONNECTION_UNKNOWN)) {
+GoogleURLTrackerTest::GoogleURLTrackerTest() {
   prefs_.registry()->RegisterStringPref(
       prefs::kLastKnownGoogleURL,
       GoogleURLTracker::kDefaultGoogleHomepage);
@@ -176,7 +170,7 @@ void GoogleURLTrackerTest::SetUp() {
   std::unique_ptr<GoogleURLTrackerClient> client(client_);
   google_url_tracker_.reset(new GoogleURLTracker(
       std::move(client), GoogleURLTracker::ALWAYS_DOT_COM_MODE,
-      test_network_connection_tracker_.get()));
+      network::TestNetworkConnectionTracker::GetInstance()));
 }
 
 void GoogleURLTrackerTest::TearDown() {
@@ -207,7 +201,7 @@ void GoogleURLTrackerTest::FinishSleep() {
 }
 
 void GoogleURLTrackerTest::NotifyNetworkChanged() {
-  test_network_connection_tracker_->SetConnectionType(
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_UNKNOWN);
   base::RunLoop().RunUntilIdle();
 }

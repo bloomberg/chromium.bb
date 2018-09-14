@@ -73,12 +73,10 @@ class OneGoogleBarLoaderImplTest : public testing::Test {
 
   explicit OneGoogleBarLoaderImplTest(bool account_consistency_mirror_required)
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        test_network_connection_tracker_(
-            true /* respond_synchronously */,
-            network::mojom::ConnectionType::CONNECTION_UNKNOWN),
-        google_url_tracker_(std::make_unique<GoogleURLTrackerClientStub>(),
-                            GoogleURLTracker::ALWAYS_DOT_COM_MODE,
-                            &test_network_connection_tracker_),
+        google_url_tracker_(
+            std::make_unique<GoogleURLTrackerClientStub>(),
+            GoogleURLTracker::ALWAYS_DOT_COM_MODE,
+            network::TestNetworkConnectionTracker::GetInstance()),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
@@ -131,7 +129,6 @@ class OneGoogleBarLoaderImplTest : public testing::Test {
 
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
 
-  network::TestNetworkConnectionTracker test_network_connection_tracker_;
   GoogleURLTracker google_url_tracker_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;

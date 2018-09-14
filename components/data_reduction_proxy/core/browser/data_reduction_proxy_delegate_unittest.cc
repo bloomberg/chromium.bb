@@ -51,6 +51,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -87,14 +88,14 @@ class TestDataReductionProxyDelegate : public DataReductionProxyDelegate {
       DataReductionProxyEventCreator* event_creator,
       DataReductionProxyBypassStats* bypass_stats,
       bool proxy_supports_quic,
-      net::NetLog* net_log,
-      network::NetworkConnectionTracker* network_connection_tracker)
-      : DataReductionProxyDelegate(config,
-                                   configurator,
-                                   event_creator,
-                                   bypass_stats,
-                                   net_log,
-                                   network_connection_tracker),
+      net::NetLog* net_log)
+      : DataReductionProxyDelegate(
+            config,
+            configurator,
+            event_creator,
+            bypass_stats,
+            net_log,
+            network::TestNetworkConnectionTracker::GetInstance()),
         proxy_supports_quic_(proxy_supports_quic) {}
 
   ~TestDataReductionProxyDelegate() override {}
@@ -257,10 +258,6 @@ class DataReductionProxyDelegateTest : public testing::Test {
 
   DataReductionProxyDelegate* proxy_delegate() const {
     return proxy_delegate_.get();
-  }
-
-  network::NetworkConnectionTracker* network_connection_tracker() const {
-    return test_context_->test_network_connection_tracker();
   }
 
  private:
@@ -484,7 +481,7 @@ TEST_F(DataReductionProxyDelegateTest, AlternativeProxy) {
     TestDataReductionProxyDelegate delegate(
         config(), io_data()->configurator(), io_data()->event_creator(),
         io_data()->bypass_stats(), test.proxy_supports_quic,
-        io_data()->net_log(), network_connection_tracker());
+        io_data()->net_log());
 
     base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(

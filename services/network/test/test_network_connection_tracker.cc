@@ -5,14 +5,34 @@
 #include "services/network/test/test_network_connection_tracker.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace network {
 
-TestNetworkConnectionTracker::TestNetworkConnectionTracker(
-    bool respond_synchronously,
-    network::mojom::ConnectionType initial_type)
-    : respond_synchronously_(respond_synchronously), type_(initial_type) {}
+static TestNetworkConnectionTracker* g_test_network_connection_tracker_instance;
+
+// static
+std::unique_ptr<TestNetworkConnectionTracker>
+TestNetworkConnectionTracker::CreateInstance() {
+  return base::WrapUnique(new TestNetworkConnectionTracker());
+}
+
+// static
+TestNetworkConnectionTracker* TestNetworkConnectionTracker::GetInstance() {
+  DCHECK(g_test_network_connection_tracker_instance);
+  return g_test_network_connection_tracker_instance;
+}
+
+TestNetworkConnectionTracker::TestNetworkConnectionTracker() {
+  DCHECK(!g_test_network_connection_tracker_instance);
+  g_test_network_connection_tracker_instance = this;
+}
+
+TestNetworkConnectionTracker::~TestNetworkConnectionTracker() {
+  DCHECK_EQ(g_test_network_connection_tracker_instance, this);
+  g_test_network_connection_tracker_instance = nullptr;
+}
 
 bool TestNetworkConnectionTracker::GetConnectionType(
     network::mojom::ConnectionType* type,
@@ -31,6 +51,11 @@ void TestNetworkConnectionTracker::SetConnectionType(
     network::mojom::ConnectionType type) {
   type_ = type;
   OnNetworkChanged(type_);
+}
+
+void TestNetworkConnectionTracker::SetRespondSynchronously(
+    bool respond_synchronously) {
+  respond_synchronously_ = respond_synchronously;
 }
 
 }  // namespace network

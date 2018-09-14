@@ -29,7 +29,14 @@ source_set("test_support") {
     "//base/test:test_support",
   ]
 
-  if (!is_ios) {
+  if (is_ios) {
+    sources += [
+      "ios_components_test_initializer.cc",
+      "ios_components_test_initializer.h",
+    ]
+
+    deps += [ "//services/network:test_support" ]
+  } else {
     deps += [
       "//components/invalidation/impl",
       "//components/policy/core/browser",
