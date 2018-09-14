@@ -10,7 +10,7 @@ import android.support.graphics.drawable.Animatable2Compat;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.widget.ImageView;
 
-import org.chromium.chrome.R;
+import org.chromium.chrome.download.R;
 
 /**
  * A helper class to display the loading image and animation for image and video items. This class

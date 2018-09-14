@@ -6,16 +6,16 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:id="@android:id/progress">
         <rotate
-            android:fromDegrees="180"
-            android:toDegrees="180" >
+            android:fromDegrees="270"
+            android:toDegrees="270" >
             <shape
-                android:innerRadius="16dp"
+                android:innerRadius="28dp"
                 android:thickness="2dp"
                 android:useLevel="true"
                 android:shape="ring">
                 <gradient
-                    android:startColor="@color/modern_grey_800"
-                    android:endColor="@color/modern_grey_800"
+                    android:startColor="@color/modern_grey_900"
+                    android:endColor="@color/modern_grey_900"
                     android:type="sweep" />
             </shape>
         </rotate>

@@ -26,7 +26,7 @@ public class ListUtils {
     /** The potential types of list items that could be displayed. */
     @IntDef({ViewType.DATE, ViewType.IN_PROGRESS, ViewType.GENERIC, ViewType.VIDEO, ViewType.IMAGE,
             ViewType.CUSTOM_VIEW, ViewType.PREFETCH, ViewType.SECTION_HEADER,
-            ViewType.SEPARATOR_DATE, ViewType.SEPARATOR_SECTION})
+            ViewType.SEPARATOR_DATE, ViewType.SEPARATOR_SECTION, ViewType.IN_PROGRESS_VIDEO})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
         int DATE = 0;
@@ -39,6 +39,7 @@ public class ListUtils {
         int SECTION_HEADER = 7;
         int SEPARATOR_DATE = 8;
         int SEPARATOR_SECTION = 9;
+        int IN_PROGRESS_VIDEO = 10;
     }
 
     /** Converts a given list of {@link ListItem}s to a list of {@link OfflineItem}s. */
@@ -72,25 +73,24 @@ public class ListUtils {
                 OfflineItemListItem offlineItem = (OfflineItemListItem) item;
 
                 if (offlineItem.item.isSuggested) return ViewType.PREFETCH;
-                if (offlineItem.item.state == OfflineItemState.IN_PROGRESS
+
+                boolean inProgress = offlineItem.item.state == OfflineItemState.IN_PROGRESS
                         || offlineItem.item.state == OfflineItemState.PAUSED
                         || offlineItem.item.state == OfflineItemState.INTERRUPTED
                         || offlineItem.item.state == OfflineItemState.PENDING
-                        || offlineItem.item.state == OfflineItemState.FAILED) {
-                    return ViewType.IN_PROGRESS;
-                }
+                        || offlineItem.item.state == OfflineItemState.FAILED;
 
                 switch (offlineItem.item.filter) {
                     case OfflineItemFilter.FILTER_VIDEO:
-                        return ViewType.VIDEO;
+                        return inProgress ? ViewType.IN_PROGRESS_VIDEO : ViewType.VIDEO;
                     case OfflineItemFilter.FILTER_IMAGE:
-                        return ViewType.IMAGE;
+                        return inProgress ? ViewType.IN_PROGRESS : ViewType.IMAGE;
                     // case OfflineItemFilter.FILTER_PAGE:
                     // case OfflineItemFilter.FILTER_AUDIO:
                     // case OfflineItemFilter.FILTER_OTHER:
                     // case OfflineItemFilter.FILTER_DOCUMENT:
                     default:
-                        return ViewType.GENERIC;
+                        return inProgress ? ViewType.IN_PROGRESS : ViewType.GENERIC;
                 }
             } else {
                 return ViewType.DATE;

@@ -3,7 +3,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <!-- Download Home -->
     <style name="DownloadHomeStatusText">
         <item name="android:layout_width">wrap_content</item>
@@ -70,5 +71,29 @@
         <item name="android:layout_height">24dp</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:layout_marginTop">8dp</item>
+    </style>
+    <style name="SmallCircularProgress">
+        <item name="android:layout_width">36dp</item>
+        <item name="android:layout_height">36dp</item>
+        <item name="android:tint">@color/default_icon_color</item>
+        <item name="android:background">@drawable/circular_progress_bar_background_small</item>
+        <item name="indeterminateProgress">@drawable/circular_progress_bar_indeterminate_small</item>
+        <item name="determinateProgress">@drawable/circular_progress_bar_determinate_small</item>
+        <item name="resumeSrc">@drawable/ic_play_arrow_white_24dp</item>
+        <!-- TODO(883387): Support retrying failed downloads. -->
+        <item name="retrySrc">@drawable/ic_play_arrow_white_24dp</item>
+        <item name="pauseSrc">@drawable/ic_pause_white_24dp</item>
+    </style>
+    <style name="LargeCircularProgress">
+        <item name="android:layout_width">60dp</item>
+        <item name="android:layout_height">60dp</item>
+        <item name="android:tint">@color/default_icon_color</item>
+        <item name="android:background">@drawable/circular_progress_bar_background_large</item>
+        <item name="indeterminateProgress">@drawable/circular_progress_bar_indeterminate_large</item>
+        <item name="determinateProgress">@drawable/circular_progress_bar_determinate_large</item>
+        <item name="resumeSrc">@drawable/ic_play_arrow_white_36dp</item>
+        <!-- TODO(883387): Support retrying failed downloads. -->
+        <item name="retrySrc">@drawable/ic_play_arrow_white_36dp</item>
+        <item name="pauseSrc">@drawable/ic_pause_white_36dp</item>
     </style>
 </resources>
