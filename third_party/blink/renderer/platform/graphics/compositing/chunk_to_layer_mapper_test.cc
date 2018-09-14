@@ -224,4 +224,18 @@ TEST_F(ChunkToLayerMapperTest, SlowPath) {
   EXPECT_EQ(FloatClipRect(), mapper.ClipRect());
 }
 
+TEST_F(ChunkToLayerMapperTest, SwitchToSiblingEffect) {
+  auto effect1 = CreateOpacityEffect(*LayerState().Effect(), 0.5f);
+  auto chunk1 = Chunk(PropertyTreeState(LayerState().Transform(),
+                                        LayerState().Clip(), effect1.get()));
+  auto effect2 = CreateOpacityEffect(*LayerState().Effect(), 0.5f);
+  auto chunk2 = Chunk(PropertyTreeState(LayerState().Transform(),
+                                        LayerState().Clip(), effect2.get()));
+
+  ChunkToLayerMapper mapper(chunk1.properties.GetPropertyTreeState(),
+                            gfx::Vector2dF(10, 20));
+  mapper.SwitchToChunk(chunk2);
+  EXPECT_FALSE(HasFilterThatMovesPixels(mapper));
+}
+
 }  // namespace blink
