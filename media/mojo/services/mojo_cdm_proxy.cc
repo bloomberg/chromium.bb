@@ -62,6 +62,18 @@ CdmProxy::Function ToMediaFunction(cdm::CdmProxy::Function function) {
   return CdmProxy::Function::kIntelNegotiateCryptoSessionKeyExchange;
 }
 
+CdmProxy::KeyType ToMediaKeyType(cdm::CdmProxy::KeyType key_type) {
+  switch (key_type) {
+    case cdm::CdmProxy::KeyType::kDecryptOnly:
+      return CdmProxy::KeyType::kDecryptOnly;
+    case cdm::CdmProxy::KeyType::kDecryptAndDecode:
+      return CdmProxy::KeyType::kDecryptAndDecode;
+  }
+
+  NOTREACHED() << "Unexpected key type: " << static_cast<int32_t>(key_type);
+  return CdmProxy::KeyType::kDecryptOnly;
+}
+
 }  // namespace
 
 MojoCdmProxy::MojoCdmProxy(mojom::CdmProxyPtr cdm_proxy_ptr,
@@ -127,6 +139,7 @@ void MojoCdmProxy::CreateMediaCryptoSession(const uint8_t* input_data,
 void MojoCdmProxy::SetKey(uint32_t crypto_session_id,
                           const uint8_t* key_id,
                           uint32_t key_id_size,
+                          KeyType key_type,
                           const uint8_t* key_blob,
                           uint32_t key_blob_size) {
   DVLOG(3) << __func__;
@@ -134,6 +147,7 @@ void MojoCdmProxy::SetKey(uint32_t crypto_session_id,
 
   cdm_proxy_ptr_->SetKey(
       crypto_session_id, std::vector<uint8_t>(key_id, key_id + key_id_size),
+      ToMediaKeyType(key_type),
       std::vector<uint8_t>(key_blob, key_blob + key_blob_size));
 }
 

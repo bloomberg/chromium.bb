@@ -58,6 +58,7 @@ class MEDIA_GPU_EXPORT D3D11CdmProxy : public CdmProxy {
       CreateMediaCryptoSessionCB create_media_crypto_session_cb) override;
   void SetKey(uint32_t crypto_session_id,
               const std::vector<uint8_t>& key_id,
+              KeyType key_type,
               const std::vector<uint8_t>& key_blob) override;
   void RemoveKey(uint32_t crypto_session_id,
                  const std::vector<uint8_t>& key_id) override;

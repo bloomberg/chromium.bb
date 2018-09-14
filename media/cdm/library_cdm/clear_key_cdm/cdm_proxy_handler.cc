@@ -33,7 +33,8 @@ void CdmProxyHandler::Initialize(InitCB init_cb) {
 }
 
 void CdmProxyHandler::SetKey(const std::vector<uint8_t>& response) {
-  cdm_proxy_->SetKey(crypto_session_id_, nullptr, 0, response.data(),
+  cdm_proxy_->SetKey(crypto_session_id_, nullptr, 0,
+                     cdm::CdmProxy::kDecryptAndDecode, response.data(),
                      response.size());
 }
 

@@ -86,6 +86,7 @@ void ClearKeyCdmProxy::CreateMediaCryptoSession(
 
 void ClearKeyCdmProxy::SetKey(uint32_t crypto_session_id,
                               const std::vector<uint8_t>& key_id,
+                              KeyType /* key_type */,
                               const std::vector<uint8_t>& key_blob) {
   DVLOG(1) << __func__;
 

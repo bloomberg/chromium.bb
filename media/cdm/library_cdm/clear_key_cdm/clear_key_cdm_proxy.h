@@ -34,6 +34,7 @@ class ClearKeyCdmProxy : public CdmProxy, public CdmContext {
       CreateMediaCryptoSessionCB create_media_crypto_session_cb) final;
   void SetKey(uint32_t crypto_session_id,
               const std::vector<uint8_t>& key_id,
+              KeyType key_type,
               const std::vector<uint8_t>& key_blob) final;
   void RemoveKey(uint32_t crypto_session_id,
                  const std::vector<uint8_t>& key_id) final;
