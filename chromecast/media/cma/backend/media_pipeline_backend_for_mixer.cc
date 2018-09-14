@@ -94,6 +94,7 @@ bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
 
   state_ = kStatePlaying;
   playback_started_ = !av_sync_;
+  starting_playback_rate_ = 1.0;
 
   return true;
 }
@@ -157,24 +158,28 @@ bool MediaPipelineBackendForMixer::Resume() {
 }
 
 bool MediaPipelineBackendForMixer::SetPlaybackRate(float rate) {
-  LOG(INFO) << __func__ << " rate=" << rate;
+  if (!playback_started_) {
+    LOG(INFO) << "Got playback rate change before playback has started.";
 
-  // If av_sync_ is available, only set the playback rate of the video master,
-  // and let av_sync_ handle syncing the audio to the video.
-  if (av_sync_) {
-    DCHECK(video_decoder_);
-    if (!video_decoder_->SetPlaybackRate(rate))
+    // Some vendor VideoDecoderForMixer implementations may not properly handle
+    // the rate change before playback has started. It needs to be moved to
+    // after we start playback
+    starting_playback_rate_ = rate;
+  } else {
+    LOG(INFO) << __func__ << " rate=" << rate;
+
+    // If av_sync_ is available, only notify it of the playback rate change,
+    // and it will take care of changing the rate of the audio and video.
+    if (av_sync_) {
+      av_sync_->NotifyPlaybackRateChange(rate);
+      return true;
+    }
+
+    if (audio_decoder_ && !audio_decoder_->SetPlaybackRate(rate))
       return false;
-    av_sync_->NotifyPlaybackRateChange(rate);
-    return true;
+    if (video_decoder_ && !video_decoder_->SetPlaybackRate(rate))
+      return false;
   }
-
-  // If there is no av_sync_, then we must manually set the playback rate of
-  // the audio decoder.
-  if (video_decoder_ && !video_decoder_->SetPlaybackRate(rate))
-    return false;
-  if (audio_decoder_ && !audio_decoder_->SetPlaybackRate(rate))
-    return false;
 
   return true;
 }
@@ -290,7 +295,11 @@ void MediaPipelineBackendForMixer::TryStartPlayback() {
   video_decoder_->SetPts(start_playback_timestamp_us_, start_playback_pts_us_);
   audio_decoder_->StartPlaybackAt(start_playback_timestamp_us_);
   av_sync_->NotifyStart(start_playback_timestamp_us_, start_playback_pts_us_);
+
   playback_started_ = true;
+  if (starting_playback_rate_ != 1.0) {
+    SetPlaybackRate(starting_playback_rate_);
+  }
 }
 
 }  // namespace media

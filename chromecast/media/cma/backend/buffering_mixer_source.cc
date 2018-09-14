@@ -420,10 +420,9 @@ void BufferingMixerSource::CheckAndStartPlaybackIfNecessary(
             input_samples_per_second_));
       } else {
         LOG(INFO) << "Adding silence. Duration=" << silence_duration;
-        remaining_silence_frames_ =
-            DataToFrames(::media::AudioTimestampHelper::TimeToFrames(
-                base::TimeDelta::FromMicroseconds(silence_duration),
-                input_samples_per_second_));
+        remaining_silence_frames_ = ::media::AudioTimestampHelper::TimeToFrames(
+            base::TimeDelta::FromMicroseconds(silence_duration),
+            input_samples_per_second_);
       }
     }
 

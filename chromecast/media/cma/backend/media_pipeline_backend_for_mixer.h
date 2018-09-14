@@ -96,6 +96,7 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend,
   bool audio_ready_to_play_ = false;
   bool video_ready_to_play_ = false;
   bool playback_started_ = false;
+  float starting_playback_rate_ = 1.0;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendForMixer);
 };

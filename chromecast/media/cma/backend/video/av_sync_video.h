@@ -92,8 +92,13 @@ class AvSyncVideo : public AvSync {
   // that will reset the linear regression model.
   std::unique_ptr<WeightedMovingLinearRegression> audio_pts_;
   std::unique_ptr<WeightedMovingLinearRegression> video_pts_;
-  double current_audio_playback_rate_ = 1.0;
-  double current_video_playback_rate_ = 1.0;
+
+  // This is the audio playback rate propagated from SetPlaybackRate, which is
+  // exposed to the user to speed up or slow down their playback.
+  double current_media_playback_rate_ = 1.0;
+
+  // This is the small playback rate change done to maintain AV sync.
+  double current_av_sync_audio_playback_rate_ = 1.0;
 
   int64_t last_gather_timestamp_us_ = 0;
   int64_t last_repeated_frames_ = 0;
