@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_FEED_FEED_OFFLINE_BRIDGE_H_
 
 #include <jni.h>
+#include <string>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
@@ -69,6 +70,8 @@ class FeedOfflineBridge {
   // and after AppendContentMetadata() is called for all data.
   void OnGetKnownContentDone(JNIEnv* env,
                              const base::android::JavaRef<jobject>& j_this);
+
+  void NotifyStatusChange(const std::string& url, bool available_offline);
 
  private:
   // Starts an the async request for ContentMetadata through KnownContentApi's

@@ -127,9 +127,12 @@ FeedOfflineHost::FeedOfflineHost(OfflinePageModel* offline_page_model,
 FeedOfflineHost::~FeedOfflineHost() = default;
 
 void FeedOfflineHost::Initialize(
-    const base::RepeatingClosure& trigger_get_known_content) {
+    const base::RepeatingClosure& trigger_get_known_content,
+    const NotifyStatusChangeCallback& notify_status_change) {
   DCHECK(trigger_get_known_content_.is_null());
+  DCHECK(notify_status_change_.is_null());
   trigger_get_known_content_ = trigger_get_known_content;
+  notify_status_change_ = notify_status_change;
   // TODO(skym): Post task to call PrefetchService::SetSuggestionProvider().
 }
 
@@ -147,7 +150,7 @@ void FeedOfflineHost::GetOfflineStatus(
   scoped_refptr<CallbackAggregator> aggregator =
       base::MakeRefCounted<CallbackAggregator>(
           std::move(callback),
-          base::BindRepeating(&FeedOfflineHost::CacheOfflinePageAndId,
+          base::BindRepeating(&FeedOfflineHost::CacheOfflinePageUrlAndId,
                               weak_factory_.GetWeakPtr()));
 
   for (std::string url : urls) {
@@ -207,17 +210,25 @@ void FeedOfflineHost::OfflinePageModelLoaded(OfflinePageModel* model) {
 
 void FeedOfflineHost::OfflinePageAdded(OfflinePageModel* model,
                                        const OfflinePageItem& added_page) {
-  // TODO(skym): Call into bridge callback.
+  const std::string& url = PreferOriginal(added_page).spec();
+  CacheOfflinePageUrlAndId(url, added_page.offline_id);
+  notify_status_change_.Run(url, true);
 }
 
 void FeedOfflineHost::OfflinePageDeleted(
     const OfflinePageModel::DeletedPageInfo& page_info) {
-  // TODO(skym): Call into bridge callback.
+  const std::string& url = page_info.url.spec();
+  EvictOfflinePageUrl(url);
+  notify_status_change_.Run(url, false);
 }
 
-void FeedOfflineHost::CacheOfflinePageAndId(const std::string& url,
-                                            int64_t id) {
+void FeedOfflineHost::CacheOfflinePageUrlAndId(const std::string& url,
+                                               int64_t id) {
   url_hash_to_id_[base::Hash(url)] = id;
+}
+
+void FeedOfflineHost::EvictOfflinePageUrl(const std::string& url) {
+  url_hash_to_id_.erase(base::Hash(url));
 }
 
 }  // namespace feed
