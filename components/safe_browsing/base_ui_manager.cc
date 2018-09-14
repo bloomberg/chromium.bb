@@ -227,7 +227,10 @@ void BaseUIManager::DisplayBlockingPage(
     return;
   }
 
-  if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
+  if (resource.threat_type != SB_THREAT_TYPE_SAFE &&
+      resource.threat_type != SB_THREAT_TYPE_BILLING) {
+    // TODO(vakh): crbug/883462: The reports for SB_THREAT_TYPE_BILLING should
+    // be disabled for M70 but enabled for a later release (M71?).
     CreateAndSendHitReport(resource);
   }
 
