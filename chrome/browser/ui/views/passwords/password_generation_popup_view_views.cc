@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
+#include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -51,15 +52,14 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
     BuildColumnSet(layout);
     layout->StartRow(views::GridLayout::kFixedSize, 0);
 
-    views::Label* suggestion_label = new views::Label(
+    layout->AddView(autofill::CreateLabelWithColorReadabilityDisabled(
         suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
         state == PasswordGenerationPopupController::kOfferGeneration
             ? views::style::STYLE_PRIMARY
-            : STYLE_SECONDARY);
-    layout->AddView(suggestion_label);
+            : STYLE_SECONDARY));
 
     DCHECK(!password_label_);
-    password_label_ = new views::Label(
+    password_label_ = autofill::CreateLabelWithColorReadabilityDisabled(
         password, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
     layout->AddView(password_label_);
   }

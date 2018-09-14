@@ -8,10 +8,13 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 
 namespace views {
+class Label;
 class StyledLabel;
 class Textfield;
 }  // namespace views
@@ -33,6 +36,14 @@ class TitleWithIconAndSeparatorView : public views::View {
 
 // Creates and returns a small Textfield intended to be used for CVC entry.
 views::Textfield* CreateCvcTextfield();
+
+// Returns a new label with auto-color readability disabled to ensure consistent
+// colors in the title when a dark native theme is applied
+// (https://crbug.com/881514).
+views::Label* CreateLabelWithColorReadabilityDisabled(
+    const base::string16& text,
+    int text_context,
+    int text_style);
 
 // Defines a view with legal message. This class handles the legal message
 // parsing and the links clicking events.

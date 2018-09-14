@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_view_common.h"
+#include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/chrome_typography_provider.h"
@@ -448,21 +449,21 @@ views::View* AutofillPopupItemView::CreateValueLabel() {
       popup_view_->controller()->GetElidedValueAt(line_number_);
   if (popup_view_->controller()
           ->GetSuggestionAt(line_number_)
-          .is_value_secondary)
+          .is_value_secondary) {
     return CreateSecondaryLabel(text);
+  }
 
-  gfx::FontList font_list = views::style::GetFont(
-      ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, GetPrimaryTextStyle());
-  gfx::Font::Weight font_weight;
-  views::Label* text_label = new views::Label(
+  views::Label* text_label = CreateLabelWithColorReadabilityDisabled(
       popup_view_->controller()->GetElidedValueAt(line_number_),
-      {ShouldUseCustomFontWeightForPrimaryInfo(&font_weight)
-           ? font_list.DeriveWithWeight(font_weight)
-           : font_list});
-  text_label->SetEnabledColor(
-      views::style::GetColor(*this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                             GetPrimaryTextStyle()));
+      ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, GetPrimaryTextStyle());
+
+  gfx::Font::Weight font_weight;
+  if (ShouldUseCustomFontWeightForPrimaryInfo(&font_weight)) {
+    text_label->SetFontList(
+        text_label->font_list().DeriveWithWeight(font_weight));
+  }
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
   return text_label;
 }
 
@@ -478,12 +479,9 @@ views::View* AutofillPopupItemView::CreateDescriptionLabel() {
 
 views::Label* AutofillPopupItemView::CreateSecondaryLabel(
     const base::string16& text) const {
-  views::Label* subtext_label = new views::Label(
-      text, {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                                   ChromeTextStyle::STYLE_SECONDARY)});
-  subtext_label->SetEnabledColor(
-      views::style::GetColor(*this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                             ChromeTextStyle::STYLE_SECONDARY));
+  views::Label* subtext_label = CreateLabelWithColorReadabilityDisabled(
+      text, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+      ChromeTextStyle::STYLE_SECONDARY);
   subtext_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   return subtext_label;
@@ -719,10 +717,9 @@ void AutofillPopupWarningView::CreateContent() {
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_margin, horizontal_margin)));
 
-  views::Label* text_label = new views::Label(
+  views::Label* text_label = CreateLabelWithColorReadabilityDisabled(
       controller->GetElidedValueAt(line_number_),
-      {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                             ChromeTextStyle::STYLE_RED)});
+      ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_RED);
   text_label->SetEnabledColor(AutofillPopupBaseView::kWarningColor);
   text_label->SetMultiLine(true);
   int max_width =

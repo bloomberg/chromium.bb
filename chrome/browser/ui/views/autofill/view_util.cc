@@ -117,6 +117,20 @@ views::Textfield* CreateCvcTextfield() {
   return textfield;
 }
 
+views::Label* CreateLabelWithColorReadabilityDisabled(
+    const base::string16& text,
+    int text_context,
+    int text_style) {
+  views::Label* label = new views::Label(text, text_context, text_style);
+  label->SetAutoColorReadabilityEnabled(false);
+  // Forces the color for the required context and style to be applied. It may
+  // have been overridden by the default theme's color before auto-color
+  // readability was disabled.
+  label->SetEnabledColor(
+      views::style::GetColor(*label, text_context, text_style));
+  return label;
+}
+
 LegalMessageView::LegalMessageView(const LegalMessageLines& legal_message_lines,
                                    views::StyledLabelListener* listener)
     : legal_message_lines_(legal_message_lines) {
