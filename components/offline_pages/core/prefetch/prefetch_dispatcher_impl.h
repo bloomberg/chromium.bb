@@ -18,13 +18,15 @@
 #include "components/version_info/channel.h"
 #include "net/url_request/url_request_context_getter.h"
 
+class PrefService;
+
 namespace offline_pages {
 class PrefetchService;
 
 class PrefetchDispatcherImpl : public PrefetchDispatcher,
                                public TaskQueue::Delegate {
  public:
-  PrefetchDispatcherImpl();
+  explicit PrefetchDispatcherImpl(PrefService* pref_service);
   ~PrefetchDispatcherImpl() override;
 
   // PrefetchDispatcher implementation:
@@ -107,6 +109,7 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
                               bool is_first_attempt,
                               const std::string& image_data);
 
+  PrefService* pref_service_;
   PrefetchService* service_;
   TaskQueue task_queue_;
   bool needs_pipeline_processing_ = false;

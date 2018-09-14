@@ -44,7 +44,7 @@ class PrefetchDownloadFlowTest : public PrefetchTaskTestBase {
     download_client_ = std::make_unique<TestDownloadClient>(downloader.get());
     download_service_.set_client(download_client_.get());
     prefetch_service_taco_->SetPrefetchDispatcher(
-        std::make_unique<PrefetchDispatcherImpl>());
+        std::make_unique<PrefetchDispatcherImpl>(prefs()));
     prefetch_service_taco_->SetPrefetchStore(store_util()->ReleaseStore());
     prefetch_service_taco_->SetPrefetchDownloader(std::move(downloader));
     prefetch_service_taco_->CreatePrefetchService();

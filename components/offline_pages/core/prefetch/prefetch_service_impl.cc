@@ -12,7 +12,6 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
-#include "components/offline_pages/core/prefetch/prefetch_configuration.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
@@ -37,7 +36,6 @@ PrefetchServiceImpl::PrefetchServiceImpl(
     std::unique_ptr<PrefetchImporter> prefetch_importer,
     std::unique_ptr<PrefetchBackgroundTaskHandler>
         prefetch_background_task_handler,
-    std::unique_ptr<PrefetchConfiguration> prefetch_configuration,
     std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher)
     : offline_metrics_collector_(std::move(offline_metrics_collector)),
       prefetch_dispatcher_(std::move(dispatcher)),
@@ -50,7 +48,6 @@ PrefetchServiceImpl::PrefetchServiceImpl(
       prefetch_importer_(std::move(prefetch_importer)),
       prefetch_background_task_handler_(
           std::move(prefetch_background_task_handler)),
-      prefetch_configuration_(std::move(prefetch_configuration)),
       thumbnail_fetcher_(std::move(thumbnail_fetcher)) {
   prefetch_dispatcher_->SetService(this);
   prefetch_downloader_->SetPrefetchService(this);
@@ -131,10 +128,6 @@ PrefetchImporter* PrefetchServiceImpl::GetPrefetchImporter() {
 PrefetchBackgroundTaskHandler*
 PrefetchServiceImpl::GetPrefetchBackgroundTaskHandler() {
   return prefetch_background_task_handler_.get();
-}
-
-PrefetchConfiguration* PrefetchServiceImpl::GetPrefetchConfiguration() {
-  return prefetch_configuration_.get();
 }
 
 ThumbnailFetcher* PrefetchServiceImpl::GetThumbnailFetcher() {

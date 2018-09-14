@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 
 #include "components/offline_pages/core/offline_store_utils.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/task/task_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,6 +27,7 @@ PrefetchTaskTestBase::~PrefetchTaskTestBase() = default;
 
 void PrefetchTaskTestBase::SetUp() {
   TaskTestBase::SetUp();
+  prefetch_prefs::RegisterPrefs(prefs_.registry());
   store_test_util_.BuildStoreInMemory();
 }
 
