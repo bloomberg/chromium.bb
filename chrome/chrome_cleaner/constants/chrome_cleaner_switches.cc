@@ -105,6 +105,9 @@ const char kPostRebootTriggerSwitch[] = "post-reboot-trigger";
 const char kPostRebootSwitchesInOtherRegistryKeySwitch[] =
     "post-reboot-override-cmd";
 
+// Specifies the quarantine folder instead of the default one.
+const char kQuarantineDirSwitch[] = "quarantine-dir";
+
 // Allow the engine to remove UwS that isn't marked cleanable. For testing
 // only.
 const char kRemoveScanOnlyUwS[] = "remove-scan-only-uws";
