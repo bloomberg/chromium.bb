@@ -77,6 +77,13 @@ class ContentSettingsStore
   void ClearContentSettingsForExtension(const std::string& ext_id,
                                         ExtensionPrefsScope scope);
 
+  // Clears all contents settings set by the extension |ext_id| for the
+  // content type |content_type|.
+  void ClearContentSettingsForExtensionAndContentType(
+      const std::string& ext_id,
+      ExtensionPrefsScope scope,
+      ContentSettingsType content_type);
+
   // Serializes all content settings set by the extension with ID |extension_id|
   // and returns them as a ListValue. The caller takes ownership of the returned
   // value.
