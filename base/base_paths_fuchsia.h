@@ -24,10 +24,9 @@ enum {
   PATH_FUCHSIA_END,
 };
 
-// If running inside a package, returns a FilePath of the root path
-// of the currently deployed package.
-// Otherwise returns an empty FilePath.
-BASE_EXPORT base::FilePath GetPackageRoot();
+// Sets the directory which stores persistent data.
+// Can be left unset if no persistent data store is available.
+void SetPersistentDataPath(const base::FilePath path);
 
 }  // namespace base
 

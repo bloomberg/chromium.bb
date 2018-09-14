@@ -15,15 +15,4 @@ constexpr char kIncognitoSwitch[] = "incognito";
 
 constexpr char kWebContextDataPath[] = "/web_context_data";
 
-base::FilePath GetWebContextDataDir() {
-  base::FilePath data_dir{kWebContextDataPath};
-  bool is_incognito =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(kIncognitoSwitch);
-  CHECK_EQ(is_incognito, !base::DirectoryExists(data_dir));
-
-  if (is_incognito)
-    return base::FilePath();
-  return data_dir;
-}
-
 }  // namespace webrunner

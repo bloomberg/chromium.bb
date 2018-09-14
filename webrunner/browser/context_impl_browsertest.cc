@@ -573,4 +573,28 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, Stop) {
       context_impl()->GetFrameImplForTest(&frame)->web_contents_->IsLoading());
 }
 
+class IncognitoContextImplTest : public ContextImplTest {
+ public:
+  IncognitoContextImplTest() = default;
+  ~IncognitoContextImplTest() override = default;
+
+  // Don't use a persistent directory by specifying a null implementation here.
+  void ConfigurePersistentDataDirectory() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IncognitoContextImplTest);
+};
+
+// Verify that the browser can operate without a persistent data directory.
+IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, NavigateFrame) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, controller.get());
+
+  frame.Unbind();
+}
+
 }  // namespace webrunner

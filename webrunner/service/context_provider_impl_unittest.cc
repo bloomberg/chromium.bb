@@ -107,7 +107,7 @@ class FakeContext : public chromium::web::Context {
 MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
   base::MessageLoopForIO message_loop;
 
-  base::FilePath data_dir =  GetWebContextDataDir();
+  base::FilePath data_dir(kWebContextDataPath);
   if (!data_dir.empty()) {
     EXPECT_TRUE(base::PathExists(data_dir.AppendASCII(kTestDataFileIn)));
 
@@ -213,7 +213,7 @@ class ContextProviderImplTest : public base::MultiProcessTest {
   struct CapturingNavigationEventObserver
       : public chromium::web::NavigationEventObserver {
    public:
-    CapturingNavigationEventObserver(base::OnceClosure on_change_cb)
+    explicit CapturingNavigationEventObserver(base::OnceClosure on_change_cb)
         : on_change_cb_(std::move(on_change_cb)) {}
     ~CapturingNavigationEventObserver() override = default;
 
