@@ -496,8 +496,8 @@ def PrintApkAnalysis(apk_filename, tool_prefix, out_dir, chartjson=None):
   # Always look at uncompressed .so.
   normalized_apk_size -= native_code.ComputeZippedSize()
   normalized_apk_size += native_code.ComputeUncompressedSize()
-  # TODO(agrieve): Once we have better tooling (which can tell you where dex
-  #     size came from), change this to "ComputeExtractedSize()".
+  # Normalized dex size: size within the zip + size on disk for Android Go
+  # devices (which ~= uncompressed dex size).
   normalized_apk_size += java_code.ComputeUncompressedSize()
   # Avoid noise caused when strings change and translations haven't yet been
   # updated.
