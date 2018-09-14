@@ -1109,7 +1109,7 @@ void SurfaceAggregator::PropagateCopyRequestPasses() {
 CompositorFrame SurfaceAggregator::Aggregate(
     const SurfaceId& surface_id,
     base::TimeTicks expected_display_time,
-    int32_t display_trace_id) {
+    int64_t display_trace_id) {
   DCHECK(!expected_display_time.is_null());
 
   uma_stats_.Reset();
@@ -1126,7 +1126,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
   if (!surface->HasActiveFrame())
     return {};
 
-  base::AutoReset<int32_t> reset_display_trace_id(&display_trace_id_,
+  base::AutoReset<int64_t> reset_display_trace_id(&display_trace_id_,
                                                   display_trace_id);
   const CompositorFrame& root_surface_frame = surface->GetActiveFrame();
   TRACE_EVENT_WITH_FLOW2(
