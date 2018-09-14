@@ -483,7 +483,9 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
   self.navigationController.interactivePopGestureRecognizer.delegate = self;
 
   // Hide the toolbar if we're displaying the root node.
-  if (self.bookmarks->loaded() && _rootNode != self.bookmarks->root_node()) {
+  if (self.bookmarks->loaded() &&
+      (_rootNode != self.bookmarks->root_node() ||
+       self.sharedState.currentlyShowingSearchResults)) {
     self.navigationController.toolbarHidden = NO;
   } else {
     self.navigationController.toolbarHidden = YES;
@@ -946,14 +948,14 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
       folderPicker.editedNodes, self.bookmarks, folder, self.browserState);
 
   [self setTableViewEditing:NO];
-  [self dismissViewControllerAnimated:YES completion:NULL];
+  [self.navigationController dismissViewControllerAnimated:YES completion:NULL];
   self.folderSelector.delegate = nil;
   self.folderSelector = nil;
 }
 
 - (void)folderPickerDidCancel:(BookmarkFolderViewController*)folderPicker {
   [self setTableViewEditing:NO];
-  [self dismissViewControllerAnimated:YES completion:NULL];
+  [self.navigationController dismissViewControllerAnimated:YES completion:NULL];
   self.folderSelector.delegate = nil;
   self.folderSelector = nil;
 }
@@ -1051,6 +1053,17 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
 #pragma mark - private
 
+// Check if any of our controller is presenting. We don't consider when this
+// controller is presenting the search controller.
+// Note that when adding a controller that can present, it should be added in
+// context here.
+- (BOOL)isAnyControllerPresenting {
+  return (([self presentedViewController] &&
+           [self presentedViewController] != self.searchController) ||
+          [self.searchController presentedViewController] ||
+          [self.navigationController presentedViewController]);
+}
+
 - (void)setupUIStackCacheIfApplicable {
   self.isReconstructingFromCache = NO;
 
@@ -1062,7 +1075,8 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
 // Set up context bar for the new UI.
 - (void)setupContextBar {
-  if (_rootNode != self.bookmarks->root_node()) {
+  if (_rootNode != self.bookmarks->root_node() ||
+      self.sharedState.currentlyShowingSearchResults) {
     self.navigationController.toolbarHidden = NO;
     [self setContextBarState:BookmarksContextBarDefault];
   } else {
@@ -1256,8 +1270,9 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
 - (BOOL)allowsNewFolder {
   // When the current root node has been removed remotely (becomes NULL),
-  // creating new folder is forbidden.
-  return self.sharedState.tableViewDisplayedRootNode != NULL;
+  // or when displaying search results, creating new folder is forbidden.
+  return self.sharedState.tableViewDisplayedRootNode != NULL &&
+         !self.sharedState.currentlyShowingSearchResults;
 }
 
 - (int)topMostVisibleIndexPathRow {
@@ -1318,15 +1333,22 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 }
 
 - (std::vector<const bookmarks::BookmarkNode*>)getEditNodesInVector {
-  // Create a vector of edit nodes in the same order as the nodes in folder.
   std::vector<const bookmarks::BookmarkNode*> nodes;
-  int childCount = self.sharedState.tableViewDisplayedRootNode->child_count();
-  for (int i = 0; i < childCount; ++i) {
-    const BookmarkNode* node =
-        self.sharedState.tableViewDisplayedRootNode->GetChild(i);
-    if (self.sharedState.editNodes.find(node) !=
-        self.sharedState.editNodes.end()) {
-      nodes.push_back(node);
+  if (self.sharedState.currentlyShowingSearchResults) {
+    // Create a vector of edit nodes in the same order as the selected nodes.
+    const std::set<const bookmarks::BookmarkNode*> editNodes =
+        self.sharedState.editNodes;
+    std::copy(editNodes.begin(), editNodes.end(), std::back_inserter(nodes));
+  } else {
+    // Create a vector of edit nodes in the same order as the nodes in folder.
+    int childCount = self.sharedState.tableViewDisplayedRootNode->child_count();
+    for (int i = 0; i < childCount; ++i) {
+      const BookmarkNode* node =
+          self.sharedState.tableViewDisplayedRootNode->GetChild(i);
+      if (self.sharedState.editNodes.find(node) !=
+          self.sharedState.editNodes.end()) {
+        nodes.push_back(node);
+      }
     }
   }
   return nodes;
@@ -1339,6 +1361,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
   }
 }
 
+// Show scrim overlay and hide toolbar.
 - (void)showScrim {
   self.navigationController.toolbarHidden = YES;
   self.scrimView.alpha = 0.0f;
@@ -1353,17 +1376,16 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
                    }];
 }
 
-- (void)hideScrimAndMaybeRestoreContexBar:(BOOL)restoreContextBar {
+// Hide scrim and restore toolbar.
+- (void)hideScrim {
   [UIView animateWithDuration:kScrimFadeDuration
       animations:^{
         self.scrimView.alpha = 0.0f;
       }
       completion:^(BOOL finished) {
         [self.scrimView removeFromSuperview];
-        if (restoreContextBar) {
-          [self setupContextBar];
-        }
       }];
+  [self setupContextBar];
 }
 
 #pragma mark - Loading and Empty States
@@ -1418,8 +1440,8 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
 // Called when the leading button is clicked.
 - (void)leadingButtonClicked {
-  // Ignore the button tap if view controller presenting.
-  if ([self presentedViewController]) {
+  // Ignore the button tap if any of our controllers is presenting.
+  if ([self isAnyControllerPresenting]) {
     return;
   }
   const std::set<const bookmarks::BookmarkNode*> nodes =
@@ -1452,8 +1474,8 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
 // Called when the center button is clicked.
 - (void)centerButtonClicked {
-  // Ignore the button tap if view controller presenting.
-  if ([self presentedViewController]) {
+  // Ignore the button tap if any of our controller is presenting.
+  if ([self isAnyControllerPresenting]) {
     return;
   }
   const std::set<const bookmarks::BookmarkNode*> nodes =
@@ -1506,8 +1528,8 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
 // Called when the trailing button, "Select" or "Cancel" is clicked.
 - (void)trailingButtonClicked {
-  // Ignore the button tap if view controller presenting.
-  if ([self presentedViewController]) {
+  // Ignore the button tap if any of our controller is presenting.
+  if ([self isAnyControllerPresenting]) {
     return;
   }
   // Toggle edit mode.
@@ -1927,7 +1949,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
   } else {
     if (!self.sharedState.currentlyShowingSearchResults) {
       self.sharedState.currentlyShowingSearchResults = YES;
-      [self hideScrimAndMaybeRestoreContexBar:NO];
+      [self hideScrim];
     }
     // Replace current list with search result, but doesn't change
     // the 'regular' model for this page, which we can restore when search
@@ -1954,7 +1976,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 }
 
 - (void)didDismissSearchController:(UISearchController*)searchController {
-  [self hideScrimAndMaybeRestoreContexBar:YES];
+  [self hideScrim];
 }
 
 #pragma mark - BookmarkHomeSharedStateObserver
@@ -2015,7 +2037,7 @@ const NSTimeInterval kScrimFadeDuration = 0.2;
 
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  // Filtered results are always a Url and never in edit mode.
+  // Filtered results are always a URL and editable.
   if (self.sharedState.currentlyShowingSearchResults) {
     return YES;
   }

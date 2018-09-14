@@ -4176,7 +4176,7 @@ id<GREYMatcher> SearchIconButton() {
 
 #pragma mark - BookmarksTestCaseSearch Tests
 
-// Test that the search bar is shown on root.
+// Tests that the search bar is shown on root.
 - (void)testSearchBarShownOnRoot {
   if (!IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
@@ -4191,7 +4191,7 @@ id<GREYMatcher> SearchIconButton() {
                                    grey_userInteractionEnabled(), nil)];
 }
 
-// Test that the search bar is shown on mobile list.
+// Tests that the search bar is shown on mobile list.
 - (void)testSearchBarShownOnMobileBookmarks {
   if (!IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
@@ -4207,7 +4207,7 @@ id<GREYMatcher> SearchIconButton() {
                                    grey_userInteractionEnabled(), nil)];
 }
 
-// Test the search.
+// Tests the search.
 - (void)testSearchResults {
   if (!IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
@@ -4269,7 +4269,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_nil()];
 }
 
-// Test that you get 'No Results' when no matching bookmarks are found.
+// Tests that you get 'No Results' when no matching bookmarks are found.
 - (void)testSearchWithNoResults {
   if (!IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
@@ -4289,7 +4289,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 }
 
-// Test that scrim is shown while search box is enabled with no queries.
+// Tests that scrim is shown while search box is enabled with no queries.
 - (void)testSearchScrimShownWhenSearchBoxEnabled {
   if (!IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
@@ -4334,7 +4334,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_nil()];
 }
 
-// Test that tapping scrim while search box is enabled dismisses the search
+// Tests that tapping scrim while search box is enabled dismisses the search
 // controller.
 - (void)testSearchTapOnScrimCancelsSearchController {
   if (!IsUIRefreshPhase1Enabled()) {
@@ -4370,7 +4370,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 }
 
-// Test cancelling search restores the node's bookmarks.
+// Tests cancelling search restores the node's bookmarks.
 - (void)testSearchCancelRestoresNodeBookmarks {
   if (!IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
@@ -4410,7 +4410,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 }
 
-// Test that the navigation bar isn't shown when search is focused.
+// Tests that the navigation bar isn't shown when search is focused and empty.
 - (void)testSearchHidesNavigationBar {
   if (!IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
@@ -4420,18 +4420,26 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
 
-  // Search.
+  // Focus Search.
   [[EarlGrey selectElementWithMatcher:SearchIconButton()]
-      performAction:grey_typeText(@"F")];
+      performAction:grey_tap()];
 
   // Verify we have no navigation bar.
-  // Verify the context bar is shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kBookmarkHomeUIToolbarIdentifier)]
       assertWithMatcher:grey_nil()];
+
+  // Search.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(@"First")];
+
+  // Verify we now have a navigation bar.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeUIToolbarIdentifier)]
+      assertWithMatcher:grey_notNil()];
 }
 
-// Test that you can long press and edit a bookmark and see edits when going
+// Tests that you can long press and edit a bookmark and see edits when going
 // back to search.
 - (void)testSearchLongPressEditOnURL {
   if (!IsUIRefreshPhase1Enabled()) {
@@ -4471,7 +4479,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 }
 
-// Test that you can swipe items in search mode.
+// Tests that you can swipe items in search mode.
 - (void)testSearchItemsCanBeSwipedToDelete {
   if (!IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
@@ -4505,7 +4513,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 }
 
-// Test that you can't search while in edit mode.
+// Tests that you can't search while in edit mode.
 - (void)testDisablesSearchOnEditMode {
   if (!IsUIRefreshPhase1Enabled()) {
     EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
@@ -4538,6 +4546,260 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey selectElementWithMatcher:grey_kindOfClass(
                                           NSClassFromString(@"UISearchBar"))]
       assertWithMatcher:grey_userInteractionEnabled()];
+}
+
+// Tests that new Folder is disabled when search results are shown.
+- (void)testSearchDisablesNewFolderButtonOnNavigationBar {
+  if (!IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Search and hide keyboard.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(@"First\n")];
+
+  // Verify we now have a navigation bar.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeUIToolbarIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                          [BookmarksTestCase
+                                              contextBarNewFolderString])]
+      assertWithMatcher:grey_accessibilityTrait(
+                            UIAccessibilityTraitNotEnabled)];
+}
+
+// Tests that a single edit is possible when searching and selecting a single
+// URL in edit mode.
+- (void)testSearchEditModeEditOnSingleURL {
+  if (!IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Search and hide keyboard.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(@"First\n")];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(@"First URL, 127.0.0.1")]
+      performAction:grey_tap()];
+
+  // Invoke Edit through context menu.
+  [BookmarksTestCase
+      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                  openEditor:kBookmarkEditViewContainerIdentifier
+             modifyTextField:@"Title Field_textField"
+                          to:@"n6"
+                 dismissWith:kBookmarkEditNavigationBarDoneButtonIdentifier];
+
+  // Should not find it anymore.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      assertWithMatcher:grey_nil()];
+
+  // Search with new name.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_replaceText(@"n6")];
+
+  // Should now find it again.
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"n6")]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that multiple deletes on search results works.
+- (void)testSearchEditModeDeleteOnMultipleURL {
+  if (!IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Search and hide keyboard.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(@"URL\n")];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URLs.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(@"First URL, 127.0.0.1")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          @"Second URL, 127.0.0.1")]
+      performAction:grey_tap()];
+
+  // Delete.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
+      performAction:grey_tap()];
+
+  // Should not find them anymore.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      assertWithMatcher:grey_nil()];
+
+  // Should find other two URLs.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Third URL")]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"French URL")]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that multiple moves on search results works.
+- (void)testMoveFunctionalityOnMultipleUrlSelection {
+  if (!IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Search and hide keyboard.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(@"URL\n")];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL and folder.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap on move, from context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Choose to move into Folder 1. Use grey_ancestor since
+  // BookmarksHomeTableView might be visible on the background on non-compact
+  // widthts, and there might be a "Folder1" node there as well.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(TappableBookmarkNodeWithLabel(@"Folder 1"),
+                            grey_ancestor(grey_accessibilityID(
+                                kBookmarkFolderPickerViewContainerIdentifier)),
+                            nil)] performAction:grey_tap()];
+
+  // Verify all folder flow UI is now closed.
+  [BookmarksTestCase verifyFolderFlowIsClosed];
+
+  // Wait for Undo toast to go away from screen.
+  [BookmarksTestCase waitForUndoToastToGoAway];
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:NO];
+
+  // Cancel search.
+  [[EarlGrey selectElementWithMatcher:CancelButton()] performAction:grey_tap()];
+
+  // Verify Folder 1 has three bookmark nodes.
+  [BookmarksTestCase assertChildCount:3 ofFolderWithName:@"Folder 1"];
+
+  // Drill down to where "Second URL" and "First URL" have been moved and assert
+  // it's presence.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that a search and single edit is possible when searching over root.
+- (void)testSearchEditPossibleOnRoot {
+  if (!IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(@"This test is UIRefresh only.");
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+
+  // Search and hide keyboard.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_typeText(@"First\n")];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(@"First URL, 127.0.0.1")]
+      performAction:grey_tap()];
+
+  // Invoke Edit through context menu.
+  [BookmarksTestCase
+      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                  openEditor:kBookmarkEditViewContainerIdentifier
+             modifyTextField:@"Title Field_textField"
+                          to:@"n6"
+                 dismissWith:kBookmarkEditNavigationBarDoneButtonIdentifier];
+
+  // Should not find it anymore.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      assertWithMatcher:grey_nil()];
+
+  // Search with new name.
+  [[EarlGrey selectElementWithMatcher:SearchIconButton()]
+      performAction:grey_replaceText(@"n6")];
+
+  // Should now find it again.
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"n6")]
+      assertWithMatcher:grey_notNil()];
+
+  // Cancel search.
+  [[EarlGrey selectElementWithMatcher:CancelButton()] performAction:grey_tap()];
+
+  // Verify we have no navigation bar.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeUIToolbarIdentifier)]
+      assertWithMatcher:grey_nil()];
 }
 
 @end
