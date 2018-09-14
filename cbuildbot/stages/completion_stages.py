@@ -862,11 +862,10 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
                    'scheduled in this run. Will not publish uprevs.')
       return
 
-    push_overlays = portage_util.FindOverlays(
-        self._run.config.push_overlays, buildroot=self._build_root)
 
     # Either has to be a master or not have any push overlays.
-    assert self._run.config.master or not push_overlays
+    assert self._run.config.master
+    assert self._run.config.push_overlays
 
     staging_branch = None
     if self.stage_push:
@@ -881,8 +880,6 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
           self.CheckSlaveUploadPrebuiltsTest(db, build_id)):
         staging_branch = ('refs/' + constants.PFQ_REF + '/' +
                           constants.STAGING_PFQ_BRANCH_PREFIX + str(build_id))
-
-    assert push_overlays, 'push_overlays must be set to run this stage'
 
     # If we're a commit queue, we should clean out our local changes, resync,
     # and reapply our uprevs. This is necessary so that 1) we are sure to point
@@ -917,6 +914,8 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       if self._run.options.uprev and self._run.config.uprev:
         commands.UprevPackages(self._build_root, self._boards,
                                overlay_type=self._run.config.overlays)
+        push_overlays = portage_util.FindOverlays(
+            self._run.config.push_overlays, buildroot=self._build_root)
         commands.RegenPortageCache(push_overlays)
 
     # When prebuilts is True, if it's a successful run or staging_branch is
@@ -927,8 +926,9 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       confwriter.Perform()
 
     # Push the uprev, portage cache, and binhost commits.
-    commands.UprevPush(self._build_root, push_overlays,
-                       self._run.options.debug,
+    commands.UprevPush(self._build_root,
+                       overlay_type=self._run.config.push_overlays,
+                       dryrun=self._run.options.debug,
                        staging_branch=staging_branch)
     if config_lib.IsMasterChromePFQ(self._run.config) and self.success:
       self._run.attrs.metadata.UpdateWithDict({'UprevvedChrome': True})

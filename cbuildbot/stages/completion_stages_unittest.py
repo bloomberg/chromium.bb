@@ -849,8 +849,9 @@ class PublishUprevChangesStageTest(
                   extra_cmd_args=['--chrome_rev', constants.CHROME_REV_TOT])
     self._run.options.prebuilts = True
     self.RunStage()
-    self.push_mock.assert_called_once_with(self.build_root, ['ext'], False,
-                                           staging_branch=None)
+    self.push_mock.assert_called_once_with(
+        self.build_root, overlay_type='public', dryrun=False,
+        staging_branch=None)
     self.assertTrue(self._run.attrs.metadata.GetValue('UprevvedChrome'))
     metadata_dict = self._run.attrs.metadata.GetDict()
     self.assertFalse(metadata_dict.has_key('UprevvedAndroid'))
@@ -923,8 +924,9 @@ class PublishUprevChangesStageTest(
                                   constants.ANDROID_REV_LATEST])
     self._run.options.prebuilts = True
     self.RunStage()
-    self.push_mock.assert_called_once_with(self.build_root, ['ext'], False,
-                                           staging_branch=None)
+    self.push_mock.assert_called_once_with(
+        self.build_root, overlay_type='public', dryrun=False,
+        staging_branch=None)
     self.assertTrue(self._run.attrs.metadata.GetValue('UprevvedAndroid'))
     metadata_dict = self._run.attrs.metadata.GetDict()
     self.assertFalse(metadata_dict.has_key('UprevvedChrome'))
@@ -934,8 +936,9 @@ class PublishUprevChangesStageTest(
     stage = self.ConstructStage()
     stage.sync_stage.pool.HasPickedUpCLs.return_value = True
     stage.PerformStage()
-    self.push_mock.assert_called_once_with(self.build_root, ['ext', 'int'],
-                                           False, staging_branch=None)
+    self.push_mock.assert_called_once_with(
+        self.build_root, overlay_type='both', dryrun=False,
+        staging_branch=None)
 
   def testPerformStageOnCQMasterWithPickedUpCLs(self):
     """Test PerformStage on CQ-master with picked up CLs."""
@@ -943,8 +946,9 @@ class PublishUprevChangesStageTest(
     stage = self.ConstructStage()
     stage.sync_stage.pool.HasPickedUpCLs.return_value = True
     stage.PerformStage()
-    self.push_mock.assert_called_once_with(self.build_root, ['ext', 'int'],
-                                           False, staging_branch=None)
+    self.push_mock.assert_called_once_with(
+        self.build_root, overlay_type='both', dryrun=False,
+        staging_branch=None)
 
   def testPerformStageOnCQMasterWithoutPickedUpCLs(self):
     """Test PerformStage on CQ-master without picked up CLs."""
