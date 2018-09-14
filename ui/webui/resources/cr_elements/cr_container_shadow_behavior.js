@@ -29,7 +29,7 @@ var CrContainerShadowBehavior = {
     var dropShadow = document.createElement('div');
     // This ID should match the CSS rules in shared_styles_css.html.
     dropShadow.id = 'cr-container-shadow';
-    this.shadowRoot.insertBefore(dropShadow, this.$.container);
+    this.$.container.parentNode.insertBefore(dropShadow, this.$.container);
 
     // Dummy element used to detect scrolling. Has a 0px height intentionally.
     var intersectionProbe = document.createElement('div');

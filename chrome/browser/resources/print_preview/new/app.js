@@ -14,7 +14,7 @@ const MAX_SECTIONS_TO_SHOW = 6;
 Polymer({
   is: 'print-preview-app',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, CrContainerShadowBehavior],
 
   properties: {
     /**
