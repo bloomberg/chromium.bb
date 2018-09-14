@@ -739,13 +739,14 @@ function floatDownNotification(notification, notificationContainer) {
   // Reset notification visibility once the animation is complete.
   notificationContainer.classList.remove(CLASSES.FLOAT_UP);
   let afterHide = (event) => {
-    if (event.propertyName == 'bottom') {
+    if (event.propertyName === 'bottom') {
       notification.classList.add(CLASSES.HIDE_NOTIFICATION);
       notification.classList.remove(CLASSES.HAS_LINK);
       notificationContainer.removeEventListener('transitionend', afterHide);
     }
-    // Focus on the omnibox after the notification is hidden.
-    window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
+    // Blur the hidden items.
+    $(IDS.UNDO_LINK).blur();
+    $(IDS.RESTORE_ALL_LINK).blur();
   };
   notificationContainer.addEventListener('transitionend', afterHide);
 }
@@ -757,6 +758,8 @@ function floatDownNotification(notification, notificationContainer) {
  */
 function onUndo() {
   hideNotification();
+  // Focus on the omnibox after the notification is hidden.
+  window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
   if (configData.isCustomLinksEnabled) {
     ntpApiHandle.undoCustomLinkAction();
   } else if (lastBlacklistedTile != null) {
@@ -771,6 +774,8 @@ function onUndo() {
  */
 function onRestoreAll() {
   hideNotification();
+  // Focus on the omnibox after the notification is hidden.
+  window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
   if (configData.isCustomLinksEnabled) {
     ntpApiHandle.resetCustomLinks();
   } else {
