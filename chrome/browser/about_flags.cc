@@ -841,35 +841,23 @@ const FeatureEntry::FeatureVariation kAutofillPreviewStyleVariations[] = {
     {"(Black on GoogleYellow050)", kAutofillPreviewStyleBlackOnYellow050,
      base::size(kAutofillPreviewStyleBlackOnYellow050), nullptr}};
 
-#if !defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 const FeatureEntry::FeatureParam kAutofillPrimaryInfoStyleMedium[] = {
-    {autofill::kAutofillPrimaryInfoFontWeightParameterName,
-     autofill::kAutofillPrimaryInfoFontWeightParameterMedium},
-};
-const FeatureEntry::FeatureParam kAutofillPrimaryInfoStyleSemiBold[] = {
-    {autofill::kAutofillPrimaryInfoFontWeightParameterName,
-     autofill::kAutofillPrimaryInfoFontWeightParameterSemiBold},
+    {autofill::kAutofillForcedFontWeightParameterName,
+     autofill::kAutofillForcedFontWeightParameterMedium},
 };
 const FeatureEntry::FeatureParam kAutofillPrimaryInfoStyleBold[] = {
-    {autofill::kAutofillPrimaryInfoFontWeightParameterName,
-     autofill::kAutofillPrimaryInfoFontWeightParameterBold},
-};
-const FeatureEntry::FeatureParam kAutofillPrimaryInfoStyleExtraBold[] = {
-    {autofill::kAutofillPrimaryInfoFontWeightParameterName,
-     autofill::kAutofillPrimaryInfoFontWeightParameterExtraBold},
+    {autofill::kAutofillForcedFontWeightParameterName,
+     autofill::kAutofillForcedFontWeightParameterBold},
 };
 
 const FeatureEntry::FeatureVariation kAutofillPrimaryInfoStyleVariations[] = {
-    {"(Medium)", kAutofillPrimaryInfoStyleMedium,
+    {"(medium)", kAutofillPrimaryInfoStyleMedium,
      base::size(kAutofillPrimaryInfoStyleMedium), nullptr},
-    {"(Semi-bold)", kAutofillPrimaryInfoStyleSemiBold,
-     base::size(kAutofillPrimaryInfoStyleSemiBold), nullptr},
-    {"(Bold)", kAutofillPrimaryInfoStyleBold,
+    {"(bold)", kAutofillPrimaryInfoStyleBold,
      base::size(kAutofillPrimaryInfoStyleBold), nullptr},
-    {"(Extra-bold)", kAutofillPrimaryInfoStyleExtraBold,
-     base::size(kAutofillPrimaryInfoStyleExtraBold), nullptr},
 };
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -4103,7 +4091,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillCacheQueryResponsesDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCacheQueryResponses)},
 
-#if !defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
     {"autofill-primary-info-style",
      flag_descriptions::kAutofillPrimaryInfoStyleExperimentName,
      flag_descriptions::kAutofillPrimaryInfoStyleExperimentDescription,
@@ -4112,7 +4100,7 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::kAutofillPrimaryInfoStyleExperiment,
          kAutofillPrimaryInfoStyleVariations,
          "AutofillPrimaryInfoStyleExperiment")},
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
     {"autofill-enable-company-name",
      flag_descriptions::kAutofillEnableCompanyNameName,
