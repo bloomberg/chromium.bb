@@ -886,14 +886,11 @@ input:checked + .toggle::before {
   display: none;
   outline: none;
   padding: 0 16px;
+  position: relative;
 }
 
 #error-notice:not(.has-link) #error-notice-link {
   display: none;
-}
-
-#error-notice.has-link #error-notice-link {
-  display: inline;
 }
 
 #error-notice-link:hover,
