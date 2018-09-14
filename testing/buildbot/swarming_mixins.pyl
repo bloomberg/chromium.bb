@@ -15,14 +15,4 @@
 # already exists.
 
 {
-  'linux-trusty': {
-    'dimensions': {
-      'os': 'Ubuntu-14.04',
-    }
-  },
-  'arm_tester': {
-    'dimensions': {
-      'cpu': 'arm7l-32',
-    }
-  }
 }
