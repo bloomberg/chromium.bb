@@ -8,7 +8,6 @@
  * Native input attributes that are currently supported by cr-inputs are:
  *   autofocus
  *   disabled
- *   incremental (only applicable when type="search")
  *   max (only applicable when type="number")
  *   min (only applicable when type="number")
  *   maxlength
@@ -71,8 +70,6 @@ Polymer({
       value: false,
       reflectToAttribute: true,
     },
-
-    incremental: Boolean,
 
     invalid: {
       type: Boolean,
