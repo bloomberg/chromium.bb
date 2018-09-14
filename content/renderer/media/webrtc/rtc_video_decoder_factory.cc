@@ -6,9 +6,12 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "content/renderer/media/webrtc/rtc_video_decoder.h"
+#include "content/renderer/media/webrtc/rtc_video_decoder_adapter.h"
+#include "media/base/media_switches.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/common_video/h264/profile_level_id.h"
@@ -147,8 +150,14 @@ std::unique_ptr<webrtc::VideoDecoder>
 RTCVideoDecoderFactory::CreateVideoDecoder(
     const webrtc::SdpVideoFormat& format) {
   DVLOG(2) << __func__;
-  std::unique_ptr<webrtc::VideoDecoder> decoder = RTCVideoDecoder::Create(
-      webrtc::PayloadStringToCodecType(format.name), gpu_factories_);
+  std::unique_ptr<webrtc::VideoDecoder> decoder;
+  if (base::FeatureList::IsEnabled(media::kRTCVideoDecoderAdapter)) {
+    decoder = RTCVideoDecoderAdapter::Create(
+        gpu_factories_, webrtc::PayloadStringToCodecType(format.name));
+  } else {
+    decoder = RTCVideoDecoder::Create(
+        webrtc::PayloadStringToCodecType(format.name), gpu_factories_);
+  }
   // ScopedVideoDecoder uses the task runner to make sure the decoder is
   // destructed on the correct thread.
   return decoder ? std::make_unique<ScopedVideoDecoder>(

@@ -24,6 +24,10 @@ class BrowserGpuVideoAcceleratorFactories
   bool IsGpuVideoAcceleratorEnabled() override;
   base::UnguessableToken GetChannelToken() override;
   int32_t GetCommandBufferRouteId() override;
+  std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
+      media::MediaLog* media_log,
+      const media::RequestOverlayInfoCB& request_overlay_info_cb,
+      const gfx::ColorSpace& target_color_space) override;
   std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
       override;
   std::unique_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator()

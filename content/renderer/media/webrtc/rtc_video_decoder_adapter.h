@@ -48,22 +48,12 @@ namespace content {
 // way to synchronize this correctly.
 class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
  public:
-  using CreateVideoDecoderCB =
-      base::RepeatingCallback<std::unique_ptr<media::VideoDecoder>(
-          media::MediaLog*)>;
-
   // Creates and initializes an RTCVideoDecoderAdapter. Returns nullptr if
   // |video_codec_type| cannot be supported.
   // Called on the worker thread.
   static std::unique_ptr<RTCVideoDecoderAdapter> Create(
-      webrtc::VideoCodecType video_codec_type,
       media::GpuVideoAcceleratorFactories* gpu_factories,
-      CreateVideoDecoderCB create_video_decoder_cb);
-
-  // Called on the worker thread.
-  static void DeleteSoonOnMediaThread(
-      std::unique_ptr<webrtc::VideoDecoder> rtc_video_decoder_adapter,
-      media::GpuVideoAcceleratorFactories* gpu_factories);
+      webrtc::VideoCodecType video_codec_type);
 
   // Called on |media_task_runner_|.
   ~RTCVideoDecoderAdapter() override;
@@ -86,12 +76,13 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   const char* ImplementationName() const override;
 
  private:
-  // |create_video_decoder_cb| will always be called on |media_task_runner|.
+  using CreateVideoDecoderCB =
+      base::RepeatingCallback<std::unique_ptr<media::VideoDecoder>(
+          media::MediaLog*)>;
+
   // Called on the worker thread.
-  RTCVideoDecoderAdapter(
-      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-      CreateVideoDecoderCB create_video_decoder_cb,
-      webrtc::VideoCodecType video_codec_type);
+  RTCVideoDecoderAdapter(media::GpuVideoAcceleratorFactories* gpu_factories,
+                         webrtc::VideoCodecType video_codec_type);
 
   bool InitializeSync();
   void InitializeOnMediaThread(media::VideoDecoder::InitCB init_cb);
@@ -101,7 +92,7 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
 
   // Construction parameters.
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-  CreateVideoDecoderCB create_video_decoder_cb_;
+  media::GpuVideoAcceleratorFactories* gpu_factories_;
   webrtc::VideoCodecType video_codec_type_;
 
   // Media thread members.

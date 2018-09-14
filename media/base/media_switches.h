@@ -124,6 +124,7 @@ MEDIA_EXPORT extern const base::Feature kPictureInPicture;
 MEDIA_EXPORT extern const base::Feature kPreloadMediaEngagementData;
 MEDIA_EXPORT extern const base::Feature kPreloadMetadataSuspend;
 MEDIA_EXPORT extern const base::Feature kResumeBackgroundVideo;
+MEDIA_EXPORT extern const base::Feature kRTCVideoDecoderAdapter;
 MEDIA_EXPORT extern const base::Feature kSpecCompliantCanPlayThrough;
 MEDIA_EXPORT extern const base::Feature kUseAndroidOverlay;
 MEDIA_EXPORT extern const base::Feature kUseAndroidOverlayAggressively;

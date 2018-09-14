@@ -2255,8 +2255,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(registry.get(),
                        base::BindRepeating(&GetNetworkChangeManager));
 
-  registry->AddInterface(base::BindRepeating(
-      &RenderProcessHostImpl::BindVideoDecoderService, base::Unretained(this)));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&RenderProcessHostImpl::BindVideoDecoderService,
+                          base::Unretained(this)));
 
   // ---- Please do not register interfaces below this line ------
   //

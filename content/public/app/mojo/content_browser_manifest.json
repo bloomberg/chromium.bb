@@ -69,6 +69,7 @@
           "device.mojom.GamepadHapticsManager",
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
           "media.mojom.KeySystemSupport",
+          "media.mojom.InterfaceFactory",
           "media.mojom.VideoCaptureHost",
           "media.mojom.VideoDecodePerfHistory",
           "memory_coordinator.mojom.MemoryCoordinatorHandle",

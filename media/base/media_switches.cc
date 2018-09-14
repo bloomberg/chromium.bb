@@ -294,6 +294,10 @@ const base::Feature kNewEncodeCpuLoadEstimator{
 const base::Feature kNewRemotePlaybackPipeline{
     "NewRemotePlaybackPipeline", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use the new RTC hardware decode path via RTCVideoDecoderAdapter.
+const base::Feature kRTCVideoDecoderAdapter{"RTCVideoDecoderAdapter",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // CanPlayThrough issued according to standard.
 const base::Feature kSpecCompliantCanPlayThrough{
     "SpecCompliantCanPlayThrough", base::FEATURE_ENABLED_BY_DEFAULT};
