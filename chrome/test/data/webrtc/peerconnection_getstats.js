@@ -197,6 +197,7 @@ var kRTCIceCandidateStats = new RTCStats_(null, {
   ip: 'string',
   port: 'number',
   protocol: 'string',
+  relayProtocol: 'string',
   candidateType: 'string',
   priority: 'number',
   url: 'string',
