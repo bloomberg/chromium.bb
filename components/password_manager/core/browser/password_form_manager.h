@@ -116,6 +116,7 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   bool IsPendingCredentialsPublicSuffixMatch() const override;
   bool RetryPasswordFormPasswordUpdate() const override;
   bool IsPossibleChangePasswordFormWithoutUsername() const override;
+  std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const override;
 
   // Through |driver|, supply the associated frame with appropriate information
   // (fill data, whether to allow password generation, etc.). If this is called

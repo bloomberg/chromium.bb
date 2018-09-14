@@ -915,6 +915,11 @@ bool PasswordFormManager::IsPossibleChangePasswordFormWithoutUsername() const {
   return is_possible_change_password_form_without_username_;
 }
 
+std::vector<base::WeakPtr<PasswordManagerDriver>>
+PasswordFormManager::GetDrivers() const {
+  return drivers_;
+}
+
 FormFetcher* PasswordFormManager::GetFormFetcher() {
   return form_fetcher_;
 }
