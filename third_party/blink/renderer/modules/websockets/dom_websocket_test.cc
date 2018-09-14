@@ -229,6 +229,25 @@ TEST(DOMWebSocketTest, insecureRequestsUpgrade) {
   EXPECT_EQ(KURL("wss://example.com/endpoint"), websocket_scope.Socket().url());
 }
 
+TEST(DOMWebSocketTest, insecureRequestsUpgradePotentiallyTrustworthy) {
+  V8TestingScope scope;
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
+  {
+    InSequence s;
+    EXPECT_CALL(websocket_scope.Channel(),
+                Connect(KURL("ws://127.0.0.1/endpoint"), String()))
+        .WillOnce(Return(true));
+  }
+
+  scope.GetDocument().SetInsecureRequestPolicy(kUpgradeInsecureRequests);
+  websocket_scope.Socket().Connect("ws://127.0.0.1/endpoint", Vector<String>(),
+                                   scope.GetExceptionState());
+
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
+  EXPECT_EQ(KURL("ws://127.0.0.1/endpoint"), websocket_scope.Socket().url());
+}
+
 TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade) {
   V8TestingScope scope;
   DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());

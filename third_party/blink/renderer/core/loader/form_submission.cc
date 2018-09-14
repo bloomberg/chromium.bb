@@ -207,7 +207,8 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
                                              : copied_attributes.Action());
 
   if (document.GetInsecureRequestPolicy() & kUpgradeInsecureRequests &&
-      action_url.ProtocolIs("http")) {
+      action_url.ProtocolIs("http") &&
+      !SecurityOrigin::Create(action_url)->IsPotentiallyTrustworthy()) {
     UseCounter::Count(document,
                       WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
     action_url.SetProtocol("https");

@@ -11,19 +11,16 @@
 async_test(t => {
     var i = document.createElement('iframe');
 
-    // This is a bit of a hack. UPGRADE doesn't upgrade the port number, so we
-    // specify this non-existent URL ('http' over port 8443). If UPGRADE doesn't
-    // work, it won't load.
-    i.src = "http://127.0.0.1:8443/security/resources/post-origin-to-parent.html";
+    i.src = "http://127.0.0.1:8000/security/resources/post-origin-to-parent.html";
 
     window.addEventListener('message', t.step_func(e => {
         if (e.source == i.contentWindow) {
-            assert_equals("https://127.0.0.1:8443", e.data.origin);
+            assert_equals("http://127.0.0.1:8000", e.data.origin);
             t.done();
         }
     }));
     document.body.appendChild(i);
-}, "Same-host frames are upgraded.");
+}, "127.0.0.1 frames are not upgraded.");
 
 async_test(t => {
     var i = document.createElement('iframe');
@@ -44,18 +41,18 @@ async_test(t => {
 
 async_test(t => {
     var i = document.createElement('iframe');
-    i.srcdoc = "<a href='http://127.0.0.1:8443/security/resources/post-origin-to-parent.html'>Navigate!</a>" +
+    i.srcdoc = "<a href='http://127.0.0.1:8000/security/resources/post-origin-to-parent.html'>Navigate!</a>" +
                "<script>document.querySelector('a').click()</scr" + "ipt>";
 
     window.addEventListener('message', t.step_func(e => {
         if (e.source == i.contentWindow) {
-            assert_equals("https://127.0.0.1:8443", e.data.origin);
+            assert_equals("http://127.0.0.1:8000", e.data.origin);
             t.done();
         }
     }));
 
     document.body.appendChild(i);
-}, "Upgrade policy cascades to nested, same-host frames.");
+}, "Upgrade policy cascades to nested, same-host frames, but 127.0.0.1 is not upgraded.");
 
 async_test(t => {
     var i = document.createElement('iframe');

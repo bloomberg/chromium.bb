@@ -1444,15 +1444,16 @@ class NavigationHandleImplHttpsUpgradeBrowserTest
 // Tests that the start URL is HTTPS upgraded for a same site navigation.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplHttpsUpgradeBrowserTest,
                        StartUrlIsHttpsUpgradedSameSite) {
-  GURL start_url(
-      embedded_test_server()->GetURL("/https_upgrade_same_site.html"));
+  GURL start_url(embedded_test_server()->GetURL(
+      "example.com", "/https_upgrade_same_site.html"));
 
   // Builds the expected upgraded same site URL.
   GURL::Replacements replace_scheme;
   replace_scheme.SetSchemeStr("https");
-  GURL cross_site_iframe_secure_url = embedded_test_server()
-                                          ->GetURL("/title1.html")
-                                          .ReplaceComponents(replace_scheme);
+  GURL cross_site_iframe_secure_url =
+      embedded_test_server()
+          ->GetURL("example.com", "/title1.html")
+          .ReplaceComponents(replace_scheme);
 
   CheckHttpsUpgradedIframeNavigation(start_url, cross_site_iframe_secure_url);
 }
