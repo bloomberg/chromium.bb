@@ -7,12 +7,12 @@
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
+#include "chrome/browser/android/explore_sites/get_catalog_task.h"
 #include "chrome/browser/android/explore_sites/import_catalog_task.h"
 #include "components/offline_pages/task/task.h"
 
-using offline_pages::Task;
-using chrome::android::explore_sites::GetExploreSitesVariation;
 using chrome::android::explore_sites::ExploreSitesVariation;
+using chrome::android::explore_sites::GetExploreSitesVariation;
 
 namespace explore_sites {
 
@@ -24,6 +24,15 @@ ExploreSitesServiceImpl::~ExploreSitesServiceImpl() {}
 
 bool ExploreSitesServiceImpl::IsExploreSitesEnabled() {
   return GetExploreSitesVariation() == ExploreSitesVariation::ENABLED;
+}
+
+void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {
+  if (!IsExploreSitesEnabled())
+    return;
+
+  task_queue_.AddTask(std::make_unique<GetCatalogTask>(
+      explore_sites_store_.get(), check_for_new_catalog_, std::move(callback)));
+  check_for_new_catalog_ = false;
 }
 
 void ExploreSitesServiceImpl::Shutdown() {}

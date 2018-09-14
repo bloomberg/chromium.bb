@@ -16,9 +16,9 @@ static const char kDeleteExistingCategorySql[] =
     "DELETE FROM categories WHERE version = ?";
 static const char kInsertCategorySql[] = R"(
 INSERT INTO categories
-(version, type, usable_on_ntp, label, image)
+(version, type, label, image)
 VALUES
-(?, ?, ?, ?, ?);)";
+(?, ?, ?, ?);)";
 
 static const char kDeleteExistingSiteSql[] = R"(
 DELETE FROM sites
@@ -81,7 +81,6 @@ bool ImportCatalogSync(int64_t catalog_timestamp,
     int col = 0;
     category_statement.BindInt64(col++, catalog_timestamp);
     category_statement.BindInt(col++, static_cast<int>(category.type()));
-    category_statement.BindBool(col++, true);
     category_statement.BindString(col++, category.localized_title());
     category_statement.BindString(col++, category.icon());
 

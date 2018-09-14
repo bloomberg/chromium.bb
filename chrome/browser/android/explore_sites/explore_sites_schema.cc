@@ -27,7 +27,6 @@ static const char kCategoriesTableCreationSql[] =
     "version INTEGER NOT NULL, "  // matches an entry in the meta table:
                                   // ‘current_catalog’ or ‘downloading_catalog’.
     "type INTEGER NOT NULL, "
-    "usable_on_ntp BOOLEAN NOT NULL, "
     "label TEXT NOT NULL, "
     "image BLOB, "  // can be NULL if no image is available, but must be
                     // populated for use on the NTP.

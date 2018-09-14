@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service.h"
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
+#include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "components/offline_pages/task/task_queue.h"
 
 using offline_pages::TaskQueue;
@@ -25,6 +26,9 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
 
   bool IsExploreSitesEnabled();
 
+  // ExploreSitesService implementation.
+  void GetCatalog(CatalogCallback callback) override;
+
  private:
   // KeyedService implementation:
   void Shutdown() override;
@@ -34,6 +38,11 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
 
   void AddUpdatedCatalog(int64_t catalog_timestamp,
                          std::unique_ptr<Catalog> catalog_proto);
+
+  // True when Chrome starts up, this is reset after the catalog is requested
+  // the first time in Chrome. This prevents the ESP from changing out from
+  // under a viewer.
+  bool check_for_new_catalog_ = true;
 
   // Used to control access to the ExploreSitesStore.
   TaskQueue task_queue_;
