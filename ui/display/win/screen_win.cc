@@ -38,6 +38,7 @@ ScreenWin* g_screen_win_instance = nullptr;
 // Gets the DPI for a particular monitor, or 0 if per-monitor DPI is nuot
 // supported or can't be read.
 int GetPerMonitorDPI(HMONITOR monitor) {
+  // Most versions of Windows we will encounter are DPI-aware.
   if (!base::win::IsProcessPerMonitorDpiAware())
     return 0;
 
@@ -56,9 +57,10 @@ int GetPerMonitorDPI(HMONITOR monitor) {
 
   UINT dpi_x;
   UINT dpi_y;
-  if (!SUCCEEDED(
-          get_dpi_for_monitor_func(monitor, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y)))
+  if (!SUCCEEDED(get_dpi_for_monitor_func(monitor, MDT_EFFECTIVE_DPI, &dpi_x,
+                                          &dpi_y))) {
     return 0;
+  }
 
   DCHECK_EQ(dpi_x, dpi_y);
   return int{dpi_x};
@@ -510,7 +512,6 @@ int ScreenWin::GetDPIForHWND(HWND hwnd) {
   if (Display::HasForceDeviceScaleFactor())
     return GetDPIFromScalingFactor(Display::GetForcedDeviceScaleFactor());
 
-  // Most versions of Windows we will encounter are DPI-aware.
   HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
   int dpi = GetPerMonitorDPI(monitor);
   return dpi ? dpi : display::win::internal::GetDefaultSystemDPI();
