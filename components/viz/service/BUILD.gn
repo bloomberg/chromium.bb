@@ -177,6 +177,7 @@ viz_component("service") {
   allow_circular_includes_from = [ ":gpu_service_dependencies" ]
 
   deps = [
+    "//cc/base",
     "//cc/paint",
     "//components/crash/core/common:crash_key",
     "//components/viz/common",
