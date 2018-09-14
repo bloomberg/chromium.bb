@@ -13,12 +13,12 @@ GEN_INCLUDE(['../../testing/mock_feedback.js']);
  * @constructor
  * @extends {ChromeVoxNextE2ETest}
  */
-function ChromeVoxEditingTest() {
+function EditingTest() {
   ChromeVoxNextE2ETest.call(this);
   window.RoleType = chrome.automation.RoleType;
 }
 
-ChromeVoxEditingTest.prototype = {
+EditingTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
   /**
@@ -44,7 +44,7 @@ line 3
 </textarea>
 */};
 
-TEST_F('ChromeVoxEditingTest', 'Focus', function() {
+TEST_F('EditingTest', 'Focus', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(doc, function(root) {
     var singleLine = root.find({role: RoleType.TEXT_FIELD,
@@ -67,7 +67,7 @@ TEST_F('ChromeVoxEditingTest', 'Focus', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'Multiline', function() {
+TEST_F('EditingTest', 'Multiline', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(doc, function(root) {
     var textarea = root.find({role: RoleType.TEXT_FIELD,
@@ -96,7 +96,7 @@ TEST_F('ChromeVoxEditingTest', 'Multiline', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'TextButNoSelectionChange', function() {
+TEST_F('EditingTest', 'TextButNoSelectionChange', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
@@ -131,7 +131,7 @@ TEST_F('ChromeVoxEditingTest', 'TextButNoSelectionChange', function() {
     });
 });
 
-TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
+TEST_F('EditingTest', 'RichTextMoveByLine', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="textbox" contenteditable>
@@ -178,7 +178,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
+TEST_F('EditingTest', 'RichTextMoveByCharacter', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="textbox" contenteditable>This <b>is</b> a test.</div>
@@ -248,7 +248,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
 });
 
 // Tests specifically for cursor workarounds.
-TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
+TEST_F('EditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="textbox" contenteditable>hello <b>world</b></div>
@@ -289,7 +289,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterNodeWorkaround', function
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
+TEST_F('EditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="textbox" contenteditable>Test</div>
@@ -325,7 +325,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
+TEST_F('EditingTest', 'RichTextLinkOutput', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="textbox" contenteditable>a <a href="#">test</a></div>
@@ -369,7 +369,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'RichTextExtendByCharacter', function() {
+TEST_F('EditingTest', 'RichTextExtendByCharacter', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="textbox" contenteditable>Te<br>st</div>
@@ -403,7 +403,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextExtendByCharacter', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
+TEST_F('EditingTest', 'RichTextImageByCharacter', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p id="go" contenteditable>
@@ -464,7 +464,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'RichTextSelectByLine', function() {
+TEST_F('EditingTest', 'RichTextSelectByLine', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p id="go" contenteditable>
@@ -520,17 +520,17 @@ TEST_F('ChromeVoxEditingTest', 'RichTextSelectByLine', function() {
           // By line (notice the partial selections from the first and second
           // lines).
           .call(move)
-          .expectSpeech('rst line \n s', 'selected')
-          .expectBraille('second line\n', {startIndex: 0, endIndex: 1})
+          .expectSpeech('rst line \n se', 'selected')
+          .expectBraille('second line\n', {startIndex: 0, endIndex: 2})
 
           .call(move)
-          .expectSpeech('econd line \n th', 'selected')
+          .expectSpeech('cond line \n th', 'selected')
           .expectBraille('third line\n', {startIndex: 0, endIndex: 2})
 
           // Shrinking.
           .call(move)
-          .expectSpeech('econd line \n th', 'unselected')
-          .expectBraille('second line\n', {startIndex: 0, endIndex: 1})
+          .expectSpeech('cond line \n th', 'unselected')
+          .expectBraille('second line\n', {startIndex: 0, endIndex: 2})
 
           .call(move)
           .expectSpeech('fi', 'selected')
@@ -575,7 +575,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextSelectByLine', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'EditableLineOneStaticText', function() {
+TEST_F('EditingTest', 'EditableLineOneStaticText', function() {
   this.runWithLoadedTree(function() {/*!
     <p contenteditable style="word-spacing:100000px">this is a test</p>
   */}, function(root) {
@@ -627,7 +627,7 @@ TEST_F('ChromeVoxEditingTest', 'EditableLineOneStaticText', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'EditableLineTwoStaticTexts', function() {
+TEST_F('EditingTest', 'EditableLineTwoStaticTexts', function() {
   this.runWithLoadedTree(function() {/*!
     <p contenteditable>hello <b>world</b></p>
   */}, function(root) {
@@ -680,7 +680,7 @@ TEST_F('ChromeVoxEditingTest', 'EditableLineTwoStaticTexts', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'EditableLineEquality', function() {
+TEST_F('EditingTest', 'EditableLineEquality', function() {
   this.runWithLoadedTree(function() {/*!
     <div contenteditable role="textbox">
       <p style="word-spacing:100000px">this is a test</p>
@@ -757,7 +757,7 @@ TEST_F('ChromeVoxEditingTest', 'EditableLineEquality', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'EditableLineStrictEquality', function() {
+TEST_F('EditingTest', 'EditableLineStrictEquality', function() {
   this.runWithLoadedTree(function() {/*!
     <div contenteditable role="textbox">
       <p style="word-spacing:100000px">this is a test</p>
@@ -812,7 +812,7 @@ TEST_F('ChromeVoxEditingTest', 'EditableLineStrictEquality', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'EditableLineBaseLineAnchorOrFocus', function() {
+TEST_F('EditingTest', 'EditableLineBaseLineAnchorOrFocus', function() {
   this.runWithLoadedTree(function() {/*!
     <div contenteditable role="textbox">
       <p style="word-spacing:100000px">this is a test</p>
@@ -856,7 +856,7 @@ TEST_F('ChromeVoxEditingTest', 'EditableLineBaseLineAnchorOrFocus', function() {
   })
 });
 
-TEST_F('ChromeVoxEditingTest', 'IsValidLine', function() {
+TEST_F('EditingTest', 'IsValidLine', function() {
   this.runWithLoadedTree(function() {/*!
     <div contenteditable role="textbox">
       <p style="word-spacing:100000px">this is a test</p>
@@ -898,7 +898,7 @@ TEST_F('ChromeVoxEditingTest', 'IsValidLine', function() {
   })
 });
 
-TEST_F('ChromeVoxEditingTest', 'TelTrimsWhitespace', function() {
+TEST_F('EditingTest', 'TelTrimsWhitespace', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go"></div>

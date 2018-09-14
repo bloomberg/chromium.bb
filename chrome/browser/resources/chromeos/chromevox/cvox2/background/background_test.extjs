@@ -13,11 +13,11 @@ GEN_INCLUDE(['../../testing/mock_feedback.js']);
  * @constructor
  * @extends {ChromeVoxNextE2ETest}
  */
-function ChromeVoxBackgroundTest() {
+function BackgroundTest() {
   ChromeVoxNextE2ETest.call(this);
 }
 
-ChromeVoxBackgroundTest.prototype = {
+BackgroundTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
   /** @override */
@@ -131,18 +131,18 @@ ChromeVoxBackgroundTest.prototype = {
 };
 
 /** Tests that ChromeVox classic is in this context. */
-SYNC_TEST_F('ChromeVoxBackgroundTest', 'ClassicNamespaces', function() {
+SYNC_TEST_F('BackgroundTest', 'ClassicNamespaces', function() {
   assertEquals('object', typeof(cvox));
   assertEquals('function', typeof(cvox.ChromeVoxBackground));
 });
 
 /** Tests that ChromeVox next is in this context. */
-SYNC_TEST_F('ChromeVoxBackgroundTest', 'NextNamespaces', function() {
+SYNC_TEST_F('BackgroundTest', 'NextNamespaces', function() {
   assertEquals('function', typeof(Background));
 });
 
 /** Tests consistency of navigating forward and backward. */
-TEST_F('ChromeVoxBackgroundTest', 'ForwardBackwardNavigation', function() {
+TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
     mockFeedback.expectSpeech('start').expectBraille('start');
@@ -201,7 +201,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ForwardBackwardNavigation', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'CaretNavigation', function() {
+TEST_F('BackgroundTest', 'CaretNavigation', function() {
   // TODO(plundblad): Add braille expectaions when crbug.com/523285 is fixed.
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
@@ -249,7 +249,7 @@ TEST_F('ChromeVoxBackgroundTest', 'CaretNavigation', function() {
 });
 
 /** Tests that individual buttons are stops for move-by-word functionality. */
-TEST_F('ChromeVoxBackgroundTest', 'CaretNavigationTreatsButtonAsWord', function() {
+TEST_F('BackgroundTest', 'CaretNavigationTreatsButtonAsWord', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.buttonDoc, function() {
     mockFeedback.expectSpeech('start');
@@ -271,7 +271,7 @@ TEST_F('ChromeVoxBackgroundTest', 'CaretNavigationTreatsButtonAsWord', function(
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'SelectSingleBasic', function() {
+TEST_F('BackgroundTest', 'SelectSingleBasic', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.formsDoc, function() {
     var incrementSelectedIndex =
@@ -288,7 +288,7 @@ TEST_F('ChromeVoxBackgroundTest', 'SelectSingleBasic', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ContinuousRead', function() {
+TEST_F('BackgroundTest', 'ContinuousRead', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
     mockFeedback.expectSpeech('start')
@@ -302,7 +302,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ContinuousRead', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'InitialFocus', function() {
+TEST_F('BackgroundTest', 'InitialFocus', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<a href="a">a</a>',
     function(rootNode) {
@@ -312,7 +312,7 @@ TEST_F('ChromeVoxBackgroundTest', 'InitialFocus', function() {
     });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'AriaLabel', function() {
+TEST_F('BackgroundTest', 'AriaLabel', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<a aria-label="foo" href="a">a</a>',
     function(rootNode) {
@@ -326,7 +326,7 @@ TEST_F('ChromeVoxBackgroundTest', 'AriaLabel', function() {
   );
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ShowContextMenu', function() {
+TEST_F('BackgroundTest', 'ShowContextMenu', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<p>before</p><a href="a">a</a>',
     function(rootNode) {
@@ -341,7 +341,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ShowContextMenu', function() {
     }.bind(this));
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'BrailleRouting', function() {
+TEST_F('BackgroundTest', 'BrailleRouting', function() {
   var mockFeedback = this.createMockFeedback();
   var route = function(position) {
     assertTrue(ChromeVoxState.instance.onBrailleKeyEvent(
@@ -384,7 +384,7 @@ TEST_F('ChromeVoxBackgroundTest', 'BrailleRouting', function() {
       });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'FocusInputElement', function() {
+TEST_F('BackgroundTest', 'FocusInputElement', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
@@ -409,7 +409,7 @@ TEST_F('ChromeVoxBackgroundTest', 'FocusInputElement', function() {
 });
 
 // Flaky, see https://crbug.com/622387.
-TEST_F('ChromeVoxBackgroundTest', 'DISABLED_UseEditableState', function() {
+TEST_F('BackgroundTest', 'DISABLED_UseEditableState', function() {
   this.runWithLoadedTree(
     function() {/*!
       <input type="text"></input>
@@ -440,7 +440,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_UseEditableState', function() {
     }.bind(this));
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'EarconsForControls', function() {
+TEST_F('BackgroundTest', 'EarconsForControls', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
@@ -488,7 +488,7 @@ TEST_F('ChromeVoxBackgroundTest', 'EarconsForControls', function() {
     }.bind(this));
 });
 
-SYNC_TEST_F('ChromeVoxBackgroundTest', 'GlobsToRegExp', function() {
+SYNC_TEST_F('BackgroundTest', 'GlobsToRegExp', function() {
   assertEquals('/^()$/', Background.globsToRegExp_([]).toString());
   assertEquals(
       '/^(http:\\/\\/host\\/path\\+here)$/',
@@ -499,7 +499,7 @@ SYNC_TEST_F('ChromeVoxBackgroundTest', 'GlobsToRegExp', function() {
 });
 
 // Flaky, see https://crbug.com/622387.
-TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ActiveOrInactive', function() {
+TEST_F('BackgroundTest', 'DISABLED_ActiveOrInactive', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
       <a href="a">a</a>
@@ -537,7 +537,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ActiveOrInactive', function() {
     });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ShouldNotFocusIframe', function() {
+TEST_F('BackgroundTest', 'ShouldNotFocusIframe', function() {
   this.runWithLoadedTree(  function() {/*!
     <iframe tabindex=0 src="data:text/html,<p>Inside</p>"></iframe>
     <button>outside</button>
@@ -559,7 +559,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ShouldNotFocusIframe', function() {
   }.bind(this));
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ShouldFocusLink', function() {
+TEST_F('BackgroundTest', 'ShouldFocusLink', function() {
   this.runWithLoadedTree(  function() {/*!
     <div><a href="#">mylink</a></div>
     <button>after</button>
@@ -580,7 +580,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ShouldFocusLink', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'NoisySlider', function() {
+TEST_F('BackgroundTest', 'NoisySlider', function() {
   var mockFeedback = this.createMockFeedback();
   // Slider aria-valuetext must change otherwise blink suppresses event.
   this.runWithLoadedTree(  function() {/*!
@@ -609,7 +609,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NoisySlider', function() {
   }.bind(this));
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'Checkbox', function() {
+TEST_F('BackgroundTest', 'Checkbox', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="checkbox">go</div>
@@ -644,7 +644,7 @@ TEST_F('ChromeVoxBackgroundTest', 'Checkbox', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'MixedCheckbox', function() {
+TEST_F('BackgroundTest', 'MixedCheckbox', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div id="go" role="checkbox" aria-checked="mixed">go</div>
@@ -654,7 +654,7 @@ TEST_F('ChromeVoxBackgroundTest', 'MixedCheckbox', function() {
 });
 
 /** Tests navigating into and out of iframes using nextButton */
-TEST_F('ChromeVoxBackgroundTest', 'ForwardNavigationThroughIframeButtons', function() {
+TEST_F('BackgroundTest', 'ForwardNavigationThroughIframeButtons', function() {
   var mockFeedback = this.createMockFeedback();
 
   var running = false;
@@ -696,7 +696,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ForwardNavigationThroughIframeButtons', funct
 });
 
 /** Tests navigating into and out of iframes using nextObject */
-TEST_F('ChromeVoxBackgroundTest', 'ForwardObjectNavigationThroughIframes', function() {
+TEST_F('BackgroundTest', 'ForwardObjectNavigationThroughIframes', function() {
   var mockFeedback = this.createMockFeedback();
 
   var running = false;
@@ -745,7 +745,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ForwardObjectNavigationThroughIframes', funct
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'SelectOptionSelected', function() {
+TEST_F('BackgroundTest', 'SelectOptionSelected', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <select>
@@ -769,7 +769,7 @@ TEST_F('ChromeVoxBackgroundTest', 'SelectOptionSelected', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ToggleButton', function() {
+TEST_F('BackgroundTest', 'ToggleButton', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div aria-pressed="mixed" role="button">boldface</div>
@@ -802,7 +802,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ToggleButton', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'EditText', function() {
+TEST_F('BackgroundTest', 'EditText', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <input type="text"></input>
@@ -818,7 +818,7 @@ TEST_F('ChromeVoxBackgroundTest', 'EditText', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'BackwardForwardSync', function() {
+TEST_F('BackgroundTest', 'BackwardForwardSync', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div aria-label="Group" role="group" tabindex=0>
@@ -851,7 +851,7 @@ TEST_F('ChromeVoxBackgroundTest', 'BackwardForwardSync', function() {
 });
 
 /** Tests that navigation works when the current object disappears. */
-TEST_F('ChromeVoxBackgroundTest', 'DisappearingObject', function() {
+TEST_F('BackgroundTest', 'DisappearingObject', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.disappearingObjectDoc, function(rootNode) {
     var deleteButton = rootNode.find({role: RoleType.BUTTON,
@@ -883,7 +883,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DisappearingObject', function() {
 });
 
 /** Tests that focus jumps to details properly when indicated. */
-TEST_F('ChromeVoxBackgroundTest', 'JumpToDetails', function() {
+TEST_F('BackgroundTest', 'JumpToDetails', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.detailsDoc, function(rootNode) {
     mockFeedback.call(doCmd('jumpToDetails'))
@@ -893,7 +893,7 @@ TEST_F('ChromeVoxBackgroundTest', 'JumpToDetails', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ButtonNameValueDescription', function() {
+TEST_F('BackgroundTest', 'ButtonNameValueDescription', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <input type="submit" aria-label="foo" value="foo"></input>
@@ -906,7 +906,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ButtonNameValueDescription', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'NameFromHeadingLink', function() {
+TEST_F('BackgroundTest', 'NameFromHeadingLink', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <p>before</p>
@@ -921,7 +921,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NameFromHeadingLink', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'OptionChildIndexCount', function() {
+TEST_F('BackgroundTest', 'OptionChildIndexCount', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <div role="listbox">
@@ -942,7 +942,7 @@ TEST_F('ChromeVoxBackgroundTest', 'OptionChildIndexCount', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ListMarkerIsIgnored', function() {
+TEST_F('BackgroundTest', 'ListMarkerIsIgnored', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <ul><li>apple</ul>
@@ -954,7 +954,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ListMarkerIsIgnored', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'SymetricComplexHeading', function() {
+TEST_F('BackgroundTest', 'SymetricComplexHeading', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <h4><p>NW</p><p>NE</p></h4>
@@ -970,7 +970,7 @@ TEST_F('ChromeVoxBackgroundTest', 'SymetricComplexHeading', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ContentEditableJumpSyncsRange', function() {
+TEST_F('BackgroundTest', 'ContentEditableJumpSyncsRange', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <p>start</p>
@@ -1002,7 +1002,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ContentEditableJumpSyncsRange', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'Selection', function() {
+TEST_F('BackgroundTest', 'Selection', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <p>simple</p>
@@ -1027,7 +1027,7 @@ TEST_F('ChromeVoxBackgroundTest', 'Selection', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'BasicTableCommands', function() {
+TEST_F('BackgroundTest', 'BasicTableCommands', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
   <table border=1>
@@ -1097,7 +1097,7 @@ TEST_F('ChromeVoxBackgroundTest', 'BasicTableCommands', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'MissingTableCells', function() {
+TEST_F('BackgroundTest', 'MissingTableCells', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
   <table border=1>
@@ -1139,7 +1139,7 @@ TEST_F('ChromeVoxBackgroundTest', 'MissingTableCells', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'DisabledState', function() {
+TEST_F('BackgroundTest', 'DisabledState', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <button aria-disabled="true">ok</button>
@@ -1148,7 +1148,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DisabledState', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'HeadingLevels', function() {
+TEST_F('BackgroundTest', 'HeadingLevels', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <h1>1</h1><h2>2</h2><h3>3</h3><h4>4</h4><h5>5</h5><h6>6</h6>
@@ -1168,7 +1168,7 @@ TEST_F('ChromeVoxBackgroundTest', 'HeadingLevels', function() {
 });
 
 // Flaky, see https://crbug.com/622387.
-TEST_F('ChromeVoxBackgroundTest', 'DISABLED_EditableNavigation', function() {
+TEST_F('BackgroundTest', 'DISABLED_EditableNavigation', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <div contenteditable>this is a test</div>
@@ -1186,7 +1186,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_EditableNavigation', function() {
 });
 
 // Flaky, see https://crbug.com/622387.
-TEST_F('ChromeVoxBackgroundTest', 'DISABLED_NavigationMovesFocus', function() {
+TEST_F('BackgroundTest', 'DISABLED_NavigationMovesFocus', function() {
   this.runWithLoadedTree(function(root) {/*!
     <p>start</p>
     <input type="text"></input>
@@ -1201,7 +1201,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_NavigationMovesFocus', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'BrailleCaretNavigation', function() {
+TEST_F('BackgroundTest', 'BrailleCaretNavigation', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <p>This is a<em>test</em> of inline braille<br>with a second line</p>
@@ -1222,7 +1222,7 @@ TEST_F('ChromeVoxBackgroundTest', 'BrailleCaretNavigation', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'InPageLinks', function() {
+TEST_F('BackgroundTest', 'InPageLinks', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <a href="#there">hi</a>
@@ -1235,7 +1235,7 @@ TEST_F('ChromeVoxBackgroundTest', 'InPageLinks', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'ListItem', function() {
+TEST_F('BackgroundTest', 'ListItem', function() {
   this.resetContextualOutput();
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
@@ -1266,7 +1266,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ListItem', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'BusyHeading', function() {
+TEST_F('BackgroundTest', 'BusyHeading', function() {
   this.resetContextualOutput();
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
@@ -1283,7 +1283,7 @@ TEST_F('ChromeVoxBackgroundTest', 'BusyHeading', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'NodeVsSubnode', function() {
+TEST_F('BackgroundTest', 'NodeVsSubnode', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <a href="#">test</a>
@@ -1313,7 +1313,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NodeVsSubnode', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'NativeFind', function() {
+TEST_F('BackgroundTest', 'NativeFind', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <a href="#">grape</a>
@@ -1330,7 +1330,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NativeFind', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'EditableKeyCommand', function() {
+TEST_F('BackgroundTest', 'EditableKeyCommand', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <input type="text"></input>
@@ -1363,7 +1363,7 @@ TEST_F('ChromeVoxBackgroundTest', 'EditableKeyCommand', function() {
 });
 
 // Flaky. See http://crbug.com/857382.
-TEST_F('ChromeVoxBackgroundTest', 'DISABLED_TextSelectionAndLiveRegion', function() {
+TEST_F('BackgroundTest', 'DISABLED_TextSelectionAndLiveRegion', function() {
   DesktopAutomationHandler.announceActions = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
@@ -1401,7 +1401,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_TextSelectionAndLiveRegion', functio
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'TableColumnHeaders', function() {
+TEST_F('BackgroundTest', 'TableColumnHeaders', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <div role="grid">
@@ -1442,7 +1442,7 @@ TEST_F('ChromeVoxBackgroundTest', 'TableColumnHeaders', function() {
 });
 
 // Flaky, see https://crbug.com/622387.
-TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ActiveDescendantUpdates', function() {
+TEST_F('BackgroundTest', 'DISABLED_ActiveDescendantUpdates', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <div aria-label="container" tabindex=0 role="group" id="active"
@@ -1475,7 +1475,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_ActiveDescendantUpdates', function()
 });
 
 // Flaky, see https://crbug.com/622387.
-TEST_F('ChromeVoxBackgroundTest', 'DISABLED_NavigationEscapesEdit', function() {
+TEST_F('BackgroundTest', 'DISABLED_NavigationEscapesEdit', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p>before content editable</p>
@@ -1550,7 +1550,7 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_NavigationEscapesEdit', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'NavigationSyncsSelect', function() {
+TEST_F('BackgroundTest', 'NavigationSyncsSelect', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <select>
@@ -1572,7 +1572,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationSyncsSelect', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'NavigationIgnoresLabels', function() {
+TEST_F('BackgroundTest', 'NavigationIgnoresLabels', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p>before</p>
@@ -1604,7 +1604,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationIgnoresLabels', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'NavigationIgnoresDescriptions', function() {
+TEST_F('BackgroundTest', 'NavigationIgnoresDescriptions', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p>before</p>
@@ -1636,7 +1636,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationIgnoresDescriptions', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'MathContentViaInnerHtml', function() {
+TEST_F('BackgroundTest', 'MathContentViaInnerHtml', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*
     <div role="math">
@@ -1679,7 +1679,7 @@ TEST_F('ChromeVoxBackgroundTest', 'MathContentViaInnerHtml', function() {
   });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'GestureGranularity', function() {
+TEST_F('BackgroundTest', 'GestureGranularity', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*
     <p>This is a test</p>
