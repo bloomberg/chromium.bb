@@ -46,7 +46,7 @@ TestScreen::~TestScreen() {
   delete host_;
 }
 
-WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay() {
+WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay(Env* env) {
   DCHECK(!host_);
   if (window_tree_client_) {
     host_ =
@@ -54,7 +54,8 @@ WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay() {
     host_->SetBoundsInPixels(gfx::Rect(GetPrimaryDisplay().GetSizeInPixel()));
   } else {
     host_ = WindowTreeHost::Create(ui::PlatformWindowInitProperties{gfx::Rect(
-                                       GetPrimaryDisplay().GetSizeInPixel())})
+                                       GetPrimaryDisplay().GetSizeInPixel())},
+                                   env)
                 .release();
   }
   // Some tests don't correctly manage window focus/activation states.
