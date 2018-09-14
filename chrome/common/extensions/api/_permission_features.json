@@ -293,7 +293,7 @@
     "location": "policy"
   },
   "enterprise.hardwarePlatform": {
-    "channel": "canary",
+    "channel": "beta",
     "extension_types": ["extension"],
     "location": "policy"
   },
