@@ -83,12 +83,12 @@ TEST_F(SlotScopedTraversalTest, emptySlot) {
 
 void SlotScopedTraversalTest::TestExpectedSequence(
     const Vector<Element*>& list) {
-  for (size_t i = 0; i < list.size(); ++i) {
+  for (wtf_size_t i = 0; i < list.size(); ++i) {
     const Element* expected = i == list.size() - 1 ? nullptr : list[i + 1];
     EXPECT_EQ(expected, SlotScopedTraversal::Next(*list[i]));
   }
 
-  for (size_t i = list.size(); i > 0; --i) {
+  for (wtf_size_t i = list.size(); i > 0; --i) {
     const Element* expected = i == 1 ? nullptr : list[i - 2];
     EXPECT_EQ(expected, SlotScopedTraversal::Previous(*list[i - 1]));
   }

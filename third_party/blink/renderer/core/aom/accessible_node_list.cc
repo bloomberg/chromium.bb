@@ -34,7 +34,7 @@ void AccessibleNodeList::AddOwner(AOMRelationListProperty property,
 
 void AccessibleNodeList::RemoveOwner(AOMRelationListProperty property,
                                      AccessibleNode* node) {
-  for (size_t i = 0; i < owners_.size(); ++i) {
+  for (wtf_size_t i = 0; i < owners_.size(); ++i) {
     auto& item = owners_[i];
     if (item.first == property && item.second == node) {
       owners_.EraseAt(i);
@@ -53,7 +53,7 @@ void AccessibleNodeList::add(AccessibleNode* node, AccessibleNode* before) {
   if (nodes_.size() == kMaxItems)
     return;
 
-  unsigned index = nodes_.size();
+  wtf_size_t index = nodes_.size();
   if (before) {
     for (index = 0; index < nodes_.size(); ++index) {
       if (nodes_[index] == before)
@@ -67,7 +67,7 @@ void AccessibleNodeList::add(AccessibleNode* node, AccessibleNode* before) {
 }
 
 void AccessibleNodeList::remove(int index) {
-  if (index >= 0 && index < static_cast<int>(nodes_.size()))
+  if (index >= 0 && static_cast<wtf_size_t>(index) < nodes_.size())
     nodes_.EraseAt(index);
 }
 
@@ -81,9 +81,9 @@ bool AccessibleNodeList::AnonymousIndexedSetter(unsigned index,
   if (index >= kMaxItems)
     return false;
   if (index >= nodes_.size()) {
-    unsigned old_size = nodes_.size();
+    wtf_size_t old_size = nodes_.size();
     nodes_.resize(index + 1);
-    for (unsigned i = old_size; i < nodes_.size(); ++i)
+    for (wtf_size_t i = old_size; i < nodes_.size(); ++i)
       nodes_[i] = nullptr;
   }
   nodes_[index] = node;
