@@ -641,6 +641,7 @@ const char
         "TabManager.SessionOverlap.BackgroundTabOpening";
 
 // static
-const base::TimeDelta TabManagerStatsCollector::kLowFrequencySamplingInterval;
+constexpr base::TimeDelta
+    TabManagerStatsCollector::kLowFrequencySamplingInterval;
 
 }  // namespace resource_coordinator
