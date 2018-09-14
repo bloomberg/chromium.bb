@@ -33,11 +33,17 @@ int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
       int64_t billing_customer_id = 0;
       if (base::StringToInt64(base::StringPiece(customer_data->customer_id),
                               &billing_customer_id)) {
-        AutofillMetrics::LogPaymentsCustomerDataBillingIdIsValid(true);
+        AutofillMetrics::LogPaymentsCustomerDataBillingIdStatus(
+            AutofillMetrics::BillingIdStatus::VALID);
         return billing_customer_id;
+      } else {
+        AutofillMetrics::LogPaymentsCustomerDataBillingIdStatus(
+            AutofillMetrics::BillingIdStatus::PARSE_ERROR);
       }
+    } else {
+      AutofillMetrics::LogPaymentsCustomerDataBillingIdStatus(
+          AutofillMetrics::BillingIdStatus::MISSING);
     }
-    AutofillMetrics::LogPaymentsCustomerDataBillingIdIsValid(false);
   }
 
   // Get billing customer ID from priority preferences.
