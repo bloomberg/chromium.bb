@@ -255,11 +255,9 @@ void Font::DrawEmphasisMarks(cc::PaintCanvas* canvas,
     return;
 
   ShapeResultBloberizer bloberizer(*this, device_scale_factor);
-  // TODO(layout-dev): This should either not take a direction argument or we
-  // need to plumb the proper one through. I don't think we need it.
-  bloberizer.FillTextEmphasisGlyphs(
-      text_info.text, TextDirection::kLtr, text_info.from, text_info.to,
-      emphasis_glyph_data, text_info.shape_result);
+  bloberizer.FillTextEmphasisGlyphs(text_info.text, text_info.from,
+                                    text_info.to, emphasis_glyph_data,
+                                    text_info.shape_result);
   DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
 }
 

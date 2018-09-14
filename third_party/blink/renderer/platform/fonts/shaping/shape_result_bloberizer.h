@@ -44,12 +44,10 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
                               const GlyphData& emphasis_data,
                               const ShapeResultBuffer&);
   void FillTextEmphasisGlyphs(const StringView&,
-                              TextDirection,
                               unsigned from,
                               unsigned to,
                               const GlyphData& emphasis_data,
                               const ShapeResult*);
-
   void Add(Glyph glyph,
            const SimpleFontData* font_data,
            CanvasRotationInVertical canvas_rotation,
@@ -124,16 +122,6 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   bool CanUseFastPath(unsigned from, unsigned to, const ShapeResult*);
   float FillFastHorizontalGlyphs(const ShapeResultBuffer&, TextDirection);
   float FillFastHorizontalGlyphs(const ShapeResult*, float advance = 0);
-
-  float FillTextEmphasisGlyphsForRun(const ShapeResult::RunInfo*,
-                                     const StringView&,
-                                     unsigned text_length,
-                                     TextDirection,
-                                     unsigned from,
-                                     unsigned to,
-                                     const GlyphData& emphasis_data,
-                                     float initial_advance,
-                                     unsigned run_offset);
 
   void CommitPendingRun();
   void CommitPendingBlob();
