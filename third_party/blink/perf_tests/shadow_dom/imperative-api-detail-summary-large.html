@@ -11,8 +11,11 @@
   const sum1 = document.querySelector("#summary1");
   const sum2 = document.querySelector("#summary2");
   window.onload = function() {
+    for (let i = 0; i < 100; i++) {
+      host.appendChild(document.createElement("summary"));
+    }
     PerfTestRunner.measureTime({
-      description: "Measure performance of built-in detail element when summary element is inserted.",
+      description: "Measure performance of built-in detail element when summary element is inserted when the child node is over 100",
       run: function() {
         const start = PerfTestRunner.now();
         for (let i = 0; i < 100; i++) {
