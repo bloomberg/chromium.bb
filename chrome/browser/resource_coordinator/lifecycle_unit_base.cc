@@ -83,6 +83,10 @@ ukm::SourceId LifecycleUnitBase::GetUkmSourceId() const {
   return ukm::kInvalidSourceId;
 }
 
+void LifecycleUnitBase::SetDiscardCountForTesting(size_t discard_count) {
+  discard_count_ = discard_count;
+}
+
 void LifecycleUnitBase::SetState(LifecycleUnitState state,
                                  LifecycleUnitStateChangeReason reason) {
   if (state == state_)

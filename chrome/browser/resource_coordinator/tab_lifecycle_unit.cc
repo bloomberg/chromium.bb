@@ -288,6 +288,12 @@ TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
   DCHECK(web_contents);
   DCHECK(tab_strip_model_);
 
+  // Attach the ResourceCoordinatorTabHelper. In production code this has
+  // already been attached by now due to AttachTabHelpers, but there's a long
+  // tail of tests that don't add these helpers. This ensures that the various
+  // DCHECKs in the state transition machinery don't fail.
+  ResourceCoordinatorTabHelper::CreateForWebContents(web_contents);
+
   // Visible tabs are treated as having been immediately focused, while
   // non-visible tabs have their focus set to the last active time (the time at
   // which they stopped being the active tab in a tabstrip).
@@ -583,6 +589,23 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
       web_contents()->GetLastCommittedURL().is_empty()) {
     return false;
   }
+
+// Fix for urgent discarding woes in crbug.com/883071. These protections only
+// apply on non-ChromeOS desktop platforms (Linux, Mac, Win).
+// NOTE: These do not currently provide DecisionDetails!
+#if !defined(OS_CHROMEOS)
+  if (reason == LifecycleUnitDiscardReason::URGENT) {
+    // Limit urgent discarding to once only.
+    if (GetDiscardCount() > 0)
+      return false;
+    // Protect non-visible tabs from urgent discarding for a period of time.
+    if (web_contents()->GetVisibility() != content::Visibility::VISIBLE) {
+      base::TimeDelta time_in_bg = NowTicks() - GetWallTimeWhenHidden();
+      if (time_in_bg < kBackgroundUrgentProtectionTime)
+        return false;
+    }
+  }
+#endif
 
   // We deliberately run through all of the logic without early termination.
   // This ensures that the decision details lists all possible reasons that the

@@ -275,6 +275,9 @@ class TabLifecycleUnitSourceTest
     CreateTwoTabs(true /* focus_tab_strip */, &first_lifecycle_unit,
                   &second_lifecycle_unit);
 
+    // Advance time so tabs are urgent discardable.
+    task_runner_->AdvanceMockTickClock(kBackgroundUrgentProtectionTime);
+
     // Detach the non-active tab. Verify that it can no longer be discarded.
     ExpectCanDiscardTrueAllReasons(first_lifecycle_unit);
     std::unique_ptr<content::WebContents> owned_contents =
@@ -323,6 +326,9 @@ class TabLifecycleUnitSourceTest
     content::WebContentsTester::For(initial_web_contents)
         ->SetLastActiveTime(kDummyLastActiveTime);
 
+    // Advance time so tabs are urgent discardable.
+    task_runner_->AdvanceMockTickClock(kBackgroundUrgentProtectionTime);
+
     // Discard the tab.
     EXPECT_EQ(LifecycleUnitState::ACTIVE,
               background_lifecycle_unit->GetState());
@@ -351,6 +357,9 @@ class TabLifecycleUnitSourceTest
                   &foreground_lifecycle_unit);
     content::WebContents* initial_web_contents =
         tab_strip_model_->GetWebContentsAt(0);
+
+    // Advance time so tabs are urgent discardable.
+    task_runner_->AdvanceMockTickClock(kBackgroundUrgentProtectionTime);
 
     // Discard the tab.
     EXPECT_EQ(LifecycleUnitState::ACTIVE,
@@ -385,6 +394,9 @@ class TabLifecycleUnitSourceTest
                   &foreground_lifecycle_unit);
     content::WebContents* initial_web_contents =
         tab_strip_model_->GetWebContentsAt(0);
+
+    // Advance time so tabs are urgent discardable.
+    task_runner_->AdvanceMockTickClock(kBackgroundUrgentProtectionTime);
 
     // Discard the tab.
     EXPECT_EQ(LifecycleUnitState::ACTIVE,
@@ -602,18 +614,17 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeADiscardedTab) {
       tab_strip_model_->GetWebContentsAt(0);
   task_runner_->FastForwardBy(kShortDelay);
 
-  // It should be possible to discard the background tab.
-  ExpectCanDiscardTrueAllReasons(background_lifecycle_unit);
+  // Advance time so tabs are urgent discardable.
+  task_runner_->AdvanceMockTickClock(kBackgroundUrgentProtectionTime);
 
-  // Discard the tab. Use LifecycleUnitDiscardReason::URGENT to force the
-  // discard.
+  // Discard the tab.
   EXPECT_EQ(LifecycleUnitState::ACTIVE, background_lifecycle_unit->GetState());
   EXPECT_CALL(tab_observer_, OnDiscardedStateChange(::testing::_, true));
-  background_lifecycle_unit->Discard(LifecycleUnitDiscardReason::URGENT);
+  background_lifecycle_unit->Discard(LifecycleUnitDiscardReason::PROACTIVE);
 
   ::testing::Mock::VerifyAndClear(&tab_observer_);
   TransitionFromPendingDiscardToDiscardedIfNeeded(
-      LifecycleUnitDiscardReason::URGENT, background_lifecycle_unit);
+      LifecycleUnitDiscardReason::PROACTIVE, background_lifecycle_unit);
   EXPECT_EQ(LifecycleUnitState::DISCARDED,
             background_lifecycle_unit->GetState());
   EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));

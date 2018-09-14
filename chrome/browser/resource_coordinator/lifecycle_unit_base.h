@@ -41,6 +41,8 @@ class LifecycleUnitBase : public LifecycleUnit {
   void RemoveObserver(LifecycleUnitObserver* observer) override;
   ukm::SourceId GetUkmSourceId() const override;
 
+  void SetDiscardCountForTesting(size_t discard_count);
+
  protected:
   // TODO(chrisha|fdoray): Clean up the virtual methods below and make them
   // pure virtual.
