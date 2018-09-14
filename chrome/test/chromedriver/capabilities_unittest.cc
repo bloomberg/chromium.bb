@@ -279,28 +279,24 @@ TEST(ParseCapabilities, ManualProxy) {
   proxy.SetString("ftpProxy", "localhost:9001");
   proxy.SetString("httpProxy", "localhost:8001");
   proxy.SetString("sslProxy", "localhost:10001");
-  proxy.SetString("noProxy", "google.com, youtube.com");
+  proxy.SetString("socksProxy", "localhost:12345");
+  proxy.SetInteger("socksVersion", 5);
+  std::unique_ptr<base::ListValue> bypass = std::make_unique<base::ListValue>();
+  bypass->AppendString("google.com");
+  bypass->AppendString("youtube.com");
+  proxy.SetList("noProxy", std::move(bypass));
   base::DictionaryValue caps;
   caps.SetKey("proxy", std::move(proxy));
   Status status = capabilities.Parse(caps);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, capabilities.switches.GetSize());
   ASSERT_EQ(
-      "ftp=localhost:9001;http=localhost:8001;https=localhost:10001",
+      "ftp=localhost:9001;http=localhost:8001;https=localhost:10001;"
+      "socks=socks5://localhost:12345",
       capabilities.switches.GetSwitchValue("proxy-server"));
   ASSERT_EQ(
-      "google.com, youtube.com",
+      "google.com,youtube.com",
       capabilities.switches.GetSwitchValue("proxy-bypass-list"));
-}
-
-TEST(ParseCapabilities, MissingSettingForManualProxy) {
-  Capabilities capabilities;
-  base::DictionaryValue proxy;
-  proxy.SetString("proxyType", "manual");
-  base::DictionaryValue caps;
-  caps.SetKey("proxy", std::move(proxy));
-  Status status = capabilities.Parse(caps);
-  ASSERT_FALSE(status.IsOk());
 }
 
 TEST(ParseCapabilities, IgnoreNullValueForManualProxy) {
@@ -319,6 +315,29 @@ TEST(ParseCapabilities, IgnoreNullValueForManualProxy) {
   ASSERT_EQ(
       "ftp=localhost:9001",
       capabilities.switches.GetSwitchValue("proxy-server"));
+}
+
+TEST(ParseCapabilities, MissingSocksVersion) {
+  Capabilities capabilities;
+  base::DictionaryValue proxy;
+  proxy.SetString("proxyType", "manual");
+  proxy.SetString("socksProxy", "localhost:6000");
+  base::DictionaryValue caps;
+  caps.SetKey("proxy", std::move(proxy));
+  Status status = capabilities.Parse(caps);
+  ASSERT_FALSE(status.IsOk());
+}
+
+TEST(ParseCapabilities, BadSocksVersion) {
+  Capabilities capabilities;
+  base::DictionaryValue proxy;
+  proxy.SetString("proxyType", "manual");
+  proxy.SetString("socksProxy", "localhost:6000");
+  proxy.SetInteger("socksVersion", 256);
+  base::DictionaryValue caps;
+  caps.SetKey("proxy", std::move(proxy));
+  Status status = capabilities.Parse(caps);
+  ASSERT_FALSE(status.IsOk());
 }
 
 TEST(ParseCapabilities, AcceptInsecureCertsDisabledByDefault) {
