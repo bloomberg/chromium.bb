@@ -333,25 +333,11 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   if (base::ContainsKey(*kWhitelistedOrigins, effective_url.GetOrigin()))
     return ALLOW;
 
-  // Check manual overrides for the exact URL.
-  auto url_it = url_map_.find(policy::url_util::Normalize(effective_url));
-  if (url_it != url_map_.end())
-    return url_it->second ? ALLOW : BLOCK;
-
-  // Check manual overrides for the hostname.
-  const std::string host = effective_url.host();
-  auto host_it = host_map_.find(host);
-  if (host_it != host_map_.end())
-    return host_it->second ? ALLOW : BLOCK;
-
-  // Look for patterns matching the hostname, with a value that is different
-  // from the default (a value of true in the map meaning allowed).
-  for (const auto& host_entry : host_map_) {
-    if ((host_entry.second == (default_behavior_ == BLOCK)) &&
-        HostMatchesPattern(host, host_entry.first)) {
-      return host_entry.second ? ALLOW : BLOCK;
-    }
-  }
+  // Check manual blacklists and whitelists.
+  FilteringBehavior manual_result =
+      GetManualFilteringBehaviorForURL(effective_url);
+  if (manual_result != INVALID)
+    return manual_result;
 
   // Check the list of URL patterns.
   std::set<URLMatcherConditionSet::ID> matching_ids =
@@ -363,7 +349,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   }
 
   // Check the list of hostname hashes.
-  if (contents_->hostname_hashes.count(HostnameHash(host))) {
+  if (contents_->hostname_hashes.count(HostnameHash(effective_url.host()))) {
     *reason = supervised_user_error_page::WHITELIST;
     return ALLOW;
   }
@@ -378,6 +364,46 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   // Fall back to the default behavior.
   *reason = supervised_user_error_page::DEFAULT;
   return default_behavior_;
+}
+
+// There may be conflicting patterns, say, "allow *.google.com" and "block
+// www.google.*". To break the tie, we prefer blacklists over whitelists, by
+// returning early if there is a BLOCK and evaluating all manual overrides
+// before returning an ALLOW. If there are no applicable manual overrides,
+// return INVALID.
+SupervisedUserURLFilter::FilteringBehavior
+SupervisedUserURLFilter::GetManualFilteringBehaviorForURL(
+    const GURL& url) const {
+  FilteringBehavior result = INVALID;
+
+  // Check manual overrides for the exact URL.
+  auto url_it = url_map_.find(policy::url_util::Normalize(url));
+  if (url_it != url_map_.end()) {
+    if (!url_it->second)
+      return BLOCK;
+    result = ALLOW;
+  }
+
+  // Check manual overrides for the hostname.
+  const std::string host = url.host();
+  auto host_it = host_map_.find(host);
+  if (host_it != host_map_.end()) {
+    if (!host_it->second)
+      return BLOCK;
+    result = ALLOW;
+  }
+
+  // Look for patterns matching the hostname, with a value that is different
+  // from the default (a value of true in the map meaning allowed).
+  for (const auto& host_entry : host_map_) {
+    if (HostMatchesPattern(host, host_entry.first)) {
+      if (!host_entry.second)
+        return BLOCK;
+      result = ALLOW;
+    }
+  }
+
+  return result;
 }
 
 bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(

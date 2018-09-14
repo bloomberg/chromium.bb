@@ -180,6 +180,7 @@ class SupervisedUserURLFilter {
       const GURL& url,
       bool manual_only,
       supervised_user_error_page::FilteringBehaviorReason* reason) const;
+  FilteringBehavior GetManualFilteringBehaviorForURL(const GURL& url) const;
 
   void CheckCallback(FilteringBehaviorCallback callback,
                      const GURL& url,

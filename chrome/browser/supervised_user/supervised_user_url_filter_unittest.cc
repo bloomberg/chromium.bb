@@ -29,6 +29,13 @@ class SupervisedUserURLFilterTest : public ::testing::Test,
 
   // SupervisedUserURLFilter::Observer:
   void OnSiteListUpdated() override { run_loop_.Quit(); }
+  void OnURLChecked(const GURL& url,
+                    SupervisedUserURLFilter::FilteringBehavior behavior,
+                    supervised_user_error_page::FilteringBehaviorReason reason,
+                    bool uncertain) override {
+    behavior_ = behavior;
+    reason_ = reason;
+  }
 
  protected:
   bool IsURLWhitelisted(const std::string& url) {
@@ -36,9 +43,45 @@ class SupervisedUserURLFilterTest : public ::testing::Test,
            SupervisedUserURLFilter::ALLOW;
   }
 
+  void ExpectURLInDefaultWhitelist(const std::string& url) {
+    ExpectURLCheckMatches(url, SupervisedUserURLFilter::ALLOW,
+                          supervised_user_error_page::DEFAULT);
+  }
+
+  void ExpectURLInDefaultBlacklist(const std::string& url) {
+    ExpectURLCheckMatches(url, SupervisedUserURLFilter::BLOCK,
+                          supervised_user_error_page::DEFAULT);
+  }
+
+  void ExpectURLInManualWhitelist(const std::string& url) {
+    ExpectURLCheckMatches(url, SupervisedUserURLFilter::ALLOW,
+                          supervised_user_error_page::MANUAL);
+  }
+
+  void ExpectURLInManualBlacklist(const std::string& url) {
+    ExpectURLCheckMatches(url, SupervisedUserURLFilter::BLOCK,
+                          supervised_user_error_page::MANUAL);
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::RunLoop run_loop_;
   SupervisedUserURLFilter filter_;
+  SupervisedUserURLFilter::FilteringBehavior behavior_;
+  supervised_user_error_page::FilteringBehaviorReason reason_;
+
+ private:
+  void ExpectURLCheckMatches(
+      const std::string& url,
+      SupervisedUserURLFilter::FilteringBehavior expected_behavior,
+      supervised_user_error_page::FilteringBehaviorReason expected_reason) {
+    bool called_synchronously =
+        filter_.GetFilteringBehaviorForURLWithAsyncChecks(GURL(url),
+                                                          base::DoNothing());
+    ASSERT_TRUE(called_synchronously);
+
+    EXPECT_EQ(behavior_, expected_behavior);
+    EXPECT_EQ(reason_, expected_reason);
+  }
 };
 
 TEST_F(SupervisedUserURLFilterTest, Basic) {
@@ -399,30 +442,85 @@ TEST_F(SupervisedUserURLFilterTest, HostMatchesPattern) {
                                                   "www.*.google.com"));
 }
 
-TEST_F(SupervisedUserURLFilterTest, Patterns) {
+TEST_F(SupervisedUserURLFilterTest, PatternsWithoutConflicts) {
   std::map<std::string, bool> hosts;
 
-  // Initally, the second rule is ignored because has the same value as the
-  // default (block). When we change the default to allow, the first rule is
-  // ignored instead.
+  // The third rule is redundant with the first, but it's not a conflict
+  // since they have the same value (allow).
   hosts["*.google.com"] = true;
-  hosts["www.google.*"] = false;
-
   hosts["accounts.google.com"] = false;
   hosts["mail.google.com"] = true;
-  filter_.SetManualHosts(std::move(hosts));
 
-  // Initially, the default filtering behavior is BLOCK.
+  filter_.SetManualHosts(std::move(hosts));
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+
   EXPECT_TRUE(IsURLWhitelisted("http://www.google.com/foo/"));
   EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
   EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
 
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
+
+  EXPECT_TRUE(IsURLWhitelisted("http://www.google.com/foo/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
+  EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
+  EXPECT_TRUE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
+}
+
+TEST_F(SupervisedUserURLFilterTest, PatternsWithConflicts) {
+  std::map<std::string, bool> hosts;
+
+  // The fourth rule conflicts with the first for "www.google.com" host.
+  // Blocking then takes precedence.
+  hosts["*.google.com"] = true;
+  hosts["accounts.google.com"] = false;
+  hosts["mail.google.com"] = true;
+  hosts["www.google.*"] = false;
+
+  filter_.SetManualHosts(std::move(hosts));
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+
   EXPECT_FALSE(IsURLWhitelisted("http://www.google.com/foo/"));
   EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
   EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
+
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
+
+  EXPECT_FALSE(IsURLWhitelisted("http://www.google.com/foo/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
+  EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
+  EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
+}
+
+TEST_F(SupervisedUserURLFilterTest, Reason) {
+  std::map<std::string, bool> hosts;
+  std::map<GURL, bool> urls;
+  hosts["youtube.com"] = true;
+  hosts["*.google.*"] = true;
+  urls[GURL("https://youtube.com/robots.txt")] = false;
+  urls[GURL("https://google.co.uk/robots.txt")] = false;
+
+  filter_.SetManualHosts(std::move(hosts));
+  filter_.SetManualURLs(std::move(urls));
+
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+
+  ExpectURLInDefaultBlacklist("https://m.youtube.com/feed/trending");
+  ExpectURLInDefaultBlacklist("https://com.google");
+  ExpectURLInManualWhitelist("https://youtube.com/feed/trending");
+  ExpectURLInManualWhitelist("https://google.com/humans.txt");
+  ExpectURLInManualBlacklist("https://youtube.com/robots.txt");
+  ExpectURLInManualBlacklist("https://google.co.uk/robots.txt");
+
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
+
+  ExpectURLInDefaultWhitelist("https://m.youtube.com/feed/trending");
+  ExpectURLInDefaultWhitelist("https://com.google");
+  ExpectURLInManualWhitelist("https://youtube.com/feed/trending");
+  ExpectURLInManualWhitelist("https://google.com/humans.txt");
+  ExpectURLInManualBlacklist("https://youtube.com/robots.txt");
+  ExpectURLInManualBlacklist("https://google.co.uk/robots.txt");
 }
 
 TEST_F(SupervisedUserURLFilterTest, WhitelistsPatterns) {
