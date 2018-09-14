@@ -48,6 +48,8 @@ jumbo_component("display") {
     "win/screen_win.h",
     "win/screen_win_display.cc",
     "win/screen_win_display.h",
+    "win/uwp_text_scale_factor.cc",
+    "win/uwp_text_scale_factor.h",
   ]
 
   defines = [ "DISPLAY_IMPLEMENTATION" ]

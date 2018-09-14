@@ -6,7 +6,6 @@
 #define UI_DISPLAY_WIN_DPI_H_
 
 #include "ui/display/display_export.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace display {
 namespace win {
@@ -23,15 +22,24 @@ DISPLAY_EXPORT void SetDefaultDeviceScaleFactor(float scale);
 // scale factor is 1.0. This does not handle per-monitor DPI.
 DISPLAY_EXPORT float GetDPIScale();
 
-// Equivalent to GetDPIScale() but ignores the --force-device-scale-factor flag.
-float GetUnforcedDeviceScaleFactor();
-
+// Deprecated. Use win::ScreenWin::GetDPIForHWND instead.
+//
 // Returns the equivalent DPI for |device_scaling_factor|.
 DISPLAY_EXPORT int GetDPIFromScalingFactor(float device_scaling_factor);
 
-// Returns the equivalent scaling factor for |dpi|.
-DISPLAY_EXPORT float GetScalingFactorFromDPI(int dpi);
+namespace internal {
+// Note: These methods do not take accessibility adjustments into account.
 
+// Equivalent to GetDPIScale() but ignores the --force-device-scale-factor flag.
+float GetUnforcedDeviceScaleFactor();
+
+// Returns the equivalent scaling factor for |dpi|.
+float GetScalingFactorFromDPI(int dpi);
+
+// Gets the default DPI for the system.
+int GetDefaultSystemDPI();
+
+}  // namespace internal
 }  // namespace win
 }  // namespace display
 
