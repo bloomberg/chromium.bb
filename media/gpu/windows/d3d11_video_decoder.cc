@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -576,6 +578,9 @@ void D3D11VideoDecoder::SetWasSupportedReason(
     case D3D11VideoNotSupportedReason::kZeroCopyVideoRequired:
       reason = "Must allow zero-copy video for D3D11VideoDecoder";
       break;
+    case D3D11VideoNotSupportedReason::kEncryptedMedia:
+      reason = "Encrypted media is not enabled for D3D11VideoDecoder";
+      break;
   }
 
   DVLOG(2) << reason;
@@ -591,6 +596,12 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
 
   // TODO(liberato): All of this could be moved into MojoVideoDecoder, so that
   // it could run on the client side and save the IPC hop.
+
+  if (config.is_encrypted() &&
+      !base::FeatureList::IsEnabled(kD3D11EncryptedMedia)) {
+    SetWasSupportedReason(D3D11VideoNotSupportedReason::kEncryptedMedia);
+    return false;
+  }
 
   // TODO(liberato): It would be nice to QueryD3D11DeviceObjectFromANGLE, but
   // we don't know what thread we're on.

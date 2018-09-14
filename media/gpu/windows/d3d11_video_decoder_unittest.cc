@@ -12,10 +12,12 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/test_helpers.h"
 #include "media/gpu/windows/d3d11_mocks.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
@@ -185,6 +187,28 @@ TEST_F(D3D11VideoDecoderTest, FailsIfZeroCopyWorkaround) {
   gpu_workarounds_.disable_dxgi_zero_copy_video = true;
   CreateDecoder();
   InitializeDecoder(supported_config_, kExpectFailure);
+}
+
+TEST_F(D3D11VideoDecoderTest, DoesNotSupportEncryptionWithoutFlag) {
+  CreateDecoder();
+  VideoDecoderConfig encrypted_config = supported_config_;
+  encrypted_config.SetIsEncrypted(true);
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures({}, {kD3D11EncryptedMedia});
+    EXPECT_FALSE(d3d11_decoder_raw_->IsPotentiallySupported(encrypted_config));
+  }
+}
+
+TEST_F(D3D11VideoDecoderTest, SupportsEncryptionWithFlag) {
+  CreateDecoder();
+  VideoDecoderConfig encrypted_config = supported_config_;
+  encrypted_config.SetIsEncrypted(true);
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures({kD3D11EncryptedMedia}, {});
+    EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(encrypted_config));
+  }
 }
 
 }  // namespace media
