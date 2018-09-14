@@ -22,6 +22,7 @@
 
 # Flaky, https://crbug.com/813631.
 -URLRequestQuicTest.CancelPushIfCached_*
+-URLRequestQuicTest.DoNotCancelPushIfNotFoundInCache
 
 # Flaky, https://crbug.com/814811.
 -URLRequestTest.NetworkDelegateProxyError
