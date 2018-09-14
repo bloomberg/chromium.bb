@@ -249,9 +249,8 @@ class UrlRuleFlatBufferConverter {
         return false;  // Unsupported source type.
     }
 
-    if (rule_.match_case())
-      options_ |= flat::OptionFlag_IS_MATCH_CASE;
-
+    // TODO(crbug.com/884063): Consider setting IS_CASE_INSENSITIVE here if we
+    // want to support case insensitive rules for subresource_filter.
     return true;
   }
 

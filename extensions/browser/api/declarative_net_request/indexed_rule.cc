@@ -127,8 +127,8 @@ uint8_t GetOptionsMask(const dnr_api::Rule& parsed_rule) {
   if (parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_ALLOW)
     mask |= flat_rule::OptionFlag_IS_WHITELIST;
   if (parsed_rule.condition.is_url_filter_case_sensitive &&
-      *parsed_rule.condition.is_url_filter_case_sensitive) {
-    mask |= flat_rule::OptionFlag_IS_MATCH_CASE;
+      !*parsed_rule.condition.is_url_filter_case_sensitive) {
+    mask |= flat_rule::OptionFlag_IS_CASE_INSENSITIVE;
   }
 
   switch (parsed_rule.condition.domain_type) {

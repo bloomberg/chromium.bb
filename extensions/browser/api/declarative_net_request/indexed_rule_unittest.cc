@@ -126,8 +126,12 @@ TEST_F(IndexedRuleTest, OptionsParsing) {
       {dnr_api::DOMAIN_TYPE_FIRSTPARTY, dnr_api::RULE_ACTION_TYPE_ALLOW,
        std::make_unique<bool>(true),
        flat_rule::OptionFlag_IS_WHITELIST |
+           flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY},
+      {dnr_api::DOMAIN_TYPE_FIRSTPARTY, dnr_api::RULE_ACTION_TYPE_ALLOW,
+       std::make_unique<bool>(false),
+       flat_rule::OptionFlag_IS_WHITELIST |
            flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY |
-           flat_rule::OptionFlag_IS_MATCH_CASE},
+           flat_rule::OptionFlag_IS_CASE_INSENSITIVE},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {

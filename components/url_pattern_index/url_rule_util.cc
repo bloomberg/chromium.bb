@@ -175,8 +175,8 @@ std::string FlatUrlRuleToFilterlistString(const flat::UrlRule* flat_rule) {
 
   out += PartyOptionsToString(&options_printer, flat_rule);
 
-  if (flat_rule->options() & url_pattern_index::flat::OptionFlag_IS_MATCH_CASE)
-    out += options_printer.PrintOption("match-case");
+  // TODO(csharrison): Consider printing something for case-insensitive /
+  // case-sensitive rules.
 
   out += TypeOptionsToString(&options_printer, flat_rule);
 
