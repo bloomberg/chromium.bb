@@ -2778,7 +2778,6 @@ crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pas
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-pause-resume.tentative.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-contain/contain-layout-008.html [ Failure ]
 crbug.com/626703 external/wpt/presentation-api/controlling-ua/reconnectToPresentation_notfound_error-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/presentation-api/controlling-ua/reconnectToMultiplePresentations_success-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/presentation-api/controlling-ua/startMultiplePresentations_success-manual.https.html [ Skip ]
