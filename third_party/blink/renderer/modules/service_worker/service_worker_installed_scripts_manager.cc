@@ -260,18 +260,16 @@ bool ServiceWorkerInstalledScriptsManager::IsScriptInstalled(
   return installed_urls_.Contains(script_url);
 }
 
-InstalledScriptsManager::ScriptStatus
-ServiceWorkerInstalledScriptsManager::GetScriptData(
-    const KURL& script_url,
-    InstalledScriptsManager::ScriptData* out_script_data) {
+std::unique_ptr<InstalledScriptsManager::ScriptData>
+ServiceWorkerInstalledScriptsManager::GetScriptData(const KURL& script_url) {
   DCHECK(!IsMainThread());
   if (!IsScriptInstalled(script_url))
-    return ScriptStatus::kFailed;
+    return nullptr;
 
   // This blocks until the script is received from the browser.
   std::unique_ptr<RawScriptData> raw_script_data = GetRawScriptData(script_url);
   if (!raw_script_data)
-    return ScriptStatus::kFailed;
+    return nullptr;
 
   // This is from WorkerClassicScriptLoader::DidReceiveData.
   std::unique_ptr<TextResourceDecoder> decoder =
@@ -296,11 +294,9 @@ ServiceWorkerInstalledScriptsManager::GetScriptData(
       meta_data->Append(chunk.data(), chunk.size());
   }
 
-  InstalledScriptsManager::ScriptData script_data(
+  return std::make_unique<InstalledScriptsManager::ScriptData>(
       script_url, source_text_builder.ToString(), std::move(meta_data),
       raw_script_data->TakeHeaders());
-  *out_script_data = std::move(script_data);
-  return ScriptStatus::kSuccess;
 }
 
 std::unique_ptr<RawScriptData>

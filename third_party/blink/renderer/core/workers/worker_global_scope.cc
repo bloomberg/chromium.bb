@@ -232,23 +232,15 @@ WorkerGlobalScope::LoadScriptFromInstalledScriptsManager(
           script_url)) {
     return LoadResult::kNotHandled;
   }
-  InstalledScriptsManager::ScriptData script_data;
-  InstalledScriptsManager::ScriptStatus status =
-      GetThread()->GetInstalledScriptsManager()->GetScriptData(script_url,
-                                                               &script_data);
-  switch (status) {
-    case InstalledScriptsManager::ScriptStatus::kFailed:
-      return LoadResult::kFailed;
-    case InstalledScriptsManager::ScriptStatus::kSuccess:
-      *out_response_url = script_url;
-      *out_source_code = script_data.TakeSourceText();
-      *out_cached_meta_data = script_data.TakeMetaData();
-      // TODO(shimazu): Add appropriate probes for inspector.
-      return LoadResult::kSuccess;
-  }
-
-  NOTREACHED();
-  return LoadResult::kFailed;
+  std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
+      GetThread()->GetInstalledScriptsManager()->GetScriptData(script_url);
+  if (!script_data)
+    return LoadResult::kFailed;
+  *out_response_url = script_url;
+  *out_source_code = script_data->TakeSourceText();
+  *out_cached_meta_data = script_data->TakeMetaData();
+  // TODO(shimazu): Add appropriate probes for inspector.
+  return LoadResult::kSuccess;
 }
 
 WorkerGlobalScope::LoadResult

@@ -31,10 +31,7 @@ class MODULES_EXPORT ServiceWorkerInstalledScriptsManager
 
   // InstalledScriptsManager implementation.
   bool IsScriptInstalled(const KURL& script_url) const override;
-  // TODO(leonhsl): Remove the enum type ScriptStatus, make this function return
-  // a std::unique_ptr<ScriptData> instead, nullptr indicates failure.
-  ScriptStatus GetScriptData(const KURL& script_url,
-                             ScriptData* out_script_data) override;
+  std::unique_ptr<ScriptData> GetScriptData(const KURL& script_url) override;
 
  private:
   friend class ServiceWorkerInstalledScriptsManagerTest;
