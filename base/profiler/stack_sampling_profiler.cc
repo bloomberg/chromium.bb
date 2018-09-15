@@ -52,7 +52,7 @@ StackSamplingProfiler::Frame::~Frame() = default;
 
 class StackSamplingProfiler::SamplingThread : public Thread {
  public:
-  class TestAPI {
+  class TestPeer {
    public:
     // Reset the existing sampler. This will unfortunately create the object
     // unnecessarily if it doesn't already exist but there's no way around that.
@@ -132,7 +132,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   void Remove(int collection_id);
 
  private:
-  friend class TestAPI;
+  friend class TestPeer;
   friend struct DefaultSingletonTraits<SamplingThread>;
 
   // The different states in which the sampling-thread can be.
@@ -216,7 +216,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
 };
 
 // static
-void StackSamplingProfiler::SamplingThread::TestAPI::Reset() {
+void StackSamplingProfiler::SamplingThread::TestPeer::Reset() {
   SamplingThread* sampler = SamplingThread::GetInstance();
 
   ThreadExecutionState state;
@@ -247,7 +247,7 @@ void StackSamplingProfiler::SamplingThread::TestAPI::Reset() {
 }
 
 // static
-void StackSamplingProfiler::SamplingThread::TestAPI::DisableIdleShutdown() {
+void StackSamplingProfiler::SamplingThread::TestPeer::DisableIdleShutdown() {
   SamplingThread* sampler = SamplingThread::GetInstance();
 
   {
@@ -257,7 +257,7 @@ void StackSamplingProfiler::SamplingThread::TestAPI::DisableIdleShutdown() {
 }
 
 // static
-void StackSamplingProfiler::SamplingThread::TestAPI::ShutdownAssumingIdle(
+void StackSamplingProfiler::SamplingThread::TestPeer::ShutdownAssumingIdle(
     bool simulate_intervening_add) {
   SamplingThread* sampler = SamplingThread::GetInstance();
 
@@ -286,10 +286,10 @@ void StackSamplingProfiler::SamplingThread::TestAPI::ShutdownAssumingIdle(
 }
 
 // static
-void StackSamplingProfiler::SamplingThread::TestAPI::ShutdownTaskAndSignalEvent(
-    SamplingThread* sampler,
-    int add_events,
-    WaitableEvent* event) {
+void StackSamplingProfiler::SamplingThread::TestPeer::
+    ShutdownTaskAndSignalEvent(SamplingThread* sampler,
+                               int add_events,
+                               WaitableEvent* event) {
   sampler->ShutdownTask(add_events);
   event->Signal();
 }
@@ -592,24 +592,24 @@ void StackSamplingProfiler::SamplingThread::CleanUp() {
 // StackSamplingProfiler ------------------------------------------------------
 
 // static
-void StackSamplingProfiler::TestAPI::Reset() {
-  SamplingThread::TestAPI::Reset();
+void StackSamplingProfiler::TestPeer::Reset() {
+  SamplingThread::TestPeer::Reset();
 }
 
 // static
-bool StackSamplingProfiler::TestAPI::IsSamplingThreadRunning() {
+bool StackSamplingProfiler::TestPeer::IsSamplingThreadRunning() {
   return SamplingThread::GetInstance()->IsRunning();
 }
 
 // static
-void StackSamplingProfiler::TestAPI::DisableIdleShutdown() {
-  SamplingThread::TestAPI::DisableIdleShutdown();
+void StackSamplingProfiler::TestPeer::DisableIdleShutdown() {
+  SamplingThread::TestPeer::DisableIdleShutdown();
 }
 
 // static
-void StackSamplingProfiler::TestAPI::PerformSamplingThreadIdleShutdown(
+void StackSamplingProfiler::TestPeer::PerformSamplingThreadIdleShutdown(
     bool simulate_intervening_start) {
-  SamplingThread::TestAPI::ShutdownAssumingIdle(simulate_intervening_start);
+  SamplingThread::TestPeer::ShutdownAssumingIdle(simulate_intervening_start);
 }
 
 void StackSamplingProfiler::ProfileBuilder::RecordAnnotations() {}
