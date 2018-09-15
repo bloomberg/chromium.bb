@@ -121,6 +121,8 @@ def _PushGitChanges(git_repo, message, dry_run=False, push_to=None):
       return
     raise
 
+  logging.info('Pushing to branch (%s) with message: %s %s',
+               push_to, message, ' (dryrun)' if dry_run else '')
   git.GitPush(git_repo, PUSH_BRANCH, push_to, skip=dry_run)
 
 
@@ -292,6 +294,7 @@ class VersionInfo(object):
 
       repo_dir = os.path.dirname(self.version_file)
 
+      logging.info('Updating version file to: %s', self.VersionString())
       try:
         git.CreateBranch(repo_dir, PUSH_BRANCH)
         shutil.copyfile(temp_fh.name, self.version_file)
@@ -471,8 +474,11 @@ def GenerateAndPublishOfficialAndBuildSpec(
   msg = 'Incremented to version: %s' % version_info.VersionString()
   version_info.UpdateVersionFile(msg, dryrun)
 
+  build_spec_path = OfficialBuildSpecPath(version_info)
+
+  logging.info('Creating buildspec: %s', build_spec_path)
   PopulateAndPublishBuildSpec(
-      OfficialBuildSpecPath(version_info),
+      build_spec_path,
       repo.ExportManifest(mark_revision=True),
       manifest_versions_int,
       manifest_versions_ext,
@@ -502,8 +508,12 @@ def GenerateAndPublishReleaseCandidateBuildSpec(
   """
   version_info = VersionInfo.from_repo(repo.directory)
 
+  build_spec_path = CandidateBuildSpecPath(
+      version_info, category, manifest_versions_int)
+
+  logging.info('Creating buildspec: %s', build_spec_path)
   PopulateAndPublishBuildSpec(
-      CandidateBuildSpecPath(version_info, category, manifest_versions_int),
+      build_spec_path,
       repo.ExportManifest(mark_revision=True),
       manifest_versions_int,
       manifest_versions_ext,
