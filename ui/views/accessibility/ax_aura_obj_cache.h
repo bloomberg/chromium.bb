@@ -92,6 +92,13 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
 
   void SetDelegate(Delegate* delegate) { delegate_ = delegate; }
 
+  // Changes the behavior of GetFocusedView() so that it only considers
+  // views within the given Widget, this enables making tests
+  // involving focus reliable.
+  void set_focused_widget_for_testing(views::Widget* widget) {
+    focused_widget_for_testing_ = widget;
+  }
+
  private:
   friend struct base::DefaultSingletonTraits<AXAuraObjCache>;
 
@@ -130,6 +137,8 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   Delegate* delegate_ = nullptr;
 
   std::set<aura::Window*> root_windows_;
+
+  views::Widget* focused_widget_for_testing_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AXAuraObjCache);
 };

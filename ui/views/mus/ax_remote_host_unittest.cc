@@ -165,18 +165,6 @@ TEST_F(AXRemoteHostTest, AutomationEnabledTwice) {
   EXPECT_EQ(ax::mojom::Event::kLoadComplete, service.last_event_.event_type);
 }
 
-// Views can trigger accessibility events during Widget construction before the
-// AXRemoteHost starts monitoring the widget. This happens with the material
-// design focus ring on text fields. Verify we don't crash in this case.
-// https://crbug.com/862759
-TEST_F(AXRemoteHostTest, SendEventBeforeWidgetCreated) {
-  TestAXHostService service(true /*automation_enabled*/);
-  AXRemoteHost* remote = CreateRemote(&service);
-  views::View view;
-  remote->HandleEvent(&view, ax::mojom::Event::kLocationChanged);
-  // No crash.
-}
-
 // Verifies that the AXRemoteHost stops monitoring widgets that are closed
 // asynchronously, like when ash requests close via DesktopWindowTreeHostMus.
 // https://crbug.com/869608
@@ -230,6 +218,9 @@ TEST_F(AXRemoteHostTest, PerformAction) {
 
   // Create a view to sense the action.
   TestView view;
+  view.SetBounds(0, 0, 100, 100);
+  std::unique_ptr<Widget> widget = CreateTestWidget();
+  widget->GetRootView()->AddChildView(&view);
   AXAuraObjCache::GetInstance()->GetOrCreate(&view);
 
   // Request an action on the view.
