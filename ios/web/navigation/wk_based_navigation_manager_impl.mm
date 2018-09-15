@@ -441,6 +441,8 @@ bool WKBasedNavigationManagerImpl::CanPruneAllButLastCommittedItem() const {
 void WKBasedNavigationManagerImpl::Restore(
     int last_committed_item_index,
     std::vector<std::unique_ptr<NavigationItem>> items) {
+  WillRestore(items.size());
+
   DCHECK_LT(last_committed_item_index, static_cast<int>(items.size()));
   DCHECK(items.empty() || last_committed_item_index >= 0);
   if (items.empty())
