@@ -80,7 +80,7 @@ class BrowserTabStripController : public TabStripController,
   bool EverHasVisibleBackgroundTabShapes() const override;
   SkColor GetFrameColor() const override;
   SkColor GetToolbarTopSeparatorColor() const override;
-  SkColor GetTabBackgroundColor(TabState active, bool opaque) const override;
+  SkColor GetTabBackgroundColor(TabState active) const override;
   SkColor GetTabForegroundColor(TabState state) const override;
   int GetTabBackgroundResourceId(
       BrowserNonClientFrameView::ActiveState active_state,

@@ -1158,8 +1158,8 @@ SkColor TabStrip::GetTabSeparatorColor() const {
   return separator_color_;
 }
 
-SkColor TabStrip::GetTabBackgroundColor(TabState state, bool opaque) const {
-  return controller_->GetTabBackgroundColor(state, opaque);
+SkColor TabStrip::GetTabBackgroundColor(TabState state) const {
+  return controller_->GetTabBackgroundColor(state);
 }
 
 SkColor TabStrip::GetTabForegroundColor(TabState state) const {
@@ -1237,9 +1237,9 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     // opaque background before compositing, so it's safe to pass false for
     // |lcd_text_requires_opaque_layer| to allow LCD AA.  The GTK theme avoids
     // drawing backgrounds, however, and thus must fall back to greyscale AA.
-    // Checking whether the background alpha is zero distinguishes these cases.
-    bool has_background_color =
-        SkColorGetA(GetTabBackgroundColor(TAB_INACTIVE, false)) > 0;
+    // The check for SHOULD_FILL_BACKGROUND_TAB_COLOR distinguishes these cases.
+    bool has_background_color = GetThemeProvider()->GetDisplayProperty(
+        ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR);
     ui::CompositingRecorder opacity_recorder(
         paint_info.context(), GetInactiveAlpha(false), !has_background_color);
 
@@ -2106,9 +2106,8 @@ void TabStrip::UpdateContrastRatioValues() {
   if (!controller_)
     return;
 
-  const SkColor active_tab_bg_color = GetTabBackgroundColor(TAB_ACTIVE, true);
-  const SkColor inactive_tab_bg_color =
-      GetTabBackgroundColor(TAB_INACTIVE, true);
+  const SkColor active_tab_bg_color = GetTabBackgroundColor(TAB_ACTIVE);
+  const SkColor inactive_tab_bg_color = GetTabBackgroundColor(TAB_INACTIVE);
 
   // The contrast ratio for the hover effect on standard-width tabs.
   // In the default Refresh color scheme, this corresponds to a hover

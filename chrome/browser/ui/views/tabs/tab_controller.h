@@ -154,9 +154,8 @@ class TabController {
   virtual SkColor GetTabSeparatorColor() const = 0;
 
   // Returns the tab background color based on both the |state| of the tab and
-  // the activation state of the window.  If |opaque| is true, the resulting
-  // color after drawing the tab background on the frame will be returned.
-  virtual SkColor GetTabBackgroundColor(TabState state, bool opaque) const = 0;
+  // the activation state of the window.
+  virtual SkColor GetTabBackgroundColor(TabState state) const = 0;
 
   // Returns the tab foreground color of the the text based on both the |state|
   // of the tab and the activation state of the window.

@@ -486,6 +486,14 @@ bool GtkUi::GetColor(int id, SkColor* color, PrefService* pref_service) const {
   return false;
 }
 
+bool GtkUi::GetDisplayProperty(int id, int* result) const {
+  if (id == ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR) {
+    *result = 0;
+    return true;
+  }
+  return false;
+}
+
 SkColor GtkUi::GetFocusRingColor() const {
   return focus_ring_color_;
 }

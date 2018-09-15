@@ -109,7 +109,7 @@ class NewTabButton : public views::ImageButton,
   // Paints a properly sized plus (+) icon into the center of the button.
   void PaintPlusIcon(gfx::Canvas* canvas, int offset, int size);
 
-  SkColor GetButtonFillColor(bool opaque) const;
+  SkColor GetButtonFillColor() const;
   SkColor GetIconColor() const;
 
   // In the touch-optimized UI, initializes the incognito button icon.

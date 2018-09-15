@@ -796,6 +796,9 @@ int ThemeService::GetDisplayProperty(int id) const {
           GetColor(ThemeProperties::COLOR_NTP_BACKGROUND, false)) ? 0 : 1;
     }
 
+    case ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR:
+      return 1;
+
     default:
       return -1;
   }

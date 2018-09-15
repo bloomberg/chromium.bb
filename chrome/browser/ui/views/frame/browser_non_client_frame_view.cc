@@ -145,7 +145,7 @@ bool BrowserNonClientFrameView::HasVisibleBackgroundTabShapes(
 
   // Background tab shapes are visible iff the tab color differs from the frame
   // color.
-  return GetTabBackgroundColor(TAB_INACTIVE, true, active_state) !=
+  return GetTabBackgroundColor(TAB_INACTIVE, active_state) !=
          GetFrameColor(active_state);
 }
 
@@ -210,7 +210,6 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
 
 SkColor BrowserNonClientFrameView::GetTabBackgroundColor(
     TabState state,
-    bool opaque,
     ActiveState active_state) const {
   if (state == TAB_ACTIVE)
     return GetThemeOrDefaultColor(ThemeProperties::COLOR_TOOLBAR);
@@ -229,8 +228,7 @@ SkColor BrowserNonClientFrameView::GetTabBackgroundColor(
                 frame, tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB))
           : GetThemeOrDefaultColor(color_id);
 
-  return opaque ? color_utils::GetResultingPaintColor(background, frame)
-                : background;
+  return color_utils::GetResultingPaintColor(background, frame);
 }
 
 SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
@@ -242,7 +240,7 @@ SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
           ? ThemeProperties::COLOR_BACKGROUND_TAB_TEXT
           : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE;
   if (MD::IsRefreshUi() && !GetThemeProvider()->HasCustomColor(color_id)) {
-    const SkColor background_color = GetTabBackgroundColor(TAB_INACTIVE, true);
+    const SkColor background_color = GetTabBackgroundColor(TAB_INACTIVE);
     const SkColor default_color = color_utils::IsDark(background_color)
                                       ? gfx::kGoogleGrey500
                                       : gfx::kGoogleGrey700;
@@ -340,7 +338,7 @@ bool BrowserNonClientFrameView::ShouldDrawStrokes() const {
   // active frame color, to avoid toggling the stroke on and off as the window
   // activation state changes.
   return color_utils::GetContrastRatio(
-             GetTabBackgroundColor(TAB_ACTIVE, true, kActive),
+             GetTabBackgroundColor(TAB_ACTIVE, kActive),
              GetFrameColor(kActive)) < 1.3;
 }
 

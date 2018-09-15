@@ -91,7 +91,7 @@ class FakeTabController : public TabController {
   bool HasVisibleBackgroundTabShapes() const override { return false; }
   SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
-  SkColor GetTabBackgroundColor(TabState state, bool opaque) const override {
+  SkColor GetTabBackgroundColor(TabState state) const override {
     return gfx::kPlaceholderColor;
   }
   SkColor GetTabForegroundColor(TabState state) const override {

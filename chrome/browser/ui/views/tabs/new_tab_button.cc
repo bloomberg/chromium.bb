@@ -440,6 +440,7 @@ void NewTabButton::PaintFill(bool pressed,
     // First we compute the background image coordinates and scale, in case we
     // need to draw a custom background image.
     const ui::ThemeProvider* tp = GetThemeProvider();
+
     bool has_custom_image;
     const int bg_id = GetButtonFillResourceIdIfAny(
         tab_strip_, tp, non_refresh_touch_ui, &has_custom_image);
@@ -466,7 +467,7 @@ void NewTabButton::PaintFill(bool pressed,
           SkShader::kRepeat_TileMode, &flags);
       DCHECK(succeeded);
     } else {
-      flags.setColor(GetButtonFillColor(false));
+      flags.setColor(GetButtonFillColor());
     }
 
     cc::PaintFlags shadow_flags = flags;
@@ -529,13 +530,16 @@ void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas, int offset, int size) {
                    paint_flags);
 }
 
-SkColor NewTabButton::GetButtonFillColor(bool opaque) const {
+SkColor NewTabButton::GetButtonFillColor() const {
   if (new_tab_promo_observer_.IsObservingSources()) {
     return GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_ProminentButtonColor);
   }
 
-  return tab_strip_->GetTabBackgroundColor(TAB_INACTIVE, opaque);
+  return GetThemeProvider()->GetDisplayProperty(
+             ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR)
+             ? tab_strip_->GetTabBackgroundColor(TAB_INACTIVE)
+             : SK_ColorTRANSPARENT;
 }
 
 SkColor NewTabButton::GetIconColor() const {
@@ -645,5 +649,5 @@ void NewTabButton::UpdateInkDropBaseColor() {
   DCHECK(MD::IsNewerMaterialUi());
 
   set_ink_drop_base_color(color_utils::BlendTowardOppositeLuma(
-      GetButtonFillColor(true), SK_AlphaOPAQUE));
+      GetButtonFillColor(), SK_AlphaOPAQUE));
 }

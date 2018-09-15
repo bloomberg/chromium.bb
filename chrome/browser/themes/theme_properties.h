@@ -60,7 +60,7 @@ class ThemeProperties {
 
     NTP_BACKGROUND_ALIGNMENT,
     NTP_BACKGROUND_TILING,
-    NTP_LOGO_ALTERNATE
+    NTP_LOGO_ALTERNATE,
   };
 
   // A bitfield mask for alignments.
@@ -176,6 +176,8 @@ class ThemeProperties {
     // The color of the 1px border around the window on Windows 10.
     COLOR_ACCENT_BORDER,
 #endif  // OS_WIN
+
+    SHOULD_FILL_BACKGROUND_TAB_COLOR,
   };
 
   // Represents the lookup values for a theme property.
