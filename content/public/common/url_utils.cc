@@ -31,10 +31,7 @@ bool IsSavableURL(const GURL& url) {
   return false;
 }
 
-// PlzNavigate
 bool IsURLHandledByNetworkStack(const GURL& url) {
-  CHECK(IsBrowserSideNavigationEnabled());
-
   // Javascript URLs, srcdoc, schemes that don't load data should not send a
   // request to the network stack.
   if (url.SchemeIs(url::kJavaScriptScheme) || url.is_empty() ||

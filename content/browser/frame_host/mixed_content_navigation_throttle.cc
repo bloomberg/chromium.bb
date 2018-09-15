@@ -94,16 +94,12 @@ void UpdateRendererOnMixedContentFound(NavigationHandleImpl* navigation_handle,
 std::unique_ptr<NavigationThrottle>
 MixedContentNavigationThrottle::CreateThrottleForNavigation(
     NavigationHandle* navigation_handle) {
-  if (IsBrowserSideNavigationEnabled())
-    return base::WrapUnique(
-        new MixedContentNavigationThrottle(navigation_handle));
-  return nullptr;
+  return std::make_unique<MixedContentNavigationThrottle>(navigation_handle);
 }
 
 MixedContentNavigationThrottle::MixedContentNavigationThrottle(
     NavigationHandle* navigation_handle)
     : NavigationThrottle(navigation_handle) {
-  DCHECK(IsBrowserSideNavigationEnabled());
 }
 
 MixedContentNavigationThrottle::~MixedContentNavigationThrottle() {}

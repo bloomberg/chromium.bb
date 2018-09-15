@@ -19,9 +19,6 @@ std::unique_ptr<NavigationThrottle>
 FormSubmissionThrottle::MaybeCreateThrottleFor(NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!IsBrowserSideNavigationEnabled())
-    return nullptr;
-
   if (!handle->IsFormSubmission())
     return nullptr;
 
