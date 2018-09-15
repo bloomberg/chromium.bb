@@ -47655,6 +47655,19 @@ would be helpful to identify which type is being sent.
   <int value="2" label="Leave Chrome"/>
 </enum>
 
+<enum name="TabScreenshotAction">
+  <int value="0" label="User took no actions">
+    User made a screenshot, but did not take any actions with it before
+    navigating away or closing the tab.
+  </int>
+  <int value="1" label="Opened sharing">
+    User took a screenshot then tried to share.
+  </int>
+  <int value="2" label="Download IPH provided">
+    User was provided in product help for Downloads after taking a screenshot.
+  </int>
+</enum>
+
 <enum name="TabStatus">
   <int value="0" label="Memory resident"/>
   <int value="1" label="Evicted and reloaded"/>
