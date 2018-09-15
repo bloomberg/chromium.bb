@@ -72,7 +72,7 @@ class PreviewsServiceTest : public testing::Test {
   void SetUp() override {
     previews_decider_impl_ = std::make_unique<TestPreviewsDeciderImpl>();
 
-    service_ = std::make_unique<PreviewsService>();
+    service_ = std::make_unique<PreviewsService>(nullptr);
     base::FilePath file_path;
     service_->Initialize(previews_decider_impl_.get(),
                          nullptr /* optimization_guide_service */,

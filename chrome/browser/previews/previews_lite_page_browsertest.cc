@@ -254,6 +254,14 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
       }
     }
 
+    // The chrome-proxy header should have the pid option.
+    if (request.headers.find("chrome-proxy")->second.find(", pid=") ==
+        std::string::npos) {
+      response->set_code(
+          net::HttpStatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED);
+      return response;
+    }
+
     std::string code_query_param;
     int return_code = 0;
     if (net::GetValueForKeyInQuery(original_url, "resp", &code_query_param))

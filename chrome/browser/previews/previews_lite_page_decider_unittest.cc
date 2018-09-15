@@ -39,7 +39,7 @@ TEST_F(PreviewsLitePageDeciderTest, TestServerUnavailable) {
 
   for (const TestCase& test_case : kTestCases) {
     std::unique_ptr<PreviewsLitePageDecider> decider =
-        std::make_unique<PreviewsLitePageDecider>();
+        std::make_unique<PreviewsLitePageDecider>(nullptr);
     std::unique_ptr<base::SimpleTestTickClock> clock =
         std::make_unique<base::SimpleTestTickClock>();
     decider->SetClockForTesting(clock.get());
@@ -83,7 +83,7 @@ TEST_F(PreviewsLitePageDeciderTest, TestSingleBypass) {
 
   for (const TestCase& test_case : kTestCases) {
     std::unique_ptr<PreviewsLitePageDecider> decider =
-        std::make_unique<PreviewsLitePageDecider>();
+        std::make_unique<PreviewsLitePageDecider>(nullptr);
     std::unique_ptr<base::SimpleTestTickClock> clock =
         std::make_unique<base::SimpleTestTickClock>();
     decider->SetClockForTesting(clock.get());

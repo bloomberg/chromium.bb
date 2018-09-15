@@ -269,6 +269,12 @@ base::Optional<base::TimeDelta> DataReductionProxyService::GetHttpRttEstimate()
   return http_rtt_;
 }
 
+void DataReductionProxyService::SetProxyRequestHeadersOnUI(
+    const net::HttpRequestHeaders& headers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  settings_->SetProxyRequestHeaders(headers);
+}
+
 void DataReductionProxyService::LoadHistoricalDataUsage(
     const HistoricalDataUsageCallback& load_data_usage_callback) {
   std::unique_ptr<std::vector<DataUsageBucket>> data_usage(

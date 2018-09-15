@@ -21,7 +21,6 @@
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "net/http/http_request_headers.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 
@@ -35,6 +34,7 @@ class Value;
 }
 
 namespace net {
+class HttpRequestHeaders;
 class URLRequestContextGetter;
 }
 
@@ -147,16 +147,8 @@ class DataReductionProxyService
   net::EffectiveConnectionType GetEffectiveConnectionType() const;
   base::Optional<base::TimeDelta> GetHttpRttEstimate() const;
 
-  // Sets |proxy_request_headers_| with a forwarded value from the IO thread.
-  void SetProxyRequestHeaders(net::HttpRequestHeaders headers) {
-    proxy_request_headers_ = headers;
-  }
-
-  // Returns |proxy_request_headers_|. Note: The chrome-proxy header does not
-  // include the page id.
-  const net::HttpRequestHeaders& GetProxyRequestHeaders() const {
-    return proxy_request_headers_;
-  }
+  // Sends the given |headers| to |DataReductionProxySettings|.
+  void SetProxyRequestHeadersOnUI(const net::HttpRequestHeaders& headers);
 
   // Accessor methods.
   DataReductionProxyCompressionStats* compression_stats() const {
@@ -220,10 +212,6 @@ class DataReductionProxyService
 
   base::ObserverList<DataReductionProxyServiceObserver>::Unchecked
       observer_list_;
-
-  // Authentication headers for the Data Reduction Proxy, if any. This is
-  // forwarded from the IO thread in PostTask.
-  net::HttpRequestHeaders proxy_request_headers_;
 
   bool initialized_;
 
