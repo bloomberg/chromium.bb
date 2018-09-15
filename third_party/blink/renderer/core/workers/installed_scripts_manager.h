@@ -53,18 +53,11 @@ class InstalledScriptsManager {
   // installed.
   virtual bool IsScriptInstalled(const KURL& script_url) const = 0;
 
-  enum class ScriptStatus { kSuccess, kFailed };
-  // Used on the worker thread. GetScriptData() can provide a script for the
-  // |script_url| only once. When GetScriptData returns
-  // - ScriptStatus::kSuccess: the script has been received correctly. Sets
-  //                           |out_script_data| to the script.
-  // - ScriptStatus::kFailed: an error happened while receiving the script from
-  //                          the browser process. |out_script_data| is set to
-  //                          empty ScriptData.
+  // Used on the worker thread. Returning nullptr indicates an error
+  // happened while receiving the script from the browser process.
   // This can block if the script has not been received from the browser process
   // yet.
-  virtual ScriptStatus GetScriptData(const KURL& script_url,
-                                     ScriptData* out_script_data) = 0;
+  virtual std::unique_ptr<ScriptData> GetScriptData(const KURL& script_url) = 0;
 };
 
 }  // namespace blink

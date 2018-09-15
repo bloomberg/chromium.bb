@@ -135,31 +135,30 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
   if (installed_scripts_manager &&
       installed_scripts_manager->IsScriptInstalled(script_url)) {
     // GetScriptData blocks until the script is received from the browser.
-    InstalledScriptsManager::ScriptData script_data;
-    InstalledScriptsManager::ScriptStatus status =
-        installed_scripts_manager->GetScriptData(script_url, &script_data);
-    if (status == InstalledScriptsManager::ScriptStatus::kFailed) {
+    std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
+        installed_scripts_manager->GetScriptData(script_url);
+    if (!script_data) {
       close();
       return;
     }
 
     DCHECK(source_code.IsEmpty());
     DCHECK(!cached_meta_data);
-    source_code = script_data.TakeSourceText();
-    cached_meta_data = script_data.TakeMetaData();
+    source_code = script_data->TakeSourceText();
+    cached_meta_data = script_data->TakeMetaData();
 
     base::Optional<ContentSecurityPolicyResponseHeaders>
         content_security_policy_raw_headers =
-            script_data.GetContentSecurityPolicyResponseHeaders();
+            script_data->GetContentSecurityPolicyResponseHeaders();
     ApplyContentSecurityPolicyFromHeaders(
         content_security_policy_raw_headers.value());
 
-    String referrer_policy = script_data.GetReferrerPolicy();
+    String referrer_policy = script_data->GetReferrerPolicy();
     if (!referrer_policy.IsNull())
       ParseAndSetReferrerPolicy(referrer_policy);
 
     std::unique_ptr<Vector<String>> origin_trial_tokens =
-        script_data.CreateOriginTrialTokens();
+        script_data->CreateOriginTrialTokens();
     OriginTrialContext::AddTokens(this, origin_trial_tokens.get());
 
     ReportingProxy().DidLoadInstalledScript();
