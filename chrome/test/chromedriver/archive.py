@@ -46,7 +46,7 @@ def DownloadChrome(revision, dest_dir, site=Site.CHROMIUM_SNAPSHOT):
   """
   def GetZipName(revision):
     if util.IsWindows():
-      return revision + '/chrome-win32.zip'
+      return revision + '/chrome-win.zip'
     elif util.IsMac():
       return revision + '/chrome-mac.zip'
     elif util.IsLinux():
@@ -54,7 +54,7 @@ def DownloadChrome(revision, dest_dir, site=Site.CHROMIUM_SNAPSHOT):
 
   def GetDirName():
     if util.IsWindows():
-      return 'chrome-win32'
+      return 'chrome-win'
     elif util.IsMac():
       return 'chrome-mac'
     elif util.IsLinux():
