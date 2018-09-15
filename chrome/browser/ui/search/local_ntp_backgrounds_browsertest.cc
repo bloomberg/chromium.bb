@@ -253,6 +253,68 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   EXPECT_TRUE(result);
 }
 
+IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
+                       CustomBackgroundResetAfterChangeDefaultSearchEngine) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestThemeInfoObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Set a custom background image via the EmbeddedSearch API.
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab,
+      "window.chrome.embeddedSearch.newTabPage."
+      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
+      "')"));
+  observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
+                                   "", "", "");
+
+  // Check that the custom background element has the correct attribution with
+  // the scrim applied.
+  bool result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab,
+      "$('custom-bg').style.backgroundImage == 'linear-gradient(rgba(0, 0, 0, "
+      "0), rgba(0, 0, 0, 0.3)), "
+      "url(\"chrome-search://local-ntp/background1.jpg\")'",
+      &result));
+  ASSERT_TRUE(result);
+
+  // Change the default search engine to a non google one
+  local_ntp_test_utils::SetUserSelectedDefaultSearchProvider(
+      browser()->profile(), "https://www.example.com",
+      /*ntp_url=*/"");
+
+  // Open a new blank tab.
+  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  ASSERT_FALSE(search::IsInstantNTP(active_tab));
+
+  // Navigate to the NTP.
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  bool is_google = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!window.configData && !!window.configData.isGooglePage",
+      &is_google));
+  EXPECT_FALSE(is_google);
+
+  // Check that gear icon is not visible.
+  EXPECT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "$('edit-bg').hidden", &result));
+  EXPECT_TRUE(result);
+
+  // Check that the custom background image and attributes was cleared.
+  EXPECT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "$('custom-bg').backgroundImage === undefined", &result));
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "$('custom-bg-attr').hasChildNodes()", &result));
+  EXPECT_FALSE(result);
+}
+
 class LocalNTPCustomBackgroundsThemeTest
     : public extensions::ExtensionBrowserTest {
  public:
@@ -309,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background attribution via the EmbeddedSearch API.
-  EXPECT_TRUE(content::ExecuteScript(active_tab,
+  ASSERT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
                                      "setBackgroundURLWithAttributions('https:/"
                                      "/www.test.com/', 'attr1', 'attr2', "
@@ -320,26 +382,71 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   // Check that the custom background element has the correct attribution
   // applied.
   bool result = false;
-  EXPECT_TRUE(instant_test_utils::GetBoolFromJS(
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab,
       "document.querySelector('.attr1').innerText === 'attr1' && "
       "document.querySelector('.attr2').innerText === 'attr2'",
       &result));
   EXPECT_TRUE(result);
   // Apply a custom background still count as using default theme
-  EXPECT_TRUE(observer.IsUsingDefaultTheme());
+  ASSERT_TRUE(observer.IsUsingDefaultTheme());
 
   // Switch to waiting for the theme to get applied.
   observer.SwitchCheck();
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
   observer.WaitForThemeApplied(true);
-  EXPECT_FALSE(observer.IsUsingDefaultTheme());
+  ASSERT_FALSE(observer.IsUsingDefaultTheme());
 
   // Check that the custom background attribution is cleared after
   // a theme was applied.
-  EXPECT_TRUE(instant_test_utils::GetBoolFromJS(
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab, "$('custom-bg-attr').hasChildNodes()", &result));
   EXPECT_FALSE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
+                       RemoveBackgroundImageAfterThemeApplied) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestThemeInfoObserver observer(
+      InstantServiceFactory::GetForProfile(profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Set a custom background image via the EmbeddedSearch API.
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab,
+      "window.chrome.embeddedSearch.newTabPage."
+      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
+      "')"));
+  observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
+                                   "", "", "");
+
+  // Check that the custom background element has the correct attribution with
+  // the scrim applied.
+  bool result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab,
+      "$('custom-bg').style.backgroundImage === 'linear-gradient(rgba(0, 0, 0, "
+      "0), rgba(0, 0, 0, 0.3)), "
+      "url(\"chrome-search://local-ntp/background1.jpg\")'",
+      &result));
+  ASSERT_TRUE(result);
+  // Apply a custom background still count as using default theme
+  ASSERT_TRUE(observer.IsUsingDefaultTheme());
+
+  // Switch to waiting for the theme to get applied.
+  observer.SwitchCheck();
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
+  observer.WaitForThemeApplied(true);
+  ASSERT_FALSE(observer.IsUsingDefaultTheme());
+
+  // Check that the custom background image is hidden after a theme was
+  // applied.
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "$('custom-bg').style.opacity === '0'", &result));
+  EXPECT_TRUE(result);
 }
 
 }  // namespace
