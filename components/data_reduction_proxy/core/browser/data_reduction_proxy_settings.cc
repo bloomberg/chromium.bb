@@ -278,8 +278,28 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
 
 const net::HttpRequestHeaders&
 DataReductionProxySettings::GetProxyRequestHeaders() const {
-  DCHECK(data_reduction_proxy_service_);
-  return data_reduction_proxy_service_->GetProxyRequestHeaders();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return proxy_request_headers_;
+};
+
+void DataReductionProxySettings::SetProxyRequestHeaders(
+    const net::HttpRequestHeaders& headers) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  proxy_request_headers_ = headers;
+  for (auto& observer : proxy_request_headers_observers_)
+    observer.OnProxyRequestHeadersChanged(headers);
+}
+
+void DataReductionProxySettings::AddProxyRequestHeadersObserver(
+    ProxyRequestHeadersObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  proxy_request_headers_observers_.AddObserver(observer);
+}
+
+void DataReductionProxySettings::RemoveProxyRequestHeadersObserver(
+    ProxyRequestHeadersObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  proxy_request_headers_observers_.RemoveObserver(observer);
 }
 
 DataReductionProxyEventStore* DataReductionProxySettings::GetEventStore()

@@ -99,8 +99,9 @@ blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedPreviews() {
 
 }  // namespace
 
-PreviewsService::PreviewsService()
-    : previews_lite_page_decider_(std::make_unique<PreviewsLitePageDecider>()) {
+PreviewsService::PreviewsService(content::BrowserContext* browser_context)
+    : previews_lite_page_decider_(
+          std::make_unique<PreviewsLitePageDecider>(browser_context)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -131,4 +132,8 @@ void PreviewsService::Initialize(
           : nullptr,
       base::Bind(&IsPreviewsTypeEnabled),
       std::make_unique<previews::PreviewsLogger>(), GetAllowedPreviews());
+}
+
+void PreviewsService::Shutdown() {
+  previews_lite_page_decider_->Shutdown();
 }

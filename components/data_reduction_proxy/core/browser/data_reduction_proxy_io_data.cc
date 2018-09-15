@@ -463,10 +463,10 @@ void DataReductionProxyIOData::SetDataUseAscriber(
 }
 
 void DataReductionProxyIOData::UpdateProxyRequestHeaders(
-    net::HttpRequestHeaders headers) {
+    const net::HttpRequestHeaders& headers) {
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DataReductionProxyService::SetProxyRequestHeaders,
+      base::BindOnce(&DataReductionProxyService::SetProxyRequestHeadersOnUI,
                      service_, std::move(headers)));
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -18,8 +19,21 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
 
-PreviewsLitePageDecider::PreviewsLitePageDecider()
-    : clock_(base::DefaultTickClock::GetInstance()) {}
+PreviewsLitePageDecider::PreviewsLitePageDecider(
+    content::BrowserContext* browser_context)
+    : clock_(base::DefaultTickClock::GetInstance()),
+      page_id_(base::RandUint64()),
+      drp_settings_(nullptr) {
+  if (browser_context && !browser_context->IsOffTheRecord()) {
+    DataReductionProxyChromeSettings* drp_settings =
+        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+            browser_context);
+    DCHECK(drp_settings);
+
+    drp_settings_ = drp_settings;
+    drp_settings_->AddProxyRequestHeadersObserver(this);
+  }
+}
 
 PreviewsLitePageDecider::~PreviewsLitePageDecider() = default;
 
@@ -45,7 +59,7 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
   DCHECK(decider);
 
   // TODO(crbug/842233): Replace this logic with PreviewsState.
-  bool drp_enabled = decider->IsDataSaverEnabled(handle);
+  bool drp_enabled = decider->drp_settings_->IsDataReductionProxyEnabled();
   bool preview_enabled = previews::params::ArePreviewsAllowed() &&
                          previews::params::IsLitePageServerPreviewsEnabled();
 
@@ -56,22 +70,21 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
   return nullptr;
 }
 
-void PreviewsLitePageDecider::SetClockForTesting(const base::TickClock* clock) {
-  clock_ = clock;
+void PreviewsLitePageDecider::OnProxyRequestHeadersChanged(
+    const net::HttpRequestHeaders& headers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // This is done so that successive page ids cannot be used to track users
+  // across sessions. These sessions are contained in the chrome-proxy header.
+  page_id_ = base::RandUint64();
 }
 
-bool PreviewsLitePageDecider::IsDataSaverEnabled(
-    content::NavigationHandle* handle) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(handle);
-  DCHECK(handle->GetWebContents());
-  DCHECK(handle->GetWebContents()->GetBrowserContext());
+void PreviewsLitePageDecider::Shutdown() {
+  if (drp_settings_)
+    drp_settings_->RemoveProxyRequestHeadersObserver(this);
+}
 
-  DataReductionProxyChromeSettings* drp_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          handle->GetWebContents()->GetBrowserContext());
-  DCHECK(drp_settings);
-  return drp_settings->IsDataReductionProxyEnabled();
+void PreviewsLitePageDecider::SetClockForTesting(const base::TickClock* clock) {
+  clock_ = clock;
 }
 
 void PreviewsLitePageDecider::SetServerUnavailableFor(
@@ -93,6 +106,7 @@ bool PreviewsLitePageDecider::IsServerUnavailable() {
 }
 
 void PreviewsLitePageDecider::AddSingleBypass(std::string url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Garbage collect any old entries while looking for the one for |url|.
   auto entry = single_bypass_.end();
   for (auto iter = single_bypass_.begin(); iter != single_bypass_.end();
@@ -117,8 +131,14 @@ void PreviewsLitePageDecider::AddSingleBypass(std::string url) {
 }
 
 bool PreviewsLitePageDecider::CheckSingleBypass(std::string url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto entry = single_bypass_.find(url);
   if (entry == single_bypass_.end())
     return false;
   return entry->second >= clock_->NowTicks();
+}
+
+uint64_t PreviewsLitePageDecider::GeneratePageID() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return ++page_id_;
 }

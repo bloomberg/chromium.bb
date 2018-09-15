@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
@@ -53,6 +54,15 @@ enum DataReductionSettingsEnabledAction {
   DATA_REDUCTION_SETTINGS_ACTION_OFF_TO_ON = 0,
   DATA_REDUCTION_SETTINGS_ACTION_ON_TO_OFF,
   DATA_REDUCTION_SETTINGS_ACTION_BOUNDARY,
+};
+
+// Classes may derive from |ProxyRequestHeadersObserver| and register as an
+// observer of |DataReductionProxySettings| to get notified when the proxy
+// request headers change.
+class ProxyRequestHeadersObserver {
+ public:
+  virtual void OnProxyRequestHeadersChanged(
+      const net::HttpRequestHeaders& headers) = 0;
 };
 
 // Central point for configuring the data reduction proxy.
@@ -134,8 +144,19 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // called in response to creating or loading a new profile.
   void MaybeActivateDataReductionProxy(bool at_startup);
 
+  // Sets the headers to use for requests to the compression server.
+  void SetProxyRequestHeaders(const net::HttpRequestHeaders& headers);
+
   // Returns headers to use for requests to the compression server.
   const net::HttpRequestHeaders& GetProxyRequestHeaders() const;
+
+  // Adds an observer that is notified every time the proxy request headers
+  // change.
+  void AddProxyRequestHeadersObserver(ProxyRequestHeadersObserver* observer);
+
+  // Removes an observer that is notified every time the proxy request headers
+  // change.
+  void RemoveProxyRequestHeadersObserver(ProxyRequestHeadersObserver* observer);
 
   // Returns the event store being used. May be null if
   // InitDataReductionProxySettings has not been called.
@@ -276,6 +297,13 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   // Should not be null.
   base::Clock* clock_;
+
+  // Observers to notify when the proxy request headers change.
+  base::ObserverList<ProxyRequestHeadersObserver>::Unchecked
+      proxy_request_headers_observers_;
+
+  // The headers to use for requests to the proxy server.
+  net::HttpRequestHeaders proxy_request_headers_;
 
   base::ThreadChecker thread_checker_;
 

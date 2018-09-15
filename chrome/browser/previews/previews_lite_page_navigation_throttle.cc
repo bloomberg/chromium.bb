@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -38,6 +39,8 @@
 #include "url/gurl.h"
 
 namespace {
+
+constexpr char kChromeProxyHeader[] = "chrome-proxy";
 
 bool IsPreviewsDomain(const GURL& url) {
   GURL previews_host = previews::params::GetLitePagePreviewsDomainURL();
@@ -247,7 +250,20 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
                                 g_browser_process->network_quality_tracker()
                                     ->GetEffectiveConnectionType()));
 
-  // TODO(crbug.com/883955): Add in page id to the chrome-proxy header.
+  // Add in the page id to the chrome-proxy header.
+  if (request_headers.HasHeader(kChromeProxyHeader)) {
+    std::string header_value;
+    request_headers.GetHeader(kChromeProxyHeader, &header_value);
+
+    // 64 bit uint fits in 16 characters when represented in hexadecimal, but
+    // there needs to be a trailing null terminated character in the buffer.
+    char page_id_buffer[17];
+    base::strings::SafeSPrintf(page_id_buffer, "%x",
+                               manager_->GeneratePageID());
+    header_value += ", pid=" + std::string(page_id_buffer);
+    request_headers.SetHeader(kChromeProxyHeader, header_value);
+  }
+
   content::OpenURLParams url_params = MakeOpenURLParams(
       navigation_handle(), GetPreviewsURL(), request_headers.ToString());
   return CreateNewNavigation(url_params);
