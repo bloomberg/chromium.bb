@@ -5,8 +5,6 @@
 #ifndef WEBRUNNER_BROWSER_WEBRUNNER_BROWSER_CONTEXT_H_
 #define WEBRUNNER_BROWSER_WEBRUNNER_BROWSER_CONTEXT_H_
 
-#include <memory>
-
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_context.h"
@@ -18,7 +16,7 @@ class WebRunnerURLRequestContextGetter;
 
 class WebRunnerBrowserContext : public content::BrowserContext {
  public:
-  WebRunnerBrowserContext();
+  explicit WebRunnerBrowserContext(base::FilePath data_dir_path);
   ~WebRunnerBrowserContext() override;
 
   // BrowserContext implementation.
@@ -55,6 +53,8 @@ class WebRunnerBrowserContext : public content::BrowserContext {
  private:
   // Contains URLRequestContextGetter required for resource loading.
   class ResourceContext;
+
+  const base::FilePath data_dir_path_;
 
   std::unique_ptr<WebRunnerNetLog> net_log_;
   scoped_refptr<WebRunnerURLRequestContextGetter> url_request_getter_;

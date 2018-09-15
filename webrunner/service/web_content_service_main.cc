@@ -4,9 +4,7 @@
 
 #include <zircon/process.h>
 
-#include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
-#include "base/files/file_util.h"
 #include "content/public/app/content_main.h"
 #include "services/service_manager/embedder/switches.h"
 #include "webrunner/service/common.h"
@@ -33,11 +31,6 @@ int main(int argc, const char** argv) {
     // |context_channel| set
     if (!context_channel)
       return webrunner::ContextProviderMain();
-  }
-
-  // Configure PathService to use the persistent data path, if it was set.
-  if (base::PathExists(base::FilePath(webrunner::kWebContextDataPath))) {
-    base::SetPersistentDataPath(base::FilePath(webrunner::kWebContextDataPath));
   }
 
   webrunner::WebRunnerMainDelegate delegate(std::move(context_channel));

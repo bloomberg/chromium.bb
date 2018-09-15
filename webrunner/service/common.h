@@ -9,6 +9,10 @@
 
 #include "webrunner/common/webrunner_export.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace webrunner {
 // This file contains constants and functions shared between Context and
 // ContextProvider processes.
@@ -17,12 +21,17 @@ namespace webrunner {
 // Context process.
 constexpr uint32_t kContextRequestHandleId = PA_HND(PA_USER0, 0);
 
-// Path to the directory used to store persistent data in the Context process.
-WEBRUNNER_EXPORT extern const char kWebContextDataPath[];
+// Path to the direct used to store persistent data in context process.
+extern const char kWebContextDataPath[];
 
 // Switch passed to content process when running in incognito mode, i.e. when
 // there is no kWebContextDataPath.
 WEBRUNNER_EXPORT extern const char kIncognitoSwitch[];
+
+// Returns data directory that should be used by this context process. Should
+// not be called in ContextProvider. Empty path is returned if the context
+// doesn't have storage dir.
+WEBRUNNER_EXPORT base::FilePath GetWebContextDataDir();
 
 }  // namespace webrunner
 
