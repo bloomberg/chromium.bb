@@ -1792,4 +1792,53 @@ unsigned ShapeResult::CharacterPositionData::PreviousSafeToBreakOffset(
   return 0;
 }
 
+namespace {
+
+void AddRunInfoRanges(const ShapeResult::RunInfo& run_info,
+                      float offset,
+                      Vector<CharacterRange>* ranges) {
+  Vector<float> character_widths(run_info.num_characters_);
+  for (const auto& glyph : run_info.glyph_data_)
+    character_widths[glyph.character_index] += glyph.advance;
+
+  if (run_info.Rtl())
+    offset += run_info.width_;
+
+  for (unsigned character_index = 0; character_index < run_info.num_characters_;
+       character_index++) {
+    float start = offset;
+    offset += character_widths[character_index] * (run_info.Rtl() ? -1 : 1);
+    float end = offset;
+
+    // To match getCharacterRange we flip ranges to ensure start <= end.
+    if (end < start)
+      ranges->push_back(CharacterRange(end, start, 0, 0));
+    else
+      ranges->push_back(CharacterRange(start, end, 0, 0));
+  }
+}
+
+}  // anonymous namespace
+
+float ShapeResult::IndividualCharacterRanges(Vector<CharacterRange>* ranges,
+                                             float start_x) const {
+  DCHECK(ranges);
+  float current_x = start_x;
+
+  if (Rtl()) {
+    unsigned run_count = runs_.size();
+    for (int index = run_count - 1; index >= 0; index--) {
+      current_x -= runs_[index]->width_;
+      AddRunInfoRanges(*runs_[index], current_x, ranges);
+    }
+  } else {
+    for (const auto& run : runs_) {
+      AddRunInfoRanges(*run, current_x, ranges);
+      current_x += run->width_;
+    }
+  }
+
+  return current_x;
+}
+
 }  // namespace blink

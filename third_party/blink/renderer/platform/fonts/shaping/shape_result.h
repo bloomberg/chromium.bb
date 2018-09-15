@@ -136,6 +136,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   CharacterRange GetCharacterRange(const StringView& text,
                                    unsigned from,
                                    unsigned to) const;
+  // TODO(eae): Remove start_x and return value once ShapeResultBuffer has been
+  // removed.
+  float IndividualCharacterRanges(Vector<CharacterRange>* ranges,
+                                  float start_x = 0) const;
+
   // The character start/end index of a range shape result.
   unsigned StartIndexForResult() const { return start_index_; }
   unsigned EndIndexForResult() const { return start_index_ + num_characters_; }
