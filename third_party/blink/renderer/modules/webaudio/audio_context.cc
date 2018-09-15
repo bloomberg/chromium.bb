@@ -105,8 +105,8 @@ AudioContext* AudioContext::Create(Document& document,
   if (RuntimeEnabledFeatures::AutoplayIgnoresWebAudioEnabled()) {
     document.AddConsoleMessage(ConsoleMessage::Create(
         kOtherMessageSource, kWarningMessageLevel,
-        "The Web Audio autoplay policy will be re-enabled in Chrome 70 (October"
-        " 2018). Please check that your website is compatible with it. "
+        "The Web Audio autoplay policy will be re-enabled in Chrome 71 ("
+        "December 2018). Please check that your website is compatible with it. "
         "https://goo.gl/7K7WLu"));
   }
 

@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 21: The Web Audio autoplay policy will be re-enabled in Chrome 70 (October 2018). Please check that your website is compatible with it. https://goo.gl/7K7WLu
+CONSOLE WARNING: line 21: The Web Audio autoplay policy will be re-enabled in Chrome 71 (December 2018). Please check that your website is compatible with it. https://goo.gl/7K7WLu
 MediaElementAudioSourceNode with same-origin source
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
