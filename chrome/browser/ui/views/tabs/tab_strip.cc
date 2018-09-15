@@ -1232,11 +1232,16 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   Tabs selected_and_hovered_tabs;
 
   {
-    // We pass false for |lcd_text_requires_opaque_layer| so that background
-    // tab titles will get LCD AA.  These are rendered opaquely on an opaque tab
-    // background before the layer is composited, so this is safe.
-    ui::CompositingRecorder opacity_recorder(paint_info.context(),
-                                             GetInactiveAlpha(false), false);
+    // Using transparency here normally disables LCD AA on title text in favor
+    // of greyscale AA.  In most cases, the tabs will be rendered opaquely on an
+    // opaque background before compositing, so it's safe to pass false for
+    // |lcd_text_requires_opaque_layer| to allow LCD AA.  The GTK theme avoids
+    // drawing backgrounds, however, and thus must fall back to greyscale AA.
+    // Checking whether the background alpha is zero distinguishes these cases.
+    bool has_background_color =
+        SkColorGetA(GetTabBackgroundColor(TAB_INACTIVE, false)) > 0;
+    ui::CompositingRecorder opacity_recorder(
+        paint_info.context(), GetInactiveAlpha(false), !has_background_color);
 
     // Under refresh, the different tab shape can lead to odd painting artifacts
     // of hovered background tabs due to the painting order. This manifests as
