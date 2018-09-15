@@ -37,10 +37,20 @@
         display: flex;
         justify-content: space-between;
       }
+
+      a[href] {
+        color: var(--google-blue-700);
+        text-decoration: none;
+      }
     </style>
     <div id="permissions-mode">
-      <div class="mid-section-header">
-        $i18n{hostPermissionsHeading}
+      <div>
+        <div class="mid-section-header">
+          $i18n{hostPermissionsHeading}
+        </div>
+        <div>
+          $i18nRaw{hostPermissionsLearnMoreLink}
+        </div>
       </div>
       <select id="host-access" class="md-select"
           value="[[permissions.hostAccess]]"
