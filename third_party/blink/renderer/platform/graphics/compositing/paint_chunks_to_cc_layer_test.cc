@@ -1223,5 +1223,75 @@ TEST_F(PaintChunksToCcLayerTest, NoopEffectDoesNotEmitItems) {
               }));
 }
 
+// These tests are testing error recovery path that are only used in
+// release builds. A DCHECK'd build will trap instead.
+#if !DCHECK_IS_ON()
+TEST_F(PaintChunksToCcLayerTest, SPv1ChunkEscapeLayerClipFailSafe) {
+  ScopedSlimmingPaintV2ForTest spv2_disabler(false);
+  // This test verifies the fail-safe path correctly recovers from a malformed
+  // chunk that escaped its layer's clip.
+  FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
+  auto c1 = CreateClip(c0(), &t0(), clip_rect);
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c0(), e0());
+  chunks.AddChunk(t0(), *c1, e0());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState(&t0(), c1.get(), &e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  // We don't care about the exact output as long as it didn't crash.
+}
+
+TEST_F(PaintChunksToCcLayerTest, SPv1ChunkEscapeEffectClipFailSafe) {
+  ScopedSlimmingPaintV2ForTest spv2_disabler(false);
+  // This test verifies the fail-safe path correctly recovers from a malformed
+  // chunk that escaped its effect's clip.
+  FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
+  auto c1 = CreateClip(c0(), &t0(), clip_rect);
+  CompositorFilterOperations filter;
+  filter.AppendBlurFilter(5);
+  auto e1 = CreateFilterEffect(e0(), &t0(), c1.get(), std::move(filter));
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), *c1, *e1);
+  chunks.AddChunk(t0(), c0(), *e1);
+  chunks.AddChunk(t0(), *c1, *e1);
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState(&t0(), &c0(), &e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  // We don't care about the exact output as long as it didn't crash.
+}
+
+TEST_F(PaintChunksToCcLayerTest, SPv1ChunkEscapeLayerClipDoubleFault) {
+  ScopedSlimmingPaintV2ForTest spv2_disabler(false);
+  // This test verifies the fail-safe path correctly recovers from a series of
+  // malformed chunks that escaped their layer's clip.
+  FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
+  auto c1 = CreateClip(c0(), &t0(), clip_rect);
+  auto c2 = CreateClip(c0(), &t0(), clip_rect);
+  auto c3 = CreateClip(c0(), &t0(), clip_rect);
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), *c2, e0());
+  chunks.AddChunk(t0(), *c3, e0());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState(&t0(), c1.get(), &e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  // We don't care about the exact output as long as it didn't crash.
+}
+#endif
+
 }  // namespace
 }  // namespace blink
