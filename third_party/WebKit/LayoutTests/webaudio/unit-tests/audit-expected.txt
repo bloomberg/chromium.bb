@@ -1,5 +1,5 @@
 CONSOLE ERROR: line 39: [audit.js] this test requires the explicit comparison with the expected result when it runs with run_web_tests.py.
-CONSOLE WARNING: line 61: The Web Audio autoplay policy will be re-enabled in Chrome 70 (October 2018). Please check that your website is compatible with it. https://goo.gl/7K7WLu
+CONSOLE WARNING: line 61: The Web Audio autoplay policy will be re-enabled in Chrome 71 (December 2018). Please check that your website is compatible with it. https://goo.gl/7K7WLu
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "  1 is equal to 1."
 PASS # AUDIT TASK RUNNER STARTED.
