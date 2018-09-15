@@ -190,6 +190,9 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // we trigger a (rare) re-layout case will we need to rebuild the
   // derived_geometry_ data-structure.
   struct DerivedGeometry {
+    USING_FAST_MALLOC(DerivedGeometry);
+
+   public:
     DerivedGeometry();
     DerivedGeometry(DerivedGeometry&& o) noexcept = default;
 
