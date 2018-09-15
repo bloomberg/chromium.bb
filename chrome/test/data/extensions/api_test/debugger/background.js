@@ -298,6 +298,58 @@ chrome.test.getConfig(config => chrome.test.runTests([
     });
   },
 
+  function offlineErrorPage() {
+    const url = 'http://127.0.0.1//extensions/api_test/debugger/inspected.html';
+    chrome.tabs.create({url: url}, function(tab) {
+      var debuggee = {tabId: tab.id};
+      var failed = false;
+
+      function onAttach() {
+        chrome.debugger.sendCommand(debuggee, 'Network.enable', null,
+            () => chrome.test.assertNoLastError());
+        var offlineParams = { offline: true, latency: 0,
+            downloadThroughput: 0, uploadThroughput: 0 };
+        chrome.debugger.sendCommand(debuggee,
+            'Network.emulateNetworkConditions',
+            offlineParams, onOffline);
+      }
+
+      function onOffline() {
+        chrome.test.assertNoLastError();
+        chrome.debugger.sendCommand(debuggee, 'Page.enable', null,
+            () => chrome.test.assertNoLastError());
+        chrome.debugger.sendCommand(debuggee, 'Page.reload', null,
+            () => chrome.test.assertNoLastError());
+      }
+
+      function cleanup(detach) {
+        chrome.debugger.onDetach.removeListener(onDetach);
+        chrome.debugger.onEvent.removeListener(onEvent);
+        if (detach)
+          chrome.debugger.detach(debuggee);
+        chrome.tabs.remove(tab.id);
+      }
+
+      function onDetach() {
+        failed = true;
+        cleanup(false);
+        chrome.test.fail('Detached before navigated to error page');
+      }
+
+      function onEvent(_, method, params) {
+        if (failed || method !== 'Page.frameNavigated')
+          return;
+        cleanup(true);
+        chrome.test.assertNoLastError();
+        chrome.test.succeed();
+      }
+
+      chrome.debugger.attach(debuggee, protocolVersion, onAttach);
+      chrome.debugger.onDetach.addListener(onDetach);
+      chrome.debugger.onEvent.addListener(onEvent);
+    });
+  },
+
   function autoAttachToOOPIF() {
     if (!config.customArg) {
       chrome.test.succeed();
