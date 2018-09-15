@@ -45,51 +45,6 @@ inline int FudgeFactor() {
 CORE_EXPORT bool IsSpatialNavigationEnabled(const LocalFrame*);
 bool SpatialNavigationIgnoresEventHandlers(const LocalFrame*);
 
-// Spatially speaking, two given elements in a web page can be:
-// 1) Fully aligned: There is a full intersection between the rects, either
-//    vertically or horizontally.
-//
-// * Horizontally       * Vertically
-//    _
-//   |_|                   _ _ _ _ _ _
-//   |_|...... _          |_|_|_|_|_|_|
-//   |_|      |_|         .       .
-//   |_|......|_|   OR    .       .
-//   |_|      |_|         .       .
-//   |_|......|_|          _ _ _ _
-//   |_|                  |_|_|_|_|
-//
-//
-// 2) Partially aligned: There is a partial intersection between the rects,
-//    either vertically or horizontally.
-//
-// * Horizontally       * Vertically
-//    _                   _ _ _ _ _
-//   |_|                 |_|_|_|_|_|
-//   |_|.... _      OR           . .
-//   |_|    |_|                  . .
-//   |_|....|_|                  ._._ _
-//          |_|                  |_|_|_|
-//          |_|
-//
-// 3) Or, otherwise, not aligned at all.
-//
-// * Horizontally       * Vertically
-//         _              _ _ _ _
-//        |_|            |_|_|_|_|
-//        |_|                    .
-//        |_|                     .
-//       .          OR             .
-//    _ .                           ._ _ _ _ _
-//   |_|                            |_|_|_|_|_|
-//   |_|
-//   |_|
-//
-// "Totally Aligned" elements are preferable candidates to move
-// focus to over "Partially Aligned" ones, that on its turns are
-// more preferable than "Not Aligned".
-enum RectsAlignment { kNone = 0, kPartial, kFull };
-
 struct FocusCandidate {
   STACK_ALLOCATED();
 
