@@ -147,6 +147,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   explicit ResourceResponse(const KURL&);
   ResourceResponse(const ResourceResponse&);
   ResourceResponse& operator=(const ResourceResponse&);
+  ~ResourceResponse();
 
   bool IsNull() const { return is_null_; }
   bool IsHTTP() const;

@@ -154,6 +154,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   SimpleFontData(const FontPlatformData&,
                  scoped_refptr<CustomFontData> custom_data,
                  bool subpixel_ascent_descent = false);
+  ~SimpleFontData() override;
 
  private:
   void PlatformInit(bool subpixel_ascent_descent);
