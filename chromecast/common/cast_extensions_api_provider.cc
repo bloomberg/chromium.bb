@@ -14,7 +14,6 @@
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/automation.h"
-#include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/shell/grit/app_shell_resources.h"
 
@@ -62,7 +61,6 @@ void CastExtensionsAPIProvider::AddPermissionsProviders(
 void CastExtensionsAPIProvider::RegisterManifestHandlers() {
   (new AutomationHandler)->Register();  // TODO(crbug/837773) De-dupe later.
   (new chromecast::CastRedirectHandler)->Register();
-  (new ContentScriptsHandler)->Register();
 }
 
 }  // namespace extensions
