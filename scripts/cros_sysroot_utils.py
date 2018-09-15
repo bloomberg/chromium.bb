@@ -55,8 +55,6 @@ def ParseArgs(argv):
                        help='File to write the configuration into. If not '
                        'specified, the configuration will be printed to '
                        'stdout.')
-  binhost.add_argument('--chrome-only', dest='chrome_only', action='store_true',
-                       help='Generate only the chrome binhost.')
   binhost.add_argument('--local-only', dest='local_only', action='store_true',
                        help='Use compatible local boards only.')
   binhost.set_defaults(command='generate-binhosts')
@@ -89,5 +87,4 @@ def main(argv):
   elif opts.command == 'generate-make-conf':
     output.write('\n' + sysroot.GenerateMakeConf(opts.accepted_licenses))
   elif opts.command == 'generate-binhosts':
-    output.write('\n' + sysroot.GenerateBinhostConf(opts.chrome_only,
-                                                    opts.local_only))
+    output.write('\n' + sysroot.GenerateBinhostConf(opts.local_only))

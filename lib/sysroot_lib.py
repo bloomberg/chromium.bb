@@ -368,11 +368,10 @@ class Sysroot(object):
 
     return '\n'.join(config)
 
-  def GenerateBinhostConf(self, chrome_only=False, local_only=False):
+  def GenerateBinhostConf(self, local_only=False):
     """Returns the binhost configuration.
 
     Args:
-      chrome_only: If True, generate only the binhost for chrome.
       local_only: If True, use binary packages from local boards only.
     """
     board = self.GetStandardField(STANDARD_FIELD_BOARD_USE)
@@ -392,13 +391,6 @@ class Sysroot(object):
     chrome_binhost = board and self._ChromeBinhost(board)
     preflight_binhost, preflight_binhost_internal = self._PreflightBinhosts(
         board)
-
-    if chrome_only:
-      if chrome_binhost:
-        return '\n'.join(['source %s' % chrome_binhost,
-                          'PORTAGE_BINHOST="$LATEST_RELEASE_CHROME_BINHOST"'])
-      else:
-        return ''
 
     config.append("""
 # FULL_BINHOST is populated by the full builders. It is listed first because it
