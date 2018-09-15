@@ -267,6 +267,8 @@ component("gpu") {
       "windows/d3d11_video_decoder_client.h",
       "windows/d3d11_video_decoder_impl.cc",
       "windows/d3d11_video_decoder_impl.h",
+      "windows/d3d11_vp9_accelerator.cc",
+      "windows/d3d11_vp9_accelerator.h",
       "windows/d3d11_vp9_picture.cc",
       "windows/d3d11_vp9_picture.h",
       "windows/dxva_picture_buffer_win.cc",
@@ -328,6 +330,8 @@ source_set("common") {
     "h264_decoder.h",
     "h264_dpb.cc",
     "h264_dpb.h",
+    "vp9_decoder.cc",
+    "vp9_decoder.h",
     "vp9_picture.cc",
     "vp9_picture.h",
   ]
@@ -340,8 +344,6 @@ source_set("common") {
       "vp8_picture.h",
       "vp8_reference_frame_vector.cc",
       "vp8_reference_frame_vector.h",
-      "vp9_decoder.cc",
-      "vp9_decoder.h",
     ]
   }
 

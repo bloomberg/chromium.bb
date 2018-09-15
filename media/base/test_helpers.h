@@ -90,6 +90,9 @@ class TestVideoConfig {
   static VideoDecoderConfig Normal(VideoCodec codec = kCodecVP8);
   static VideoDecoderConfig NormalH264(
       VideoCodecProfile = VIDEO_CODEC_PROFILE_UNKNOWN);
+  static VideoDecoderConfig NormalCodecProfile(
+      VideoCodec codec = kCodecVP8,
+      VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN);
   static VideoDecoderConfig NormalEncrypted(VideoCodec codec = kCodecVP8);
   static VideoDecoderConfig NormalRotated(VideoRotation rotation);
 
