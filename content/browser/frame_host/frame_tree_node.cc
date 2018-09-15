@@ -415,8 +415,6 @@ void FrameTreeNode::TransferNavigationRequestOwnership(
 
 void FrameTreeNode::CreatedNavigationRequest(
     std::unique_ptr<NavigationRequest> navigation_request) {
-  CHECK(IsBrowserSideNavigationEnabled());
-
   // This is never called when navigating to a Javascript URL. For the loading
   // state, this matches what Blink is doing: Blink doesn't send throbber
   // notifications for Javascript URLS.
@@ -452,7 +450,6 @@ void FrameTreeNode::CreatedNavigationRequest(
 
 void FrameTreeNode::ResetNavigationRequest(bool keep_state,
                                            bool inform_renderer) {
-  CHECK(IsBrowserSideNavigationEnabled());
   if (!navigation_request_)
     return;
 
@@ -543,19 +540,17 @@ void FrameTreeNode::DidChangeLoadProgress(double load_progress) {
 }
 
 bool FrameTreeNode::StopLoading() {
-  if (IsBrowserSideNavigationEnabled()) {
-    if (navigation_request_) {
-      int expected_pending_nav_entry_id = navigation_request_->nav_entry_id();
-      if (navigation_request_->navigation_handle()) {
-        navigation_request_->navigation_handle()->set_net_error_code(
-            net::ERR_ABORTED);
-        expected_pending_nav_entry_id =
-            navigation_request_->navigation_handle()->pending_nav_entry_id();
-      }
-      navigator_->DiscardPendingEntryIfNeeded(expected_pending_nav_entry_id);
+  if (navigation_request_) {
+    int expected_pending_nav_entry_id = navigation_request_->nav_entry_id();
+    if (navigation_request_->navigation_handle()) {
+      navigation_request_->navigation_handle()->set_net_error_code(
+          net::ERR_ABORTED);
+      expected_pending_nav_entry_id =
+          navigation_request_->navigation_handle()->pending_nav_entry_id();
     }
-    ResetNavigationRequest(false, true);
+    navigator_->DiscardPendingEntryIfNeeded(expected_pending_nav_entry_id);
   }
+  ResetNavigationRequest(false, true);
 
   // TODO(nasko): see if child frames should send IPCs in site-per-process
   // mode.

@@ -57,9 +57,9 @@ static void StartOnUIThread(
   RenderFrameHost* frame_host =
       RenderFrameHost::FromID(render_process_id, render_frame_id);
 
-  // PlzNavigate: navigations don't have associated RenderFrameHosts. Get the
-  // SiteInstance from the FrameTreeNode.
-  if (!frame_host && IsBrowserSideNavigationEnabled()) {
+  // Navigations don't have associated RenderFrameHosts. Get the SiteInstance
+  // from the FrameTreeNode.
+  if (!frame_host) {
     FrameTreeNode* frame_tree_node =
         FrameTreeNode::GloballyFindByID(frame_tree_node_id);
     if (frame_tree_node)
