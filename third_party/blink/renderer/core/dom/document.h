@@ -419,8 +419,6 @@ class CORE_EXPORT Document : public ContainerNode,
     has_xml_declaration_ = has_xml_declaration ? 1 : 0;
   }
 
-  String origin() const;
-
   String visibilityState() const;
   mojom::PageVisibilityState GetPageVisibilityState() const;
   bool hidden() const;

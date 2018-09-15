@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1103 tests; 1082 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1103 tests; 1079 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Partial interface Window: original interface defined
 PASS Event interface: existence and properties of interface object
@@ -233,7 +233,7 @@ FAIL Document interface: existence and properties of interface prototype object'
 PASS Document interface: attribute implementation
 PASS Document interface: attribute URL
 PASS Document interface: attribute documentURI
-PASS Document interface: attribute origin
+FAIL Document interface: attribute origin assert_true: The prototype object must have a property "origin" expected true got false
 PASS Document interface: attribute compatMode
 PASS Document interface: attribute characterSet
 PASS Document interface: attribute charset
@@ -273,7 +273,7 @@ PASS Stringification of new Document()
 PASS Document interface: new Document() must inherit property "implementation" with the proper type
 PASS Document interface: new Document() must inherit property "URL" with the proper type
 PASS Document interface: new Document() must inherit property "documentURI" with the proper type
-PASS Document interface: new Document() must inherit property "origin" with the proper type
+FAIL Document interface: new Document() must inherit property "origin" with the proper type assert_inherits: property "origin" not found in prototype chain
 PASS Document interface: new Document() must inherit property "compatMode" with the proper type
 PASS Document interface: new Document() must inherit property "characterSet" with the proper type
 PASS Document interface: new Document() must inherit property "charset" with the proper type
@@ -346,7 +346,7 @@ PASS Stringification of xmlDoc
 PASS Document interface: xmlDoc must inherit property "implementation" with the proper type
 PASS Document interface: xmlDoc must inherit property "URL" with the proper type
 PASS Document interface: xmlDoc must inherit property "documentURI" with the proper type
-PASS Document interface: xmlDoc must inherit property "origin" with the proper type
+FAIL Document interface: xmlDoc must inherit property "origin" with the proper type assert_inherits: property "origin" not found in prototype chain
 PASS Document interface: xmlDoc must inherit property "compatMode" with the proper type
 PASS Document interface: xmlDoc must inherit property "characterSet" with the proper type
 PASS Document interface: xmlDoc must inherit property "charset" with the proper type

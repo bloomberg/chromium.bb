@@ -43,7 +43,6 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [ImplementedAs=urlForBinding] readonly attribute USVString URL;
     // FIXME: documentURI should not be nullable.
     [ImplementedAs=urlForBinding] readonly attribute USVString? documentURI;
-    [DeprecateAs=DocumentOrigin] readonly attribute USVString origin;
     readonly attribute DOMString compatMode;
 
     readonly attribute DOMString characterSet;

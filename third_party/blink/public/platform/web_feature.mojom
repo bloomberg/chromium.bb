@@ -1315,7 +1315,6 @@ enum WebFeature {
   kHTMLDocumentCreateProcessingInstruction = 1825,
   kFetchResponseConstructionWithStream = 1826,
   kLocationOrigin = 1827,
-  kDocumentOrigin = 1828,
   kCanvas2DFilter = 1830,
   kCanvas2DImageSmoothingQuality = 1831,
   kCanvasToBlob = 1832,
