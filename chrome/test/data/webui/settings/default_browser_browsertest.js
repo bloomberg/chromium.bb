@@ -29,7 +29,8 @@ cr.define('settings_default_browser', function() {
     /** @override */
     requestDefaultBrowserState() {
       this.methodCalled('requestDefaultBrowserState');
-      return Promise.resolve(this.defaultBrowserInfo_);
+      cr.webUIListenerCallback(
+          'settings.updateDefaultBrowserState', this.defaultBrowserInfo_);
     }
 
     /** @override */
@@ -72,7 +73,7 @@ cr.define('settings_default_browser', function() {
       return browserProxy.whenCalled('requestDefaultBrowserState');
     }
 
-    test('default-browser-test-can-be-default', function(done) {
+    test('default-browser-test-can-be-default', function() {
       browserProxy.setDefaultBrowserInfo({
         canBeDefault: true,
         isDefault: false,
@@ -80,16 +81,16 @@ cr.define('settings_default_browser', function() {
         isUnknownError: false
       });
 
+      // TODO(scottchen): assert UI states instead of private variables.
       return initPage().then(function() {
         assertFalse(page.isDefault_);
         assertFalse(page.isSecondaryInstall_);
         assertFalse(page.isUnknownError_);
         assertTrue(page.maySetDefaultBrowser_);
-        done();
       });
     });
 
-    test('default-browser-test-is-default', function(done) {
+    test('default-browser-test-is-default', function() {
       assertTrue(!!page);
       browserProxy.setDefaultBrowserInfo({
         canBeDefault: true,
@@ -103,11 +104,10 @@ cr.define('settings_default_browser', function() {
         assertFalse(page.isSecondaryInstall_);
         assertFalse(page.isUnknownError_);
         assertFalse(page.maySetDefaultBrowser_);
-        done();
       });
     });
 
-    test('default-browser-test-is-secondary-install', function(done) {
+    test('default-browser-test-is-secondary-install', function() {
       browserProxy.setDefaultBrowserInfo({
         canBeDefault: false,
         isDefault: false,
@@ -120,11 +120,10 @@ cr.define('settings_default_browser', function() {
         assertTrue(page.isSecondaryInstall_);
         assertFalse(page.isUnknownError_);
         assertFalse(page.maySetDefaultBrowser_);
-        done();
       });
     });
 
-    test('default-browser-test-is-disabled-by-policy', function(done) {
+    test('default-browser-test-is-disabled-by-policy', function() {
       browserProxy.setDefaultBrowserInfo({
         canBeDefault: true,
         isDefault: false,
@@ -137,11 +136,10 @@ cr.define('settings_default_browser', function() {
         assertFalse(page.isSecondaryInstall_);
         assertTrue(page.isUnknownError_);
         assertFalse(page.maySetDefaultBrowser_);
-        done();
       });
     });
 
-    test('default-browser-test-is-unknown-error', function(done) {
+    test('default-browser-test-is-unknown-error', function() {
       browserProxy.setDefaultBrowserInfo({
         canBeDefault: true,
         isDefault: false,
@@ -154,7 +152,6 @@ cr.define('settings_default_browser', function() {
         assertFalse(page.isSecondaryInstall_);
         assertTrue(page.isUnknownError_);
         assertFalse(page.maySetDefaultBrowser_);
-        done();
       });
     });
   });

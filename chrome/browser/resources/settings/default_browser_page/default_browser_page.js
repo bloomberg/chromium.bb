@@ -40,8 +40,7 @@ Polymer({
         'settings.updateDefaultBrowserState',
         this.updateDefaultBrowserState_.bind(this));
 
-    this.browserProxy_.requestDefaultBrowserState().then(
-        this.updateDefaultBrowserState_.bind(this));
+    this.browserProxy_.requestDefaultBrowserState();
   },
 
   /**

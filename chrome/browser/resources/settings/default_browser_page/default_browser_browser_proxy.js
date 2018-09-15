@@ -23,7 +23,6 @@ cr.define('settings', function() {
     /**
      * Get the initial DefaultBrowserInfo and begin sending updates to
      * 'settings.updateDefaultBrowserState'.
-     * @return {!Promise<DefaultBrowserInfo>}
      */
     requestDefaultBrowserState() {}
 
@@ -40,8 +39,7 @@ cr.define('settings', function() {
   class DefaultBrowserBrowserProxyImpl {
     /** @override */
     requestDefaultBrowserState() {
-      return cr.sendWithPromise(
-          'SettingsDefaultBrowser.requestDefaultBrowserState');
+      chrome.send('SettingsDefaultBrowser.requestDefaultBrowserState');
     }
 
     /** @override */
