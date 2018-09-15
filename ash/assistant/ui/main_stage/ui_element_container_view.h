@@ -41,6 +41,7 @@ class UiElementContainerView : public AssistantScrollView,
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnContentsPreferredSizeChanged(views::View* content_view) override;
+  void PreferredSizeChanged() override;
 
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const AssistantQuery& query) override;
@@ -67,6 +68,9 @@ class UiElementContainerView : public AssistantScrollView,
   void SetProcessingUiElement(bool is_processing);
   void ProcessPendingUiElements();
 
+  // Sets whether or not PreferredSizeChanged events should be propagated.
+  void SetPropagatePreferredSizeChanged(bool propagate);
+
   void ReleaseAllCards();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
@@ -80,6 +84,12 @@ class UiElementContainerView : public AssistantScrollView,
   // Whether a UI element is currently being processed. If true, new UI elements
   // are added to |pending_ui_element_list_| and processed later.
   bool is_processing_ui_element_ = false;
+
+  // Whether we should allow propagation of PreferredSizeChanged events. Because
+  // we only animate views in/out in batches, we can prevent over-propagation of
+  // PreferredSizeChanged events by waiting until the entirety of a response has
+  // been added/removed before propagating. This reduces layout passes.
+  bool propagate_preferred_size_changed_ = true;
 
   // UI elements will be animated on their own layers. We track the desired
   // opacity to which each layer should be animated when processing the next
