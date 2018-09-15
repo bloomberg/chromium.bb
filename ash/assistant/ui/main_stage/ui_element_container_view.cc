@@ -245,6 +245,14 @@ void UiElementContainerView::OnContentsPreferredSizeChanged(
   content_view->SetSize(gfx::Size(width(), preferred_height));
 }
 
+void UiElementContainerView::PreferredSizeChanged() {
+  // Because views are added/removed in batches, we attempt to prevent over-
+  // propagation of the PreferredSizeChanged event during batched view hierarchy
+  // add/remove operations. This helps to reduce layout passes.
+  if (propagate_preferred_size_changed_)
+    AssistantScrollView::PreferredSizeChanged();
+}
+
 void UiElementContainerView::InitLayout() {
   views::BoxLayout* layout_manager =
       content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -315,8 +323,12 @@ void UiElementContainerView::OnResponseCleared() {
   // Prevent any in-flight card rendering requests from returning.
   render_request_weak_factory_.InvalidateWeakPtrs();
 
+  // We can prevent over-propagation of the PreferredSizeChanged event by
+  // stopping propagation during batched view hierarchy add/remove operations.
+  SetPropagatePreferredSizeChanged(false);
   content_view()->RemoveAllChildViews(/*delete_children=*/true);
   ui_element_views_.clear();
+  SetPropagatePreferredSizeChanged(true);
 
   ReleaseAllCards();
 
@@ -330,6 +342,11 @@ void UiElementContainerView::OnResponseCleared() {
 
 void UiElementContainerView::OnResponseAdded(
     const AssistantResponse& response) {
+  // Because the views for the response are animated in together, we can stop
+  // propagation of PreferredSizeChanged events until all views have been added
+  // to the view hierarchy to reduce layout passes.
+  SetPropagatePreferredSizeChanged(false);
+
   for (const std::unique_ptr<AssistantUiElement>& ui_element :
        response.GetUiElements()) {
     // If we are processing a UI element we need to pend the incoming elements
@@ -354,8 +371,11 @@ void UiElementContainerView::OnAllUiElementsAdded() {
   using assistant::util::CreateOpacityElement;
 
   // Now that the response for the current query has been added to the view
-  // hierarchy, we can re-enable processing of events.
+  // hierarchy, we can re-enable processing of events. We can also restart
+  // propagation of PreferredSizeChanged events since all views have been added
+  // to the view hierarchy.
   set_can_process_events_within_subtree(true);
+  SetPropagatePreferredSizeChanged(true);
 
   // Now that we've received and added all UI elements for the current query
   // response, we can animate them in.
@@ -546,6 +566,18 @@ void UiElementContainerView::ProcessPendingUiElements() {
   // been successfully added.
   if (!is_processing_ui_element_)
     OnAllUiElementsAdded();
+}
+
+void UiElementContainerView::SetPropagatePreferredSizeChanged(bool propagate) {
+  if (propagate == propagate_preferred_size_changed_)
+    return;
+
+  propagate_preferred_size_changed_ = propagate;
+
+  // When we are no longer stopping propagation of PreferredSizeChanged events,
+  // we fire an event off to ensure the view hierarchy is properly laid out.
+  if (propagate_preferred_size_changed_)
+    PreferredSizeChanged();
 }
 
 void UiElementContainerView::ReleaseAllCards() {
