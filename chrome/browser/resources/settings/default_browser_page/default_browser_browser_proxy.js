@@ -39,12 +39,12 @@ cr.define('settings', function() {
   class DefaultBrowserBrowserProxyImpl {
     /** @override */
     requestDefaultBrowserState() {
-      chrome.send('SettingsDefaultBrowser.requestDefaultBrowserState');
+      chrome.send('requestDefaultBrowserState');
     }
 
     /** @override */
     setAsDefaultBrowser() {
-      chrome.send('SettingsDefaultBrowser.setAsDefaultBrowser');
+      chrome.send('setAsDefaultBrowser');
     }
   }
 
