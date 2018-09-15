@@ -81,35 +81,6 @@ class BASE_EXPORT StackSamplingProfiler {
     TimeDelta sampling_interval = TimeDelta::FromMilliseconds(100);
   };
 
-  // Testing support. These methods are static beause they interact with the
-  // sampling thread, a singleton used by all StackSamplingProfiler objects.
-  // These methods can only be called by the same thread that started the
-  // sampling.
-  class BASE_EXPORT TestAPI {
-   public:
-    // Resets the internal state to that of a fresh start. This is necessary
-    // so that tests don't inherit state from previous tests.
-    static void Reset();
-
-    // Returns whether the sampling thread is currently running or not.
-    static bool IsSamplingThreadRunning();
-
-    // Disables inherent idle-shutdown behavior.
-    static void DisableIdleShutdown();
-
-    // Initiates an idle shutdown task, as though the idle timer had expired,
-    // causing the thread to exit. There is no "idle" check so this must be
-    // called only when all sampling tasks have completed. This blocks until
-    // the task has been executed, though the actual stopping of the thread
-    // still happens asynchronously. Watch IsSamplingThreadRunning() to know
-    // when the thread has exited. If |simulate_intervening_start| is true then
-    // this method will make it appear to the shutdown task that a new profiler
-    // was started between when the idle-shutdown was initiated and when it
-    // runs.
-    static void PerformSamplingThreadIdleShutdown(
-        bool simulate_intervening_start);
-  };
-
   // The ProfileBuilder interface allows the user to record profile information
   // on the fly in whatever format is desired. Functions are invoked by the
   // profiler on its own thread so must not block or perform expensive
@@ -184,9 +155,37 @@ class BASE_EXPORT StackSamplingProfiler {
   // are completed or the profiler object is destroyed, whichever occurs first.
   void Stop();
 
- private:
-  friend class TestAPI;
+  // Test peer class. These functions are purely for internal testing of
+  // StackSamplingProfiler; DO NOT USE within tests outside of this directory.
+  // The functions are static because they interact with the sampling thread, a
+  // singleton used by all StackSamplingProfiler objects.  The functions can
+  // only be called by the same thread that started the sampling.
+  class BASE_EXPORT TestPeer {
+   public:
+    // Resets the internal state to that of a fresh start. This is necessary
+    // so that tests don't inherit state from previous tests.
+    static void Reset();
 
+    // Returns whether the sampling thread is currently running or not.
+    static bool IsSamplingThreadRunning();
+
+    // Disables inherent idle-shutdown behavior.
+    static void DisableIdleShutdown();
+
+    // Initiates an idle shutdown task, as though the idle timer had expired,
+    // causing the thread to exit. There is no "idle" check so this must be
+    // called only when all sampling tasks have completed. This blocks until
+    // the task has been executed, though the actual stopping of the thread
+    // still happens asynchronously. Watch IsSamplingThreadRunning() to know
+    // when the thread has exited. If |simulate_intervening_start| is true then
+    // this method will make it appear to the shutdown task that a new profiler
+    // was started between when the idle-shutdown was initiated and when it
+    // runs.
+    static void PerformSamplingThreadIdleShutdown(
+        bool simulate_intervening_start);
+  };
+
+ private:
   // SamplingThread is a separate thread used to suspend and sample stacks from
   // the target thread.
   class SamplingThread;
