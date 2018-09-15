@@ -182,6 +182,37 @@ Status CheckSessionCreated(Session* session) {
   return Status(kOk);
 }
 
+// Look for W3C mode setting in InitSession command parameters.
+bool GetW3CSetting(const base::DictionaryValue& params) {
+  bool w3c;
+  const base::ListValue* list;
+  const base::DictionaryValue* dict;
+
+  if (params.GetDictionary("capabilities.alwaysMatch", &dict)) {
+    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
+        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
+      return w3c;
+    }
+  }
+
+  if (params.GetList("capabilities.firstMatch", &list) &&
+      list->GetDictionary(0, &dict)) {
+    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
+        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
+      return w3c;
+    }
+  }
+
+  if (params.GetDictionary("desiredCapabilities", &dict)) {
+    if (dict->GetBoolean("goog:chromeOptions.w3c", &w3c) ||
+        dict->GetBoolean("chromeOptions.w3c", &w3c)) {
+      return w3c;
+    }
+  }
+
+  return kW3CDefault;
+}
+
 Status InitSessionHelper(const InitSessionParams& bound_params,
                          Session* session,
                          const base::DictionaryValue& params,
@@ -189,14 +220,14 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->driver_log.reset(
       new WebDriverLog(WebDriverLog::kDriverType, Log::kAll));
   const base::DictionaryValue* desired_caps;
+  const base::DictionaryValue empty_dict;
   base::DictionaryValue merged_caps;
 
-  bool w3c_capability = false;
-  if (params.GetDictionary("capabilities.alwaysMatch", &desired_caps) &&
-      (desired_caps->GetBoolean("goog:chromeOptions.w3c", &w3c_capability) ||
-       desired_caps->GetBoolean("chromeOptions.w3c", &w3c_capability)) &&
-      w3c_capability) {
-    session->w3c_compliant = true;
+  session->w3c_compliant = GetW3CSetting(params);
+  if (session->w3c_compliant) {
+    if (!params.GetDictionary("capabilities.alwaysMatch", &desired_caps))
+      desired_caps = &empty_dict;
+
     // TODO(johnchen): Handle capabilities.firstMatch. Currently, we're just
     // merging, not validating or matching as per the spec.
     const base::ListValue* first_match_list;
@@ -222,14 +253,6 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
         break;
       }
     }
-  } else if (params.GetDictionary("capabilities.desiredCapabilities",
-                                  &desired_caps) &&
-             (desired_caps->GetBoolean("goog:chromeOptions.w3c",
-                                       &w3c_capability) ||
-              desired_caps->GetBoolean("chromeOptions.w3c", &w3c_capability)) &&
-             w3c_capability) {
-    // TODO(johnchen): Remove when clients stop using this.
-    session->w3c_compliant = true;
   } else if (!params.GetDictionary("desiredCapabilities", &desired_caps)) {
     return Status(kSessionNotCreated,
                   "Missing or invalid capabilities");
@@ -286,7 +309,7 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
   session->capabilities = CreateCapabilities(session, capabilities);
 
-  if (w3c_capability) {
+  if (session->w3c_compliant) {
     base::DictionaryValue body;
     body.SetDictionary("capabilities", std::move(session->capabilities));
     body.SetString("sessionId", session->id);
