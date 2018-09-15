@@ -35,7 +35,6 @@ bool ScrollNode::operator==(const ScrollNode& other) const {
   return id == other.id && parent_id == other.parent_id &&
          scrollable == other.scrollable &&
          main_thread_scrolling_reasons == other.main_thread_scrolling_reasons &&
-         non_fast_scrollable_region == other.non_fast_scrollable_region &&
          container_bounds == other.container_bounds && bounds == other.bounds &&
          max_scroll_offset_affected_by_page_scale ==
              other.max_scroll_offset_affected_by_page_scale &&

@@ -617,7 +617,11 @@ ElementListType LayerTreeImpl::GetElementTypeForAnimation() const {
   return IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
 }
 
-void LayerTreeImpl::AddToElementLayerList(ElementId element_id) {
+void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
+                                          LayerImpl* layer) {
+  DCHECK(layer);
+  DCHECK(layer->element_id() == element_id);
+
   if (!element_id)
     return;
 
@@ -636,6 +640,9 @@ void LayerTreeImpl::AddToElementLayerList(ElementId element_id) {
 
   host_impl_->mutator_host()->RegisterElement(element_id,
                                               GetElementTypeForAnimation());
+
+  if (layer->scrollable())
+    AddScrollableLayer(layer);
 }
 
 void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
@@ -650,6 +657,19 @@ void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
                                                 GetElementTypeForAnimation());
 
   elements_in_layer_list_.erase(element_id);
+  element_id_to_scrollable_layer_.erase(element_id);
+}
+
+void LayerTreeImpl::AddScrollableLayer(LayerImpl* layer) {
+  DCHECK(layer);
+  DCHECK(layer->scrollable());
+
+  if (!layer->element_id())
+    return;
+
+  DCHECK(!element_id_to_scrollable_layer_.count(layer->element_id()));
+  element_id_to_scrollable_layer_.insert(
+      std::make_pair(layer->element_id(), layer));
 }
 
 void LayerTreeImpl::SetTransformMutated(ElementId element_id,
@@ -1384,6 +1404,12 @@ gfx::SizeF LayerTreeImpl::ScrollableSize() const {
 LayerImpl* LayerTreeImpl::LayerById(int id) const {
   LayerImplMap::const_iterator iter = layer_id_map_.find(id);
   return iter != layer_id_map_.end() ? iter->second : nullptr;
+}
+
+LayerImpl* LayerTreeImpl::ScrollableLayerByElementId(
+    ElementId element_id) const {
+  auto iter = element_id_to_scrollable_layer_.find(element_id);
+  return iter != element_id_to_scrollable_layer_.end() ? iter->second : nullptr;
 }
 
 void LayerTreeImpl::SetSurfaceRanges(

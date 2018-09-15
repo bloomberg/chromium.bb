@@ -412,10 +412,13 @@ class CC_EXPORT LayerTreeImpl {
   gfx::Rect RootScrollLayerDeviceViewportBounds() const;
 
   LayerImpl* LayerById(int id) const;
+  LayerImpl* ScrollableLayerByElementId(ElementId element_id) const;
 
   bool IsElementInLayerList(ElementId element_id) const;
-  void AddToElementLayerList(ElementId element_id);
+  void AddToElementLayerList(ElementId element_id, LayerImpl* layer);
   void RemoveFromElementLayerList(ElementId element_id);
+
+  void AddScrollableLayer(LayerImpl* layer);
 
   void SetSurfaceRanges(const base::flat_set<viz::SurfaceRange> surface_ranges);
   const base::flat_set<viz::SurfaceRange>& SurfaceRanges() const;
@@ -668,6 +671,9 @@ class CC_EXPORT LayerTreeImpl {
       element_id_to_transform_animations_;
   std::unordered_map<ElementId, FilterOperations, ElementIdHash>
       element_id_to_filter_animations_;
+
+  std::unordered_map<ElementId, LayerImpl*, ElementIdHash>
+      element_id_to_scrollable_layer_;
 
   struct ScrollbarLayerIds {
     int horizontal = Layer::INVALID_ID;

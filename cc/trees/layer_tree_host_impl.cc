@@ -3395,7 +3395,18 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     return scroll_status;
   }
 
-  if (!scroll_node->non_fast_scrollable_region.IsEmpty()) {
+  LayerImpl* layer =
+      active_tree_->ScrollableLayerByElementId(scroll_node->element_id);
+
+  // We may not find an associated layer for the root or secondary root node -
+  // that's fine, they're not associated with any elements on the page. We also
+  // won't find a layer for the inner viewport (in SPv2) since it doesn't
+  // require hit testing.
+  DCHECK(layer || scroll_node->id == ScrollTree::kRootNodeId ||
+         scroll_node->id == ScrollTree::kSecondaryRootNodeId ||
+         scroll_node->scrolls_inner_viewport);
+
+  if (layer && !layer->non_fast_scrollable_region().IsEmpty()) {
     bool clipped = false;
     gfx::Transform inverse_screen_space_transform(
         gfx::Transform::kSkipInitialization);
@@ -3407,7 +3418,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
 
     gfx::PointF hit_test_point_in_layer_space = MathUtil::ProjectPoint(
         inverse_screen_space_transform, screen_space_point, &clipped);
-    if (!clipped && scroll_node->non_fast_scrollable_region.Contains(
+    if (!clipped && layer->non_fast_scrollable_region().Contains(
                         gfx::ToRoundedPoint(hit_test_point_in_layer_space))) {
       TRACE_EVENT0("cc",
                    "LayerImpl::tryScroll: Failed NonFastScrollableRegion");

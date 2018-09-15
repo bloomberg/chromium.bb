@@ -32,8 +32,6 @@ struct CC_EXPORT ScrollNode {
 
   uint32_t main_thread_scrolling_reasons;
 
-  Region non_fast_scrollable_region;
-
   // Size of the container area that the contents scrolls in, not including
   // non-overlay scrollbars. Overlay scrollbars do not affect these bounds.
   gfx::Size container_bounds;

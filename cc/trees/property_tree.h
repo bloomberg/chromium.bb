@@ -62,9 +62,11 @@ class CC_EXPORT PropertyTree {
   virtual ~PropertyTree();
   PropertyTree<T>& operator=(const PropertyTree<T>&);
 
-  // Property tree node starts from index 0.
+  // Property tree node starts from index 0. See equivalent constants in
+  // property_tree_manager.cc for comments.
   static const int kInvalidNodeId = -1;
   static const int kRootNodeId = 0;
+  static const int kSecondaryRootNodeId = 1;
 
   bool operator==(const PropertyTree<T>& other) const;
 

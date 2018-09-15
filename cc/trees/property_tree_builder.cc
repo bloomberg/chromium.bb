@@ -1134,7 +1134,6 @@ void PropertyTreeBuilderContext<LayerType>::AddScrollNodeIfNeeded(
     ScrollNode node;
     node.scrollable = scrollable;
     node.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
-    node.non_fast_scrollable_region = layer->non_fast_scrollable_region();
     node.scrolls_inner_viewport = layer == inner_viewport_scroll_layer_;
     node.scrolls_outer_viewport = layer == outer_viewport_scroll_layer_;
 

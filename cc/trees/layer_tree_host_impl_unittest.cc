@@ -1296,8 +1296,8 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
   SetupScrollAndContentsLayers(gfx::Size(200, 200));
   host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
 
-  LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
-  root->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
+  LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
+  outer_scroll->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
 
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
@@ -1352,16 +1352,16 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
   SetupScrollAndContentsLayers(gfx::Size(200, 200));
   host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
 
-  LayerImpl* root = *host_impl_->active_tree()->begin();
-  root->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
-  root->SetPosition(gfx::PointF(-25.f, 0.f));
-  root->SetDrawsContent(true);
+  LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
+  outer_scroll->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
+  outer_scroll->SetPosition(gfx::PointF(-25.f, 0.f));
+  outer_scroll->SetDrawsContent(true);
 
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
 
   // This point would fall into the non-fast scrollable region except that we've
-  // moved the layer down by 25 pixels.
+  // moved the layer left by 25 pixels.
   InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
       BeginState(gfx::Point(40, 10)).get(), InputHandler::WHEEL);
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);

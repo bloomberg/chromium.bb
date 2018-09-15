@@ -10014,7 +10014,6 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   property_tree_root->scrollable = false;
   property_tree_root->main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
-  property_tree_root->non_fast_scrollable_region = Region();
   property_tree_root->transform_id = kRootPropertyTreeNodeId;
 
   // The node owned by root1
@@ -10079,7 +10078,6 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   // The node owned by parent5
   ScrollNode scroll_parent5;
   scroll_parent5.id = 8;
-  scroll_parent5.non_fast_scrollable_region = gfx::Rect(0, 0, 50, 50);
   scroll_parent5.bounds = gfx::Size(10, 10);
   scroll_parent5.should_flatten = true;
   scroll_parent5.user_scrollable_horizontal = true;
