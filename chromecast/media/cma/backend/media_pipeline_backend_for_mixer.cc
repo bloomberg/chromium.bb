@@ -168,15 +168,18 @@ bool MediaPipelineBackendForMixer::SetPlaybackRate(float rate) {
   } else {
     LOG(INFO) << __func__ << " rate=" << rate;
 
-    // If av_sync_ is available, only notify it of the playback rate change,
-    // and it will take care of changing the rate of the audio and video.
+    // If av_sync_ is available, only change the audio rate of playback. This
+    // will notify us of when the audio playback rate change goes into effect,
+    // and then we'll change the video rate of playback.
     if (av_sync_) {
-      av_sync_->NotifyPlaybackRateChange(rate);
+      DCHECK(audio_decoder_);
+      audio_decoder_->SetPlaybackRate(rate);
       return true;
     }
 
-    if (audio_decoder_ && !audio_decoder_->SetPlaybackRate(rate))
-      return false;
+    if (audio_decoder_) {
+      rate = audio_decoder_->SetPlaybackRate(rate);
+    }
     if (video_decoder_ && !video_decoder_->SetPlaybackRate(rate))
       return false;
   }
@@ -299,6 +302,12 @@ void MediaPipelineBackendForMixer::TryStartPlayback() {
   playback_started_ = true;
   if (starting_playback_rate_ != 1.0) {
     SetPlaybackRate(starting_playback_rate_);
+  }
+}
+
+void MediaPipelineBackendForMixer::NewAudioPlaybackRateInEffect(float rate) {
+  if (av_sync_) {
+    av_sync_->NotifyPlaybackRateChange(rate);
   }
 }
 

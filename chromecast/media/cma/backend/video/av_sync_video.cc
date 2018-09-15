@@ -440,8 +440,7 @@ void AvSyncVideo::NotifyPlaybackRateChange(float rate) {
   DCHECK(backend_->video_decoder());
   DCHECK(backend_->audio_decoder());
 
-  current_media_playback_rate_ =
-      backend_->audio_decoder()->SetPlaybackRate(rate);
+  current_media_playback_rate_ = rate;
 
   backend_->video_decoder()->SetPlaybackRate(current_media_playback_rate_);
 
