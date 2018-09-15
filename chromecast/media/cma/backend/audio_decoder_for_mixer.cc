@@ -229,6 +229,13 @@ float AudioDecoderForMixer::SetPlaybackRate(float rate) {
     }
   }
 
+  // If the rate_shifter_info_ is empty, then the playback rate will take
+  // effect right away, so we should notify now.
+  if (rate_shifter_info_.empty()) {
+    LOG(INFO) << "New playback rate in effect: " << rate;
+    backend_->NewAudioPlaybackRateInEffect(rate);
+  }
+
   rate_shifter_info_.push_back(RateShifterInfo(rate));
   return rate;
 }
@@ -630,6 +637,7 @@ void AudioDecoderForMixer::PushRateShifted() {
 
     rate_info = &rate_shifter_info_.front();
     LOG(INFO) << "New playback rate in effect: " << rate_info->rate;
+    backend_->NewAudioPlaybackRateInEffect(rate_info->rate);
     rate_info->input_frames += remaining_input_frames;
     DCHECK_EQ(0, rate_info->output_frames);
 
