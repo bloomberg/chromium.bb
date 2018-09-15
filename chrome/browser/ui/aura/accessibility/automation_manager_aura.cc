@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
@@ -97,7 +98,8 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
     if (active_window) {
       views::AXAuraObjWrapper* focus =
           views::AXAuraObjCache::GetInstance()->GetOrCreate(active_window);
-      SendEvent(context, focus, ax::mojom::Event::kChildrenChanged);
+      if (focus)
+        SendEvent(context, focus, ax::mojom::Event::kChildrenChanged);
     }
   }
   // Gain access to out-of-process native windows.
@@ -120,10 +122,32 @@ void AutomationManagerAura::HandleEvent(BrowserContext* context,
   if (!enabled_)
     return;
 
-  views::AXAuraObjWrapper* aura_obj = view ?
-      views::AXAuraObjCache::GetInstance()->GetOrCreate(view) :
-      current_tree_->GetRoot();
-  SendEvent(nullptr, aura_obj, event_type);
+  if (!view) {
+    SendEvent(nullptr, current_tree_->GetRoot(), event_type);
+    return;
+  }
+
+  views::AXAuraObjWrapper* obj =
+      views::AXAuraObjCache::GetInstance()->GetOrCreate(view);
+  if (!obj)
+    return;
+
+  // Post a task to handle the event at the end of the current call stack.
+  // This helps us avoid firing accessibility events for transient changes.
+  // because there's a chance that the underlying object being wrapped could
+  // be deleted, pass the ID of the object rather than the object pointer.
+  int32_t id = obj->GetUniqueId().Get();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AutomationManagerAura::SendEventOnObjectById,
+                     weak_ptr_factory_.GetWeakPtr(), id, event_type));
+}
+
+void AutomationManagerAura::SendEventOnObjectById(int32_t id,
+                                                  ax::mojom::Event event_type) {
+  views::AXAuraObjWrapper* obj = views::AXAuraObjCache::GetInstance()->Get(id);
+  if (obj)
+    SendEvent(nullptr, obj, event_type);
 }
 
 void AutomationManagerAura::HandleAlert(content::BrowserContext* context,
@@ -169,7 +193,8 @@ void AutomationManagerAura::OnEvent(views::AXAuraObjWrapper* aura_obj,
 AutomationManagerAura::AutomationManagerAura()
     : AXHostDelegate(extensions::api::automation::kDesktopTreeID),
       enabled_(false),
-      processing_events_(false) {}
+      processing_events_(false),
+      weak_ptr_factory_(this) {}
 
 AutomationManagerAura::~AutomationManagerAura() {
 }
@@ -185,6 +210,9 @@ void AutomationManagerAura::Reset(bool reset_serializer) {
 void AutomationManagerAura::SendEvent(BrowserContext* context,
                                       views::AXAuraObjWrapper* aura_obj,
                                       ax::mojom::Event event_type) {
+  if (!enabled_)
+    return;
+
   if (!current_tree_serializer_)
     return;
 
@@ -229,6 +257,9 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
 
   AutomationEventRouter* router = AutomationEventRouter::GetInstance();
   router->DispatchAccessibilityEvents(event_bundle);
+
+  if (event_bundle_callback_for_testing_)
+    event_bundle_callback_for_testing_.Run(event_bundle);
 
   processing_events_ = false;
   auto pending_events_copy = pending_events_;
