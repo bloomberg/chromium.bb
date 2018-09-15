@@ -89,6 +89,12 @@ class ExtensionBuilder {
   // page will be set.
   ExtensionBuilder& SetBackgroundPage(BackgroundPage background_page);
 
+  // Adds a content script to the extension, with a script with the specified
+  // |script_name| that matches the given |match_patterns|.
+  ExtensionBuilder& AddContentScript(
+      const std::string& script_name,
+      const std::vector<std::string>& match_patterns);
+
   // Shortcuts to setting values on the manifest dictionary without needing to
   // go all the way through MergeManifest(). Sample usage:
   // ExtensionBuilder("name").SetManifestKey("version", "0.2").Build();

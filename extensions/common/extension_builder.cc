@@ -19,6 +19,12 @@ struct ExtensionBuilder::ManifestData {
   std::vector<std::string> permissions;
   base::Optional<ActionType> action;
   base::Optional<BackgroundPage> background_page;
+
+  // A ContentScriptEntry includes a string name, and a vector of string
+  // match patterns.
+  using ContentScriptEntry = std::pair<std::string, std::vector<std::string>>;
+  std::vector<ContentScriptEntry> content_scripts;
+
   base::Optional<base::Value> extra;
 
   std::unique_ptr<base::DictionaryValue> GetValue() const {
@@ -75,6 +81,21 @@ struct ExtensionBuilder::ManifestData {
       }
       background.Set("persistent", persistent);
       manifest.Set("background", background.Build());
+    }
+
+    if (!content_scripts.empty()) {
+      ListBuilder scripts_value;
+      for (const auto& script : content_scripts) {
+        ListBuilder matches;
+        for (const auto& match : script.second)
+          matches.Append(match);
+        scripts_value.Append(
+            DictionaryBuilder()
+                .Set("js", ListBuilder().Append(script.first).Build())
+                .Set("matches", matches.Build())
+                .Build());
+      }
+      manifest.Set("content_scripts", scripts_value.Build());
     }
 
     std::unique_ptr<base::DictionaryValue> result = manifest.Build();
@@ -153,6 +174,14 @@ ExtensionBuilder& ExtensionBuilder::SetBackgroundPage(
     BackgroundPage background_page) {
   CHECK(manifest_data_);
   manifest_data_->background_page = background_page;
+  return *this;
+}
+
+ExtensionBuilder& ExtensionBuilder::AddContentScript(
+    const std::string& script_name,
+    const std::vector<std::string>& match_patterns) {
+  CHECK(manifest_data_);
+  manifest_data_->content_scripts.emplace_back(script_name, match_patterns);
   return *this;
 }
 

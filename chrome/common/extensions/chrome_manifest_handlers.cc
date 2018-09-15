@@ -24,7 +24,6 @@
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "extensions/common/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/manifest_handlers/automation.h"
-#include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 
@@ -45,7 +44,6 @@ void RegisterChromeManifestHandlers() {
   (new AppLaunchManifestHandler)->Register();
   (new AutomationHandler)->Register();
   (new CommandsHandler)->Register();
-  (new ContentScriptsHandler)->Register();
   (new DevToolsPageHandler)->Register();
   (new ExtensionActionHandler)->Register();
   (new HomepageURLHandler)->Register();

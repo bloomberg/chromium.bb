@@ -1041,19 +1041,10 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
         test_case.current_url.spec().c_str()));
 
     // Install an extension with the specified permission.
-    scoped_refptr<const Extension> extension;
-    {
-      ExtensionBuilder builder("test");
-      DictionaryBuilder content_script;
-      content_script
-          .Set("matches",
-               ListBuilder().Append(test_case.requested_pattern).Build())
-          .Set("js", ListBuilder().Append("script.js").Build());
-      builder.SetManifestKey(
-          "content_scripts",
-          ListBuilder().Append(content_script.Build()).Build());
-      extension = builder.Build();
-    }
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("test")
+            .AddContentScript("script.js", {test_case.requested_pattern})
+            .Build();
     InitializeAndAddExtension(*extension);
 
     ScriptingPermissionsModifier(profile(), extension)
