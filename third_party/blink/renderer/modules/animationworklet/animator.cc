@@ -28,9 +28,10 @@ void Animator::Trace(blink::Visitor* visitor) {
   visitor->Trace(instance_.Cast<v8::Value>());
 }
 
-bool Animator::Animate(ScriptState* script_state,
-                       double current_time,
-                       CompositorMutatorOutputState::AnimationState* output) {
+bool Animator::Animate(
+    ScriptState* script_state,
+    double current_time,
+    AnimationWorkletDispatcherOutput::AnimationState* output) {
   v8::Isolate* isolate = script_state->GetIsolate();
 
   v8::Local<v8::Object> instance = instance_.NewLocal(isolate);

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_WORKLET_MUTATOR_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_WORKLET_MUTATOR_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_ANIMATION_WORKLET_MUTATOR_DISPATCHER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_ANIMATION_WORKLET_MUTATOR_DISPATCHER_IMPL_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_animator.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/mutator_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -24,49 +24,47 @@ class CompositorMutatorClient;
 class MainThreadMutatorClient;
 class WaitableEvent;
 
-// Fans out requests from the compositor to all of the registered
-// CompositorAnimators which can then mutate layers through their respective
-// mutate interface. Requests for animation frames are received from
-// CompositorAnimators and sent to the compositor to generate a new compositor
-// frame.
-//
-// Unless otherwise noted, this should be accessed only on the compositor
-// thread.
-class PLATFORM_EXPORT WorkletMutatorImpl final : public CompositorMutator {
+// Fans out requests to all of the registered AnimationWorkletMutators which can
+// then run worklet animations to produce mutation updates. Requests for
+// animation frames are received from AnimationWorkletMutators and generate a
+// new frame.
+class PLATFORM_EXPORT AnimationWorkletMutatorDispatcherImpl final
+    : public AnimationWorkletMutatorDispatcher {
  public:
   // There are three outputs for the two interface surfaces of the created
   // class blob. The returned owning pointer to the Client, which
   // also owns the rest of the structure. |mutatee| and |mutatee_runner| form a
-  // pair for referencing the WorkletMutatorImpl. i.e. Put tasks on the
-  // TaskRunner using the WeakPtr to get to the methods.
+  // pair for referencing the AnimationWorkletMutatorDispatcherImpl. i.e. Put
+  // tasks on the TaskRunner using the WeakPtr to get to the methods.
   static std::unique_ptr<CompositorMutatorClient> CreateCompositorThreadClient(
-      base::WeakPtr<WorkletMutatorImpl>* mutatee,
+      base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>* mutatee,
       scoped_refptr<base::SingleThreadTaskRunner>* mutatee_runner);
   static std::unique_ptr<MainThreadMutatorClient> CreateMainThreadClient(
-      base::WeakPtr<WorkletMutatorImpl>* mutatee,
+      base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>* mutatee,
       scoped_refptr<base::SingleThreadTaskRunner>* mutatee_runner);
 
-  explicit WorkletMutatorImpl(bool main_thread_task_runner);
-  ~WorkletMutatorImpl() override;
+  explicit AnimationWorkletMutatorDispatcherImpl(bool main_thread_task_runner);
+  ~AnimationWorkletMutatorDispatcherImpl() override;
 
-  // CompositorMutator implementation.
-  void Mutate(std::unique_ptr<CompositorMutatorInputState>) override;
+  // AnimationWorkletMutatorDispatcher implementation.
+  void Mutate(std::unique_ptr<AnimationWorkletDispatcherInput>) override;
   // TODO(majidvp): Remove when timeline inputs are known.
-  bool HasAnimators() override;
+  bool HasMutators() override;
 
   // Interface for use by the AnimationWorklet Thread(s) to request calls.
-  // (To the given Animator on the given TaskRunner.)
-  void RegisterCompositorAnimator(
-      CrossThreadPersistent<CompositorAnimator>,
-      scoped_refptr<base::SingleThreadTaskRunner> animator_runner);
+  // (To the given Mutator on the given TaskRunner.)
+  void RegisterAnimationWorkletMutator(
+      CrossThreadPersistent<AnimationWorkletMutator>,
+      scoped_refptr<base::SingleThreadTaskRunner> mutator_runner);
 
-  void UnregisterCompositorAnimator(CrossThreadPersistent<CompositorAnimator>);
+  void UnregisterAnimationWorkletMutator(
+      CrossThreadPersistent<AnimationWorkletMutator>);
 
   void SetClient(MutatorClient* client) { client_ = client; }
 
  private:
-  using CompositorAnimatorToTaskRunnerMap =
-      HashMap<CrossThreadPersistent<CompositorAnimator>,
+  using AnimationWorkletMutatorToTaskRunnerMap =
+      HashMap<CrossThreadPersistent<AnimationWorkletMutator>,
               scoped_refptr<base::SingleThreadTaskRunner>>;
 
   class AutoSignal {
@@ -82,29 +80,29 @@ class PLATFORM_EXPORT WorkletMutatorImpl final : public CompositorMutator {
 
   // The AnimationWorkletProxyClientImpls are also owned by the WorkerClients
   // dictionary.
-  CompositorAnimatorToTaskRunnerMap animator_map_;
+  AnimationWorkletMutatorToTaskRunnerMap mutator_map_;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
-    return mutator_queue_;
+    return host_queue_;
   }
 
   template <typename ClientType>
   static std::unique_ptr<ClientType> CreateClient(
-      base::WeakPtr<WorkletMutatorImpl>* weak_interface,
+      base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>* weak_interface,
       scoped_refptr<base::SingleThreadTaskRunner>* queue,
       bool create_main_thread_client);
 
-  scoped_refptr<base::SingleThreadTaskRunner> mutator_queue_;
+  scoped_refptr<base::SingleThreadTaskRunner> host_queue_;
 
   // The MutatorClient owns (std::unique_ptr) us, so this pointer is
   // valid as long as this class exists.
   MutatorClient* client_;
 
-  base::WeakPtrFactory<WorkletMutatorImpl> weak_factory_;
+  base::WeakPtrFactory<AnimationWorkletMutatorDispatcherImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkletMutatorImpl);
+  DISALLOW_COPY_AND_ASSIGN(AnimationWorkletMutatorDispatcherImpl);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_WORKLET_MUTATOR_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_ANIMATION_WORKLET_MUTATOR_DISPATCHER_IMPL_H_

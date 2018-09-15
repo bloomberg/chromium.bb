@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/worklet_mutator_impl.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 
 #include "base/single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -10,7 +10,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_animator.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -35,17 +35,17 @@ std::unique_ptr<WebThread> CreateThread(const char* name) {
           .SetThreadNameForTest(name));
 }
 
-class MockCompositorAnimator
-    : public GarbageCollectedFinalized<MockCompositorAnimator>,
-      public CompositorAnimator {
-  USING_GARBAGE_COLLECTED_MIXIN(MockCompositorAnimator);
+class MockAnimationWorkletMutator
+    : public GarbageCollectedFinalized<MockAnimationWorkletMutator>,
+      public AnimationWorkletMutator {
+  USING_GARBAGE_COLLECTED_MIXIN(MockAnimationWorkletMutator);
 
  public:
-  MockCompositorAnimator(
+  MockAnimationWorkletMutator(
       scoped_refptr<base::SingleThreadTaskRunner> expected_runner)
       : expected_runner_(expected_runner) {}
 
-  ~MockCompositorAnimator() override {}
+  ~MockAnimationWorkletMutator() override {}
 
   std::unique_ptr<AnimationWorkletOutput> Mutate(
       std::unique_ptr<AnimationWorkletInput> input) override {
@@ -61,7 +61,8 @@ class MockCompositorAnimator
 
 class MockCompositorMutatorClient : public CompositorMutatorClient {
  public:
-  MockCompositorMutatorClient(std::unique_ptr<WorkletMutatorImpl> mutator)
+  MockCompositorMutatorClient(
+      std::unique_ptr<AnimationWorkletMutatorDispatcherImpl> mutator)
       : CompositorMutatorClient(std::move(mutator)) {}
   ~MockCompositorMutatorClient() override {}
   // gmock cannot mock methods with move-only args so we forward it to ourself.
@@ -74,10 +75,11 @@ class MockCompositorMutatorClient : public CompositorMutatorClient {
                void(cc::MutatorOutputState* output_state));
 };
 
-class WorkletMutatorImplTest : public ::testing::Test {
+class AnimationWorkletMutatorDispatcherImplTest : public ::testing::Test {
  public:
   void SetUp() override {
-    auto mutator = std::make_unique<WorkletMutatorImpl>(false);
+    auto mutator =
+        std::make_unique<AnimationWorkletMutatorDispatcherImpl>(false);
     mutator_ = mutator.get();
     client_ =
         std::make_unique<::testing::StrictMock<MockCompositorMutatorClient>>(
@@ -87,17 +89,17 @@ class WorkletMutatorImplTest : public ::testing::Test {
   void TearDown() override { mutator_ = nullptr; }
 
   std::unique_ptr<::testing::StrictMock<MockCompositorMutatorClient>> client_;
-  WorkletMutatorImpl* mutator_;
+  AnimationWorkletMutatorDispatcherImpl* mutator_;
 };
 
-std::unique_ptr<CompositorMutatorInputState> CreateTestMutatorInput() {
+std::unique_ptr<AnimationWorkletDispatcherInput> CreateTestMutatorInput() {
   AnimationWorkletInput::AddAndUpdateState state1{
       {11, 1}, "test1", 5000, nullptr};
 
   AnimationWorkletInput::AddAndUpdateState state2{
       {22, 2}, "test2", 5000, nullptr};
 
-  auto input = std::make_unique<CompositorMutatorInputState>();
+  auto input = std::make_unique<AnimationWorkletDispatcherInput>();
   input->Add(std::move(state1));
   input->Add(std::move(state2));
 
@@ -110,18 +112,18 @@ bool OnlyIncludesAnimation1(const AnimationWorkletInput& in) {
              1;
 }
 
-TEST_F(WorkletMutatorImplTest,
+TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        RegisteredAnimatorShouldOnlyReceiveInputForItself) {
   std::unique_ptr<WebThread> first_thread = CreateThread("FirstThread");
-  MockCompositorAnimator* first_animator =
-      new ::testing::StrictMock<MockCompositorAnimator>(
+  MockAnimationWorkletMutator* first_mutator =
+      new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
-  mutator_->RegisterCompositorAnimator(first_animator,
-                                       first_thread->GetTaskRunner());
+  mutator_->RegisterAnimationWorkletMutator(first_mutator,
+                                            first_thread->GetTaskRunner());
 
-  EXPECT_CALL(*first_animator, GetScopeId()).Times(1).WillOnce(Return(11));
-  EXPECT_CALL(*first_animator, MutateRef(Truly(OnlyIncludesAnimation1)))
+  EXPECT_CALL(*first_mutator, GetScopeId()).Times(1).WillOnce(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(Truly(OnlyIncludesAnimation1)))
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(1);
@@ -129,106 +131,107 @@ TEST_F(WorkletMutatorImplTest,
   mutator_->Mutate(CreateTestMutatorInput());
 }
 
-TEST_F(WorkletMutatorImplTest,
+TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        RegisteredAnimatorShouldNotBeMutatedWhenNoInput) {
   std::unique_ptr<WebThread> first_thread = CreateThread("FirstThread");
-  MockCompositorAnimator* first_animator =
-      new ::testing::StrictMock<MockCompositorAnimator>(
+  MockAnimationWorkletMutator* first_mutator =
+      new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
-  mutator_->RegisterCompositorAnimator(first_animator,
-                                       first_thread->GetTaskRunner());
+  mutator_->RegisterAnimationWorkletMutator(first_mutator,
+                                            first_thread->GetTaskRunner());
 
-  EXPECT_CALL(*first_animator, GetScopeId()).Times(1).WillOnce(Return(11));
-  EXPECT_CALL(*first_animator, MutateRef(_)).Times(0);
+  EXPECT_CALL(*first_mutator, GetScopeId()).Times(1).WillOnce(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_)).Times(0);
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
 
   AnimationWorkletInput::AddAndUpdateState state2{
       {22, 2}, "test2", 5000, nullptr};
 
-  auto input = std::make_unique<CompositorMutatorInputState>();
+  auto input = std::make_unique<AnimationWorkletDispatcherInput>();
   input->Add(std::move(state2));
 
   mutator_->Mutate(std::move(input));
 }
 
-TEST_F(WorkletMutatorImplTest,
+TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        MutationUpdateIsNotInvokedWithNoRegisteredAnimators) {
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
-  std::unique_ptr<CompositorMutatorInputState> input =
-      std::make_unique<CompositorMutatorInputState>();
+  std::unique_ptr<AnimationWorkletDispatcherInput> input =
+      std::make_unique<AnimationWorkletDispatcherInput>();
   mutator_->Mutate(std::move(input));
 }
 
-TEST_F(WorkletMutatorImplTest, MutationUpdateIsNotInvokedWithNullOutput) {
-  // Create a thread to run animator tasks.
+TEST_F(AnimationWorkletMutatorDispatcherImplTest,
+       MutationUpdateIsNotInvokedWithNullOutput) {
+  // Create a thread to run mutator tasks.
   std::unique_ptr<WebThread> first_thread =
       CreateThread("FirstAnimationThread");
-  MockCompositorAnimator* first_animator =
-      new ::testing::StrictMock<MockCompositorAnimator>(
+  MockAnimationWorkletMutator* first_mutator =
+      new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
-  mutator_->RegisterCompositorAnimator(first_animator,
-                                       first_thread->GetTaskRunner());
-  EXPECT_CALL(*first_animator, GetScopeId()).Times(1).WillOnce(Return(11));
-  EXPECT_CALL(*first_animator, MutateRef(_)).Times(1).WillOnce(Return(nullptr));
+  mutator_->RegisterAnimationWorkletMutator(first_mutator,
+                                            first_thread->GetTaskRunner());
+  EXPECT_CALL(*first_mutator, GetScopeId()).Times(1).WillOnce(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_)).Times(1).WillOnce(Return(nullptr));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
   mutator_->Mutate(CreateTestMutatorInput());
 }
 
-TEST_F(WorkletMutatorImplTest,
+TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        MutationUpdateIsInvokedCorrectlyWithSingleRegisteredAnimator) {
-  // Create a thread to run animator tasks.
+  // Create a thread to run mutator tasks.
   std::unique_ptr<WebThread> first_thread =
       CreateThread("FirstAnimationThread");
-  MockCompositorAnimator* first_animator =
-      new ::testing::StrictMock<MockCompositorAnimator>(
+  MockAnimationWorkletMutator* first_mutator =
+      new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
-  mutator_->RegisterCompositorAnimator(first_animator,
-                                       first_thread->GetTaskRunner());
-  EXPECT_CALL(*first_animator, GetScopeId()).Times(1).WillOnce(Return(11));
-  EXPECT_CALL(*first_animator, MutateRef(_))
+  mutator_->RegisterAnimationWorkletMutator(first_mutator,
+                                            first_thread->GetTaskRunner());
+  EXPECT_CALL(*first_mutator, GetScopeId()).Times(1).WillOnce(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_))
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(1);
   mutator_->Mutate(CreateTestMutatorInput());
 
-  // The above call blocks on animator threads running their tasks so we can
+  // The above call blocks on mutator threads running their tasks so we can
   // safely verify here.
   Mock::VerifyAndClearExpectations(client_.get());
 
-  // Ensure animator is not invoked after unregistration.
-  EXPECT_CALL(*first_animator, MutateRef(_)).Times(0);
+  // Ensure mutator is not invoked after unregistration.
+  EXPECT_CALL(*first_mutator, MutateRef(_)).Times(0);
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(0);
-  mutator_->UnregisterCompositorAnimator(first_animator);
+  mutator_->UnregisterAnimationWorkletMutator(first_mutator);
 
   mutator_->Mutate(CreateTestMutatorInput());
   Mock::VerifyAndClearExpectations(client_.get());
 }
 
-TEST_F(WorkletMutatorImplTest,
+TEST_F(AnimationWorkletMutatorDispatcherImplTest,
        MutationUpdateInvokedCorrectlyWithTwoRegisteredAnimatorsOnSameThread) {
   std::unique_ptr<WebThread> first_thread =
       CreateThread("FirstAnimationThread");
-  MockCompositorAnimator* first_animator =
-      new ::testing::StrictMock<MockCompositorAnimator>(
+  MockAnimationWorkletMutator* first_mutator =
+      new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
-  MockCompositorAnimator* second_animator =
-      new ::testing::StrictMock<MockCompositorAnimator>(
+  MockAnimationWorkletMutator* second_mutator =
+      new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
-  mutator_->RegisterCompositorAnimator(first_animator,
-                                       first_thread->GetTaskRunner());
-  mutator_->RegisterCompositorAnimator(second_animator,
-                                       first_thread->GetTaskRunner());
+  mutator_->RegisterAnimationWorkletMutator(first_mutator,
+                                            first_thread->GetTaskRunner());
+  mutator_->RegisterAnimationWorkletMutator(second_mutator,
+                                            first_thread->GetTaskRunner());
 
-  EXPECT_CALL(*first_animator, GetScopeId()).Times(1).WillOnce(Return(11));
-  EXPECT_CALL(*first_animator, MutateRef(_))
+  EXPECT_CALL(*first_mutator, GetScopeId()).Times(1).WillOnce(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_))
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
-  EXPECT_CALL(*second_animator, GetScopeId()).Times(1).WillOnce(Return(22));
-  EXPECT_CALL(*second_animator, MutateRef(_))
+  EXPECT_CALL(*second_mutator, GetScopeId()).Times(1).WillOnce(Return(22));
+  EXPECT_CALL(*second_mutator, MutateRef(_))
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
 
@@ -237,47 +240,47 @@ TEST_F(WorkletMutatorImplTest,
 }
 
 TEST_F(
-    WorkletMutatorImplTest,
+    AnimationWorkletMutatorDispatcherImplTest,
     MutationUpdateInvokedCorrectlyWithTwoRegisteredAnimatorsOnDifferentThreads) {
   std::unique_ptr<WebThread> first_thread =
       CreateThread("FirstAnimationThread");
-  MockCompositorAnimator* first_animator =
-      new ::testing::StrictMock<MockCompositorAnimator>(
+  MockAnimationWorkletMutator* first_mutator =
+      new ::testing::StrictMock<MockAnimationWorkletMutator>(
           first_thread->GetTaskRunner());
 
   std::unique_ptr<WebThread> second_thread =
       CreateThread("SecondAnimationThread");
-  MockCompositorAnimator* second_animator =
-      new ::testing::StrictMock<MockCompositorAnimator>(
+  MockAnimationWorkletMutator* second_mutator =
+      new ::testing::StrictMock<MockAnimationWorkletMutator>(
           second_thread->GetTaskRunner());
 
-  mutator_->RegisterCompositorAnimator(first_animator,
-                                       first_thread->GetTaskRunner());
-  mutator_->RegisterCompositorAnimator(second_animator,
-                                       second_thread->GetTaskRunner());
+  mutator_->RegisterAnimationWorkletMutator(first_mutator,
+                                            first_thread->GetTaskRunner());
+  mutator_->RegisterAnimationWorkletMutator(second_mutator,
+                                            second_thread->GetTaskRunner());
 
-  EXPECT_CALL(*first_animator, GetScopeId()).Times(1).WillOnce(Return(11));
-  EXPECT_CALL(*first_animator, MutateRef(_))
+  EXPECT_CALL(*first_mutator, GetScopeId()).Times(1).WillOnce(Return(11));
+  EXPECT_CALL(*first_mutator, MutateRef(_))
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
-  EXPECT_CALL(*second_animator, GetScopeId()).Times(1).WillOnce(Return(22));
-  EXPECT_CALL(*second_animator, MutateRef(_))
+  EXPECT_CALL(*second_mutator, GetScopeId()).Times(1).WillOnce(Return(22));
+  EXPECT_CALL(*second_mutator, MutateRef(_))
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(2);
   mutator_->Mutate(CreateTestMutatorInput());
 
-  // The above call blocks on animator threads running their tasks so we can
+  // The above call blocks on mutator threads running their tasks so we can
   // safely verify here.
   Mock::VerifyAndClearExpectations(client_.get());
 
-  // Ensure animator is not invoked after unregistration.
-  mutator_->UnregisterCompositorAnimator(first_animator);
+  // Ensure mutator is not invoked after unregistration.
+  mutator_->UnregisterAnimationWorkletMutator(first_mutator);
 
-  EXPECT_CALL(*first_animator, GetScopeId()).Times(0);
-  EXPECT_CALL(*first_animator, MutateRef(_)).Times(0);
-  EXPECT_CALL(*second_animator, GetScopeId()).Times(1).WillOnce(Return(22));
-  EXPECT_CALL(*second_animator, MutateRef(_))
+  EXPECT_CALL(*first_mutator, GetScopeId()).Times(0);
+  EXPECT_CALL(*first_mutator, MutateRef(_)).Times(0);
+  EXPECT_CALL(*second_mutator, GetScopeId()).Times(1).WillOnce(Return(22));
+  EXPECT_CALL(*second_mutator, MutateRef(_))
       .Times(1)
       .WillOnce(Return(new AnimationWorkletOutput()));
   EXPECT_CALL(*client_, SetMutationUpdateRef(_)).Times(1);

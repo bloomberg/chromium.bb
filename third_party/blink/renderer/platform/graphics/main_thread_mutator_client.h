@@ -5,26 +5,27 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_MAIN_THREAD_MUTATOR_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_MAIN_THREAD_MUTATOR_CLIENT_H_
 
-#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
 #include "third_party/blink/renderer/platform/graphics/mutator_client.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
-class WorkletMutatorImpl;
+class AnimationWorkletMutatorDispatcherImpl;
 
 class PLATFORM_EXPORT MainThreadMutatorClient : public MutatorClient {
  public:
-  explicit MainThreadMutatorClient(std::unique_ptr<WorkletMutatorImpl>);
+  explicit MainThreadMutatorClient(
+      std::unique_ptr<AnimationWorkletMutatorDispatcherImpl>);
   ~MainThreadMutatorClient() override = default;
 
   void SetMutationUpdate(std::unique_ptr<AnimationWorkletOutput>) override;
   void SetDelegate(MutatorClient* client);
-  WorkletMutatorImpl* Mutator() { return mutator_.get(); }
+  AnimationWorkletMutatorDispatcherImpl* Mutator() { return mutator_.get(); }
 
  private:
-  std::unique_ptr<WorkletMutatorImpl> mutator_;
+  std::unique_ptr<AnimationWorkletMutatorDispatcherImpl> mutator_;
   MutatorClient* delegate_;
 };
 

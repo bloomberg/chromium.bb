@@ -23,16 +23,16 @@ class Layer;
 
 namespace blink {
 
+class AnimationWorkletMutatorDispatcherImpl;
 class CompositorAnimationHost;
 class GraphicsLayer;
-struct IntrinsicSizingInfo;
+class HitTestResult;
 class PageWidgetEventHandler;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebViewImpl;
-class HitTestResult;
+struct IntrinsicSizingInfo;
 struct WebFloatPoint;
-class WorkletMutatorImpl;
 
 class CORE_EXPORT WebFrameWidgetBase
     : public GarbageCollectedFinalized<WebFrameWidgetBase>,
@@ -51,7 +51,8 @@ class CORE_EXPORT WebFrameWidgetBase
   virtual bool ForSubframe() const = 0;
   virtual void ScheduleAnimation() = 0;
   virtual void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) {}
-  virtual base::WeakPtr<WorkletMutatorImpl> EnsureCompositorMutator(
+  virtual base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+  EnsureCompositorMutatorDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) = 0;
 
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching

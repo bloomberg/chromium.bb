@@ -90,7 +90,8 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void Initialize() override;
   bool ForSubframe() const override { return false; }
   void ScheduleAnimation() override;
-  base::WeakPtr<WorkletMutatorImpl> EnsureCompositorMutator(
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+  EnsureCompositorMutatorDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>*) override;
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   GraphicsLayer* RootGraphicsLayer() const override;

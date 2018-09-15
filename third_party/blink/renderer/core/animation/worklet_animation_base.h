@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -31,7 +31,7 @@ class CORE_EXPORT WorkletAnimationBase : public ScriptWrappable {
   virtual KeyframeEffect* GetEffect() const = 0;
   virtual const WorkletAnimationId& GetWorkletAnimationId() const = 0;
   virtual bool IsActiveAnimation() const = 0;
-  virtual void UpdateInputState(CompositorMutatorInputState*) = 0;
+  virtual void UpdateInputState(AnimationWorkletDispatcherInput*) = 0;
   virtual void SetOutputState(
       const AnimationWorkletOutput::AnimationState&) = 0;
   virtual AnimationTimeline* GetTimeline() const = 0;

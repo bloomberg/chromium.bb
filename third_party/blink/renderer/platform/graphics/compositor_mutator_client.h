@@ -12,12 +12,13 @@
 
 namespace blink {
 
-class WorkletMutatorImpl;
+class AnimationWorkletMutatorDispatcherImpl;
 
 class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator,
                                                 public MutatorClient {
  public:
-  explicit CompositorMutatorClient(std::unique_ptr<WorkletMutatorImpl>);
+  explicit CompositorMutatorClient(
+      std::unique_ptr<AnimationWorkletMutatorDispatcherImpl>);
   ~CompositorMutatorClient() override;
 
   void SetMutationUpdate(std::unique_ptr<cc::MutatorOutputState>) override;
@@ -25,10 +26,10 @@ class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator,
   // cc::LayerTreeMutator
   void SetClient(cc::LayerTreeMutatorClient*) override;
   void Mutate(std::unique_ptr<cc::MutatorInputState>) override;
-  bool HasAnimators() override;
+  bool HasMutators() override;
 
  private:
-  std::unique_ptr<WorkletMutatorImpl> mutator_;
+  std::unique_ptr<AnimationWorkletMutatorDispatcherImpl> mutator_;
   cc::LayerTreeMutatorClient* client_;
 };
 

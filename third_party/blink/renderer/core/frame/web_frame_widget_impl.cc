@@ -80,9 +80,9 @@
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
-#include "third_party/blink/renderer/platform/graphics/worklet_mutator_impl.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
 namespace blink {
@@ -136,7 +136,7 @@ WebFrameWidgetImpl* WebFrameWidgetImpl::Create(WebWidgetClient& client) {
 
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)
     : WebFrameWidgetBase(client),
-      mutator_(nullptr),
+      mutator_dispatcher_(nullptr),
       layer_tree_view_(nullptr),
       root_layer_(nullptr),
       root_graphics_layer_(nullptr),
@@ -162,7 +162,7 @@ void WebFrameWidgetImpl::Trace(blink::Visitor* visitor) {
 void WebFrameWidgetImpl::Close() {
   WebFrameWidgetBase::Close();
 
-  mutator_ = nullptr;
+  mutator_dispatcher_ = nullptr;
   layer_tree_view_ = nullptr;
   root_layer_ = nullptr;
   root_graphics_layer_ = nullptr;
@@ -570,17 +570,18 @@ void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
   Client()->IntrinsicSizingInfoChanged(web_sizing_info);
 }
 
-base::WeakPtr<WorkletMutatorImpl> WebFrameWidgetImpl::EnsureCompositorMutator(
+base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+WebFrameWidgetImpl::EnsureCompositorMutatorDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
   if (!mutator_task_runner_) {
     layer_tree_view_->SetMutatorClient(
-        WorkletMutatorImpl::CreateCompositorThreadClient(
-            &mutator_, &mutator_task_runner_));
+        AnimationWorkletMutatorDispatcherImpl::CreateCompositorThreadClient(
+            &mutator_dispatcher_, &mutator_task_runner_));
   }
 
   DCHECK(mutator_task_runner_);
   *mutator_task_runner = mutator_task_runner_;
-  return mutator_;
+  return mutator_dispatcher_;
 }
 
 void WebFrameWidgetImpl::ApplyViewportDeltas(
@@ -683,7 +684,7 @@ void WebFrameWidgetImpl::WillCloseLayerTreeView() {
   }
 
   SetIsAcceleratedCompositingActive(false);
-  mutator_ = nullptr;
+  mutator_dispatcher_ = nullptr;
   layer_tree_view_ = nullptr;
   animation_host_ = nullptr;
   layer_tree_view_closed_ = true;
@@ -1028,7 +1029,7 @@ Element* WebFrameWidgetImpl::FocusedElement() const {
 
 void WebFrameWidgetImpl::InitializeLayerTreeView() {
   DCHECK(Client());
-  DCHECK(!mutator_);
+  DCHECK(!mutator_dispatcher_);
   layer_tree_view_ = Client()->InitializeLayerTreeView();
   DCHECK(layer_tree_view_);
   if (Platform::Current()->IsThreadedAnimationEnabled()) {

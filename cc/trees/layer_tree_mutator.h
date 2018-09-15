@@ -148,7 +148,7 @@ class CC_EXPORT LayerTreeMutator {
 
   virtual void Mutate(std::unique_ptr<MutatorInputState> input_state) = 0;
   // TODO(majidvp): Remove when timeline inputs are known.
-  virtual bool HasAnimators() = 0;
+  virtual bool HasMutators() = 0;
 };
 
 }  // namespace cc
