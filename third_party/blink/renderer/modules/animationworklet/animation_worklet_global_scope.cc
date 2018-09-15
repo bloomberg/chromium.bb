@@ -23,9 +23,9 @@ void UpdateAnimation(Animator* animator,
                      ScriptState* script_state,
                      WorkletAnimationId id,
                      double current_time,
-                     CompositorMutatorOutputState* result) {
-  CompositorMutatorOutputState::AnimationState animation_output(id,
-                                                                base::nullopt);
+                     AnimationWorkletDispatcherOutput* result) {
+  AnimationWorkletDispatcherOutput::AnimationState animation_output(
+      id, base::nullopt);
   if (animator->Animate(script_state, current_time, &animation_output)) {
     result->animations.push_back(std::move(animation_output));
   }

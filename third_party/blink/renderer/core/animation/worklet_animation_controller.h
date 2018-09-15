@@ -9,7 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
 #include "third_party/blink/renderer/platform/graphics/mutator_client.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -17,10 +17,10 @@
 
 namespace blink {
 
+class AnimationWorkletMutatorDispatcherImpl;
 class Document;
 class MainThreadMutatorClient;
 class WorkletAnimationBase;
-class WorkletMutatorImpl;
 
 // Handles AnimationWorklet animations on the main-thread.
 //
@@ -52,7 +52,8 @@ class CORE_EXPORT WorkletAnimationController
   // correct ElementId for the scroll source.
   void ScrollSourceCompositingStateChanged(Node*);
 
-  base::WeakPtr<WorkletMutatorImpl> EnsureMainThreadMutator(
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+  EnsureMainThreadMutatorDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
   void SetMutationUpdate(
       std::unique_ptr<AnimationWorkletOutput> output) override;
@@ -60,7 +61,7 @@ class CORE_EXPORT WorkletAnimationController
 
  private:
   void MutateAnimations();
-  std::unique_ptr<CompositorMutatorInputState> CollectAnimationStates();
+  std::unique_ptr<AnimationWorkletDispatcherInput> CollectAnimationStates();
   void ApplyAnimationTimings(TimingUpdateReason reason);
 
   HeapHashSet<Member<WorkletAnimationBase>> pending_animations_;

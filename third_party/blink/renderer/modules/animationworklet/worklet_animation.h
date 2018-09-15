@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
 
 namespace blink {
 
@@ -111,7 +111,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   }
   bool IsActiveAnimation() const override;
 
-  void UpdateInputState(CompositorMutatorInputState* input_state) override;
+  void UpdateInputState(AnimationWorkletDispatcherInput* input_state) override;
   void SetOutputState(
       const AnimationWorkletOutput::AnimationState& state) override;
 

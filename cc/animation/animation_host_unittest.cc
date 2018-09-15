@@ -165,7 +165,7 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateTakesEffectInSameFrame) {
   MockLayerTreeMutator* mock_mutator = new NiceMock<MockLayerTreeMutator>();
   host_impl_->SetLayerTreeMutator(
       base::WrapUnique<LayerTreeMutator>(mock_mutator));
-  ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
+  ON_CALL(*mock_mutator, HasMutators()).WillByDefault(Return(true));
   ON_CALL(*mock_mutator, MutateRef(_))
       .WillByDefault(InvokeWithoutArgs(
           [this, local_time]() { this->SetOutputState(local_time); }));
@@ -191,7 +191,7 @@ TEST_F(AnimationHostTest, LayerTreeMutatorsIsMutatedWithCorrectInputState) {
   MockLayerTreeMutator* mock_mutator = new NiceMock<MockLayerTreeMutator>();
   host_impl_->SetLayerTreeMutator(
       base::WrapUnique<LayerTreeMutator>(mock_mutator));
-  ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
+  ON_CALL(*mock_mutator, HasMutators()).WillByDefault(Return(true));
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -216,7 +216,7 @@ TEST_F(AnimationHostTest, LayerTreeMutatorsIsMutatedOnlyWhenInputChanges) {
   MockLayerTreeMutator* mock_mutator = new NiceMock<MockLayerTreeMutator>();
   host_impl_->SetLayerTreeMutator(
       base::WrapUnique<LayerTreeMutator>(mock_mutator));
-  ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
+  ON_CALL(*mock_mutator, HasMutators()).WillByDefault(Return(true));
 
   const float start_opacity = .7f;
   const float end_opacity = .3f;
@@ -342,7 +342,7 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
   MockLayerTreeMutator* mock_mutator = new NiceMock<MockLayerTreeMutator>();
   host_impl_->SetLayerTreeMutator(
       base::WrapUnique<LayerTreeMutator>(mock_mutator));
-  ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
+  ON_CALL(*mock_mutator, HasMutators()).WillByDefault(Return(true));
   EXPECT_CALL(*mock_mutator,
               MutateRef(::testing::Truly(Animation1TimeEquals20)))
       .Times(1);

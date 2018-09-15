@@ -556,7 +556,7 @@ bool WorkletAnimation::IsActiveAnimation() const {
 }
 
 void WorkletAnimation::UpdateInputState(
-    CompositorMutatorInputState* input_state) {
+    AnimationWorkletDispatcherInput* input_state) {
   if (!running_on_main_thread_) {
     input_state->Peek(id_);
     return;

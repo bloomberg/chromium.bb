@@ -9,8 +9,8 @@
 #include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/main_thread_mutator_client.h"
-#include "third_party/blink/renderer/platform/graphics/worklet_mutator_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -92,21 +92,22 @@ void WorkletAnimationController::ScrollSourceCompositingStateChanged(
   }
 }
 
-base::WeakPtr<WorkletMutatorImpl>
-WorkletAnimationController::EnsureMainThreadMutator(
+base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+WorkletAnimationController::EnsureMainThreadMutatorDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
-  base::WeakPtr<WorkletMutatorImpl> mutator;
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher;
   if (!mutator_task_runner_) {
-    main_thread_mutator_client_ = WorkletMutatorImpl::CreateMainThreadClient(
-        &mutator, &mutator_task_runner_);
+    main_thread_mutator_client_ =
+        AnimationWorkletMutatorDispatcherImpl::CreateMainThreadClient(
+            &mutator_dispatcher, &mutator_task_runner_);
     main_thread_mutator_client_->SetDelegate(this);
   }
 
   DCHECK(main_thread_mutator_client_);
   DCHECK(mutator_task_runner_);
-  DCHECK(mutator);
+  DCHECK(mutator_dispatcher);
   *mutator_task_runner = mutator_task_runner_;
-  return mutator;
+  return mutator_dispatcher;
 }
 
 void WorkletAnimationController::SetMutationUpdate(
@@ -128,10 +129,10 @@ void WorkletAnimationController::MutateAnimations() {
   main_thread_mutator_client_->Mutator()->Mutate(CollectAnimationStates());
 }
 
-std::unique_ptr<CompositorMutatorInputState>
+std::unique_ptr<AnimationWorkletDispatcherInput>
 WorkletAnimationController::CollectAnimationStates() {
-  std::unique_ptr<CompositorMutatorInputState> result =
-      std::make_unique<CompositorMutatorInputState>();
+  std::unique_ptr<AnimationWorkletDispatcherInput> result =
+      std::make_unique<AnimationWorkletDispatcherInput>();
 
   for (auto& animation : animations_.Values())
     animation->UpdateInputState(result.get());

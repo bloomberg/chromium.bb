@@ -9,25 +9,26 @@
 #include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_animator.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
+class AnimationWorkletMutatorDispatcherImpl;
 class Document;
 class WorkletGlobalScope;
-class WorkletMutatorImpl;
 
-// Mediates between one Animator and the associated WorkletMutatorImpl. There
-// is one AnimationWorkletProxyClientImpl per Animator but there may be multiple
-// for a given mutator and animatorWorklet.
+// Mediates between animation worklet global scope and its associated
+// dispatchers. An AnimationWorkletProxyClientImpl is associated with a single
+// global scope and up to two dispatchers representing main and compositor
+// threads.
 //
 // This is constructed on the main thread but it is used in the worklet backing
 // thread.
 class MODULES_EXPORT AnimationWorkletProxyClientImpl final
     : public GarbageCollectedFinalized<AnimationWorkletProxyClientImpl>,
       public AnimationWorkletProxyClient,
-      public CompositorAnimator {
+      public AnimationWorkletMutator {
   WTF_MAKE_NONCOPYABLE(AnimationWorkletProxyClientImpl);
   USING_GARBAGE_COLLECTED_MIXIN(AnimationWorkletProxyClientImpl);
 
@@ -36,9 +37,9 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
   // |mutatee_runner|.
   explicit AnimationWorkletProxyClientImpl(
       int scope_id,
-      base::WeakPtr<WorkletMutatorImpl> compositor_mutatee,
+      base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> compositor_mutatee,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_mutatee_runner,
-      base::WeakPtr<WorkletMutatorImpl> main_thread_mutatee,
+      base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> main_thread_mutatee,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_mutatee_runner);
   void Trace(blink::Visitor*) override;
 
@@ -46,7 +47,7 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
   void SetGlobalScope(WorkletGlobalScope*) override;
   void Dispose() override;
 
-  // CompositorAnimator:
+  // AnimationWorkletMutator:
   // These methods are invoked on the animation worklet thread.
   int GetScopeId() const override { return scope_id_; }
   std::unique_ptr<AnimationWorkletOutput> Mutate(
@@ -58,11 +59,12 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
   const int scope_id_;
 
   struct MutatorItem {
-    base::WeakPtr<WorkletMutatorImpl> mutator;
+    base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher;
     scoped_refptr<base::SingleThreadTaskRunner> mutator_runner;
-    MutatorItem(base::WeakPtr<WorkletMutatorImpl> mutator,
-                scoped_refptr<base::SingleThreadTaskRunner> mutator_runner)
-        : mutator(std::move(mutator)),
+    MutatorItem(
+        base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher,
+        scoped_refptr<base::SingleThreadTaskRunner> mutator_runner)
+        : mutator_dispatcher(std::move(mutator_dispatcher)),
           mutator_runner(std::move(mutator_runner)) {}
   };
   WTF::Vector<MutatorItem> mutator_items_;

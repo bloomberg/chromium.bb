@@ -5,12 +5,12 @@
 #include "third_party/blink/renderer/platform/graphics/main_thread_mutator_client.h"
 
 #include <memory>
-#include "third_party/blink/renderer/platform/graphics/worklet_mutator_impl.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 
 namespace blink {
 
 MainThreadMutatorClient::MainThreadMutatorClient(
-    std::unique_ptr<WorkletMutatorImpl> mutator)
+    std::unique_ptr<AnimationWorkletMutatorDispatcherImpl> mutator)
     : mutator_(std::move(mutator)) {
   mutator_->SetClient(this);
 }

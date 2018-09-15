@@ -21,7 +21,7 @@ class MockLayerTreeMutator : public LayerTreeMutator {
 
   MOCK_METHOD1(MutateRef, void(MutatorInputState* input_state));
   MOCK_METHOD1(SetClient, void(LayerTreeMutatorClient* client));
-  MOCK_METHOD0(HasAnimators, bool());
+  MOCK_METHOD0(HasMutators, bool());
 };
 
 }  // namespace cc

@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
@@ -35,7 +35,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   // the output state with new updates.
   bool Animate(ScriptState*,
                double current_time,
-               CompositorMutatorOutputState::AnimationState*);
+               AnimationWorkletDispatcherOutput::AnimationState*);
   base::Optional<TimeDelta> GetLastLocalTime() const {
     return effect_->local_time();
   }
