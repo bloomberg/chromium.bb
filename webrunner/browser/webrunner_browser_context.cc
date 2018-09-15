@@ -7,10 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/url_request_context.h"
@@ -58,8 +56,10 @@ std::unique_ptr<WebRunnerNetLog> CreateNetLog() {
   return result;
 }
 
-WebRunnerBrowserContext::WebRunnerBrowserContext()
-    : net_log_(CreateNetLog()), resource_context_(new ResourceContext()) {
+WebRunnerBrowserContext::WebRunnerBrowserContext(base::FilePath data_dir_path)
+    : data_dir_path_(std::move(data_dir_path)),
+      net_log_(CreateNetLog()),
+      resource_context_(new ResourceContext()) {
   BrowserContext::Initialize(this, GetPath());
 }
 
@@ -81,9 +81,7 @@ WebRunnerBrowserContext::CreateZoomLevelDelegate(
 }
 
 base::FilePath WebRunnerBrowserContext::GetPath() const {
-  base::FilePath data_path;
-  base::PathService::Get(base::DIR_APP_DATA, &data_path);
-  return data_path;
+  return data_dir_path_;
 }
 
 base::FilePath WebRunnerBrowserContext::GetCachePath() const {
@@ -92,7 +90,7 @@ base::FilePath WebRunnerBrowserContext::GetCachePath() const {
 }
 
 bool WebRunnerBrowserContext::IsOffTheRecord() const {
-  return GetPath().empty();
+  return data_dir_path_.empty();
 }
 
 content::ResourceContext* WebRunnerBrowserContext::GetResourceContext() {

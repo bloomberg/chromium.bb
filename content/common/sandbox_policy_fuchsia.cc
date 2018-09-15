@@ -19,7 +19,6 @@
 #include "base/files/file_util.h"
 #include "base/fuchsia/component_context.h"
 #include "base/fuchsia/filtered_service_directory.h"
-#include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -104,9 +103,7 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
 
   // Map /pkg (read-only files deployed from the package) into the child's
   // namespace.
-  base::FilePath package_root;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &package_root));
-  options->paths_to_clone.push_back(package_root);
+  options->paths_to_clone.push_back(base::GetPackageRoot());
 
   // Clear environmental variables to better isolate the child from
   // this process.

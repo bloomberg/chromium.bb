@@ -40,8 +40,7 @@ NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
     return nullptr;
   }
 
-  FilePath computed_path;
-  base::PathService::Get(DIR_SOURCE_ROOT, &computed_path);
+  FilePath computed_path = base::GetPackageRoot();
   computed_path = computed_path.AppendASCII("lib").Append(components[0]);
   base::File library(computed_path,
                      base::File::FLAG_OPEN | base::File::FLAG_READ);
