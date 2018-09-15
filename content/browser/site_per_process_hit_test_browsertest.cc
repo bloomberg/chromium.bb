@@ -2962,6 +2962,7 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
   // before any events go through the main frame RenderWidgetHost.
   // https://crbug.com/882458
   CursorUpdateEventLogger main_frame_event_logger;
+  LOG(ERROR) << "Installing main-frame event logger.";
   root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
       &main_frame_event_logger);
 #endif
