@@ -284,7 +284,7 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
   RunBuildScript(buildroot, cmd, extra_env=extra_env_local, enter_chroot=True)
 
 
-def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
+def SetupBoard(buildroot, board, usepkg,
                extra_env=None, force=False, profile=None, chroot_upgrade=True,
                chroot_args=None):
   """Wrapper around setup_board.
@@ -293,8 +293,6 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
     buildroot: The buildroot of the current build.
     board: The board to set up.
     usepkg: Whether to use binary packages when setting up the board.
-    chrome_binhost_only: If set, only use binary packages on the board for
-      Chrome itself.
     extra_env: A dictionary of environmental variables to set during generation.
     force: Whether to remove the board prior to setting it up.
     profile: The profile to use with this board.
@@ -316,9 +314,6 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
 
   if not usepkg:
     cmd.extend(_LOCAL_BUILD_FLAGS)
-
-  if chrome_binhost_only:
-    cmd.append('--chrome_binhost_only')
 
   if force:
     cmd.append('--force')
@@ -433,7 +428,7 @@ def UpdateBinhostJson(buildroot):
   RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
 
-def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
+def Build(buildroot, board, build_autotest, usepkg,
           packages=(), skip_chroot_upgrade=True,
           extra_env=None, chrome_root=None, noretry=False,
           chroot_args=None, event_file=None, run_goma=False):
@@ -444,8 +439,6 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     board: The board to set up.
     build_autotest: Whether to build autotest-related packages.
     usepkg: Whether to use binary packages.
-    chrome_binhost_only: If set, only use binary packages on the board for
-      Chrome itself.
     packages: Tuple of specific packages we want to build. If empty,
       build_packages will calculate a list of packages automatically.
     skip_chroot_upgrade: Whether to skip the chroot update. If the chroot is
@@ -469,9 +462,6 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
 
   if not usepkg:
     cmd.extend(_LOCAL_BUILD_FLAGS)
-
-  if chrome_binhost_only:
-    cmd.append('--chrome_binhost_only')
 
   if noretry:
     cmd.append('--nobuildretry')

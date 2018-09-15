@@ -322,7 +322,7 @@ class SDKTestStage(generic_stages.BuilderStage):
                           extra_env=self._portage_extra_env,
                           chroot_args=new_chroot_args)
       commands.Build(self._build_root, board, build_autotest=True,
-                     usepkg=False, chrome_binhost_only=False,
+                     usepkg=False,
                      extra_env=self._portage_extra_env,
                      chroot_args=new_chroot_args)
 

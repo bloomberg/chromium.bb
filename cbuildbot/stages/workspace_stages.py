@@ -224,7 +224,6 @@ class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
     usepkg = self._run.config.usepkg_build_packages
     commands.SetupBoard(
         self._build_root, board=self._current_board, usepkg=usepkg,
-        chrome_binhost_only=self._run.config.chrome_binhost_only,
         force=self._run.config.board_replace,
         extra_env=self._portage_extra_env, chroot_upgrade=True,
         profile=self._run.options.profile or self._run.config.profile)
@@ -241,7 +240,6 @@ class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage):
                    self._current_board,
                    build_autotest=False,
                    usepkg=self._run.config.usepkg_build_packages,
-                   chrome_binhost_only=self._run.config.chrome_binhost_only,
                    packages=packages,
                    skip_chroot_upgrade=True,
                    chrome_root=self._run.options.chrome_root,

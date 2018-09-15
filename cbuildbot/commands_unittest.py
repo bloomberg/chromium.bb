@@ -862,7 +862,6 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     """Base case where Build is called with minimal options."""
     kwargs.setdefault('build_autotest', default)
     kwargs.setdefault('usepkg', default)
-    kwargs.setdefault('chrome_binhost_only', default)
     kwargs.setdefault('skip_chroot_upgrade', default)
 
     kwargs.setdefault('event_file',

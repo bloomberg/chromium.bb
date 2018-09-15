@@ -690,9 +690,6 @@ def DefaultSettings():
       # packages.)
       build_packages_in_background=False,
 
-      # Only use binaries in build_packages for Chrome itself.
-      chrome_binhost_only=False,
-
       # Does this profile need to sync chrome?  If None, we guess based on
       # other factors.  If True/False, we always do that.
       sync_chrome=None,
