@@ -53,8 +53,6 @@ void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
        IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_SINGLE_DEVICE_HEADER},
       {"startSetupPageFeatureListHeader",
        IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FEATURE_LIST_HEADER},
-      {"startSetupPageFeatureListAwm",
-       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AWM_DESCRIPTION},
       {"startSetupPageFeatureListInstallApps",
        IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_INSTALL_APPS_DESCRIPTION},
       {"startSetupPageFeatureListAddFeatures",
@@ -80,13 +78,20 @@ void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
           IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE,
           base::ASCIIToUTF16(kFootnoteMarker),
           base::UTF8ToUTF16(
-              chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
-                  .spec())));
+              chromeos::multidevice_setup::
+                  GetBoardSpecificBetterTogetherSuiteLearnMoreUrl()
+                      .spec())));
+  html_source->AddString("startSetupPageFootnote",
+                         l10n_util::GetStringFUTF16(
+                             IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE,
+                             base::ASCIIToUTF16(kFootnoteMarker)));
   html_source->AddString(
-      "startSetupPageFootnote",
+      "startSetupPageFeatureListAwm",
       l10n_util::GetStringFUTF16(
-          IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE,
-          base::ASCIIToUTF16(kFootnoteMarker)));
+          IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AWM_DESCRIPTION,
+          base::UTF8ToUTF16(chromeos::multidevice_setup::
+                                GetBoardSpecificMessagesLearnMoreUrl()
+                                    .spec())));
 }
 
 }  // namespace

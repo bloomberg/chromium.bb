@@ -109,9 +109,7 @@ const UiPageContainerBehaviorImpl = {
     if (!this.i18nExists(textId))
       return;
 
-    const validNodeFn = (node, value) => node.tagName == 'A';
-    return this.i18nAdvanced(
-        textId, {attrs: {'id': validNodeFn, 'href': validNodeFn}});
+    return loadTimeData.getString(textId);
   },
 };
 

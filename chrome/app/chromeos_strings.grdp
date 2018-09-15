@@ -139,7 +139,7 @@
     MultiDevice Setup
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL" desc="Label for button to accept conditions and begin MultiDevice setup workflow.">
-    Accept
+    Accept &amp; continue
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_TRY_AGAIN_LABEL" desc="Label for button to retry setup upon failure.">
     Try again
@@ -148,7 +148,7 @@
     Set up Better Together
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_PASSWORD_PAGE_ENTER_PASSWORD_LABEL" desc="Message displayed in the multi-device setup flow which asks the user to enter their password.">
-    Enter password
+    Enter your password
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_PASSWORD_PAGE_WRONG_PASSWORD_LABEL" desc="Message displayed in the multi-device setup flow when the user has entered an incorrect password.">
     Wrong password
@@ -169,7 +169,7 @@
     Better Together
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE" desc="Summary to tell user that they can share their Android's capabilities with their Chromebook; includes details on specific features that can be used and a link to an information page">
-    Share the best of Android with your Chromebook automatically. Connect your phone so you can text from your computer, share your phone's internet connection, and unlock your Chromebook screen.<ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a id="learn-more-link" href="$2<ex>https://support.google.com/chromebook/?p=multidevice</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+    Connect your Android phone and Chromebook to text from your computer, share your internet connection, and unlock your Chromebook with your phone.<ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a href="$2<ex>https://support.google.com/chromebook/?p=multidevice</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE" desc="Footnote for multi-device feature setup page, which indicates that the exact set of features available to users differs according to the device model used.">
     <ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph>Features vary by device
@@ -180,20 +180,17 @@
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MULTIPLE_DEVICE_HEADER" desc="Label appearing over a list of Android phones which this Chromebook can connect to.">
     Select a device
   </message>
-  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_DISCLAIMER" desc="A disclaimer that the specific features available depend on the user's phone and Chromebook.">
-    <ph name="FOOTNOTE_TARGET">$1<ex>*</ex></ph>Features vary by device
-  </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FEATURE_LIST_HEADER" desc="Header to introduce a list of things Better Together can do.">
-    Better Together may:
+    Turning on Better Together means that it can:
   </message>
-  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AWM_DESCRIPTION" desc="Description of a feature that shows text messages received by the user's phone as notification on their Chromebook.">
-    Send you notifications and default to remembering this computer for Messages
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AWM_DESCRIPTION" desc="Description of a feature that shows text messages received by the user's phone as notification on their Chromebook and a link to an information page.">
+    Send you notifications and default to remembering this computer for Messages. <ph name="LINK_BEGIN">&lt;a href="$1<ex>https://support.google.com/chromebook/?p=messages</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_INSTALL_APPS_DESCRIPTION" desc="Tell the user that Better Together can install apps on their Chromebook">
     Install apps on your Chromebook
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_ADD_FEATURES" desc="Tell the user that Better Together can offer to add new features to that use their phone's connection to their Chromebook">
-    Offer new features that use your phone's connection to your Chromebook
+    Offer new features as they become available
   </message>
 
   <!-- Update Screen Strings -->

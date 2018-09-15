@@ -2652,32 +2652,37 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_VERIFICATION_TEXT,
           base::UTF8ToUTF16(
-              chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
-                  .spec())));
+              chromeos::multidevice_setup::
+                  GetBoardSpecificBetterTogetherSuiteLearnMoreUrl()
+                      .spec())));
   html_source->AddString(
       "multideviceSetupSummary",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY,
           base::UTF8ToUTF16(
-              chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
-                  .spec())));
+              chromeos::multidevice_setup::
+                  GetBoardSpecificBetterTogetherSuiteLearnMoreUrl()
+                      .spec())));
   html_source->AddString(
       "multideviceNoHostText",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_NO_ELIGIBLE_HOSTS,
           base::UTF8ToUTF16(
-              chromeos::multidevice_setup::GetBoardSpecificLearnMoreUrl()
-                  .spec())));
+              chromeos::multidevice_setup::
+                  GetBoardSpecificBetterTogetherSuiteLearnMoreUrl()
+                      .spec())));
+  html_source->AddString(
+      "multideviceAndroidMessagesItemSummary",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES_SUMMARY,
+          base::UTF8ToUTF16(chromeos::multidevice_setup::
+                                GetBoardSpecificMessagesLearnMoreUrl()
+                                    .spec())));
   html_source->AddString(
       "multideviceSmartLockItemSummary",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_SMART_LOCK_SUMMARY,
           GetHelpUrlWithBoard(chrome::kEasyUnlockLearnMoreUrl)));
-  html_source->AddString(
-      "multideviceAndroidMessagesItemSummary",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES_SUMMARY,
-          GetHelpUrlWithBoard(chrome::kAndroidMessagesLearnMoreURL)));
 }
 #endif
 
