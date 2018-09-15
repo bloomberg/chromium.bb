@@ -279,6 +279,10 @@ const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
 const base::Feature kD3D11EncryptedMedia{"D3D11EncryptedMedia",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable VP9 decoding in the D3D11VideoDecoder.
+const base::Feature kD3D11VP9Decoder{"D3D11VP9Decoder",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
 const base::Feature kMseBufferByPts{"MseBufferByPts",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

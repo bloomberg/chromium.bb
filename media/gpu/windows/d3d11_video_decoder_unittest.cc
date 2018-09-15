@@ -53,7 +53,6 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     gpu_preferences_.enable_zero_copy_dxgi_video = true;
     gpu_preferences_.use_passthrough_cmd_decoder = false;
     gpu_workarounds_.disable_dxgi_zero_copy_video = false;
-    supported_config_ = TestVideoConfig::NormalH264(H264PROFILE_MAIN);
   }
 
   void TearDown() override {
@@ -119,7 +118,6 @@ class D3D11VideoDecoderTest : public ::testing::Test {
   gpu::GpuPreferences gpu_preferences_;
   gpu::GpuDriverBugWorkarounds gpu_workarounds_;
   MockD3D11VideoDecoderImpl* impl_ = nullptr;
-  VideoDecoderConfig supported_config_;
   D3D11CreateDeviceMock create_device_mock_;
 
   MOCK_METHOD1(MockInitCB, void(bool));
@@ -145,7 +143,9 @@ TEST_F(D3D11VideoDecoderTest, RequiresD3D11_1) {
       feature_levels, &num_levels);
   d3d11_decoder_raw_->SetCreateDeviceCallbackForTesting(
       std::move(create_device_cb));
-  InitializeDecoder(supported_config_, kExpectFailure);
+  InitializeDecoder(
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
+      kExpectFailure);
 
   // Verify that it requests exactly 11.1, and nothing earlier.
   // Later is okay.
@@ -157,41 +157,58 @@ TEST_F(D3D11VideoDecoderTest, RequiresD3D11_1) {
   ASSERT_TRUE(min_is_d3d11_1);
 }
 
-TEST_F(D3D11VideoDecoderTest, SupportsH264) {
+TEST_F(D3D11VideoDecoderTest, OnlySupportsVP9WithFlagEnabled) {
   CreateDecoder();
-  // Make sure that we're testing H264.
-  ASSERT_EQ(supported_config_.profile(), H264PROFILE_MAIN);
-  // We do not actually try to initialize the decoder, since we don't mock
-  // out enough of D3D for that to work.  Instead, we just check that
-  // IsPotentiallySupported is correct.
-  EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(supported_config_));
+
+  VideoDecoderConfig configuration =
+      TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures({}, {kD3D11VP9Decoder});
+    EXPECT_FALSE(d3d11_decoder_raw_->IsPotentiallySupported(configuration));
+  }
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures({kD3D11VP9Decoder}, {});
+    EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(configuration));
+  }
 }
 
-TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP8) {
+TEST_F(D3D11VideoDecoderTest, OnlySupportsH264NonHIGH10Profile) {
   CreateDecoder();
-  InitializeDecoder(TestVideoConfig::Normal(kCodecVP8), kExpectFailure);
-}
 
-TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP9) {
-  CreateDecoder();
-  InitializeDecoder(TestVideoConfig::Normal(kCodecVP9), kExpectFailure);
+  VideoDecoderConfig high10 = TestVideoConfig::NormalCodecProfile(
+      kCodecH264, H264PROFILE_HIGH10PROFILE);
+
+  VideoDecoderConfig normal =
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN);
+
+  EXPECT_FALSE(d3d11_decoder_raw_->IsPotentiallySupported(high10));
+  EXPECT_TRUE(d3d11_decoder_raw_->IsPotentiallySupported(normal));
 }
 
 TEST_F(D3D11VideoDecoderTest, RequiresZeroCopyPreference) {
   gpu_preferences_.enable_zero_copy_dxgi_video = false;
   CreateDecoder();
-  InitializeDecoder(supported_config_, kExpectFailure);
+  InitializeDecoder(
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
+      kExpectFailure);
 }
 
 TEST_F(D3D11VideoDecoderTest, FailsIfZeroCopyWorkaround) {
   gpu_workarounds_.disable_dxgi_zero_copy_video = true;
   CreateDecoder();
-  InitializeDecoder(supported_config_, kExpectFailure);
+  InitializeDecoder(
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
+      kExpectFailure);
 }
 
 TEST_F(D3D11VideoDecoderTest, DoesNotSupportEncryptionWithoutFlag) {
   CreateDecoder();
-  VideoDecoderConfig encrypted_config = supported_config_;
+  VideoDecoderConfig encrypted_config =
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN);
   encrypted_config.SetIsEncrypted(true);
   {
     base::test::ScopedFeatureList scoped_feature_list;
@@ -202,7 +219,8 @@ TEST_F(D3D11VideoDecoderTest, DoesNotSupportEncryptionWithoutFlag) {
 
 TEST_F(D3D11VideoDecoderTest, SupportsEncryptionWithFlag) {
   CreateDecoder();
-  VideoDecoderConfig encrypted_config = supported_config_;
+  VideoDecoderConfig encrypted_config =
+      TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN);
   encrypted_config.SetIsEncrypted(true);
   {
     base::test::ScopedFeatureList scoped_feature_list;

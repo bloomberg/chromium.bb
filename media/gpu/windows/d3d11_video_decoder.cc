@@ -5,6 +5,7 @@
 #include "media/gpu/windows/d3d11_video_decoder.h"
 
 #include <d3d11_4.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -24,6 +25,23 @@
 #include "ui/gl/gl_angle_util_win.h"
 
 namespace media {
+
+namespace {
+
+#define INRANGE(_profile, codecname) \
+  (_profile >= codecname##PROFILE_MIN && _profile <= codecname##PROFILE_MAX)
+
+bool isVP9(const VideoDecoderConfig& config) {
+  return INRANGE(config.profile(), VP9);
+}
+
+bool isH264(const VideoDecoderConfig& config) {
+  return INRANGE(config.profile(), H264);
+}
+
+#undef INRANGE
+
+}  // namespace
 
 std::unique_ptr<VideoDecoder> D3D11VideoDecoder::Create(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
@@ -80,6 +98,53 @@ D3D11VideoDecoder::~D3D11VideoDecoder() {
 
 std::string D3D11VideoDecoder::GetDisplayName() const {
   return "D3D11VideoDecoder";
+}
+
+void D3D11VideoDecoder::InitializeAcceleratedDecoder(
+    const VideoDecoderConfig& config,
+    CdmProxyContext* proxy_context,
+    Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder) {
+  if (isVP9(config)) {
+    accelerated_video_decoder_ =
+        std::make_unique<VP9Decoder>(std::make_unique<D3D11VP9Accelerator>());
+    return;
+  }
+
+  if (isH264(config)) {
+    accelerated_video_decoder_ = std::make_unique<H264Decoder>(
+        std::make_unique<D3D11H264Accelerator>(this, media_log_.get(),
+                                               proxy_context, video_decoder,
+                                               video_device_, video_context_),
+        config.color_space_info());
+    return;
+  }
+
+  // No other type of config should make it this far due to earlier checks.
+  NOTREACHED();
+  return;
+}
+
+bool D3D11VideoDecoder::DeviceHasDecoderID(GUID decoder_guid) {
+  UINT index = video_device_->GetVideoDecoderProfileCount();
+  while (index-- > 0) {
+    GUID profile = {};
+    if (SUCCEEDED(video_device_->GetVideoDecoderProfile(index, &profile))) {
+      if (profile == decoder_guid)
+        return true;
+    }
+  }
+  return false;
+}
+
+GUID D3D11VideoDecoder::GetD3D11DecoderGUID(const VideoDecoderConfig& config) {
+  if (isVP9(config) && base::FeatureList::IsEnabled(kD3D11VP9Decoder))
+    // TODO(tmathmeyer) set up a finch experiment.
+    return D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0;
+
+  if (isH264(config))
+    return D3D11_DECODER_PROFILE_H264_VLD_NOFGT;
+
+  return {};
 }
 
 void D3D11VideoDecoder::Initialize(
@@ -139,29 +204,10 @@ void D3D11VideoDecoder::Initialize(
     return;
   }
 
-  GUID needed_guid;
-  memcpy(&needed_guid, &D3D11_DECODER_PROFILE_H264_VLD_NOFGT,
-         sizeof(needed_guid));
-  GUID decoder_guid = {};
-
-  {
-    // Enumerate supported video profiles and look for the H264 profile.
-    bool found = false;
-    UINT profile_count = video_device_->GetVideoDecoderProfileCount();
-    for (UINT profile_idx = 0; profile_idx < profile_count; profile_idx++) {
-      GUID profile_id = {};
-      hr = video_device_->GetVideoDecoderProfile(profile_idx, &profile_id);
-      if (SUCCEEDED(hr) && (profile_id == needed_guid)) {
-        decoder_guid = profile_id;
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      NotifyError("Did not find a supported profile");
-      return;
-    }
+  GUID decoder_guid = GetD3D11DecoderGUID(config);
+  if (!DeviceHasDecoderID(decoder_guid)) {
+    NotifyError("Did not find a supported profile");
+    return;
   }
 
   // TODO(liberato): dxva does this.  don't know if we need to.
@@ -222,11 +268,7 @@ void D3D11VideoDecoder::Initialize(
     proxy_context = cdm_context->GetCdmProxyContext();
 #endif
 
-  accelerated_video_decoder_ = std::make_unique<H264Decoder>(
-      std::make_unique<D3D11H264Accelerator>(this, media_log_.get(),
-                                             proxy_context, video_decoder,
-                                             video_device_, video_context_),
-      config.color_space_info());
+  InitializeAcceleratedDecoder(config, proxy_context, video_decoder);
 
   // |cdm_context| could be null for clear playback.
   if (cdm_context) {
@@ -620,18 +662,19 @@ bool D3D11VideoDecoder::IsPotentiallySupported(
     return false;
   }
 
-  // Must be H264.
-  // TODO(tmathmeyer): vp9 should be supported.
-  const bool is_h264 = config.profile() >= H264PROFILE_MIN &&
-                       config.profile() <= H264PROFILE_MAX;
+  if (config.profile() == H264PROFILE_HIGH10PROFILE) {
+    // H264 HIGH10 is never supported.
+    SetWasSupportedReason(D3D11VideoNotSupportedReason::kProfileNotSupported);
+    return false;
+  }
 
-  if (is_h264) {
-    if (config.profile() == H264PROFILE_HIGH10PROFILE) {
-      // Must use NV12, which excludes HDR.
-      SetWasSupportedReason(D3D11VideoNotSupportedReason::kProfileNotSupported);
-      return false;
-    }
-  } else {
+  // Converts one of chromium's VideoCodecProfile options to a dxguid value.
+  // If this GUID comes back empty then the profile is not supported.
+  GUID decoderGUID = GetD3D11DecoderGUID(config);
+
+  // If we got the empty guid, fail.
+  GUID empty_guid = {};
+  if (decoderGUID == empty_guid) {
     SetWasSupportedReason(D3D11VideoNotSupportedReason::kCodecNotSupported);
     return false;
   }

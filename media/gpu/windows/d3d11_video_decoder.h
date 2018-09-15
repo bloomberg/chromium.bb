@@ -21,6 +21,7 @@
 #include "media/gpu/windows/d3d11_create_device_cb.h"
 #include "media/gpu/windows/d3d11_h264_accelerator.h"
 #include "media/gpu/windows/d3d11_video_decoder_client.h"
+#include "media/gpu/windows/d3d11_vp9_accelerator.h"
 
 namespace gpu {
 class CommandBufferStub;
@@ -100,6 +101,18 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   // Run the decoder loop.
   void DoDecode();
+
+  // instantiate |accelerated_video_decoder_| based on the video profile
+  void InitializeAcceleratedDecoder(
+      const VideoDecoderConfig& config,
+      CdmProxyContext* proxy_context,
+      Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder);
+
+  // Query the video device for a specific decoder ID.
+  bool DeviceHasDecoderID(GUID decoder_guid);
+
+  // Gets the Decoder GUID from the config.
+  GUID GetD3D11DecoderGUID(const VideoDecoderConfig& config);
 
   // Create new PictureBuffers.  Currently, this completes synchronously, but
   // really should have an async interface since it must do some work on the gpu
