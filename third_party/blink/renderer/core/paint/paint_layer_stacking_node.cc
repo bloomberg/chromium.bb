@@ -240,7 +240,7 @@ bool PaintLayerStackingNode::StyleDidChange(PaintLayer* paint_layer,
                                             const ComputedStyle* old_style) {
   bool was_stacking_context = false;
   bool was_stacked = false;
-  bool old_z_index = 0;
+  int old_z_index = 0;
   if (old_style) {
     was_stacking_context = old_style->IsStackingContext();
     old_z_index = old_style->ZIndex();
