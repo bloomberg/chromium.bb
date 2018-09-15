@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
@@ -53,6 +55,8 @@ class WebStateTest
       feature_list_.InitAndEnableFeature(web::features::kSlimNavigationManager);
     }
   }
+
+  base::HistogramTester histogram_tester_;
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -288,7 +292,7 @@ TEST_P(WebStateTest, SetHasOpener) {
 // session size limit of |wk_navigation_util::kMaxSessionSize|.
 TEST_P(WebStateTest, RestoreLargeSession) {
   // Create session storage with large number of items.
-  const int kItemCount = 100;
+  const int kItemCount = 150;
   NSMutableArray<CRWNavigationItemStorage*>* item_storages =
       [NSMutableArray arrayWithCapacity:kItemCount];
   for (unsigned int i = 0; i < kItemCount; i++) {
@@ -357,6 +361,9 @@ TEST_P(WebStateTest, RestoreLargeSession) {
   }));
   EXPECT_EQ(kExpectedItemCount, navigation_manager->GetItemCount());
   EXPECT_TRUE(navigation_manager->CanGoForward());
+
+  histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
+  histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 100, 1);
 }
 
 INSTANTIATE_TEST_CASE_P(

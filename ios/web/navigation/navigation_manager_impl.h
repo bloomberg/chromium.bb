@@ -26,6 +26,12 @@ class NavigationItem;
 class NavigationManagerDelegate;
 class SessionStorageBuilder;
 
+// Name of UMA histogram to log the number of items Navigation Manager was
+// requested to restore. 100 is logged when the number of navigation items is
+// greater than 100. This is just a requested count and actual number of
+// restored items can be smaller.
+extern const char kRestoreNavigationItemCount[];
+
 // Defines the ways how a pending navigation can be initiated.
 enum class NavigationInitiationType {
   // Navigation initiation type is only valid for pending navigations, use NONE
@@ -212,6 +218,10 @@ class NavigationManagerImpl : public NavigationManager {
       UserAgentOverrideOption override_option,
       const NavigationItem* inherit_from,
       NavigationItem* pending_item);
+
+  // Must be called by subclasses before restoring |item_count| navigation
+  // items.
+  void WillRestore(size_t item_count);
 
   // Creates a NavigationItem using the given properties, where |previous_url|
   // is the URL of the navigation just prior to the current one. If
