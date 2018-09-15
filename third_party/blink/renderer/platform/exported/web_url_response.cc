@@ -57,7 +57,7 @@ class URLResponseExtraDataContainer : public ResourceResponse::ExtraData {
     return base::AdoptRef(new URLResponseExtraDataContainer(extra_data));
   }
 
-  ~URLResponseExtraDataContainer() override = default;
+  ~URLResponseExtraDataContainer() override;
 
   WebURLResponse::ExtraData* GetExtraData() const { return extra_data_.get(); }
 
@@ -67,6 +67,9 @@ class URLResponseExtraDataContainer : public ResourceResponse::ExtraData {
 
   std::unique_ptr<WebURLResponse::ExtraData> extra_data_;
 };
+
+NOINLINE URLResponseExtraDataContainer::~URLResponseExtraDataContainer() =
+    default;
 
 }  // namespace
 

@@ -86,6 +86,8 @@ ResourceResponse::ResourceResponse(const ResourceResponse&) = default;
 ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) =
     default;
 
+ResourceResponse::~ResourceResponse() = default;
+
 bool ResourceResponse::IsHTTP() const {
   return url_.ProtocolIsInHTTPFamily();
 }
