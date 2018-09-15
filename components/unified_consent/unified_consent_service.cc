@@ -157,6 +157,8 @@ UnifiedConsentService::UnifiedConsentService(
   // wasn't running, disable unified consent.
   if (!AreAllNonPersonalizedServicesEnabled() && IsUnifiedConsentGiven()) {
     SetUnifiedConsentGiven(false);
+    RecordUnifiedConsentRevoked(
+        metrics::UnifiedConsentRevokeReason::kServiceWasDisabled);
   }
 
   RecordSettingsHistogram();
@@ -265,14 +267,20 @@ void UnifiedConsentService::Shutdown() {
 void UnifiedConsentService::OnServiceStateChanged(Service service) {
   // Unified consent is disabled when any of its dependent services gets
   // disabled.
-  if (service_client_->GetServiceState(service) == ServiceState::kDisabled)
+  if (service_client_->GetServiceState(service) == ServiceState::kDisabled &&
+      IsUnifiedConsentGiven()) {
     SetUnifiedConsentGiven(false);
+    RecordUnifiedConsentRevoked(
+        metrics::UnifiedConsentRevokeReason::kServiceWasDisabled);
+  }
 }
 
 void UnifiedConsentService::OnPrimaryAccountCleared(
     const AccountInfo& account_info) {
   // When signing out, the unfied consent is revoked.
   pref_service_->SetBoolean(prefs::kUnifiedConsentGiven, false);
+  RecordUnifiedConsentRevoked(
+      metrics::UnifiedConsentRevokeReason::kUserSignedOut);
 
   // By design, signing out of Chrome automatically disables off-by-default
   // services.
@@ -306,6 +314,8 @@ void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
   if (sync_service_->IsUsingSecondaryPassphrase() && IsUnifiedConsentGiven()) {
     // Force off unified consent given when the user sets a custom passphrase.
     SetUnifiedConsentGiven(false);
+    RecordUnifiedConsentRevoked(
+        metrics::UnifiedConsentRevokeReason::kCustomPassphrase);
   }
 
   syncer::SyncPrefs sync_prefs(pref_service_);

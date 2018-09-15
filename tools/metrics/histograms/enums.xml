@@ -48374,6 +48374,12 @@ Full version information for the fingerprint enum values:
   <int value="8" label="User turned off on-by-default privacy setting"/>
 </enum>
 
+<enum name="UnifiedConsentRevokeReason">
+  <int value="0" label="User signed out of Chrome"/>
+  <int value="1" label="Service was disabled"/>
+  <int value="2" label="Custom passphrase was detected"/>
+</enum>
+
 <enum name="UnifiedConsentSyncAndGoogleServicesSettings">
   <int value="0" label="None of the services are enabled"/>
   <int value="1" label="'Sync and all Google services' is enabled"/>
