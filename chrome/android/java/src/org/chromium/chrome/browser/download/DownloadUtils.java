@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactor
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
+import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.offlinepages.DownloadUiActionFlags;
@@ -342,6 +343,17 @@ public class DownloadUtils {
 
         String intentMimeType = "";
         String[] intentMimeParts = {"", ""};
+
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (activity != null && activity instanceof ChromeTabbedActivity) {
+            ChromeTabbedActivity chromeActivity = ((ChromeTabbedActivity) activity);
+            ScreenshotTabObserver tabObserver =
+                    ScreenshotTabObserver.from(chromeActivity.getActivityTab());
+            if (tabObserver != null) {
+                tabObserver.onActionPerformedAfterScreenshot(
+                        ScreenshotTabObserver.SCREENSHOT_ACTION_SHARE);
+            }
+        }
 
         for (int i = 0; i < items.size(); i++) {
             DownloadHistoryItemWrapper wrappedItem  = items.get(i);

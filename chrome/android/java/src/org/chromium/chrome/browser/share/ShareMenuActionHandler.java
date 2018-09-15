@@ -13,6 +13,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -143,6 +144,11 @@ public class ShareMenuActionHandler {
 
     private void triggerShare(final Activity activity, final Tab currentTab,
             final boolean shareDirectly, boolean isIncognito) {
+        ScreenshotTabObserver tabObserver = ScreenshotTabObserver.from(currentTab);
+        if (tabObserver != null) {
+            tabObserver.onActionPerformedAfterScreenshot(
+                    ScreenshotTabObserver.SCREENSHOT_ACTION_SHARE);
+        }
         if (OfflinePageUtils.maybeShareOfflinePage(
                     activity, currentTab, (ShareParams p) -> mDelegate.share(p))) {
             return;
