@@ -164,10 +164,6 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunctionOnTarget(
   return testing::AssertionSuccess();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Debugger) {
-  ASSERT_TRUE(RunExtensionTest("debugger")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
                        DebuggerNotAllowedOnOtherExtensionPages) {
   // Load another arbitrary extension with an associated resource (popup.html).
@@ -328,13 +324,8 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   EXPECT_EQ(0u, service1->infobar_count());
 }
 
-class SitePerProcessExtensionApiTest : public ExtensionApiTest {
+class DebuggerExtensionApiTest : public ExtensionApiTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    content::IsolateAllSitesForTesting(command_line);
-  };
-
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -343,7 +334,19 @@ class SitePerProcessExtensionApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessExtensionApiTest, Debugger) {
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, Debugger) {
+  ASSERT_TRUE(RunExtensionTest("debugger")) << message_;
+}
+
+class SitePerProcessDebuggerExtensionApiTest : public DebuggerExtensionApiTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DebuggerExtensionApiTest::SetUpCommandLine(command_line);
+    content::IsolateAllSitesForTesting(command_line);
+  };
+};
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest, Debugger) {
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/extensions/api_test/debugger/oopif.html"));
   GURL iframe_url(embedded_test_server()->GetURL(
