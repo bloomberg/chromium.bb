@@ -12,6 +12,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.widget.tile.TileWithTextView;
 
 /**
  * Provides configuration details for suggestions.
@@ -54,10 +55,10 @@ public final class SuggestionsConfig {
     /**
      * Returns the current tile style, that depends on the enabled features and the screen size.
      */
-    @TileView.Style
+    @TileWithTextView.Style
     public static int getTileStyle(UiConfig uiConfig) {
-        return uiConfig.getCurrentDisplayStyle().isSmall() ? TileView.Style.MODERN_CONDENSED
-                                                           : TileView.Style.MODERN;
+        return uiConfig.getCurrentDisplayStyle().isSmall() ? TileWithTextView.Style.MODERN_CONDENSED
+                                                           : TileWithTextView.Style.MODERN;
     }
 
     private static boolean useCondensedTileLayout(boolean isScreenSmall) {

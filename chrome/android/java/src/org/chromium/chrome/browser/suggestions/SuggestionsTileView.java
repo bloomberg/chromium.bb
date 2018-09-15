@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,51 +6,26 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.annotation.IntDef;
 import android.util.AttributeSet;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.TitleUtil;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.chromium.chrome.browser.widget.tile.TileWithTextView;
+import org.chromium.chrome.browser.widget.tile.TileWithTextView.Style;
 
 /**
  * The view for a site suggestion tile. Displays the title of the site beneath a large icon. If a
  * large icon isn't available, displays a rounded rectangle with a single letter in its place.
  */
-public class TileView extends FrameLayout {
-    @IntDef({Style.MODERN, Style.MODERN_CONDENSED})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface Style {
-        int MODERN = 1;
-        int MODERN_CONDENSED = 2;
-    }
-
-    /** The url currently associated to this tile. */
-    private SiteSuggestion mSiteData;
-
-    private TextView mTitleView;
-    private ImageView mIconView;
-    private ImageView mBadgeView;
+public class SuggestionsTileView extends TileWithTextView {
+    /** The data currently associated to this tile. */
+    private SiteSuggestion mData;
 
     /**
      * Constructor for inflating from XML.
      */
-    public TileView(Context context, AttributeSet attrs) {
+    public SuggestionsTileView(Context context, AttributeSet attrs) {
         super(context, attrs);
-    }
-
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-
-        mTitleView = findViewById(R.id.tile_view_title);
-        mIconView = findViewById(R.id.tile_view_icon);
-        mBadgeView = findViewById(R.id.offline_badge);
     }
 
     /**
@@ -61,34 +36,33 @@ public class TileView extends FrameLayout {
      * @param tileStyle The visual style of the tile.
      */
     public void initialize(Tile tile, int titleLines, @Style int tileStyle) {
-        mTitleView.setLines(titleLines);
-        mSiteData = tile.getData();
-        mTitleView.setText(TitleUtil.getTitleForDisplay(tile.getTitle(), tile.getUrl()));
-        renderOfflineBadge(tile);
-        renderIcon(tile);
+        super.initialize(TitleUtil.getTitleForDisplay(tile.getTitle(), tile.getUrl()),
+                tile.getUrl(), tile.isOfflineAvailable(), tile.getIcon(), titleLines, tileStyle);
+        mData = tile.getData();
+        setIconViewLayoutParams(tile);
     }
 
-    /** @return The url associated with this view. */
-    public String getUrl() {
-        return mSiteData.url;
-    }
-
+    /** Retrieves data associated with this view.  */
     public SiteSuggestion getData() {
-        return mSiteData;
+        return mData;
     }
 
-    /** @return The {@link TileSource} of the tile represented by this TileView */
-    public int getTileSource() {
-        return mSiteData.source;
+    /** Retrieves url associated with this view. */
+    public String getUrl() {
+        return mData.url;
     }
 
-    /**
-     * Renders the icon held by the {@link Tile} or clears it from the view if the icon is null.
-     */
+    /** Renders icon based on tile data.  */
     public void renderIcon(Tile tile) {
-        mIconView.setImageDrawable(tile.getIcon());
+        setIconDrawable(tile.getIcon());
+        setIconViewLayoutParams(tile);
+    }
 
-        // Slightly enlarge the monogram in the modern layout.
+    public void renderOfflineBadge(Tile tile) {
+        setOfflineBadgeVisibility(tile.isOfflineAvailable());
+    }
+
+    private void setIconViewLayoutParams(Tile tile) {
         MarginLayoutParams params = (MarginLayoutParams) mIconView.getLayoutParams();
         Resources resources = getResources();
         if (tile.getType() == TileVisualType.ICON_COLOR
@@ -104,10 +78,5 @@ public class TileView extends FrameLayout {
                     resources.getDimensionPixelSize(R.dimen.tile_view_icon_margin_top_modern);
         }
         mIconView.setLayoutParams(params);
-    }
-
-    /** Shows or hides the offline badge to reflect the offline availability of the {@link Tile}. */
-    public void renderOfflineBadge(Tile tile) {
-        mBadgeView.setVisibility(tile.isOfflineAvailable() ? VISIBLE : GONE);
     }
 }

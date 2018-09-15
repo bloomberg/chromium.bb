@@ -4,12 +4,10 @@
      found in the LICENSE file. -->
 
 <!-- A site suggestion tile. -->
-<org.chromium.chrome.browser.suggestions.TileView
+<merge
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="@dimen/tile_view_width_condensed"
-    android:layout_height="wrap_content" >
+    xmlns:tools="http://schemas.android.com/tools" >
 
     <!-- The icon background. -->
     <View
@@ -62,4 +60,4 @@
         android:lineSpacingMultiplier="1.17"
         android:textAppearance="@style/BlackCaption" />
 
-</org.chromium.chrome.browser.suggestions.TileView>
+</merge>

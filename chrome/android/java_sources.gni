@@ -1370,6 +1370,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/suggestions/SiteSuggestion.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsBinder.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsConfig.java",
+  "java/src/org/chromium/chrome/browser/suggestions/SuggestionsTileView.java",
   "java/src/org/chromium/chrome/browser/suggestions/ThumbnailGradient.java",
   "java/src/org/chromium/chrome/browser/suggestions/Tile.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileGridLayout.java",
@@ -1379,7 +1380,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/suggestions/TileGroup.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileGroupDelegateImpl.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileRenderer.java",
-  "java/src/org/chromium/chrome/browser/suggestions/TileView.java",
   "java/src/org/chromium/chrome/browser/suggestions/NavigationRecorder.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsDependencyFactory.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsNavigationDelegate.java",
@@ -1673,6 +1673,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/textbubble/ArrowBubbleDrawable.java",
   "java/src/org/chromium/chrome/browser/widget/textbubble/ImageTextBubble.java",
   "java/src/org/chromium/chrome/browser/widget/textbubble/TextBubble.java",
+  "java/src/org/chromium/chrome/browser/widget/tile/TileWithTextView.java",
 ]
 
 if (enable_vr) {
