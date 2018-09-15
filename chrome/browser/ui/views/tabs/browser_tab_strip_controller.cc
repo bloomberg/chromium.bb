@@ -403,9 +403,8 @@ SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
   return GetFrameView()->GetToolbarTopSeparatorColor();
 }
 
-SkColor BrowserTabStripController::GetTabBackgroundColor(TabState state,
-                                                         bool opaque) const {
-  return GetFrameView()->GetTabBackgroundColor(state, opaque);
+SkColor BrowserTabStripController::GetTabBackgroundColor(TabState state) const {
+  return GetFrameView()->GetTabBackgroundColor(state);
 }
 
 SkColor BrowserTabStripController::GetTabForegroundColor(TabState state) const {

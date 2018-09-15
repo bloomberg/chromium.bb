@@ -75,6 +75,7 @@ class GtkUi : public views::LinuxUI {
   bool GetColor(int id,
                 SkColor* color,
                 PrefService* pref_service) const override;
+  bool GetDisplayProperty(int id, int* result) const override;
   SkColor GetFocusRingColor() const override;
   SkColor GetActiveSelectionBgColor() const override;
   SkColor GetActiveSelectionFgColor() const override;

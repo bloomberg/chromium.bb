@@ -1318,10 +1318,12 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   // |y_inset| is only set when |fill_id| is being used.
   DCHECK(!y_inset || fill_id);
 
-  const SkColor active_color =
-      controller_->GetTabBackgroundColor(TAB_ACTIVE, false);
+  const SkColor active_color = controller_->GetTabBackgroundColor(TAB_ACTIVE);
   const SkColor inactive_color =
-      controller_->GetTabBackgroundColor(TAB_INACTIVE, false);
+      GetThemeProvider()->GetDisplayProperty(
+          ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR)
+          ? controller_->GetTabBackgroundColor(TAB_INACTIVE)
+          : SK_ColorTRANSPARENT;
   const SkColor stroke_color = controller_->GetToolbarTopSeparatorColor();
   const bool paint_hover_effect = !active && hover_controller_.ShouldDraw();
 
@@ -1795,14 +1797,14 @@ void Tab::UpdateButtonIconColors(SkColor title_color) {
   constexpr float kMinimumPressedContrastRatio = 4.41f;
 
   SkColor tab_bg_color = controller_->GetTabBackgroundColor(
-      IsActive() ? TAB_ACTIVE : TAB_INACTIVE, true);
+      IsActive() ? TAB_ACTIVE : TAB_INACTIVE);
   SkColor tab_title_color = title_color;
 
   // Make sure the text has enough contrast to be visible if this tab is
   // selected.
   if (IsSelected() && !IsActive()) {
     const SkColor tab_active_bg_color =
-        controller_->GetTabBackgroundColor(TAB_ACTIVE, true);
+        controller_->GetTabBackgroundColor(TAB_ACTIVE);
     tab_bg_color = color_utils::AlphaBlend(
         tab_active_bg_color, tab_bg_color,
         gfx::ToRoundedInt(kSelectedTabOpacity * SK_AlphaOPAQUE));
