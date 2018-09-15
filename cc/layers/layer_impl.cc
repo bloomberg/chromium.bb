@@ -86,7 +86,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
 
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
-  layer_tree_impl_->AddToElementLayerList(element_id_);
+  layer_tree_impl_->AddToElementLayerList(element_id_, this);
 
   SetNeedsPushProperties();
 }
@@ -270,11 +270,16 @@ gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
 void LayerImpl::SetScrollable(const gfx::Size& bounds) {
   if (scrollable_ && scroll_container_bounds_ == bounds)
     return;
+
+  bool was_scrollable = scrollable_;
   scrollable_ = true;
   scroll_container_bounds_ = bounds;
 
   // Scrollbar positions depend on the bounds.
   layer_tree_impl()->SetScrollbarGeometriesNeedUpdate();
+
+  if (!was_scrollable)
+    layer_tree_impl()->AddScrollableLayer(this);
 
   if (layer_tree_impl()->settings().scrollbar_animator ==
       LayerTreeSettings::AURA_OVERLAY) {
@@ -644,7 +649,7 @@ void LayerImpl::SetElementId(ElementId element_id) {
 
   layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   element_id_ = element_id;
-  layer_tree_impl_->AddToElementLayerList(element_id_);
+  layer_tree_impl_->AddToElementLayerList(element_id_, this);
 
   SetNeedsPushProperties();
 }
