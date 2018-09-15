@@ -38,11 +38,11 @@ DefaultBrowserHandler::~DefaultBrowserHandler() {}
 
 void DefaultBrowserHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "SettingsDefaultBrowser.requestDefaultBrowserState",
+      "requestDefaultBrowserState",
       base::BindRepeating(&DefaultBrowserHandler::RequestDefaultBrowserState,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "SettingsDefaultBrowser.setAsDefaultBrowser",
+      "setAsDefaultBrowser",
       base::BindRepeating(&DefaultBrowserHandler::SetAsDefaultBrowser,
                           base::Unretained(this)));
 }
@@ -101,7 +101,7 @@ void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
       state == shell_integration::UNKNOWN_DEFAULT);
   dict.SetBoolean("isDisabledByPolicy", DefaultBrowserIsDisabledByPolicy());
 
-  FireWebUIListener("settings.updateDefaultBrowserState", dict);
+  FireWebUIListener("browser-default-state-changed", dict);
 }
 
 }  // namespace settings

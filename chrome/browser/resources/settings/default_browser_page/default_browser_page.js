@@ -37,7 +37,7 @@ Polymer({
   /** @override */
   ready: function() {
     this.addWebUIListener(
-        'settings.updateDefaultBrowserState',
+        'browser-default-state-changed',
         this.updateDefaultBrowserState_.bind(this));
 
     this.browserProxy_.requestDefaultBrowserState();

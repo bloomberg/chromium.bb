@@ -30,7 +30,7 @@ cr.define('settings_default_browser', function() {
     requestDefaultBrowserState() {
       this.methodCalled('requestDefaultBrowserState');
       cr.webUIListenerCallback(
-          'settings.updateDefaultBrowserState', this.defaultBrowserInfo_);
+          'browser-default-state-changed', this.defaultBrowserInfo_);
     }
 
     /** @override */
