@@ -12,8 +12,13 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-GURL GetBoardSpecificLearnMoreUrl() {
+GURL GetBoardSpecificBetterTogetherSuiteLearnMoreUrl() {
   return GURL(std::string(chrome::kMultiDeviceLearnMoreURL) +
+              "&b=" + base::SysInfo::GetLsbReleaseBoard());
+}
+
+GURL GetBoardSpecificMessagesLearnMoreUrl() {
+  return GURL(std::string(chrome::kAndroidMessagesLearnMoreURL) +
               "&b=" + base::SysInfo::GetLsbReleaseBoard());
 }
 
