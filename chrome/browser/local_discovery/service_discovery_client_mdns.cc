@@ -19,6 +19,7 @@
 #include "chrome/browser/local_discovery/service_discovery_client_impl.h"
 #include "components/net_log/chrome_net_log.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "net/dns/mdns_client.h"
 #include "net/socket/datagram_server_socket.h"
 
@@ -340,7 +341,7 @@ ServiceDiscoveryClientMdns::ServiceDiscoveryClientMdns()
       need_delay_mdns_tasks_(true),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   StartNewClient();
 }
 
@@ -373,12 +374,12 @@ ServiceDiscoveryClientMdns::CreateLocalDomainResolver(
 
 ServiceDiscoveryClientMdns::~ServiceDiscoveryClientMdns() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
   DestroyMdns();
 }
 
-void ServiceDiscoveryClientMdns::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void ServiceDiscoveryClientMdns::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Only network changes resets counter.
   restart_attempts_ = 0;

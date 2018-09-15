@@ -12,8 +12,8 @@
 #include "base/observer_list.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
-#include "net/base/network_change_notifier.h"
 #include "net/dns/mdns_client.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace local_discovery {
 
@@ -21,7 +21,7 @@ namespace local_discovery {
 // UI thread and the networking code on the IO thread.
 class ServiceDiscoveryClientMdns
     : public ServiceDiscoverySharedClient,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   class Proxy;
 
@@ -39,9 +39,8 @@ class ServiceDiscoveryClientMdns
       net::AddressFamily address_family,
       LocalDomainResolver::IPAddressCallback callback) override;
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver:
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
  private:
   ~ServiceDiscoveryClientMdns() override;
