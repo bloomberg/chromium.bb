@@ -2432,6 +2432,10 @@
         ],
       },
       'Linux ARM': {
+        'swarming_mixins': [
+          'linux-trusty',
+          'arm_tester',
+        ],
         'test_suites': {
           'gtest_tests': 'linux_arm_gtests',
         },

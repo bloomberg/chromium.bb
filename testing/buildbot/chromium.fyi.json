@@ -947,13 +947,25 @@
     "gtest_tests": [
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "armv7l-32",
+              "os": "Ubuntu-14.04"
+            }
+          ]
         },
         "test": "nacl_helper_nonsfi_unittests"
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "armv7l-32",
+              "os": "Ubuntu-14.04"
+            }
+          ]
         },
         "test": "nacl_loader_unittests"
       },
@@ -962,7 +974,13 @@
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "armv7l-32",
+              "os": "Ubuntu-14.04"
+            }
+          ]
         },
         "test": "sandbox_linux_unittests"
       }
