@@ -550,12 +550,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "Using unescaped '#' characters in a data URI body", "'%23'",
                   kM71, "5656049583390720")};
 
-    case WebFeature::kDocumentOrigin:
-      return {"DocumentOrigin", kM70,
-              ReplacedWillBeRemoved("document.origin",
-                                    "self.origin (window.origin)", kM70,
-                                    "5701042356355072")};
-
     case WebFeature::kMediaElementSourceOnOfflineContext:
       return {"MediaElementAudioSourceNode", kM71,
               WillBeRemoved("Creating a MediaElementAudioSourceNode on an "

@@ -1592,7 +1592,6 @@ interface Document : Node
     getter onwebkitfullscreenchange
     getter onwebkitfullscreenerror
     getter onwheel
-    getter origin
     getter pictureInPictureElement
     getter pictureInPictureEnabled
     getter plugins

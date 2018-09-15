@@ -6536,10 +6536,6 @@ void Document::UpdateSecurityOrigin(scoped_refptr<SecurityOrigin> origin) {
   DidUpdateSecurityOrigin();
 }
 
-String Document::origin() const {
-  return GetSecurityOrigin()->ToString();
-}
-
 void Document::DidUpdateSecurityOrigin() {
   if (!frame_)
     return;
