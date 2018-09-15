@@ -161,10 +161,10 @@ public class TileGridLayout extends FrameLayout {
     }
 
     @Nullable
-    public TileView getTileView(SiteSuggestion suggestion) {
+    public SuggestionsTileView getTileView(SiteSuggestion suggestion) {
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
-            TileView tileView = (TileView) getChildAt(i);
+            SuggestionsTileView tileView = (SuggestionsTileView) getChildAt(i);
             if (suggestion.equals(tileView.getData())) return tileView;
         }
         return null;

@@ -216,7 +216,7 @@ public class TileGroupTest {
     private void waitForTileRemoved(final SiteSuggestion suggestion)
             throws TimeoutException, InterruptedException {
         TileGridLayout tileContainer = getTileGridLayout();
-        final TileView removedTile = tileContainer.getTileView(suggestion);
+        final SuggestionsTileView removedTile = tileContainer.getTileView(suggestion);
         if (removedTile == null) return;
 
         final CallbackHelper callback = new CallbackHelper();
@@ -242,8 +242,8 @@ public class TileGroupTest {
         tileContainer.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
             @Override
             public void onChildViewAdded(View parent, View child) {
-                if (!(child instanceof TileView)) return;
-                if (!((TileView) child).getData().equals(suggestion)) return;
+                if (!(child instanceof SuggestionsTileView)) return;
+                if (!((SuggestionsTileView) child).getData().equals(suggestion)) return;
 
                 callback.notifyCalled();
             }

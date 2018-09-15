@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.widget.tile.TileWithTextView;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 
@@ -48,7 +49,7 @@ public class TileRenderer {
     private final ImageFetcher mImageFetcher;
     private final RoundedIconGenerator mIconGenerator;
 
-    @TileView.Style
+    @TileWithTextView.Style
     private final int mStyle;
     private final int mTitleLinesCount;
     private final int mDesiredIconSize;
@@ -57,8 +58,8 @@ public class TileRenderer {
     @LayoutRes
     private final int mLayout;
 
-    public TileRenderer(
-            Context context, @TileView.Style int style, int titleLines, ImageFetcher imageFetcher) {
+    public TileRenderer(Context context, @TileWithTextView.Style int style, int titleLines,
+            ImageFetcher imageFetcher) {
         mImageFetcher = imageFetcher;
         mStyle = style;
         mTitleLinesCount = titleLines;
@@ -90,10 +91,10 @@ public class TileRenderer {
     public void renderTileSection(
             List<Tile> sectionTiles, ViewGroup parent, TileGroup.TileSetupDelegate setupDelegate) {
         // Map the old tile views by url so they can be reused later.
-        Map<SiteSuggestion, TileView> oldTileViews = new HashMap<>();
+        Map<SiteSuggestion, SuggestionsTileView> oldTileViews = new HashMap<>();
         int childCount = parent.getChildCount();
         for (int i = 0; i < childCount; i++) {
-            TileView tileView = (TileView) parent.getChildAt(i);
+            SuggestionsTileView tileView = (SuggestionsTileView) parent.getChildAt(i);
             oldTileViews.put(tileView.getData(), tileView);
         }
 
@@ -102,7 +103,7 @@ public class TileRenderer {
         parent.removeAllViews();
 
         for (Tile tile : sectionTiles) {
-            TileView tileView = oldTileViews.get(tile.getData());
+            SuggestionsTileView tileView = oldTileViews.get(tile.getData());
             if (tileView == null) {
                 tileView = buildTileView(tile, parent, setupDelegate);
             }
@@ -127,10 +128,11 @@ public class TileRenderer {
      * @return The new tile view.
      */
     @VisibleForTesting
-    TileView buildTileView(
+    SuggestionsTileView buildTileView(
             Tile tile, ViewGroup parentView, TileGroup.TileSetupDelegate setupDelegate) {
-        TileView tileView = (TileView) LayoutInflater.from(parentView.getContext())
-                                    .inflate(mLayout, parentView, false);
+        SuggestionsTileView tileView =
+                (SuggestionsTileView) LayoutInflater.from(parentView.getContext())
+                        .inflate(mLayout, parentView, false);
         tileView.initialize(tile, mTitleLinesCount, mStyle);
 
         // Note: It is important that the callbacks below don't keep a reference to the tile or
@@ -204,10 +206,10 @@ public class TileRenderer {
     @LayoutRes
     private int getLayout() {
         switch (mStyle) {
-            case TileView.Style.MODERN:
-                return R.layout.tile_view_modern;
-            case TileView.Style.MODERN_CONDENSED:
-                return R.layout.tile_view_modern_condensed;
+            case TileWithTextView.Style.MODERN:
+                return R.layout.suggestions_tile_view;
+            case TileWithTextView.Style.MODERN_CONDENSED:
+                return R.layout.suggestions_tile_view_condensed;
         }
         assert false;
         return 0;
