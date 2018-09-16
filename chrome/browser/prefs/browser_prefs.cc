@@ -294,7 +294,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/apps/platform_apps/app_launch_for_metro_restart_win.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
@@ -492,7 +491,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 
 #if defined(OS_WIN)
-  app_metro_launch::RegisterPrefs(registry);
   component_updater::RegisterPrefsForSwReporter(registry);
   desktop_ios_promotion::RegisterLocalPrefs(registry);
 #if defined(GOOGLE_CHROME_BUILD)

@@ -8,8 +8,6 @@ assert(enable_extensions)
 
 source_set("platform_apps") {
   sources = [
-    "app_launch_for_metro_restart_win.cc",
-    "app_launch_for_metro_restart_win.h",
     "app_load_service.cc",
     "app_load_service.h",
     "app_load_service_factory.cc",

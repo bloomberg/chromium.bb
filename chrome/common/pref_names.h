@@ -760,10 +760,6 @@ extern const char kRLZDisabled[];
 extern const char kAppListLocalState[];
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
-#if defined(OS_WIN)
-extern const char kAppLaunchForMetroRestart[];
-extern const char kAppLaunchForMetroRestartProfile[];
-#endif
 extern const char kAppShortcutsVersion[];
 
 extern const char kModuleConflictBubbleShown[];

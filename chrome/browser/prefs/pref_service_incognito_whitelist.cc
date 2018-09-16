@@ -309,10 +309,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kAppListLocalState,
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
-#if defined(OS_WIN)
-    prefs::kAppLaunchForMetroRestart,
-    prefs::kAppLaunchForMetroRestartProfile,
-#endif
     prefs::kAppShortcutsVersion,
 
     prefs::kModuleConflictBubbleShown,
