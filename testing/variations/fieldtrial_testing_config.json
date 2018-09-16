@@ -4905,21 +4905,6 @@
             ]
         }
     ],
-    "WebRTC-ApmGainController2Limiter": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "WebRTC-Audio-NetEqPostponeDecodingAfterExpand": [
         {
             "platforms": [
@@ -5064,7 +5049,7 @@
             ],
             "experiments": [
                 {
-                    "name": "WebRtcHybridAgc",
+                    "name": "Enabled",
                     "enable_features": [
                         "WebRtcHybridAgc"
                     ]
