@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_MIGRATABLE_CARD_VIEW_H_
 
 #include "base/macros.h"
+#include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -32,6 +33,8 @@ class MigratableCardView : public views::View {
                      int card_index);
   ~MigratableCardView() override;
 
+  bool IsSelected();
+  std::string GetGuid();
   void SetCheckboxEnabled(bool checkbox_enabled);
   void UpdateCardView(LocalCardMigrationDialogState dialog_state);
 
@@ -42,6 +45,8 @@ class MigratableCardView : public views::View {
   void Init(const MigratableCreditCard& migratable_credit_card,
             views::ButtonListener* listener,
             int card_index);
+
+  MigratableCreditCard migratable_credit_card_;
 
   views::Checkbox* checkbox_ = nullptr;
 

@@ -17,17 +17,15 @@
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
+#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
-
-// TODO(crbug.com/867194): Add time counter for showing 'close' button if
-// uploading takes too long.
 
 namespace autofill {
 
 LocalCardMigrationDialogControllerImpl::LocalCardMigrationDialogControllerImpl(
     content::WebContents* web_contents)
-    : local_card_migration_dialog_(nullptr) {}
+    : web_contents_(web_contents), local_card_migration_dialog_(nullptr) {}
 
 LocalCardMigrationDialogControllerImpl::
     ~LocalCardMigrationDialogControllerImpl() {
@@ -38,7 +36,8 @@ LocalCardMigrationDialogControllerImpl::
 void LocalCardMigrationDialogControllerImpl::ShowDialog(
     std::unique_ptr<base::DictionaryValue> legal_message,
     LocalCardMigrationDialog* local_card_migration_dialog,
-    base::OnceClosure user_accepted_migration_closure) {
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    AutofillClient::LocalCardMigrationCallback start_migrating_cards_callback) {
   if (local_card_migration_dialog_)
     local_card_migration_dialog_->CloseDialog();
 
@@ -49,8 +48,10 @@ void LocalCardMigrationDialogControllerImpl::ShowDialog(
   }
 
   local_card_migration_dialog_ = local_card_migration_dialog;
-  local_card_migration_dialog_->ShowDialog(
-      std::move(user_accepted_migration_closure));
+  start_migrating_cards_callback_ = std::move(start_migrating_cards_callback);
+  migratable_credit_cards_ = migratable_credit_cards;
+  view_state_ = LocalCardMigrationDialogState::kOffered;
+  local_card_migration_dialog_->ShowDialog();
 }
 
 LocalCardMigrationDialogState
@@ -58,19 +59,9 @@ LocalCardMigrationDialogControllerImpl::GetViewState() const {
   return view_state_;
 }
 
-void LocalCardMigrationDialogControllerImpl::SetViewState(
-    LocalCardMigrationDialogState view_state) {
-  view_state_ = view_state;
-}
-
 const std::vector<MigratableCreditCard>&
 LocalCardMigrationDialogControllerImpl::GetCardList() const {
   return migratable_credit_cards_;
-}
-
-void LocalCardMigrationDialogControllerImpl::SetCardList(
-    std::vector<MigratableCreditCard>& migratable_credit_cards) {
-  migratable_credit_cards_ = migratable_credit_cards;
 }
 
 const LegalMessageLines&
@@ -78,8 +69,24 @@ LocalCardMigrationDialogControllerImpl::GetLegalMessageLines() const {
   return legal_message_lines_;
 }
 
-void LocalCardMigrationDialogControllerImpl::OnCardSelected(int index) {
-  migratable_credit_cards_[index].ToggleChosen();
+void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(
+    const std::vector<std::string>& selected_cards_guids) {
+  // TODO(crbug.com/867194): Add metrics.
+  std::move(start_migrating_cards_callback_).Run(selected_cards_guids);
+}
+
+void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
+  // TODO(crbug.com/867194): Add metrics.
+  start_migrating_cards_callback_.Reset();
+}
+
+void LocalCardMigrationDialogControllerImpl::OnViewCardsButtonClicked() {
+  // TODO(crbug.com/867194): Add metrics.
+  constexpr int kPaymentsProfileUserIndex = 0;
+  web_contents_->OpenURL(content::OpenURLParams(
+      payments::GetManageInstrumentsUrl(kPaymentsProfileUserIndex),
+      content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false));
 }
 
 void LocalCardMigrationDialogControllerImpl::OnDialogClosed() {

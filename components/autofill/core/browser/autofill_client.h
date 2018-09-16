@@ -93,6 +93,8 @@ class AutofillClient : public RiskDataLoader {
   };
 
   typedef base::Callback<void(const CreditCard&)> CreditCardScanCallback;
+  typedef base::OnceCallback<void(const std::vector<std::string>&)>
+      LocalCardMigrationCallback;
 
   ~AutofillClient() override {}
 
@@ -139,18 +141,18 @@ class AutofillClient : public RiskDataLoader {
                                 base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
   virtual void OnUnmaskVerificationResult(PaymentsRpcResult result) = 0;
 
-  // Runs |closure| if the user accepts the card migration offer. This causes
-  // the card migration dialog to be shown.
+  // Runs |show_migration_dialog_closure| if the user accepts the card migration
+  // offer. This causes the card migration dialog to be shown.
   virtual void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) = 0;
 
-  // Shows a dialog with the given |legal_message|. Runs |closure| if
-  // the user would like the selected |migratable_credit_cards| to be
-  // uploaded to cloud.
+  // Shows a dialog with the given |legal_message|. Runs
+  // |start_migrating_cards_callback| if the user would like the selected cards
+  // in the |migratable_credit_cards| to be uploaded to cloud.
   virtual void ConfirmMigrateLocalCardToCloud(
       std::unique_ptr<base::DictionaryValue> legal_message,
-      std::vector<MigratableCreditCard>& migratable_credit_cards,
-      base::OnceClosure start_migrating_cards_closure) = 0;
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      LocalCardMigrationCallback start_migrating_cards_callback) = 0;
 
   // Runs |callback| if the |card| should be imported as personal data.
   // |metric_logger| can be used to log user actions.

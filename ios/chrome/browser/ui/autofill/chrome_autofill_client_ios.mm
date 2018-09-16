@@ -177,8 +177,8 @@ void ChromeAutofillClientIOS::ShowLocalCardMigrationDialog(
 
 void ChromeAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
     std::unique_ptr<base::DictionaryValue> legal_message,
-    std::vector<MigratableCreditCard>& migratable_credit_cards,
-    base::OnceClosure start_migrating_cards_closure) {
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    LocalCardMigrationCallback start_migrating_cards_callback) {
   NOTIMPLEMENTED();
 }
 

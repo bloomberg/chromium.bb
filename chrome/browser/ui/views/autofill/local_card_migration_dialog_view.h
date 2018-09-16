@@ -41,7 +41,7 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   ~LocalCardMigrationDialogView() override;
 
   // LocalCardMigrationDialog
-  void ShowDialog(base::OnceClosure user_accepted_migration_closure) override;
+  void ShowDialog() override;
   void CloseDialog() override;
   void OnMigrationFinished() override;
 
@@ -74,11 +74,10 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   int GetHeaderImageId() const;
   base::string16 GetOkButtonLabel() const;
   base::string16 GetCancelButtonLabel() const;
-  void OnSaveButtonClicked();
-  void OnCancelButtonClicked();
-  void OnViewCardsButtonClicked();
   void SetMigrationIsPending(bool is_pending);
   void ShowCloseButton();
+  void UpdateDialogToPendingView();
+  const std::vector<std::string> GetSelectedCardGuids();
 
   LocalCardMigrationDialogController* controller_;
 
@@ -110,8 +109,6 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   // Whether the uploading is in progress and results are
   // pending.
   bool migration_pending_ = false;
-
-  base::OnceClosure user_accepted_migration_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationDialogView);
 };

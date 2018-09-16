@@ -562,17 +562,15 @@ class MigrateCardsRequest : public PaymentsRequest {
     std::string all_pans_data = std::string();
     std::unique_ptr<base::ListValue> migrate_cards(new base::ListValue());
     for (size_t index = 0; index < migratable_credit_cards_.size(); ++index) {
-      if (migratable_credit_cards_[index].is_chosen()) {
-        std::string pan_field_name = GetPanFieldName(index);
-        // Generate credit card dictionary.
-        migrate_cards->Append(BuildCreditCardDictionary(
-            migratable_credit_cards_[index].credit_card(), app_locale,
-            pan_field_name));
-        // Append pan data to the |all_pans_data|.
-        all_pans_data +=
-            GetAppendPan(migratable_credit_cards_[index].credit_card(),
-                         app_locale, pan_field_name);
-      }
+      std::string pan_field_name = GetPanFieldName(index);
+      // Generate credit card dictionary.
+      migrate_cards->Append(BuildCreditCardDictionary(
+          migratable_credit_cards_[index].credit_card(), app_locale,
+          pan_field_name));
+      // Append pan data to the |all_pans_data|.
+      all_pans_data +=
+          GetAppendPan(migratable_credit_cards_[index].credit_card(),
+                       app_locale, pan_field_name);
     }
     request_dict.Set("local_card", std::move(migrate_cards));
 
