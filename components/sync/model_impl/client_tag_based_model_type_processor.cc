@@ -87,9 +87,12 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
     const DataTypeActivationRequest& request,
     StartCallback start_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!IsConnected());
-  DCHECK(request.error_handler);
-  DCHECK(start_callback);
+  // TODO(crbug.com/876490): Here and elsewhere in this file, CHECKs have been
+  // introduced to investigate some crashes in the wild. Let's downgrade all
+  // CHECKs to DCHECKs as soon as the investigation is completed.
+  CHECK(!IsConnected());
+  CHECK(request.error_handler);
+  CHECK(start_callback);
   DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
 
   start_callback_ = std::move(start_callback);
@@ -104,15 +107,15 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
 
 void ClientTagBasedModelTypeProcessor::OnModelStarting(
     ModelTypeSyncBridge* bridge) {
-  DCHECK(bridge);
+  CHECK(bridge);
   bridge_ = bridge;
 }
 
 void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     std::unique_ptr<MetadataBatch> batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(entities_.empty());
-  DCHECK(!model_ready_to_sync_);
+  CHECK(entities_.empty());
+  CHECK(!model_ready_to_sync_);
 
   model_ready_to_sync_ = true;
 
@@ -164,6 +167,8 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
+  CHECK(model_ready_to_sync_);
+
   if (!model_type_state_.has_cache_guid()) {
     model_type_state_.set_cache_guid(activation_request_.cache_guid);
   } else if (model_type_state_.cache_guid() != activation_request_.cache_guid) {
@@ -186,6 +191,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
       case ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync:
         // Model not ready to sync, so wait until the bridge calls
         // ModelReadyToSync().
+        CHECK(!model_ready_to_sync_);
         break;
     }
 
@@ -211,7 +217,7 @@ void ClientTagBasedModelTypeProcessor::OnSyncStopping(
     SyncStopMetadataFate metadata_fate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Disabling sync for a type never happens before the model is ready to sync.
-  DCHECK(model_ready_to_sync_);
+  CHECK(model_ready_to_sync_);
 
   switch (metadata_fate) {
     case KEEP_METADATA: {
@@ -221,11 +227,13 @@ void ClientTagBasedModelTypeProcessor::OnSyncStopping(
           // The model is still ready to sync (with the same |bridge_|) and same
           // sync metadata.
           ResetState(KEEP_METADATA);
+          CHECK(model_ready_to_sync_);
           break;
         case ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync:
           // Model not ready to sync, so wait until the bridge calls
           // ModelReadyToSync(), and meanwhile throw away all metadata.
           ResetState(CLEAR_METADATA);
+          CHECK(!model_ready_to_sync_);
           break;
       }
       break;
@@ -237,15 +245,19 @@ void ClientTagBasedModelTypeProcessor::OnSyncStopping(
           // The model is still ready to sync (with the same |bridge_|) - replay
           // the initialization.
           ModelReadyToSync(std::make_unique<MetadataBatch>());
+          CHECK(model_ready_to_sync_);
           break;
         case ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync:
           // Model not ready to sync, so wait until the bridge calls
           // ModelReadyToSync().
+          CHECK(!model_ready_to_sync_);
           break;
       }
       break;
     }
   }
+
+  CHECK(!IsConnected());
 }
 
 ModelTypeSyncBridge::StopSyncResponse
@@ -311,7 +323,7 @@ void ClientTagBasedModelTypeProcessor::ConnectSync(
 
 void ClientTagBasedModelTypeProcessor::DisconnectSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsConnected());
+  CHECK(IsConnected());
 
   DVLOG(1) << "Disconnecting sync for " << ModelTypeToString(type_);
   weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
@@ -574,6 +586,7 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
     const UpdateResponseDataList& updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(model_ready_to_sync_);
 
   if (!ValidateUpdate(model_type_state, updates)) {
     return;
@@ -828,10 +841,11 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     const UpdateResponseDataList& updates) {
   std::unique_ptr<MetadataChangeList> metadata_changes =
       bridge_->CreateMetadataChangeList();
+  CHECK(model_ready_to_sync_);
 
   // Check that the worker correctly marked initial sync as done
   // for this update.
-  DCHECK(model_type_state.initial_sync_done());
+  CHECK(model_type_state.initial_sync_done());
 
   if (HasClearAllDirective(model_type_state)) {
     ExpireAllEntries(metadata_changes.get());
@@ -889,7 +903,8 @@ base::Optional<ModelError>
 ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
     const UpdateResponseDataList& updates) {
-  DCHECK(model_type_state.initial_sync_done());
+  CHECK(model_ready_to_sync_);
+  CHECK(model_type_state.initial_sync_done());
 
   std::unique_ptr<MetadataChangeList> metadata_changes =
       bridge_->CreateMetadataChangeList();
