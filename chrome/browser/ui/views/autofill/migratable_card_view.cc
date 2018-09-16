@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -29,11 +28,21 @@ constexpr char MigratableCardView::kViewClassName[] = "MigratableCardView";
 MigratableCardView::MigratableCardView(
     const MigratableCreditCard& migratable_credit_card,
     views::ButtonListener* listener,
-    int card_index) {
+    int card_index)
+    : migratable_credit_card_(migratable_credit_card) {
   Init(migratable_credit_card, listener, card_index);
 }
 
 MigratableCardView::~MigratableCardView() = default;
+
+bool MigratableCardView::IsSelected() {
+  DCHECK(checkbox_);
+  return checkbox_->checked();
+}
+
+std::string MigratableCardView::GetGuid() {
+  return migratable_credit_card_.credit_card().guid();
+}
 
 void MigratableCardView::SetCheckboxEnabled(bool checkbox_enabled) {
   checkbox_->SetEnabled(checkbox_enabled);
@@ -72,7 +81,7 @@ void MigratableCardView::Init(
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
 
   checkbox_ = new views::Checkbox(base::string16(), listener);
-  checkbox_->SetChecked(migratable_credit_card.is_chosen());
+  checkbox_->SetChecked(true);
   checkbox_->set_tag(card_index);
   checkbox_->SetVisible(true);
   // TODO(crbug/867194): Currently the ink drop animation circle is cut by the

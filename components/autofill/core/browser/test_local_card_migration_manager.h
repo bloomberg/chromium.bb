@@ -47,7 +47,8 @@ class TestLocalCardMigrationManager : public LocalCardMigrationManager {
 
   // Override the base function. When called, represent the main prompt is
   // shown. Set the |main_prompt_was_shown_|.
-  void OnUserAcceptedMainMigrationDialog() override;
+  void OnUserAcceptedMainMigrationDialog(
+      const std::vector<std::string>& selected_cards) override;
 
  private:
   void OnDidGetUploadDetails(

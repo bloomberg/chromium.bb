@@ -46,8 +46,8 @@ class TestAutofillClient : public AutofillClient {
       base::OnceClosure show_migration_dialog_closure) override;
   void ConfirmMigrateLocalCardToCloud(
       std::unique_ptr<base::DictionaryValue> legal_message,
-      std::vector<MigratableCreditCard>& migratable_credit_cards,
-      base::OnceClosure start_migrating_cards_closure) override;
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      LocalCardMigrationCallback start_migrating_cards_callback) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const CreditCard& card,
@@ -107,6 +107,11 @@ class TestAutofillClient : public AutofillClient {
     security_level_ = security_level;
   }
 
+  void set_migration_card_selections(
+      const std::vector<std::string>& migration_card_selection) {
+    migration_card_selection_ = migration_card_selection;
+  }
+
   GURL form_origin() { return form_origin_; }
 
   static void UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
@@ -125,6 +130,8 @@ class TestAutofillClient : public AutofillClient {
 
   security_state::SecurityLevel security_level_ =
       security_state::SecurityLevel::NONE;
+
+  std::vector<std::string> migration_card_selection_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
 };

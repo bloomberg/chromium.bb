@@ -18,7 +18,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
-#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/ui/local_card_migration_dialog_controller.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -72,9 +71,7 @@ LocalCardMigrationDialogView::LocalCardMigrationDialogView(
 
 LocalCardMigrationDialogView::~LocalCardMigrationDialogView() {}
 
-void LocalCardMigrationDialogView::ShowDialog(
-    base::OnceClosure user_accepted_migration_closure) {
-  user_accepted_migration_closure_ = std::move(user_accepted_migration_closure);
+void LocalCardMigrationDialogView::ShowDialog() {
   Init();
   constrained_window::ShowWebModalDialogViews(this, web_contents_);
 }
@@ -94,6 +91,18 @@ void LocalCardMigrationDialogView::OnMigrationFinished() {
   separator_->SetVisible(false);
   // TODO(crbug/867194): Add tip value prompt.
   SetMigrationIsPending(false);
+}
+
+const std::vector<std::string>
+LocalCardMigrationDialogView::GetSelectedCardGuids() {
+  std::vector<std::string> selected_cards;
+  for (int index = 0; index < card_list_view_->child_count(); ++index) {
+    MigratableCardView* card =
+        AsMigratableCardView(card_list_view_->child_at(index));
+    if (card->IsSelected())
+      selected_cards.push_back(card->GetGuid());
+  }
+  return selected_cards;
 }
 
 gfx::Size LocalCardMigrationDialogView::CalculatePreferredSize() const {
@@ -139,7 +148,8 @@ bool LocalCardMigrationDialogView::IsDialogButtonEnabled(
 bool LocalCardMigrationDialogView::Accept() {
   switch (controller_->GetViewState()) {
     case LocalCardMigrationDialogState::kOffered:
-      OnSaveButtonClicked();
+      UpdateDialogToPendingView();
+      controller_->OnSaveButtonClicked(GetSelectedCardGuids());
       return !base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationShowFeedback);
     case LocalCardMigrationDialogState::kFinished:
@@ -151,11 +161,11 @@ bool LocalCardMigrationDialogView::Accept() {
 bool LocalCardMigrationDialogView::Cancel() {
   switch (controller_->GetViewState()) {
     case LocalCardMigrationDialogState::kOffered:
-      OnCancelButtonClicked();
+      controller_->OnCancelButtonClicked();
       return true;
     case LocalCardMigrationDialogState::kFinished:
     case LocalCardMigrationDialogState::kActionRequired:
-      OnViewCardsButtonClicked();
+      controller_->OnViewCardsButtonClicked();
       return true;
   }
 }
@@ -172,9 +182,6 @@ void LocalCardMigrationDialogView::ButtonPressed(views::Button* sender,
   // dialog.
   if (sender == close_migration_dialog_button_) {
     CloseDialog();
-  } else {
-    // Checkbox is clicked.
-    controller_->OnCardSelected(sender->tag());
   }
 }
 
@@ -333,31 +340,6 @@ base::string16 LocalCardMigrationDialogView::GetCancelButtonLabel() const {
   }
 }
 
-void LocalCardMigrationDialogView::OnSaveButtonClicked() {
-  for (int index = 0; index < card_list_view_->child_count(); index++) {
-    // Checkboxes will be disabled when card uploading is in progress.
-    AsMigratableCardView(card_list_view_->child_at(index))
-        ->SetCheckboxEnabled(false);
-  }
-  SetMigrationIsPending(true);
-  std::move(user_accepted_migration_closure_).Run();
-  show_close_button_timer_.Start(
-      FROM_HERE, features::GetTimeoutForMigrationPromptFeedbackCloseButton(),
-      this, &LocalCardMigrationDialogView::ShowCloseButton);
-}
-
-void LocalCardMigrationDialogView::OnCancelButtonClicked() {
-  user_accepted_migration_closure_.Reset();
-}
-
-void LocalCardMigrationDialogView::OnViewCardsButtonClicked() {
-  constexpr int kPaymentsProfileUserIndex = 0;
-  web_contents_->OpenURL(content::OpenURLParams(
-      payments::GetManageInstrumentsUrl(kPaymentsProfileUserIndex),
-      content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false));
-}
-
 void LocalCardMigrationDialogView::SetMigrationIsPending(
     bool migration_pending) {
   migration_pending_ = migration_pending;
@@ -367,6 +349,18 @@ void LocalCardMigrationDialogView::SetMigrationIsPending(
 
 void LocalCardMigrationDialogView::ShowCloseButton() {
   close_migration_dialog_button_->SetVisible(true);
+}
+
+void LocalCardMigrationDialogView::UpdateDialogToPendingView() {
+  for (int index = 0; index < card_list_view_->child_count(); index++) {
+    // Checkboxes will be disabled when card uploading is in progress.
+    AsMigratableCardView(card_list_view_->child_at(index))
+        ->SetCheckboxEnabled(false);
+  }
+  SetMigrationIsPending(true);
+  show_close_button_timer_.Start(
+      FROM_HERE, features::GetTimeoutForMigrationPromptFeedbackCloseButton(),
+      this, &LocalCardMigrationDialogView::ShowCloseButton);
 }
 
 LocalCardMigrationDialog* CreateLocalCardMigrationDialogView(

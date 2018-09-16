@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
 namespace autofill {
@@ -78,9 +79,15 @@ void TestAutofillClient::ShowLocalCardMigrationDialog(
 
 void TestAutofillClient::ConfirmMigrateLocalCardToCloud(
     std::unique_ptr<base::DictionaryValue> legal_message,
-    std::vector<MigratableCreditCard>& migratable_credit_cards,
-    base::OnceClosure start_migrating_cards_closure) {
-  std::move(start_migrating_cards_closure).Run();
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    LocalCardMigrationCallback start_migrating_cards_callback) {
+  // If |migration_card_selection_| hasn't been preset by tests, default to
+  // selecting all migratable cards.
+  if (migration_card_selection_.empty()) {
+    for (MigratableCreditCard card : migratable_credit_cards)
+      migration_card_selection_.push_back(card.credit_card().guid());
+  }
+  std::move(start_migrating_cards_callback).Run(migration_card_selection_);
 }
 
 void TestAutofillClient::ConfirmSaveAutofillProfile(

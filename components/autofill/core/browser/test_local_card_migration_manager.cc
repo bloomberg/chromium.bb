@@ -52,9 +52,10 @@ void TestLocalCardMigrationManager::
   LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog();
 }
 
-void TestLocalCardMigrationManager::OnUserAcceptedMainMigrationDialog() {
+void TestLocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
+    const std::vector<std::string>& selected_cards) {
   main_prompt_was_shown_ = true;
-  LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog();
+  LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(selected_cards);
 }
 
 void TestLocalCardMigrationManager::OnDidGetUploadDetails(

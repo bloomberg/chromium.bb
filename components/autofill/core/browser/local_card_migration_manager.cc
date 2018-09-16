@@ -102,10 +102,22 @@ void LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog() {
 }
 
 // Send the migration request once risk data is available.
-void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog() {
+void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
+    const std::vector<std::string>& selected_card_guids) {
   user_accepted_main_migration_dialog_ = true;
   AutofillMetrics::LogLocalCardMigrationPromptMetric(
       local_card_migration_origin_, AutofillMetrics::MAIN_DIALOG_ACCEPTED);
+  // Update the |migratable_credit_cards_| with the |selected_card_guids|. This
+  // will remove any card from |migratable_credit_cards_| of which the GUID is
+  // not in |selected_card_guids|.
+  auto card_is_selected = [&selected_card_guids](MigratableCreditCard& card) {
+    return std::find(selected_card_guids.begin(), selected_card_guids.end(),
+                     card.credit_card().guid()) == selected_card_guids.end();
+  };
+  migratable_credit_cards_.erase(
+      std::remove_if(migratable_credit_cards_.begin(),
+                     migratable_credit_cards_.end(), card_is_selected),
+      migratable_credit_cards_.end());
   // Populating risk data and offering migration two-round pop-ups occur
   // asynchronously. If |migration_risk_data_| has already been loaded, send the
   // migrate local cards request. Otherwise, continue to wait and let
