@@ -2970,6 +2970,61 @@ TEST_P(PaintPropertyTreeBuilderTest, PerspectiveIsNotFlattened) {
                           frame_view->GetLayoutView());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, FlatteningIn3DContext) {
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="a" style="transform-style: preserve-3d">
+      <div id="b" style="transform: translate3d(0, 0, 33px)">
+        <div id="c" style="transform: translate3d(0, 0, -10px)">C</div>
+      </div>
+      <div id="d" style="transform: translate3d(0, -10px, 22px)">D</div>
+    </div>
+  )HTML");
+
+  const auto* a_properties = PaintPropertiesForElement("a");
+  ASSERT_NE(a_properties, nullptr);
+  ASSERT_NE(a_properties->Transform(), nullptr);
+  EXPECT_EQ(TransformationMatrix(), a_properties->Transform()->Matrix());
+  EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
+  EXPECT_TRUE(a_properties->Transform()->FlattensInheritedTransform());
+  EXPECT_EQ(a_properties->Effect(), nullptr);
+
+  const auto* b_properties = PaintPropertiesForElement("b");
+  ASSERT_NE(b_properties, nullptr);
+  ASSERT_NE(b_properties->Transform(), nullptr);
+  EXPECT_EQ(TransformationMatrix().Translate3d(0, 0, 33),
+            b_properties->Transform()->Matrix());
+  EXPECT_EQ(a_properties->Transform()->RenderingContextId(),
+            b_properties->Transform()->RenderingContextId());
+  EXPECT_FALSE(b_properties->Transform()->FlattensInheritedTransform());
+  // Force render surface with an effect node for |b| which is an 3D object in
+  // its container while it flattens its contents.
+  ASSERT_NE(b_properties->Effect(), nullptr);
+  EXPECT_EQ(b_properties->Transform(),
+            b_properties->Effect()->LocalTransformSpace());
+
+  const auto* c_properties = PaintPropertiesForElement("c");
+  ASSERT_NE(c_properties, nullptr);
+  ASSERT_NE(c_properties->Transform(), nullptr);
+  EXPECT_EQ(TransformationMatrix().Translate3d(0, 0, -10),
+            c_properties->Transform()->Matrix());
+  EXPECT_FALSE(c_properties->Transform()->HasRenderingContext());
+  EXPECT_TRUE(c_properties->Transform()->FlattensInheritedTransform());
+  EXPECT_EQ(c_properties->Effect(), nullptr);
+
+  const auto* d_properties = PaintPropertiesForElement("d");
+  ASSERT_NE(d_properties, nullptr);
+  ASSERT_NE(d_properties->Transform(), nullptr);
+  EXPECT_EQ(TransformationMatrix().Translate3d(0, -10, 22),
+            d_properties->Transform()->Matrix());
+  EXPECT_EQ(a_properties->Transform()->RenderingContextId(),
+            d_properties->Transform()->RenderingContextId());
+  EXPECT_FALSE(d_properties->Transform()->FlattensInheritedTransform());
+  EXPECT_EQ(d_properties->Effect(), nullptr);
+}
+
 TEST_P(PaintPropertyTreeBuilderTest,
        PerspectiveDoesNotEstablishRenderingContext) {
   // It's necessary to make nodes from the one that applies perspective to
