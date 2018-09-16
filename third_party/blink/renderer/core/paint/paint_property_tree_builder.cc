@@ -707,6 +707,16 @@ static bool NeedsEffect(const LayoutObject& object) {
     return true;
   }
 
+  // An effect node is required by cc if the layer flattens its subtree but it
+  // is treated as a 3D object by its parent.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      object.HasLayer()) {
+    PaintLayer* layer = ToLayoutBoxModelObject(object).Layer();
+    if (!layer->Preserves3D() && layer->HasSelfPaintingLayerDescendant() &&
+        layer->Parent() && layer->Parent()->Preserves3D())
+      return true;
+  }
+
   return false;
 }
 
@@ -716,10 +726,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
 
   // TODO(trchen): Can't omit effect node if we have 3D children.
   if (NeedsPaintPropertyUpdate()) {
-    // Use the current clip as output_clip for SVG children because their
-    // effects never interleave with clips.
-    const auto* output_clip =
-        object_.IsSVGChild() ? context_.current.clip : nullptr;
     if (NeedsEffect(object_)) {
       base::Optional<IntRect> mask_clip = CSSMaskPainter::MaskBoundingBox(
           object_, context_.current.paint_offset);
@@ -746,6 +752,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         has_spv1_composited_clip_path = true;
         clip_path_clip = IntRect();
       }
+
+      // Use the current clip as output_clip for SVG children because their
+      // effects never interleave with clips.
+      const auto* output_clip =
+          object_.IsSVGChild() ? context_.current.clip : nullptr;
+
       if (mask_clip || clip_path_clip) {
         IntRect combined_clip = mask_clip ? *mask_clip : *clip_path_clip;
         if (mask_clip && clip_path_clip)

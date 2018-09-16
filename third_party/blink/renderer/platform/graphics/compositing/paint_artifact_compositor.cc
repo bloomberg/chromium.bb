@@ -349,14 +349,6 @@ static bool IsNonCompositingAncestorOf(
   return true;
 }
 
-static bool IsBackfaceHidden(const TransformPaintPropertyNode* node) {
-  while (node && node->GetBackfaceVisibility() ==
-                     TransformPaintPropertyNode::BackfaceVisibility::kInherited)
-    node = node->Parent();
-  return node && node->GetBackfaceVisibility() ==
-                     TransformPaintPropertyNode::BackfaceVisibility::kHidden;
-}
-
 // Determines whether drawings based on the 'guest' state can be painted into
 // a layer with the 'home' state. A number of criteria need to be met:
 // 1. The guest effect must be a descendant of the home effect. However this
@@ -373,7 +365,8 @@ static bool CanUpcastTo(const PropertyTreeState& guest,
                         const PropertyTreeState& home) {
   DCHECK_EQ(home.Effect()->Unalias(), guest.Effect()->Unalias());
 
-  if (IsBackfaceHidden(home.Transform()) != IsBackfaceHidden(guest.Transform()))
+  if (home.Transform()->IsBackfaceHidden() !=
+      guest.Transform()->IsBackfaceHidden())
     return false;
 
   auto* home_clip = home.Clip()->Unalias();
@@ -818,8 +811,10 @@ void PaintArtifactCompositor::Update(
     layer->SetClipTreeIndex(clip_id);
     layer->SetEffectTreeIndex(effect_id);
     bool backface_hidden =
-        IsBackfaceHidden(pending_layer.property_tree_state.Transform());
+        pending_layer.property_tree_state.Transform()->IsBackfaceHidden();
     layer->SetDoubleSided(!backface_hidden);
+    // TODO(wangxianzhu): cc::PropertyTreeBuilder has a more sophisticated
+    // condition for this. Do we need to do the same here?
     layer->SetShouldCheckBackfaceVisibility(backface_hidden);
   }
   property_tree_manager.Finalize();

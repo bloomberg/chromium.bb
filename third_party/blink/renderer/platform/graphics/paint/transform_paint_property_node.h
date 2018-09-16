@@ -134,8 +134,23 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.flattens_inherited_transform;
   }
 
+  // Returns the local BackfaceVisibility value set on this node.
+  // See |IsBackfaceHidden()| for computing whether this transform node is
+  // hidden or not.
   BackfaceVisibility GetBackfaceVisibility() const {
     return state_.backface_visibility;
+  }
+
+  // Returns the first non-inherited BackefaceVisibility value along the
+  // transform node ancestor chain, including this node's value if it is
+  // non-inherited. TODO(wangxianzhu): Let PaintPropertyTreeBuilder calculate
+  // the value instead of walking up the tree.
+  bool IsBackfaceHidden() const {
+    const auto* node = this;
+    while (node &&
+           node->GetBackfaceVisibility() == BackfaceVisibility::kInherited)
+      node = node->Parent();
+    return node && node->GetBackfaceVisibility() == BackfaceVisibility::kHidden;
   }
 
   bool HasDirectCompositingReasons() const {

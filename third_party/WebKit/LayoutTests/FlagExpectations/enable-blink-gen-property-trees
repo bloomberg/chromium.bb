@@ -161,8 +161,6 @@ Bug(none) compositing/geometry/layer-due-to-layer-children.html [ Failure ]
 Bug(none) compositing/perpendicular-layer-sorting.html [ Failure ]
 Bug(none) compositing/perspective-interest-rect.html [ Failure ]
 
-crbug.com/879605 compositing/overflow-trumps-transform-style.html [ Failure ]
-
 # Rounded borders have slightly different antialiasing
 Bug(none) compositing/composited-scaled-child-with-border-radius-parent-clip.html [ Failure ]
 Bug(none) compositing/composited-translated-child-with-border-radius-parent-clip.html [ Failure ]

@@ -251,6 +251,18 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     CreateCompositorScrollNode(scroll_node, compositor_node);
   }
 
+  // If the parent transform node flattens transform (as |transform_node|
+  // flattens inherited transform) while it participates in the 3d sorting
+  // context of an ancestor, cc needs a render surface for correct flattening.
+  if (transform_node->FlattensInheritedTransform() &&
+      transform_node->Parent() &&
+      transform_node->Parent()->RenderingContextId() &&
+      !transform_node->Parent()->FlattensInheritedTransform()) {
+    auto* current_cc_effect = GetEffectTree().Node(current_effect_id_);
+    if (current_cc_effect && current_cc_effect->transform_id == parent_id)
+      current_cc_effect->has_render_surface = true;
+  }
+
   auto result = transform_node_map_.Set(transform_node, id);
   DCHECK(result.is_new_entry);
   GetTransformTree().set_needs_update(true);
@@ -666,6 +678,8 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
         EnsureCompositorTransformNode(next_effect->LocalTransformSpace());
   }
   effect_node.blend_mode = used_blend_mode;
+  effect_node.double_sided =
+      !next_effect->LocalTransformSpace()->IsBackfaceHidden();
   CompositorElementId compositor_element_id =
       next_effect->GetCompositorElementId();
   if (compositor_element_id) {
