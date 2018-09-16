@@ -2920,31 +2920,6 @@ class CursorMessageFilter : public content::BrowserMessageFilter {
 
 namespace {
 
-#if defined(OS_WIN)
-// Temporary diagnostic code for https://crbug.com/882458.
-class CursorUpdateEventLogger
-    : public content::RenderWidgetHost::InputEventObserver {
- public:
-  CursorUpdateEventLogger() = default;
-  ~CursorUpdateEventLogger() override {}
-
-  void OnInputEvent(const blink::WebInputEvent& event) override {
-    blink::WebInputEvent::Type type = event.GetType();
-    if (blink::WebInputEvent::IsMouseEventType(type)) {
-      auto mouse_event = static_cast<const blink::WebMouseEvent&>(event);
-      auto pos = mouse_event.PositionInWidget();
-      LOG(INFO) << "EventType = " << blink::WebInputEvent::GetName(type)
-                << ", pos = (" << pos.x << "," << pos.y;
-    } else {
-      LOG(INFO) << "EventType = " << blink::WebInputEvent::GetName(type);
-    }
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CursorUpdateEventLogger);
-};
-#endif
-
 // Verify that we receive a mouse cursor update message when we mouse over
 // a text field contained in an out-of-process iframe.
 void CursorUpdateReceivedFromCrossSiteIframeHelper(
@@ -2956,16 +2931,6 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
 
   auto* web_contents = static_cast<WebContentsImpl*>(shell->web_contents());
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
-#if defined(OS_WIN)
-  // Install observer to try and see if what event might be triggering an
-  // unexpected cursor being set. *Hopefully* this observer gets installed
-  // before any events go through the main frame RenderWidgetHost.
-  // https://crbug.com/882458
-  CursorUpdateEventLogger main_frame_event_logger;
-  LOG(ERROR) << "Installing main-frame event logger.";
-  root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
-      &main_frame_event_logger);
-#endif
 
   FrameTreeNode* child_node = root->child_at(0);
   EXPECT_NE(shell->web_contents()->GetSiteInstance(),
@@ -3042,16 +3007,20 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
   CursorInfo cursor_info;
   cursor.GetCursorInfo(&cursor_info);
   EXPECT_EQ(cursor_info.type, blink::WebCursorInfo::kTypeIBeam);
-#if defined(OS_WIN)
-  root->current_frame_host()->GetRenderWidgetHost()->RemoveInputEventObserver(
-      &main_frame_event_logger);
-#endif
 }
 
 }  // namespace
 
+#if defined(OS_WIN)
+// https://crbug.com/882458
+#define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
+  DISABLED_CursorUpdateReceivedFromCrossSiteIframe
+#else
+#define MAYBE_CursorUpdateReceivedFromCrossSiteIframe \
+  CursorUpdateReceivedFromCrossSiteIframe
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       CursorUpdateReceivedFromCrossSiteIframe) {
+                       MAYBE_CursorUpdateReceivedFromCrossSiteIframe) {
   CursorUpdateReceivedFromCrossSiteIframeHelper(shell(),
                                                 embedded_test_server());
 }

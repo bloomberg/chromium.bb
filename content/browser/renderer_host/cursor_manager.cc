@@ -6,39 +6,18 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
-#if defined(OS_WIN)
-#include "base/command_line.h"
-#include "content/public/common/content_switches.h"
-#endif
-
 namespace content {
 
 CursorManager::CursorManager(RenderWidgetHostViewBase* root)
     : view_under_cursor_(root),
       root_view_(root),
-#if defined(OS_WIN)
-      enable_logging_for_test_(false),
-#endif
-      tooltip_observer_for_testing_(nullptr) {
-#if defined(OS_WIN)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kBrowserTest))
-    enable_logging_for_test_ = true;
-#endif
-}
+      tooltip_observer_for_testing_(nullptr) {}
 
 CursorManager::~CursorManager() {}
 
 void CursorManager::UpdateCursor(RenderWidgetHostViewBase* view,
                                  const WebCursor& cursor) {
   cursor_map_[view] = cursor;
-#if defined(OS_WIN)
-  if (enable_logging_for_test_) {
-    enable_logging_for_test_ = false;
-    LOG(ERROR) << "Setting first cursor for view = " << view
-               << ", this = " << this;
-  }
-#endif
   if (view == view_under_cursor_)
     root_view_->DisplayCursor(cursor);
 }
