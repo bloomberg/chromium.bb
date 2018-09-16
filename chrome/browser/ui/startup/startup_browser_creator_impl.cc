@@ -76,13 +76,10 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#include "chrome/browser/apps/platform_apps/app_launch_for_metro_restart_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration_win.h"
 #endif  // defined(OS_WIN)
 
