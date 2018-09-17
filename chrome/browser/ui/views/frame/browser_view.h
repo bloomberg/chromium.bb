@@ -109,8 +109,7 @@ class BrowserView : public BrowserWindow,
   BrowserView();
   ~BrowserView() override;
 
-  // Takes ownership of |browser|.
-  void Init(Browser* browser);
+  void Init(std::unique_ptr<Browser> browser);
 
   void set_frame(BrowserFrame* frame) { frame_ = frame; }
   BrowserFrame* frame() const { return frame_; }
