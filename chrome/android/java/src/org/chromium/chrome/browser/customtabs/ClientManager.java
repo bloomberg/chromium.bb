@@ -15,6 +15,7 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsService.Relation;
@@ -31,6 +32,7 @@ import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityDelegate;
 import org.chromium.chrome.browser.installedapp.InstalledAppProviderImpl;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.WebContents;
@@ -266,6 +268,8 @@ class ClientManager {
     }
 
     private final Map<CustomTabsSessionToken, SessionParams> mSessionParams = new HashMap<>();
+    private final Map<CustomTabsSessionToken, ActivityDelegate> mActivityDelegates
+            = new HashMap<>();
     private final SparseBooleanArray mUidHasCalledWarmup = new SparseBooleanArray();
     private boolean mWarmupHasBeenCalled;
 
@@ -782,6 +786,7 @@ class ClientManager {
         if (params.originVerifier != null) params.originVerifier.cleanUp();
         if (params.disconnectCallback != null) params.disconnectCallback.run(session);
         mUidHasCalledWarmup.delete(params.uid);
+        mActivityDelegates.remove(session);
     }
 
     /**
@@ -811,5 +816,15 @@ class ClientManager {
                 cleanupSessionInternal(session);
             }
         }
+    }
+
+    void setActivityDelegateForSession(CustomTabsSessionToken sessionToken,
+                                          ActivityDelegate activityDelegate) {
+        mActivityDelegates.put(sessionToken, activityDelegate);
+    }
+
+    @Nullable
+    ActivityDelegate getActivityDelegateForSession(CustomTabsSessionToken sessionToken) {
+        return mActivityDelegates.get(sessionToken);
     }
 }
