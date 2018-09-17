@@ -4,37 +4,37 @@
 
 /**
  * Class to run and get details about user commands.
- *
- * @constructor
- * @param {SwitchAccessInterface} switchAccess
  */
-function Commands(switchAccess) {
+class Commands {
   /**
-   * SwitchAccess reference.
-   *
-   * @private {SwitchAccessInterface}
+   * @constructor
+   * @param {SwitchAccessInterface} switchAccess
    */
-  this.switchAccess_ = switchAccess;
+  constructor(switchAccess) {
+    /**
+     * SwitchAccess reference.
+     *
+     * @private {SwitchAccessInterface}
+     */
+    this.switchAccess_ = switchAccess;
 
-  /**
-   * A map from command name to the default key code and function binding for
-   * the command.
-   *
-   * @private {!Object}
-   */
-  this.commandMap_ = this.buildCommandMap_();
-}
-
-Commands.prototype = {
+    /**
+     * A map from command name to the default key code and function binding for
+     * the command.
+     *
+     * @private {!Object<string, {keyCode: string, callback:function(): void}>}
+     */
+    this.commandMap_ = this.buildCommandMap_();
+  }
 
   /**
    * Return a list of the names of all user commands.
    *
    * @return {!Array<string>}
    */
-  getCommands: function() {
+  getCommands() {
     return Object.keys(this.commandMap_);
-  },
+  }
 
   /**
    * Return the default key code for a command.
@@ -42,26 +42,26 @@ Commands.prototype = {
    * @param {string} command
    * @return {number}
    */
-  getDefaultKeyCodeFor: function(command) {
+  getDefaultKeyCodeFor(command) {
     return this.commandMap_[command]['defaultKeyCode'];
-  },
+  }
 
   /**
    * Run the function binding for the specified command.
    *
    * @param {string} command
    */
-  runCommand: function(command) {
+  runCommand(command) {
     this.commandMap_[command]['binding']();
-  },
+  }
 
   /**
    * Build the object that maps from command name to the default key code and
    * function binding for the command.
    *
-   * @return {!Object}
+   * @return {!Object<string, {keyCode: string, callback: function(): void}>}
    */
-  buildCommandMap_: function() {
+  buildCommandMap_() {
     return {
       'next': {
         'defaultKeyCode': 51, /* '3' key */
@@ -81,4 +81,4 @@ Commands.prototype = {
       }
     };
   }
-};
+}
