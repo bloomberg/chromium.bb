@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <winternl.h>
 
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"

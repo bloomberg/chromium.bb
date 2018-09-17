@@ -24,10 +24,17 @@
 #define CHROME_BROWSER_MEMORY_SWAP_THRASHING_MONITOR_H_
 
 #include "base/base_export.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/memory/swap_thrashing_monitor_delegate.h"
+
+namespace features {
+
+extern const base::Feature kSwapThrashingMonitor;
+
+}  // namespace features
 
 namespace memory {
 
