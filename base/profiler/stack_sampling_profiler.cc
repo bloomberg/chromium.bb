@@ -132,7 +132,6 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   void Remove(int collection_id);
 
  private:
-  friend class TestPeer;
   friend struct DefaultSingletonTraits<SamplingThread>;
 
   // The different states in which the sampling-thread can be.
