@@ -99,9 +99,23 @@ class SigninManagerBase : public KeyedService {
         const std::string& password) {}
   };
 
+// On non-ChromeOS platforms, SigninManagerBase should only be instantiated
+// via the derived SigninManager class, as the codewise assumes the
+// invariant that any SigninManagerBase object can be cast to a
+// SigninManager object when not on ChromeOS. Make the constructor private
+// and add SigninManager as a friend to support this.
+// TODO(883648): Eliminate the need to downcast SigninManagerBase to
+// SigninManager and then eliminate this as well.
+#if !defined(OS_CHROMEOS)
+ private:
+#endif
   SigninManagerBase(SigninClient* client,
                     AccountTrackerService* account_tracker_service,
                     SigninErrorController* signin_error_controller);
+#if !defined(OS_CHROMEOS)
+ public:
+#endif
+
   ~SigninManagerBase() override;
 
   // Registers per-profile prefs.
@@ -207,6 +221,11 @@ class SigninManagerBase : public KeyedService {
  private:
   friend class FakeSigninManagerBase;
   friend class FakeSigninManager;
+
+  // Added only to allow SigninManager to call the SigninManagerBase
+  // constructor while disallowing any ad-hoc subclassing of
+  // SigninManagerBase.
+  friend class SigninManager;
 
   SigninClient* client_;
   AccountTrackerService* account_tracker_service_;
