@@ -4714,8 +4714,7 @@ def CMDcomments(parser, args):
       dct = c.__dict__.copy()
       dct['date'] = dct['date'].strftime('%Y-%m-%d %H:%M:%S.%f')
       return dct
-    with open(options.json_file, 'wb') as f:
-      json.dump(map(pre_serialize, summary), f)
+    write_json(options.json_file, map(pre_serialize, summary))
   return 0
 
 

@@ -3235,7 +3235,29 @@ class TestGitCl(TestCase):
     self.calls = [
       ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
       ((['git', 'config', 'rietveld.server'],), 'codereview.chromium.org'),
-    ] * 2
+    ] * 2 + [
+      (('write_json', 'output.json', [
+        {
+          'date': '2000-03-13 20:49:34.515270',
+          'message': 'PTAL',
+          'approval': False,
+          'disapproval': False,
+          'sender': 'owner@example.com'
+        }, {
+          'date': '2017-03-13 20:49:34.515270',
+          'message': 'lgtm',
+          'approval': True,
+          'disapproval': False,
+          'sender': 'r@example.com'
+        }, {
+          'date': '2017-03-13 21:50:34.515270',
+          'message': 'not lgtm',
+          'approval': False,
+          'disapproval': True,
+          'sender': 'r2@example.com'
+        }
+      ]),'')
+    ]
     self.mock(git_cl._RietveldChangelistImpl, 'GetIssueProperties', lambda _: {
       'messages': [
         {'text': 'lgtm', 'date': '2017-03-13 20:49:34.515270',
@@ -3266,22 +3288,8 @@ class TestGitCl(TestCase):
     ]
     cl = git_cl.Changelist(codereview='rietveld', issue=1)
     self.assertEqual(cl.GetCommentsSummary(), expected_comments_summary)
-
-    with git_cl.gclient_utils.temporary_directory() as tempdir:
-      out_file = os.path.abspath(os.path.join(tempdir, 'out.json'))
-      self.assertEqual(0, git_cl.main(['comment', '--rietveld', '-i', '10',
-                                       '-j', out_file]))
-      with open(out_file) as f:
-        read = json.load(f)
-      self.assertEqual(len(read), 3)
-      self.assertEqual(read[0], {
-          'date': '2000-03-13 20:49:34.515270',
-          'message': 'PTAL',
-          'approval': False,
-          'disapproval': False,
-          'sender': 'owner@example.com'})
-      self.assertEqual(read[1]['date'], '2017-03-13 20:49:34.515270')
-      self.assertEqual(read[2]['date'], '2017-03-13 21:50:34.515270')
+    self.assertEqual(0, git_cl.main(['comment', '--rietveld', '-i', '10',
+                                      '-j', 'output.json']))
 
   def test_git_cl_comments_fetch_gerrit(self):
     self.mock(sys, 'stdout', StringIO.StringIO())
@@ -3355,8 +3363,36 @@ class TestGitCl(TestCase):
             'message': 'I removed this because it is bad',
           },
         ]
-      }),
-    ] * 2
+      })
+    ] * 2 + [
+      (('write_json', 'output.json', [
+        {
+          u'date': u'2017-03-16 20:00:41.000000',
+          u'message': (
+              u'PTAL\n' +
+              u'\n' +
+              u'codereview.settings\n' +
+              u'  Base, Line 42: https://chromium-review.googlesource.com/' +
+              u'c/1/2/codereview.settings#b42\n' +
+              u'  I removed this because it is bad\n'),
+          u'approval': False,
+          u'disapproval': False,
+          u'sender': u'owner@example.com'
+        }, {
+          u'date': u'2017-03-17 05:19:37.500000',
+          u'message': (
+              u'Patch Set 2: Code-Review+1\n' +
+              u'\n' +
+              u'/COMMIT_MSG\n' +
+              u'  PS2, File comment: https://chromium-review.googlesource' +
+              u'.com/c/1/2//COMMIT_MSG#\n' +
+              u'  Please include a bug link\n'),
+          u'approval': False,
+          u'disapproval': False,
+          u'sender': u'reviewer@example.com'
+        }
+      ]),'')
+    ]
     expected_comments_summary = [
       git_cl._CommentSummary(
         message=(
@@ -3381,38 +3417,8 @@ class TestGitCl(TestCase):
     ]
     cl = git_cl.Changelist(codereview='gerrit', issue=1)
     self.assertEqual(cl.GetCommentsSummary(), expected_comments_summary)
-
-    with git_cl.gclient_utils.temporary_directory() as tempdir:
-      out_file = os.path.abspath(os.path.join(tempdir, 'out.json'))
-      self.assertEqual(0, git_cl.main(['comment', '--gerrit', '-i', '1',
-                                       '-j', out_file]))
-      with open(out_file) as f:
-        read = json.load(f)
-      self.assertEqual(len(read), 2)
-      self.assertEqual(read[0], {
-        u'date': u'2017-03-16 20:00:41.000000',
-        u'message': (
-            u'PTAL\n' +
-            u'\n' +
-            u'codereview.settings\n' +
-            u'  Base, Line 42: https://chromium-review.googlesource.com/' +
-            u'c/1/2/codereview.settings#b42\n' +
-            u'  I removed this because it is bad\n'),
-        u'approval': False,
-        u'disapproval': False,
-        u'sender': u'owner@example.com'})
-      self.assertEqual(read[1], {
-        u'date': u'2017-03-17 05:19:37.500000',
-        u'message': (
-            u'Patch Set 2: Code-Review+1\n' +
-            u'\n' +
-            u'/COMMIT_MSG\n' +
-            u'  PS2, File comment: https://chromium-review.googlesource.com/' +
-            u'c/1/2//COMMIT_MSG#\n' +
-            u'  Please include a bug link\n'),
-        u'approval': False,
-        u'disapproval': False,
-        u'sender': u'reviewer@example.com'})
+    self.assertEqual(0, git_cl.main(['comment', '--gerrit', '-i', '1',
+                                      '-j', 'output.json']))
 
   def test_get_remote_url_with_mirror(self):
     original_os_path_isdir = os.path.isdir
