@@ -249,9 +249,9 @@ void ThreadState::RunTerminationGC() {
   DCHECK(!IsMainThread());
   DCHECK(CheckThread());
 
-  if (IsMarkingInProgress()) {
-    IncrementalMarkingFinalize();
-  }
+  FinishIncrementalMarkingIfRunning(
+      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kIncrementalMarking,
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kThreadTerminationGC);
 
   // Finish sweeping.
   CompleteSweep();
