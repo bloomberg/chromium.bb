@@ -40,6 +40,7 @@ class APP_LIST_EXPORT SearchResultPageView
   gfx::Size CalculatePreferredSize() const override;
 
   // AppListPage overrides:
+  void OnHidden() override;
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
   void OnAnimationUpdated(double progress,
                           ash::AppListState from_state,
