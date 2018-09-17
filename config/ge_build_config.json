@@ -2232,21 +2232,6 @@
       ]
     },
     {
-      "name": "rainier",
-      "reference_board_name": "rainier",
-      "arch": "ARM_INTERNAL",
-      "builder": "RELEASE",
-      "experimental": false,
-      "models": [
-        {
-          "board_name": "rainier",
-          "name": "rainier",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        }
-      ]
-    },
-    {
       "name": "reef",
       "reference_board_name": "reef",
       "arch": "X86_INTERNAL",
