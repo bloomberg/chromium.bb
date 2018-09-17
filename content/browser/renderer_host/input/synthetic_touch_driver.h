@@ -37,13 +37,13 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
       const SyntheticPointerActionParams& params) const override;
 
  private:
-  using IndexMap = std::array<int, blink::WebTouchEvent::kTouchesLengthCap>;
+  using PointerIdIndexMap = std::map<int, int>;
 
-  void ResetIndexMap();
+  void ResetPointerIdIndexMap();
   int GetIndexFromMap(int value) const;
 
   SyntheticWebTouchEvent touch_event_;
-  IndexMap index_map_;
+  PointerIdIndexMap pointer_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticTouchDriver);
 };

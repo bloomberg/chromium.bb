@@ -145,10 +145,10 @@ class MockSyntheticPointerTouchActionTarget
             SyntheticPointerActionParams::PointerActionType::PRESS ||
         param.pointer_action_type() ==
             SyntheticPointerActionParams::PointerActionType::MOVE) {
-      if (indexes_[index] != param.index()) {
+      if (indexes_[index] != param.pointer_id()) {
         return testing::AssertionFailure()
                << "Pointer index at index " << index << " was "
-               << indexes_[index] << ", expected " << param.index() << ".";
+               << indexes_[index] << ", expected " << param.pointer_id() << ".";
       }
 
       if (positions_[index] != param.position()) {
@@ -193,7 +193,7 @@ class MockSyntheticPointerTouchActionTarget
  private:
   int num_dispatched_pointer_actions_;
   gfx::PointF positions_[WebTouchEvent::kTouchesLengthCap];
-  int indexes_[WebTouchEvent::kTouchesLengthCap];
+  uint32_t indexes_[WebTouchEvent::kTouchesLengthCap];
   WebTouchPoint::State states_[WebTouchEvent::kTouchesLengthCap];
 };
 
@@ -346,7 +346,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
   // Send a touch press for one finger.
   SyntheticPointerActionParams param1 = SyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType::PRESS);
-  param1.set_index(0);
+  param1.set_pointer_id(0);
   param1.set_position(gfx::PointF(54, 89));
   SyntheticPointerActionListParams::ParamList param_list1;
   param_list1.push_back(param1);
@@ -359,7 +359,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
   param1.set_position(gfx::PointF(133, 156));
   SyntheticPointerActionParams param2 = SyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType::PRESS);
-  param2.set_index(1);
+  param2.set_pointer_id(1);
   param2.set_position(gfx::PointF(79, 132));
   SyntheticPointerActionListParams::ParamList param_list2;
   param_list2.push_back(param1);
@@ -429,7 +429,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionsMultiPressRelease) {
   // Send a touch press for one finger.
   SyntheticPointerActionParams param1 = SyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType::PRESS);
-  param1.set_index(0);
+  param1.set_pointer_id(0);
   param1.set_position(gfx::PointF(54, 89));
   SyntheticPointerActionListParams::ParamList param_list1;
   param_list1.push_back(param1);
@@ -437,7 +437,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionsMultiPressRelease) {
 
   SyntheticPointerActionParams param2 = SyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType::PRESS);
-  param2.set_index(1);
+  param2.set_pointer_id(1);
   param2.set_position(gfx::PointF(123, 69));
   param1.set_pointer_action_type(
       SyntheticPointerActionParams::PointerActionType::IDLE);
@@ -497,7 +497,7 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionTypeInvalid) {
   // first.
   SyntheticPointerActionParams param = SyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType::MOVE);
-  param.set_index(0);
+  param.set_pointer_id(0);
   param.set_position(gfx::PointF(54, 89));
   params_.PushPointerActionParams(param);
   pointer_action_.reset(new SyntheticPointerAction(params_));

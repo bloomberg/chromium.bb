@@ -51,11 +51,7 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
     pointer_action_type_ = pointer_action_type;
   }
 
-  void set_index(int index) {
-    DCHECK_GE(index, 0);
-    DCHECK_LT(index, blink::WebTouchEvent::kTouchesLengthCap);
-    index_ = index;
-  }
+  void set_pointer_id(uint32_t pointer_id) { pointer_id_ = pointer_id; }
 
   void set_position(const gfx::PointF& position) {
     DCHECK(pointer_action_type_ == PointerActionType::PRESS ||
@@ -71,11 +67,7 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
 
   PointerActionType pointer_action_type() const { return pointer_action_type_; }
 
-  int index() const {
-    DCHECK_GE(index_, 0);
-    DCHECK_LT(index_, blink::WebTouchEvent::kTouchesLengthCap);
-    return index_;
-  }
+  uint32_t pointer_id() const { return pointer_id_; }
 
   gfx::PointF position() const {
     DCHECK(pointer_action_type_ == PointerActionType::PRESS ||
@@ -101,9 +93,8 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
   PointerActionType pointer_action_type_;
   // The position of the pointer, where it presses or moves to.
   gfx::PointF position_;
-  // The index of the pointer in the pointer action sequence passed from the
-  // user API.
-  int index_;
+  // The id of the pointer given by the users.
+  uint32_t pointer_id_;
   Button button_;
 };
 

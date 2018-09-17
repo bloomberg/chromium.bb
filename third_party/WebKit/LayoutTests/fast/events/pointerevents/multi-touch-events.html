@@ -46,7 +46,7 @@ function callbackValidTouchCount() {
 function testMultiTouchPointers() {
     if (window.chrome && chrome.gpuBenchmarking) {
         var pointerActions =
-            [{source: "touch",
+            [{source: "touch", id: 0,
               actions: [
                 { name: "pointerDown", x: x, y: y },
                 { name: "pointerMove", x: x + 30, y: y + 30 },
@@ -54,13 +54,13 @@ function testMultiTouchPointers() {
                 { name: "pointerMove", x: x + 90, y: y + 90 },
                 { name: "pause", },
                 { name: "pointerUp" }]},
-             {source: "touch",
+             {source: "touch", id: 1,
               actions: [
                 { name: "pause" },
                 { name: "pointerDown", x: x, y: y },
                 { name: "pointerMove", x: x + 60, y: y + 60 },
                 { name: "pointerUp"}]},
-             {source: "touch",
+             {source: "touch", id: 2,
               actions: [
                 { name: "pause" },
                 { name: "pause" },

@@ -72,9 +72,6 @@ void SyntheticMouseDriver::Leave(int index) {
 
 bool SyntheticMouseDriver::UserInputCheck(
     const SyntheticPointerActionParams& params) const {
-  if (params.index() != 0)
-    return false;
-
   if (params.pointer_action_type() ==
       SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED) {
     return false;
