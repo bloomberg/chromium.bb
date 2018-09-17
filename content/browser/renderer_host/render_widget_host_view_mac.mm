@@ -286,11 +286,14 @@ RenderWidgetHostViewMac::GetTextSelection() {
 
 void RenderWidgetHostViewMac::InitAsChild(
     gfx::NativeView parent_view) {
+  DCHECK_EQ(widget_type_, WidgetType::kFrame);
 }
 
 void RenderWidgetHostViewMac::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
+  DCHECK_EQ(widget_type_, WidgetType::kPopup);
+
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewMac*>(parent_host_view);
 
@@ -303,7 +306,6 @@ void RenderWidgetHostViewMac::InitAsPopup(
   popup_parent_host_view_->popup_child_host_view_ = this;
 
   // This path is used by the time/date picker.
-  DCHECK_EQ(popup_type_, WidgetType::kPopup);
   ns_view_bridge_->InitAsPopup(pos);
 }
 

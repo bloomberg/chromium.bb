@@ -255,7 +255,7 @@ RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForWidget(
   return rwhv;
 }
 
-RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForPopupWidget(
+RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForChildWidget(
     RenderWidgetHost* render_widget_host) {
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
   return new RenderWidgetHostViewAndroid(rwhi, nullptr);

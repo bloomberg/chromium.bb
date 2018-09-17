@@ -173,9 +173,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       float scale_factor,
       base::OnceCallback<void(const SkBitmap&)> callback);
 
-  void SetPopupType(WidgetType popup_type);
+  void SetWidgetType(WidgetType widget_type);
 
-  WidgetType GetPopupType();
+  WidgetType GetWidgetType();
 
   // Return a value that is incremented each time the renderer swaps a new frame
   // to the view.
@@ -624,15 +624,18 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   virtual bool HasFallbackSurface() const;
 
+  // Cached bool to test if the VizHitTesting feature is enabled.
+  const bool use_viz_hit_test_;
+
   // The model object. Members will become private when
   // RenderWidgetHostViewGuest is removed.
   RenderWidgetHostImpl* host_;
 
   // Is this a fullscreen view?
-  bool is_fullscreen_;
+  bool is_fullscreen_ = false;
 
   // Whether this view is a frame or a popup.
-  WidgetType popup_type_;
+  WidgetType widget_type_ = WidgetType::kFrame;
 
   // Indicates whether keyboard lock is active for this view.
   bool keyboard_locked_ = false;
@@ -642,19 +645,20 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool is_scroll_offset_at_top_ = true;
 
   // The scale factor of the display the renderer is currently on.
-  float current_device_scale_factor_;
+  float current_device_scale_factor_ = 0;
 
   // The color space of the display the renderer is currently on.
   gfx::ColorSpace current_display_color_space_;
 
   // The orientation of the display the renderer is currently on.
-  display::Display::Rotation current_display_rotation_;
+  display::Display::Rotation current_display_rotation_ =
+      display::Display::ROTATE_0;
 
   // A reference to current TextInputManager instance this RWHV is registered
   // with. This is initially nullptr until the first time the view calls
   // GetTextInputManager(). It also becomes nullptr when TextInputManager is
   // destroyed before the RWHV is destroyed.
-  TextInputManager* text_input_manager_;
+  TextInputManager* text_input_manager_ = nullptr;
 
   // The background color used in the current renderer.
   base::Optional<SkColor> content_background_color_;
@@ -663,11 +667,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // |content_background_color|.
   base::Optional<SkColor> default_background_color_;
 
-  WebContentsAccessibility* web_contents_accessibility_;
+  WebContentsAccessibility* web_contents_accessibility_ = nullptr;
 
-  bool is_currently_scrolling_viewport_;
-
-  bool use_viz_hit_test_ = false;
+  bool is_currently_scrolling_viewport_ = false;
 
  private:
   void SynchronizeVisualProperties();
@@ -703,7 +705,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   gfx::Rect current_display_area_;
 
-  uint32_t renderer_frame_number_;
+  uint32_t renderer_frame_number_ = 0;
 
   base::ObserverList<RenderWidgetHostViewBaseObserver>::Unchecked observers_;
 

@@ -96,8 +96,9 @@ class WebContentsView {
   virtual RenderWidgetHostViewBase* CreateViewForWidget(
       RenderWidgetHost* render_widget_host, bool is_guest_view_hack) = 0;
 
-  // Creates a new View that holds a popup and receives messages for it.
-  virtual RenderWidgetHostViewBase* CreateViewForPopupWidget(
+  // Creates a new View that holds a non-top-level widget and receives messages
+  // for it.
+  virtual RenderWidgetHostViewBase* CreateViewForChildWidget(
       RenderWidgetHost* render_widget_host) = 0;
 
   // Sets the page title for the native widgets corresponding to the view. This

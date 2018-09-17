@@ -151,9 +151,9 @@ RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForWidget(
                                            platform_widget->GetWeakPtr());
 }
 
-RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForPopupWidget(
+RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForChildWidget(
     RenderWidgetHost* render_widget_host) {
-  return platform_view_->CreateViewForPopupWidget(render_widget_host);
+  return platform_view_->CreateViewForChildWidget(render_widget_host);
 }
 
 void WebContentsViewGuest::SetPageTitle(const base::string16& title) {

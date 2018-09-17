@@ -46,16 +46,8 @@
 namespace content {
 
 RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
-    : host_(RenderWidgetHostImpl::From(host)),
-      is_fullscreen_(false),
-      popup_type_(WidgetType::kFrame),
-      current_device_scale_factor_(0),
-      current_display_rotation_(display::Display::ROTATE_0),
-      text_input_manager_(nullptr),
-      web_contents_accessibility_(nullptr),
-      is_currently_scrolling_viewport_(false),
-      use_viz_hit_test_(features::IsVizHitTestingEnabled()),
-      renderer_frame_number_(0),
+    : use_viz_hit_test_(features::IsVizHitTestingEnabled()),
+      host_(RenderWidgetHostImpl::From(host)),
       weak_factory_(this) {
   host_->render_frame_metadata_provider()->AddObserver(this);
 }
@@ -443,12 +435,12 @@ bool RenderWidgetHostViewBase::HasFallbackSurface() const {
   return false;
 }
 
-void RenderWidgetHostViewBase::SetPopupType(WidgetType popup_type) {
-  popup_type_ = popup_type;
+void RenderWidgetHostViewBase::SetWidgetType(WidgetType widget_type) {
+  widget_type_ = widget_type;
 }
 
-WidgetType RenderWidgetHostViewBase::GetPopupType() {
-  return popup_type_;
+WidgetType RenderWidgetHostViewBase::GetWidgetType() {
+  return widget_type_;
 }
 
 BrowserAccessibilityManager*
