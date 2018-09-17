@@ -69,8 +69,6 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
   PlatformGlyphInit();
 }
 
-SimpleFontData::~SimpleFontData() = default;
-
 void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
   if (!platform_data_.size()) {
     font_metrics_.Reset();
