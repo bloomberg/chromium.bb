@@ -37,6 +37,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     // Redefined the string since MemoryDumpManager::kTraceCategory causes
     // static initialization of this struct.
     {TRACE_DISABLED_BY_DEFAULT("memory-infra"), "*", kMemoryDumpAllowedArgs},
+    {TRACE_DISABLED_BY_DEFAULT("system_stats"), "*", nullptr},
     {nullptr, nullptr, nullptr}};
 
 const char* kMetadataWhitelist[] = {"chrome-library-name",
