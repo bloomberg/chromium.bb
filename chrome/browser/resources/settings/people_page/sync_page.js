@@ -657,6 +657,16 @@ Polymer({
     return this.unifiedConsentEnabled ? 'list-item' : 'settings-box';
   },
 
+  /**
+   * When there is a sync passphrase, some items have an additional line for the
+   * passphrase reset hint, making them three lines rather than two.
+   * @return {string}
+   * @private
+   */
+  getPassphraseHintLines_: function() {
+    return this.syncPrefs.encryptAllData ? 'three-line' : 'two-line';
+  },
+
   // <if expr="not chromeos">
   /**
    * @return {boolean}

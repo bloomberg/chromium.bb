@@ -1778,12 +1778,13 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
       l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT,
                                 base::ASCIIToUTF16(sync_dashboard_url)));
   html_source->AddString(
-      "passphraseResetHint",
-      l10n_util::GetStringFUTF8(
-          unified_consent::IsUnifiedConsentFeatureEnabled()
-              ? IDS_SETTINGS_PASSPHRASE_RESET_HINT_UNIFIED_CONSENT
-              : IDS_SETTINGS_PASSPHRASE_RESET_HINT,
-          base::ASCIIToUTF16(sync_dashboard_url)));
+      "passphraseResetHintEncryption",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RESET_HINT_ENCRYPTION,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
+  html_source->AddString(
+      "passphraseResetHintToggle",
+      l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RESET_HINT_TOGGLE,
+                                base::ASCIIToUTF16(sync_dashboard_url)));
   html_source->AddString(
       "passphraseRecover",
       l10n_util::GetStringFUTF8(IDS_SETTINGS_PASSPHRASE_RECOVER,
