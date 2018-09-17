@@ -10,6 +10,8 @@ cr.define('destination_search_test', function() {
     ReceiveFailedSetup: 'receive failed setup',
     GetCapabilitiesFails: 'get capabilities fails',
     CloudKioskPrinter: 'cloud kiosk printer',
+    ReceiveSuccessfulSetupWithPolicies:
+        'receive successful setup with policies',
   };
 
   const suiteName = 'NewDestinationSearchTest';
@@ -200,6 +202,32 @@ cr.define('destination_search_test', function() {
 
       // Verify that the destination has been selected.
       assertEquals(printerId, destinationStore.selectedDestination.id);
+    });
+
+    // Tests that if policies are set correctly if they are presenst
+    // for a destination. ChromeOS only.
+    test(assert(TestNames.ReceiveSuccessfulSetupWithPolicies), function() {
+      const destId = '00112233DEADBEEF';
+      const response = {
+        printerId: destId,
+        capabilities:
+            print_preview_test_utils.getCddTemplate(destId).capabilities,
+        policies: {allowedColorModes: print_preview.ColorMode.GRAY},
+        success: true,
+      };
+      nativeLayer.setSetupPrinterResponse(false, response);
+      requestSetup(destId);
+      return nativeLayer.whenCalled('setupPrinter').then(function(actualId) {
+        assertEquals(destId, actualId);
+        const selectedDestination = destinationStore.selectedDestination;
+        assertNotEquals(null, selectedDestination);
+        assertEquals(destId, selectedDestination.id);
+        assertNotEquals(null, selectedDestination.capabilities);
+        assertNotEquals(null, selectedDestination.policies);
+        assertEquals(
+            print_preview.ColorMode.GRAY,
+            selectedDestination.policies.allowedColorModes);
+      });
     });
   });
 
