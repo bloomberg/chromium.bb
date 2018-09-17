@@ -98,7 +98,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   PreviewsState GetPreviewsState() const override;
   void SetPreviewsState(PreviewsState previews_state) override;
   NavigationUIData* GetNavigationUIData() const override;
-  DevToolsStatus GetDevToolsStatus() const override;
   void SetResourceRequestBlockedReason(
       blink::ResourceRequestBlockedReason reason) override;
   base::Optional<blink::ResourceRequestBlockedReason>
@@ -187,10 +186,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     navigation_ui_data_ = std::move(navigation_ui_data);
   }
 
-  void set_devtools_status(DevToolsStatus devtools_status) {
-    devtools_status_ = devtools_status;
-  }
-
   void SetBlobHandles(BlobHandles blob_handles);
 
   bool blocked_response_from_reaching_renderer() const {
@@ -249,7 +244,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool report_raw_headers_;
   bool report_security_info_;
   bool is_async_;
-  DevToolsStatus devtools_status_;
   base::Optional<blink::ResourceRequestBlockedReason>
       resource_request_blocked_reason_;
   PreviewsState previews_state_;

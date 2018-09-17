@@ -1840,7 +1840,6 @@ void NetworkHandler::ContinueInterceptedRequest(
   }
 
   base::Optional<net::Error> error;
-  bool mark_as_canceled = false;
   if (error_reason.isJust()) {
     bool ok;
     error = NetErrorFromString(error_reason.fromJust(), &ok);
@@ -1848,15 +1847,13 @@ void NetworkHandler::ContinueInterceptedRequest(
       callback->sendFailure(Response::InvalidParams("Invalid errorReason."));
       return;
     }
-
-    mark_as_canceled = true;
   }
 
   auto modifications =
       std::make_unique<DevToolsNetworkInterceptor::Modifications>(
           std::move(error), std::move(raw_response), std::move(url),
           std::move(method), std::move(post_data), std::move(headers),
-          std::move(auth_challenge_response), mark_as_canceled);
+          std::move(auth_challenge_response));
 
   if (url_loader_interceptor_) {
     url_loader_interceptor_->ContinueInterceptedRequest(
