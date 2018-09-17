@@ -25,15 +25,14 @@ struct StructTraits<url::mojom::OriginDataView, url::Origin> {
       if (!data.ReadScheme(&scheme) || !data.ReadHost(&host))
         return false;
 
-      *out = url::Origin::UnsafelyCreateOriginWithoutNormalization(scheme, host,
-                                                                   data.port());
-    }
+      base::Optional<url::Origin> origin =
+          url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(
+              scheme, host, data.port());
+      if (!origin.has_value())
+        return false;
 
-    // If a unique origin was created, but the unique flag wasn't set, then
-    // the values provided to 'UnsafelyCreateOriginWithoutNormalization' were
-    // invalid.
-    if (!data.unique() && out->unique())
-      return false;
+      *out = origin.value();
+    }
 
     return true;
   }

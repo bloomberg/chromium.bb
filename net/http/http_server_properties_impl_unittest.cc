@@ -450,17 +450,17 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   ASSERT_EQ(3u, map.size());
   AlternativeServiceMap::const_iterator map_it = map.begin();
 
-  EXPECT_TRUE(map_it->first.Equals(test_server2));
+  EXPECT_EQ(map_it->first, test_server2);
   ASSERT_EQ(1u, map_it->second.size());
   EXPECT_EQ(alternative_service3, map_it->second[0].alternative_service());
   EXPECT_EQ(expiration3, map_it->second[0].expiration());
   ++map_it;
-  EXPECT_TRUE(map_it->first.Equals(test_server1));
+  EXPECT_EQ(map_it->first, test_server1);
   ASSERT_EQ(1u, map_it->second.size());
   EXPECT_EQ(alternative_service1, map_it->second[0].alternative_service());
   EXPECT_EQ(expiration1, map_it->second[0].expiration());
   ++map_it;
-  EXPECT_TRUE(map_it->first.Equals(test_server3));
+  EXPECT_EQ(map_it->first, test_server3);
   ASSERT_EQ(1u, map_it->second.size());
   EXPECT_EQ(alternative_service4, map_it->second[0].alternative_service());
   EXPECT_EQ(expiration4, map_it->second[0].expiration());
@@ -603,7 +603,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServiceInfos) {
 
   const AlternativeServiceMap& map = impl_.alternative_service_map();
   AlternativeServiceMap::const_iterator it = map.begin();
-  EXPECT_TRUE(it->first.Equals(test_server2));
+  EXPECT_EQ(it->first, test_server2);
   ASSERT_EQ(1u, it->second.size());
   EXPECT_EQ(alternative_service2, it->second[0].alternative_service());
 
@@ -615,7 +615,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternativeServiceInfos) {
 
   // GetAlternativeServices should reorder the AlternateProtocol map.
   it = map.begin();
-  EXPECT_TRUE(it->first.Equals(test_server1));
+  EXPECT_EQ(it->first, test_server1);
   ASSERT_EQ(1u, it->second.size());
   EXPECT_EQ(alternative_service1, it->second[0].alternative_service());
 }
@@ -802,7 +802,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, AlternativeServiceWithScheme) {
 
   const net::AlternativeServiceMap& map = impl_.alternative_service_map();
   net::AlternativeServiceMap::const_iterator it = map.begin();
-  EXPECT_TRUE(it->first.Equals(http_server));
+  EXPECT_EQ(it->first, http_server);
   ASSERT_EQ(2u, it->second.size());
   EXPECT_EQ(alternative_service1, it->second[0].alternative_service());
   EXPECT_EQ(alternative_service2, it->second[1].alternative_service());
@@ -839,7 +839,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
 
   const net::AlternativeServiceMap& map = impl_.alternative_service_map();
   net::AlternativeServiceMap::const_iterator it = map.begin();
-  EXPECT_TRUE(it->first.Equals(test_server));
+  EXPECT_EQ(it->first, test_server);
   ASSERT_EQ(2u, it->second.size());
   EXPECT_EQ(alternative_service1, it->second[0].alternative_service());
   EXPECT_EQ(alternative_service2, it->second[1].alternative_service());
@@ -1381,13 +1381,13 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Set) {
   ASSERT_EQ(3u, map.size());
   ServerNetworkStatsMap::const_iterator map_it = map.begin();
 
-  EXPECT_TRUE(map_it->first.Equals(docs_server));
+  EXPECT_EQ(map_it->first, docs_server);
   EXPECT_EQ(new_stats_docs, map_it->second);
   ++map_it;
-  EXPECT_TRUE(map_it->first.Equals(google_server));
+  EXPECT_EQ(map_it->first, google_server);
   EXPECT_EQ(stats_google, map_it->second);
   ++map_it;
-  EXPECT_TRUE(map_it->first.Equals(mail_server));
+  EXPECT_EQ(map_it->first, mail_server);
   EXPECT_EQ(stats_mail, map_it->second);
 }
 

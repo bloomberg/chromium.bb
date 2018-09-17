@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/strings/string_util.h"
+#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
@@ -637,6 +638,20 @@ struct FuzzTraits<base::DictionaryValue> {
       }
     }
     --g_depth;
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<base::UnguessableToken> {
+  static bool Fuzz(base::UnguessableToken* p, Fuzzer* fuzzer) {
+    auto low = p->GetLowForSerialization();
+    auto high = p->GetHighForSerialization();
+    if (!FuzzParam(&low, fuzzer))
+      return false;
+    if (!FuzzParam(&high, fuzzer))
+      return false;
+    *p = base::UnguessableToken::Deserialize(high, low);
     return true;
   }
 };
@@ -1509,21 +1524,48 @@ struct FuzzTraits<ui::LatencyInfo> {
 template <>
 struct FuzzTraits<url::Origin> {
   static bool Fuzz(url::Origin* p, Fuzzer* fuzzer) {
-    std::string scheme = p->scheme();
-    std::string host = p->host();
-    uint16_t port = p->port();
+    bool opaque = p->unique();
+    if (!FuzzParam(&opaque, fuzzer))
+      return false;
+    std::string scheme = p->GetTupleOrPrecursorTupleIfOpaque().scheme();
+    std::string host = p->GetTupleOrPrecursorTupleIfOpaque().host();
+    uint16_t port = p->GetTupleOrPrecursorTupleIfOpaque().port();
     if (!FuzzParam(&scheme, fuzzer))
       return false;
     if (!FuzzParam(&host, fuzzer))
       return false;
     if (!FuzzParam(&port, fuzzer))
       return false;
-    *p = url::Origin::UnsafelyCreateOriginWithoutNormalization(scheme, host,
-                                                               port);
 
-    // Force a unique origin 1% of the time:
-    if (RandInRange(100) == 1)
-      *p = url::Origin();
+    base::Optional<url::Origin> origin;
+    if (!opaque) {
+      origin = url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(
+          scheme, host, port);
+    } else {
+      base::Optional<base::UnguessableToken> token =
+          p->GetNonceForSerialization();
+      if (!token)
+        token = base::UnguessableToken::Deserialize(RandU64(), RandU64());
+      if (!FuzzParam(&(*token), fuzzer))
+        return false;
+      origin = url::Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
+          scheme, host, port, url::Origin::Nonce(*token));
+    }
+
+    if (!origin) {
+      // This means that we produced non-canonical values that were rejected by
+      // UnsafelyCreate. Which is nice, except, those are arguably interesting
+      // values to be sending over the wire sometimes, to make sure they're
+      // rejected at the receiving end.
+      //
+      // We could potentially call CreateFromNormalizedTuple here to force their
+      // creation, except that could lead to invariant violations within the
+      // url::Origin we construct -- and potentially crash the fuzzer. What to
+      // do?
+      return false;
+    }
+
+    *p = std::move(origin).value();
     return true;
   }
 };
