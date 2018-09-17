@@ -1891,7 +1891,7 @@ int BrowserView::GetBottomInsetOfLocationBarWithinToolbar() const {
 void BrowserView::ReparentTopContainerForEndOfImmersive() {
   overlay_view_->SetVisible(false);
   top_container()->DestroyLayer();
-  AddChildViewAt(top_container(), GetIndexOf(contents_container_) + 1);
+  AddChildViewAt(top_container(), GetIndexOf(contents_container_));
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {
@@ -2381,27 +2381,6 @@ void BrowserView::InitViews() {
 
   LoadAccelerators();
 
-  contents_web_view_ = new ContentsWebView(browser_->profile());
-  contents_web_view_->set_id(VIEW_ID_TAB_CONTAINER);
-  contents_web_view_->SetEmbedFullscreenWidgetMode(true);
-
-  web_contents_close_handler_.reset(
-      new WebContentsCloseHandler(contents_web_view_));
-
-  devtools_web_view_ = new views::WebView(browser_->profile());
-  devtools_web_view_->set_id(VIEW_ID_DEV_TOOLS_DOCKED);
-  devtools_web_view_->SetVisible(false);
-
-  contents_container_ = new views::View();
-  contents_container_->SetBackground(views::CreateSolidBackground(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND)));
-  contents_container_->AddChildView(devtools_web_view_);
-  contents_container_->AddChildView(contents_web_view_);
-  contents_container_->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
-      devtools_web_view_, contents_web_view_));
-  AddChildView(contents_container_);
-  set_contents_view(contents_container_);
-
   // Top container holds tab strip and toolbar and lives at the front of the
   // view hierarchy.
   top_container_ = new TopContainerView(this);
@@ -2423,6 +2402,27 @@ void BrowserView::InitViews() {
   // hosted app frame).
   if (!toolbar_button_provider_)
     SetToolbarButtonProvider(toolbar_);
+
+  contents_web_view_ = new ContentsWebView(browser_->profile());
+  contents_web_view_->set_id(VIEW_ID_TAB_CONTAINER);
+  contents_web_view_->SetEmbedFullscreenWidgetMode(true);
+
+  web_contents_close_handler_.reset(
+      new WebContentsCloseHandler(contents_web_view_));
+
+  devtools_web_view_ = new views::WebView(browser_->profile());
+  devtools_web_view_->set_id(VIEW_ID_DEV_TOOLS_DOCKED);
+  devtools_web_view_->SetVisible(false);
+
+  contents_container_ = new views::View();
+  contents_container_->SetBackground(views::CreateSolidBackground(
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND)));
+  contents_container_->AddChildView(devtools_web_view_);
+  contents_container_->AddChildView(contents_web_view_);
+  contents_container_->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
+      devtools_web_view_, contents_web_view_));
+  AddChildView(contents_container_);
+  set_contents_view(contents_container_);
 
   infobar_container_ = new InfoBarContainerView(this);
   AddChildView(infobar_container_);
