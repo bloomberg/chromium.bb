@@ -507,7 +507,6 @@ _arm_internal_release_boards = frozenset([
     'octavius',
     'peach_pi',
     'peach_pit',
-    'rainier',
     'romer',
     'scarlet',
     'veyron_fievel',
@@ -626,7 +625,6 @@ _x86_internal_release_boards = frozenset([
     'wizpig',
     'wolf',
     'zako',
-    'zoombini',
 ])
 
 _x86_external_boards = frozenset([
