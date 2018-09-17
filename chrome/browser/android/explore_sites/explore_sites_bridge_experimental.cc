@@ -13,8 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/explore_sites/catalog.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
-#include "chrome/browser/android/explore_sites/explore_sites_service.h"
-#include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
 #include "chrome/browser/android/explore_sites/ntp_json_fetcher.h"
 #include "chrome/browser/android/explore_sites/url_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,7 +54,7 @@ policy {
   setting: "user"
   policy_exception_justification:
     "This feature is only enabled explicitly by flag."
-        })");
+})");
 
 void GotNTPCategoriesFromJson(
     const ScopedJavaGlobalRef<jobject>& j_callback_ref,

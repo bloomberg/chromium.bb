@@ -18,14 +18,18 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 public class ExploreSitesCategoryUnitTest {
     @Test
     public void testAddSite() {
-        String title = "test";
-        String url = "http://www.google.com";
-        String categoryTitle = "Movies";
+        final int id = 1;
+        final int siteId = 100;
+        final String title = "test";
+        final String url = "http://www.google.com";
+        final String categoryTitle = "Movies";
 
-        ExploreSitesCategory category = new ExploreSitesCategory(categoryTitle);
-        category.addSite(title, url);
+        ExploreSitesCategory category = new ExploreSitesCategory(id, categoryTitle);
+        category.addSite(new ExploreSitesSite(siteId, title, url));
 
+        assertEquals(id, category.getId());
         assertEquals(1, category.getSites().size());
+        assertEquals(siteId, category.getSites().get(0).getId());
         assertEquals(title, category.getSites().get(0).getTitle());
         assertEquals(url, category.getSites().get(0).getUrl());
     }
