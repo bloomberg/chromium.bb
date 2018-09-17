@@ -181,17 +181,6 @@ class ResourceRequestInfo {
   // UI thread at the beginning of navigation.
   virtual NavigationUIData* GetNavigationUIData() const = 0;
 
-  enum class DevToolsStatus {
-    kCanceled,
-    // DevTools can internally handle a redirect, so the url request may
-    // appear never done. Mark these cases.
-    kCanceledAsRedirect,
-    kNotCanceled,
-  };
-
-  // If and why this request was canceled by DevTools. TODO(johannes): Remove.
-  virtual DevToolsStatus GetDevToolsStatus() const = 0;
-
   // Used to annotate requests blocked using net::ERR_BLOCKED_BY_CLIENT and
   // net::ERR_BLOCKED_BY_RESPONSE errors, with a ResourceRequestBlockedReason.
   virtual void SetResourceRequestBlockedReason(

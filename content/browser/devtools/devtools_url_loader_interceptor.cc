@@ -777,12 +777,9 @@ Response InterceptionJob::InnerContinueRequest(
   if (modifications->auth_challenge_response.isJust())
     return Response::InvalidParams("authChallengeResponse not expected.");
 
-  if (modifications->mark_as_canceled || modifications->error_reason) {
-    int error = modifications->error_reason
-                    ? *modifications->error_reason
-                    : (modifications->mark_as_canceled ? net::ERR_ABORTED
-                                                       : net::ERR_FAILED);
-    network::URLLoaderCompletionStatus status(error);
+  if (modifications->error_reason) {
+    network::URLLoaderCompletionStatus status(
+        modifications->error_reason.value());
     status.completion_time = base::TimeTicks::Now();
     if (modifications->error_reason == net::ERR_BLOCKED_BY_CLIENT) {
       // So we know that these modifications originated from devtools

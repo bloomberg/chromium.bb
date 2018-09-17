@@ -185,7 +185,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       report_raw_headers_(report_raw_headers),
       report_security_info_(report_security_info),
       is_async_(is_async),
-      devtools_status_(DevToolsStatus::kNotCanceled),
       previews_state_(previews_state),
       body_(body),
       initiated_in_secure_context_(initiated_in_secure_context),
@@ -320,11 +319,6 @@ void ResourceRequestInfoImpl::SetPreviewsState(PreviewsState previews_state) {
 
 NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
   return navigation_ui_data_.get();
-}
-
-ResourceRequestInfo::DevToolsStatus ResourceRequestInfoImpl::GetDevToolsStatus()
-    const {
-  return devtools_status_;
 }
 
 void ResourceRequestInfoImpl::SetResourceRequestBlockedReason(

@@ -456,8 +456,6 @@ int DevToolsURLInterceptorRequestJob::MockResponseDetails::ReadRawData(
 
 namespace {
 
-using DevToolsStatus = ResourceRequestInfoImpl::DevToolsStatus;
-
 void SendPendingBodyRequestsOnUiThread(
     std::vector<std::unique_ptr<
         protocol::Network::Backend::GetResponseBodyForInterceptionCallback>>
@@ -530,14 +528,6 @@ std::unique_ptr<net::UploadDataStream> GetUploadData(net::URLRequest* request) {
 
   return std::make_unique<net::ElementsUploadDataStream>(
       std::move(proxy_readers), 0);
-}
-
-void SetDevToolsStatus(net::URLRequest* request,
-                       DevToolsStatus devtools_status) {
-  ResourceRequestInfoImpl* resource_request_info =
-      ResourceRequestInfoImpl::ForRequest(request);
-  DCHECK(resource_request_info);
-  resource_request_info->set_devtools_status(devtools_status);
 }
 
 bool IsDownload(net::URLRequest* orig_request, net::URLRequest* subrequest) {
@@ -794,8 +784,6 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestRedirectReceived(
     bool* defer_redirect) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(sub_request_);
-  SetDevToolsStatus(sub_request_->request(),
-                    DevToolsStatus::kCanceledAsRedirect);
 
   // If we're not intercepting results or are a response then cancel this
   // redirect and tell the parent request it was redirected through |redirect_|.
@@ -920,8 +908,7 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
               base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
               protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
               protocol::Maybe<protocol::Network::Headers>(),
-              protocol::Maybe<protocol::Network::AuthChallengeResponse>(),
-              false));
+              protocol::Maybe<protocol::Network::AuthChallengeResponse>()));
       return;
     case WaitingForUserResponse::WAITING_FOR_AUTH_ACK: {
       std::unique_ptr<protocol::Network::AuthChallengeResponse> auth_response =
@@ -934,7 +921,7 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
               base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
               protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
               protocol::Maybe<protocol::Network::Headers>(),
-              std::move(auth_response), false));
+              std::move(auth_response)));
       return;
     }
 
@@ -1072,9 +1059,6 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
   bool is_response_ack = waiting_for_user_response_ ==
                          WaitingForUserResponse::WAITING_FOR_RESPONSE_ACK;
   waiting_for_user_response_ = WaitingForUserResponse::NOT_WAITING;
-
-  if (modifications->mark_as_canceled)
-    SetDevToolsStatus(request(), DevToolsStatus::kCanceled);
 
   if (modifications->error_reason) {
     if (sub_request_) {

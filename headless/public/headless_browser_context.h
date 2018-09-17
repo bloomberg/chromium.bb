@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/web_preferences.h"
 #include "headless/lib/browser/headless_network_conditions.h"
 #include "headless/public/headless_export.h"
@@ -34,7 +33,6 @@ class HeadlessBrowserContextOptions;
 // Builder::SetOverrideWebPreferencesCallback().
 using content::WebPreferences;
 
-using DevToolsStatus = content::ResourceRequestInfo::DevToolsStatus;
 using content::ProtocolHandlerMap;
 
 // Represents an isolated session with a unique cache, cookies, and other

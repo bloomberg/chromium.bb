@@ -59,8 +59,7 @@ class DevToolsNetworkInterceptor {
                   protocol::Maybe<std::string> modified_post_data,
                   protocol::Maybe<protocol::Network::Headers> modified_headers,
                   protocol::Maybe<protocol::Network::AuthChallengeResponse>
-                      auth_challenge_response,
-                  bool mark_as_canceled);
+                      auth_challenge_response);
     ~Modifications();
 
     // If none of the following are set then the request will be allowed to
@@ -77,8 +76,6 @@ class DevToolsNetworkInterceptor {
     // AuthChallengeResponse is mutually exclusive with the above.
     protocol::Maybe<protocol::Network::AuthChallengeResponse>
         auth_challenge_response;
-
-    bool mark_as_canceled;
   };
 
   enum InterceptionStage {
