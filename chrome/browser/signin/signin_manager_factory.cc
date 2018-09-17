@@ -86,7 +86,6 @@ SigninManagerFactory* SigninManagerFactory::GetInstance() {
 void SigninManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   SigninManagerBase::RegisterProfilePrefs(registry);
-  LocalAuth::RegisterLocalAuthPrefs(registry);
 }
 
 // static
