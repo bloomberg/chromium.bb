@@ -86,4 +86,28 @@ std::string SoftwareFeatureEnumToString(
   }
 }
 
+std::string SoftwareFeatureEnumToStringAllCaps(
+    cryptauth::SoftwareFeature software_feature) {
+  switch (software_feature) {
+    case SoftwareFeature::BETTER_TOGETHER_HOST:
+      return "BETTER_TOGETHER_HOST";
+    case SoftwareFeature::BETTER_TOGETHER_CLIENT:
+      return "BETTER_TOGETHER_CLIENT";
+    case SoftwareFeature::EASY_UNLOCK_HOST:
+      return "EASY_UNLOCK_HOST";
+    case SoftwareFeature::EASY_UNLOCK_CLIENT:
+      return "EASY_UNLOCK_CLIENT";
+    case SoftwareFeature::MAGIC_TETHER_HOST:
+      return "MAGIC_TETHER_HOST";
+    case SoftwareFeature::MAGIC_TETHER_CLIENT:
+      return "MAGIC_TETHER_CLIENT";
+    case SoftwareFeature::SMS_CONNECT_HOST:
+      return "SMS_CONNECT_HOST";
+    case SoftwareFeature::SMS_CONNECT_CLIENT:
+      return "SMS_CONNECT_CLIENT";
+    default:
+      return "UNKNOWN_FEATURE";
+  }
+}
+
 }  // namespace cryptauth
