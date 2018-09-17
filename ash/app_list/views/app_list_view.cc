@@ -1125,7 +1125,8 @@ void AppListView::Layout() {
                                           -kAppListBackgroundRadius * 2);
   app_list_background_shield_->SetBoundsRect(app_list_background_shield_bounds);
   app_list_background_shield_->UpdateCornerRadius(kAppListBackgroundRadius);
-  if (is_background_blur_enabled_ && !IsHomeLauncherEnabledInTabletMode() &&
+  if (is_background_blur_enabled_ && app_list_background_shield_mask_ &&
+      !IsHomeLauncherEnabledInTabletMode() &&
       app_list_background_shield_->layer()->size() !=
           app_list_background_shield_mask_->layer()->size()) {
     // Update the blur mask for the |app_list_background_shield_| with same
