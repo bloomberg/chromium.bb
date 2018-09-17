@@ -145,9 +145,8 @@ void SearchBoxView::ModelChanged() {
 }
 
 void SearchBoxView::UpdateKeyboardVisibility() {
-  if (!is_tablet_mode())
+  if (!keyboard::KeyboardController::HasInstance())
     return;
-
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
   if (!keyboard_controller->enabled() ||
       is_search_box_active() == keyboard::IsKeyboardVisible())
@@ -574,13 +573,10 @@ bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
 
 void SearchBoxView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
-  search_box::SearchBoxViewBase::ButtonPressed(sender, event);
-
-  if (!features::IsZeroStateSuggestionsEnabled())
-    return;
-
-  if (close_button() && sender == close_button())
+  if (close_button() && sender == close_button()) {
     SetSearchBoxActive(false, ui::ET_UNKNOWN);
+  }
+  search_box::SearchBoxViewBase::ButtonPressed(sender, event);
 }
 
 void SearchBoxView::HintTextChanged() {

@@ -196,7 +196,7 @@ TEST_F(SearchBoxViewTest, SearchBoxEmptyAfterCloseButtonClicked) {
   EXPECT_TRUE(view()->search_box()->text().empty());
 }
 
-// Tests that the search box is still active after close button is clicked.
+// Tests that the search box is no longer active after close button is clicked.
 TEST_F(SearchBoxViewTest, SearchBoxActiveAfterCloseButtonClicked) {
   KeyPress(ui::VKEY_A);
   view()->ButtonPressed(
@@ -204,7 +204,7 @@ TEST_F(SearchBoxViewTest, SearchBoxActiveAfterCloseButtonClicked) {
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON,
                      ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_TRUE(view()->is_search_box_active());
+  EXPECT_FALSE(view()->is_search_box_active());
 }
 
 // Tests that the search box is inactive by default.

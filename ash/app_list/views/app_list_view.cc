@@ -393,6 +393,7 @@ void AppListView::Dismiss() {
   delegate_->DismissAppList();
   SetState(AppListViewState::CLOSED);
   GetWidget()->Deactivate();
+  CloseKeyboardIfVisible();
 }
 
 bool AppListView::CloseOpenedPage() {
@@ -605,11 +606,8 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent) {
 
 void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
   // If the virtual keyboard is visible, dismiss the keyboard and return early.
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled() &&
-      keyboard_controller->IsKeyboardVisible()) {
+  if (CloseKeyboardIfVisible()) {
     search_box_view_->NotifyGestureEvent();
-    keyboard_controller->HideKeyboardByUser();
     return;
   }
 
@@ -1618,6 +1616,17 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
     // the app list's position
     OffsetYPositionOfAppList(0);
   }
+}
+
+bool AppListView::CloseKeyboardIfVisible() {
+  // TODO(ginko) abstract this function to be in |keyboard::KeyboardController|
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller && keyboard_controller->enabled() &&
+      keyboard_controller->IsKeyboardVisible()) {
+    keyboard_controller->HideKeyboardByUser();
+    return true;
+  }
+  return false;
 }
 
 void AppListView::OnDisplayMetricsChanged(const display::Display& display,
