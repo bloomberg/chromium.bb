@@ -95,6 +95,8 @@ DownloadMetaData BuildDownloadMetaData(Entry* entry, DownloadDriver* driver) {
   if (entry->state == Entry::State::COMPLETE) {
     meta_data.completion_info =
         CompletionInfo(entry->target_file_path, entry->bytes_downloaded);
+    meta_data.completion_info->response_headers = entry->response_headers;
+    meta_data.completion_info->url_chain = entry->url_chain;
     // If the download is completed, the |current_size| needs to pull from entry
     // since the history db record has been deleted.
     meta_data.current_size = entry->bytes_downloaded;

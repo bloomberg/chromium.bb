@@ -427,6 +427,10 @@ void ControllerImpl::OnDownloadCreated(const DriverEntry& download) {
     return;
   }
 
+  entry->url_chain = download.url_chain;
+  entry->response_headers = download.response_headers;
+  model_->Update(*entry);
+
   download::Client* client = clients_->GetClient(entry->client);
   DCHECK(client);
   using ShouldDownload = download::Client::ShouldDownload;

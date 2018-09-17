@@ -5,9 +5,14 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_DOWNLOAD_METADATA_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_DOWNLOAD_METADATA_H_
 
+#include <vector>
+
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "net/http/http_response_headers.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "url/gurl.h"
 
 namespace download {
 
@@ -23,6 +28,17 @@ struct CompletionInfo {
 
   // Download file size in bytes.
   uint64_t bytes_downloaded;
+
+  // The url chain of the download. Download may encounter redirects, and
+  // fetches the content from the last url in the chain.
+  // This will reflect the initial request's chain and does not take into
+  // account changed values during retries/resumptions.
+  std::vector<GURL> url_chain;
+
+  // The response headers for the download request.
+  // This will reflect the initial response's headers and does not take into
+  // account changed values during retries/resumptions.
+  scoped_refptr<const net::HttpResponseHeaders> response_headers;
 
   CompletionInfo(const base::FilePath& path, uint64_t bytes_downloaded);
   CompletionInfo(const CompletionInfo& other);
