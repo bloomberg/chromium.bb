@@ -52,7 +52,9 @@ class CORE_EXPORT PseudoElement : public Element {
 
   static String PseudoElementNameForEvents(PseudoId);
 
-  Node* FindAssociatedNode() const;
+  // Pseudo element are not allowed to be the inner node for hit testing. Find
+  // the closest ancestor which is a real dom node.
+  virtual Node* InnerNodeForHitTesting() const;
 
   virtual void Dispose();
 

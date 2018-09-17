@@ -365,4 +365,34 @@ void FirstLetterPseudoElement::DidRecalcStyle(StyleRecalcChange) {
   }
 }
 
+Node* FirstLetterPseudoElement::InnerNodeForHitTesting() const {
+  // When we hit a first letter during hit testing, hover state and events
+  // should be triggered on the parent of the real text node where the first
+  // letter is taken from. The first letter may not come from a real node - for
+  // quotes and generated text in ::before/::after. In that case walk up the
+  // layout tree to find the closest ancestor which is not anonymous. Note that
+  // display:contents will not be skipped since we generate anonymous
+  // LayoutInline boxes for ::before/::after with display:contents.
+  DCHECK(remaining_text_layout_object_);
+  LayoutObject* layout_object = remaining_text_layout_object_;
+  while (layout_object->IsAnonymous()) {
+    layout_object = layout_object->Parent();
+    DCHECK(layout_object);
+  }
+  Node* node = layout_object->GetNode();
+  DCHECK(node);
+  if (layout_object == remaining_text_layout_object_) {
+    // The text containing the first-letter is a real node, return its flat tree
+    // parent. If we used the layout tree parent, we would have incorrectly
+    // skipped display:contents ancestors.
+    return FlatTreeTraversal::Parent(*node);
+  }
+  if (node->IsPseudoElement()) {
+    // ::first-letter in generated content for ::before/::after. Use pseudo
+    // element parent.
+    return node->ParentOrShadowHostNode();
+  }
+  return node;
+}
+
 }  // namespace blink
