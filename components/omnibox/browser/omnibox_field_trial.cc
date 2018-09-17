@@ -39,7 +39,8 @@ namespace omnibox {
 const base::Feature kOmniboxRichEntitySuggestions{
     "OmniboxRichEntitySuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable enhanced presentation showing larger images.
+// Feature used to enable enhanced presentation showing larger images, currently
+// only used on desktop platforms.
 const base::Feature kOmniboxNewAnswerLayout{"OmniboxNewAnswerLayout",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -53,9 +54,16 @@ const base::Feature kOmniboxTailSuggestions{
     "OmniboxTailSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to force on the experiment of showing a button for suggestions
-// whose URL is open in another tab, with the ability to switch to that tab.
+// whose URL is open in another tab, with the ability to switch to that tab,
+// currently only used on desktop platforms.
 const base::Feature kOmniboxTabSwitchSuggestions{
-    "OmniboxTabSwitchSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+  "OmniboxTabSwitchSuggestions",
+#if defined(OS_IOS) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used to enable various experiments on keyword mode, UI and
 // suggestions.

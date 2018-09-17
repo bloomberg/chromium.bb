@@ -2826,7 +2826,6 @@
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxNewAnswerLayout",
                         "OmniboxRichEntitySuggestions",
-                        "OmniboxTabSwitchSuggestions",
                         "OmniboxTailSuggestions",
                         "ZeroSuggestRedirectToChrome",
                         "ZeroSuggestSwapTitleAndUrl"
