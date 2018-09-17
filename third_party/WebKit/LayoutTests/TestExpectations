@@ -300,14 +300,12 @@ crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-002.html
 # [css-contain]
 
 crbug.com/880802 external/wpt/css/css-contain/contain-layout-017.html [ Failure ]
-crbug.com/882333 external/wpt/css/css-contain/contain-layout-baseline-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
 crbug.com/880802 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
 crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-015.html [ Failure ]
 crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-016.html [ Failure ]
-crbug.com/882333 external/wpt/css/css-contain/contain-size-baseline-001.html [ Failure ]
 crbug.com/855263 external/wpt/css/css-contain/contain-size-breaks-001.html [ Failure ]
 crbug.com/855261 external/wpt/css/css-contain/contain-size-grid-002.html [ Failure ]
 crbug.com/855263 external/wpt/css/css-contain/contain-size-monolithic-001.html [ Failure ]
@@ -333,6 +331,7 @@ crbug.com/882388 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/882388 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-fieldset-002.html [ Failure ]
 crbug.com/863454 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Failure ]
 crbug.com/863454 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
+crbug.com/882333 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-inline-block-001.html [ Failure ]
 
 # ====== Layout team owned tests to here ======
 

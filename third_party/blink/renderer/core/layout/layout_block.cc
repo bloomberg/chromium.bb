@@ -1738,7 +1738,7 @@ bool LayoutBlock::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
   // ancestors or siblings.
   return (!StyleRef().IsOverflowVisible() &&
           !ShouldIgnoreOverflowPropertyForInlineBlockBaseline()) ||
-         ShouldApplySizeContainment();
+         ShouldApplyLayoutContainment();
 }
 
 LayoutUnit LayoutBlock::InlineBlockBaseline(
