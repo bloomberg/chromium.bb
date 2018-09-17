@@ -16,6 +16,7 @@
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
+#include "third_party/webrtc/rtc_base/timeutils.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
