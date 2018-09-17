@@ -1757,6 +1757,8 @@ TEST_F(NetworkContextTest, ClearEmptyReportingCacheReports) {
 }
 
 TEST_F(NetworkContextTest, ClearReportingCacheReportsWithNoService) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndDisableFeature(features::kReporting);
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
@@ -1867,6 +1869,8 @@ TEST_F(NetworkContextTest, ClearEmptyReportingCacheClients) {
 }
 
 TEST_F(NetworkContextTest, ClearReportingCacheClientsWithNoService) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndDisableFeature(features::kReporting);
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
@@ -1962,6 +1966,8 @@ TEST_F(NetworkContextTest, ClearEmptyNetworkErrorLogging) {
 }
 
 TEST_F(NetworkContextTest, ClearEmptyNetworkErrorLoggingWithNoService) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndDisableFeature(features::kNetworkErrorLogging);
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
