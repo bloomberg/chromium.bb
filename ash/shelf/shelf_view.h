@@ -294,6 +294,8 @@ class ASH_EXPORT ShelfView : public views::View,
   // Update all button's visibility in overflow.
   void UpdateAllButtonsVisibilityInOverflowMode();
 
+  void LayoutAppListAndBackButtonHighlight() const;
+
   // Calculates the ideal bounds. The bounds of each button corresponding to an
   // item in the model is set in |view_model_|.
   void CalculateIdealBounds(gfx::Rect* overflow_bounds) const;
