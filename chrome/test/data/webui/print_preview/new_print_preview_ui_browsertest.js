@@ -872,6 +872,12 @@ TEST_F(
       this.runMochaTest(destination_search_test.TestNames.ReceiveFailedSetup);
     });
 
+TEST_F(
+    'PrintPreviewNewDestinationSearchTest',
+    'ReceiveSuccessfultSetupWithPolicies', function() {
+      this.runMochaTest(destination_search_test.TestNames.ResolutionFails);
+    });
+
 GEN('#else');  // !defined(OS_CHROMEOS)
 TEST_F(
     'PrintPreviewNewDestinationSearchTest', 'GetCapabilitiesFails', function() {
