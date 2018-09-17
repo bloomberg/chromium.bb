@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionNoOpWhenDisabled) {
   StartPlaybackAndWait(shell(), "long-video");
   StartPlaybackAndWait(shell(), "long-audio");
 
-  media_session->Suspend(MediaSession::SuspendType::SYSTEM);
+  media_session->Suspend(MediaSession::SuspendType::kSystem);
   StopPlaybackAndWait(shell(), "long-audio");
 
   // At that point, only "long-audio" is paused.
@@ -146,11 +146,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, SimplePlayPause) {
 
   StartPlaybackAndWait(shell(), "long-video");
 
-  media_session->Suspend(MediaSession::SuspendType::SYSTEM);
+  media_session->Suspend(MediaSession::SuspendType::kSystem);
   WaitForStop(shell());
   EXPECT_FALSE(IsPlaying(shell(), "long-video"));
 
-  media_session->Resume(MediaSession::SuspendType::SYSTEM);
+  media_session->Resume(MediaSession::SuspendType::kSystem);
   WaitForStart(shell());
   EXPECT_TRUE(IsPlaying(shell(), "long-video"));
 }
@@ -166,12 +166,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultiplePlayersPlayPause) {
   StartPlaybackAndWait(shell(), "long-video");
   StartPlaybackAndWait(shell(), "long-audio");
 
-  media_session->Suspend(MediaSession::SuspendType::SYSTEM);
+  media_session->Suspend(MediaSession::SuspendType::kSystem);
   WaitForStop(shell());
   EXPECT_FALSE(IsPlaying(shell(), "long-video"));
   EXPECT_FALSE(IsPlaying(shell(), "long-audio"));
 
-  media_session->Resume(MediaSession::SuspendType::SYSTEM);
+  media_session->Resume(MediaSession::SuspendType::kSystem);
   WaitForStart(shell());
   EXPECT_TRUE(IsPlaying(shell(), "long-video"));
   EXPECT_TRUE(IsPlaying(shell(), "long-audio"));
@@ -217,22 +217,22 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultipleTabsPlayPause) {
   StartPlaybackAndWait(shell(), "long-video");
   StartPlaybackAndWait(other_shell, "long-video");
 
-  media_session->Suspend(MediaSession::SuspendType::SYSTEM);
+  media_session->Suspend(MediaSession::SuspendType::kSystem);
   WaitForStop(shell());
   EXPECT_FALSE(IsPlaying(shell(), "long-video"));
   EXPECT_TRUE(IsPlaying(other_shell, "long-video"));
 
-  other_media_session->Suspend(MediaSession::SuspendType::SYSTEM);
+  other_media_session->Suspend(MediaSession::SuspendType::kSystem);
   WaitForStop(other_shell);
   EXPECT_FALSE(IsPlaying(shell(), "long-video"));
   EXPECT_FALSE(IsPlaying(other_shell, "long-video"));
 
-  media_session->Resume(MediaSession::SuspendType::SYSTEM);
+  media_session->Resume(MediaSession::SuspendType::kSystem);
   WaitForStart(shell());
   EXPECT_TRUE(IsPlaying(shell(), "long-video"));
   EXPECT_FALSE(IsPlaying(other_shell, "long-video"));
 
-  other_media_session->Resume(MediaSession::SuspendType::SYSTEM);
+  other_media_session->Resume(MediaSession::SuspendType::kSystem);
   WaitForStart(other_shell);
   EXPECT_TRUE(IsPlaying(shell(), "long-video"));
   EXPECT_TRUE(IsPlaying(other_shell, "long-video"));

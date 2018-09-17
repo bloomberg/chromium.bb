@@ -119,21 +119,21 @@ void MediaSessionAndroid::Resume(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj) {
   DCHECK(media_session());
-  media_session()->Resume(MediaSession::SuspendType::UI);
+  media_session()->Resume(MediaSession::SuspendType::kUI);
 }
 
 void MediaSessionAndroid::Suspend(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj) {
   DCHECK(media_session());
-  media_session()->Suspend(MediaSession::SuspendType::UI);
+  media_session()->Suspend(MediaSession::SuspendType::kUI);
 }
 
 void MediaSessionAndroid::Stop(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj) {
   DCHECK(media_session());
-  media_session()->Stop(MediaSession::SuspendType::UI);
+  media_session()->Stop(MediaSession::SuspendType::kUI);
 }
 
 void MediaSessionAndroid::SeekForward(

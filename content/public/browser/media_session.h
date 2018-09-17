@@ -30,11 +30,11 @@ class MediaSession : public media_session::mojom::MediaSession {
  public:
   enum class SuspendType {
     // Suspended by the system because a transient sound needs to be played.
-    SYSTEM,
+    kSystem,
     // Suspended by the UI.
-    UI,
+    kUI,
     // Suspended by the page via script or user interaction.
-    CONTENT,
+    kContent,
   };
 
   // Returns the MediaSession associated to this WebContents. Creates one if

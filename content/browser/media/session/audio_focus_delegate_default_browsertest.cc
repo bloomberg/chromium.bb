@@ -41,8 +41,8 @@ class AudioFocusDelegateDefaultBrowserTest : public ContentBrowserTest {
     EXPECT_FALSE(media_session->IsActive());
     EXPECT_TRUE(other_media_session->IsActive());
 
-    media_session->Stop(MediaSessionImpl::SuspendType::UI);
-    other_media_session->Stop(MediaSessionImpl::SuspendType::UI);
+    media_session->Stop(MediaSessionImpl::SuspendType::kUI);
+    other_media_session->Stop(MediaSessionImpl::SuspendType::kUI);
   }
 };
 
