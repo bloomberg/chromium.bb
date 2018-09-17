@@ -31,7 +31,7 @@ class CORE_EXPORT StyleInvalidator {
   StyleInvalidator(PendingInvalidationMap&);
 
   ~StyleInvalidator();
-  void Invalidate(Element& invalidation_root);
+  void Invalidate(Document& document, Element* invalidation_root);
 
  private:
   class SiblingData;
