@@ -2416,6 +2416,13 @@ void WebContentsImpl::FullscreenFrameSetUpdated() {
     display_cutout_host_impl_->DidAcquireFullscreen(new_fullscreen_frame);
 }
 
+#if defined(OS_ANDROID)
+void WebContentsImpl::UpdateUserGestureCarryoverInfo() {
+  if (delegate_)
+    delegate_->UpdateUserGestureCarryoverInfo(this);
+}
+#endif
+
 bool WebContentsImpl::IsFullscreenForCurrentTab() const {
   return delegate_ ? delegate_->IsFullscreenForTabOrPending(this) : false;
 }

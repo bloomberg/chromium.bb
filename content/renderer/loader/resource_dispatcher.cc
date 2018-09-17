@@ -196,6 +196,26 @@ void NotifyResourceTransferSizeUpdate(
   render_frame->DidReceiveTransferSizeUpdate(request_id, transfer_size_diff);
 }
 
+#if defined(OS_ANDROID)
+void NotifyUpdateUserGestureCarryoverInfo(int render_frame_id) {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      RenderThreadImpl::DeprecatedGetMainTaskRunner();
+  if (!task_runner->BelongsToCurrentThread()) {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(NotifyUpdateUserGestureCarryoverInfo, render_frame_id));
+    return;
+  }
+
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id);
+  if (!render_frame)
+    return;
+
+  render_frame->GetFrameHost()->UpdateUserGestureCarryoverInfo();
+}
+#endif
+
 // Returns true if the headers indicate that this resource should always be
 // revalidated or not cached.
 bool AlwaysAccessNetwork(
@@ -715,6 +735,13 @@ int ResourceDispatcher::StartAsync(
         response_override_params,
     base::OnceClosure* continue_navigation_function) {
   CheckSchemeForReferrerPolicy(*request);
+
+#if defined(OS_ANDROID)
+  if (request->resource_type != RESOURCE_TYPE_MAIN_FRAME &&
+      request->has_user_gesture) {
+    NotifyUpdateUserGestureCarryoverInfo(request->render_frame_id);
+  }
+#endif
 
   bool override_url_loader =
       !!response_override_params &&

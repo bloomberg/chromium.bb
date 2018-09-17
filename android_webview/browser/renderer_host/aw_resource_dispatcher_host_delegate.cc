@@ -16,7 +16,6 @@
 #include "android_webview/browser/net/aw_web_resource_request.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/common/url_constants.h"
-#include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/features.h"
 #include "components/web_restrictions/browser/web_restrictions_resource_throttle.h"
@@ -38,7 +37,6 @@ using android_webview::AwWebResourceRequest;
 using content::BrowserThread;
 using content::ResourceType;
 using content::WebContents;
-using navigation_interception::InterceptNavigationDelegate;
 
 namespace {
 
@@ -324,8 +322,6 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
   throttles->push_back(std::move(ioThreadThrottle));
 
   bool is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
-  if (!is_main_frame)
-    InterceptNavigationDelegate::UpdateUserGestureCarryoverInfo(request);
   throttles->push_back(
       std::make_unique<web_restrictions::WebRestrictionsResourceThrottle>(
           AwBrowserContext::GetDefault()->GetWebRestrictionProvider(),

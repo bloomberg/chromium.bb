@@ -2614,6 +2614,12 @@ void RenderFrameHostImpl::FullscreenStateChanged(bool is_fullscreen) {
   delegate_->FullscreenStateChanged(this, is_fullscreen);
 }
 
+#if defined(OS_ANDROID)
+void RenderFrameHostImpl::UpdateUserGestureCarryoverInfo() {
+  delegate_->UpdateUserGestureCarryoverInfo();
+}
+#endif
+
 void RenderFrameHostImpl::OnDidBlockFramebust(const GURL& url) {
   delegate_->OnDidBlockFramebust(url);
 }

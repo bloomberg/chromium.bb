@@ -89,6 +89,8 @@ class TabWebContentsDelegateAndroid
       content::WebContents* web_contents) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
+  void UpdateUserGestureCarryoverInfo(
+      content::WebContents* web_contents) override;
 
  private:
   // NotificationObserver implementation.

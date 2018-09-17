@@ -41,6 +41,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/infobars/core/infobar.h"
+#include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -453,6 +454,14 @@ void TabWebContentsDelegateAndroid::OnDidBlockFramebust(
     content::WebContents* web_contents,
     const GURL& url) {
   ShowFramebustBlockInfobarInternal(web_contents, url);
+}
+
+void TabWebContentsDelegateAndroid::UpdateUserGestureCarryoverInfo(
+    content::WebContents* web_contents) {
+  auto* intercept_navigation_delegate =
+      navigation_interception::InterceptNavigationDelegate::Get(web_contents);
+  if (intercept_navigation_delegate)
+    intercept_navigation_delegate->UpdateLastUserGestureCarryoverTimestamp();
 }
 
 }  // namespace android

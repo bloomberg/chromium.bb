@@ -538,6 +538,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ExitFullscreenMode(bool will_cause_resize) override;
   void FullscreenStateChanged(RenderFrameHost* rfh,
                               bool is_fullscreen) override;
+#if defined(OS_ANDROID)
+  void UpdateUserGestureCarryoverInfo() override;
+#endif
   bool ShouldRouteMessageEvent(
       RenderFrameHost* target_rfh,
       SiteInstance* source_site_instance) const override;
