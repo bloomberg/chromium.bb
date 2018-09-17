@@ -247,18 +247,20 @@ camera.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
 };
 
 /**
- * Updates UI controls' disabled status for capturing/taking state changes.
+ * Updates UI controls for stream and take-state changes.
  * @private
  */
 camera.views.Camera.prototype.updateControls_ = function() {
+  // Update the shutter's label before enabling or disabling it.
   var [capturing, taking] = [this.capturing, this.taking];
+  this.updateShutterLabel_();
   this.shutterButton_.disabled = !capturing;
   this.options_.updateControls(capturing, taking);
   this.galleryButton_.disabled = !capturing || taking;
 };
 
 /**
- * Updates the shutter button's label for taking/ticks state changes.
+ * Updates the shutter button's label.
  * @private
  */
 camera.views.Camera.prototype.updateShutterLabel_ = function() {
@@ -317,7 +319,6 @@ camera.views.Camera.prototype.showToastMessage_ = function(message, named) {
 camera.views.Camera.prototype.beginTake_ = function() {
   document.body.classList.add('taking');
   this.ticks_ = this.options_.timerTicks();
-  this.updateShutterLabel_();
   this.updateControls_();
 
   Promise.resolve(this.ticks_).then(() => {
@@ -378,7 +379,6 @@ camera.views.Camera.prototype.endTake_ = function() {
     // Re-enable UI controls after finishing the take.
     this.take_ = null;
     document.body.classList.remove('taking');
-    this.updateShutterLabel_();
     this.updateControls_();
   });
 };
