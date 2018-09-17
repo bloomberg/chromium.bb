@@ -120,6 +120,19 @@ class ChannelAssociatedGroupController
     return outgoing_messages_.size();
   }
 
+  std::pair<uint32_t, size_t> GetTopQueuedMessageNameAndCount() {
+    std::unordered_map<uint32_t, size_t> counts;
+    std::pair<uint32_t, size_t> top_message_name_and_count = {0, 0};
+    base::AutoLock lock(outgoing_messages_lock_);
+    for (const auto& message : outgoing_messages_) {
+      auto it_and_inserted = counts.emplace(message.name(), 0);
+      it_and_inserted.first->second++;
+      if (it_and_inserted.first->second > top_message_name_and_count.second)
+        top_message_name_and_count = *it_and_inserted.first;
+    }
+    return top_message_name_and_count;
+  }
+
   void Bind(mojo::ScopedMessagePipeHandle handle) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(task_runner_->BelongsToCurrentThread());
@@ -969,6 +982,12 @@ bool ControllerMemoryDumpProvider::OnMemoryDump(
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
                     base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                     controller->GetQueuedMessageCount());
+    auto top_message_name_and_count =
+        controller->GetTopQueuedMessageNameAndCount();
+    dump->AddScalar("top_message_name", "id", top_message_name_and_count.first);
+    dump->AddScalar("top_message_count",
+                    base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                    top_message_name_and_count.second);
   }
 
   return true;
