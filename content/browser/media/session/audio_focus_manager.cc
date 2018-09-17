@@ -60,7 +60,7 @@ void AudioFocusManager::RequestAudioFocus(MediaSessionImpl* media_session,
           old_session.media_session->StartDucking();
         else
           old_session.media_session->Suspend(
-              MediaSessionImpl::SuspendType::SYSTEM);
+              MediaSessionImpl::SuspendType::kSystem);
       }
     }
   }

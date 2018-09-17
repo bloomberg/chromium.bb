@@ -96,7 +96,7 @@ class MediaSessionImplUmaTest : public RenderViewHostImplTestHarness {
 };
 
 TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnUISuspend) {
-  GetSession()->Suspend(SuspendType::UI);
+  GetSession()->Suspend(SuspendType::kUI);
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.UserAction"));
   EXPECT_EQ(1, samples->TotalCount());
@@ -105,22 +105,22 @@ TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnUISuspend) {
 }
 
 TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnSystemSuspend) {
-  GetSession()->Suspend(SuspendType::SYSTEM);
+  GetSession()->Suspend(SuspendType::kSystem);
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.UserAction"));
   EXPECT_EQ(0, samples->TotalCount());
 }
 
 TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnContentSuspend) {
-  GetSession()->Suspend(SuspendType::CONTENT);
+  GetSession()->Suspend(SuspendType::kContent);
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.UserAction"));
   EXPECT_EQ(0, samples->TotalCount());
 }
 
 TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnUIResume) {
-  GetSession()->Suspend(SuspendType::SYSTEM);
-  GetSession()->Resume(SuspendType::UI);
+  GetSession()->Suspend(SuspendType::kSystem);
+  GetSession()->Resume(SuspendType::kUI);
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.UserAction"));
   EXPECT_EQ(1, samples->TotalCount());
@@ -129,8 +129,8 @@ TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnUIResume) {
 }
 
 TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnSystemResume) {
-  GetSession()->Suspend(SuspendType::SYSTEM);
-  GetSession()->Resume(SuspendType::SYSTEM);
+  GetSession()->Suspend(SuspendType::kSystem);
+  GetSession()->Resume(SuspendType::kSystem);
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.UserAction"));
   EXPECT_EQ(0, samples->TotalCount());
@@ -138,15 +138,15 @@ TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnSystemResume) {
 
 // This should never happen but just check this to be safe.
 TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnContentResume) {
-  GetSession()->Suspend(SuspendType::SYSTEM);
-  GetSession()->Resume(SuspendType::CONTENT);
+  GetSession()->Suspend(SuspendType::kSystem);
+  GetSession()->Resume(SuspendType::kContent);
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.UserAction"));
   EXPECT_EQ(0, samples->TotalCount());
 }
 
 TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnUIStop) {
-  GetSession()->Stop(SuspendType::UI);
+  GetSession()->Stop(SuspendType::kUI);
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.UserAction"));
   EXPECT_EQ(1, samples->TotalCount());
@@ -156,7 +156,7 @@ TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnUIStop) {
 
 // This should never happen but just check this to be safe.
 TEST_F(MediaSessionImplUmaTest, RecordPauseDefaultOnSystemStop) {
-  GetSession()->Stop(SuspendType::SYSTEM);
+  GetSession()->Stop(SuspendType::kSystem);
   std::unique_ptr<base::HistogramSamples> samples(
       GetHistogramSamplesSinceTestStart("Media.Session.UserAction"));
   EXPECT_EQ(0, samples->TotalCount());

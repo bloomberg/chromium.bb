@@ -517,10 +517,10 @@ AutomationInternalPerformActionFunction::Run() {
       session->StopDucking();
       return RespondNow(NoArguments());
     case api::automation_internal::ACTION_TYPE_PRIVATE_RESUMEMEDIA:
-      session->Resume(content::MediaSession::SuspendType::SYSTEM);
+      session->Resume(content::MediaSession::SuspendType::kSystem);
       return RespondNow(NoArguments());
     case api::automation_internal::ACTION_TYPE_PRIVATE_SUSPENDMEDIA:
-      session->Suspend(content::MediaSession::SuspendType::SYSTEM);
+      session->Suspend(content::MediaSession::SuspendType::kSystem);
       return RespondNow(NoArguments());
     case api::automation_internal::ACTION_TYPE_PRIVATE_NONE:
       // Not a private action.

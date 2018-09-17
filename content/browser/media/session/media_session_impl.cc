@@ -345,21 +345,21 @@ void MediaSessionImpl::OnPlayerPaused(MediaSessionPlayerObserver* observer,
 
   // Otherwise, suspend the session.
   DCHECK(IsActive());
-  OnSuspendInternal(SuspendType::CONTENT, State::SUSPENDED);
+  OnSuspendInternal(SuspendType::kContent, State::SUSPENDED);
 }
 
 void MediaSessionImpl::Resume(SuspendType suspend_type) {
   if (!IsSuspended())
     return;
 
-  if (suspend_type == SuspendType::UI) {
+  if (suspend_type == SuspendType::kUI) {
     MediaSessionUmaHelper::RecordMediaSessionUserAction(
         MediaSessionUmaHelper::MediaSessionUserAction::PlayDefault);
   }
 
   // When the resume requests comes from another source than system, audio focus
   // must be requested.
-  if (suspend_type != SuspendType::SYSTEM) {
+  if (suspend_type != SuspendType::kSystem) {
     // Request audio focus again in case we lost it because another app started
     // playing while the playback was paused.
     State audio_focus_state = RequestSystemAudioFocus(desired_audio_focus_type_)
@@ -378,7 +378,7 @@ void MediaSessionImpl::Suspend(SuspendType suspend_type) {
   if (!IsActive())
     return;
 
-  if (suspend_type == SuspendType::UI) {
+  if (suspend_type == SuspendType::kUI) {
     MediaSessionUmaHelper::RecordMediaSessionUserAction(
         MediaSessionUserAction::PauseDefault);
   }
@@ -388,16 +388,16 @@ void MediaSessionImpl::Suspend(SuspendType suspend_type) {
 
 void MediaSessionImpl::Stop(SuspendType suspend_type) {
   DCHECK(audio_focus_state_ != State::INACTIVE);
-  DCHECK(suspend_type != SuspendType::CONTENT);
+  DCHECK(suspend_type != SuspendType::kContent);
   DCHECK(!HasPepper());
 
-  if (suspend_type == SuspendType::UI) {
+  if (suspend_type == SuspendType::kUI) {
     MediaSessionUmaHelper::RecordMediaSessionUserAction(
         MediaSessionUmaHelper::MediaSessionUserAction::StopDefault);
   }
 
   // TODO(mlamouri): merge the logic between UI and SYSTEM.
-  if (suspend_type == SuspendType::SYSTEM) {
+  if (suspend_type == SuspendType::kSystem) {
     OnSuspendInternal(suspend_type, State::INACTIVE);
     return;
   }
@@ -508,7 +508,7 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
 
   DCHECK(new_state == State::SUSPENDED || new_state == State::INACTIVE);
   // UI suspend cannot use State::INACTIVE.
-  DCHECK(suspend_type == SuspendType::SYSTEM || new_state == State::SUSPENDED);
+  DCHECK(suspend_type == SuspendType::kSystem || new_state == State::SUSPENDED);
 
   if (!one_shot_players_.empty())
     return;
@@ -517,10 +517,10 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
     return;
 
   switch (suspend_type) {
-    case SuspendType::UI:
+    case SuspendType::kUI:
       uma_helper_.RecordSessionSuspended(MediaSessionSuspendedSource::UI);
       break;
-    case SuspendType::SYSTEM:
+    case SuspendType::kSystem:
       switch (new_state) {
         case State::SUSPENDED:
           uma_helper_.RecordSessionSuspended(
@@ -535,7 +535,7 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
           break;
       }
       break;
-    case SuspendType::CONTENT:
+    case SuspendType::kContent:
       uma_helper_.RecordSessionSuspended(MediaSessionSuspendedSource::CONTENT);
       break;
   }
@@ -543,7 +543,7 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
   SetAudioFocusState(new_state);
   suspend_type_ = suspend_type;
 
-  if (suspend_type != SuspendType::CONTENT) {
+  if (suspend_type != SuspendType::kContent) {
     // SuspendType::CONTENT happens when the suspend action came from
     // the page in which case the player is already paused.
     // Otherwise, the players need to be paused.
@@ -559,7 +559,7 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
 }
 
 void MediaSessionImpl::OnResumeInternal(SuspendType suspend_type) {
-  if (suspend_type == SuspendType::SYSTEM && suspend_type_ != suspend_type)
+  if (suspend_type == SuspendType::kSystem && suspend_type_ != suspend_type)
     return;
 
   SetAudioFocusState(State::ACTIVE);

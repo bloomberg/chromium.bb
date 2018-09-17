@@ -61,7 +61,7 @@ void AudioFocusDelegateAndroid::OnSuspend(JNIEnv*,
   if (!media_session_->IsActive())
     return;
 
-  media_session_->Suspend(MediaSession::SuspendType::SYSTEM);
+  media_session_->Suspend(MediaSession::SuspendType::kSystem);
 }
 
 void AudioFocusDelegateAndroid::OnResume(JNIEnv*,
@@ -69,7 +69,7 @@ void AudioFocusDelegateAndroid::OnResume(JNIEnv*,
   if (!media_session_->IsSuspended())
     return;
 
-  media_session_->Resume(MediaSession::SuspendType::SYSTEM);
+  media_session_->Resume(MediaSession::SuspendType::kSystem);
 }
 
 void AudioFocusDelegateAndroid::OnStartDucking(JNIEnv*, jobject) {

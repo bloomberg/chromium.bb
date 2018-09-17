@@ -139,16 +139,16 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
 
   bool IsControllable() { return media_session_->IsControllable(); }
 
-  void UIResume() { media_session_->Resume(MediaSession::SuspendType::UI); }
+  void UIResume() { media_session_->Resume(MediaSession::SuspendType::kUI); }
 
   void SystemResume() {
-    media_session_->OnResumeInternal(MediaSession::SuspendType::SYSTEM);
+    media_session_->OnResumeInternal(MediaSession::SuspendType::kSystem);
   }
 
-  void UISuspend() { media_session_->Suspend(MediaSession::SuspendType::UI); }
+  void UISuspend() { media_session_->Suspend(MediaSession::SuspendType::kUI); }
 
   void SystemSuspend(bool temporary) {
-    media_session_->OnSuspendInternal(MediaSession::SuspendType::SYSTEM,
+    media_session_->OnSuspendInternal(MediaSession::SuspendType::kSystem,
                                       temporary
                                           ? MediaSessionImpl::State::SUSPENDED
                                           : MediaSessionImpl::State::INACTIVE);
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, StopGivesAwayAudioFocus) {
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
 
-  media_session_->Stop(MediaSession::SuspendType::UI);
+  media_session_->Stop(MediaSession::SuspendType::kUI);
 
   EXPECT_FALSE(IsActive());
 }
@@ -827,7 +827,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
 
-  media_session_->Stop(MediaSession::SuspendType::UI);
+  media_session_->Stop(MediaSession::SuspendType::kUI);
 
   EXPECT_FALSE(IsControllable());
   EXPECT_FALSE(IsActive());
@@ -1298,7 +1298,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, UMA_Suspended_Stop) {
   base::HistogramTester tester;
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
-  media_session_->Stop(MediaSession::SuspendType::UI);
+  media_session_->Stop(MediaSession::SuspendType::kUI);
 
   std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.Suspended"));
@@ -1334,7 +1334,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
 
   clock.Advance(base::TimeDelta::FromMilliseconds(1000));
-  media_session_->Stop(MediaSession::SuspendType::UI);
+  media_session_->Stop(MediaSession::SuspendType::kUI);
 
   std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.ActiveTime"));
@@ -1361,7 +1361,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   UIResume();
 
   clock.Advance(base::TimeDelta::FromMilliseconds(1000));
-  media_session_->Stop(MediaSession::SuspendType::UI);
+  media_session_->Stop(MediaSession::SuspendType::kUI);
 
   std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.ActiveTime"));
@@ -1388,7 +1388,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   SystemResume();
 
   clock.Advance(base::TimeDelta::FromMilliseconds(1000));
-  media_session_->Stop(MediaSession::SuspendType::UI);
+  media_session_->Stop(MediaSession::SuspendType::kUI);
 
   std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.ActiveTime"));
@@ -1440,12 +1440,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
   clock.Advance(base::TimeDelta::FromMilliseconds(500));
   SystemSuspend(true);
-  media_session_->Stop(MediaSession::SuspendType::UI);
+  media_session_->Stop(MediaSession::SuspendType::kUI);
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
   clock.Advance(base::TimeDelta::FromMilliseconds(5000));
   SystemResume();
-  media_session_->Stop(MediaSession::SuspendType::UI);
+  media_session_->Stop(MediaSession::SuspendType::kUI);
 
   std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.ActiveTime"));
@@ -1470,7 +1470,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 
   StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
   clock.Advance(base::TimeDelta::FromMilliseconds(1000));
-  media_session_->Stop(MediaSession::SuspendType::UI);
+  media_session_->Stop(MediaSession::SuspendType::kUI);
 
   std::unique_ptr<base::HistogramSamples> samples(
       tester.GetHistogramSamplesSinceCreation("Media.Session.ActiveTime"));
