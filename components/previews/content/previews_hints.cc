@@ -174,6 +174,8 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
   url_matcher::URLMatcherConditionSet::Vector all_conditions;
   std::set<std::string> seen_host_suffixes;
 
+  size_t total_resource_loading_hints_received = 0;
+  size_t total_page_patterns_with_resource_loading_hints_received = 0;
   // Process hint configuration.
   for (const auto hint : config.hints()) {
     // We only support host suffixes at the moment. Skip anything else.
@@ -221,8 +223,36 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
     if (ShouldProcessPageHints() && !hint.page_hints().empty()) {
       UMA_HISTOGRAM_COUNTS("ResourceLoadingHints.PageHints.ProcessedCount",
                            hint.page_hints().size());
-      hints->initial_hints_.push_back(hint);
+
+      for (const auto& page_hint : hint.page_hints()) {
+        for (const auto& optimization : page_hint.whitelisted_optimizations()) {
+          base::Optional<PreviewsType> previews_type =
+              ConvertProtoOptimizationTypeToPreviewsOptimizationType(
+                  optimization.optimization_type());
+
+          if (!previews_type ||
+              previews_type != PreviewsType::RESOURCE_LOADING_HINTS) {
+            continue;
+          }
+          total_page_patterns_with_resource_loading_hints_received++;
+          total_resource_loading_hints_received +=
+              optimization.resource_loading_hints().size();
+        }
+      }
+
+      if (total_page_patterns_with_resource_loading_hints_received <=
+          previews::params::GetMaxPageHintsInMemoryThreshhold()) {
+        hints->initial_hints_.push_back(hint);
+      }
     }
+  }
+  if (ShouldProcessPageHints()) {
+    UMA_HISTOGRAM_COUNTS_100000(
+        "ResourceLoadingHints.ResourceHints.TotalReceived",
+        total_resource_loading_hints_received);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "ResourceLoadingHints.PageHints.TotalReceived",
+        total_page_patterns_with_resource_loading_hints_received);
   }
   hints->url_matcher_.AddConditionSets(all_conditions);
 
