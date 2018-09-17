@@ -31,6 +31,9 @@ struct HitTestRegionFlags {
   enum : uint32_t { kHitTestMouse = 0x10 };
   // Hit-testing for touch events.
   enum : uint32_t { kHitTestTouch = 0x20 };
+
+  // Client hasn't submitted its own hit-test data yet.
+  enum : uint32_t { kHitTestNotActive = 0x40 };
 };
 
 struct HitTestRegion {

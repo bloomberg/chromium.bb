@@ -96,8 +96,10 @@ class VIZ_HOST_EXPORT HitTestQuery {
   bool GetTransformToTarget(const FrameSinkId& target,
                             gfx::Transform* transform) const;
 
-  // Returns whether hit test data for |frame_sink_id| is available.
-  bool ContainsFrameSinkId(const FrameSinkId& frame_sink_id) const;
+  // Returns whether client has submitted hit test data for |frame_sink_id|.
+  // Note that this returns false even if the embedder has submitted hit-test
+  // data for |frame_sink_id|.
+  bool ContainsActiveFrameSinkId(const FrameSinkId& frame_sink_id) const;
 
  private:
   friend class content::HitTestRegionObserver;

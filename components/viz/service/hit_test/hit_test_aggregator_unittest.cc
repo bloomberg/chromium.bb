@@ -866,8 +866,7 @@ TEST_F(HitTestAggregatorTest, MissingChildFrame) {
 
   aggregator->Aggregate(e_surface_id);
 
-  // Child c didn't submit any CompositorFrame. Events should go to parent.
-  EXPECT_EQ(aggregator->GetRegionCount(), 2);
+  EXPECT_EQ(aggregator->GetRegionCount(), 3);
 
   EXPECT_EQ(host_buffer_frame_sink_id(), kDisplayFrameSink);
 
@@ -875,9 +874,19 @@ TEST_F(HitTestAggregatorTest, MissingChildFrame) {
   EXPECT_EQ(region.flags, HitTestRegionFlags::kHitTestMine);
   EXPECT_EQ(region.frame_sink_id, e_surface_id.frame_sink_id());
   EXPECT_EQ(region.rect, gfx::Rect(0, 0, 1024, 768));
-  EXPECT_EQ(region.child_count, 1);
+  EXPECT_EQ(region.child_count, 2);
 
+  // |c_hit_test_region_list| was not submitted on time, so we should do
+  // async targeting with |e_hit_test_region_c|.
   region = host_regions()[1];
+  EXPECT_EQ(region.flags, HitTestRegionFlags::kHitTestChildSurface |
+                              HitTestRegionFlags::kHitTestAsk |
+                              HitTestRegionFlags::kHitTestNotActive);
+  EXPECT_EQ(region.frame_sink_id, c_surface_id.frame_sink_id());
+  EXPECT_EQ(region.rect, gfx::Rect(100, 100, 200, 500));
+  EXPECT_EQ(region.child_count, 0);
+
+  region = host_regions()[2];
   EXPECT_EQ(region.flags, HitTestRegionFlags::kHitTestMine);
   EXPECT_EQ(region.frame_sink_id, e_surface_id.frame_sink_id());
   EXPECT_EQ(region.rect, gfx::Rect(200, 200, 300, 200));
