@@ -160,10 +160,11 @@ class TabMetricsLoggerUKMTest : public ::testing::Test {
 TEST_F(TabMetricsLoggerUKMTest, LogBackgroundTabShown) {
   const tab_ranker::MRUFeatures& mru_metrics{4, 7};
   const int64_t inactive_duration_ms = 1234;
+  const bool is_discarded = false;
 
   GetLogger()->LogBackgroundTabShown(
       GetSourceId(), base::TimeDelta::FromMilliseconds(inactive_duration_ms),
-      mru_metrics);
+      mru_metrics, is_discarded);
 
   // Checks that the size is logged correctly.
   EXPECT_EQ(1U, GetTestUkmRecorder()->sources_count());
@@ -182,15 +183,19 @@ TEST_F(TabMetricsLoggerUKMTest, LogBackgroundTabShown) {
                                           inactive_duration_ms);
   GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "TotalTabCount",
                                           mru_metrics.total);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "IsDiscarded",
+                                          is_discarded);
 }
 
 // Checks the closed event is logged correctly.
 TEST_F(TabMetricsLoggerUKMTest, LogBackgroundTabClosed) {
   const tab_ranker::MRUFeatures& mru_metrics{4, 7};
   const int64_t inactive_duration_ms = 1234;
+  const bool is_discarded = true;
+
   GetLogger()->LogBackgroundTabClosed(
       GetSourceId(), base::TimeDelta::FromMilliseconds(inactive_duration_ms),
-      mru_metrics);
+      mru_metrics, is_discarded);
 
   // Checks that the size is logged correctly.
   EXPECT_EQ(1U, GetTestUkmRecorder()->sources_count());
@@ -209,15 +214,18 @@ TEST_F(TabMetricsLoggerUKMTest, LogBackgroundTabClosed) {
                                           inactive_duration_ms);
   GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "TotalTabCount",
                                           mru_metrics.total);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "IsDiscarded",
+                                          is_discarded);
 }
 
 // Checks the sequence id is logged as sequentially incremental sequence across
 // different events.
 TEST_F(TabMetricsLoggerUKMTest, SequenceIdShouldBeLoggedSequentially) {
+  const bool is_discarded = false;
   GetLogger()->LogBackgroundTabShown(GetSourceId(), base::TimeDelta(),
-                                     tab_ranker::MRUFeatures());
+                                     tab_ranker::MRUFeatures(), is_discarded);
   GetLogger()->LogBackgroundTabClosed(GetSourceId(), base::TimeDelta(),
-                                      tab_ranker::MRUFeatures());
+                                      tab_ranker::MRUFeatures(), is_discarded);
 
   EXPECT_EQ(2U, GetTestUkmRecorder()->sources_count());
   EXPECT_EQ(2U, GetTestUkmRecorder()->entries_count());
