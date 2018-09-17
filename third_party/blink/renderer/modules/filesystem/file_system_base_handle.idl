@@ -16,5 +16,10 @@
     readonly attribute USVString name;
 
     [CallWith=ScriptState] Promise<FileSystemDirectoryHandle> getParent();
-    // TODO(mek): Other methods to move/copy/delete entries.
+
+    [CallWith=ScriptState] Promise<FileSystemBaseHandle> moveTo(
+        FileSystemDirectoryHandle parent, optional USVString name);
+    [CallWith=ScriptState] Promise<FileSystemBaseHandle> copyTo(
+        FileSystemDirectoryHandle parent, optional USVString name);
+    [CallWith=ScriptState] Promise<void> remove();
 };

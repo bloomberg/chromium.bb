@@ -1,95 +1,72 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <meta charset="utf-8">
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
 <script>
-// TODO(mek): All the files created by this test should be cleaned up once the
-// API to delete files has been implemented.
+promise_test(async t => cleanupSandboxedFileSystem(),
+    'Cleanup to setup test environment');
 
-async function getFileSize(handle) {
-  const file = await handle.getFile();
-  return file.size;
-}
+promise_test(async t => {
+    const handle = await createEmptyFile(t, 'empty_blob');
+    const writer = await handle.createWriter();
 
-async function getFileContents(handle) {
-  const file = await handle.getFile();
-  return new Response(file).text();
-}
+    await writer.write(0, new Blob([]));
 
-async function createEmptyFile(name) {
-  const dir = await FileSystemDirectoryHandle.getSystemDirectory({type: 'sandbox'});
-  const handle = await dir.getFile(name, {create: true});
-  // Make sure the file is empty if it already existed.
-  // TODO(mek): Once we have a way of cleaning up the sandboxed filesystem we
-  // can make sure to do that before running all tests, and keep only the
-  // assertion.
-  const writer = await handle.createWriter();
-  await writer.truncate(0);
-  assert_equals(0, await getFileSize(handle));
-  return handle;
-}
-
-promise_test(async () => {
-  const handle = await createEmptyFile('empty_blob');
-  const writer = await handle.createWriter();
-
-  await writer.write(0, new Blob([]));
-
-  assert_equals('', await getFileContents(handle));
-  assert_equals(0, await getFileSize(handle));
+    assert_equals(await getFileContents(handle), '');
+    assert_equals(await getFileSize(handle), 0);
 }, 'write() with an empty blob to an empty file');
 
-promise_test(async () => {
-  const handle = await createEmptyFile('valid_blob');
-  const writer = await handle.createWriter();
+promise_test(async t => {
+    const handle = await createEmptyFile(t, 'valid_blob');
+    const writer = await handle.createWriter();
 
-  await writer.write(0, new Blob(['1234567890']));
+    await writer.write(0, new Blob(['1234567890']));
 
-  assert_equals('1234567890', await getFileContents(handle));
-  assert_equals(10, await getFileSize(handle));
+    assert_equals(await getFileContents(handle), '1234567890');
+    assert_equals(await getFileSize(handle), 10);
 }, 'write() a blob to an empty file');
 
-promise_test(async () => {
-  const handle = await createEmptyFile('blob_with_offset');
-  const writer = await handle.createWriter();
+promise_test(async t => {
+    const handle = await createEmptyFile(t, 'blob_with_offset');
+    const writer = await handle.createWriter();
 
-  await writer.write(0, new Blob(['1234567890']));
-  await writer.write(4, new Blob(['abc']));
+    await writer.write(0, new Blob(['1234567890']));
+    await writer.write(4, new Blob(['abc']));
 
-  assert_equals('1234abc890', await getFileContents(handle));
-  assert_equals(10, await getFileSize(handle));
+    assert_equals(await getFileContents(handle), '1234abc890');
+    assert_equals(await getFileSize(handle), 10);
 }, 'write() called with a blob and a valid offset');
 
 promise_test(async t => {
-  const handle = await createEmptyFile('bad_offset');
-  const writer = await handle.createWriter();
+    const handle = await createEmptyFile(t, 'bad_offset');
+    const writer = await handle.createWriter();
 
-  await promise_rejects(t, 'InvalidStateError', writer.write(4, new Blob(['abc'])));
+    await promise_rejects(t, 'InvalidStateError', writer.write(4, new Blob(['abc'])));
 
-  assert_equals('', await getFileContents(handle));
-  assert_equals(0, await getFileSize(handle));
+    assert_equals(await getFileContents(handle), '');
+    assert_equals(await getFileSize(handle), 0);
 }, 'write() called with an invalid offset');
 
-promise_test(async () => {
-  const handle = await createEmptyFile('trunc_shrink');
-  const writer = await handle.createWriter();
+promise_test(async t => {
+    const handle = await createEmptyFile(t, 'trunc_shrink');
+    const writer = await handle.createWriter();
 
-  await writer.write(0, new Blob(['1234567890']));
-  await writer.truncate(5);
+    await writer.write(0, new Blob(['1234567890']));
+    await writer.truncate(5);
 
-  assert_equals('12345', await getFileContents(handle));
-  assert_equals(5, await getFileSize(handle));
+    assert_equals(await getFileContents(handle), '12345');
+    assert_equals(await getFileSize(handle), 5);
 }, 'truncate() to shrink a file');
 
-promise_test(async () => {
-  const handle = await createEmptyFile('trunc_grow');
-  const writer = await handle.createWriter();
+promise_test(async t => {
+    const handle = await createEmptyFile(t, 'trunc_grow');
+    const writer = await handle.createWriter();
 
-  await writer.write(0, new Blob(['abc']));
-  await writer.truncate(5);
+    await writer.write(0, new Blob(['abc']));
+    await writer.truncate(5);
 
-  assert_equals('abc\0\0', await getFileContents(handle));
-  assert_equals(5, await getFileSize(handle));
+    assert_equals(await getFileContents(handle), 'abc\0\0');
+    assert_equals(await getFileSize(handle), 5);
 }, 'truncate() to grow a file');
-
 </script>

@@ -87,4 +87,14 @@ ScriptValue FileSystemDirectoryHandle::getEntries(ScriptState* script_state) {
   return ScriptValue(script_state, result);
 }
 
+ScriptPromise FileSystemDirectoryHandle::removeRecursively(
+    ScriptState* script_state) {
+  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise result = resolver->Promise();
+  filesystem()->RemoveRecursively(
+      this, new VoidCallbacks::OnDidSucceedPromiseImpl(resolver),
+      new PromiseErrorCallback(resolver));
+  return result;
+}
+
 }  // namespace blink

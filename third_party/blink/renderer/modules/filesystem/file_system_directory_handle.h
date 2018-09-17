@@ -27,6 +27,7 @@ class FileSystemDirectoryHandle : public FileSystemBaseHandle {
                              const String& name,
                              const FileSystemGetDirectoryOptions&);
   ScriptValue getEntries(ScriptState*);
+  ScriptPromise removeRecursively(ScriptState*);
 
   static ScriptPromise getSystemDirectory(
       ScriptState*,

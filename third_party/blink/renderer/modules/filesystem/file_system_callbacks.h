@@ -461,6 +461,16 @@ class VoidCallbacks final : public FileSystemCallbacksBase {
     Member<V8PersistentCallbackInterface<V8VoidCallback>> callback_;
   };
 
+  class OnDidSucceedPromiseImpl : public OnDidSucceedCallback {
+   public:
+    OnDidSucceedPromiseImpl(ScriptPromiseResolver*);
+    void Trace(Visitor*) override;
+    void OnSuccess(ExecutionContext*) override;
+
+   private:
+    Member<ScriptPromiseResolver> resolver_;
+  };
+
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(OnDidSucceedCallback*,
                                                           ErrorCallbackBase*,
                                                           ExecutionContext*,
