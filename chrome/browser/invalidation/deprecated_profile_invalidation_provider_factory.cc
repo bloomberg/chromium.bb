@@ -28,6 +28,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -136,7 +137,8 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
           profile->GetRequestContext(),
           content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetURLLoaderFactoryForBrowserProcess());
+              ->GetURLLoaderFactoryForBrowserProcess(),
+          content::GetNetworkConnectionTracker());
   service->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
       new InvalidatorStorage(profile->GetPrefs())));
 

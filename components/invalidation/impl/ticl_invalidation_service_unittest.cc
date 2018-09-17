@@ -23,6 +23,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {
@@ -73,7 +74,8 @@ class TiclInvalidationServiceTestDelegate {
     invalidation_service_ = std::make_unique<TiclInvalidationService>(
         "TestUserAgent", identity_provider_.get(),
         std::unique_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
-        gcm_driver_.get(), nullptr, nullptr);
+        gcm_driver_.get(), nullptr, nullptr,
+        network::TestNetworkConnectionTracker::GetInstance());
   }
 
   void InitializeInvalidationService() {

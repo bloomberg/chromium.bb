@@ -62,7 +62,8 @@ TiclInvalidationService::TiclInvalidationService(
     std::unique_ptr<TiclSettingsProvider> settings_provider,
     gcm::GCMDriver* gcm_driver,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    network::NetworkConnectionTracker* network_connection_tracker)
     : user_agent_(user_agent),
       identity_provider_(identity_provider),
       settings_provider_(std::move(settings_provider)),
@@ -71,7 +72,8 @@ TiclInvalidationService::TiclInvalidationService(
       network_channel_type_(GCM_NETWORK_CHANNEL),
       gcm_driver_(gcm_driver),
       request_context_(request_context),
-      url_loader_factory_(std::move(url_loader_factory)) {}
+      url_loader_factory_(std::move(url_loader_factory)),
+      network_connection_tracker_(network_connection_tracker) {}
 
 TiclInvalidationService::~TiclInvalidationService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -370,7 +372,7 @@ void TiclInvalidationService::StartInvalidator(
           gcm_driver_, identity_provider_);
       network_channel_creator =
           syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
-              url_loader_factory_->Clone(),
+              url_loader_factory_->Clone(), network_connection_tracker_,
               gcm_invalidation_bridge_->CreateDelegate());
       break;
     }

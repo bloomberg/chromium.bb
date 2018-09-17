@@ -18,6 +18,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -93,8 +94,11 @@ class TestGCMNetworkChannel : public GCMNetworkChannel {
  public:
   TestGCMNetworkChannel(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate)
-      : GCMNetworkChannel(std::move(url_loader_factory), std::move(delegate)) {
+      : GCMNetworkChannel(std::move(url_loader_factory),
+                          network_connection_tracker,
+                          std::move(delegate)) {
     ResetRegisterBackoffEntryForTest(&kTestBackoffPolicy);
   }
 
@@ -134,7 +138,9 @@ class GCMNetworkChannelTest
     delegate_ = new TestGCMNetworkChannelDelegate();
     std::unique_ptr<GCMNetworkChannelDelegate> delegate(delegate_);
     gcm_network_channel_.reset(new TestGCMNetworkChannel(
-        test_shared_loader_factory_, std::move(delegate)));
+        test_shared_loader_factory_,
+        network::TestNetworkConnectionTracker::GetInstance(),
+        std::move(delegate)));
     gcm_network_channel_->AddObserver(this);
     gcm_network_channel_->SetMessageReceiver(
         invalidation::NewPermanentCallback(
@@ -362,8 +368,8 @@ TEST_F(GCMNetworkChannelTest, ChannelState) {
   // Successful post should set invalidator state to enabled.
   EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
   // Network changed event shouldn't affect invalidator state.
-  network_channel()->OnNetworkChanged(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+  network_channel()->OnConnectionChanged(
+      network::mojom::ConnectionType::CONNECTION_NONE);
   EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
 
   // GCM connection state should affect invalidator state.
