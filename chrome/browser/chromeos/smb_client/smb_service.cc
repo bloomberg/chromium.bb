@@ -280,8 +280,7 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
   RecordRemountResult(TranslateErrorToMountResult(error));
 
   if (error != smbprovider::ERROR_OK) {
-    LOG(ERROR) << "SmbService: failed to restore filesystem: "
-               << file_system_id;
+    LOG(ERROR) << "SmbService: failed to restore filesystem: ";
     Unmount(file_system_id, file_system_provider::Service::UNMOUNT_REASON_USER);
   }
 }
