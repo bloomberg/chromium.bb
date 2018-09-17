@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/views/safe_browsing/password_reuse_modal_warning_dialog.h"
 #include "chrome/browser/ui/views/task_manager_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
-#include "chrome/common/chrome_features.h"
 #include "components/constrained_window/constrained_window_views.h"
 
 // This file provides definitions of desktop browser dialog-creation methods for
@@ -34,11 +33,6 @@
 // here (declared in browser_dialogs.h).
 
 namespace chrome {
-
-bool ShowAllDialogsWithViewsToolkit() {
-  return base::FeatureList::IsEnabled(
-      features::kShowAllDialogsWithViewsToolkit);
-}
 
 void ShowPageInfoBubbleViews(Browser* browser,
                              content::WebContents* web_contents,
