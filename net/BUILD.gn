@@ -2256,7 +2256,7 @@ proto_library("net_quic_proto") {
 }
 
 if (!is_proto_quic) {
-  static_library("extras") {
+  component("extras") {
     sources = [
       "extras/sqlite/cookie_crypto_delegate.h",
       "extras/sqlite/sqlite_channel_id_store.cc",
@@ -2264,6 +2264,7 @@ if (!is_proto_quic) {
       "extras/sqlite/sqlite_persistent_cookie_store.cc",
       "extras/sqlite/sqlite_persistent_cookie_store.h",
     ]
+    defines = [ "IS_NET_EXTRAS_IMPL" ]
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
     deps = [
       ":net",

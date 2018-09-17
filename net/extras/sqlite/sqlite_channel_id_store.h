@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/ssl/default_channel_id_store.h"
@@ -25,7 +26,8 @@ namespace net {
 // in terms of a SQLite database. For documentation about the actual member
 // functions consult the documentation of the parent class
 // DefaultChannelIDStore::PersistentCertStore.
-class SQLiteChannelIDStore : public DefaultChannelIDStore::PersistentStore {
+class COMPONENT_EXPORT(NET_EXTRAS) SQLiteChannelIDStore
+    : public DefaultChannelIDStore::PersistentStore {
  public:
   // Create or open persistent store in file |path|. All I/O tasks are performed
   // in background using |background_task_runner|.
