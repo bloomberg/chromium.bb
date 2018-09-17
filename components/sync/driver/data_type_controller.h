@@ -169,11 +169,12 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   virtual void GetAllNodes(const AllNodesCallback& callback) = 0;
 
   // Collects StatusCounters for this datatype and passes them to |callback|.
-  // Used to display entity counts in chrome://sync-internals.
+  // Used to display entity counts in chrome://sync-internals. Can be called
+  // only if state() != NOT_RUNNING.
   virtual void GetStatusCounters(const StatusCountersCallback& callback) = 0;
 
   // Records entities count and estimated memory usage of the type into
-  // histograms.
+  // histograms. Can be called only if state() != NOT_RUNNING.
   virtual void RecordMemoryUsageAndCountsHistograms() = 0;
 
  protected:
