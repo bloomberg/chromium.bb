@@ -37,7 +37,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -1109,11 +1108,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Simulate a navigation that has not completed.
   const GURL kURL2 = embedded_test_server()->GetURL("/title2.html");
-  NavigationStallDelegate stall_delegate(kURL2);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationManager navigation(shell()->web_contents(), kURL2);
   std::unique_ptr<LoadProgressDelegateAndObserver> delegate(
       new LoadProgressDelegateAndObserver(shell()));
   shell()->LoadURL(kURL2);
+  EXPECT_TRUE(navigation.WaitForResponse());
   EXPECT_TRUE(delegate->did_start_loading);
   EXPECT_FALSE(delegate->did_stop_loading);
 
@@ -1135,8 +1134,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // We should have gotten to DidStopLoading.
   EXPECT_TRUE(delegate->did_stop_loading);
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
