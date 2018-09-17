@@ -220,8 +220,7 @@ TEST_F('OutputE2ETest', 'Headings', function() {
   });
 });
 
-// Flaky, see https://crbug.com/876145.
-TEST_F('OutputE2ETest', 'DISABLED_Audio', function() {
+TEST_F('OutputE2ETest', 'Audio', function() {
   this.runWithLoadedTree('<audio src="foo.mp3" controls></audio>',
     function(root) {
       var el = root.find({role: 'button'});
