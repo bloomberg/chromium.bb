@@ -302,17 +302,11 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
     return true;
   }
 
-  // The blocked Framebust bubble only has a toolkit-views implementation.
-  if (chrome::ShowAllDialogsWithViewsToolkit() ||
-      model->AsFramebustBlockBubbleModel()) {
-    gfx::Point origin = gfx::ScreenPointFromNSPoint(anchor);
-    NSWindow* bubble = chrome::ContentSettingBubbleViewsBridge::Show(
-        [web_contents->GetTopLevelNativeWindow() contentView], model,
-        web_contents, origin, this);
-    bubbleWindow_.reset([bubble retain]);
-  } else {
-    NOTREACHED() << "MacViews Browser can't host Cocoa dialogs";
-  }
+  gfx::Point origin = gfx::ScreenPointFromNSPoint(anchor);
+  NSWindow* bubble = chrome::ContentSettingBubbleViewsBridge::Show(
+      [web_contents->GetTopLevelNativeWindow() contentView], model,
+      web_contents, origin, this);
+  bubbleWindow_.reset([bubble retain]);
 
   return true;
 }
