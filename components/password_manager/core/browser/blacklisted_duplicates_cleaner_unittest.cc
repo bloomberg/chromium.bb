@@ -16,11 +16,11 @@
 
 namespace password_manager {
 
-class BlacklistedDuplicatesCleanerCleanerTest : public ::testing::Test {
+class BlacklistedDuplicatesCleanerTest : public ::testing::Test {
  public:
-  BlacklistedDuplicatesCleanerCleanerTest() = default;
+  BlacklistedDuplicatesCleanerTest() = default;
 
-  ~BlacklistedDuplicatesCleanerCleanerTest() override = default;
+  ~BlacklistedDuplicatesCleanerTest() override = default;
 
  protected:
   TestPasswordStore* store() { return store_.get(); }
@@ -38,10 +38,10 @@ class BlacklistedDuplicatesCleanerCleanerTest : public ::testing::Test {
       base::MakeRefCounted<TestPasswordStore>();
   TestingPrefServiceSimple prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlacklistedDuplicatesCleanerCleanerTest);
+  DISALLOW_COPY_AND_ASSIGN(BlacklistedDuplicatesCleanerTest);
 };
 
-TEST_F(BlacklistedDuplicatesCleanerCleanerTest, RemoveBlacklistedDuplicates) {
+TEST_F(BlacklistedDuplicatesCleanerTest, RemoveBlacklistedDuplicates) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
   ASSERT_TRUE(
       store()->Init(syncer::SyncableService::StartSyncFlare(), nullptr));

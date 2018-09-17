@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -41,7 +42,12 @@ class BlacklistedDuplicatesCleaner : public PasswordStoreConsumer,
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:
+  // Clean-up is performed on |store_|.
   scoped_refptr<PasswordStore> store_;
+
+  // |prefs_| is used to record that the clean-up happened and thus does not
+  // have to happen again. This is not an owning pointer, being owned by
+  // ProfileImpl class.
   PrefService* prefs_;
 
   // Used to signal completion of the clean-up task. It is null until
