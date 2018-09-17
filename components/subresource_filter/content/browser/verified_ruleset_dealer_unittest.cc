@@ -399,9 +399,9 @@ class TestVerifiedRulesetDealerClient {
  public:
   TestVerifiedRulesetDealerClient() = default;
 
-  base::Callback<void(VerifiedRulesetDealer*)> GetCallback() {
-    return base::Bind(&TestVerifiedRulesetDealerClient::Callback,
-                      base::Unretained(this));
+  base::OnceCallback<void(VerifiedRulesetDealer*)> GetCallback() {
+    return base::BindOnce(&TestVerifiedRulesetDealerClient::Callback,
+                          base::Unretained(this));
   }
 
   void ExpectRulesetState(bool expected_availability,
@@ -562,9 +562,9 @@ class TestVerifiedRulesetClient {
  public:
   TestVerifiedRulesetClient() = default;
 
-  base::Callback<void(VerifiedRuleset*)> GetCallback() {
-    return base::Bind(&TestVerifiedRulesetClient::Callback,
-                      base::Unretained(this));
+  base::OnceCallback<void(VerifiedRuleset*)> GetCallback() {
+    return base::BindOnce(&TestVerifiedRulesetClient::Callback,
+                          base::Unretained(this));
   }
 
   void ExpectNoRuleset() const {
