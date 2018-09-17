@@ -140,7 +140,6 @@ class HandledEventCallbackTracker {
 
  private:
   std::vector<ReceivedCallback> callbacks_received_;
-  std::vector<ui::LatencyInfo> latency_info_received_;
   base::WeakPtr<HandledEventCallbackTracker> weak_this_;
   base::WeakPtrFactory<HandledEventCallbackTracker> weak_ptr_factory_;
 };
