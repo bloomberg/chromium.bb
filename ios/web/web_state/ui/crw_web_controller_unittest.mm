@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/mac/foundation_util.h"
-#include "base/path_service.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1230,70 +1229,6 @@ TEST_P(CRWWebControllerWebProcessTest, Eviction) {
 };
 
 INSTANTIATE_TEST_CASES(CRWWebControllerWebProcessTest);
-
-// Test fixture for -[CRWWebController loadCurrentURLIfNecessary] method.
-class LoadIfNecessaryTest : public WebTest, public ProgrammaticTestMixin {
- protected:
-  void SetUp() override {
-    ProgrammaticTestMixin::SetUp();
-    WebTest::SetUp();
-    web_state_ = std::make_unique<WebStateImpl>(
-        WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
-  }
-
-  void TearDown() override {
-    WebTest::TearDown();
-    web_state_.reset();
-  }
-
-  std::unique_ptr<WebStateImpl> web_state_;
-
- private:
-  // Returns file:// URL which point to a test html file with "pony" text.
-  GURL GetTestFileUrl() {
-    base::FilePath path;
-    base::PathService::Get(base::DIR_MODULE, &path);
-    path = path.Append(
-        FILE_PATH_LITERAL("ios/testing/data/http_server_files/pony.html"));
-    return GURL(base::StringPrintf("file://%s", path.value().c_str()));
-  }
-  // Returns session storage with a single committed entry with |GetTestFileUrl|
-  // url.
-  CRWSessionStorage* GetTestSessionStorage() {
-    CRWSessionStorage* result = [[CRWSessionStorage alloc] init];
-    result.lastCommittedItemIndex = 0;
-    CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-    [item setVirtualURL:GetTestFileUrl()];
-    [result setItemStorages:@[ item ]];
-    return result;
-  }
-};
-
-// Tests that |loadCurrentURLIfNecessary| restores the page after disabling and
-// re-enabling web usage.
-TEST_P(LoadIfNecessaryTest, RestoredFromHistory) {
-  ASSERT_FALSE(test::IsWebViewContainingText(web_state_.get(), "pony"));
-  [web_state_->GetWebController() loadCurrentURLIfNecessary];
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state_.get(), "pony"));
-};
-
-// Tests that |loadCurrentURLIfNecessary| restores the page after disabling and
-// re-enabling web usage.
-TEST_P(LoadIfNecessaryTest, DisableAndReenableWebUsage) {
-  [web_state_->GetWebController() loadCurrentURLIfNecessary];
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state_.get(), "pony"));
-
-  // Disable and re-enable web usage.
-  web_state_->SetWebUsageEnabled(false);
-  web_state_->SetWebUsageEnabled(true);
-
-  // |loadCurrentURLIfNecessary| should restore the page.
-  ASSERT_FALSE(test::IsWebViewContainingText(web_state_.get(), "pony"));
-  [web_state_->GetWebController() loadCurrentURLIfNecessary];
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state_.get(), "pony"));
-};
-
-INSTANTIATE_TEST_CASES(LoadIfNecessaryTest);
 
 #undef INSTANTIATE_TEST_CASES
 

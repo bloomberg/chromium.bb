@@ -377,10 +377,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Mojo interface registry for this WebState.
   std::unique_ptr<WebStateInterfaceProvider> web_state_interface_provider_;
 
-  // Cached session history when web usage is disabled. It is used to restore
-  // history into WKWebView when web usage is re-enabled.
-  CRWSessionStorage* cached_session_storage_;
-
   // The most recently restored session history that has not yet committed in
   // the WKWebView. This is reset in OnNavigationItemCommitted().
   CRWSessionStorage* restored_session_storage_;
