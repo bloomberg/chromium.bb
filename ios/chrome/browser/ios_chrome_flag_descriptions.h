@@ -184,11 +184,6 @@ extern const char kOutOfWebFullscreenDescription[];
 extern const char kPhysicalWeb[];
 extern const char kPhysicalWebDescription[];
 
-// Title and description for the flag to enable the new UI Reboot on existing
-// Infobars.
-extern const char kInfobarsUIRebootName[];
-extern const char kInfobarsUIRebootDescription[];
-
 // Title and description for the flag to enable WKBackForwardList based
 // navigation manager.
 extern const char kSlimNavigationManagerName[];
@@ -212,14 +207,6 @@ extern const char kTabSwitcherPresentsBVCDescription[];
 // implementation.
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
-
-// Title and description for the flag to enable the UI Refresh location bar.
-extern const char kUIRefreshLocationBarName[];
-extern const char kUIRefreshLocationBarDescription[];
-
-// Title and description for the flag to enable the phase 1 UI Refresh.
-extern const char kUIRefreshPhase1Name[];
-extern const char kUIRefreshPhase1Description[];
 
 // Title and description for the flag to enable the unified consent.
 extern const char kUnifiedConsentName[];

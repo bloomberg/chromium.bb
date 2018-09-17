@@ -55,15 +55,19 @@ bool IsNewClearBrowsingDataUIEnabled();
 bool IsThirdPartyKeyboardWorkaroundEnabled();
 
 // Whether RecentTabs UI Reboot is enabled.
+// TODO (crbug.com/884718): Remove all use of this flag.
 bool IsRecentTabsUIRebootEnabled();
 
 // Whether the Bookmarks UI Reboot is enabled.
+// TODO (crbug.com/884719): Remove all use of this flag.
 bool IsBookmarksUIRebootEnabled();
 
 // Whether the Reading List UI Reboot is enabled.
+// TODO (crbug.com/884720): Remove all use of this flag.
 bool IsReadingListUIRebootEnabled();
 
 // Whether the Settings UI Reboot is enabled.
+// TODO (crbug.com/884721): Remove all use of this flag.
 bool IsSettingsUIRebootEnabled();
 
 // Whether the application group sandbox must be cleared before starting.
