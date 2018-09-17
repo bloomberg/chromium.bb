@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "content/public/browser/media_session.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 class MediaClient : public ash::mojom::MediaClient,
@@ -38,6 +39,8 @@ class MediaClient : public ash::mojom::MediaClient,
   // |user_index|. (Note that this isn't stable, see implementation comment on
   // RequestCaptureState()).
   ash::mojom::MediaCaptureState GetMediaCaptureStateByIndex(int user_index);
+
+  void ToggleMediaSessionPlayPause(content::MediaSession* media_session);
 
   ash::mojom::MediaControllerPtr media_controller_;
 

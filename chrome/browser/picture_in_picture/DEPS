@@ -1,5 +1,7 @@
 specific_include_rules = {
   "picture_in_picture_window_controller_browsertest\.cc": [
+    "+ash/accelerators/accelerator_controller.h",
+    "+ash/shell.h",
     "+chrome/browser/ui/views/overlay/overlay_window_views.h",
   ],
 }
