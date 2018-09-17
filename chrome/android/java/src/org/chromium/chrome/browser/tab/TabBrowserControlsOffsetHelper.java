@@ -41,6 +41,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
 
     private final Tab mTab;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
+    private final TabObserver mTabObserver;
 
     private float mPreviousTopControlsOffsetY = Float.NaN;
     private float mPreviousBottomControlsOffsetY = Float.NaN;
@@ -74,6 +75,18 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      */
     private TabBrowserControlsOffsetHelper(Tab tab) {
         mTab = tab;
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onCrash(Tab tab, boolean sadTabShown) {
+                if (sadTabShown) showAndroidControls(false);
+            }
+            @Override
+            public void onRendererResponsiveStateChanged(boolean isResponsive) {
+                if (!isResponsive) showAndroidControls(false);
+            }
+        };
+
+        mTab.addObserver(mTabObserver);
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
     }
@@ -281,5 +294,6 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
     public void destroy() {
         clearPreviousPositions();
         VrModuleProvider.unregisterVrModeObserver(this);
+        mTab.removeObserver(mTabObserver);
     }
 }

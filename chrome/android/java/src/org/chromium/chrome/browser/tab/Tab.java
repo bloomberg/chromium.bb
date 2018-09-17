@@ -345,7 +345,6 @@ public class Tab
     private boolean mIsNativePageCommitPending;
 
     private FullscreenManager mFullscreenManager;
-    private final TabBrowserControlsOffsetHelper mControlsOffsetHelper;
 
     /**
      * Indicates whether this tab is detached from any activity and its corresponding
@@ -585,8 +584,6 @@ public class Tab
 
         ContextualSearchTabHelper.createForTab(this);
         MediaSessionTabHelper.createForTab(this);
-
-        mControlsOffsetHelper = TabBrowserControlsOffsetHelper.from(this);
 
         if (creationState != null) {
             mTabUma = new TabUma(creationState);
@@ -1623,7 +1620,7 @@ public class Tab
         mDataSavedOnStartPageLoad =
                 DataReductionProxySettings.getInstance().getContentLengthSavedInHistorySummary();
 
-        if (mIsRendererUnresponsive) handleRendererResponsive();
+        if (mIsRendererUnresponsive) handleRendererResponsiveStateChanged(true);
 
         if (mTabUma != null) mTabUma.onPageLoadStarted();
 
@@ -1877,47 +1874,45 @@ public class Tab
      * Constructs and shows a sad tab (Aw, Snap!).
      */
     protected void showSadTab() {
-        if (getWebContents() != null) {
-            // If the tab has crashed twice in a row change the sad tab view to the "Send Feedback"
-            // version and change the onClickListener.
-            final boolean showSendFeedbackView = mSadTabSuccessiveRefreshCounter >= 1;
+        if (getWebContents() == null) return;
 
-            Runnable suggestionAction = new Runnable() {
-                @Override
-                public void run() {
-                    Activity activity = mWindowAndroid.getActivity().get();
-                    assert activity != null;
-                    HelpAndFeedback.getInstance(activity).show(activity,
-                            activity.getString(R.string.help_context_sad_tab),
-                            Profile.getLastUsedProfile(), null);
+        // If the tab has crashed twice in a row change the sad tab view to the "Send Feedback"
+        // version and change the onClickListener.
+        final boolean showSendFeedbackView = mSadTabSuccessiveRefreshCounter >= 1;
+
+        Runnable suggestionAction = new Runnable() {
+            @Override
+            public void run() {
+                Activity activity = mWindowAndroid.getActivity().get();
+                assert activity != null;
+                HelpAndFeedback.getInstance(activity).show(activity,
+                        activity.getString(R.string.help_context_sad_tab),
+                        Profile.getLastUsedProfile(), null);
+            }
+        };
+
+        Runnable buttonAction = new Runnable() {
+            @Override
+            public void run() {
+                if (showSendFeedbackView) {
+                    getActivity().startHelpAndFeedback(
+                            getUrl(), "MobileSadTabFeedback", getProfile());
+                } else {
+                    reload();
                 }
-            };
+            }
+        };
 
-            Runnable buttonAction = new Runnable() {
-                @Override
-                public void run() {
-                    if (showSendFeedbackView) {
-                        getActivity().startHelpAndFeedback(
-                                getUrl(), "MobileSadTabFeedback", getProfile());
-                    } else {
-                        reload();
-                    }
-                }
-            };
+        // Make sure we are not adding the "Aw, snap" view over an existing one.
+        assert mSadTabView == null;
 
-            // Make sure we are not adding the "Aw, snap" view over an existing one.
-            assert mSadTabView == null;
-
-            mSadTabView = SadTabViewFactory.createSadTabView(mThemedApplicationContext,
-                    suggestionAction, buttonAction, showSendFeedbackView, mIncognito);
-            mSadTabSuccessiveRefreshCounter++;
-            // Show the sad tab inside ContentView.
-            mContentView.addView(mSadTabView,
-                    new FrameLayout.LayoutParams(
-                            LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-            notifyContentChanged();
-        }
-        mControlsOffsetHelper.showAndroidControls(false);
+        mSadTabView = SadTabViewFactory.createSadTabView(mThemedApplicationContext,
+                suggestionAction, buttonAction, showSendFeedbackView, mIncognito);
+        mSadTabSuccessiveRefreshCounter++;
+        // Show the sad tab inside ContentView.
+        mContentView.addView(mSadTabView,
+                new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        notifyContentChanged();
     }
 
     /**
@@ -3172,18 +3167,17 @@ public class Tab
         return mDownloadDelegate.shouldInterceptContextMenuDownload(url);
     }
 
-    void handleRendererUnresponsive() {
-        mIsRendererUnresponsive = true;
+    void handleRendererResponsiveStateChanged(boolean isResponsive) {
+        mIsRendererUnresponsive = !isResponsive;
+        for (TabObserver observer : mObservers) {
+            observer.onRendererResponsiveStateChanged(isResponsive);
+        }
         if (mFullscreenManager == null) return;
-
-        mControlsOffsetHelper.showAndroidControls(false);
-        updateBrowserControlsState(BrowserControlsState.SHOWN, false);
-    }
-
-    void handleRendererResponsive() {
-        mIsRendererUnresponsive = false;
-        if (mFullscreenManager == null) return;
-        updateFullscreenEnabledState();
+        if (isResponsive) {
+            updateFullscreenEnabledState();
+        } else {
+            updateBrowserControlsState(BrowserControlsState.SHOWN, false);
+        }
     }
 
     /**
