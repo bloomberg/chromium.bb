@@ -82,10 +82,19 @@ void SelectToSpeakTray::UpdateIconsForSession() {
       Shell::Get()->session_controller()->GetSessionState();
   SkColor color = TrayIconColor(session_state);
 
-  inactive_image_ = gfx::CreateVectorIcon(kSystemTraySelectToSpeakIcon, color);
-  selecting_image_ =
-      gfx::CreateVectorIcon(kSystemTraySelectToSpeakActiveIcon, color);
-  speaking_image_ = gfx::CreateVectorIcon(kSystemTrayStopIcon, color);
+  if (chromeos::switches::ShouldUseShelfNewUi()) {
+    inactive_image_ =
+        gfx::CreateVectorIcon(kSystemTraySelectToSpeakNewuiIcon, color);
+    selecting_image_ =
+        gfx::CreateVectorIcon(kSystemTraySelectToSpeakActiveNewuiIcon, color);
+    speaking_image_ = gfx::CreateVectorIcon(kSystemTrayStopNewuiIcon, color);
+  } else {
+    inactive_image_ =
+        gfx::CreateVectorIcon(kSystemTraySelectToSpeakIcon, color);
+    selecting_image_ =
+        gfx::CreateVectorIcon(kSystemTraySelectToSpeakActiveIcon, color);
+    speaking_image_ = gfx::CreateVectorIcon(kSystemTrayStopIcon, color);
+  }
 }
 
 void SelectToSpeakTray::CheckStatusAndUpdateIcon() {
