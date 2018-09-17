@@ -2149,6 +2149,7 @@ interface FileSystemDirectoryHandle : FileSystemBaseHandle
     method getDirectory
     method getEntries
     method getFile
+    method removeRecursively
 interface FileSystemFileHandle : FileSystemBaseHandle
     attribute @@toStringTag
     method constructor

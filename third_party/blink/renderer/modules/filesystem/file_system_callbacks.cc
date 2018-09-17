@@ -502,6 +502,19 @@ void VoidCallbacks::OnDidSucceedV8Impl::OnSuccess(
   callback_->InvokeAndReportException(nullptr);
 }
 
+VoidCallbacks::OnDidSucceedPromiseImpl::OnDidSucceedPromiseImpl(
+    ScriptPromiseResolver* resolver)
+    : resolver_(resolver) {}
+
+void VoidCallbacks::OnDidSucceedPromiseImpl::Trace(Visitor* visitor) {
+  OnDidSucceedCallback::Trace(visitor);
+  visitor->Trace(resolver_);
+}
+
+void VoidCallbacks::OnDidSucceedPromiseImpl::OnSuccess(ExecutionContext*) {
+  resolver_->Resolve();
+}
+
 std::unique_ptr<AsyncFileSystemCallbacks> VoidCallbacks::Create(
     OnDidSucceedCallback* success_callback,
     ErrorCallbackBase* error_callback,
