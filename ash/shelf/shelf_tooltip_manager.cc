@@ -143,6 +143,9 @@ void ShelfTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_EXITED) {
     if (bubble_ && bubble_->ShouldCloseOnMouseExit())
       Close();
+
+    // Don't show any tooltip we were planning on showing after a delay.
+    timer_.Stop();
     return;
   }
 
