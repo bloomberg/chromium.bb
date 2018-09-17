@@ -123,11 +123,10 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  bool CurrentFullscreenFrameTreeNodeIsEmpty() {
+  bool IsInFullscreen() {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    return web_contents->current_fullscreen_frame_tree_node_id_ ==
-           RenderFrameHost::kNoFrameTreeNodeId;
+    return web_contents->current_fullscreen_frame_;
   }
 
  private:
@@ -2656,15 +2655,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b{allowfullscreen})");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  int main_frame_id = main_frame->GetFrameTreeNodeId();
+  RenderFrameHostImpl* main_frame = web_contents->GetMainFrame();
+  RenderFrameHostImpl* child_frame =
+      static_cast<RenderFrameHostImpl*>(ChildFrameAt(main_frame, 0));
 
-  RenderFrameHost* child_frame = ChildFrameAt(main_frame, 0);
-  int child_frame_id = child_frame->GetFrameTreeNodeId();
-
-  WebContentsImpl::FullscreenFrameNodes nodes;
-  EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-  EXPECT_TRUE(CurrentFullscreenFrameTreeNodeIsEmpty());
+  std::set<RenderFrameHostImpl*> fullscreen_frames;
+  EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
+  EXPECT_FALSE(IsInFullscreen());
 
   // Make the top page fullscreen.
   {
@@ -2674,10 +2671,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
     observer.Wait();
   }
 
-  nodes.insert(main_frame_id);
-  EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-  EXPECT_EQ(main_frame_id,
-            web_contents->current_fullscreen_frame_tree_node_id_);
+  fullscreen_frames.insert(main_frame);
+  EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
+  EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
 
   // Make the child frame fullscreen.
   {
@@ -2687,10 +2683,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
     observer.Wait();
   }
 
-  nodes.insert(child_frame_id);
-  EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-  EXPECT_EQ(child_frame_id,
-            web_contents->current_fullscreen_frame_tree_node_id_);
+  fullscreen_frames.insert(child_frame);
+  EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
+  EXPECT_EQ(child_frame, web_contents->current_fullscreen_frame_);
 
   // Exit fullscreen on the child frame.
   // This will not work with --site-per-process until crbug.com/617369
@@ -2703,10 +2698,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
       observer.Wait();
     }
 
-    nodes.erase(child_frame_id);
-    EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-    EXPECT_EQ(main_frame_id,
-              web_contents->current_fullscreen_frame_tree_node_id_);
+    fullscreen_frames.erase(child_frame);
+    EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
+    EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
   }
 }
 
@@ -2724,14 +2718,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FullscreenAfterFrameSwap) {
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* main_frame =
       static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
-  EXPECT_EQ(0u, web_contents->fullscreen_frame_tree_nodes_.size());
+  EXPECT_EQ(0u, web_contents->fullscreen_frames_.size());
 
   // 2) Make it fullscreen.
   FullscreenWebContentsObserver observer(web_contents, main_frame);
   EXPECT_TRUE(
       ExecuteScript(main_frame, "document.body.webkitRequestFullscreen();"));
   observer.Wait();
-  EXPECT_EQ(1u, web_contents->fullscreen_frame_tree_nodes_.size());
+  EXPECT_EQ(1u, web_contents->fullscreen_frames_.size());
 
   // 3) Navigate cross origin. Act as if the old frame was very slow delivering
   //    the swapout ack and stayed in pending deletion for a while. Even if the
@@ -2741,7 +2735,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FullscreenAfterFrameSwap) {
   main_frame->GetProcess()->AddFilter(filter.get());
   main_frame->DisableSwapOutTimerForTesting();
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_EQ(0u, web_contents->fullscreen_frame_tree_nodes_.size());
+  EXPECT_EQ(0u, web_contents->fullscreen_frames_.size());
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -2756,15 +2750,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b{allowfullscreen})");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  int main_frame_id = main_frame->GetFrameTreeNodeId();
+  RenderFrameHostImpl* main_frame = web_contents->GetMainFrame();
+  RenderFrameHostImpl* child_frame =
+      static_cast<RenderFrameHostImpl*>(ChildFrameAt(main_frame, 0));
 
-  RenderFrameHost* child_frame = ChildFrameAt(main_frame, 0);
-  int child_frame_id = child_frame->GetFrameTreeNodeId();
-
-  WebContentsImpl::FullscreenFrameNodes nodes;
-  EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-  EXPECT_TRUE(CurrentFullscreenFrameTreeNodeIsEmpty());
+  std::set<RenderFrameHostImpl*> nodes;
+  EXPECT_EQ(nodes, web_contents->fullscreen_frames_);
+  EXPECT_FALSE(IsInFullscreen());
 
   // Make the top page fullscreen.
   {
@@ -2774,10 +2766,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     observer.Wait();
   }
 
-  nodes.insert(main_frame_id);
-  EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-  EXPECT_EQ(main_frame_id,
-            web_contents->current_fullscreen_frame_tree_node_id_);
+  nodes.insert(main_frame);
+  EXPECT_EQ(nodes, web_contents->fullscreen_frames_);
+  EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
 
   // Make the child frame fullscreen.
   {
@@ -2787,17 +2778,16 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     observer.Wait();
   }
 
-  nodes.insert(child_frame_id);
-  EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-  EXPECT_EQ(child_frame_id,
-            web_contents->current_fullscreen_frame_tree_node_id_);
+  nodes.insert(child_frame);
+  EXPECT_EQ(nodes, web_contents->fullscreen_frames_);
+  EXPECT_EQ(child_frame, web_contents->current_fullscreen_frame_);
 
   // Perform a cross origin navigation on the main frame.
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL(
                                  "c.com", "/cross_site_iframe_factory.html")));
-  EXPECT_EQ(0u, web_contents->fullscreen_frame_tree_nodes_.size());
-  EXPECT_TRUE(CurrentFullscreenFrameTreeNodeIsEmpty());
+  EXPECT_EQ(0u, web_contents->fullscreen_frames_.size());
+  EXPECT_FALSE(IsInFullscreen());
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -2811,15 +2801,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a{allowfullscreen})");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  int main_frame_id = main_frame->GetFrameTreeNodeId();
+  RenderFrameHostImpl* main_frame = web_contents->GetMainFrame();
+  RenderFrameHostImpl* child_frame =
+      static_cast<RenderFrameHostImpl*>(ChildFrameAt(main_frame, 0));
 
-  RenderFrameHost* child_frame = ChildFrameAt(main_frame, 0);
-  int child_frame_id = child_frame->GetFrameTreeNodeId();
-
-  WebContentsImpl::FullscreenFrameNodes nodes;
-  EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-  EXPECT_TRUE(CurrentFullscreenFrameTreeNodeIsEmpty());
+  std::set<RenderFrameHostImpl*> fullscreen_frames;
+  EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
+  EXPECT_FALSE(IsInFullscreen());
 
   // Make the top page fullscreen.
   {
@@ -2829,10 +2817,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     observer.Wait();
   }
 
-  nodes.insert(main_frame_id);
-  EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-  EXPECT_EQ(main_frame_id,
-            web_contents->current_fullscreen_frame_tree_node_id_);
+  fullscreen_frames.insert(main_frame);
+  EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
+  EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
 
   // Make the child frame fullscreen.
   {
@@ -2842,10 +2829,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     observer.Wait();
   }
 
-  nodes.insert(child_frame_id);
-  EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-  EXPECT_EQ(child_frame_id,
-            web_contents->current_fullscreen_frame_tree_node_id_);
+  fullscreen_frames.insert(child_frame);
+  EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
+  EXPECT_EQ(child_frame, web_contents->current_fullscreen_frame_);
 
   // Exit fullscreen on the child frame.
   {
@@ -2854,10 +2840,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     observer.Wait();
   }
 
-  nodes.erase(child_frame_id);
-  EXPECT_EQ(nodes, web_contents->fullscreen_frame_tree_nodes_);
-  EXPECT_EQ(main_frame_id,
-            web_contents->current_fullscreen_frame_tree_node_id_);
+  fullscreen_frames.erase(child_frame);
+  EXPECT_EQ(fullscreen_frames, web_contents->fullscreen_frames_);
+  EXPECT_EQ(main_frame, web_contents->current_fullscreen_frame_);
 }
 
 class MockDidOpenRequestedURLObserver : public WebContentsObserver {

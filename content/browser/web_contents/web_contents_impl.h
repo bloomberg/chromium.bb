@@ -1413,6 +1413,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                              AXTreeSnapshotCombiner* combiner,
                                              ui::AXMode ax_mode);
 
+  // Called each time |fullscreen_frames_| is updated. Find the new
+  // |current_fullscreen_frame_| and notify observers whenever it changes.
+  void FullscreenFrameSetUpdated();
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1779,14 +1783,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Gets notified about changes in viewport fit events.
   std::unique_ptr<DisplayCutoutHostImpl> display_cutout_host_impl_;
 
-  // Stores a set of FrameTreeNode ids that are fullscreen.
-  using FullscreenFrameNodes = std::set<int>;
-  FullscreenFrameNodes fullscreen_frame_tree_nodes_;
+  // Stores a set of frames that are fullscreen.
+  // See https://fullscreen.spec.whatwg.org.
+  std::set<RenderFrameHostImpl*> fullscreen_frames_;
 
-  // Stores the ID of the current fullscreen |FrameTreeNode| or
-  // |kNoFrameTreeNodeId| if the tab is not currently fullscreen.
-  int current_fullscreen_frame_tree_node_id_ =
-      RenderFrameHost::kNoFrameTreeNodeId;
+  // Store the frame that is currently fullscreen, nullptr if there is none.
+  RenderFrameHostImpl* current_fullscreen_frame_ = nullptr;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;
