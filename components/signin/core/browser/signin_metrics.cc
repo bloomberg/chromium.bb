@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 
 namespace signin_metrics {
@@ -783,8 +784,10 @@ void LogAccountEquality(AccountEquality equality) {
 void LogCookieJarStableAge(const base::TimeDelta stable_age,
                            const ReportingType type) {
   INVESTIGATOR_HISTOGRAM_CUSTOM_COUNTS(
-      "Signin.CookieJar.StableAge", type, stable_age.InSeconds(), 1,
-      base::TimeDelta::FromDays(365).InSeconds(), 100);
+      "Signin.CookieJar.StableAge", type,
+      base::saturated_cast<int>(stable_age.InSeconds()), 1,
+      base::saturated_cast<int>(base::TimeDelta::FromDays(365).InSeconds()),
+      100);
 }
 
 void LogCookieJarCounts(const int signed_in,
