@@ -145,37 +145,71 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
         storage::GetHardCodedSettings(per_host_quota_kilobytes * KB));
   }
 
-  virtual int64_t RequestDiskUsage() {
+  int64_t RequestDiskUsage() {
+    base::RunLoop loop;
     PostTaskAndReplyWithResult(
         GetContext()->TaskRunner(), FROM_HERE,
         base::BindOnce(&IndexedDBContextImpl::GetOriginDiskUsage, GetContext(),
                        Origin::Create(GURL("file:///"))),
         base::BindOnce(&IndexedDBBrowserTest::DidGetDiskUsage,
-                       base::Unretained(this)));
+                       base::Unretained(this), loop.QuitClosure()));
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(GetContext()->TaskRunner()));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetDiskUsage to be called.
-    base::RunLoop().RunUntilIdle();
+    loop.Run();
     return disk_usage_;
   }
 
-  virtual int RequestBlobFileCount() {
+  int RequestBlobFileCount() {
+    base::RunLoop loop;
     PostTaskAndReplyWithResult(
         GetContext()->TaskRunner(), FROM_HERE,
         base::BindOnce(&IndexedDBContextImpl::GetOriginBlobFileCount,
                        GetContext(), Origin::Create(GURL("file:///"))),
         base::BindOnce(&IndexedDBBrowserTest::DidGetBlobFileCount,
-                       base::Unretained(this)));
+                       base::Unretained(this), loop.QuitClosure()));
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(GetContext()->TaskRunner()));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetBlobFileCount to be called.
-    base::RunLoop().RunUntilIdle();
+    loop.Run();
     return blob_file_count_;
   }
 
- private:
+  bool RequestSchemaDowngrade(Origin origin) {
+    base::RunLoop loop;
+    PostTaskAndReplyWithResult(
+        GetContext()->TaskRunner(), FROM_HERE,
+        base::BindOnce(&IndexedDBContextImpl::ForceSchemaDowngrade,
+                       GetContext(), origin),
+        base::BindOnce(&IndexedDBBrowserTest::DidDowngradeSchema,
+                       base::Unretained(this), loop.QuitClosure()));
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(GetContext()->TaskRunner()));
+    EXPECT_TRUE(helper->Run());
+    // Wait for DidDowngradeSchema to be called.
+    loop.Run();
+    return schema_downgrade_;
+  }
+
+  V2SchemaCorruptionStatus RequestHasV2SchemaCorruption(Origin origin) {
+    base::RunLoop loop;
+    PostTaskAndReplyWithResult(
+        GetContext()->TaskRunner(), FROM_HERE,
+        base::BindOnce(&IndexedDBContextImpl::HasV2SchemaCorruption,
+                       GetContext(), origin),
+        base::BindOnce(&IndexedDBBrowserTest::DidGetV2SchemaCorruption,
+                       base::Unretained(this), loop.QuitClosure()));
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(GetContext()->TaskRunner()));
+    EXPECT_TRUE(helper->Run());
+    // Wait for DidGetV2SchemaCorruption to be called.
+    loop.Run();
+    return v2_schema_corruption_;
+  }
+
+ protected:
   static MockBrowserTestIndexedDBClassFactory* GetTestClassFactory() {
     static ::base::LazyInstance<MockBrowserTestIndexedDBClassFactory>::Leaky
         s_factory = LAZY_INSTANCE_INITIALIZER;
@@ -186,12 +220,32 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     return GetTestClassFactory();
   }
 
-  virtual void DidGetDiskUsage(int64_t bytes) { disk_usage_ = bytes; }
+  void DidGetDiskUsage(base::OnceClosure done, int64_t bytes) {
+    disk_usage_ = bytes;
+    std::move(done).Run();
+  }
 
-  virtual void DidGetBlobFileCount(int count) { blob_file_count_ = count; }
+  void DidGetBlobFileCount(base::OnceClosure done, int count) {
+    blob_file_count_ = count;
+    std::move(done).Run();
+  }
 
+  void DidDowngradeSchema(base::OnceClosure done, bool downgrade) {
+    schema_downgrade_ = downgrade;
+    std::move(done).Run();
+  }
+
+  void DidGetV2SchemaCorruption(base::OnceClosure done,
+                                V2SchemaCorruptionStatus corruption) {
+    v2_schema_corruption_ = corruption;
+    std::move(done).Run();
+  }
+
+ private:
   int64_t disk_usage_;
   int blob_file_count_ = 0;
+  bool schema_downgrade_;
+  V2SchemaCorruptionStatus v2_schema_corruption_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBrowserTest);
 };
@@ -531,6 +585,21 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DiskFullOnCommit) {
 
 namespace {
 
+static std::unique_ptr<net::test_server::HttpResponse> ServePath(
+    std::string request_path) {
+  base::FilePath resource_path =
+      content::GetTestFilePath("indexeddb", request_path.c_str());
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_code(net::HTTP_OK);
+
+  std::string file_contents;
+  if (!base::ReadFileToString(resource_path, &file_contents))
+    NOTREACHED() << "could not read file " << resource_path;
+  http_response->set_content(file_contents);
+  return std::move(http_response);
+}
+
 static void CompactIndexedDBBackingStore(
     scoped_refptr<IndexedDBContextImpl> context,
     const Origin& origin) {
@@ -693,17 +762,20 @@ static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
     return std::move(http_response);
   }
 
-  // A request for a test resource
-  base::FilePath resource_path =
-      content::GetTestFilePath("indexeddb", request_path.c_str());
-  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-      new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::HTTP_OK);
-  std::string file_contents;
-  if (!base::ReadFileToString(resource_path, &file_contents))
+  return ServePath(request_path);
+}
+
+static const char s_indexeddb_test_prefix[] = "/indexeddb/test/";
+
+static std::unique_ptr<net::test_server::HttpResponse> StaticFileRequestHandler(
+    const std::string& path,
+    IndexedDBBrowserTest* test,
+    const net::test_server::HttpRequest& request) {
+  if (path.find(s_indexeddb_test_prefix) == std::string::npos)
     return std::unique_ptr<net::test_server::HttpResponse>();
-  http_response->set_content(file_contents);
-  return std::move(http_response);
+  std::string request_path =
+      request.relative_url.substr(std::string(s_indexeddb_test_prefix).size());
+  return ServePath(request_path);
 }
 
 }  // namespace
@@ -850,6 +922,60 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
   TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("connection closed with error"));
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
+}
+
+// The V2 schema corruption test runs in a separate class to avoid corrupting
+// an IDB store that other tests use.
+class IndexedDBBrowserTestV2SchemaCorruption : public IndexedDBBrowserTest {
+ public:
+  void SetUp() override {
+    GetTestClassFactory()->Reset();
+    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetIDBClassFactory);
+    ContentBrowserTest::SetUp();
+  }
+};
+
+// Verify the V2 schema corruption lifecycle:
+// - create a current version backing store (v3 or later)
+// - add an object store, some data, and an object that contains a blob
+// - verify the object+blob are stored in the object store
+// - verify the backing store doesn't have v2 schema corruption
+// - force the schema to downgrade to v2
+// - verify the backing store has v2 schema corruption
+// - verify the object+blob can be fetched
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestV2SchemaCorruption, LifecycleTest) {
+  ASSERT_TRUE(embedded_test_server()->Started() ||
+              embedded_test_server()->InitializeAndListen());
+  const Origin origin = Origin::Create(embedded_test_server()->base_url());
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &StaticFileRequestHandler, s_indexeddb_test_prefix, this));
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Set up the IndexedDB instance so it contains our reference data.
+  std::string test_file =
+      std::string(s_indexeddb_test_prefix) + "v2schemacorrupt_setup.html";
+  SimpleTest(embedded_test_server()->GetURL(test_file));
+
+  // Verify the backing store does not have corruption.
+  V2SchemaCorruptionStatus has_corruption =
+      RequestHasV2SchemaCorruption(origin);
+  ASSERT_EQ(has_corruption, V2SchemaCorruptionStatus::kNo);
+
+  // Revert schema to v2.  This closes the targeted backing store.
+  bool schema_downgrade = RequestSchemaDowngrade(origin);
+  ASSERT_EQ(schema_downgrade, true);
+
+  // Re-open the backing store and verify it has corruption.
+  test_file =
+      std::string(s_indexeddb_test_prefix) + "v2schemacorrupt_reopen.html";
+  SimpleTest(embedded_test_server()->GetURL(test_file));
+  has_corruption = RequestHasV2SchemaCorruption(origin);
+  ASSERT_EQ(has_corruption, V2SchemaCorruptionStatus::kYes);
+
+  // Verify that the saved blob is get-able with a v2 backing store.
+  test_file =
+      std::string(s_indexeddb_test_prefix) + "v2schemacorrupt_verify.html";
+  SimpleTest(embedded_test_server()->GetURL(test_file));
 }
 
 class IndexedDBBrowserTestSingleProcess : public IndexedDBBrowserTest {

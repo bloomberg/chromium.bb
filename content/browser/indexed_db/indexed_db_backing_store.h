@@ -68,6 +68,12 @@ class IndexedDBBackingStoreTest;
 FORWARD_DECLARE_TEST(IndexedDBBackingStoreTest, ReadCorruptionInfo);
 }  // namespace indexed_db_backing_store_unittest
 
+enum class V2SchemaCorruptionStatus {
+  kUnknown = 0,  // Due to other unknown/critical errors.
+  kNo = 1,
+  kYes = 2,
+};
+
 class CONTENT_EXPORT IndexedDBBackingStore
     : public base::RefCounted<IndexedDBBackingStore> {
  public:
@@ -579,6 +585,10 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   // Stops the journal_cleaning_timer_ and runs its pending task.
   void ForceRunBlobCleanup();
+
+  // HasV2SchemaCorruption() returns whether the backing store is v2 and
+  // has blob references.
+  V2SchemaCorruptionStatus HasV2SchemaCorruption();
 
   // RevertSchemaToV2() updates a backing store state on disk to override its
   // metadata version to 2.  This allows triggering https://crbug.com/829141 on
