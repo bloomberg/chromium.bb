@@ -5,12 +5,10 @@
 #include "ash/app_list/home_launcher_gesture_handler.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/transform.h"
@@ -28,9 +26,6 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
 
   // testing::Test:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        app_list::features::kEnableHomeLauncherGestures);
-
     AshTestBase::SetUp();
 
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -51,10 +46,6 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
   }
 
  private:
-  // Explicitly enable the feature for tests.
-  // TODO(crbug.com/872319): Remove this after the feature is launched.
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherGestureHandlerTest);
 };
 
