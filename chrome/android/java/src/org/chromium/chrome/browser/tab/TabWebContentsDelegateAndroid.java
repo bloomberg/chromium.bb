@@ -285,14 +285,14 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     public void rendererUnresponsive() {
         super.rendererUnresponsive();
         if (mTab.getWebContents() != null) nativeOnRendererUnresponsive(mTab.getWebContents());
-        mTab.handleRendererUnresponsive();
+        mTab.handleRendererResponsiveStateChanged(false);
     }
 
     @Override
     public void rendererResponsive() {
         super.rendererResponsive();
         if (mTab.getWebContents() != null) nativeOnRendererResponsive(mTab.getWebContents());
-        mTab.handleRendererResponsive();
+        mTab.handleRendererResponsiveStateChanged(true);
     }
 
     @Override

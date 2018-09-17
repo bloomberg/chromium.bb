@@ -306,6 +306,12 @@ public interface TabObserver {
     public void onInteractabilityChanged(boolean isInteractable);
 
     /**
+     * Called when renderer changes its state about being responsive to requests.
+     * @param {@code true} if the renderer becomes responsive, otherwise {@code false}.
+     */
+    public void onRendererResponsiveStateChanged(boolean isResponsive);
+
+    /**
      * Called when navigation entries of a tab have been deleted.
      * @param tab The notifying {@link Tab}.
      */
