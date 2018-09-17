@@ -85,6 +85,7 @@
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
@@ -777,10 +778,14 @@ void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  // Added 9/2018
+  local_state->ClearPref(
+      metrics::prefs::kStabilityCrashCountWithoutGmsCoreUpdateObsolete);
+#else
   // Added 1/2018.
   local_state->ClearPref(kShowFirstRunBubbleOption);
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   // Added 5/2018.

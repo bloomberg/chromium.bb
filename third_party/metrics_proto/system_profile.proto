@@ -500,7 +500,7 @@ message SystemProfileProto {
   // Figures that can be used to generate application stability metrics.
   // All values are counts of events since the last time that these
   // values were reported.
-  // Next tag: 30
+  // Next tag: 31
   message Stability {
     // Total amount of time that the program was running, in seconds,
     // since the last time a log was recorded, as measured using a client-side
@@ -560,13 +560,16 @@ message SystemProfileProto {
     // than 1.
     optional int32 launch_count = 15;
     // The number of times that it didn't exit cleanly (which we assume to be
-    // mostly crashes).
+    // mostly crashes). On Android M71+ this does not include times when the Gms
+    // Core version has changed, which is recorded separately below.
     optional int32 crash_count = 16;
     // Android only. The number of times Chrome didn't exit cleanly and the GMS
-    // Core version had not changed from the last session. This is a subset of
-    // |crash_count| where we exclude unclean exits that are likely caused by
+    // Core version has changed from the last session. This is in addition to
+    // |crash_count| in which we exclude unclean exits that are likely caused by
     // GMS Core updates.
-    optional int32 crash_count_without_gms_core_update = 28;
+    optional int32 crash_count_due_to_gms_core_update = 30;
+    // Historical, no longer recorded since 2018-09.
+    optional int32 crash_count_without_gms_core_update = 28 [deprecated = true];
 
     // The number of times the program began, but did not complete, the shutdown
     // process.  (For example, this may occur when Windows is shutting down, and
