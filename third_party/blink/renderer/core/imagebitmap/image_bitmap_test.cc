@@ -443,8 +443,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         converted_pixel.get(), transformed_pixel.get(), 1,
-        (color_type == kN32_SkColorType) ? kUint8ClampedArrayStorageFormat
-                                         : kUint16ArrayStorageFormat,
+        (color_type == kN32_SkColorType) ? kPixelFormat_8888
+                                         : kPixelFormat_hhhh,
         kAlphaMultiplied, kUnpremulRoundTripTolerance);
   }
 }
@@ -555,8 +555,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         converted_pixel.get(), transformed_pixel.get(), 1,
-        (color_type == kN32_SkColorType) ? kUint8ClampedArrayStorageFormat
-                                         : kUint16ArrayStorageFormat,
+        (color_type == kN32_SkColorType) ? kPixelFormat_8888
+                                         : kPixelFormat_hhhh,
         kAlphaMultiplied, kUnpremulRoundTripTolerance);
   }
 }
@@ -659,8 +659,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         converted_pixel.get(), transformed_pixel.get(), 1,
-        (color_type == kN32_SkColorType) ? kUint8ClampedArrayStorageFormat
-                                         : kUint16ArrayStorageFormat,
+        (color_type == kN32_SkColorType) ? kPixelFormat_8888
+                                         : kPixelFormat_hhhh,
         kAlphaMultiplied, unpremul_round_trip_tolerance);
   }
 }
@@ -753,8 +753,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         converted_pixel.get(), transformed_pixel.get(), 1,
-        (color_type == kN32_SkColorType) ? kUint8ClampedArrayStorageFormat
-                                         : kUint16ArrayStorageFormat,
+        (color_type == kN32_SkColorType) ? kPixelFormat_8888
+                                         : kPixelFormat_hhhh,
         kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
   }
 }

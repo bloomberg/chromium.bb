@@ -201,12 +201,6 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   static DOMFloat32Array* AllocateAndValidateFloat32Array(
       const unsigned&,
       ExceptionState* = nullptr);
-
-  static DOMFloat32Array* ConvertFloat16ArrayToFloat32Array(const uint16_t*,
-                                                            unsigned);
-
-  void SwapU16EndiannessForSkColorSpaceXform(const IntRect* = nullptr);
-  void SwizzleIfNeeded(DataU8ColorType, const IntRect*);
 };
 
 }  // namespace blink

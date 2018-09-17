@@ -925,8 +925,8 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         converted_pixel.get(), transformed_pixel.get(), 1,
-        (color_type == kRGBA_8888_SkColorType) ? kUint8ClampedArrayStorageFormat
-                                               : kUint16ArrayStorageFormat,
+        (color_type == kRGBA_8888_SkColorType) ? kPixelFormat_8888
+                                               : kPixelFormat_hhhh,
         kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
   }
 }
@@ -1050,8 +1050,7 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
                   data_array->BaseAddress(), data_length,
                   image_data_color_spaces[i], image_data_storage_formats[j],
                   canvas_color_spaces[k], canvas_pixel_formats[k],
-                  pixels_converted_manually,
-                  SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat));
+                  pixels_converted_manually, kPixelFormat_ffff));
 
       // Create a canvas and call putImageData and getImageData to make sure
       // the conversion is done correctly.
@@ -1073,8 +1072,8 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
           pixels_from_get_image_data, pixels_converted_manually.get(),
           num_pixels,
           (canvas_pixel_formats[k] == kRGBA8CanvasPixelFormat)
-              ? kUint8ClampedArrayStorageFormat
-              : kFloat32ArrayStorageFormat,
+              ? kPixelFormat_8888
+              : kPixelFormat_ffff,
           kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
     }
   }

@@ -2206,6 +2206,7 @@ jumbo_source_set("unit_tests") {
     ":core",
     ":unit_test_support",
     "//mojo/public/cpp/system",
+    "//skia:skcms",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/renderer/core/editing:unit_tests",
