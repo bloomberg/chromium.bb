@@ -18,19 +18,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-          "rect": [6, 41, 204, 23],
-          "reason": "appeared"
+          "object": "NGPhysicalTextFragment 'Details'",
+          "rect": [24, 8, 45, 19],
+          "reason": "style change"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow BODY",
-          "rect": [6, 41, 204, 23],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [8, 8, 200, 50],
-          "reason": "subtree"
+          "object": "LayoutDetailsMarker DIV id='details-marker'",
+          "rect": [8, 12, 11, 11],
+          "reason": "style change"
         }
       ]
     }

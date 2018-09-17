@@ -13,6 +13,7 @@
 
 namespace blink {
 
+enum class NGOutlineType;
 class CORE_EXPORT NGPhysicalBoxFragment final
     : public NGPhysicalContainerFragment {
  public:
@@ -67,8 +68,11 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // Ink overflow including contents, in the local coordinates.
   NGPhysicalOffsetRect InkOverflow(bool apply_clip) const;
 
-  void AddSelfOutlineRects(Vector<LayoutRect>*,
-                           const LayoutPoint& additional_offset) const;
+  // Fragment offset is this fragment's offset from parent.
+  // Needed to compensate for LayoutInline Legacy code offsets.
+  void AddSelfOutlineRects(Vector<LayoutRect>* outline_rects,
+                           const LayoutPoint& additional_offset,
+                           NGOutlineType include_block_overflows) const;
 
   UBiDiLevel BidiLevel() const override;
 

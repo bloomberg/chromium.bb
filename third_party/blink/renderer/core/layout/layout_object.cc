@@ -730,6 +730,10 @@ LayoutBlockFlow* LayoutObject::EnclosingNGBlockFlow() const {
     return nullptr;
   LayoutBox* box = EnclosingBox();
   DCHECK(box);
+#if DCHECK_IS_ON()
+  if (NGBlockNode::CanUseNewLayout(*box))
+    DCHECK(box->IsLayoutBlockFlow());
+#endif
   return NGBlockNode::CanUseNewLayout(*box) ? ToLayoutBlockFlow(box) : nullptr;
 }
 
