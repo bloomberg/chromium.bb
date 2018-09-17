@@ -196,20 +196,10 @@ void DefaultGpuHost::DisableGpuCompositing() {}
 void DefaultGpuHost::SetChildSurface(gpu::SurfaceHandle parent,
                                      gpu::SurfaceHandle child) {
 #if defined(OS_WIN)
-  // Verify that |parent| was created by the window server.
-  DWORD process_id = 0;
-  DWORD thread_id = GetWindowThreadProcessId(parent, &process_id);
-  if (!thread_id || process_id != ::GetCurrentProcessId()) {
-    OnBadMessageFromGpu();
-    return;
-  }
-
-  // TODO(sad): Also verify that |child| was created by the mus-gpu process.
-
-  if (!gfx::RenderingWindowManager::GetInstance()->RegisterChild(parent,
-                                                                 child)) {
-    OnBadMessageFromGpu();
-  }
+  // Using GetCurrentProcessId() only works with in-process GPU, which is fine
+  // because DefaultGpuHost isn't used outside of tests.
+  gfx::RenderingWindowManager::GetInstance()->RegisterChild(
+      parent, child, /*expected_child_process_id=*/::GetCurrentProcessId());
 #else
   NOTREACHED();
 #endif

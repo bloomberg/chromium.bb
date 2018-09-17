@@ -222,10 +222,9 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
                                                             child_hwnd);
     } else {
       // We are already in the browser process.
-      if (!gfx::RenderingWindowManager::GetInstance()->RegisterChild(
-              surface_handle, child_hwnd)) {
-        LOG(ERROR) << "Bad parenting request.";
-      }
+      gfx::RenderingWindowManager::GetInstance()->RegisterChild(
+          surface_handle, child_hwnd,
+          /*expected_child_process_id=*/::GetCurrentProcessId());
     }
   }
 

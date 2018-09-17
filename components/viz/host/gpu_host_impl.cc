@@ -416,28 +416,9 @@ void GpuHostImpl::DisableGpuCompositing() {
 void GpuHostImpl::SetChildSurface(gpu::SurfaceHandle parent,
                                   gpu::SurfaceHandle child) {
 #if defined(OS_WIN)
-  constexpr char kBadMessageError[] = "Bad parenting request from gpu process.";
-  if (!params_.in_process) {
-    DWORD parent_process_id = 0;
-    DWORD parent_thread_id =
-        ::GetWindowThreadProcessId(parent, &parent_process_id);
-    if (!parent_thread_id || parent_process_id != ::GetCurrentProcessId()) {
-      LOG(ERROR) << kBadMessageError;
-      return;
-    }
-
-    DWORD child_process_id = 0;
-    DWORD child_thread_id =
-        ::GetWindowThreadProcessId(child, &child_process_id);
-    if (!child_thread_id || child_process_id != pid_) {
-      LOG(ERROR) << kBadMessageError;
-      return;
-    }
-  }
-
-  if (!gfx::RenderingWindowManager::GetInstance()->RegisterChild(parent,
-                                                                 child)) {
-    LOG(ERROR) << kBadMessageError;
+  if (pid_ != base::kNullProcessId) {
+    gfx::RenderingWindowManager::GetInstance()->RegisterChild(
+        parent, child, /*expected_child_process_id=*/pid_);
   }
 #else
   NOTREACHED();
