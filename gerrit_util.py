@@ -409,12 +409,26 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       break
     # A status >=500 is assumed to be a possible transient error; retry.
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
-    LOGGER.warn('A transient error occurred while querying %s:\n'
-                '%s %s %s\n'
-                '%s %d %s',
-                conn.req_host, conn.req_params['method'],
-                conn.req_params['uri'],
-                http_version, http_version, response.status, response.reason)
+
+    # TODO(crbug/881860): remove this special 404 handling.
+    if response.status == 404:
+      LOGGER.warn(
+          '404 NotFound error occurred while querying %s %s: %s\n'
+          'NOTE: if see this while running `git cl upload`,\n'
+          'consider reporting this to https://crbug.com/881860.\n'
+          'Please, include response headers below:\n'
+          '  %s\n',
+          conn.req_params['method'], conn.req_params['uri'], response.reason,
+          '\n  '.join(
+              json.dumps(response, sort_keys=True, indent=2).splitlines()))
+    else:
+      LOGGER.warn('A transient error occurred while querying %s:\n'
+                  '%s %s\n'
+                  '%s %d %s\n',
+                  conn.req_host,
+                  conn.req_params['method'], conn.req_params['uri'],
+                  http_version, response.status, response.reason)
+
     if TRY_LIMIT - idx > 1:
       LOGGER.info('Will retry in %d seconds (%d more times)...',
                   sleep_time, TRY_LIMIT - idx - 1)
