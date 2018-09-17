@@ -30,6 +30,12 @@ cryptauth::SoftwareFeature SoftwareFeatureStringToEnum(
 std::string SoftwareFeatureEnumToString(
     cryptauth::SoftwareFeature software_feature);
 
+// Converts a Proto enum SoftwareFeature to its ALL_CAPS string
+// representation. Used to specify software features for the FindEligibleDevices
+// request's |callback_bluetooth_address| field.
+std::string SoftwareFeatureEnumToStringAllCaps(
+    cryptauth::SoftwareFeature software_feature);
+
 }  // namespace cryptauth
 
 #endif  // COMPONENTS_CRYPTAUTH_PROTO_ENUM_UTIL_H_
