@@ -4492,38 +4492,6 @@
             ]
         }
     ],
-    "UseHeuristicLanguageModel": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Experiment",
-                    "enable_features": [
-                        "UseHeuristicLanguageModel"
-                    ]
-                },
-                {
-                    "name": "Beta_Experiment",
-                    "enable_features": [
-                        "UseHeuristicLanguageModel"
-                    ]
-                },
-                {
-                    "name": "Stable_Experiment",
-                    "enable_features": [
-                        "UseHeuristicLanguageModel"
-                    ]
-                }
-            ]
-        }
-    ],
     "UsePdfCompositorServiceForPrint": [
         {
             "platforms": [
