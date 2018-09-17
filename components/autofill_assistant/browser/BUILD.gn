@@ -20,6 +20,8 @@ jumbo_static_library("browser") {
     "actions/autofill_action.h",
     "actions/click_action.cc",
     "actions/click_action.h",
+    "actions/focus_element_action.cc",
+    "actions/focus_element_action.h",
     "actions/select_option_action.cc",
     "actions/select_option_action.h",
     "actions/tell_action.cc",

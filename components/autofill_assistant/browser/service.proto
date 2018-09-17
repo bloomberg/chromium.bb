@@ -110,6 +110,7 @@ message ActionProto {
     ClickProto click = 5;
     SelectOptionProto select_option = 7;
     TellProto tell = 11;
+    FocusElementProto focus_element = 12;
     WaitForDomProto wait_for_dom = 19;
     UseCreditCardProto use_card = 28;
     UseAddressProto use_address = 29;
@@ -196,6 +197,15 @@ message SelectOptionProto {
 // Contain a localized text message from the server.
 message TellProto {
   optional string message = 1;
+}
+
+// Contain all arguments to focus on an element.
+message FocusElementProto {
+  // Element to focus on.
+  optional ElementReferenceProto element = 1;
+
+  // Optional title to show in the status bar.
+  optional string title = 2;
 }
 
 // Fill a form with an address if there is, otherwise fail this action.

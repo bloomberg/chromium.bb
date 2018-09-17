@@ -59,6 +59,10 @@ class ActionDelegate {
                             const std::string& selected_option,
                             base::OnceCallback<void(bool)> callback) = 0;
 
+  // Focus on the element given by |selectors|.
+  virtual void FocusElement(const std::vector<std::string>& selectors,
+                            base::OnceCallback<void(bool)> callback) = 0;
+
   // Return the current ClientMemory.
   virtual ClientMemory* GetClientMemory() = 0;
 

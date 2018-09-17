@@ -49,6 +49,9 @@ class ScriptExecutor : public ActionDelegate {
   void SelectOption(const std::vector<std::string>& selectors,
                     const std::string& selected_option,
                     base::OnceCallback<void(bool)> callback) override;
+  void FocusElement(const std::vector<std::string>& selectors,
+                    base::OnceCallback<void(bool)> callback) override;
+
   ClientMemory* GetClientMemory() override;
 
  private:

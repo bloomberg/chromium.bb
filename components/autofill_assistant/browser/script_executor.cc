@@ -79,6 +79,11 @@ void ScriptExecutor::SelectOption(const std::vector<std::string>& selectors,
                                               std::move(callback));
 }
 
+void ScriptExecutor::FocusElement(const std::vector<std::string>& selectors,
+                                  base::OnceCallback<void(bool)> callback) {
+  delegate_->GetWebController()->FocusElement(selectors, std::move(callback));
+}
+
 ClientMemory* ScriptExecutor::GetClientMemory() {
   return delegate_->GetClientMemory();
 }

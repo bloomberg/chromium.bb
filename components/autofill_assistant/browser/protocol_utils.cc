@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/actions/focus_element_action.h"
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
 #include "components/autofill_assistant/browser/actions/tell_action.h"
 #include "components/autofill_assistant/browser/actions/upload_dom_action.h"
@@ -126,6 +127,10 @@ bool ProtocolUtils::ParseActions(const std::string& response,
       }
       case ActionProto::ActionInfoCase::kTell: {
         actions->emplace_back(std::make_unique<TellAction>(action));
+        break;
+      }
+      case ActionProto::ActionInfoCase::kFocusElement: {
+        actions->emplace_back(std::make_unique<FocusElementAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kUseAddress:
