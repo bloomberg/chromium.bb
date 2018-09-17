@@ -28,16 +28,6 @@ NavigationController* InterstitialPageNavigatorImpl::GetController() {
   return controller_;
 }
 
-void InterstitialPageNavigatorImpl::DidStartProvisionalLoad(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& url,
-    const std::vector<GURL>& redirect_chain,
-    const base::TimeTicks& navigation_start) {
-  // Do not proceed if the interstitial itself has been disabled.
-  if (!enabled_)
-    return;
-}
-
 void InterstitialPageNavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params,

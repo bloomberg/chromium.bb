@@ -121,33 +121,21 @@ void TestRenderFrameHost::Detach() {
 }
 
 void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
-  if (IsBrowserSideNavigationEnabled()) {
-    SendRendererInitiatedNavigationRequest(url, false);
-    return;
-  }
-
-  OnDidStartLoading(true);
-  OnDidStartProvisionalLoad(url, std::vector<GURL>(), base::TimeTicks::Now());
+  SendRendererInitiatedNavigationRequest(url, false);
 }
 
 void TestRenderFrameHost::SimulateRedirect(const GURL& new_url) {
-  if (IsBrowserSideNavigationEnabled()) {
-    NavigationRequest* request = frame_tree_node_->navigation_request();
-    if (!request->loader_for_testing()) {
-      base::RunLoop loop;
-      request->set_on_start_checks_complete_closure_for_testing(
-          loop.QuitClosure());
-      loop.Run();
-    }
-    TestNavigationURLLoader* url_loader =
-        static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
-    CHECK(url_loader);
-    url_loader->SimulateServerRedirect(new_url);
-    return;
+  NavigationRequest* request = frame_tree_node_->navigation_request();
+  if (!request->loader_for_testing()) {
+    base::RunLoop loop;
+    request->set_on_start_checks_complete_closure_for_testing(
+        loop.QuitClosure());
+    loop.Run();
   }
-
-  GetNavigationHandle()->CallWillRedirectRequestForTesting(new_url, false,
-                                                           GURL(), false);
+  TestNavigationURLLoader* url_loader =
+      static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
+  CHECK(url_loader);
+  url_loader->SimulateServerRedirect(new_url);
 }
 
 void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
@@ -227,8 +215,6 @@ void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
 void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
   CHECK(GetNavigationHandle());
   GURL error_url = GURL(kUnreachableWebDataURL);
-  OnDidStartProvisionalLoad(error_url, std::vector<GURL>(),
-                            base::TimeTicks::Now());
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
@@ -338,15 +324,9 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   if (!IsBrowserSideNavigationEnabled())
     OnDidStartLoading(true);
 
-  // DidStartProvisionalLoad may delete the pending entry that holds |url|,
-  // so we keep a copy of it to use below.
-  GURL url_copy(url);
-  OnDidStartProvisionalLoad(url_copy, std::vector<GURL>(),
-                            base::TimeTicks::Now());
-
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = nav_entry_id;
-  params.url = url_copy;
+  params.url = url;
   params.transition = transition;
   params.should_update_history = true;
   params.did_create_new_entry = did_create_new_entry;
@@ -358,7 +338,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   params.socket_address.set_host("2001:db8::1");
   params.socket_address.set_port(80);
   params.history_list_was_cleared = simulate_history_list_was_cleared_;
-  params.original_request_url = url_copy;
+  params.original_request_url = url;
 
   // Simulate Blink assigning an item and document sequence number to the
   // navigation.
@@ -388,7 +368,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // In most cases, the origin will match the URL's origin.  Tests that need to
   // check corner cases (like about:blank) should specify the origin param
   // manually.
-  url::Origin origin = url::Origin::Create(url_copy);
+  url::Origin origin = url::Origin::Create(url);
   params.origin = origin;
 
   url::Replacements<char> replacements;
@@ -401,13 +381,11 @@ void TestRenderFrameHost::SendNavigateWithParameters(
       !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD) &&
       !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
       (GetLastCommittedURL().is_valid() && !last_commit_was_error_page_ &&
-       url_copy.ReplaceComponents(replacements) ==
+       url.ReplaceComponents(replacements) ==
            GetLastCommittedURL().ReplaceComponents(replacements));
 
-  params.page_state =
-      PageState::CreateForTestingWithSequenceNumbers(
-          url_copy, params.item_sequence_number,
-          params.document_sequence_number);
+  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+      url, params.item_sequence_number, params.document_sequence_number);
 
   if (!callback.is_null())
     callback.Run(&params);

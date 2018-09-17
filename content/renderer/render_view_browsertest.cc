@@ -2143,11 +2143,13 @@ TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
   frame()->GetWebFrame()->LoadHTMLString(
       "hello world", blink::WebURL(GURL("data:text/html,")));
 
-  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  base::TimeTicks transmitted_start = std::get<2>(host_nav_params);
-  EXPECT_FALSE(transmitted_start.is_null());
-  EXPECT_LE(lower_bound_navigation_start, transmitted_start);
+  DocumentState* document_state = DocumentState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+  NavigationStateImpl* navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  EXPECT_FALSE(navigation_state->common_params().navigation_start.is_null());
+  EXPECT_LE(lower_bound_navigation_start,
+            navigation_state->common_params().navigation_start);
 }
 
 // Checks that a browser-initiated navigation in an initial document that was
@@ -2158,9 +2160,12 @@ TEST_F(RenderViewImplTest, BrowserNavigationStart) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
 
   frame()->Navigate(common_params, RequestNavigationParams());
-  FrameHostMsg_DidStartProvisionalLoad::Param nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_EQ(common_params.navigation_start, std::get<2>(nav_params));
+  DocumentState* document_state = DocumentState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+  NavigationStateImpl* navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  EXPECT_EQ(common_params.navigation_start,
+            navigation_state->common_params().navigation_start);
 }
 
 // Sanity check for the Navigation Timing API |navigationStart| override. We
@@ -2194,9 +2199,12 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
   frame()->Navigate(common_params, RequestNavigationParams());
 
-  FrameHostMsg_DidStartProvisionalLoad::Param nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_EQ(common_params.navigation_start, std::get<2>(nav_params));
+  DocumentState* document_state = DocumentState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+  NavigationStateImpl* navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  EXPECT_EQ(common_params.navigation_start,
+            navigation_state->common_params().navigation_start);
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForReload) {
@@ -2216,11 +2224,13 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
   // be fired during Navigate.
   frame()->Navigate(common_params, RequestNavigationParams());
 
-  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-
   // The browser navigation_start is always used.
-  EXPECT_EQ(common_params.navigation_start, std::get<2>(host_nav_params));
+  DocumentState* document_state = DocumentState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+  NavigationStateImpl* navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  EXPECT_EQ(common_params.navigation_start,
+            navigation_state->common_params().navigation_start);
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
@@ -2241,12 +2251,14 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
       FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(-1, back_state, common_params_back,
                        RequestNavigationParams());
-  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
+  DocumentState* document_state = DocumentState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetDocumentLoader());
+  NavigationStateImpl* navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
 
   // The browser navigation_start is always used.
-  EXPECT_EQ(common_params_back.navigation_start, std::get<2>(host_nav_params));
-  render_thread_->sink().ClearMessages();
+  EXPECT_EQ(common_params_back.navigation_start,
+            navigation_state->common_params().navigation_start);
 
   // Go forward.
   CommonNavigationParams common_params_forward;
@@ -2257,10 +2269,12 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
       FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(1, forward_state, common_params_forward,
                        RequestNavigationParams());
-  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params2 =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
+  document_state = DocumentState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetDocumentLoader());
+  navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
   EXPECT_EQ(common_params_forward.navigation_start,
-            std::get<2>(host_nav_params2));
+            navigation_state->common_params().navigation_start);
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
@@ -2278,9 +2292,12 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
   request_params.current_history_list_length = 1;
   frame()->Navigate(common_params, request_params);
 
-  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_EQ(std::get<2>(host_nav_params), common_params.navigation_start);
+  DocumentState* document_state = DocumentState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+  NavigationStateImpl* navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  EXPECT_EQ(common_params.navigation_start,
+            navigation_state->common_params().navigation_start);
 }
 
 TEST_F(RenderViewImplTest, PreferredSizeZoomed) {

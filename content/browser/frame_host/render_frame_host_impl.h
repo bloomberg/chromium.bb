@@ -872,10 +872,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnDocumentOnLoadCompleted();
-  void OnDidStartProvisionalLoad(
-      const GURL& url,
-      const std::vector<GURL>& redirect_chain,
-      const base::TimeTicks& navigation_start);
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnDidFailLoadWithError(const GURL& url,

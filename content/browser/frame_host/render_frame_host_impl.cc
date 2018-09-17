@@ -1057,8 +1057,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartProvisionalLoad,
-                        OnDidStartProvisionalLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailProvisionalLoadWithError,
                         OnDidFailProvisionalLoadWithError)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailLoadWithError,
@@ -1644,24 +1642,6 @@ void RenderFrameHostImpl::OnDocumentOnLoadCompleted() {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   delegate_->DocumentOnLoadCompleted(this);
-}
-
-void RenderFrameHostImpl::OnDidStartProvisionalLoad(
-    const GURL& url,
-    const std::vector<GURL>& redirect_chain,
-    const base::TimeTicks& navigation_start) {
-  // TODO(clamy): Check if other navigation methods (OpenURL,
-  // DidFailProvisionalLoad, ...) should also be ignored if the RFH is no longer
-  // active.
-  if (!is_active())
-    return;
-
-  TRACE_EVENT2("navigation", "RenderFrameHostImpl::OnDidStartProvisionalLoad",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
-               url.possibly_invalid_spec());
-
-  frame_tree_node_->navigator()->DidStartProvisionalLoad(
-      this, url, redirect_chain, navigation_start);
 }
 
 void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(

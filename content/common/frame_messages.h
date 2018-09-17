@@ -1185,12 +1185,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_RenderProcessGone,
 // Sent by the renderer when the frame becomes focused.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameFocused)
 
-// Sent when the renderer starts a provisional load for a frame.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_DidStartProvisionalLoad,
-                    GURL /* url */,
-                    std::vector<GURL> /* redirect_chain */,
-                    base::TimeTicks /* navigation_start */)
-
 // Sent when the renderer fails a provisional load with an error.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFailProvisionalLoadWithError,
                     FrameHostMsg_DidFailProvisionalLoadWithError_Params)

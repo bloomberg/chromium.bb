@@ -455,10 +455,6 @@ TEST_F(WebContentsImplTest, DirectNavigationToViewSourceWebUI) {
   InitNavigateParams(&params, entry_id, true, kRewrittenURL,
                      ui::PAGE_TRANSITION_TYPED);
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->OnMessageReceived(
-      FrameHostMsg_DidStartProvisionalLoad(1, kRewrittenURL,
-                                           std::vector<GURL>(),
-                                           base::TimeTicks::Now()));
   main_test_rfh()->SimulateCommitProcessed(
       request->navigation_handle()->GetNavigationId(),
       true /* was_successful */);
@@ -2003,15 +1999,7 @@ TEST_F(WebContentsImplTest, CreateInterstitialForClosingTab) {
   DeleteContents();
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
 
-  // The interstitial page triggers a DidStartNavigation after the tab is gone,
-  // but before the interstitial page itself is deleted.  This should not crash.
-  Navigator* interstitial_navigator =
-      interstitial_rfh->frame_tree_node()->navigator();
-  interstitial_navigator->DidStartProvisionalLoad(
-      interstitial_rfh, url2, std::vector<GURL>(), base::TimeTicks::Now());
-  EXPECT_FALSE(deleted);
-
-  // Simulate a commit in the interstitial page, which should also not crash.
+  // Simulate a commit in the interstitial page, which should not crash.
   interstitial_rfh->SimulateNavigationCommit(url2);
 
   RunAllPendingInMessageLoop();
