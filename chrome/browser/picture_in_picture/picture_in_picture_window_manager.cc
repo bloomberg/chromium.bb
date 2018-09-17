@@ -78,6 +78,13 @@ void PictureInPictureWindowManager::ExitPictureInPicture() {
     CloseWindowInternal();
 }
 
+content::WebContents* PictureInPictureWindowManager::GetWebContents() {
+  if (!pip_window_controller_)
+    return nullptr;
+
+  return pip_window_controller_->GetInitiatorWebContents();
+}
+
 void PictureInPictureWindowManager::CreateWindowInternal(
     content::WebContents* web_contents) {
   contents_observer_ = std::make_unique<ContentsObserver>(this, web_contents);

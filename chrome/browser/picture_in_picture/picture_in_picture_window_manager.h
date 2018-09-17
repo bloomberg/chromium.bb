@@ -39,6 +39,8 @@ class PictureInPictureWindowManager {
                                   const gfx::Size&);
   void ExitPictureInPicture();
 
+  content::WebContents* GetWebContents();
+
  private:
   friend struct base::DefaultSingletonTraits<PictureInPictureWindowManager>;
   class ContentsObserver;

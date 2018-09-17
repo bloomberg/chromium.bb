@@ -37,6 +37,12 @@
 #include "ui/views/widget/widget_observer.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/shell.h"
+#include "ui/base/accelerators/accelerator.h"
+#endif
+
 using ::testing::_;
 
 namespace {
@@ -1462,3 +1468,53 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
   destroyed_watcher.Wait();
 }
+
+#if defined(OS_CHROMEOS)
+// Tests that video in Picture-in-Picture is paused when user presses
+// VKEY_MEDIA_PLAY_PAUSE key even if there's another media playing in a
+// foreground tab.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       HandleMediaKeyPlayPause) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* first_active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(first_active_web_contents);
+  EXPECT_TRUE(
+      content::ExecuteScript(first_active_web_contents, "video.play();"));
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      first_active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  Browser* second_browser = CreateBrowser(browser()->profile());
+  ui_test_utils::NavigateToURL(second_browser, test_page_url);
+
+  content::WebContents* second_active_web_contents =
+      second_browser->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(second_active_web_contents);
+  EXPECT_TRUE(
+      content::ExecuteScript(second_active_web_contents, "video.play();"));
+
+  ash::AcceleratorController* controller =
+      ash::Shell::Get()->accelerator_controller();
+  controller->Process(ui::Accelerator(ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE));
+  base::RunLoop().RunUntilIdle();
+
+  bool is_paused = false;
+  // Picture-in-Picture video in first browser window is paused.
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(first_active_web_contents,
+                                          "isPaused();", &is_paused));
+  EXPECT_TRUE(is_paused);
+
+  // Video in second browser window is not paused.
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(second_active_web_contents,
+                                          "isPaused();", &is_paused));
+  EXPECT_FALSE(is_paused);
+}
+#endif  // defined(OS_CHROMEOS)

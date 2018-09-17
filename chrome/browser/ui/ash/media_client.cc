@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/media_session.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
@@ -165,23 +165,37 @@ void MediaClient::HandleMediaNextTrack() {
 }
 
 void MediaClient::HandleMediaPlayPause() {
-  // If there is an active browser, then instead of dispatching this event,
-  // handle active tab's media session play pause.
+  // If there is a video playing in Picture-in-Picture, toggle
+  // Picture-in-Picture tab's media session play pause.
+  content::WebContents* pip_web_contents =
+      PictureInPictureWindowManager::GetInstance()->GetWebContents();
+  if (pip_web_contents) {
+    ToggleMediaSessionPlayPause(content::MediaSession::Get(pip_web_contents));
+    return;
+  }
+  // If there is an active browser, handle active tab's media session play
+  // pause.
   Browser* browser = chrome::FindBrowserWithActiveWindow();
   if (browser) {
-    content::MediaSession* media_session = content::MediaSession::Get(
-        browser->tab_strip_model()->GetActiveWebContents());
-    if (media_session->IsControllable()) {
-      if (media_session->IsActuallyPaused())
-        media_session->Resume(content::MediaSession::SuspendType::UI);
-      else
-        media_session->Suspend(content::MediaSession::SuspendType::UI);
-      return;
-    }
+    ToggleMediaSessionPlayPause(content::MediaSession::Get(
+        browser->tab_strip_model()->GetActiveWebContents()));
+    return;
   }
+  // Dispatch this event.
   extensions::MediaPlayerAPI::Get(ProfileManager::GetActiveUserProfile())
       ->media_player_event_router()
       ->NotifyTogglePlayState();
+}
+
+void MediaClient::ToggleMediaSessionPlayPause(
+    content::MediaSession* media_session) {
+  if (!media_session->IsControllable())
+    return;
+
+  if (media_session->IsActuallyPaused())
+    media_session->Resume(content::MediaSession::SuspendType::UI);
+  else
+    media_session->Suspend(content::MediaSession::SuspendType::UI);
 }
 
 void MediaClient::HandleMediaPrevTrack() {
