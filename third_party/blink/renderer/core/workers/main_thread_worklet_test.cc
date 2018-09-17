@@ -67,8 +67,9 @@ class MainThreadWorkletTest : public PageTestBase {
         document->Url(), ScriptType::kModule, document->UserAgent(),
         document->GetContentSecurityPolicy()->Headers(),
         document->GetReferrerPolicy(), document->GetSecurityOrigin(),
-        document->IsSecureContext(), nullptr /* worker_clients */,
-        document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
+        document->IsSecureContext(), document->GetHttpsState(),
+        nullptr /* worker_clients */, document->AddressSpace(),
+        OriginTrialContext::GetTokens(document).get(),
         base::UnguessableToken::Create(), nullptr /* worker_settings */,
         kV8CacheOptionsDefault, new WorkletModuleResponsesMap);
     global_scope_ = new MainThreadWorkletGlobalScope(

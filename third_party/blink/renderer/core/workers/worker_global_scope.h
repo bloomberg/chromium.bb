@@ -112,6 +112,7 @@ class CORE_EXPORT WorkerGlobalScope
   bool IsContextThread() const final;
   const KURL& BaseURL() const final { return url_; }
   String UserAgent() const final { return user_agent_; }
+  HttpsState GetHttpsState() const override { return https_state_; }
   const base::UnguessableToken& GetAgentClusterID() const final {
     return agent_cluster_id_;
   }
@@ -231,6 +232,8 @@ class CORE_EXPORT WorkerGlobalScope
   service_manager::InterfaceProvider interface_provider_;
 
   const base::UnguessableToken agent_cluster_id_;
+
+  HttpsState https_state_;
 };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope,

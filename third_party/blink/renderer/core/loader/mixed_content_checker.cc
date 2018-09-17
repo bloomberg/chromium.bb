@@ -209,6 +209,19 @@ bool RequestIsSubframeSubresource(
           frame_type != network::mojom::RequestContextFrameType::kNested);
 }
 
+static bool IsInsecureUrl(const KURL& url) {
+  // |url| is mixed content if its origin is not potentially trustworthy nor
+  // secure. We do a quick check against `SecurityOrigin::IsSecure` to catch
+  // things like `about:blank`, which cannot be sanely passed into
+  // `SecurityOrigin::Create` (as their origin depends on their context).
+  // blob: and filesystem: URLs never hit the network, and access is restricted
+  // to same-origin contexts, so they are not blocked either.
+  bool is_allowed = url.ProtocolIs("blob") || url.ProtocolIs("filesystem") ||
+                    SecurityOrigin::IsSecure(url) ||
+                    SecurityOrigin::Create(url)->IsPotentiallyTrustworthy();
+  return !is_allowed;
+}
+
 // static
 bool MixedContentChecker::IsMixedContent(const SecurityOrigin* security_origin,
                                          const KURL& url) {
@@ -216,16 +229,20 @@ bool MixedContentChecker::IsMixedContent(const SecurityOrigin* security_origin,
           security_origin->Protocol()))
     return false;
 
-  // |url| is mixed content if its origin is not potentially trustworthy nor
-  // secure. We do a quick check against `SecurityOrigin::isSecure` to catch
-  // things like `about:blank`, which cannot be sanely passed into
-  // `SecurityOrigin::create` (as their origin depends on their context).
-  // blob: and filesystem: URLs never hit the network, and access is restricted
-  // to same-origin contexts, so they are not blocked either.
-  bool is_allowed = url.ProtocolIs("blob") || url.ProtocolIs("filesystem") ||
-                    SecurityOrigin::IsSecure(url) ||
-                    SecurityOrigin::Create(url)->IsPotentiallyTrustworthy();
-  return !is_allowed;
+  return IsInsecureUrl(url);
+}
+
+// static
+bool MixedContentChecker::IsMixedContent(
+    const FetchClientSettingsObjectImpl& settings,
+    const KURL& url) {
+  switch (settings.GetHttpsState()) {
+    case HttpsState::kNone:
+      return false;
+
+    case HttpsState::kModern:
+      return IsInsecureUrl(url);
+  }
 }
 
 // static
@@ -457,7 +474,7 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
     SecurityViolationReportingPolicy reporting_policy,
     bool is_worklet_global_scope) {
   if (!MixedContentChecker::IsMixedContent(
-          worker_fetch_context.GetSecurityOrigin(), url)) {
+          *worker_fetch_context.GetFetchClientSettingsObject(), url)) {
     return false;
   }
 
@@ -563,7 +580,7 @@ bool MixedContentChecker::IsWebSocketAllowed(
     const WorkerFetchContext& worker_fetch_context,
     const KURL& url) {
   if (!MixedContentChecker::IsMixedContent(
-          worker_fetch_context.GetSecurityOrigin(), url)) {
+          *worker_fetch_context.GetFetchClientSettingsObject(), url)) {
     return true;
   }
 

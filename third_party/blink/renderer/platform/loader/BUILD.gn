@@ -33,6 +33,8 @@ blink_platform_sources("loader") {
     "fetch/fetch_parameters.h",
     "fetch/fetch_utils.cc",
     "fetch/fetch_utils.h",
+    "fetch/https_state.cc",
+    "fetch/https_state.h",
     "fetch/integrity_metadata.cc",
     "fetch/integrity_metadata.h",
     "fetch/memory_cache.cc",

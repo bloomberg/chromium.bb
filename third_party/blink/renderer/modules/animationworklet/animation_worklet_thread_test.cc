@@ -88,8 +88,8 @@ class AnimationWorkletThreadTest : public PageTestBase {
         std::make_unique<GlobalScopeCreationParams>(
             document->Url(), ScriptType::kModule, document->UserAgent(),
             Vector<CSPHeaderAndType>(), document->GetReferrerPolicy(),
-            document->GetSecurityOrigin(), document->IsSecureContext(), clients,
-            document->AddressSpace(),
+            document->GetSecurityOrigin(), document->IsSecureContext(),
+            document->GetHttpsState(), clients, document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
             kV8CacheOptionsDefault, new WorkletModuleResponsesMap),

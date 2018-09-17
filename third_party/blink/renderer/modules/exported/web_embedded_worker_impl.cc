@@ -329,6 +329,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   // (crbug.com/254993)
   const SecurityOrigin* starter_origin = document->GetSecurityOrigin();
   bool starter_secure_context = document->IsSecureContext();
+  const HttpsState starter_https_state = document->GetHttpsState();
 
   WorkerClients* worker_clients = WorkerClients::Create();
   ProvideIndexedDBClientToWorker(worker_clients,
@@ -378,7 +379,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         worker_start_data_.user_agent,
         content_security_policy ? content_security_policy->Headers()
                                 : Vector<CSPHeaderAndType>(),
-        referrer_policy, starter_origin, starter_secure_context, worker_clients,
+        referrer_policy, starter_origin, starter_secure_context,
+        starter_https_state, worker_clients,
         main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
         std::move(worker_settings),
@@ -395,7 +397,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         worker_start_data_.script_url, script_type,
         worker_start_data_.user_agent, Vector<CSPHeaderAndType>(),
         kReferrerPolicyDefault, starter_origin, starter_secure_context,
-        worker_clients, worker_start_data_.address_space,
+        starter_https_state, worker_clients, worker_start_data_.address_space,
         nullptr /* OriginTrialTokens */, devtools_worker_token_,
         std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),

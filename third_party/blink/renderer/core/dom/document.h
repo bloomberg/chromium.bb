@@ -713,6 +713,12 @@ class CORE_EXPORT Document : public ContainerNode,
   String UserAgent() const final;
   void DisableEval(const String& error_message) final;
 
+  // TODO(https://crbug.com/880986): Implement Document's HTTPS state in more
+  // spec-conformant way.
+  HttpsState GetHttpsState() const final {
+    return CalculateHttpsState(GetSecurityOrigin());
+  }
+
   CSSStyleSheet& ElementSheet();
 
   virtual DocumentParser* CreateParser();

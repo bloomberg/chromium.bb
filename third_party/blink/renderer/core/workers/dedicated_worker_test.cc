@@ -134,10 +134,12 @@ class DedicatedWorkerMessagingProxyForTest
         std::make_unique<GlobalScopeCreationParams>(
             script_url, ScriptType::kClassic, "fake user agent", headers,
             kReferrerPolicyDefault, security_origin_.get(),
-            false /* starter_secure_context */, nullptr /* worker_clients */,
-            mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_tokens */,
-            base::UnguessableToken::Create(), std::move(worker_settings),
-            kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */),
+            false /* starter_secure_context */,
+            CalculateHttpsState(security_origin_.get()),
+            nullptr /* worker_clients */, mojom::IPAddressSpace::kLocal,
+            nullptr /* origin_trial_tokens */, base::UnguessableToken::Create(),
+            std::move(worker_settings), kV8CacheOptionsDefault,
+            nullptr /* worklet_module_responses_map */),
         WorkerBackingThreadStartupData(
             WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
             WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow));

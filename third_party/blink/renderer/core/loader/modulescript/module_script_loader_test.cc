@@ -186,7 +186,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       GetDocument().Url(), ScriptType::kModule, GetDocument().UserAgent(),
       Vector<CSPHeaderAndType>(), GetDocument().GetReferrerPolicy(),
       GetDocument().GetSecurityOrigin(), GetDocument().IsSecureContext(),
-      nullptr /* worker_clients */, GetDocument().AddressSpace(),
+      GetDocument().GetHttpsState(), nullptr /* worker_clients */,
+      GetDocument().AddressSpace(),
       OriginTrialContext::GetTokens(&GetDocument()).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, new WorkletModuleResponsesMap);

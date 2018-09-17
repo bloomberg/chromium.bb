@@ -59,7 +59,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
           document->Url(), ScriptType::kModule, document->UserAgent(),
           csp->Headers(), document->GetReferrerPolicy(),
           document->GetSecurityOrigin(), document->IsSecureContext(),
-          worker_clients, document->AddressSpace(),
+          document->GetHttpsState(), worker_clients, document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
           base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(document->GetSettings()),

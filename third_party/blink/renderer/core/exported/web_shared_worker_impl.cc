@@ -344,7 +344,8 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
           content_security_policy ? content_security_policy->Headers()
                                   : Vector<CSPHeaderAndType>(),
           referrer_policy, starter_origin, starter_secure_context,
-          worker_clients, main_script_loader_->ResponseAddressSpace(),
+          document->GetHttpsState(), worker_clients,
+          main_script_loader_->ResponseAddressSpace(),
           main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
           std::move(worker_settings), kV8CacheOptionsDefault,
           nullptr /* worklet_module_response_map */,
