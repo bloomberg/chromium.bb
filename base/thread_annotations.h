@@ -29,10 +29,14 @@
 // you want to refer to is not in scope, you may use a member pointer
 // (e.g. &MyClass::mutex_) to refer to a mutex in some (unknown) object.
 
-#ifndef THREAD_ANNOTATIONS_H_
-#define THREAD_ANNOTATIONS_H_
+#ifndef BASE_THREAD_ANNOTATIONS_H_
+#define BASE_THREAD_ANNOTATIONS_H_
 
-#if defined(__clang__)
+#include "build/build_config.h"
+
+// TODO(lukasza): https://crbug.com/881875#c9: Enable lock annotations on Mac
+// after the clang bug is fixed: https://bugs.llvm.org/show_bug.cgi?id=38896
+#if defined(__clang__) && !defined(OS_MACOSX)
 #define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
 #else
 #define THREAD_ANNOTATION_ATTRIBUTE__(x)  // no-op
@@ -235,4 +239,4 @@ inline T& ts_unchecked_read(T& v) NO_THREAD_SAFETY_ANALYSIS {
 
 }  // namespace thread_safety_analysis
 
-#endif  // _BASE_THREAD_ANNOTATIONS_H_
+#endif  // BASE_THREAD_ANNOTATIONS_H_

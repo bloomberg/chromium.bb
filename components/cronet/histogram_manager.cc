@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/thread_annotations.h"
 #include "components/metrics/histogram_encoder.h"
 
 namespace cronet {
@@ -35,7 +36,10 @@ void HistogramManager::RecordDelta(const base::HistogramBase& histogram,
   EncodeHistogramDelta(histogram.histogram_name(), snapshot, &uma_proto_);
 }
 
-bool HistogramManager::GetDeltas(std::vector<uint8_t>* data) {
+// TODO(lukasza): https://crbug.com/881903: NO_THREAD_SAFETY_ANALYSIS below can
+// be removed once base::Lock::Try is annotated with EXCLUSIVE_TRYLOCK_FUNCTION.
+bool HistogramManager::GetDeltas(std::vector<uint8_t>* data)
+    NO_THREAD_SAFETY_ANALYSIS {
   if (get_deltas_lock_.Try()) {
     base::AutoLock lock(get_deltas_lock_, base::AutoLock::AlreadyAcquired());
     // Clear the protobuf between calls.

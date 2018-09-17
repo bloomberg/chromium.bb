@@ -1107,6 +1107,12 @@ auto IsolatedOriginEntry(const url::Origin& origin1,
 
 }  // namespace
 
+#define LOCKED_EXPECT_THAT(lock, value, matcher) \
+  do {                                           \
+    base::AutoLock auto_lock(lock);              \
+    EXPECT_THAT(value, matcher);                 \
+  } while (0);
+
 // Verifies ChildProcessSecurityPolicyImpl::AddIsolatedOrigins method.
 TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
   url::Origin foo = url::Origin::Create(GURL("https://foo.com/"));
@@ -1121,36 +1127,36 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Initially there should be no isolated origins.
-  EXPECT_THAT(p->isolated_origins_, testing::IsEmpty());
+  LOCKED_EXPECT_THAT(p->lock_, p->isolated_origins_, testing::IsEmpty());
 
   // Verify deduplication of the argument.
   p->AddIsolatedOrigins({foo, bar, bar});
-  EXPECT_THAT(p->isolated_origins_,
-              testing::UnorderedElementsAre(IsolatedOriginEntry(foo),
-                                            IsolatedOriginEntry(bar)));
+  LOCKED_EXPECT_THAT(p->lock_, p->isolated_origins_,
+                     testing::UnorderedElementsAre(IsolatedOriginEntry(foo),
+                                                   IsolatedOriginEntry(bar)));
 
   // Verify that the old set is extended (not replaced).
   p->AddIsolatedOrigins({baz});
-  EXPECT_THAT(p->isolated_origins_,
-              testing::UnorderedElementsAre(IsolatedOriginEntry(foo),
-                                            IsolatedOriginEntry(bar),
-                                            IsolatedOriginEntry(baz)));
+  LOCKED_EXPECT_THAT(p->lock_, p->isolated_origins_,
+                     testing::UnorderedElementsAre(IsolatedOriginEntry(foo),
+                                                   IsolatedOriginEntry(bar),
+                                                   IsolatedOriginEntry(baz)));
 
   // Verify deduplication against the old set.
   p->AddIsolatedOrigins({foo});
-  EXPECT_THAT(p->isolated_origins_,
-              testing::UnorderedElementsAre(IsolatedOriginEntry(foo),
-                                            IsolatedOriginEntry(bar),
-                                            IsolatedOriginEntry(baz)));
+  LOCKED_EXPECT_THAT(p->lock_, p->isolated_origins_,
+                     testing::UnorderedElementsAre(IsolatedOriginEntry(foo),
+                                                   IsolatedOriginEntry(bar),
+                                                   IsolatedOriginEntry(baz)));
 
   // Verify deduplication considers scheme and port differences.  Note that
   // origins that differ only in ports map to the same key.
   p->AddIsolatedOrigins({baz, baz_http_8000, baz_https_8000});
-  EXPECT_THAT(p->isolated_origins_,
-              testing::UnorderedElementsAre(
-                  IsolatedOriginEntry(foo), IsolatedOriginEntry(bar),
-                  IsolatedOriginEntry(baz, baz_https_8000),
-                  IsolatedOriginEntry(baz_http_8000)));
+  LOCKED_EXPECT_THAT(p->lock_, p->isolated_origins_,
+                     testing::UnorderedElementsAre(
+                         IsolatedOriginEntry(foo), IsolatedOriginEntry(bar),
+                         IsolatedOriginEntry(baz, baz_https_8000),
+                         IsolatedOriginEntry(baz_http_8000)));
 
   // Verify that adding an origin that is invalid for isolation will 1) log a
   // warning and 2) won't CHECK or crash the browser process, 3) will not add
@@ -1167,11 +1173,12 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
 
     mock_log.StartCapturingLogs();
     p->AddIsolatedOrigins({quxfoo, invalid_etld});
-    EXPECT_THAT(p->isolated_origins_,
-                testing::UnorderedElementsAre(
-                    IsolatedOriginEntry(foo, quxfoo), IsolatedOriginEntry(bar),
-                    IsolatedOriginEntry(baz, baz_https_8000),
-                    IsolatedOriginEntry(baz_http_8000)));
+    LOCKED_EXPECT_THAT(
+        p->lock_, p->isolated_origins_,
+        testing::UnorderedElementsAre(IsolatedOriginEntry(foo, quxfoo),
+                                      IsolatedOriginEntry(bar),
+                                      IsolatedOriginEntry(baz, baz_https_8000),
+                                      IsolatedOriginEntry(baz_http_8000)));
   }
 }
 

@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/template_util.h"
+#include "base/thread_annotations.h"
 
 namespace base {
 
@@ -277,7 +278,9 @@ class OptionalBase {
       storage_.Init(std::forward<U>(value));
   }
 
-  void FreeIfNeeded() {
+  // TODO(lukasza): Figure out how to remove the NO_THREAD_SAFETY_ANALYSIS
+  // annotation below.  See https://crbug.com/881875#c1 for details.
+  void FreeIfNeeded() NO_THREAD_SAFETY_ANALYSIS {
     if (!storage_.is_populated_)
       return;
     storage_.value_.~T();
