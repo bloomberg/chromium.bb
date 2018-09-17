@@ -45,148 +45,56 @@ gfx::Transform HmdMatrix34ToTransform(const vr::HmdMatrix34_t& mat) {
 
 }  // namespace
 
-OpenVRRenderLoop::OpenVRRenderLoop()
-    : base::Thread("OpenVRRenderLoop"),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      presentation_binding_(this),
-      frame_data_binding_(this),
-      gamepad_provider_(this),
-      weak_ptr_factory_(this) {
-  DCHECK(main_thread_task_runner_);
-}
+OpenVRRenderLoop::OpenVRRenderLoop() : XRCompositorCommon() {}
 
 OpenVRRenderLoop::~OpenVRRenderLoop() {
   Stop();
 }
 
-void OpenVRRenderLoop::ClearPendingFrame() {
-  has_outstanding_frame_ = false;
-  if (delayed_get_frame_data_callback_) {
-    base::ResetAndReturn(&delayed_get_frame_data_callback_).Run();
-  }
+bool OpenVRRenderLoop::PreComposite() {
+  texture_helper_.AllocateBackBuffer();
+  return true;
 }
 
-void OpenVRRenderLoop::SubmitFrameMissing(int16_t frame_index,
-                                          const gpu::SyncToken& sync_token) {
-  // Nothing to do. It's OK to start the next frame even if the current
-  // one didn't get sent to OpenVR.
-  ClearPendingFrame();
-}
-
-void OpenVRRenderLoop::SubmitFrame(int16_t frame_index,
-                                   const gpu::MailboxHolder& mailbox,
-                                   base::TimeDelta time_waited) {
-  NOTREACHED();
-}
-
-void OpenVRRenderLoop::SubmitFrameDrawnIntoTexture(
-    int16_t frame_index,
-    const gpu::SyncToken& sync_token,
-    base::TimeDelta time_waited) {
-  // Not currently implemented for Windows.
-  NOTREACHED();
-}
-
-void OpenVRRenderLoop::SubmitFrameWithTextureHandle(
-    int16_t frame_index,
-    mojo::ScopedHandle texture_handle) {
+bool OpenVRRenderLoop::SubmitCompositedFrame() {
   DCHECK(openvr_);
   vr::IVRCompositor* vr_compositor = openvr_->GetCompositor();
   DCHECK(vr_compositor);
+  if (!vr_compositor)
+    return false;
 
-  TRACE_EVENT1("gpu", "SubmitFrameWithTextureHandle", "frameIndex",
-               frame_index);
-#if defined(OS_WIN)
-  MojoPlatformHandle platform_handle;
-  platform_handle.struct_size = sizeof(platform_handle);
-  MojoResult result = MojoUnwrapPlatformHandle(texture_handle.release().value(),
-                                               nullptr, &platform_handle);
-  if (result != MOJO_RESULT_OK) {
-    ClearPendingFrame();
-    return;
+  vr::Texture_t texture;
+  texture.handle = texture_helper_.GetBackbuffer().Get();
+  texture.eType = vr::TextureType_DirectX;
+  texture.eColorSpace = vr::ColorSpace_Auto;
+
+  vr::VRTextureBounds_t bounds[2];
+  bounds[0] = {left_bounds_.x(), left_bounds_.y(),
+               left_bounds_.width() + left_bounds_.x(),
+               left_bounds_.height() + left_bounds_.y()};
+  bounds[1] = {right_bounds_.x(), right_bounds_.y(),
+               right_bounds_.width() + right_bounds_.x(),
+               right_bounds_.height() + right_bounds_.y()};
+
+  vr::EVRCompositorError error =
+      vr_compositor->Submit(vr::EVREye::Eye_Left, &texture, &bounds[0]);
+  if (error != vr::VRCompositorError_None) {
+    return false;
   }
-
-  texture_helper_.SetSourceTexture(
-      base::win::ScopedHandle(reinterpret_cast<HANDLE>(platform_handle.value)));
-  texture_helper_.AllocateBackBuffer();
-  bool copy_successful = texture_helper_.CopyTextureToBackBuffer(true);
-  if (copy_successful) {
-    vr::Texture_t texture;
-    texture.handle = texture_helper_.GetBackbuffer().Get();
-    texture.eType = vr::TextureType_DirectX;
-    texture.eColorSpace = vr::ColorSpace_Auto;
-
-    vr::VRTextureBounds_t bounds[2];
-    bounds[0] = {left_bounds_.x(), left_bounds_.y(),
-                 left_bounds_.width() + left_bounds_.x(),
-                 left_bounds_.height() + left_bounds_.y()};
-    bounds[1] = {right_bounds_.x(), right_bounds_.y(),
-                 right_bounds_.width() + right_bounds_.x(),
-                 right_bounds_.height() + right_bounds_.y()};
-
-    vr::EVRCompositorError error =
-        vr_compositor->Submit(vr::EVREye::Eye_Left, &texture, &bounds[0]);
-    if (error != vr::VRCompositorError_None) {
-      ExitPresent();
-      return;
-    }
-    error = vr_compositor->Submit(vr::EVREye::Eye_Right, &texture, &bounds[1]);
-    if (error != vr::VRCompositorError_None) {
-      ExitPresent();
-      return;
-    }
-    vr_compositor->PostPresentHandoff();
+  error = vr_compositor->Submit(vr::EVREye::Eye_Right, &texture, &bounds[1]);
+  if (error != vr::VRCompositorError_None) {
+    return false;
   }
-
-  // Tell WebVR that we are done with the texture.
-  submit_client_->OnSubmitFrameTransferred(copy_successful);
-  submit_client_->OnSubmitFrameRendered();
-#endif
-
-  ClearPendingFrame();
+  vr_compositor->PostPresentHandoff();
+  return true;
 }
 
-void OpenVRRenderLoop::CleanUp() {
-  submit_client_ = nullptr;
-  presentation_binding_.Close();
-  frame_data_binding_.Close();
-  gamepad_provider_.Close();
-}
-
-void OpenVRRenderLoop::RequestGamepadProvider(
-    mojom::IsolatedXRGamepadProviderRequest request) {
-  gamepad_provider_.Close();
-  gamepad_provider_.Bind(std::move(request));
-}
-
-void OpenVRRenderLoop::UpdateLayerBounds(int16_t frame_id,
-                                         const gfx::RectF& left_bounds,
-                                         const gfx::RectF& right_bounds,
-                                         const gfx::Size& source_size) {
-  // Bounds are updated instantly, rather than waiting for frame_id.  This works
-  // since blink always passes the current frame_id when updating the bounds.
-  // Ignoring the frame_id keeps the logic simpler, so this can more easily
-  // merge with vr_shell_gl eventually.
-  left_bounds_ = left_bounds;
-  right_bounds_ = right_bounds;
-  source_size_ = source_size;
-};
-
-void OpenVRRenderLoop::RequestSession(
-    base::OnceCallback<void()> on_presentation_ended,
-    mojom::XRRuntimeSessionOptionsPtr options,
-    RequestSessionCallback callback) {
-  DCHECK(options->immersive);
-  presentation_binding_.Close();
-  frame_data_binding_.Close();
-
+bool OpenVRRenderLoop::StartRuntime() {
   if (!openvr_) {
     openvr_ = std::make_unique<OpenVRWrapper>(true);
     if (!openvr_->IsInitialized()) {
       openvr_ = nullptr;
-      main_thread_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
-      return;
+      return false;
     }
 
     openvr_->GetCompositor()->SuspendRendering(true);
@@ -200,27 +108,20 @@ void OpenVRRenderLoop::RequestSession(
   if (!texture_helper_.SetAdapterIndex(adapter_index) ||
       !texture_helper_.EnsureInitialized()) {
     openvr_ = nullptr;
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
-    return;
+    return false;
   }
 #endif
-  DCHECK(!on_presentation_ended_);
-  on_presentation_ended_ = std::move(on_presentation_ended);
 
-  device::mojom::XRPresentationProviderPtr presentation_provider;
-  device::mojom::XRFrameDataProviderPtr frame_data_provider;
-  presentation_binding_.Bind(mojo::MakeRequest(&presentation_provider));
-  frame_data_binding_.Bind(mojo::MakeRequest(&frame_data_provider));
+  return true;
+}
 
-  device::mojom::XRPresentationTransportOptionsPtr transport_options =
-      device::mojom::XRPresentationTransportOptions::New();
-  transport_options->transport_method =
-      device::mojom::XRPresentationTransportMethod::SUBMIT_AS_TEXTURE_HANDLE;
-  // Only set boolean options that we need. Default is false, and we should be
-  // able to safely ignore ones that our implementation doesn't care about.
-  transport_options->wait_for_transfer_notification = true;
+void OpenVRRenderLoop::StopRuntime() {
+  if (openvr_)
+    openvr_->GetCompositor()->SuspendRendering(true);
+  openvr_ = nullptr;
+}
 
+void OpenVRRenderLoop::OnSessionStart() {
   // Reset the active states for all the controllers.
   for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) {
     InputActiveState& input_active_state = input_active_states_[i];
@@ -230,18 +131,6 @@ void OpenVRRenderLoop::RequestSession(
     input_active_state.controller_role = vr::TrackedControllerRole_Invalid;
   }
 
-  auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
-  submit_frame_sink->provider = presentation_provider.PassInterface();
-  submit_frame_sink->client_request = mojo::MakeRequest(&submit_client_);
-  submit_frame_sink->transport_options = std::move(transport_options);
-
-  auto session = device::mojom::XRSession::New();
-  session->data_provider = frame_data_provider.PassInterface();
-  session->submit_frame_sink = std::move(submit_frame_sink);
-
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true, std::move(session)));
-  is_presenting_ = true;
   openvr_->GetCompositor()->SuspendRendering(false);
 
   // Measure the VrViewerType we are presenting with.
@@ -261,51 +150,11 @@ void OpenVRRenderLoop::RequestSession(
   base::UmaHistogramSparse("VRViewerType", static_cast<int>(type));
 }
 
-void OpenVRRenderLoop::ExitPresent() {
-  is_presenting_ = false;
-  presentation_binding_.Close();
-  frame_data_binding_.Close();
-  submit_client_ = nullptr;
-  if (openvr_)
-    openvr_->GetCompositor()->SuspendRendering(true);
-  openvr_ = nullptr;
-
-  has_outstanding_frame_ = false;
-  delayed_get_frame_data_callback_.Reset();
-
-  // Push out one more controller update so we don't have stale controllers.
-  UpdateControllerState();
-
-  if (on_presentation_ended_) {
-    main_thread_task_runner_->PostTask(FROM_HERE,
-                                       std::move(on_presentation_ended_));
-  }
-}
-
-void OpenVRRenderLoop::UpdateControllerState() {
-  if (!gamepad_callback_) {
-    // Nobody is listening to updates, so bail early.
-    return;
-  }
-
+mojom::XRGamepadDataPtr OpenVRRenderLoop::GetNextGamepadData() {
   if (!openvr_) {
-    std::move(gamepad_callback_).Run(nullptr);
-    return;
+    return nullptr;
   }
-
-  std::move(gamepad_callback_)
-      .Run(OpenVRGamepadHelper::GetGamepadData(openvr_->GetSystem()));
-}
-
-void OpenVRRenderLoop::RequestUpdate(
-    mojom::IsolatedXRGamepadProvider::RequestUpdateCallback callback) {
-  // Save the callback to resolve next time we update (typically on vsync).
-  gamepad_callback_ = std::move(callback);
-
-  // If we aren't presenting, reply now saying that we have no controllers.
-  if (!is_presenting_) {
-    UpdateControllerState();
-  }
+  return OpenVRGamepadHelper::GetGamepadData(openvr_->GetSystem());
 }
 
 mojom::VRPosePtr OpenVRRenderLoop::GetPose() {
@@ -326,34 +175,9 @@ mojom::VRPosePtr OpenVRRenderLoop::GetPose() {
   return pose;
 }
 
-void OpenVRRenderLoop::Init() {
-}
-
-base::WeakPtr<OpenVRRenderLoop> OpenVRRenderLoop::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
-void OpenVRRenderLoop::GetFrameData(
-    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  DCHECK(is_presenting_);
-
-  if (has_outstanding_frame_) {
-    DCHECK(!delayed_get_frame_data_callback_);
-    delayed_get_frame_data_callback_ =
-        base::BindOnce(&OpenVRRenderLoop::GetFrameData, base::Unretained(this),
-                       std::move(callback));
-    return;
-  }
-
-  has_outstanding_frame_ = true;
-
+mojom::XRFrameDataPtr OpenVRRenderLoop::GetNextFrameData() {
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
-
   frame_data->frame_id = next_frame_id_;
-  next_frame_id_ += 1;
-  if (next_frame_id_ < 0) {
-    next_frame_id_ = 0;
-  }
 
   if (openvr_) {
     frame_data->pose = GetPose();
@@ -366,23 +190,7 @@ void OpenVRRenderLoop::GetFrameData(
     }
   }
 
-  // Yield here to let the event queue process pending mojo messages,
-  // specifically the next gamepad callback request that's likely to
-  // have been sent during WaitGetPoses.
-  task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&OpenVRRenderLoop::GetControllerDataAndSendFrameData,
-                     base::Unretained(this), std::move(callback),
-                     std::move(frame_data)));
-}
-
-void OpenVRRenderLoop::GetControllerDataAndSendFrameData(
-    XRFrameDataProvider::GetFrameDataCallback callback,
-    mojom::XRFrameDataPtr frame_data) {
-  // Update gamepad controllers.
-  UpdateControllerState();
-
-  std::move(callback).Run(std::move(frame_data));
+  return frame_data;
 }
 
 std::vector<mojom::XRInputSourceStatePtr> OpenVRRenderLoop::GetInputState(
