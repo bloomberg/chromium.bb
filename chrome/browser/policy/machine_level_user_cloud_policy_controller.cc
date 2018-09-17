@@ -59,6 +59,14 @@ bool IsMachineLevelUserCloudPolicyEnabled() {
 #endif
 }
 
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+void CleanupUnusedPolicyDirectory() {
+  std::string enrollment_token =
+      BrowserDMTokenStorage::Get()->RetrieveEnrollmentToken();
+  if (enrollment_token.empty())
+    BrowserDMTokenStorage::Get()->ScheduleUnusedPolicyDirectoryDeletion();
+}
+#endif
 }  // namespace
 
 const base::FilePath::CharType
@@ -109,6 +117,16 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager() {
 void MachineLevelUserCloudPolicyController::Init(
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  // This is a function that removes the directory we accidentally create due to
+  // crbug.com/880870. The directory is only removed when it's empty and
+  // enrollment token doesn't exist. This function is expected to be removed
+  // after few milestones.
+  // Also, this function is put before policy enable check on purpose so it
+  // could cover all users.
+  CleanupUnusedPolicyDirectory();
+#endif
+
   if (!IsMachineLevelUserCloudPolicyEnabled())
     return;
 

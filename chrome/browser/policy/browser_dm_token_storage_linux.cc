@@ -143,6 +143,25 @@ void BrowserDMTokenStorageLinux::SaveDMToken(const std::string& token) {
                      weak_factory_.GetWeakPtr()));
 }
 
+void BrowserDMTokenStorageLinux::DeletePolicyDirectory() {
+  base::FilePath token_file_path;
+  std::string dummy_id = "id";
+  if (!GetDmTokenFilePath(&token_file_path, dummy_id, /* create_dir = */ false))
+    return;
+
+  base::FilePath token_dir_path = token_file_path.DirName();
+  if (base::DirectoryExists(token_dir_path) &&
+      base::IsDirectoryEmpty(token_dir_path)) {
+    base::DeleteFile(token_dir_path, /* recursive = */ false);
+  }
+
+  base::FilePath policy_dir_path = token_dir_path.DirName();
+  if (base::DirectoryExists(policy_dir_path) &&
+      base::IsDirectoryEmpty(policy_dir_path)) {
+    base::DeleteFile(policy_dir_path, /* recursive = */ false);
+  }
+}
+
 std::string BrowserDMTokenStorageLinux::ReadMachineIdFile() {
   std::string machine_id;
   if (!base::ReadFileToString(base::FilePath(kMachineIdFilename), &machine_id))

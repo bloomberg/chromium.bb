@@ -176,4 +176,113 @@ TEST_F(BrowserDMTokenStorageLinuxTest, SaveDMToken) {
   EXPECT_EQ(kDMToken, dm_token);
 }
 
+class BrowserDMTokenStorageLinuxCleanupTest : public testing::Test {
+ protected:
+  BrowserDMTokenStorageLinuxCleanupTest() = default;
+  ~BrowserDMTokenStorageLinuxCleanupTest() override = default;
+
+  void SetUp() override {
+    ASSERT_TRUE(fake_user_data_dir_.CreateUniqueTempDir());
+    path_override_.reset(new base::ScopedPathOverride(
+        chrome::DIR_USER_DATA, fake_user_data_dir_.GetPath()));
+    policy_dir_path_ = fake_user_data_dir_.GetPath().Append("Policy");
+    token_dir_path_ = policy_dir_path_.Append("Enrollment");
+  }
+
+  base::ScopedTempDir fake_user_data_dir_;
+  base::FilePath policy_dir_path_;
+  base::FilePath token_dir_path_;
+  BrowserDMTokenStorageLinux storage_;
+  std::unique_ptr<base::ScopedPathOverride> path_override_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserDMTokenStorageLinuxCleanupTest);
+};
+
+TEST_F(BrowserDMTokenStorageLinuxCleanupTest, Success) {
+  ASSERT_TRUE(base::CreateDirectory(token_dir_path_));
+
+  ASSERT_TRUE(base::DirectoryExists(policy_dir_path_));
+  ASSERT_TRUE(base::DirectoryExists(token_dir_path_));
+  storage_.DeletePolicyDirectory();
+
+  EXPECT_FALSE(base::PathExists(policy_dir_path_));
+  EXPECT_FALSE(base::PathExists(token_dir_path_));
+}
+
+TEST_F(BrowserDMTokenStorageLinuxCleanupTest, TokenDirNotEmpty) {
+  ASSERT_TRUE(base::CreateDirectory(token_dir_path_));
+
+  ASSERT_TRUE(base::DirectoryExists(policy_dir_path_));
+  ASSERT_TRUE(base::DirectoryExists(token_dir_path_));
+
+  base::FilePath tmp_file;
+  CreateTemporaryFileInDir(token_dir_path_, &tmp_file);
+
+  storage_.DeletePolicyDirectory();
+
+  EXPECT_TRUE(base::DirectoryExists(policy_dir_path_));
+  EXPECT_TRUE(base::DirectoryExists(token_dir_path_));
+}
+
+TEST_F(BrowserDMTokenStorageLinuxCleanupTest, TokenDirNotExist) {
+  ASSERT_TRUE(base::CreateDirectory(policy_dir_path_));
+
+  ASSERT_TRUE(base::DirectoryExists(policy_dir_path_));
+  ASSERT_FALSE(base::DirectoryExists(token_dir_path_));
+
+  storage_.DeletePolicyDirectory();
+
+  EXPECT_FALSE(base::PathExists(policy_dir_path_));
+  EXPECT_FALSE(base::PathExists(token_dir_path_));
+}
+
+TEST_F(BrowserDMTokenStorageLinuxCleanupTest, TokenDirIsNotDir) {
+  ASSERT_TRUE(base::CreateDirectory(policy_dir_path_));
+
+  ASSERT_TRUE(base::DirectoryExists(policy_dir_path_));
+  ASSERT_FALSE(base::DirectoryExists(token_dir_path_));
+
+  ASSERT_TRUE(base::CloseFile(base::OpenFile(token_dir_path_, "w")));
+
+  storage_.DeletePolicyDirectory();
+
+  EXPECT_TRUE(base::DirectoryExists(policy_dir_path_));
+  EXPECT_TRUE(base::PathExists(token_dir_path_));
+}
+
+TEST_F(BrowserDMTokenStorageLinuxCleanupTest, PolicyDirIsNotExist) {
+  ASSERT_FALSE(base::DirectoryExists(policy_dir_path_));
+  ASSERT_FALSE(base::DirectoryExists(token_dir_path_));
+
+  storage_.DeletePolicyDirectory();
+
+  EXPECT_FALSE(base::PathExists(policy_dir_path_));
+  EXPECT_FALSE(base::PathExists(token_dir_path_));
+}
+
+TEST_F(BrowserDMTokenStorageLinuxCleanupTest, PolicyDirIsNotEmpty) {
+  ASSERT_TRUE(base::CreateDirectory(token_dir_path_));
+
+  ASSERT_TRUE(base::DirectoryExists(policy_dir_path_));
+  ASSERT_TRUE(base::DirectoryExists(token_dir_path_));
+
+  base::FilePath tmp_file;
+  CreateTemporaryFileInDir(policy_dir_path_, &tmp_file);
+
+  storage_.DeletePolicyDirectory();
+
+  EXPECT_TRUE(base::DirectoryExists(policy_dir_path_));
+  EXPECT_FALSE(base::PathExists(token_dir_path_));
+}
+
+TEST_F(BrowserDMTokenStorageLinuxCleanupTest, PolicyDirIsNotDir) {
+  ASSERT_TRUE(base::CloseFile(base::OpenFile(policy_dir_path_, "w")));
+
+  storage_.DeletePolicyDirectory();
+
+  EXPECT_TRUE(base::PathExists(policy_dir_path_));
+  EXPECT_FALSE(base::PathExists(token_dir_path_));
+}
+
 }  // namespace policy
