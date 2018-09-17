@@ -142,6 +142,22 @@ message MatchedScheduledTask {
   optional ScheduledTask scheduled_task = 1;
 }
 
+// Next tag: 5
+message MatchedExtension {
+  // The extension ID that the extension was installed with.
+  optional string extension_id = 1;
+
+  // The way the extension was installed
+  optional ExtensionInstallMethod install_method = 2;
+
+  // The permissions the extension was installed based on the permissions field
+  // from the extension's manifest.json.
+  repeated string manifest_permissions = 3;
+
+  // The files associated with an extension that should be deleted or reported.
+  repeated MatchedFile files = 4;
+}
+
 // Information about a registry value.
 // Next tag: 5.
 message RegistryValue {
@@ -152,7 +168,7 @@ message RegistryValue {
 }
 
 // All the information found by the app about an UwS during a run.
-// Next tag: 11.
+// Next tag: 12.
 message UwS {
   optional uint32 id = 6;
   optional string name = 1;
@@ -164,6 +180,8 @@ message UwS {
   repeated MatchedRegistryEntry registry_entries = 3;
 
   repeated MatchedScheduledTask scheduled_tasks = 4;
+
+  repeated MatchedExtension matched_extension = 11;
 
   // If you are adding new matched footprint type, please update conditions of
   // "forced detection" in scanner/scanner.cc:ScanThisPUP and update
