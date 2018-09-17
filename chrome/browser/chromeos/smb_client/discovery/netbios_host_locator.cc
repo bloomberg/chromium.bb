@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/smb_client/smb_constants.h"
 #include "net/base/ip_endpoint.h"
@@ -13,6 +14,15 @@
 
 namespace chromeos {
 namespace smb_client {
+namespace {
+
+bool IsMLan(const net::NetworkInterface& interface) {
+  return interface.type == net::NetworkChangeNotifier::CONNECTION_UNKNOWN &&
+         base::StartsWith(interface.name, "mlan",
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
+}  // namespace
 
 net::IPAddress CalculateBroadcastAddress(
     const net::NetworkInterface& interface) {
@@ -30,10 +40,13 @@ net::IPAddress CalculateBroadcastAddress(
   return broadcast_address;
 }
 
+// TODO(baileyberro): Some devices' wifi interface has CONNECTION_UNKNOWN as
+// type rather than CONNECTION_WIFI. https://crbug.com/872665
 bool ShouldUseInterface(const net::NetworkInterface& interface) {
   return interface.address.IsIPv4() &&
          (interface.type == net::NetworkChangeNotifier::CONNECTION_ETHERNET ||
-          interface.type == net::NetworkChangeNotifier::CONNECTION_WIFI);
+          interface.type == net::NetworkChangeNotifier::CONNECTION_WIFI ||
+          IsMLan(interface));
 }
 
 NetBiosHostLocator::NetBiosHostLocator(GetInterfacesFunction get_interfaces,
