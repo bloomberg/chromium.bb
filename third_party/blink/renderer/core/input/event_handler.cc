@@ -1325,6 +1325,19 @@ WebInputEventResult EventHandler::HandleWheelEvent(
   return mouse_wheel_event_manager_->HandleWheelEvent(event);
 }
 
+// TODO(crbug.com/665924): This function bypasses all Handle*Event path.
+// It should be using that flow instead of creating/sending events directly.
+WebInputEventResult EventHandler::HandleTargetedMouseEvent(
+    Node* target,
+    const WebMouseEvent& event,
+    const AtomicString& mouse_event_type,
+    const Vector<WebMouseEvent>& coalesced_events,
+    const String& canvas_region_id) {
+  mouse_event_manager_->SetClickCount(event.click_count);
+  return pointer_event_manager_->DirectDispatchMousePointerEvent(
+      target, event, mouse_event_type, coalesced_events, canvas_region_id);
+}
+
 WebInputEventResult EventHandler::HandleGestureEvent(
     const WebGestureEvent& gesture_event) {
   // Propagation to inner frames is handled below this function.

@@ -1762,55 +1762,69 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     return WebInputEventResult::kHandledSystem;
 
   if (mouse_capture_node_ &&
-      WebInputEvent::IsMouseEventType(input_event.GetType())) {
-    TRACE_EVENT1("input", "captured mouse event", "type",
-                 input_event.GetType());
-    // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
-    Node* node = mouse_capture_node_;
+      WebInputEvent::IsMouseEventType(input_event.GetType()))
+    return HandleCapturedMouseEvent(coalesced_event);
 
-    // Not all platforms call mouseCaptureLost() directly.
-    if (input_event.GetType() == WebInputEvent::kMouseUp)
-      MouseCaptureLost();
-
-    std::unique_ptr<UserGestureIndicator> gesture_indicator;
-
-    AtomicString event_type;
-    switch (input_event.GetType()) {
-      case WebInputEvent::kMouseEnter:
-        event_type = EventTypeNames::mouseover;
-        break;
-      case WebInputEvent::kMouseMove:
-        event_type = EventTypeNames::mousemove;
-        break;
-      case WebInputEvent::kMouseLeave:
-        event_type = EventTypeNames::mouseout;
-        break;
-      case WebInputEvent::kMouseDown:
-        event_type = EventTypeNames::mousedown;
-        gesture_indicator = Frame::NotifyUserActivation(
-            node->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
-        mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
-        break;
-      case WebInputEvent::kMouseUp:
-        event_type = EventTypeNames::mouseup;
-        gesture_indicator = std::make_unique<UserGestureIndicator>(
-            std::move(mouse_capture_gesture_token_));
-        break;
-      default:
-        NOTREACHED();
-    }
-
-    WebMouseEvent transformed_event =
-        TransformWebMouseEvent(MainFrameImpl()->GetFrameView(),
-                               static_cast<const WebMouseEvent&>(input_event));
-    node->DispatchMouseEvent(transformed_event, event_type,
-                             transformed_event.click_count);
-    return WebInputEventResult::kHandledSystem;
-  }
-
-  // FIXME: This should take in the intended frame, not the local frame root.
+  // FIXME: This should take in the intended frame, not the local frame
+  // root.
   return PageWidgetDelegate::HandleInputEvent(*this, coalesced_event,
                                               MainFrameImpl()->GetFrame());
+}
+
+WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
+    const WebCoalescedInputEvent& coalesced_event) {
+  const WebInputEvent& input_event = coalesced_event.Event();
+  TRACE_EVENT1("input", "captured mouse event", "type", input_event.GetType());
+  // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
+  Node* node = mouse_capture_node_;
+
+  // Not all platforms call mouseCaptureLost() directly.
+  if (input_event.GetType() == WebInputEvent::kMouseUp)
+    MouseCaptureLost();
+
+  std::unique_ptr<UserGestureIndicator> gesture_indicator;
+
+  AtomicString event_type;
+  switch (input_event.GetType()) {
+    case WebInputEvent::kMouseEnter:
+      event_type = EventTypeNames::mouseover;
+      break;
+    case WebInputEvent::kMouseMove:
+      event_type = EventTypeNames::mousemove;
+      break;
+    case WebInputEvent::kPointerRawMove:
+      // There will be no mouse event for raw move events.
+      event_type = EventTypeNames::pointerrawmove;
+      break;
+    case WebInputEvent::kMouseLeave:
+      event_type = EventTypeNames::mouseout;
+      break;
+    case WebInputEvent::kMouseDown:
+      event_type = EventTypeNames::mousedown;
+      gesture_indicator = Frame::NotifyUserActivation(
+          node->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
+      mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
+      break;
+    case WebInputEvent::kMouseUp:
+      event_type = EventTypeNames::mouseup;
+      gesture_indicator = std::make_unique<UserGestureIndicator>(
+          std::move(mouse_capture_gesture_token_));
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  WebMouseEvent transformed_event =
+      TransformWebMouseEvent(MainFrameImpl()->GetFrameView(),
+                             static_cast<const WebMouseEvent&>(input_event));
+  if (LocalFrame* frame = node->GetDocument().GetFrame()) {
+    frame->GetEventHandler().HandleTargetedMouseEvent(
+        node, transformed_event, event_type,
+        TransformWebMouseEventVector(
+            MainFrameImpl()->GetFrameView(),
+            coalesced_event.GetCoalescedEventsPointers()));
+  }
+  return WebInputEventResult::kHandledSystem;
 }
 
 void WebViewImpl::SetCursorVisibilityState(bool is_visible) {

@@ -523,6 +523,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
 
+  WebInputEventResult HandleCapturedMouseEvent(const WebCoalescedInputEvent&);
+
   void EnablePopupMouseWheelEventListener(WebLocalFrameImpl* local_root);
   void DisablePopupMouseWheelEventListener();
 
