@@ -909,18 +909,23 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 
   if (policy == kNavigationPolicyIgnore)
     return;
-  DCHECK(policy == kNavigationPolicyCurrentTab ||
-         policy == kNavigationPolicyHandledByClient ||
-         policy == kNavigationPolicyHandledByClientForInitialHistory);
-
-  bool cancel_scheduled_navigations = policy != kNavigationPolicyCurrentTab;
-  if (!CancelProvisionalLoaderForNewNavigation(cancel_scheduled_navigations))
-    return;
 
   // TODO(japhet): This case wants to flag the frame as loading and do nothing
   // else. It'd be nice if it could go through the placeholder DocumentLoader
   // path, too.
-  if (policy == kNavigationPolicyHandledByClientForInitialHistory)
+  if (policy == kNavigationPolicyHandledByClientForInitialHistory) {
+    DCHECK(!provisional_document_loader_);
+    DCHECK(frame_->GetDocument()->IsLoadCompleted());
+    DCHECK(frame_->GetDocument()->HasFinishedParsing());
+    progress_tracker_->ProgressStarted();
+    return;
+  }
+
+  DCHECK(policy == kNavigationPolicyCurrentTab ||
+         policy == kNavigationPolicyHandledByClient);
+
+  bool cancel_scheduled_navigations = policy != kNavigationPolicyCurrentTab;
+  if (!CancelProvisionalLoaderForNewNavigation(cancel_scheduled_navigations))
     return;
 
   provisional_document_loader_ = CreateDocumentLoader(
