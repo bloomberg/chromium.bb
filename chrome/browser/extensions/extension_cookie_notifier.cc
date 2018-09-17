@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -19,15 +17,35 @@
 
 ExtensionCookieNotifier::ExtensionCookieNotifier(Profile* profile)
     : profile_(profile), binding_(this) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
+  StartListening();
+}
 
-  network::mojom::CookieManager* manager_ptr =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
+ExtensionCookieNotifier::~ExtensionCookieNotifier() = default;
+
+void ExtensionCookieNotifier::StartListening() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile_);
+  DCHECK(!binding_.is_bound());
+
+  network::mojom::CookieManager* cookie_manager =
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetCookieManagerForBrowserProcess();
+  if (!cookie_manager)
+    return;
+
   network::mojom::CookieChangeListenerPtr listener_ptr;
   binding_.Bind(mojo::MakeRequest(&listener_ptr));
-  manager_ptr->AddGlobalChangeListener(std::move(listener_ptr));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &ExtensionCookieNotifier::OnConnectionError, base::Unretained(this)));
+
+  cookie_manager->AddGlobalChangeListener(std::move(listener_ptr));
+}
+
+void ExtensionCookieNotifier::OnConnectionError() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  binding_.Close();
+  StartListening();
 }
 
 void ExtensionCookieNotifier::OnCookieChange(
@@ -35,17 +53,10 @@ void ExtensionCookieNotifier::OnCookieChange(
     network::mojom::CookieChangeCause cause) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Confirm the profile hasn't gone away since this object was created.
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile_))
-    return;
-
   ChromeCookieDetails cookie_details(
       &cookie, cause != network::mojom::CookieChangeCause::INSERTED, cause);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_COOKIE_CHANGED_FOR_EXTENSIONS,
       content::Source<Profile>(profile_),
       content::Details<ChromeCookieDetails>(&cookie_details));
-}
-
-ExtensionCookieNotifier::~ExtensionCookieNotifier() {
 }
