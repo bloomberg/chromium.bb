@@ -9,12 +9,29 @@ var forwardApiMethods = require('guestViewContainerElement').forwardApiMethods;
 var GuestViewContainerElement =
     require('guestViewContainerElement').GuestViewContainerElement;
 var WebViewImpl = require('webView').WebViewImpl;
+var WebViewConstants = require('webViewConstants').WebViewConstants;
 var WEB_VIEW_API_METHODS = require('webViewApiMethods').WEB_VIEW_API_METHODS;
 var WebViewInternal = getInternalApi ?
     getInternalApi('webViewInternal') :
     require('webViewInternal').WebViewInternal;
 
-class WebViewElement extends GuestViewContainerElement {}
+class WebViewElement extends GuestViewContainerElement {
+  static get observedAttributes() {
+    return [
+      WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY,
+      WebViewConstants.ATTRIBUTE_ALLOWSCALING,
+      WebViewConstants.ATTRIBUTE_AUTOSIZE, WebViewConstants.ATTRIBUTE_MAXHEIGHT,
+      WebViewConstants.ATTRIBUTE_MAXWIDTH, WebViewConstants.ATTRIBUTE_MINHEIGHT,
+      WebViewConstants.ATTRIBUTE_MINWIDTH, WebViewConstants.ATTRIBUTE_NAME,
+      WebViewConstants.ATTRIBUTE_PARTITION, WebViewConstants.ATTRIBUTE_SRC
+    ];
+  }
+
+  constructor() {
+    super();
+    privates(this).internal = new WebViewImpl(this);
+  }
+}
 
 WebViewElement.prototype.addContentScripts = function(rules) {
   var internal = privates(this).internal;
@@ -90,4 +107,4 @@ forwardApiMethods(
 // |WebViewElement.prototype.go|.
 privates(WebViewElement).originalGo = WebViewElement.prototype.go;
 
-registerElement('WebView', WebViewElement, WebViewImpl);
+registerElement('WebView', WebViewElement);

@@ -8,8 +8,18 @@ var registerElement = require('guestViewContainerElement').registerElement;
 var GuestViewContainerElement =
     require('guestViewContainerElement').GuestViewContainerElement;
 var ExtensionOptionsImpl = require('extensionOptions').ExtensionOptionsImpl;
+var ExtensionOptionsConstants =
+    require('extensionOptionsConstants').ExtensionOptionsConstants;
 
-class ExtensionOptionsElement extends GuestViewContainerElement {}
+class ExtensionOptionsElement extends GuestViewContainerElement {
+  static get observedAttributes() {
+    return [ExtensionOptionsConstants.ATTRIBUTE_EXTENSION];
+  }
 
-registerElement(
-    'ExtensionOptions', ExtensionOptionsElement, ExtensionOptionsImpl);
+  constructor() {
+    super();
+    privates(this).internal = new ExtensionOptionsImpl(this);
+  }
+}
+
+registerElement('ExtensionOptions', ExtensionOptionsElement);

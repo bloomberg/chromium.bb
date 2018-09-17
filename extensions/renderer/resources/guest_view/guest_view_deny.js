@@ -6,7 +6,7 @@
 // permissions are not available. These elements exist only to provide a useful
 // error message when developers attempt to use them.
 
-var DocumentNatives = requireNative('document_natives');
+var GuestViewInternalNatives = requireNative('guest_view_internal');
 
 var ERROR_MESSAGE = 'You do not have permission to use the %1 element.' +
     ' Be sure to declare the "%1" permission in your manifest file.';
@@ -22,20 +22,18 @@ var VIEW_TYPES = [
 
 // Registers a GuestView custom element.
 function registerGuestViewElement(viewType) {
-  var DeniedElement = class extends HTMLElement {}
+  GuestViewInternalNatives.AllowGuestViewElementDefinition(() => {
+    var DeniedElement = class extends HTMLElement {
+      constructor() {
+        super();
+        window.console.error($String.replace(
+            ERROR_MESSAGE, /%1/g, $String.toLowerCase(viewType)));
+      }
+    }
 
-  // We set the lifecycle callback so that it's available during
-  // registration. Once that's done, we'll delete it so developers cannot
-  // call it.
-  DeniedElement.prototype.createdCallback = function() {
-    window.console.error(
-        $String.replace(ERROR_MESSAGE, /%1/g, $String.toLowerCase(viewType)));
-  };
-
-  window[viewType] = DocumentNatives.RegisterElement(
-      $String.toLowerCase(viewType), {prototype: DeniedElement.prototype});
-
-  delete DeniedElement.prototype.createdCallback;
+    window.customElements.define($String.toLowerCase(viewType), DeniedElement);
+    window[viewType] = DeniedElement;
+  });
 }
 
 var useCapture = true;
