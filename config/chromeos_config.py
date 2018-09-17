@@ -3349,7 +3349,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'nocturne',
       'peach_pit',
       'peppy',
-      'reef',
       'terra',
       'tricky',
       'veyron_minnie',
@@ -3359,6 +3358,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   _chrome_pfq_experimental_boards = frozenset([
       'bob',
       'hana',
+      'reef',
       'nyan_big',
       'scarlet',
   ])
@@ -3398,9 +3398,11 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           internal_board_configs,
           site_config.templates.chrome_pfq,
           enable_skylab_hw_tests=True,
+          important=False,
           active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
+
   # Define the result of the build configs for tryjob purposes.
   site_config.AddForBoards(
       'chrome-pfq',
