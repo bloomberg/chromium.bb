@@ -2287,8 +2287,10 @@ void ProfileSyncService::RecordMemoryUsageHistograms() {
   syncer::ModelTypeSet active_types = GetActiveDataTypes();
   for (syncer::ModelType type : active_types) {
     auto dtc_it = data_type_controllers_.find(type);
-    if (dtc_it != data_type_controllers_.end())
+    if (dtc_it != data_type_controllers_.end() &&
+        dtc_it->second->state() != syncer::DataTypeController::NOT_RUNNING) {
       dtc_it->second->RecordMemoryUsageAndCountsHistograms();
+    }
   }
 }
 
