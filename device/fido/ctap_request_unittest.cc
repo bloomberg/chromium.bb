@@ -63,7 +63,8 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
 
   auto serialized_data = get_assertion_req.EncodeAsCBOR();
   EXPECT_THAT(serialized_data,
-              ::testing::ElementsAreArray(test_data::kCtapGetAssertionRequest));
+              ::testing::ElementsAreArray(
+                  test_data::kTestComplexCtapGetAssertionRequest));
 }
 
 TEST(CTAPRequestTest, TestConstructCtapAuthenticatorRequestParam) {
@@ -127,7 +128,8 @@ TEST(CTAPRequestTest, ParseGetAssertionRequestForVirtualCtapKey) {
       0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
 
   const auto request = ParseCtapGetAssertionRequest(
-      base::make_span(test_data::kCtapGetAssertionRequest).subspan(1));
+      base::make_span(test_data::kTestComplexCtapGetAssertionRequest)
+          .subspan(1));
   ASSERT_TRUE(request);
   EXPECT_THAT(request->client_data_hash(),
               ::testing::ElementsAreArray(test_data::kClientDataHash));
