@@ -26,7 +26,9 @@
 #include "ios/web/public/web_thread.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_fetcher.h"
+#include "net/http/http_status_code.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace {
@@ -42,7 +44,7 @@ const char kContextualSearchResponseSelectedTextParam[] = "selected_text";
 const char kContextualSearchResponseSearchTermParam[] = "search_term";
 const int kContextualSearchRequestVersion = 2;
 const char kContextualSearchServerEndpoint[] = "_/contextualsearch?";
-const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context: ";
+const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context";
 const char kDoPreventPreloadValue[] = "1";
 const char kXssiEscape[] = ")]}'\n";
 
@@ -102,9 +104,6 @@ void DecodeSearchTermsFromJsonResponse(const std::string& response,
 }
 
 }  // namespace
-
-// URLFetcher ID, only used for tests: we only have one kind of fetcher.
-const int ContextualSearchDelegate::kContextualSearchURLFetcherID = 1;
 
 // Handles tasks for the ContextualSearchManager in a separable, testable way.
 ContextualSearchDelegate::ContextualSearchDelegate(
@@ -171,27 +170,28 @@ void ContextualSearchDelegate::RequestServerSearchTerm() {
   GURL request_url(BuildRequestUrl());
   DCHECK(request_url.is_valid());
 
-  // Reset will delete any previous fetcher, and we won't get any callback.
-  search_term_fetcher_ = net::URLFetcher::Create(
-      kContextualSearchURLFetcherID, request_url, net::URLFetcher::GET, this);
-  search_term_fetcher_->SetRequestContext(browser_state_->GetRequestContext());
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = request_url;
+
+  SetDiscourseContextAndAddToHeader(*context_, resource_request.get());
 
   // Add Chrome experiment state to the request headers.
-  net::HttpRequestHeaders headers;
-  variations::AppendVariationHeadersUnknownSignedIn(
-      search_term_fetcher_->GetOriginalURL(),
-      browser_state_->IsOffTheRecord() ? variations::InIncognito::kYes
-                                       : variations::InIncognito::kNo,
-      &headers);
-  search_term_fetcher_->SetExtraRequestHeaders(headers.ToString());
+  // Reset will delete any previous loader, and we won't get any callback.
+  url_loader_ =
+      variations::CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
+          std::move(resource_request),
+          browser_state_->IsOffTheRecord() ? variations::InIncognito::kYes
+                                           : variations::InIncognito::kNo,
+          NO_TRAFFIC_ANNOTATION_YET);
 
-  SetDiscourseContextAndAddToHeader(*context_);
-
-  search_term_fetcher_->Start();
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      browser_state_->GetSharedURLLoaderFactory().get(),
+      base::BindOnce(&ContextualSearchDelegate::OnURLLoadComplete,
+                     base::Unretained(this)));
 }
 
 void ContextualSearchDelegate::CancelSearchTermRequest() {
-  search_term_fetcher_.reset();
+  url_loader_.reset();
   context_.reset();
 }
 
@@ -219,27 +219,25 @@ GURL ContextualSearchDelegate::GetURLForResolvedSearch(
   return url;
 }
 
-void ContextualSearchDelegate::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  DCHECK(source == search_term_fetcher_.get());
+void ContextualSearchDelegate::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
   SearchResolution resolution;
   std::string prevent_preload;
-  resolution.response_code = source->GetResponseCode();
-  if (source->GetStatus().is_success() && resolution.response_code == 200) {
-    std::string response;
-    bool has_string_response = source->GetResponseAsString(&response);
-    DCHECK(has_string_response);
-    if (has_string_response) {
-      resolution.start_offset = -1;
-      resolution.end_offset = -1;
-      DecodeSearchTermsFromJsonResponse(
-          response, &resolution.search_term, &resolution.display_text,
-          &resolution.alternate_term, &prevent_preload, resolution.start_offset,
-          resolution.end_offset);
-    }
+
+  int response_code = -1;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
   }
-  resolution.is_invalid =
-      resolution.response_code == net::URLFetcher::RESPONSE_CODE_INVALID;
+  resolution.response_code = response_code;
+  if (response_body && response_code == net::HTTP_OK) {
+    resolution.start_offset = -1;
+    resolution.end_offset = -1;
+    DecodeSearchTermsFromJsonResponse(
+        *response_body, &resolution.search_term, &resolution.display_text,
+        &resolution.alternate_term, &prevent_preload, resolution.start_offset,
+        resolution.end_offset);
+  }
+  resolution.is_invalid = resolution.response_code == -1;
   resolution.prevent_preload = prevent_preload == kDoPreventPreloadValue;
 
   search_term_callback_.Run(resolution);
@@ -309,7 +307,8 @@ std::string ContextualSearchDelegate::GetSearchTermResolutionUrlString(
 }
 
 void ContextualSearchDelegate::SetDiscourseContextAndAddToHeader(
-    const ContextualSearchContext& context) {
+    const ContextualSearchContext& context,
+    network::ResourceRequest* resource_request) {
   discourse_context::ClientDiscourseContext proto;
   discourse_context::Display* display = proto.add_display();
   display->set_uri(context.page_url.spec());
@@ -331,6 +330,6 @@ void ContextualSearchDelegate::SetDiscourseContextAndAddToHeader(
   // The server memoizer expects a web-safe encoding.
   std::replace(encoded_context.begin(), encoded_context.end(), '+', '-');
   std::replace(encoded_context.begin(), encoded_context.end(), '/', '_');
-  search_term_fetcher_->AddExtraRequestHeader(kDiscourseContextHeaderPrefix +
-                                              encoded_context);
+  resource_request->headers.SetHeader(kDiscourseContextHeaderPrefix,
+                                      encoded_context);
 }

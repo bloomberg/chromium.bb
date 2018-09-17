@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "ios/chrome/browser/ui/contextual_search/contextual_search_context.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class TemplateURLService;
 
@@ -19,11 +18,15 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+namespace network {
+struct ResourceRequest;
+class SimpleURLLoader;
+}  // namespace network
+
 // Handles tasks for the ContextualSearchManager in a separable and testable
 // way, without the complication of being connected to a Java object.
 class ContextualSearchDelegate
-    : public net::URLFetcherDelegate,
-      public base::SupportsWeakPtr<ContextualSearchDelegate> {
+    : public base::SupportsWeakPtr<ContextualSearchDelegate> {
  public:
   typedef struct {
     bool is_invalid;
@@ -38,16 +41,13 @@ class ContextualSearchDelegate
 
   typedef base::Callback<void(SearchResolution)> SearchTermResolutionCallback;
 
-  // ID used in creating URLFetcher for Contextual Search results.
-  static const int kContextualSearchURLFetcherID;
-
   // Constructs a delegate for the given user browser state that will always
   // call back to the given callbacks when search term resolution or surrounding
   // text responses are available.
   ContextualSearchDelegate(
       ios::ChromeBrowserState* browser_state,
       const SearchTermResolutionCallback& search_term_callback);
-  ~ContextualSearchDelegate() override;
+  virtual ~ContextualSearchDelegate();
 
   // Requests the search term using |context| and parameters that specify the
   // surrounding text. if |context| represents a local text selection, then no
@@ -73,8 +73,7 @@ class ContextualSearchDelegate
                                bool should_prefetch);
 
  private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   // Builds the request URL.
   GURL BuildRequestUrl();
@@ -95,10 +94,11 @@ class ContextualSearchDelegate
   // Populates the discourse context and adds it to the HTTP header of the
   // search term resolution request.
   void SetDiscourseContextAndAddToHeader(
-      const ContextualSearchContext& context);
+      const ContextualSearchContext& context,
+      network::ResourceRequest* resource_request);
 
   // The current request in progress, or NULL.
-  std::unique_ptr<net::URLFetcher> search_term_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   // Holds the TemplateURLService. Not owned.
   TemplateURLService* template_url_service_;
