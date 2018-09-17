@@ -9,6 +9,12 @@
 
 #include "components/image_fetcher/core/request_metadata.h"
 
+class GURL;
+namespace web {
+class WebState;
+struct Referrer;
+}
+
 // Object saving images to the system's album.
 @interface ImageSaver : NSObject
 
@@ -17,8 +23,16 @@
     (UIViewController*)baseViewController;
 
 // Saves the image's |data|, with |metadata| to the system's album.
+// TODO(crbug.com/163201):Remove this when kCopyImage flag is removed.
 - (void)saveImageData:(NSData*)data
          withMetadata:(const image_fetcher::RequestMetadata&)metadata;
+
+// Fetches and saves the image at |url| to the system's album. |web_state| is
+// used for fetching image data by JavaScript and must not be nullptr.
+// |referrer| is used for download.
+- (void)saveImageAtURL:(const GURL&)url
+              referrer:(const web::Referrer&)referrer
+              webState:(web::WebState*)webState;
 
 @end
 
