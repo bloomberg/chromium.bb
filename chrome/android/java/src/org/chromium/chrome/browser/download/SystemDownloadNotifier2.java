@@ -137,8 +137,8 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
 
     @Override
     public void notifyDownloadFailed(DownloadInfo info, @FailState int failState) {
-        mDownloadNotificationService.notifyDownloadFailed(info.getContentId(), info.getFileName(),
-                info.getIcon(), info.isOffTheRecord(), failState);
+        getDownloadNotificationService().notifyDownloadFailed(info.getContentId(),
+                info.getFileName(), info.getIcon(), info.isOffTheRecord(), failState);
     }
 
     @Override
