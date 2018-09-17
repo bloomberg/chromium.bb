@@ -308,10 +308,10 @@ void FrameMetrics::AddFrameDisplayed(base::TimeTicks source_timestamp,
       latency.InMicroseconds() * kFixedPointMultiplierLatency;
   latency_analyzer_.AddSample(CapValue(latency_value), kLatencySampleWeight);
 
-  // Only calculate velocity if there's enough history.
-  if (latencies_added_ >= 1) {
-    base::TimeDelta latency_delta = latency - latency_prev_;
-    base::TimeDelta source_duration = source_timestamp - source_timestamp_prev_;
+  base::TimeDelta latency_delta = latency - latency_prev_;
+  base::TimeDelta source_duration = source_timestamp - source_timestamp_prev_;
+  // Only calculate speed if there's enough history.
+  if (latencies_added_ >= 1 && settings_.is_frame_latency_speed_on()) {
     int64_t latency_velocity =
         (latency_delta * kFixedPointMultiplierLatencySpeed) / source_duration;
 
@@ -319,27 +319,26 @@ void FrameMetrics::AddFrameDisplayed(base::TimeTicks source_timestamp,
     // entries to avoid overflow in the accumulators just in case.
     latency_speed_analyzer_.AddSample(CapValue(latency_velocity),
                                       CapDuration(source_duration));
+  }
 
-    // Only calculate acceleration if there's enough history.
-    if (latencies_added_ >= 2) {
-      base::TimeDelta source_duration_average =
-          (source_duration + source_duration_prev_) / 2;
-      int64_t latency_acceleration =
-          (((latency_delta * kFixedPointMultiplierLatencyAcceleration) /
-            source_duration) -
-           ((latency_delta_prev_ * kFixedPointMultiplierLatencyAcceleration) /
-            source_duration_prev_)) /
-          source_duration_average.InMicroseconds();
-      latency_acceleration_analyzer_.AddSample(
-          CapValue(latency_acceleration), CapDuration(source_duration_average));
-    }
-
-    // Update history.
+  // Only calculate acceleration if there's enough history.
+  if (latencies_added_ >= 2 && settings_.is_frame_latency_acceleration_on()) {
+    base::TimeDelta source_duration_average =
+        (source_duration + source_duration_prev_) / 2;
+    int64_t latency_acceleration =
+        (((latency_delta * kFixedPointMultiplierLatencyAcceleration) /
+          source_duration) -
+         ((latency_delta_prev_ * kFixedPointMultiplierLatencyAcceleration) /
+          source_duration_prev_)) /
+        source_duration_average.InMicroseconds();
+    latency_acceleration_analyzer_.AddSample(
+        CapValue(latency_acceleration), CapDuration(source_duration_average));
+  }
+  // Update history.
+  if (latencies_added_ >= 1) {
     source_duration_prev_ = source_duration;
     latency_delta_prev_ = latency_delta;
   }
-
-  // Update history.
   source_timestamp_prev_ = source_timestamp;
   latency_prev_ = latency;
   latencies_added_++;
@@ -366,8 +365,10 @@ void FrameMetrics::Reset() {
 
   frame_skips_analyzer_.Reset();
   latency_analyzer_.Reset();
-  latency_speed_analyzer_.Reset();
-  latency_acceleration_analyzer_.Reset();
+  if (settings_.is_frame_latency_speed_on())
+    latency_speed_analyzer_.Reset();
+  if (settings_.is_frame_latency_acceleration_on())
+    latency_acceleration_analyzer_.Reset();
 }
 
 // Reset analyzers, but don't reset resent latency history so we can get
@@ -417,13 +418,17 @@ class FrameMetricsTraceData
     latency.AsValueInto(&state);
     state.EndDictionary();
 
-    state.BeginDictionary("Speed");
-    speed.AsValueInto(&state);
-    state.EndDictionary();
+    if (settings.is_frame_latency_speed_on()) {
+      state.BeginDictionary("Speed");
+      speed.AsValueInto(&state);
+      state.EndDictionary();
+    }
 
-    state.BeginDictionary("Acceleration");
-    acceleration.AsValueInto(&state);
-    state.EndDictionary();
+    if (settings.is_frame_latency_acceleration_on()) {
+      state.BeginDictionary("Acceleration");
+      acceleration.AsValueInto(&state);
+      state.EndDictionary();
+    }
 
     state.AppendAsTraceFormat(out);
   }
@@ -447,8 +452,10 @@ void FrameMetrics::TraceStats() const {
     trace_data->settings = settings_;
     frame_skips_analyzer_.ComputeSummary(&trace_data->skips);
     latency_analyzer_.ComputeSummary(&trace_data->latency);
-    latency_speed_analyzer_.ComputeSummary(&trace_data->speed);
-    latency_acceleration_analyzer_.ComputeSummary(&trace_data->acceleration);
+    if (settings_.is_frame_latency_speed_on())
+      latency_speed_analyzer_.ComputeSummary(&trace_data->speed);
+    if (settings_.is_frame_latency_acceleration_on())
+      latency_acceleration_analyzer_.ComputeSummary(&trace_data->acceleration);
   }
   TRACE_EVENT_INSTANT1(kTraceCategories, "FrameMetrics",
                        TRACE_EVENT_SCOPE_THREAD, "Info", std::move(trace_data));
