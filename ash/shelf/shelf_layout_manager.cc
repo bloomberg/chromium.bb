@@ -272,9 +272,6 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     SetState(SHELF_VISIBLE);
   } else if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     SetState(SHELF_HIDDEN);
-  } else if (Shell::Get()->window_selector_controller() &&
-             Shell::Get()->window_selector_controller()->IsSelecting()) {
-    SetState(SHELF_VISIBLE);
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
@@ -283,10 +280,8 @@ void ShelfLayoutManager::UpdateVisibilityState() {
             ->GetWorkspaceWindowState());
 
     switch (window_state) {
-      case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN: {
-        if (IsDraggingWindowFromTopOrCaptionArea()) {
-          SetState(SHELF_VISIBLE);
-        } else if (IsShelfAutoHideForFullscreenMaximized()) {
+      case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN:
+        if (IsShelfAutoHideForFullscreenMaximized()) {
           SetState(SHELF_AUTO_HIDE);
         } else if (IsShelfHiddenForFullscreen()) {
           SetState(SHELF_HIDDEN);
@@ -296,17 +291,11 @@ void ShelfLayoutManager::UpdateVisibilityState() {
           SetState(SHELF_AUTO_HIDE);
         }
         break;
-      }
       case wm::WORKSPACE_WINDOW_STATE_MAXIMIZED:
-        if (IsDraggingWindowFromTopOrCaptionArea()) {
-          SetState(SHELF_VISIBLE);
-        } else if (IsShelfAutoHideForFullscreenMaximized()) {
-          SetState(SHELF_AUTO_HIDE);
-        } else {
-          SetState(CalculateShelfVisibility());
-        }
+        SetState(IsShelfAutoHideForFullscreenMaximized()
+                     ? SHELF_AUTO_HIDE
+                     : CalculateShelfVisibility());
         break;
-
       case wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
       case wm::WORKSPACE_WINDOW_STATE_DEFAULT:
         SetState(CalculateShelfVisibility());
@@ -1033,6 +1022,15 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   // If there are no visible windows do not hide the shelf.
   if (!HasVisibleWindow())
     return SHELF_AUTO_HIDE_SHOWN;
+
+  if (IsDraggingWindowFromTopOrCaptionArea())
+    return SHELF_AUTO_HIDE_SHOWN;
+
+  // Do not hide the shelf if overview mode is active.
+  if (Shell::Get()->window_selector_controller() &&
+      Shell::Get()->window_selector_controller()->IsSelecting()) {
+    return SHELF_AUTO_HIDE_SHOWN;
+  }
 
   if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS ||
       gesture_drag_status_ == GESTURE_DRAG_CANCEL_IN_PROGRESS) {
