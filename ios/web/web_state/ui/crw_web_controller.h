@@ -157,7 +157,8 @@ class WebStateImpl;
 - (void)loadCurrentURL;
 
 // Loads the URL indicated by current session state if the current page has not
-// loaded yet.
+// loaded yet. This method should never be called directly. Use
+// NavigationManager::LoadIfNecessary() instead.
 - (void)loadCurrentURLIfNecessary;
 
 // Loads HTML in the page and presents it as if it was originating from an

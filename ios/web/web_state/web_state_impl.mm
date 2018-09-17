@@ -566,26 +566,7 @@ bool WebStateImpl::IsWebUsageEnabled() const {
 }
 
 void WebStateImpl::SetWebUsageEnabled(bool enabled) {
-  // This must be called before RestoreSessionStorage() because the latter
-  // creates a web view under WKBasedNavigationManager, and expects
-  // _webUsageEnabled to be true.
   [web_controller_ setWebUsageEnabled:enabled];
-
-  // SetWebUsageEnabled(false) will cause the WKWebView to be removed and this
-  // is the only way to clear browser data. Cache the session history in this
-  // WebState so that when web usage is re-enabled, history can be restored into
-  // the newly created WKWebView.
-  // TODO(crbug.com/557963): don't destroy WKWebView to clear browser data.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    if (enabled) {
-      if (cached_session_storage_) {
-        RestoreSessionStorage(cached_session_storage_);
-      }
-      cached_session_storage_ = nil;
-    } else {
-      cached_session_storage_ = BuildSessionStorage();
-    }
-  }
 }
 
 bool WebStateImpl::ShouldSuppressDialogs() const {

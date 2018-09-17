@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -21,6 +22,7 @@
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
+#import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_client.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -34,6 +36,28 @@ using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
 
 namespace web {
+namespace {
+
+// A text string from the test HTML page in the session storage returned  by
+// GetTestSessionStorage().
+const char kTestSessionStoragePageText[] = "pony";
+
+// Returns a session storage with a single committed entry of a test HTML page.
+CRWSessionStorage* GetTestSessionStorage() {
+  base::FilePath path;
+  base::PathService::Get(base::DIR_MODULE, &path);
+  path = path.Append(
+      FILE_PATH_LITERAL("ios/testing/data/http_server_files/pony.html"));
+  GURL testFileUrl(base::StringPrintf("file://%s", path.value().c_str()));
+
+  CRWSessionStorage* result = [[CRWSessionStorage alloc] init];
+  result.lastCommittedItemIndex = 0;
+  CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
+  [item setVirtualURL:testFileUrl];
+  [result setItemStorages:@[ item ]];
+  return result;
+}
+}  // namespace
 
 // WebStateTest is parameterized on this enum to test both the legacy
 // implementation of navigation manager and the experimental implementation.
@@ -364,6 +388,39 @@ TEST_P(WebStateTest, RestoreLargeSession) {
 
   histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
   histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 100, 1);
+}
+
+// Tests that if a saved session is provided when creating a new WebState, it is
+// restored after the first NavigationManager::LoadIfNecessary() call.
+TEST_P(WebStateTest, RestoredFromHistory) {
+  auto web_state = WebState::CreateWithStorageSession(
+      WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
+
+  ASSERT_FALSE(test::IsWebViewContainingText(web_state.get(),
+                                             kTestSessionStoragePageText));
+  web_state->GetNavigationManager()->LoadIfNecessary();
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
+                                                 kTestSessionStoragePageText));
+}
+
+// Tests that NavigationManager::LoadIfNecessary() restores the page after
+// disabling and re-enabling web usage.
+TEST_P(WebStateTest, DisableAndReenableWebUsage) {
+  auto web_state = WebState::CreateWithStorageSession(
+      WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
+  web_state->GetNavigationManager()->LoadIfNecessary();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
+                                                 kTestSessionStoragePageText));
+
+  web_state->SetWebUsageEnabled(false);
+  web_state->SetWebUsageEnabled(true);
+
+  // NavigationManager::LoadIfNecessary() should restore the page.
+  ASSERT_FALSE(test::IsWebViewContainingText(web_state.get(),
+                                             kTestSessionStoragePageText));
+  web_state->GetNavigationManager()->LoadIfNecessary();
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
+                                                 kTestSessionStoragePageText));
 }
 
 INSTANTIATE_TEST_CASE_P(
