@@ -18,7 +18,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordUserAction;
 
 /**
  * This class detects screenshots by monitoring the screenshots directory on internal and external
@@ -81,10 +80,6 @@ public class ScreenshotMonitor {
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    // Unit tests do not have JNI to native side user counts.
-                    if (!mSkipOsCallsForUnitTesting) {
-                      RecordUserAction.record("Tab.Screenshot");
-                    }
                     if (mScreenshotMonitor == null) return;
                     mScreenshotMonitor.onEventOnUiThread(uriPath);
                 }

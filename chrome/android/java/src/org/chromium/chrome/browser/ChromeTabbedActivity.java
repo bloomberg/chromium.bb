@@ -75,6 +75,7 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitor;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitorDelegate;
+import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedEventReporter;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -2427,6 +2428,8 @@ public class ChromeTabbedActivity
             public void run() {
                 getToolbarManager().showDownloadPageTextBubble(
                         getActivityTab(), FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE);
+                ScreenshotTabObserver tabObserver = ScreenshotTabObserver.from(getActivityTab());
+                if (tabObserver != null) tabObserver.onScreenshotTaken();
             }
         });
     }
