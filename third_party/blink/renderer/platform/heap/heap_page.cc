@@ -740,12 +740,17 @@ void NormalPageArena::PromptlyFreeObject(HeapObjectHeader* header) {
           ->ClearBit(address);
       return;
     }
+    // The object may be on a page that has not been swept yet and requires
+    // manual unmarking.
+    if (header->IsMarked())
+      header->Unmark();
     PromptlyFreeObjectInFreeList(header, size);
   }
 }
 
 void NormalPageArena::PromptlyFreeObjectInFreeList(HeapObjectHeader* header,
                                                    size_t size) {
+  DCHECK(!header->IsMarked());
   Address address = reinterpret_cast<Address>(header);
   NormalPage* page = reinterpret_cast<NormalPage*>(PageFromObject(header));
   if (page->HasBeenSwept()) {
@@ -759,10 +764,6 @@ void NormalPageArena::PromptlyFreeObjectInFreeList(HeapObjectHeader* header,
     CHECK_MEMORY_INACCESSIBLE(payload, payload_size);
     AddToFreeList(address, size);
     promptly_freed_size_ += size;
-  } else {
-    // If we do not have free list entries the sweeper will take care of
-    // coalescing.
-    header->Unmark();
   }
   GetThreadState()->Heap().DecreaseAllocatedObjectSize(size);
 }
