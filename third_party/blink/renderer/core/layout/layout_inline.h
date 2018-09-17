@@ -256,6 +256,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
                                          bool ignore_scroll_offset) const final;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ParameterizedLayoutInlineTest, VisualRectInDocument);
+
   LayoutObjectChildList* VirtualChildren() final { return Children(); }
   const LayoutObjectChildList* VirtualChildren() const final {
     return Children();
@@ -313,10 +315,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutUnit OffsetWidth() const final { return LinesBoundingBox().Width(); }
   LayoutUnit OffsetHeight() const final { return LinesBoundingBox().Height(); }
 
- public:  // public for testing only
   LayoutRect VisualRectInDocument() const override;
-
- private:
   // This method differs from visualOverflowRect in that it doesn't include the
   // rects for culled inline boxes, which aren't necessary for paint
   // invalidation.

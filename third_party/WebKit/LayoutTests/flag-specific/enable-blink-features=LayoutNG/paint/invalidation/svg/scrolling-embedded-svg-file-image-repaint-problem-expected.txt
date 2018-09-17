@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
-          "rect": [24, 967, 737, 29],
-          "reason": "appeared"
-        },
-        {
           "object": "NGPhysicalTextFragment 'pservers-pattern-01-b \u2190'",
           "rect": [208, 972, 173, 19],
           "reason": "appeared"
@@ -41,6 +36,11 @@
           "object": "NGPhysicalTextFragment '\u2192 script-handle-01-b'",
           "rect": [427, 972, 150, 19],
           "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalBoxFragment LayoutInline A",
+          "rect": [383, 971, 42, 21],
+          "reason": "appeared"
         },
         {
           "object": "NGPhysicalTextFragment 'index'",

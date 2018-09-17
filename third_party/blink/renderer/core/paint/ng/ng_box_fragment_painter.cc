@@ -241,10 +241,6 @@ void NGBoxFragmentPainter::PaintObject(
     } else {
       PaintBlockChildren(paint_info);
     }
-    if (ShouldPaintDescendantOutlines(paint_phase)) {
-      NGFragmentPainter(box_fragment_)
-          .PaintDescendantOutlines(paint_info, paint_offset);
-    }
   }
 
   if (ShouldPaintSelfOutline(paint_phase))
@@ -303,11 +299,8 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
     return;
   }
 
-  const auto& children = box_fragment_.Children();
-  if (ShouldPaintDescendantOutlines(paint_info.phase))
-    PaintInlineChildrenOutlines(children, paint_info, paint_offset);
-  else
-    PaintLineBoxChildren(children, paint_info.ForDescendants(), paint_offset);
+  PaintLineBoxChildren(box_fragment_.Children(), paint_info.ForDescendants(),
+                       paint_offset);
 }
 
 void NGBoxFragmentPainter::PaintInlineChild(const NGPaintFragment& child,
@@ -664,14 +657,14 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     const Vector<scoped_refptr<NGPaintFragment>>& line_boxes,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
-  DCHECK(!ShouldPaintSelfOutline(paint_info.phase) &&
-         !ShouldPaintDescendantOutlines(paint_info.phase));
 
   // Only paint during the foreground/selection phases.
   if (paint_info.phase != PaintPhase::kForeground &&
       paint_info.phase != PaintPhase::kSelection &&
       paint_info.phase != PaintPhase::kTextClip &&
-      paint_info.phase != PaintPhase::kMask)
+      paint_info.phase != PaintPhase::kMask &&
+      paint_info.phase != PaintPhase::kDescendantOutlinesOnly &&
+      paint_info.phase != PaintPhase::kOutline)
     return;
 
   // The only way an inline could paint like this is if it has a layer.

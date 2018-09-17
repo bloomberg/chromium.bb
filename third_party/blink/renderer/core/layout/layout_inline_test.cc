@@ -246,7 +246,7 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
   }
 }
 
-TEST_F(LayoutInlineTest, VisualRectInDocument) {
+TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocument) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>

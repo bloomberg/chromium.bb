@@ -150,9 +150,11 @@ void LayoutNGMixin<Base>::AddOutlineRects(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
     NGOutlineType include_block_overflows) const {
-  Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
-  if (CurrentFragment()) {
-    CurrentFragment()->AddSelfOutlineRects(&rects, additional_offset);
+  if (PaintFragment()) {
+    PaintFragment()->AddSelfOutlineRect(&rects, additional_offset,
+                                        include_block_overflows);
+  } else {
+    Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
   }
 }
 

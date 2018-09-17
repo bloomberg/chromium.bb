@@ -46,21 +46,6 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   is_old_layout_root_ = is_old_layout_root;
   border_edge_ = border_edges;
   children_inline_ = layout_object && layout_object->ChildrenInline();
-
-  // Compute visual contribution from descendant outlines.
-  NGOutlineUtils::FragmentMap anchor_fragment_map;
-  NGOutlineUtils::OutlineRectMap outline_rect_map;
-  NGOutlineUtils::CollectDescendantOutlines(
-      *this, NGPhysicalOffset(), &anchor_fragment_map, &outline_rect_map);
-  for (auto& anchor_iter : anchor_fragment_map) {
-    const NGPhysicalFragment* fragment = anchor_iter.value;
-    Vector<LayoutRect>* outline_rects =
-        &outline_rect_map.find(anchor_iter.key)->value;
-    descendant_outlines_.Unite(NGOutlineUtils::ComputeEnclosingOutline(
-        fragment->Style(), *outline_rects));
-  }
-  GetLayoutObject()->SetOutlineMayBeAffectedByDescendants(
-      !descendant_outlines_.IsEmpty());
 }
 
 const NGBaseline* NGPhysicalBoxFragment::Baseline(
@@ -143,21 +128,18 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfInkOverflow() const {
 
   DCHECK(GetLayoutObject());
   if (style.HasVisualOverflowingEffect()) {
-    if (GetLayoutObject()->IsBox()) {
-      ink_overflow.Expand(style.BoxDecorationOutsets());
-      if (NGOutlineUtils::HasPaintedOutline(style,
-                                            GetLayoutObject()->GetNode())) {
-        Vector<LayoutRect> outline_rects;
-        // The result rects are in coordinates of this object's border box.
-        AddSelfOutlineRects(&outline_rects, LayoutPoint());
-        LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
-        rect.Inflate(style.OutlineOutsetExtent());
-        ink_overflow.Unite(rect);
-      }
-    } else {
-      // TODO(kojii): Implement for inline boxes.
-      DCHECK(GetLayoutObject()->IsLayoutInline());
-      ink_overflow.Expand(style.BoxDecorationOutsets());
+    ink_overflow.Expand(style.BoxDecorationOutsets());
+    if (NGOutlineUtils::HasPaintedOutline(style,
+                                          GetLayoutObject()->GetNode()) &&
+        !NGOutlineUtils::IsInlineOutlineNonpaintingFragment(*this)) {
+      Vector<LayoutRect> outline_rects;
+      // The result rects are in coordinates of this object's border box.
+      AddSelfOutlineRects(
+          &outline_rects, LayoutPoint(),
+          GetLayoutObject()->OutlineRectsShouldIncludeBlockVisualOverflow());
+      LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
+      rect.Inflate(style.OutlineOutsetExtent());
+      ink_overflow.Unite(rect);
     }
   }
   ink_overflow.Unite(descendant_outlines_.ToLayoutRect());
@@ -166,20 +148,39 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfInkOverflow() const {
 
 void NGPhysicalBoxFragment::AddSelfOutlineRects(
     Vector<LayoutRect>* outline_rects,
-    const LayoutPoint& additional_offset) const {
-  DCHECK(outline_rects);
-
-  LayoutRect outline_rect(additional_offset, Size().ToLayoutSize());
-  outline_rects->push_back(outline_rect);
-
+    const LayoutPoint& additional_offset,
+    NGOutlineType outline_type) const {
   DCHECK(GetLayoutObject());
-  if (!GetLayoutObject()->IsBox())
+
+  const LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object->IsAnonymousBlock() && !layout_object->IsLayoutInline()) {
+    LayoutRect outline_rect(additional_offset, Size().ToLayoutSize());
+    outline_rects->push_back(outline_rect);
+  }
+
+  if (layout_object->IsLayoutInline()) {
+    Vector<LayoutRect> blockflow_outline_rects;
+    ToLayoutInline(layout_object)
+        ->AddOutlineRects(blockflow_outline_rects, LayoutPoint(), outline_type);
+    // The rectangle's returned are offset from containing block,
+    // We need offset from this fragment. Apply correction.
+    if (blockflow_outline_rects.size() > 0) {
+      LayoutSize corrected_offset =
+          additional_offset - blockflow_outline_rects[0].Location();
+      for (auto& outline : blockflow_outline_rects) {
+        outline.Move(corrected_offset);
+        outline_rects->push_back(outline);
+      }
+    }
     return;
-  if (!Style().OutlineStyleIsAuto() || GetLayoutObject()->HasOverflowClip() ||
-      ToLayoutBox(GetLayoutObject())->HasControlClip())
+  }
+  if (!layout_object->IsBox())
+    return;
+  if (outline_type == NGOutlineType::kDontIncludeBlockVisualOverflow)
+    return;
+  if (HasOverflowClip() && ToLayoutBox(layout_object)->HasControlClip())
     return;
 
-  // Focus outline includes chidlren
   for (const auto& child : Children()) {
     // List markers have no outline
     if (child->IsListMarker())

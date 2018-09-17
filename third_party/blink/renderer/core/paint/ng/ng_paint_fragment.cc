@@ -21,6 +21,8 @@
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
@@ -403,13 +405,16 @@ void NGPaintFragment::UpdateVisualRectForNonLayoutObjectChildren() {
   }
 }
 
-void NGPaintFragment::AddSelfOutlineRect(
-    Vector<LayoutRect>* outline_rects,
-    const LayoutPoint& additional_offset) const {
+void NGPaintFragment::AddSelfOutlineRect(Vector<LayoutRect>* outline_rects,
+                                         const LayoutPoint& additional_offset,
+                                         NGOutlineType outline_type) const {
+  DCHECK(outline_rects);
   const NGPhysicalFragment& fragment = PhysicalFragment();
   if (fragment.IsBox()) {
-    ToNGPhysicalBoxFragment(fragment).AddSelfOutlineRects(outline_rects,
-                                                          additional_offset);
+    if (NGOutlineUtils::IsInlineOutlineNonpaintingFragment(PhysicalFragment()))
+      return;
+    ToNGPhysicalBoxFragment(fragment).AddSelfOutlineRects(
+        outline_rects, additional_offset, outline_type);
   }
 }
 

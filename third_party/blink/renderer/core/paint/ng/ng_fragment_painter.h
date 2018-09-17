@@ -10,7 +10,6 @@
 
 namespace blink {
 
-class LayoutObject;
 class LayoutPoint;
 class NGPaintFragment;
 struct PaintInfo;
@@ -25,16 +24,10 @@ class NGFragmentPainter : public ObjectPainterBase {
       : paint_fragment_(paint_fragment) {}
 
   void PaintOutline(const PaintInfo&, const LayoutPoint& paint_offset);
-  void PaintDescendantOutlines(const PaintInfo&,
-                               const LayoutPoint& paint_offset);
 
   void AddPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
-  void CollectDescendantOutlines(
-      const LayoutPoint& paint_offset,
-      HashMap<const LayoutObject*, NGPaintFragment*>* anchor_fragment_map,
-      HashMap<const LayoutObject*, Vector<LayoutRect>>* outline_rect_map);
 
   const NGPaintFragment& paint_fragment_;
 };
