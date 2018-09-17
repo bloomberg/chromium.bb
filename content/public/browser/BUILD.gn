@@ -406,7 +406,6 @@ jumbo_source_set("browser_sources") {
 
   if (!is_android) {
     sources += [
-      "devtools_frontend_host.h",
       "host_zoom_map.h",
       "zoom_level_delegate.h",
     ]
