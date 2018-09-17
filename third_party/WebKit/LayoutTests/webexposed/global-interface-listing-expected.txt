@@ -435,6 +435,7 @@ interface BackgroundFetchRegistration : EventTarget
     getter failureReason
     getter id
     getter onprogress
+    getter recordsAvailable
     getter result
     getter uploadTotal
     getter uploaded

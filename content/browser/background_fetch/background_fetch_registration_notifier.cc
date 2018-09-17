@@ -40,6 +40,21 @@ void BackgroundFetchRegistrationNotifier::Notify(const std::string& unique_id,
   }
 }
 
+void BackgroundFetchRegistrationNotifier::NotifyRecordsUnavailable(
+    const std::string& unique_id) {
+  for (auto it = observers_.begin(); it != observers_.end();) {
+    if (it->first != unique_id) {
+      it++;
+      continue;
+    }
+
+    it->second->OnRecordsUnavailable();
+
+    // No more notifications will be sent to the observers from this point.
+    it = observers_.erase(it);
+  }
+}
+
 void BackgroundFetchRegistrationNotifier::AddGarbageCollectionCallback(
     const std::string& unique_id,
     base::OnceClosure callback) {

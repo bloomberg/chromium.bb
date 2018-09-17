@@ -523,6 +523,10 @@ void BackgroundFetchContext::CleanupRegistration(
     bool preserve_info_to_dispatch_click_event) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // Indicate to the renderer that the records for this fetch are no longer
+  // available.
+  registration_notifier_->NotifyRecordsUnavailable(registration_id.unique_id());
+
   // If we had an active JobController, it is no longer necessary, as the
   // notification's UI can no longer be updated after the fetch is aborted, or
   // after the waitUntil promise of the
@@ -538,18 +542,12 @@ void BackgroundFetchContext::CleanupRegistration(
   }
   job_controllers_.erase(registration_id.unique_id());
 
-  // At this point, JavaScript can no longer obtain BackgroundFetchRegistration
-  // objects for this registration, and those objects are the only thing that
-  // requires us to keep the registration's data around. So once the
-  // RegistrationNotifier informs us that all existing observers (and hence
-  // BackgroundFetchRegistration objects) have been garbage collected, it'll be
-  // safe to delete the registration. This callback doesn't run if the browser
-  // is shutdown before that happens - BackgroundFetchDataManager::Cleanup acts
-  // as a fallback in that case, and deletes the registration on next startup.
-  registration_notifier_->AddGarbageCollectionCallback(
-      registration_id.unique_id(),
-      base::BindOnce(&BackgroundFetchContext::LastObserverGarbageCollected,
-                     weak_factory_.GetWeakPtr(), registration_id));
+  // Delete the data associated with this fetch. Cache storage will keep the
+  // downloaded data around so long as there are references to it, and delete
+  // it once there is none. We don't need to do that accounting.
+  data_manager_->DeleteRegistration(
+      registration_id,
+      base::BindOnce(&background_fetch::RecordRegistrationDeletedError));
 }
 
 void BackgroundFetchContext::DispatchClickEvent(const std::string& unique_id) {
@@ -563,12 +561,10 @@ void BackgroundFetchContext::DispatchClickEvent(const std::string& unique_id) {
     return;
   }
 
-  // The fetch is active, or has been aborted/cancelled.
+  // The fetch is active.
   auto controllers_iter = job_controllers_.find(unique_id);
   if (controllers_iter == job_controllers_.end())
     return;
-  // TODO(crbug.com/873630): Implement a background fetch state manager to
-  // keep track of states, and stop hard-coding result here.
   auto registration = controllers_iter->second->NewRegistration(
       blink::mojom::BackgroundFetchResult::UNSET);
   event_dispatcher_.DispatchBackgroundFetchClickEvent(
