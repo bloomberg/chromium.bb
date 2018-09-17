@@ -410,6 +410,9 @@ void AdsPageLoadMetricsObserver::RecordResourceHistogram(
 }
 
 void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms() {
+  // Only records histograms on pages that have some ad bytes.
+  if (page_ad_resource_bytes_ == 0)
+    return;
   PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Total",
                        page_resource_bytes_);
   PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Ads",
