@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/synchronization/lock_impl.h"
+#include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
@@ -17,12 +18,16 @@ namespace base {
 // A convenient wrapper for an OS specific critical section.  The only real
 // intelligence in this class is in debug mode for the support for the
 // AssertAcquired() method.
-class BASE_EXPORT Lock {
+class LOCKABLE BASE_EXPORT Lock {
  public:
 #if !DCHECK_IS_ON()
-   // Optimized wrapper implementation
+  // Optimized wrapper implementation
   Lock() : lock_() {}
   ~Lock() {}
+
+  // TODO(lukasza): https://crbug.com/831825: Add EXCLUSIVE_LOCK_FUNCTION
+  // annotation to Acquire method and similar annotations to Release, Try and
+  // AssertAcquired methods (here and in the #else branch).
   void Acquire() { lock_.Lock(); }
   void Release() { lock_.Unlock(); }
 
@@ -105,19 +110,20 @@ class BASE_EXPORT Lock {
 };
 
 // A helper class that acquires the given Lock while the AutoLock is in scope.
-class AutoLock {
+class SCOPED_LOCKABLE AutoLock {
  public:
   struct AlreadyAcquired {};
 
-  explicit AutoLock(Lock& lock) : lock_(lock) {
+  explicit AutoLock(Lock& lock) EXCLUSIVE_LOCK_FUNCTION(lock) : lock_(lock) {
     lock_.Acquire();
   }
 
-  AutoLock(Lock& lock, const AlreadyAcquired&) : lock_(lock) {
+  AutoLock(Lock& lock, const AlreadyAcquired&) EXCLUSIVE_LOCKS_REQUIRED(lock)
+      : lock_(lock) {
     lock_.AssertAcquired();
   }
 
-  ~AutoLock() {
+  ~AutoLock() UNLOCK_FUNCTION() {
     lock_.AssertAcquired();
     lock_.Release();
   }

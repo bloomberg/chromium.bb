@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/resource_type.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -381,7 +382,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // found in O(log n) time, and the corresponding list of origins to search
   // using the expensive DoesOriginMatchIsolatedOrigin() comparison is
   // typically small.
-  base::flat_map<GURL, base::flat_set<url::Origin>> isolated_origins_;
+  base::flat_map<GURL, base::flat_set<url::Origin>> isolated_origins_
+      GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };
