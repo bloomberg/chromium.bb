@@ -187,6 +187,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Called when on-screen keyboard's visibility is changed.
   void OnScreenKeyboardShown(bool shown);
 
+  // If the on-screen keyboard is shown, hide it. Return whether keyboard was
+  // hidden
+  bool CloseKeyboardIfVisible();
+
   // Sets |is_in_drag_| and updates the visibility of app list items.
   void SetIsInDrag(bool is_in_drag);
 
