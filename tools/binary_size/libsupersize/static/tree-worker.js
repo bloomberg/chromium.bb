@@ -42,6 +42,7 @@ const _NAMES_TO_FLAGS = Object.freeze({
   hot: _FLAGS.HOT,
   generated: _FLAGS.GENERATED_SOURCE,
   coverage: _FLAGS.COVERAGE,
+  uncompressed: _FLAGS.UNCOMPRESSED,
 });
 
 /** @param {FileEntry} fileEntry */

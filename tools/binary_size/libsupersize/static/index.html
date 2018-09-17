@@ -97,8 +97,8 @@
             <p class="select-wrapper">
                 <select id="byteunit" name="byteunit" data-dynamic>
                     <option value="B">B - bytes</option>
-                    <option value="KiB">KiB - kibibytes</option>
-                    <option value="MiB" selected>MiB - mebibytes</option>
+                    <option value="KiB" selected>KiB - kibibytes</option>
+                    <option value="MiB">MiB - mebibytes</option>
                     <option value="GiB">GiB - gibibytes</option>
                 </select>
                 <label class="select-label" for="byteunit">Byte unit</label>
@@ -223,7 +223,11 @@
             </div>
             <div class="radio-wrapper">
                 <input type="radio" id="coveragehightlight" name="highlight" value="coverage">
-                <label class="radio-label" for="coveragehightlight">Code coverage</label>
+                <label class="radio-label" for="coveragehightlight">Code coverage (not implemented)</label>
+            </div>
+            <div class="radio-wrapper">
+                <input type="radio" id="uncompressedhighlight" name="highlight" value="uncompressed">
+                <label class="radio-label" for="uncompressedhighlight">Uncompressed .pak files</label>
             </div>
         </fieldset>
 
