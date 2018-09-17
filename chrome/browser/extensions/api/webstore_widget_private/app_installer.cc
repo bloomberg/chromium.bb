@@ -88,6 +88,24 @@ bool AppInstaller::CheckInlineInstallPermitted(
     std::string* error) const {
   DCHECK(error != NULL);
   DCHECK(error->empty());
+
+  // We expect to be able to inline install the app.
+  bool inline_install_not_supported = false;
+  if (webstore_data.HasKey(kInlineInstallNotSupportedKey) &&
+      !webstore_data.GetBoolean(kInlineInstallNotSupportedKey,
+                                &inline_install_not_supported)) {
+    *error = extensions::webstore_install::kInvalidWebstoreResponseError;
+    return false;
+  }
+
+  DCHECK(!inline_install_not_supported)
+      << "App does not support inline installation";
+
+  if (inline_install_not_supported) {
+    *error = extensions::webstore_install::kInvalidWebstoreResponseError;
+    return false;
+  }
+
   return true;
 }
 
