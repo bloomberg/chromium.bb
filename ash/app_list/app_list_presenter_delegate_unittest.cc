@@ -1408,33 +1408,6 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-// Tests that the app list is not draggable from shelf.
-TEST_F(AppListPresenterDelegateHomeLauncherTest, DragFromShelf) {
-  UpdateDisplay("1080x900");
-
-  // Drag from the shelf to show the app list.
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->GestureScrollSequence(gfx::Point(540, 890), gfx::Point(540, 0),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(true);
-
-  // Show app list in tablet mode.
-  EnableTabletMode(true);
-  GetAppListTestHelper()->CheckVisibility(true);
-
-  // Enable overview mode to hide the app list.
-  Shell::Get()->window_selector_controller()->ToggleOverview();
-  ui::Layer* layer = GetAppListView()->app_list_main_view()->layer();
-  EXPECT_EQ(0.0f, layer->opacity());
-
-  // Drag from the shelf.
-  generator->GestureScrollSequence(gfx::Point(540, 890), gfx::Point(540, 0),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
-  GetAppListTestHelper()->WaitUntilIdle();
-  EXPECT_EQ(0.0f, layer->opacity());
-}
-
 // Tests that the app list button will minimize all windows.
 TEST_F(AppListPresenterDelegateHomeLauncherTest,
        AppListButtonMinimizeAllWindows) {

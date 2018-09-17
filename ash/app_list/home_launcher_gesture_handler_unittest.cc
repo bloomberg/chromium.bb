@@ -7,6 +7,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
@@ -92,6 +93,49 @@ TEST_F(HomeLauncherGestureHandlerTest, ShowWindowsAreHidden) {
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_FALSE(window2->IsVisible());
   EXPECT_FALSE(window3->IsVisible());
+}
+
+// Tests that the home launcher gestures work with overview mode as expected.
+TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
+  UpdateDisplay("400x448");
+
+  auto window1 = CreateWindowForTesting();
+  auto window2 = CreateWindowForTesting();
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsMinimized());
+  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsMinimized());
+
+  WindowSelectorController* controller =
+      Shell::Get()->window_selector_controller();
+  controller->ToggleOverview();
+  const int window1_initial_translation =
+      window1->transform().To2dTranslation().y();
+  const int window2_initial_translation =
+      window2->transform().To2dTranslation().y();
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
+  EXPECT_FALSE(GetGestureHandler()->window());
+
+  // Tests that while scrolling the window transform changes.
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300));
+  EXPECT_NE(window1_initial_translation,
+            window1->transform().To2dTranslation().y());
+  EXPECT_NE(window2_initial_translation,
+            window2->transform().To2dTranslation().y());
+
+  // Tests that after releasing at below the halfway point, we remain in
+  // overview mode.
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  EXPECT_EQ(window1_initial_translation,
+            window1->transform().To2dTranslation().y());
+  EXPECT_EQ(window2_initial_translation,
+            window2->transform().To2dTranslation().y());
+
+  // Tests that after releasing on the bottom half, overview mode has been
+  // exited, and the two windows have been minimized to show the home launcher.
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
+  EXPECT_FALSE(controller->IsSelecting());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
+  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
 }
 
 class HomeLauncherModeGestureHandlerTest

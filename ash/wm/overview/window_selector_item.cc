@@ -19,7 +19,6 @@
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_grid.h"
-#include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -498,8 +497,10 @@ bool WindowSelectorItem::Contains(const aura::Window* target) const {
 void WindowSelectorItem::RestoreWindow(bool reset_transform) {
   caption_container_view_->listener_button()->ResetListener();
   close_button_->ResetListener();
-  transform_window_.RestoreWindow(reset_transform,
-                                  window_selector_->use_slide_animation());
+  transform_window_.RestoreWindow(
+      reset_transform,
+      window_selector_->enter_exit_overview_type() ==
+          WindowSelector::EnterExitOverviewType::kWindowsMinimized);
 }
 
 void WindowSelectorItem::EnsureVisible() {
@@ -523,9 +524,19 @@ void WindowSelectorItem::Shutdown() {
                                                transform_window_.window());
     }
   }
+
+  // On swiping from the shelf, the caller handles the animation via calls to
+  // UpdateYAndOpacity, so do not additional fade out or slide animation to the
+  // window.
+  if (window_selector_->enter_exit_overview_type() ==
+      WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
+    return;
+  }
+
   // Fade out the item widget. This animation continues past the lifetime
   // of |this|.
-  const bool slide = window_selector_->use_slide_animation();
+  const bool slide = window_selector_->enter_exit_overview_type() ==
+                     WindowSelector::EnterExitOverviewType::kWindowsMinimized;
   FadeOutWidgetAndMaybeSlideOnExit(
       std::move(item_widget_),
       slide ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
@@ -553,6 +564,36 @@ void WindowSelectorItem::SlideWindowIn() {
                                    /*slide=*/true);
 }
 
+void WindowSelectorItem::UpdateYPositionAndOpacity(
+    int new_grid_y,
+    float opacity,
+    WindowSelector::UpdateAnimationSettingsCallback callback) {
+  // Animate the window selector widget and the window itself.
+  // TODO(sammiequon): Investigate if we can combine with
+  // FadeInWidgetAndMaybeSlideOnEnter and animate the transient children too.
+  // Also when animating we should remove shadow and rounded corners.
+  std::vector<ui::Layer*> animation_layers = {
+      GetWindowForStacking()->layer(),
+      item_widget_->GetNativeWindow()->layer()};
+  for (auto* layer : animation_layers) {
+    layer->GetAnimator()->StopAnimating();
+    std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+    if (!callback.is_null()) {
+      settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
+          layer->GetAnimator());
+      callback.Run(settings.get(), /*observe=*/false);
+    }
+    layer->SetOpacity(opacity);
+
+    // Alter the y-translation. Offset by the window location relative to the
+    // grid.
+    const int offset = target_bounds_.y() + kHeaderHeightDp + kWindowMargin;
+    gfx::Transform transform = layer->transform();
+    transform.matrix().setFloat(1, 3, static_cast<float>(offset + new_grid_y));
+    layer->SetTransform(transform);
+  }
+}
+
 float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
   gfx::Size inset_size(size.width(), size.height() - 2 * kWindowMargin);
   return ScopedTransformOverviewWindow::GetItemScale(
@@ -574,9 +615,9 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   if (in_bounds_update_)
     return;
 
-  // Do not animate if the resulting bounds does not change. The original window
-  // may change bounds so we still need to call SetItemBounds to update the
-  // window transform.
+  // Do not animate if the resulting bounds does not change. The original
+  // window may change bounds so we still need to call SetItemBounds to update
+  // the window transform.
   OverviewAnimationType new_animation_type = animation_type;
   if (target_bounds == target_bounds_)
     new_animation_type = OVERVIEW_ANIMATION_NONE;
@@ -921,7 +962,6 @@ void WindowSelectorItem::OnDragAnimationCompleted() {
 
 void WindowSelectorItem::SetShadowBounds(
     base::Optional<gfx::Rect> bounds_in_screen) {
-
   // Shadow is normally turned off during animations and reapplied when they
   // are finished. On destruction, |shadow_| is cleaned up before
   // |transform_window_|, which may call this function, so early exit if
@@ -1133,9 +1173,9 @@ void WindowSelectorItem::StartDrag() {
   window_grid_->SetSelectionWidgetVisibility(false);
 
   // |transform_window_| handles hiding shadow and rounded edges mask while
-  // animating, and applies them after animation is complete. Prevent the shadow
-  // and rounded edges mask from showing up after dragging in the case the
-  // window is pressed while still animating.
+  // animating, and applies them after animation is complete. Prevent the
+  // shadow and rounded edges mask from showing up after dragging in the case
+  // the window is pressed while still animating.
   transform_window_.CancelAnimationsListener();
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();

@@ -45,7 +45,8 @@ inline ui::Layer* GetLayer(views::Widget* widget) {
 }
 
 void UpdateOverviewSettings(ui::AnimationMetricsReporter* reporter,
-                            ui::ScopedLayerAnimationSettings* settings) {
+                            ui::ScopedLayerAnimationSettings* settings,
+                            bool observe) {
   settings->SetTransitionDuration(kOverviewAnimationDuration);
   settings->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   settings->SetPreemptionStrategy(
@@ -202,8 +203,7 @@ void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
     view_->UpdateYPositionAndOpacity(y_position_in_screen, background_opacity);
 }
 
-void AppListPresenterImpl::EndDragFromShelf(
-    app_list::AppListViewState app_list_state) {
+void AppListPresenterImpl::EndDragFromShelf(AppListViewState app_list_state) {
   if (view_) {
     if (app_list_state == AppListViewState::CLOSED ||
         view_->app_list_state() == AppListViewState::CLOSED) {
@@ -241,7 +241,7 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
     if (!callback.is_null()) {
       settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
           layer->GetAnimator());
-      callback.Run(settings.get());
+      callback.Run(settings.get(), /*observe=*/false);
     }
     layer->SetOpacity(opacity);
     layer->SetTransform(translation);

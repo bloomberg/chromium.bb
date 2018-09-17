@@ -35,11 +35,10 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   static bool CanSelect();
 
   // Attempts to toggle overview mode and returns true if successful (showing
-  // overview would be unsuccessful if there are no windows to show). If
-  // |toggled_from_home_launcher| is true, enter/exit overview with a different
-  // animation to accommodate the home launcher. |toggled_from_home_launcher|
-  // should only be true if the home launcher button is pressed.
-  bool ToggleOverview(bool toggled_from_home_launcher = false);
+  // overview would be unsuccessful if there are no windows to show). Depending
+  // on |type| the enter/exit animation will look different.
+  bool ToggleOverview(WindowSelector::EnterExitOverviewType type =
+                          WindowSelector::EnterExitOverviewType::kNormal);
 
   // Returns true if window selection mode is active.
   bool IsSelecting() const;

@@ -46,7 +46,7 @@ void AppListShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
   // End overview mode.
   if (Shell::Get()->window_selector_controller()->IsSelecting()) {
     Shell::Get()->window_selector_controller()->ToggleOverview(
-        /*use_slide_animation=*/true);
+        WindowSelector::EnterExitOverviewType::kWindowsMinimized);
     back_action = false;
   }
 

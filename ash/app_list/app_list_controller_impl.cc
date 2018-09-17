@@ -490,7 +490,6 @@ void AppListControllerImpl::FlushForTesting() {
 }
 
 void AppListControllerImpl::OnOverviewModeStarting() {
-  in_overview_mode_ = true;
   if (!IsHomeLauncherEnabledInTabletMode()) {
     DismissAppList();
     return;
@@ -498,15 +497,15 @@ void AppListControllerImpl::OnOverviewModeStarting() {
 
   // Only animate the app list when overview mode is using slide animation.
   presenter_.ScheduleOverviewModeAnimation(
-      true /* start */, Shell::Get()
-                            ->window_selector_controller()
-                            ->window_selector()
-                            ->use_slide_animation() /* animate */);
+      /*start=*/true,
+      Shell::Get()
+              ->window_selector_controller()
+              ->window_selector()
+              ->enter_exit_overview_type() ==
+          WindowSelector::EnterExitOverviewType::kWindowsMinimized);
 }
 
 void AppListControllerImpl::OnOverviewModeEnding() {
-  in_overview_mode_ = false;
-
   if (!IsHomeLauncherEnabledInTabletMode())
     return;
 
@@ -515,10 +514,12 @@ void AppListControllerImpl::OnOverviewModeEnding() {
   // overview mode finishes animating. WindowSelector however is nullptr by the
   // time the animations are finished, so we need to check the animation type
   // here.
-  use_slide_to_exit_overview_mode_ = Shell::Get()
-                                         ->window_selector_controller()
-                                         ->window_selector()
-                                         ->use_slide_animation();
+  use_slide_to_exit_overview_mode_ =
+      Shell::Get()
+          ->window_selector_controller()
+          ->window_selector()
+          ->enter_exit_overview_type() ==
+      WindowSelector::EnterExitOverviewType::kWindowsMinimized;
 }
 
 void AppListControllerImpl::OnOverviewModeEndingAnimationComplete() {
@@ -838,7 +839,9 @@ void AppListControllerImpl::UpdateHomeLauncherVisibility() {
   if (!IsHomeLauncherEnabledInTabletMode() || !presenter_.GetWindow())
     return;
 
-  if (in_overview_mode_ || in_wallpaper_preview_)
+  const bool in_overview =
+      Shell::Get()->window_selector_controller()->IsSelecting();
+  if (in_wallpaper_preview_ || in_overview)
     presenter_.GetWindow()->Hide();
   else
     presenter_.GetWindow()->Show();

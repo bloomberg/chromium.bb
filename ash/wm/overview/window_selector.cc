@@ -354,11 +354,14 @@ void WindowSelector::Init(const WindowList& windows,
           GetDraggedWindow(window_grid->root_window(), mru_window_list);
       if (dragged_window) {
         window_grid->PositionWindows(/*animate=*/false);
-      } else if (use_slide_animation_) {
+      } else if (enter_exit_overview_type_ ==
+                 EnterExitOverviewType::kWindowsMinimized) {
         window_grid->PositionWindows(/*animate=*/false);
         window_grid->SlideWindowsIn();
-        use_slide_animation_ = false;
       } else {
+        // EnterExitOverviewType::kSwipeFromShelf is an exit only type, so it
+        // should not appear here.
+        DCHECK_EQ(enter_exit_overview_type_, EnterExitOverviewType::kNormal);
         window_grid->CalculateWindowListAnimationStates(
             /*selected_item=*/nullptr, OverviewTransition::kEnter);
         window_grid->PositionWindows(/*animate=*/true, /*ignore_item=*/nullptr,
@@ -424,7 +427,8 @@ void WindowSelector::Shutdown() {
   // Setting focus after restoring windows' state avoids unnecessary animations.
   // No need to restore if we are sliding to the home launcher screen, as all
   // windows will be minimized.
-  ResetFocusRestoreWindow(!use_slide_animation_);
+  ResetFocusRestoreWindow(enter_exit_overview_type_ ==
+                          EnterExitOverviewType::kNormal);
   RemoveAllObservers();
 
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_)
@@ -716,6 +720,20 @@ void WindowSelector::SetWindowListNotAnimatedWhenExiting(
   WindowGrid* grid = GetGridWithRootWindow(root_window);
   if (grid)
     grid->SetWindowListNotAnimatedWhenExiting();
+}
+
+void WindowSelector::UpdateGridAtLocationYPositionAndOpacity(
+    const gfx::Point& location,
+    int new_y,
+    float opacity,
+    const gfx::Rect& work_area,
+    UpdateAnimationSettingsCallback callback) {
+  WindowGrid* grid =
+      GetGridWithRootWindow(display::Screen::GetScreen()
+                                ->GetWindowAtScreenPoint(location)
+                                ->GetRootWindow());
+  if (grid)
+    grid->UpdateYPositionAndOpacity(new_y, opacity, work_area, callback);
 }
 
 void WindowSelector::OnDisplayRemoved(const display::Display& display) {

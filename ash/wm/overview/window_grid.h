@@ -199,6 +199,16 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // locations.
   void SlideWindowsIn();
 
+  // Update the y position and opacity of the entire grid. Does this by
+  // transforming the grids |shield_widget_| and the windows in |window_list_|.
+  // If |callback| is true transformation and opacity change should be animated.
+  // The animation settings will be set by the caller via |callback|.
+  void UpdateYPositionAndOpacity(
+      int new_y,
+      float opacity,
+      const gfx::Rect& work_area,
+      WindowSelector::UpdateAnimationSettingsCallback callback);
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
