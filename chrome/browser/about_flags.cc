@@ -2271,6 +2271,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kOfflinePreviews)},
+    {"enable-previews-android-omnibox-ui",
+     flag_descriptions::kEnablePreviewsAndroidOmniboxUIName,
+     flag_descriptions::kEnablePreviewsAndroidOmniboxUIDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(previews::features::kAndroidOmniboxPreviewsBadge)},
 #endif  // OS_ANDROID
     {"enable-client-lo-fi", flag_descriptions::kEnableClientLoFiName,
      flag_descriptions::kEnableClientLoFiDescription, kOsAll,

@@ -28229,6 +28229,7 @@ from previous Chrome versions.
       label="enable-fill-on-account-select-no-highlighting"/>
   <int value="-2143113994" label="enable-ephemeral-apps-in-webstore"/>
   <int value="-2141661938" label="AnimatedAppMenuIcon:enabled"/>
+  <int value="-2141247271" label="AndroidOmniboxPreviewsBadge:enabled"/>
   <int value="-2134333982" label="ShowArcFilesApp:enabled"/>
   <int value="-2134244069" label="HttpFormWarning:enabled"/>
   <int value="-2133892372" label="ResamplingInputEvents:disabled"/>
@@ -28736,6 +28737,7 @@ from previous Chrome versions.
   <int value="-1278796760" label="QueryInOmnibox:enabled"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
   <int value="-1271563519" label="enable-appcontainer"/>
+  <int value="-1269093329" label="AndroidOmniboxPreviewsBadge:disabled"/>
   <int value="-1269084216" label="ash-md"/>
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
   <int value="-1267958145" label="disable-pdf-material-ui"/>
