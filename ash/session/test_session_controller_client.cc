@@ -108,6 +108,11 @@ void TestSessionControllerClient::SetIsRunningInAppMode(bool app_mode) {
   controller_->SetSessionInfo(session_info_->Clone());
 }
 
+void TestSessionControllerClient::SetIsDemoSession() {
+  session_info_->is_demo_session = true;
+  controller_->SetSessionInfo(session_info_->Clone());
+}
+
 void TestSessionControllerClient::CreatePredefinedUserSessions(int count) {
   DCHECK_GT(count, 0);
 
