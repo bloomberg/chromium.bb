@@ -16,7 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/windows_version.h"
 #include "base/win/wmi.h"
 
@@ -85,7 +85,7 @@ int64_t SysInfo::AmountOfVirtualMemory() {
 
 // static
 int64_t SysInfo::AmountOfFreeDiskSpace(const FilePath& path) {
-  AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   int64_t available;
   if (!GetDiskSpaceInfo(path, &available, nullptr))
@@ -95,7 +95,7 @@ int64_t SysInfo::AmountOfFreeDiskSpace(const FilePath& path) {
 
 // static
 int64_t SysInfo::AmountOfTotalDiskSpace(const FilePath& path) {
-  AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   int64_t total;
   if (!GetDiskSpaceInfo(path, nullptr, &total))
