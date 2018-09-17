@@ -16,7 +16,7 @@
 
 namespace device {
 
-class OpenVRRenderLoop;
+class XRCompositorCommon;
 
 class DEVICE_VR_EXPORT OpenVRDevice
     : public VRDeviceBase,
@@ -58,7 +58,7 @@ class DEVICE_VR_EXPORT OpenVRDevice
   void OnPresentingControllerMojoConnectionError();
   void OnPresentationEnded();
 
-  std::unique_ptr<OpenVRRenderLoop> render_loop_;
+  std::unique_ptr<XRCompositorCommon> render_loop_;
   std::unique_ptr<OpenVRWrapper> openvr_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
