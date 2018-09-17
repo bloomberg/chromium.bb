@@ -65,8 +65,7 @@ TEST(CanvasColorParamsTest, MatchSkColorSpaceWithGfxColorSpace) {
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         transformed_pixel_canvas.get(), transformed_pixel_media.get(), 1,
-        kUint16ArrayStorageFormat, kAlphaMultiplied,
-        kUnpremulRoundTripTolerance);
+        kPixelFormat_hhhh, kAlphaMultiplied, kUnpremulRoundTripTolerance);
     }
 }
 

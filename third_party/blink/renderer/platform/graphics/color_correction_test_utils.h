@@ -9,10 +9,17 @@
 
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/third_party/skcms/skcms.h"
 
 namespace blink {
+
+enum PixelFormat {
+  kPixelFormat_8888,      // 8 bit color components
+  kPixelFormat_16161616,  // 16 bit unsigned color components
+  kPixelFormat_hhhh,      // half float color components
+  kPixelFormat_ffff,      // float 32 color components
+};
 
 enum PixelsAlphaMultiply {
   kAlphaMultiplied,
@@ -30,7 +37,7 @@ class ColorCorrectionTestUtils {
       const void* actual_pixels,
       const void* expected_pixels,
       int num_pixels,
-      ImageDataStorageFormat src_storage_format,
+      PixelFormat pixel_format,
       PixelsAlphaMultiply alpha_multiplied,
       UnpremulRoundTripTolerance premul_unpremul_tolerance);
 
@@ -40,9 +47,9 @@ class ColorCorrectionTestUtils {
       CanvasColorSpace src_color_space,
       ImageDataStorageFormat src_storage_format,
       CanvasColorSpace dst_color_space,
-      CanvasPixelFormat dst_pixel_format,
+      CanvasPixelFormat dst_canvas_pixel_format,
       std::unique_ptr<uint8_t[]>& converted_pixels,
-      SkColorSpaceXform::ColorFormat color_format_for_f16_canvas);
+      PixelFormat pixel_format_for_f16_canvas);
 
   static bool MatchColorSpace(SkColorSpace* src_color_space,
                               SkColorSpace* dst_color_space,

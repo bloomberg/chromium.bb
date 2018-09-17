@@ -34,8 +34,7 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
-#include "third_party/skia/include/core/SkSwizzle.h"
+#include "third_party/skia/third_party/skcms/skcms.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -323,77 +322,38 @@ ImageData* ImageData::Create(scoped_refptr<StaticBitmapImage> image,
   DCHECK(skia_image);
   SkImageInfo image_info = GetImageInfo(image);
   CanvasColorParams color_params(image_info);
-  bool premul_needed = (image_info.alphaType() == kUnpremul_SkAlphaType) &&
-                       (alpha_disposition == kPremultiplyAlpha);
-  bool unpremul_needed = (image_info.alphaType() == kPremul_SkAlphaType) &&
-                         (alpha_disposition == kUnpremultiplyAlpha);
+  if (image_info.alphaType() != kOpaque_SkAlphaType) {
+    if (alpha_disposition == kPremultiplyAlpha) {
+      image_info = image_info.makeAlphaType(kPremul_SkAlphaType);
+    } else if (alpha_disposition == kUnpremultiplyAlpha) {
+      image_info = image_info.makeAlphaType(kUnpremul_SkAlphaType);
+    }
+  }
 
-  if (image_info.colorType() != kRGBA_F16_SkColorType) {
+  SkColorType color_type = image_info.colorType();
+  bool create_f32_image_data = (color_type == kRGBA_1010102_SkColorType ||
+                                color_type == kRGB_101010x_SkColorType ||
+                                color_type == kRGBA_F16_SkColorType ||
+                                color_type == kRGBA_F32_SkColorType);
+
+  if (!create_f32_image_data) {
     ImageData* image_data = Create(image->Size(), color_params);
     if (!image_data)
       return nullptr;
     image_info = image_info.makeColorType(kRGBA_8888_SkColorType);
-    if (premul_needed)
-      image_info = image_info.makeAlphaType(kPremul_SkAlphaType);
-    else if (unpremul_needed)
-      image_info = image_info.makeAlphaType(kUnpremul_SkAlphaType);
     skia_image->readPixels(image_info, image_data->data()->Data(),
                            image_info.minRowBytes(), 0, 0);
     return image_data;
   }
 
-  skia_image = skia_image->makeNonTextureImage();
-  SkPixmap pixmap;
-  if (!skia_image->peekPixels(&pixmap)) {
-    DCHECK(false);
-    return nullptr;
-  }
-
-  // If alpha_disposition is kDontChangeAlpha or it mathces the alpha type of
-  // the input image, we don't need to do anything.
-  // If alpha_disposition is kPremultiplyAlpha and image is unpremul, we can do
-  // premul while converting half float to float 32 in SkColorSpacXform::apply.
-  // If alpha_disposition is kUnpremultiplyAlpha and image is premul, we can't
-  // do unpremul in SkColorSpaceXform::apply. Hence, we need to unpremul the
-  // pixmap beforehand.
-  SkAlphaType xform_alpha_type = kUnpremul_SkAlphaType;  // doesn't touch alpha
-  DOMUint16Array* f16_array = nullptr;
-  if (premul_needed) {
-    xform_alpha_type = kPremul_SkAlphaType;
-  } else if (unpremul_needed) {
-    image_info = image_info.makeAlphaType(kUnpremul_SkAlphaType);
-    f16_array = ImageData::AllocateAndValidateUint16Array(
-        image->width() * image->height() * 4, nullptr);
-    if (!f16_array)
-      return nullptr;
-    if (!pixmap.readPixels(image_info, f16_array->Data(),
-                           image_info.minRowBytes())) {
-      NOTREACHED();
-      return nullptr;
-    }
-    pixmap.reset(image_info, f16_array->Data(), image_info.minRowBytes());
-  }
-
-  // If the input image uses half float storage, we need to convert the pixels
-  // to float32. Since SkColorType does not support float 32, we have to use
-  // SkColorSpaceXform for this conversion.
+  // Create image data with f32 storage
   DOMFloat32Array* f32_array = ImageData::AllocateAndValidateFloat32Array(
-      image->width() * image->height() * 4, nullptr);
+      image->Size().Area() * 4, nullptr);
   if (!f32_array)
     return nullptr;
-
-  SkColorSpaceXform::ColorFormat src_color_format =
-      SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
-  SkColorSpaceXform::ColorFormat dst_color_format =
-      SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat;
-  std::unique_ptr<SkColorSpaceXform> xform =
-      SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
-                             SkColorSpace::MakeSRGBLinear().get());
-  bool color_converison_successful = xform->apply(
-      dst_color_format, f32_array->Data(), src_color_format, pixmap.addr(),
-      image->width() * image->height(), xform_alpha_type);
-  DCHECK(color_converison_successful);
-
+  image_info = image_info.makeColorType(kRGBA_F32_SkColorType);
+  skia_image->readPixels(image_info, f32_array->Data(),
+                         image_info.minRowBytes(), 0, 0);
   ImageDataColorSettings color_settings =
       CanvasColorParamsToImageDataColorSettings(color_params);
   return Create(image->Size(), NotShared<blink::DOMArrayBufferView>(f32_array),
@@ -686,28 +646,6 @@ unsigned ImageData::StorageFormatDataSize(
   return 1;
 }
 
-DOMFloat32Array* ImageData::ConvertFloat16ArrayToFloat32Array(
-    const uint16_t* f16_array,
-    unsigned array_length) {
-  if (!f16_array || array_length <= 0)
-    return nullptr;
-
-  DOMFloat32Array* f32_array = AllocateAndValidateFloat32Array(array_length);
-  if (!f32_array)
-    return nullptr;
-
-  std::unique_ptr<SkColorSpaceXform> xform =
-      SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
-                             SkColorSpace::MakeSRGBLinear().get());
-  bool color_converison_successful = false;
-  color_converison_successful = xform->apply(
-      SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat, f32_array->Data(),
-      SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat, f16_array,
-      array_length, SkAlphaType::kUnpremul_SkAlphaType);
-  DCHECK(color_converison_successful);
-  return f32_array;
-}
-
 DOMArrayBufferView*
 ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
     WTF::ArrayBufferContents& content,
@@ -716,89 +654,52 @@ ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
   if (!content.DataLength())
     return nullptr;
 
-  // Uint16 is not supported as the storage format for ImageData created from a
-  // canvas
-  if (storage_format == kUint16ArrayStorageFormat)
-    return nullptr;
-
-  unsigned num_pixels = 0;
-  DOMArrayBuffer* array_buffer = nullptr;
-  DOMUint8ClampedArray* u8_array = nullptr;
-  DOMFloat32Array* f32_array = nullptr;
-
-  SkColorSpaceXform::ColorFormat src_color_format =
-      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  SkColorSpaceXform::ColorFormat dst_color_format =
-      SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat;
-  std::unique_ptr<SkColorSpaceXform> xform =
-      SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
-                             SkColorSpace::MakeSRGBLinear().get());
-
-  // To speed up the conversion process, we use SkColorSpaceXform::apply()
-  // wherever appropriate.
-  bool color_converison_successful = false;
-  switch (pixel_format) {
-    case kRGBA8CanvasPixelFormat:
-      num_pixels = content.DataLength() / 4;
-      switch (storage_format) {
-        case kUint8ClampedArrayStorageFormat:
-          array_buffer = DOMArrayBuffer::Create(content);
-          return DOMUint8ClampedArray::Create(array_buffer, 0,
-                                              array_buffer->ByteLength());
-          break;
-        case kFloat32ArrayStorageFormat:
-          f32_array = AllocateAndValidateFloat32Array(num_pixels * 4);
-          if (!f32_array)
-            return nullptr;
-          color_converison_successful = xform->apply(
-              dst_color_format, f32_array->Data(), src_color_format,
-              content.Data(), num_pixels, SkAlphaType::kUnpremul_SkAlphaType);
-          DCHECK(color_converison_successful);
-          return f32_array;
-          break;
-        default:
-          NOTREACHED();
-      }
-      break;
-
-    case kF16CanvasPixelFormat:
-      num_pixels = content.DataLength() / 8;
-      src_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
-
-      switch (storage_format) {
-        case kUint8ClampedArrayStorageFormat:
-          u8_array = AllocateAndValidateUint8ClampedArray(num_pixels * 4);
-          if (!u8_array)
-            return nullptr;
-          dst_color_format =
-              SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-          color_converison_successful = xform->apply(
-              dst_color_format, u8_array->Data(), src_color_format,
-              content.Data(), num_pixels, SkAlphaType::kUnpremul_SkAlphaType);
-          DCHECK(color_converison_successful);
-          return u8_array;
-          break;
-        case kFloat32ArrayStorageFormat:
-          f32_array = AllocateAndValidateFloat32Array(num_pixels * 4);
-          if (!f32_array)
-            return nullptr;
-          dst_color_format =
-              SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat;
-          color_converison_successful = xform->apply(
-              dst_color_format, f32_array->Data(), src_color_format,
-              content.Data(), num_pixels, SkAlphaType::kUnpremul_SkAlphaType);
-          DCHECK(color_converison_successful);
-          return f32_array;
-          break;
-        default:
-          NOTREACHED();
-      }
-      break;
-
-    default:
-      NOTREACHED();
+  if (pixel_format == kRGBA8CanvasPixelFormat &&
+      storage_format == kUint8ClampedArrayStorageFormat) {
+    DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(content);
+    return DOMUint8ClampedArray::Create(array_buffer, 0,
+                                        array_buffer->ByteLength());
   }
-  return nullptr;
+
+  skcms_PixelFormat src_format = skcms_PixelFormat_RGBA_8888;
+  unsigned num_pixels = content.DataLength() / 4;
+  if (pixel_format == kF16CanvasPixelFormat) {
+    src_format = skcms_PixelFormat_RGBA_hhhh;
+    num_pixels /= 2;
+  }
+  skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
+
+  if (storage_format == kUint8ClampedArrayStorageFormat) {
+    DOMUint8ClampedArray* u8_array =
+        AllocateAndValidateUint8ClampedArray(num_pixels * 4);
+    if (!u8_array)
+      return nullptr;
+    bool data_transform_successful = skcms_Transform(
+        content.Data(), src_format, alpha_format, nullptr, u8_array->Data(),
+        skcms_PixelFormat_RGBA_8888, alpha_format, nullptr, num_pixels);
+    DCHECK(data_transform_successful);
+    return u8_array;
+  }
+
+  if (storage_format == kUint16ArrayStorageFormat) {
+    DOMUint16Array* u16_array = AllocateAndValidateUint16Array(num_pixels * 4);
+    if (!u16_array)
+      return nullptr;
+    bool data_transform_successful = skcms_Transform(
+        content.Data(), src_format, alpha_format, nullptr, u16_array->Data(),
+        skcms_PixelFormat_RGBA_16161616LE, alpha_format, nullptr, num_pixels);
+    DCHECK(data_transform_successful);
+    return u16_array;
+  }
+
+  DOMFloat32Array* f32_array = AllocateAndValidateFloat32Array(num_pixels * 4);
+  if (!f32_array)
+    return nullptr;
+  bool data_transform_successful = skcms_Transform(
+      content.Data(), src_format, alpha_format, nullptr, f32_array->Data(),
+      skcms_PixelFormat_RGBA_ffff, alpha_format, nullptr, num_pixels);
+  DCHECK(data_transform_successful);
+  return f32_array;
 }
 
 DOMArrayBufferBase* ImageData::BufferBase() const {
@@ -822,47 +723,6 @@ CanvasColorParams ImageData::GetCanvasColorParams() {
   return CanvasColorParams(color_space, pixel_format, kNonOpaque);
 }
 
-void ImageData::SwapU16EndiannessForSkColorSpaceXform(
-    const IntRect* crop_rect) {
-  if (!data_u16_)
-    return;
-  uint16_t* buffer = static_cast<uint16_t*>(data_u16_->BufferBase()->Data());
-  if (crop_rect) {
-    int start_index = (crop_rect->X() + crop_rect->Y() * width()) * 4;
-    for (int i = 0; i < crop_rect->Height(); i++) {
-      for (int j = 0; j < crop_rect->Width(); j++)
-        buffer[start_index + j] = base::ByteSwap(buffer[start_index + j]);
-      start_index += width() * 4;
-    }
-    return;
-  }
-  for (unsigned i = 0; i < size_.Area() * 4; i++)
-    buffer[i] = base::ByteSwap(buffer[i]);
-};
-
-void ImageData::SwizzleIfNeeded(DataU8ColorType u8_color_type,
-                                const IntRect* crop_rect) {
-  // ImageData is always in RGBA color component order. If this is the same for
-  // kN32, swizzling is not needed.
-  if (!data_ || u8_color_type == kRGBAColorType ||
-      kN32_SkColorType == kRGBA_8888_SkColorType)
-    return;
-  // Wide gamut color spaces are always in RGBA color component order.
-  if (!GetCanvasColorParams().NeedsSkColorSpaceXformCanvas())
-    return;
-  if (crop_rect) {
-    uint32_t* data_u32 = static_cast<uint32_t*>(BufferBase()->Data());
-    for (int i = crop_rect->Y(); i < crop_rect->Y() + crop_rect->Height();
-         i++) {
-      SkSwapRB(data_u32 + i * width() + crop_rect->X(),
-               data_u32 + i * width() + crop_rect->X(), crop_rect->Width());
-    }
-    return;
-  }
-  SkSwapRB(static_cast<uint32_t*>(BufferBase()->Data()),
-           static_cast<uint32_t*>(BufferBase()->Data()), Size().Area());
-}
-
 bool ImageData::ImageDataInCanvasColorSettings(
     CanvasColorSpace canvas_color_space,
     CanvasPixelFormat canvas_pixel_format,
@@ -873,113 +733,74 @@ bool ImageData::ImageDataInCanvasColorSettings(
   if (!data_ && !data_u16_ && !data_f32_)
     return false;
 
-  CanvasColorParams dst_color_params =
+  CanvasColorParams canvas_color_params =
       CanvasColorParams(canvas_color_space, canvas_pixel_format, kNonOpaque);
 
-  void* src_data = BufferBase()->Data();
+  unsigned char* src_data = static_cast<unsigned char*>(BufferBase()->Data());
+
+  ImageDataStorageFormat storage_format = GetImageDataStorageFormat();
+
+  skcms_PixelFormat src_pixel_format = skcms_PixelFormat_RGBA_8888;
+  if (data_u16_)
+    src_pixel_format = skcms_PixelFormat_RGBA_16161616LE;
+  else if (data_f32_)
+    src_pixel_format = skcms_PixelFormat_RGBA_ffff;
+
+  skcms_PixelFormat dst_pixel_format = skcms_PixelFormat_RGBA_8888;
+  if (canvas_pixel_format == kRGBA8CanvasPixelFormat &&
+      u8_color_type == kN32ColorType &&
+      kN32_SkColorType == kBGRA_8888_SkColorType) {
+    dst_pixel_format = skcms_PixelFormat_BGRA_8888;
+  } else if (canvas_pixel_format == kF16CanvasPixelFormat) {
+    dst_pixel_format = skcms_PixelFormat_RGBA_hhhh;
+  }
+
+  skcms_AlphaFormat src_alpha_format = skcms_AlphaFormat_Unpremul;
+  skcms_AlphaFormat dst_alpha_format = skcms_AlphaFormat_Unpremul;
+  if (alpha_disposition == kPremultiplyAlpha)
+    dst_alpha_format = skcms_AlphaFormat_PremulAsEncoded;
+
   sk_sp<SkColorSpace> src_color_space =
-      GetCanvasColorParams().GetSkColorSpaceForSkSurfaces();
-  sk_sp<SkColorSpace> dst_color_space =
-      dst_color_params.GetSkColorSpaceForSkSurfaces();
+      GetCanvasColorParams().GetSkColorSpace();
+  sk_sp<SkColorSpace> dst_color_space = canvas_color_params.GetSkColorSpace();
+  skcms_ICCProfile src_profile, dst_profile;
+  src_color_space->toProfile(&src_profile);
+  dst_color_space->toProfile(&dst_profile);
+
   const IntRect* crop_rect = nullptr;
   if (src_rect && *src_rect != IntRect(IntPoint(), Size()))
     crop_rect = src_rect;
 
-  // if color conversion is not needed, copy data into pixel buffer.
-  if (!src_color_space.get() && !dst_color_space.get() && data_) {
-    int num_pixels = width() * height();
-    SwizzleIfNeeded(u8_color_type, crop_rect);
-    if (crop_rect) {
-      unsigned char* src_data =
-          static_cast<unsigned char*>(BufferBase()->Data());
-      unsigned char* dst_data = static_cast<unsigned char*>(converted_pixels);
-      int src_index = (crop_rect->X() + crop_rect->Y() * width()) * 4;
-      int dst_index = 0;
-      int src_row_stride = width() * 4;
-      int dst_row_stride = crop_rect->Width() * 4;
-      for (int i = 0; i < crop_rect->Height(); i++) {
-        std::memcpy(dst_data + dst_index, src_data + src_index, dst_row_stride);
-        src_index += src_row_stride;
-        dst_index += dst_row_stride;
-      }
-      num_pixels = crop_rect->Width() * crop_rect->Height();
-    } else {
-      memcpy(converted_pixels, data_->Data(), data_->length());
-    }
-    bool conversion_result = true;
-    if (alpha_disposition == kPremultiplyAlpha) {
-      std::unique_ptr<SkColorSpaceXform> xform =
-          SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
-                                 SkColorSpace::MakeSRGBLinear().get());
-      SkColorSpaceXform::ColorFormat color_format =
-          SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-      conversion_result =
-          xform->apply(color_format, converted_pixels, color_format,
-                       converted_pixels, num_pixels, kPremul_SkAlphaType);
-    }
-    SwizzleIfNeeded(u8_color_type, crop_rect);
-    return conversion_result;
-  }
-
-  bool conversion_result = false;
-  if (!src_color_space.get())
-    src_color_space = SkColorSpace::MakeSRGB();
-  if (!dst_color_space.get())
-    dst_color_space = SkColorSpace::MakeSRGB();
-  std::unique_ptr<SkColorSpaceXform> xform =
-      SkColorSpaceXform::New(src_color_space.get(), dst_color_space.get());
-
-  SkColorSpaceXform::ColorFormat src_color_format =
-      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  if (data_u16_)
-    src_color_format = SkColorSpaceXform::ColorFormat::kRGBA_U16_BE_ColorFormat;
-  else if (data_f32_)
-    src_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat;
-  SkColorSpaceXform::ColorFormat dst_color_format =
-      u8_color_type == kRGBAColorType ||
-              kN32_SkColorType == kRGBA_8888_SkColorType
-          ? SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat
-          : SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat;
-  if (canvas_pixel_format == kF16CanvasPixelFormat)
-    dst_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
-  SkAlphaType alpha_type = (alpha_disposition == kPremultiplyAlpha)
-                               ? kPremul_SkAlphaType
-                               : kUnpremul_SkAlphaType;
-
-  // SkColorSpaceXform only accepts big-endian integers when source data is
-  // uint16. Since ImageData is always little-endian, we need to convert back
-  // and forth before passing uint16 data to SkColorSpaceXform::apply().
-  SwapU16EndiannessForSkColorSpaceXform(crop_rect);
-
+  // If only a portion of ImageData is required for canvas, we run the transform
+  // for every line.
   if (crop_rect) {
-    unsigned char* src_data = static_cast<unsigned char*>(BufferBase()->Data());
-    unsigned char* dst_data = static_cast<unsigned char*>(converted_pixels);
-    int src_data_type_size =
-        ImageData::StorageFormatDataSize(color_settings_.storageFormat());
-    int dst_pixel_size = dst_color_params.BytesPerPixel();
-    int src_index =
-        (crop_rect->X() + crop_rect->Y() * width()) * 4 * src_data_type_size;
-    int dst_index = 0;
-    int src_row_stride = width() * 4 * src_data_type_size;
-    int dst_row_stride = crop_rect->Width() * dst_pixel_size;
-    conversion_result = true;
-    for (int i = 0; i < crop_rect->Height(); i++) {
-      conversion_result &=
-          xform->apply(dst_color_format, dst_data + dst_index, src_color_format,
-                       src_data + src_index, crop_rect->Width(), alpha_type);
-      if (!conversion_result)
-        break;
+    unsigned bytes_per_pixel =
+        ImageData::StorageFormatDataSize(storage_format) * 4;
+    unsigned src_index =
+        (crop_rect->X() + crop_rect->Y() * width()) * bytes_per_pixel;
+    unsigned dst_index = 0;
+    unsigned src_row_stride = width() * bytes_per_pixel;
+    unsigned dst_row_stride =
+        crop_rect->Width() * canvas_color_params.BytesPerPixel();
+    bool data_transform_successful = true;
+
+    for (int i = 0; data_transform_successful && i < crop_rect->Height(); i++) {
+      data_transform_successful = skcms_Transform(
+          src_data + src_index, src_pixel_format, src_alpha_format,
+          &src_profile, converted_pixels + dst_index, dst_pixel_format,
+          dst_alpha_format, &dst_profile, crop_rect->Width());
+      DCHECK(data_transform_successful);
       src_index += src_row_stride;
       dst_index += dst_row_stride;
     }
-  } else {
-    conversion_result =
-        xform->apply(dst_color_format, converted_pixels, src_color_format,
-                     src_data, size_.Area(), alpha_type);
+    return data_transform_successful;
   }
 
-  SwapU16EndiannessForSkColorSpaceXform(crop_rect);
-  return conversion_result;
+  bool data_transform_successful =
+      skcms_Transform(src_data, src_pixel_format, src_alpha_format,
+                      &src_profile, converted_pixels, dst_pixel_format,
+                      dst_alpha_format, &dst_profile, size_.Area());
+  return data_transform_successful;
 }
 
 void ImageData::Trace(blink::Visitor* visitor) {

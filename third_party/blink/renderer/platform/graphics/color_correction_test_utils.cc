@@ -9,30 +9,6 @@
 
 namespace blink {
 
-// This function is a compact version of SkHalfToFloat from Skia. If many
-// color correction tests fail at the same time, please check if SkHalf format
-// has changed.
-static float Float16ToFloat(const uint16_t& f16) {
-  union FloatUIntUnion {
-    uint32_t fUInt;
-    float fFloat;
-  };
-  FloatUIntUnion magic = {126 << 23};
-  FloatUIntUnion o;
-  if (((f16 >> 10) & 0x001f) == 0) {
-    o.fUInt = magic.fUInt + (f16 & 0x03ff);
-    o.fFloat -= magic.fFloat;
-  } else {
-    o.fUInt = (f16 & 0x03ff) << 13;
-    if (((f16 >> 10) & 0x001f) == 0x1f)
-      o.fUInt |= (255 << 23);
-    else
-      o.fUInt |= ((127 - 15 + ((f16 >> 10) & 0x001f)) << 23);
-  }
-  o.fUInt |= ((f16 >> 15) << 31);
-  return o.fFloat;
-}
-
 bool ColorCorrectionTestUtils::IsNearlyTheSame(float expected,
                                                float actual,
                                                float tolerance) {
@@ -45,17 +21,18 @@ void ColorCorrectionTestUtils::CompareColorCorrectedPixels(
     const void* actual_pixels,
     const void* expected_pixels,
     int num_pixels,
-    ImageDataStorageFormat src_storage_format,
+    PixelFormat pixel_format,
     PixelsAlphaMultiply alpha_multiplied,
     UnpremulRoundTripTolerance premul_unpremul_tolerance) {
   bool test_passed = true;
-  int srgb_color_correction_tolerance = 3;
-  float wide_gamut_color_correction_tolerance = 0.01;
+  int _8888_color_correction_tolerance = 3;
+  int _16161616_color_correction_tolerance = 255;
+  float floating_point_color_correction_tolerance = 0.01;
   if (premul_unpremul_tolerance == kNoUnpremulRoundTripTolerance)
-    wide_gamut_color_correction_tolerance = 0;
+    floating_point_color_correction_tolerance = 0;
 
-  switch (src_storage_format) {
-    case kUint8ClampedArrayStorageFormat: {
+  switch (pixel_format) {
+    case kPixelFormat_8888: {
       if (premul_unpremul_tolerance == kUnpremulRoundTripTolerance) {
         // Premul->unpremul->premul round trip does not introduce any error when
         // rounding intermediate results. However, we still might see some error
@@ -75,7 +52,7 @@ void ColorCorrectionTestUtils::CompareColorCorrectedPixels(
             test_passed &= IsNearlyTheSame(
                 actual_pixels_u8[i * 4 + j] * alpha_multiplier,
                 expected_pixels_u8[i * 4 + j] * alpha_multiplier,
-                srgb_color_correction_tolerance);
+                _8888_color_correction_tolerance);
           }
         }
       } else {
@@ -85,32 +62,49 @@ void ColorCorrectionTestUtils::CompareColorCorrectedPixels(
       break;
     }
 
-    case kUint16ArrayStorageFormat: {
+    case kPixelFormat_16161616: {
       const uint16_t* actual_pixels_u16 =
           static_cast<const uint16_t*>(actual_pixels);
       const uint16_t* expected_pixels_u16 =
           static_cast<const uint16_t*>(expected_pixels);
-      for (int i = 0; test_passed && i < num_pixels; i++) {
-        for (int j = 0; j < 4; j++) {
-          test_passed &=
-              IsNearlyTheSame(Float16ToFloat(actual_pixels_u16[i * 4 + j]),
-                              Float16ToFloat(expected_pixels_u16[i * 4 + j]),
-                              wide_gamut_color_correction_tolerance);
-        }
+      for (int i = 0; test_passed && i < num_pixels * 4; i++) {
+        test_passed &=
+            IsNearlyTheSame(actual_pixels_u16[i], expected_pixels_u16[i],
+                            _16161616_color_correction_tolerance);
       }
       break;
     }
 
-    case kFloat32ArrayStorageFormat: {
+    case kPixelFormat_hhhh: {
+      float actual_pixels_f32[num_pixels * 4];
+      float expected_pixels_f32[num_pixels * 4];
+      EXPECT_TRUE(
+          skcms_Transform(actual_pixels, skcms_PixelFormat_RGBA_hhhh,
+                          skcms_AlphaFormat_Unpremul, nullptr,
+                          actual_pixels_f32, skcms_PixelFormat_BGRA_ffff,
+                          skcms_AlphaFormat_Unpremul, nullptr, num_pixels));
+      EXPECT_TRUE(
+          skcms_Transform(expected_pixels, skcms_PixelFormat_RGBA_hhhh,
+                          skcms_AlphaFormat_Unpremul, nullptr,
+                          expected_pixels_f32, skcms_PixelFormat_BGRA_ffff,
+                          skcms_AlphaFormat_Unpremul, nullptr, num_pixels));
+
+      for (int i = 0; test_passed && i < num_pixels * 4; i++) {
+        test_passed &=
+            IsNearlyTheSame(actual_pixels_f32[i], expected_pixels_f32[i],
+                            floating_point_color_correction_tolerance);
+      }
+      break;
+    }
+
+    case kPixelFormat_ffff: {
       const float* actual_pixels_f32 = static_cast<const float*>(actual_pixels);
       const float* expected_pixels_f32 =
           static_cast<const float*>(expected_pixels);
-      for (int i = 0; test_passed && i < num_pixels; i++) {
-        for (int j = 0; j < 4; j++) {
-          test_passed &= IsNearlyTheSame(actual_pixels_f32[i * 4 + j],
-                                         expected_pixels_f32[i * 4 + j],
-                                         wide_gamut_color_correction_tolerance);
-        }
+      for (int i = 0; test_passed && i < num_pixels * 4; i++) {
+        test_passed &=
+            IsNearlyTheSame(actual_pixels_f32[i], expected_pixels_f32[i],
+                            floating_point_color_correction_tolerance);
       }
       break;
     }
@@ -127,39 +121,22 @@ bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
     CanvasColorSpace src_color_space,
     ImageDataStorageFormat src_storage_format,
     CanvasColorSpace dst_color_space,
-    CanvasPixelFormat dst_pixel_format,
+    CanvasPixelFormat dst_canvas_pixel_format,
     std::unique_ptr<uint8_t[]>& converted_pixels,
-    SkColorSpaceXform::ColorFormat color_format_for_f16_canvas) {
-  unsigned num_pixels = num_elements / 4;
-  // Setting SkColorSpaceXform::apply parameters
-  SkColorSpaceXform::ColorFormat src_color_format =
-      SkColorSpaceXform::kRGBA_8888_ColorFormat;
-
-  uint16_t* u16_buffer = static_cast<uint16_t*>(src_data);
-  switch (src_storage_format) {
-    case kUint8ClampedArrayStorageFormat:
-      break;
-
-    case kUint16ArrayStorageFormat:
-      src_color_format =
-          SkColorSpaceXform::ColorFormat::kRGBA_U16_BE_ColorFormat;
-      for (int i = 0; i < num_elements; i++)
-        u16_buffer[i] = base::ByteSwap(u16_buffer[i]);
-      break;
-
-    case kFloat32ArrayStorageFormat:
-      src_color_format = SkColorSpaceXform::kRGBA_F32_ColorFormat;
-      break;
-
-    default:
-      NOTREACHED();
-      return false;
+    PixelFormat pixel_format_for_f16_canvas) {
+  skcms_PixelFormat src_pixel_format = skcms_PixelFormat_RGBA_8888;
+  if (src_storage_format == kUint16ArrayStorageFormat) {
+    src_pixel_format = skcms_PixelFormat_RGBA_16161616LE;
+  } else if (src_storage_format == kFloat32ArrayStorageFormat) {
+    src_pixel_format = skcms_PixelFormat_RGBA_ffff;
   }
 
-  SkColorSpaceXform::ColorFormat dst_color_format =
-      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  if (dst_pixel_format == kF16CanvasPixelFormat)
-    dst_color_format = color_format_for_f16_canvas;
+  skcms_PixelFormat dst_pixel_format = skcms_PixelFormat_RGBA_8888;
+  if (dst_canvas_pixel_format == kF16CanvasPixelFormat) {
+    dst_pixel_format = (pixel_format_for_f16_canvas == kPixelFormat_hhhh)
+                           ? skcms_PixelFormat_RGBA_hhhh
+                           : skcms_PixelFormat_RGBA_ffff;
+  }
 
   sk_sp<SkColorSpace> src_sk_color_space = nullptr;
   src_sk_color_space =
@@ -173,21 +150,21 @@ bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
     src_sk_color_space = SkColorSpace::MakeSRGB();
 
   sk_sp<SkColorSpace> dst_sk_color_space =
-      CanvasColorParams(dst_color_space, dst_pixel_format, kNonOpaque)
+      CanvasColorParams(dst_color_space, dst_canvas_pixel_format, kNonOpaque)
           .GetSkColorSpaceForSkSurfaces();
   if (!dst_sk_color_space.get())
     dst_sk_color_space = SkColorSpace::MakeSRGB();
 
-  std::unique_ptr<SkColorSpaceXform> xform = SkColorSpaceXform::New(
-      src_sk_color_space.get(), dst_sk_color_space.get());
-  bool conversion_result =
-      xform->apply(dst_color_format, converted_pixels.get(), src_color_format,
-                   src_data, num_pixels, kUnpremul_SkAlphaType);
+  skcms_ICCProfile src_profile, dst_profile;
+  src_sk_color_space->toProfile(&src_profile);
+  dst_sk_color_space->toProfile(&dst_profile);
 
-  if (src_storage_format == kUint16ArrayStorageFormat) {
-    for (int i = 0; i < num_elements; i++)
-      u16_buffer[i] = base::ByteSwap(u16_buffer[i]);
-  }
+  skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
+  bool conversion_result =
+      skcms_Transform(src_data, src_pixel_format, alpha_format, &src_profile,
+                      converted_pixels.get(), dst_pixel_format, alpha_format,
+                      &dst_profile, num_elements / 4);
+
   return conversion_result;
 }
 
@@ -269,11 +246,11 @@ bool ColorCorrectionTestUtils::MatchSkImages(sk_sp<SkImage> src_image,
     return test_passed;
   }
 
-  std::unique_ptr<uint16_t[]> src_pixels(new uint16_t[num_pixels * 4]());
-  std::unique_ptr<uint16_t[]> dst_pixels(new uint16_t[num_pixels * 4]());
+  std::unique_ptr<float[]> src_pixels(new float[num_pixels * 4]());
+  std::unique_ptr<float[]> dst_pixels(new float[num_pixels * 4]());
 
-  src_info = src_info.makeColorType(kRGBA_F16_SkColorType);
-  dst_info = dst_info.makeColorType(kRGBA_F16_SkColorType);
+  src_info = src_info.makeColorType(kRGBA_F32_SkColorType);
+  dst_info = dst_info.makeColorType(kRGBA_F32_SkColorType);
 
   src_image->readPixels(src_info, src_pixels.get(), src_info.minRowBytes(), 0,
                         0);
@@ -282,9 +259,8 @@ bool ColorCorrectionTestUtils::MatchSkImages(sk_sp<SkImage> src_image,
 
   for (int i = 0; test_passed && i < num_pixels; i++) {
     for (int j = 0; j < num_components; j++) {
-      test_passed &=
-          IsNearlyTheSame(Float16ToFloat(src_pixels[i * 4 + j]),
-                          Float16ToFloat(dst_pixels[i * 4 + j]), f16_tolerance);
+      test_passed &= IsNearlyTheSame(src_pixels[i * 4 + j],
+                                     dst_pixels[i * 4 + j], f16_tolerance);
     }
   }
   return test_passed;
