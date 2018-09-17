@@ -5099,3 +5099,6 @@ crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experim
 crbug.com/883591 [ Android ] fullscreen/full-screen-inline-split-crash.html [ Pass Crash ]
 crbug.com/883860 [ Mac ] external/wpt/service-workers/service-worker/interfaces-sw.https.html  [ Failure ]
 crbug.com/883837 [ Win7 ] http/tests/performance-timing/resource_timing_buffer_full_250.html [ Timeout Pass ]
+
+crbug.com/v8/8186 external/wpt/wasm/jsapi/module/customSections.any.html [ Skip ]
+crbug.com/v8/8186 external/wpt/wasm/jsapi/module/customSections.any.worker.html [ Skip ]
