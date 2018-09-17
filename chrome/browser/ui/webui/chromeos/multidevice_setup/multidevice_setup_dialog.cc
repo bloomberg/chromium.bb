@@ -8,6 +8,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_handler.h"
+#include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -28,71 +29,8 @@ namespace multidevice_setup {
 
 namespace {
 
-// TODO(khorimoto): Localize footnote marker if necessary.
-const char kFootnoteMarker[] = "*";
-
 constexpr int kDialogHeightPx = 640;
 constexpr int kDialogWidthPx = 768;
-
-void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
-  static constexpr struct {
-    const char* name;
-    int id;
-  } kLocalizedStringsWithoutPlaceholders[] = {
-      {"accept", IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL},
-      {"cancel", IDS_CANCEL},
-      {"done", IDS_DONE},
-      {"passwordPageHeader", IDS_MULTIDEVICE_SETUP_PASSWORD_PAGE_HEADER},
-      {"enterPassword",
-       IDS_MULTIDEVICE_SETUP_PASSWORD_PAGE_ENTER_PASSWORD_LABEL},
-      {"wrongPassword",
-       IDS_MULTIDEVICE_SETUP_PASSWORD_PAGE_WRONG_PASSWORD_LABEL},
-      {"startSetupPageMultipleDeviceHeader",
-       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MULTIPLE_DEVICE_HEADER},
-      {"startSetupPageSingleDeviceHeader",
-       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_SINGLE_DEVICE_HEADER},
-      {"startSetupPageFeatureListHeader",
-       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FEATURE_LIST_HEADER},
-      {"startSetupPageFeatureListInstallApps",
-       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_INSTALL_APPS_DESCRIPTION},
-      {"startSetupPageFeatureListAddFeatures",
-       IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_ADD_FEATURES},
-      {"setupFailedPageHeader", IDS_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_HEADER},
-      {"setupFailedPageMessage",
-       IDS_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_MESSAGE},
-      {"setupSucceededPageHeader",
-       IDS_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_HEADER},
-      {"setupSucceededPageMessage",
-       IDS_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_MESSAGE},
-      {"startSetupPageHeader", IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER},
-      {"title", IDS_MULTIDEVICE_SETUP_DIALOG_TITLE},
-      {"tryAgain", IDS_MULTIDEVICE_SETUP_TRY_AGAIN_LABEL},
-  };
-
-  for (const auto& entry : kLocalizedStringsWithoutPlaceholders)
-    html_source->AddLocalizedString(entry.name, entry.id);
-
-  html_source->AddString(
-      "startSetupPageMessage",
-      l10n_util::GetStringFUTF16(
-          IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE,
-          base::ASCIIToUTF16(kFootnoteMarker),
-          base::UTF8ToUTF16(
-              chromeos::multidevice_setup::
-                  GetBoardSpecificBetterTogetherSuiteLearnMoreUrl()
-                      .spec())));
-  html_source->AddString("startSetupPageFootnote",
-                         l10n_util::GetStringFUTF16(
-                             IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE,
-                             base::ASCIIToUTF16(kFootnoteMarker)));
-  html_source->AddString(
-      "startSetupPageFeatureListAwm",
-      l10n_util::GetStringFUTF16(
-          IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AWM_DESCRIPTION,
-          base::UTF8ToUTF16(chromeos::multidevice_setup::
-                                GetBoardSpecificMessagesLearnMoreUrl()
-                                    .spec())));
-}
 
 }  // namespace
 
@@ -134,7 +72,7 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIMultiDeviceSetupHost);
 
-  AddMultiDeviceSetupStrings(source);
+  chromeos::multidevice_setup::AddLocalizedStrings(source);
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(
       IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_DIALOG_HTML);
