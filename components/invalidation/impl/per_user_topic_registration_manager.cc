@@ -44,7 +44,7 @@ using SubscriptionFinishedCallback =
                             std::string private_topic_name,
                             PerUserTopicRegistrationRequest::RequestType type)>;
 
-static const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
+static const net::BackoffEntry::Policy kBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
     // exponential back-off rules.
     0,
@@ -86,13 +86,15 @@ struct PerUserTopicRegistrationManager::RegistrationEntry {
 
   void RegistrationFinished(const Status& code,
                             const std::string& private_topic_name);
-
-  void DoRegister();
+  void Cancel();
 
   // The object for which this is the status.
-  const Topic id;
+  const Topic topic;
   SubscriptionFinishedCallback completion_callback;
   PerUserTopicRegistrationRequest::RequestType type;
+
+  base::OneShotTimer request_retry_timer_;
+  net::BackoffEntry request_backoff_;
 
   std::unique_ptr<PerUserTopicRegistrationRequest> request;
 
@@ -100,10 +102,13 @@ struct PerUserTopicRegistrationManager::RegistrationEntry {
 };
 
 PerUserTopicRegistrationManager::RegistrationEntry::RegistrationEntry(
-    const Topic& id,
+    const Topic& topic,
     SubscriptionFinishedCallback completion_callback,
     PerUserTopicRegistrationRequest::RequestType type)
-    : id(id), completion_callback(std::move(completion_callback)), type(type) {}
+    : topic(topic),
+      completion_callback(std::move(completion_callback)),
+      type(type),
+      request_backoff_(&kBackoffPolicy) {}
 
 PerUserTopicRegistrationManager::RegistrationEntry::~RegistrationEntry() {}
 
@@ -111,7 +116,12 @@ void PerUserTopicRegistrationManager::RegistrationEntry::RegistrationFinished(
     const Status& code,
     const std::string& topic_name) {
   if (completion_callback)
-    std::move(completion_callback).Run(id, code, topic_name, type);
+    std::move(completion_callback).Run(topic, code, topic_name, type);
+}
+
+void PerUserTopicRegistrationManager::RegistrationEntry::Cancel() {
+  request_retry_timer_.Stop();
+  request.reset();
 }
 
 PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
@@ -121,7 +131,7 @@ PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
     const ParseJSONCallback& parse_json)
     : local_state_(local_state),
       identity_provider_(identity_provider),
-      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
+      request_access_token_backoff_(&kBackoffPolicy),
       parse_json_(parse_json),
       url_loader_factory_(url_loader_factory) {}
 
@@ -163,6 +173,9 @@ void PerUserTopicRegistrationManager::UpdateRegisteredTopics(
   for (const auto& topic : topics) {
     // If id isn't registered, schedule the registration.
     if (topic_to_private_topic_.find(topic) == topic_to_private_topic_.end()) {
+      auto it = registration_statuses_.find(topic);
+      if (it != registration_statuses_.end())
+        it->second->Cancel();
       registration_statuses_[topic] = std::make_unique<RegistrationEntry>(
           topic,
           base::BindOnce(
@@ -208,7 +221,7 @@ void PerUserTopicRegistrationManager::StartRegistrationRequest(
     return;
   }
   PerUserTopicRegistrationRequest::Builder builder;
-
+  it->second->request.reset();  // Resetting request in case it's running.
   it->second->request = builder.SetToken(token_)
                             .SetScope(kInvalidationRegistrationScope)
                             .SetPublicTopicName(topic)
@@ -245,10 +258,25 @@ void PerUserTopicRegistrationManager::RegistrationFinishedForTopic(
       }
     }
     local_state_->CommitPendingWrite();
-    return;
+  } else {
+    if (code.IsAuthFailure()) {
+      // Re-request access token and fire registrations again.
+      RequestAccessToken();
+    } else {
+      auto completition_callback = base::BindOnce(
+          &PerUserTopicRegistrationManager::RegistrationFinishedForTopic,
+          base::Unretained(this));
+      registration_statuses_[topic]->completion_callback =
+          std::move(completition_callback);
+      registration_statuses_[topic]->request_backoff_.InformOfRequest(false);
+      registration_statuses_[topic]->request_retry_timer_.Start(
+          FROM_HERE,
+          registration_statuses_[topic]->request_backoff_.GetTimeUntilRelease(),
+          base::BindRepeating(
+              &PerUserTopicRegistrationManager::StartRegistrationRequest,
+              base::Unretained(this), topic));
+    }
   }
-  // TODO(melandory): reschedule subscription or unsubscription attempt
-  // in case of failure.
 }
 
 TopicSet PerUserTopicRegistrationManager::GetRegisteredIds() const {
