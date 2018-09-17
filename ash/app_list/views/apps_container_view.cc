@@ -54,8 +54,8 @@ constexpr int kAppsGridPageSwitcherSpacing = 8;
 
 // The range of app list transition progress in which the suggestion chips'
 // opacity changes from 0 to 1.
-constexpr float kSuggestionChipOpacityStartProgress = 0;
-constexpr float kSuggestionChipOpacityEndProgress = 0.67;
+constexpr float kSuggestionChipOpacityStartProgress = 0.66;
+constexpr float kSuggestionChipOpacityEndProgress = 1;
 
 }  // namespace
 

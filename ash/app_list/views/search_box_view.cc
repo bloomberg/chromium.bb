@@ -67,8 +67,8 @@ constexpr int kSearchBoxFocusBorderCornerRadius = 28;
 
 // Range of the fraction of app list from collapsed to peeking that search box
 // should change opacity.
-constexpr float kOpacityStartFraction = 0.1f;
-constexpr float kOpacityEndFraction = 0.6f;
+constexpr float kOpacityStartFraction = 0.11f;
+constexpr float kOpacityEndFraction = 1.0f;
 
 // Minimum amount of characters required to enable autocomplete.
 constexpr int kMinimumLengthToAutocomplete = 2;

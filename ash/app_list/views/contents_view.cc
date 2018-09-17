@@ -38,8 +38,8 @@ namespace {
 
 // The range of app list transition progress in which the expand arrow'
 // opacity changes from 0 to 1.
-constexpr float kExpandArrowOpacityStartProgress = 0;
-constexpr float kExpandArrowOpacityEndProgress = 0.62;
+constexpr float kExpandArrowOpacityStartProgress = 0.61;
+constexpr float kExpandArrowOpacityEndProgress = 1;
 
 void DoAnimation(base::TimeDelta animation_duration,
                  ui::Layer* layer,
