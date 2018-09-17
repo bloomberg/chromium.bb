@@ -21,6 +21,10 @@ from devil.android.sdk import intent # pylint: disable=import-error
 
 # Chrome Startup Benchmarks for mobile devices (running Android).
 #
+# It uses specifics of AndroidPlatform and hardcodes sending Android intents. It
+# should be disabled on non-Android to avoid failures at
+# benchmark_smoke_unittest.BenchmarkSmokeTest.
+#
 # The recommended way to run this benchmark is:
 # shell> CHROMIUM_OUTPUT_DIR=gn_android/Release tools/perf/run_benchmark \
 #   -v startup.mobile --browser=android-chrome \
@@ -64,8 +68,6 @@ class _MobileStartupSharedState(story_module.SharedState):
   def LaunchBrowser(self, url, flush_caches):
     if flush_caches:
       self.platform.FlushDnsCache()
-      # TODO(crbug.com/811244): Determine whether this ensures the page cache is
-      # cleared after |FlushOsPageCaches()| returns.
       self._possible_browser.FlushOsPageCaches()
     self.platform.WaitForBatteryTemperature(32)
     self.platform.StartActivity(
@@ -156,9 +158,6 @@ class _MobileStartupStorySet(story_module.StorySet):
     self.AddStory(_MobileStartupWithIntentStoryWarm())
 
 
-# The mobile startup benchmark uses specifics of AndroidPlatform and hardcodes
-# sending Android intents. The benchmark is disabled on non-Android to avoid
-# failure at benchmark_smoke_unittest.BenchmarkSmokeTest.
 @benchmark.Info(emails=['pasko@chromium.org',
                         'chrome-android-perf-status@chromium.org'])
 class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
