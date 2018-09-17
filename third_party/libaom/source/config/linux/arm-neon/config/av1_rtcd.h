@@ -495,6 +495,12 @@ void av1_highbd_inv_txfm_add_16x16_c(const tran_low_t* dqcoeff,
                                      const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_16x16 av1_highbd_inv_txfm_add_16x16_c
 
+void av1_highbd_inv_txfm_add_16x8_c(const tran_low_t* dqcoeff,
+                                    uint8_t* dst,
+                                    int stride,
+                                    const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_16x8 av1_highbd_inv_txfm_add_16x8_c
+
 void av1_highbd_inv_txfm_add_32x32_c(const tran_low_t* dqcoeff,
                                      uint8_t* dst,
                                      int stride,
@@ -506,6 +512,12 @@ void av1_highbd_inv_txfm_add_4x4_c(const tran_low_t* dqcoeff,
                                    int stride,
                                    const TxfmParam* txfm_param);
 #define av1_highbd_inv_txfm_add_4x4 av1_highbd_inv_txfm_add_4x4_c
+
+void av1_highbd_inv_txfm_add_8x16_c(const tran_low_t* dqcoeff,
+                                    uint8_t* dst,
+                                    int stride,
+                                    const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_8x16 av1_highbd_inv_txfm_add_8x16_c
 
 void av1_highbd_inv_txfm_add_8x8_c(const tran_low_t* dqcoeff,
                                    uint8_t* dst,
@@ -856,26 +868,26 @@ void av1_jnt_convolve_y_neon(const uint8_t* src,
                              ConvolveParams* conv_params);
 #define av1_jnt_convolve_y av1_jnt_convolve_y_neon
 
-void av1_selfguided_restoration_c(const uint8_t* dgd8,
-                                  int width,
-                                  int height,
-                                  int dgd_stride,
-                                  int32_t* flt0,
-                                  int32_t* flt1,
-                                  int flt_stride,
-                                  int sgr_params_idx,
-                                  int bit_depth,
-                                  int highbd);
-void av1_selfguided_restoration_neon(const uint8_t* dgd8,
-                                     int width,
-                                     int height,
-                                     int dgd_stride,
-                                     int32_t* flt0,
-                                     int32_t* flt1,
-                                     int flt_stride,
-                                     int sgr_params_idx,
-                                     int bit_depth,
-                                     int highbd);
+int av1_selfguided_restoration_c(const uint8_t* dgd8,
+                                 int width,
+                                 int height,
+                                 int dgd_stride,
+                                 int32_t* flt0,
+                                 int32_t* flt1,
+                                 int flt_stride,
+                                 int sgr_params_idx,
+                                 int bit_depth,
+                                 int highbd);
+int av1_selfguided_restoration_neon(const uint8_t* dgd8,
+                                    int width,
+                                    int height,
+                                    int dgd_stride,
+                                    int32_t* flt0,
+                                    int32_t* flt1,
+                                    int flt_stride,
+                                    int sgr_params_idx,
+                                    int bit_depth,
+                                    int highbd);
 #define av1_selfguided_restoration av1_selfguided_restoration_neon
 
 void av1_upsample_intra_edge_c(uint8_t* p, int sz);
