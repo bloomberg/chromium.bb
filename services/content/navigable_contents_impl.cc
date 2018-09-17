@@ -35,7 +35,8 @@ NavigableContentsImpl::NavigableContentsImpl(
       binding_(this, std::move(request)),
       client_(std::move(client)),
       delegate_(
-          service_->delegate()->CreateNavigableContentsDelegate(client_.get())),
+          service_->delegate()->CreateNavigableContentsDelegate(*params,
+                                                                client_.get())),
       native_content_view_(delegate_->GetNativeView()) {
   binding_.set_connection_error_handler(base::BindRepeating(
       &Service::RemoveNavigableContents, base::Unretained(service_), this));
@@ -43,12 +44,13 @@ NavigableContentsImpl::NavigableContentsImpl(
 
 NavigableContentsImpl::~NavigableContentsImpl() = default;
 
-void NavigableContentsImpl::Navigate(const GURL& url) {
+void NavigableContentsImpl::Navigate(const GURL& url,
+                                     mojom::NavigateParamsPtr params) {
   // Ignore non-HTTP/HTTPS requests for now.
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
-  delegate_->Navigate(url);
+  delegate_->Navigate(url, std::move(params));
 }
 
 void NavigableContentsImpl::CreateView(bool in_service_process,

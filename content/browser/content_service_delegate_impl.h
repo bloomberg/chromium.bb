@@ -37,6 +37,7 @@ class ContentServiceDelegateImpl : public content::ServiceDelegate {
   // content::ContentServiceDelegate:
   void WillDestroyServiceInstance(content::Service* service) override;
   std::unique_ptr<NavigableContentsDelegate> CreateNavigableContentsDelegate(
+      const mojom::NavigableContentsParams& params,
       mojom::NavigableContentsClient* client) override;
 
   BrowserContext* const browser_context_;

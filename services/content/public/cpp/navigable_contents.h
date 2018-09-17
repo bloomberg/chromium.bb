@@ -10,7 +10,9 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/content/public/cpp/navigable_contents_observer.h"
 #include "services/content/public/mojom/navigable_contents.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 
@@ -28,7 +30,13 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
  public:
   // Constructs a new NavigableContents using |factory|.
   explicit NavigableContents(mojom::NavigableContentsFactory* factory);
+  NavigableContents(mojom::NavigableContentsFactory* factory,
+                    mojom::NavigableContentsParamsPtr params);
   ~NavigableContents() override;
+
+  // These methods NavigableContentsObservers registered on this object.
+  void AddObserver(NavigableContentsObserver* observer);
+  void RemoveObserver(NavigableContentsObserver* observer);
 
   // Returns a NavigableContentsView which renders this NavigableContents's
   // currently navigated contents. This widget can be parented and displayed
@@ -42,15 +50,17 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
   // Begins an attempt to asynchronously navigate this NavigableContents to
   // |url|.
   void Navigate(const GURL& url);
-
-  void set_did_stop_loading_callback_for_testing(
-      base::RepeatingClosure callback) {
-    did_stop_loading_callback_ = std::move(callback);
-  }
+  void NavigateWithParams(const GURL& url, mojom::NavigateParamsPtr params);
 
  private:
   // mojom::NavigableContentsClient:
+  void DidFinishNavigation(
+      const GURL& url,
+      bool is_main_frame,
+      bool is_error_page,
+      const scoped_refptr<net::HttpResponseHeaders>& response_headers) override;
   void DidStopLoading() override;
+  void DidAutoResizeView(const gfx::Size& new_size) override;
 
   void OnEmbedTokenReceived(const base::UnguessableToken& token);
 
@@ -58,7 +68,7 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
   mojo::Binding<mojom::NavigableContentsClient> client_binding_;
   std::unique_ptr<NavigableContentsView> view_;
 
-  base::RepeatingClosure did_stop_loading_callback_;
+  base::ReentrantObserverList<NavigableContentsObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigableContents);
 };

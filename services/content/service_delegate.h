@@ -6,6 +6,7 @@
 #define SERVICES_CONTENT_SERVICE_DELEGATE_H_
 
 #include "services/content/public/mojom/navigable_contents.mojom.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 
 namespace content {
 
@@ -33,7 +34,8 @@ class ServiceDelegate {
   // |client| is a NavigableContentsClient interface the implementation can use
   // to communicate with the client of this contents.
   virtual std::unique_ptr<NavigableContentsDelegate>
-  CreateNavigableContentsDelegate(mojom::NavigableContentsClient* client) = 0;
+  CreateNavigableContentsDelegate(const mojom::NavigableContentsParams& params,
+                                  mojom::NavigableContentsClient* client) = 0;
 };
 
 };  // namespace content

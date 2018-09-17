@@ -38,7 +38,7 @@ class NavigableContentsImpl : public mojom::NavigableContents {
 
  private:
   // mojom::NavigableContents:
-  void Navigate(const GURL& url) override;
+  void Navigate(const GURL& url, mojom::NavigateParamsPtr params) override;
   void CreateView(bool in_service_process,
                   CreateViewCallback callback) override;
 

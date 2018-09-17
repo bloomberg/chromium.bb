@@ -1,5 +1,8 @@
 include_rules = [
+  "+net/http/http_response_headers.h",
+
   "+services/ws/public",
+
   "+ui/aura",
   "+ui/views",
 ]
