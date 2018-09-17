@@ -33,6 +33,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter failureReason
 [Worker]     getter id
 [Worker]     getter onprogress
+[Worker]     getter recordsAvailable
 [Worker]     getter result
 [Worker]     getter uploadTotal
 [Worker]     getter uploaded

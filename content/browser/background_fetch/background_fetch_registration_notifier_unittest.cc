@@ -62,6 +62,8 @@ class TestRegistrationObserver
     return progress_updates_;
   }
 
+  bool records_available() const { return records_available_; }
+
   // blink::mojom::BackgroundFetchRegistrationObserver implementation.
   void OnProgress(uint64_t upload_total,
                   uint64_t uploaded,
@@ -71,9 +73,12 @@ class TestRegistrationObserver
                                    downloaded);
   }
 
+  void OnRecordsUnavailable() override { records_available_ = false; }
+
  private:
   std::vector<ProgressUpdate> progress_updates_;
   mojo::Binding<blink::mojom::BackgroundFetchRegistrationObserver> binding_;
+  bool records_available_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestRegistrationObserver);
 };
@@ -93,6 +98,11 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
               uint64_t download_total,
               uint64_t downloaded) {
     notifier_->Notify(unique_id, download_total, downloaded);
+    task_runner_->RunUntilIdle();
+  }
+
+  void NotifyRecordsUnavailable(const std::string& unique_id) {
+    notifier_->NotifyRecordsUnavailable(unique_id);
     task_runner_->RunUntilIdle();
   }
 
@@ -227,6 +237,16 @@ TEST_F(BackgroundFetchRegistrationNotifierTest,
   // are detected properly.
   // ASSERT_TRUE(garbage_collected_) << "Garbage should be collected when the
   //                                    "observer is closed.";
+}
+
+TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRecordsUnavailable) {
+  auto observer = std::make_unique<TestRegistrationObserver>();
+
+  notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
+  ASSERT_TRUE(observer->records_available());
+
+  NotifyRecordsUnavailable(kPrimaryUniqueId);
+  ASSERT_FALSE(observer->records_available());
 }
 
 }  // namespace

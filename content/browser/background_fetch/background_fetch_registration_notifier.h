@@ -37,9 +37,14 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
               uint64_t download_total,
               uint64_t downloaded);
 
+  // Notifies any registered observers for the registration identifier by
+  // |unique_id| that the records for the fetch are no longer available.
+  void NotifyRecordsUnavailable(const std::string& unique_id);
+
   // Runs |callback| when the last observer for |unique_id| is removed, or
   // immediately if there are already no observers. Callback will never be run
   // if the browser is shutdown before the last observer is removed.
+  // TODO(crbug.com/881885): Delete this method + update unit tests.
   void AddGarbageCollectionCallback(const std::string& unique_id,
                                     base::OnceClosure callback);
 

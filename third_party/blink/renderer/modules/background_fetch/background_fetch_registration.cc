@@ -91,6 +91,10 @@ void BackgroundFetchRegistration::OnProgress(uint64_t upload_total,
   DispatchEvent(*Event::Create(EventTypeNames::progress));
 }
 
+void BackgroundFetchRegistration::OnRecordsUnavailable() {
+  records_available_ = false;
+}
+
 String BackgroundFetchRegistration::id() const {
   return developer_id_;
 }
@@ -109,6 +113,10 @@ unsigned long long BackgroundFetchRegistration::downloadTotal() const {
 
 unsigned long long BackgroundFetchRegistration::downloaded() const {
   return downloaded_;
+}
+
+bool BackgroundFetchRegistration::recordsAvailable() const {
+  return records_available_;
 }
 
 const AtomicString& BackgroundFetchRegistration::InterfaceName() const {
