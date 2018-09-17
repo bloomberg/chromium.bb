@@ -20,6 +20,8 @@ public class ExploreSitesBridge {
 
     /**
      * Fetches the catalog data for Explore page.
+     *
+     * Callback will be called with |null| if an error occurred.
      */
     public static void getEspCatalog(
             Profile profile, Callback<List<ExploreSitesCategory>> callback) {
@@ -27,18 +29,6 @@ public class ExploreSitesBridge {
         nativeGetEspCatalog(profile, result, callback);
     }
 
-    /**
-     * Fetches the catalog data for New Tab page.
-     */
-    public static void getNtpCatalog(
-            Profile profile, Callback<List<ExploreSitesCategory>> callback) {
-        List<ExploreSitesCategory> result = new ArrayList<>();
-        nativeGetNtpCatalog(profile, result, callback);
-    }
-
-
-    private static native void nativeGetNtpCatalog(Profile profile,
-            List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);
     private static native void nativeGetEspCatalog(Profile profile,
             List<ExploreSitesCategory> result, Callback<List<ExploreSitesCategory>> callback);
 }
