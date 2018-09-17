@@ -30,8 +30,8 @@ const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables running the Viz-assisted hit-test logic.
-const base::Feature kEnableVizHitTestDrawQuad{
-    "VizHitTestDrawQuad", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableVizHitTestDrawQuad{"VizHitTestDrawQuad",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableVizHitTestSurfaceLayer{
     "VizHitTestSurfaceLayer", base::FEATURE_DISABLED_BY_DEFAULT};
