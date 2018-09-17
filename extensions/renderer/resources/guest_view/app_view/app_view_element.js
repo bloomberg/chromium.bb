@@ -10,8 +10,13 @@ var GuestViewContainerElement =
     require('guestViewContainerElement').GuestViewContainerElement;
 var AppViewImpl = require('appView').AppViewImpl;
 
-class AppViewElement extends GuestViewContainerElement {}
+class AppViewElement extends GuestViewContainerElement {
+  constructor() {
+    super();
+    privates(this).internal = new AppViewImpl(this);
+  }
+}
 
 forwardApiMethods(AppViewElement, AppViewImpl, null, ['connect']);
 
-registerElement('AppView', AppViewElement, AppViewImpl);
+registerElement('AppView', AppViewElement);
