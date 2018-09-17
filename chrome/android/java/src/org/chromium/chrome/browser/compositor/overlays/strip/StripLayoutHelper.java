@@ -13,6 +13,7 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.view.MotionEvent;
@@ -1078,6 +1079,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
      * @return The StripLayoutTab that corresponds to that tabid.
      */
     @VisibleForTesting
+    @Nullable
     public StripLayoutTab findTabById(int id) {
         if (mStripTabs == null) return null;
         for (int i = 0; i < mStripTabs.length; i++) {
@@ -1650,7 +1652,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         if (selectedTab == null) return;
 
         StripLayoutTab selectedLayoutTab = findTabById(selectedTab.getId());
-        if (isSelectedTabCompletelyVisible(selectedLayoutTab)) return;
+        if (selectedLayoutTab == null || isSelectedTabCompletelyVisible(selectedLayoutTab)) return;
 
         float delta = calculateOffsetToMakeTabVisible(selectedLayoutTab, true, true, true);
         setScrollForScrollingTabStacker(delta, animate, time);
