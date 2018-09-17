@@ -660,20 +660,18 @@ class SetMouseCaptureInterceptor
 };
 
 #if defined(USE_AURA)
-// A class to allow intercepting and discarding of system-level mouse events
+// A class to allow intercepting and discarding of all system-level events
 // that might otherwise cause unpredictable behaviour in tests.
-class MouseEventRewriter : public ui::EventRewriter {
+class SystemEventRewriter : public ui::EventRewriter {
  public:
-  MouseEventRewriter() = default;
-  ~MouseEventRewriter() override {}
+  SystemEventRewriter() = default;
+  ~SystemEventRewriter() override {}
 
  private:
   ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
       std::unique_ptr<ui::Event>* new_event) override {
-    if (event.IsMouseEvent())
-      return ui::EVENT_REWRITE_DISCARD;
-    return ui::EVENT_REWRITE_CONTINUE;
+    return ui::EVENT_REWRITE_DISCARD;
   }
 
   ui::EventRewriteStatus NextDispatchEvent(
@@ -683,7 +681,7 @@ class MouseEventRewriter : public ui::EventRewriter {
     return ui::EVENT_REWRITE_CONTINUE;
   }
 
-  DISALLOW_COPY_AND_ASSIGN(MouseEventRewriter);
+  DISALLOW_COPY_AND_ASSIGN(SystemEventRewriter);
 };
 #endif
 
@@ -724,7 +722,7 @@ class SitePerProcessHitTestBrowserTest
 
   base::test::ScopedFeatureList feature_list_;
 #if defined(USE_AURA)
-  MouseEventRewriter event_rewriter;
+  SystemEventRewriter event_rewriter;
 #endif
 };
 
