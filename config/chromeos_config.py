@@ -2447,7 +2447,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'peppy',
       'poppy',
       'quawks',
-      'rainier',
       'reef',
       'samus',
       'scarlet',
