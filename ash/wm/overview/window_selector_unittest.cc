@@ -236,8 +236,9 @@ class WindowSelectorTest : public AshTestBase {
     return window_selector_controller()->window_selector_.get();
   }
 
-  void ToggleOverview(bool toggled_from_home_launcher = false) {
-    window_selector_controller()->ToggleOverview(toggled_from_home_launcher);
+  void ToggleOverview(WindowSelector::EnterExitOverviewType type =
+                          WindowSelector::EnterExitOverviewType::kNormal) {
+    window_selector_controller()->ToggleOverview(type);
   }
 
   aura::Window* GetOverviewWindowForMinimizedState(int index,
@@ -3088,7 +3089,9 @@ class TestOverviewAnimationTypeObserver : public ShellObserver {
     WindowSelector* selector =
         Shell::Get()->window_selector_controller()->window_selector();
     DCHECK(selector);
-    last_animation_was_slide_ = selector->use_slide_animation();
+    last_animation_was_slide_ =
+        selector->enter_exit_overview_type() ==
+        WindowSelector::EnterExitOverviewType::kWindowsMinimized;
   }
 
   bool last_animation_was_slide_ = false;
@@ -3137,7 +3140,7 @@ TEST_F(WindowSelectorTest, OverviewEnterExitAnimationTablet) {
 
   // Exit to home launcher. Slide animation should be used, and all windows
   // should be minimized.
-  ToggleOverview(/*toggled_from_home_launcher=*/true);
+  ToggleOverview(WindowSelector::EnterExitOverviewType::kWindowsMinimized);
   EXPECT_TRUE(observer.last_animation_was_slide());
   ASSERT_FALSE(IsSelecting());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());

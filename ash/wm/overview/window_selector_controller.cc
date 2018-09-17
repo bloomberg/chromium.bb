@@ -262,11 +262,8 @@ bool WindowSelectorController::CanSelect() {
          !session_controller->IsRunningInAppMode();
 }
 
-bool WindowSelectorController::ToggleOverview(bool toggled_from_home_launcher) {
-  // |toggled_from_home_launcher| should only be true if we are exiting
-  // overview.
-  DCHECK(!(toggled_from_home_launcher && !IsSelecting()));
-
+bool WindowSelectorController::ToggleOverview(
+    WindowSelector::EnterExitOverviewType type) {
   auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
 
   // Hidden windows will be removed by ShouldExcludeWindowFromOverview so we
@@ -280,27 +277,36 @@ bool WindowSelectorController::ToggleOverview(bool toggled_from_home_launcher) {
                        ShouldExcludeWindowFromOverview);
   windows.resize(end - windows.begin());
 
-  // We may want to slide the overview grid in or out in some cases.
-  bool should_slide_overview =
-      toggled_from_home_launcher || ShouldSlideInOutOverview(windows);
+  // We may want to slide the overview grid in or out in some cases, even if
+  // not explicitly stated.
+  WindowSelector::EnterExitOverviewType new_type = type;
+  if (type == WindowSelector::EnterExitOverviewType::kNormal &&
+      ShouldSlideInOutOverview(windows)) {
+    new_type = WindowSelector::EnterExitOverviewType::kWindowsMinimized;
+  }
 
   if (IsSelecting()) {
     // Do not allow ending overview if we're in single split mode.
     if (windows.empty() && Shell::Get()->IsSplitViewModeActive())
       return true;
 
-    if (toggled_from_home_launcher) {
-      // Minimize the windows without animations. Minimized widgets will get
-      // created in their place, and those widgets will be slid out of
-      // overview when the home launcher button is pressed.
+    window_selector_->set_enter_exit_overview_type(new_type);
+    if (type != WindowSelector::EnterExitOverviewType::kNormal) {
+      // Minimize the windows without animations. When the home launcher button
+      // is pressed, minimized widgets will get created in their place, and
+      // those widgets will be slid out of overview. Otherwise,
+      // HomeLauncherGestureHandler will handle sliding the windows out and when
+      // this function is called, we do not need to create minimized widgets.
       for (aura::Window* window : windows) {
+        if (wm::GetWindowState(window)->IsMinimized())
+          continue;
+
         window->SetProperty(aura::client::kAnimationsDisabledKey, true);
         wm::GetWindowState(window)->Minimize();
         window->ClearProperty(aura::client::kAnimationsDisabledKey);
       }
     }
 
-    window_selector_->set_use_slide_animation(should_slide_overview);
     OnSelectionEnded();
   } else {
     // Don't start overview if window selection is not allowed.
@@ -313,7 +319,7 @@ bool WindowSelectorController::ToggleOverview(bool toggled_from_home_launcher) {
     delayed_animations_.clear();
 
     window_selector_ = std::make_unique<WindowSelector>(this);
-    window_selector_->set_use_slide_animation(should_slide_overview);
+    window_selector_->set_enter_exit_overview_type(new_type);
     Shell::Get()->NotifyOverviewModeStarting();
     window_selector_->Init(windows, hide_windows);
     if (IsBlurAllowed())

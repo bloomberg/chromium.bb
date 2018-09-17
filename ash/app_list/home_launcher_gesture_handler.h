@@ -35,9 +35,13 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
  public:
   // Enum which tracks which mode the current scroll process is in.
   enum class Mode {
-    kNone,             // There is no current scroll process.
-    kSwipeUpToShow,    // Swiping away the MRU window to display launcher.
-    kSwipeDownToHide,  // Swiping down the MRU window to hide launcher.
+    // There is no current scroll process.
+    kNone,
+    // Swiping away the MRU window to display launcher. If in overview mode,
+    // swipes away overview mode as well.
+    kSwipeUpToShow,
+    // Swiping down the MRU window to hide launcher.
+    kSwipeDownToHide,
   };
 
   explicit HomeLauncherGestureHandler(
@@ -72,6 +76,10 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
     gfx::Transform initial_transform;
     gfx::Transform target_transform;
   };
+
+  // Updates |settings| based on what we want for this class. This will listen
+  // for animation complete call if |observe| is true.
+  void UpdateSettings(ui::ScopedLayerAnimationSettings* settings, bool observe);
 
   // Updates the opacity and transform |window_| and its transient children base
   // on the values in |window_values_| and |transient_descendants_values_|.

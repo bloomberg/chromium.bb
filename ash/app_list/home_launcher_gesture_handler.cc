@@ -10,6 +10,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
@@ -48,6 +49,9 @@ bool CanProcessWindow(aura::Window* window,
   // hide for shelf.
   DCHECK(!wm::GetWindowState(window)->IsFullscreen());
 
+  // Overview should be handled before reaching here.
+  DCHECK(!Shell::Get()->window_selector_controller()->IsSelecting());
+
   if (!window->IsVisible() &&
       mode == HomeLauncherGestureHandler::Mode::kSwipeUpToShow) {
     return false;
@@ -65,13 +69,6 @@ bool CanProcessWindow(aura::Window* window,
     return false;
 
   if (::wm::GetTransientParent(window))
-    return false;
-
-  // TODO(sammiequon): Make this feature work for these cases below.
-  if (Shell::Get()->split_view_controller()->IsSplitViewModeActive())
-    return false;
-
-  if (Shell::Get()->window_selector_controller()->IsSelecting())
     return false;
 
   return true;
@@ -112,21 +109,21 @@ gfx::RectF GetOffscreenWindowBounds(aura::Window* window,
   return dst_bounds;
 }
 
-// Given a y screen coordinate |y|, find out where it lies as a ratio in the
+// Given a |location_in_screen|, find out where it lies as a ratio in the
 // work area, where the top of the work area is 0.f and the bottom is 1.f.
-double GetHeightInWorkAreaAsRatio(int y, aura::Window* window) {
-  gfx::Rect work_area = screen_util::GetDisplayWorkAreaBoundsInParent(window);
-  int clamped_y = base::ClampToRange(y, work_area.y(), work_area.bottom());
+double GetHeightInWorkAreaAsRatio(const gfx::Point& location_in_screen) {
+  gfx::Rect work_area = display::Screen::GetScreen()
+                            ->GetDisplayNearestPoint(location_in_screen)
+                            .work_area();
+  int clamped_y = base::ClampToRange(location_in_screen.y(), work_area.y(),
+                                     work_area.bottom());
   double ratio =
       static_cast<double>(clamped_y) / static_cast<double>(work_area.height());
   return 1.0 - ratio;
 }
 
-void UpdateSettings(ui::ScopedLayerAnimationSettings* settings) {
-  settings->SetTransitionDuration(kAnimationDurationMs);
-  settings->SetTweenType(gfx::Tween::LINEAR);
-  settings->SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+bool IsLastEventInTopHalf(const gfx::Point& location_in_screen) {
+  return GetHeightInWorkAreaAsRatio(location_in_screen) > 0.5;
 }
 
 // Returns the window of the widget which contains the workspace backdrop. May
@@ -172,12 +169,29 @@ HomeLauncherGestureHandler::HomeLauncherGestureHandler(
   tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
 }
 
-HomeLauncherGestureHandler::~HomeLauncherGestureHandler() = default;
+HomeLauncherGestureHandler::~HomeLauncherGestureHandler() {
+  StopObservingImplicitAnimations();
+}
 
 bool HomeLauncherGestureHandler::OnPressEvent(Mode mode) {
   // Do not start a new session if a window is currently being processed.
   if (last_event_location_)
     return false;
+
+  // TODO(sammiequon): Make this feature work for splitview.
+  if (Shell::Get()->split_view_controller()->IsSplitViewModeActive())
+    return false;
+
+  if (Shell::Get()
+          ->app_list_controller()
+          ->IsHomeLauncherEnabledInTabletMode() &&
+      Shell::Get()->window_selector_controller()->IsSelecting()) {
+    DCHECK_NE(Mode::kSwipeDownToHide, mode);
+    last_event_location_ = base::make_optional(gfx::Point());
+    mode_ = mode;
+    window_ = nullptr;
+    return true;
+  }
 
   // We want the first window in the mru list, if it exists and is usable.
   auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
@@ -187,6 +201,7 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode) {
   }
 
   DCHECK_NE(Mode::kNone, mode);
+  last_event_location_ = base::make_optional(gfx::Point());
   mode_ = mode;
   base::RecordAction(base::UserMetricsAction(
       mode_ == Mode::kSwipeDownToHide
@@ -270,22 +285,21 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode) {
 }
 
 bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location) {
-  if (!window_)
+  if (!last_event_location_)
     return false;
 
   last_event_location_ = base::make_optional(location);
-  double progress = GetHeightInWorkAreaAsRatio(location.y(), window_);
+  double progress = GetHeightInWorkAreaAsRatio(location);
   UpdateWindows(progress, /*animate=*/false);
   return true;
 }
 
 bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
-  if (!window_)
+  if (!last_event_location_)
     return false;
 
   last_event_location_ = base::make_optional(location);
-  const bool hide_window =
-      GetHeightInWorkAreaAsRatio(location.y(), window_) > 0.5;
+  const bool hide_window = IsLastEventInTopHalf(*last_event_location_);
   UpdateWindows(hide_window ? 1.0 : 0.0, /*animate=*/true);
 
   if (!hide_window && mode_ == Mode::kSwipeDownToHide) {
@@ -329,20 +343,41 @@ void HomeLauncherGestureHandler::OnTabletModeEnded() {
   // When leaving tablet mode advance to the end of the in progress scroll
   // session or animation.
   StopObservingImplicitAnimations();
-  window_->layer()->GetAnimator()->StopAnimating();
+  if (window_)
+    window_->layer()->GetAnimator()->StopAnimating();
   for (const auto& descendant : transient_descendants_values_)
     descendant.first->layer()->GetAnimator()->StopAnimating();
-  UpdateWindows(
-      GetHeightInWorkAreaAsRatio(last_event_location_->y(), window_) > 0.5
-          ? 1.0
-          : 0.0,
-      /*animate=*/false);
+  UpdateWindows(IsLastEventInTopHalf(*last_event_location_) ? 1.0 : 0.0,
+                /*animate=*/false);
   OnImplicitAnimationsCompleted();
 }
 
 void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   DCHECK(last_event_location_);
-  DCHECK(window_);
+
+  float app_list_opacity = 1.f;
+  if (Shell::Get()->window_selector_controller()->IsSelecting()) {
+    if (IsLastEventInTopHalf(*last_event_location_)) {
+      Shell::Get()->window_selector_controller()->ToggleOverview(
+          WindowSelector::EnterExitOverviewType::kSwipeFromShelf);
+    } else {
+      app_list_opacity = 0.f;
+    }
+  }
+
+  // Return the app list to its original opacity and transform without
+  // animation.
+  app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
+      display::Screen::GetScreen()
+          ->GetDisplayNearestPoint(*last_event_location_)
+          .work_area()
+          .y(),
+      app_list_opacity, base::NullCallback());
+
+  if (!window_) {
+    RemoveObserversAndStopTracking();
+    return;
+  }
 
   // Update the backdrop first as the backdrop controller listens for some state
   // changes like minimizing below which may also alter the backdrop.
@@ -352,7 +387,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     backdrop_window->layer()->SetOpacity(1.f);
   }
 
-  if (GetHeightInWorkAreaAsRatio(last_event_location_->y(), window_) > 0.5) {
+  if (IsLastEventInTopHalf(*last_event_location_)) {
     // Minimize the hidden windows so they can be used normally with alt+tab
     // and overview. Minimize in reverse order to preserve mru ordering.
     std::reverse(hidden_windows_.begin(), hidden_windows_.end());
@@ -374,15 +409,54 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     }
   }
 
-  // Return the app list to its original opacity and transform without
-  // animation.
-  app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
-      screen_util::GetDisplayWorkAreaBoundsInParent(window_).y(), 1.f,
-      base::NullCallback());
   RemoveObserversAndStopTracking();
 }
 
+void HomeLauncherGestureHandler::UpdateSettings(
+    ui::ScopedLayerAnimationSettings* settings,
+    bool observe) {
+  // TODO(sammiequon): The animation should change based on the distance to the
+  // end.
+  settings->SetTransitionDuration(kAnimationDurationMs);
+  settings->SetTweenType(gfx::Tween::LINEAR);
+  settings->SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+  if (observe)
+    settings->AddObserver(this);
+}
+
 void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
+  // Update full screen applist.
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestPoint(*last_event_location_)
+          .work_area();
+  const int y_position =
+      gfx::Tween::IntValueBetween(progress, work_area.bottom(), work_area.y());
+  const float opacity = gfx::Tween::FloatValueBetween(progress, 0.f, 1.f);
+  app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
+      y_position, opacity,
+      animate ? base::BindRepeating(&HomeLauncherGestureHandler::UpdateSettings,
+                                    base::Unretained(this))
+              : base::NullCallback());
+
+  WindowSelectorController* controller =
+      Shell::Get()->window_selector_controller();
+  if (controller->IsSelecting()) {
+    DCHECK_EQ(mode_, Mode::kSwipeUpToShow);
+    controller->window_selector()->UpdateGridAtLocationYPositionAndOpacity(
+        *last_event_location_, y_position - work_area.height(), 1.f - opacity,
+        work_area,
+        animate
+            ? base::BindRepeating(&HomeLauncherGestureHandler::UpdateSettings,
+                                  base::Unretained(this))
+            : base::NullCallback());
+    return;
+  }
+
+  DCHECK(window_);
+
   // Helper to update a single windows opacity and transform based on by
   // calculating the in between values using |value| and |values|.
   auto update_windows_helper = [this](double progress, bool animate,
@@ -397,9 +471,14 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
     if (animate) {
       settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
           window->layer()->GetAnimator());
-      UpdateSettings(settings.get());
-      if (window == this->window())
-        settings->AddObserver(this);
+      // There are multiple animations run on a release event (app list,
+      // overview and the stored windows). We only want to act on one animation
+      // end, so only observe one of the animations. If overview is active,
+      // observe the shield widget of the grid, else observe |window_|.
+      UpdateSettings(
+          settings.get(),
+          this->window_ == window &&
+              !Shell::Get()->window_selector_controller()->IsSelecting());
     }
     window->layer()->SetOpacity(opacity);
     window->SetTransform(transform);
@@ -415,22 +494,6 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
                           descendant.second);
   }
   update_windows_helper(progress, animate, window_, window_values_);
-
-  // Update full screen applist. On tests, |window_| may be null because
-  // OnImplicitAnimationsCompleted runs right away, which invalidates |window_|,
-  // so just skip this section.
-  if (!window_)
-    return;
-
-  const gfx::Rect work_area =
-      screen_util::GetDisplayWorkAreaBoundsInParent(window_);
-  const int y_position =
-      gfx::Tween::IntValueBetween(progress, work_area.bottom(), work_area.y());
-  app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
-      y_position,
-      gfx::Tween::FloatValueBetween(progress, window_values_.target_opacity,
-                                    window_values_.initial_opacity),
-      animate ? base::BindRepeating(&UpdateSettings) : base::NullCallback());
 }
 
 void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
@@ -446,7 +509,8 @@ void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
     descendant.first->RemoveObserver(this);
   transient_descendants_values_.clear();
 
-  window_->RemoveObserver(this);
+  if (window_)
+    window_->RemoveObserver(this);
   window_ = nullptr;
 }
 

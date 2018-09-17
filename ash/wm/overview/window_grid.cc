@@ -19,6 +19,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -378,6 +379,13 @@ SkColor WindowGrid::GetShieldColor() {
 void WindowGrid::Shutdown() {
   for (const auto& window : window_list_)
     window->Shutdown();
+
+  // HomeLauncherGestureHandler will handle fading/sliding |shield_widget_| in
+  // this exit mode.
+  if (window_selector_->enter_exit_overview_type() ==
+      WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
+    return;
+  }
 
   if (shield_widget_) {
     // Fade out the shield widget. This animation continues past the lifetime
@@ -833,6 +841,13 @@ void WindowGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
   if (!prepared_for_overview_)
     return;
 
+  // When swiping away overview mode via shelf, windows will get minimized, but
+  // we do not want to create minimized widgets in their place.
+  if (window_selector_->enter_exit_overview_type() ==
+      WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
+    return;
+  }
+
   mojom::WindowStateType new_type = window_state->GetStateType();
   if (IsMinimizedWindowStateType(old_type) ==
       IsMinimizedWindowStateType(new_type)) {
@@ -1083,6 +1098,35 @@ void WindowGrid::EndNudge() {
 void WindowGrid::SlideWindowsIn() {
   for (const auto& window_item : window_list_)
     window_item->SlideWindowIn();
+}
+
+void WindowGrid::UpdateYPositionAndOpacity(
+    int new_y,
+    float opacity,
+    const gfx::Rect& work_area,
+    WindowSelector::UpdateAnimationSettingsCallback callback) {
+  // Translate |shield_widget_| to |new_y|. The shield widget covers the shelf
+  // so scale it down while moving it, so that it does not cover the launcher,
+  // which is showing as this is disappearing.
+  aura::Window* shield_window = shield_widget_->GetNativeWindow();
+  float height_ratio = 1.f;
+  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+  if (!callback.is_null()) {
+    settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
+        shield_window->layer()->GetAnimator());
+    callback.Run(settings.get(), /*observe=*/true);
+  } else {
+    height_ratio = static_cast<float>(work_area.height()) /
+                   static_cast<float>(shield_window->bounds().height());
+  }
+  shield_window->SetTransform(gfx::Transform(1.f, 0.f, 0.f, height_ratio, 0.f,
+                                             static_cast<float>(new_y)));
+  shield_window->layer()->SetOpacity(opacity);
+
+  // Apply the same translation and opacity change to the windows in the grid.
+  for (const auto& window_item : window_list_) {
+    window_item->UpdateYPositionAndOpacity(new_y, opacity, callback);
+  }
 }
 
 void WindowGrid::InitShieldWidget() {

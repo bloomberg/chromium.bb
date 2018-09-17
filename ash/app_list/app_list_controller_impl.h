@@ -264,10 +264,6 @@ class ASH_EXPORT AppListControllerImpl
   // Whether the home launcher feature is enabled.
   const bool is_home_launcher_enabled_;
 
-  // Whether the device is in overview mode. The home launcher (if enabled)
-  // should be hidden during overview mode.
-  bool in_overview_mode_ = false;
-
   // Each time overview mode is exited, set this variable based on whether
   // overview mode is sliding out, so the home launcher knows what to do when
   // overview mode exit animations are finished.
