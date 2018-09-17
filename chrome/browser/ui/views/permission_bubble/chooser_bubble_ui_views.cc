@@ -25,9 +25,8 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
                                            std::move(chooser_controller_));
 }
 
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 void ChooserBubbleUi::CreateAndShow(views::BubbleDialogDelegateView* delegate) {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
+#if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa())
     return ChooserBubbleUi::CreateAndShowCocoa(delegate);
 #endif
@@ -42,4 +41,3 @@ void ChooserBubbleUi::CreateAndShow(views::BubbleDialogDelegateView* delegate) {
   else
     views::BubbleDialogDelegateView::CreateBubble(delegate)->ShowInactive();
 }
-#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER

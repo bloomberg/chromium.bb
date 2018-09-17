@@ -367,8 +367,6 @@ jumbo_split_static_library("ui") {
       "cocoa/one_click_signin_dialog_controller.mm",
       "cocoa/one_click_signin_view_controller.h",
       "cocoa/one_click_signin_view_controller.mm",
-      "cocoa/permission_bubble/chooser_bubble_ui_cocoa.h",
-      "cocoa/permission_bubble/chooser_bubble_ui_cocoa.mm",
       "cocoa/permission_bubble/chooser_bubble_ui_views_mac.mm",
       "cocoa/permission_bubble/permission_prompt_impl_views_mac.mm",
       "cocoa/profiles/avatar_base_controller.h",
