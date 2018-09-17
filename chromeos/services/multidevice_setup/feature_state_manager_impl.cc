@@ -210,7 +210,9 @@ void FeatureStateManagerImpl::UpdateFeatureStateCache(
 
   if (previous_cached_feature_state_map == cached_feature_state_map_)
     return;
-
+  PA_LOG(INFO) << "Feature states map changed. Old map: "
+               << previous_cached_feature_state_map
+               << ", new map: " << cached_feature_state_map_;
   NotifyFeatureStatesChange(cached_feature_state_map_);
 }
 
