@@ -661,8 +661,16 @@ class HeadlessBrowserTestAppendCommandLineFlags : public HeadlessBrowserTest {
   bool callback_was_run_ = false;
 };
 
+#if defined(OS_WIN)
+// Flaky on Win ASAN. See https://crbug.com/884095.
+#define MAYBE_AppendChildProcessCommandLineFlags \
+  DISABLED_AppendChildProcessCommandLineFlags
+#else
+#define MAYBE_AppendChildProcessCommandLineFlags \
+  AppendChildProcessCommandLineFlags
+#endif
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestAppendCommandLineFlags,
-                       AppendChildProcessCommandLineFlags) {
+                       MAYBE_AppendChildProcessCommandLineFlags) {
   // Create a new renderer process, and verify that callback was executed.
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
