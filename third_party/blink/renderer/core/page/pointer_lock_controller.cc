@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -135,20 +136,24 @@ void PointerLockController::DidLosePointerLock() {
 
 void PointerLockController::DispatchLockedMouseEvent(
     const WebMouseEvent& event,
+    const Vector<WebMouseEvent>& coalesced_events,
     const AtomicString& event_type) {
   if (!element_ || !element_->GetDocument().GetFrame())
     return;
 
-  element_->DispatchMouseEvent(event, event_type, event.click_count);
+  if (LocalFrame* frame = element_->GetDocument().GetFrame()) {
+    frame->GetEventHandler().HandleTargetedMouseEvent(
+        element_, event, event_type, coalesced_events);
 
-  // Event handlers may remove element.
-  if (!element_)
-    return;
+    // Event handlers may remove element.
+    if (!element_)
+      return;
 
-  // Create click events
-  if (event_type == EventTypeNames::mouseup) {
-    element_->DispatchMouseEvent(event, EventTypeNames::click,
-                                 event.click_count);
+    // Create click events
+    if (event_type == EventTypeNames::mouseup) {
+      frame->GetEventHandler().HandleTargetedMouseEvent(
+          element_, event, EventTypeNames::click, Vector<WebMouseEvent>());
+    }
   }
 }
 

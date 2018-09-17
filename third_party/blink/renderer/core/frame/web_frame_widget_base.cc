@@ -341,7 +341,11 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
 
   if (GetPage()) {
     GetPage()->GetPointerLockController().DispatchLockedMouseEvent(
-        transformed_event, event_type);
+        transformed_event,
+        TransformWebMouseEventVector(
+            local_root_->GetFrameView(),
+            coalesced_event.GetCoalescedEventsPointers()),
+        event_type);
   }
 }
 

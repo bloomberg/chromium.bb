@@ -490,8 +490,13 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
     WebMouseEvent transformed_event =
         TransformWebMouseEvent(LocalRootImpl()->GetFrameView(),
                                static_cast<const WebMouseEvent&>(input_event));
-    node->DispatchMouseEvent(transformed_event, event_type,
-                             transformed_event.click_count);
+    if (LocalFrame* frame = node->GetDocument().GetFrame()) {
+      frame->GetEventHandler().HandleTargetedMouseEvent(
+          node, transformed_event, event_type,
+          TransformWebMouseEventVector(
+              LocalRootImpl()->GetFrameView(),
+              coalesced_event.GetCoalescedEventsPointers()));
+    }
     return WebInputEventResult::kHandledSystem;
   }
 

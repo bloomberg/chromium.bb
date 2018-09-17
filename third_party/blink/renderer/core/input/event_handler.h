@@ -159,6 +159,13 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult HandleMouseReleaseEvent(const WebMouseEvent&);
   WebInputEventResult HandleWheelEvent(const WebMouseWheelEvent&);
 
+  WebInputEventResult HandleTargetedMouseEvent(
+      Node* target,
+      const WebMouseEvent&,
+      const AtomicString& event_type,
+      const Vector<WebMouseEvent>& coalesced_events,
+      const String& canvas_node_id = String());
+
   // Called on the local root frame exactly once per gesture event.
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&);
   WebInputEventResult HandleGestureEvent(const GestureEventWithHitTestResults&);

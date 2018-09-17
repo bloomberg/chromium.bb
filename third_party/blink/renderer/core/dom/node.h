@@ -72,7 +72,6 @@ template <typename NodeType>
 class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
 class StyleChangeReasonForTracing;
-class WebMouseEvent;
 class WebPluginContainerImpl;
 
 const int kNodeStyleChangeShift = 18;
@@ -785,12 +784,6 @@ class CORE_EXPORT Node : public EventTarget {
   DispatchEventResult DispatchDOMActivateEvent(int detail,
                                                Event& underlying_event);
 
-  void DispatchMouseEvent(const WebMouseEvent&,
-                          const AtomicString& event_type,
-                          int click_count = 0,
-                          const String& canvas_node_id = String(),
-                          Node* related_target = nullptr);
-
   void DispatchSimulatedClick(Event* underlying_event,
                               SimulatedClickMouseEventOptions = kSendNoEvents,
                               SimulatedClickCreationScope =
@@ -923,13 +916,6 @@ class CORE_EXPORT Node : public EventTarget {
   }
   void SetFlag(NodeFlags mask) { node_flags_ |= mask; }
   void ClearFlag(NodeFlags mask) { node_flags_ &= ~mask; }
-
-  // TODO(mustaq): This is a hack to fix sites with flash objects. We should
-  // instead route all WebMouseEvents through EventHandler. See
-  // crbug.com/665924.
-  void CreateAndDispatchPointerEvent(const AtomicString& mouse_event_name,
-                                     const WebMouseEvent&,
-                                     LocalDOMWindow* view);
 
  protected:
   enum ConstructionType {
