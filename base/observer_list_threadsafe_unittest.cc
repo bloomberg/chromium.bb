@@ -513,8 +513,9 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
   // TaskScheduler can safely use |barrier|.
   test::ScopedTaskEnvironment scoped_task_environment;
 
-  CreateSequencedTaskRunnerWithTraits({})->PostTask(
-      FROM_HERE, base::BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
+  CreateSequencedTaskRunnerWithTraits({MayBlock()})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
                                 observer_list, Unretained(&observer)));
   TaskScheduler::GetInstance()->FlushForTesting();
 
