@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_NOTIFICATIONS_WIN_NOTIFICATION_IMAGE_RETAINER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
