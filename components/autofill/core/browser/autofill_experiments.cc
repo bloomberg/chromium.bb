@@ -67,7 +67,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email) {
   // Check Autofill sync setting.
-  if (!(sync_service && sync_service->CanSyncStart() &&
+  if (!(sync_service && sync_service->CanSyncFeatureStart() &&
         sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE))) {
     return false;
   }

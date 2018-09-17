@@ -70,7 +70,8 @@ DistantSession::DistantSession() {}
 
 DistantSession::DistantSession(syncer::SyncService* sync_service,
                                const std::string& tag) {
-  if (sync_service->CanSyncStart() && sync_service->GetOpenTabsUIDelegate()) {
+  if (sync_service->CanSyncFeatureStart() &&
+      sync_service->GetOpenTabsUIDelegate()) {
     sync_sessions::OpenTabsUIDelegate* open_tabs =
         sync_service->GetOpenTabsUIDelegate();
 
@@ -107,7 +108,8 @@ SyncedSessions::SyncedSessions() {}
 SyncedSessions::SyncedSessions(syncer::SyncService* sync_service) {
   DCHECK(sync_service);
   // Reload Sync open tab sesions.
-  if (sync_service->CanSyncStart() && sync_service->GetOpenTabsUIDelegate()) {
+  if (sync_service->CanSyncFeatureStart() &&
+      sync_service->GetOpenTabsUIDelegate()) {
     sync_sessions::OpenTabsUIDelegate* open_tabs =
         sync_service->GetOpenTabsUIDelegate();
 

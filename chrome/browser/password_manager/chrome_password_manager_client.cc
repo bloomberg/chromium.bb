@@ -861,7 +861,7 @@ bool ChromePasswordManagerClient::ShouldAnnotateNavigationEntries(
 
   browser_sync::ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!profile_sync_service || !profile_sync_service->IsSyncActive() ||
+  if (!profile_sync_service || !profile_sync_service->IsSyncFeatureActive() ||
       profile_sync_service->IsUsingSecondaryPassphrase()) {
     return false;
   }

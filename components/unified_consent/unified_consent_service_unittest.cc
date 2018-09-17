@@ -380,7 +380,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndAllServicesOn) {
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   sync_service_.SetTransportState(
       syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION);
-  EXPECT_FALSE(sync_service_.IsSyncActive());
+  EXPECT_FALSE(sync_service_.IsSyncFeatureActive());
 
   CreateConsentService(true /* client_services_on_by_default */);
   EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
@@ -424,7 +424,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndServicesOff) {
   syncer::SyncPrefs sync_prefs(&pref_service_);
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_TRUE(sync_service_.IsSyncActive());
+  EXPECT_TRUE(sync_service_.IsSyncFeatureActive());
 
   CreateConsentService();
   EXPECT_FALSE(AreAllOnByDefaultPrivacySettingsOn());
@@ -468,7 +468,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_UpdateSettings) {
   sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
   syncer::SyncPrefs sync_prefs(&pref_service_);
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
-  EXPECT_TRUE(sync_service_.IsSyncActive());
+  EXPECT_TRUE(sync_service_.IsSyncFeatureActive());
   EXPECT_TRUE(sync_service_.GetPreferredDataTypes().Has(syncer::USER_EVENTS));
   // Url keyed data collection is off before the migration.
   EXPECT_FALSE(pref_service_.GetBoolean(

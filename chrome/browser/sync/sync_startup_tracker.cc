@@ -57,7 +57,7 @@ SyncStartupTracker::SyncServiceState SyncStartupTracker::GetSyncServiceState(
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   // If no service exists or it can't be started, treat as a startup error.
-  if (!service || !service->CanSyncStart())
+  if (!service || !service->CanSyncFeatureStart())
     return SYNC_STARTUP_ERROR;
 
   // If the sync engine has started up, notify the callback.

@@ -21,8 +21,8 @@ namespace {
 
 bool ShouldAffiliationBasedMatchingBeActive(syncer::SyncService* sync_service) {
   return base::FeatureList::IsEnabled(features::kAffiliationBasedMatching) &&
-         sync_service && sync_service->CanSyncStart() &&
-         sync_service->IsSyncActive() &&
+         sync_service && sync_service->CanSyncFeatureStart() &&
+         sync_service->IsSyncFeatureActive() &&
          sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS) &&
          !sync_service->IsUsingSecondaryPassphrase();
 }

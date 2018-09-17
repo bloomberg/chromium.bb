@@ -172,7 +172,7 @@ jboolean ProfileSyncServiceAndroid::IsSyncActive(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->IsSyncActive();
+  return sync_service_->IsSyncFeatureActive();
 }
 
 jboolean ProfileSyncServiceAndroid::IsEngineInitialized(

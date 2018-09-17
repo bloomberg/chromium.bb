@@ -42,7 +42,7 @@ class TestSyncService : public FakeSyncService {
     return preferred_data_types_;
   }
   ModelTypeSet GetActiveDataTypes() const override {
-    if (!IsSyncActive())
+    if (!IsSyncFeatureActive())
       return ModelTypeSet();
     return active_data_types_;
   }

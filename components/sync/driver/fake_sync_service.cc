@@ -48,7 +48,7 @@ syncer::SyncService::TransportState FakeSyncService::GetTransportState() const {
     return TransportState::DISABLED;
   }
   // From this point on, Sync can start in principle.
-  DCHECK(CanSyncStart());
+  DCHECK(CanSyncFeatureStart());
   if (!IsFirstSetupComplete()) {
     return TransportState::PENDING_DESIRED_CONFIGURATION;
   }

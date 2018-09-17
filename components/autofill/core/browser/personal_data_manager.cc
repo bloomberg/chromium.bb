@@ -129,7 +129,7 @@ class IsEmptyFunctor {
 
 bool IsSyncEnabledFor(const syncer::SyncService* sync_service,
                       syncer::ModelType model_type) {
-  return sync_service != nullptr && sync_service->CanSyncStart() &&
+  return sync_service != nullptr && sync_service->CanSyncFeatureStart() &&
          sync_service->GetPreferredDataTypes().Has(model_type);
 }
 

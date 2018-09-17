@@ -133,11 +133,11 @@ TEST_F(ExternalPrefLoaderTest, PrefReadInitiatesCorrectly) {
       Manifest::INVALID_LOCATION, Extension::NO_FLAGS);
   provider.VisitRegisteredExtension();
 
-  // Initially CanSyncStart() returns true, returning false will let |loader|
-  // proceed.
+  // Initially CanSyncFeatureStart() returns true, returning false will let
+  // |loader| proceed.
   test_service->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_USER_CHOICE);
-  ASSERT_FALSE(test_service->CanSyncStart());
+  ASSERT_FALSE(test_service->CanSyncFeatureStart());
   test_service->FireOnStateChanged(test_service);
   run_loop.Run();
 }

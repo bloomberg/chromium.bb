@@ -180,7 +180,7 @@ bool AutocompleteProviderClientImpl::IsUnifiedConsentGiven() const {
 bool AutocompleteProviderClientImpl::IsSyncActive() const {
   syncer::SyncService* sync =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
-  return sync && sync->IsSyncActive();
+  return sync && sync->IsSyncFeatureActive();
 }
 
 void AutocompleteProviderClientImpl::Classify(

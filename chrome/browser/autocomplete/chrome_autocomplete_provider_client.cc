@@ -291,7 +291,7 @@ bool ChromeAutocompleteProviderClient::IsSyncActive() const {
   syncer::SyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetSyncServiceForBrowserContext(
           profile_);
-  return sync && sync->IsSyncActive();
+  return sync && sync->IsSyncFeatureActive();
 }
 
 void ChromeAutocompleteProviderClient::Classify(

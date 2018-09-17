@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
             GetSyncService(0)->IsFirstSetupComplete());
 
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
-  EXPECT_FALSE(GetSyncService(0)->IsSyncActive());
+  EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
 
   // Make sure that only the allowed types got activated. Note that, depending
   // on some other feature flags, not all of the allowed types are necessarily
@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
-  ASSERT_FALSE(GetSyncService(0)->IsSyncActive());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
 
   // Simulate the user opting in to full Sync: Make the account primary, and
   // set first-time setup to complete.
@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
-  EXPECT_TRUE(GetSyncService(0)->IsSyncActive());
+  EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 
   // Make sure that some model type which is not allowed in transport-only mode
   // got activated.

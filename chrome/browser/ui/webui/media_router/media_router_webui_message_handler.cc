@@ -1080,7 +1080,8 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
       // being shown the cloud services option, and is now logged in with sync
       // enabled, turn on cloud services.
       if (first_run_flow_acknowledged &&
-          ProfileSyncServiceFactory::GetForProfile(profile)->IsSyncActive()) {
+          ProfileSyncServiceFactory::GetForProfile(profile)
+              ->IsSyncFeatureActive()) {
         pref_service->SetBoolean(::prefs::kMediaRouterEnableCloudServices,
                                  true);
         pref_service->SetBoolean(::prefs::kMediaRouterCloudServicesPrefSet,

@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserConsentsSyncTest,
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_FALSE(GetSyncService(0)->IsSyncActive())
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive())
       << "Full sync should be disabled";
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
