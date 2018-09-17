@@ -746,13 +746,6 @@ PDFViewer.prototype = {
       case 'setIsSelecting':
         this.viewportScroller_.setEnableScrolling(message.data.isSelecting);
         break;
-      case 'setIsEditMode':
-        // TODO(hnakashima): Replace this with final visual indication from UX.
-        if (message.data.isEditMode)
-          this.toolbar_.docTitle = document.title + ' (edit mode)';
-        else
-          this.toolbar_.docTitle = document.title;
-        break;
       case 'getNamedDestinationReply':
         this.paramsParser_.onNamedDestinationReceived(message.data.pageNumber);
         break;

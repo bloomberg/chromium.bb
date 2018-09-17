@@ -154,10 +154,6 @@ const char kJSTransformPagePointReplyType[] = "transformPagePointReply";
 const char kJSSetIsSelectingType[] = "setIsSelecting";
 const char kJSIsSelecting[] = "isSelecting";
 
-// Notify when the document was changed and edit mode is toggled.
-const char kJSSetIsEditModeType[] = "setIsEditMode";
-const char kJSIsEditMode[] = "isEditMode";
-
 // Notify when a form field is focused (Plugin -> Page)
 const char kJSFieldFocusType[] = "formFocusChange";
 const char kJSFieldFocus[] = "focused";
@@ -1898,10 +1894,8 @@ void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
 }
 
 void OutOfProcessInstance::IsEditModeChanged(bool is_edit_mode) {
-  pp::VarDictionary message;
-  message.Set(kType, kJSSetIsEditModeType);
-  message.Set(kJSIsEditMode, pp::Var(is_edit_mode));
-  PostMessage(message);
+  // TODO(hnakashima): Switch to saving the edited file, rather than the
+  // original file.
 }
 
 float OutOfProcessInstance::GetToolbarHeightInScreenCoords() {
