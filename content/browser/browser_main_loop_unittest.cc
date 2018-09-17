@@ -37,9 +37,9 @@ TEST(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
                   ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                       {base::TaskPriority::USER_VISIBLE}),
               base::SysInfo::NumberOfProcessors() - 1);
-    BrowserTaskExecutor::ResetForTesting();
     browser_main_loop.ShutdownThreadsAndCleanUp();
   }
+  BrowserTaskExecutor::ResetForTesting();
   for (int id = BrowserThread::UI; id < BrowserThread::ID_COUNT; ++id) {
     BrowserThreadImpl::ResetGlobalsForTesting(
         static_cast<BrowserThread::ID>(id));
