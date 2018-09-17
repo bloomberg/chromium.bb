@@ -588,6 +588,29 @@ TEST_P(PaintLayerTest, SubsequenceCachingMuticol) {
   EXPECT_FALSE(svgroot->SupportsSubsequenceCaching());
 }
 
+TEST_P(PaintLayerTest, NegativeZIndexChangeToPositive) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #child { position: relative; }
+    </style>
+    <div id='target' style='isolation: isolate'>
+      <div id='child' style='z-index: -1'></div>
+    </div>
+  )HTML");
+
+  PaintLayer* target = GetPaintLayerByElementId("target");
+
+  EXPECT_TRUE(target->StackingNode()->HasNegativeZOrderList());
+  EXPECT_FALSE(target->StackingNode()->HasPositiveZOrderList());
+
+  GetDocument().getElementById("child")->setAttribute(HTMLNames::styleAttr,
+                                                      "z-index: 1");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(target->StackingNode()->HasNegativeZOrderList());
+  EXPECT_TRUE(target->StackingNode()->HasPositiveZOrderList());
+}
+
 TEST_P(PaintLayerTest, HasDescendantWithClipPath) {
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='position:relative'>
