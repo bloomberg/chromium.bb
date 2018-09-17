@@ -100,8 +100,8 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
         is_animation_tainted_(is_animation_tainted),
         needs_variable_resolution_(false),
         needs_url_resolution_(false),
-        has_font_units_(false),
-        has_root_font_units_(false) {}
+        has_font_units_(has_font_units),
+        has_root_font_units_(has_root_font_units) {}
 
   void ConsumeAndUpdateTokens(const CSSParserTokenRange&);
 

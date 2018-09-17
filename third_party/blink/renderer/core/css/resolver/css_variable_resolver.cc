@@ -238,6 +238,8 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
   // TODO(alancutter): Avoid adding backing strings multiple times in a row.
   result.backing_strings.AppendVector(variable_data->BackingStrings());
   result.is_animation_tainted |= variable_data->IsAnimationTainted();
+  result.has_font_units |= variable_data->HasFontUnits();
+  result.has_root_font_units |= variable_data->HasRootFontUnits();
 
   Result trash;
   ResolveFallback(range, options, trash);
