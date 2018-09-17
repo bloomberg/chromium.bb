@@ -19,6 +19,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.net.ConnectionType;
@@ -29,6 +30,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Class that detects the network connectivity. We will get the connectivity info from Android
@@ -37,6 +39,13 @@ import java.net.URL;
  * we will retry with exponential backoff.
  */
 public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTypeObserver {
+    // ProbeUrlType defined in tools/metrics/histograms/enums.xml.
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    public static final int PROBE_WITH_DEFAULT_URL = 0;
+    public static final int PROBE_WITH_FALLBACK_URL = 1;
+    public static final int PROBE_WITH_URL_COUNT = 2;
+
     // Denotes the connection state.
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({ConnectionState.NONE, ConnectionState.DISCONNECTED, ConnectionState.NO_INTERNET,
@@ -57,20 +66,29 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
         int VALIDATED = 4;
     }
 
-    // The result of the HTTP probing.
+    // The result of the HTTP probing. Defined in tools/metrics/histograms/enums.xml.
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ProbeResult.NO_INTERNET, ProbeResult.SERVER_ERROR, ProbeResult.CAPTIVE_PORTAL,
-            ProbeResult.VALIDATED})
+    @IntDef({ProbeResult.NO_INTERNET, ProbeResult.SERVER_ERROR, ProbeResult.NOT_VALIDATED,
+            ProbeResult.VALIDATED_WITH_NO_CONTENT,
+            ProbeResult.VALIDATED_WITH_OK_BUT_ZERO_CONTENT_LENGTH,
+            ProbeResult.VALIDATED_WITH_OK_BUT_NO_CONTENT_LENGTH})
     private @interface ProbeResult {
         // The network is connected, but it can't reach the Internet, i.e. connecting to a hotspot
         // that is not conencted to Internet.
-        int NO_INTERNET = 1;
+        int NO_INTERNET = 0;
         // Server returns response code >= 400.
-        int SERVER_ERROR = 2;
-        // Capitve portal is determined.
-        int CAPTIVE_PORTAL = 3;
-        // Received the expected result from server.
-        int VALIDATED = 4;
+        int SERVER_ERROR = 1;
+        // Cannot be validated due to not receiving expected result from server. This is most likely
+        // caused by captive portal.
+        int NOT_VALIDATED = 2;
+        // Validated when the expected result is received from server.
+        int VALIDATED_WITH_NO_CONTENT = 3;
+        int VALIDATED_WITH_OK_BUT_ZERO_CONTENT_LENGTH = 4;
+        int VALIDATED_WITH_OK_BUT_NO_CONTENT_LENGTH = 5;
+        // Count.
+        int RESULT_COUNT = 6;
     }
 
     /**
@@ -107,7 +125,13 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     private @ConnectionState int mConnectionState = ConnectionState.NONE;
 
     private String mUserAgentString;
+    // Whether or not to use default url (vs fallback url) to do http probe.
+    private boolean mUseDefaultUrl;
+    // The delay time, in milliseconds, before we can send next http probe request.
     private int mConnectivityCheckDelayMs;
+    // The starting time, in milliseconds since boot, when we start to do http probes to validate
+    // the connectivity. This is used in UMA reporting.
+    private long mConnectivityCheckStartTimeMs;
     private Handler mHandler;
     private Runnable mRunnable;
 
@@ -152,6 +176,7 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
 
         // Do manual check via sending HTTP probes to server.
         mConnectivityCheckDelayMs = 0;
+        mConnectivityCheckStartTimeMs = SystemClock.elapsedRealtime();
         performConnectivityCheck();
     }
 
@@ -170,11 +195,17 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
 
         // NET_CAPABILITY_VALIDATED and NET_CAPABILITY_CAPTIVE_PORTAL are only available on
         // Marshmallow and later versions.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return ConnectionState.NONE;
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager == null) return ConnectionState.NONE;
+        ConnectivityManager connectivityManager = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            connectivityManager =
+                    (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
+                            Context.CONNECTIVITY_SERVICE);
+        }
+
+        boolean canGetConnectionStateFromSystem = connectivityManager != null;
+        RecordHistogram.recordBooleanHistogram(
+                "ConnectivityDetector.FromSystem", canGetConnectionStateFromSystem);
+        if (!canGetConnectionStateFromSystem) return ConnectionState.NONE;
 
         boolean isCapitivePortal = false;
         Network[] networks = connectivityManager.getAllNetworks();
@@ -202,30 +233,27 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
         if (mUserAgentString == null) {
             mUserAgentString = ContentUtils.getBrowserUserAgent();
         }
-        checkConnectivityViaDefaultUrl();
+        mUseDefaultUrl = true;
+        checkConnectivityViaHttpProbe();
     }
 
     @VisibleForTesting
-    void checkConnectivityViaDefaultUrl() {
-        sendHttpProbe(sDefaultProbeUrl, SOCKET_TIMEOUT_MS, (result) -> {
+    void checkConnectivityViaHttpProbe() {
+        sendHttpProbe(mUseDefaultUrl, SOCKET_TIMEOUT_MS, (result) -> {
             updateConnectionStatePerProbeResult(result);
 
-            // Probe again with the fallback URL. The captive portal may react differently for
-            // different url.
-            if (result != ProbeResult.VALIDATED) {
-                checkConnectivityViaFallbackUrl();
-            }
-        });
-    }
-
-    @VisibleForTesting
-    void checkConnectivityViaFallbackUrl() {
-        sendHttpProbe(sFallbackProbeUrl, SOCKET_TIMEOUT_MS, (result) -> {
-            updateConnectionStatePerProbeResult(result);
-
-            // Schedule the retry with backoff.
-            if (result != ProbeResult.VALIDATED) {
-                scheduleNextConnectivityCheck();
+            if (mConnectionState != ConnectionState.VALIDATED) {
+                if (mUseDefaultUrl) {
+                    // Probe again with the fallback URL. The captive portal may react differently
+                    // for different url.
+                    mUseDefaultUrl = false;
+                    checkConnectivityViaHttpProbe();
+                } else {
+                    // Wait some time and retry again.
+                    scheduleNextConnectivityCheck();
+                }
+            } else {
+                recordHttpProbeValidatedStats();
             }
         });
     }
@@ -237,7 +265,8 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
      * denote if the connectivity is validated.
      */
     private void sendHttpProbe(
-            final String urlString, final int timeoutMs, final Callback<Integer> callback) {
+            final boolean useDefaultUrl, final int timeoutMs, final Callback<Integer> callback) {
+        final String urlString = useDefaultUrl ? sDefaultProbeUrl : sFallbackProbeUrl;
         new AsyncTask<Integer>() {
             @Override
             protected Integer doInBackground() {
@@ -262,8 +291,13 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
                                     + "ms ret=" + responseCode
                                     + " headers=" + urlConnection.getHeaderFields());
 
+                    RecordHistogram.recordSparseSlowlyHistogram(useDefaultUrl
+                                    ? "ConnectivityDetector.Probe.HttpResponseCode.Default"
+                                    : "ConnectivityDetector.Probe.HttpResponseCode.Fallback",
+                            responseCode);
+
                     if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
-                        return ProbeResult.VALIDATED;
+                        return ProbeResult.VALIDATED_WITH_NO_CONTENT;
                     } else if (responseCode >= 400) {
                         return ProbeResult.SERVER_ERROR;
                     } else if (responseCode == HttpURLConnection.HTTP_OK) {
@@ -271,18 +305,18 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
                         // because the user cannot sign in to an empty page. Probably this is due to
                         // a broken transparent proxy.
                         if (urlConnection.getContentLength() == 0) {
-                            return ProbeResult.VALIDATED;
+                            return ProbeResult.VALIDATED_WITH_OK_BUT_ZERO_CONTENT_LENGTH;
                         } else if (urlConnection.getContentLength() == -1) {
                             // When no Content-length (default value == -1), attempt to read a byte
                             // from the response.
                             if (urlConnection.getInputStream().read() == -1) {
-                                return ProbeResult.VALIDATED;
+                                return ProbeResult.VALIDATED_WITH_OK_BUT_NO_CONTENT_LENGTH;
                             }
                         }
                     }
                 } catch (IOException e) {
                     Log.d(TAG, "Probe " + urlString + " failed w/ exception " + e);
-                    // Most likyly the exception is thrown due to host name not resolved or socket
+                    // Most likely the exception is thrown due to host name not resolved or socket
                     // timeout.
                     return ProbeResult.NO_INTERNET;
                 } finally {
@@ -290,11 +324,17 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
                         urlConnection.disconnect();
                     }
                 }
-                return ProbeResult.CAPTIVE_PORTAL;
+                // The result returned from a well-known URL doesn't match the expected result,
+                // probably due to that the traffic is intercepted by the captive portal.
+                return ProbeResult.NOT_VALIDATED;
             }
 
             @Override
             protected void onPostExecute(Integer result) {
+                RecordHistogram.recordEnumeratedHistogram(useDefaultUrl
+                                ? "ConnectivityDetector.Probe.ProbeResult.Default"
+                                : "ConnectivityDetector.Probe.ProbeResult.Fallback",
+                        result, ProbeResult.RESULT_COUNT);
                 callback.onResult(result);
             }
         }
@@ -331,10 +371,12 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
         @ConnectionState
         int newConnectionState = mConnectionState;
         switch (result) {
-            case ProbeResult.VALIDATED:
+            case ProbeResult.VALIDATED_WITH_NO_CONTENT:
+            case ProbeResult.VALIDATED_WITH_OK_BUT_ZERO_CONTENT_LENGTH:
+            case ProbeResult.VALIDATED_WITH_OK_BUT_NO_CONTENT_LENGTH:
                 newConnectionState = ConnectionState.VALIDATED;
                 break;
-            case ProbeResult.CAPTIVE_PORTAL:
+            case ProbeResult.NOT_VALIDATED:
                 newConnectionState = ConnectionState.CAPTIVE_PORTAL;
                 break;
             case ProbeResult.NO_INTERNET:
@@ -346,6 +388,15 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
                 break;
         }
         updateConnectionState(newConnectionState);
+    }
+
+    private void recordHttpProbeValidatedStats() {
+        RecordHistogram.recordEnumeratedHistogram("ConnectivityDetector.Probe.ValidationUrl",
+                mUseDefaultUrl ? PROBE_WITH_DEFAULT_URL : PROBE_WITH_FALLBACK_URL,
+                PROBE_WITH_URL_COUNT);
+        RecordHistogram.recordLongTimesHistogram("ConnectivityDetector.Probe.ValidationTime",
+                SystemClock.elapsedRealtime() - mConnectivityCheckStartTimeMs,
+                TimeUnit.MILLISECONDS);
     }
 
     @VisibleForTesting
@@ -383,5 +434,10 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     @VisibleForTesting
     Handler getHandlerForTesting() {
         return mHandler;
+    }
+
+    @VisibleForTesting
+    void setUseDefaultUrlForTesting(boolean useDefaultUrl) {
+        mUseDefaultUrl = useDefaultUrl;
     }
 }

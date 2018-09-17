@@ -40506,6 +40506,20 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="PRIVET_DISABLE_NOTIFICATIONS_CLICKED"/>
 </enum>
 
+<enum name="ProbeResult">
+  <int value="0" label="No internet"/>
+  <int value="1" label="Server error"/>
+  <int value="2" label="Not validated"/>
+  <int value="3" label="Validated with no content"/>
+  <int value="4" label="Validated with ok but zero content length"/>
+  <int value="5" label="Validated with ok but no content length"/>
+</enum>
+
+<enum name="ProbeUrlType">
+  <int value="0" label="Probe with default url"/>
+  <int value="1" label="Probe with fallback url"/>
+</enum>
+
 <enum name="ProcessDetailedExitStatus">
   <int value="0" label="Empty minidump in running app"/>
   <int value="1" label="Empty minidump in paused app"/>
