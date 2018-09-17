@@ -857,12 +857,17 @@ static_library("headless_shell_lib") {
   sources = [
     "app/headless_shell.cc",
     "app/headless_shell.h",
-    "lib/browser/headless_content_browser_client.cc",
-    "lib/browser/headless_content_browser_client.h",
     "lib/utility/headless_content_utility_client.cc",
     "lib/utility/headless_content_utility_client.h",
     "public/headless_shell.h",
   ]
+
+  if (!is_component_build) {
+    sources += [
+      "lib/browser/headless_content_browser_client.cc",
+      "lib/browser/headless_content_browser_client.h",
+    ]
+  }
 
   deps = [
     ":headless_renderer",
