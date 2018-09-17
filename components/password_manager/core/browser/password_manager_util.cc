@@ -211,7 +211,7 @@ void UpdateMetadataForUsage(PasswordForm* credential) {
 password_manager::SyncState GetPasswordSyncState(
     const syncer::SyncService* sync_service) {
   if (sync_service && sync_service->IsFirstSetupComplete() &&
-      sync_service->IsSyncActive() &&
+      sync_service->IsSyncFeatureActive() &&
       sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS)) {
     return sync_service->IsUsingSecondaryPassphrase()
                ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
@@ -223,7 +223,7 @@ password_manager::SyncState GetPasswordSyncState(
 password_manager::SyncState GetHistorySyncState(
     const syncer::SyncService* sync_service) {
   if (sync_service && sync_service->IsFirstSetupComplete() &&
-      sync_service->IsSyncActive() &&
+      sync_service->IsSyncFeatureActive() &&
       (sync_service->GetActiveDataTypes().Has(
            syncer::HISTORY_DELETE_DIRECTIVES) ||
        sync_service->GetActiveDataTypes().Has(syncer::PROXY_TABS))) {

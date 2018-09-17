@@ -182,13 +182,13 @@ void DesktopProfileSessionDurationsService::HandleSyncAndAccountChange() {
   FeatureState non_sync_account_status =
       oauth2_token_service_->GetAccounts().empty() ? FeatureState::OFF
                                                    : FeatureState::ON;
-  if (sync_service_ && sync_service_->CanSyncStart()) {
+  if (sync_service_ && sync_service_->CanSyncFeatureStart()) {
     // Sync has potential to turn on, or get into account error state.
     if (sync_service_->GetAuthError().state() ==
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
       // Sync is enabled, but we have an account issue.
       UpdateSyncAndAccountStatus(FeatureState::ON, FeatureState::OFF);
-    } else if (sync_service_->IsSyncActive() &&
+    } else if (sync_service_->IsSyncFeatureActive() &&
                sync_service_->GetLastCycleSnapshot().is_initialized()) {
       // Sync is on and running, we must have an account too.
       UpdateSyncAndAccountStatus(FeatureState::ON, FeatureState::ON);

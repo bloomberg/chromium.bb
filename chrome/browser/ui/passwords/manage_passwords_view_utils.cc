@@ -195,6 +195,6 @@ bool IsSyncingAutosignSetting(Profile* profile) {
   const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return (sync_service && sync_service->IsFirstSetupComplete() &&
-          sync_service->IsSyncActive() &&
+          sync_service->IsSyncFeatureActive() &&
           sync_service->GetActiveDataTypes().Has(syncer::PRIORITY_PREFERENCES));
 }

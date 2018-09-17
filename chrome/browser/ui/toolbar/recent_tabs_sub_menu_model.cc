@@ -703,7 +703,7 @@ void RecentTabsSubMenuModel::ClearTabsFromOtherDevices() {
 sync_sessions::OpenTabsUIDelegate*
 RecentTabsSubMenuModel::GetOpenTabsUIDelegate() {
   // Only return the delegate if it exists and it is done syncing sessions.
-  return sync_service_ && sync_service_->IsSyncActive()
+  return sync_service_ && sync_service_->IsSyncFeatureActive()
              ? sync_service_->GetOpenTabsUIDelegate()
              : nullptr;
 }

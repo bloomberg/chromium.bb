@@ -50,7 +50,7 @@ void HistoryDeleteDirectivesDataTypeController::OnStateChanged(
 
 bool HistoryDeleteDirectivesDataTypeController::DisableTypeIfNecessary() {
   DCHECK(CalledOnValidThread());
-  if (!sync_client_->GetSyncService()->IsSyncActive())
+  if (!sync_client_->GetSyncService()->IsSyncFeatureActive())
     return false;
 
   if (ReadyForStart())

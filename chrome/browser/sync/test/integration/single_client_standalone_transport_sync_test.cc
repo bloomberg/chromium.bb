@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   ASSERT_TRUE(GetSyncService(0)->IsFirstSetupComplete());
 
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
-  EXPECT_TRUE(GetSyncService(0)->IsSyncActive());
+  EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 }
 #else
 IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   ASSERT_FALSE(GetSyncService(0)->IsFirstSetupComplete());
 
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
-  EXPECT_FALSE(GetSyncService(0)->IsSyncActive());
+  EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
 
   // Make sure that only the allowed types got activated. Note that, depending
   // on some other feature flags, not all of the allowed types are necessarily
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
-  ASSERT_TRUE(GetSyncService(0)->IsSyncActive());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 
   // Make sure that some model type which is not allowed in transport-only mode
   // got activated.
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
-  EXPECT_FALSE(GetSyncService(0)->IsSyncActive());
+  EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
 
   syncer::ModelTypeSet bad_types =
       syncer::Difference(GetSyncService(0)->GetActiveDataTypes(),
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
-  EXPECT_TRUE(GetSyncService(0)->IsSyncActive());
+  EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::BOOKMARKS));
 }
 

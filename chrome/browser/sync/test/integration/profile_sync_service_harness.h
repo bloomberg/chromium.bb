@@ -116,8 +116,7 @@ class ProfileSyncServiceHarness {
   bool AwaitEngineInitialization(bool skip_passphrase_verification = false);
 
   // Blocks the caller until sync setup is complete. Returns true if and only
-  // if sync setup completed successfully. See syncer::SyncService's
-  // IsSyncActive() method for the definition of what successful means here.
+  // if sync setup completed successfully.
   bool AwaitSyncSetupCompletion(bool skip_passphrase_verification);
 
   // Returns the ProfileSyncService member of the sync client.

@@ -185,37 +185,34 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   //////////////////////////////////////////////////////////////////////////////
 
   // Returns whether all conditions are satisfied for Sync-the-feature to start.
-  // This means that there are no disable reasons, and first-time Sync setup has
-  // been completed by the user.
-  // Note: This does not imply that Sync is actually running. Check GetState to
-  // get the current state of Sync-the-transport.
+  // This means that there is a primary account, no disable reasons, and
+  // first-time Sync setup has been completed by the user.
+  // Note: This does not imply that Sync is actually running. Check
+  // IsSyncFeatureActive or GetTransportState to get the current state.
   bool IsSyncFeatureEnabled() const;
 
-  // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
   // Equivalent to "HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)".
   bool HasUnrecoverableError() const;
 
-  // DEPRECATED! Use GetState instead. Equivalent to
-  // "GetState() == State::PENDING_DESIRED_CONFIGURATION ||
-  // GetState() == State::CONFIGURING || GetState() == State::ACTIVE".
+  // Equivalent to GetTransportState() returning one of
+  // PENDING_DESIRED_CONFIGURATION, CONFIGURING, or ACTIVE.
   // Note: This refers to Sync-the-transport, which may be active even if
   // Sync-the-feature is disabled by the user, by enterprise policy, etc.
   bool IsEngineInitialized() const;
 
-  // DEPRECATED! Use GetDisableReasons/HasDisableReason instead.
   // Equivalent to having no disable reasons, i.e.
   // "GetDisableReasons() == DISABLE_REASON_NONE".
   // Note: This refers to Sync-the-feature. Sync-the-transport may be running
   // even if this is false.
-  bool CanSyncStart() const;
+  bool CanSyncFeatureStart() const;
 
-  // Returns whether Sync-the-feature is active, which means GetState() is
-  // either State::CONFIGURING or State::ACTIVE and IsSyncFeatureEnabled() is
-  // true.
+  // Returns whether Sync-the-feature is active, which means
+  // GetTransportState() is either CONFIGURING or ACTIVE and
+  // IsSyncFeatureEnabled() is true.
   // To see which datatypes are actually syncing, see GetActiveDataTypes().
   // Note: This refers to Sync-the-feature. Sync-the-transport may be active
   // even if this is false.
-  bool IsSyncActive() const;
+  bool IsSyncFeatureActive() const;
 
   //////////////////////////////////////////////////////////////////////////////
   // INITIAL SETUP / CONSENT
@@ -232,7 +229,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Whether the user has completed the initial Sync setup. This does not mean
   // that sync is currently running (due to delayed startup, unrecoverable
   // errors, or shutdown). If you want to know whether Sync is actually running,
-  // use GetState instead.
+  // use GetTransportState or IsSyncFeatureActive instead.
   // Note: This refers to Sync-the-feature. Sync-the-transport may be active
   // independent of first-setup state.
   virtual bool IsFirstSetupComplete() const = 0;

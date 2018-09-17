@@ -489,7 +489,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     are_notifications_enabled->Set(full_status.notifications_enabled);
 
   // Encryption.
-  if (service->IsSyncActive()) {
+  if (service->IsSyncFeatureActive()) {
     is_using_explicit_passphrase->Set(service->IsUsingSecondaryPassphrase());
     is_passphrase_required->Set(service->IsPassphraseRequired());
     passphrase_time->Set(

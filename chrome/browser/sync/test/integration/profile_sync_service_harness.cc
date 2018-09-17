@@ -558,7 +558,7 @@ bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
 
 SyncCycleSnapshot ProfileSyncServiceHarness::GetLastCycleSnapshot() const {
   DCHECK(service() != nullptr) << "Sync service has not yet been set up.";
-  if (service()->IsSyncActive()) {
+  if (service()->IsSyncFeatureActive()) {
     return service()->GetLastCycleSnapshot();
   }
   return SyncCycleSnapshot();
@@ -598,7 +598,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << syncer::PassphraseRequiredReasonToString(
               service()->passphrase_required_reason_for_test())
        << ", notifications_enabled: " << status.notifications_enabled
-       << ", service_is_active: " << service()->IsSyncActive();
+       << ", service_is_active: " << service()->IsSyncFeatureActive();
   } else {
     os << "Sync service not available";
   }

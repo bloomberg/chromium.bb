@@ -332,7 +332,7 @@ void ClearBrowsingDataHandler::UpdateSyncState() {
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::Value("update-sync-state"),
       base::Value(identity_manager && identity_manager->HasPrimaryAccount()),
-      base::Value(sync_service_ && sync_service_->IsSyncActive() &&
+      base::Value(sync_service_ && sync_service_->IsSyncFeatureActive() &&
                   sync_service_->GetActiveDataTypes().Has(
                       syncer::HISTORY_DELETE_DIRECTIVES)),
       base::Value(ShouldShowCookieException(profile_)));

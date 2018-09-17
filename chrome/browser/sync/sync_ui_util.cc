@@ -50,7 +50,7 @@ base::string16 GetSyncedStateStatusLabel(const ProfileSyncService* service,
     // User is signed in, but sync has been stopped.
     return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
   }
-  if (!service->IsSyncActive()) {
+  if (!service->IsSyncFeatureActive()) {
     // User is not signed in, or sync is still initializing.
     return base::string16();
   }

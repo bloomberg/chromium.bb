@@ -449,7 +449,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, NeedsConfirmation) {
   // Sync should immediately start up in transport mode.
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  EXPECT_FALSE(service()->IsSyncActive());
+  EXPECT_FALSE(service()->IsSyncFeatureActive());
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
   // The last sync time shouldn't be cleared.
@@ -583,7 +583,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, EarlyRequestStop) {
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  EXPECT_TRUE(service()->IsSyncActive());
+  EXPECT_TRUE(service()->IsSyncFeatureActive());
   EXPECT_TRUE(service()->IsSyncFeatureEnabled());
 }
 
@@ -607,7 +607,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, EarlyRequestStop) {
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  EXPECT_FALSE(service()->IsSyncActive());
+  EXPECT_FALSE(service()->IsSyncFeatureActive());
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
   // Request start. Now Sync-the-feature should start again.
@@ -616,7 +616,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, EarlyRequestStop) {
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  EXPECT_TRUE(service()->IsSyncActive());
+  EXPECT_TRUE(service()->IsSyncFeatureActive());
   EXPECT_TRUE(service()->IsSyncFeatureEnabled());
 }
 
@@ -632,7 +632,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest,
             service()->GetDisableReasons());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  ASSERT_TRUE(service()->IsSyncActive());
+  ASSERT_TRUE(service()->IsSyncFeatureActive());
   ASSERT_TRUE(service()->IsSyncFeatureEnabled());
 
   testing::Mock::VerifyAndClearExpectations(component_factory());
@@ -643,7 +643,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest,
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             service()->GetTransportState());
-  EXPECT_FALSE(service()->IsSyncActive());
+  EXPECT_FALSE(service()->IsSyncFeatureActive());
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
   service()->RequestStart();
@@ -652,7 +652,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest,
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  EXPECT_TRUE(service()->IsSyncActive());
+  EXPECT_TRUE(service()->IsSyncFeatureActive());
   EXPECT_TRUE(service()->IsSyncFeatureEnabled());
 }
 
@@ -667,7 +667,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest,
             service()->GetDisableReasons());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  ASSERT_TRUE(service()->IsSyncActive());
+  ASSERT_TRUE(service()->IsSyncFeatureActive());
   ASSERT_TRUE(service()->IsSyncFeatureEnabled());
 
   testing::Mock::VerifyAndClearExpectations(component_factory());
@@ -678,7 +678,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest,
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  EXPECT_FALSE(service()->IsSyncActive());
+  EXPECT_FALSE(service()->IsSyncFeatureActive());
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
   service()->RequestStart();
@@ -687,7 +687,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest,
             service()->GetDisableReasons());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
-  EXPECT_TRUE(service()->IsSyncActive());
+  EXPECT_TRUE(service()->IsSyncFeatureActive());
   EXPECT_TRUE(service()->IsSyncFeatureEnabled());
 }
 
@@ -1416,7 +1416,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, DisableSyncOnClient) {
 #endif
 
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(service()->IsSyncActive());
+  EXPECT_FALSE(service()->IsSyncFeatureActive());
 }
 
 TEST_F(ProfileSyncServiceWithStandaloneTransportTest, DisableSyncOnClient) {
@@ -1455,7 +1455,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, DisableSyncOnClient) {
 #endif
 
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(service()->IsSyncActive());
+  EXPECT_FALSE(service()->IsSyncFeatureActive());
 }
 
 // Verify a that local sync mode resumes after the policy is lifted.
