@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL flex assert_equals: offsetHeight expected 18 but got 36
-FAIL inline-flex assert_equals: offsetHeight expected 18 but got 36
-FAIL grid assert_equals: offsetHeight expected 18 but got 36
-FAIL inline-grid assert_equals: offsetHeight expected 18 but got 36
-PASS multicol
-Harness: the test ran to completion.
-
