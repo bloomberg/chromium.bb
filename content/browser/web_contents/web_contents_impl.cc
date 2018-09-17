@@ -1388,6 +1388,10 @@ const std::string& WebContentsImpl::GetEncoding() const {
   return canonical_encoding_;
 }
 
+bool WebContentsImpl::WasDiscarded() {
+  return GetFrameTree()->root()->was_discarded();
+}
+
 void WebContentsImpl::SetWasDiscarded(bool was_discarded) {
   GetFrameTree()->root()->set_was_discarded();
 }

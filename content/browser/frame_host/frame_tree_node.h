@@ -384,6 +384,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // When a navigation request is created, was_discarded is passed on to the
   // request and reset to false in FrameTreeNode.
   void set_was_discarded() { was_discarded_ = true; }
+  bool was_discarded() const { return was_discarded_; }
 
   // Returns the sticky bit of the User Activation v2 state of the
   // |FrameTreeNode|.

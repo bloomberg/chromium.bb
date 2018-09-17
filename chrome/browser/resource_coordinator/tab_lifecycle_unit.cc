@@ -793,13 +793,15 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
   // Replace the discarded tab with the null version.
   const int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
   DCHECK_NE(index, TabStripModel::kNoTab);
+
+  // This ensures that on reload after discard, the document has
+  // "WasDiscarded" set to true.
+  // The "WasDiscarded" state is also sent to tab_strip_model.
+  null_contents->SetWasDiscarded(true);
+
   std::unique_ptr<content::WebContents> old_contents_deleter =
       tab_strip_model_->ReplaceWebContentsAt(index, std::move(null_contents));
   DCHECK_EQ(web_contents(), raw_null_contents);
-
-  // This ensures that on reload after discard, the document has
-  // "wasDiscarded" set to true.
-  raw_null_contents->SetWasDiscarded(true);
 
   // Discard the old tab's renderer.
   // TODO(jamescook): This breaks script connections with other tabs. Find a

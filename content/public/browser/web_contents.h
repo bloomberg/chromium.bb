@@ -446,6 +446,7 @@ class WebContents : public PageNavigator,
   // parent to child.
   // When a navigation request is created, was_discarded is passed on to the
   // request and reset to false in FrameTreeNode.
+  virtual bool WasDiscarded() = 0;
   virtual void SetWasDiscarded(bool was_discarded) = 0;
 
   // Internal state ------------------------------------------------------------
