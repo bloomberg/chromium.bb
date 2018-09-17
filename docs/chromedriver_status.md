@@ -19,7 +19,7 @@ Below is a list of all WebDriver commands and their current support in ChromeDri
 | DELETE | /session/{session id}/window                                   | Close Window               | Complete           |
 | POST   | /session/{session id}/window                                   | Switch To Window           | Complete           |
 | GET    | /session/{session id}/window/handles                           | Get Window Handles         | Complete           |
-| POST   | /session/{session id}/frame                                    | Switch To Frame            | Partially Complete | [1992](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1992)
+| POST   | /session/{session id}/frame                                    | Switch To Frame            | Complete           | 
 | POST   | /session/{session id}/frame/parent                             | Switch To Parent Frame     |                    |
 | GET    | /session/{session id}/window/rect                              | Get Window Rect            | Complete           |
 | POST   | /session/{session id}/window/rect                              | Set Window Rect            | Complete           |

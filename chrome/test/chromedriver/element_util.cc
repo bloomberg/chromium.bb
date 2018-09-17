@@ -26,14 +26,6 @@ namespace {
 const char kElementKey[] = "ELEMENT";
 const char kElementKeyW3C[] = "element-6066-11e4-a52e-4f735466cecf";
 
-std::string GetElementKey() {
-  Session* session = GetThreadLocalSession();
-  if (session && session->w3c_compliant)
-    return kElementKeyW3C;
-  else
-    return kElementKey;
-}
-
 bool ParseFromValue(base::Value* value, WebPoint* point) {
   base::DictionaryValue* dict_value;
   if (!value->GetAsDictionary(&dict_value))
@@ -248,6 +240,14 @@ Status GetElementBorder(
 }
 
 }  // namespace
+
+std::string GetElementKey() {
+  Session* session = GetThreadLocalSession();
+  if (session && session->w3c_compliant)
+    return kElementKeyW3C;
+  else
+    return kElementKey;
+}
 
 std::unique_ptr<base::DictionaryValue> CreateElement(
     const std::string& element_id) {
