@@ -2,22 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection.h"
+#include "chrome/browser/apps/platform_apps/api/easy_unlock_private/easy_unlock_private_connection.h"
 
 #include "base/lazy_instance.h"
 #include "components/cryptauth/connection.h"
 
-namespace extensions {
+namespace apps {
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<
-    ApiResourceManager<EasyUnlockPrivateConnection>>>::DestructorAtExit
-    g_easy_unlock_private_connection_factory = LAZY_INSTANCE_INITIALIZER;
-
-template <>
-BrowserContextKeyedAPIFactory<ApiResourceManager<EasyUnlockPrivateConnection>>*
-ApiResourceManager<EasyUnlockPrivateConnection>::GetFactoryInstance() {
-  return g_easy_unlock_private_connection_factory.Pointer();
-}
+static base::LazyInstance<EasyUnlockPrivateConnectionResourceManagerFactory>::
+    DestructorAtExit g_easy_unlock_private_connection_factory =
+        LAZY_INSTANCE_INITIALIZER;
 
 EasyUnlockPrivateConnection::EasyUnlockPrivateConnection(
     bool persistent,
@@ -37,4 +31,10 @@ bool EasyUnlockPrivateConnection::IsPersistent() const {
   return persistent_;
 }
 
-}  // namespace extensions
+}  // namespace apps
+
+template <>
+EasyUnlockPrivateConnectionResourceManagerFactory*
+EasyUnlockPrivateConnectionResourceManager::GetFactoryInstance() {
+  return apps::g_easy_unlock_private_connection_factory.Pointer();
+}

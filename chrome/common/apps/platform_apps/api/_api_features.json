@@ -10,5 +10,9 @@
   "browser": {
     "dependencies": ["permission:browser"],
     "contexts": ["blessed_extension"]
+  },
+  "easyUnlockPrivate": {
+    "dependencies": ["permission:easyUnlockPrivate"],
+    "contexts": ["blessed_extension"]
   }
 }

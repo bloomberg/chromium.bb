@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_API_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_API_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_API_H_
 
 #include <stddef.h>
 
@@ -33,14 +33,15 @@ namespace proximity_auth {
 class BluetoothLowEnergyConnectionFinder;
 }
 
-namespace extensions {
+namespace apps {
 
 class EasyUnlockPrivateConnectionManager;
 
-class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
+class EasyUnlockPrivateAPI : public extensions::BrowserContextKeyedAPI {
  public:
-  static BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>*
-      GetFactoryInstance();
+  using Factory =
+      extensions::BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>;
+  static Factory* GetFactoryInstance();
 
   static const bool kServiceRedirectedInIncognito = true;
 
@@ -52,7 +53,7 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
   }
 
  private:
-  friend class BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>;
+  friend class extensions::BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "EasyUnlockPrivate"; }
@@ -64,10 +65,6 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateAPI);
 };
-
-template <>
-void BrowserContextKeyedAPIFactory<
-    EasyUnlockPrivateAPI>::DeclareFactoryDependencies();
 
 class EasyUnlockPrivateGetStringsFunction : public UIThreadExtensionFunction {
  public:
@@ -180,6 +177,9 @@ class EasyUnlockPrivateSetupConnectionSendFunction
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetupConnectionSendFunction);
 };
 
-}  // namespace extensions
+}  // namespace apps
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_API_H_
+template <>
+void apps::EasyUnlockPrivateAPI::Factory::DeclareFactoryDependencies();
+
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_API_H_

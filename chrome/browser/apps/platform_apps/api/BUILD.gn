@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//chrome/common/apps/platform_apps/api/api_sources.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
@@ -24,6 +25,8 @@ source_set("api") {
   sources = [
     "browser/browser_api.cc",
     "browser/browser_api.h",
+    "browser_context_keyed_service_factories.cc",
+    "browser_context_keyed_service_factories.h",
   ]
 
   deps = [
@@ -31,4 +34,31 @@ source_set("api") {
     "//chrome/common/apps/platform_apps/api",
     "//extensions/browser",
   ]
+
+  if (is_chromeos) {
+    sources += [
+      "easy_unlock_private/easy_unlock_private_api.cc",
+      "easy_unlock_private/easy_unlock_private_api.h",
+      "easy_unlock_private/easy_unlock_private_connection.cc",
+      "easy_unlock_private/easy_unlock_private_connection.h",
+      "easy_unlock_private/easy_unlock_private_connection_manager.cc",
+      "easy_unlock_private/easy_unlock_private_connection_manager.h",
+    ]
+
+    deps += [
+      "//chrome:strings",
+      "//chrome/browser/chromeos",
+      "//chrome/browser/ui",
+      "//chromeos/components/proximity_auth",
+      "//chromeos/components/proximity_auth/logging",
+      "//components/account_id",
+      "//components/cryptauth",
+      "//components/strings:components_strings_grit",
+      "//components/user_manager",
+      "//device/bluetooth",
+      "//ui/chromeos",
+    ]
+  }
+
+  visibility = [ "//chrome/browser" ]
 }

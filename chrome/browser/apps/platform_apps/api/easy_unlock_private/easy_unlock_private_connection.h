@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CONNECTION_H_
-#define CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CONNECTION_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CONNECTION_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CONNECTION_H_
 
 #include <memory>
 
@@ -17,16 +17,10 @@ namespace cryptauth {
 class Connection;
 }  // namespace cryptauth
 
-namespace extensions {
-
-class EasyUnlockPrivateConnection;
-
-template <>
-BrowserContextKeyedAPIFactory<ApiResourceManager<EasyUnlockPrivateConnection>>*
-ApiResourceManager<EasyUnlockPrivateConnection>::GetFactoryInstance();
+namespace apps {
 
 // An ApiResource wrapper for a cryptauth::Connection.
-class EasyUnlockPrivateConnection : public ApiResource {
+class EasyUnlockPrivateConnection : public extensions::ApiResource {
  public:
   EasyUnlockPrivateConnection(
       bool persistent,
@@ -45,7 +39,7 @@ class EasyUnlockPrivateConnection : public ApiResource {
       content::BrowserThread::UI;
 
  private:
-  friend class ApiResourceManager<EasyUnlockPrivateConnection>;
+  friend class extensions::ApiResourceManager<EasyUnlockPrivateConnection>;
   static const char* service_name() {
     return "EasyUnlockPrivateConnectionManager";
   }
@@ -60,6 +54,16 @@ class EasyUnlockPrivateConnection : public ApiResource {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateConnection);
 };
 
-}  // namespace extensions
+}  // namespace apps
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CONNECTION_H_
+using EasyUnlockPrivateConnectionResourceManager =
+    extensions::ApiResourceManager<apps::EasyUnlockPrivateConnection>;
+using EasyUnlockPrivateConnectionResourceManagerFactory =
+    extensions::BrowserContextKeyedAPIFactory<
+        EasyUnlockPrivateConnectionResourceManager>;
+
+template <>
+EasyUnlockPrivateConnectionResourceManagerFactory*
+EasyUnlockPrivateConnectionResourceManager::GetFactoryInstance();
+
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_API_EASY_UNLOCK_PRIVATE_EASY_UNLOCK_PRIVATE_CONNECTION_H_

@@ -61,8 +61,8 @@ namespace easyUnlockPrivate {
                                     long timeOut,
                                     FindSetupConnectionCallback callback);
 
-    // Disconnects the connection with |connectionId|. 
-    static void setupConnectionDisconnect(long connectionId, 
+    // Disconnects the connection with |connectionId|.
+    static void setupConnectionDisconnect(long connectionId,
                                           optional EmptyCallback callback);
 
     // Sends |data| through the connection with |connnectionId|.

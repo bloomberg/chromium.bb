@@ -93,7 +93,6 @@ if (is_chromeos) {
     "arc_apps_private.idl",
     "certificate_provider.idl",
     "certificate_provider_internal.idl",
-    "easy_unlock_private.idl",
     "echo_private.json",
     "enterprise_device_attributes.idl",
     "enterprise_platform_keys.idl",

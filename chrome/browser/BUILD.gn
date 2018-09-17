@@ -3903,10 +3903,18 @@ jumbo_split_static_library("browser") {
     ]
     public_deps += [
       "//chrome/browser/apps/platform_apps",
+      "//chrome/browser/apps/platform_apps/api",
       "//chrome/browser/extensions",
     ]
     allow_circular_includes_from += [
       "//chrome/browser/apps/platform_apps",
+
+      # TODO(https://crbug.com/883570): This is unfortunate, but not easy to
+      # fix. Ideally, //chrome/browser:browser shouldn't depend on these APIs
+      # (though the APIs likely will depend on //chrome/browser), but we need
+      # to pull them in here to allow registration of keyed services.
+      "//chrome/browser/apps/platform_apps/api",
+
       "//chrome/browser/extensions",
       "//chrome/browser/web_applications",
       "//chrome/browser/web_applications/bookmark_apps",

@@ -3813,12 +3813,12 @@ test("unit_tests") {
     }
     if (is_chromeos) {
       sources += [
+        "../browser/apps/platform_apps/api/easy_unlock_private/easy_unlock_private_api_chromeos_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_app_manager_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_auth_attempt_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_notification_controller_chromeos_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_service_unittest_chromeos.cc",
-        "../browser/extensions/api/easy_unlock_private/easy_unlock_private_api_chromeos_unittest.cc",
         "../browser/extensions/api/file_system/consent_provider_unittest.cc",
       ]
     } else {

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
+#include "chrome/browser/apps/platform_apps/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 
 #include <utility>
 
 #include "base/logging.h"
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection.h"
-#include "chrome/common/extensions/api/easy_unlock_private.h"
+#include "chrome/browser/apps/platform_apps/api/easy_unlock_private/easy_unlock_private_connection.h"
+#include "chrome/common/apps/platform_apps/api/easy_unlock_private.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/wire_message.h"
 #include "extensions/browser/event_router.h"
@@ -16,7 +16,7 @@
 using cryptauth::Connection;
 using cryptauth::WireMessage;
 
-namespace extensions {
+namespace apps {
 namespace {
 
 const char kEasyUnlockFeatureName[] = "easy_unlock";
@@ -62,7 +62,7 @@ EasyUnlockPrivateConnectionManager::~EasyUnlockPrivateConnectionManager() {
 }
 
 int EasyUnlockPrivateConnectionManager::AddConnection(
-    const Extension* extension,
+    const extensions::Extension* extension,
     std::unique_ptr<Connection> connection,
     bool persistent) {
   DCHECK(connection);
@@ -75,8 +75,9 @@ int EasyUnlockPrivateConnectionManager::AddConnection(
 }
 
 api::easy_unlock_private::ConnectionStatus
-EasyUnlockPrivateConnectionManager::ConnectionStatus(const Extension* extension,
-                                                     int connection_id) const {
+EasyUnlockPrivateConnectionManager::ConnectionStatus(
+    const extensions::Extension* extension,
+    int connection_id) const {
   Connection* connection = GetConnection(extension->id(), connection_id);
   if (connection)
     return ToApiConnectionStatus(connection->status());
@@ -84,7 +85,7 @@ EasyUnlockPrivateConnectionManager::ConnectionStatus(const Extension* extension,
 }
 
 std::string EasyUnlockPrivateConnectionManager::GetDeviceAddress(
-    const Extension* extension,
+    const extensions::Extension* extension,
     int connection_id) const {
   Connection* connection = GetConnection(extension->id(), connection_id);
   if (!connection)
@@ -92,8 +93,9 @@ std::string EasyUnlockPrivateConnectionManager::GetDeviceAddress(
   return connection->GetDeviceAddress();
 }
 
-bool EasyUnlockPrivateConnectionManager::Disconnect(const Extension* extension,
-                                                    int connection_id) {
+bool EasyUnlockPrivateConnectionManager::Disconnect(
+    const extensions::Extension* extension,
+    int connection_id) {
   Connection* connection = GetConnection(extension->id(), connection_id);
   if (connection) {
     connection->Disconnect();
@@ -103,7 +105,7 @@ bool EasyUnlockPrivateConnectionManager::Disconnect(const Extension* extension,
 }
 
 bool EasyUnlockPrivateConnectionManager::SendMessage(
-    const Extension* extension,
+    const extensions::Extension* extension,
     int connection_id,
     const std::string& message_body) {
   Connection* connection = GetConnection(extension->id(), connection_id);
@@ -120,8 +122,8 @@ void EasyUnlockPrivateConnectionManager::OnConnectionStatusChanged(
     Connection::Status new_status) {
   std::string event_name =
       api::easy_unlock_private::OnConnectionStatusChanged::kEventName;
-  events::HistogramValue histogram_value =
-      events::EASY_UNLOCK_PRIVATE_ON_CONNECTION_STATUS_CHANGED;
+  extensions::events::HistogramValue histogram_value =
+      extensions::events::EASY_UNLOCK_PRIVATE_ON_CONNECTION_STATUS_CHANGED;
   std::unique_ptr<base::ListValue> args =
       api::easy_unlock_private::OnConnectionStatusChanged::Create(
           0, ToApiConnectionStatus(old_status),
@@ -134,8 +136,8 @@ void EasyUnlockPrivateConnectionManager::OnMessageReceived(
     const Connection& connection,
     const WireMessage& message) {
   std::string event_name = api::easy_unlock_private::OnDataReceived::kEventName;
-  events::HistogramValue histogram_value =
-      events::EASY_UNLOCK_PRIVATE_ON_DATA_RECEIVED;
+  extensions::events::HistogramValue histogram_value =
+      extensions::events::EASY_UNLOCK_PRIVATE_ON_DATA_RECEIVED;
   std::vector<uint8_t> data(message.body().begin(), message.body().end());
   std::unique_ptr<base::ListValue> args =
       api::easy_unlock_private::OnDataReceived::Create(0, data);
@@ -154,8 +156,8 @@ void EasyUnlockPrivateConnectionManager::OnSendCompleted(
 
   std::string event_name =
       api::easy_unlock_private::OnSendCompleted::kEventName;
-  events::HistogramValue histogram_value =
-      events::EASY_UNLOCK_PRIVATE_ON_SEND_COMPLETED;
+  extensions::events::HistogramValue histogram_value =
+      extensions::events::EASY_UNLOCK_PRIVATE_ON_SEND_COMPLETED;
   std::vector<uint8_t> data(message.payload().begin(), message.payload().end());
   std::unique_ptr<base::ListValue> args =
       api::easy_unlock_private::OnSendCompleted::Create(0, data, success);
@@ -165,18 +167,18 @@ void EasyUnlockPrivateConnectionManager::OnSendCompleted(
 
 void EasyUnlockPrivateConnectionManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionReason reason) {
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionReason reason) {
   extensions_.erase(extension->id());
 }
 
 void EasyUnlockPrivateConnectionManager::DispatchConnectionEvent(
     const std::string& event_name,
-    events::HistogramValue histogram_value,
+    extensions::events::HistogramValue histogram_value,
     const Connection* connection,
     std::unique_ptr<base::ListValue> args) {
-  const EventListenerMap::ListenerList& listeners =
-      EventRouter::Get(browser_context_)
+  const extensions::EventListenerMap::ListenerList& listeners =
+      extensions::EventRouter::Get(browser_context_)
           ->listeners()
           .GetEventListenersByName(event_name);
   for (const auto& listener : listeners) {
@@ -186,23 +188,22 @@ void EasyUnlockPrivateConnectionManager::DispatchConnectionEvent(
     int connection_index = 0;
     args_copy->Set(connection_index,
                    std::make_unique<base::Value>(connection_id));
-    std::unique_ptr<Event> event(
-        new Event(histogram_value, event_name, std::move(args_copy)));
-    EventRouter::Get(browser_context_)
+    std::unique_ptr<extensions::Event> event(new extensions::Event(
+        histogram_value, event_name, std::move(args_copy)));
+    extensions::EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, std::move(event));
   }
 }
 
-ApiResourceManager<EasyUnlockPrivateConnection>*
+EasyUnlockPrivateConnectionResourceManager*
 EasyUnlockPrivateConnectionManager::GetResourceManager() const {
-  return ApiResourceManager<EasyUnlockPrivateConnection>::Get(browser_context_);
+  return EasyUnlockPrivateConnectionResourceManager::Get(browser_context_);
 }
 
 Connection* EasyUnlockPrivateConnectionManager::GetConnection(
     const std::string& extension_id,
     int connection_id) const {
-  ApiResourceManager<EasyUnlockPrivateConnection>* manager =
-      GetResourceManager();
+  EasyUnlockPrivateConnectionResourceManager* manager = GetResourceManager();
   EasyUnlockPrivateConnection* easy_unlock_connection =
       manager->Get(extension_id, connection_id);
   if (easy_unlock_connection) {
@@ -223,4 +224,4 @@ int EasyUnlockPrivateConnectionManager::FindConnectionId(
   return 0;
 }
 
-}  // namespace extensions
+}  // namespace apps
