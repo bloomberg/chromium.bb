@@ -153,11 +153,6 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   // TracePrologue has been called, and TraceEpilogue has not yet been called.
   bool tracing_in_progress_ = false;
 
-  // Is AdvanceTracing currently running? If not, we know that all calls of
-  // pushToMarkingDeque are from V8 or new wrapper associations. And this
-  // information is used by the verifier feature.
-  bool advancing_tracing_ = false;
-
   // Indicates whether an idle task for a lazy cleanup has already been
   // scheduled. The flag is used to avoid scheduling multiple idle tasks for
   // cleaning up.

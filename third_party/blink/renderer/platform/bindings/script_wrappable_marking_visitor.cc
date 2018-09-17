@@ -185,7 +185,6 @@ bool ScriptWrappableMarkingVisitor::AdvanceTracing(double deadline_in_ms) {
   CHECK(ThreadState::Current());
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   CHECK(tracing_in_progress_);
-  base::AutoReset<bool>(&advancing_tracing_, true);
   TimeTicks deadline =
       TimeTicks() + TimeDelta::FromMillisecondsD(deadline_in_ms);
   while (deadline.is_max() || WTF::CurrentTimeTicks() < deadline) {
@@ -273,9 +272,7 @@ void ScriptWrappableMarkingVisitor::VisitWithWrappers(
   DCHECK(header->IsWrapperHeaderMarked());
   marking_deque_.push_back(MarkingDequeItem(descriptor));
 #if DCHECK_IS_ON()
-  if (!advancing_tracing_) {
-    verifier_deque_.push_back(MarkingDequeItem(descriptor));
-  }
+  verifier_deque_.push_back(MarkingDequeItem(descriptor));
 #endif
 }
 
