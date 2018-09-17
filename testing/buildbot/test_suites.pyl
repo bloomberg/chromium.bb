@@ -383,9 +383,7 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.chromeos_unittests.filter',
       ],
     },
-    # TODO(bpastene): Re-enable this once the fixes in crbug.com/881638 roll
-    # into CHROMEOS_LKGM.
-    #'cros_vm_sanity_test': {},
+    'cros_vm_sanity_test': {},
     'crypto_unittests': {},
     'display_unittests': {},
     'google_apis_unittests': {},
@@ -439,9 +437,7 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.chromeos_unittests.filter',
       ],
     },
-    # TODO(bpastene): Re-enable this once the fixes in crbug.com/881638 roll
-    # into CHROMEOS_LKGM.
-    #'cros_vm_sanity_test': {},
+    'cros_vm_sanity_test': {},
     'services_unittests': {
       'args': [
         '--vpython-dir=../../vpython_dir_linux_amd64',
