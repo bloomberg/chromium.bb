@@ -638,6 +638,7 @@ static aom_image_t *add_grain_if_needed(aom_image_t *img,
   }
 
   if (grain_img_buf) {
+    grain_img_buf->user_priv = img->user_priv;
     if (av1_add_film_grain(grain_params, img, grain_img_buf)) {
       aom_img_free(grain_img_buf);
       grain_img_buf = NULL;
