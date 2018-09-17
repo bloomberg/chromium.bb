@@ -57,7 +57,7 @@ SVGParsingError SVGLengthList::ParseInternal(const CharType*& ptr,
       ptr++;
     if (ptr == start)
       break;
-    String value_string(start, ptr - start);
+    String value_string(start, static_cast<wtf_size_t>(ptr - start));
     if (value_string.IsEmpty())
       break;
 
@@ -95,7 +95,7 @@ void SVGLengthList::Add(SVGPropertyBase* other, SVGElement* context_element) {
     return;
 
   SVGLengthContext length_context(context_element);
-  for (size_t i = 0; i < length(); ++i)
+  for (uint32_t i = 0; i < length(); ++i)
     at(i)->SetValue(
         at(i)->Value(length_context) + other_list->at(i)->Value(length_context),
         length_context);
@@ -122,15 +122,16 @@ void SVGLengthList::CalculateAnimatedValue(
   DCHECK_EQ(mode_, SVGLength::LengthModeForAnimatedLengthAttribute(
                        animation_element->AttributeName()));
 
-  size_t from_length_list_size = from_list->length();
-  size_t to_length_list_size = to_list->length();
-  size_t to_at_end_of_duration_list_size = to_at_end_of_duration_list->length();
+  uint32_t from_length_list_size = from_list->length();
+  uint32_t to_length_list_size = to_list->length();
+  uint32_t to_at_end_of_duration_list_size =
+      to_at_end_of_duration_list->length();
 
   if (!AdjustFromToListValues(from_list, to_list, percentage,
                               animation_element->GetAnimationMode()))
     return;
 
-  for (size_t i = 0; i < to_length_list_size; ++i) {
+  for (uint32_t i = 0; i < to_length_list_size; ++i) {
     // TODO(shanmuga.m): Support calc for SVGLengthList animation
     float animated_number = at(i)->Value(length_context);
     CSSPrimitiveValue::UnitType unit_type =

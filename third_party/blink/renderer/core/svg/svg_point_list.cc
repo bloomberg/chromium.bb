@@ -87,7 +87,7 @@ void SVGPointList::Add(SVGPropertyBase* other, SVGElement* context_element) {
   if (length() != other_list->length())
     return;
 
-  for (size_t i = 0; i < length(); ++i)
+  for (uint32_t i = 0; i < length(); ++i)
     at(i)->SetValue(at(i)->Value() + other_list->at(i)->Value());
 }
 
@@ -104,15 +104,16 @@ void SVGPointList::CalculateAnimatedValue(
   SVGPointList* to_at_end_of_duration_list =
       ToSVGPointList(to_at_end_of_duration_value);
 
-  size_t from_point_list_size = from_list->length();
-  size_t to_point_list_size = to_list->length();
-  size_t to_at_end_of_duration_list_size = to_at_end_of_duration_list->length();
+  uint32_t from_point_list_size = from_list->length();
+  uint32_t to_point_list_size = to_list->length();
+  uint32_t to_at_end_of_duration_list_size =
+      to_at_end_of_duration_list->length();
 
   if (!AdjustFromToListValues(from_list, to_list, percentage,
                               animation_element->GetAnimationMode()))
     return;
 
-  for (size_t i = 0; i < to_point_list_size; ++i) {
+  for (uint32_t i = 0; i < to_point_list_size; ++i) {
     float animated_x = at(i)->X();
     float animated_y = at(i)->Y();
 

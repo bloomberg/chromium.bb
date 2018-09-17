@@ -64,14 +64,14 @@ class SVGStringListBase : public SVGPropertyBase {
 
   // SVGStringList DOM Spec implementation. These are only to be called from
   // SVGStringListTearOff:
-  unsigned long length() { return values_.size(); }
+  uint32_t length() { return values_.size(); }
   void clear() { values_.clear(); }
   void Initialize(const String&);
-  String GetItem(size_t, ExceptionState&);
-  void InsertItemBefore(const String&, size_t);
-  String RemoveItem(size_t, ExceptionState&);
+  String GetItem(uint32_t, ExceptionState&);
+  void InsertItemBefore(const String&, uint32_t);
+  String RemoveItem(uint32_t, ExceptionState&);
   void AppendItem(const String&);
-  void ReplaceItem(const String&, size_t, ExceptionState&);
+  void ReplaceItem(const String&, uint32_t, ExceptionState&);
 
   // SVGPropertyBase:
   virtual SVGParsingError SetValueAsString(const String&) = 0;
@@ -104,7 +104,7 @@ class SVGStringListBase : public SVGPropertyBase {
   void ParseInternal(const CharType*& ptr,
                      const CharType* end,
                      char list_delimiter);
-  bool CheckIndexBound(size_t, ExceptionState&);
+  bool CheckIndexBound(uint32_t, ExceptionState&);
 
   Vector<String> values_;
 };

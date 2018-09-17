@@ -88,8 +88,8 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
 
   // SVG*List DOM interface:
 
-  // WebIDL requires "unsigned long" type instead of size_t.
-  unsigned long length() { return ToDerived()->Target()->length(); }
+  // WebIDL requires "unsigned long" which is "uint32_t".
+  uint32_t length() { return ToDerived()->Target()->length(); }
 
   void clear(ExceptionState& exception_state) {
     if (ToDerived()->IsImmutable()) {
@@ -113,15 +113,14 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
     return CreateItemTearOff(value);
   }
 
-  ItemTearOffType* getItem(unsigned long index,
-                           ExceptionState& exception_state) {
+  ItemTearOffType* getItem(uint32_t index, ExceptionState& exception_state) {
     ItemPropertyType* value =
         ToDerived()->Target()->GetItem(index, exception_state);
     return CreateItemTearOff(value);
   }
 
   ItemTearOffType* insertItemBefore(ItemTearOffType* item,
-                                    unsigned long index,
+                                    uint32_t index,
                                     ExceptionState& exception_state) {
     if (ToDerived()->IsImmutable()) {
       SVGPropertyTearOffBase::ThrowReadOnly(exception_state);
@@ -135,7 +134,7 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
   }
 
   ItemTearOffType* replaceItem(ItemTearOffType* item,
-                               unsigned long index,
+                               uint32_t index,
                                ExceptionState& exception_state) {
     if (ToDerived()->IsImmutable()) {
       SVGPropertyTearOffBase::ThrowReadOnly(exception_state);
@@ -148,15 +147,14 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
     return CreateItemTearOff(value);
   }
 
-  bool AnonymousIndexedSetter(unsigned index,
+  bool AnonymousIndexedSetter(uint32_t index,
                               ItemTearOffType* item,
                               ExceptionState& exception_state) {
     replaceItem(item, index, exception_state);
     return true;
   }
 
-  ItemTearOffType* removeItem(unsigned long index,
-                              ExceptionState& exception_state) {
+  ItemTearOffType* removeItem(uint32_t index, ExceptionState& exception_state) {
     if (ToDerived()->IsImmutable()) {
       SVGPropertyTearOffBase::ThrowReadOnly(exception_state);
       return nullptr;
