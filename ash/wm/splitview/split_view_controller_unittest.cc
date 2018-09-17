@@ -2972,7 +2972,7 @@ TEST_F(SplitViewAppDraggingTest, DragNoneActiveMaximizedWindow) {
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
   const float long_scroll_delta = display_bounds.height() / 4 + 5;
 
-  gfx::Point start = gfx::Point(0, 0);
+  const gfx::Point start;
   // Drag the window that cannot be snapped long enough, the window will be
   // dropped into overview.
   base::TimeTicks timestamp = base::TimeTicks::Now();
@@ -3001,7 +3001,7 @@ TEST_F(SplitViewAppDraggingTest, DragActiveMaximizedWindow) {
 
   // Move the window by a small amount of distance will maximize the window
   // again.
-  gfx::Point start = gfx::Point(0, 0);
+  const gfx::Point start;
   SendGestureEvents(start, 10, window.get());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
 
@@ -3070,7 +3070,7 @@ TEST_F(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
 
   // Drag the window by a small amount of distance, the window will back to
   // fullscreened, and shelf will be hidden again.
-  gfx::Point start = gfx::Point(0, 0);
+  const gfx::Point start;
   SendGestureEvents(start, 10, window.get());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsFullscreen());
   EXPECT_FALSE(shelf_layout_manager->IsVisible());
@@ -3084,6 +3084,47 @@ TEST_F(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
   EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
   EXPECT_TRUE(shelf_layout_manager->IsVisible());
+}
+
+// Tests the auto-hide shelf state during window dragging.
+TEST_F(SplitViewAppDraggingTest, AutoHideShelf) {
+  UpdateDisplay("800x600");
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  std::unique_ptr<aura::Window> window = CreateTestWindowWithWidget();
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  ShelfLayoutManager* shelf_layout_manager =
+      AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
+  shelf_layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf_layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  const gfx::Point start;
+  const float long_scroll_delta = display_bounds.height() / 4 + 5;
+  SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  // Shelf should be shown during drag.
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  EndScrollSequence(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  // Shelf should be shown after drag and snapped window should be covered by
+  // the auto-hide-shown shelf.
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  EXPECT_EQ(split_view_controller()
+                ->GetSnappedWindowBoundsInScreen(window.get(),
+                                                 SplitViewController::LEFT)
+                .height(),
+            display_bounds.height());
 }
 
 // Tests that the app drag will be reverted if the screen is being rotated.
@@ -3137,7 +3178,7 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
   float small_velocity = TabletModeAppWindowDragController::
                              kFlingToOverviewFromSnappingAreaThreshold -
                          10.f;
-  gfx::Point start(gfx::Point(0, 0));
+  gfx::Point start;
   base::TimeTicks timestamp = base::TimeTicks::Now();
 
   // Fling to the right with large enough velocity when trying to snap the
@@ -3205,7 +3246,7 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
   float large_velocity = TabletModeAppWindowDragController::
                              kFlingToOverviewFromSnappingAreaThreshold +
                          10.f;
-  gfx::Point start(gfx::Point(0, 0));
+  const gfx::Point start;
 
   // Fling the window in left snapping area to left should still snap the
   // window.

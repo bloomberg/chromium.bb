@@ -1057,7 +1057,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
   // Tests that the shelf is visible when in overview mode and its color is
   // overlap.
   window_selector_controller->ToggleOverview();
-  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());
 
   // Test that on exiting overview mode, the shelf returns to auto hide state.
