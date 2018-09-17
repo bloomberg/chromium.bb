@@ -127,11 +127,9 @@ base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
       return ReadArrayContent(*header, max_nesting_level);
     case CBORValue::Type::MAP:
       return ReadMapContent(*header, max_nesting_level);
-    case CBORValue::Type::TAG:
-      NOTREACHED() << constants::kUnsupportedMajorType;
-      return base::nullopt;
     case CBORValue::Type::SIMPLE_VALUE:
       return DecodeToSimpleValue(*header);
+    case CBORValue::Type::TAG:  // We explicitly don't support TAG.
     case CBORValue::Type::NONE:
       break;
   }
