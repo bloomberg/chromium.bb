@@ -1454,8 +1454,6 @@ bool ChromeContentBrowserClient::ShouldLockToOrigin(
     return false;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Disable origin lock if this is an extension/app that applies effective URL
-  // mappings.
   if (!ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
           browser_context, effective_site_url)) {
     return false;
