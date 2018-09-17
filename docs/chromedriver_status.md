@@ -9,7 +9,7 @@ Below is a list of all WebDriver commands and their current support in ChromeDri
 | GET    | /status                                                        | Status                     | Complete           |
 | GET    | /session/{session id}/timeouts                                 | Get Timeouts               | Complete           |
 | POST   | /session/{session id}/timeouts                                 | Set Timeouts               | Complete           |
-| POST   | /session/{session id}/url                                      | Navigate To                | Partially Complete | [1987](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1987)
+| POST   | /session/{session id}/url                                      | Navigate To                | Complete           | 
 | GET    | /session/{session id}/url                                      | Get Current URL            | Complete           |
 | POST   | /session/{session id}/back                                     | Back                       |                    |
 | POST   | /session/{session id}/forward                                  | Forward                    |                    |
@@ -43,8 +43,8 @@ Below is a list of all WebDriver commands and their current support in ChromeDri
 | POST   | /session/{session id}/element/{element id}/clear               | Element Clear              | Partially Complete | [1998](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1998)
 | POST   | /session/{session id}/element/{element id}/value               | Element Send Keys          | Partially Complete | [1999](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1999)
 | GET    | /session/{session id}/source                                   | Get Page Source            |                    |
-| POST   | /session/{session id}/execute/sync                             | Execute Script             | Partially Complete | [2000](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2000) [2398](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2398) [2556](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2556)
-| POST   | /session/{session id}/execute/async                            | Execute Async Script       | Partially Complete | [2001](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2001) [2398](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2398) [2556](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2556)
+| POST   | /session/{session id}/execute/sync                             | Execute Script             | Partially Complete | [2398](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2398) [2556](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2556)
+| POST   | /session/{session id}/execute/async                            | Execute Async Script       | Partially Complete | [2398](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2398) [2556](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2556)
 | GET    | /session/{session id}/cookie                                   | Get All Cookies            | Complete           |
 | GET    | /session/{session id}/cookie/{name}                            | Get Named Cookie           | Complete           |
 | POST   | /session/{session id}/cookie                                   | Add Cookie                 | Partially Complete | [2002](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2002)

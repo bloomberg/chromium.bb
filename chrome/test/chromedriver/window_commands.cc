@@ -312,7 +312,7 @@ Status ExecuteGet(Session* session,
   timeout->SetDuration(session->page_load_timeout);
   std::string url;
   if (!params.GetString("url", &url))
-    return Status(kUnknownError, "'url' must be a string");
+    return Status(kInvalidArgument, "'url' must be a string");
   Status status = web_view->Load(url, timeout);
   if (status.IsError())
     return status;
@@ -327,7 +327,7 @@ Status ExecuteExecuteScript(Session* session,
                             Timeout* timeout) {
   std::string script;
   if (!params.GetString("script", &script))
-    return Status(kUnknownError, "'script' must be a string");
+    return Status(kInvalidArgument, "'script' must be a string");
   if (script == ":takeHeapSnapshot") {
     return web_view->TakeHeapSnapshot(value);
   } else if (script == ":startProfile") {
@@ -337,7 +337,7 @@ Status ExecuteExecuteScript(Session* session,
   } else {
     const base::ListValue* args;
     if (!params.GetList("args", &args))
-      return Status(kUnknownError, "'args' must be a list");
+      return Status(kInvalidArgument, "'args' must be a list");
 
     return web_view->CallFunction(session->GetCurrentFrameId(),
                                   "function(){" + script + "}", *args, value);
@@ -351,10 +351,10 @@ Status ExecuteExecuteAsyncScript(Session* session,
                                  Timeout* timeout) {
   std::string script;
   if (!params.GetString("script", &script))
-    return Status(kUnknownError, "'script' must be a string");
+    return Status(kInvalidArgument, "'script' must be a string");
   const base::ListValue* args;
   if (!params.GetList("args", &args))
-    return Status(kUnknownError, "'args' must be a list");
+    return Status(kInvalidArgument, "'args' must be a list");
 
   return web_view->CallUserAsyncFunction(
       session->GetCurrentFrameId(), "function(){" + script + "}", *args,
