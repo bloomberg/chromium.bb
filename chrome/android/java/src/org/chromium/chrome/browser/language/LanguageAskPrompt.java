@@ -22,9 +22,13 @@ import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
+import org.chromium.components.language.GeoLanguageProviderBridge;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -195,7 +199,23 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
         list.setHasFixedSize(true);
         params.customView = list;
 
-        adapter.setLanguages(PrefServiceBridge.getInstance().getChromeLanguageList());
+        List<LanguageItem> languages = PrefServiceBridge.getInstance().getChromeLanguageList();
+        LinkedHashSet<String> currentGeoLanguages =
+                GeoLanguageProviderBridge.getCurrentGeoLanguages();
+        Collections.sort(languages, new Comparator<LanguageItem>() {
+            private int computeItemScore(LanguageItem item) {
+                // Order languages so that the region's languages are on top, followed by the ones
+                // already in the user's accept languages, then the remaining languages in
+                // alphabetical order.
+                if (currentGeoLanguages.contains(item.getCode())) return -2;
+                return mInitialLanguages.contains(item.getCode()) ? -1 : 0;
+            }
+            @Override
+            public int compare(LanguageItem first, LanguageItem second) {
+                return computeItemScore(first) - computeItemScore(second);
+            }
+        });
+        adapter.setLanguages(languages);
 
         mModalDialogManager = activity.getModalDialogManager();
         mDialog = new ModalDialogView(this, params);

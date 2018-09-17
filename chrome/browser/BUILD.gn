@@ -2504,6 +2504,7 @@ jumbo_split_static_library("browser") {
       "//components/embedder_support/android:web_contents_delegate",
       "//components/feed:buildflags",
       "//components/feed:feature_list",
+      "//components/language/android:language_bridge",
       "//components/payments/content/android",
       "//components/resources:components_resources",
       "//components/toolbar",
