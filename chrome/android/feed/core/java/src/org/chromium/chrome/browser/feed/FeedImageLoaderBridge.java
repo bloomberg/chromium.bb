@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.feed;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -45,7 +46,7 @@ public class FeedImageLoaderBridge {
      * Fetches images for feed. A {@code null} Bitmap is returned if no image is available. The
      * callback is never called synchronously.
      */
-    public void fetchImage(List<String> urls, Callback<Bitmap> callback) {
+    public void fetchImage(List<String> urls, Callback<ImageResponse> callback) {
         assert mNativeFeedImageLoaderBridge != 0;
 
         String[] urlsArray = urls.toArray(new String[urls.size()]);
@@ -53,9 +54,24 @@ public class FeedImageLoaderBridge {
         nativeFetchImage(mNativeFeedImageLoaderBridge, urlsArray, callback);
     }
 
+    @CalledByNative
+    public static ImageResponse createImageResponse(int imagePositionInList, Bitmap bitmap) {
+        return new ImageResponse(imagePositionInList, bitmap);
+    }
+
+    static class ImageResponse {
+        public int imagePositionInList;
+        public Bitmap bitmap;
+
+        public ImageResponse(int imagePositionInList, Bitmap bitmap) {
+            this.imagePositionInList = imagePositionInList;
+            this.bitmap = bitmap;
+        }
+    }
+
     // Native methods
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedImageLoaderBridge);
     private native void nativeFetchImage(
-            long nativeFeedImageLoaderBridge, String[] urls, Callback<Bitmap> callback);
+            long nativeFeedImageLoaderBridge, String[] urls, Callback<ImageResponse> callback);
 }

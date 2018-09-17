@@ -71,12 +71,17 @@ void FeedImageLoaderBridge::FetchImage(JNIEnv* j_env,
 
 void FeedImageLoaderBridge::OnImageFetched(
     ScopedJavaGlobalRef<jobject> callback,
-    const gfx::Image& image) {
+    const gfx::Image& image,
+    size_t image_position) {
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (!image.IsEmpty()) {
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
   }
-  RunObjectCallbackAndroid(callback, j_bitmap);
+
+  RunObjectCallbackAndroid(callback,
+                           Java_FeedImageLoaderBridge_createImageResponse(
+                               env, image_position, j_bitmap));
 }
 
 }  // namespace feed

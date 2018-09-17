@@ -79,7 +79,7 @@ void FeedImageManager::FetchImagesFromDatabase(size_t url_index,
   if (url_index >= urls.size()) {
     // Already reached the last entry. Return an empty image.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
+        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image(), -1));
     return;
   }
 
@@ -125,7 +125,7 @@ void FeedImageManager::OnImageDecodedFromDatabase(size_t url_index,
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), image));
+      FROM_HERE, base::BindOnce(std::move(callback), image, url_index));
 
   // Report success if the url exists.
   // This check is for concurrent access to the same url.
@@ -206,7 +206,7 @@ void FeedImageManager::OnImageDecodedFromNetwork(size_t url_index,
   image_database_->SaveImage(image_id, image_data);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), image));
+      FROM_HERE, base::BindOnce(std::move(callback), image, url_index));
 
   // Report success if the url exists.
   // This check is for concurrent access to the same url.

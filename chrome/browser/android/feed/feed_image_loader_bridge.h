@@ -32,7 +32,8 @@ class FeedImageLoaderBridge {
 
  private:
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
-                      const gfx::Image& image);
+                      const gfx::Image& image,
+                      size_t image_position);
 
   FeedImageManager* feed_image_manager_;
 
