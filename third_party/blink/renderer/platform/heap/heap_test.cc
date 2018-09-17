@@ -6954,4 +6954,21 @@ TEST(HeapTest, PromptlyFreeStackAllocatedHeapLinkedHashSet) {
   EXPECT_NE(after, before);
 }
 
+TEST(HeapTest, ShrinkVector) {
+  // Regression test: https://crbug.com/823289
+
+  HeapVector<Member<IntWrapper>> vector;
+  vector.ReserveCapacity(32);
+  for (int i = 0; i < 4; i++) {
+    vector.push_back(new IntWrapper(i));
+  }
+
+  ConservativelyCollectGarbage(BlinkGC::kLazySweeping);
+
+  // The following call tries to promptly free the left overs. In the buggy
+  // scenario that would create a free HeapObjectHeader that is assumed to be
+  // black which it is not.
+  vector.ShrinkToFit();
+}
+
 }  // namespace blink
