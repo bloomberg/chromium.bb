@@ -54,10 +54,6 @@ class GinJavaBridgeMessageFilter : public BrowserMessageFilter {
   friend class BrowserThread;
   friend class base::DeleteHelper<GinJavaBridgeMessageFilter>;
 
-  // GinJavaBridgeDispatcherHost removes itself from the map on
-  // WebContents destruction, so there is no risk that the pointer would become
-  // stale.
-  //
   // The filter keeps its own routing map of RenderFrames for two reasons:
   //  1. Message dispatching must be done on the background thread,
   //     without resorting to the UI thread, which can be in fact currently
@@ -65,13 +61,13 @@ class GinJavaBridgeMessageFilter : public BrowserMessageFilter {
   //  2. As RenderFrames pass away earlier than JavaScript wrappers,
   //     messages from the latter can arrive after the RenderFrame has been
   //     removed from the WebContents' routing table.
-  typedef std::map<int32_t, GinJavaBridgeDispatcherHost*> HostMap;
+  typedef std::map<int32_t, scoped_refptr<GinJavaBridgeDispatcherHost>> HostMap;
 
   GinJavaBridgeMessageFilter();
   ~GinJavaBridgeMessageFilter() override;
 
   // Called on the background thread.
-  GinJavaBridgeDispatcherHost* FindHost();
+  scoped_refptr<GinJavaBridgeDispatcherHost> FindHost();
   void OnGetMethods(GinJavaBoundObject::ObjectID object_id,
                     std::set<std::string>* returned_method_names);
   void OnHasMethod(GinJavaBoundObject::ObjectID object_id,
