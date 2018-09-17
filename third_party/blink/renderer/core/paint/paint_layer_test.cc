@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -1611,6 +1612,102 @@ TEST_P(PaintLayerTest, SetNeedsRepaintSelfPaintingUnderNonSelfPainting) {
   EXPECT_TRUE(span_layer->NeedsRepaint());
   EXPECT_TRUE(floating_layer->NeedsRepaint());
   EXPECT_TRUE(multicol_layer->NeedsRepaint());
+}
+
+TEST_P(PaintLayerTest, HitTestPseudoElementWithContinuation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #target::before {
+        content: ' ';
+        display: block;
+        height: 100px
+      }
+    </style>
+    <span id='target'></span>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->HitTest(location, result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(target->GetPseudoElement(kPseudoIdBefore),
+            result.InnerPossiblyPseudoNode());
+}
+
+TEST_P(PaintLayerTest, HitTestFirstLetterPseudoElement) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #container { height: 100px; }
+      #container::first-letter { font-size: 50px; }
+    </style>
+    <div id='container'>
+      <div>
+        <span id='target'>First letter</span>
+      </div>
+    </div>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+  Element* container = GetDocument().getElementById("container");
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->HitTest(location, result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(container->GetPseudoElement(kPseudoIdFirstLetter),
+            result.InnerPossiblyPseudoNode());
+}
+
+TEST_P(PaintLayerTest, HitTestFirstLetterInBeforePseudoElement) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #container { height: 100px; }
+      #container::first-letter { font-size: 50px; }
+      #target::before { content: "First letter"; }
+    </style>
+    <div id='container'>
+      <div>
+        <span id='target'></span>
+      </div>
+    </div>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+  Element* container = GetDocument().getElementById("container");
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->HitTest(location, result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(container->GetPseudoElement(kPseudoIdFirstLetter),
+            result.InnerPossiblyPseudoNode());
+}
+
+TEST_P(PaintLayerTest, HitTestFirstLetterPseudoElementDisplayContents) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #container { height: 100px; }
+      #container::first-letter { font-size: 50px; }
+      #target { display: contents; }
+    </style>
+    <div id='container'>
+      <div>
+        <span id='target'>First letter</span>
+      </div>
+    </div>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+  Element* container = GetDocument().getElementById("container");
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->HitTest(location, result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(container->GetPseudoElement(kPseudoIdFirstLetter),
+            result.InnerPossiblyPseudoNode());
 }
 
 }  // namespace blink
