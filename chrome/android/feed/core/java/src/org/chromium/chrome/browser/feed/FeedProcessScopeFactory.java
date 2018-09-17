@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed;
 
+import android.support.annotation.Nullable;
+
 import com.google.android.libraries.feed.api.common.ThreadUtils;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecycleListener;
@@ -15,34 +17,40 @@ import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.concurrent.Executors;
 
 /** Holds singleton {@link FeedProcessScope} and some of the scope's host implementations. */
 public class FeedProcessScopeFactory {
+    private static PrefChangeRegistrar sPrefChangeRegistrar;
     private static FeedProcessScope sFeedProcessScope;
     private static FeedScheduler sFeedScheduler;
     private static FeedOfflineIndicator sFeedOfflineIndicator;
 
-    /** @return The shared {@link FeedProcessScope} instance. */
-    public static FeedProcessScope getFeedProcessScope() {
+    /** @return The shared {@link FeedProcessScope} instance. Null if the Feed is disabled. */
+    public static @Nullable FeedProcessScope getFeedProcessScope() {
         if (sFeedProcessScope == null) {
             initialize();
         }
         return sFeedProcessScope;
     }
 
-    /** @return The {@link FeedScheduler} that was given to the {@link FeedProcessScope}. */
-    public static FeedScheduler getFeedScheduler() {
+    /** @return The {@link FeedScheduler} that was given to the {@link FeedProcessScope}. Null if
+     * the Feed is disabled. */
+    public static @Nullable FeedScheduler getFeedScheduler() {
         if (sFeedScheduler == null) {
             initialize();
         }
         return sFeedScheduler;
     }
 
-    /** @return The {@link FeedOfflineIndicator} that was given to the {@link FeedProcessScope}. */
-    public static FeedOfflineIndicator getFeedOfflineIndicator() {
+    /** @return The {@link FeedOfflineIndicator} that was given to the {@link FeedProcessScope}.
+     * Null if the Feed is disabled. */
+    public static @Nullable FeedOfflineIndicator getFeedOfflineIndicator() {
         if (sFeedOfflineIndicator == null) {
             initialize();
         }
@@ -51,6 +59,14 @@ public class FeedProcessScopeFactory {
 
     private static void initialize() {
         assert sFeedProcessScope == null && sFeedScheduler == null && sFeedOfflineIndicator == null;
+        if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED)) {
+            return;
+        }
+
+        sPrefChangeRegistrar = new PrefChangeRegistrar();
+        sPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED,
+                FeedProcessScopeFactory::articlesEnabledPrefChange);
+
         Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
         Configuration configHostApi = createConfiguration();
 
@@ -108,6 +124,27 @@ public class FeedProcessScopeFactory {
     /** Resets the FeedProcessScope after testing is complete. */
     @VisibleForTesting
     static void clearFeedProcessScopeForTesting() {
+        destroy();
+    }
+
+    private static void articlesEnabledPrefChange() {
+        // Should only be subscribed while it was enabled. A change should mean articles are now
+        // disabled.
+        assert !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
+        destroy();
+    }
+
+    /** Clears out all static state. */
+    private static void destroy() {
+        if (sPrefChangeRegistrar != null) {
+            sPrefChangeRegistrar.removeObserver(Pref.NTP_ARTICLES_SECTION_ENABLED);
+            sPrefChangeRegistrar.destroy();
+            sPrefChangeRegistrar = null;
+        }
+        if (sFeedProcessScope != null) {
+            sFeedProcessScope.onDestroy();
+            sFeedProcessScope = null;
+        }
         if (sFeedScheduler != null) {
             sFeedScheduler.destroy();
             sFeedScheduler = null;
@@ -116,6 +153,5 @@ public class FeedProcessScopeFactory {
             sFeedOfflineIndicator.destroy();
             sFeedOfflineIndicator = null;
         }
-        sFeedProcessScope = null;
     }
 }
