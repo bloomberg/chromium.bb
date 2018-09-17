@@ -233,6 +233,7 @@
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/error_page_content.h"
+#import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #include "ios/chrome/browser/web/print_tab_helper.h"
@@ -3765,7 +3766,18 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                       defaultURL->short_name());
       action = ^{
         Record(ACTION_SEARCH_BY_IMAGE, isImage, isLink);
-        [weakSelf searchByImageAtURL:imageUrl referrer:referrer];
+        if (base::FeatureList::IsEnabled(kCopyImage)) {
+          ImageFetchTabHelper* image_fetcher =
+              ImageFetchTabHelper::FromWebState(self.currentWebState);
+          DCHECK(image_fetcher);
+          image_fetcher->GetImageData(imageUrl, referrer, ^(NSData* data) {
+            [weakSelf searchByImageData:data atURL:imageUrl];
+          });
+        } else {
+          // TODO(crbug.com/163201):Remove this when kCopyImage flag is
+          // removed.
+          [weakSelf searchByImageAtURL:imageUrl referrer:referrer];
+        }
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
     }
@@ -3819,6 +3831,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 // Performs a search with the image at the given url. The referrer is used to
 // download the image.
+// TODO(crbug.com/163201):Remove this when kCopyImage flag is removed.
 - (void)searchByImageAtURL:(const GURL&)url
                   referrer:(const web::Referrer)referrer {
   DCHECK(url.is_valid());
