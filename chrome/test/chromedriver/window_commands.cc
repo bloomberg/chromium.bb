@@ -380,7 +380,7 @@ Status ExecuteSwitchToFrame(Session* session,
   const base::DictionaryValue* id_dict;
   if (id->GetAsDictionary(&id_dict)) {
     std::string element_id;
-    if (!id_dict->GetString("ELEMENT", &element_id))
+    if (!id_dict->GetString(GetElementKey(), &element_id))
       return Status(kUnknownError, "missing 'ELEMENT'");
     bool is_displayed = false;
     Status status = IsElementDisplayed(
