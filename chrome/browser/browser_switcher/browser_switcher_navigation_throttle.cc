@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,12 +74,17 @@ BrowserSwitcherNavigationThrottle::MaybeCreateThrottleFor(
     content::NavigationHandle* navigation) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (navigation->IsInMainFrame()) {
-    return std::make_unique<
-        navigation_interception::InterceptNavigationThrottle>(
-        navigation, base::BindRepeating(&MaybeLaunchAlternativeBrowser));
-  }
-  return nullptr;
+  content::BrowserContext* browser_context =
+      navigation->GetWebContents()->GetBrowserContext();
+
+  if (browser_context->IsOffTheRecord())
+    return nullptr;
+
+  if (!navigation->IsInMainFrame())
+    return nullptr;
+
+  return std::make_unique<navigation_interception::InterceptNavigationThrottle>(
+      navigation, base::BindRepeating(&MaybeLaunchAlternativeBrowser));
 }
 
 }  // namespace browser_switcher
