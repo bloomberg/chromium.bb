@@ -413,14 +413,13 @@ bool Display::DrawAndSwap() {
         callbacks.emplace_back(std::move(callback));
       }
     }
-    bool need_presentation_feedback = !callbacks.empty();
-    if (need_presentation_feedback)
-      pending_presented_callbacks_.emplace_back(std::move(callbacks));
+    pending_presented_callbacks_.emplace_back(std::move(callbacks));
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
 
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
+    const bool need_presentation_feedback = true;
     renderer_->SwapBuffers(std::move(frame.metadata.latency_info),
                            need_presentation_feedback);
     if (scheduler_)
