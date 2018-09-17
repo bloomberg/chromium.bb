@@ -244,6 +244,7 @@ constexpr StringToIntTable kOverwritableColorTable[] = {
      TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE},
     {"toolbar", TP::COLOR_TOOLBAR},
     {"tab_text", TP::COLOR_TAB_TEXT},
+    {"tab_text_inactive", TP::COLOR_TAB_TEXT_INACTIVE},
     {"tab_background_text", TP::COLOR_BACKGROUND_TAB_TEXT},
     {"tab_background_text_inactive", TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
     {"tab_background_text_incognito", TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO},

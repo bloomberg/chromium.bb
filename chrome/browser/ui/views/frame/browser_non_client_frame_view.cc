@@ -232,8 +232,12 @@ SkColor BrowserNonClientFrameView::GetTabBackgroundColor(
 }
 
 SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
-  if (state == TAB_ACTIVE)
-    return GetThemeOrDefaultColor(ThemeProperties::COLOR_TAB_TEXT);
+  if (state == TAB_ACTIVE) {
+    const int color_id = ShouldPaintAsActive()
+                             ? ThemeProperties::COLOR_TAB_TEXT
+                             : ThemeProperties::COLOR_TAB_TEXT_INACTIVE;
+    return GetThemeOrDefaultColor(color_id);
+  }
 
   const int color_id =
       ShouldPaintAsActive()
