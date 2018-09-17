@@ -35,7 +35,6 @@ namespace blink {
 
 class LayoutBlockFlow;
 class NGPaintFragment;
-
 // LayoutInline is the LayoutObject associated with display: inline.
 // This is called an "inline box" in CSS 2.1.
 // http://www.w3.org/TR/CSS2/visuren.html#inline-boxes
@@ -314,8 +313,10 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutUnit OffsetWidth() const final { return LinesBoundingBox().Width(); }
   LayoutUnit OffsetHeight() const final { return LinesBoundingBox().Height(); }
 
+ public:  // public for testing only
   LayoutRect VisualRectInDocument() const override;
 
+ private:
   // This method differs from visualOverflowRect in that it doesn't include the
   // rects for culled inline boxes, which aren't necessary for paint
   // invalidation.

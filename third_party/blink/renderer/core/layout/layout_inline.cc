@@ -1253,36 +1253,16 @@ LayoutRect LayoutInline::VisualRectInDocument() const {
     MapToVisualRectInAncestorSpace(View(), rect);
     return rect;
   }
-
+  Vector<LayoutRect> outlines;
+  AddOutlineRects(outlines, LayoutPoint(),
+                  NGOutlineType::kIncludeBlockVisualOverflow);
   FloatRect float_result;
   LinesBoundingBoxGeneratorContext context(float_result);
-
-  LayoutInline* end_continuation = InlineElementContinuation();
-  while (LayoutInline* next_continuation =
-             end_continuation->InlineElementContinuation())
-    end_continuation = next_continuation;
-
-  for (LayoutBlock* curr_block = ContainingBlock();
-       curr_block && curr_block->IsAnonymousBlock();
-       curr_block = ToLayoutBlock(curr_block->NextSibling())) {
-    bool walk_children_only = !curr_block->ChildrenInline();
-    for (LayoutObject* curr = curr_block->FirstChild(); curr;
-         curr = curr->NextSibling()) {
-      LayoutRect rect(curr->LocalVisualRect());
-      context(FloatRect(rect));
-      if (walk_children_only)
-        continue;
-      for (LayoutObject* walker = curr; walker;
-           walker = walker->NextInPreOrder(curr)) {
-        if (walker != end_continuation)
-          continue;
-        LayoutRect rect(EnclosingIntRect(float_result));
-        MapToVisualRectInAncestorSpace(View(), rect);
-        return rect;
-      }
-    }
-  }
-  return LayoutRect();
+  for (const auto& outline : outlines)
+    context(outline);
+  LayoutRect int_result(EnclosingIntRect(float_result));
+  MapToVisualRectInAncestorSpace(View(), int_result);
+  return int_result;
 }
 
 LayoutRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
