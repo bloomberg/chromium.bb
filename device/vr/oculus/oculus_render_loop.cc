@@ -42,58 +42,161 @@ gfx::Transform PoseToTransform(const ovrPosef& pose) {
 
 }  // namespace
 
-OculusRenderLoop::OculusRenderLoop(
-    base::RepeatingCallback<void()> on_presentation_ended)
-    : base::Thread("OculusRenderLoop"),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      presentation_binding_(this),
-      frame_data_binding_(this),
-      on_presentation_ended_(on_presentation_ended),
-      gamepad_provider_(this),
-      weak_ptr_factory_(this) {
-  DCHECK(main_thread_task_runner_);
-}
+OculusRenderLoop::OculusRenderLoop() : XRCompositorCommon() {}
 
 OculusRenderLoop::~OculusRenderLoop() {
   Stop();
 }
 
-void OculusRenderLoop::ClearPendingFrame() {
-  has_outstanding_frame_ = false;
-  if (delayed_get_frame_data_callback_) {
-    base::ResetAndReturn(&delayed_get_frame_data_callback_).Run();
+mojom::XRFrameDataPtr OculusRenderLoop::GetNextFrameData() {
+  if (!session_) {
+    return nullptr;
   }
+
+  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
+  frame_data->frame_id = next_frame_id_;
+
+  auto predicted_time =
+      ovr_GetPredictedDisplayTime(session_, ovr_frame_index_ + 1);
+  ovrTrackingState state = ovr_GetTrackingState(session_, predicted_time, true);
+  sensor_time_ = ovr_GetTimeInSeconds();
+  frame_data->time_delta = base::TimeDelta::FromSecondsD(predicted_time);
+
+  mojom::VRPosePtr pose =
+      mojo::ConvertTo<mojom::VRPosePtr>(state.HeadPose.ThePose);
+  last_render_pose_ = state.HeadPose.ThePose;
+
+  DCHECK(pose);
+  pose->input_state = GetInputState(state);
+  frame_data->pose = std::move(pose);
+  return frame_data;
 }
 
-void OculusRenderLoop::CleanUp() {
-  submit_client_ = nullptr;
-  StopOvrSession();
-  presentation_binding_.Close();
-  frame_data_binding_.Close();
-  gamepad_provider_.Close();
+mojom::XRGamepadDataPtr OculusRenderLoop::GetNextGamepadData() {
+  if (!session_) {
+    return nullptr;
+  }
+
+  return OculusGamepadHelper::GetGamepadData(session_);
 }
 
-void OculusRenderLoop::SubmitFrameMissing(int16_t frame_index,
-                                          const gpu::SyncToken& sync_token) {
-  // Nothing to do. It's OK to start the next frame even if the current
-  // one didn't get sent to the ovrSession.
-  ClearPendingFrame();
+bool OculusRenderLoop::StartRuntime() {
+  if (!session_) {
+    ovrInitParams initParams = {ovrInit_RequestVersion | ovrInit_MixedRendering,
+                                OVR_MINOR_VERSION, NULL, 0, 0};
+    ovrResult result = ovr_Initialize(&initParams);
+    if (OVR_FAILURE(result)) {
+      return false;
+    }
+
+    result = ovr_Create(&session_, &luid_);
+    if (OVR_FAILURE(result)) {
+      ovr_Shutdown();
+      return false;
+    }
+  }
+
+  if (!session_
+#if defined(OS_WIN)
+      || !texture_helper_.SetAdapterLUID(*reinterpret_cast<LUID*>(&luid_)) ||
+      !texture_helper_.EnsureInitialized()
+#endif
+          ) {
+    StopRuntime();
+    return false;
+  }
+
+  return true;
 }
 
-void OculusRenderLoop::SubmitFrame(int16_t frame_index,
-                                   const gpu::MailboxHolder& mailbox,
-                                   base::TimeDelta time_waited) {
-  // There are two submit paths - one for Android, and one for Windows. This
-  // method is called on Android, but this class isn't used on Android.
-  NOTREACHED();
+void OculusRenderLoop::StopRuntime() {
+  DestroyOvrSwapChain();
+  if (session_) {
+    // Shut down our current session so the presentation session can begin.
+    ovr_Destroy(session_);
+    session_ = nullptr;
+    ovr_Shutdown();
+  }
+
+  texture_helper_.Reset();
+  texture_swap_chain_ = 0;
+  ovr_frame_index_ = 0;
 }
 
-void OculusRenderLoop::SubmitFrameDrawnIntoTexture(
-    int16_t frame_index,
-    const gpu::SyncToken& sync_token,
-    base::TimeDelta time_waited) {
-  // Not currently implemented for Windows.
-  NOTREACHED();
+void OculusRenderLoop::OnSessionStart() {}
+
+bool OculusRenderLoop::PreComposite() {
+  // Create swap chain on demand.
+  if (!texture_swap_chain_) {
+    CreateOvrSwapChain();
+  }
+
+  if (!texture_swap_chain_)
+    return false;
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+  ovr_GetTextureSwapChainBufferDX(
+      session_, texture_swap_chain_, -1,
+      IID_PPV_ARGS(texture.ReleaseAndGetAddressOf()));
+  texture_helper_.SetBackbuffer(texture);
+
+  return true;
+}
+
+bool OculusRenderLoop::SubmitCompositedFrame() {
+  ovrLayerEyeFov layer = {};
+  layer.Header.Type = ovrLayerType_EyeFov;
+  layer.Header.Flags = 0;
+  layer.ColorTexture[0] = texture_swap_chain_;
+  DCHECK(source_size_.width() % 2 == 0);
+  layer.Viewport[0] = {
+      // Left viewport.
+      {static_cast<int>(source_size_.width() * left_bounds_.x()),
+       static_cast<int>(source_size_.height() * left_bounds_.y())},
+      {static_cast<int>(source_size_.width() * left_bounds_.width()),
+       static_cast<int>(source_size_.height() * left_bounds_.height())}};
+
+  layer.Viewport[1] = {
+      // Right viewport.
+      {static_cast<int>(source_size_.width() * right_bounds_.x()),
+       static_cast<int>(source_size_.height() * right_bounds_.y())},
+      {static_cast<int>(source_size_.width() * right_bounds_.width()),
+       static_cast<int>(source_size_.height() * right_bounds_.height())}};
+  ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session_);
+  layer.Fov[0] = hmdDesc.DefaultEyeFov[0];
+  layer.Fov[1] = hmdDesc.DefaultEyeFov[1];
+
+  auto render_desc_left = ovr_GetRenderDesc(session_, ovrEye_Left,
+                                            hmdDesc.DefaultEyeFov[ovrEye_Left]);
+  auto render_desc_right = ovr_GetRenderDesc(
+      session_, ovrEye_Right, hmdDesc.DefaultEyeFov[ovrEye_Right]);
+  ovrVector3f eye_offsets[2] = {render_desc_left.HmdToEyeOffset,
+                                render_desc_right.HmdToEyeOffset};
+  ovr_CalcEyePoses(last_render_pose_, eye_offsets, layer.RenderPose);
+
+  layer.SensorSampleTime = sensor_time_;
+
+  ovrViewScaleDesc view_scale_desc;
+  view_scale_desc.HmdToEyeOffset[ovrEye_Left] = eye_offsets[ovrEye_Left];
+  view_scale_desc.HmdToEyeOffset[ovrEye_Right] = eye_offsets[ovrEye_Right];
+  view_scale_desc.HmdSpaceToWorldScaleInMeters = 1;
+
+  constexpr unsigned int layer_count = 1;
+  ovrLayerHeader* layer_headers[layer_count] = {&layer.Header};
+  ovr_CommitTextureSwapChain(session_, texture_swap_chain_);
+  ovrResult result = ovr_SubmitFrame(
+      session_, ovr_frame_index_, &view_scale_desc, layer_headers, layer_count);
+  if (!OVR_SUCCESS(result)) {
+    // We failed to present.  Create a new swap chain.
+    StopRuntime();
+    StartRuntime();
+    if (!session_) {
+      return false;
+    }
+  }
+  ovr_frame_index_++;
+
+  return true;
 }
 
 void OculusRenderLoop::CreateOvrSwapChain() {
@@ -119,255 +222,9 @@ void OculusRenderLoop::DestroyOvrSwapChain() {
   }
 }
 
-void OculusRenderLoop::SubmitFrameWithTextureHandle(
-    int16_t frame_index,
-    mojo::ScopedHandle texture_handle) {
-  TRACE_EVENT1("gpu", "SubmitFrameWithTextureHandle", "frameIndex",
-               frame_index);
-
-#if defined(OS_WIN)
-  MojoPlatformHandle platform_handle;
-  platform_handle.struct_size = sizeof(platform_handle);
-  MojoResult result = MojoUnwrapPlatformHandle(texture_handle.release().value(),
-                                               nullptr, &platform_handle);
-  if (result != MOJO_RESULT_OK) {
-    ClearPendingFrame();
-    return;
-  }
-
-  texture_helper_.SetSourceTexture(
-      base::win::ScopedHandle(reinterpret_cast<HANDLE>(platform_handle.value)));
-
-  // Create swap chain on demand.
-  if (!texture_swap_chain_) {
-    CreateOvrSwapChain();
-  }
-
-  bool copy_succeeded = false;
-  if (texture_swap_chain_) {
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-    ovr_GetTextureSwapChainBufferDX(
-        session_, texture_swap_chain_, -1,
-        IID_PPV_ARGS(texture.ReleaseAndGetAddressOf()));
-    texture_helper_.SetBackbuffer(texture);
-
-    if (texture_helper_.CopyTextureToBackBuffer(true)) {
-      copy_succeeded = true;
-      ovrLayerEyeFov layer = {};
-      layer.Header.Type = ovrLayerType_EyeFov;
-      layer.Header.Flags = 0;
-      layer.ColorTexture[0] = texture_swap_chain_;
-      DCHECK(source_size_.width() % 2 == 0);
-      layer.Viewport[0] = {
-          // Left viewport.
-          {static_cast<int>(source_size_.width() * left_bounds_.x()),
-           static_cast<int>(source_size_.height() * left_bounds_.y())},
-          {static_cast<int>(source_size_.width() * left_bounds_.width()),
-           static_cast<int>(source_size_.height() * left_bounds_.height())}};
-
-      layer.Viewport[1] = {
-          // Right viewport.
-          {static_cast<int>(source_size_.width() * right_bounds_.x()),
-           static_cast<int>(source_size_.height() * right_bounds_.y())},
-          {static_cast<int>(source_size_.width() * right_bounds_.width()),
-           static_cast<int>(source_size_.height() * right_bounds_.height())}};
-      ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session_);
-      layer.Fov[0] = hmdDesc.DefaultEyeFov[0];
-      layer.Fov[1] = hmdDesc.DefaultEyeFov[1];
-
-      auto render_desc_left = ovr_GetRenderDesc(
-          session_, ovrEye_Left, hmdDesc.DefaultEyeFov[ovrEye_Left]);
-      auto render_desc_right = ovr_GetRenderDesc(
-          session_, ovrEye_Right, hmdDesc.DefaultEyeFov[ovrEye_Right]);
-      ovrVector3f eye_offsets[2] = {render_desc_left.HmdToEyeOffset,
-                                    render_desc_right.HmdToEyeOffset};
-      ovr_CalcEyePoses(last_render_pose_, eye_offsets, layer.RenderPose);
-
-      layer.SensorSampleTime = sensor_time_;
-
-      ovrViewScaleDesc view_scale_desc;
-      view_scale_desc.HmdToEyeOffset[ovrEye_Left] = eye_offsets[ovrEye_Left];
-      view_scale_desc.HmdToEyeOffset[ovrEye_Right] = eye_offsets[ovrEye_Right];
-      view_scale_desc.HmdSpaceToWorldScaleInMeters = 1;
-
-      constexpr unsigned int layer_count = 1;
-      ovrLayerHeader* layer_headers[layer_count] = {&layer.Header};
-      ovr_CommitTextureSwapChain(session_, texture_swap_chain_);
-      ovrResult result =
-          ovr_SubmitFrame(session_, ovr_frame_index_, &view_scale_desc,
-                          layer_headers, layer_count);
-      if (!OVR_SUCCESS(result)) {
-        copy_succeeded = false;
-
-        // We failed to present.  Create a new swap chain.
-        StopOvrSession();
-        StartOvrSession();
-        if (!session_) {
-          ExitPresent();
-        }
-      }
-      ovr_frame_index_++;
-    }
-  }
-  // Tell WebVR that we are done with the texture.
-  submit_client_->OnSubmitFrameTransferred(copy_succeeded);
-  submit_client_->OnSubmitFrameRendered();
-#endif
-  ClearPendingFrame();
-}
-
-void OculusRenderLoop::UpdateLayerBounds(int16_t frame_id,
-                                         const gfx::RectF& left_bounds,
-                                         const gfx::RectF& right_bounds,
-                                         const gfx::Size& source_size) {
-  // There is no parallelism, so we can ignore frame_id and assume the bounds
-  // are updating for the next frame.
-  left_bounds_ = left_bounds;
-  right_bounds_ = right_bounds;
-  source_size_ = source_size;
-
+void OculusRenderLoop::OnLayerBoundsChanged() {
   DestroyOvrSwapChain();
 };
-
-void OculusRenderLoop::RequestSession(mojom::XRRuntimeSessionOptionsPtr options,
-                                      RequestSessionCallback callback) {
-  DCHECK(options->immersive);
-
-  StartOvrSession();
-  if (!session_
-#if defined(OS_WIN)
-      || !texture_helper_.SetAdapterLUID(*reinterpret_cast<LUID*>(&luid_)) ||
-      !texture_helper_.EnsureInitialized()
-#endif
-          ) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
-    return;
-  }
-
-  presentation_binding_.Close();
-  frame_data_binding_.Close();
-  device::mojom::XRPresentationProviderPtr presentation_provider;
-  device::mojom::XRFrameDataProviderPtr frame_data_provider;
-  presentation_binding_.Bind(mojo::MakeRequest(&presentation_provider));
-  frame_data_binding_.Bind(mojo::MakeRequest(&frame_data_provider));
-
-  device::mojom::XRPresentationTransportOptionsPtr transport_options =
-      device::mojom::XRPresentationTransportOptions::New();
-  transport_options->transport_method =
-      device::mojom::XRPresentationTransportMethod::SUBMIT_AS_TEXTURE_HANDLE;
-  // Only set boolean options that we need. Default is false, and we should be
-  // able to safely ignore ones that our implementation doesn't care about.
-  transport_options->wait_for_transfer_notification = true;
-
-  auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
-  submit_frame_sink->provider = presentation_provider.PassInterface();
-  submit_frame_sink->client_request = mojo::MakeRequest(&submit_client_);
-  submit_frame_sink->transport_options = std::move(transport_options);
-
-  auto session = device::mojom::XRSession::New();
-  session->data_provider = frame_data_provider.PassInterface();
-  session->submit_frame_sink = std::move(submit_frame_sink);
-
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true, std::move(session)));
-  is_presenting_ = true;
-}
-
-void OculusRenderLoop::StartOvrSession() {
-  ovrInitParams initParams = {ovrInit_RequestVersion | ovrInit_MixedRendering,
-                              OVR_MINOR_VERSION, NULL, 0, 0};
-  ovrResult result = ovr_Initialize(&initParams);
-  if (OVR_FAILURE(result)) {
-    return;
-  }
-
-  result = ovr_Create(&session_, &luid_);
-  if (OVR_FAILURE(result)) {
-    return;
-  }
-}
-
-void OculusRenderLoop::StopOvrSession() {
-  DestroyOvrSwapChain();
-  if (session_) {
-    // Shut down our current session so the presentation session can begin.
-    ovr_Destroy(session_);
-    session_ = nullptr;
-    ovr_Shutdown();
-  }
-
-  texture_helper_.Reset();
-  texture_swap_chain_ = 0;
-  ovr_frame_index_ = 0;
-}
-
-void OculusRenderLoop::ExitPresent() {
-  is_presenting_ = false;
-  presentation_binding_.Close();
-  frame_data_binding_.Close();
-  submit_client_ = nullptr;
-  ClearPendingFrame();
-
-  StopOvrSession();
-
-  main_thread_task_runner_->PostTask(FROM_HERE, on_presentation_ended_);
-}
-
-void OculusRenderLoop::Init() {}
-
-base::WeakPtr<OculusRenderLoop> OculusRenderLoop::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
-void OculusRenderLoop::GetFrameData(
-    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  DCHECK(is_presenting_);
-
-  if (has_outstanding_frame_) {
-    DCHECK(!delayed_get_frame_data_callback_);
-    delayed_get_frame_data_callback_ =
-        base::BindOnce(&OculusRenderLoop::GetFrameData, base::Unretained(this),
-                       std::move(callback));
-    return;
-  }
-  has_outstanding_frame_ = true;
-
-  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
-
-  frame_data->frame_id = next_frame_id_;
-  next_frame_id_ += 1;
-  if (next_frame_id_ < 0) {
-    next_frame_id_ = 0;
-  }
-
-  auto predicted_time =
-      ovr_GetPredictedDisplayTime(session_, ovr_frame_index_ + 1);
-  ovrTrackingState state = ovr_GetTrackingState(session_, predicted_time, true);
-  sensor_time_ = ovr_GetTimeInSeconds();
-  frame_data->time_delta = base::TimeDelta::FromSecondsD(predicted_time);
-
-  mojom::VRPosePtr pose =
-      mojo::ConvertTo<mojom::VRPosePtr>(state.HeadPose.ThePose);
-  last_render_pose_ = state.HeadPose.ThePose;
-
-  DCHECK(pose);
-  pose->input_state = GetInputState(state);
-  frame_data->pose = std::move(pose);
-
-  // Update gamepad controllers.
-  UpdateControllerState();
-
-  std::move(callback).Run(std::move(frame_data));
-}
-
-void OculusRenderLoop::RequestGamepadProvider(
-    mojom::IsolatedXRGamepadProviderRequest request) {
-  gamepad_provider_.Close();
-  // We just close the binding, so the other side won't expect callbacks.
-  gamepad_callback_.Reset();
-  gamepad_provider_.Bind(std::move(request));
-}
 
 std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
     const ovrTrackingState& tracking_state) {
@@ -419,21 +276,6 @@ std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
   }
 
   return input_states;
-}
-
-void OculusRenderLoop::UpdateControllerState() {
-  if (!gamepad_callback_) {
-    // Nobody is listening to updates, so bail early.
-    return;
-  }
-
-  if (!session_) {
-    std::move(gamepad_callback_).Run(nullptr);
-    return;
-  }
-
-  std::move(gamepad_callback_)
-      .Run(OculusGamepadHelper::GetGamepadData(session_));
 }
 
 device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
@@ -492,24 +334,6 @@ device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
   state->description = std::move(desc);
 
   return state;
-}
-
-void OculusRenderLoop::RequestUpdate(
-    mojom::IsolatedXRGamepadProvider::RequestUpdateCallback callback) {
-  DCHECK(!gamepad_callback_);
-  if (gamepad_callback_) {
-    std::move(gamepad_callback_).Run(nullptr);
-  }
-
-  // If we aren't presenting, reply now saying that we have no controllers.
-  if (!is_presenting_) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
-  // Otherwise, save the callback to resolve next time we update (typically on
-  // vsync).
-  gamepad_callback_ = std::move(callback);
 }
 
 }  // namespace device

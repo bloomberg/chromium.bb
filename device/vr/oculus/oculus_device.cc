@@ -96,9 +96,7 @@ OculusDevice::OculusDevice()
 
   SetVRDisplayInfo(CreateVRDisplayInfo(GetId(), session_));
 
-  render_loop_ = std::make_unique<OculusRenderLoop>(
-      base::BindRepeating(&OculusDevice::OnPresentationEnded,
-                          weak_ptr_factory_.GetWeakPtr()));
+  render_loop_ = std::make_unique<OculusRenderLoop>();
 }
 
 mojom::IsolatedXRGamepadProviderFactoryPtr OculusDevice::BindGamepadFactory() {
@@ -139,8 +137,8 @@ void OculusDevice::RequestSession(
     // loop, post the request over to the render loop to be bound.
     if (provider_request_) {
       render_loop_->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&OculusRenderLoop::RequestGamepadProvider,
-                                    render_loop_->GetWeakPtr(),
+          FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
+                                    base::Unretained(render_loop_.get()),
                                     std::move(provider_request_)));
     }
   }
@@ -149,10 +147,15 @@ void OculusDevice::RequestSession(
       base::BindOnce(&OculusDevice::OnRequestSessionResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
 
+  auto on_presentation_ended = base::BindOnce(
+      &OculusDevice::OnPresentationEnded, weak_ptr_factory_.GetWeakPtr());
+
   render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&OculusRenderLoop::RequestSession,
-                                render_loop_->GetWeakPtr(), std::move(options),
-                                std::move(on_request_present_result)));
+      FROM_HERE,
+      base::BindOnce(&XRCompositorCommon::RequestSession,
+                     base::Unretained(render_loop_.get()),
+                     std::move(on_presentation_ended), std::move(options),
+                     std::move(on_request_present_result)));
 }
 
 void OculusDevice::OnRequestSessionResult(
@@ -191,8 +194,8 @@ void OculusDevice::SetFrameDataRestricted(bool restricted) {
 
 void OculusDevice::OnPresentingControllerMojoConnectionError() {
   render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&OculusRenderLoop::ExitPresent,
-                                render_loop_->GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&XRCompositorCommon::ExitPresent,
+                                base::Unretained(render_loop_.get())));
   OnExitPresent();
   exclusive_controller_binding_.Close();
 }
@@ -247,8 +250,8 @@ void OculusDevice::GetIsolatedXRGamepadProvider(
   // until we do.
   if (render_loop_->IsRunning()) {
     render_loop_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&OculusRenderLoop::RequestGamepadProvider,
-                                  render_loop_->GetWeakPtr(),
+        FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
+                                  base::Unretained(render_loop_.get()),
                                   std::move(provider_request)));
   } else {
     provider_request_ = std::move(provider_request);

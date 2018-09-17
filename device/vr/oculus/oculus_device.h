@@ -16,7 +16,7 @@
 
 namespace device {
 
-class OculusRenderLoop;
+class XRCompositorCommon;
 
 class DEVICE_VR_EXPORT OculusDevice
     : public VRDeviceBase,
@@ -54,7 +54,7 @@ class DEVICE_VR_EXPORT OculusDevice
   void StartOvrSession();
   void StopOvrSession();
 
-  std::unique_ptr<OculusRenderLoop> render_loop_;
+  std::unique_ptr<XRCompositorCommon> render_loop_;
   ovrSession session_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
