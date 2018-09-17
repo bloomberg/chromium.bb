@@ -53,15 +53,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenSingleImageOnDrive) {
   StartTest();
 }
 
-#if defined(OS_CHROMEOS)
-// Flaky on ChromeOS ASAN/MSAN. See https://crbug.com/884399.
-#define MAYBE_OpenMultipleImagesOnDownloads \
-  DISABLED_OpenMultipleImagesOnDownloads
-#else
-#define MAYBE_OpenMultipleImagesOnDownloads OpenMultipleImagesOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_OpenMultipleImagesOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDownloads) {
   set_test_case_name("openMultipleImagesOnDownloads");
   StartTest();
 }
@@ -89,15 +81,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
-#if defined(OS_CHROMEOS)
-// Flaky on ChromeOS ASAN/MSAN. See https://crbug.com/884404.
-#define MAYBE_TraverseSlideImagesOnDownloads \
-  DISABLED_TraverseSlideImagesOnDownloads
-#else
-#define MAYBE_TraverseSlideImagesOnDownloads TraverseSlideImagesOnDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_TraverseSlideImagesOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDownloads) {
   set_test_case_name("traverseSlideImagesOnDownloads");
   StartTest();
 }
