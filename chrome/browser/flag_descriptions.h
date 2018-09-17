@@ -369,6 +369,9 @@ extern const char kEnableHDRDescription[];
 extern const char kEnableHeavyPageCappingName[];
 extern const char kEnableHeavyPageCappingDescription[];
 
+extern const char kEnablePreviewsAndroidOmniboxUIName[];
+extern const char kEnablePreviewsAndroidOmniboxUIDescription[];
+
 extern const char kEnableHttpFormWarningName[];
 extern const char kEnableHttpFormWarningDescription[];
 
