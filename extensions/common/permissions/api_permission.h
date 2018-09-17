@@ -14,15 +14,11 @@
 #include "base/pickle.h"
 #include "base/values.h"
 
-namespace apps {
-class ChromeAppsAPIPermissions;
-}
-
 namespace extensions {
 
 class PermissionIDSet;
 class APIPermissionInfo;
-class ChromeAPIPermissions;
+class PermissionsInfo;
 
 // APIPermission is for handling some complex permissions. Please refer to
 // extensions::SocketPermission as an example.
@@ -385,6 +381,17 @@ class APIPermissionInfo {
 
   typedef std::set<APIPermission::ID> IDSet;
 
+  // This exists to allow aggregate initialization, so that default values
+  // for flags, etc. can be omitted.
+  // TODO(yoz): Simplify the way initialization is done. APIPermissionInfo
+  // should be the simple data struct.
+  struct InitInfo {
+    APIPermission::ID id;
+    const char* name;
+    int flags;
+    APIPermissionInfo::APIPermissionConstructor constructor;
+  };
+
   ~APIPermissionInfo();
 
   // Creates a APIPermission instance.
@@ -421,25 +428,11 @@ class APIPermissionInfo {
   }
 
  private:
-  // Instances should only be constructed from within a PermissionsProvider.
-  friend class CastAPIPermissions;
-  friend class ChromeAPIPermissions;
-  friend class apps::ChromeAppsAPIPermissions;
-  friend class ExtensionsAPIPermissions;
+  // Instances should only be constructed from within a PermissionsInfo.
+  friend class PermissionsInfo;
   // Implementations of APIPermission will want to get the permission message,
   // but this class's implementation should be hidden from everyone else.
   friend class APIPermission;
-
-  // This exists to allow aggregate initialization, so that default values
-  // for flags, etc. can be omitted.
-  // TODO(yoz): Simplify the way initialization is done. APIPermissionInfo
-  // should be the simple data struct.
-  struct InitInfo {
-    APIPermission::ID id;
-    const char* name;
-    int flags;
-    APIPermissionInfo::APIPermissionConstructor constructor;
-  };
 
   explicit APIPermissionInfo(const InitInfo& info);
 

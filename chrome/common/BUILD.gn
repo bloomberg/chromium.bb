@@ -324,8 +324,6 @@ static_library("common") {
       "extensions/api/url_handlers/url_handlers_parser.h",
       "extensions/api/webstore/webstore_api_constants.cc",
       "extensions/api/webstore/webstore_api_constants.h",
-      "extensions/chrome_aliases.cc",
-      "extensions/chrome_aliases.h",
       "extensions/chrome_extension_messages.h",
       "extensions/chrome_extensions_api_provider.cc",
       "extensions/chrome_extensions_api_provider.h",

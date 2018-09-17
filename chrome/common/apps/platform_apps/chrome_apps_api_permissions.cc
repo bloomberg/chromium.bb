@@ -4,38 +4,21 @@
 
 #include "chrome/common/apps/platform_apps/chrome_apps_api_permissions.h"
 
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
-#include "extensions/common/permissions/api_permission.h"
+namespace chrome_apps_api_permissions {
+namespace {
 
-namespace apps {
+// WARNING: If you are modifying a permission message in this list, be sure to
+// add the corresponding permission message rule to
+// ChromePermissionMessageProvider::GetPermissionMessages as well.
+constexpr extensions::APIPermissionInfo::InitInfo permissions_to_register[] = {
+    {extensions::APIPermission::kBrowser, "browser"},
+    {extensions::APIPermission::kEasyUnlockPrivate, "easyUnlockPrivate"},
+};
 
-ChromeAppsAPIPermissions::ChromeAppsAPIPermissions() = default;
-ChromeAppsAPIPermissions::~ChromeAppsAPIPermissions() = default;
+}  // namespace
 
-std::vector<std::unique_ptr<extensions::APIPermissionInfo>>
-ChromeAppsAPIPermissions::GetAllPermissions() const {
-  // WARNING: If you are modifying a permission message in this list, be sure to
-  // add the corresponding permission message rule to
-  // ChromePermissionMessageProvider::GetPermissionMessages as well.
-  static constexpr extensions::APIPermissionInfo::InitInfo
-      permissions_to_register[] = {
-          {extensions::APIPermission::kBrowser, "browser"},
-          {extensions::APIPermission::kEasyUnlockPrivate, "easyUnlockPrivate"},
-      };
-
-  std::vector<std::unique_ptr<extensions::APIPermissionInfo>> permissions;
-  permissions.reserve(base::size(permissions_to_register));
-
-  for (const auto& permission : permissions_to_register) {
-    // NOTE: Using base::WrapUnique() because APIPermissionsInfo ctor is
-    // private.
-    permissions.push_back(
-        base::WrapUnique(new extensions::APIPermissionInfo(permission)));
-  }
-
-  return permissions;
+base::span<const extensions::APIPermissionInfo::InitInfo> GetPermissionInfos() {
+  return base::make_span(permissions_to_register);
 }
 
-}  // namespace apps
+}  // namespace chrome_apps_api_permissions

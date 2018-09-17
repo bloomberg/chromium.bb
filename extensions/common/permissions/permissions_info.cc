@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "extensions/common/alias.h"
@@ -20,13 +21,12 @@ PermissionsInfo* PermissionsInfo::GetInstance() {
   return g_permissions_info.Pointer();
 }
 
-void PermissionsInfo::AddProvider(
-    const PermissionsProvider& permissions_provider,
+void PermissionsInfo::RegisterPermissions(
+    base::span<const APIPermissionInfo::InitInfo> infos,
     const std::vector<Alias>& aliases) {
-  auto permissions = permissions_provider.GetAllPermissions();
+  for (const auto& info : infos)
+    RegisterPermission(base::WrapUnique(new APIPermissionInfo((info))));
 
-  for (auto& permission : permissions)
-    RegisterPermission(std::move(permission));
   for (const auto& alias : aliases)
     RegisterAlias(alias);
 }

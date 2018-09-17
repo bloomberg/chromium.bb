@@ -8,8 +8,8 @@
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/api/manifest_features.h"
 #include "chrome/common/extensions/api/permission_features.h"
-#include "chrome/common/extensions/chrome_aliases.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
+#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/grit/common_resources.h"
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -53,9 +53,11 @@ base::StringPiece ChromeExtensionsAPIProvider::GetAPISchema(
   return api::ChromeGeneratedSchemas::Get(name);
 }
 
-void ChromeExtensionsAPIProvider::AddPermissionsProviders(
+void ChromeExtensionsAPIProvider::RegisterPermissions(
     PermissionsInfo* permissions_info) {
-  permissions_info->AddProvider(api_permissions_, GetChromePermissionAliases());
+  permissions_info->RegisterPermissions(
+      chrome_api_permissions::GetPermissionInfos(),
+      chrome_api_permissions::GetPermissionAliases());
 }
 
 void ChromeExtensionsAPIProvider::RegisterManifestHandlers() {

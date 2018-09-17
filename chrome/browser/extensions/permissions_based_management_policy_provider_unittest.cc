@@ -36,8 +36,6 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
         provider_(settings_.get()) {}
 
   void SetUp() override {
-    ChromeAPIPermissions api_permissions;
-    perm_list_ = api_permissions.GetAllPermissions();
     pref_service_->registry()->RegisterDictionaryPref(
         pref_names::kExtensionManagement);
   }
@@ -47,9 +45,9 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
   // Get API permissions name for |id|, we cannot use arbitrary strings since
   // they will be ignored by ExtensionManagementService.
   std::string GetAPIPermissionName(APIPermission::ID id) {
-    for (const auto& perm : perm_list_) {
-      if (perm->id() == id)
-        return perm->name();
+    for (const auto& perm : chrome_api_permissions::GetPermissionInfos()) {
+      if (perm.id == id)
+        return perm.name;
     }
     ADD_FAILURE() << "Permission not found: " << id;
     return std::string();
@@ -81,8 +79,6 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
   }
 
  protected:
-  std::vector<std::unique_ptr<APIPermissionInfo>> perm_list_;
-
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<ExtensionManagement> settings_;
 

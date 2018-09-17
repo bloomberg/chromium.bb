@@ -5,17 +5,19 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_EXTENSIONS_API_PERMISSIONS_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_EXTENSIONS_API_PERMISSIONS_H_
 
-#include "base/compiler_specific.h"
-#include "extensions/common/permissions/permissions_provider.h"
+#include <vector>
+
+#include "base/containers/span.h"
+#include "extensions/common/alias.h"
+#include "extensions/common/permissions/api_permission.h"
 
 namespace extensions {
+namespace api_permissions {
 
-class ExtensionsAPIPermissions : public PermissionsProvider {
- public:
-  std::vector<std::unique_ptr<APIPermissionInfo>> GetAllPermissions()
-      const override;
-};
+base::span<const APIPermissionInfo::InitInfo> GetPermissionInfos();
+std::vector<Alias> GetPermissionAliases();
 
+}  // namespace api_permissions
 }  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_PERMISSIONS_EXTENSIONS_API_PERMISSIONS_H_

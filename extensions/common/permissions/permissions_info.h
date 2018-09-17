@@ -14,11 +14,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/permissions_provider.h"
 
 namespace extensions {
 
@@ -30,9 +30,11 @@ class PermissionsInfo {
  public:
   static PermissionsInfo* GetInstance();
 
-  // Initializes the permissions from the provider.
-  void AddProvider(const PermissionsProvider& permission_provider,
-                   const std::vector<Alias>& aliases);
+  // Registers the permissions specified by |infos| along with the
+  // |aliases|.
+  // TODO(devlin): Convert |aliases| to be a base::span.
+  void RegisterPermissions(base::span<const APIPermissionInfo::InitInfo> infos,
+                           const std::vector<Alias>& aliases);
 
   // Returns the permission with the given |id|, and NULL if it doesn't exist.
   const APIPermissionInfo* GetByID(APIPermission::ID id) const;

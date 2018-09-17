@@ -117,7 +117,7 @@ void ExtensionsClient::DoInitialize() {
   const base::ElapsedTimer timer;
   for (const auto& provider : api_providers_) {
     provider->RegisterManifestHandlers();
-    provider->AddPermissionsProviders(permissions_info);
+    provider->RegisterPermissions(permissions_info);
   }
   ManifestHandler::FinalizeRegistration();
 
