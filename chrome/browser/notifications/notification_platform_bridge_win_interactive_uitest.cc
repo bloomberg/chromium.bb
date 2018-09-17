@@ -341,7 +341,8 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   NotificationPlatformBridgeWin* bridge = GetBridge();
   ASSERT_TRUE(bridge);
 
-  std::vector<winui::Notifications::IToastNotification*> notifications;
+  std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
+      notifications;
   bridge->SetDisplayedNotificationsForTesting(&notifications);
 
   // Validate that empty list of notifications show 0 results.
