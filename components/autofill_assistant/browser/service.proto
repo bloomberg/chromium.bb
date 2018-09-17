@@ -10,7 +10,8 @@ package autofill_assistant;
 
 // Context contains client environment details.
 message ClientContextProto {
-  required string chrome_version = 1;
+  message Chrome { optional string chrome_version = 1; }
+  oneof client { Chrome chrome = 1; }
 }
 
 // Get the list of scripts that can potentially be run on a url.
@@ -52,16 +53,13 @@ message ScriptPreconditionProto {
 enum PolicyType {
   UNKNOWN_POLICY = 0;
   SCRIPT = 1;
-  PAGE = 2;
-  VALIDATION = 3;
-  TRACE = 4;
 }
 
 message ScriptActionRequestProto {
   optional ClientContextProto client_context = 7;
 
   // The server payload received from the previous response.
-  optional bytes server_payload = 1;
+  optional bytes server_payload = 2;
 
   oneof request {
     InitialScriptActionsRequestProto initial_request = 4;
@@ -72,10 +70,12 @@ message ScriptActionRequestProto {
 // Initial request to get a script's actions.
 message InitialScriptActionsRequestProto {
   message QueryProto {
-    required string script_path = 1;
-    optional PolicyType policy = 2;
+    // The backend expects the |script_path| to be a repeated field. This field
+    // is expected to contain only one element.
+    repeated string script_path = 1;
+    optional PolicyType policy = 3;
   }
-  required QueryProto query = 1;
+  optional QueryProto query = 3;
 }
 
 // Next request to get a script's actions.
@@ -90,11 +90,11 @@ message NextScriptActionsRequestProto {
 message ActionsResponseProto {
   // Opaque data that should not be interpreted and must pass this back
   // unchanged in the next request.
-  optional bytes server_payload = 1;
+  optional bytes server_payload = 2;
 
   // Actions to be performed in order.
   // Should stop processing as soon as an action fails.
-  repeated ActionProto actions = 2;
+  repeated ActionProto actions = 3;
 }
 
 // An action could be performed.
@@ -195,7 +195,7 @@ message SelectOptionProto {
 
 // Contain a localized text message from the server.
 message TellProto {
-  required string message = 1;
+  optional string message = 1;
 }
 
 // Fill a form with an address if there is, otherwise fail this action.

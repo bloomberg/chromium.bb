@@ -25,7 +25,7 @@ std::string ProtocolUtils::CreateGetScriptsRequest(const GURL& url) {
 
   SupportsScriptRequestProto script_proto;
   script_proto.set_url(url.spec());
-  script_proto.mutable_client_context()->set_chrome_version(
+  script_proto.mutable_client_context()->mutable_chrome()->set_chrome_version(
       version_info::GetProductNameAndVersionForUserAgent());
   std::string serialized_script_proto;
   bool success = script_proto.SerializeToString(&serialized_script_proto);
@@ -73,8 +73,10 @@ std::string ProtocolUtils::CreateInitialScriptActionsRequest(
   ScriptActionRequestProto request_proto;
   InitialScriptActionsRequestProto::QueryProto* query =
       request_proto.mutable_initial_request()->mutable_query();
-  query->set_script_path(script_path);
+  query->add_script_path(script_path);
   query->set_policy(PolicyType::SCRIPT);
+  request_proto.mutable_client_context()->mutable_chrome()->set_chrome_version(
+      version_info::GetProductNameAndVersionForUserAgent());
 
   std::string serialized_initial_request_proto;
   bool success =
