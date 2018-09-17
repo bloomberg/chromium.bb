@@ -497,9 +497,9 @@ void drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t 
 	uint32_t i;
 
 	for (i = 0; i < num_formats; i++) {
-		struct combination combo = {.format = formats[i],
-					    .metadata = *metadata,
-					    .use_flags = use_flags };
+		struct combination combo = { .format = formats[i],
+					     .metadata = *metadata,
+					     .use_flags = use_flags };
 
 		drv_array_append(drv->combos, &combo);
 	}
@@ -593,9 +593,9 @@ struct drv_array *drv_query_kms(struct driver *drv)
 			}
 
 			if (!found) {
-				struct kms_item item = {.format = plane->formats[j],
-							.modifier = DRM_FORMAT_MOD_LINEAR,
-							.use_flags = use_flag };
+				struct kms_item item = { .format = plane->formats[j],
+							 .modifier = DRM_FORMAT_MOD_LINEAR,
+							 .use_flags = use_flag };
 
 				drv_array_append(kms_items, &item);
 			}

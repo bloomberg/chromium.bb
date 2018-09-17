@@ -300,10 +300,10 @@ static int gralloc0_lock_async(struct gralloc_module_t const *module, buffer_han
 	uint32_t map_flags;
 	uint8_t *addr[DRV_MAX_PLANES];
 	auto mod = (struct gralloc0_module const *)module;
-	struct rectangle rect = {.x = static_cast<uint32_t>(l),
-				 .y = static_cast<uint32_t>(t),
-				 .width = static_cast<uint32_t>(w),
-				 .height = static_cast<uint32_t>(h) };
+	struct rectangle rect = { .x = static_cast<uint32_t>(l),
+				  .y = static_cast<uint32_t>(t),
+				  .width = static_cast<uint32_t>(w),
+				  .height = static_cast<uint32_t>(h) };
 
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
@@ -342,10 +342,10 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 	uint32_t map_flags;
 	uint8_t *addr[DRV_MAX_PLANES] = { nullptr, nullptr, nullptr, nullptr };
 	auto mod = (struct gralloc0_module const *)module;
-	struct rectangle rect = {.x = static_cast<uint32_t>(l),
-				 .y = static_cast<uint32_t>(t),
-				 .width = static_cast<uint32_t>(w),
-				 .height = static_cast<uint32_t>(h) };
+	struct rectangle rect = { .x = static_cast<uint32_t>(l),
+				  .y = static_cast<uint32_t>(t),
+				  .width = static_cast<uint32_t>(w),
+				  .height = static_cast<uint32_t>(h) };
 
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {

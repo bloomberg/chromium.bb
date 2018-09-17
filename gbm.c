@@ -229,7 +229,7 @@ PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t widt
 	void *addr;
 	off_t offset;
 	uint32_t map_flags;
-	struct rectangle rect = {.x = x, .y = y, .width = width, .height = height };
+	struct rectangle rect = { .x = x, .y = y, .width = width, .height = height };
 	if (!bo || width == 0 || height == 0 || !stride || !map_data)
 		return NULL;
 
@@ -318,9 +318,9 @@ PUBLIC union gbm_bo_handle gbm_bo_get_plane_handle(struct gbm_bo *bo, size_t pla
 	return gbm_bo_get_handle_for_plane(bo, plane);
 }
 
-PUBLIC union gbm_bo_handle gbm_bo_get_handle_for_plane(struct gbm_bo* bo, size_t plane)
+PUBLIC union gbm_bo_handle gbm_bo_get_handle_for_plane(struct gbm_bo *bo, size_t plane)
 {
-  return (union gbm_bo_handle)drv_bo_get_plane_handle(bo->bo, plane).u64;
+	return (union gbm_bo_handle)drv_bo_get_plane_handle(bo->bo, plane).u64;
 }
 
 PUBLIC int gbm_bo_get_plane_fd(struct gbm_bo *bo, size_t plane)
