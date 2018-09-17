@@ -28,30 +28,30 @@ static const unsigned char* g_style_invalidator_tracing_enabled = nullptr;
   if (UNLIKELY(*g_style_invalidator_tracing_enabled))                    \
     TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason);
 
-void StyleInvalidator::Invalidate(Element& root_element) {
+void StyleInvalidator::Invalidate(Document& document, Element* root_element) {
   SiblingData sibling_data;
-  Document& document = root_element.GetDocument();
 
   if (UNLIKELY(document.NeedsStyleInvalidation())) {
-    DCHECK(&root_element == document.documentElement());
+    DCHECK(root_element == document.documentElement());
     PushInvalidationSetsForContainerNode(document, sibling_data);
     document.ClearNeedsStyleInvalidation();
     DCHECK(sibling_data.IsEmpty());
   }
 
-  Invalidate(root_element, sibling_data);
-
-  if (!sibling_data.IsEmpty()) {
-    for (Element* child = ElementTraversal::NextSibling(root_element); child;
-         child = ElementTraversal::NextSibling(*child)) {
-      Invalidate(*child, sibling_data);
+  if (root_element) {
+    Invalidate(*root_element, sibling_data);
+    if (!sibling_data.IsEmpty()) {
+      for (Element* child = ElementTraversal::NextSibling(*root_element); child;
+           child = ElementTraversal::NextSibling(*child)) {
+        Invalidate(*child, sibling_data);
+      }
+    }
+    for (Node* ancestor = root_element; ancestor;
+         ancestor = ancestor->ParentOrShadowHostNode()) {
+      ancestor->ClearChildNeedsStyleInvalidation();
     }
   }
-
-  for (Node* ancestor = &root_element; ancestor;
-       ancestor = ancestor->ParentOrShadowHostNode()) {
-    ancestor->ClearChildNeedsStyleInvalidation();
-  }
+  document.ClearChildNeedsStyleInvalidation();
   pending_invalidation_map_.clear();
 }
 

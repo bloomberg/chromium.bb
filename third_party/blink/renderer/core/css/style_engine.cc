@@ -1072,7 +1072,8 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
 void StyleEngine::InvalidateStyle() {
   StyleInvalidator style_invalidator(
       pending_invalidations_.GetPendingInvalidationMap());
-  style_invalidator.Invalidate(style_invalidation_root_.RootElement());
+  style_invalidator.Invalidate(GetDocument(),
+                               style_invalidation_root_.RootElement());
   style_invalidation_root_.Clear();
 }
 

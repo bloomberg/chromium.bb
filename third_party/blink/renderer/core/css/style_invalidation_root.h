@@ -13,7 +13,7 @@ class CORE_EXPORT StyleInvalidationRoot : public StyleTraversalRoot {
   DISALLOW_NEW();
 
  public:
-  Element& RootElement() const;
+  Element* RootElement() const;
 
  private:
 #if DCHECK_IS_ON()
