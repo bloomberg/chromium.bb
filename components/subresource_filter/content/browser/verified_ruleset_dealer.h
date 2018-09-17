@@ -90,7 +90,8 @@ class VerifiedRulesetDealer::Handle {
   // Invokes |callback| on |task_runner|, providing a pointer to the underlying
   // VerifiedRulesetDealer as an argument. The pointer is guaranteed to be valid
   // at least until the callback returns.
-  void GetDealerAsync(base::Callback<void(VerifiedRulesetDealer*)> callback);
+  void GetDealerAsync(
+      base::OnceCallback<void(VerifiedRulesetDealer*)> callback);
 
   // Schedules file open to use as a new ruleset file. In the case of success,
   // the new and valid |base::File| is passed to |callback|. In the case of
@@ -157,7 +158,7 @@ class VerifiedRuleset::Handle {
   // Invokes |callback| on |task_runner|, providing a pointer to the underlying
   // VerifiedRuleset as an argument. The pointer is guaranteed to be valid at
   // least until the callback returns.
-  void GetRulesetAsync(base::Callback<void(VerifiedRuleset*)> callback);
+  void GetRulesetAsync(base::OnceCallback<void(VerifiedRuleset*)> callback);
 
  private:
   // This is to allow ADSF to post |ruleset_.get()| pointer to |task_runner_|.
