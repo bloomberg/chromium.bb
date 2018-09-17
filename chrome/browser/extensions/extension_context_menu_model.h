@@ -38,6 +38,7 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
     PAGE_ACCESS_RUN_ON_CLICK,
     PAGE_ACCESS_RUN_ON_SITE,
     PAGE_ACCESS_RUN_ON_ALL_SITES,
+    PAGE_ACCESS_LEARN_MORE,
   };
 
   // Type of action the extension icon represents.
