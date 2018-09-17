@@ -1696,6 +1696,7 @@ test("content_unittests") {
     "../renderer/dom_storage/mock_leveldb_wrapper.cc",
     "../renderer/dom_storage/mock_leveldb_wrapper.h",
     "../renderer/fileapi/webfilewriter_base_unittest.cc",
+    "../renderer/gpu/actions_parser_unittest.cc",
     "../renderer/gpu/frame_swap_message_queue_unittest.cc",
     "../renderer/gpu/layer_tree_view_unittest.cc",
     "../renderer/gpu/queue_message_swap_promise_unittest.cc",

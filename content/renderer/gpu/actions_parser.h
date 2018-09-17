@@ -21,7 +21,7 @@ namespace content {
 // This class takes the arugment of json format from
 // GpuBenchmarking::PointerActionSequence, parses it and warps
 // it into a SyntheticPointerActionListParams object.
-class ActionsParser {
+class CONTENT_EXPORT ActionsParser {
  public:
   explicit ActionsParser(base::Value* value);
   ~ActionsParser();
@@ -33,9 +33,10 @@ class ActionsParser {
 
  private:
   bool ParsePointerActions(const base::DictionaryValue& pointer_actions);
-  bool ParseActions(const base::ListValue& actions);
+  bool ParseActions(const base::ListValue& actions, int pointer_id);
   bool ParseAction(const base::DictionaryValue& action,
-                   SyntheticPointerActionListParams::ParamList& param_list);
+                   SyntheticPointerActionListParams::ParamList& param_list,
+                   int pointer_id);
 
   SyntheticPointerActionListParams gesture_params_;
   std::vector<SyntheticPointerActionListParams::ParamList>
@@ -46,6 +47,7 @@ class ActionsParser {
 
   base::Value* pointer_actions_value_;
   int action_index_;
+  std::set<int> pointer_id_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionsParser);
 };

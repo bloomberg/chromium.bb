@@ -8,12 +8,14 @@ namespace content {
 
 SyntheticPointerActionParams::SyntheticPointerActionParams()
     : pointer_action_type_(PointerActionType::NOT_INITIALIZED),
-      index_(0),
+      pointer_id_(0),
       button_(Button::LEFT) {}
 
 SyntheticPointerActionParams::SyntheticPointerActionParams(
     PointerActionType action_type)
-    : pointer_action_type_(action_type), index_(0), button_(Button::LEFT) {}
+    : pointer_action_type_(action_type),
+      pointer_id_(0),
+      button_(Button::LEFT) {}
 
 SyntheticPointerActionParams::~SyntheticPointerActionParams() {}
 

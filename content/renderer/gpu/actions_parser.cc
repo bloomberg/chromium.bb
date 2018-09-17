@@ -69,8 +69,7 @@ bool ActionsParser::ParsePointerActionSequence() {
   const base::ListValue* pointer_list;
   if (!pointer_actions_value_ ||
       !pointer_actions_value_->GetAsList(&pointer_list)) {
-    error_message_ =
-        base::StringPrintf("pointer_list is missing or not a list");
+    error_message_ = std::string("pointer_list is missing or not a list");
     return false;
   }
 
@@ -78,7 +77,7 @@ bool ActionsParser::ParsePointerActionSequence() {
     const base::DictionaryValue* pointer_actions;
     if (!pointer_value.GetAsDictionary(&pointer_actions)) {
       error_message_ =
-          base::StringPrintf("pointer actions is missing or not a dictionary");
+          std::string("pointer actions is missing or not a dictionary");
       return false;
     } else if (!ParsePointerActions(*pointer_actions)) {
       return false;
@@ -107,13 +106,11 @@ bool ActionsParser::ParsePointerActionSequence() {
 bool ActionsParser::ParsePointerActions(const base::DictionaryValue& pointer) {
   std::string source_type;
   if (!pointer.GetString("source", &source_type)) {
-    error_message_ =
-        base::StringPrintf("source type is missing or not a string");
+    error_message_ = std::string("source type is missing or not a string");
     return false;
   } else if (source_type != "touch" && source_type != "mouse" &&
              source_type != "pen") {
-    error_message_ =
-        base::StringPrintf("source type is an unsupported input source");
+    error_message_ = std::string("source type is an unsupported input source");
     return false;
   }
 
@@ -122,16 +119,48 @@ bool ActionsParser::ParsePointerActions(const base::DictionaryValue& pointer) {
   }
 
   if (source_type_ != source_type) {
-    error_message_ = base::StringPrintf(
-        "currently multiple input sources are not not supported");
+    error_message_ =
+        std::string("currently multiple input sources are not not supported");
     return false;
   }
 
   if (source_type != "touch" && action_index_ > 0) {
-    error_message_ = base::StringPrintf(
+    error_message_ = std::string(
         "for input source type of mouse and pen, we only support one device in "
         "one sequence");
     return false;
+  }
+
+  int pointer_id = -1;
+  if (pointer.HasKey("id")) {
+    if (!pointer.GetInteger("id", &pointer_id)) {
+      error_message_ = std::string("pointer id is not an integer");
+      return false;
+    }
+
+    if (pointer_id < 0) {
+      error_message_ = std::string("pointer id can not be negative");
+      return false;
+    }
+  }
+
+  if (pointer_id != -1) {
+    if (pointer_id_set_.find(pointer_id) != pointer_id_set_.end()) {
+      error_message_ = std::string("pointer id already exists");
+      return false;
+    }
+
+    if (action_index_ != static_cast<int>(pointer_id_set_.size())) {
+      error_message_ = std::string("some pointers do not have a pointer id");
+      return false;
+    }
+
+    pointer_id_set_.insert(pointer_id);
+  } else {
+    if (pointer_id_set_.size() > 0) {
+      error_message_ = std::string("this pointer does not have a pointer id");
+      return false;
+    }
   }
 
   const base::ListValue* actions;
@@ -141,13 +170,14 @@ bool ActionsParser::ParsePointerActions(const base::DictionaryValue& pointer) {
     return false;
   }
 
-  if (!ParseActions(*actions))
+  if (!ParseActions(*actions, pointer_id))
     return false;
 
   return true;
 }
 
-bool ActionsParser::ParseActions(const base::ListValue& actions) {
+bool ActionsParser::ParseActions(const base::ListValue& actions,
+                                 int pointer_id) {
   SyntheticPointerActionListParams::ParamList param_list;
   for (const auto& action_value : actions) {
     const base::DictionaryValue* action;
@@ -155,7 +185,7 @@ bool ActionsParser::ParseActions(const base::ListValue& actions) {
       error_message_ = base::StringPrintf(
           "actions[%d].actions is missing or not a dictionary", action_index_);
       return false;
-    } else if (!ParseAction(*action, param_list)) {
+    } else if (!ParseAction(*action, param_list, pointer_id)) {
       return false;
     }
   }
@@ -169,7 +199,8 @@ bool ActionsParser::ParseActions(const base::ListValue& actions) {
 
 bool ActionsParser::ParseAction(
     const base::DictionaryValue& action,
-    SyntheticPointerActionListParams::ParamList& param_list) {
+    SyntheticPointerActionListParams::ParamList& param_list,
+    int pointer_id) {
   SyntheticPointerActionParams::PointerActionType pointer_action_type =
       SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED;
   std::string name;
@@ -235,7 +266,10 @@ bool ActionsParser::ParseAction(
   }
 
   SyntheticPointerActionParams action_param(pointer_action_type);
-  action_param.set_index(action_index_);
+  if (pointer_id == -1)
+    action_param.set_pointer_id(action_index_);
+  else
+    action_param.set_pointer_id(pointer_id);
   switch (pointer_action_type) {
     case SyntheticPointerActionParams::PointerActionType::PRESS:
       action_param.set_position(gfx::PointF(position_x, position_y));

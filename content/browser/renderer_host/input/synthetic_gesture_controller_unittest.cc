@@ -1760,9 +1760,9 @@ TEST_F(SyntheticGestureControllerTest, PointerTouchAction) {
   SyntheticPointerActionParams param1 = SyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType::PRESS);
   param0.set_position(gfx::PointF(54, 89));
-  param0.set_index(0);
+  param0.set_pointer_id(0);
   param1.set_position(gfx::PointF(79, 132));
-  param1.set_index(1);
+  param1.set_pointer_id(1);
   param_list.push_back(param0);
   param_list.push_back(param1);
   SyntheticPointerActionListParams params(param_list);
