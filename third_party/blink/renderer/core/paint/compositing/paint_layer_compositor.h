@@ -185,6 +185,8 @@ class CORE_EXPORT PaintLayerCompositor {
   void EnableCompositingModeIfNeeded();
 
   void ApplyOverlayFullscreenVideoAdjustmentIfNeeded();
+  void AdjustOverlayFullscreenVideoPosition(GraphicsLayer*);
+  GraphicsLayer* OverlayFullscreenVideoGraphicsLayer();
 
   // Checks the given graphics layer against the compositor's horizontal and
   // vertical scrollbar graphics layers, returning the associated Scrollbar
