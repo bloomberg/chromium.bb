@@ -231,8 +231,6 @@ jumbo_split_static_library("ui") {
       "cocoa/extensions/media_galleries_dialog_cocoa.mm",
       "cocoa/extensions/media_gallery_list_entry_view.h",
       "cocoa/extensions/media_gallery_list_entry_view.mm",
-      "cocoa/extensions/toolbar_actions_bar_bubble_mac.h",
-      "cocoa/extensions/toolbar_actions_bar_bubble_mac.mm",
       "cocoa/extensions/toolbar_actions_bar_bubble_views_presenter.h",
       "cocoa/extensions/toolbar_actions_bar_bubble_views_presenter.mm",
       "cocoa/fast_resize_view.h",

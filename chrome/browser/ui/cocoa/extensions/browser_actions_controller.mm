@@ -16,11 +16,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
-#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
-#import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_views_presenter.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
@@ -40,10 +38,6 @@ NSString* const kBrowserActionVisibilityChangedNotification =
     @"BrowserActionVisibilityChangedNotification";
 
 namespace {
-
-// How far to inset from the bottom of the view to get the top border
-// of the popup 2px below the bottom of the Omnibox.
-const CGFloat kBrowserActionBubbleYOffset = 3.0;
 
 // The amount of horizontal padding the browser action container should have on
 // each side.
@@ -263,7 +257,6 @@ bool ToolbarActionsBarBridge::CloseOverflowMenuIfOpen() {
 @synthesize containerView = containerView_;
 @synthesize browser = browser_;
 @synthesize isOverflow = isOverflow_;
-@synthesize activeBubble = activeBubble_;
 
 #pragma mark -
 #pragma mark Public Methods
@@ -284,10 +277,8 @@ bool ToolbarActionsBarBridge::CloseOverflowMenuIfOpen() {
         new ToolbarActionsBar(toolbarActionsBarBridge_.get(),
                               browser_,
                               mainBar));
-    if (chrome::ShowAllDialogsWithViewsToolkit()) {
-      viewsBubblePresenter_ =
-          std::make_unique<ToolbarActionsBarBubbleViewsPresenter>(self);
-    }
+    viewsBubblePresenter_ =
+        std::make_unique<ToolbarActionsBarBubbleViewsPresenter>(self);
 
     containerView_ = container;
     [containerView_ setMinWidth:toolbarActionsBar_->GetMinimumWidth()];
@@ -420,8 +411,7 @@ bool ToolbarActionsBarBridge::CloseOverflowMenuIfOpen() {
   return [self preferredSize];
 }
 
-- (void)bubbleWindowClosing:(NSNotification*)notification {
-  activeBubble_ = nil;
+- (void)bubbleWindowClosing {
   toolbarActionsBar_->OnBubbleClosed();
 }
 
@@ -773,16 +763,8 @@ bool ToolbarActionsBarBridge::CloseOverflowMenuIfOpen() {
 
 - (NSPoint)popupPointForView:(NSView*)view
                   withBounds:(NSRect)bounds {
-  NSPoint anchor;
-  if (chrome::ShowAllDialogsWithViewsToolkit()) {
-    // Anchor to the bottom-right of the button.
-    anchor = NSMakePoint(NSMaxX(bounds), [view isFlipped] ? NSMaxY(bounds) : 0);
-  } else {
-    // Anchor point just above the center of the bottom.
-    int y = [view isFlipped] ? NSMaxY(bounds) - kBrowserActionBubbleYOffset
-                             : kBrowserActionBubbleYOffset;
-    anchor = NSMakePoint(NSMidX(bounds), y);
-  }
+  NSPoint anchor =
+      NSMakePoint(NSMaxX(bounds), [view isFlipped] ? NSMaxY(bounds) : 0);
   // Convert the point to the container view's frame, and adjust for animation.
   NSPoint anchorInContainer =
       [containerView_ convertPoint:anchor fromView:view];
@@ -862,26 +844,8 @@ bool ToolbarActionsBarBridge::CloseOverflowMenuIfOpen() {
 
   NSWindow* parentWindow = [containerView_ window];
   anchor = ui::ConvertPointFromWindowToScreen(parentWindow, anchor);
-  if (viewsBubblePresenter_) {
-    viewsBubblePresenter_->PresentAt(std::move(delegate), parentWindow, anchor,
-                                     anchoredToAction);
-    // No need to set |activeBubble_| as it's only used for Cocoa tests. Also,
-    // skip registering for notifications since the presenter will call
-    // -bubbleWindowClosing: directly.
-    return;
-  }
-
-  activeBubble_ = [[ToolbarActionsBarBubbleMac alloc]
-      initWithParentWindow:[containerView_ window]
-               anchorPoint:anchor
-          anchoredToAction:anchoredToAction
-                  delegate:std::move(delegate)];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(bubbleWindowClosing:)
-             name:NSWindowWillCloseNotification
-           object:[activeBubble_ window]];
-  [activeBubble_ showWindow:nil];
+  viewsBubblePresenter_->PresentAt(std::move(delegate), parentWindow, anchor,
+                                   anchoredToAction);
 }
 
 - (void)setFocusedViewIndex:(NSInteger)index {
