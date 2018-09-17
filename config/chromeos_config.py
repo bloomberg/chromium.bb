@@ -3952,10 +3952,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'sign_types': ['recovery', 'factory'],
       },
 
-      'nocturne-release': {
-          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
-      },
-
       'octopus-release': {
           'sign_types': ['recovery', 'factory'],
       },
