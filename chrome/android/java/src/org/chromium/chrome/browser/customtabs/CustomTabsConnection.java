@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChainedTasks;
@@ -241,7 +242,6 @@ public class CustomTabsConnection {
     private volatile ChainedTasks mWarmupTasks;
 
     private ModuleLoader mModuleLoader;
-
     /**
      * <strong>DO NOT CALL</strong>
      * Public to be instanciable from {@link ChromeApplication}. This is however
@@ -1102,6 +1102,13 @@ public class CustomTabsConnection {
      * @return true for success.
      */
     public boolean notifyNavigationEvent(CustomTabsSessionToken session, int navigationEvent) {
+        // Notify dynamic module
+        ActivityDelegate activityDelegate = mClientManager.getActivityDelegateForSession(session);
+        if (activityDelegate != null) {
+            activityDelegate.onNavigationEvent(navigationEvent,
+                    getExtrasBundleForNavigationEventForSession(session));
+        }
+
         CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
         if (callback == null) return false;
 
@@ -1486,5 +1493,10 @@ public class CustomTabsConnection {
                     + mModuleLoader.getComponentName());
         }
         return mModuleLoader;
+    }
+
+    public void setActivityDelegateForSession(CustomTabsSessionToken sessionToken,
+                                              ActivityDelegate activityDelegate) {
+        mClientManager.setActivityDelegateForSession(sessionToken, activityDelegate);
     }
 }

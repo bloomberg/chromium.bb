@@ -385,6 +385,8 @@ public class CustomTabActivity extends ChromeActivity {
 
         if (mModuleOnStartPending) startModule();
         if (mModuleOnResumePending) resumeModule();
+
+        mConnection.setActivityDelegateForSession(mSession, mModuleActivityDelegate);
     }
 
     private void startModule() {
