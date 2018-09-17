@@ -296,6 +296,8 @@ Polymer({
               listItem.onConfigureComplete(response.success);
               if (response.success) {
                 destination.capabilities = response.capabilities;
+                if (response.policies)
+                  destination.policies = response.policies;
                 this.selectDestination_(destination);
               }
             },
