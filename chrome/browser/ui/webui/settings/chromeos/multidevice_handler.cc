@@ -100,6 +100,8 @@ void MultideviceHandler::UpdatePageContent() {
   std::unique_ptr<base::DictionaryValue> page_content_dictionary =
       GeneratePageContentDataDictionary();
   DCHECK(page_content_dictionary);
+  PA_LOG(INFO) << "Updating MultiDevice settings page content with: "
+               << *page_content_dictionary << ".";
   FireWebUIListener("settings.updateMultidevicePageContentData",
                     *page_content_dictionary);
 }
@@ -122,6 +124,8 @@ void MultideviceHandler::HandleGetPageContent(const base::ListValue* args) {
   std::unique_ptr<base::DictionaryValue> page_content_dictionary =
       GeneratePageContentDataDictionary();
   DCHECK(page_content_dictionary);
+  PA_LOG(INFO) << "Responding to getPageContentData() request with: "
+               << *page_content_dictionary << ".";
 
   ResolveJavascriptCallback(base::Value(callback_id), *page_content_dictionary);
 }
