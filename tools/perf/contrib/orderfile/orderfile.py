@@ -69,7 +69,7 @@ class OrderfileStorySet(story.StorySet):
   SEED = 8675309
 
   # These defaults are current best practice for production orderfiles.
-  DEFAULT_TRAINING = 50
+  DEFAULT_TRAINING = 25
   DEFAULT_TESTING = 8
   DEFAULT_VARIATIONS = 1
 
