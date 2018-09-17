@@ -165,8 +165,7 @@ public class SigninHelper {
                         // Here we have to sign out though to ensure account consistency,
                         // so override the flag.
                         mSigninManager.prohibitSignout(false);
-                        // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
-                        mSigninManager.signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
+                        mSigninManager.signOut(SignoutReason.ACCOUNT_REMOVED_FROM_DEVICE);
                     } else {
                         validateAccountSettings(true);
                     }

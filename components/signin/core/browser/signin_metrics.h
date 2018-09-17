@@ -52,6 +52,9 @@ enum ProfileSignout {
   AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
   // The user disables sync from the DICE UI.
   USER_TUNED_OFF_SYNC_FROM_DICE_UI,
+  // Android specific. Signout forced because the account was removed from the
+  // device.
+  ACCOUNT_REMOVED_FROM_DEVICE,
   // Keep this as the last enum.
   NUM_PROFILE_SIGNOUT_METRICS,
 };
