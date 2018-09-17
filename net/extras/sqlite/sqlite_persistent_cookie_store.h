@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/cookies/cookie_monster.h"
@@ -28,7 +29,7 @@ class CookieCryptoDelegate;
 // Implements the PersistentCookieStore interface in terms of a SQLite database.
 // For documentation about the actual member functions consult the documentation
 // of the parent class |CookieMonster::PersistentCookieStore|.
-class SQLitePersistentCookieStore
+class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentCookieStore
     : public CookieMonster::PersistentCookieStore {
  public:
   // Contains the origin and a bool indicating whether or not the
