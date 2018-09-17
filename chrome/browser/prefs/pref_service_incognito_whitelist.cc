@@ -259,8 +259,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kTabStripStackedLayout,
 
-    prefs::kRegisteredBackgroundContents,
-
 #if defined(OS_WIN)
     prefs::kLastWelcomedOSVersion,
 #endif
@@ -275,13 +273,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kDnsOverHttpsServers,
     prefs::kDnsOverHttpsServerMethods,
 
-#if defined(OS_MACOSX)
-    prefs::kUserRemovedLoginItem,
-    prefs::kChromeCreatedLoginItem,
-    prefs::kMigratedLoginItemPref,
-#endif
-
-    prefs::kBackgroundModeEnabled,
     prefs::kHardwareAccelerationModePrevious,
 
     prefs::kFactoryResetRequested,
