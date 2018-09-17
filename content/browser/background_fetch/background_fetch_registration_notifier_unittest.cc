@@ -106,15 +106,11 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
     task_runner_->RunUntilIdle();
   }
 
-  void CollectGarbage() { garbage_collected_ = true; }
-
  protected:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle handle_;
 
   std::unique_ptr<BackgroundFetchRegistrationNotifier> notifier_;
-
-  bool garbage_collected_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRegistrationNotifierTest);
@@ -204,39 +200,6 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyWithoutObservers) {
   // Because the notification was for |kSecondaryUniqueId|, no progress updates
   // should be received by the |observer|.
   EXPECT_EQ(observer->progress_updates().size(), 0u);
-}
-
-TEST_F(BackgroundFetchRegistrationNotifierTest,
-       AddGarbageCollectionCallback_NoObservers) {
-  notifier_->AddGarbageCollectionCallback(
-      kPrimaryUniqueId,
-      base::BindOnce(&BackgroundFetchRegistrationNotifierTest::CollectGarbage,
-                     base::Unretained(this)));
-
-  ASSERT_TRUE(garbage_collected_)
-      << "Garbage should be collected when there are no observers";
-}
-
-TEST_F(BackgroundFetchRegistrationNotifierTest,
-       AddGarbageCollectionCallback_OneObserver) {
-  auto observer = std::make_unique<TestRegistrationObserver>();
-
-  auto foo = observer->GetPtr();
-  notifier_->AddObserver(kPrimaryUniqueId, std::move(foo));
-  notifier_->AddGarbageCollectionCallback(
-      kPrimaryUniqueId,
-      base::BindOnce(&BackgroundFetchRegistrationNotifierTest::CollectGarbage,
-                     base::Unretained(this)));
-
-  ASSERT_FALSE(garbage_collected_)
-      << "Garbage should not be collected when there is an observer";
-
-  observer->Close();
-
-  // TODO(crbug.com/777764): Add this back when non-exceptional binding closures
-  // are detected properly.
-  // ASSERT_TRUE(garbage_collected_) << "Garbage should be collected when the
-  //                                    "observer is closed.";
 }
 
 TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRecordsUnavailable) {
