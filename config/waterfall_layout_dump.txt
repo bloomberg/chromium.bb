@@ -3336,7 +3336,6 @@ zoombini-no-vmtest-pre-cq (gce_beefy)
 zoombini-paladin-tryjob (gce_beefy)
 zoombini-payloads (gce_beefy)
 zoombini-pre-cq (gce_beefy)
-zoombini-release (gce_beefy)
 zoombini-release-afdo-generate-tryjob (gce_beefy)
 [zoombini-release-afdo-tryjob] (gce_beefy)
   zoombini-release-afdo-generate
