@@ -229,7 +229,6 @@ NavigationHandleImpl::NavigationHandleImpl(
       navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       should_check_main_world_csp_(should_check_main_world_csp),
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
-      is_transferring_(false),
       is_form_submission_(is_form_submission),
       should_replace_current_entry_(false),
       is_download_(false),

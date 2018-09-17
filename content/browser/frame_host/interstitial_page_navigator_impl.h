@@ -27,11 +27,6 @@ class CONTENT_EXPORT InterstitialPageNavigatorImpl : public Navigator {
   // Navigator implementation.
   NavigatorDelegate* GetDelegate() override;
   NavigationController* GetController() override;
-  void DidStartProvisionalLoad(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      const std::vector<GURL>& redirect_chain,
-      const base::TimeTicks& navigation_start) override;
   void DidNavigate(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params,

@@ -4100,19 +4100,8 @@ void RenderFrameImpl::DidStartProvisionalLoad(
     navigation_state->set_transition_type(ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   }
 
-  base::TimeTicks navigation_start =
-      navigation_state->common_params().navigation_start;
-  DCHECK(!navigation_start.is_null());
-
   for (auto& observer : observers_)
     observer.DidStartProvisionalLoad(document_loader);
-
-  std::vector<GURL> redirect_chain;
-  GetRedirectChain(document_loader, &redirect_chain);
-
-  Send(new FrameHostMsg_DidStartProvisionalLoad(
-      routing_id_, document_loader->GetRequest().Url(), redirect_chain,
-      navigation_start));
 }
 
 void RenderFrameImpl::DidFailProvisionalLoad(

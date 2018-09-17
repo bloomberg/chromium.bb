@@ -642,10 +642,6 @@ void NavigationSimulator::CommitErrorPage() {
   render_frame_host_->SimulateCommitProcessed(handle_->GetNavigationId(),
                                               true /* was_successful */);
 
-  GURL error_url = GURL(kUnreachableWebDataURL);
-  render_frame_host_->OnMessageReceived(FrameHostMsg_DidStartProvisionalLoad(
-      render_frame_host_->GetRoutingID(), error_url, std::vector<GURL>(),
-      base::TimeTicks::Now()));
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = handle_->pending_nav_entry_id();
   params.did_create_new_entry = DidCreateNewEntry();

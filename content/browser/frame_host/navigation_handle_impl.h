@@ -53,10 +53,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
  public:
   // If |redirect_chain| is empty, then the redirect chain will be created to
   // start with |url|. Otherwise |redirect_chain| is used as the starting point.
-  // |navigation_start| comes from the DidStartProvisionalLoad IPC, which tracks
-  // both renderer-initiated and browser-initiated navigation start.
-  // PlzNavigate: This value always comes from the CommonNavigationParams
-  // associated with this navigation.
+  // |navigation_start| comes from the CommonNavigationParams associated with
+  // this navigation.
   static std::unique_ptr<NavigationHandleImpl> Create(
       const GURL& url,
       const std::vector<GURL>& redirect_chain,
@@ -214,15 +212,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   void set_net_error_code(net::Error net_error_code) {
     net_error_code_ = net_error_code;
-  }
-
-  // Returns whether the navigation is currently being transferred from one
-  // RenderFrameHost to another. In particular, a DidStartProvisionalLoad IPC
-  // for the navigation URL, received in the new RenderFrameHost, should not
-  // indicate the start of a new navigation in that case.
-  bool is_transferring() const { return is_transferring_; }
-  void set_is_transferring(bool is_transferring) {
-    is_transferring_ = is_transferring;
   }
 
   // Updates the RenderFrameHost that is about to commit the navigation. This
@@ -593,10 +582,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The origin policy that applies to this navigation. Empty if none applies.
   std::string origin_policy_;
-
-  // Whether the navigation is in the middle of a transfer. Set to false when
-  // the DidStartProvisionalLoad is received from the new renderer.
-  bool is_transferring_;
 
   // Whether or not the navigation results from the submission of a form.
   bool is_form_submission_;

@@ -105,35 +105,6 @@ NavigationController* NavigatorImpl::GetController() {
   return controller_;
 }
 
-// TODO(clamy): See if we can remove this function now that PlzNavigate has
-// shipped.
-void NavigatorImpl::DidStartProvisionalLoad(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& url,
-    const std::vector<GURL>& redirect_chain,
-    const base::TimeTicks& navigation_start) {
-  bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
-  bool is_error_page = (url.spec() == kUnreachableWebDataURL);
-  GURL validated_url(url);
-  RenderProcessHost* render_process_host = render_frame_host->GetProcess();
-  render_process_host->FilterURL(false, &validated_url);
-
-  // Do not allow browser plugin guests to navigate to non-web URLs, since they
-  // cannot swap processes or grant bindings.
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (render_process_host->IsForGuestsOnly() &&
-      !policy->IsWebSafeScheme(validated_url.scheme())) {
-    validated_url = GURL(url::kAboutBlankURL);
-  }
-
-  if (is_main_frame && !is_error_page) {
-    DidStartMainFrameNavigation(validated_url,
-                                render_frame_host->GetSiteInstance(),
-                                render_frame_host->GetNavigationHandle());
-  }
-}
-
 void NavigatorImpl::DidFailProvisionalLoadWithError(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
