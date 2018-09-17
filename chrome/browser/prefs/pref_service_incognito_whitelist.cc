@@ -275,15 +275,10 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kDnsOverHttpsServers,
     prefs::kDnsOverHttpsServerMethods,
 
-    prefs::kRegisteredProtocolHandlers,
-    prefs::kIgnoredProtocolHandlers,
-    prefs::kCustomHandlersEnabled,
-
 #if defined(OS_MACOSX)
     prefs::kUserRemovedLoginItem,
     prefs::kChromeCreatedLoginItem,
     prefs::kMigratedLoginItemPref,
-    prefs::kNotifyWhenAppsKeepChromeAlive,
 #endif
 
     prefs::kBackgroundModeEnabled,
@@ -308,8 +303,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #if BUILDFLAG(ENABLE_APP_LIST)
     prefs::kAppListLocalState,
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
-
-    prefs::kAppShortcutsVersion,
 
     prefs::kModuleConflictBubbleShown,
 
