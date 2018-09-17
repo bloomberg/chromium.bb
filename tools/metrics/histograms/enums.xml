@@ -44933,6 +44933,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="User turned off sync from DICE UI.">
     User turned off sync from the Desktop Identity Consistency internals UI.
   </int>
+  <int value="9" label="(Android) Account removed from device">
+    Signout forced because account was removed from device.
+  </int>
 </enum>
 
 <enum name="SigninSource">
