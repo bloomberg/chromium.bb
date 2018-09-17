@@ -94,7 +94,6 @@ winky-paladin (gce_beefy)
 wizpig-paladin (gce_beefy)
 wolf-paladin (gce_beefy)
 wooten-paladin (gce_beefy)
-zoombini-paladin (gce_beefy)
 
 == chromeos_release ==
 grunt-android-pi-pre-flight-branch (gce_beefy)

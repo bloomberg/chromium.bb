@@ -2467,7 +2467,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'winky',
       'wizpig',
       'wolf',
-      'zoombini',
   ])
 
   # Paladin configs that exist and should be important as soon as they are
