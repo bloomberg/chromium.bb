@@ -17,8 +17,6 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
-using base::FilePath;
-
 namespace {
 
 constexpr base::FilePath::CharType kImageRoot[] =
@@ -32,22 +30,23 @@ constexpr base::TimeDelta kDeletionDelay = base::TimeDelta::FromSeconds(12);
 
 // Writes |data| to a new temporary file and returns the path to the new file,
 // or an empty path if the function fails.
-FilePath WriteDataToTmpFile(const FilePath& file_path,
-                            const base::string16& subdirectory,
-                            const scoped_refptr<base::RefCountedMemory>& data) {
+base::FilePath WriteDataToTmpFile(
+    const base::FilePath& file_path,
+    const base::string16& subdirectory,
+    const scoped_refptr<base::RefCountedMemory>& data) {
   int data_len = data->size();
   if (data_len == 0)
-    return FilePath();
+    return base::FilePath();
 
-  FilePath new_temp = file_path.Append(subdirectory);
+  base::FilePath new_temp = file_path.Append(subdirectory);
   if (!base::CreateDirectoryAndGetError(new_temp, nullptr))
-    return FilePath();
+    return base::FilePath();
 
-  FilePath temp_file;
+  base::FilePath temp_file;
   if (!base::CreateTemporaryFileInDir(new_temp, &temp_file))
-    return FilePath();
+    return base::FilePath();
   if (base::WriteFile(temp_file, data->front_as<char>(), data_len) != data_len)
-    return FilePath();
+    return base::FilePath();
   return temp_file;
 }
 
@@ -64,7 +63,7 @@ NotificationImageRetainer::~NotificationImageRetainer() {
     base::DeleteFile(image_directory_, true);
 }
 
-FilePath NotificationImageRetainer::RegisterTemporaryImage(
+base::FilePath NotificationImageRetainer::RegisterTemporaryImage(
     const gfx::Image& image,
     const std::string& profile_id,
     const GURL& origin) {
@@ -75,7 +74,7 @@ FilePath NotificationImageRetainer::RegisterTemporaryImage(
     DeleteFile(image_directory_, /*recursive=*/true);
     // Recreate the image directory.
     if (!base::CreateDirectoryAndGetError(image_directory_, nullptr))
-      return FilePath();
+      return base::FilePath();
     initialized_ = true;
   }
 
@@ -84,7 +83,7 @@ FilePath NotificationImageRetainer::RegisterTemporaryImage(
   // subdirectory will also be given a unique filename.
   base::string16 directory =
       base::UintToString16(base::Hash(profile_id + origin.spec()));
-  FilePath temp_file =
+  base::FilePath temp_file =
       WriteDataToTmpFile(image_directory_, directory, image.As1xPNGBytes());
 
   // Add a future task to try to delete the file. It is OK to fail, the file
@@ -107,8 +106,8 @@ void NotificationImageRetainer::OverrideTempFileLifespanForTesting(
   override_file_destruction_ = override_file_destruction;
 }
 
-FilePath NotificationImageRetainer::DetermineImageDirectory() {
-  FilePath data_dir;
+base::FilePath NotificationImageRetainer::DetermineImageDirectory() {
+  base::FilePath data_dir;
   bool success = base::PathService::Get(chrome::DIR_USER_DATA, &data_dir);
   DCHECK(success);
   return data_dir.Append(kImageRoot);
