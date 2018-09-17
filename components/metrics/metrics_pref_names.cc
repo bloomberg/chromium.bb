@@ -88,12 +88,19 @@ const char kStabilityChildProcessCrashCount[] =
     "user_experience_metrics.stability.child_process_crash_count";
 
 // Number of times the application exited uncleanly since the last report.
+// On Android this does not count the ones due to Gms Core updates (below).
 const char kStabilityCrashCount[] =
     "user_experience_metrics.stability.crash_count";
 
 // Number of times the application exited uncleanly since the last report
-// without gms core update.
-const char kStabilityCrashCountWithoutGmsCoreUpdate[] =
+// due to a gms core update.
+const char kStabilityCrashCountDueToGmsCoreUpdate[] =
+    "user_experience_metrics.stability.crash_count_due_to_gms_core_update";
+
+// Number of times the application exited uncleanly since the last report
+// without gms core update (Deprecated 2018-09).
+// TODO(wnwen): Remove this after 2019-09.
+const char kStabilityCrashCountWithoutGmsCoreUpdateObsolete[] =
     "user_experience_metrics.stability.crash_count_without_gms_core_update";
 
 // Number of times the initial stability log upload was deferred to the next
