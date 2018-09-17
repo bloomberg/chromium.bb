@@ -59,23 +59,19 @@ bool IsIPhoneX() {
 }
 
 bool IsRefreshInfobarEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
+  return true;
 }
 
 bool IsRefreshLocationBarEnabled() {
-  // Refresh location bar requires UIRefreshPhase1 as well.
-  return base::FeatureList::IsEnabled(kUIRefreshLocationBar) &&
-         IsUIRefreshPhase1Enabled();
+  return true;
 }
 
 bool IsRefreshPopupPresentationEnabled() {
-  return base::FeatureList::IsEnabled(kRefreshPopupPresentation);
+  return true;
 }
 
 bool IsUIRefreshPhase1Enabled() {
-  if (tests_hook::ForceUIRefreshPhase1())
-    return true;
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
+  return true;
 }
 
 CGFloat StatusBarHeight() {

@@ -4,12 +4,10 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_observer.h"
 
-#include "base/test/scoped_feature_list.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_mediator.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -125,53 +123,18 @@ TEST_F(FullscreenWebStateObserverTest, ResetForSameDocumentURLChange) {
   EXPECT_EQ(1.0, model().progress());
 }
 
-// Tests that the model is disabled when a load is occurring.
-TEST_F(FullscreenWebStateObserverTest, DisableDuringLoadWithUIRefreshDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kUIRefreshPhase1);
-
-  EXPECT_TRUE(model().enabled());
-  web_state().SetLoading(true);
-  EXPECT_FALSE(model().enabled());
-  web_state().SetLoading(false);
-  EXPECT_TRUE(model().enabled());
-}
-
 // Tests that the model is not disabled when a load is occurring.
-TEST_F(FullscreenWebStateObserverTest, DisableDuringLoadWithUIRefreshEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kUIRefreshPhase1);
-
+TEST_F(FullscreenWebStateObserverTest, DisableDuringLoad) {
   EXPECT_TRUE(model().enabled());
   web_state().SetLoading(true);
   EXPECT_TRUE(model().enabled());
   web_state().SetLoading(false);
-  EXPECT_TRUE(model().enabled());
-}
-
-// Tests that the model is disabled when the SSL status is broken.
-TEST_F(FullscreenWebStateObserverTest, DisableForBrokenSSL) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kUIRefreshPhase1);
-
-  std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
-  item->GetSSL().security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
-  navigation_manager().SetVisibleItem(item.get());
-  EXPECT_TRUE(model().enabled());
-  web_state().OnVisibleSecurityStateChanged();
-  EXPECT_FALSE(model().enabled());
-  navigation_manager().SetVisibleItem(nullptr);
-  web_state().OnVisibleSecurityStateChanged();
   EXPECT_TRUE(model().enabled());
 }
 
 // Tests that the model remains enabled when the SSL status is broken and the
 // UI refresh flag is enabled.
-TEST_F(FullscreenWebStateObserverTest,
-       DisableForBrokenSSLWithUIRefreshEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kUIRefreshPhase1);
-
+TEST_F(FullscreenWebStateObserverTest, DisableForBrokenSSL) {
   std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
   item->GetSSL().security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
   navigation_manager().SetVisibleItem(item.get());

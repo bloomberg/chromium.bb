@@ -224,10 +224,6 @@ const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "
     "broadcast by devices near you.";
 
-const char kInfobarsUIRebootName[] = "Infobars UI Reboot";
-const char kInfobarsUIRebootDescription[] =
-    "When enabled, Infobars will use the new UI Reboot layout.";
-
 const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
 const char kSlimNavigationManagerDescription[] =
     "When enabled, uses the experimental slim navigation manager that provides "
@@ -255,15 +251,6 @@ const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
-
-const char kUIRefreshLocationBarName[] = "UI Refresh Location Bar";
-const char kUIRefreshLocationBarDescription[] =
-    "When enabled, the UI Refresh location bar with a custom steady-state will "
-    "be displayed.";
-
-const char kUIRefreshPhase1Name[] = "UI Refresh Phase 1";
-const char kUIRefreshPhase1Description[] =
-    "When enabled, the first phase of the iOS UI refresh will be displayed.";
 
 const char kUnifiedConsentName[] = "Unified Consent";
 const char kUnifiedConsentDescription[] =

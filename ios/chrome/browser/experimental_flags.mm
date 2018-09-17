@@ -127,19 +127,19 @@ bool IsThirdPartyKeyboardWorkaroundEnabled() {
 }
 
 bool IsRecentTabsUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
+  return true;
 }
 
 bool IsBookmarksUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
+  return true;
 }
 
 bool IsReadingListUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
+  return true;
 }
 
 bool IsSettingsUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
+  return true;
 }
 
 }  // namespace experimental_flags
