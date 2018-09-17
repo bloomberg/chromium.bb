@@ -737,7 +737,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             ACCELERATOR_BUTTON_TAP_ACTION.record();
             setUrlBarFocus(true);
         };
-        final Drawable drawable = ContextCompat.getDrawable(mActivity, R.drawable.ic_search);
+        final Drawable drawable =
+                ContextCompat.getDrawable(mActivity, R.drawable.ic_search).mutate();
         final CharSequence accessibilityString =
                 mActivity.getString(R.string.accessibility_toolbar_btn_search_accelerator);
         return new ToolbarButtonData(drawable, accessibilityString, accessibilityString,
