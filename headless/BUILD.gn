@@ -820,8 +820,6 @@ if (is_win) {
     sources = [
       "app/headless_shell.cc",
       "app/headless_shell.h",
-      "app/headless_shell_switches.cc",
-      "app/headless_shell_switches.h",
       "app/headless_shell_win.cc",
       "public/headless_shell.h",
     ]
@@ -859,8 +857,6 @@ static_library("headless_shell_lib") {
   sources = [
     "app/headless_shell.cc",
     "app/headless_shell.h",
-    "app/headless_shell_switches.cc",
-    "app/headless_shell_switches.h",
     "lib/browser/headless_content_browser_client.cc",
     "lib/browser/headless_content_browser_client.h",
     "lib/utility/headless_content_utility_client.cc",
