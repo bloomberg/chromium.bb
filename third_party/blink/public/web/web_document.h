@@ -128,6 +128,7 @@ class WebDocument : public WebNode {
 
   BLINK_EXPORT WebVector<WebDraggableRegion> DraggableRegions() const;
 
+  // TODO(867831): Remove once the caller migrates to Custom Elements V1.
   BLINK_EXPORT v8::Local<v8::Value> RegisterEmbedderCustomElement(
       const WebString& name,
       v8::Local<v8::Value> options);

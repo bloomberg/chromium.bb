@@ -20,6 +20,7 @@ class DocumentCustomBindings : public ObjectBackedNativeHandler {
 
  private:
   // Registers the provided element as a custom element in Blink.
+  // TODO(867831): Remove once guest view migrates to Custom Elements V1.
   void RegisterElement(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 

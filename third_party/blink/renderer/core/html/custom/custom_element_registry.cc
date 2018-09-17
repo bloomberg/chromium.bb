@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/auto_reset.h"
+#include "third_party/blink/public/web/web_custom_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_custom_element_definition_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -52,8 +53,9 @@ void CollectUpgradeCandidateInNode(Node& root,
 
 // Returns true if |name| is invalid.
 bool ThrowIfInvalidName(const AtomicString& name,
+                        bool allow_embedder_names,
                         ExceptionState& exception_state) {
-  if (CustomElement::IsValidName(name))
+  if (CustomElement::IsValidName(name, allow_embedder_names))
     return false;
   exception_state.ThrowDOMException(
       DOMExceptionCode::kSyntaxError,
@@ -64,7 +66,7 @@ bool ThrowIfInvalidName(const AtomicString& name,
 // Returns true if |name| is valid.
 bool ThrowIfValidName(const AtomicString& name,
                       ExceptionState& exception_state) {
-  if (!CustomElement::IsValidName(name))
+  if (!CustomElement::IsValidName(name, false))
     return false;
   exception_state.ThrowDOMException(
       DOMExceptionCode::kNotSupportedError,
@@ -126,7 +128,9 @@ CustomElementDefinition* CustomElementRegistry::define(
   if (!builder.CheckConstructorIntrinsics())
     return nullptr;
 
-  if (ThrowIfInvalidName(name, exception_state))
+  const bool allow_embedder_names =
+      WebCustomElement::EmbedderNamesAllowedScope::IsAllowed();
+  if (ThrowIfInvalidName(name, allow_embedder_names, exception_state))
     return nullptr;
 
   if (NameIsDefined(name) || V0NameIsDefined(name)) {
@@ -306,7 +310,7 @@ ScriptPromise CustomElementRegistry::whenDefined(
     ScriptState* script_state,
     const AtomicString& name,
     ExceptionState& exception_state) {
-  if (ThrowIfInvalidName(name, exception_state))
+  if (ThrowIfInvalidName(name, false, exception_state))
     return ScriptPromise();
   CustomElementDefinition* definition = DefinitionForName(name);
   if (definition)

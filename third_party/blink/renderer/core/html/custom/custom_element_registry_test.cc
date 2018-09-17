@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/web/web_custom_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet_init.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -18,6 +19,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition_builder.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_descriptor.h"
@@ -467,6 +469,50 @@ TEST_F(CustomElementRegistryTest, defineCustomElementWithStyle) {
   EXPECT_EQ(
       sheet->ownerRule(),
       Registry().DefinitionForName("a-a")->DefaultStyleSheet()->ownerRule());
+}
+
+// The embedder may define its own elements via the CustomElementRegistry
+// whose names are not valid custom element names. Ensure that such a
+// definition may be done.
+TEST_F(CustomElementRegistryTest, DefineEmbedderCustomElements) {
+  CustomElement::AddEmbedderCustomElementName("embeddercustomelement");
+
+  WebCustomElement::EmbedderNamesAllowedScope embedder_names_scope;
+
+  NonThrowableExceptionState should_not_throw;
+  TestCustomElementDefinitionBuilder builder;
+  CustomElementDefinition* definition_embedder =
+      Registry().define("embeddercustomelement", builder,
+                        ElementDefinitionOptions(), should_not_throw);
+  CustomElementDefinition* definition =
+      Registry().DefinitionFor(CustomElementDescriptor(
+          "embeddercustomelement", "embeddercustomelement"));
+  EXPECT_NE(nullptr, definition)
+      << "embeddercustomelement, embeddercustomelement should be registered";
+  EXPECT_EQ(definition_embedder, definition);
+}
+
+// Ensure that even when the embedder has declared that an invalid name may
+// be used for a custom element definition, the caller of |define| may disallow
+// the use of the invalid name (so that we don't expose the ability to use such
+// a name to the web).
+TEST_F(CustomElementRegistryTest, DisallowedEmbedderCustomElements) {
+  CustomElement::AddEmbedderCustomElementName("embeddercustomelement");
+
+  // Without a WebCustomElement::EmbedderNamesAllowedScope, this registration
+  // is disallowed.
+
+  TestCustomElementDefinitionBuilder builder;
+  CustomElementDefinition* definition_embedder = Registry().define(
+      "embeddercustomelement", builder, ElementDefinitionOptions(),
+      IGNORE_EXCEPTION_FOR_TESTING);
+  CustomElementDefinition* definition =
+      Registry().DefinitionFor(CustomElementDescriptor(
+          "embeddercustomelement", "embeddercustomelement"));
+  EXPECT_EQ(nullptr, definition) << "embeddercustomelement, "
+                                    "embeddercustomelement should not be "
+                                    "registered";
+  EXPECT_EQ(definition_embedder, definition);
 }
 
 // TODO(dominicc): Add tests which adjust the "is" attribute when type

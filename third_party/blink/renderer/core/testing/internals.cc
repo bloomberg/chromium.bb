@@ -89,6 +89,7 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect_list.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_font_cache.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
@@ -3469,6 +3470,11 @@ unsigned Internals::LifecycleUpdateCount() const {
 void Internals::DisableIntersectionObserverV2Throttle() const {
   // This gets reset by Internals::ResetToConsistentState
   IntersectionObserver::SetV2ThrottleDelayEnabledForTesting(false);
+}
+
+void Internals::addEmbedderCustomElementName(const AtomicString& name,
+                                             ExceptionState& exception_state) {
+  CustomElement::AddEmbedderCustomElementNameForTesting(name, exception_state);
 }
 
 }  // namespace blink

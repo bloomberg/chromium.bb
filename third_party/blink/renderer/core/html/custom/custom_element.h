@@ -35,7 +35,17 @@ class CORE_EXPORT CustomElement {
 
   static CustomElementDefinition* DefinitionForElement(const Element*);
 
+  static void AddEmbedderCustomElementName(const AtomicString& name);
+
   static bool IsValidName(const AtomicString& name) {
+    return IsValidName(name, true);
+  }
+
+  static bool IsValidName(const AtomicString& name,
+                          bool including_embedder_names) {
+    if (including_embedder_names && EmbedderCustomElementNames().Contains(name))
+      return true;
+
     // This quickly rejects all common built-in element names.
     if (name.find('-', 1) == kNotFound)
       return false;
@@ -96,12 +106,17 @@ class CORE_EXPORT CustomElement {
 
   static void TryToUpgrade(Element*, bool upgrade_invisible_elements = false);
 
+  static void AddEmbedderCustomElementNameForTesting(const AtomicString& name,
+                                                     ExceptionState&);
+
  private:
   // Some existing specs have element names with hyphens in them,
   // like font-face in SVG. The custom elements spec explicitly
   // disallows these as custom element names.
   // https://html.spec.whatwg.org/#valid-custom-element-name
   static bool IsHyphenatedSpecElementName(const AtomicString&);
+
+  static Vector<AtomicString>& EmbedderCustomElementNames();
 
   enum CreateUUCheckLevel {
     kCheckAll,

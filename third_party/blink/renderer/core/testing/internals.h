@@ -593,6 +593,8 @@ class Internals final : public ScriptWrappable {
 
   void DisableIntersectionObserverV2Throttle() const;
 
+  void addEmbedderCustomElementName(const AtomicString& name, ExceptionState&);
+
  private:
   explicit Internals(ExecutionContext*);
   Document* ContextDocument() const;
