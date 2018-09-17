@@ -50,6 +50,8 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
                ResourceRequest::RedirectStatus =
                    ResourceRequest::RedirectStatus::kNoRedirect) const;
 
+  bool MatchesAsSelf(const KURL&);
+
   // Returns true if this CSPSource subsumes the other, as defined by the
   // algorithm at https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
   bool Subsumes(CSPSource*) const;

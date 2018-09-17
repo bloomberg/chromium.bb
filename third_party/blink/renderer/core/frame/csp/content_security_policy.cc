@@ -1668,7 +1668,7 @@ bool ContentSecurityPolicy::ShouldSendCSPHeader(ResourceType type) const {
 }
 
 bool ContentSecurityPolicy::UrlMatchesSelf(const KURL& url) const {
-  return self_source_->Matches(url, RedirectStatus::kNoRedirect);
+  return self_source_->MatchesAsSelf(url);
 }
 
 bool ContentSecurityPolicy::ProtocolEqualsSelf(const String& protocol) const {
