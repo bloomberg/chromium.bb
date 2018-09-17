@@ -28,4 +28,14 @@ Please add documents below as you write it.
 
 Please complete the list below with new or existing design docs.
 
-* [Handling Large Values in IndexedDB](https://goo.gl/VncHrw)
+* [Handling Large Values in IndexedDB](https://docs.google.com/document/d/1wmbLb91Se4OIp3Z0eKkAJEHG4YHgq75WUH2mqazrnik/)
+* [IndexedDB Tombstone Sweeper](https://docs.google.com/document/d/1BWy0aT_hWrmc3umCxas6-7ofDmT8CSgK4sv1s4VwTeA/)
+* [LevelDB Scopes: Special Transactions for IndexedDB](https://docs.google.com/document/d/16_igCI15Gfzb6UYqeuJTmJPrzEtawz6Y1tVOKNtYgiU/)
+* [IndexedDB: Onion Soup](https://docs.google.com/document/d/12nwW3mLxVBximpIt9IS0h7hoaB5fcIAl4zHdhuOVKLg/)
+
+## Obsoleted Design Docs
+
+These documents are no longer current, but are still the best documentation we
+have in their area.
+
+* [Blob Storage in IndexedDB](https://docs.google.com/document/d/1Kdr4pcFt4QBDLLQn-fY4kZgw6ptmK23lthGZdQMVh2Y/)
