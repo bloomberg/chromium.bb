@@ -235,7 +235,7 @@ void OmniboxViewMac::ResetTabState(WebContents* web_contents) {
 }
 
 void OmniboxViewMac::Update() {
-  if (model()->ResetDisplayUrls()) {
+  if (model()->ResetDisplayTexts()) {
     // Restore everything to the baseline look.
     RevertAll();
 

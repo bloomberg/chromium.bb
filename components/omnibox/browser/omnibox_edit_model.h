@@ -158,17 +158,17 @@ class OmniboxEditModel {
   void UpdateInput(bool has_selected_text,
                    bool prevent_inline_autocomplete);
 
-  // Resets the permanent display URLs to those provided by the controller.
-  // Returns true if the display URLs have changed and the change should be
-  // immediately user-visible, because either the user is not editing or the
-  // edit does not have focus.
-  bool ResetDisplayUrls();
+  // Resets the permanent display texts (display_text_ and url_for_editing_)
+  // to those provided by the controller. Returns true if the display texts
+  // have changed and the change should be immediately user-visible, because
+  // either the user is not editing or the edit does not have focus.
+  bool ResetDisplayTexts();
 
   // Returns the URL corresponding to the permanent text.
   GURL PermanentURL() const;
 
-  // Returns the permanent URL text for the current page and Omnibox state.
-  base::string16 GetCurrentPermanentUrlText() const;
+  // Returns the permanent display text for the current page and Omnibox state.
+  base::string16 GetPermanentDisplayText() const;
 
   // Sets the user_text_ to |text|.  Only the View should call this.
   void SetUserText(const base::string16& text);
@@ -491,10 +491,15 @@ class OmniboxEditModel {
   // no input is in progress or the Omnibox is not focused.
   FocusSource focus_source_;
 
-  // The text representing the current URL for steady state display. This may
-  // be a simplified version of the current URL with destructive elisions
-  // applied - and should not be considered suitable for editing.
-  base::string16 display_only_url_;
+  // Display-only text representing the current page. This could be any of:
+  //  - The same as |url_for_editing_| if Steady State Elisions is OFF.
+  //  - A simplified version of |url_for_editing_| with some destructive
+  //    elisions applied. This is the case if Steady State Elisions is ON.
+  //  - The user entered search query, if the user is on the search results
+  //    page of the default search provider and Query in Omnibox is ON.
+  //
+  // This should not be considered suitable for editing.
+  base::string16 display_text_;
 
   // The initial text representing the current URL suitable for editing.
   // This should fully represent the current URL without any meaning-changing

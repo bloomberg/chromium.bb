@@ -786,7 +786,7 @@ NSAttributedString* OmniboxViewIOS::ApplyTextAttributes(
 void OmniboxViewIOS::UpdateAppearance() {
   // If Siri is thinking, treat that as user input being in progress.  It is
   // unsafe to modify the text field while voice entry is pending.
-  if (model()->ResetDisplayUrls()) {
+  if (model()->ResetDisplayTexts()) {
     // Revert everything to the baseline look.
     RevertAll();
   } else if (!model()->has_focus() &&
@@ -795,7 +795,7 @@ void OmniboxViewIOS::UpdateAppearance() {
     // necessary to re-color to the URL string.  Only do this if the omnibox is
     // not currently focused.
     NSAttributedString* as =
-        ApplyTextAttributes(model()->GetCurrentPermanentUrlText());
+        ApplyTextAttributes(model()->GetPermanentDisplayText());
     [field_ setText:as userTextLength:[as length]];
   }
 }

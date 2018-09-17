@@ -262,7 +262,7 @@ void OmniboxViewViews::Update() {
   const security_state::SecurityLevel old_security_level = security_level_;
   UpdateSecurityLevel();
 
-  if (model()->ResetDisplayUrls()) {
+  if (model()->ResetDisplayTexts()) {
     RevertAll();
 
     // Only select all when we have focus.  If we don't have focus, selecting
@@ -1021,7 +1021,7 @@ void OmniboxViewViews::OnFocus() {
   views::Textfield::OnFocus();
   // TODO(tommycli): This does not seem like it should be necessary.
   // Investigate why it's needed and see if we can remove it.
-  model()->ResetDisplayUrls();
+  model()->ResetDisplayTexts();
   // TODO(oshima): Get control key state.
   model()->OnSetFocus(false);
   // Don't call controller()->OnSetFocus, this view has already acquired focus.
@@ -1069,7 +1069,7 @@ void OmniboxViewViews::OnBlur() {
   // favor of some other View in the same Widget.
   if (GetWidget() && GetWidget()->IsActive() &&
       model()->user_input_in_progress() &&
-      text() == model()->GetCurrentPermanentUrlText()) {
+      text() == model()->GetPermanentDisplayText()) {
     RevertAll();
   }
 
@@ -1087,7 +1087,7 @@ void OmniboxViewViews::OnBlur() {
   // the Omnibox as well. Investigate moving this into the OmniboxEditModel.
   if (!model()->user_input_in_progress() && model()->popup_model() &&
       model()->popup_model()->IsOpen() &&
-      text() != model()->GetCurrentPermanentUrlText()) {
+      text() != model()->GetPermanentDisplayText()) {
     RevertAll();
   } else {
     CloseOmniboxPopup();

@@ -339,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
   {
     FocusSearchCheckPreconditions();
 
-    omnibox_model->ResetDisplayUrls();
+    omnibox_model->ResetDisplayTexts();
     EXPECT_EQ(base::ASCIIToUTF16(url::kAboutBlankURL), omnibox_view->GetText());
 
     location_bar->FocusSearch();
