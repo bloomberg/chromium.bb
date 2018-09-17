@@ -273,11 +273,12 @@ void TouchActionFilter::ReportTouchAction() {
   // must add one to the upper bound to be able to visualize the number of
   // times |cc::kTouchActionAuto| is hit.
   // https://crbug.com/879511, remove this temporary fix.
-  if (scrolling_touch_action_.has_value()) {
-    UMA_HISTOGRAM_ENUMERATION("TouchAction.EffectiveTouchAction",
-                              scrolling_touch_action_.value(),
-                              cc::kTouchActionMax + 1);
-  }
+  if (!scrolling_touch_action_.has_value())
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION("TouchAction.EffectiveTouchAction",
+                            scrolling_touch_action_.value(),
+                            cc::kTouchActionMax + 1);
 
   // Report how often the effective touch action computed by blink is or is
   // not equivalent to the whitelisted touch action computed by the
