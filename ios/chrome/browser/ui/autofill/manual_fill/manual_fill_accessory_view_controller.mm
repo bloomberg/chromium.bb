@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 
+#include "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -66,51 +68,55 @@ static NSTimeInterval MFAnimationDuration = 0.20;
                           action:@selector(passwordButtonPressed)
                 forControlEvents:UIControlEventTouchUpInside];
 
-  self.cardsButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  UIImage* cardImage = [UIImage imageNamed:@"ic_credit_card"];
-  [self.cardsButton setImage:cardImage forState:UIControlStateNormal];
-  self.cardsButton.tintColor = tintColor;
-  self.cardsButton.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.cardsButton addTarget:self
-                       action:@selector(cardButtonPressed)
-             forControlEvents:UIControlEventTouchUpInside];
-
-  self.accountButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  UIImage* accountImage = [UIImage imageNamed:@"addresses"];
-  [self.accountButton setImage:accountImage forState:UIControlStateNormal];
-  self.accountButton.tintColor = tintColor;
-  self.accountButton.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.accountButton addTarget:self
-                         action:@selector(accountButtonPressed)
+  NSArray* views;
+  // If Manual Fallback Phase 2 is enabled add all the views.
+  BOOL isManualFillPhase2Enabled = base::FeatureList::IsEnabled(
+      autofill::features::kAutofillManualFallbackPhaseTwo);
+  if (isManualFillPhase2Enabled) {
+    self.cardsButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    UIImage* cardImage = [UIImage imageNamed:@"ic_credit_card"];
+    [self.cardsButton setImage:cardImage forState:UIControlStateNormal];
+    self.cardsButton.tintColor = tintColor;
+    self.cardsButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.cardsButton addTarget:self
+                         action:@selector(cardButtonPressed)
                forControlEvents:UIControlEventTouchUpInside];
 
-  NSLayoutXAxisAnchor* menuLeadingAnchor = self.view.leadingAnchor;
-  if (@available(iOS 11, *)) {
-    menuLeadingAnchor = self.view.safeAreaLayoutGuide.leadingAnchor;
-  }
-  NSLayoutXAxisAnchor* menuTrailingAnchor = self.view.trailingAnchor;
-  if (@available(iOS 11, *)) {
-    menuTrailingAnchor = self.view.safeAreaLayoutGuide.trailingAnchor;
-  }
+    self.accountButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    UIImage* accountImage = [UIImage imageNamed:@"addresses"];
+    [self.accountButton setImage:accountImage forState:UIControlStateNormal];
+    self.accountButton.tintColor = tintColor;
+    self.accountButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.accountButton addTarget:self
+                           action:@selector(accountButtonPressed)
+                 forControlEvents:UIControlEventTouchUpInside];
 
-  UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:@[
-    self.keyboardButton, self.passwordButton, self.accountButton,
-    self.cardsButton
-  ]];
+    views = @[
+      self.keyboardButton, self.passwordButton, self.accountButton,
+      self.cardsButton
+    ];
+  } else {
+    views = @[ self.keyboardButton, self.passwordButton ];
+  }
+  UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:views];
   stackView.spacing = 10;
   stackView.axis = UILayoutConstraintAxisHorizontal;
   stackView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:stackView];
 
+  id<LayoutGuideProvider> safeAreaLayoutGuide =
+      SafeAreaLayoutGuideForView(self.view);
   [NSLayoutConstraint activateConstraints:@[
     // Vertical constraints.
     [stackView.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
     [stackView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
 
     // Horizontal constraints.
-    [stackView.leadingAnchor constraintEqualToAnchor:menuLeadingAnchor
-                                            constant:10],
-    [stackView.trailingAnchor constraintEqualToAnchor:menuTrailingAnchor],
+    [stackView.leadingAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor
+                       constant:10],
+    [stackView.trailingAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.trailingAnchor],
   ]];
   self.keyboardButton.hidden = YES;
   self.keyboardButton.alpha = 0.0;
