@@ -66,6 +66,10 @@ class WebController {
                             const std::string& selected_option,
                             base::OnceCallback<void(bool)> callback);
 
+  // Focus on element given by |selectors|.
+  virtual void FocusElement(const std::vector<std::string>& selectors,
+                            base::OnceCallback<void(bool)> callback);
+
  private:
   void OnFindElementForClick(base::OnceCallback<void(bool)> callback,
                              std::string object_id);
