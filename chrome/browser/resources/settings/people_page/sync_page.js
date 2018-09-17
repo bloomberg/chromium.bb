@@ -248,8 +248,8 @@ Polymer({
     return !!this.unifiedConsentEnabled &&
         (!this.syncStatus.signedIn || !!this.syncStatus.disabled ||
          (!!this.syncStatus.hasError &&
-          this.syncStatus.statusAction ===
-              settings.StatusAction.REAUTHENTICATE));
+          this.syncStatus.statusAction !==
+              settings.StatusAction.ENTER_PASSPHRASE));
   },
 
   /** @protected */
