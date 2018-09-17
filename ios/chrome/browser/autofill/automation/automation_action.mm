@@ -81,6 +81,21 @@ using web::test::ElementSelector;
 @interface AutomationActionAutofill : AutomationAction
 @end
 
+// An action that validates a previously autofilled element.
+// Confirms that the target element has is of the expected autofill field type
+// and contains the specified value.
+// We assume this action has a format resembling:
+// {
+//   "selectorType": "xpath",
+//   "selector": "//*[@data-tl-id=\"COAC2ShpAddrFirstName\"]",
+//   "context": [],
+//   "expectedAutofillType": "NAME_FIRST",
+//   "expectedValue": "Yuki",
+//   "type": "validateField"
+// }
+@interface AutomationActionValidateField : AutomationAction
+@end
+
 @implementation AutomationAction
 
 + (instancetype)actionWithValueDictionary:
@@ -101,6 +116,7 @@ using web::test::ElementSelector;
     @"click" : [AutomationActionClick class],
     @"waitFor" : [AutomationActionWaitFor class],
     @"autofill" : [AutomationActionAutofill class],
+    @"validateField" : [AutomationActionValidateField class],
     // More to come.
   };
 
@@ -141,17 +157,26 @@ using web::test::ElementSelector;
 
 // Creates a selector targeting the element specified in the action.
 - (web::test::ElementSelector)selectorForTarget {
-  const base::Value* xpathValue(self.actionDictionary->FindKeyOfType(
-      "selector", base::Value::Type::STRING));
-  GREYAssert(xpathValue, @"Selector is missing in action.");
-
-  const std::string xpath(xpathValue->GetString());
-  GREYAssert(!xpath.empty(), @"selector is an empty value.");
+  const std::string xpath = [self getStringFromDictionaryWithKey:"selector"];
 
   // Creates a selector from the action dictionary.
   web::test::ElementSelector selector(
       ElementSelector::ElementSelectorXPath(xpath));
   return selector;
+}
+
+// Returns a std::string corrensponding to the given key in the action
+// dictionary. Will raise a test failure if the key is missing or the value is
+// empty.
+- (std::string)getStringFromDictionaryWithKey:(std::string)key {
+  const base::Value* expectedTypeValue(
+      self.actionDictionary->FindKeyOfType(key, base::Value::Type::STRING));
+  GREYAssert(expectedTypeValue, @"%s is missing in action.", key.c_str());
+
+  const std::string expectedType(expectedTypeValue->GetString());
+  GREYAssert(!expectedType.empty(), @"%s is an empty value", key.c_str());
+
+  return expectedType;
 }
 
 @end
@@ -198,8 +223,7 @@ using web::test::ElementSelector;
     (const std::vector<std::string>&)assertions {
   for (std::string const& assertion : assertions) {
     NSError* error;
-    NSString* assertionString =
-        [NSString stringWithUTF8String:assertion.c_str()];
+    NSString* assertionString = base::SysUTF8ToNSString(assertion);
 
     id result = chrome_test_util::ExecuteJavaScript(
         [NSString stringWithFormat:@""
@@ -262,6 +286,65 @@ static const char PROFILE_HOME_ZIP[] = "94043";
       selectElementWithMatcher:grey_accessibilityID(
                                    kFormSuggestionLabelAccessibilityIdentifier)]
       performAction:grey_tap()];
+}
+
+@end
+
+@implementation AutomationActionValidateField
+
+- (void)execute {
+  web::test::ElementSelector selector = [self selectorForTarget];
+
+  // Wait for the element to be visible on the page.
+  [ChromeEarlGrey waitForWebViewContainingElement:selector];
+
+  NSString* expectedType = base::SysUTF8ToNSString(
+      [self getStringFromDictionaryWithKey:"expectedAutofillType"]);
+  NSString* expectedValue = base::SysUTF8ToNSString(
+      [self getStringFromDictionaryWithKey:"expectedValue"]);
+
+  NSString* predictionType =
+      [self executeJavascript:"return target.getAttribute('placeholder');"
+                     onTarget:[self selectorForTarget]];
+
+  NSString* autofilledValue = [self executeJavascript:"return target.value;"
+                                             onTarget:[self selectorForTarget]];
+
+  GREYAssertEqualObjects(predictionType, expectedType,
+                         @"Expected prediction type %@ but got %@",
+                         expectedType, predictionType);
+  GREYAssertEqualObjects(autofilledValue, expectedValue,
+                         @"Expected autofilled value %@ but got %@",
+                         expectedValue, autofilledValue);
+}
+
+// Runs the JS code passed in against the target element specified by the
+// selector passed in. The target element is passed in to the JS function
+// by the name "target", so example JS code is like:
+// return target.value
+- (NSString*)executeJavascript:(std::string)function
+                      onTarget:(web::test::ElementSelector)selector {
+  NSError* error;
+
+  NSString* result = chrome_test_util::ExecuteJavaScript(
+      [NSString
+          stringWithFormat:@"    (function() {"
+                            "      try {"
+                            "        return function(target){%@}(%@);"
+                            "      } catch (ex) {return 'Exception encountered "
+                            "' + ex.message;}"
+                            "     "
+                            "    })();",
+                           base::SysUTF8ToNSString(function),
+                           base::SysUTF8ToNSString(
+                               selector.GetSelectorScript())],
+      &error);
+
+  if (error) {
+    GREYAssert(NO, @"Javascript execution error: %@", result);
+    return nil;
+  }
+  return result;
 }
 
 @end
