@@ -2057,15 +2057,6 @@ if (enable_java_templates) {
         deps = _native_libs_deps
         write_runtime_deps = _runtime_deps_file
       }
-
-      _native_lib_version_rule = ""
-      if (defined(invoker.native_lib_version_rule)) {
-        _native_lib_version_rule = invoker.native_lib_version_rule
-      }
-      _native_lib_version_arg = "\"\""
-      if (defined(invoker.native_lib_version_arg)) {
-        _native_lib_version_arg = invoker.native_lib_version_arg
-      }
     } else {
       # Must exist for instrumentation_test_apk() to depend on.
       group("${_template_name}__runtime_deps") {
@@ -2088,6 +2079,17 @@ if (enable_java_templates) {
     } else {
       # Must exist for instrumentation_test_apk() to depend on.
       group("${_template_name}__secondary_abi__runtime_deps") {
+      }
+    }
+
+    if (_shared_libraries_is_valid || _secondary_abi_shared_libraries_is_valid) {
+      _native_lib_version_rule = ""
+      if (defined(invoker.native_lib_version_rule)) {
+        _native_lib_version_rule = invoker.native_lib_version_rule
+      }
+      _native_lib_version_arg = "\"\""
+      if (defined(invoker.native_lib_version_arg)) {
+        _native_lib_version_arg = invoker.native_lib_version_arg
       }
     }
 
@@ -2236,13 +2238,13 @@ if (enable_java_templates) {
 
     _srcjar_deps += [ ":$_compile_resources_target" ]
 
-    if (_native_libs_deps != []) {
+    if (_native_libs_deps != [] || _secondary_abi_native_libs_deps != []) {
       _enable_chromium_linker_tests = false
       if (defined(invoker.enable_chromium_linker_tests)) {
         _enable_chromium_linker_tests = invoker.enable_chromium_linker_tests
       }
       _ordered_libraries_json =
-          "$target_gen_dir/$target_name.ordered_libararies.json"
+          "$target_gen_dir/$target_name.ordered_libraries.json"
       _rebased_ordered_libraries_json =
           rebase_path(_ordered_libraries_json, root_build_dir)
       _ordered_libraries_target = "${_template_name}__write_ordered_libraries"
@@ -2254,9 +2256,15 @@ if (enable_java_templates) {
         deps = [
           ":$_build_config_target",
           ":${_template_name}__runtime_deps",
+          ":${_template_name}__secondary_abi__runtime_deps",
         ]
+        if (_native_libs_deps != []) {
+          _deps_file_to_use = _runtime_deps_file
+        } else {
+          _deps_file_to_use = _secondary_abi_runtime_deps_file
+        }
         inputs = [
-          _runtime_deps_file,
+          _deps_file_to_use,
         ]
         outputs = [
           _ordered_libraries_json,
@@ -2265,7 +2273,7 @@ if (enable_java_templates) {
         args = [
           "--readelf=$_rebased_android_readelf",
           "--output=$_rebased_ordered_libraries_json",
-          "--runtime-deps=" + rebase_path(_runtime_deps_file, root_build_dir),
+          "--runtime-deps=" + rebase_path(_deps_file_to_use, root_build_dir),
         ]
         if (defined(invoker.dont_load_shared_libraries)) {
           args += [ "--exclude-shared-libraries=" +
