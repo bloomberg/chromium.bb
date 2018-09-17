@@ -68,21 +68,20 @@ void DefaultAudioDestinationHandler::Dispose() {
 
 void DefaultAudioDestinationHandler::Initialize() {
   DCHECK(IsMainThread());
-  if (IsInitialized())
-    return;
 
-  CreateDestination();
+  CreatePlatformDestination();
   AudioHandler::Initialize();
 }
 
 void DefaultAudioDestinationHandler::Uninitialize() {
   DCHECK(IsMainThread());
-  if (!IsInitialized())
+
+  // It is possible that the handler is already uninitialized.
+  if (!IsInitialized()) {
     return;
+  }
 
-  if (destination_->IsPlaying())
-    StopDestination();
-
+  StopPlatformDestination();
   AudioHandler::Uninitialize();
 }
 
@@ -94,7 +93,7 @@ void DefaultAudioDestinationHandler::SetChannelCount(
   // The channelCount for the input to this node controls the actual number of
   // channels we send to the audio hardware. It can only be set if the number
   // is less than the number of hardware channels.
-  if (!MaxChannelCount() || channel_count > MaxChannelCount()) {
+  if (channel_count > MaxChannelCount()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
         ExceptionMessages::IndexOutsideRange<unsigned>(
@@ -108,33 +107,29 @@ void DefaultAudioDestinationHandler::SetChannelCount(
   AudioHandler::SetChannelCount(channel_count, exception_state);
 
   // Stop, re-create and start the destination to apply the new channel count.
-  if (!exception_state.HadException() &&
-      this->ChannelCount() != old_channel_count && IsInitialized()) {
-    StopDestination();
-    CreateDestination();
-    StartDestination();
+  if (this->ChannelCount() != old_channel_count &&
+      !exception_state.HadException()) {
+    StopPlatformDestination();
+    CreatePlatformDestination();
+    StartPlatformDestination();
   }
 }
 
 void DefaultAudioDestinationHandler::StartRendering() {
-  DCHECK(IsInitialized());
-  // Context might try to start rendering again while the destination is
-  // running. Ignore it when that happens.
-  if (IsInitialized() && !destination_->IsPlaying()) {
-    StartDestination();
-  }
+  DCHECK(IsMainThread());
+
+  StartPlatformDestination();
 }
 
 void DefaultAudioDestinationHandler::StopRendering() {
-  DCHECK(IsInitialized());
-  // Context might try to stop rendering again while the destination is stopped.
-  // Ignore it when that happens.
-  if (IsInitialized() && destination_->IsPlaying()) {
-    StopDestination();
-  }
+  DCHECK(IsMainThread());
+
+  StopPlatformDestination();
 }
 
 void DefaultAudioDestinationHandler::RestartRendering() {
+  DCHECK(IsMainThread());
+
   StopRendering();
   StartRendering();
 }
@@ -144,7 +139,10 @@ unsigned long DefaultAudioDestinationHandler::MaxChannelCount() const {
 }
 
 double DefaultAudioDestinationHandler::SampleRate() const {
-  return destination_ ? destination_->SampleRate() : 0;
+  // This can be accessed from both threads (main and audio), so it is
+  // possible that |platform_destination_| is not fully functional when it
+  // is accssed by the audio thread.
+  return platform_destination_ ? platform_destination_->SampleRate() : 0;
 }
 
 void DefaultAudioDestinationHandler::Render(
@@ -161,8 +159,9 @@ void DefaultAudioDestinationHandler::Render(
   // safe execution of the subsequence operations because the hanlder holds
   // the context as |UntracedMember| and it can go away anytime.
   DCHECK(Context());
-  if (!Context())
+  if (!Context()) {
     return;
+  }
 
   Context()->GetDeferredTaskHandler().SetAudioThreadToCurrentThread();
 
@@ -176,24 +175,23 @@ void DefaultAudioDestinationHandler::Render(
 
   Context()->HandlePreRenderTasks(output_position);
 
-  DCHECK_GE(NumberOfInputs(), 1u);
-  if (NumberOfInputs() < 1) {
-    destination_bus->Zero();
-    return;
-  }
-
   // Renders the graph by pulling all the input(s) to this node. This will in
   // turn pull on their input(s), all the way backwards through the graph.
   AudioBus* rendered_bus = Input(0).Pull(destination_bus, number_of_frames);
 
+  DCHECK(rendered_bus);
   if (!rendered_bus) {
+    // AudioNodeInput might be in the middle of destruction. Then the internal
+    // summing bus will return as nullptr. Then zero out the output.
     destination_bus->Zero();
   } else if (rendered_bus != destination_bus) {
-    // in-place processing was not possible - so copy
+    // In-place processing was not possible. Copy the rendererd result to the
+    // given |destination_bus| buffer.
     destination_bus->CopyFrom(*rendered_bus);
   }
 
-  // Processes "automatic" nodes that are not connected to anything.
+  // Processes "automatic" nodes that are not connected to anything. This can
+  // be done after copying because it does not affect the rendered result.
   Context()->GetDeferredTaskHandler().ProcessAutomaticPullNodes(
       number_of_frames);
 
@@ -207,37 +205,46 @@ void DefaultAudioDestinationHandler::Render(
 }
 
 size_t DefaultAudioDestinationHandler::GetCallbackBufferSize() const {
-  return destination_->CallbackBufferSize();
+  DCHECK(IsMainThread());
+  DCHECK(IsInitialized());
+
+  return platform_destination_->CallbackBufferSize();
 }
 
 int DefaultAudioDestinationHandler::GetFramesPerBuffer() const {
-  return destination_ ? destination_->FramesPerBuffer() : 0;
+  DCHECK(IsMainThread());
+  DCHECK(IsInitialized());
+
+  return platform_destination_ ? platform_destination_->FramesPerBuffer() : 0;
 }
 
-void DefaultAudioDestinationHandler::CreateDestination() {
-  destination_ = AudioDestination::Create(*this, ChannelCount(), latency_hint_);
+void DefaultAudioDestinationHandler::CreatePlatformDestination() {
+  platform_destination_ =
+      AudioDestination::Create(*this, ChannelCount(), latency_hint_);
 }
 
-void DefaultAudioDestinationHandler::StartDestination() {
-  DCHECK(!destination_->IsPlaying());
+void DefaultAudioDestinationHandler::StartPlatformDestination() {
+  if (platform_destination_->IsPlaying()) {
+    return;
+  }
 
   AudioWorklet* audio_worklet = Context()->audioWorklet();
   if (audio_worklet && audio_worklet->IsReady()) {
     // This task runner is only used to fire the audio render callback, so it
     // MUST not be throttled to avoid potential audio glitch.
-    destination_->StartWithWorkletTaskRunner(
+    platform_destination_->StartWithWorkletTaskRunner(
         audio_worklet->GetMessagingProxy()
             ->GetBackingWorkerThread()
             ->GetTaskRunner(TaskType::kInternalMedia));
   } else {
-    destination_->Start();
+    platform_destination_->Start();
   }
 }
 
-void DefaultAudioDestinationHandler::StopDestination() {
-  DCHECK(destination_->IsPlaying());
-
-  destination_->Stop();
+void DefaultAudioDestinationHandler::StopPlatformDestination() {
+  if (platform_destination_->IsPlaying()) {
+    platform_destination_->Stop();
+  }
 }
 
 // -----------------------------------------------------------------------------
