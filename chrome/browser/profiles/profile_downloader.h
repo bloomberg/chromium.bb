@@ -21,8 +21,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace identity {
-class PrimaryAccountAccessTokenFetcher;
+class AccessTokenFetcher;
 }
+
 class ProfileDownloaderDelegate;
 
 // Downloads user profile information. The profile picture is decoded in a
@@ -102,7 +103,7 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   // Implementation of AccountTrackerService::Observer.
   void OnAccountUpdated(const AccountInfo& info) override;
 
-  // Callback for PrimaryAccountAccessTokenFetcher.
+  // Callback for AccessTokenFetcher.
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
                                   identity::AccessTokenInfo access_token_info);
 
@@ -120,8 +121,7 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   std::string account_id_;
   std::string auth_token_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
-      oauth2_access_token_fetcher_;
+  std::unique_ptr<identity::AccessTokenFetcher> oauth2_access_token_fetcher_;
   AccountInfo account_info_;
   SkBitmap profile_picture_;
   PictureStatus picture_status_;
