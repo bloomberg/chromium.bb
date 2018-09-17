@@ -54,7 +54,7 @@ void AlternativeBrowserLauncherImpl::OnAltBrowserParametersChanged() {
   // This string could contain a placeholder, e.g. "${url}". Let the driver
   // decide what to do with it.
   driver_->SetBrowserParameters(
-      prefs_->GetString(prefs::kAlternativeBrowserParameters));
+      prefs_->GetList(prefs::kAlternativeBrowserParameters));
 }
 
 bool AlternativeBrowserLauncherImpl::Launch(const GURL& url) const {

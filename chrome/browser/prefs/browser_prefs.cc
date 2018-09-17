@@ -295,7 +295,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
@@ -305,6 +304,10 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
+#endif
+
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -715,13 +718,16 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(OS_WIN)
-  browser_switcher::prefs::RegisterProfilePrefs(registry);
   component_updater::RegisterProfilePrefsForSwReporter(registry);
   desktop_ios_promotion::RegisterProfilePrefs(registry);
   NetworkProfileBubble::RegisterProfilePrefs(registry);
   safe_browsing::SettingsResetPromptPrefsManager::RegisterProfilePrefs(
       registry);
   safe_browsing::PostCleanupSettingsResetter::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  browser_switcher::prefs::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(TOOLKIT_VIEWS)

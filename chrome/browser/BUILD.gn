@@ -3156,20 +3156,6 @@ jumbo_split_static_library("browser") {
 
   if (is_win) {
     sources += [
-      "browser_switcher/alternative_browser_driver.cc",
-      "browser_switcher/alternative_browser_driver.h",
-      "browser_switcher/alternative_browser_launcher.cc",
-      "browser_switcher/alternative_browser_launcher.h",
-      "browser_switcher/browser_switcher_navigation_throttle.cc",
-      "browser_switcher/browser_switcher_navigation_throttle.h",
-      "browser_switcher/browser_switcher_prefs.cc",
-      "browser_switcher/browser_switcher_prefs.h",
-      "browser_switcher/browser_switcher_service.cc",
-      "browser_switcher/browser_switcher_service.h",
-      "browser_switcher/browser_switcher_service_factory.cc",
-      "browser_switcher/browser_switcher_service_factory.h",
-      "browser_switcher/browser_switcher_sitelist.cc",
-      "browser_switcher/browser_switcher_sitelist.h",
       "downgrade/user_data_downgrade.cc",
       "downgrade/user_data_downgrade.h",
       "first_run/upgrade_util.cc",
@@ -3396,6 +3382,27 @@ jumbo_split_static_library("browser") {
       "renderer_context_menu/spelling_options_submenu_observer.h",
       "webshare/share_service_impl.cc",
       "webshare/share_service_impl.h",
+    ]
+  }
+
+  if (is_win || (is_linux && !is_chromeos)) {
+    sources += [
+      "browser_switcher/alternative_browser_driver_linux.cc",
+      "browser_switcher/alternative_browser_driver_linux.h",
+      "browser_switcher/alternative_browser_driver_win.cc",
+      "browser_switcher/alternative_browser_driver_win.h",
+      "browser_switcher/alternative_browser_launcher.cc",
+      "browser_switcher/alternative_browser_launcher.h",
+      "browser_switcher/browser_switcher_navigation_throttle.cc",
+      "browser_switcher/browser_switcher_navigation_throttle.h",
+      "browser_switcher/browser_switcher_prefs.cc",
+      "browser_switcher/browser_switcher_prefs.h",
+      "browser_switcher/browser_switcher_service.cc",
+      "browser_switcher/browser_switcher_service.h",
+      "browser_switcher/browser_switcher_service_factory.cc",
+      "browser_switcher/browser_switcher_service_factory.h",
+      "browser_switcher/browser_switcher_sitelist.cc",
+      "browser_switcher/browser_switcher_sitelist.h",
     ]
   }
 

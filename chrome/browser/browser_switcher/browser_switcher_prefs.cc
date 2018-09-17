@@ -27,7 +27,7 @@ const char kUrlGreylist[] = "browser_switcher.url_greylist";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kAlternativeBrowserPath, "");
-  registry->RegisterStringPref(prefs::kAlternativeBrowserParameters, "");
+  registry->RegisterListPref(prefs::kAlternativeBrowserParameters);
   registry->RegisterListPref(prefs::kUrlList);
   registry->RegisterListPref(prefs::kUrlGreylist);
 }

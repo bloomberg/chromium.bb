@@ -76,22 +76,6 @@ void PercentEncodeCommas(std::wstring* url) {
   }
 }
 
-std::wstring CompileCommandLine(const std::wstring& raw_command_line,
-                                const GURL& url) {
-  std::wstring url_spec = base::UTF8ToWide(GURL(url).spec());
-  std::wstring command_line = raw_command_line;
-  size_t pos = command_line.find(kUrlVarName);
-  if (pos != command_line.npos) {
-    command_line = command_line.replace(pos, wcslen(kUrlVarName), url_spec);
-  } else {
-    if (command_line.empty())
-      command_line = url_spec;
-    else
-      command_line.append(L" ").append(url_spec);
-  }
-  return command_line;
-}
-
 std::wstring GetBrowserLocation(const wchar_t* regkey_name) {
   DCHECK(regkey_name);
   base::win::RegKey key;
@@ -131,14 +115,18 @@ void AlternativeBrowserDriverImpl::SetBrowserPath(base::StringPiece path) {
 }
 
 void AlternativeBrowserDriverImpl::SetBrowserParameters(
-    base::StringPiece parameters) {
-  browser_params_ = base::UTF8ToWide(parameters);
+    const base::ListValue* parameters) {
+  browser_params_.clear();
+  browser_params_.reserve(parameters->GetList().size());
+  for (const auto& param : *parameters) {
+    DCHECK(param.is_string());
+    browser_params_.push_back(base::UTF8ToUTF16(param.GetString()));
+  }
 }
 
 bool AlternativeBrowserDriverImpl::TryLaunch(const GURL& url) {
   VLOG(2) << "Launching alternative browser...";
   VLOG(2) << "  path = " << browser_path_;
-  VLOG(2) << "  parameters = " << browser_params_;
   VLOG(2) << "  dde_host = " << dde_host_;
   VLOG(2) << "  url = " << url.spec();
   return (TryLaunchWithDde(url) || TryLaunchWithExec(url));
@@ -202,9 +190,20 @@ bool AlternativeBrowserDriverImpl::TryLaunchWithDde(const GURL& url) {
 }
 
 bool AlternativeBrowserDriverImpl::TryLaunchWithExec(const GURL& url) {
-  base::CommandLine cmd_line = base::CommandLine(base::FilePath(browser_path_));
-  cmd_line.AppendArgNative(
-      base::WideToUTF16(CompileCommandLine(browser_params_, url)));
+  if (browser_path_.empty())
+    return false;
+
+  CHECK(url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile());
+
+  // We know that there will be at most browser_params_.size() arguments, plus
+  // one for the executable, and possibly one for the URL.
+  const int max_num_args = browser_params_.size() + 2;
+  std::vector<std::wstring> argv;
+  argv.reserve(max_num_args);
+  argv.push_back(browser_path_);
+  AppendCommandLineArguments(&argv, browser_params_, url);
+
+  base::CommandLine cmd_line = base::CommandLine(argv);
   base::LaunchOptions options;
   if (!base::LaunchProcess(cmd_line, options).IsValid()) {
     LOG(ERROR) << "Could not start the alternative browser! Error: "
@@ -212,6 +211,29 @@ bool AlternativeBrowserDriverImpl::TryLaunchWithExec(const GURL& url) {
     return false;
   }
   return true;
+}
+
+void AlternativeBrowserDriverImpl::AppendCommandLineArguments(
+    std::vector<std::wstring>* argv,
+    const std::vector<std::wstring>& raw_args,
+    const GURL& url) {
+  // TODO(crbug/882520): Do environment variable expansion.
+  std::wstring url_spec = base::UTF8ToWide(url.spec());
+  std::vector<std::wstring> command_line;
+  bool contains_url = false;
+  for (const auto& arg : raw_args) {
+    size_t url_index = arg.find(kUrlVarName);
+    if (url_index != std::string::npos) {
+      std::wstring expanded_arg = arg;
+      expanded_arg.replace(url_index, wcslen(kUrlVarName), url_spec);
+      argv->push_back(expanded_arg);
+      contains_url = true;
+    } else {
+      argv->push_back(arg);
+    }
+  }
+  if (!contains_url)
+    argv->push_back(url_spec);
 }
 
 }  // namespace browser_switcher

@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_BROWSER_SWITCHER_ALTERNATIVE_BROWSER_DRIVER_H_
 #define CHROME_BROWSER_BROWSER_SWITCHER_ALTERNATIVE_BROWSER_DRIVER_H_
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/values.h"
+#include "build/build_config.h"
 
 class GURL;
 
@@ -29,9 +32,9 @@ class AlternativeBrowserDriver {
 
   // Updates the command-line parameters to give to the browser when it is
   // launched.
-  virtual void SetBrowserParameters(base::StringPiece parameters) = 0;
+  virtual void SetBrowserParameters(const base::ListValue* parameters) = 0;
 
-  // Tries to launch |browser| at the specified URL with DDE, using whatever
+  // Tries to launch |browser| at the specified URL, using whatever
   // method is most appropriate.
   virtual bool TryLaunch(const GURL& url) = 0;
 };
@@ -45,18 +48,31 @@ class AlternativeBrowserDriverImpl : public AlternativeBrowserDriver {
 
   // AlternativeBrowserDriver
   void SetBrowserPath(base::StringPiece path) override;
-  void SetBrowserParameters(base::StringPiece parameters) override;
+  void SetBrowserParameters(const base::ListValue* parameters) override;
   bool TryLaunch(const GURL& url) override;
 
+  using StringType = base::FilePath::StringType;
+
+  // Appends the arguments in |raw_args| to |argv|, performing substitution of
+  // "${url}" at the same time. If none of |raw_args| contains "${url}", the URL
+  // is appended as the last argument.
+  static void AppendCommandLineArguments(
+      std::vector<StringType>* argv,
+      const std::vector<StringType>& raw_args,
+      const GURL& url);
+
  private:
-  // Tries to launch |browser| at the specified URL with DDE, using whatever
+#if defined(OS_WIN)
   bool TryLaunchWithDde(const GURL& url);
   bool TryLaunchWithExec(const GURL& url);
+#endif
 
   // Info on how to launch the currently-selected alternate browser.
-  std::wstring browser_path_;
-  std::wstring browser_params_;
-  std::wstring dde_host_;
+  StringType browser_path_;
+  std::vector<StringType> browser_params_;
+#if defined(OS_WIN)
+  StringType dde_host_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AlternativeBrowserDriverImpl);
 };
