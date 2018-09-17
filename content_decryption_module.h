@@ -295,7 +295,8 @@ enum VideoCodec : uint32_t {
   kUnknownVideoCodec = 0,
   kCodecVp8,
   kCodecH264,
-  kCodecVp9
+  kCodecVp9,
+  kCodecAv1
 };
 CHECK_TYPE(VideoCodec, 4, 4);
 
@@ -313,7 +314,10 @@ enum VideoCodecProfile : uint32_t {
   kVP9Profile0,
   kVP9Profile1,
   kVP9Profile2,
-  kVP9Profile3
+  kVP9Profile3,
+  kAv1ProfileMain,
+  kAv1ProfileHigh,
+  kAv1ProfilePro
 };
 CHECK_TYPE(VideoCodecProfile, 4, 4);
 
