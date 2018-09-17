@@ -469,10 +469,9 @@ void ArcSessionManager::Initialize() {
       base::FeatureList::IsEnabled(
           kCleanArcDataOnRegularToChildTransitionFeature)) {
     LOG(WARNING) << "User transited from regular to child, deleting ARC data";
-    data_remover_->Schedule();
-    profile_->GetPrefs()->SetInteger(
-        prefs::kArcSupervisionTransition,
-        static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+    // Since method below starts removal procedure automatically, return.
+    RequestArcDataRemoval();
+    return;
   }
 
   // Chrome may be shut down before completing ARC data removal.
@@ -767,6 +766,9 @@ void ArcSessionManager::RequestArcDataRemoval() {
   // TODO(hidehiko): Think a way to get rid of 1), too.
 
   data_remover_->Schedule();
+  profile_->GetPrefs()->SetInteger(
+      prefs::kArcSupervisionTransition,
+      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
   // To support 1) case above, maybe start data removal.
   if (state_ == State::STOPPED)
     MaybeStartArcDataRemoval();
@@ -1006,10 +1008,8 @@ void ArcSessionManager::StopArc() {
     profile_->GetPrefs()->SetBoolean(prefs::kArcPaiStarted, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcFastAppReinstallStarted, false);
-    profile_->GetPrefs()->SetInteger(
-        prefs::kArcSupervisionTransition,
-        static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
   }
+
   ShutdownSession();
   if (support_host_)
     support_host_->Close();

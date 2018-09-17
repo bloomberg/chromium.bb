@@ -659,6 +659,36 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
   arc_session_manager()->Shutdown();
 }
 
+TEST_F(ArcSessionManagerTest, ClearArcTransitionOnArcDataRemoval) {
+  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
+            arc::GetSupervisionTransition(profile()));
+
+  // Initialize ARC.
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  arc_session_manager()->StartArcForTesting();
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+
+  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
+            arc::GetSupervisionTransition(profile()));
+
+  // Child started graduation.
+  profile()->GetPrefs()->SetInteger(
+      prefs::kArcSupervisionTransition,
+      static_cast<int>(ArcSupervisionTransition::CHILD_TO_REGULAR));
+
+  arc_session_manager()->RequestArcDataRemoval();
+  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
+            arc::GetSupervisionTransition(profile()));
+
+  arc_session_manager()->Shutdown();
+}
+
 TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
