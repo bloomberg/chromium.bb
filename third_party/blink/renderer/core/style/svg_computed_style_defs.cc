@@ -46,7 +46,7 @@ bool SVGPaint::operator==(const SVGPaint& other) const {
          DataEquivalent(resource, other.resource);
 }
 
-const String& SVGPaint::GetUrl() const {
+const AtomicString& SVGPaint::GetUrl() const {
   return Resource()->Url();
 }
 

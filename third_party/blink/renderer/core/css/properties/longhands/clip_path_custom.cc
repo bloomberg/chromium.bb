@@ -38,7 +38,7 @@ const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
     }
     if (operation->GetType() == ClipPathOperation::REFERENCE) {
       return CSSURIValue::Create(
-          AtomicString(ToReferenceClipPathOperation(operation)->Url()));
+          ToReferenceClipPathOperation(operation)->Url());
     }
   }
   return CSSIdentifierValue::Create(CSSValueNone);
