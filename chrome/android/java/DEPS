@@ -9,6 +9,7 @@ include_rules = [
   "+components/embedder_support/android/delegate",
   "+components/feature_engagement/public/android/java/src/org/chromium/components/feature_engagement",
   "+components/gcm_driver/android/java/src/org/chromium/components/gcm_driver",
+  "+components/language",
   "+components/location/android/java",
   "+components/minidump_uploader",
   "+components/navigation_interception",
