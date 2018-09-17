@@ -19,7 +19,7 @@ namespace features {
 
 extern const base::Feature kAffiliationBasedMatching;
 extern const base::Feature kAutofillHome;
-extern const base::Feature kDeleteUndecryptableLogins;
+extern const base::Feature kDeleteCorruptedPasswords;
 extern const base::Feature kHtmlBasedUsernameDetector;
 extern const base::Feature kPasswordGenerationRequirements;
 extern const base::Feature kPasswordGenerationRequirementsDomainOverrides;
@@ -32,6 +32,7 @@ extern const base::Feature kPasswordSearchMobile;
 extern const base::Feature kPasswordsKeyboardAccessory;
 extern const base::Feature kProtectSyncCredential;
 extern const base::Feature kProtectSyncCredentialOnReauth;
+extern const base::Feature kRecoverPasswordsForSyncUsers;
 
 // Field trial and corresponding parameters.
 // To manually override this, start Chrome with the following parameters:
