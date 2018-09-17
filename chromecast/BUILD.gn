@@ -591,6 +591,7 @@ buildflag_header("chromecast_buildflags") {
     "IS_SINGLE_VOLUME=$is_single_volume",
     "USE_ANDROID_USER_AGENT=$use_android_user_agent",
     "USE_CHROMECAST_CDMS=$use_chromecast_cdms",
+    "DEFAULT_COMMAND_LINE_FLAGS=\"$default_command_line_flags\"",
   ]
 }
 
