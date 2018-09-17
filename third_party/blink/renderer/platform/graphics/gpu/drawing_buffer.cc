@@ -450,10 +450,10 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
     // there are implicit flushes between contexts at the lowest level.
     gl_->GenUnverifiedSyncTokenCHROMIUM(
         color_buffer_for_mailbox->produce_sync_token.GetData());
-#if defined(OS_MACOSX)
-    // Needed for GPU back-pressure on macOS. Used to be in the middle
-    // of the commands above; try to move it to the bottom to allow
-    // them to be treated atomically.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+    // Needed for GPU back-pressure on macOS and Android. Used to be in the
+    // middle of the commands above; try to move it to the bottom to allow them
+    // to be treated atomically.
     gl_->DescheduleUntilFinishedCHROMIUM();
 #endif
   }
