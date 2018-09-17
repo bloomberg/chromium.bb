@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/chrome_extension_browser_constants.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -41,6 +42,7 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/menu_separator_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -221,6 +223,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     case PAGE_ACCESS_RUN_ON_CLICK:
     case PAGE_ACCESS_RUN_ON_SITE:
     case PAGE_ACCESS_RUN_ON_ALL_SITES:
+    case PAGE_ACCESS_LEARN_MORE:
       return true;
     default:
       NOTREACHED() << "Unknown command" << command_id;
@@ -275,6 +278,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
     case PAGE_ACCESS_RUN_ON_CLICK:
     case PAGE_ACCESS_RUN_ON_SITE:
     case PAGE_ACCESS_RUN_ON_ALL_SITES:
+    case PAGE_ACCESS_LEARN_MORE:
       HandlePageAccessCommand(command_id, extension);
       break;
     default:
@@ -399,32 +403,38 @@ void ExtensionContextMenuModel::CreatePageAccessSubmenu(
   ScriptingPermissionsModifier::SiteAccess site_access =
       modifier.GetSiteAccess(url);
 
-  // Don't show the sub menu if the extension neither has nor wants
-  // access to the site.
-  if (!site_access.has_site_access && !site_access.withheld_site_access)
-    return;
-
-  // Otherwise, always show at least "on click" and "on this site" options.
-  page_access_submenu_->AddRadioItemWithStringId(
-      PAGE_ACCESS_RUN_ON_CLICK,
-      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK, kRadioGroup);
-  page_access_submenu_->AddRadioItem(
-      PAGE_ACCESS_RUN_ON_SITE,
-      l10n_util::GetStringFUTF16(
-          IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_SITE,
-          url_formatter::StripWWW(base::UTF8ToUTF16(
-              url::Origin::Create(web_contents->GetLastCommittedURL())
-                  .host()))),
-      kRadioGroup);
-
-  // Only show "on all sites" if the extension has or wants an all-sites-like
-  // permission.
-  if (site_access.has_all_sites_access ||
-      site_access.withheld_all_sites_access) {
+  // Only show the access controls if the extension either has or wants access
+  // to the site.
+  if (site_access.has_site_access || site_access.withheld_site_access) {
+    // Always show at least "on click" and "on this site" options.
     page_access_submenu_->AddRadioItemWithStringId(
-        PAGE_ACCESS_RUN_ON_ALL_SITES,
-        IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES, kRadioGroup);
+        PAGE_ACCESS_RUN_ON_CLICK,
+        IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK, kRadioGroup);
+    page_access_submenu_->AddRadioItem(
+        PAGE_ACCESS_RUN_ON_SITE,
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_SITE,
+            url_formatter::StripWWW(base::UTF8ToUTF16(
+                url::Origin::Create(web_contents->GetLastCommittedURL())
+                    .host()))),
+        kRadioGroup);
+
+    // Only show "on all sites" if the extension has or wants an all-sites-like
+    // permission.
+    if (site_access.has_all_sites_access ||
+        site_access.withheld_all_sites_access) {
+      page_access_submenu_->AddRadioItemWithStringId(
+          PAGE_ACCESS_RUN_ON_ALL_SITES,
+          IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES,
+          kRadioGroup);
+    }
+
+    page_access_submenu_->AddSeparator(ui::NORMAL_SEPARATOR);
   }
+
+  page_access_submenu_->AddItemWithStringId(
+      PAGE_ACCESS_LEARN_MORE,
+      IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_LEARN_MORE);
 
   AddSubMenuWithStringId(PAGE_ACCESS_SUBMENU,
                          IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS,
@@ -437,6 +447,15 @@ void ExtensionContextMenuModel::HandlePageAccessCommand(
   content::WebContents* web_contents = GetActiveWebContents();
   if (!web_contents)
     return;
+
+  if (command_id == PAGE_ACCESS_LEARN_MORE) {
+    content::OpenURLParams params(
+        GURL(chrome_extension_constants::kRuntimeHostPermissionsHelpURL),
+        content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui::PAGE_TRANSITION_LINK, false);
+    browser_->OpenURL(params);
+    return;
+  }
 
   MenuEntries current_access = GetCurrentPageAccess(extension, web_contents);
   if (command_id == current_access)
