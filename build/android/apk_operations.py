@@ -903,82 +903,77 @@ class _Command(object):
 
   def ProcessArgs(self, args):
     self.args = args
-    self.devices = []
-    if self.need_device_args:
-      self.devices = device_utils.DeviceUtils.HealthyDevices(
-          device_arg=args.devices,
-          enable_device_files_cache=bool(args.output_directory),
-          default_retries=0)
-    # TODO(agrieve): Device cache should not depend on output directory.
-    #     Maybe put int /tmp?
-    _LoadDeviceCaches(self.devices, args.output_directory)
     # Ensure these keys always exist. They are set by wrapper scripts, but not
     # always added when not using wrapper scripts.
     args.__dict__.setdefault('apk_path', None)
     args.__dict__.setdefault('incremental_json', None)
 
-    try:
-      if len(self.devices) > 1:
-        if not self.supports_multiple_devices:
-          self._parser.error(device_errors.MultipleDevicesError(self.devices))
-        if not args.all and not args.devices:
-          self._parser.error(_GenerateMissingAllFlagMessage(self.devices))
+    if self.supports_incremental:
+      incremental_apk_path = None
+      if args.incremental_json and not args.non_incremental:
+        with open(args.incremental_json) as f:
+          install_dict = json.load(f)
+          incremental_apk_path = os.path.join(
+              args.output_directory, install_dict['apk_path'])
+          if not os.path.exists(incremental_apk_path):
+            incremental_apk_path = None
 
-      incremental_apk_exists = False
+      if args.incremental and args.non_incremental:
+        self._parser.error('Must use only one of --incremental and '
+                           '--non-incremental')
+      elif args.non_incremental:
+        if not args.apk_path:
+          self._parser.error('Apk has not been built.')
+      elif args.incremental:
+        if not incremental_apk_path:
+          self._parser.error('Incremental apk has not been built.')
+        args.apk_path = None
 
-      if self.supports_incremental:
-        if args.incremental_json:
-          with open(args.incremental_json) as f:
-            install_dict = json.load(f)
-            apk_path = os.path.join(args.output_directory,
-                                    install_dict['apk_path'])
-            incremental_apk_exists = os.path.exists(apk_path)
+      if args.apk_path and incremental_apk_path:
+        self._parser.error('Both incremental and non-incremental apks exist. '
+                           'Select using --incremental or --non-incremental')
 
-        if args.incremental and args.non_incremental:
-          self._parser.error('Must use only one of --incremental and '
-                             '--non-incremental')
-        elif args.non_incremental:
-          if not args.apk_path:
-            self._parser.error('Apk has not been built.')
-          args.incremental_json = None
-        elif args.incremental:
-          if not (args.incremental_json and incremental_apk_exists):
-            self._parser.error('Incremental apk has not been built.')
-          args.apk_path = None
+    if ((self.needs_apk_path and not self.is_bundle) or args.apk_path
+        or (self.supports_incremental and args.incremental_json)):
+      if self.supports_incremental and incremental_apk_path:
+        self.install_dict = install_dict
+        self.apk_helper = apk_helper.ToHelper(incremental_apk_path)
+      elif args.apk_path:
+        self.apk_helper = apk_helper.ToHelper(args.apk_path)
+      else:
+        self._parser.error('Apk is not built.')
 
-        if args.apk_path and args.incremental_json and incremental_apk_exists:
-          self._parser.error('Both incremental and non-incremental apks exist. '
-                             'Select using --incremental or --non-incremental')
+    if self.needs_package_name and not args.package_name:
+      if self.apk_helper:
+        args.package_name = self.apk_helper.GetPackageName()
+      elif self._from_wrapper_script:
+        self._parser.error('Apk is not built.')
+      else:
+        self._parser.error('One of --package-name or --apk-path is required.')
 
-      if ((self.needs_apk_path and not self.is_bundle) or args.apk_path
-          or args.incremental_json):
-        if args.incremental_json:
-          if incremental_apk_exists:
-            self.install_dict = install_dict
-            self.apk_helper = apk_helper.ToHelper(
-                os.path.join(args.output_directory,
-                             self.install_dict['apk_path']))
-        if not self.apk_helper and args.apk_path:
-          self.apk_helper = apk_helper.ToHelper(args.apk_path)
-        if not self.apk_helper:
-          self._parser.error(
-              'Neither incremental nor non-incremental apk is built.')
+    self.devices = []
+    if self.need_device_args:
+      self.devices = device_utils.DeviceUtils.HealthyDevices(
+          device_arg=args.devices,
+          enable_device_files_cache=bool(args.output_directory),
+          default_retries=0,
+          abis=self.apk_helper.GetAbis())
+      # TODO(agrieve): Device cache should not depend on output directory.
+      #     Maybe put int /tmp?
+      _LoadDeviceCaches(self.devices, args.output_directory)
 
-      if self.needs_package_name and not args.package_name:
-        if self.apk_helper:
-          args.package_name = self.apk_helper.GetPackageName()
-        elif self._from_wrapper_script:
-          self._parser.error(
-              'Neither incremental nor non-incremental apk is built.')
-        else:
-          self._parser.error('One of --package-name or --apk-path is required.')
-
-      # Save cache now if command will not get a chance to afterwards.
-      if self.calls_exec:
+      try:
+        if len(self.devices) > 1:
+          if not self.supports_multiple_devices:
+            self._parser.error(device_errors.MultipleDevicesError(self.devices))
+          if not args.all and not args.devices:
+            self._parser.error(_GenerateMissingAllFlagMessage(self.devices))
+        # Save cache now if command will not get a chance to afterwards.
+        if self.calls_exec:
+          _SaveDeviceCaches(self.devices, args.output_directory)
+      except:
         _SaveDeviceCaches(self.devices, args.output_directory)
-    except:
-      _SaveDeviceCaches(self.devices, args.output_directory)
-      raise
+        raise
 
 
 class _DevicesCommand(_Command):
