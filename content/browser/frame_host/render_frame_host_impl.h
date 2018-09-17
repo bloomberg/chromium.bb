@@ -1011,6 +1011,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
   void FullscreenStateChanged(bool is_fullscreen) override;
+#if defined(OS_ANDROID)
+  void UpdateUserGestureCarryoverInfo() override;
+#endif
 
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();

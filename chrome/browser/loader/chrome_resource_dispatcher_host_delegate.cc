@@ -111,7 +111,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/intercept_download_resource_throttle.h"
 #include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
-#include "components/navigation_interception/intercept_navigation_delegate.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -128,10 +127,6 @@ using content::ResourceType;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 using extensions::Extension;
 using extensions::StreamsPrivateAPI;
-#endif
-
-#if defined(OS_ANDROID)
-using navigation_interception::InterceptNavigationDelegate;
 #endif
 
 namespace {
@@ -369,11 +364,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                          info->GetWebContentsGetterForRequest(),
                                          info->GetResourceType()));
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
-
-#if defined(OS_ANDROID)
-  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME)
-    InterceptNavigationDelegate::UpdateUserGestureCarryoverInfo(request);
-#endif
 
 #if defined(OS_CHROMEOS)
   // Check if we need to add merge session throttle. This throttle will postpone

@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -264,6 +265,14 @@ void AwWebContentsDelegate::ExitFullscreenModeForTab(
 bool AwWebContentsDelegate::IsFullscreenForTabOrPending(
     const content::WebContents* web_contents) const {
   return is_fullscreen_;
+}
+
+void AwWebContentsDelegate::UpdateUserGestureCarryoverInfo(
+    content::WebContents* web_contents) {
+  auto* intercept_navigation_delegate =
+      navigation_interception::InterceptNavigationDelegate::Get(web_contents);
+  if (intercept_navigation_delegate)
+    intercept_navigation_delegate->UpdateLastUserGestureCarryoverTimestamp();
 }
 
 static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(

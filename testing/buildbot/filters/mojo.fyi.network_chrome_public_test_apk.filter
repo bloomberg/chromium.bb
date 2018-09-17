@@ -17,11 +17,3 @@
 
 # https://crbug.com/721403
 -org.chromium.chrome.browser.infobar.InfoBarTest.testDataReductionPromoInfoBar
-
-# http://crbug.com/882060
--org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallback
--org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallbackAndShortTimeout
--org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallbackInSubFrame
--org.chromium.chrome.browser.tab.InterceptNavigationDelegateTest.testNavigationFromImageOnLoad
--org.chromium.chrome.browser.tab.InterceptNavigationDelegateTest.testNavigationFromXHRCallback
--org.chromium.chrome.browser.tab.InterceptNavigationDelegateTest.testNavigationFromXHRCallbackAndShortTimeout

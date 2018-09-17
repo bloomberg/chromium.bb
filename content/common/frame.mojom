@@ -358,4 +358,11 @@ interface FrameHost {
   // Notifies the browser that the current frame has either become or is no
   // longer fullscreen.
   FullscreenStateChanged(bool is_fullscreen);
+
+  // Updates information to determine whether a user gesture should carryover to
+  // future navigations. This is needed so navigations within a certain
+  // timeframe of a request initiated by a gesture will be treated as if they
+  // were initiated by a gesture too, otherwise the navigation may be blocked.
+  [EnableIf=is_android]
+  UpdateUserGestureCarryoverInfo();
 };

@@ -62,6 +62,8 @@ class AwWebContentsDelegate
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const override;
+  void UpdateUserGestureCarryoverInfo(
+      content::WebContents* web_contents) override;
 
  private:
   bool is_fullscreen_;
