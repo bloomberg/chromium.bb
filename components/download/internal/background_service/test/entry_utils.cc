@@ -50,6 +50,11 @@ Entry BuildBasicEntry() {
 Entry BuildBasicEntry(Entry::State state) {
   Entry entry = BuildBasicEntry();
   entry.state = state;
+  if (entry.state == Entry::State::ACTIVE) {
+    entry.response_headers =
+        base::MakeRefCounted<const net::HttpResponseHeaders>(
+            "HTTP/1.1 200 OK\nContent-type: text/html\n\n");
+  }
   return entry;
 }
 
@@ -95,6 +100,9 @@ Entry BuildEntry(DownloadClient client,
   entry.attempt_count = attempt_count;
   entry.resumption_count = resumption_count;
   entry.cleanup_attempt_count = cleanup_attempt_count;
+  entry.url_chain = {url, url};
+  entry.response_headers = base::MakeRefCounted<const net::HttpResponseHeaders>(
+      "HTTP/1.1 200 OK\nContent-type: text/html\n\n");
   return entry;
 }
 

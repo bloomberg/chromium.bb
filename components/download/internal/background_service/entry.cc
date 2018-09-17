@@ -8,6 +8,17 @@
 
 namespace download {
 
+namespace {
+
+bool AreHeadersEqual(const net::HttpResponseHeaders* h1,
+                     const net::HttpResponseHeaders* h2) {
+  if (h1 && h2)
+    return h1->raw_headers() == h2->raw_headers();
+  return !h1 && !h2;
+}
+
+}  // namespace
+
 Entry::Entry()
     : bytes_downloaded(0u),
       attempt_count(0),
@@ -52,7 +63,9 @@ bool Entry::operator==(const Entry& other) const {
          resumption_count == other.resumption_count &&
          cleanup_attempt_count == other.cleanup_attempt_count &&
          has_upload_data == other.has_upload_data &&
-         traffic_annotation == other.traffic_annotation;
+         traffic_annotation == other.traffic_annotation &&
+         url_chain == other.url_chain &&
+         AreHeadersEqual(response_headers.get(), other.response_headers.get());
 }
 
 size_t Entry::EstimateMemoryUsage() const {
