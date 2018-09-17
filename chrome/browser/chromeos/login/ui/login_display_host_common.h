@@ -15,10 +15,6 @@
 class AccountId;
 class ScopedKeepAlive;
 
-namespace wm {
-class ScopedDragDropDisabler;
-}
-
 namespace chromeos {
 
 class ArcKioskController;
@@ -102,10 +98,6 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
   // Make sure chrome won't exit while we are at login/oobe screen.
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
-
-  // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
-  // during a login session and restored afterwards.
-  std::unique_ptr<wm::ScopedDragDropDisabler> scoped_drag_drop_disabler_;
 
   // Called after host deletion.
   std::vector<base::OnceClosure> completion_callbacks_;

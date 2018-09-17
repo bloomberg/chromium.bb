@@ -10,6 +10,7 @@
 
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/drag_drop/drag_drop_controller_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_root_window_for_new_windows.h"
@@ -674,6 +675,18 @@ TEST_F(ShellLocalStateTest, LocalState) {
   EXPECT_EQ(local_state_ptr, ash_test_helper()->GetLocalStatePrefService());
 
   Shell::Get()->RemoveShellObserver(&observer);
+}
+
+using ShellLoginTest = NoSessionAshTestBase;
+
+TEST_F(ShellLoginTest, DragAndDropDisabledBeforeLogin) {
+  DragDropController* drag_drop_controller =
+      ShellTestApi(Shell::Get()).drag_drop_controller();
+  DragDropControllerTestApi drag_drop_controller_test_api(drag_drop_controller);
+  EXPECT_FALSE(drag_drop_controller_test_api.enabled());
+
+  SimulateUserLogin("user1@test.com");
+  EXPECT_TRUE(drag_drop_controller_test_api.enabled());
 }
 
 }  // namespace ash
