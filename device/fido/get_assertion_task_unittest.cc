@@ -213,5 +213,105 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignRequestWithEmptyAllowedList) {
   EXPECT_FALSE(get_assertion_callback_receiver().value());
 }
 
+// Checks that when device supports both CTAP2 and U2F protocol and when
+// appId extension parameter is present, the browser first checks presence
+// of valid credentials via silent authentication.
+TEST_F(FidoGetAssertionTaskTest, TestSilentSignInWhenAppIdExtensionPresent) {
+  CtapGetAssertionRequest request(test_data::kRelyingPartyId,
+                                  test_data::kClientDataHash);
+
+  std::vector<PublicKeyCredentialDescriptor> allowed_list;
+  allowed_list.push_back(PublicKeyCredentialDescriptor(
+      CredentialType::kPublicKey,
+      fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)));
+  request.SetAlternativeApplicationParameter(
+      test_data::kAlternativeApplicationParameter);
+  request.SetAllowList(std::move(allowed_list));
+
+  auto device = MockFidoDevice::MakeCtap();
+  device->ExpectRequestAndRespondWith(test_data::kCtapSilentGetAssertionRequest,
+                                      test_data::kTestGetAssertionResponse);
+  device->ExpectRequestAndRespondWith(test_data::kCtapGetAssertionRequest,
+                                      test_data::kTestGetAssertionResponse);
+
+  auto task = std::make_unique<GetAssertionTask>(
+      device.get(), std::move(request),
+      get_assertion_callback_receiver().callback());
+
+  get_assertion_callback_receiver().WaitForCallback();
+  EXPECT_EQ(CtapDeviceResponseCode::kSuccess,
+            get_assertion_callback_receiver().status());
+}
+
+TEST_F(FidoGetAssertionTaskTest, TestU2fFallbackForAppIdExtension) {
+  CtapGetAssertionRequest request(test_data::kRelyingPartyId,
+                                  test_data::kClientDataHash);
+
+  std::vector<PublicKeyCredentialDescriptor> allowed_list;
+  allowed_list.push_back(PublicKeyCredentialDescriptor(
+      CredentialType::kPublicKey,
+      fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)));
+  request.SetAlternativeApplicationParameter(
+      test_data::kAlternativeApplicationParameter);
+  request.SetAllowList(std::move(allowed_list));
+
+  ::testing::InSequence s;
+  auto device = MockFidoDevice::MakeCtap();
+  std::array<uint8_t, 1> error{{base::strict_cast<uint8_t>(
+      CtapDeviceResponseCode::kCtap2ErrNoCredentials)}};
+  // First as device supports both CTAP and U2F protocol, browser will try CTAP
+  // GetAssertion.
+  device->ExpectRequestAndRespondWith(test_data::kCtapSilentGetAssertionRequest,
+                                      error);
+  // After falling back to U2F request will use the primary app_param, which
+  // will be rejected.
+  device->ExpectRequestAndRespondWith(test_data::kU2fCheckOnlySignCommandApdu,
+                                      test_data::kU2fWrongDataApduResponse);
+  // After the rejection, the U2F sign request with alternative application
+  // parameter should be tried.
+  device->ExpectRequestAndRespondWith(
+      test_data::
+          kU2fCheckOnlySignCommandApduWithAlternativeApplicationParameter,
+      test_data::kApduEncodedNoErrorSignResponse);
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fSignCommandApduWithAlternativeApplicationParameter,
+      test_data::kApduEncodedNoErrorSignResponse);
+
+  auto task = std::make_unique<GetAssertionTask>(
+      device.get(), std::move(request),
+      get_assertion_callback_receiver().callback());
+  get_assertion_callback_receiver().WaitForCallback();
+  EXPECT_EQ(CtapDeviceResponseCode::kSuccess,
+            get_assertion_callback_receiver().status());
+}
+
+TEST_F(FidoGetAssertionTaskTest, TestAvoidSilentSignInForCtapOnlyDevice) {
+  CtapGetAssertionRequest request(test_data::kRelyingPartyId,
+                                  test_data::kClientDataHash);
+
+  std::vector<PublicKeyCredentialDescriptor> allowed_list;
+  allowed_list.push_back(PublicKeyCredentialDescriptor(
+      CredentialType::kPublicKey,
+      fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)));
+
+  request.SetAlternativeApplicationParameter(
+      test_data::kAlternativeApplicationParameter);
+  request.SetAllowList(std::move(allowed_list));
+
+  auto device = MockFidoDevice::MakeCtap(ReadCTAPGetInfoResponse(
+      test_data::kTestCtap2OnlyAuthenticatorGetInfoResponse));
+  std::array<uint8_t, 1> error{
+      {base::strict_cast<uint8_t>(CtapDeviceResponseCode::kCtap2ErrOther)}};
+  device->ExpectRequestAndRespondWith(test_data::kCtapGetAssertionRequest,
+                                      error);
+
+  auto task = std::make_unique<GetAssertionTask>(
+      device.get(), std::move(request),
+      get_assertion_callback_receiver().callback());
+  get_assertion_callback_receiver().WaitForCallback();
+  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
+            get_assertion_callback_receiver().status());
+}
+
 }  // namespace
 }  // namespace device
