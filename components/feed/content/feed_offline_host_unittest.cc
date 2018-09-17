@@ -19,6 +19,7 @@
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/prefetch/stub_prefetch_service.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -61,6 +62,9 @@ class TestOfflinePageModel : public StubOfflinePageModel {
   void AddOfflinedPage(const std::string& url, int64_t offline_id) {
     AddOfflinedPage(url, "", offline_id, base::Time());
   }
+
+  MOCK_METHOD1(AddObserver, void(Observer*));
+  MOCK_METHOD1(RemoveObserver, void(Observer*));
 
  private:
   void GetPagesByURL(const GURL& url,
@@ -108,6 +112,9 @@ class FeedOfflineHostTest : public ::testing::Test {
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
   void ResetHost() {
+    EXPECT_CALL(*offline_page_model(), AddObserver(testing::_)).Times(1);
+    EXPECT_CALL(*offline_page_model(), RemoveObserver(testing::_)).Times(1);
+
     host_ = std::make_unique<FeedOfflineHost>(
         &offline_page_model_, &prefetch_service_,
         base::BindRepeating(&FeedOfflineHostTest::OnSuggestionConsumed,
