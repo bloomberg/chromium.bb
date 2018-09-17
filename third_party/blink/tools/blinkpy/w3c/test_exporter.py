@@ -311,7 +311,8 @@ class TestExporter(object):
         patch = commit.format_patch()
         message = commit.message()
         subject = commit.subject()
-        body = commit.body()
+        # Replace '<' with '\<', crbug.com/822278.
+        body = commit.body().replace(r'<', r'\<')
         author = commit.author()
         updating = bool(pr_number)
         pr_description = body + pr_footer

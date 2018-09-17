@@ -177,7 +177,8 @@ class TestExporterTest(LoggingTestCase):
                 'owner': {'email': 'test@chromium.org'},
             },
             api=test_exporter.gerrit,
-            chromium_commit=MockChromiumCommit(self.host, subject='subject', body='fake body', change_id='I001')
+            chromium_commit=MockChromiumCommit(self.host, subject='subject',
+                                               body='fake body <faketag1>, <faketag2>', change_id='I001')
         )]
         test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
@@ -190,7 +191,8 @@ class TestExporterTest(LoggingTestCase):
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [
             ('chromium-export-cl-1234',
              'subject',
-             'fake body\n\nChange-Id: I001\nReviewed-on: https://chromium-review.googlesource.com/1234\nWPT-Export-Revision: 1'),
+             'fake body \\<faketag1>, \\<faketag2>\n\nChange-Id: I001\nReviewed-on: '
+             'https://chromium-review.googlesource.com/1234\nWPT-Export-Revision: 1'),
         ])
         self.assertEqual(test_exporter.wpt_github.pull_requests_merged, [])
 
