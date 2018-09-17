@@ -129,7 +129,8 @@ public abstract class XrTestFramework {
             return JavaScriptUtils.executeJavaScriptAndWaitForResult(
                     webContents, js, timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | TimeoutException e) {
-            Assert.fail("Fatal interruption or timeout running JavaScript: " + js);
+            Assert.fail("Fatal interruption or timeout running JavaScript '" + js
+                    + "': " + e.toString());
         }
         return "Not reached";
     }
@@ -211,7 +212,7 @@ public abstract class XrTestFramework {
      */
     public static void pollJavaScriptBooleanOrFail(
             String boolExpression, int timeoutMs, WebContents webContents) {
-        Assert.assertTrue("Timed out polling boolean expression: " + boolExpression,
+        Assert.assertTrue("Timed out polling JavaScript boolean expression: " + boolExpression,
                 pollJavaScriptBoolean(boolExpression, timeoutMs, webContents));
     }
 
@@ -225,7 +226,8 @@ public abstract class XrTestFramework {
      */
     public static void pollJavaScriptBooleanInFrameOrFail(
             String boolExpression, int timeoutMs, WebContents webContents) {
-        Assert.assertTrue("Timed out polling boolean expression in frame: " + boolExpression,
+        Assert.assertTrue("Timed out polling JavaScript boolean expression in focused frame: "
+                        + boolExpression,
                 pollJavaScriptBooleanInFrame(boolExpression, timeoutMs, webContents));
     }
 
@@ -250,8 +252,8 @@ public abstract class XrTestFramework {
     public static void waitOnJavaScriptStep(WebContents webContents) {
         // Make sure we aren't trying to wait on a JavaScript test step without the code to do so.
         Assert.assertTrue("Attempted to wait on a JavaScript step without the code to do so. You "
-                        + "either forgot to import webvr_e2e.js or are incorrectly using a Java "
-                        + "method.",
+                        + "either forgot to import web[v|x]r_e2e.js or are incorrectly using a "
+                        + "Java method.",
                 Boolean.parseBoolean(runJavaScriptOrFail("typeof javascriptDone !== 'undefined'",
                         POLL_TIMEOUT_SHORT_MS, webContents)));
 
@@ -268,16 +270,17 @@ public abstract class XrTestFramework {
             // failed.
             String reason;
             if (!success) {
-                reason = "Polling JavaScript boolean javascriptDone timed out.";
+                reason = "Timed out waiting for JavaScript step to finish.";
             } else {
-                reason = "Polling JavaScript boolean javascriptDone succeeded, but test failed.";
+                reason = "JavaScript testharness reported failure while waiting for JavaScript "
+                        + "step to finish";
             }
             String resultString =
                     runJavaScriptOrFail("resultString", POLL_TIMEOUT_SHORT_MS, webContents);
             if (resultString.equals("\"\"")) {
-                reason += " Did not obtain specific reason from testharness.";
+                reason += " Did not obtain specific failure reason from JavaScript testharness.";
             } else {
-                reason += " Testharness reported failure: " + resultString;
+                reason += " JavaScript testharness reported failure reason: " + resultString;
             }
             Assert.fail(reason);
         }
@@ -321,7 +324,7 @@ public abstract class XrTestFramework {
             case TestStatus.FAILED:
                 String resultString =
                         runJavaScriptOrFail("resultString", POLL_TIMEOUT_SHORT_MS, webContents);
-                Assert.fail("JavaScript testharness failed with result: " + resultString);
+                Assert.fail("JavaScript testharness failed with reason: " + resultString);
                 break;
             case TestStatus.RUNNING:
                 Assert.fail("Attempted to end test in Java without finishing in JavaScript.");
@@ -341,7 +344,11 @@ public abstract class XrTestFramework {
      * @param webContents The Webcontents for the tab to check for failures in.
      */
     public static void assertNoJavaScriptErrors(WebContents webContents) {
-        Assert.assertNotEquals(checkTestStatus(webContents), TestStatus.FAILED);
+        if (checkTestStatus(webContents) == TestStatus.FAILED) {
+            String resultString =
+                    runJavaScriptOrFail("resultString", POLL_TIMEOUT_SHORT_MS, webContents);
+            Assert.fail("JavaScript testharness failed with reason: " + resultString);
+        }
     }
 
     private static String runJavaScriptInFrameInternal(
@@ -386,7 +393,7 @@ public abstract class XrTestFramework {
     public int loadUrlAndAwaitInitialization(String url, int timeoutSec)
             throws InterruptedException {
         int result = mRule.loadUrl(url, timeoutSec);
-        Assert.assertTrue("JavaScript initialization successful",
+        Assert.assertTrue("Timed out waiting for JavaScript test initialization",
                 pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,
                         mRule.getWebContents()));
         return result;

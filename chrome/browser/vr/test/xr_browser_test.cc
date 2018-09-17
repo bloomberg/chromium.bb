@@ -147,7 +147,7 @@ void XrBrowserTestBase::PollJavaScriptBooleanOrFail(
     const base::TimeDelta& timeout,
     content::WebContents* web_contents) {
   EXPECT_TRUE(PollJavaScriptBoolean(bool_expression, timeout, web_contents))
-      << "Timed out polling boolean expression: " << bool_expression;
+      << "Timed out polling JavaScript boolean expression: " << bool_expression;
 }
 
 bool XrBrowserTestBase::BlockOnConditionUnsafe(
@@ -174,7 +174,7 @@ void XrBrowserTestBase::WaitOnJavaScriptStep(
       "typeof javascriptDone !== 'undefined'", web_contents);
   EXPECT_TRUE(code_available) << "Attempted to wait on a JavaScript test step "
                               << "without the code to do so. You either forgot "
-                              << "to import webvr_e2e.js or "
+                              << "to import web[v|x]r_e2e.js or "
                               << "are incorrectly using a C++ function.";
 
   // Actually wait for the step to finish.
@@ -189,19 +189,22 @@ void XrBrowserTestBase::WaitOnJavaScriptStep(
     // the test failed.
     std::string reason;
     if (!success) {
-      reason = "Polling JavaScript boolean javascriptDone timed out.";
+      reason = "Timed out waiting for JavaScript step to finish.";
     } else {
       reason =
-          "Polling JavaScript boolean javascriptDone succeeded, but test "
-          "failed.";
+          "JavaScript testharness reported failure while waiting for "
+          "JavaScript step to finish";
     }
 
     std::string result_string =
         RunJavaScriptAndExtractStringOrFail("resultString", web_contents);
     if (result_string == "") {
-      reason += " Did not obtain specific reason from testharness.";
+      reason +=
+          " Did not obtain specific failure reason from JavaScript "
+          "testharness.";
     } else {
-      reason += " Testharness reported failure: " + result_string;
+      reason +=
+          " JavaScript testharness reported failure reason: " + result_string;
     }
     FAIL() << reason;
   }
@@ -236,12 +239,12 @@ void XrBrowserTestBase::EndTest(content::WebContents* web_contents) {
     case XrBrowserTestBase::TestStatus::STATUS_PASSED:
       break;
     case XrBrowserTestBase::TestStatus::STATUS_FAILED:
-      FAIL() << "JavaScript testharness failed with result: "
+      FAIL() << "JavaScript testharness failed with reason: "
              << RunJavaScriptAndExtractStringOrFail("resultString",
                                                     web_contents);
       break;
     case XrBrowserTestBase::TestStatus::STATUS_RUNNING:
-      FAIL() << "Attempted to end test in C++ without finishing in JavaScript";
+      FAIL() << "Attempted to end test in C++ without finishing in JavaScript.";
       break;
     default:
       FAIL() << "Received unknown test status.";
@@ -252,7 +255,7 @@ void XrBrowserTestBase::AssertNoJavaScriptErrors(
     content::WebContents* web_contents) {
   if (CheckTestStatus(web_contents) ==
       XrBrowserTestBase::TestStatus::STATUS_FAILED) {
-    FAIL() << "JavaScript test harness failed with result: "
+    FAIL() << "JavaScript testharness failed with reason: "
            << RunJavaScriptAndExtractStringOrFail("resultString", web_contents);
   }
 }
