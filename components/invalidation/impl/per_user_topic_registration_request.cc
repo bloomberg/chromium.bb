@@ -102,7 +102,9 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
 
   if (response_code != net::HTTP_OK) {
     std::move(request_completed_callback_)
-        .Run(Status(StatusCode::FAILED,
+        .Run(Status((response_code == net::HTTP_UNAUTHORIZED)
+                        ? StatusCode::AUTH_FAILURE
+                        : StatusCode::FAILED,
                     base::StringPrintf("HTTP Error: %d", response_code)),
              std::string());
     RecordRequestStatus(SubscriptionStatus::kHttpFailure, type_);

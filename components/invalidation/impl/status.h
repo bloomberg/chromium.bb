@@ -25,8 +25,10 @@ enum class InvalidationParsingStatus {
 enum class StatusCode {
   // The operation has been completed successfully.
   SUCCESS = 0,
+  // Failed with HTTP 401.
+  AUTH_FAILURE = 1,
   // The operation failed.
-  FAILED = 1
+  FAILED = 2
 };
 
 // This struct provides the status code of a request and an optional message
@@ -39,6 +41,7 @@ struct Status {
   static Status Success();
 
   bool IsSuccess() const { return code == StatusCode::SUCCESS; }
+  bool IsAuthFailure() const { return code == StatusCode::AUTH_FAILURE; }
 
   StatusCode code;
   // The message is not meant to be displayed to the user.
