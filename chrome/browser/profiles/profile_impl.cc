@@ -149,6 +149,7 @@
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
+#include "chrome/browser/chromeos/multidevice_setup/android_sms_pairing_state_tracker_impl.h"
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_impl.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
@@ -1537,6 +1538,8 @@ ProfileImpl::CreateMultiDeviceSetupService() {
           this),
       std::make_unique<
           chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(this),
+      std::make_unique<
+          chromeos::multidevice_setup::AndroidSmsPairingStateTrackerImpl>(this),
       chromeos::GcmDeviceInfoProviderImpl::GetInstance());
 }
 

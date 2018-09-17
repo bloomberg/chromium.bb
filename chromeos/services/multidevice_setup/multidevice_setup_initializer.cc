@@ -10,6 +10,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
+#include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
 
 namespace chromeos {
 
@@ -45,11 +46,13 @@ MultiDeviceSetupInitializer::Factory::BuildInstance(
     AuthTokenValidator* auth_token_validator,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate,
+    std::unique_ptr<AndroidSmsPairingStateTracker>
+        android_sms_pairing_state_tracker,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider) {
   return base::WrapUnique(new MultiDeviceSetupInitializer(
       pref_service, device_sync_client, secure_channel_client,
       auth_token_validator, std::move(android_sms_app_helper_delegate),
-      gcm_device_info_provider));
+      std::move(android_sms_pairing_state_tracker), gcm_device_info_provider));
 }
 
 MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
@@ -59,6 +62,8 @@ MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
     AuthTokenValidator* auth_token_validator,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate,
+    std::unique_ptr<AndroidSmsPairingStateTracker>
+        android_sms_pairing_state_tracker,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
     : pref_service_(pref_service),
       device_sync_client_(device_sync_client),
@@ -66,6 +71,8 @@ MultiDeviceSetupInitializer::MultiDeviceSetupInitializer(
       auth_token_validator_(auth_token_validator),
       android_sms_app_helper_delegate_(
           std::move(android_sms_app_helper_delegate)),
+      android_sms_pairing_state_tracker_(
+          std::move(android_sms_pairing_state_tracker)),
       gcm_device_info_provider_(gcm_device_info_provider) {
   if (device_sync_client_->is_ready()) {
     InitializeImplementation();
@@ -226,7 +233,7 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
   multidevice_setup_impl_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
       pref_service_, device_sync_client_, secure_channel_client_,
       auth_token_validator_, std::move(android_sms_app_helper_delegate_),
-      gcm_device_info_provider_);
+      std::move(android_sms_pairing_state_tracker_), gcm_device_info_provider_);
 
   if (pending_delegate_) {
     multidevice_setup_impl_->SetAccountStatusChangeDelegate(

@@ -41,19 +41,6 @@ Polymer({
       type: Array,
       value: () => ['settings-multidevice-tether-item'],
     },
-
-    // TODO(jordynass): Once the service provides this data via pageContentData,
-    // replace this property with that path.
-    /**
-     * If SMS Connect requires setup, it displays a paper button prompting the
-     * setup flow. If it is already set up, it displays a regular toggle for the
-     * feature.
-     * @private {boolean}
-     */
-    androidMessagesRequiresSetup_: {
-      type: Boolean,
-      value: true,
-    },
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */
@@ -111,5 +98,14 @@ Polymer({
   getStatusText_: function() {
     return this.isSuiteOn() ? this.i18n('multideviceEnabled') :
                               this.i18n('multideviceDisabled');
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  doesAndroidMessagesRequireSetup_: function() {
+    return this.getFeatureState(settings.MultiDeviceFeature.MESSAGES) ==
+        settings.MultiDeviceFeatureState.FURTHER_SETUP_REQUIRED;
   },
 });

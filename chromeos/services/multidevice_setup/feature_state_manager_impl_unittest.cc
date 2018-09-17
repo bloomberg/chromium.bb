@@ -11,6 +11,7 @@
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_feature_state_manager.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
+#include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -66,9 +67,16 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
         cryptauth::RemoteDeviceRefList{test_local_device_, test_host_device_});
     fake_device_sync_client_->set_local_device_metadata(test_local_device_);
 
+    auto fake_android_sms_pairing_state_tracker =
+        std::make_unique<FakeAndroidSmsPairingStateTracker>();
+    fake_android_sms_pairing_state_tracker->SetPairingComplete(true);
+    fake_android_sms_pairing_state_tracker_ =
+        fake_android_sms_pairing_state_tracker.get();
+
     manager_ = FeatureStateManagerImpl::Factory::Get()->BuildInstance(
         test_pref_service_.get(), fake_host_status_provider_.get(),
-        fake_device_sync_client_.get());
+        fake_device_sync_client_.get(),
+        std::move(fake_android_sms_pairing_state_tracker));
 
     fake_observer_ = std::make_unique<FakeFeatureStateManagerObserver>();
     manager_->AddObserver(fake_observer_.get());
@@ -169,6 +177,10 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
     fake_device_sync_client_->NotifyNewDevicesSynced();
   }
 
+  void SetAndroidSmsPairingState(bool is_paired) {
+    fake_android_sms_pairing_state_tracker_->SetPairingComplete(is_paired);
+  }
+
   sync_preferences::TestingPrefServiceSyncable* test_pref_service() {
     return test_pref_service_.get();
   }
@@ -183,6 +195,7 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
       test_pref_service_;
   std::unique_ptr<FakeHostStatusProvider> fake_host_status_provider_;
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
+  FakeAndroidSmsPairingStateTracker* fake_android_sms_pairing_state_tracker_;
 
   std::unique_ptr<FakeFeatureStateManagerObserver> fake_observer_;
 
@@ -302,22 +315,34 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, Messages) {
   VerifyFeatureStateChange(2u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kEnabledByUser);
 
+  SetAndroidSmsPairingState(false /* is_paired */);
+  EXPECT_EQ(mojom::FeatureState::kFurtherSetupRequired,
+            manager()->GetFeatureStates()[mojom::Feature::kMessages]);
+  VerifyFeatureStateChange(3u /* expected_index */, mojom::Feature::kMessages,
+                           mojom::FeatureState::kFurtherSetupRequired);
+
+  SetAndroidSmsPairingState(true /* is_paired */);
+  EXPECT_EQ(mojom::FeatureState::kEnabledByUser,
+            manager()->GetFeatureStates()[mojom::Feature::kMessages]);
+  VerifyFeatureStateChange(4u /* expected_index */, mojom::Feature::kMessages,
+                           mojom::FeatureState::kEnabledByUser);
+
   MakeBetterTogetherSuiteDisabledByUser();
   EXPECT_EQ(mojom::FeatureState::kUnavailableSuiteDisabled,
             manager()->GetFeatureStates()[mojom::Feature::kMessages]);
-  VerifyFeatureStateChange(4u /* expected_index */, mojom::Feature::kMessages,
+  VerifyFeatureStateChange(6u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kUnavailableSuiteDisabled);
 
   test_pref_service()->SetBoolean(kMessagesEnabledPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
             manager()->GetFeatureStates()[mojom::Feature::kMessages]);
-  VerifyFeatureStateChange(5u /* expected_index */, mojom::Feature::kMessages,
+  VerifyFeatureStateChange(7u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kDisabledByUser);
 
   test_pref_service()->SetBoolean(kMessagesAllowedPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kProhibitedByPolicy,
             manager()->GetFeatureStates()[mojom::Feature::kMessages]);
-  VerifyFeatureStateChange(6u /* expected_index */, mojom::Feature::kMessages,
+  VerifyFeatureStateChange(8u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kProhibitedByPolicy);
 }
 

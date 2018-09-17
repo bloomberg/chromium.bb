@@ -29,6 +29,7 @@ class SecureChannelClient;
 namespace multidevice_setup {
 
 class AndroidSmsAppHelperDelegate;
+class AndroidSmsPairingStateTracker;
 class AuthTokenValidator;
 
 // Initializes the MultiDeviceSetup service. This class is responsible for
@@ -50,6 +51,8 @@ class MultiDeviceSetupInitializer
         AuthTokenValidator* auth_token_validator,
         std::unique_ptr<AndroidSmsAppHelperDelegate>
             android_sms_app_helper_delegate,
+        std::unique_ptr<AndroidSmsPairingStateTracker>
+            android_sms_pairing_state_tracker,
         const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
 
    private:
@@ -66,6 +69,8 @@ class MultiDeviceSetupInitializer
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate,
+      std::unique_ptr<AndroidSmsPairingStateTracker>
+          android_sms_pairing_state_tracker,
       const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
 
   // mojom::MultiDeviceSetup:
@@ -100,6 +105,8 @@ class MultiDeviceSetupInitializer
   secure_channel::SecureChannelClient* secure_channel_client_;
   AuthTokenValidator* auth_token_validator_;
   std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
+  std::unique_ptr<AndroidSmsPairingStateTracker>
+      android_sms_pairing_state_tracker_;
   const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;
 
   std::unique_ptr<mojom::MultiDeviceSetup> multidevice_setup_impl_;

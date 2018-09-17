@@ -35,6 +35,7 @@ namespace multidevice_setup {
 
 class AccountStatusChangeDelegateNotifier;
 class AndroidSmsAppHelperDelegate;
+class AndroidSmsPairingStateTracker;
 class AuthTokenValidator;
 class DeviceReenroller;
 class HostBackendDelegate;
@@ -60,6 +61,8 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
         AuthTokenValidator* auth_token_validator,
         std::unique_ptr<AndroidSmsAppHelperDelegate>
             android_sms_app_helper_delegate,
+        std::unique_ptr<AndroidSmsPairingStateTracker>
+            android_sms_pairing_state_tracker,
         const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
 
    private:
@@ -79,6 +82,8 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate,
+      std::unique_ptr<AndroidSmsPairingStateTracker>
+          android_sms_pairing_state_tracker,
       const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
 
   // mojom::MultiDeviceSetup:

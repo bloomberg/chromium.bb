@@ -16,6 +16,7 @@
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
+#include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/auth_token_validator.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 
@@ -56,11 +57,13 @@ MultiDeviceSetupImpl::Factory::BuildInstance(
     AuthTokenValidator* auth_token_validator,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate,
+    std::unique_ptr<AndroidSmsPairingStateTracker>
+        android_sms_pairing_state_tracker,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider) {
   return base::WrapUnique(new MultiDeviceSetupImpl(
       pref_service, device_sync_client, secure_channel_client,
       auth_token_validator, std::move(android_sms_app_helper_delegate),
-      gcm_device_info_provider));
+      std::move(android_sms_pairing_state_tracker), gcm_device_info_provider));
 }
 
 MultiDeviceSetupImpl::MultiDeviceSetupImpl(
@@ -70,6 +73,8 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     AuthTokenValidator* auth_token_validator,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate,
+    std::unique_ptr<AndroidSmsPairingStateTracker>
+        android_sms_pairing_state_tracker,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
     : android_sms_app_helper_delegate_(
           std::move(android_sms_app_helper_delegate)),
@@ -95,7 +100,8 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
           FeatureStateManagerImpl::Factory::Get()->BuildInstance(
               pref_service,
               host_status_provider_.get(),
-              device_sync_client)),
+              device_sync_client,
+              std::move(android_sms_pairing_state_tracker))),
       setup_flow_completion_recorder_(
           SetupFlowCompletionRecorderImpl::Factory::Get()->BuildInstance(
               pref_service,

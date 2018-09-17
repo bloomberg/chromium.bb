@@ -31,6 +31,7 @@ class SecureChannelClient;
 namespace multidevice_setup {
 
 class AndroidSmsAppHelperDelegate;
+class AndroidSmsPairingStateTracker;
 class AuthTokenValidator;
 class MultiDeviceSetupBase;
 
@@ -46,6 +47,8 @@ class MultiDeviceSetupService : public service_manager::Service {
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate,
+      std::unique_ptr<AndroidSmsPairingStateTracker>
+          android_sms_pairing_state_tracker,
       const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
   ~MultiDeviceSetupService() override;
 

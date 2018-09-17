@@ -83,7 +83,8 @@
           <settings-multidevice-feature-item id="messagesItem"
               feature="[[MultiDeviceFeature.MESSAGES]]"
               page-content-data="[[pageContentData]]">
-            <template is="dom-if" if="[[androidMessagesRequiresSetup_]]"
+            <template is="dom-if"
+                if="[[doesAndroidMessagesRequireSetup_(pageContentData)]]"
                 restamp>
               <paper-button on-click="handleAndroidMessagesButtonClick_"
                   slot="feature-controller">

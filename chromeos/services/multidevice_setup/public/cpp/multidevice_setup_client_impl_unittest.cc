@@ -16,6 +16,7 @@
 #include "chromeos/services/multidevice_setup/multidevice_setup_initializer.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
+#include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -48,6 +49,8 @@ class FakeMultiDeviceSetupInitializerFactory
       AuthTokenValidator* auth_token_validator,
       std::unique_ptr<AndroidSmsAppHelperDelegate>
           android_sms_app_helper_delegate,
+      std::unique_ptr<AndroidSmsPairingStateTracker>
+          android_sms_pairing_state_tracker,
       const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
       override {
     EXPECT_TRUE(fake_multidevice_setup_);
@@ -125,6 +128,7 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
         nullptr /* pref_service */, nullptr /* device_sync_client */,
         nullptr /* secure_channel_client */, nullptr /* auth_token_validator */,
         nullptr /* android_sms_app_helper_delegate */,
+        nullptr /* android_sms_pairing_state_tracker */,
         nullptr /* gcm_device_info_provider */);
 
     connector_factory_ =
