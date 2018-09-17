@@ -110,6 +110,23 @@ bool IsAddingUsernameToExistingMatch(
          match->second->password_value == credentials.password_value;
 }
 
+// Helper functions for character type classification. The built-in functions
+// depend on locale, platform and other stuff. To make the output more
+// predictable, the function are re-implemented here.
+bool IsNumeric(int c) {
+  return '0' <= c && c <= '9';
+}
+bool IsLowercaseLetter(int c) {
+  return 'a' <= c && c <= 'z';
+}
+bool IsUppercaseLetter(int c) {
+  return 'A' <= c && c <= 'Z';
+}
+bool IsSpecialSymbol(int c) {
+  return ('!' <= c && c <= '/') || (':' <= c && c <= '@') ||
+         ('[' <= c && c <= '`') || ('{' <= c && c <= '~');
+}
+
 }  // namespace
 
 VotesUploader::VotesUploader(PasswordManagerClient* client,
@@ -477,26 +494,32 @@ bool VotesUploader::FindCorrectedUsernameElement(
 void VotesUploader::GeneratePasswordAttributesVote(
     const base::string16& password_value,
     FormStructure* form_structure) {
+  // Don't crowdsource password attributes for non-ascii passwords.
+  for (const auto& e : password_value)
+    if (!(IsUppercaseLetter(e) || IsLowercaseLetter(e) || IsNumeric(e) ||
+          IsSpecialSymbol(e)))
+      return;
+
   // Select a character class attribute to upload.
   int bucket = base::RandGenerator(9);
-  int (*predicate)(int c) = nullptr;
+  bool (*predicate)(int c) = nullptr;
   autofill::PasswordAttribute character_class_attribute =
       autofill::PasswordAttribute::kHasSpecialSymbol;
   if (bucket == 0) {
-    predicate = &islower;
+    predicate = &IsLowercaseLetter;
     character_class_attribute =
         autofill::PasswordAttribute::kHasLowercaseLetter;
   } else if (bucket == 1) {
-    predicate = &isupper;
+    predicate = &IsUppercaseLetter;
     character_class_attribute =
         autofill::PasswordAttribute::kHasUppercaseLetter;
   } else if (bucket == 2) {
-    predicate = &isdigit;
+    predicate = &IsNumeric;
     character_class_attribute = autofill::PasswordAttribute::kHasNumeric;
   } else {  //  3 <= bucket < 9
     // Upload symbols more often as 2/3rd of issues are because of missing
     // special symbols.
-    predicate = &ispunct;
+    predicate = &IsSpecialSymbol;
     character_class_attribute = autofill::PasswordAttribute::kHasSpecialSymbol;
   }
   bool actual_value_for_character_class =
