@@ -84,4 +84,3 @@ def RunJsLint(input_api, output_api, gjslint_path, file_name):
 def CheckChangeOnUpload(input_api, output_api):
   """Special Top level function called by git_cl."""
   return CheckChangeJsLintsClean(input_api, output_api)
-
