@@ -97,11 +97,13 @@ void DeviceSyncClientImpl::ForceSyncNow(
 }
 
 cryptauth::RemoteDeviceRefList DeviceSyncClientImpl::GetSyncedDevices() {
+  DCHECK(is_ready());
   return expiring_device_cache_->GetNonExpiredRemoteDevices();
 }
 
 base::Optional<cryptauth::RemoteDeviceRef>
 DeviceSyncClientImpl::GetLocalDeviceMetadata() {
+  DCHECK(is_ready());
   return local_device_id_
              ? expiring_device_cache_->GetRemoteDevice(*local_device_id_)
              : base::nullopt;

@@ -533,9 +533,7 @@ void EasyUnlockServiceRegular::InitializeInternal() {
                                               GetAccountId());
     }
 
-    if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-      remote_device_unlock_keys_before_sync_ = GetUnlockKeys();
-    } else {
+    if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
       scoped_crypt_auth_device_manager_observer_.Add(
           GetCryptAuthDeviceManager());
     }
