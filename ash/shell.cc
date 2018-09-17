@@ -1445,14 +1445,15 @@ void Shell::OnFirstSessionStarted() {
 }
 
 void Shell::OnSessionStateChanged(session_manager::SessionState state) {
+  const bool is_session_active = state == session_manager::SessionState::ACTIVE;
   // Initialize the |shelf_window_watcher_| when a session becomes active.
   // Shelf itself is initialized in RootWindowController.
-  if (state == session_manager::SessionState::ACTIVE) {
-    if (!shelf_window_watcher_) {
-      shelf_window_watcher_ =
-          std::make_unique<ShelfWindowWatcher>(shelf_model());
-    }
-  }
+  if (is_session_active && !shelf_window_watcher_)
+    shelf_window_watcher_ = std::make_unique<ShelfWindowWatcher>(shelf_model());
+
+  // Disable drag-and-drop during OOBE and GAIA login screens by only enabling
+  // the controller when the session is active. https://crbug.com/464118
+  drag_drop_controller_->set_enabled(is_session_active);
 
   // NOTE: keyboard::IsKeyboardEnabled() is false in mash, but may not be in
   // unit tests. crbug.com/646565.

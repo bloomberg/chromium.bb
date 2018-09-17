@@ -158,7 +158,7 @@ int DragDropController::StartDragAndDrop(
     const gfx::Point& screen_location,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
-  if (IsDragDropInProgress())
+  if (!enabled_ || IsDragDropInProgress())
     return 0;
 
   const ui::OSExchangeData::Provider* provider = &data.provider();
@@ -257,6 +257,7 @@ int DragDropController::StartDragAndDrop(
 }
 
 void DragDropController::DragCancel() {
+  DCHECK(enabled_);
   DoDragCancel(kCancelAnimationDuration);
 }
 
