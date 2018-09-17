@@ -852,7 +852,7 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
   return view;
 }
 
-RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForPopupWidget(
+RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForChildWidget(
     RenderWidgetHost* render_widget_host) {
   // Popups are not created as embedded windows in mus, so
   // |is_mus_browser_plugin_guest| is always false for them.

@@ -112,7 +112,7 @@ void MarkUnchangedTouchPointsAsStationary(blink::WebTouchEvent* event,
 bool NeedsInputGrab(content::RenderWidgetHostViewBase* view) {
   if (!view)
     return false;
-  return view->GetPopupType() == content::WidgetType::kPopup;
+  return view->GetWidgetType() == content::WidgetType::kPopup;
 }
 
 }  // namespace

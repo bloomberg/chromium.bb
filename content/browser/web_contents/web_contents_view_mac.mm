@@ -397,7 +397,7 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
   return view;
 }
 
-RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForPopupWidget(
+RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForChildWidget(
     RenderWidgetHost* render_widget_host) {
   RenderWidgetHostViewMac* view =
       new RenderWidgetHostViewMac(render_widget_host, false);

@@ -1123,6 +1123,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PositionChildPopup) {
 
   // Verify that when the popup is initialized for the first time, it correctly
   // treats the input bounds as screen coordinates.
+  view_->SetWidgetType(WidgetType::kPopup);
   view_->InitAsPopup(parent_view_, bounds_in_screen);
 
   gfx::Rect final_bounds_in_screen = view_->GetViewBounds();
@@ -1228,6 +1229,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyFullscreenOnBlur) {
   view_ = nullptr;
 }
 
+#if defined(OS_CHROMEOS)
 // Checks that a popup view is destroyed when a user clicks outside of the popup
 // view and focus does not change. This is the case when the user clicks on the
 // desktop background on Chrome OS.
@@ -1236,11 +1238,12 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyPopupClickOutsidePopup) {
   parent_view_->Focus();
   EXPECT_TRUE(parent_view_->HasFocus());
 
+  view_->SetWidgetType(WidgetType::kPopup);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
   aura::Window* window = view_->GetNativeView();
   ASSERT_TRUE(window != nullptr);
 
-  gfx::Point click_point;
+  gfx::Point click_point(0, 0);
   EXPECT_FALSE(window->GetBoundsInRootWindow().Contains(click_point));
   aura::Window* parent_window = parent_view_->GetNativeView();
   EXPECT_FALSE(parent_window->GetBoundsInRootWindow().Contains(click_point));
@@ -1263,11 +1266,12 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyPopupTapOutsidePopup) {
   parent_view_->Focus();
   EXPECT_TRUE(parent_view_->HasFocus());
 
+  view_->SetWidgetType(WidgetType::kPopup);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
   aura::Window* window = view_->GetNativeView();
   ASSERT_TRUE(window != nullptr);
 
-  gfx::Point tap_point;
+  gfx::Point tap_point(0, 0);
   EXPECT_FALSE(window->GetBoundsInRootWindow().Contains(tap_point));
   aura::Window* parent_window = parent_view_->GetNativeView();
   EXPECT_FALSE(parent_window->GetBoundsInRootWindow().Contains(tap_point));
@@ -1281,9 +1285,9 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyPopupTapOutsidePopup) {
   widget_host_ = nullptr;
   view_ = nullptr;
 }
+#endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
 // On Desktop Linux, select boxes need mouse capture in order to work. Test that
 // when a select box is opened via a mouse press that it retains mouse capture
 // after the mouse is released.
@@ -1296,7 +1300,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PopupRetainsCaptureAfterMouseRelease) {
       parent_view_->GetNativeView()->GetRootWindow(), gfx::Point(300, 300));
   generator.PressLeftButton();
 
-  view_->SetPopupType(WidgetType::kPopup);
+  view_->SetWidgetType(WidgetType::kPopup);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
   ASSERT_TRUE(view_->NeedsMouseCapture());
   aura::Window* window = view_->GetNativeView();
@@ -1314,7 +1318,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PopupClosesWhenParentLosesFocus) {
   parent_view_->Focus();
   EXPECT_TRUE(parent_view_->HasFocus());
 
-  view_->SetPopupType(WidgetType::kPopup);
+  view_->SetWidgetType(WidgetType::kPopup);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
 
   aura::Window* popup_window = view_->GetNativeView();
@@ -1742,8 +1746,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   parent_view_->Focus();
   ASSERT_TRUE(parent_view_->HasFocus());
 
-  // WidgetType::kPopup means the child view (popup) will receive input.
-  view_->SetPopupType(WidgetType::kPopup);
+  view_->SetWidgetType(WidgetType::kPopup);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
   ASSERT_NE(nullptr, view_->GetNativeView());
   view_->Show();
@@ -1798,66 +1801,6 @@ TEST_F(RenderWidgetHostViewAuraTest,
     ASSERT_FALSE(child_events.empty())
         << "Failed for DomCode: "
         << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
-  }
-}
-
-TEST_F(RenderWidgetHostViewAuraTest,
-       KeyEventRoutingKeyboardLockAndChildPopupWithoutInputGrab) {
-  parent_view_->SetBounds(gfx::Rect(10, 10, 400, 400));
-  parent_view_->Focus();
-  ASSERT_TRUE(parent_view_->HasFocus());
-
-  // WidgetType::kFrame means the child view (popup) will not receive input.
-  view_->SetPopupType(WidgetType::kFrame);
-  view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
-  ASSERT_NE(nullptr, view_->GetNativeView());
-  view_->Show();
-
-  // The parent view owns the KeyboardLock for this test.
-  auto test_hook = std::make_unique<TestScopedKeyboardHook>();
-  test_hook->LockAllKeys();
-  parent_view_->event_handler()->scoped_keyboard_hook_ = std::move(test_hook);
-
-  // These keys will be handled by the parent view and will not be sent through
-  // the prehandler input pipeline.
-  std::vector<ui::DomCode> dom_codes = {ui::DomCode::US_A, ui::DomCode::ENTER,
-                                        ui::DomCode::TAB, ui::DomCode::ALT_LEFT,
-                                        ui::DomCode::US_Z};
-  MockRenderWidgetHostImpl* parent_host =
-      static_cast<MockRenderWidgetHostImpl*>(parent_host_);
-  for (ui::DomCode dom_code : dom_codes) {
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
-                           ui::DomCodeToUsLayoutKeyboardCode(dom_code),
-                           dom_code, ui::EF_NONE);
-    parent_view_->OnKeyEvent(&key_event);
-    const NativeWebKeyboardEvent* child_event =
-        render_widget_host_delegate()->last_event();
-    ASSERT_FALSE(child_event)
-        << "Failed for DomCode: "
-        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
-    // Run the runloop to ensure input messages are dispatched.  Otherwise the
-    // result of GetAndResetDispatchedMessages() will not be valid.
-    base::RunLoop().RunUntilIdle();
-    auto child_events = GetAndResetDispatchedMessages();
-    ASSERT_TRUE(child_events.empty())
-        << "Failed for DomCode: "
-        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
-
-    const NativeWebKeyboardEvent* parent_event = delegates_[0]->last_event();
-    ASSERT_FALSE(parent_event)
-        << "Failed for DomCode: "
-        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
-    auto events = parent_host->input_handler()->GetAndResetDispatchedMessages();
-    ASSERT_FALSE(events.empty());
-    const NativeWebKeyboardEvent* native_key_event =
-        static_cast<const NativeWebKeyboardEvent*>(
-            events.back()->ToEvent()->Event()->web_event.get());
-    ASSERT_TRUE(native_key_event)
-        << "Failed for DomCode: "
-        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
-    ASSERT_EQ(key_event.key_code(), native_key_event->windows_key_code);
-    ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
-              native_key_event->native_key_code);
   }
 }
 

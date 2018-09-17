@@ -2781,13 +2781,13 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
 
   RenderWidgetHostViewBase* widget_view =
       static_cast<RenderWidgetHostViewBase*>(
-          view_->CreateViewForPopupWidget(widget_host));
+          view_->CreateViewForChildWidget(widget_host));
   if (!widget_view)
     return;
-  if (!is_fullscreen) {
-    // Popups should not get activated.
-    widget_view->SetPopupType(WidgetType::kPopup);
-  }
+  // Fullscreen child widgets are frames, other child widgets are popups, and
+  // popups should not get activated.
+  if (!is_fullscreen)
+    widget_view->SetWidgetType(WidgetType::kPopup);
   // Save the created widget associated with the route so we can show it later.
   pending_widget_views_[GlobalRoutingID(render_process_id, route_id)] =
       widget_view;
@@ -2851,6 +2851,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
     view = GetRenderWidgetHostView();
   }
 
+  // Fullscreen child widgets are frames, other child widgets are popups.
   if (is_fullscreen) {
     DCHECK_EQ(MSG_ROUTING_NONE, fullscreen_widget_routing_id_);
     view_->StoreFocus();
