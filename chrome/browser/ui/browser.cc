@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -261,8 +262,9 @@ namespace {
 // How long we wait before updating the browser chrome while loading a page.
 const int kUIUpdateCoalescingTimeMS = 200;
 
-BrowserWindow* CreateBrowserWindow(Browser* browser, bool user_gesture) {
-  return BrowserWindow::CreateBrowserWindow(browser, user_gesture);
+BrowserWindow* CreateBrowserWindow(std::unique_ptr<Browser> browser,
+                                   bool user_gesture) {
+  return BrowserWindow::CreateBrowserWindow(std::move(browser), user_gesture);
 }
 
 // Is the fast tab unload experiment enabled?
@@ -452,7 +454,8 @@ Browser::Browser(const CreateParams& params)
     return;
 
   window_ = params.window ? params.window
-                          : CreateBrowserWindow(this, params.user_gesture);
+                          : CreateBrowserWindow(std::unique_ptr<Browser>(this),
+                                                params.user_gesture);
 
   if (hosted_app_controller_)
     hosted_app_controller_->UpdateLocationBarVisibility(false);

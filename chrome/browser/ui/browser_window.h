@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_WINDOW_H_
 #define CHROME_BROWSER_UI_BROWSER_WINDOW_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -350,7 +351,7 @@ class BrowserWindow : public ui::BaseWindow {
       GetWebContentsModalDialogHost() = 0;
 
   // Construct a BrowserWindow implementation for the specified |browser|.
-  static BrowserWindow* CreateBrowserWindow(Browser* browser,
+  static BrowserWindow* CreateBrowserWindow(std::unique_ptr<Browser> browser,
                                             bool user_gesture);
 
   // Shows the avatar bubble on the window frame off of the avatar button with

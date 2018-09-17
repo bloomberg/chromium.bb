@@ -492,8 +492,8 @@ BrowserView::~BrowserView() {
   toolbar_ = nullptr;
 }
 
-void BrowserView::Init(Browser* browser) {
-  browser_.reset(browser);
+void BrowserView::Init(std::unique_ptr<Browser> browser) {
+  browser_ = std::move(browser);
   browser_->tab_strip_model()->AddObserver(this);
   immersive_mode_controller_.reset(chrome::CreateImmersiveModeController());
 }
