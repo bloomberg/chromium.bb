@@ -8,7 +8,6 @@
 #include <string>
 
 #include <windows.ui.notifications.h>
-#include <wrl/client.h>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -73,8 +72,8 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
 
   // Initializes the displayed notification vector. Only for use in testing.
   void SetDisplayedNotificationsForTesting(
-      std::vector<Microsoft::WRL::ComPtr<
-          ABI::Windows::UI::Notifications::IToastNotification>>* notifications);
+      std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
+          notifications);
 
   // Sets a Toast Notifier to use to display notifications, when run in a test.
   void SetNotifierForTesting(

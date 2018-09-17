@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include <objbase.h>
+#include <wrl/client.h>
 #include <wrl/event.h>
 
 #include "base/bind.h"
@@ -212,14 +212,17 @@ class NotificationPlatformBridgeWinImpl
       return hr;
     }
 
-    mswr::ComPtr<winui::Notifications::IToastNotification2> toast2;
-    hr = (*toast_notification)->QueryInterface(IID_PPV_ARGS(&toast2));
+    winui::Notifications::IToastNotification2* toast2ptr = nullptr;
+    hr = (*toast_notification)->QueryInterface(&toast2ptr);
     if (FAILED(hr)) {
       LogDisplayHistogram(DisplayStatus::CREATE_TOAST_NOTIFICATION2_FAILED);
       DLOG(ERROR) << "Failed to get IToastNotification2 object " << std::hex
                   << hr;
       return hr;
     }
+
+    mswr::ComPtr<winui::Notifications::IToastNotification2> toast2;
+    toast2.Attach(toast2ptr);
 
     // Set the Group and Tag values for the notification, in order to support
     // closing/replacing notification by tag. Both of these values have a limit
@@ -252,13 +255,12 @@ class NotificationPlatformBridgeWinImpl
     // 1) Renotify flag is not set.
     // 2) They are not new (no other notification with same tag is found).
     if (!notification.renotify()) {
-      std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
-          notifications;
+      std::vector<winui::Notifications::IToastNotification*> notifications;
       GetNotifications(profile_id, incognito, &notifications);
 
-      for (auto notification : notifications) {
-        mswr::ComPtr<winui::Notifications::IToastNotification2> t2;
-        HRESULT hr = notification->QueryInterface(IID_PPV_ARGS(&t2));
+      for (auto* notification : notifications) {
+        winui::Notifications::IToastNotification2* t2 = nullptr;
+        HRESULT hr = notification->QueryInterface(&t2);
         if (FAILED(hr))
           continue;
 
@@ -464,8 +466,8 @@ class NotificationPlatformBridgeWinImpl
   void GetDisplayedFromActionCenter(
       const std::string& profile_id,
       bool incognito,
-      std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>*
-          notifications) const {
+      std::vector<winui::Notifications::IToastNotification*>* notifications)
+      const {
     mswr::ComPtr<winui::Notifications::IToastNotificationHistory> history;
     if (!GetIToastNotificationHistory(&history)) {
       LogGetDisplayedStatus(GetDisplayedStatus::GET_TOAST_HISTORY_FAILED);
@@ -505,7 +507,7 @@ class NotificationPlatformBridgeWinImpl
     }
 
     GetDisplayedStatus status = GetDisplayedStatus::SUCCESS;
-    mswr::ComPtr<winui::Notifications::IToastNotification> tn;
+    winui::Notifications::IToastNotification* tn;
     for (uint32_t index = 0; index < size; ++index) {
       hr = list->GetAt(0U, &tn);
       if (FAILED(hr)) {
@@ -520,11 +522,10 @@ class NotificationPlatformBridgeWinImpl
     LogGetDisplayedStatus(status);
   }
 
-  void GetNotifications(
-      const std::string& profile_id,
-      bool incognito,
-      std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>*
-          notifications) const {
+  void GetNotifications(const std::string& profile_id,
+                        bool incognito,
+                        std::vector<winui::Notifications::IToastNotification*>*
+                            notifications) const {
     if (!NotificationPlatformBridgeWinImpl::notifications_for_testing_) {
       GetDisplayedFromActionCenter(profile_id, incognito, notifications);
     } else {
@@ -540,14 +541,12 @@ class NotificationPlatformBridgeWinImpl
     // to NotificationPlatformBridgeWin::GetDisplayed.
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-    std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
-        notifications;
+    std::vector<winui::Notifications::IToastNotification*> notifications;
     GetNotifications(profile_id, incognito, &notifications);
 
     auto displayed_notifications = std::make_unique<std::set<std::string>>();
-    for (auto notification : notifications) {
-      NotificationLaunchId launch_id(
-          GetNotificationLaunchId(notification.Get()));
+    for (auto* notification : notifications) {
+      NotificationLaunchId launch_id(GetNotificationLaunchId(notification));
       if (!launch_id.is_valid()) {
         LogGetDisplayedLaunchIdStatus(
             GetDisplayedLaunchIdStatus::DECODE_LAUNCH_ID_FAILED);
@@ -741,8 +740,7 @@ class NotificationPlatformBridgeWinImpl
     return hr;
   }
 
-  static std::vector<
-      mswr::ComPtr<ABI::Windows::UI::Notifications::IToastNotification>>*
+  static std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
       notifications_for_testing_;
 
   static ABI::Windows::UI::Notifications::IToastNotifier* notifier_for_testing_;
@@ -762,7 +760,7 @@ class NotificationPlatformBridgeWinImpl
   DISALLOW_COPY_AND_ASSIGN(NotificationPlatformBridgeWinImpl);
 };
 
-std::vector<mswr::ComPtr<ABI::Windows::UI::Notifications::IToastNotification>>*
+std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
     NotificationPlatformBridgeWinImpl::notifications_for_testing_ = nullptr;
 
 ABI::Windows::UI::Notifications::IToastNotifier*
@@ -899,8 +897,7 @@ void NotificationPlatformBridgeWin::ForwardHandleEventForTesting(
 }
 
 void NotificationPlatformBridgeWin::SetDisplayedNotificationsForTesting(
-    std::vector<
-        mswr::ComPtr<ABI::Windows::UI::Notifications::IToastNotification>>*
+    std::vector<ABI::Windows::UI::Notifications::IToastNotification*>*
         notifications) {
   NotificationPlatformBridgeWinImpl::notifications_for_testing_ = notifications;
 }

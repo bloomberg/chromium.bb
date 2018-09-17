@@ -200,8 +200,7 @@ TEST_F(NotificationPlatformBridgeWinTest, Suppress) {
 
   base::win::ScopedCOMInitializer com_initializer;
 
-  std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
-      notifications;
+  std::vector<winui::Notifications::IToastNotification*> notifications;
   notification_platform_bridge_win_->SetDisplayedNotificationsForTesting(
       &notifications);
 
