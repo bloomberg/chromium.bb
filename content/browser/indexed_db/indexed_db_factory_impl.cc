@@ -339,14 +339,23 @@ void IndexedDBFactoryImpl::ForceClose(const Origin& origin) {
 }
 
 void IndexedDBFactoryImpl::ForceSchemaDowngrade(const Origin& origin) {
-  OriginDBs range = GetOpenDatabasesForOrigin(origin);
+  auto it = backing_store_map_.find(origin);
+  if (it == backing_store_map_.end())
+    return;
 
-  while (range.first != range.second) {
-    IndexedDBDatabase* db = range.first->second;
-    ++range.first;
-    leveldb::Status s = db->backing_store()->RevertSchemaToV2();
-    DLOG_IF(ERROR, !s.ok()) << "Unable to force downgrade: " << s.ToString();
-  }
+  IndexedDBBackingStore* backing_store = it->second.get();
+  leveldb::Status s = backing_store->RevertSchemaToV2();
+  DLOG_IF(ERROR, !s.ok()) << "Unable to force downgrade: " << s.ToString();
+}
+
+V2SchemaCorruptionStatus IndexedDBFactoryImpl::HasV2SchemaCorruption(
+    const Origin& origin) {
+  auto it = backing_store_map_.find(origin);
+  if (it == backing_store_map_.end())
+    return V2SchemaCorruptionStatus::kUnknown;
+
+  IndexedDBBackingStore* backing_store = it->second.get();
+  return backing_store->HasV2SchemaCorruption();
 }
 
 void IndexedDBFactoryImpl::ContextDestroyed() {

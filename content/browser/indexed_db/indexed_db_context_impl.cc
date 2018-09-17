@@ -405,15 +405,30 @@ void IndexedDBContextImpl::ForceClose(const Origin origin,
   DCHECK_EQ(0UL, GetConnectionCount(origin));
 }
 
-void IndexedDBContextImpl::ForceSchemaDowngrade(const Origin& origin) {
+bool IndexedDBContextImpl::ForceSchemaDowngrade(const Origin& origin) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
 
   if (data_path_.empty() || !HasOrigin(origin))
-    return;
+    return false;
+
+  if (factory_.get()) {
+    factory_->ForceSchemaDowngrade(origin);
+    return true;
+  }
+  this->ForceClose(origin, FORCE_SCHEMA_DOWNGRADE_INTERNALS_PAGE);
+  return false;
+}
+
+V2SchemaCorruptionStatus IndexedDBContextImpl::HasV2SchemaCorruption(
+    const Origin& origin) {
+  DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
+
+  if (data_path_.empty() || !HasOrigin(origin))
+    return V2SchemaCorruptionStatus::kUnknown;
 
   if (factory_.get())
-    factory_->ForceSchemaDowngrade(origin);
-  DCHECK_EQ(0UL, GetConnectionCount(origin));
+    return factory_->HasV2SchemaCorruption(origin);
+  return V2SchemaCorruptionStatus::kUnknown;
 }
 
 size_t IndexedDBContextImpl::GetConnectionCount(const Origin& origin) {

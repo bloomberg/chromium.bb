@@ -123,7 +123,8 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   // ForceClose takes a value rather than a reference since it may release the
   // owning object.
   void ForceClose(const url::Origin origin, ForceCloseReason reason);
-  void ForceSchemaDowngrade(const url::Origin& origin);
+  bool ForceSchemaDowngrade(const url::Origin& origin);
+  V2SchemaCorruptionStatus HasV2SchemaCorruption(const url::Origin& origin);
   // GetStoragePaths returns all paths owned by this database, in arbitrary
   // order.
   std::vector<base::FilePath> GetStoragePaths(const url::Origin& origin) const;

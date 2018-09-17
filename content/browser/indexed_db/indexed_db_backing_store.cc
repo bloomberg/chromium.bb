@@ -702,6 +702,34 @@ Status IndexedDBBackingStore::RevertSchemaToV2() {
   return s;
 }
 
+V2SchemaCorruptionStatus IndexedDBBackingStore::HasV2SchemaCorruption() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  const std::string schema_version_key = SchemaVersionKey::Encode();
+  scoped_refptr<LevelDBTransaction> transaction =
+      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
+
+  int64_t db_schema_version = 0;
+  bool found = false;
+  Status s =
+      GetInt(transaction.get(), schema_version_key, &db_schema_version, &found);
+  if (!s.ok())
+    return V2SchemaCorruptionStatus::kUnknown;
+  if (db_schema_version != 2)
+    return V2SchemaCorruptionStatus::kNo;
+
+  bool has_blobs = false;
+  s = AnyDatabaseContainsBlobs(transaction.get(), &has_blobs);
+  if (!s.ok())
+    return V2SchemaCorruptionStatus::kUnknown;
+  if (!has_blobs)
+    return V2SchemaCorruptionStatus::kNo;
+
+  s = transaction->Commit();
+  if (!s.ok())
+    return V2SchemaCorruptionStatus::kUnknown;
+  return V2SchemaCorruptionStatus::kYes;
+}
+
 WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 

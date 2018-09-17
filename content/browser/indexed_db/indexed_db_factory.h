@@ -80,6 +80,8 @@ class CONTENT_EXPORT IndexedDBFactory
 
   virtual void ForceClose(const url::Origin& origin) = 0;
   virtual void ForceSchemaDowngrade(const url::Origin& origin) = 0;
+  virtual V2SchemaCorruptionStatus HasV2SchemaCorruption(
+      const url::Origin& origin) = 0;
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
   virtual void ContextDestroyed() = 0;

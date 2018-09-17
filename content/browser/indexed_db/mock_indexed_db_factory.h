@@ -79,6 +79,8 @@ class MockIndexedDBFactory : public IndexedDBFactory {
   OriginDBs GetOpenDatabasesForOrigin(const url::Origin& origin) const override;
   MOCK_METHOD1(ForceClose, void(const url::Origin& origin));
   MOCK_METHOD1(ForceSchemaDowngrade, void(const url::Origin& origin));
+  MOCK_METHOD1(HasV2SchemaCorruption,
+               V2SchemaCorruptionStatus(const url::Origin& origin));
   MOCK_METHOD0(ContextDestroyed, void());
   MOCK_METHOD1(DatabaseDeleted,
                void(const IndexedDBDatabase::Identifier& identifier));

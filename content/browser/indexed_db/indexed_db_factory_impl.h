@@ -88,6 +88,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
 
   void ForceClose(const url::Origin& origin) override;
   void ForceSchemaDowngrade(const url::Origin& origin) override;
+  V2SchemaCorruptionStatus HasV2SchemaCorruption(
+      const url::Origin& origin) override;
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
   void ContextDestroyed() override;
