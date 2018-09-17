@@ -312,6 +312,8 @@ class BrowserSanityTest(RemoteTest):
     # line args.
     if not self._test_env.get('GN_ARGS'):
       self._test_env['GN_ARGS'] = 'is_chromeos = true'
+    if not self._test_env.get('USE'):
+      self._test_env['USE'] = 'highdpi'
     self._test_env['PATH'] = (
         self._test_env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin'))
 
