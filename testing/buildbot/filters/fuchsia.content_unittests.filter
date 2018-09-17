@@ -64,3 +64,6 @@
 -RenderWidgetHostViewAuraOverscrollTest.TouchGestureEndDispatchedAfterOverscrollComplete
 -RenderWidgetHostViewAuraTest.SyntheticFlingCancelAtTouchpadScrollBegin
 -RenderWidgetHostViewAuraTest.TimerBasedWheelEventPhaseInfo
+
+# Flaky, https://crbug.com/884250.
+-ReferrerSanitizerTest.SanitizesPolicyForNonEmptyReferrers
