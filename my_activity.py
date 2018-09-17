@@ -372,9 +372,12 @@ class MyActivity(object):
 
   def gerrit_search(self, instance, owner=None, reviewer=None):
     max_age = datetime.today() - self.modified_after
-    max_age = max_age.days * 24 * 3600 + max_age.seconds
-    user_filter = 'owner:%s' % owner if owner else 'reviewer:%s' % reviewer
-    filters = ['-age:%ss' % max_age, user_filter]
+    filters = ['-age:%ss' % (max_age.days * 24 * 3600 + max_age.seconds)]
+    if owner:
+      assert not reviewer
+      filters.append('owner:%s' % owner)
+    else:
+      filters.extend(('-owner:%s' % reviewer, 'reviewer:%s' % reviewer))
     # TODO(cjhopman): Should abandoned changes be filtered out when
     # merged_only is not enabled?
     if self.options.merged_only:
@@ -697,7 +700,6 @@ class MyActivity(object):
           gerrit_instances)
       rietveld_reviews = itertools.chain.from_iterable(rietveld_reviews.get())
       gerrit_reviews = itertools.chain.from_iterable(gerrit_reviews.get())
-      gerrit_reviews = [r for r in gerrit_reviews if not self.match(r['owner'])]
       self.reviews = list(rietveld_reviews) + list(gerrit_reviews)
 
   def print_reviews(self):
