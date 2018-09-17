@@ -57,7 +57,7 @@ FloatRect ReferenceFilterOperation::MapRect(const FloatRect& rect) const {
   return last_effect->MapRect(rect);
 }
 
-ReferenceFilterOperation::ReferenceFilterOperation(const String& url,
+ReferenceFilterOperation::ReferenceFilterOperation(const AtomicString& url,
                                                    SVGResource* resource)
     : FilterOperation(REFERENCE), url_(url), resource_(resource) {}
 

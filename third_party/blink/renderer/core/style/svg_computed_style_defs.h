@@ -153,7 +153,7 @@ struct SVGPaint {
   StyleSVGResource* Resource() const { return resource.get(); }
 
   const Color& GetColor() const { return color; }
-  const String& GetUrl() const;
+  const AtomicString& GetUrl() const;
 
   scoped_refptr<StyleSVGResource> resource;
   Color color;

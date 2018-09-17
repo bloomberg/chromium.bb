@@ -120,7 +120,7 @@ scoped_refptr<StyleSVGResource> StyleBuilderConverter::ConvertElementReference(
   SVGResource* resource =
       state.GetElementStyleResources().GetSVGResourceFromValue(
           state.GetTreeScope(), url_value);
-  return StyleSVGResource::Create(resource, AtomicString(url_value.Value()));
+  return StyleSVGResource::Create(resource, url_value.ValueForSerialization());
 }
 
 LengthBox StyleBuilderConverter::ConvertClip(StyleResolverState& state,
@@ -144,7 +144,8 @@ scoped_refptr<ClipPathOperation> StyleBuilderConverter::ConvertClipPath(
         state.GetElementStyleResources().GetSVGResourceFromValue(
             state.GetTreeScope(), url_value);
     // TODO(fs): Doesn't work with external SVG references (crbug.com/109212.)
-    return ReferenceClipPathOperation::Create(url_value.Value(), resource);
+    return ReferenceClipPathOperation::Create(url_value.ValueForSerialization(),
+                                              resource);
   }
   DCHECK(value.IsIdentifierValue() &&
          ToCSSIdentifierValue(value).GetValueID() == CSSValueNone);

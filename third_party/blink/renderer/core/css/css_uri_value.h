@@ -27,7 +27,9 @@ class CSSURIValue : public CSSValue {
   SVGResource* EnsureResourceReference() const;
   void ReResolveUrl(const Document&) const;
 
-  const String& Value() const { return relative_url_; }
+  const AtomicString& ValueForSerialization() const {
+    return is_local_ ? relative_url_ : absolute_url_;
+  }
 
   String CustomCSSText() const;
 

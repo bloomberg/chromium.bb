@@ -142,8 +142,8 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
           state.GetElementStyleResources().GetSVGResourceFromValue(
               state.GetTreeScope(), url_value,
               ElementStyleResources::kAllowExternalResource);
-      operations.Operations().push_back(
-          ReferenceFilterOperation::Create(url_value.Value(), resource));
+      operations.Operations().push_back(ReferenceFilterOperation::Create(
+          url_value.ValueForSerialization(), resource));
       continue;
     }
 
