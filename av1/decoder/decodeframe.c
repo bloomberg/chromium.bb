@@ -88,17 +88,25 @@ int av1_check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb) {
 static void set_planes_to_neutral_grey(const SequenceHeader *const seq_params,
                                        const YV12_BUFFER_CONFIG *const buf,
                                        int only_chroma) {
-  const int val = 1 << (seq_params->bit_depth - 1);
-  for (int plane = only_chroma; plane < MAX_MB_PLANE; plane++) {
-    const int is_uv = plane > 0;
-    for (int row_idx = 0; row_idx < buf->crop_heights[is_uv]; row_idx++) {
-      if (seq_params->use_highbitdepth) {
-        // TODO(yaowu): replace this with aom_memset16() for speed
-        for (int col_idx = 0; col_idx < buf->crop_widths[is_uv]; col_idx++) {
-          uint16_t *base = CONVERT_TO_SHORTPTR(buf->buffers[plane]);
-          base[row_idx * buf->strides[is_uv] + col_idx] = val;
+  if (seq_params->use_highbitdepth) {
+    const int val = 1 << (seq_params->bit_depth - 1);
+    for (int plane = only_chroma; plane < MAX_MB_PLANE; plane++) {
+      const int is_uv = plane > 0;
+      uint16_t *const base = CONVERT_TO_SHORTPTR(buf->buffers[plane]);
+      // Set the first row to neutral grey. Then copy the first row to all
+      // subsequent rows.
+      if (buf->crop_heights[is_uv] > 0) {
+        aom_memset16(base, val, buf->crop_widths[is_uv]);
+        for (int row_idx = 1; row_idx < buf->crop_heights[is_uv]; row_idx++) {
+          memcpy(&base[row_idx * buf->strides[is_uv]], base,
+                 sizeof(*base) * buf->crop_widths[is_uv]);
         }
-      } else {
+      }
+    }
+  } else {
+    for (int plane = only_chroma; plane < MAX_MB_PLANE; plane++) {
+      const int is_uv = plane > 0;
+      for (int row_idx = 0; row_idx < buf->crop_heights[is_uv]; row_idx++) {
         memset(&buf->buffers[plane][row_idx * buf->uv_stride], 1 << 7,
                buf->crop_widths[is_uv]);
       }
