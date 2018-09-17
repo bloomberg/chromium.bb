@@ -382,8 +382,6 @@ component("headless") {
     sources += [
       "lib/browser/headless_print_manager.cc",
       "lib/browser/headless_print_manager.h",
-      "lib/renderer/headless_print_render_frame_helper_delegate.cc",
-      "lib/renderer/headless_print_render_frame_helper_delegate.h",
     ]
   }
 
@@ -420,6 +418,10 @@ component("headless") {
     deps += [ "//components/os_crypt" ]
   }
 
+  if (enable_basic_printing) {
+    deps += [ "//components/printing/browser" ]
+  }
+
   if (is_component_build) {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
@@ -434,6 +436,13 @@ component("headless") {
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
+
+    if (enable_basic_printing) {
+      sources += [
+        "lib/renderer/headless_print_render_frame_helper_delegate.cc",
+        "lib/renderer/headless_print_render_frame_helper_delegate.h",
+      ]
+    }
 
     deps += [
       "//components/crash/core/common:crash_key",
@@ -517,6 +526,13 @@ if (!is_component_build) {
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
     ]
+
+    if (enable_basic_printing) {
+      sources += [
+        "lib/renderer/headless_print_render_frame_helper_delegate.cc",
+        "lib/renderer/headless_print_render_frame_helper_delegate.h",
+      ]
+    }
 
     deps = [
       ":headless",
