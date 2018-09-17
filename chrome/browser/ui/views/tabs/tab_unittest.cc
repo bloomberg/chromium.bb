@@ -20,6 +20,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -92,10 +93,10 @@ class FakeTabController : public TabController {
   SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabBackgroundColor(TabState state) const override {
-    return gfx::kPlaceholderColor;
+    return state == TAB_ACTIVE ? tab_bg_color_active_ : tab_bg_color_inactive_;
   }
   SkColor GetTabForegroundColor(TabState state) const override {
-    return gfx::kPlaceholderColor;
+    return state == TAB_ACTIVE ? tab_fg_color_active_ : tab_fg_color_inactive_;
   }
   int GetBackgroundResourceId(
       bool* has_custom_image,
@@ -114,10 +115,25 @@ class FakeTabController : public TabController {
   }
   float GetHoverOpacityForRadialHighlight() const override { return 1.0f; }
 
+  void SetTabColors(SkColor bg_color_active,
+                    SkColor fg_color_active,
+                    SkColor bg_color_inactive,
+                    SkColor fg_color_inactive) {
+    tab_bg_color_active_ = bg_color_active;
+    tab_fg_color_active_ = fg_color_active;
+    tab_bg_color_inactive_ = bg_color_inactive;
+    tab_fg_color_inactive_ = fg_color_inactive;
+  }
+
  private:
   ui::ListSelectionModel selection_model_;
   bool active_tab_ = false;
   bool paint_throbber_to_layer_ = true;
+
+  SkColor tab_bg_color_active_ = gfx::kPlaceholderColor;
+  SkColor tab_fg_color_active_ = gfx::kPlaceholderColor;
+  SkColor tab_bg_color_inactive_ = gfx::kPlaceholderColor;
+  SkColor tab_fg_color_inactive_ = gfx::kPlaceholderColor;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTabController);
 };
@@ -701,4 +717,40 @@ TEST_F(TabTest, ExtraAlertPaddingNotShownOnSmallActiveTab) {
   EXPECT_TRUE(alert->visible());
   // The alert indicator moves closer because the extra padding is gone.
   EXPECT_LT(close->x() - alert->bounds().right(), original_spacing);
+}
+
+TEST_F(TabTest, TitleTextHasSufficientContrast) {
+  constexpr SkColor kDarkGray = SkColorSetRGB(0x22, 0x22, 0x22);
+  constexpr SkColor kLightGray = SkColorSetRGB(0x99, 0x99, 0x99);
+  struct ColorScheme {
+    SkColor bg_active;
+    SkColor fg_active;
+    SkColor bg_inactive;
+    SkColor fg_inactive;
+  };
+  ColorScheme color_schemes[] = {
+      {
+          SK_ColorBLACK, SK_ColorWHITE, SK_ColorBLACK, SK_ColorWHITE,
+      },
+      {
+          SK_ColorBLACK, SK_ColorWHITE, SK_ColorWHITE, SK_ColorBLACK,
+      },
+      {
+          kDarkGray, kLightGray, kDarkGray, kLightGray,
+      },
+  };
+  FakeTabController controller;
+  Tab tab(&controller, nullptr);
+  for (const auto& colors : color_schemes) {
+    controller.SetTabColors(colors.bg_active, colors.fg_active,
+                            colors.bg_inactive, colors.fg_inactive);
+    for (TabState state : {TAB_INACTIVE, TAB_ACTIVE}) {
+      controller.set_active_tab(state == TAB_ACTIVE);
+      tab.UpdateForegroundColors();
+      const SkColor fg_color = tab.title_->enabled_color();
+      const SkColor bg_color = controller.GetTabBackgroundColor(state);
+      const float contrast = color_utils::GetContrastRatio(fg_color, bg_color);
+      EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);
+    }
+  }
 }

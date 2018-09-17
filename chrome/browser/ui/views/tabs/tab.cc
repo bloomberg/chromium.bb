@@ -875,12 +875,14 @@ void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   hover_controller_.SetSubtleOpacityScale(
       controller_->GetHoverOpacityForRadialHighlight());
   hover_controller_.Show(GlowHoverController::SUBTLE);
+  OnButtonColorMaybeChanged();
   Layout();
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
   mouse_hovered_ = false;
   hover_controller_.Hide();
+  OnButtonColorMaybeChanged();
   Layout();
 }
 
@@ -1038,7 +1040,7 @@ SkColor Tab::GetCloseTabButtonColor(
   // hierarchy.
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (!theme_provider)
-    return SK_ColorTRANSPARENT;
+    return gfx::kPlaceholderColor;
 
   int color_id;
   switch (button_state) {
@@ -1738,20 +1740,24 @@ Tab::SeparatorOpacities Tab::GetSeparatorOpacities(bool for_layout) const {
   return {leading_opacity, trailing_opacity};
 }
 
+float Tab::GetHoverOpacity() const {
+  // Opacity boost varies on tab width.  The interpolation is nonlinear so
+  // that most tabs will fall on the low end of the opacity range, but very
+  // narrow tabs will still stand out on the high end.
+  const float range_start = float{GetStandardWidth()};
+  const float range_end = float{GetMinimumInactiveWidth()};
+  const float value_in_range = float{width()};
+  const float t = (value_in_range - range_start) / (range_end - range_start);
+  return controller_->GetHoverOpacityForTab(t * t);
+}
+
 float Tab::GetThrobValue() const {
   const bool is_selected = IsSelected();
   double val = is_selected ? kSelectedTabOpacity : 0;
 
   // Wrapping in closure to only compute offset when needed (animate or hover).
   const auto offset = [=] {
-    // Opacity boost varies on tab width.  The interpolation is nonlinear so
-    // that most tabs will fall on the low end of the opacity range, but very
-    // narrow tabs will still stand out on the high end.
-    const float range_start = float{GetStandardWidth()};
-    const float range_end = float{GetMinimumInactiveWidth()};
-    const float value_in_range = float{width()};
-    const float t = (value_in_range - range_start) / (range_end - range_start);
-    const float opacity = controller_->GetHoverOpacityForTab(t * t);
+    const float opacity = GetHoverOpacity();
     return is_selected ? (kSelectedTabThrobScale * opacity) : opacity;
   };
 
@@ -1770,8 +1776,7 @@ void Tab::OnButtonColorMaybeChanged() {
   if (!theme_provider)
     return;
 
-  UpdateButtonIconColors(controller_->GetTabForegroundColor(
-      IsActive() ? TAB_ACTIVE : TAB_INACTIVE));
+  UpdateForegroundColors();
 }
 
 void Tab::UpdateTabIconNeedsAttentionBlocked() {
@@ -1786,7 +1791,7 @@ void Tab::UpdateTabIconNeedsAttentionBlocked() {
   }
 }
 
-void Tab::UpdateButtonIconColors(SkColor title_color) {
+void Tab::UpdateForegroundColors() {
   // These ratios are calculated from the default colors specified in the
   // Material Refresh design document. Active/inactive are the contrast ratios
   // of the close X against the tab background. Hovered/pressed are the contrast
@@ -1796,21 +1801,27 @@ void Tab::UpdateButtonIconColors(SkColor title_color) {
   constexpr float kMinimumHoveredContrastRatio = 5.02f;
   constexpr float kMinimumPressedContrastRatio = 4.41f;
 
-  SkColor tab_bg_color = controller_->GetTabBackgroundColor(
-      IsActive() ? TAB_ACTIVE : TAB_INACTIVE);
-  SkColor tab_title_color = title_color;
-
-  // Make sure the text has enough contrast to be visible if this tab is
-  // selected.
-  if (IsSelected() && !IsActive()) {
-    const SkColor tab_active_bg_color =
-        controller_->GetTabBackgroundColor(TAB_ACTIVE);
-    tab_bg_color = color_utils::AlphaBlend(
-        tab_active_bg_color, tab_bg_color,
-        gfx::ToRoundedInt(kSelectedTabOpacity * SK_AlphaOPAQUE));
-    tab_title_color =
-        color_utils::GetColorWithMinimumContrast(title_color, tab_bg_color);
+  // In some cases, inactive tabs may have background more like active tabs than
+  // inactive tabs, so colors should be adapted to ensure appropriate contrast.
+  // In particular, text should have plenty of contrast in all cases, so switch
+  // to using foreground color designed for active tabs if the tab looks more
+  // like an active tab than an inactive tab.
+  float expected_opacity = 0.0f;
+  if (IsActive()) {
+    expected_opacity = 1.0f;
+  } else if (IsSelected()) {
+    expected_opacity = kSelectedTabOpacity;
+  } else if (mouse_hovered_) {
+    expected_opacity = GetHoverOpacity();
   }
+  SkColor tab_bg_color = color_utils::AlphaBlend(
+      controller_->GetTabBackgroundColor(TAB_ACTIVE),
+      controller_->GetTabBackgroundColor(TAB_INACTIVE),
+      gfx::ToRoundedInt(expected_opacity * SK_AlphaOPAQUE));
+  SkColor tab_title_color = controller_->GetTabForegroundColor(
+      expected_opacity > 0.5f ? TAB_ACTIVE : TAB_INACTIVE);
+  tab_title_color =
+      color_utils::GetColorWithMinimumContrast(tab_title_color, tab_bg_color);
 
   title_->SetEnabledColor(tab_title_color);
 
