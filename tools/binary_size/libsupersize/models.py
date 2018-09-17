@@ -142,6 +142,9 @@ FLAG_HOT = 128
 # Relevant for .text symbols. If a method has this flag, then it was run
 # according to the code coverage.
 FLAG_COVERED = 256
+# Relevant for non-locale .pak symbols. Indicates a pak entry is stored
+# uncompressed.
+FLAG_UNCOMPRESSED = 512
 
 
 DIFF_STATUS_UNCHANGED = 0
@@ -309,6 +312,10 @@ class BaseSymbol(object):
       parts.append('clone')
     if flags & FLAG_HOT:
       parts.append('hot')
+    if flags & FLAG_COVERED:
+      parts.append('covered')
+    if flags & FLAG_UNCOMPRESSED:
+      parts.append('uncompressed')
     return '{%s}' % ','.join(parts)
 
   def IsBss(self):

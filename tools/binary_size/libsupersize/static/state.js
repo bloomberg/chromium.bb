@@ -347,7 +347,7 @@ function _makeSizeTextGetter() {
         description += ` for 1 of ${node.numAliases} aliases`;
       }
 
-      const unit = state.get('byteunit') || 'MiB';
+      const unit = state.get('byteunit') || 'KiB';
       const suffix = _BYTE_UNITS[unit];
       // Format |bytes| as a number with 2 digits after the decimal point
       const text = (bytes / suffix).toLocaleString(_LOCALE, {

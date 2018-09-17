@@ -84,6 +84,7 @@ const _FLAGS = Object.freeze({
   CLONE: 2 ** 6,
   HOT: 2 ** 7,
   COVERAGE: 2 ** 8,
+  UNCOMPRESSED: 2 ** 9,
 });
 
 /**
