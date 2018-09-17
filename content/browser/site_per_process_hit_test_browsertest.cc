@@ -58,10 +58,6 @@
 #include "content/test/mock_overscroll_refresh_handler_android.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/debug/stack_trace.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -1246,48 +1242,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   root_scroll_begin_observer.Wait();
 }
 
-#if defined(OS_WIN)
-// Add temporary TouchMove event observer to detect spurious TouchMove events
-// leading to test flake.
-// https://crbug.com/833380.
-class EmulatedTouchTouchMoveInputObserver
-    : public RenderWidgetHost::InputEventObserver {
- public:
-  explicit EmulatedTouchTouchMoveInputObserver(RenderWidgetHost* host)
-      : host_(host), first_touch_move_seen_(false) {
-    host_->AddInputEventObserver(this);
-  }
-  ~EmulatedTouchTouchMoveInputObserver() override {
-    host_->RemoveInputEventObserver(this);
-  }
-
-  void OnInputEvent(const blink::WebInputEvent& event) override {
-    if (event.GetType() != blink::WebInputEvent::kTouchMove)
-      return;
-
-    const blink::WebTouchEvent& touch_event =
-        static_cast<const blink::WebTouchEvent&>(event);
-    blink::WebFloatPoint pos_in_widget =
-        touch_event.touches[0].PositionInWidget();
-    blink::WebFloatPoint pos_in_screen =
-        touch_event.touches[0].PositionInScreen();
-    LOG(ERROR) << "TouchMove seen: widget @ (" << pos_in_widget.x << ","
-               << pos_in_widget.y << "), screen @ (" << pos_in_screen.x << ","
-               << pos_in_screen.y << ")";
-
-    if (first_touch_move_seen_)
-      return;
-
-    first_touch_move_seen_ = true;
-    base::debug::StackTrace().Print();
-  }
-
- private:
-  RenderWidgetHost* host_;
-  bool first_touch_move_seen_;
-};
-#endif
-
 class SitePerProcessEmulatedTouchBrowserTest
     : public SitePerProcessHitTestBrowserTest {
  public:
@@ -1335,17 +1289,6 @@ class SitePerProcessEmulatedTouchBrowserTest
         [](blink::WebInputEvent::Type expected_type,
            const gfx::Point& expected_position, content::InputEventAckSource,
            content::InputEventAckState, const blink::WebInputEvent& event) {
-#if defined(OS_WIN)
-          // Add some logging to diagnose a potential source of flake:
-          // the hypothesis is that something is causing the gesture
-          // stream to cancel before kGestureShowPress is generated, so
-          // we'll dump the event stream that we actually see in this case.
-          // https://crbug.com/833380.
-          if (expected_type == blink::WebInputEvent::kGestureShowPress) {
-            LOG(ERROR) << "Waiting for: kGestureShowPress: ack seen for "
-                       << blink::WebInputEvent::GetName(event.GetType());
-          }
-#endif
           if (event.GetType() != expected_type)
             return false;
 
@@ -1446,17 +1389,6 @@ class SitePerProcessEmulatedTouchBrowserTest
     simulated_event_time += simulated_event_time_delta;
     mouse_up_event.SetTimeStamp(simulated_event_time);
 
-#if defined(OS_WIN)
-    // Add temporary TouchMove event observer to detect spurious TouchMove
-    // events leading to test flake.
-    // https://crbug.com/833380.
-    std::unique_ptr<EmulatedTouchTouchMoveInputObserver> touch_move_observer;
-    if (test_type == ShowPressHasTouchID) {
-      touch_move_observer.reset(new EmulatedTouchTouchMoveInputObserver(
-          child_rwhv->GetRenderWidgetHost()));
-    }
-#endif
-
     // Send mouse events and wait for GesturePinchBegin.
     router->RouteMouseEvent(root_rwhv, &mouse_move_event, ui::LatencyInfo());
     router->RouteMouseEvent(root_rwhv, &mouse_down_event, ui::LatencyInfo());
@@ -1464,9 +1396,6 @@ class SitePerProcessEmulatedTouchBrowserTest
       // Wait for child to receive GestureShowPress. If this test fails, it
       // will either DCHECK or time out.
       child_gesture_event_observer.Wait();
-#if defined(OS_WIN)
-      touch_move_observer.reset();
-#endif
       return;
     }
     router->RouteMouseEvent(root_rwhv, &mouse_drag_event, ui::LatencyInfo());
