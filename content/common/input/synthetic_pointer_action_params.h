@@ -35,6 +35,7 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
   };
 
   enum class Button {
+    NO_BUTTON,
     LEFT,
     MIDDLE,
     RIGHT,
@@ -85,6 +86,8 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
       SyntheticPointerActionParams::Button button);
   static blink::WebMouseEvent::Button GetWebMouseEventButton(
       SyntheticPointerActionParams::Button button);
+  static blink::WebMouseEvent::Button GetWebMouseEventButtonFromModifier(
+      unsigned modifiers);
 
  private:
   friend struct IPC::ParamTraits<content::SyntheticPointerActionParams>;
