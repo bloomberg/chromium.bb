@@ -49,3 +49,37 @@ UIImage* StretchableImageNamed(NSString* name,
 
   return StretchableImageFromUIImage(image, left_cap_width, top_cap_height);
 }
+
+// https://en.wikipedia.org/wiki/List_of_file_signatures
+NSString* GetImageExtensionFromData(NSData* data) {
+  if (!data || data.length < 16)
+    return nil;
+
+  const char* pdata = static_cast<const char*>(data.bytes);
+  switch (pdata[0]) {
+    case '\xFF':
+      return strncmp(pdata, "\xFF\xD8\xFF", 3) ? nil : @"jpg";
+    case '\x89':
+      return strncmp(pdata, "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8) ? nil
+                                                                   : @"png";
+    case 'G':
+      return (strncmp(pdata, "GIF87a", 6) && strncmp(pdata, "GIF89a", 6))
+                 ? nil
+                 : @"gif";
+    case '\x49':
+      return strncmp(pdata, "\x49\x49\x2A\x00", 4) ? nil : @"tif";
+    case '\x4D':
+      return strncmp(pdata, "\x4D\x4D\x00\x2A", 4) ? nil : @"tif";
+    case 'B':
+      return strncmp(pdata, "BM", 2) ? nil : @"bmp";
+    case 'R':
+      return (strncmp(pdata, "RIFF", 4) || strncmp(pdata + 8, "WEBP", 4))
+                 ? nil
+                 : @"webp";
+    case '\0':
+      return strncmp(pdata, "\x00\x00\x01\x00", 4) ? nil : @"ico";
+    default:
+      return nil;
+  }
+  return nil;
+}
