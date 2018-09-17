@@ -40,7 +40,7 @@ namespace blink {
 // ----------
 // Allowlists are collections of origins, although two special terms can be used
 // when declaring them:
-//   "self" refers to the orgin of the frame which is declaring the policy.
+//   "self" refers to the origin of the frame which is declaring the policy.
 //   "*" refers to all origins; any origin will match an allowlist which
 //   contains it.
 //

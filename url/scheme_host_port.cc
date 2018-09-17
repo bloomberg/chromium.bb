@@ -209,11 +209,6 @@ GURL SchemeHostPort::GetURL() const {
   return GURL(std::move(serialized), parsed, true);
 }
 
-bool SchemeHostPort::Equals(const SchemeHostPort& other) const {
-  return port_ == other.port() && scheme_ == other.scheme() &&
-         host_ == other.host();
-}
-
 bool SchemeHostPort::operator<(const SchemeHostPort& other) const {
   return std::tie(port_, scheme_, host_) <
          std::tie(other.port_, other.scheme_, other.host_);
@@ -256,6 +251,11 @@ std::string SchemeHostPort::SerializeInternal(url::Parsed* parsed) const {
   }
 
   return result;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const SchemeHostPort& scheme_host_port) {
+  return out << scheme_host_port.Serialize();
 }
 
 }  // namespace url

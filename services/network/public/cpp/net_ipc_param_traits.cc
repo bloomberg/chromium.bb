@@ -500,19 +500,20 @@ bool ParamTraits<url::Origin>::Read(const base::Pickle* m,
   uint16_t port;
   if (!ReadParam(m, iter, &unique) || !ReadParam(m, iter, &scheme) ||
       !ReadParam(m, iter, &host) || !ReadParam(m, iter, &port)) {
-    *p = url::Origin();
     return false;
   }
 
-  *p = unique ? url::Origin()
-              : url::Origin::UnsafelyCreateOriginWithoutNormalization(
-                    scheme, host, port);
+  if (unique) {
+    *p = url::Origin();
+  } else {
+    base::Optional<url::Origin> origin =
+        url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(scheme, host,
+                                                                   port);
+    if (!origin.has_value())
+      return false;
 
-  // If a unique origin was created, but the unique flag wasn't set, then
-  // the values provided to 'UnsafelyCreateOriginWithoutNormalization' were
-  // invalid; kill the renderer.
-  if (!unique && p->unique())
-    return false;
+    *p = origin.value();
+  }
 
   return true;
 }

@@ -49,9 +49,9 @@ struct Parsed;
 //   these constructs.
 //
 // * SchemeHostPort has no notion of the Origin concept (RFC 6454), and in
-//   particular, it has no notion of a "unique" Origin. If you need to take
-//   uniqueness into account (and, if you're making security-relevant decisions
-//   then you absolutely do), please use 'url::Origin' instead.
+//   particular, it has no notion of an opaque Origin. If you need to take
+//   opaque origins into account (and, if you're making security-relevant
+//   decisions then you absolutely do), please use 'url::Origin' instead.
 //
 // Usage:
 //
@@ -71,7 +71,7 @@ struct Parsed;
 //     tuple.port(); // 443
 //
 //     GURL url("https://example.com/");
-//     tuple.Equals(url::SchemeHostPort(url)); // true
+//     tuple == url::SchemeHostPort(url); // true
 class URL_EXPORT SchemeHostPort {
  public:
   // Creates an invalid (scheme, host, port) tuple, which represents an invalid
@@ -129,7 +129,7 @@ class URL_EXPORT SchemeHostPort {
   // While this string form resembles the Origin serialization specified in
   // Section 6.2 of RFC 6454, it is important to note that invalid
   // SchemeHostPort tuples serialize to the empty string, rather than being
-  // serialized as a unique Origin.
+  // serialized as would an opaque Origin.
   std::string Serialize() const;
 
   // Efficiently returns what GURL(Serialize()) would return, without needing to
@@ -141,9 +141,14 @@ class URL_EXPORT SchemeHostPort {
   //
   // Note that this comparison is _not_ the same as an origin-based comparison.
   // In particular, invalid SchemeHostPort objects match each other (and
-  // themselves). Unique origins, on the other hand, would not.
-  bool Equals(const SchemeHostPort& other) const;
-
+  // themselves). Opaque origins, on the other hand, would not.
+  bool operator==(const SchemeHostPort& other) const {
+    return port_ == other.port() && scheme_ == other.scheme() &&
+           host_ == other.host();
+  }
+  bool operator!=(const SchemeHostPort& other) const {
+    return !(*this == other);
+  }
   // Allows SchemeHostPort to be used as a key in STL (for example, a std::set
   // or std::map).
   bool operator<(const SchemeHostPort& other) const;
@@ -155,6 +160,9 @@ class URL_EXPORT SchemeHostPort {
   std::string host_;
   uint16_t port_;
 };
+
+URL_EXPORT std::ostream& operator<<(std::ostream& out,
+                                    const SchemeHostPort& scheme_host_port);
 
 }  // namespace url
 

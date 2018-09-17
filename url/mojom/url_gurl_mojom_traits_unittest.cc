@@ -72,8 +72,9 @@ TEST(MojoGURLStructTraitsTest, Basic) {
   }
 
   // Test basic Origin serialization.
-  Origin non_unique = Origin::UnsafelyCreateOriginWithoutNormalization(
-      "http", "www.google.com", 80);
+  Origin non_unique = Origin::UnsafelyCreateTupleOriginWithoutNormalization(
+                          "http", "www.google.com", 80)
+                          .value();
   Origin output;
   EXPECT_TRUE(proxy->BounceOrigin(non_unique, &output));
   EXPECT_EQ(non_unique, output);

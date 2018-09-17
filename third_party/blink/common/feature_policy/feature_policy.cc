@@ -20,6 +20,7 @@ std::unique_ptr<FeaturePolicy::Allowlist> AllowlistFromDeclaration(
     result->AddAll();
   for (const auto& origin : parsed_declaration.origins)
     result->Add(origin);
+
   return result;
 }
 
@@ -82,7 +83,7 @@ bool FeaturePolicy::Allowlist::Contains(const url::Origin& origin) const {
   if (matches_all_origins_)
     return true;
   for (const auto& targetOrigin : origins_) {
-    if (targetOrigin.IsSameOriginWith(origin))
+    if (!origin.unique() && targetOrigin.IsSameOriginWith(origin))
       return true;
   }
   return false;
@@ -125,12 +126,8 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(
       feature_list_.at(feature);
   if (default_policy == FeaturePolicy::FeatureDefault::EnableForAll)
     return true;
-  if (default_policy == FeaturePolicy::FeatureDefault::EnableForSelf) {
-    // TODO(iclelland): Remove the pointer equality check once it is possible to
-    // compare opaque origins successfully against themselves.
-    // https://crbug.com/690520
-    return (&origin_ == &origin) || origin_.IsSameOriginWith(origin);
-  }
+  if (default_policy == FeaturePolicy::FeatureDefault::EnableForSelf)
+    return origin_.IsSameOriginWith(origin);
   return false;
 }
 
@@ -170,7 +167,14 @@ void FeaturePolicy::SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header) {
 
 FeaturePolicy::FeaturePolicy(url::Origin origin,
                              const FeatureList& feature_list)
-    : origin_(origin), feature_list_(feature_list) {}
+    : origin_(std::move(origin)), feature_list_(feature_list) {
+  if (origin_.unique()) {
+    // FeaturePolicy was written expecting opaque Origins to be indistinct, but
+    // this has changed. Split out a new opaque origin here, to defend against
+    // origin-equality.
+    origin_ = origin_.DeriveNewOpaqueOrigin();
+  }
+}
 
 FeaturePolicy::~FeaturePolicy() = default;
 
