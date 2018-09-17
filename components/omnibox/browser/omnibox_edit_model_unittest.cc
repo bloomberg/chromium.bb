@@ -11,6 +11,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -141,7 +142,7 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
         base::ASCIIToUTF16(input[i].url_for_editing));
     toolbar_model()->set_url_for_display(
         base::ASCIIToUTF16(input[i].url_for_display));
-    model()->ResetDisplayUrls();
+    model()->ResetDisplayTexts();
 
     model()->SetInputInProgress(input[i].is_match_selected_in_popup);
     model()->SetPopupIsOpen(input[i].is_match_selected_in_popup);
@@ -228,11 +229,52 @@ TEST_F(OmniboxEditModelTest, GenerateMatchesFromFullFormattedUrl) {
   toolbar_model()->set_formatted_full_url(
       base::ASCIIToUTF16("http://localhost/"));
   toolbar_model()->set_url_for_display(base::ASCIIToUTF16("localhost"));
-  model()->ResetDisplayUrls();
+  model()->ResetDisplayTexts();
 
   // Bypass the test class's mock method to test the real behavior.
   AutocompleteMatch match = model()->OmniboxEditModel::CurrentMatch(nullptr);
   EXPECT_EQ(AutocompleteMatchType::URL_WHAT_YOU_TYPED, match.type);
+}
+
+TEST_F(OmniboxEditModelTest, DisplayText) {
+  toolbar_model()->set_formatted_full_url(
+      base::ASCIIToUTF16("https://www.example.com/"));
+  toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
+
+  // Verify the displayed text with Steady State Elisions Enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
+    model()->ResetDisplayTexts();
+    EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
+              model()->GetPermanentDisplayText());
+  }
+
+// TODO(tommycli): For now, it's not possible to enable Steady State Elisions
+// in the edit model for iOS.
+#if !defined(OS_IOS)
+  // Verify the displayed text with Steady State Elisions Disabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
+
+    ASSERT_TRUE(
+        OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled());
+
+    model()->ResetDisplayTexts();
+    EXPECT_EQ(base::ASCIIToUTF16("example.com"),
+              model()->GetPermanentDisplayText());
+  }
+#endif  // !defined(OS_IOS)
+
+  // Verify the displayed text when there is a Query in Omnibox match.
+  TestOmniboxClient* client =
+      static_cast<TestOmniboxClient*>(model()->client());
+  client->SetFakeSearchTermsForQueryInOmnibox(base::ASCIIToUTF16("foobar"));
+  model()->ResetDisplayTexts();
+  EXPECT_EQ(base::ASCIIToUTF16("foobar"), model()->GetPermanentDisplayText());
 }
 
 TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {

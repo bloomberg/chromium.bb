@@ -35,6 +35,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/omnibox/browser/query_in_omnibox.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -166,9 +167,9 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
 }
 
 void OmniboxEditModel::RestoreState(const State* state) {
-  // We need to update the permanent display URLs correctly and revert the view
-  // regardless of whether there is saved state.
-  ResetDisplayUrls();
+  // We need to update the permanent display texts correctly and revert the
+  // view regardless of whether there is saved state.
+  ResetDisplayTexts();
 
   view_->RevertAll();
   // Restore the autocomplete controller's input, or clear it if this is a new
@@ -219,20 +220,32 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
   return match;
 }
 
-bool OmniboxEditModel::ResetDisplayUrls() {
-  const base::string16 old_current_permanent_url = GetCurrentPermanentUrlText();
+bool OmniboxEditModel::ResetDisplayTexts() {
+  const base::string16 old_display_text = GetPermanentDisplayText();
 
   // Track if the user has modified the text. This is different from
   // |user_input_in_progress_| because we care if the user has actually
   // modified the text, while |user_input_in_progress_| may be true even if
   // the user has merely made a partial selection.
-  bool user_has_modified_text = view_->GetText() != old_current_permanent_url;
+  bool user_has_modified_text = view_->GetText() != old_display_text;
 
-  url_for_editing_ = controller()->GetToolbarModel()->GetFormattedFullURL();
-  display_only_url_ =
-      OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled()
-          ? controller()->GetToolbarModel()->GetURLForDisplay()
-          : url_for_editing_;
+  ToolbarModel* toolbar_model = controller()->GetToolbarModel();
+  url_for_editing_ = toolbar_model->GetFormattedFullURL();
+
+  QueryInOmnibox* query_in_omnibox = client()->GetQueryInOmnibox();
+  base::string16 search_query;
+  if (query_in_omnibox &&
+      query_in_omnibox->GetDisplaySearchTerms(
+          toolbar_model->GetSecurityLevel(false /* ignore_editing */),
+          toolbar_model->GetURL(), &search_query)) {
+    DCHECK(!search_query.empty());
+    display_text_ = search_query;
+  } else if (OmniboxFieldTrial::
+                 IsHideSteadyStateUrlSchemeAndSubdomainsEnabled()) {
+    display_text_ = toolbar_model->GetURLForDisplay();
+  } else {
+    display_text_ = url_for_editing_;
+  }
 
   // When there's new permanent text, and the user isn't interacting with the
   // omnibox, we want to revert the edit to show the new text.  We could simply
@@ -244,7 +257,7 @@ bool OmniboxEditModel::ResetDisplayUrls() {
   // always safe to change the text; this also prevents someone toggling "Show
   // URL" (which sounds as if it might be persistent) from seeing just that URL
   // forever afterwards.
-  return (GetCurrentPermanentUrlText() != old_current_permanent_url) &&
+  return (GetPermanentDisplayText() != old_display_text) &&
          (!has_focus() || (!user_has_modified_text && !PopupIsOpen()));
 }
 
@@ -253,11 +266,11 @@ GURL OmniboxEditModel::PermanentURL() const {
                                  std::string());
 }
 
-base::string16 OmniboxEditModel::GetCurrentPermanentUrlText() const {
+base::string16 OmniboxEditModel::GetPermanentDisplayText() const {
   if (user_input_in_progress_)
     return url_for_editing_;
 
-  return display_only_url_;
+  return display_text_;
 }
 
 void OmniboxEditModel::SetUserText(const base::string16& text) {
@@ -315,7 +328,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
 
   // Check whether the user is trying to copy the current page's URL by checking
   // if |text| is the whole permanent URL.
-  if (!user_input_in_progress_ && *text == GetCurrentPermanentUrlText()) {
+  if (!user_input_in_progress_ && *text == GetPermanentDisplayText()) {
     // It's safe to copy the underlying URL.  These lines ensure that if the
     // scheme was stripped it's added back, and the URL is unescaped (we escape
     // parts of it for display).
@@ -407,7 +420,7 @@ void OmniboxEditModel::Revert() {
   // First home the cursor, so view of text is scrolled to left, then correct
   // it. |SetCaretPos()| doesn't scroll the text, so doing that first wouldn't
   // accomplish anything.
-  base::string16 current_permanent_url = GetCurrentPermanentUrlText();
+  base::string16 current_permanent_url = GetPermanentDisplayText();
   view_->SetWindowTextAndCaretPos(current_permanent_url, 0, false, true);
   view_->SetCaretPos(std::min(current_permanent_url.length(), start));
   client_->OnRevert();
@@ -1116,7 +1129,7 @@ void OmniboxEditModel::OnPopupDataChanged(
     view_->OnInlineAutocompleteTextCleared();
 
   const base::string16& user_text =
-      user_input_in_progress_ ? user_text_ : GetCurrentPermanentUrlText();
+      user_input_in_progress_ ? user_text_ : GetPermanentDisplayText();
   if (keyword_state_changed && is_keyword_selected()) {
     // If we reach here, the user most likely entered keyword mode by inserting
     // a space between a keyword name and a search string (as pressing space or

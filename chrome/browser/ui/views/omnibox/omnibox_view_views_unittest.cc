@@ -443,7 +443,7 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
   toolbar_model()->set_url_for_display(
       base::ASCIIToUTF16("https://permanent-text.com"));
 
-  omnibox_view()->model()->ResetDisplayUrls();
+  omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
 
   EXPECT_EQ(base::ASCIIToUTF16("https://permanent-text.com"),
@@ -494,7 +494,7 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
         omnibox_view()->GetRenderText());
     render_text_test_api.SetGlyphWidth(kCharacterWidth);
 
-    omnibox_view()->model()->ResetDisplayUrls();
+    omnibox_view()->model()->ResetDisplayTexts();
     omnibox_view()->RevertAll();
   }
 
