@@ -11,7 +11,9 @@
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -21,6 +23,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -155,7 +158,7 @@ void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
 
   switch (demo_config_) {
     case DemoSession::DemoModeConfig::kOnline:
-      EnrollOnline();
+      LoadDemoResourcesCrOSComponent();
       return;
     case DemoSession::DemoModeConfig::kOffline: {
       const base::FilePath offline_data_dir =
@@ -169,8 +172,39 @@ void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
   }
 }
 
-void DemoSetupController::EnrollOnline() {
+void DemoSetupController::LoadDemoResourcesCrOSComponent() {
+  component_updater::CrOSComponentManager* cros_component_manager =
+      g_browser_process->platform_part()->cros_component_manager();
+  // In tests, use the desired error code.
+  if (!cros_component_manager ||
+      chromeos::DBusThreadManager::Get()->IsUsingFakes()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DemoSetupController::OnDemoResourcesCrOSComponentLoaded,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       component_error_for_tests_, base::FilePath()));
+    return;
+  }
+
+  cros_component_manager->Load(
+      DemoSession::kDemoModeResourcesComponentName,
+      component_updater::CrOSComponentManager::MountPolicy::kMount,
+      component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
+      base::BindOnce(&DemoSetupController::OnDemoResourcesCrOSComponentLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DemoSetupController::OnDemoResourcesCrOSComponentLoaded(
+    component_updater::CrOSComponentManager::Error error,
+    const base::FilePath& path) {
   DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOnline);
+
+  if (error != component_updater::CrOSComponentManager::Error::NONE) {
+    SetupFailed("Failed to load demo resources CrOS component with error: " +
+                    std::to_string(static_cast<int>(error)),
+                DemoSetupError::kRecoverable);
+    return;
+  }
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -275,6 +309,11 @@ void DemoSetupController::OnDeviceAttributeUploadCompleted(bool success) {
 
 void DemoSetupController::OnDeviceAttributeUpdatePermission(bool granted) {
   NOTREACHED();
+}
+
+void DemoSetupController::SetCrOSComponentLoadErrorForTest(
+    component_updater::CrOSComponentManager::Error error) {
+  component_error_for_tests_ = error;
 }
 
 void DemoSetupController::SetDeviceLocalAccountPolicyStoreForTest(

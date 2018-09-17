@@ -24,6 +24,8 @@ namespace chromeos {
 
 namespace {
 
+// TODO(michaelpg): Clean up tests for offline resources and differentiate
+// between the CrOS component and the preinstalled resources image.
 constexpr char kOfflineResourcesComponent[] = "demo-mode-resources";
 constexpr char kTestDemoModeResourcesMountPoint[] =
     "/run/imageloader/demo_mode_resources";
