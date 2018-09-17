@@ -17,7 +17,7 @@ BUNDLETOOL_DIR = os.path.abspath(os.path.join(
     __file__, '..', '..', '..', '..', 'third_party', 'android_build_tools',
     'bundletool'))
 
-BUNDLETOOL_VERSION = '0.5.0'
+BUNDLETOOL_VERSION = '0.6.0'
 
 BUNDLETOOL_JAR_PATH = os.path.join(
     BUNDLETOOL_DIR, 'bundletool-all-%s.jar' % BUNDLETOOL_VERSION)
