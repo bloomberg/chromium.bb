@@ -1408,9 +1408,6 @@ const char kSaveFileDefaultDirectory[] = "savefile.default_directory";
 // the chrome/browser/download/save_package.h for the possible values.
 const char kSaveFileType[] = "savefile.type";
 
-// A list of download sources that can be trusted, e.g., enterprise intranet.
-const char kTrustedDownloadSources[] = "trusted_download_sources";
-
 // String which specifies the last directory that was chosen for uploading
 // or opening a file.
 const char kSelectFileLastDirectory[] = "selectfile.last_directory";
@@ -1432,10 +1429,6 @@ const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 // Dictionary of schemes used by the external protocol handler.
 // The value is true if the scheme must be ignored.
 const char kExcludedSchemes[] = "protocol_handler.excluded_schemes";
-
-// Integer that specifies the index of the tab the user was on when they
-// last visited the options window.
-const char kOptionsWindowLastTabIndex[] = "options_window.last_tab_index";
 
 // String containing the last known intranet redirect URL, if any.  See
 // intranet_redirect_detector.h for more information.
@@ -1556,10 +1549,6 @@ const char kDevToolsTCPDiscoveryConfig[] = "devtools.tcp_discovery_config";
 // A dictionary with generic DevTools settings.
 const char kDevToolsPreferences[] = "devtools.preferences";
 
-// Local hash of authentication password, used for off-line authentication
-// when on-line authentication is not available.
-const char kGoogleServicesPasswordHash[] = "google.services.password_hash";
-
 #if !defined(OS_ANDROID)
 // Tracks the number of times the dice signin promo has been shown in the user
 // menu.
@@ -1596,10 +1585,6 @@ const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
 // Dictionary that maps web app URLs to Chrome extension IDs.
 const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
 
-// Dictionary that maps Geolocation network provider server URLs to
-// corresponding access token.
-const char kGeolocationAccessToken[] = "geolocation.access_token";
-
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
 
@@ -1623,9 +1608,6 @@ const char kPrintPreviewStickySettings[] =
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
 
 #if defined(OS_WIN)
-// The "major.minor" OS version for which the welcome page was last shown.
-const char kLastWelcomedOSVersion[] = "browser.last_welcomed_os_version";
-
 // Boolean that specifies whether or not showing the welcome page following an
 // OS upgrade is enabled. True by default. May be set by master_preferences or
 // overridden by the WelcomePageOnOSUpgradeEnabled policy setting.
@@ -2168,9 +2150,6 @@ const char kAppListLocalState[] = "app_list.local_state";
 // An integer that is incremented whenever changes are made to app shortcuts.
 // Increasing this causes all app shortcuts to be recreated.
 const char kAppShortcutsVersion[] = "apps.shortcuts_version";
-
-// How often the bubble has been shown.
-const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";
 
 // A string pref for storing the salt used to compute the pepper device ID.
 const char kDRMSalt[] = "settings.privacy.drm_salt";

@@ -35,7 +35,6 @@ uint32_t GetHomeButtonAndHomePageIsNewTabPageFlags() {
 }  // namespace
 
 void RegisterBrowserPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   registry->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
 
 #if !defined(OS_ANDROID)
@@ -56,7 +55,6 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kShowHomeButton, false,
                                 GetHomeButtonAndHomePageIsNewTabPageFlags());
 
-  registry->RegisterIntegerPref(prefs::kModuleConflictBubbleShown, 0);
   registry->RegisterInt64Pref(prefs::kDefaultBrowserLastDeclined, 0);
   bool reset_check_default = false;
 #if defined(OS_WIN)

@@ -353,6 +353,16 @@ const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
 const char kDnsPrefetchingHostReferralList[] =
     "dns_prefetching.host_referral_list";
 
+// Deprecated 9/2018
+const char kGeolocationAccessToken[] = "geolocation.access_token";
+const char kGoogleServicesPasswordHash[] = "google.services.password_hash";
+const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";
+const char kOptionsWindowLastTabIndex[] = "options_window.last_tab_index";
+const char kTrustedDownloadSources[] = "trusted_download_sources";
+#if defined(OS_WIN)
+const char kLastWelcomedOSVersion[] = "browser.last_welcomed_os_version";
+#endif
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -369,6 +379,12 @@ void RegisterProfilePrefsForMigration(
 
   registry->RegisterListPref(kDnsPrefetchingStartupList);
   registry->RegisterListPref(kDnsPrefetchingHostReferralList);
+
+  registry->RegisterStringPref(kGeolocationAccessToken, std::string());
+  registry->RegisterStringPref(kGoogleServicesPasswordHash, std::string());
+  registry->RegisterIntegerPref(kModuleConflictBubbleShown, 0);
+  registry->RegisterIntegerPref(kOptionsWindowLastTabIndex, 0);
+  registry->RegisterStringPref(kTrustedDownloadSources, std::string());
 }
 
 }  // namespace
@@ -500,6 +516,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   registry->RegisterBooleanPref(kResetHasSeenWin10PromoPage, false);
+  registry->RegisterStringPref(kLastWelcomedOSVersion, std::string());
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -773,6 +790,9 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 #if defined(OS_WIN)
   // Added 6/2018.
   local_state->ClearPref(kResetHasSeenWin10PromoPage);
+
+  // Added 9/2018
+  local_state->ClearPref(kLastWelcomedOSVersion);
 #endif
 }
 
@@ -802,4 +822,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 8/2018
   profile_prefs->ClearPref(kDnsPrefetchingStartupList);
   profile_prefs->ClearPref(kDnsPrefetchingHostReferralList);
+
+  // Added 9/2018
+  profile_prefs->ClearPref(kGeolocationAccessToken);
+  profile_prefs->ClearPref(kGoogleServicesPasswordHash);
+  profile_prefs->ClearPref(kModuleConflictBubbleShown);
+  profile_prefs->ClearPref(kOptionsWindowLastTabIndex);
+  profile_prefs->ClearPref(kTrustedDownloadSources);
 }

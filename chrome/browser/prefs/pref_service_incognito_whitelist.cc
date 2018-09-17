@@ -223,8 +223,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kOpenPdfDownloadInSystemReader,
 #endif
 
-    prefs::kTrustedDownloadSources,
-
     prefs::kDefaultTasksByMimeType,
     prefs::kDefaultTasksBySuffix,
 
@@ -239,13 +237,9 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kWasRestarted,
 #endif  // !defined(OS_ANDROID)
 
-    prefs::kGoogleServicesPasswordHash,
-
     prefs::kWebAppCreateOnDesktop,
     prefs::kWebAppCreateInAppsMenu,
     prefs::kWebAppCreateInQuickLaunchBar,
-
-    prefs::kGeolocationAccessToken,
 
     prefs::kDefaultAudioCaptureDevice,
     prefs::kDefaultVideoCaptureDevice,
@@ -258,10 +252,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kPerformanceTracingEnabled,
 
     prefs::kTabStripStackedLayout,
-
-#if defined(OS_WIN)
-    prefs::kLastWelcomedOSVersion,
-#endif
 
     prefs::kCertRevocationCheckingEnabled,
     prefs::kCertRevocationCheckingRequiredLocalAnchors,
@@ -294,8 +284,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #if BUILDFLAG(ENABLE_APP_LIST)
     prefs::kAppListLocalState,
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
-
-    prefs::kModuleConflictBubbleShown,
 
     prefs::kDRMSalt,
     prefs::kEnableDRM,

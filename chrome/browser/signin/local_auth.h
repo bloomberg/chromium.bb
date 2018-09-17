@@ -19,15 +19,8 @@ class LocalAuthTest;
 class Profile;
 class ProfileAttributesEntry;
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 class LocalAuth {
  public:
-  static void RegisterLocalAuthPrefs(
-      user_prefs::PrefRegistrySyncable* registry);
-
   static void SetLocalAuthCredentials(ProfileAttributesEntry* entry,
                                       const std::string& password);
 

@@ -445,7 +445,6 @@ void StartupBrowserCreator::ClearLaunchedProfilesForTesting() {
 void StartupBrowserCreator::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
 #if defined(OS_WIN)
-  registry->RegisterStringPref(prefs::kLastWelcomedOSVersion, std::string());
   registry->RegisterBooleanPref(prefs::kWelcomePageOnOSUpgradeEnabled, true);
   registry->RegisterBooleanPref(prefs::kHasSeenWin10PromoPage, false);
 #endif

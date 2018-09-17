@@ -491,7 +491,6 @@ extern const char kShowMissingSdCardErrorAndroid[];
 
 extern const char kSaveFileDefaultDirectory[];
 extern const char kSaveFileType[];
-extern const char kTrustedDownloadSources[];
 
 extern const char kAllowFileSelectionDialogs[];
 extern const char kDefaultTasksByMimeType[];
@@ -500,8 +499,6 @@ extern const char kDefaultTasksBySuffix[];
 extern const char kSelectFileLastDirectory[];
 
 extern const char kExcludedSchemes[];
-
-extern const char kOptionsWindowLastTabIndex[];
 
 extern const char kLastKnownIntranetRedirectOrigin[];
 
@@ -547,8 +544,6 @@ extern const char kDevToolsPreferences[];
 extern const char kDevToolsDiscoverTCPTargetsEnabled[];
 extern const char kDevToolsTCPDiscoveryConfig[];
 
-extern const char kGoogleServicesPasswordHash[];
-
 #if !defined(OS_ANDROID)
 extern const char kDiceSigninUserMenuPromoCount[];
 extern const char kSignInPromoStartupCount[];
@@ -564,8 +559,6 @@ extern const char kWebAppCreateInQuickLaunchBar[];
 extern const char kWebAppInstallForceList[];
 
 extern const char kWebAppsExtensionIDs[];
-
-extern const char kGeolocationAccessToken[];
 
 extern const char kDefaultAudioCaptureDevice[];
 extern const char kDefaultVideoCaptureDevice[];
@@ -662,7 +655,6 @@ extern const char kTabStripStackedLayout[];
 extern const char kRegisteredBackgroundContents[];
 
 #if defined(OS_WIN)
-extern const char kLastWelcomedOSVersion[];
 extern const char kWelcomePageOnOSUpgradeEnabled[];
 #endif
 
@@ -761,8 +753,6 @@ extern const char kAppListLocalState[];
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 extern const char kAppShortcutsVersion[];
-
-extern const char kModuleConflictBubbleShown[];
 
 extern const char kDRMSalt[];
 extern const char kEnableDRM[];
