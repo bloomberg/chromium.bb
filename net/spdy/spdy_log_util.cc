@@ -14,8 +14,6 @@ namespace net {
 
 std::string ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
                                           base::StringPiece debug_data) {
-  // Note: this logic should be kept in sync with stripGoAwayDebugData in
-  // chrome/browser/resources/net_internals/log_view_painter.js.
   if (capture_mode.include_cookies_and_credentials()) {
     return debug_data.as_string();
   }
