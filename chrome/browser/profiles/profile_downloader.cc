@@ -31,7 +31,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
 #include "skia/ext/image_operations.h"
 #include "url/gurl.h"
 
@@ -143,11 +143,11 @@ void ProfileDownloader::StartFetchingOAuth2AccessToken() {
   scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
 
   oauth2_access_token_fetcher_ =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-          "profile_downloader", identity_manager_, scopes,
+      identity_manager_->CreateAccessTokenFetcherForAccount(
+          account_id_, "profile_downloader", scopes,
           base::BindOnce(&ProfileDownloader::OnAccessTokenFetchComplete,
                          base::Unretained(this)),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
 ProfileDownloader::~ProfileDownloader() {
