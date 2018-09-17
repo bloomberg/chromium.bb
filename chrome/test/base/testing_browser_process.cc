@@ -25,7 +25,7 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
-#include "components/subresource_filter/content/browser/content_ruleset_service.h"
+#include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/buildflags/buildflags.h"
