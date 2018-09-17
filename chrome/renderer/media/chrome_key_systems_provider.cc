@@ -6,6 +6,7 @@
 
 #include "base/time/default_tick_clock.h"
 #include "chrome/renderer/media/chrome_key_systems.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 

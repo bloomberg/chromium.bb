@@ -34,6 +34,7 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/media_switches.h"
 #include "media/base/provision_fetcher.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 // In SHARED_INTERMEDIATE_DIR
 #include "widevine_cdm_version.h"  // NOLINT(build/include)
