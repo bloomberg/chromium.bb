@@ -56,8 +56,10 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_MirrorHTML5Video) {
 
 IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest,
                        MANUAL_OpenLocalMediaFileFullscreen) {
-  GURL file_url = net::FilePathToFileURL(
-      media::GetTestDataFilePath("butterfly-853x480.webm"));
+  GURL file_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("media/bigbuck.webm")));
+
   // Start at a new tab, the file should open in the same tab.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Make sure there is 1 tab.
@@ -83,14 +85,20 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest,
   WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, receiver());
 
-  // Play the file for 10 seconds.
-  Wait(base::TimeDelta::FromSeconds(10));
+  // Play the file for 15 seconds.
+  Wait(base::TimeDelta::FromSeconds(15));
 
   // Expect that the current tab has the file open in it.
   ASSERT_EQ(file_url, web_contents->GetURL());
+
   // Expect that fullscreen is active.
-  ASSERT_TRUE(
-      web_contents->GetDelegate()->IsFullscreenForTabOrPending(web_contents));
+  bool is_fullscreen = false;
+  std::string is_fullscreen_script =
+      "domAutomationController.send"
+      "(document.webkitCurrentFullScreenElement != null);";
+  CHECK(content::ExecuteScriptAndExtractBool(web_contents, is_fullscreen_script,
+                                             &is_fullscreen));
+  ASSERT_TRUE(is_fullscreen);
 }
 
 }  // namespace media_router
