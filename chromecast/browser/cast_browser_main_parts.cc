@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <string>
+#include <vector>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -274,6 +275,25 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
 };
 
 void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
+  std::string default_command_line_flags_string =
+      BUILDFLAG(DEFAULT_COMMAND_LINE_FLAGS);
+  std::vector<std::string> default_command_line_flags_list =
+      base::SplitString(default_command_line_flags_string, ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (auto default_command_line_flag : default_command_line_flags_list) {
+    std::vector<std::string> default_command_line_flag_content =
+        base::SplitString(default_command_line_flag, "=", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+    if (default_command_line_flag_content.size() == 2 &&
+        !command_line->HasSwitch(default_command_line_flag_content[0])) {
+      DVLOG(2) << "Set default command line switch '"
+               << default_command_line_flag_content[0] << "' = '"
+               << default_command_line_flag_content[1] << "'";
+      command_line->AppendSwitchASCII(default_command_line_flag_content[0],
+                                      default_command_line_flag_content[1]);
+    }
+  }
+
   for (const auto& default_switch : kDefaultSwitches) {
     // Don't override existing command line switch values with these defaults.
     // This could occur primarily (or only) on Android, where the command line
