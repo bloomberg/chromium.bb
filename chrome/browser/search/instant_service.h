@@ -20,6 +20,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -163,7 +164,12 @@ class InstantService : public KeyedService,
 
   void ApplyOrResetCustomBackgroundThemeInfo();
 
+  void ApplyCustomBackgroundThemeInfo();
+  void ApplyCustomBackgroundThemeInfoFromLocalFile(bool file_exists);
+
   void ResetCustomBackgroundThemeInfo();
+
+  void FallbackToDefaultThemeInfo();
 
   // Update the background pref to point to
   // chrome-search://local-ntp/background.jpg
@@ -191,6 +197,10 @@ class InstantService : public KeyedService,
 
   // Keeps track of any changes in search engine provider. May be null.
   std::unique_ptr<SearchProviderObserver> search_provider_observer_;
+
+  PrefChangeRegistrar pref_change_registrar_;
+
+  PrefService* pref_service_;
 
   base::WeakPtrFactory<InstantService> weak_ptr_factory_;
 

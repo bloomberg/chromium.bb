@@ -1504,6 +1504,8 @@ const char kContentSuggestionsNotificationsSentCount[] =
 #else
 // Holds info for New Tab Page custom background
 const char kNtpCustomBackgroundDict[] = "ntp.custom_background_dict";
+const char kNtpCustomBackgroundLocalToDevice[] =
+    "ntp.custom_background_local_to_device";
 #endif  // defined(OS_ANDROID)
 
 // Which page should be visible on the new tab page v4
