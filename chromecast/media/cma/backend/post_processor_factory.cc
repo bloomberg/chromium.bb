@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/stringprintf.h"
@@ -21,6 +22,23 @@ namespace {
 
 const char kV1SoCreateFunction[] = "AudioPostProcessorShlib_Create";
 const char kV2SoCreateFunction[] = "AudioPostProcessor2Shlib_Create";
+const char kPreferredLibraryPath[] = "/system/chrome/lib/processors";
+const char kPreferredOemLibraryPath[] = "/oem_cast_shlibs/processors";
+
+base::FilePath FindLibrary(const std::string& library_name) {
+  base::FilePath path(kPreferredLibraryPath + library_name);
+  if (base::PathExists(path)) {
+    return path;
+  }
+  path = base::FilePath(kPreferredOemLibraryPath + library_name);
+  if (base::PathExists(path)) {
+    return path;
+  }
+  LOG(WARNING) << library_name << " not found in " << kPreferredLibraryPath
+               << " or " << kPreferredOemLibraryPath
+               << ". Prefer storing post processors in these directories.";
+  return base::FilePath(library_name);
+}
 
 }  // namespace
 
@@ -34,13 +52,13 @@ PostProcessorFactory::PostProcessorFactory() = default;
 PostProcessorFactory::~PostProcessorFactory() = default;
 
 std::unique_ptr<AudioPostProcessor2> PostProcessorFactory::CreatePostProcessor(
-    const std::string& library_path,
+    const std::string& library_name,
     const std::string& config,
     int channels) {
-  libraries_.push_back(std::make_unique<base::ScopedNativeLibrary>(
-      base::FilePath(library_path)));
+  base::FilePath path = FindLibrary(library_name);
+  libraries_.push_back(std::make_unique<base::ScopedNativeLibrary>(path));
   CHECK(libraries_.back()->is_valid())
-      << "Could not open post processing library " << library_path;
+      << "Could not open post processing library " << library_name;
 
   auto v2_create = reinterpret_cast<CreatePostProcessor2Function>(
       libraries_.back()->GetFunctionPointer(kV2SoCreateFunction));
@@ -52,10 +70,10 @@ std::unique_ptr<AudioPostProcessor2> PostProcessorFactory::CreatePostProcessor(
       libraries_.back()->GetFunctionPointer(kV1SoCreateFunction));
 
   DCHECK(v1_create) << "Could not find " << kV1SoCreateFunction << "() in "
-                    << library_path;
+                    << library_name;
 
   LOG(WARNING) << "[Deprecated]: AudioPostProcessor will be deprecated soon."
-               << " Please update " << library_path
+               << " Please update " << library_name
                << " to AudioPostProcessor2.";
 
   return std::make_unique<AudioPostProcessorWrapper>(
@@ -81,6 +99,11 @@ bool PostProcessorFactory::IsPostProcessorLibrary(
   }
 
   return false;
+}
+
+// static
+base::FilePath const PostProcessorFactory::GetPostProcessorDirectory() {
+  return base::FilePath(kPreferredLibraryPath);
 }
 
 }  // namespace media
