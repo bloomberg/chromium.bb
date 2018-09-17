@@ -19,10 +19,10 @@ const base::Feature kAffiliationBasedMatching = {
 const base::Feature kAutofillHome = {"AutofillHome",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Deletes entries from local database on Mac which cannot be decrypted when
-// merging data with Sync.
-const base::Feature kDeleteUndecryptableLogins = {
-    "DeleteUndecryptableLogins", base::FEATURE_ENABLED_BY_DEFAULT};
+// Recovers lost passwords on Mac by deleting ones that cannot be decrypted
+// with the present encryption key from the Keychain.
+const base::Feature kDeleteCorruptedPasswords = {
+    "DeleteCorruptedPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use HTML based username detector.
 const base::Feature kHtmlBasedUsernameDetector = {
@@ -58,6 +58,11 @@ const base::Feature kPasswordSearchMobile = {"PasswordSearchMobile",
 // Adds password-related features to the keyboard accessory on mobile devices.
 const base::Feature kPasswordsKeyboardAccessory = {
     "PasswordsKeyboardAccessory", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Deletes entries from local database on Mac which cannot be decrypted when
+// merging data with Sync.
+const base::Feature kRecoverPasswordsForSyncUsers = {
+    "RecoverPasswordsForSyncUsers", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.

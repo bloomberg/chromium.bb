@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -25,6 +26,7 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -2043,11 +2045,6 @@ class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
 
   void TearDown() override { OSCryptMocker::TearDown(); }
 
-  // Fills |form| with dummy data. It sets password value to |unique_string|.
-  static PasswordForm GenerateUniquePasswordForm(
-      const base::string16& unique_string,
-      const GURL& origin);
-
   // Generates login depending on |unique_string| and |origin| parameters and
   // adds it to the database. Changes encrypted password in the database if the
   // |should_be_corrupted| flag is active.
@@ -2072,26 +2069,19 @@ class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(LoginDatabaseUndecryptableLoginsTest);
 };
 
-// static
-PasswordForm LoginDatabaseUndecryptableLoginsTest::GenerateUniquePasswordForm(
-    const base::string16& unique_string,
-    const GURL& origin) {
-  PasswordForm form;
-  form.origin = origin;
-  form.username_element = unique_string;
-  form.username_value = unique_string;
-  form.password_element = unique_string;
-  form.password_value = unique_string;
-  form.signon_realm = origin.GetOrigin().spec();
-  return form;
-}
-
 PasswordForm LoginDatabaseUndecryptableLoginsTest::AddDummyLogin(
     const std::string& unique_string,
     const GURL& origin,
     bool should_be_corrupted) {
-  PasswordForm form =
-      GenerateUniquePasswordForm(ASCIIToUTF16(unique_string), origin);
+  // Create a dummy password form.
+  const base::string16 unique_string16 = ASCIIToUTF16(unique_string);
+  PasswordForm form;
+  form.origin = origin;
+  form.username_element = unique_string16;
+  form.username_value = unique_string16;
+  form.password_element = unique_string16;
+  form.password_value = unique_string16;
+  form.signon_realm = origin.GetOrigin().spec();
 
   {
     LoginDatabase db(database_path());
@@ -2170,6 +2160,64 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+TEST_F(LoginDatabaseUndecryptableLoginsTest, PasswordRecoveryEnabledGetLogins) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kDeleteCorruptedPasswords);
+
+  auto form1 = AddDummyLogin("foo1", GURL("https://foo1.com/"), false);
+  auto form2 = AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
+  auto form3 = AddDummyLogin("foo3", GURL("https://foo3.com/"), false);
+
+  LoginDatabase db(database_path());
+  ASSERT_TRUE(db.Init());
+
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  EXPECT_TRUE(db.GetAutofillableLogins(&result));
+  EXPECT_THAT(result, UnorderedElementsAre(Pointee(form1), Pointee(form3)));
+}
+
+TEST_F(LoginDatabaseUndecryptableLoginsTest,
+       PasswordRecoveryDisabledGetLogins) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDeleteCorruptedPasswords);
+
+  AddDummyLogin("foo1", GURL("https://foo1.com/"), false);
+  AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
+
+  LoginDatabase db(database_path());
+  ASSERT_TRUE(db.Init());
+
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  EXPECT_FALSE(db.GetAutofillableLogins(&result));
+  EXPECT_TRUE(result.empty());
+}
+
+TEST_F(LoginDatabaseUndecryptableLoginsTest,
+       PasswordRecoveryEnabledKeychainLocked) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kDeleteCorruptedPasswords);
+
+  // This is a valid entry.
+  auto form = AddDummyLogin("foo", GURL("https://foo.com/"), false);
+
+  OSCryptMocker::SetBackendLocked(true);
+
+  LoginDatabase db(database_path());
+  ASSERT_TRUE(db.Init());
+
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  EXPECT_FALSE(db.GetAutofillableLogins(&result));
+  EXPECT_TRUE(result.empty());
+
+  // Note: it's not possible that encryption suddenly becomes available. This is
+  // only used to check that the form is not removed from the database.
+  OSCryptMocker::SetBackendLocked(false);
+
+  EXPECT_TRUE(db.GetAutofillableLogins(&result));
+  EXPECT_THAT(result, UnorderedElementsAre(Pointee(form)));
+}
+
 TEST_F(LoginDatabaseUndecryptableLoginsTest, KeychainLockedTest) {
   AddDummyLogin("foo1", GURL("https://foo1.com/"), false);
   AddDummyLogin("foo2", GURL("https://foo2.com/"), true);
@@ -2190,6 +2238,6 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, KeychainLockedTest) {
           kEncryptionUnavailable,
       1);
 }
-#endif
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 }  // namespace password_manager

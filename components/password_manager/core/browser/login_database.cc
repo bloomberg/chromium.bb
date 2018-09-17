@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -34,6 +35,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "sql/database.h"
@@ -520,6 +522,18 @@ std::string GeneratePlaceholders(size_t count) {
     result[i] = '?';
   }
   return result;
+}
+
+// Fills |form| with necessary data required to be removed from the database
+// and returns it.
+PasswordForm GetFormForRemoval(const sql::Statement& statement) {
+  PasswordForm form;
+  form.origin = GURL(statement.ColumnString(COLUMN_ORIGIN_URL));
+  form.username_element = statement.ColumnString16(COLUMN_USERNAME_ELEMENT);
+  form.username_value = statement.ColumnString16(COLUMN_USERNAME_VALUE);
+  form.password_element = statement.ColumnString16(COLUMN_PASSWORD_ELEMENT);
+  form.signon_realm = statement.ColumnString(COLUMN_SIGNON_REALM);
+  return form;
 }
 
 }  // namespace
@@ -1026,7 +1040,7 @@ bool LoginDatabase::RemoveLoginsSyncedBetween(base::Time delete_begin,
 }
 
 bool LoginDatabase::GetAutoSignInLogins(
-    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(forms);
   DCHECK(!autosignin_statement_.empty());
   sql::Statement s(
@@ -1118,7 +1132,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
 
 bool LoginDatabase::GetLogins(
     const PasswordStore::FormDigest& form,
-    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(forms);
   const GURL signon_realm(form.signon_realm);
   std::string registered_domain = GetRegistryControlledDomain(signon_realm);
@@ -1200,7 +1214,7 @@ bool LoginDatabase::GetLogins(
 
 bool LoginDatabase::GetLoginsForSameOrganizationName(
     const std::string& signon_realm,
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   DCHECK(forms);
   forms->clear();
 
@@ -1243,7 +1257,7 @@ bool LoginDatabase::GetLoginsForSameOrganizationName(
 bool LoginDatabase::GetLoginsCreatedBetween(
     const base::Time begin,
     const base::Time end,
-    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(forms);
   DCHECK(!created_statement_.empty());
   sql::Statement s(
@@ -1258,7 +1272,7 @@ bool LoginDatabase::GetLoginsCreatedBetween(
 bool LoginDatabase::GetLoginsSyncedBetween(
     const base::Time begin,
     const base::Time end,
-    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(forms);
   DCHECK(!synced_statement_.empty());
   sql::Statement s(
@@ -1272,18 +1286,18 @@ bool LoginDatabase::GetLoginsSyncedBetween(
 }
 
 bool LoginDatabase::GetAutofillableLogins(
-    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   return GetAllLoginsWithBlacklistSetting(false, forms);
 }
 
 bool LoginDatabase::GetBlacklistLogins(
-    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   return GetAllLoginsWithBlacklistSetting(true, forms);
 }
 
 bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
     bool blacklisted,
-    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   DCHECK(forms);
   DCHECK(!blacklisted_statement_.empty());
   sql::Statement s(
@@ -1333,15 +1347,8 @@ DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
       continue;
 
     // If it was not possible to decrypt the password, remove it from the
-    // database. Fill |form| with necessary data required to be removed from
-    // the database.
-    PasswordForm form;
-    form.origin = GURL(s.ColumnString(COLUMN_ORIGIN_URL));
-    form.username_element = s.ColumnString16(COLUMN_USERNAME_ELEMENT);
-    form.username_value = s.ColumnString16(COLUMN_USERNAME_VALUE);
-    form.password_element = s.ColumnString16(COLUMN_PASSWORD_ELEMENT);
-    form.signon_realm = s.ColumnString(COLUMN_SIGNON_REALM);
-    forms_to_be_deleted.push_back(std::move(form));
+    // database.
+    forms_to_be_deleted.push_back(GetFormForRemoval(s));
   }
 
   for (const auto& form : forms_to_be_deleted) {
@@ -1392,8 +1399,10 @@ std::string LoginDatabase::GetEncryptedPassword(
 bool LoginDatabase::StatementToForms(
     sql::Statement* statement,
     const PasswordStore::FormDigest* matched_form,
-    std::vector<std::unique_ptr<PasswordForm>>* forms) const {
+    std::vector<std::unique_ptr<PasswordForm>>* forms) {
   PSLDomainMatchMetric psl_domain_match_metric = PSL_DOMAIN_MATCH_NONE;
+
+  std::vector<PasswordForm> forms_to_be_deleted;
 
   forms->clear();
   while (statement->Step()) {
@@ -1402,8 +1411,11 @@ bool LoginDatabase::StatementToForms(
         InitPasswordFormFromStatement(new_form.get(), *statement);
     if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
       return false;
-    if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
+    if (result == ENCRYPTION_RESULT_ITEM_FAILURE) {
+      if (IsUsingCleanupMechanism())
+        forms_to_be_deleted.push_back(GetFormForRemoval(*statement));
       continue;
+    }
     DCHECK_EQ(ENCRYPTION_RESULT_SUCCESS, result);
 
     if (matched_form) {
@@ -1431,6 +1443,14 @@ bool LoginDatabase::StatementToForms(
   if (matched_form) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
                               psl_domain_match_metric, PSL_DOMAIN_MATCH_COUNT);
+  }
+
+  // Remove corrupted passwords.
+  // TODO(tsabolcec): Instead of ignoring items that failed to be removed, count
+  // successfully removed entries and report it.
+  for (const auto& form : forms_to_be_deleted) {
+    if (!RemoveLogin(form))
+      continue;
   }
 
   if (!statement->Succeeded())
@@ -1507,6 +1527,14 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
   DCHECK(encrypted_statement_.empty());
   encrypted_statement_ =
       "SELECT password_value FROM logins WHERE " + all_unique_key_column_names;
+}
+
+bool LoginDatabase::IsUsingCleanupMechanism() const {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  return base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
+#else
+  return false;
+#endif
 }
 
 }  // namespace password_manager

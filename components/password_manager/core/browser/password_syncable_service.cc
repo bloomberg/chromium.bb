@@ -146,7 +146,7 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_entries;
   PasswordEntryMap new_local_entries;
   if (!ReadFromPasswordStore(&password_entries, &new_local_entries)) {
-    if (!base::FeatureList::IsEnabled(features::kDeleteUndecryptableLogins)) {
+    if (!ShouldRecoverPasswordsDuringMerge()) {
       merge_result.set_error(sync_error_factory->CreateAndUploadError(
           FROM_HERE, "Failed to get passwords from store."));
       metrics_util::LogPasswordSyncState(metrics_util::NOT_SYNCING_FAILED_READ);
@@ -430,6 +430,12 @@ void PasswordSyncableService::WriteEntriesToDatabase(
                         new_changes.begin(),
                         new_changes.end());
   }
+}
+
+bool PasswordSyncableService::ShouldRecoverPasswordsDuringMerge() const {
+  return base::FeatureList::IsEnabled(
+             features::kRecoverPasswordsForSyncUsers) &&
+         !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
 }
 
 syncer::SyncData SyncDataFromPassword(

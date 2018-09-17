@@ -521,10 +521,10 @@ TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
 }
 
 // Disable feature for deleting undecryptable logins.
-TEST_F(PasswordSyncableServiceTest, DeleteUndecryptableLoginsDisabled) {
+TEST_F(PasswordSyncableServiceTest, RecoverPasswordsForSyncUsersDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
-      features::kDeleteUndecryptableLogins);
+      features::kRecoverPasswordsForSyncUsers);
   auto error_factory = std::make_unique<syncer::SyncErrorFactoryMock>();
   syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                           "Failed to get passwords from store.",
@@ -543,10 +543,10 @@ TEST_F(PasswordSyncableServiceTest, DeleteUndecryptableLoginsDisabled) {
 }
 
 // Enable feature for deleting undecryptable logins.
-TEST_F(PasswordSyncableServiceTest, DeleteUndecryptableLoginsEnabled) {
+TEST_F(PasswordSyncableServiceTest, RecoverPasswordsForSyncUsersEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      features::kDeleteUndecryptableLogins);
+      features::kRecoverPasswordsForSyncUsers);
 
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
@@ -563,11 +563,36 @@ TEST_F(PasswordSyncableServiceTest, DeleteUndecryptableLoginsEnabled) {
   EXPECT_FALSE(result.error().IsSet());
 }
 
+// Test that corrupted logins are not removed when merging data if features
+// for recovering passwords for both Sync and non-Sync users are enabled.
+TEST_F(PasswordSyncableServiceTest, PasswordRecoveryForAllUsersEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({features::kRecoverPasswordsForSyncUsers,
+                                        features::kDeleteCorruptedPasswords},
+                                       {});
+
+  auto error_factory = std::make_unique<syncer::SyncErrorFactoryMock>();
+  syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                          "Failed to get passwords from store.",
+                          syncer::PASSWORDS);
+  EXPECT_CALL(*error_factory, CreateAndUploadError(_, _))
+      .WillOnce(Return(error));
+
+  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*password_store(), DeleteUndecryptableLogins()).Times(0);
+
+  syncer::SyncMergeResult result = service()->MergeDataAndStartSyncing(
+      syncer::PASSWORDS, SyncDataList(), std::move(processor_),
+      std::move(error_factory));
+  EXPECT_TRUE(result.error().IsSet());
+}
+
 // Database cleanup fails because encryption is unavailable.
 TEST_F(PasswordSyncableServiceTest, FailedDeleteUndecryptableLogins) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      features::kDeleteUndecryptableLogins);
+      features::kRecoverPasswordsForSyncUsers);
   auto error_factory = std::make_unique<syncer::SyncErrorFactoryMock>();
   syncer::SyncError error(
       FROM_HERE, syncer::SyncError::DATATYPE_ERROR,

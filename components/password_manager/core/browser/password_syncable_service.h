@@ -96,6 +96,18 @@ class PasswordSyncableService : public syncer::SyncableService {
       const std::vector<std::unique_ptr<autofill::PasswordForm>>& entries,
       PasswordStoreChangeList* all_changes);
 
+  // Returns true if corrupted passwords should be deleted from the local
+  // database when merging data.
+  // There are two features that handle recovering lost passwords.
+  // RecoverPasswordsForSyncUsers recovers passwords for sync users when merging
+  // data with Sync. If that feature is disabled, this method returns false.
+  // Other feature, DeleteCorruptedPasswords, is introduced after the first
+  // feature and recovers both Sync and non-Sync users internally in
+  // LoginDatabase. When that feature is enabled, this method returns false.
+  // After launching DeleteCorruptedPasswords, RecoverPasswordsForSyncUsers
+  // and related code is to be cleaned up.
+  bool ShouldRecoverPasswordsDuringMerge() const;
+
   // The factory that creates sync errors. |SyncError| has rich data
   // suitable for debugging.
   std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory_;
