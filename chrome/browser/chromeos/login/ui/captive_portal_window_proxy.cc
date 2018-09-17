@@ -93,9 +93,6 @@ void CaptivePortalWindowProxy::Close() {
     widget_->Close();
   captive_portal_view_.reset();
   captive_portal_view_for_testing_ = NULL;
-
-  for (auto& observer : observers_)
-    observer.OnAfterCaptivePortalHidden();
 }
 
 void CaptivePortalWindowProxy::OnRedirected() {
@@ -122,24 +119,16 @@ void CaptivePortalWindowProxy::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void CaptivePortalWindowProxy::OnWidgetClosing(views::Widget* widget) {
+void CaptivePortalWindowProxy::OnWidgetDestroyed(views::Widget* widget) {
   DCHECK(GetState() == STATE_DISPLAYED);
   DCHECK(widget == widget_);
 
   DetachFromWidget(widget);
 
+  DCHECK(GetState() == STATE_IDLE);
+
   for (auto& observer : observers_)
     observer.OnAfterCaptivePortalHidden();
-
-  DCHECK(GetState() == STATE_IDLE);
-}
-
-void CaptivePortalWindowProxy::OnWidgetDestroying(views::Widget* widget) {
-  DetachFromWidget(widget);
-}
-
-void CaptivePortalWindowProxy::OnWidgetDestroyed(views::Widget* widget) {
-  DetachFromWidget(widget);
 }
 
 void CaptivePortalWindowProxy::InitCaptivePortalView() {

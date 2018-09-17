@@ -103,6 +103,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowTest, ShowClose) {
   CheckState(true, 0);
 
   Close();
+  // Wait for widget to be destroyed
+  base::RunLoop().RunUntilIdle();
   CheckState(false, 0);
 }
 
@@ -116,6 +118,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowTest, OnRedirected) {
   CheckState(true, 1);
 
   Close();
+  // Wait for widget to be destroyed
+  base::RunLoop().RunUntilIdle();
   CheckState(false, 1);
 }
 
@@ -129,6 +133,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowTest, OnOriginalURLLoaded) {
   CheckState(true, 1);
 
   OnOriginalURLLoaded();
+  // Wait for widget to be destroyed
+  base::RunLoop().RunUntilIdle();
   CheckState(false, 1);
 }
 
@@ -142,12 +148,16 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowTest, MultipleCalls) {
   CheckState(true, 0);
 
   Close();
+  // Wait for widget to be destroyed
+  base::RunLoop().RunUntilIdle();
   CheckState(false, 0);
 
   OnRedirected();
   CheckState(false, 1);
 
   OnOriginalURLLoaded();
+  // Wait for widget to be destroyed
+  base::RunLoop().RunUntilIdle();
   CheckState(false, 1);
 
   Show();
@@ -157,6 +167,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowTest, MultipleCalls) {
   CheckState(true, 2);
 
   Close();
+  // Wait for widget to be destroyed
+  base::RunLoop().RunUntilIdle();
   CheckState(false, 2);
 
   OnOriginalURLLoaded();
