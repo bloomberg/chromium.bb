@@ -42,6 +42,7 @@
 #include "presentation-time-client-protocol.h"
 #include "linux-dmabuf-unstable-v1-client-protocol.h"
 #include "tablet-unstable-v2-client-protocol.h"
+#include "xdg-output-unstable-v1-client-protocol.h"
 
 typedef void (*print_info_t)(void *info);
 typedef void (*destroy_info_t)(void *info);
@@ -67,6 +68,7 @@ struct output_mode {
 
 struct output_info {
 	struct global_info global;
+	struct wl_list global_link;
 
 	struct wl_output *output;
 
@@ -138,7 +140,7 @@ struct tablet_tool_info {
 	uint64_t hardware_serial;
 	uint64_t hardware_id_wacom;
 	enum zwp_tablet_tool_v2_type type;
-	
+
 	bool has_tilt;
 	bool has_pressure;
 	bool has_distance;
@@ -195,6 +197,28 @@ struct tablet_v2_info {
 	struct wl_list seats;
 };
 
+struct xdg_output_v1_info {
+	struct wl_list link;
+
+	struct zxdg_output_v1 *xdg_output;
+	struct output_info *output;
+
+	struct {
+		int32_t x, y;
+		int32_t width, height;
+	} logical;
+
+	char *name, *description;
+};
+
+struct xdg_output_manager_v1_info {
+	struct global_info global;
+	struct zxdg_output_manager_v1 *manager;
+	struct weston_info *info;
+
+	struct wl_list outputs;
+};
+
 struct presentation_info {
 	struct global_info global;
 	struct wp_presentation *presentation;
@@ -212,6 +236,10 @@ struct weston_info {
 	/* required for tablet-unstable-v2 */
 	struct wl_list seats;
 	struct tablet_v2_info *tablet_info;
+
+	/* required for xdg-output-unstable-v1 */
+	struct wl_list outputs;
+	struct xdg_output_manager_v1_info *xdg_output_manager_v1_info;
 };
 
 static void
@@ -844,7 +872,7 @@ handle_tablet_v2_tablet_tool_capability(void *data,
 {
 	struct tablet_tool_info *info = data;
 	enum zwp_tablet_tool_v2_capability cap = capability;
-	
+
 	switch(cap) {
 	case ZWP_TABLET_TOOL_V2_CAPABILITY_TILT:
 		info->has_tilt = true;
@@ -1296,6 +1324,146 @@ add_tablet_v2_info(struct weston_info *info, uint32_t id, uint32_t version)
 }
 
 static void
+destroy_xdg_output_v1_info(struct xdg_output_v1_info *info)
+{
+	wl_list_remove(&info->link);
+	zxdg_output_v1_destroy(info->xdg_output);
+	free(info->name);
+	free(info->description);
+	free(info);
+}
+
+static void
+print_xdg_output_v1_info(const struct xdg_output_v1_info *info)
+{
+	printf("\txdg_output_v1\n");
+	printf("\t\toutput: %d\n", info->output->global.id);
+	if (info->name)
+		printf("\t\tname: '%s'\n", info->name);
+	if (info->description)
+		printf("\t\tdescription: '%s'\n", info->description);
+	printf("\t\tlogical_x: %d, logical_y: %d\n",
+		info->logical.x, info->logical.y);
+	printf("\t\tlogical_width: %d, logical_height: %d\n",
+		info->logical.width, info->logical.height);
+}
+
+static void
+print_xdg_output_manager_v1_info(void *data)
+{
+	struct xdg_output_manager_v1_info *info = data;
+	struct xdg_output_v1_info *output;
+
+	print_global_info(data);
+
+	wl_list_for_each(output, &info->outputs, link)
+		print_xdg_output_v1_info(output);
+}
+
+static void
+destroy_xdg_output_manager_v1_info(void *data)
+{
+	struct xdg_output_manager_v1_info *info = data;
+	struct xdg_output_v1_info *output, *tmp;
+
+	zxdg_output_manager_v1_destroy(info->manager);
+
+	wl_list_for_each_safe(output, tmp, &info->outputs, link)
+		destroy_xdg_output_v1_info(output);
+}
+
+static void
+handle_xdg_output_v1_logical_position(void *data, struct zxdg_output_v1 *output,
+                                      int32_t x, int32_t y)
+{
+	struct xdg_output_v1_info *xdg_output = data;
+	xdg_output->logical.x = x;
+	xdg_output->logical.y = y;
+}
+
+static void
+handle_xdg_output_v1_logical_size(void *data, struct zxdg_output_v1 *output,
+                                      int32_t width, int32_t height)
+{
+	struct xdg_output_v1_info *xdg_output = data;
+	xdg_output->logical.width = width;
+	xdg_output->logical.height = height;
+}
+
+static void
+handle_xdg_output_v1_done(void *data, struct zxdg_output_v1 *output)
+{
+	/* Don't bother waiting for this; there's no good reason a
+	 * compositor will wait more than one roundtrip before sending
+	 * these initial events. */
+}
+
+static void
+handle_xdg_output_v1_name(void *data, struct zxdg_output_v1 *output,
+                          const char *name)
+{
+	struct xdg_output_v1_info *xdg_output = data;
+	xdg_output->name = strdup(name);
+}
+
+static void
+handle_xdg_output_v1_description(void *data, struct zxdg_output_v1 *output,
+                          const char *description)
+{
+	struct xdg_output_v1_info *xdg_output = data;
+	xdg_output->description = strdup(description);
+}
+
+static const struct zxdg_output_v1_listener xdg_output_v1_listener = {
+	.logical_position = handle_xdg_output_v1_logical_position,
+	.logical_size = handle_xdg_output_v1_logical_size,
+	.done = handle_xdg_output_v1_done,
+	.name = handle_xdg_output_v1_name,
+	.description = handle_xdg_output_v1_description,
+};
+
+static void
+add_xdg_output_v1_info(struct xdg_output_manager_v1_info *manager_info,
+                       struct output_info *output)
+{
+	struct xdg_output_v1_info *xdg_output = xzalloc(sizeof *xdg_output);
+
+	wl_list_insert(&manager_info->outputs, &xdg_output->link);
+	xdg_output->xdg_output = zxdg_output_manager_v1_get_xdg_output(
+		manager_info->manager, output->output);
+	zxdg_output_v1_add_listener(xdg_output->xdg_output,
+		&xdg_output_v1_listener, xdg_output);
+
+	xdg_output->output = output;
+
+	manager_info->info->roundtrip_needed = true;
+}
+
+static void
+add_xdg_output_manager_v1_info(struct weston_info *info, uint32_t id,
+                               uint32_t version)
+{
+	struct output_info *output;
+	struct xdg_output_manager_v1_info *manager = xzalloc(sizeof *manager);
+
+	wl_list_init(&manager->outputs);
+	manager->info = info;
+
+	init_global_info(info, &manager->global, id,
+		zxdg_output_manager_v1_interface.name, version);
+	manager->global.print = print_xdg_output_manager_v1_info;
+	manager->global.destroy = destroy_xdg_output_manager_v1_info;
+
+	manager->manager = wl_registry_bind(info->registry, id,
+		&zxdg_output_manager_v1_interface, version > 2 ? 2 : version);
+
+	wl_list_for_each(output, &info->outputs, global_link)
+		add_xdg_output_v1_info(manager, output);
+
+	info->xdg_output_manager_v1_info = manager;
+}
+
+static void
 add_seat_info(struct weston_info *info, uint32_t id, uint32_t version)
 {
 	struct seat_info *seat = xzalloc(sizeof *seat);
@@ -1522,6 +1690,11 @@ add_output_info(struct weston_info *info, uint32_t id, uint32_t version)
 			       output);
 
 	info->roundtrip_needed = true;
+	wl_list_insert(&info->outputs, &output->global_link);
+
+	if (info->xdg_output_manager_v1_info)
+		add_xdg_output_v1_info(info->xdg_output_manager_v1_info,
+				       output);
 }
 
 static void
@@ -1629,6 +1802,8 @@ global_handler(void *data, struct wl_registry *registry, uint32_t id,
 		add_presentation_info(info, id, version);
 	else if (!strcmp(interface, zwp_tablet_manager_v2_interface.name))
 		add_tablet_v2_info(info, id, version);
+	else if (!strcmp(interface, zxdg_output_manager_v1_interface.name))
+		add_xdg_output_manager_v1_info(info, id, version);
 	else
 		add_global_info(info, id, interface, version);
 }
@@ -1683,8 +1858,10 @@ main(int argc, char **argv)
 	}
 
 	info.tablet_info = NULL;
+	info.xdg_output_manager_v1_info = NULL;
 	wl_list_init(&info.infos);
 	wl_list_init(&info.seats);
+	wl_list_init(&info.outputs);
 
 	info.registry = wl_display_get_registry(info.display);
 	wl_registry_add_listener(info.registry, &registry_listener, &info);
