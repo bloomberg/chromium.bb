@@ -1943,6 +1943,15 @@
           'gtest_tests': 'gpu_fyi_win_optional_gtests',
           'gpu_telemetry_tests': 'gpu_optional_win_telemetry_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+            # WIN10_INTEL_HD_630_EXPERIMENTAL_DRIVER
+            'gpu': '8086:5912-24.20.100.6286',
+            'os': 'Windows-10',
+            'pool': 'Chrome-GPU',
+          },
+        ],
       },
       'Optional Win10 Release (NVIDIA)': {
         'os_type': 'win',
@@ -2043,6 +2052,15 @@
           'gtest_tests': 'gpu_fyi_win_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+            # WIN10_INTEL_HD_630_EXPERIMENTAL_DRIVER
+            'gpu': '8086:5912-24.20.100.6286',
+            'os': 'Windows-10',
+            'pool': 'Chrome-GPU',
+          },
+        ],
       },
       'Win10 FYI Release (NVIDIA)': {
         'os_type': 'win',
@@ -2080,6 +2098,15 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_gles2_d3d11_tests',
         },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+            # WIN10_INTEL_HD_630_EXPERIMENTAL_DRIVER
+            'gpu': '8086:5912-24.20.100.6286',
+            'os': 'Windows-10',
+            'pool': 'Chrome-GPU',
+          },
+        ],
       },
       'Win10 FYI dEQP Release (NVIDIA)': {
         'os_type': 'win',
