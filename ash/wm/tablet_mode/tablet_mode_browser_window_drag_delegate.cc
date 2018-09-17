@@ -385,10 +385,12 @@ void TabletModeBrowserWindowDragDelegate::UpdateScrim(
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(dragged_window_)
           .work_area();
-  if (location_in_screen.y() < GetScrimVerticalThreshold(work_area_bounds)) {
+  if (location_in_screen.y() < GetScrimVerticalThreshold(work_area_bounds) ||
+      location_in_screen.y() >= work_area_bounds.bottom()) {
     // Remove |scrim_| entirely so that the dragged window can be merged back
     // to the source window when the dragged window is dragged back toward the
-    // top area of the screen.
+    // top area of the screen. Also remove |scrim_| if the dragged window is
+    // dragged to the bottom of the screen.
     scrim_.reset();
     return;
   }
