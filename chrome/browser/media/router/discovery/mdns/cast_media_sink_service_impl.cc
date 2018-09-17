@@ -354,15 +354,6 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
           base::IgnoreResult(&cast_channel::CastSocketService::RemoveSocket),
           base::Unretained(cast_socket_service_), socket_id));
 
-  // No op if socket is not opened yet. OnChannelOpened will handle this error.
-  if (socket.ready_state() == cast_channel::ReadyState::CONNECTING) {
-    DVLOG(2) << "Opening socket is pending, no-op... "
-             << ip_endpoint.ToString();
-    return;
-  }
-
-  DVLOG(2) << "OnError starts reopening cast channel: "
-           << ip_endpoint.ToString();
   // Remove existing cast sink from |sinks|. It will be added back if
   // it can be successfully reconnected.
   const auto& sinks = GetSinks();
@@ -376,18 +367,24 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
     return;
   }
 
-  const MediaSinkInternal& sink = sink_it->second;
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CastMediaSinkServiceImpl::OpenChannel, GetWeakPtr(), sink,
-                     nullptr, SinkSource::kConnectionRetry));
-
   // We erase the sink here so that OpenChannel would not find an existing
   // sink.
   // Note: a better longer term solution is to introduce a state field to the
   // sink. We would set it to ERROR here. In OpenChannel(), we would check
   // create a socket only if the state is not already CONNECTED.
+  MediaSinkInternal sink = sink_it->second;
   RemoveSink(sink);
+
+  // If socket is not opened yet, then |OnChannelOpened()| will handle the
+  // retry.
+  if (socket.ready_state() != cast_channel::ReadyState::CONNECTING) {
+    DVLOG(2) << "OnError starts reopening cast channel: "
+             << ip_endpoint.ToString();
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&CastMediaSinkServiceImpl::OpenChannel, GetWeakPtr(),
+                       sink, nullptr, SinkSource::kConnectionRetry));
+  }
 }
 
 void CastMediaSinkServiceImpl::OnMessage(

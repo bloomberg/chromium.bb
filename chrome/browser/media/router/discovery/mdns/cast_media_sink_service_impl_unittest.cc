@@ -547,7 +547,10 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelErrorRetry) {
 
 TEST_F(CastMediaSinkServiceImplTest,
        TestOnChannelErrorMayRetryForConnectingChannel) {
-  net::IPEndPoint ip_endpoint1 = CreateIPEndPoint(1);
+  MediaSinkInternal cast_sink1 = CreateCastSink(1);
+  media_sink_service_impl_.AddOrUpdateSink(cast_sink1);
+
+  net::IPEndPoint ip_endpoint1 = cast_sink1.cast_data().ip_endpoint;
   cast_channel::MockCastSocket socket;
   socket.set_id(1);
   socket.SetIPEndpoint(ip_endpoint1);
@@ -573,8 +576,6 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelErrorNoRetryForMissingSink) {
   cast_channel::MockCastSocket socket;
   socket.set_id(1);
   socket.SetIPEndpoint(ip_endpoint1);
-  EXPECT_CALL(socket, ready_state())
-      .WillOnce(Return(cast_channel::ReadyState::CLOSED));
 
   media_sink_service_impl_.OnError(
       socket, cast_channel::ChannelError::CHANNEL_NOT_OPEN);
