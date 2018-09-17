@@ -576,6 +576,14 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
       FROM_HERE,
       base::Bind(&DetectFaultTolerantHeap),
       base::TimeDelta::FromMinutes(1));
+
+  // Start the swap thrashing monitor if it's enabled.
+  //
+  // TODO(sebmarchand): Delay the initialization of this monitor once we start
+  // using this feature by default, this is currently enabled at startup to make
+  // it easier to experiment with this monitor.
+  if (base::FeatureList::IsEnabled(features::kSwapThrashingMonitor))
+    memory::SwapThrashingMonitor::Initialize();
 }
 
 // static
