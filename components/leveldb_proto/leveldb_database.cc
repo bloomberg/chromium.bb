@@ -44,8 +44,8 @@ LevelDB::LevelDB(const char* client_name)
       std::string("LevelDB.Destroy.") + client_name, 1,
       leveldb_env::LEVELDB_STATUS_MAX, leveldb_env::LEVELDB_STATUS_MAX + 1,
       base::Histogram::kUmaTargetedHistogramFlag);
-  approx_mem_histogram_ = base::LinearHistogram::FactoryGet(
-      std::string("LevelDB.ApproximateMemoryUse.") + client_name, 1,
+  approx_memtable_mem_histogram_ = base::LinearHistogram::FactoryGet(
+      std::string("LevelDB.ApproximateMemTableMemoryUse.") + client_name, 1,
       kMaxApproxMemoryUseMB * 1048576, kMaxApproxMemoryUseMB * 4,
       base::Histogram::kUmaTargetedHistogramFlag);
 }
@@ -93,8 +93,11 @@ leveldb::Status LevelDB::Init(const base::FilePath& database_dir,
       // reads/writes and the block cache should be empty.
       uint64_t approx_mem = 0;
       std::string usage_string;
-      if (GetApproximateMemoryUse(&approx_mem))
-        approx_mem_histogram_->Add(approx_mem);
+      if (GetApproximateMemoryUse(&approx_mem)) {
+        approx_memtable_mem_histogram_->Add(
+            approx_mem -
+            leveldb_chrome::GetSharedBrowserBlockCache()->TotalCharge());
+      }
     }
   } else {
     LOG(WARNING) << "Unable to open " << database_dir.value() << ": "
