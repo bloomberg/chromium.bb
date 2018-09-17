@@ -63,10 +63,16 @@ public class FeedRefreshTask extends NativeBackgroundTask {
     @Override
     protected void onStartTaskWithNative(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
-        FeedProcessScopeFactory.getFeedScheduler().onFixedTimer(() -> {
-            // Regardless of success, mark ourselves as completed.
-            callback.taskFinished(false);
-        });
+        FeedScheduler scheduler = FeedProcessScopeFactory.getFeedScheduler();
+        if (scheduler != null) {
+            scheduler.onFixedTimer(() -> {
+                // Regardless of success, mark ourselves as completed.
+                callback.taskFinished(false);
+            });
+        } else {
+            // If the FeedProcessScopeFactory is vending nulls, the Feed is disabled.
+            cancelWakeUp();
+        }
     }
 
     @Override
@@ -83,7 +89,11 @@ public class FeedRefreshTask extends NativeBackgroundTask {
 
     @Override
     public void reschedule(Context context) {
-        ThreadUtils.runOnUiThread(
-                () -> { FeedProcessScopeFactory.getFeedScheduler().onTaskReschedule(); });
+        ThreadUtils.runOnUiThread(() -> {
+            FeedScheduler scheduler = FeedProcessScopeFactory.getFeedScheduler();
+            if (scheduler != null) {
+                scheduler.onTaskReschedule();
+            }
+        });
     }
 }

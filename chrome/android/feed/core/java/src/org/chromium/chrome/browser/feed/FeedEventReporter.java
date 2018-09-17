@@ -11,6 +11,9 @@ public final class FeedEventReporter {
 
     /** Should be called when the browser is foregrounded. */
     public static void onBrowserForegrounded() {
-        FeedProcessScopeFactory.getFeedScheduler().onForegrounded();
+        FeedScheduler scheduler = FeedProcessScopeFactory.getFeedScheduler();
+        if (scheduler != null) {
+            scheduler.onForegrounded();
+        }
     }
 }

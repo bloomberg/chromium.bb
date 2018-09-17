@@ -296,6 +296,8 @@ public class FeedNewTabPage extends NewTabPage {
         }
 
         FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
+        assert feedProcessScope != null;
+
         Activity activity = mTab.getActivity();
         Profile profile = mTab.getProfile();
 
@@ -352,8 +354,13 @@ public class FeedNewTabPage extends NewTabPage {
         if (mStream != null) {
             mRootView.removeView(mStream.getView());
             mStreamLifecycleManager.destroy();
+            mStreamLifecycleManager = null;
+            // Do not call mStream.onDestroy(), the mStreamLifecycleManager has done that for us.
             mStream = null;
+            mImageLoader.destroy();
+            mImageLoader = null;
             mSectionHeaderView = null;
+            mSigninPromoView = null;
         }
 
         mScrollViewForPolicy = new ScrollView(mTab.getActivity());
