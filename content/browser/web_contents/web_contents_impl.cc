@@ -24,6 +24,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -285,6 +286,10 @@ class CloseDialogCallbackWrapper
 
   CloseCallback callback_;
 };
+
+bool FrameCompareDepth(RenderFrameHostImpl* a, RenderFrameHostImpl* b) {
+  return a->frame_tree_node()->depth() < b->frame_tree_node()->depth();
+}
 
 }  // namespace
 
@@ -2346,8 +2351,7 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
     }
   }
 
-  // Clear the current fullscreen frame ID.
-  current_fullscreen_frame_tree_node_id_ = RenderFrameHost::kNoFrameTreeNodeId;
+  current_fullscreen_frame_ = nullptr;
 
   for (auto& observer : observers_) {
     observer.DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(),
@@ -2360,73 +2364,56 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
 
 void WebContentsImpl::FullscreenStateChanged(RenderFrameHost* rfh,
                                              bool is_fullscreen) {
-  int frame_tree_node_id = rfh->GetFrameTreeNodeId();
-  auto it = fullscreen_frame_tree_nodes_.find(frame_tree_node_id);
-  bool changed = false;
+  RenderFrameHostImpl* frame = static_cast<RenderFrameHostImpl*>(rfh);
 
   if (is_fullscreen) {
-    // If we are fullscreen then add the FrameTreeNode ID to the set.
-    if (it == fullscreen_frame_tree_nodes_.end()) {
-      fullscreen_frame_tree_nodes_.insert(frame_tree_node_id);
-      changed = true;
+    if (!base::ContainsKey(fullscreen_frames_, frame)) {
+      fullscreen_frames_.insert(frame);
+      FullscreenFrameSetUpdated();
     }
-  } else {
-    FrameTreeNode* ancestor =
-        static_cast<RenderFrameHostImpl*>(rfh)->frame_tree_node();
-    DCHECK(ancestor);
+    return;
+  }
 
-    // If we are not fullscreen then remove this frame and any descendants
-    // from the set.
-    for (it = fullscreen_frame_tree_nodes_.begin();
-         it != fullscreen_frame_tree_nodes_.end();) {
-      FrameTreeNode* node = FrameTreeNode::GloballyFindByID(*it);
-
-      if (!node || frame_tree_node_id == *it ||
-          node->IsDescendantOf(ancestor)) {
-        it = fullscreen_frame_tree_nodes_.erase(it);
+  // If |frame| is no longer in fullscreen, remove it and any descendants.
+  // See https://fullscreen.spec.whatwg.org.
+  bool changed = false;
+  base::EraseIf(fullscreen_frames_, [&](RenderFrameHostImpl* rfh) {
+    for (auto* current = rfh; current; current = current->GetParent()) {
+      if (current == frame) {
         changed = true;
-      } else {
-        ++it;
+        return true;
       }
     }
+    return false;
+  });
+
+  if (changed)
+    FullscreenFrameSetUpdated();
+}
+
+void WebContentsImpl::FullscreenFrameSetUpdated() {
+  if (fullscreen_frames_.empty()) {
+    current_fullscreen_frame_ = nullptr;
+    return;
   }
 
-  // If we have changed then find the current fullscreen FrameTreeNode
-  // and call the observers. If we have exited fullscreen then this
-  // will be the last frame that was fullscreen.
-  if (changed && fullscreen_frame_tree_nodes_.size() > 0) {
-    unsigned int max_depth = 0;
-    RenderFrameHost* max_depth_rfh = nullptr;
+  // Find the current fullscreen frame and call the observers.
+  // If frame A is fullscreen, then frame B goes into inner fullscreen, then B
+  // exits fullscreen - that will result in A being fullscreen.
+  RenderFrameHostImpl* new_fullscreen_frame = *std::max_element(
+      fullscreen_frames_.begin(), fullscreen_frames_.end(), FrameCompareDepth);
 
-    for (auto node_id : fullscreen_frame_tree_nodes_) {
-      FrameTreeNode* fullscreen_node = FrameTreeNode::GloballyFindByID(node_id);
-      DCHECK(fullscreen_node);
+  // If we have already notified observers about this frame then we should not
+  // fire the observers again.
+  if (new_fullscreen_frame == current_fullscreen_frame_)
+    return;
+  current_fullscreen_frame_ = new_fullscreen_frame;
 
-      if (max_depth_rfh == nullptr || fullscreen_node->depth() > max_depth) {
-        max_depth = fullscreen_node->depth();
-        max_depth_rfh = fullscreen_node->current_frame_host();
-      }
-    }
+  for (auto& observer : observers_)
+    observer.DidAcquireFullscreen(new_fullscreen_frame);
 
-    // If we have already notified observers about this frame then we should not
-    // fire the observers again.
-    DCHECK(max_depth_rfh);
-    if (max_depth_rfh->GetFrameTreeNodeId() ==
-        current_fullscreen_frame_tree_node_id_)
-      return;
-
-    current_fullscreen_frame_tree_node_id_ =
-        max_depth_rfh->GetFrameTreeNodeId();
-
-    for (auto& observer : observers_)
-      observer.DidAcquireFullscreen(max_depth_rfh);
-
-    if (display_cutout_host_impl_)
-      display_cutout_host_impl_->DidAcquireFullscreen(max_depth_rfh);
-  } else if (fullscreen_frame_tree_nodes_.size() == 0) {
-    current_fullscreen_frame_tree_node_id_ =
-        RenderFrameHost::kNoFrameTreeNodeId;
-  }
+  if (display_cutout_host_impl_)
+    display_cutout_host_impl_->DidAcquireFullscreen(new_fullscreen_frame);
 }
 
 bool WebContentsImpl::IsFullscreenForCurrentTab() const {
