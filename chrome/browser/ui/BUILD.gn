@@ -487,8 +487,6 @@ jumbo_split_static_library("ui") {
       "content_settings/content_setting_media_menu_model.cc",
       "content_settings/content_setting_media_menu_model.h",
       "proximity_auth/proximity_auth_error_bubble_stub.cc",
-      "startup/session_crashed_infobar_delegate.cc",
-      "startup/session_crashed_infobar_delegate.h",
     ]
   }
 
