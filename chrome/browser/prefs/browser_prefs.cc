@@ -113,7 +113,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/sessions/core/session_id_generator.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
-#include "components/subresource_filter/core/browser/ruleset_service.h"
+#include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/translate/core/browser/translate_prefs.h"
