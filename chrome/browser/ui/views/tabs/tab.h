@@ -238,6 +238,7 @@ class Tab : public gfx::AnimationDelegate,
   FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibilityWhenStacked);
   FRIEND_TEST_ALL_PREFIXES(TabStripTest,
                            TabCloseButtonVisibilityWhenNotStacked);
+  FRIEND_TEST_ALL_PREFIXES(TabTest, TitleTextHasSufficientContrast);
 
   // Contains values 0..1 representing the opacity of the corresponding
   // separators.  These are physical and not logical, so "left" is the left
@@ -299,6 +300,9 @@ class Tab : public gfx::AnimationDelegate,
   // effects and consider only the current tab's state.
   SeparatorOpacities GetSeparatorOpacities(bool for_layout) const;
 
+  // Returns the final hover opacity for this tab (considers tab width).
+  float GetHoverOpacity() const;
+
   // Gets the throb value for the tab. When a tab is not selected the active
   // background is drawn at GetThrobValue() * 100%. This is used for hover, mini
   // tab title change and pulsing.
@@ -313,8 +317,10 @@ class Tab : public gfx::AnimationDelegate,
   // state; it is the responsibility of the caller to request a paint.
   void UpdateTabIconNeedsAttentionBlocked();
 
-  // Generate and update close button and alert icon colors for proper contrast.
-  void UpdateButtonIconColors(SkColor title_color);
+  // Selects, generates, and applies colors for various foreground elements to
+  // ensure proper contrast. Elements affected include title text, close button
+  // and alert icon.
+  void UpdateForegroundColors();
 
   // The controller, never NULL.
   TabController* const controller_;
