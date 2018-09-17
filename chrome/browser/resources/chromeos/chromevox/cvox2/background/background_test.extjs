@@ -1185,8 +1185,7 @@ TEST_F('BackgroundTest', 'DISABLED_EditableNavigation', function() {
   });
 });
 
-// Flaky, see https://crbug.com/622387.
-TEST_F('BackgroundTest', 'DISABLED_NavigationMovesFocus', function() {
+TEST_F('BackgroundTest', 'NavigationMovesFocus', function() {
   this.runWithLoadedTree(function(root) {/*!
     <p>start</p>
     <input type="text"></input>
@@ -1362,8 +1361,7 @@ TEST_F('BackgroundTest', 'EditableKeyCommand', function() {
   });
 });
 
-// Flaky. See http://crbug.com/857382.
-TEST_F('BackgroundTest', 'DISABLED_TextSelectionAndLiveRegion', function() {
+TEST_F('BackgroundTest', 'TextSelectionAndLiveRegion', function() {
   DesktopAutomationHandler.announceActions = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
@@ -1474,8 +1472,7 @@ TEST_F('BackgroundTest', 'DISABLED_ActiveDescendantUpdates', function() {
   });
 });
 
-// Flaky, see https://crbug.com/622387.
-TEST_F('BackgroundTest', 'DISABLED_NavigationEscapesEdit', function() {
+TEST_F('BackgroundTest', 'NavigationEscapesEdit', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p>before content editable</p>
