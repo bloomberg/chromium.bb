@@ -183,20 +183,23 @@ public class MediaViewerUtils {
      * @param context The application Context.
      */
     public static void updateMediaLauncherActivityEnabled(Context context) {
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
-            PackageManager packageManager = context.getPackageManager();
-            ComponentName componentName = new ComponentName(context, MediaLauncherActivity.class);
-            int newState = shouldEnableMediaLauncherActivity(context)
-                    ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                    : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
-            // This indicates that we don't want to kill Chrome when changing component enabled
-            // state.
-            int flags = PackageManager.DONT_KILL_APP;
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(
+                () -> { synchronousUpdateMediaLauncherActivityEnabled(context); });
+    }
 
-            if (packageManager.getComponentEnabledSetting(componentName) != newState) {
-                packageManager.setComponentEnabledSetting(componentName, newState, flags);
-            }
-        });
+    static void synchronousUpdateMediaLauncherActivityEnabled(Context context) {
+        PackageManager packageManager = context.getPackageManager();
+        ComponentName componentName = new ComponentName(context, MediaLauncherActivity.class);
+        int newState = shouldEnableMediaLauncherActivity(context)
+                ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+        // This indicates that we don't want to kill Chrome when changing component enabled
+        // state.
+        int flags = PackageManager.DONT_KILL_APP;
+
+        if (packageManager.getComponentEnabledSetting(componentName) != newState) {
+            packageManager.setComponentEnabledSetting(componentName, newState, flags);
+        }
     }
 
     /**
@@ -205,7 +208,8 @@ public class MediaViewerUtils {
      */
     public static void forceEnableMediaLauncherActivityForTest(Context context) {
         sIsMediaLauncherActivityForceEnabledForTest = true;
-        updateMediaLauncherActivityEnabled(context);
+        // Synchronously update to avoid race conditions in tests.
+        synchronousUpdateMediaLauncherActivityEnabled(context);
     }
 
     /**
@@ -214,7 +218,8 @@ public class MediaViewerUtils {
      */
     public static void stopForcingEnableMediaLauncherActivityForTest(Context context) {
         sIsMediaLauncherActivityForceEnabledForTest = false;
-        updateMediaLauncherActivityEnabled(context);
+        // Synchronously update to avoid race conditions in tests.
+        synchronousUpdateMediaLauncherActivityEnabled(context);
     }
 
     private static boolean shouldEnableMediaLauncherActivity(Context context) {
