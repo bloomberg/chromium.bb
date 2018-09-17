@@ -1569,7 +1569,7 @@ config("chromium_code") {
       defines += [ "_FORTIFY_SOURCE=2" ]
     }
 
-    if (is_mac || is_ios) {
+    if (is_mac) {
       cflags_objc = [ "-Wobjc-missing-property-synthesis" ]
       cflags_objcc = [ "-Wobjc-missing-property-synthesis" ]
     }
