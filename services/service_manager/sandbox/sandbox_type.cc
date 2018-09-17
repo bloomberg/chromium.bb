@@ -28,9 +28,7 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
       return true;
 #endif
     case SANDBOX_TYPE_NETWORK:
-#if defined(OS_LINUX)
-      return false;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
       return !base::FeatureList::IsEnabled(
           service_manager::features::kNetworkServiceWindowsSandbox);
 #else
