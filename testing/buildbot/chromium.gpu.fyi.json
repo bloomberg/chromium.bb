@@ -10979,7 +10979,16 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -10995,7 +11004,16 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -11011,7 +11029,16 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -11033,7 +11060,16 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -11051,7 +11087,16 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -11067,7 +11112,16 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -11085,7 +11139,16 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -11104,7 +11167,16 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
@@ -11117,7 +11189,16 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
@@ -11130,7 +11211,16 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -11149,7 +11239,16 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest"
+        "test": "video_decode_accelerator_unittest",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       }
     ],
     "isolated_scripts": [
@@ -11178,6 +11277,15 @@
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -11204,6 +11312,15 @@
           ],
           "idempotent": false,
           "shards": 20
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -11228,6 +11345,15 @@
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -11252,6 +11378,15 @@
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -11276,6 +11411,15 @@
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -11300,6 +11444,15 @@
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       }
     ]
@@ -13307,7 +13460,16 @@
           ],
           "shards": 4
         },
-        "test": "angle_end2end_tests"
+        "test": "angle_end2end_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13323,7 +13485,16 @@
             }
           ]
         },
-        "test": "angle_gles1_conformance_tests"
+        "test": "angle_gles1_conformance_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13340,7 +13511,16 @@
             }
           ]
         },
-        "test": "angle_unittests"
+        "test": "angle_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13356,7 +13536,16 @@
             }
           ]
         },
-        "test": "angle_white_box_tests"
+        "test": "angle_white_box_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13376,7 +13565,16 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13398,7 +13596,16 @@
             }
           ]
         },
-        "test": "browser_tests"
+        "test": "browser_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13415,7 +13622,16 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13433,7 +13649,16 @@
             }
           ]
         },
-        "test": "gl_tests"
+        "test": "gl_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13449,7 +13674,16 @@
             }
           ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13465,7 +13699,16 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13483,7 +13726,16 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13502,7 +13754,16 @@
             }
           ]
         },
-        "test": "gles2_conform_test"
+        "test": "gles2_conform_test",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
@@ -13515,7 +13776,16 @@
             }
           ]
         },
-        "test": "gpu_unittests"
+        "test": "gpu_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
@@ -13528,7 +13798,16 @@
             }
           ]
         },
-        "test": "swiftshader_unittests"
+        "test": "swiftshader_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13547,7 +13826,16 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest"
+        "test": "video_decode_accelerator_unittest",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "args": [
@@ -13566,7 +13854,16 @@
             }
           ]
         },
-        "test": "video_decode_accelerator_unittest"
+        "test": "video_decode_accelerator_unittest",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       }
     ],
     "isolated_scripts": [
@@ -13591,6 +13888,15 @@
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13614,6 +13920,15 @@
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13637,6 +13952,15 @@
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13660,6 +13984,15 @@
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13687,6 +14020,15 @@
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13717,6 +14059,15 @@
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13755,6 +14106,15 @@
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13779,6 +14139,15 @@
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13802,6 +14171,15 @@
             }
           ],
           "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13828,6 +14206,15 @@
           ],
           "idempotent": false,
           "shards": 20
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13854,6 +14241,15 @@
           ],
           "idempotent": false,
           "shards": 20
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13880,6 +14276,15 @@
           ],
           "idempotent": false,
           "shards": 20
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13904,6 +14309,15 @@
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13928,6 +14342,15 @@
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13952,6 +14375,15 @@
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -13976,6 +14408,15 @@
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -14000,6 +14441,15 @@
           ],
           "idempotent": false,
           "shards": 2
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       }
     ]
@@ -15146,7 +15596,16 @@
           ],
           "shards": 4
         },
-        "test": "angle_deqp_gles2_tests"
+        "test": "angle_deqp_gles2_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"8086:5912-23.20.16.4877\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}, {\"gpu\": \"8086:5912-24.20.100.6286\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       }
     ]
   },
