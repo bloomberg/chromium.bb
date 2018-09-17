@@ -5,28 +5,15 @@
 #ifndef CHROME_COMMON_APPS_PLATFORM_APPS_CHROME_APPS_API_PERMISSIONS_H_
 #define CHROME_COMMON_APPS_PLATFORM_APPS_CHROME_APPS_API_PERMISSIONS_H_
 
-#include <memory>
-#include <vector>
+#include "base/containers/span.h"
+#include "extensions/common/permissions/api_permission.h"
 
-#include "base/macros.h"
-#include "extensions/common/permissions/permissions_provider.h"
+namespace chrome_apps_api_permissions {
 
-namespace apps {
+// Returns the information necessary to construct Chrome app-specific
+// APIPermissions.
+base::span<const extensions::APIPermissionInfo::InitInfo> GetPermissionInfos();
 
-// A PermissionsProvider responsible for Chrome App API Permissions.
-class ChromeAppsAPIPermissions : public extensions::PermissionsProvider {
- public:
-  ChromeAppsAPIPermissions();
-  ~ChromeAppsAPIPermissions() override;
-
-  // extensions::PermissionsProvider:
-  std::vector<std::unique_ptr<extensions::APIPermissionInfo>>
-  GetAllPermissions() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeAppsAPIPermissions);
-};
-
-}  // namespace apps
+}  // namespace chrome_apps_api_permissions
 
 #endif  // CHROME_COMMON_APPS_PLATFORM_APPS_CHROME_APPS_API_PERMISSIONS_H_

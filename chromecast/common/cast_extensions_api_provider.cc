@@ -5,7 +5,6 @@
 #include "chromecast/common/cast_extensions_api_provider.h"
 
 #include "chromecast/common/cast_redirect_manifest_handler.h"
-#include "chromecast/common/extensions_api/cast_aliases.h"
 #include "chromecast/common/extensions_api/cast_api_features.h"
 #include "chromecast/common/extensions_api/cast_api_permissions.h"
 #include "chromecast/common/extensions_api/cast_manifest_features.h"
@@ -53,9 +52,11 @@ base::StringPiece CastExtensionsAPIProvider::GetAPISchema(
   return cast::api::CastGeneratedSchemas::Get(name);
 }
 
-void CastExtensionsAPIProvider::AddPermissionsProviders(
+void CastExtensionsAPIProvider::RegisterPermissions(
     PermissionsInfo* permissions_info) {
-  permissions_info->AddProvider(api_permissions_, GetCastPermissionAliases());
+  permissions_info->RegisterPermissions(
+      cast_api_permissions::GetPermissionInfos(),
+      cast_api_permissions::GetPermissionAliases());
 }
 
 void CastExtensionsAPIProvider::RegisterManifestHandlers() {

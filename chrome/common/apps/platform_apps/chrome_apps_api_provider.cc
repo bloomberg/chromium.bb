@@ -7,6 +7,7 @@
 #include "chrome/common/apps/platform_apps/api/api_features.h"
 #include "chrome/common/apps/platform_apps/api/generated_schemas.h"
 #include "chrome/common/apps/platform_apps/api/permission_features.h"
+#include "chrome/common/apps/platform_apps/chrome_apps_api_permissions.h"
 #include "chrome/grit/common_resources.h"
 #include "extensions/common/alias.h"
 #include "extensions/common/features/json_feature_provider_source.h"
@@ -50,9 +51,10 @@ base::StringPiece ChromeAppsAPIProvider::GetAPISchema(const std::string& name) {
   return api::ChromeAppsGeneratedSchemas::Get(name);
 }
 
-void ChromeAppsAPIProvider::AddPermissionsProviders(
+void ChromeAppsAPIProvider::RegisterPermissions(
     extensions::PermissionsInfo* permissions_info) {
-  permissions_info->AddProvider(api_permissions_, {});
+  permissions_info->RegisterPermissions(
+      chrome_apps_api_permissions::GetPermissionInfos(), {});
 }
 
 void ChromeAppsAPIProvider::RegisterManifestHandlers() {

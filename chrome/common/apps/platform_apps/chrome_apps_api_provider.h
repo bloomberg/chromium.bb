@@ -5,7 +5,6 @@
 #ifndef CHROME_COMMON_APPS_PLATFORM_APPS_CHROME_APPS_API_PROVIDER_H_
 #define CHROME_COMMON_APPS_PLATFORM_APPS_CHROME_APPS_API_PROVIDER_H_
 
-#include "chrome/common/apps/platform_apps/chrome_apps_api_permissions.h"
 #include "extensions/common/extensions_api_provider.h"
 
 namespace apps {
@@ -24,13 +23,11 @@ class ChromeAppsAPIProvider : public extensions::ExtensionsAPIProvider {
       extensions::JSONFeatureProviderSource* json_source) override;
   bool IsAPISchemaGenerated(const std::string& name) override;
   base::StringPiece GetAPISchema(const std::string& name) override;
-  void AddPermissionsProviders(
+  void RegisterPermissions(
       extensions::PermissionsInfo* permissions_info) override;
   void RegisterManifestHandlers() override;
 
  private:
-  const ChromeAppsAPIPermissions api_permissions_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeAppsAPIProvider);
 };
 
