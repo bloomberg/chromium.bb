@@ -146,8 +146,9 @@ TEST_F(FeedImageManagerTest, FetchEmptyUrlVector) {
   base::MockCallback<ImageFetchedCallback> image_callback;
 
   // Make sure an empty image passed to callback.
-  EXPECT_CALL(image_callback,
-              Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(true))));
+  EXPECT_CALL(
+      image_callback,
+      Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(true)), -1));
   feed_image_manager()->FetchImage(std::vector<std::string>(),
                                    image_callback.Get());
 
@@ -160,8 +161,9 @@ TEST_F(FeedImageManagerTest, FetchImageFromCache) {
   RunUntilIdle();
 
   base::MockCallback<ImageFetchedCallback> image_callback;
-  EXPECT_CALL(image_callback,
-              Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(false))));
+  EXPECT_CALL(
+      image_callback,
+      Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(false)), 0));
   feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
                                    image_callback.Get());
 
@@ -173,8 +175,9 @@ TEST_F(FeedImageManagerTest, FetchImagePopulatesCache) {
   {
     test_url_loader_factory()->AddResponse(kImageURL, kImageData);
     base::MockCallback<ImageFetchedCallback> image_callback;
-    EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
-                                                      testing::Eq(false))));
+    EXPECT_CALL(
+        image_callback,
+        Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(false)), 0));
     feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
                                      image_callback.Get());
 
@@ -192,8 +195,9 @@ TEST_F(FeedImageManagerTest, FetchImagePopulatesCache) {
   {
     test_url_loader_factory()->ClearResponses();
     base::MockCallback<ImageFetchedCallback> image_callback;
-    EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
-                                                      testing::Eq(false))));
+    EXPECT_CALL(
+        image_callback,
+        Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(false)), 0));
     feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
                                      image_callback.Get());
 
@@ -208,8 +212,9 @@ TEST_F(FeedImageManagerTest, FetchSecondImageIfFirstFailed) {
                                            net::HTTP_NOT_FOUND);
     test_url_loader_factory()->AddResponse(kImageURL2, kImageData2);
     base::MockCallback<ImageFetchedCallback> image_callback;
-    EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
-                                                      testing::Eq(false))));
+    EXPECT_CALL(
+        image_callback,
+        Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(false)), 1));
     fake_image_decoder()->SetExpectedData(kImageData2);
     feed_image_manager()->FetchImage(
         std::vector<std::string>({kImageURL, kImageURL2}),
@@ -237,8 +242,9 @@ TEST_F(FeedImageManagerTest, DecodingErrorWillDeleteCache) {
     fake_image_decoder()->SetDecodingValid(false);
     base::MockCallback<ImageFetchedCallback> image_callback;
 
-    EXPECT_CALL(image_callback, Run(testing::Property(&gfx::Image::IsEmpty,
-                                                      testing::Eq(true))));
+    EXPECT_CALL(
+        image_callback,
+        Run(testing::Property(&gfx::Image::IsEmpty, testing::Eq(true)), -1));
     feed_image_manager()->FetchImage(std::vector<std::string>({kImageURL}),
                                      image_callback.Get());
 

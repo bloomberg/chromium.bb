@@ -33,7 +33,15 @@ public class ThumbnailGradient {
     /** The percent of the border pictures that need to be 'light' for a Bitmap to be 'light'. */
     private static final float PIXEL_BORDER_RATIO = 0.4f;
 
-    /** The corner of the image the gradient is darkest. */
+    /** Where the image is located in the card. */
+    @IntDef({ThumbnailLocation.START, ThumbnailLocation.END})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ThumbnailLocation {
+        int START = 0;
+        int END = 1;
+    }
+
+    /** The corner of the thumbnail where the gradient is darkest. */
     @IntDef({GradientDirection.TOP_LEFT, GradientDirection.TOP_RIGHT})
     @Retention(RetentionPolicy.SOURCE)
     private @interface GradientDirection {
@@ -42,12 +50,24 @@ public class ThumbnailGradient {
     }
 
     /**
+     * Calls {@link #createDrawableWithGradientIfNeeded(Bitmap, int, Resources)} with the default
+     * {@link ThumbnailLocation#END}.
+     */
+    public static Drawable createDrawableWithGradientIfNeeded(Bitmap bitmap, Resources resources) {
+        return createDrawableWithGradientIfNeeded(bitmap, ThumbnailLocation.END, resources);
+    }
+
+    /**
      * If the {@link Bitmap} should have a gradient applied this method returns a Drawable
      * containing the Bitmap and a gradient. Otherwise it returns a BitmapDrawable containing just
      * the Bitmap.
+     * @param bitmap The {@link Bitmap} used to create the drawable.
+     * @param thumbnailLocation Where the image is located in the card.
+     * @param resources The {@link Resources} for the current activity.
      */
-    public static Drawable createDrawableWithGradientIfNeeded(Bitmap bitmap, Resources resources) {
-        int direction = getGradientDirection();
+    public static Drawable createDrawableWithGradientIfNeeded(
+            Bitmap bitmap, @ThumbnailLocation int thumbnailLocation, Resources resources) {
+        int direction = getGradientDirection(thumbnailLocation);
 
         // We want to keep an eye on how long this takes.
         long time = SystemClock.elapsedRealtime();
@@ -110,17 +130,19 @@ public class ThumbnailGradient {
     }
 
     /**
-     * The gradient should come from the upper corner of the image that is touching the side of the
-     * card.
+     * The gradient should come from the upper corner of the thumbnail that is touching the side of
+     * the card.
      */
     @GradientDirection
-    private static int getGradientDirection() {
+    private static int getGradientDirection(@ThumbnailLocation int thumbnailLocation) {
         // The drawable resource does not get flipped automatically if we are in RTL, so we must
         // flip it ourselves.
         boolean rtl = LocalizationUtils.isLayoutRtl();
 
-        // The thumbnail is at the end of the suggestions card, so the gradient should be applied
-        // to the top right corner in LTR and top left in RTL.
-        return rtl ? GradientDirection.TOP_LEFT : GradientDirection.TOP_RIGHT;
+        // If the thumbnail is on the left side of the card, the gradient should be applied
+        // to the top left corner. If it is on the right side of the card, the gradient should be
+        // applied to the top right corner.
+        return thumbnailLocation == ThumbnailLocation.END == rtl ? GradientDirection.TOP_LEFT
+                                                                 : GradientDirection.TOP_RIGHT;
     }
 }

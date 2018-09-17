@@ -5,18 +5,22 @@
 package org.chromium.chrome.browser.feed;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.support.v7.content.res.AppCompatResources;
+import android.text.TextUtils;
 
 import com.google.android.libraries.feed.common.functional.Consumer;
 import com.google.android.libraries.feed.host.imageloader.ImageLoaderApi;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.feed.FeedImageLoaderBridge.ImageResponse;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.suggestions.ThumbnailGradient;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -25,6 +29,11 @@ import java.util.List;
 public class FeedImageLoader implements ImageLoaderApi {
     private static final String ASSET_PREFIX = "asset://";
     private static final String DRAWABLE_RESOURCE_TYPE = "drawable";
+    private static final String OVERLAY_IMAGE_PREFIX = "overlay-image://";
+    private static final String OVERLAY_IMAGE_URL_PARAM = "url";
+    private static final String OVERLAY_IMAGE_DIRECTION_PARAM = "direction";
+    private static final String OVERLAY_IMAGE_DIRECTION_START = "start";
+    private static final String OVERLAY_IMAGE_DIRECTION_END = "end";
 
     private FeedImageLoaderBridge mFeedImageLoaderBridge;
     private Context mActivityContext;
@@ -58,6 +67,9 @@ public class FeedImageLoader implements ImageLoaderApi {
         List<String> assetUrls = new ArrayList<>();
         List<String> networkUrls = new ArrayList<>();
 
+        // Maps position in the networkUrls list to overlay image direction.
+        HashMap<Integer, Integer> overlayImages = new HashMap<>();
+
         // Since loading APK resource("asset://"") only can be done in Java side, we filter out
         // asset urls, and pass the other URLs to C++ side. This will change the order of |urls|,
         // because we will process asset:// URLs after network URLs, but once
@@ -65,8 +77,18 @@ public class FeedImageLoader implements ImageLoaderApi {
         for (String url : urls) {
             if (url.startsWith(ASSET_PREFIX)) {
                 assetUrls.add(url);
+            } else if (url.startsWith(OVERLAY_IMAGE_PREFIX)) {
+                Uri uri = Uri.parse(url);
+
+                String sourceUrl = uri.getQueryParameter(OVERLAY_IMAGE_URL_PARAM);
+                if (!TextUtils.isEmpty(sourceUrl)) {
+                    networkUrls.add(sourceUrl);
+                    addOverlayDirectionToMap(overlayImages, networkUrls.size() - 1, uri);
+                } else {
+                    assert false : "Overlay image source URL empty";
+                }
             } else {
-                // Assume this is a web image.
+                // Assume this is a regular web image.
                 networkUrls.add(url);
             }
         }
@@ -77,11 +99,20 @@ public class FeedImageLoader implements ImageLoaderApi {
             return;
         }
 
-        mFeedImageLoaderBridge.fetchImage(networkUrls, new Callback<Bitmap>() {
+        mFeedImageLoaderBridge.fetchImage(networkUrls, new Callback<ImageResponse>() {
             @Override
-            public void onResult(Bitmap bitmap) {
-                if (bitmap != null) {
-                    Drawable drawable = new BitmapDrawable(mActivityContext.getResources(), bitmap);
+            public void onResult(ImageResponse response) {
+                if (response.bitmap != null) {
+                    Drawable drawable;
+                    if (overlayImages.containsKey(response.imagePositionInList)) {
+                        drawable = ThumbnailGradient.createDrawableWithGradientIfNeeded(
+                                response.bitmap, overlayImages.get(response.imagePositionInList),
+                                mActivityContext.getResources());
+                    } else {
+                        drawable = new BitmapDrawable(
+                                mActivityContext.getResources(), response.bitmap);
+                    }
+
                     consumer.accept(drawable);
                     return;
                 }
@@ -115,5 +146,24 @@ public class FeedImageLoader implements ImageLoaderApi {
             }
         }
         return null;
+    }
+
+    /**
+     * Determine where the thumbnail is located in the card using the "direction" param and add it
+     * to the provided HashMap.
+     * @param overlayImageMap The HashMap used to store the overlay direction.
+     * @param key The key for the overlay image.
+     * @param overlayImageUri The URI for the overlay image.
+     */
+    private void addOverlayDirectionToMap(
+            HashMap<Integer, Integer> overlayImageMap, int key, Uri overlayImageUri) {
+        String direction = overlayImageUri.getQueryParameter(OVERLAY_IMAGE_DIRECTION_PARAM);
+        if (TextUtils.equals(direction, OVERLAY_IMAGE_DIRECTION_START)) {
+            overlayImageMap.put(key, ThumbnailGradient.ThumbnailLocation.START);
+        } else if (TextUtils.equals(direction, OVERLAY_IMAGE_DIRECTION_END)) {
+            overlayImageMap.put(key, ThumbnailGradient.ThumbnailLocation.END);
+        } else {
+            assert false : "Overlay image direction must be either start or end";
+        }
     }
 }

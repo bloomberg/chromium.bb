@@ -29,7 +29,8 @@ struct RequestMetadata;
 
 namespace feed {
 
-using ImageFetchedCallback = base::OnceCallback<void(const gfx::Image&)>;
+using ImageFetchedCallback =
+    base::OnceCallback<void(const gfx::Image&, size_t)>;
 
 // Enum for the result of the fetch, reported through UMA.
 // New values should be added at the end and things should not be renumbered.
