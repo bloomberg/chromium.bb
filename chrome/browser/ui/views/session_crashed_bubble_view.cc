@@ -82,7 +82,6 @@ bool DoesSupportConsentCheck() {
 #endif
 }
 
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 // Returns the app menu view, except when the browser window is Cocoa; Cocoa
 // browser windows always have a null anchor view and use
 // GetSessionCrashedBubbleAnchorRect() instead.
@@ -95,18 +94,11 @@ views::View* GetSessionCrashedBubbleAnchorView(Browser* browser) {
       ->toolbar_button_provider()
       ->GetAppMenuButton();
 }
-#else  // OS_MACOSX && !MAC_VIEWS_BROWSER
-views::View* GetSessionCrashedBubbleAnchorView(Browser* browser) {
-  return nullptr;
-}
-#endif
 
 gfx::Rect GetSessionCrashedBubbleAnchorRect(Browser* browser) {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
+#if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa())
     return bubble_anchor_util::GetAppMenuAnchorRectCocoa(browser);
-#elif defined(OS_MACOSX)
-  return bubble_anchor_util::GetAppMenuAnchorRectCocoa(browser);
 #endif
   return gfx::Rect();
 }
@@ -140,11 +132,6 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
 
 // static
 bool SessionCrashedBubble::Show(Browser* browser) {
-#if defined(OS_MACOSX)
-  if (!chrome::ShowAllDialogsWithViewsToolkit())
-    return false;
-#endif
-
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (browser->profile()->IsOffTheRecord())
     return true;
