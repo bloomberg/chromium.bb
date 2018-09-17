@@ -27,9 +27,6 @@ class OpenVRWrapper;
 
 class OpenVRRenderLoop : public XRCompositorCommon {
  public:
-  using RequestSessionCallback =
-      base::OnceCallback<void(bool result, mojom::XRSessionPtr)>;
-
   OpenVRRenderLoop();
   ~OpenVRRenderLoop() override;
 
@@ -44,7 +41,6 @@ class OpenVRRenderLoop : public XRCompositorCommon {
   bool SubmitCompositedFrame() override;
 
   // Helpers to implement XRDeviceAbstraction.
-  void UpdateControllerState();
   mojom::VRPosePtr GetPose();
   std::vector<mojom::XRInputSourceStatePtr> GetInputState(
       vr::TrackedDevicePose_t* poses,
