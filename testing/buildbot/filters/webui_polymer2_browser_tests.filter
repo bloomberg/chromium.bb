@@ -23,6 +23,10 @@
 -MediaRouterElementsBrowserTest.MediaRouterContainerSinkList
 -MediaRouterElementsBrowserTest.MediaRouterRouteDetails
 
+# Flaky on Windows. See https://crbug.com/881685
+# May also be flaky on Mac/ChromeOS. See https://crbug.com/669227#c10
+-MaterialHistoryListTest.All
+
 # Mac only failure. See crbug.com/876990
 -CrSettingsPrivacyPageTest.All
 

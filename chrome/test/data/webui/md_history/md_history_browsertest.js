@@ -98,10 +98,7 @@ MaterialHistoryListTest.prototype = {
 
 // Times out on debug builders because the History page can take several seconds
 // to load in a Debug build. See https://crbug.com/669227.
-GEN('#if !defined(NDEBUG) || defined(OS_MACOSX) || defined(OS_CHROMEOS)');
-GEN('#define MAYBE_All DISABLED_All');
-// Flakes on OS_WIN: https://crbug.com/881685
-GEN('#elif defined(OS_WIN)');
+GEN('#if !defined(NDEBUG)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
