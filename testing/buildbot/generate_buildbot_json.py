@@ -415,7 +415,11 @@ class BBJSONGenerator(object):
         if k != 'can_use_on_swarming_builders': # pragma: no cover
           del swarming_dict[k] # pragma: no cover
 
-  def update_and_cleanup_test(self, test, test_name, tester_name):
+  def update_and_cleanup_test(self, test, test_name, tester_name, tester_config,
+                              waterfall):
+    # Apply swarming mixins.
+    test = self.apply_all_swarming_mixins(
+        test, waterfall, tester_name, tester_config)
     # See if there are any exceptions that need to be merged into this
     # test's specification.
     modifications = self.get_test_modifications(test, test_name, tester_name)
@@ -491,7 +495,8 @@ class BBJSONGenerator(object):
       if args:
         result['args'] = args
 
-    result = self.update_and_cleanup_test(result, test_name, tester_name)
+    result = self.update_and_cleanup_test(
+        result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
     return result
 
@@ -505,13 +510,13 @@ class BBJSONGenerator(object):
     result['name'] = test_name
     self.initialize_swarming_dictionary_for_test(result, tester_config)
     self.initialize_args_for_test(result, tester_config)
-    result = self.update_and_cleanup_test(result, test_name, tester_name)
+    result = self.update_and_cleanup_test(
+        result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
     return result
 
   def generate_script_test(self, waterfall, tester_name, tester_config,
                            test_name, test_config):
-    del tester_config
     if not self.should_run_on_tester(waterfall, tester_name, test_name,
                                      test_config):
       return None
@@ -519,7 +524,8 @@ class BBJSONGenerator(object):
       'name': test_name,
       'script': test_config['script']
     }
-    result = self.update_and_cleanup_test(result, test_name, tester_name)
+    result = self.update_and_cleanup_test(
+        result, test_name, tester_name, tester_config, waterfall)
     return result
 
   def generate_junit_test(self, waterfall, tester_name, tester_config,
@@ -535,7 +541,6 @@ class BBJSONGenerator(object):
 
   def generate_instrumentation_test(self, waterfall, tester_name, tester_config,
                                     test_name, test_config):
-    del tester_config
     if not self.should_run_on_tester(waterfall, tester_name, test_name,
                                      test_config):
       return None
@@ -544,7 +549,8 @@ class BBJSONGenerator(object):
       result['name'] = test_name
     else:
       result['test'] = test_name
-    result = self.update_and_cleanup_test(result, test_name, tester_name)
+    result = self.update_and_cleanup_test(
+        result, test_name, tester_name, tester_config, waterfall)
     return result
 
   def substitute_gpu_args(self, tester_config, args):
@@ -676,8 +682,8 @@ class BBJSONGenerator(object):
       'Unknown test suite type ' + suite_type + ' in bot ' + bot_name +
       ' on waterfall ' + waterfall_name)
 
-  def apply_all_swarming_mixins(self, waterfall, builder_name, builder, tests):
-    """Applies all present swarming mixins to the tests for a given builder.
+  def apply_all_swarming_mixins(self, test, waterfall, builder_name, builder):
+    """Applies all present swarming mixins to the test for a given builder.
 
     Checks in the waterfall, builder, and test objects for mixins.
     """
@@ -694,33 +700,29 @@ class BBJSONGenerator(object):
       must_be_list(waterfall['swarming_mixins'], 'waterfall', waterfall['name'])
       for mixin in waterfall['swarming_mixins']:
         valid_mixin(mixin)
-        tests = [self.apply_swarming_mixin(
-            self.swarming_mixins[mixin], test) for test in tests]
+        test = self.apply_swarming_mixin(self.swarming_mixins[mixin], test)
 
     if 'swarming_mixins' in builder:
       must_be_list(builder['swarming_mixins'], 'builder', builder_name)
       for mixin in builder['swarming_mixins']:
         valid_mixin(mixin)
-        tests = [self.apply_swarming_mixin(
-            self.swarming_mixins[mixin], test) for test in tests]
-
-    new_tests = []
-    for test in tests:
-      if not 'swarming_mixins' in test:
-        new_tests.append(test)
-        continue
-
-      must_be_list(test['swarming_mixins'], 'test', test['test'])
-      for mixin in test['swarming_mixins']:
-        valid_mixin(mixin)
         test = self.apply_swarming_mixin(self.swarming_mixins[mixin], test)
-        del test['swarming_mixins']
-      new_tests.append(test)
 
-    return new_tests
+    if not 'swarming_mixins' in test:
+      return test
+
+    must_be_list(test['swarming_mixins'], 'test', test['test'])
+    for mixin in test['swarming_mixins']:
+      valid_mixin(mixin)
+      test = self.apply_swarming_mixin(self.swarming_mixins[mixin], test)
+      del test['swarming_mixins']
+    return test
 
   def apply_swarming_mixin(self, mixin, test):
     """Applies a swarming mixin to a test.
+
+    Mixins will not override an existing key. This is to ensure exceptions can
+    override a setting a mixin applies.
 
     Dimensions are handled in a special way. Instead of specifying
     'dimension_sets', which is how normal test suites specify their dimensions,
@@ -730,13 +732,15 @@ class BBJSONGenerator(object):
     new_test = copy.deepcopy(test)
     mixin = copy.deepcopy(mixin)
 
+    new_test.setdefault('swarming', {})
     if 'dimensions' in mixin:
-      new_test.setdefault('swarming', {}).setdefault('dimension_sets', [{}])
+      new_test['swarming'].setdefault('dimension_sets', [{}])
       for dimension_set in new_test['swarming']['dimension_sets']:
         dimension_set.update(mixin['dimensions'])
       del mixin['dimensions']
 
-    new_test.update(mixin)
+    new_test['swarming'].update(mixin)
+
     return new_test
 
   def generate_waterfall_json(self, waterfall):
@@ -763,8 +767,6 @@ class BBJSONGenerator(object):
         remapped_test_type = test_type_remapper.get(test_type, test_type)
         tests[remapped_test_type] = test_generator.sort(
           tests.get(remapped_test_type, []) + new_tests)
-        tests[remapped_test_type] = self.apply_all_swarming_mixins(
-            waterfall, name, config, tests[remapped_test_type])
       all_tests[name] = tests
     all_tests['AAAAA1 AUTOGENERATED FILE DO NOT EDIT'] = {}
     all_tests['AAAAA2 See generate_buildbot_json.py to make changes'] = {}
@@ -911,6 +913,32 @@ class BBJSONGenerator(object):
     if missing_bots:
       raise BBGenErr('The following nonexistent machines were referenced in '
                      'the test suite exceptions: ' + str(missing_bots))
+
+    # All mixins must be referenced
+    seen_mixins = set()
+    for waterfall in self.waterfalls:
+      seen_mixins = seen_mixins.union(waterfall.get('swarming_mixins', set()))
+      for bot_name, tester in waterfall['machines'].iteritems():
+        seen_mixins = seen_mixins.union(tester.get('swarming_mixins', set()))
+    for suite in self.test_suites.values():
+      if isinstance(suite, list):
+        # Don't care about this, it's a composition, which shouldn't include a
+        # swarming mixin.
+        continue
+
+      for test in suite.values():
+        if not isinstance(test, dict):
+          # Some test suites have top level keys, which currently can't be
+          # swarming mixin entries. Ignore them
+          continue
+
+        seen_mixins = seen_mixins.union(test.get('swarming_mixins', set()))
+
+    missing_mixins = set(self.swarming_mixins.keys()) - seen_mixins
+    if missing_mixins:
+      raise BBGenErr('The following mixins are unreferenced: %s. They must be'
+                     ' referenced in a waterfall, machine, or test suite.' % (
+                         str(missing_mixins)))
 
   def check_output_file_consistency(self, verbose=False):
     self.load_configuration_files()
