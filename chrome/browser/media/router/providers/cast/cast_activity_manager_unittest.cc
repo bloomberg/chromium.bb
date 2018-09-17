@@ -6,13 +6,15 @@
 
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/common/buffered_message_sender.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,7 +64,8 @@ class CastActivityManagerTest : public testing::Test {
                 std::make_unique<data_decoder::DataDecoderService>())),
         connector_(connector_factory_->CreateConnector()),
         data_decoder_(connector_.get()),
-        socket_service_(environment_.GetMainThreadTaskRunner()),
+        socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
+            {content::BrowserThread::UI})),
         message_handler_(&socket_service_) {
     media_sink_service_.AddOrUpdateSink(sink_);
     socket_.set_id(sink_.cast_data().cast_channel_id);
@@ -129,7 +132,7 @@ class CastActivityManagerTest : public testing::Test {
         /*incognito*/ false,
         base::BindOnce(&CastActivityManagerTest::ExpectLaunchSessionSuccess,
                        base::Unretained(this)));
-    environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     VerifyAndClearExpectations();
   }
 
@@ -168,7 +171,7 @@ class CastActivityManagerTest : public testing::Test {
     EXPECT_CALL(*client_connection_, OnMessage(_));
     EXPECT_CALL(mock_router_, OnRoutesUpdated(MediaRouteProviderId::CAST,
                                               Not(IsEmpty()), _, _));
-    environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     VerifyAndClearExpectations();
   }
 
@@ -187,7 +190,7 @@ class CastActivityManagerTest : public testing::Test {
     EXPECT_CALL(
         *client_connection_,
         DidChangeState(blink::mojom::PresentationConnectionState::TERMINATED));
-    environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     VerifyAndClearExpectations();
   }
 
@@ -210,7 +213,7 @@ class CastActivityManagerTest : public testing::Test {
             base::Unretained(this)));
     // Receiver action stop message is sent to SDK client.
     EXPECT_CALL(*client_connection_, OnMessage(_));
-    environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     VerifyAndClearExpectations();
 
     std::move(stop_session_callback).Run(success);
@@ -225,7 +228,7 @@ class CastActivityManagerTest : public testing::Test {
         route_->media_route_id(),
         base::BindOnce(&CastActivityManagerTest::ExpectTerminateResultSuccess,
                        base::Unretained(this)));
-    environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     VerifyAndClearExpectations();
   }
 
@@ -238,7 +241,7 @@ class CastActivityManagerTest : public testing::Test {
     EXPECT_CALL(
         *client_connection_,
         DidChangeState(blink::mojom::PresentationConnectionState::TERMINATED));
-    environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     VerifyAndClearExpectations();
   }
 
@@ -249,12 +252,12 @@ class CastActivityManagerTest : public testing::Test {
     EXPECT_CALL(mock_router_,
                 OnRoutesUpdated(MediaRouteProviderId::CAST, _, _, _))
         .Times(0);
-    environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
     VerifyAndClearExpectations();
   }
 
  protected:
-  base::test::ScopedTaskEnvironment environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
   DataDecoder data_decoder_;
@@ -308,7 +311,7 @@ TEST_F(CastActivityManagerTest, TerminateSessionBeforeLaunchResponse) {
   EXPECT_CALL(mock_router_,
               OnRoutesUpdated(MediaRouteProviderId::CAST, _, _, _))
       .Times(0);
-  environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromReceiver) {
@@ -321,7 +324,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromReceiver) {
       "sourceId", "12345");
   message_handler_.OnMessage(socket_, message);
   EXPECT_CALL(*client_connection_, OnMessage(_));
-  environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromReceiverAllDestinations) {
@@ -334,7 +337,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromReceiverAllDestinations) {
       "sourceId", "*");
   message_handler_.OnMessage(socket_, message);
   EXPECT_CALL(*client_connection_, OnMessage(_));
-  environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromReceiverUnknownDestination) {
@@ -347,7 +350,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromReceiverUnknownDestination) {
       "sourceId", "99999");
   message_handler_.OnMessage(socket_, message);
   EXPECT_CALL(*client_connection_, OnMessage(_)).Times(0);
-  environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromClient) {
@@ -370,7 +373,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromClient) {
 
   // An ACK message is sent back to client.
   EXPECT_CALL(*client_connection_, OnMessage(_));
-  environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromClientInvalidNamespace) {
