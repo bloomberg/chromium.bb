@@ -52,6 +52,6 @@ void ToolbarActionsBarBubbleViewsPresenter::OnWidgetClosing(
 void ToolbarActionsBarBubbleViewsPresenter::OnWidgetDestroying(
     views::Widget* widget) {
   active_bubble_ = nullptr;
-  [owner_ bubbleWindowClosing:nil];
+  [owner_ bubbleWindowClosing];
   widget->RemoveObserver(this);
 }

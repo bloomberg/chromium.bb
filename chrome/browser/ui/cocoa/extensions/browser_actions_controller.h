@@ -18,7 +18,6 @@ class Browser;
 @class BrowserActionsContainerView;
 @class MenuButton;
 class ToolbarActionsBar;
-@class ToolbarActionsBarBubbleMac;
 class ToolbarActionsBarBubbleViewsPresenter;
 class ToolbarActionsBarDelegate;
 
@@ -53,9 +52,6 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
   // True if this is the overflow container for toolbar actions.
   BOOL isOverflow_;
 
-  // The bubble that is actively showing, if any.
-  ToolbarActionsBarBubbleMac* activeBubble_;
-
   // The index of the currently-focused view in the overflow menu, or -1 if
   // no view is focused.
   NSInteger focusedViewIndex_;
@@ -71,7 +67,6 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 @property(readonly, nonatomic) BrowserActionsContainerView* containerView;
 @property(readonly, nonatomic) Browser* browser;
 @property(readonly, nonatomic) BOOL isOverflow;
-@property(readonly, nonatomic) ToolbarActionsBarBubbleMac* activeBubble;
 
 // Initializes the controller given the current browser and container view that
 // will hold the browser action buttons. If |mainController| is nil, the created
@@ -118,7 +113,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 
 // Called when the window for the active bubble is closing, and sets the active
 // bubble to nil.
-- (void)bubbleWindowClosing:(NSNotification*)notification;
+- (void)bubbleWindowClosing;
 
 @end  // @interface BrowserActionsController
 
