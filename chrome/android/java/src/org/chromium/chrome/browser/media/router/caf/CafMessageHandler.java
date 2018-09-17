@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.media.router.caf;
 
-import static org.chromium.chrome.browser.media.router.caf.CastUtils.isSameOrigin;
 
 import android.os.Handler;
 import android.support.v4.util.ArrayMap;
@@ -24,7 +23,6 @@ import org.chromium.chrome.browser.media.router.CastRequestIdGenerator;
 import org.chromium.chrome.browser.media.router.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.ClientRecord;
 import org.chromium.chrome.browser.media.router.MediaSink;
-import org.chromium.chrome.browser.media.router.cast.CastMediaSource;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -224,26 +222,34 @@ public class CafMessageHandler {
         int sequenceNumber = jsonMessage.optInt("sequenceNumber", VOID_SEQUENCE_NUMBER);
         mRouteProvider.sendMessageToClient(clientId,
                 buildSimpleSessionMessage("leave_session", sequenceNumber, clientId, null));
+        mRouteProvider.removeRoute(leavingClient.routeId, /* error= */ null);
 
-        // Send a "disconnect_session" message to all the clients that match with the leaving
-        // client's auto join policy.
-        for (ClientRecord client : mRouteProvider.getClientIdToRecords().values()) {
-            boolean shouldNotifyClient = false;
-            if (CastMediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
-                    && isSameOrigin(client.origin, leavingClient.origin)
-                    && client.tabId == leavingClient.tabId) {
-                shouldNotifyClient = true;
-            }
-            if (CastMediaSource.AUTOJOIN_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
-                    && isSameOrigin(client.origin, leavingClient.origin)) {
-                shouldNotifyClient = true;
-            }
-            if (shouldNotifyClient) {
-                mRouteProvider.sendMessageToClient(client.clientId,
-                        buildSimpleSessionMessage("disconnect_session", VOID_SEQUENCE_NUMBER,
-                                client.clientId, sessionId));
-            }
-        }
+        // TODO(zqzhang): handle leave_session message properly.
+
+        // int sequenceNumber = jsonMessage.optInt("sequenceNumber", VOID_SEQUENCE_NUMBER);
+        // mRouteProvider.sendMessageToClient(clientId,
+        //         buildSimpleSessionMessage("leave_session", sequenceNumber, clientId, null));
+
+        // // Send a "disconnect_session" message to all the clients that match with the leaving
+        // // client's auto join policy.
+        // for (ClientRecord client : mRouteProvider.getClientIdToRecords().values()) {
+        //     boolean shouldNotifyClient = false;
+        //     if
+        //     (CastMediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
+        //             && isSameOrigin(client.origin, leavingClient.origin)
+        //             && client.tabId == leavingClient.tabId) {
+        //         shouldNotifyClient = true;
+        //     }
+        //     if (CastMediaSource.AUTOJOIN_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
+        //             && isSameOrigin(client.origin, leavingClient.origin)) {
+        //         shouldNotifyClient = true;
+        //     }
+        //     if (shouldNotifyClient) {
+        //         mRouteProvider.sendMessageToClient(client.clientId,
+        //                 buildSimpleSessionMessage("disconnect_session", VOID_SEQUENCE_NUMBER,
+        //                         client.clientId, sessionId));
+        //     }
+        // }
 
         return true;
     }
@@ -533,9 +539,9 @@ public class CafMessageHandler {
     }
 
     /**
-     * Notifies the application has stopped to all requesting clients.
+     * Notifies the session has stopped to all requesting clients.
      */
-    public void onApplicationStopped() {
+    public void onSessionEnded() {
         for (String clientId : mRouteProvider.getClientIdToRecords().keySet()) {
             Queue<Integer> sequenceNumbersForClient = mStopRequests.get(clientId);
             if (sequenceNumbersForClient == null) {

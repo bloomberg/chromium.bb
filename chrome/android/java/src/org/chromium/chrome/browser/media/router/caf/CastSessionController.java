@@ -48,6 +48,14 @@ public class CastSessionController extends BaseSessionController {
         super.detachFromCastSession();
     }
 
+    @Override
+    public void onSessionEnded() {
+        CafMessageHandler messageHandler = getMessageHandler();
+        if (messageHandler == null) return;
+        messageHandler.onSessionEnded();
+        super.onSessionEnded();
+    }
+
     private class CastListener extends Cast.Listener {
         @Override
         public void onApplicationStatusChanged() {
@@ -56,11 +64,12 @@ public class CastSessionController extends BaseSessionController {
 
         @Override
         public void onApplicationMetadataChanged(ApplicationMetadata metadata) {
-            onApplicationStatusChanged();
+            CastSessionController.this.onApplicationStatusChanged();
         }
 
         @Override
         public void onVolumeChanged() {
+            CastSessionController.this.onApplicationStatusChanged();
             CafMessageHandler messageHandler = getMessageHandler();
             if (messageHandler == null) return;
             messageHandler.onVolumeChanged();
@@ -73,7 +82,7 @@ public class CastSessionController extends BaseSessionController {
         CafMessageHandler messageHandler = getMessageHandler();
         if (messageHandler != null) {
             messageHandler.broadcastClientMessage(
-                    "update_sesssion", messageHandler.buildSessionMessage());
+                    "update_session", messageHandler.buildSessionMessage());
         }
     }
 

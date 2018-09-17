@@ -271,8 +271,8 @@ public abstract class CafBaseMediaRouteProvider
             // sure the listener is not unregistered during a session relaunch.
             return;
         }
-        sessionController().detachFromCastSession();
         sessionController().onSessionEnded();
+        sessionController().detachFromCastSession();
         getAndroidMediaRouter().selectRoute(getAndroidMediaRouter().getDefaultRoute());
         removeAllRoutesWithError(error);
         CastUtils.getCastContext().getSessionManager().removeSessionManagerListener(
@@ -298,7 +298,7 @@ public abstract class CafBaseMediaRouteProvider
             MediaRoute route, String origin, int tabId, int nativeRequestId, boolean wasLaunched) {
         mRoutes.put(route.id, route);
         mManager.onRouteCreated(route.id, route.sinkId,
-                mPendingCreateRouteRequestInfo.nativeRequestId, this, wasLaunched);
+                sessionController().getRouteCreationInfo().nativeRequestId, this, wasLaunched);
     }
 
     /** Removes a route for bookkeeping. A null {@code error} indicates no error. */

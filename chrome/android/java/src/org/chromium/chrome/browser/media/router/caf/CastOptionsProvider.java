@@ -20,6 +20,7 @@ public class CastOptionsProvider implements OptionsProvider {
                 .setCastMediaOptions(null)
                 .setEnableReconnectionService(false)
                 .setResumeSavedSession(false)
+                .setStopReceiverApplicationWhenEndingSession(true)
                 .build();
     }
 
