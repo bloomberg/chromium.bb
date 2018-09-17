@@ -503,12 +503,6 @@ const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_MACOSX)
-// Whether to show all dialogs with toolkit-views on Mac, rather than Cocoa.
-const base::Feature kShowAllDialogsWithViewsToolkit{
-    "ShowAllDialogsWithViewsToolkit", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_MACOSX)
-
 #if defined(OS_ANDROID)
 const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

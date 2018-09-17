@@ -1633,12 +1633,6 @@ const char kShelfHoverPreviewsDescription[] =
 const char kShelfNewUiName[] = "Newest shelf redesign.";
 const char kShelfNewUiDescription[] = "Enables the newest shelf appearance.";
 
-const char kShowAllDialogsWithViewsToolkitName[] =
-    "Show all dialogs with Views toolkit";
-const char kShowAllDialogsWithViewsToolkitDescription[] =
-    "All browser dialogs will be shown using the Views toolkit rather than "
-    "Cocoa. This requires <a href=\"#secondary-ui-md\">#secondary-ui-md</a>.";
-
 const char kShowAndroidFilesInFilesAppName[] =
     "Show Android files in Files app";
 const char kShowAndroidFilesInFilesAppDescription[] =

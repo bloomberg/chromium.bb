@@ -331,11 +331,6 @@ extern const base::Feature kSafeSearchUrlReporting;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSecurityKeyAttestationPrompt;
 
-#if defined(OS_MACOSX)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kShowAllDialogsWithViewsToolkit;
-#endif
-
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kShowTrustedPublisherURL;
