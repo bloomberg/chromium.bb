@@ -20,7 +20,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/common/extensions/api/easy_unlock_private.h"
+#include "chrome/common/apps/platform_apps/api/easy_unlock_private.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -37,7 +37,7 @@
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace easy_unlock_private_api = extensions::api::easy_unlock_private;
+namespace easy_unlock_private_api = apps::api::easy_unlock_private;
 namespace screenlock_private_api = extensions::api::screenlock_private;
 namespace app_runtime_api = extensions::api::app_runtime;
 

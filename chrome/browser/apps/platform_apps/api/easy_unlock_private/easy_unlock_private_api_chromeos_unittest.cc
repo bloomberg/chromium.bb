@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
+#include "chrome/browser/apps/platform_apps/api/easy_unlock_private/easy_unlock_private_api.h"
 
 #include <memory>
 #include <utility>
 
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
+#include "chrome/browser/apps/platform_apps/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -19,7 +19,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 
-namespace extensions {
+namespace apps {
 namespace {
 
 using cryptauth::FakeConnection;
@@ -39,8 +39,7 @@ EasyUnlockPrivateConnectionManager* GetConnectionManager(
 
 std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  return std::make_unique<ApiResourceManager<EasyUnlockPrivateConnection>>(
-      context);
+  return std::make_unique<EasyUnlockPrivateConnectionResourceManager>(context);
 }
 
 scoped_refptr<const Extension> CreateTestExtension() {
@@ -61,7 +60,7 @@ class EasyUnlockPrivateApiTest : public extensions::ExtensionApiUnittest {
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
 
-    ApiResourceManager<EasyUnlockPrivateConnection>::GetFactoryInstance()
+    EasyUnlockPrivateConnectionResourceManager::GetFactoryInstance()
         ->SetTestingFactoryAndUse(browser()->profile(),
                                   ApiResourceManagerTestFactory);
   }
@@ -102,7 +101,7 @@ TEST_F(EasyUnlockPrivateApiTest, ExtensionUnloaded) {
   manager->AddConnection(extension.get(), std::move(connection), true);
 
   // Remove the extension from the registry.
-  auto* registry = ExtensionRegistry::Get(profile());
+  auto* registry = extensions::ExtensionRegistry::Get(profile());
   registry->TriggerOnUnloaded(
       extension.get(), extensions::UnloadedExtensionReason::PROFILE_SHUTDOWN);
 
@@ -112,4 +111,4 @@ TEST_F(EasyUnlockPrivateApiTest, ExtensionUnloaded) {
 }
 
 }  // namespace
-}  // namespace extensions
+}  // namespace apps

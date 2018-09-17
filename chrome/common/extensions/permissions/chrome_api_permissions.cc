@@ -41,7 +41,6 @@ ChromeAPIPermissions::GetAllPermissions() const {
       {APIPermission::kDownloads, "downloads"},
       {APIPermission::kDownloadsOpen, "downloads.open"},
       {APIPermission::kDownloadsShelf, "downloads.shelf"},
-      {APIPermission::kEasyUnlockPrivate, "easyUnlockPrivate"},
       {APIPermission::kIdentity, "identity"},
       {APIPermission::kIdentityEmail, "identity.email"},
       {APIPermission::kExperimental, "experimental",

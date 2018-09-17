@@ -22,6 +22,7 @@ ChromeAppsAPIPermissions::GetAllPermissions() const {
   static constexpr extensions::APIPermissionInfo::InitInfo
       permissions_to_register[] = {
           {extensions::APIPermission::kBrowser, "browser"},
+          {extensions::APIPermission::kEasyUnlockPrivate, "easyUnlockPrivate"},
       };
 
   std::vector<std::unique_ptr<extensions::APIPermissionInfo>> permissions;

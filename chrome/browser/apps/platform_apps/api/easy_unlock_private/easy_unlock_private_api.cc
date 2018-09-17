@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
+#include "chrome/browser/apps/platform_apps/api/easy_unlock_private/easy_unlock_private_api.h"
 
 #include <utility>
 #include <vector>
@@ -20,17 +20,17 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/platform_apps/api/easy_unlock_private/easy_unlock_private_connection.h"
+#include "chrome/browser/apps/platform_apps/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection.h"
-#include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/proximity_auth/proximity_auth_error_bubble.h"
-#include "chrome/common/extensions/api/easy_unlock_private.h"
+#include "chrome/common/apps/platform_apps/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/proximity_auth/bluetooth_low_energy_setup_connection_finder.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
@@ -57,27 +57,24 @@
 
 using proximity_auth::ScreenlockState;
 
-namespace extensions {
+namespace apps {
 
 namespace easy_unlock_private = api::easy_unlock_private;
 
 namespace {
 
-static base::LazyInstance<BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>>::
-    DestructorAtExit g_easy_unlock_private_api_factory =
-        LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<EasyUnlockPrivateAPI::Factory>::DestructorAtExit
+    g_easy_unlock_private_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 EasyUnlockPrivateConnectionManager* GetConnectionManager(
     content::BrowserContext* context) {
-  return BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>::Get(context)
-      ->get_connection_manager();
+  return EasyUnlockPrivateAPI::Factory::Get(context)->get_connection_manager();
 }
 
 }  // namespace
 
 // static
-BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>*
-    EasyUnlockPrivateAPI::GetFactoryInstance() {
+EasyUnlockPrivateAPI::Factory* EasyUnlockPrivateAPI::GetFactoryInstance() {
   return g_easy_unlock_private_api_factory.Pointer();
 }
 
@@ -91,17 +88,8 @@ void EasyUnlockPrivateAPI::Shutdown() {
   connection_manager_.reset();
 }
 
-template <>
-void BrowserContextKeyedAPIFactory<
-    EasyUnlockPrivateAPI>::DeclareFactoryDependencies() {
-  DependsOn(
-      ApiResourceManager<EasyUnlockPrivateConnection>::GetFactoryInstance());
-}
-
-EasyUnlockPrivateGetStringsFunction::EasyUnlockPrivateGetStringsFunction() {
-}
-EasyUnlockPrivateGetStringsFunction::~EasyUnlockPrivateGetStringsFunction() {
-}
+EasyUnlockPrivateGetStringsFunction::EasyUnlockPrivateGetStringsFunction() {}
+EasyUnlockPrivateGetStringsFunction::~EasyUnlockPrivateGetStringsFunction() {}
 
 ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> strings(new base::DictionaryValue);
@@ -127,21 +115,18 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
       "setupNotificationMessage",
       l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_NOTIFICATION_MESSAGE,
                                  device_type));
-  strings->SetString(
-      "setupNotificationButtonTitle",
-      l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_SETUP_NOTIFICATION_BUTTON_TITLE));
+  strings->SetString("setupNotificationButtonTitle",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_SETUP_NOTIFICATION_BUTTON_TITLE));
 
   // Chromebook added to Easy Unlock notification strings.
-  strings->SetString(
-      "chromebookAddedNotificationTitle",
-      l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_TITLE));
+  strings->SetString("chromebookAddedNotificationTitle",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_TITLE));
   strings->SetString(
       "chromebookAddedNotificationMessage",
       l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_MESSAGE,
-          device_type));
+          IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_MESSAGE, device_type));
   strings->SetString(
       "chromebookAddedNotificationAboutButton",
       l10n_util::GetStringUTF16(
@@ -149,21 +134,18 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
 
   // Shared "Learn more" button for the pairing changed and pairing change
   // applied notification.
-  strings->SetString(
-      "phoneChangedNotificationLearnMoreButton",
-      l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_NOTIFICATION_LEARN_MORE_BUTTON));
+  strings->SetString("phoneChangedNotificationLearnMoreButton",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_NOTIFICATION_LEARN_MORE_BUTTON));
 
   // Pairing changed notification strings.
-  strings->SetString(
-      "phoneChangedNotificationTitle",
-      l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_TITLE));
+  strings->SetString("phoneChangedNotificationTitle",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_TITLE));
   strings->SetString(
       "phoneChangedNotificationMessage",
       l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_MESSAGE,
-          device_type));
+          IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_MESSAGE, device_type));
   strings->SetString(
       "phoneChangedNotificationUpdateButton",
       l10n_util::GetStringUTF16(
@@ -188,10 +170,9 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
   strings->SetString(
       "setupIntroHeaderText",
       l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TEXT));
-  strings->SetString(
-      "setupIntroFindPhoneButtonLabel",
-      l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_SETUP_INTRO_FIND_PHONE_BUTTON_LABEL));
+  strings->SetString("setupIntroFindPhoneButtonLabel",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_SETUP_INTRO_FIND_PHONE_BUTTON_LABEL));
   strings->SetString(
       "setupIntroFindingPhoneButtonLabel",
       l10n_util::GetStringUTF16(
@@ -219,23 +200,24 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
   strings->SetString("setupSecurePhoneButtonLabel",
                      l10n_util::GetStringUTF16(
                          IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_BUTTON_LABEL));
-  strings->SetString("setupSecurePhoneLinkText",
-                     l10n_util::GetStringUTF16(
-                         IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_LINK_TEXT));
+  strings->SetString(
+      "setupSecurePhoneLinkText",
+      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_LINK_TEXT));
   // Step 2: Found a viable phone.
   strings->SetString(
       "setupFoundPhoneHeaderTitle",
-      l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TITLE, device_type));
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TITLE,
+                                 device_type));
   strings->SetString(
       "setupFoundPhoneHeaderText",
-      l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TEXT, device_type));
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TEXT,
+                                 device_type));
   strings->SetString(
       "setupFoundPhoneUseThisPhoneButtonLabel",
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_USE_THIS_PHONE_BUTTON_LABEL));
-  strings->SetString("setupFoundPhoneDeviceFormattedButtonLabel",
+  strings->SetString(
+      "setupFoundPhoneDeviceFormattedButtonLabel",
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_DEVICE_FORMATTED_BUTTON_LABEL));
   strings->SetString(
@@ -273,10 +255,9 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
       "setupCompleteTryItOutButtonLabel",
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_COMPLETE_TRY_IT_OUT_BUTTON_LABEL));
-  strings->SetString(
-      "setupCompleteSettingsLinkText",
-      l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT));
+  strings->SetString("setupCompleteSettingsLinkText",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT));
   // Step 4: Post lockscreen confirmation.
   strings->SetString("setupPostLockDismissButtonLabel",
                      l10n_util::GetStringUTF16(
@@ -287,10 +268,9 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
       "setupErrorBluetoothUnavailable",
       l10n_util::GetStringFUTF16(
           IDS_EASY_UNLOCK_SETUP_ERROR_BLUETOOTH_UNAVAILBLE, device_type));
-  strings->SetString(
-      "setupErrorOffline",
-      l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_SETUP_ERROR_OFFLINE, device_type));
+  strings->SetString("setupErrorOffline",
+                     l10n_util::GetStringFUTF16(
+                         IDS_EASY_UNLOCK_SETUP_ERROR_OFFLINE, device_type));
   strings->SetString(
       "setupErrorRemoteSoftwareOutOfDate",
       l10n_util::GetStringUTF16(
@@ -313,17 +293,16 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetStringsFunction::Run() {
 }
 
 EasyUnlockPrivateShowErrorBubbleFunction::
-    EasyUnlockPrivateShowErrorBubbleFunction() {
-}
+    EasyUnlockPrivateShowErrorBubbleFunction() {}
 
 EasyUnlockPrivateShowErrorBubbleFunction::
-    ~EasyUnlockPrivateShowErrorBubbleFunction() {
-}
+    ~EasyUnlockPrivateShowErrorBubbleFunction() {}
 
 ExtensionFunction::ResponseAction
 EasyUnlockPrivateShowErrorBubbleFunction::Run() {
   content::WebContents* web_contents = GetSenderWebContents();
-  if (!web_contents || GetViewType(web_contents) != VIEW_TYPE_APP_WINDOW) {
+  if (!web_contents || extensions::GetViewType(web_contents) !=
+                           extensions::VIEW_TYPE_APP_WINDOW) {
     return RespondNow(Error("A foreground app window is required."));
   }
 
@@ -331,19 +310,16 @@ EasyUnlockPrivateShowErrorBubbleFunction::Run() {
       easy_unlock_private::ShowErrorBubble::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (params->link_range.start < 0 ||
-      params->link_range.end < 0 ||
+  if (params->link_range.start < 0 || params->link_range.end < 0 ||
       base::saturated_cast<size_t>(params->link_range.end) >
           params->message.size()) {
     return RespondNow(Error("Invalid link range."));
   }
 
 #if defined(TOOLKIT_VIEWS)
-  gfx::Rect anchor_rect(
-      params->anchor_rect.left, params->anchor_rect.top,
-      params->anchor_rect.width, params->anchor_rect.height);
-  anchor_rect +=
-      web_contents->GetContainerBounds().OffsetFromOrigin();
+  gfx::Rect anchor_rect(params->anchor_rect.left, params->anchor_rect.top,
+                        params->anchor_rect.width, params->anchor_rect.height);
+  anchor_rect += web_contents->GetContainerBounds().OffsetFromOrigin();
   ShowProximityAuthErrorBubble(
       base::UTF8ToUTF16(params->message),
       gfx::Range(params->link_range.start, params->link_range.end),
@@ -355,12 +331,10 @@ EasyUnlockPrivateShowErrorBubbleFunction::Run() {
 }
 
 EasyUnlockPrivateHideErrorBubbleFunction::
-    EasyUnlockPrivateHideErrorBubbleFunction() {
-}
+    EasyUnlockPrivateHideErrorBubbleFunction() {}
 
 EasyUnlockPrivateHideErrorBubbleFunction::
-    ~EasyUnlockPrivateHideErrorBubbleFunction() {
-}
+    ~EasyUnlockPrivateHideErrorBubbleFunction() {}
 
 ExtensionFunction::ResponseAction
 EasyUnlockPrivateHideErrorBubbleFunction::Run() {
@@ -460,4 +434,9 @@ EasyUnlockPrivateSetupConnectionSendFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-}  // namespace extensions
+}  // namespace apps
+
+template <>
+void apps::EasyUnlockPrivateAPI::Factory::DeclareFactoryDependencies() {
+  DependsOn(EasyUnlockPrivateConnectionResourceManager::GetFactoryInstance());
+}
