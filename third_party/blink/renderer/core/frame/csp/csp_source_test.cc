@@ -911,4 +911,121 @@ TEST_F(CSPSourceTest, IntersectSchemesOnly) {
   }
 }
 
+TEST_F(CSPSourceTest, MatchingAsSelf) {
+  // Testing Step 4 of
+  // https://w3c.github.io/webappsec-csp/#match-url-to-source-expression
+  struct TestCase {
+    const Source self_source;
+    const String& url;
+    bool expected;
+  } cases[] = {
+      // Same origin
+      {{"http", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "http://example.com:80/",
+       true},
+      {{"https", "example.com", "", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "https://example.com:443/",
+       true},
+      {{"https", "example.com", "", 4545, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "https://example.com:4545/",
+       true},  // Mismatching origin
+      // Mismatching host
+      {{"http", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "http://example2.com:80/",
+       false},
+      // Ports not matching default schemes
+      {{"http", "example.com", "", 8080, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "https://example.com:443/",
+       false},
+      {{"http", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "wss://example.com:8443/",
+       false},
+      // Allowed different scheme combinations (4.2.1 and 4.2.2)
+      {{"http", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "https://example.com:443/",
+       true},
+      {{"http", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "ws://example.com:80/",
+       true},
+      {{"http", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "wss://example.com:443/",
+       true},
+      {{"ws", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "https://example.com:443/",
+       true},
+      {{"wss", "example.com", "", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "https://example.com:443/",
+       true},
+      {{"https", "example.com", "", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "wss://example.com:443/",
+       true},
+      // Ports not set (aka default)
+      {{"https", "example.com", "", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "wss://example.com:443/",
+       true},
+      {{"https", "example.com", "", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "wss://example.com/",
+       true},
+
+      // Paths are ignored
+      {{"http", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "https://example.com:443/some-path-here",
+       true},
+      {{"http", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "ws://example.com:80/some-other-path-here",
+       true},
+
+      // Custom schemes
+      {{"http", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "custom-scheme://example.com/",
+       false},
+      {{"http", "example.com", "", 80, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "custom-scheme://example.com:80/",
+       false},
+      {{"https", "example.com", "", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "custom-scheme://example.com/",
+       false},
+      {{"https", "example.com", "", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "custom-scheme://example.com:443/",
+       false},
+      {{"https", "example.com", "", 443, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "custom-scheme://example.com/some-path",
+       false},
+      {{"http", "example.com", "", 0, CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard},
+       "custom-scheme://example.com/some-path",
+       false},
+  };
+
+  KURL base;
+  for (const auto& test : cases) {
+    CSPSource* self_source = new CSPSource(
+        csp.Get(), test.self_source.scheme, test.self_source.host,
+        test.self_source.port, test.self_source.path,
+        test.self_source.host_wildcard, test.self_source.port_wildcard);
+    EXPECT_EQ(self_source->MatchesAsSelf(KURL(base, test.url)), test.expected);
+  }
+}
+
 }  // namespace blink
