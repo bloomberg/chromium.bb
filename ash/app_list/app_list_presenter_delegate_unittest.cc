@@ -1624,4 +1624,33 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackdropTest) {
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 }
 
+// Tests that app list is not active when switching to tablet mode if an active
+// window exists.
+TEST_F(AppListPresenterDelegateHomeLauncherTest,
+       NotActivateAppListWindowWhenActiveWindowExists) {
+  // No window is active.
+  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+
+  // Show app list in tablet mode. It should become active.
+  EnableTabletMode(true);
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(GetAppListView()->GetWidget()->GetNativeWindow(),
+            wm::GetActiveWindow());
+
+  // End tablet mode.
+  EnableTabletMode(false);
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+
+  // Activate a window.
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  wm::GetWindowState(window.get())->Activate();
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  // Show app list in tablet mode. It should not be active.
+  EnableTabletMode(true);
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+}
+
 }  // namespace ash
