@@ -47,6 +47,7 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
   void SetAddUserSessionPolicy(AddUserSessionPolicy policy);
   void SetSessionState(session_manager::SessionState state);
   void SetIsRunningInAppMode(bool app_mode);
+  void SetIsDemoSession();
 
   // Creates the |count| pre-defined user sessions. The users are named by
   // numbers using "user%d@tray" template. The first user is set as active user

@@ -44,6 +44,7 @@ class LogoutConfirmationController::LastWindowClosedObserver
   LastWindowClosedObserver() {
     DCHECK_EQ(Shell::Get()->session_controller()->login_status(),
               LoginStatus::PUBLIC);
+    DCHECK(!Shell::Get()->session_controller()->IsDemoSession());
     Shell::Get()->AddShellObserver(this);
 
     // Observe all displays.
@@ -155,10 +156,12 @@ void LogoutConfirmationController::ConfirmLogout(base::TimeTicks logout_time) {
 
 void LogoutConfirmationController::OnLoginStatusChanged(
     LoginStatus login_status) {
-  if (login_status == LoginStatus::PUBLIC)
+  if (login_status == LoginStatus::PUBLIC &&
+      !Shell::Get()->session_controller()->IsDemoSession()) {
     last_window_closed_observer_ = std::make_unique<LastWindowClosedObserver>();
-  else
+  } else {
     last_window_closed_observer_.reset();
+  }
 }
 
 void LogoutConfirmationController::OnLockStateChanged(bool locked) {
