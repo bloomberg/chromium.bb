@@ -71,7 +71,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_observer.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -5928,13 +5927,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Navigate to the site of the parent, but to a page that will not commit.
   GURL same_site_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  NavigationStallDelegate stall_delegate(same_site_url);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationManager stalled_navigation(web_contents(), same_site_url);
   {
     NavigationController::LoadURLParams params(same_site_url);
     params.transition_type = ui::PAGE_TRANSITION_LINK;
     params.frame_tree_node_id = node->frame_tree_node_id();
     node->navigator()->GetController()->LoadURLWithParams(params);
+    EXPECT_TRUE(stalled_navigation.WaitForResponse());
   }
 
   // Grab the routing id of the pending RenderFrameHost and set up a process
@@ -5980,8 +5979,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       shell(), embedded_test_server()->GetURL("d.com", "/title3.html")));
   watcher.Wait();
   EXPECT_TRUE(watcher.did_exit_normally());
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 // This test ensures that the RenderFrame isn't leaked in the renderer process

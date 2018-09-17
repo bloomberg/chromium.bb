@@ -37,7 +37,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -3009,16 +3008,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Navigate again to the original site, but to a page that will take a while
   // to commit.
   GURL same_site_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
-  NavigationStallDelegate stall_delegate(same_site_url);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationManager stalled_navigation(new_shell->web_contents(),
+                                           same_site_url);
   new_shell->LoadURL(same_site_url);
+  EXPECT_TRUE(stalled_navigation.WaitForRequestStart());
 
   // Going back in history should work and the test should not crash.
   TestNavigationObserver back_nav_load_observer(new_shell->web_contents());
   new_shell->web_contents()->GetController().GoBack();
   back_nav_load_observer.Wait();
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 // Tests that InputMsg type IPCs are ignored by swapped out RenderViews. It
@@ -3273,9 +3271,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Start a cross-site navigation to the same site but don't commit.
   GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  NavigationStallDelegate stall_delegate(cross_site_url);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationManager stalled_navigation(shell()->web_contents(),
+                                           cross_site_url);
   shell()->LoadURL(cross_site_url);
+  EXPECT_TRUE(stalled_navigation.WaitForResponse());
 
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell()->web_contents());
@@ -3295,8 +3294,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(next_rfh, web_contents->GetMainFrame());
   EXPECT_FALSE(
       web_contents->GetRenderManagerForTesting()->speculative_frame_host());
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 // Check that if a sandboxed subframe opens a cross-process popup such that the

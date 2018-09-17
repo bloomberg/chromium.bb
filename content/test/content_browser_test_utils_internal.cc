@@ -27,8 +27,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -282,33 +280,6 @@ Shell* OpenPopup(const ToRenderFrameHost& opener,
   Shell* new_shell = new_shell_observer.GetShell();
   WaitForLoadStop(new_shell->web_contents());
   return new_shell;
-}
-
-namespace {
-
-class HttpRequestStallThrottle : public ResourceThrottle {
- public:
-  // ResourceThrottle
-  void WillStartRequest(bool* defer) override { *defer = true; }
-
-  const char* GetNameForLogging() const override {
-    return "HttpRequestStallThrottle";
-  }
-};
-
-}  // namespace
-
-NavigationStallDelegate::NavigationStallDelegate(const GURL& url) : url_(url) {}
-
-void NavigationStallDelegate::RequestBeginning(
-    net::URLRequest* request,
-    content::ResourceContext* resource_context,
-    content::AppCacheService* appcache_service,
-    ResourceType resource_type,
-    std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (request->url() == url_)
-    throttles->push_back(std::make_unique<HttpRequestStallThrottle>());
 }
 
 FileChooserDelegate::FileChooserDelegate(const base::FilePath& file)

@@ -106,27 +106,6 @@ Shell* OpenPopup(const ToRenderFrameHost& opener,
                  const GURL& url,
                  const std::string& name);
 
-// This class can be used to stall any resource request, based on an URL match.
-// There is no explicit way to resume the request; it should be used carefully.
-// Note: This class likely doesn't work with PlzNavigate.
-// TODO(nasko): Reimplement this class using NavigationThrottle, once it has
-// the ability to defer navigation requests.
-class NavigationStallDelegate : public ResourceDispatcherHostDelegate {
- public:
-  explicit NavigationStallDelegate(const GURL& url);
-
- private:
-  // ResourceDispatcherHostDelegate
-  void RequestBeginning(net::URLRequest* request,
-                        content::ResourceContext* resource_context,
-                        content::AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        std::vector<std::unique_ptr<content::ResourceThrottle>>*
-                            throttles) override;
-
-  GURL url_;
-};
-
 // Helper for mocking choosing a file via a file dialog.
 class FileChooserDelegate : public WebContentsDelegate {
  public:

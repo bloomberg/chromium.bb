@@ -28,7 +28,6 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -4912,10 +4911,10 @@ void DoReplaceStateWhilePending(Shell* shell,
   EXPECT_TRUE(NavigateToURL(shell, start_url));
 
   // Have the user decide to go to a different page which is very slow.
-  NavigationStallDelegate stall_delegate(stalled_url);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
-  controller.LoadURL(
-      stalled_url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  TestNavigationManager stalled_navigation(shell->web_contents(), stalled_url);
+  controller.LoadURL(stalled_url, Referrer(), ui::PAGE_TRANSITION_LINK,
+                     std::string());
+  EXPECT_TRUE(stalled_navigation.WaitForRequestStart());
 
   // That should be the pending entry.
   NavigationEntryImpl* entry = controller.GetPendingEntry();
@@ -4936,16 +4935,13 @@ void DoReplaceStateWhilePending(Shell* shell,
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
     EXPECT_TRUE(capturer.is_same_document());
   }
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 }  // namespace
 
-// Flaky on Linux TSan: https://crbug.com/847326
 IN_PROC_BROWSER_TEST_F(
     NavigationControllerBrowserTest,
-    DISABLED_NavigationTypeClassification_On1SameDocumentToXWhile2Pending) {
+    NavigationTypeClassification_On1SameDocumentToXWhile2Pending) {
   GURL url1(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   GURL url2(embedded_test_server()->GetURL(
@@ -4971,10 +4967,9 @@ IN_PROC_BROWSER_TEST_F(
   DoReplaceStateWhilePending(shell(), url, url, "x");
 }
 
-// Flaky on Linux TSan: https://crbug.com/847326
 IN_PROC_BROWSER_TEST_F(
     NavigationControllerBrowserTest,
-    DISABLED_NavigationTypeClassification_On1SameDocumentTo1While1Pending) {
+    NavigationTypeClassification_On1SameDocumentTo1While1Pending) {
   GURL url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   DoReplaceStateWhilePending(shell(), url, url, "simple_page_1.html");
@@ -5003,11 +4998,11 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Start a cross-process navigation with replacement, which never completes.
   GURL foo_url(embedded_test_server()->GetURL(
       "foo.com", "/navigation_controller/page_with_links.html"));
-  NavigationStallDelegate stall_delegate(foo_url);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationManager stalled_navigation(shell()->web_contents(), foo_url);
   NavigationController::LoadURLParams params(foo_url);
   params.should_replace_current_entry = true;
   controller.LoadURLWithParams(params);
+  EXPECT_TRUE(stalled_navigation.WaitForRequestStart());
 
   // That should be the pending entry.
   NavigationEntryImpl* entry = controller.GetPendingEntry();
@@ -5033,8 +5028,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(entry_count + 1, controller.GetEntryCount());
   EXPECT_EQ(push_state_url, controller.GetLastCommittedEntry()->GetURL());
   EXPECT_EQ(start_url, controller.GetEntryAtIndex(0)->GetURL());
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 // This test ensures that if we go back from a page that has a replaceState()
@@ -5275,7 +5268,7 @@ class FailureWatcher : public WebContentsObserver {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       DISABLED_StopCausesFailureDespiteJavaScriptURL) {
+                       StopCausesFailureDespiteJavaScriptURL) {
   NavigationControllerImpl& controller =
       static_cast<NavigationControllerImpl&>(
           shell()->web_contents()->GetController());
@@ -5292,9 +5285,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Have the user decide to go to a different page which will not commit.
   GURL url2(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_2.html"));
-  NavigationStallDelegate stall_delegate(url2);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationManager stalled_navigation(shell()->web_contents(), url2);
   controller.LoadURL(url2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(stalled_navigation.WaitForResponse());
 
   // That should be the pending entry.
   NavigationEntryImpl* entry = controller.GetPendingEntry();
@@ -5306,16 +5299,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     FailureWatcher watcher(root);
     GURL js("javascript:(function(){})()");
     controller.LoadURL(js, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-    // This LoadURL ends up purging the pending entry, which is why this is
-    // tricky.
-    EXPECT_EQ(nullptr, controller.GetPendingEntry());
+    EXPECT_EQ(entry, controller.GetPendingEntry());
     EXPECT_TRUE(shell()->web_contents()->IsLoading());
     shell()->web_contents()->Stop();
     watcher.Wait();
     EXPECT_FALSE(shell()->web_contents()->IsLoading());
   }
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 namespace {
