@@ -41,7 +41,8 @@ class Y4mVideoSource : public VideoSource {
 
   virtual void ReadSourceToStart() {
     ASSERT_TRUE(input_file_ != NULL);
-    ASSERT_FALSE(y4m_input_open(&y4m_, input_file_, NULL, 0, 0));
+    ASSERT_FALSE(
+        y4m_input_open(&y4m_, input_file_, NULL, 0, AOM_CSP_UNKNOWN, 0));
     framerate_numerator_ = y4m_.fps_n;
     framerate_denominator_ = y4m_.fps_d;
     frame_ = 0;

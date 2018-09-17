@@ -53,6 +53,7 @@ struct AvxEncoderConfig {
   int disable_warnings;
   int disable_warning_prompt;
   int experimental_bitstream;
+  aom_chroma_sample_position_t csp;
 };
 
 #ifdef __cplusplus

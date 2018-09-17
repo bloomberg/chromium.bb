@@ -845,14 +845,17 @@ static void validate_positive_rational(const char *msg,
   if (!rat->den) die("Error: %s has zero denominator\n", msg);
 }
 
-static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
+/* Parses global config arguments into the AvxEncoderConfig. Note that
+ * argv is modified and overwrites all parsed arguments.
+ */
+static void parse_global_config(struct AvxEncoderConfig *global, int argc,
                                 char ***argv) {
   char **argi, **argj;
   struct arg arg;
   const int num_encoder = get_aom_encoder_count();
   char **argv_local = (char **)*argv;
 #if CONFIG_FILEOPTIONS
-  int argc_local = *argc;
+  int argc_local = argc;
 #endif
   if (num_encoder < 1) die("Error: no valid encoder available\n");
 
@@ -861,6 +864,7 @@ static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
   global->codec = get_aom_encoder_by_index(num_encoder - 1);
   global->passes = 0;
   global->color_type = I420;
+  global->csp = AOM_CSP_UNKNOWN;
 
 #if CONFIG_FILEOPTIONS
   const char *cfg = NULL;
@@ -900,6 +904,10 @@ static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
 
       if (global->pass < 1 || global->pass > 2)
         die("Error: Invalid pass selected (%d)\n", global->pass);
+    } else if (arg_match(&arg, &input_chroma_sample_position, argi)) {
+      global->csp = arg_parse_enum(&arg);
+      /* Flag is used by later code as well, preserve it. */
+      argj++;
     } else if (arg_match(&arg, &usage, argi))
       global->usage = arg_parse_uint(&arg);
     else if (arg_match(&arg, &good_dl, argi))
@@ -963,7 +971,8 @@ static void parse_global_config(struct AvxEncoderConfig *global, int *argc,
   }
 }
 
-static void open_input_file(struct AvxInputContext *input) {
+static void open_input_file(struct AvxInputContext *input,
+                            aom_chroma_sample_position_t csp) {
   /* Parse certain options from the input file, if possible */
   input->file = strcmp(input->filename, "-") ? fopen(input->filename, "rb")
                                              : set_binary_mode(stdin);
@@ -989,7 +998,7 @@ static void open_input_file(struct AvxInputContext *input) {
   input->detect.position = 0;
 
   if (input->detect.buf_read == 4 && file_is_y4m(input->detect.buf)) {
-    if (y4m_input_open(&input->y4m, input->file, input->detect.buf, 4,
+    if (y4m_input_open(&input->y4m, input->file, input->detect.buf, 4, csp,
                        input->only_i420) >= 0) {
       input->file_type = FILE_TYPE_Y4M;
       input->width = input->y4m.pic_w;
@@ -1914,7 +1923,7 @@ int main(int argc, const char **argv_) {
    * codec.
    */
   argv = argv_dup(argc - 1, argv_ + 1);
-  parse_global_config(&global, &argc, &argv);
+  parse_global_config(&global, argc, &argv);
 
 #if CONFIG_FILEOPTIONS
   if (argc < 2) usage_exit();
@@ -1970,7 +1979,7 @@ int main(int argc, const char **argv_) {
     int64_t average_rate = -1;
     int64_t lagged_count = 0;
 
-    open_input_file(&input);
+    open_input_file(&input, global.csp);
 
     /* If the input file doesn't specify its w/h (raw files), try to get
      * the data from the first stream's configuration.
