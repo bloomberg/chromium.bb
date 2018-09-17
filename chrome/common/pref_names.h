@@ -529,6 +529,7 @@ extern const char kContentSuggestionsNotificationsSentDay[];
 extern const char kContentSuggestionsNotificationsSentCount[];
 #else
 extern const char kNtpCustomBackgroundDict[];
+extern const char kNtpCustomBackgroundLocalToDevice[];
 #endif  // defined(OS_ANDROID)
 extern const char kNtpShownPage[];
 
