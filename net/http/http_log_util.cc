@@ -42,9 +42,6 @@ std::string ElideHeaderValueForNetLog(NetLogCaptureMode capture_mode,
 
   if (redact_begin == redact_end &&
       !capture_mode.include_cookies_and_credentials()) {
-    // Note: this logic should be kept in sync with stripCookieOrLoginInfo in
-    // chrome/browser/resources/net_internals/log_view_painter.js.
-
     if (base::EqualsCaseInsensitiveASCII(header, "set-cookie") ||
         base::EqualsCaseInsensitiveASCII(header, "set-cookie2") ||
         base::EqualsCaseInsensitiveASCII(header, "cookie") ||
