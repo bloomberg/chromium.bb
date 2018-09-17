@@ -238,13 +238,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kPerformanceTracingEnabled,
 
-    prefs::kCertRevocationCheckingEnabled,
-    prefs::kCertRevocationCheckingRequiredLocalAnchors,
-    prefs::kCertEnableSha1LocalAnchors,
-    prefs::kCertEnableSymantecLegacyInfrastructure,
-    prefs::kTLS13Variant,
-    prefs::kCipherSuiteBlacklist,
-
 #if !defined(OS_ANDROID)
     prefs::kMediaGalleriesUniqueId,
     prefs::kMediaGalleriesRememberedGalleries,
