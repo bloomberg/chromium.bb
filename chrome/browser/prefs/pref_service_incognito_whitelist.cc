@@ -202,7 +202,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kEnableEncryptedMedia,
 
 #if defined(OS_ANDROID)
-    prefs::kMigratedToSiteNotificationChannels,
     prefs::kClearedBlockedSiteNotificationChannels,
 #endif
 
@@ -213,7 +212,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kWebRTCIPHandlingPolicy,
 
 #if defined(OS_WIN)
-    prefs::kHasSeenWin10PromoPage,
 #if defined(GOOGLE_CHROME_BUILD)
     prefs::kHasSeenGoogleAppsPromoPage,
 #endif  // defined(GOOGLE_CHROME_BUILD)
@@ -225,17 +223,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kDefaultTasksByMimeType,
     prefs::kDefaultTasksBySuffix,
-
-    prefs::kLastKnownIntranetRedirectOrigin,
-
-    prefs::kShutdownType,
-    prefs::kShutdownNumProcesses,
-    prefs::kShutdownNumProcessesSlow,
-
-    prefs::kRestartLastSessionOnShutdown,
-#if !defined(OS_ANDROID)
-    prefs::kWasRestarted,
-#endif  // !defined(OS_ANDROID)
 
     prefs::kWebAppCreateOnDesktop,
     prefs::kWebAppCreateInAppsMenu,
@@ -251,8 +238,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kPerformanceTracingEnabled,
 
-    prefs::kTabStripStackedLayout,
-
     prefs::kCertRevocationCheckingEnabled,
     prefs::kCertRevocationCheckingRequiredLocalAnchors,
     prefs::kCertEnableSha1LocalAnchors,
@@ -260,18 +245,7 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kTLS13Variant,
     prefs::kCipherSuiteBlacklist,
 
-    prefs::kDnsOverHttpsServers,
-    prefs::kDnsOverHttpsServerMethods,
-
-    prefs::kHardwareAccelerationModePrevious,
-
-    prefs::kFactoryResetRequested,
-    prefs::kFactoryResetTPMFirmwareUpdateMode,
-    prefs::kDebuggingFeaturesRequested,
-
 #if !defined(OS_ANDROID)
-    prefs::kAttemptedToEnableAutoupdate,
-
     prefs::kMediaGalleriesUniqueId,
     prefs::kMediaGalleriesRememberedGalleries,
 #endif  // !defined(OS_ANDROID)
@@ -294,9 +268,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kPartnerBookmarkMappings,
 #endif  // defined(OS_ANDROID)
 
-    prefs::kQuickCheckEnabled,
-
-    prefs::kRecoveryComponentNeedsElevation,
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 // prefs::kRestartInBackground,
 #endif
@@ -306,10 +277,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif
 
     prefs::kBackgroundTracingLastUpload,
-
-    prefs::kOriginTrialPublicKey,
-    prefs::kOriginTrialDisabledFeatures,
-    prefs::kOriginTrialDisabledTokens,
 
     prefs::kMediaEngagementSchemaVersion,
 };
