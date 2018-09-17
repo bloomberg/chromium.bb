@@ -34,7 +34,7 @@ void SVGStringListBase::Initialize(const String& item) {
   values_.push_back(item);
 }
 
-String SVGStringListBase::GetItem(size_t index,
+String SVGStringListBase::GetItem(uint32_t index,
                                   ExceptionState& exception_state) {
   if (!CheckIndexBound(index, exception_state))
     return String();
@@ -42,7 +42,8 @@ String SVGStringListBase::GetItem(size_t index,
   return values_.at(index);
 }
 
-void SVGStringListBase::InsertItemBefore(const String& new_item, size_t index) {
+void SVGStringListBase::InsertItemBefore(const String& new_item,
+                                         uint32_t index) {
   // Spec: If the index is greater than or equal to numberOfItems, then the new
   // item is appended to the end of the list.
   if (index > values_.size())
@@ -55,7 +56,7 @@ void SVGStringListBase::InsertItemBefore(const String& new_item, size_t index) {
   values_.insert(index, new_item);
 }
 
-String SVGStringListBase::RemoveItem(size_t index,
+String SVGStringListBase::RemoveItem(uint32_t index,
                                      ExceptionState& exception_state) {
   if (!CheckIndexBound(index, exception_state))
     return String();
@@ -70,7 +71,7 @@ void SVGStringListBase::AppendItem(const String& new_item) {
 }
 
 void SVGStringListBase::ReplaceItem(const String& new_item,
-                                    size_t index,
+                                    uint32_t index,
                                     ExceptionState& exception_state) {
   if (!CheckIndexBound(index, exception_state))
     return;
@@ -89,7 +90,7 @@ void SVGStringListBase::ParseInternal(const CharType*& ptr,
       ptr++;
     if (ptr == start)
       break;
-    values_.push_back(String(start, ptr - start));
+    values_.push_back(String(start, static_cast<wtf_size_t>(ptr - start)));
     SkipOptionalSVGSpacesOrDelimiter(ptr, end, list_delimiter);
   }
 }
@@ -137,13 +138,13 @@ String SVGStringListBase::ValueAsStringWithDelimiter(
   return builder.ToString();
 }
 
-bool SVGStringListBase::CheckIndexBound(size_t index,
+bool SVGStringListBase::CheckIndexBound(uint32_t index,
                                         ExceptionState& exception_state) {
   if (index >= values_.size()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kIndexSizeError,
-        ExceptionMessages::IndexExceedsMaximumBound(
-            "index", index, static_cast<size_t>(values_.size())));
+        ExceptionMessages::IndexExceedsMaximumBound("index", index,
+                                                    values_.size()));
     return false;
   }
 

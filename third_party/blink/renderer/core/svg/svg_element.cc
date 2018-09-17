@@ -890,7 +890,7 @@ static bool HasLoadListener(Element* element) {
         element->GetEventListeners(EventTypeNames::load);
     if (!entry)
       continue;
-    for (size_t i = 0; i < entry->size(); ++i) {
+    for (wtf_size_t i = 0; i < entry->size(); ++i) {
       if (entry->at(i).Capture())
         return true;
     }
