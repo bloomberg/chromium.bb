@@ -19,6 +19,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -78,7 +79,8 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
       IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
           ->driver(),
       browser_state->GetRequestContext(),
-      browser_state->GetSharedURLLoaderFactory()));
+      browser_state->GetSharedURLLoaderFactory(),
+      GetApplicationContext()->GetNetworkConnectionTracker()));
   service->Init(
       std::make_unique<InvalidatorStorage>(browser_state->GetPrefs()));
 

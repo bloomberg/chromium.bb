@@ -32,6 +32,7 @@ class URLRequestContextGetter;
 }
 
 namespace network {
+class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 }
 
@@ -65,7 +66,8 @@ class TiclInvalidationService : public InvalidationService,
       std::unique_ptr<TiclSettingsProvider> settings_provider,
       gcm::GCMDriver* gcm_driver,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      network::NetworkConnectionTracker* network_connection_tracker);
   ~TiclInvalidationService() override;
 
   void Init(std::unique_ptr<syncer::InvalidationStateTracker>
@@ -150,6 +152,7 @@ class TiclInvalidationService : public InvalidationService,
   std::unique_ptr<GCMInvalidationBridge> gcm_invalidation_bridge_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   // The invalidation logger object we use to record state changes
   // and invalidations.

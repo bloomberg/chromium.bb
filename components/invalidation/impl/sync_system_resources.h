@@ -25,6 +25,7 @@
 #include "jingle/notifier/base/notifier_options.h"
 
 namespace network {
+class NetworkConnectionTracker;
 class SharedURLLoaderFactoryInfo;
 }  // namespace network
 
@@ -141,6 +142,7 @@ class INVALIDATION_EXPORT SyncNetworkChannel
   static std::unique_ptr<SyncNetworkChannel> CreateGCMNetworkChannel(
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
+      network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 
   // Get the count of how many valid received messages were received.
