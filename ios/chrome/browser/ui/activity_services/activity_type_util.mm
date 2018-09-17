@@ -71,6 +71,8 @@ struct PrefixTypeAssociation {
 };
 
 const PrefixTypeAssociation prefixTypeAssociations[] = {
+    {BOOKMARK, @"com.google.chrome.bookmarkActivity", true},
+    {COPY, @"com.google.chrome.copyActivity", true},
     {NATIVE_FACEBOOK, @"com.apple.UIKit.activity.PostToFacebook", true},
     {NATIVE_MAIL, @"com.apple.UIKit.activity.Mail", true},
     {NATIVE_MESSAGE, @"com.apple.UIKit.activity.Message", true},
@@ -78,6 +80,7 @@ const PrefixTypeAssociation prefixTypeAssociations[] = {
     {NATIVE_WEIBO, @"com.apple.UIKit.activity.PostToWeibo", true},
     {NATIVE_CLIPBOARD, @"com.apple.UIKit.activity.CopyToPasteboard", true},
     {PRINT, @"com.google.chrome.printActivity", true},
+    {FIND_IN_PAGE, @"com.google.chrome.FindInPageActivityType", true},
     // The trailing '.' prevents false positives.
     // For instance, "com.viberific" won't be matched by the "com.viber.".
     {GOOGLE_DRIVE, @"com.google.Drive.", false},
@@ -86,6 +89,9 @@ const PrefixTypeAssociation prefixTypeAssociations[] = {
     {GOOGLE_HANGOUTS, @"com.google.hangouts.", false},
     {GOOGLE_INBOX, @"com.google.inbox.", false},
     {GOOGLE_UNKNOWN, @"com.google.", false},
+    {READ_LATER, @"com.google.chrome.readingListActivity", true},
+    {REQUEST_DESKTOP_MOBILE_SITE,
+     @"com.google.chrome.requestDesktopOrMobileSiteActivity", true},
     {THIRD_PARTY_MAILBOX, @"com.orchestra.v2.", false},
     {THIRD_PARTY_FACEBOOK_MESSENGER, @"com.facebook.Messenger.", false},
     {THIRD_PARTY_WHATS_APP, @"net.whatsapp.WhatsApp.", false},
@@ -127,6 +133,7 @@ NSString* CompletionMessageForActivity(ActivityType type) {
   // Make sure that the message is meaningful even if the activity completed
   // unsuccessfully.
   switch (type) {
+    case COPY:
     case NATIVE_CLIPBOARD:
       return l10n_util::GetNSString(IDS_IOS_SHARE_TO_CLIPBOARD_SUCCESS);
     case APPEX_PASSWORD_MANAGEMENT:
@@ -141,11 +148,24 @@ void RecordMetricForActivity(ActivityType type) {
     case UNKNOWN:
       base::RecordAction(base::UserMetricsAction("MobileShareMenuUnknown"));
       break;
+    case BOOKMARK:
+      base::RecordAction(base::UserMetricsAction("MobileShareMenuBookmark"));
+      break;
+    case COPY:
     case NATIVE_CLIPBOARD:
       base::RecordAction(base::UserMetricsAction("MobileShareMenuClipboard"));
       break;
+    case FIND_IN_PAGE:
+      base::RecordAction(base::UserMetricsAction("MobileShareMenuFindInPage"));
+      break;
     case PRINT:
       base::RecordAction(base::UserMetricsAction("MobileShareMenuPrint"));
+      break;
+    case READ_LATER:
+      base::RecordAction(base::UserMetricsAction("MobileShareMenuReadLater"));
+      break;
+    case REQUEST_DESKTOP_MOBILE_SITE:
+      base::RecordAction(base::UserMetricsAction("MobileShareMenuRequestSite"));
       break;
     case GOOGLE_GMAIL:
       base::RecordAction(base::UserMetricsAction("MobileShareMenuGmail"));

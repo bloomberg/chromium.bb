@@ -83,8 +83,6 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 }
 
 - (void)performActivity {
-  base::RecordAction(
-      base::UserMetricsAction("MobileShareActionBookmarkThisPage"));
   [self.dispatcher bookmarkPage];
   [self activityDidFinish:YES];
 }

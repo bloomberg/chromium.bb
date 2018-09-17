@@ -11562,6 +11562,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileShareActionBookmarkThisPage">
+  <obsolete>Deprecated as of 9/2018</obsolete>
   <owner>gambard@chromium.org</owner>
   <description>
     The user pressed &quot;Bookmark&quot; from the share action menu.
@@ -11569,6 +11570,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileShareActionFindInPage">
+  <obsolete>Deprecated as of 9/2018</obsolete>
   <owner>gambard@chromium.org</owner>
   <description>
     The user pressed &quot;Find In Page&quot; from the share action menu.
@@ -11576,6 +11578,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileShareActionReadLater">
+  <obsolete>Deprecated as of 9/2018</obsolete>
   <owner>gambard@chromium.org</owner>
   <description>
     The user pressed &quot;Read Later&quot; from the share action menu.
@@ -11586,7 +11589,8 @@ should be able to be added at any place in this file.
   <owner>gambard@chromium.org</owner>
   <description>
     The user pressed &quot;Request Desktop Site&quot; from the share action
-    menu.
+    menu. This action is logged in addition to MobileShareMenuRequestSite to
+    disambiguate between desktop and mobile.
   </description>
 </action>
 
@@ -11594,6 +11598,33 @@ should be able to be added at any place in this file.
   <owner>gambard@chromium.org</owner>
   <description>
     The user pressed &quot;Request Mobile Site&quot; from the share action menu.
+    This action is logged in addition to MobileShareMenuRequestSite to
+    disambiguate between desktop and mobile.
+  </description>
+</action>
+
+<action name="MobileShareMenuBookmark">
+  <owner>gambard@chromium.org</owner>
+  <description>User shared to the device's bookmarks.</description>
+</action>
+
+<action name="MobileShareMenuFindInPage">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User activated the device's FindInPage from the share menu.
+  </description>
+</action>
+
+<action name="MobileShareMenuReadLater">
+  <owner>gambard@chromium.org</owner>
+  <description>User shared to the device's Reading List.</description>
+</action>
+
+<action name="MobileShareMenuRequestSite">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User requested the desktop or mobile version of a site web from the share
+    menu.
   </description>
 </action>
 
