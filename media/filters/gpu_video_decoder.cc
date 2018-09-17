@@ -637,13 +637,16 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   GetBufferData(picture.bitstream_buffer_id(), &timestamp, &visible_rect,
                 &natural_size);
 
+  double pixel_aspect_ratio = GetPixelAspectRatio(visible_rect, natural_size);
   if (!picture.visible_rect().IsEmpty()) {
     visible_rect = picture.visible_rect();
+    natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio);
   }
   if (!gfx::Rect(pb.size()).Contains(visible_rect)) {
     LOG(WARNING) << "Visible size " << visible_rect.ToString()
                  << " is larger than coded size " << pb.size().ToString();
-    visible_rect = gfx::Rect(pb.size());
+    visible_rect.Intersect(gfx::Rect(pb.size()));
+    natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio);
   }
 
   DCHECK(pb.texture_target());
@@ -661,10 +664,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
       BindToCurrentLoop(base::Bind(
           &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.client_texture_ids())),
-      pb.size(), visible_rect,
-      GetNaturalSize(visible_rect,
-                     GetPixelAspectRatio(visible_rect, natural_size)),
-      timestamp));
+      pb.size(), visible_rect, natural_size, timestamp));
   if (!frame) {
     DLOG(ERROR) << "Create frame failed for: " << picture.picture_buffer_id();
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
