@@ -5,7 +5,17 @@
 module content.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/network/public/mojom/network_param.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
+
+// Parameters used to configure the behavior of |NavigableContents.Navigate|.
+struct NavigateParams {
+  // Indicates that upon successful navigation, the session history should be
+  // cleared, resulting in the navigated page being the first and only entry in
+  // the session's history.
+  bool should_clear_session_history = false;
+};
 
 // The primary interface an application uses to drive a top-level, navigable
 // content object. Typically this would correspond to e.g. a browser tab, but
@@ -13,7 +23,7 @@ import "url/mojom/url.mojom";
 // within the client application.
 interface NavigableContents {
   // Initiates a navigation to |url|.
-  Navigate(url.mojom.Url url);
+  Navigate(url.mojom.Url url, NavigateParams params);
 
   // Creates a visual representation of the navigated contents, which is
   // maintained by the Content Service. Responds with a |embed_token| which can
@@ -34,7 +44,20 @@ interface NavigableContents {
 // A client interface used by the Content Service to push contents-scoped events
 // back to the application.
 interface NavigableContentsClient {
+  // Notifies the client that a navigation has finished.
+  DidFinishNavigation(url.mojom.Url url,
+                      bool is_main_frame,
+                      bool is_error_page,
+                      network.mojom.HttpResponseHeaders response_headers);
+
   // Notifies the client that the NavigableContents has stopped loading
   // resources pertaining to a prior navigation request.
   DidStopLoading();
+
+  // Indicates that the navigated contents changed in such a way as to elicit
+  // automatic resizing of the containing view. Only fired if
+  // |NavigableContentsParams.enable_view_auto_resize| was set to |true| when
+  // creating the corresponding NavigableContents. The client may use this as a
+  // signal to, e.g., resize a UI element containing the content view.
+  DidAutoResizeView(gfx.mojom.Size new_size);
 };

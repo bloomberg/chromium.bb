@@ -10,14 +10,26 @@
 namespace content {
 
 NavigableContents::NavigableContents(mojom::NavigableContentsFactory* factory)
+    : NavigableContents(factory, mojom::NavigableContentsParams::New()) {}
+
+NavigableContents::NavigableContents(mojom::NavigableContentsFactory* factory,
+                                     mojom::NavigableContentsParamsPtr params)
     : client_binding_(this) {
   mojom::NavigableContentsClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client));
-  factory->CreateContents(mojom::NavigableContentsParams::New(),
-                          mojo::MakeRequest(&contents_), std::move(client));
+  factory->CreateContents(std::move(params), mojo::MakeRequest(&contents_),
+                          std::move(client));
 }
 
 NavigableContents::~NavigableContents() = default;
+
+void NavigableContents::AddObserver(NavigableContentsObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void NavigableContents::RemoveObserver(NavigableContentsObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 NavigableContentsView* NavigableContents::GetView() {
   if (!view_) {
@@ -31,12 +43,33 @@ NavigableContentsView* NavigableContents::GetView() {
 }
 
 void NavigableContents::Navigate(const GURL& url) {
-  contents_->Navigate(url);
+  NavigateWithParams(url, mojom::NavigateParams::New());
+}
+
+void NavigableContents::NavigateWithParams(const GURL& url,
+                                           mojom::NavigateParamsPtr params) {
+  contents_->Navigate(url, std::move(params));
+}
+
+void NavigableContents::DidFinishNavigation(
+    const GURL& url,
+    bool is_main_frame,
+    bool is_error_page,
+    const scoped_refptr<net::HttpResponseHeaders>& response_headers) {
+  for (auto& observer : observers_) {
+    observer.DidFinishNavigation(url, is_main_frame, is_error_page,
+                                 response_headers.get());
+  }
 }
 
 void NavigableContents::DidStopLoading() {
-  if (did_stop_loading_callback_)
-    did_stop_loading_callback_.Run();
+  for (auto& observer : observers_)
+    observer.DidStopLoading();
+}
+
+void NavigableContents::DidAutoResizeView(const gfx::Size& new_size) {
+  for (auto& observer : observers_)
+    observer.DidAutoResizeView(new_size);
 }
 
 void NavigableContents::OnEmbedTokenReceived(
