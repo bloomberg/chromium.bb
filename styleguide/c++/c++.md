@@ -29,10 +29,20 @@ separate [C++11 use in Chromium](https://chromium-cpp.appspot.com/) page.
   * "Chromium" is the name of the project, not the product, and should never
     appear in code, variable names, API names etc. Use "Chrome" instead.
 
-  * Functions used only for testing should be restricted to test-only scenarios
-    either by `#ifdefing` them appropriately (e.g. `#if defined(UNIT_TEST)`) or
-    by naming them with a `ForTesting` suffix. The latter will be checked at
-    presubmit time to ensure they're only called by test files.
+## Test-only Code
+
+  * Functions used only for testing should be restricted to test-only usages
+    with the `ForTesting` suffix. This is checked at presubmit time to ensure
+    these functions are only called by test files.
+
+  * Test-only constructors cannot have the `ForTesting` suffix. Instead, they
+    should be declared protected with a test-only subclass, or private with a
+    test-only friend class. They should be commented as `For testing only`.
+
+  * Test-only free functions should generally live within a test_support
+    target.
+
+  * `#if defined(UNIT_TEST)` is problematic and discouraged.
 
 ## Code formatting
 
@@ -146,7 +156,7 @@ arguments:
 
 To `#ifdef` code for specific platforms, use the macros defined in
 `build/build_config.h` and in the Chromium build config files, not other macros
-set by specific compilers or build environments (e.g. `WIN32`). 
+set by specific compilers or build environments (e.g. `WIN32`).
 
 Place platform-specific #includes in their own section below the "normal"
 `#includes`. Repeat the standard `#include` order within this section:
