@@ -99,6 +99,7 @@ class PasswordAccessoryBridge {
                                 assert mNativeView
                                         != 0 : "Controller was destroyed but the bridge wasn't!";
                                 KeyboardAccessoryMetricsRecorder.recordSuggestionSelected(
+                                        AccessoryTabType.PASSWORDS,
                                         item.isPassword() ? AccessorySuggestionType.PASSWORD
                                                           : AccessorySuggestionType.USERNAME);
                                 nativeOnFillingTriggered(

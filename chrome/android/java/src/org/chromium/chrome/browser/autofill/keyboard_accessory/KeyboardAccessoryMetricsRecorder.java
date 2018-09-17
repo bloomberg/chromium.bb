@@ -284,9 +284,17 @@ public class KeyboardAccessoryMetricsRecorder {
                 UMA_KEYBOARD_ACCESSORY_ACTION_SELECTED, bucket, AccessoryAction.COUNT);
     }
 
-    static void recordSuggestionSelected(@AccessorySuggestionType int bucket) {
-        RecordHistogram.recordEnumeratedHistogram(UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED,
+    static void recordSuggestionSelected(
+            @AccessoryTabType int tabType, @AccessorySuggestionType int bucket) {
+        RecordHistogram.recordEnumeratedHistogram(
+                getHistogramForType(
+                        UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED, AccessoryTabType.ALL),
                 bucket, AccessorySuggestionType.COUNT);
+        if (tabType != AccessoryTabType.ALL) { // If recorded for all, don't record again.
+            RecordHistogram.recordEnumeratedHistogram(
+                    getHistogramForType(UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED, tabType),
+                    bucket, AccessorySuggestionType.COUNT);
+        }
     }
 
     /**
