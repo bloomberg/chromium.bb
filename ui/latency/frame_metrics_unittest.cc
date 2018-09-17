@@ -131,7 +131,10 @@ class FrameMetricsTest : public testing::Test {
   FrameMetricsTest()
       : settings(ui::FrameMetricsSource::UnitTest,
                  ui::FrameMetricsSourceThread::Unknown,
-                 ui::FrameMetricsCompileTarget::Unknown) {}
+                 ui::FrameMetricsCompileTarget::Unknown) {
+    settings.set_is_frame_latency_speed_on(true);
+    settings.set_is_frame_latency_acceleration_on(true);
+  }
 
   void SetUp() override {
     // Make sure we don't get an unexpected call to StartNewReportPeriod.

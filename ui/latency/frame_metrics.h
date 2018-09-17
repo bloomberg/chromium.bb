@@ -73,6 +73,18 @@ struct FrameMetricsSettings {
         trace_results_every_frame(trace_results_every_frame),
         max_window_size(max_window_size) {}
 
+  void set_is_frame_latency_speed_on(bool is_speed_on) {
+    is_frame_latency_speed_on_ = is_speed_on;
+  }
+  void set_is_frame_latency_acceleration_on(bool is_acceleration_on) {
+    is_frame_latency_acceleration_on_ = is_acceleration_on;
+  }
+
+  bool is_frame_latency_speed_on() const { return is_frame_latency_speed_on_; }
+  bool is_frame_latency_acceleration_on() const {
+    return is_frame_latency_acceleration_on_;
+  }
+
   // Source configuration.
   FrameMetricsSource source;
   FrameMetricsSourceThread source_thread;
@@ -86,6 +98,13 @@ struct FrameMetricsSettings {
   size_t max_window_size;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
+
+ private:
+  // Switch for frame latency speed measurements control.
+  bool is_frame_latency_speed_on_ = false;
+
+  // Switch for frame latency acceleration measurements control.
+  bool is_frame_latency_acceleration_on_ = false;
 };
 
 // Calculates all metrics for a frame source.
