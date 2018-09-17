@@ -596,6 +596,61 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Malformed response"/>
 </enum>
 
+<enum name="AlsaSampleFormatType">
+  <int value="-1" label="SND_PCM_FORMAT_UNKNOWN"/>
+  <int value="0" label="SND_PCM_FORMAT_S8"/>
+  <int value="1" label="SND_PCM_FORMAT_U8"/>
+  <int value="2" label="SND_PCM_FORMAT_S16_LE"/>
+  <int value="3" label="SND_PCM_FORMAT_S16_BE"/>
+  <int value="4" label="SND_PCM_FORMAT_U16_LE"/>
+  <int value="5" label="SND_PCM_FORMAT_U16_BE"/>
+  <int value="6" label="SND_PCM_FORMAT_S24_LE"/>
+  <int value="7" label="SND_PCM_FORMAT_S24_BE"/>
+  <int value="8" label="SND_PCM_FORMAT_U24_LE"/>
+  <int value="9" label="SND_PCM_FORMAT_U24_BE"/>
+  <int value="10" label="SND_PCM_FORMAT_S32_LE"/>
+  <int value="11" label="SND_PCM_FORMAT_S32_BE"/>
+  <int value="12" label="SND_PCM_FORMAT_U32_LE"/>
+  <int value="13" label="SND_PCM_FORMAT_U32_BE"/>
+  <int value="14" label="SND_PCM_FORMAT_FLOAT_LE"/>
+  <int value="15" label="SND_PCM_FORMAT_FLOAT_BE"/>
+  <int value="16" label="SND_PCM_FORMAT_FLOAT64_LE"/>
+  <int value="17" label="SND_PCM_FORMAT_FLOAT64_BE"/>
+  <int value="18" label="SND_PCM_FORMAT_IEC958_SUBFRAME_LE"/>
+  <int value="19" label="SND_PCM_FORMAT_IEC958_SUBFRAME_BE"/>
+  <int value="20" label="SND_PCM_FORMAT_MU_LAW"/>
+  <int value="21" label="SND_PCM_FORMAT_A_LAW"/>
+  <int value="22" label="SND_PCM_FORMAT_IMA_ADPCM"/>
+  <int value="23" label="SND_PCM_FORMAT_MPEG"/>
+  <int value="24" label="SND_PCM_FORMAT_GSM"/>
+  <int value="25" label="SND_PCM_FORMAT_S20_LE"/>
+  <int value="26" label="SND_PCM_FORMAT_S20_BE"/>
+  <int value="27" label="SND_PCM_FORMAT_U20_LE"/>
+  <int value="28" label="SND_PCM_FORMAT_U20_BE"/>
+  <int value="31" label="SND_PCM_FORMAT_SPECIAL = 31"/>
+  <int value="32" label="SND_PCM_FORMAT_S24_3LE = 32"/>
+  <int value="33" label="SND_PCM_FORMAT_S24_3BE"/>
+  <int value="34" label="SND_PCM_FORMAT_U24_3LE"/>
+  <int value="35" label="SND_PCM_FORMAT_U24_3BE"/>
+  <int value="36" label="SND_PCM_FORMAT_S20_3LE"/>
+  <int value="37" label="SND_PCM_FORMAT_S20_3BE"/>
+  <int value="38" label="SND_PCM_FORMAT_U20_3LE"/>
+  <int value="39" label="SND_PCM_FORMAT_U20_3BE"/>
+  <int value="40" label="SND_PCM_FORMAT_S18_3LE"/>
+  <int value="41" label="SND_PCM_FORMAT_S18_3BE"/>
+  <int value="42" label="SND_PCM_FORMAT_U18_3LE"/>
+  <int value="43" label="SND_PCM_FORMAT_U18_3BE"/>
+  <int value="44" label="SND_PCM_FORMAT_G723_24"/>
+  <int value="45" label="SND_PCM_FORMAT_G723_24_1B"/>
+  <int value="46" label="SND_PCM_FORMAT_G723_40"/>
+  <int value="47" label="SND_PCM_FORMAT_G723_40_1B"/>
+  <int value="48" label="SND_PCM_FORMAT_DSD_U8"/>
+  <int value="49" label="SND_PCM_FORMAT_DSD_U16_LE"/>
+  <int value="50" label="SND_PCM_FORMAT_DSD_U32_LE"/>
+  <int value="51" label="SND_PCM_FORMAT_DSD_U16_BE"/>
+  <int value="52" label="SND_PCM_FORMAT_DSD_U32_BE"/>
+</enum>
+
 <enum name="AlternateProtocolUsage">
   <int value="0" label="ALTERNATE_PROTOCOL_USAGE_NO_RACE"/>
   <int value="1" label="ALTERNATE_PROTOCOL_USAGE_WON_RACE"/>
