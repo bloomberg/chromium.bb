@@ -12,6 +12,7 @@
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_initializer.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
+#include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 
 namespace chromeos {
@@ -34,6 +35,8 @@ MultiDeviceSetupService::MultiDeviceSetupService(
     AuthTokenValidator* auth_token_validator,
     std::unique_ptr<AndroidSmsAppHelperDelegate>
         android_sms_app_helper_delegate,
+    std::unique_ptr<AndroidSmsPairingStateTracker>
+        android_sms_pairing_state_tracker,
     const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
     : multidevice_setup_(
           MultiDeviceSetupInitializer::Factory::Get()->BuildInstance(
@@ -42,6 +45,7 @@ MultiDeviceSetupService::MultiDeviceSetupService(
               secure_channel_client,
               auth_token_validator,
               std::move(android_sms_app_helper_delegate),
+              std::move(android_sms_pairing_state_tracker),
               gcm_device_info_provider)) {}
 
 MultiDeviceSetupService::~MultiDeviceSetupService() = default;

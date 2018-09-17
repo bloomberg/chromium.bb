@@ -78,7 +78,11 @@ enum FeatureState {
 
   // The feature has been enabled by the user, but it is still unavailable
   // because the entire Better Together suite has been disabled by the user.
-  kUnavailableSuiteDisabled
+  kUnavailableSuiteDisabled,
+
+  // The feature still requires further setup to be ready for use (e.g., Android
+  // Messages requires a separate pairing flow after unified setup).
+  kFurtherSetupRequired,
 };
 
 interface AccountStatusChangeDelegate {
