@@ -74,6 +74,7 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
         MediaRoute route =
                 new MediaRoute(sessionController().getSink().getId(), sourceId, presentationId);
         addRoute(route, origin, tabId, nativeRequestId, /* wasLaunched= */ false);
+        mManager.onRouteCreated(route.id, route.sinkId, nativeRequestId, this, false);
     }
 
     // TODO(zqzhang): the clientRecord/route management is not clean and the logic seems to be
