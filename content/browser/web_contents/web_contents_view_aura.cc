@@ -350,6 +350,26 @@ GlobalRoutingID GetRenderViewHostID(RenderViewHost* rvh) {
   return GlobalRoutingID(rvh->GetProcess()->GetID(), rvh->GetRoutingID());
 }
 
+// Returns the host window for |window|, or nullpr if it has no host window.
+aura::Window* GetHostWindow(aura::Window* window) {
+  aura::Window* host_window = window->GetProperty(aura::client::kHostWindowKey);
+  if (host_window)
+    return host_window;
+  return window->parent();
+}
+
+// Returns true iff the aura::client::kMirroringEnabledKey property is set for
+// |window| or its parent. That indicates that |window| is being displayed in
+// Alt-Tab view on ChromeOS.
+bool WindowIsMirrored(aura::Window* window) {
+  if (window->GetProperty(aura::client::kMirroringEnabledKey))
+    return true;
+
+  aura::Window* const host_window = GetHostWindow(window);
+  return host_window &&
+         host_window->GetProperty(aura::client::kMirroringEnabledKey);
+}
+
 }  // namespace
 
 class WebContentsViewAura::WindowObserver
@@ -373,10 +393,7 @@ class WebContentsViewAura::WindowObserver
     if (window != view_->window_.get())
       return;
 
-    aura::Window* host_window =
-        window->GetProperty(aura::client::kHostWindowKey);
-    if (!host_window)
-      host_window = parent;
+    aura::Window* const host_window = GetHostWindow(window);
 
     if (host_window_)
       host_window_->RemoveObserver(this);
@@ -762,10 +779,8 @@ void WebContentsViewAura::UpdateWebContentsVisibility() {
 }
 
 Visibility WebContentsViewAura::GetVisibility() const {
-  // aura::client::kMirroringEnabledKey indicates that the window is displayed
-  // in Alt-Tab view on ChromeOS.
   if (window_->occlusion_state() == aura::Window::OcclusionState::VISIBLE ||
-      window_->GetProperty(aura::client::kMirroringEnabledKey)) {
+      WindowIsMirrored(window_.get())) {
     return Visibility::VISIBLE;
   }
 
