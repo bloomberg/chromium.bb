@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,7 +29,7 @@ class MockAlternativeBrowserDriver : public AlternativeBrowserDriver {
   ~MockAlternativeBrowserDriver() override = default;
 
   MOCK_METHOD1(SetBrowserPath, void(base::StringPiece));
-  MOCK_METHOD1(SetBrowserParameters, void(base::StringPiece));
+  MOCK_METHOD1(SetBrowserParameters, void(const base::ListValue*));
   MOCK_METHOD1(TryLaunch, bool(const GURL&));
 };
 
@@ -38,8 +39,7 @@ class AlternativeBrowserLauncherTest : public testing::Test {
  public:
   void SetUp() override {
     prefs_.registry()->RegisterStringPref(prefs::kAlternativeBrowserPath, "");
-    prefs_.registry()->RegisterStringPref(prefs::kAlternativeBrowserParameters,
-                                          "");
+    prefs_.registry()->RegisterListPref(prefs::kAlternativeBrowserParameters);
     driver_ = new MockAlternativeBrowserDriver();
     EXPECT_CALL(*driver_, SetBrowserPath(_));
     EXPECT_CALL(*driver_, SetBrowserParameters(_));
@@ -77,10 +77,12 @@ TEST_F(AlternativeBrowserLauncherTest, LaunchPicksUpPrefChanges) {
           Invoke([](base::StringPiece path) { EXPECT_EQ("bogus.exe", path); }));
   prefs()->SetString(prefs::kAlternativeBrowserPath, "bogus.exe");
   EXPECT_CALL(driver(), SetBrowserParameters(_))
-      .WillOnce(Invoke([](base::StringPiece parameters) {
-        EXPECT_EQ("--single-process", parameters);
+      .WillOnce(Invoke([](const base::ListValue* parameters) {
+        EXPECT_EQ(1u, parameters->GetList().size());
+        EXPECT_EQ(base::Value("--single-process"), parameters->GetList()[0]);
       }));
-  prefs()->SetString(prefs::kAlternativeBrowserParameters, "--single-process");
+  ListPrefUpdate update(prefs(), prefs::kAlternativeBrowserParameters);
+  update->Append(std::make_unique<base::Value>("--single-process"));
 }
 
 }  // namespace browser_switcher
