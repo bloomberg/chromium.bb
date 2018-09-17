@@ -159,7 +159,7 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
           self.workspace_version_info.VersionString(),
           build_id)
     else:
-      self.dummy_firmware_config = '%s-firmware' % self._current_board
+      self.dummy_firmware_config = '%s-firmware-prototype' % self._current_board
       self.firmware_version = 'R%s-%s' % (
           self.workspace_version_info.chrome_branch,
           self.workspace_version_info.VersionString())
