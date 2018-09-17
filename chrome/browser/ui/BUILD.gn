@@ -2055,6 +2055,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/multidevice_setup/multidevice_setup_dialog.h",
       "webui/chromeos/multidevice_setup/multidevice_setup_handler.cc",
       "webui/chromeos/multidevice_setup/multidevice_setup_handler.h",
+      "webui/chromeos/multidevice_setup/multidevice_setup_localized_strings_provider.cc",
+      "webui/chromeos/multidevice_setup/multidevice_setup_localized_strings_provider.h",
       "webui/chromeos/network_element_localized_strings_provider.cc",
       "webui/chromeos/network_element_localized_strings_provider.h",
       "webui/chromeos/network_ui.cc",
