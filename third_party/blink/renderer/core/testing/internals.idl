@@ -417,4 +417,8 @@ enum EffectiveConnectionType {
     // setTimeout(..., 100) calls to layout tests to wait for notifications
     // to be generated.
     void DisableIntersectionObserverV2Throttle();
+
+    // Declare that the given |name| is in use by the embedder via the custom
+    // element mechanism.
+    [RaisesException] void addEmbedderCustomElementName(DOMString name);
 };

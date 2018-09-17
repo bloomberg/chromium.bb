@@ -143,6 +143,13 @@ TEST(CustomElementTest, TestIsValidNameHyphenContainingElementNames) {
   EXPECT_FALSE(CustomElement::IsValidName("missing-glyph"));
 }
 
+TEST(CustomElementTest, TestIsValidNameEmbedderNames) {
+  CustomElement::AddEmbedderCustomElementName("embeddercustomelement");
+
+  EXPECT_FALSE(CustomElement::IsValidName("embeddercustomelement", false));
+  EXPECT_TRUE(CustomElement::IsValidName("embeddercustomelement", true));
+}
+
 TEST(CustomElementTest, StateByParser) {
   const char* body_content =
       "<div id=div></div>"

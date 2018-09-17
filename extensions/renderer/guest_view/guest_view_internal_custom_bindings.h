@@ -93,6 +93,11 @@ class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
   // the fullscreen request to proceed.
   void RunWithGesture(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Runs a JavaScript function that may use window.customElements.define
+  // with whitelisted custom element names.
+  void AllowGuestViewElementDefinition(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 }  // namespace extensions
