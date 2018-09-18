@@ -42,10 +42,10 @@ PUSH_URL = 'gs://chrome-supersize/milestones/'
 REPORT_URL_TEMPLATE = '{cpu}/{apk}/report_{version1}_{version2}.ndjson'
 
 DESIRED_CPUS = ['arm', 'arm_64']
+# TODO: Add AndroidWebview.apk
 DESIRED_APKS = ['Monochrome.apk', 'ChromeModern.apk']
 # Versions are manually gathered from
-# https://omahaproxy.appspot.com/history?os=android&channel=beta
-# The latest version from each milestone was chosen, for the last 9 milestones.
+# https://omahaproxy.appspot.com/history?os=android&channel=stable
 DESIRED_VERSION = [
   '60.0.3112.116',
   '61.0.3163.98',
@@ -55,7 +55,9 @@ DESIRED_VERSION = [
   '65.0.3325.85',
   '66.0.3359.158',
   '67.0.3396.87',
-  '68.0.3440.70',
+  '68.0.3440.85',
+  '69.0.3497.91',
+  '70.0.3538.17',  # Beta
 ]
 
 
@@ -178,11 +180,14 @@ def _BuildReports(directory, bucket):
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('directory',
-                      help='Directory to save report files to.')
+                      help='Directory to save report files to '
+                           '(must not exist).')
   parser.add_argument('--size-file-bucket', required=True,
-                      help='GCS bucket to find size files in.')
+                      help='GCS bucket to find size files in.'
+                           '(e.g. "gs://bucket/subdir")')
   parser.add_argument('--sync', action='store_true',
-                      help='Sync data files to GCS.')
+                      help='Sync data files to GCS '
+                           '(otherwise just prints out command to run).')
   parser.add_argument('-v',
                       '--verbose',
                       default=0,
@@ -203,7 +208,9 @@ def main():
   _BuildReports(args.directory, size_file_bucket)
   _SetPushedReports(args.directory)
   logging.warning('Reports saved to %s', args.directory)
-  cmd = ['gsutil.py', '-m', 'rsync', '-r', args.directory, PUSH_URL]
+  cmd = ['gsutil.py', '-m', 'rsync', '-J', '-a', 'publicRead', '-r',
+         args.directory, PUSH_URL]
+
   if args.sync:
     subprocess.check_call(cmd)
   else:
