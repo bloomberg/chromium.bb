@@ -350,6 +350,12 @@ void VideoRendererImpl::OnPlaybackError(PipelineStatus error) {
 
 void VideoRendererImpl::OnPlaybackEnded() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  {
+    // Send one last stats update so things like memory usage are correct.
+    base::AutoLock auto_lock(lock_);
+    UpdateStats_Locked(true);
+  }
+
   client_->OnEnded();
 }
 
@@ -659,14 +665,16 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   base::ResetAndReturn(&flush_cb_).Run();
 }
 
-void VideoRendererImpl::UpdateStats_Locked() {
+void VideoRendererImpl::UpdateStats_Locked(bool force_update) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
   // No need to check for `stats_.video_frames_decoded_power_efficient` because
   // if it is greater than 0, `stats_.video_frames_decoded` will too.
-  if (!stats_.video_frames_decoded && !stats_.video_frames_dropped)
+  if (!force_update && !stats_.video_frames_decoded &&
+      !stats_.video_frames_dropped) {
     return;
+  }
 
   if (stats_.video_frames_dropped) {
     TRACE_EVENT_INSTANT2("media", "VideoFramesDropped",
