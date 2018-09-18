@@ -140,6 +140,7 @@ CREATE TABLE `buildTable` (
   `buildbucket_id` varchar(80) DEFAULT NULL,
   `unibuild` tinyint(1) NOT NULL DEFAULT '0',
   `suite_scheduling` tinyint(1) NOT NULL DEFAULT '0',
+  `branch` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `buildbucket_id_index` (`buildbucket_id`),
   UNIQUE KEY `unique_externals` (`buildbot_generation`,`builder_name`,`waterfall`,`build_number`,`buildbucket_id`),
