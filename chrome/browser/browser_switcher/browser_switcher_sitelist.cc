@@ -10,6 +10,8 @@
 #include "components/prefs/pref_service.h"
 #include "url/gurl.h"
 
+#include "third_party/re2/src/re2/re2.h"
+
 namespace browser_switcher {
 
 namespace {
@@ -26,6 +28,14 @@ bool StringContainsInsensitiveASCII(base::StringPiece input,
   return found != input.end();
 }
 
+// Checks if the omitted prefix for a non-fully specific prefix is one of the
+// expected parts that are allowed to be omitted (e.g. "https://").
+bool IsValidPrefix(base::StringPiece prefix) {
+  static re2::LazyRE2 re = {"(https?|file):(//)?"};
+  re2::StringPiece converted_prefix(prefix.data(), prefix.size());
+  return (prefix.empty() || re2::RE2::FullMatch(converted_prefix, *re));
+}
+
 // URL is passed as a (url_spec, url_host) to avoid heap-allocating a string for
 // the host every time this is called.
 bool UrlMatches(base::StringPiece url_spec,
@@ -37,8 +47,10 @@ bool UrlMatches(base::StringPiece url_spec,
   }
   if (pattern.find('/') != base::StringPiece::npos) {
     // Check prefix using the normalized URL, case sensitive.
-    return base::StartsWith(url_spec, GURL(pattern).spec(),
-                            base::CompareCase::SENSITIVE);
+    size_t pos = url_spec.find(pattern);
+    if (pos == std::string::npos)
+      return false;
+    return IsValidPrefix(base::StringPiece(url_spec.data(), pos));
   }
   // Compare hosts, case-insensitive.
   return StringContainsInsensitiveASCII(url_host, pattern);
