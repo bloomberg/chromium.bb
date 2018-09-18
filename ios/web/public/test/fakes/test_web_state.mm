@@ -334,6 +334,11 @@ void TestWebState::ClearLastExecutedJavascript() {
   last_executed_javascript_.clear();
 }
 
+void TestWebState::CreateWebFramesManager() {
+  DCHECK(!web::WebFramesManagerImpl::FromWebState(this));
+  web::WebFramesManagerImpl::CreateForWebState(this);
+}
+
 void TestWebState::AddWebFrame(std::unique_ptr<web::WebFrame> frame) {
   DCHECK(frame);
   web::WebFramesManagerImpl* manager =

@@ -5,6 +5,7 @@
 #import "ios/web/public/test/web_test_with_web_state.h"
 
 #include "base/ios/ios_util.h"
+#include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/web_state/web_frames_manager_impl.h"
@@ -33,10 +34,7 @@ class WebStateObserverMock : public web::WebStateObserver {
 // Verifies that the web frame passed to the observer is the main frame.
 ACTION_P(VerifyMainWebFrame, web_state) {
   EXPECT_EQ(web_state, arg0);
-
-  web::WebFramesManagerImpl* manager =
-      web::WebFramesManagerImpl::FromWebState(web_state);
-  EXPECT_EQ(manager->GetMainWebFrame(), arg1);
+  EXPECT_EQ(web::GetMainWebFrame(web_state), arg1);
 }
 
 // Verifies that the web frame passed to the observer is a child frame.

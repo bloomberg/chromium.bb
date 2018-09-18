@@ -10,6 +10,7 @@
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
+#include "ios/web/public/web_state/web_frame_util.h"
 #include "ios/web/web_state/web_frames_manager_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,19 +22,6 @@ using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
-// Waits for the WebFrame respresenting the main frame in the given
-// |web_state|. Returns nullptr if a timeout of kWaitForJSCompletionTimeout
-// occurs before the WebFrame exists.
-web::WebFrame* GetMainWebFrameForWebState(web::WebState* web_state) {
-  __block web::WebFramesManagerImpl* manager =
-      web::WebFramesManagerImpl::FromWebState(web_state);
-  __unused bool success =
-      WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
-        return manager->GetMainWebFrame();
-      });
-  return manager->GetMainWebFrame();
-}
-
 // Returns the first WebFrame found which is not the main frame in the given
 // |web_state|. Does not wait and returns null if such a frame is not found.
 web::WebFrame* GetChildWebFrameForWebState(web::WebState* web_state) {
@@ -53,14 +41,14 @@ web::WebFrame* GetChildWebFrameForWebState(web::WebState* web_state) {
 namespace web {
 
 // Test fixture to test WebFrameImpl with a real JavaScript context.
-typedef web::WebTestWithWebState WebFrameImplIntTest;
+typedef WebTestWithWebState WebFrameImplIntTest;
 
 // Tests that the expected result is received from executing a JavaScript
 // function via |CallJavaScriptFunction| on the main frame.
 TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionOnMainFrame) {
   ASSERT_TRUE(LoadHtml("<p>"));
 
-  WebFrame* main_frame = GetMainWebFrameForWebState(web_state());
+  WebFrame* main_frame = GetMainWebFrame(web_state());
   ASSERT_TRUE(main_frame);
 
   NSTimeInterval js_timeout = kWaitForJSCompletionTimeout;
@@ -125,7 +113,7 @@ TEST_F(WebFrameImplIntTest, CallJavaScriptFunctionTimeout) {
        "  while(true) {}"
        "};");
 
-  WebFrame* main_frame = GetMainWebFrameForWebState(web_state());
+  WebFrame* main_frame = GetMainWebFrame(web_state());
   ASSERT_TRUE(main_frame);
 
   __block bool called = false;
@@ -157,7 +145,7 @@ TEST_F(WebFrameImplIntTest, PreventMessageReplay) {
 
   ASSERT_TRUE(LoadHtml("<p>"));
 
-  WebFrame* main_frame = GetMainWebFrameForWebState(web_state());
+  WebFrame* main_frame = GetMainWebFrame(web_state());
   ASSERT_TRUE(main_frame);
 
   // Inject function into main frame to intercept encrypted message targeted for
@@ -233,16 +221,16 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromMainFrame) {
   auto callback = base::BindRepeating(
       ^bool(const base::DictionaryValue& /* json */,
             const GURL& /* origin_url */, bool /* user_is_interacting */,
-            bool is_main_frame, web::WebFrame* sender_frame) {
+            bool is_main_frame, WebFrame* sender_frame) {
         command_received = true;
         EXPECT_TRUE(is_main_frame);
-        EXPECT_EQ(GetMainWebFrameForWebState(web_state()), sender_frame);
+        EXPECT_EQ(GetMainWebFrame(web_state()), sender_frame);
         return true;
       });
 
   web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
-  __block web::WebFramesManagerImpl* manager =
-      web::WebFramesManagerImpl::FromWebState(web_state());
+  __block WebFramesManagerImpl* manager =
+      WebFramesManagerImpl::FromWebState(web_state());
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return manager->GetAllWebFrames().size() == 1;
   }));
@@ -269,7 +257,7 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromFrame) {
   auto callback = base::BindRepeating(
       ^bool(const base::DictionaryValue& /* json */,
             const GURL& /* origin_url */, bool /* user_is_interacting */,
-            bool is_main_frame, web::WebFrame* sender_frame) {
+            bool is_main_frame, WebFrame* sender_frame) {
         command_received = true;
         EXPECT_FALSE(is_main_frame);
         EXPECT_EQ(GetChildWebFrameForWebState(web_state()), sender_frame);
@@ -277,8 +265,8 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromFrame) {
       });
 
   web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
-  __block web::WebFramesManagerImpl* manager =
-      web::WebFramesManagerImpl::FromWebState(web_state());
+  __block WebFramesManagerImpl* manager =
+      WebFramesManagerImpl::FromWebState(web_state());
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return manager->GetAllWebFrames().size() == 2;
   }));
