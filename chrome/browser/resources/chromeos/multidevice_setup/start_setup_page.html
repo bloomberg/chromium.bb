@@ -86,24 +86,26 @@
           </div>
           <div id="feature-details-container" class="flex">
             <div id="feature-details-container-header">
-              $i18n{startSetupPageFeatureListHeader}
+              [[i18n('startSetupPageFeatureListHeader')]]
             </div>
             <div class="feature-detail">
               <iron-icon icon="multidevice-setup-icons-20:messages"></iron-icon>
-              <span>$i18nRaw{startSetupPageFeatureListAwm}</span>
+              <span inner-h-t-m-l="
+                  [[i18nAdvanced('startSetupPageFeatureListAwm')]]">
+              </span>
             </div>
             <div class="feature-detail">
               <iron-icon icon="multidevice-setup-icons-20:downloads">
               </iron-icon>
-              <span>$i18n{startSetupPageFeatureListInstallApps}</span>
+              <span>[[i18n('startSetupPageFeatureListInstallApps')]]</span>
             </div>
             <div class="feature-detail">
               <iron-icon icon="multidevice-setup-icons-20:features"></iron-icon>
-              <span>$i18n{startSetupPageFeatureListAddFeatures}</span>
+              <span>[[i18n('startSetupPageFeatureListAddFeatures')]]</span>
             </div>
           </div>
         </div>
-        <div id="footnote">$i18n{startSetupPageFootnote}</div>
+        <div id="footnote">[[i18n('startSetupPageFootnote')]]</div>
       </div>
     </ui-page>
   </template>
