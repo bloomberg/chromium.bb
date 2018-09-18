@@ -43,10 +43,10 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       LayoutUnit current_column_size,
       LayoutUnit container_content_box_block_size) const;
 
-  scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForColumns(
+  NGConstraintSpace CreateConstraintSpaceForColumns(
       const NGLogicalSize& column_size,
       bool separate_leading_margins) const;
-  scoped_refptr<NGConstraintSpace> CreateConstaintSpaceForBalancing(
+  NGConstraintSpace CreateConstaintSpaceForBalancing(
       const NGLogicalSize& column_size) const;
 };
 

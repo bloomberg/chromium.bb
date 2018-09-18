@@ -43,20 +43,20 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     if (child.IsOutOfFlowPositioned())
       continue;
 
-    NGConstraintSpaceBuilder space_builder(ConstraintSpace());
-    space_builder.SetAvailableSize(flex_container_content_box_size);
-    space_builder.SetPercentageResolutionSize(flex_container_content_box_size);
-    scoped_refptr<NGConstraintSpace> child_space =
-        space_builder.ToConstraintSpace(child.Style().GetWritingMode());
+    NGConstraintSpace child_space =
+        NGConstraintSpaceBuilder(ConstraintSpace())
+            .SetAvailableSize(flex_container_content_box_size)
+            .SetPercentageResolutionSize(flex_container_content_box_size)
+            .ToConstraintSpace(child.Style().GetWritingMode());
 
     LayoutUnit main_axis_border_and_padding =
-        ComputeBorders(*child_space, child.Style()).InlineSum() +
-        ComputePadding(*child_space, child.Style()).InlineSum();
+        ComputeBorders(child_space, child.Style()).InlineSum() +
+        ComputePadding(child_space, child.Style()).InlineSum();
     // ComputeMinMaxSize will layout the child if it has an orthogonal writing
     // mode. MinMaxSize will be in the container's inline direction.
     MinMaxSizeInput zero_input;
     MinMaxSize min_max_sizes_border_box = child.ComputeMinMaxSize(
-        ConstraintSpace().GetWritingMode(), zero_input, child_space.get());
+        ConstraintSpace().GetWritingMode(), zero_input, &child_space);
 
     LayoutUnit flex_base_border_box;
     if (child.Style().FlexBasis().IsAuto() && child.Style().Width().IsAuto()) {
@@ -70,7 +70,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       // TODO(dgrogan): Use ResolveBlockLength here for column flex boxes.
 
       flex_base_border_box = ResolveInlineLength(
-          *child_space, child.Style(), min_max_sizes_border_box,
+          child_space, child.Style(), min_max_sizes_border_box,
           length_to_resolve, LengthResolveType::kContentSize,
           LengthResolvePhase::kLayout);
     }
@@ -83,7 +83,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         flex_base_border_box - main_axis_border_and_padding;
 
     LayoutUnit main_axis_margin =
-        ComputeMarginsForSelf(*child_space, child.Style()).InlineSum();
+        ComputeMarginsForSelf(child_space, child.Style()).InlineSum();
 
     // TODO(dgrogan): When child has a min/max-{width,height} set, call
     // Resolve{Inline,Block}Length here with child's style and constraint space.
@@ -126,11 +126,10 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       space_builder.SetPercentageResolutionSize(
           flex_container_content_box_size);
       space_builder.SetIsFixedSizeInline(true);
-      scoped_refptr<NGConstraintSpace> child_space =
-          space_builder.ToConstraintSpace(
-              flex_item.box->Style()->GetWritingMode());
+      NGConstraintSpace child_space = space_builder.ToConstraintSpace(
+          flex_item.box->Style()->GetWritingMode());
       flex_item.layout_result =
-          flex_item.ng_input_node.Layout(*child_space, nullptr /*break token*/);
+          flex_item.ng_input_node.Layout(child_space, nullptr /*break token*/);
       flex_item.cross_axis_size =
           flex_item.layout_result->PhysicalFragment()->Size().height;
       // TODO(dgrogan): Port logic from

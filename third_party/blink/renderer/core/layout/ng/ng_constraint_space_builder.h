@@ -131,7 +131,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   //  - Has its size is determined by its parent layout (flex, abs-pos).
   //
   // WritingMode specifies the writing mode of the generated space.
-  scoped_refptr<NGConstraintSpace> ToConstraintSpace(WritingMode);
+  const NGConstraintSpace ToConstraintSpace(WritingMode);
 
  private:
   void SetFlag(NGConstraintSpace::ConstraintSpaceFlags mask, bool value) {
@@ -151,7 +151,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   WritingMode parent_writing_mode_;
   NGFragmentationType fragmentation_type_ = kFragmentNone;
-  NGTableCellChildLayoutPhase table_cell_child_layout_phase_ = kNone;
+  NGTableCellChildLayoutPhase table_cell_child_layout_phase_ =
+      kNotTableCellChild;
   NGFloatTypes adjoining_floats_ = kFloatTypeNone;
   TextDirection text_direction_ = TextDirection::kLtr;
 

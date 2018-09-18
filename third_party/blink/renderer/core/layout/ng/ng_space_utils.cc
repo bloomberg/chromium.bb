@@ -33,7 +33,7 @@ bool AdjustToClearance(LayoutUnit clearance_offset, NGBfcOffset* offset) {
   return false;
 }
 
-scoped_refptr<NGConstraintSpace> CreateExtrinsicConstraintSpaceForChild(
+NGConstraintSpace CreateExtrinsicConstraintSpaceForChild(
     const NGConstraintSpace& container_constraint_space,
     LayoutUnit container_extrinsic_block_size,
     NGLayoutInputNode child) {

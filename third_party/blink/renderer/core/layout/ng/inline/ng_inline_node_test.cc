@@ -103,12 +103,12 @@ class NGInlineNodeTest : public NGLayoutTest {
       Vector<scoped_refptr<const NGPhysicalTextFragment>>* fragments_out) {
     NGPhysicalSize icb_size(LayoutUnit(200), LayoutUnit(200));
 
-    scoped_refptr<NGConstraintSpace> constraint_space =
+    NGConstraintSpace constraint_space =
         NGConstraintSpaceBuilder(WritingMode::kHorizontalTb, icb_size)
             .SetAvailableSize({LayoutUnit::Max(), LayoutUnit(-1)})
             .ToConstraintSpace(WritingMode::kHorizontalTb);
     scoped_refptr<NGLayoutResult> result =
-        NGInlineLayoutAlgorithm(node, *constraint_space).Layout();
+        NGInlineLayoutAlgorithm(node, constraint_space).Layout();
 
     const NGPhysicalLineBoxFragment* line =
         ToNGPhysicalLineBoxFragment(result->PhysicalFragment().get());

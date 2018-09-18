@@ -21,11 +21,11 @@ void LayoutNGTableCaption::UpdateBlockLayout(bool relayout_children) {
 
   DCHECK(!IsOutOfFlowPositioned()) << "Out of flow captions are blockified.";
 
-  scoped_refptr<NGConstraintSpace> constraint_space =
+  NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
 
   scoped_refptr<NGLayoutResult> result =
-      NGBlockNode(this).Layout(*constraint_space);
+      NGBlockNode(this).Layout(constraint_space);
 
   // Tell legacy layout there were abspos descendents we couldn't place. We know
   // we have to pass up to legacy here because this method is legacy's entry
