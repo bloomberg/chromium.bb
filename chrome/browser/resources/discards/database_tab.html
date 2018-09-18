@@ -6,26 +6,68 @@ found in the LICENSE file.
 This is an internal only page meant for debugging. It is not intended for
 general use and is not localized.
 -->
-<!doctype html>
-<div id="tab_contents">
-  <div id="database">
-    <div class="content-header">Database</div>
-    <table id="tab-database-info-table">
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<dom-module id="database-tab">
+  <template>
+    <style>
+      table {
+        border-collapse: collapse;
+      }
+
+      table td,
+      table th {
+        border: 1px solid #777;
+        padding-left: 4px;
+        padding-right: 4px;
+      }
+
+      table th {
+        background: rgb(224, 236, 255);
+        padding-bottom: 4px;
+        padding-inline-end: 16px;
+        padding-top: 4px;
+        white-space: nowrap;
+      }
+
+      table th[data-sort-key] {
+        cursor: pointer;
+      }
+
+      .header-cell-container {
+        align-items: center;
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      .title-cell {
+        max-width: 200px;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      .title-cell-container {
+        align-items: center;
+        display: flex;
+        justify-content: flex-start;
+      }
+    </style>
+    <table>
       <thead>
-        <tr id="tab-database-info-table-header">
+        <tr>
           <th>
             <div class="header-cell-container">
-              <div>Origin</div>
+              Origin
             </div>
           </th>
           <th>
             <div class="header-cell-container">
-              <div>Dirty</div>
+              Dirty
             </div>
           </th>
           <th>
             <div class="header-cell-container">
-              <div>Last Loaded</div>
+              Last Loaded
             </div>
           </th>
           <th>
@@ -78,21 +120,24 @@ general use and is not localized.
           </th>
         </tr>
       </thead>
-      <tbody id="database-info-table-body">
+      <tbody>
+        <template is="dom-repeat" sort="compareRows_" items="[[rows_]]">
+          <tr>
+            <td class="origin-cell">[[item.origin]]</td>
+            <td class="dirty-cell">[[boolToString_(item.dirty)]]</td>
+            <td>[[lastUseToString_(item.value.lastLoaded)]]</td>
+            <td>[[featureToString_(item.value.updatesFaviconInBackground)]]</td>
+            <td>[[featureToString_(item.value.updatesTitleInBackground)]]</td>
+            <td>[[featureToString_(item.value.usesAudioInBackground)]]</td>
+            <td>
+                [[featureToString_(item.value.usesNotificationsInBackground)]]
+            </td>
+            <td>[[getAvgCPU_(item.value.loadTimeEstimates)]]</td>
+            <td>[[getAvgMemory_(item.value.loadTimeEstimates)]]</td>
+          </tr>
+        </template>
       </tbody>
     </table>
-    <template id="database-info-row">
-      <tr>
-        <td class="origin-cell"></td>
-        <td class="dirty-cell"></td>
-        <td class="last-loaded-cell"></td>
-        <td class="updates-favicon-in-background-cell"></td>
-        <td class="updates-title-in-background-cell"></td>
-        <td class="uses-audio-in-background-cell"></td>
-        <td class="uses-notifications-in-background-cell"></td>
-        <td class="avg-cpu-cell"></td>
-        <td class="avg-memory-cell"></td>
-      </tr>
-    </template>
-  </div>
-</div>
+  </template>
+  <script src="database_tab.js"></script>
+</dom-module>

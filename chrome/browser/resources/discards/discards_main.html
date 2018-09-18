@@ -1,0 +1,32 @@
+<!--
+Copyright 2018 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+
+This is an internal only page meant for debugging. It is not intended for
+general use and is not localized.
+-->
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_tabs_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
+<link rel="import" href="database_tab.html">
+<link rel="import" href="discards_tab.html">
+
+<dom-module id="discards-main">
+  <template>
+    <style include="paper-tabs-style cr-hidden-style"></style>
+    <paper-tabs noink selected="{{selected}}">
+      <paper-tab>Discards</paper-tab>
+      <paper-tab>Database</paper-tab>
+    </paper-tabs>
+
+    <iron-pages selected="[[selected]]">
+      <discards-tab></discards-tab>
+      <database-tab></database-tab>
+    </iron-pages>
+  </template>
+  <script src="discards_main.js"></script>
+</dom-module>

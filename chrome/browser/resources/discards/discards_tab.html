@@ -6,163 +6,305 @@ found in the LICENSE file.
 This is an internal only page meant for debugging. It is not intended for
 general use and is not localized.
 -->
-<!doctype html>
-<div id="tab_contents">
-  <div id="discards">
-    <div class="content-header">Discards</div>
-    <div is="action-link" id="discard-now-link">
-      [Discard a tab now]
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/action_link.html">
+<link rel="import" href="chrome://resources/html/action_link_css.html">
+
+<dom-module id="discards-tab">
+  <template>
+    <style include="action-link">
+      table {
+        border-collapse: collapse;
+      }
+
+      table td,
+      table th {
+        border: 1px solid #777;
+        padding-left: 4px;
+        padding-right: 4px;
+      }
+
+      table th {
+        background: rgb(224, 236, 255);
+        padding-bottom: 4px;
+        padding-inline-end: 16px;
+        padding-top: 4px;
+        white-space: nowrap;
+      }
+
+      table th[data-sort-key] {
+        cursor: pointer;
+      }
+
+      table th div.header-cell-container {
+        align-items: center;
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      table td.title-cell {
+        max-width: 200px;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      table td div.title-cell-container {
+        align-items: center;
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      table td div.favicon-div {
+        height: 16px;
+        margin: 3px;
+        min-width: 16px;
+      }
+
+      table td div.title-div {
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      table td.tab-url-cell {
+        max-width: 200px;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      table td.visibility-cell {
+        width: 6em;
+      }
+
+      table td.loading-state-cell {
+        width: 6em;
+      }
+
+      table td.state-cell {
+        width: 10em;
+      }
+
+      table td.boolean-cell,
+      table td.discard-count-cell,
+      table td.reactivation-score-cell,
+      table td.site-engagement-score-cell,
+      table td.utility-rank-cell {
+        text-align: center;
+      }
+
+      table td div[is=action-link],
+      table td.actions-cell {
+        font-size: 0.6rem;
+      }
+
+      table tr:hover {
+        background: rgb(255, 255, 187);
+      }
+
+      th div.header-cell-container::after {
+        content: '▲';
+        opacity: 0;
+      }
+
+      th.sort-column div.header-cell-container::after {
+        content: '▲';
+        opacity: 1;
+      }
+
+      th.sort-column-reverse div.header-cell-container::after {
+        content: '▼';
+        opacity: 1;
+      }
+
+      .tooltip-container {
+        position: relative;
+      }
+
+      .tooltip {
+        background: black;
+        color: white;
+        display: none;
+        font-size: 0.75rem;
+        left: 50%;
+        margin-left: -100px;
+        margin-top: 4px;
+        padding: 4px;
+        position: absolute;
+        top: 100%;
+        width: 200px;
+        z-index: 1;
+      }
+
+      .tooltip-container:hover > .tooltip {
+        display: block;
+      }
+    </style>
+    <div id="discards">
+      <div is="action-link" on-click="discardNow_">
+        [Discard a tab now]
+      </div>
+      <div is="action-link" on-click="discardUrgentNow_">
+        [Urgent discard a tab now]
+      </div>
+      <table id="tab-discard-info-table">
+        <thead on-click="onHeaderClick_">
+          <tr id="tab-discards-info-table-header">
+            <th data-sort-key="utilityRank" class="sort-column">
+              <div class="header-cell-container">
+                <div>
+                  <div>Utility</div>
+                  <div>Rank<div>
+                </div>
+              </div>
+            </th>
+            <th data-sort-key="reactivationScore">
+              <div class="header-cell-container">
+                <div>
+                  <div>Reactivation</div>
+                  <div>Score</div>
+                </div>
+              </div>
+            </th>
+            <th data-sort-key="siteEngagementScore">
+              <div class="header-cell-container">
+                <div>
+                  <div>Site</div>
+                  <div>Engagement</div>
+                  <div>Score</div>
+                </div>
+              </div>
+            </th>
+            <th data-sort-key="title">
+              <div class="header-cell-container">
+                Tab Title
+              </div>
+            </th>
+            <th data-sort-key="tabUrl">
+              <div class="header-cell-container">
+                Tab URL
+              </div>
+            </th>
+            <th data-sort-key="visibility">
+              <div class="header-cell-container">
+                Visibility
+              </div>
+            </th>
+            <th data-sort-key="loadingState"">
+              <div class="header-cell-container">
+                Loading State
+              </div>
+            </th>
+            <th data-sort-key="state">
+              <div class="header-cell-container">
+                <div>
+                  <div>Lifecycle</div>
+                  <div>State</div>
+                </div>
+              </div>
+            </th>
+            <th data-sort-key="canFreeze">
+              <div class="header-cell-container">
+                Can freeze?
+              </div>
+            </th>
+            <th data-sort-key="canDiscard">
+              <div class="header-cell-container">
+                Can discard?
+              </div>
+            </th>
+            <th data-sort-key="discardCount">
+              <div class="header-cell-container">
+                <div>
+                  <div>Discard</div>
+                  <div>Count</div>
+                </div>
+              </div>
+            </div></th>
+            <th data-sort-key="isAutoDiscardable">
+              <div class="header-cell-container">
+                <div>
+                  <div>Auto</div>
+                  <div>Discardable</div>
+                </div>
+              </div>
+            </th>
+            <th data-sort-key="lastActiveSeconds">
+              <div class="header-cell-container">
+                Last Active
+              </div>
+            </th>
+            <th>
+              <div class="header-cell-container">
+                Actions
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="tab-discards-info-table-body">
+          <template is="dom-repeat"
+              sort="[[computeSortFunction_(sortKey_, sortReverse_)]]"
+              items="[[tabInfos_]]">
+            <tr>
+              <td>[[item.utilityRank]]</td>
+              <td>[[getReactivationScore_(item)]]</td>
+              <td>[[getSiteEngagementScore_(item)]]</td>
+              <td>
+                <div class="title-cell-container">
+                  <div class="favicon-div"
+                    style$="[[getFavIconStyle_(item)]];"></div>
+                  <div class="title-cell">[[item.title]]</div>
+                </div>
+              </td>
+              <td class="tab-url-cell">[[item.tabUrl]]</td>
+              <td>[[visibilityToString_(item.visibility)]]</td>
+              <td>[[loadingStateToString_(item.loadingState)]]</td>
+              <td>[[getLifeCycleState_(item)]]</td>
+              <td class="boolean-cell">
+                <div>[[boolToString_(item.canFreeze)]]</div>
+                <div is="action-link" class="tooltip-container"
+                    disabled$="[[!hasCannotFreezeReasons_(item)]]">
+                  [View Reason]
+                  <div class="tooltip">[[cannotFreezeReasons_(item)]]</div>
+                </div>
+              </td>
+              <td class="boolean-cell">
+                <div>[[boolToString_(item.canDiscard)]]</div>
+                <div is="action-link" class="tooltip-container"
+                  disabled$="[[!hasCannotDiscardReasons_(item)]]">
+                  [View Reason]
+                  <div class="tooltip">[[cannotDiscardReasons_(item)]]</div>
+                </div>
+              </td>
+              <td>[[item.discardCount]]</td>
+              <td class="boolean-cell">
+                <div>[[boolToString_(item.isAutoDiscardable)]]</div>
+                <div is="action-link" class="is-auto-discardable-link"
+                    on-click="toggleAutoDiscardable_">
+                  [Toggle]
+                </div>
+              </td>
+              <td class="last-active-cell">
+                [[durationToString_(item.lastActiveSeconds)]]
+              </td>
+              <td class="actions-cell">
+                <div is="action-link" on-click="loadTab_"
+                    disabled$="[[!canLoad_(item)]]">
+                    [Load]</div>
+                <div is="action-link" on-click="freezeTab_"
+                    disabled$="[[!canFreeze_(item)]]">[Freeze]</div>
+                <div is="action-link" on-click="discardTab_"
+                    disabled$="[[!canDiscard_(item)]]">[Discard]</div>
+                <div is="action-link" on-click="urgentDiscardTab_"
+                    disabled$="[[!canDiscard_(item)]]">
+                  [Urgent Discard]
+                </div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
     </div>
-    <div is="action-link" id="discard-now-urgent-link">
-      [Urgent discard a tab now]
-    </div>
-    <table id="tab-discard-info-table">
-      <thead>
-        <tr id="tab-discards-info-table-header">
-          <th data-sort-key="utilityRank" class="sort-column">
-            <div class="header-cell-container">
-              <div>
-                <div>Utility</div>
-                <div>Rank<div>
-              </div>
-            </div>
-          </th>
-          <th data-sort-key="reactivationScore">
-            <div class="header-cell-container">
-              <div>
-                <div>Reactivation</div>
-                <div>Score</div>
-              </div>
-            </div>
-          </th>
-          <th data-sort-key="siteEngagementScore">
-            <div class="header-cell-container">
-              <div>
-                <div>Site</div>
-                <div>Engagement</div>
-                <div>Score</div>
-              </div>
-            </div>
-          </th>
-          <th data-sort-key="title">
-            <div class="header-cell-container">
-              Tab Title
-            </div>
-          </th>
-          <th data-sort-key="tabUrl">
-            <div class="header-cell-container">
-              Tab URL
-            </div>
-          </th>
-          <th data-sort-key="visibility">
-            <div class="header-cell-container">
-              Visibility
-            </div>
-          </th>
-          <th data-sort-key="loadingState">
-            <div class="header-cell-container">
-              Loading State
-            </div>
-          </th>
-          <th data-sort-key="state">
-            <div class="header-cell-container">
-              <div>
-                <div>Lifecycle</div>
-                <div>State</div>
-              </div>
-            </div>
-          </th>
-          <th data-sort-key="canFreeze">
-            <div class="header-cell-container">
-              <div>
-                <div>Can freeze?</div>
-              </div>
-            </div>
-          </th>
-          <th data-sort-key="canDiscard">
-            <div class="header-cell-container">
-              <div>
-                <div>Can discard?</div>
-              </div>
-            </div>
-          </th>
-          <th data-sort-key="discardCount">
-            <div class="header-cell-container">
-              <div>
-                <div>Discard</div>
-                <div>Count</div>
-              </div>
-            </div>
-          </div></th>
-          <th data-sort-key="isAutoDiscardable">
-            <div class="header-cell-container">
-              <div>
-                <div>Auto</div>
-                <div>Discardable</div>
-              </div>
-            </div>
-          </th>
-          <th data-sort-key="lastActiveSeconds">
-            <div class="header-cell-container">
-              Last Active
-            </div>
-          </th>
-          <th>
-            <div class="header-cell-container">
-              Actions
-            </div>
-          </th>
-        </tr>
-      </thead>
-      <tbody id="tab-discards-info-table-body">
-      </tbody>
-    </table>
-    <template id="tab-discard-info-row">
-      <tr>
-        <td class="utility-rank-cell"></td>
-        <td class="reactivation-score-cell"></td>
-        <td class="site-engagement-score-cell"></td>
-        <td class="title-cell">
-          <div class="title-cell-container">
-            <div class="favicon-div"></div>
-            <div class="title-div"></div>
-          </div>
-        </td>
-        <td class="tab-url-cell"></td>
-        <td class="visibility-cell"></td>
-        <td class="loading-state-cell"></td>
-        <td class="state-cell"></td>
-        <td class="can-freeze-cell boolean-cell">
-          <div class="can-freeze-div"></div>
-          <div is="action-link" class="tooltip-container can-freeze-link">
-            [View Reason]
-            <div class="tooltip can-freeze-tooltip"></div>
-          </div>
-        </td>
-        <td class="can-discard-cell boolean-cell">
-          <div class="can-discard-div"></div>
-          <div is="action-link" class="tooltip-container can-discard-link">
-            [View Reason]
-            <div class="tooltip can-discard-tooltip"></div>
-          </div>
-        </td>
-        <td class="discard-count-cell"></td>
-        <td class="is-auto-discardable-cell boolean-cell">
-          <div class="is-auto-discardable-div"></div>
-          <div is="action-link" class="is-auto-discardable-link">
-            [Toggle]
-          </div>
-        </td>
-        <td class="last-active-cell"></td>
-        <td class="actions-cell">
-          <div is="action-link" class="load-link">[Load]</div>
-          <div is="action-link" class="freeze-link">[Freeze]</div>
-          <div is="action-link" class="discard-link">[Discard]</div>
-          <div is="action-link" class="discard-urgent-link">
-            [Urgent Discard]
-          </div>
-        </td>
-      </tr>
-    </template>
-  </div>
-</div>
+  </template>
+  <script src="discards_tab.js"></script>
+</dom-module>
+
