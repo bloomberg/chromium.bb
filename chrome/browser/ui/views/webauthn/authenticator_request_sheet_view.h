@@ -62,6 +62,11 @@ class AuthenticatorRequestSheetView : public views::View,
   // changes.
   void ReInitChildViews();
 
+  // Returns the control on this sheet that should initially have focus instead
+  // of the OK/Cancel buttons on the dialog; or returns nullptr if the regular
+  // dialog button should have focus.
+  views::View* GetInitiallyFocusedView();
+
   AuthenticatorRequestSheetModel* model() { return model_.get(); }
 
  protected:
@@ -83,6 +88,7 @@ class AuthenticatorRequestSheetView : public views::View,
 
   std::unique_ptr<AuthenticatorRequestSheetModel> model_;
   views::Button* back_arrow_button_ = nullptr;
+  views::View* step_specific_content_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestSheetView);
 };

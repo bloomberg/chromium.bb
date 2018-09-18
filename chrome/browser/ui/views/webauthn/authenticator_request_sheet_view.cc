@@ -58,6 +58,10 @@ void AuthenticatorRequestSheetView::ReInitChildViews() {
   InvalidateLayout();
 }
 
+views::View* AuthenticatorRequestSheetView::GetInitiallyFocusedView() {
+  return step_specific_content_;
+}
+
 std::unique_ptr<views::View>
 AuthenticatorRequestSheetView::BuildStepSpecificContent() {
   return nullptr;
@@ -155,9 +159,9 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
   std::unique_ptr<views::View> step_specific_content =
       BuildStepSpecificContent();
   if (step_specific_content) {
-    auto* step_specific_content_ptr = step_specific_content.get();
+    step_specific_content_ = step_specific_content.get();
     contents->AddChildView(step_specific_content.release());
-    box_layout->SetFlexForView(step_specific_content_ptr, 1);
+    box_layout->SetFlexForView(step_specific_content_, 1);
   }
 
   return contents;
