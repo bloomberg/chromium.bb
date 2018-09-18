@@ -232,6 +232,9 @@ class PersonalDataManager : public KeyedService,
   // Returns the Payments customer data. Returns nullptr if no data is present.
   virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
 
+  void UpdateProfilesValidityMapsIfNeeded(
+      std::vector<AutofillProfile*>& profiles);
+
   // Returns the profiles to suggest to the user, ordered by frecency.
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
 
@@ -426,6 +429,8 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            MoveJapanCityToStreetAddress);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, RequestProfileValidity);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           GetProfileSuggestions_InvalidDataBasedOnServer);
 
   friend class autofill::AutofillInteractiveTest;
   friend class autofill::PersonalDataManagerFactory;
@@ -524,7 +529,7 @@ class PersonalDataManager : public KeyedService,
   void MoveJapanCityToStreetAddress();
 
   // Get the profiles fields validity map by |guid|.
-  const ProfileValidityMap& GetProfileValidityByGUID(std::string& guid);
+  const ProfileValidityMap& GetProfileValidityByGUID(const std::string& guid);
 
   // Decides which database type to use for server and local cards.
   std::unique_ptr<PersonalDatabaseHelper> database_helper_;
@@ -562,6 +567,9 @@ class PersonalDataManager : public KeyedService,
 
   // The observers.
   base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
+
+  // |profile_valditiies_need_update| whenever the profile validities are out of
+  bool profile_validities_need_update = true;
 
  private:
   // Saves |imported_credit_card| to the WebDB if it exists. Returns the guid of
@@ -687,7 +695,10 @@ class PersonalDataManager : public KeyedService,
   void ApplyCardFixesAndCleanups();
 
   // Resets |synced_profile_validity_|.
-  void ResetProfileValidity() { synced_profile_validity_.reset(); };
+  void ResetProfileValidity() {
+    synced_profile_validity_.reset();
+    profile_validities_need_update = true;
+  };
 
   const std::string app_locale_;
 
@@ -701,7 +712,8 @@ class PersonalDataManager : public KeyedService,
   PrefChangeRegistrar pref_registrar_;
 
   // Profiles validity read from the prefs. They are kept updated by
-  // observing changes in pref_services.
+  // observing changes in pref_services. We need to set the
+  // |profile_validities_need_update| whenever this is changed.
   std::unique_ptr<UserProfileValidityMap> synced_profile_validity_;
 
   // The identity manager that this instance uses. Must outlive this instance.

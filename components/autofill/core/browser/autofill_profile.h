@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/contact_info.h"
 #include "components/autofill/core/browser/phone_number.h"
+#include "components/autofill/core/browser/proto/server.pb.h"
 
 namespace autofill {
 
@@ -76,6 +77,14 @@ class AutofillProfile : public AutofillDataModel,
   void GetMatchingTypes(const base::string16& text,
                         const std::string& app_locale,
                         ServerFieldTypeSet* matching_types) const override;
+
+  void GetMatchingTypesAndValidities(
+      const base::string16& text,
+      const std::string& app_locale,
+      ServerFieldTypeSet* matching_types,
+      std::map<ServerFieldType, AutofillProfile::ValidityState>*
+          matching_types_validities) const;
+
   base::string16 GetRawInfo(ServerFieldType type) const override;
   void SetRawInfo(ServerFieldType type, const base::string16& value) override;
 
@@ -215,11 +224,14 @@ class AutofillProfile : public AutofillDataModel,
   ValidityState GetValidityState(ServerFieldType type,
                                  ValidationSource source) const;
 
-  // Sets the validity state of the specified autofill type based on
-  // |validation_source|.
+  // Sets the validity state of the specified autofill type.
   void SetValidityState(ServerFieldType type,
                         ValidityState validity,
                         ValidationSource validation_source);
+
+  // Update the validity map based on the server side validity maps from the
+  // prefs.
+  void UpdateServerValidityMap(const ProfileValidityMap& validity_states);
 
   // Returns whether autofill does the validation of the specified |type|.
   static bool IsClientValidationSupportedForType(ServerFieldType type);
@@ -235,6 +247,10 @@ class AutofillProfile : public AutofillDataModel,
   // Returns true if type is a phone type and it's invalid, either explicitly,
   // or by looking at its components.
   bool IsAnInvalidPhoneNumber(ServerFieldType type) const;
+
+  const std::map<ServerFieldType, ValidityState>& GetServerValidityMap() const {
+    return server_validity_states_;
+  };
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;

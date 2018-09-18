@@ -121,34 +121,36 @@ bool IsNameType(const AutofillField& field) {
 }
 
 // Selects the right name type from the |old_types| to insert into the
-// |new_types| based on |is_credit_card|.
-void SelectRightNameType(const ServerFieldTypeSet& old_types,
-                         ServerFieldTypeSet* new_types,
-                         bool is_credit_card) {
-  ServerFieldTypeSet upload_types;
+// |new_types| based on |is_credit_card|. This is called when we have exactly
+// two possible types.
+void SelectRightNameType(AutofillField* field, bool is_credit_card) {
+  DCHECK(field);
+  DCHECK_EQ(2U, field->possible_types().size());
+
+  ServerFieldType type_to_keep;
+  const auto& old_types = field->possible_types();
   if (old_types.count(NAME_FIRST) && old_types.count(CREDIT_CARD_NAME_FIRST)) {
-    if (is_credit_card) {
-      new_types->insert(CREDIT_CARD_NAME_FIRST);
-    } else {
-      new_types->insert(NAME_FIRST);
-    }
+    type_to_keep = is_credit_card ? CREDIT_CARD_NAME_FIRST : NAME_FIRST;
   } else if (old_types.count(NAME_LAST) &&
              old_types.count(CREDIT_CARD_NAME_LAST)) {
-    if (is_credit_card) {
-      new_types->insert(CREDIT_CARD_NAME_LAST);
-    } else {
-      new_types->insert(NAME_LAST);
-    }
+    type_to_keep = is_credit_card ? CREDIT_CARD_NAME_LAST : NAME_LAST;
   } else if (old_types.count(NAME_FULL) &&
              old_types.count(CREDIT_CARD_NAME_FULL)) {
-    if (is_credit_card) {
-      new_types->insert(CREDIT_CARD_NAME_FULL);
-    } else {
-      new_types->insert(NAME_FULL);
-    }
+    type_to_keep = is_credit_card ? CREDIT_CARD_NAME_FULL : NAME_FULL;
   } else {
-    *new_types = old_types;
+    return;
   }
+
+  ServerFieldTypeSet new_types;
+  ServerFieldTypeValidityStatesMap new_types_validities;
+  // Since the disambiguation takes place when we have only two possible types,
+  // here we can only add one type (as we are removing the other,) and don't
+  // need to keep track of other types.
+  new_types.insert(type_to_keep);
+  new_types_validities[type_to_keep] =
+      field->get_validities_for_possible_type(type_to_keep);
+  field->set_possible_types(new_types);
+  field->set_possible_types_validities(new_types_validities);
 }
 
 void LogDeveloperEngagementUkm(ukm::UkmRecorder* ukm_recorder,
@@ -370,11 +372,13 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
 
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
-  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
+  personal_data_->UpdateProfilesValidityMapsIfNeeded(profiles);
   if (observed_submission && form_structure->IsAutofillable()) {
     AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
         personal_data_->GetProfiles().size());
   }
+
   const std::vector<CreditCard*>& credit_cards =
       personal_data_->GetCreditCards();
   if (profiles.empty() && credit_cards.empty())
@@ -1657,10 +1661,18 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
     base::string16 value;
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
-    for (const AutofillProfile& profile : profiles)
-      profile.GetMatchingTypes(value, app_locale, &matching_types);
-    for (const CreditCard& card : credit_cards)
+    for (const AutofillProfile& profile : profiles) {
+      std::map<ServerFieldType, AutofillProfile::ValidityState>
+          matching_types_validities;
+      profile.GetMatchingTypesAndValidities(value, app_locale, &matching_types,
+                                            &matching_types_validities);
+      field->add_possible_types_validities(matching_types_validities);
+    }
+
+    // TODO(crbug/880531) set possible_types_validities for credit card too.
+    for (const CreditCard& card : credit_cards) {
       card.GetMatchingTypes(value, app_locale, &matching_types);
+    }
 
     if (matching_types.empty())
       matching_types.insert(UNKNOWN_TYPE);
@@ -1676,7 +1688,7 @@ void AutofillManager::DisambiguateUploadTypes(FormStructure* form) {
   for (size_t i = 0; i < form->field_count(); ++i) {
     AutofillField* field = form->field(i);
     const ServerFieldTypeSet& upload_types = field->possible_types();
-
+    // The disambiguation happens when we have exactly two possible types.
     if (upload_types.size() == 2) {
       if (upload_types.count(ADDRESS_HOME_LINE1) &&
           upload_types.count(ADDRESS_HOME_STREET_ADDRESS)) {
@@ -1699,41 +1711,56 @@ void AutofillManager::DisambiguateUploadTypes(FormStructure* form) {
 // static
 void AutofillManager::DisambiguateAddressUploadTypes(FormStructure* form,
                                                      size_t current_index) {
-  // This case happens when the profile has only one address line.
-  // Therefore the address line one and the street address (the whole
-  // address) have the same value and match.
+  // Theis happens when we have exactly two possible types, and the profile has
+  // only one address line. Therefore the address line one and the street
+  // address (the whole address) have the same value and match.
 
   // If the field is followed by a field that is predicted to be an
   // address line two and is empty, we can safely assume that this field
   // is an address line one field. Otherwise it's a whole address field.
+
   ServerFieldTypeSet matching_types;
+  ServerFieldTypeValidityStatesMap matching_types_validities;
+  AutofillField* field = form->field(current_index);
+
   size_t next_index = current_index + 1;
   if (next_index < form->field_count() &&
       form->field(next_index)->Type().GetStorableType() == ADDRESS_HOME_LINE2 &&
       form->field(next_index)->possible_types().count(EMPTY_TYPE)) {
     matching_types.insert(ADDRESS_HOME_LINE1);
+    matching_types_validities[ADDRESS_HOME_LINE1] =
+        field->get_validities_for_possible_type(ADDRESS_HOME_LINE1);
   } else {
     matching_types.insert(ADDRESS_HOME_STREET_ADDRESS);
+    matching_types_validities[ADDRESS_HOME_STREET_ADDRESS] =
+        field->get_validities_for_possible_type(ADDRESS_HOME_STREET_ADDRESS);
   }
 
-  AutofillField* field = form->field(current_index);
   field->set_possible_types(matching_types);
+  field->set_possible_types_validities(matching_types_validities);
 }
 
 // static
 void AutofillManager::DisambiguatePhoneUploadTypes(FormStructure* form,
                                                    size_t current_index) {
-  // This case happens for profiles that have no country code saved.
-  // Therefore, both the whole number and the city code and number have
-  // the same value and match.
+  // This case happens  when we have exactly two possible types, and only for
+  // profiles that have no country code saved. Therefore, both the whole number
+  // and the city code and number have the same value and match.
 
   // Since the form was submitted, it is safe to assume that the form
   // didn't require a country code. Thus, only PHONE_HOME_CITY_AND_NUMBER
   // needs to be uploaded.
+
   ServerFieldTypeSet matching_types;
-  matching_types.insert(PHONE_HOME_CITY_AND_NUMBER);
+  ServerFieldTypeValidityStatesMap matching_types_validities;
   AutofillField* field = form->field(current_index);
+
+  matching_types.insert(PHONE_HOME_CITY_AND_NUMBER);
+  matching_types_validities[PHONE_HOME_CITY_AND_NUMBER] =
+      field->get_validities_for_possible_type(PHONE_HOME_CITY_AND_NUMBER);
+
   field->set_possible_types(matching_types);
+  field->set_possible_types_validities(matching_types_validities);
 }
 
 // static
@@ -1742,7 +1769,7 @@ void AutofillManager::DisambiguateNameUploadTypes(
     size_t current_index,
     const ServerFieldTypeSet& upload_types) {
   // This case happens when both a profile and a credit card have the same
-  // name.
+  // name, and when we have exactly two possible types.
 
   // If the ambiguous field has either a previous or next field that is
   // not name related, use that information to determine whether the field
@@ -1789,16 +1816,11 @@ void AutofillManager::DisambiguateNameUploadTypes(
 
     // Otherwise, use the previous (if it was found) or next field group to
     // decide whether the field is a name or a credit card name.
-    ServerFieldTypeSet matching_types;
     if (has_found_previous_type) {
-      SelectRightNameType(upload_types, &matching_types,
-                          is_previous_credit_card);
+      SelectRightNameType(form->field(current_index), is_previous_credit_card);
     } else {
-      SelectRightNameType(upload_types, &matching_types, is_next_credit_card);
+      SelectRightNameType(form->field(current_index), is_next_credit_card);
     }
-
-    AutofillField* field = form->field(current_index);
-    field->set_possible_types(matching_types);
   }
 }
 

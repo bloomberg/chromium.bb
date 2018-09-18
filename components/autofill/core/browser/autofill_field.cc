@@ -72,6 +72,22 @@ void AutofillField::set_server_type(ServerFieldType type) {
   overall_type_ = AutofillType(NO_SERVER_DATA);
 }
 
+void AutofillField::add_possible_types_validities(
+    const std::map<ServerFieldType, AutofillProfile::ValidityState>&
+        possible_types_validities) {
+  for (const auto& possible_type_validity : possible_types_validities) {
+    possible_types_validities_[possible_type_validity.first].push_back(
+        possible_type_validity.second);
+  }
+}
+
+std::vector<AutofillProfile::ValidityState>
+AutofillField::get_validities_for_possible_type(ServerFieldType type) {
+  if (possible_types_validities_.find(type) == possible_types_validities_.end())
+    return {AutofillProfile::UNVALIDATED};
+  return possible_types_validities_[type];
+}
+
 void AutofillField::SetHtmlType(HtmlFieldType type, HtmlFieldMode mode) {
   html_type_ = type;
   html_mode_ = mode;

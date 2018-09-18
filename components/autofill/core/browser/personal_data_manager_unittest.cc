@@ -1990,6 +1990,72 @@ TEST_F(PersonalDataManagerTest,
   }
 }
 
+// Tests that suggestions based on invalid data are handled correctly.
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_InvalidDataBasedOnServer) {
+  // Set up 2 different profiles.
+  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "9876543210");
+  // Set the validity state of ADDRESS_HOME_STATE to INVALID on the prefs.
+  {
+    ProfileValidityMap profile_validity_map;
+    UserProfileValidityMap user_profile_validity_map;
+    std::string autofill_profile_validity;
+    personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
+                                             autofill_profile_validity);
+    (*profile_validity_map.mutable_field_validity_states())[static_cast<int>(
+        ADDRESS_HOME_STATE)] = static_cast<int>(AutofillProfile::INVALID);
+    (*user_profile_validity_map.mutable_profile_validity())[profile1.guid()] =
+        profile_validity_map;
+    ASSERT_TRUE(user_profile_validity_map.SerializeToString(
+        &autofill_profile_validity));
+    personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
+                                             autofill_profile_validity);
+  }
+  profile1.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(20));
+  personal_data_->AddProfile(profile1);
+
+  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "456 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "NY", "91601", "US", "1234567890");
+  personal_data_->AddProfile(profile2);
+
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+  {
+    base::HistogramTester histogram_tester;
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitAndDisableFeature(
+        features::kAutofillSuggestInvalidProfileData);
+    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+        AutofillType(ADDRESS_HOME_STATE), base::string16(), false,
+        std::vector<ServerFieldType>());
+    ASSERT_EQ(1U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("NY"), suggestions[0].value);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.InvalidProfileData.UsedForSuggestion", false, 1);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitAndEnableFeature(
+        features::kAutofillSuggestInvalidProfileData);
+    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+        AutofillType(ADDRESS_HOME_STATE), base::string16(), false,
+        std::vector<ServerFieldType>());
+    ASSERT_EQ(2U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("CA"), suggestions[1].value);
+    EXPECT_EQ(base::ASCIIToUTF16("NY"), suggestions[0].value);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.InvalidProfileData.UsedForSuggestion", true, 1);
+  }
+}
+
 // Test that local and server profiles are not shown if
 // |kAutofillProfileEnabled| is set to |false|.
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {

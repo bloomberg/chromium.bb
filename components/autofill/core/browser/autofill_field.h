@@ -59,6 +59,9 @@ class AutofillField : public FormFieldData {
   // Setters for the detected types.
   void set_heuristic_type(ServerFieldType type);
   void set_server_type(ServerFieldType type);
+  void add_possible_types_validities(
+      const std::map<ServerFieldType, AutofillProfile::ValidityState>&
+          possible_types_validities);
   void set_server_predictions(
       const std::vector<AutofillQueryResponseContents::Field::FieldPrediction>
           predictions) {
@@ -71,6 +74,8 @@ class AutofillField : public FormFieldData {
       const ServerFieldTypeValidityStatesMap& possible_types_validities) {
     possible_types_validities_ = possible_types_validities;
   }
+  std::vector<AutofillProfile::ValidityState> get_validities_for_possible_type(
+      ServerFieldType);
 
   void SetHtmlType(HtmlFieldType type, HtmlFieldMode mode);
   void set_previously_autofilled(bool previously_autofilled) {
