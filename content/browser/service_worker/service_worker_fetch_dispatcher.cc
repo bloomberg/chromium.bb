@@ -324,7 +324,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
 
   // Implements blink::mojom::ServiceWorkerFetchResponseCallback.
   void OnResponse(blink::mojom::FetchAPIResponsePtr response,
-                  base::Time dispatch_event_time) override {
+                  base::TimeTicks dispatch_event_time) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
                    std::move(response), nullptr /* body_as_stream */,
                    FetchEventResult::kGotResponse, dispatch_event_time);
@@ -332,12 +332,12 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
   void OnResponseStream(
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-      base::Time dispatch_event_time) override {
+      base::TimeTicks dispatch_event_time) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
                    std::move(response), std::move(body_as_stream),
                    FetchEventResult::kGotResponse, dispatch_event_time);
   }
-  void OnFallback(base::Time dispatch_event_time) override {
+  void OnFallback(base::TimeTicks dispatch_event_time) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
                    blink::mojom::FetchAPIResponse::New(),
                    nullptr /* body_as_stream */,
@@ -354,7 +354,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       FetchEventResult fetch_result,
-      base::Time dispatch_event_time) {
+      base::TimeTicks dispatch_event_time) {
     if (!version->FinishRequest(fetch_event_id.value(),
                                 fetch_result == FetchEventResult::kGotResponse,
                                 dispatch_event_time))
@@ -752,7 +752,7 @@ void ServiceWorkerFetchDispatcher::OnFetchEventFinished(
     int event_finish_id,
     scoped_refptr<URLLoaderAssets> url_loader_assets,
     blink::mojom::ServiceWorkerEventStatus status,
-    base::Time dispatch_event_time) {
+    base::TimeTicks dispatch_event_time) {
   version->FinishRequest(
       event_finish_id,
       status != blink::mojom::ServiceWorkerEventStatus::ABORTED,

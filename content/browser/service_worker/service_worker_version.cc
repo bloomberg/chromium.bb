@@ -599,7 +599,7 @@ bool ServiceWorkerVersion::StartExternalRequest(
 
 bool ServiceWorkerVersion::FinishRequest(int request_id,
                                          bool was_handled,
-                                         base::Time dispatch_event_time) {
+                                         base::TimeTicks dispatch_event_time) {
   InflightRequest* request = inflight_requests_.Lookup(request_id);
   if (!request)
     return false;
@@ -609,7 +609,7 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
       request->event_type, tick_clock_->NowTicks() - request->start_time_ticks,
       was_handled);
   ServiceWorkerMetrics::RecordEventDispatchingDelay(
-      request->event_type, dispatch_event_time - request->start_time);
+      request->event_type, dispatch_event_time - request->start_time_ticks);
 
   RestartTick(&idle_time_);
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
@@ -637,7 +637,7 @@ bool ServiceWorkerVersion::FinishExternalRequest(
   if (iter != external_request_uuid_to_request_id_.end()) {
     int request_id = iter->second;
     external_request_uuid_to_request_id_.erase(iter);
-    return FinishRequest(request_id, true, clock_->Now());
+    return FinishRequest(request_id, true, tick_clock_->NowTicks());
   }
 
   // It is possible that the request was cancelled or timed out before and we
@@ -1340,7 +1340,7 @@ void ServiceWorkerVersion::OpenWindow(
 void ServiceWorkerVersion::OnSimpleEventFinished(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus status,
-    base::Time dispatch_event_time) {
+    base::TimeTicks dispatch_event_time) {
   InflightRequest* request = inflight_requests_.Lookup(request_id);
   // |request| will be null when the request has been timed out.
   if (!request)

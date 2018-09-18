@@ -1626,12 +1626,12 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
     if (!install_callback_.is_null())
       std::move(install_callback_).Run();
     std::move(callback).Run(install_event_result_, has_fetch_handler_,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   }
 
   void OnActivateEvent(
       mojom::ServiceWorker::DispatchActivateEventCallback callback) override {
-    std::move(callback).Run(activate_event_result_, base::Time::Now());
+    std::move(callback).Run(activate_event_result_, base::TimeTicks::Now());
   }
 
   void set_install_callback(base::OnceClosure callback) {

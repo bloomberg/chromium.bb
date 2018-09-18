@@ -90,9 +90,9 @@ struct PaymentHandlerResponse {
 // request event in renderer side to browser side by calling respondWith().
 interface PaymentHandlerResponseCallback {
   OnResponseForAbortPayment(bool payment_aborted,
-                            mojo_base.mojom.Time dispatch_event_time);
+                            mojo_base.mojom.TimeTicks dispatch_event_time);
   OnResponseForCanMakePayment(bool can_make_payment,
-                              mojo_base.mojom.Time dispatch_event_time);
+                              mojo_base.mojom.TimeTicks dispatch_event_time);
   OnResponseForPaymentRequest(PaymentHandlerResponse response,
-                              mojo_base.mojom.Time dispatch_event_time);
+                              mojo_base.mojom.TimeTicks dispatch_event_time);
 };

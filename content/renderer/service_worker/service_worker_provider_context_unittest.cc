@@ -261,7 +261,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     fetch_event_count_++;
     fetch_event_request_ = params->request;
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::Time());
+                            base::TimeTicks());
     if (fetch_event_callback_)
       std::move(fetch_event_callback_).Run();
   }

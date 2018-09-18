@@ -25,10 +25,10 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
 
   if (fail_abort_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   } else {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   }
 
   if (abort_event_closure_)
@@ -42,10 +42,10 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
 
   if (fail_click_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   } else {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   }
 
   if (click_event_closure_)
@@ -59,10 +59,10 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
 
   if (fail_fetch_fail_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   } else {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   }
 
   if (fetch_fail_event_closure_)
@@ -77,10 +77,10 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
 
   if (fail_fetched_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   } else {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   }
 
   if (fetched_event_closure_)

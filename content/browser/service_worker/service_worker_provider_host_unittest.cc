@@ -944,7 +944,7 @@ TEST_P(ServiceWorkerProviderHostTest, DontSetControllerInDestructor) {
 
   // Finish the request. Activation won't yet occur until as
   // |idle_time_fired_in_renderer_| isn't true.
-  version1->FinishRequest(request, true, base::Time::Now());
+  version1->FinishRequest(request, true, base::TimeTicks::Now());
 
   // Destroy the provider host. This triggers activation, and since
   // SkipWaiting() was called, the provider host is in danger

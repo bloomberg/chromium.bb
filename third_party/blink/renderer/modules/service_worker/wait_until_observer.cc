@@ -111,7 +111,7 @@ WaitUntilObserver* WaitUntilObserver::Create(ExecutionContext* context,
 }
 
 void WaitUntilObserver::WillDispatchEvent() {
-  event_dispatch_time_ = WTF::CurrentTime();
+  event_dispatch_time_ = WTF::CurrentTimeTicks();
   // When handling a notificationclick or paymentrequest event, we want to
   // allow one window to be focused or opened. These calls are allowed between
   // the call to willDispatchEvent() and the last call to

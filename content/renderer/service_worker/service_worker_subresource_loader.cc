@@ -268,13 +268,13 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   controller->DispatchFetchEvent(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
-                     weak_factory_.GetWeakPtr(), base::Time::Now()));
+                     weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
-    base::Time request_dispatch_time,
+    base::TimeTicks request_dispatch_time,
     blink::mojom::ServiceWorkerEventStatus status,
-    base::Time actual_dispatch_time) {
+    base::TimeTicks actual_dispatch_time) {
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
                          "ServiceWorkerSubresourceLoader::OnFetchEventFinished",
                          this, TRACE_EVENT_FLAG_FLOW_IN, "status",
@@ -348,7 +348,7 @@ void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch(
 
 void ServiceWorkerSubresourceLoader::OnResponse(
     blink::mojom::FetchAPIResponsePtr response,
-    base::Time dispatch_event_time) {
+    base::TimeTicks dispatch_event_time) {
   TRACE_EVENT_WITH_FLOW0("ServiceWorker",
                          "ServiceWorkerSubresourceLoader::OnResponse", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
@@ -359,7 +359,7 @@ void ServiceWorkerSubresourceLoader::OnResponse(
 void ServiceWorkerSubresourceLoader::OnResponseStream(
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-    base::Time dispatch_event_time) {
+    base::TimeTicks dispatch_event_time) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
@@ -368,7 +368,7 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
 }
 
 void ServiceWorkerSubresourceLoader::OnFallback(
-    base::Time dispatch_event_time) {
+    base::TimeTicks dispatch_event_time) {
   SettleFetchEventDispatch(blink::ServiceWorkerStatusCode::kOk);
   // When the request mode is CORS or CORS-with-forced-preflight and the origin
   // of the request URL is different from the security origin of the document,

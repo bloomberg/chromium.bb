@@ -124,7 +124,7 @@ class RespondWithCallbacks
 
   void OnResponseForPaymentRequest(
       payments::mojom::PaymentHandlerResponsePtr response,
-      base::Time dispatch_event_time) override {
+      base::TimeTicks dispatch_event_time) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     service_worker_version_->FinishRequest(request_id_, false,
                                            std::move(dispatch_event_time));
@@ -137,8 +137,9 @@ class RespondWithCallbacks
     delete this;
   }
 
-  void OnResponseForCanMakePayment(bool can_make_payment,
-                                   base::Time dispatch_event_time) override {
+  void OnResponseForCanMakePayment(
+      bool can_make_payment,
+      base::TimeTicks dispatch_event_time) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     service_worker_version_->FinishRequest(request_id_, false,
                                            std::move(dispatch_event_time));
@@ -150,7 +151,7 @@ class RespondWithCallbacks
   }
 
   void OnResponseForAbortPayment(bool payment_aborted,
-                                 base::Time dispatch_event_time) override {
+                                 base::TimeTicks dispatch_event_time) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     service_worker_version_->FinishRequest(request_id_, false,
                                            std::move(dispatch_event_time));
@@ -193,7 +194,7 @@ class RespondWithCallbacks
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     service_worker_version_->FinishRequest(request_id_, false,
-                                           base::Time::Now());
+                                           base::TimeTicks::Now());
     OnErrorStatus(blink::ServiceWorkerStatusCode::kErrorAbort);
   }
 
