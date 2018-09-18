@@ -52,6 +52,7 @@ source_set("signin") {
     "signin_util.mm",
   ]
   deps = [
+    ":feature_flags",
     "//base",
     "//components/browser_sync",
     "//components/content_settings/core/browser",
@@ -82,6 +83,17 @@ source_set("signin") {
     "//services/identity/public/cpp",
     "//services/identity/public/mojom",
     "//url",
+  ]
+}
+
+source_set("feature_flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "feature_flags.h",
+    "feature_flags.mm",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
