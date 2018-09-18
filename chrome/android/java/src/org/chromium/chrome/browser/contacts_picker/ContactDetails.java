@@ -93,17 +93,21 @@ public class ContactDetails implements Comparable<ContactDetails> {
     public String getContactDetailsAsString() {
         int count = 0;
         StringBuilder builder = new StringBuilder();
-        for (String email : mEmails) {
-            if (count++ > 0) {
-                builder.append("\n");
+        if (mEmails != null) {
+            for (String email : mEmails) {
+                if (count++ > 0) {
+                    builder.append("\n");
+                }
+                builder.append(email);
             }
-            builder.append(email);
         }
-        for (String phoneNumber : mPhoneNumbers) {
-            if (count++ > 0) {
-                builder.append("\n");
+        if (mPhoneNumbers != null) {
+            for (String phoneNumber : mPhoneNumbers) {
+                if (count++ > 0) {
+                    builder.append("\n");
+                }
+                builder.append(phoneNumber);
             }
-            builder.append(phoneNumber);
         }
 
         return builder.toString();
@@ -121,15 +125,19 @@ public class ContactDetails implements Comparable<ContactDetails> {
         writer.name("emails");
 
         writer.beginArray();
-        for (String email : mEmails) {
-            writer.value(email);
+        if (mEmails != null) {
+            for (String email : mEmails) {
+                writer.value(email);
+            }
         }
         writer.endArray();
 
         writer.name("phoneNumbers");
         writer.beginArray();
-        for (String phoneNumber : mPhoneNumbers) {
-            writer.value(phoneNumber);
+        if (mPhoneNumbers != null) {
+            for (String phoneNumber : mPhoneNumbers) {
+                writer.value(phoneNumber);
+            }
         }
         writer.endArray();
 
@@ -148,7 +156,7 @@ public class ContactDetails implements Comparable<ContactDetails> {
 
     @Override
     public int hashCode() {
-        Object[] values = {mId, mDisplayName, mEmails};
+        Object[] values = {mId, mDisplayName};
         return Arrays.hashCode(values);
     }
 

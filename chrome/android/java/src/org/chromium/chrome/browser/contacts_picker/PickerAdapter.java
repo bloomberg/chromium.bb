@@ -5,10 +5,8 @@
 package org.chromium.chrome.browser.contacts_picker;
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView.Adapter;
@@ -18,10 +16,10 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * A data adapter for the Contacts Picker.
@@ -33,8 +31,11 @@ public class PickerAdapter extends Adapter<ViewHolder> {
     // The content resolver to query data from.
     private ContentResolver mContentResolver;
 
-    // A cursor containing the raw contacts data.
-    private Cursor mContactsCursor;
+    // The full list of all registered contacts on the device.
+    private ArrayList<ContactDetails> mContactDetails;
+
+    // A list of search result indices into the larger data set.
+    private ArrayList<Integer> mSearchResults;
 
     /**
      * Holds on to a {@link ContactView} that displays information about a contact.
@@ -62,8 +63,7 @@ public class PickerAdapter extends Adapter<ViewHolder> {
     public PickerAdapter(PickerCategoryView categoryView, ContentResolver contentResolver) {
         mCategoryView = categoryView;
         mContentResolver = contentResolver;
-        mContactsCursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, PROJECTION,
-                null, null, ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " ASC");
+        mContactDetails = getAllContacts();
     }
 
     /**
@@ -71,31 +71,61 @@ public class PickerAdapter extends Adapter<ViewHolder> {
      * @param query The search term to use.
      */
     public void setSearchString(String query) {
-        String searchString = "%" + query + "%";
-        String[] selectionArgs = {searchString};
-        mContactsCursor.close();
-
-        mContactsCursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, PROJECTION,
-                ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ?", selectionArgs,
-                ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " ASC");
+        if (query.equals("")) {
+            mSearchResults.clear();
+            mSearchResults = null;
+        } else {
+            mSearchResults = new ArrayList<Integer>();
+            Integer count = 0;
+            String query_lower = query.toLowerCase(Locale.getDefault());
+            for (ContactDetails contact : mContactDetails) {
+                if (contact.getDisplayName().toLowerCase(Locale.getDefault()).contains(query_lower)
+                        || contact.getContactDetailsAsString()
+                                   .toLowerCase(Locale.getDefault())
+                                   .contains(query_lower)) {
+                    mSearchResults.add(count);
+                }
+                count++;
+            }
+        }
         notifyDataSetChanged();
     }
 
     /**
-     * Fetches all known contacts and their emails.
-     * @return The contact list as a set.
+     * Fetches all known contacts.
+     * @return The contact list as an array.
      */
-    public Set<ContactDetails> getAllContacts() {
-        Set<ContactDetails> contacts = new HashSet<>();
-        if (!mContactsCursor.moveToFirst()) return contacts;
-        do {
-            String id = mContactsCursor.getString(
-                    mContactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
-            String name = mContactsCursor.getString(
-                    mContactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-            contacts.add(new ContactDetails(id, name, getEmails(), getPhoneNumbers(), getPhoto()));
-        } while (mContactsCursor.moveToNext());
+    public ArrayList<ContactDetails> getAllContacts() {
+        if (mContactDetails != null) return mContactDetails;
 
+        Map<String, ArrayList<String>> emailMap =
+                getDetails(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                        ContactsContract.CommonDataKinds.Email.CONTACT_ID,
+                        ContactsContract.CommonDataKinds.Email.DATA,
+                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " ASC, "
+                                + ContactsContract.CommonDataKinds.Email.DATA + " ASC");
+
+        Map<String, ArrayList<String>> phoneMap =
+                getDetails(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+                        ContactsContract.CommonDataKinds.Email.DATA,
+                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " ASC, "
+                                + ContactsContract.CommonDataKinds.Phone.NUMBER + " ASC");
+
+        // A cursor containing the raw contacts data.
+        Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, PROJECTION,
+                null, null, ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " ASC");
+
+        ArrayList<ContactDetails> contacts = new ArrayList<ContactDetails>(cursor.getCount());
+        if (!cursor.moveToFirst()) return contacts;
+        do {
+            String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+            String name = cursor.getString(
+                    cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
+            contacts.add(new ContactDetails(id, name, emailMap.get(id), phoneMap.get(id), null));
+        } while (cursor.moveToNext());
+
+        cursor.close();
         return contacts;
     }
 
@@ -111,79 +141,64 @@ public class PickerAdapter extends Adapter<ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String id = "";
-        String name = "";
-        if (mContactsCursor.moveToPosition(position)) {
-            id = mContactsCursor.getString(
-                    mContactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
-            name = mContactsCursor.getString(
-                    mContactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
+        ContactDetails contact;
+        if (mSearchResults == null) {
+            contact = mContactDetails.get(position);
+        } else {
+            Integer index = mSearchResults.get(position);
+            contact = mContactDetails.get(index);
         }
-
-        ((ContactView) holder.itemView)
-                .initialize(
-                        new ContactDetails(id, name, getEmails(), getPhoneNumbers(), getPhoto()));
+        ((ContactView) holder.itemView).initialize(contact);
     }
 
-    private ArrayList<String> getEmails() {
-        // Look up all associated emails for this contact.
-        String id = mContactsCursor.getString(
-                mContactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
-        Cursor emailCursor =
-                mContentResolver.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, null,
-                        ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = " + id, null,
-                        ContactsContract.CommonDataKinds.Email.DATA + " ASC");
-        ArrayList<String> emails = new ArrayList<String>();
-        while (emailCursor.moveToNext()) {
-            emails.add(emailCursor.getString(
-                    emailCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)));
-        }
-        emailCursor.close();
-        return emails;
-    }
+    /**
+     * Fetches details for a contact.
+     * @param source The source URI to use for the lookup.
+     * @param idColumn The name of the id column.
+     * @param idColumn The name of the data column.
+     * @param sortOrder The sort order. Data must be sorted by CONTACT_ID but can be additionally
+     *                  sorted also.
+     * @return A map of ids to contact details (as ArrayList).
+     */
+    private Map<String, ArrayList<String>> getDetails(
+            Uri source, String idColumn, String dataColumn, String sortOrder) {
+        Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
 
-    private ArrayList<String> getPhoneNumbers() {
-        // Look up all associated phone numbers for this contact.
-        String id = mContactsCursor.getString(
-                mContactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
-        Cursor phoneNumberCursor =
-                mContentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
-                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + id, null,
-                        ContactsContract.CommonDataKinds.Phone.NUMBER + " ASC");
-        ArrayList<String> phoneNumbers = new ArrayList<String>();
-        while (phoneNumberCursor.moveToNext()) {
-            phoneNumbers.add(phoneNumberCursor.getString(
-                    phoneNumberCursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)));
+        Cursor cursor = mContentResolver.query(source, null, null, null, sortOrder);
+        ArrayList<String> list = new ArrayList<String>();
+        String key = "";
+        String value;
+        while (cursor.moveToNext()) {
+            String id = cursor.getString(cursor.getColumnIndex(idColumn));
+            value = cursor.getString(cursor.getColumnIndex(dataColumn));
+            if (key.isEmpty()) {
+                key = id;
+                list.add(value);
+            } else {
+                if (key.equals(id)) {
+                    list.add(value);
+                } else {
+                    map.put(key, list);
+                    list = new ArrayList<String>();
+                    list.add(value);
+                    key = id;
+                }
+            }
         }
-        phoneNumberCursor.close();
-        return phoneNumbers;
+        map.put(key, list);
+        cursor.close();
+
+        return map;
     }
 
     private Bitmap getPhoto() {
-        String id = mContactsCursor.getString(
-                mContactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
-        Uri contactUri = ContentUris.withAppendedId(
-                ContactsContract.Contacts.CONTENT_URI, Long.parseLong(id));
-        Uri photoUri =
-                Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
-        Cursor cursor = mContentResolver.query(
-                photoUri, new String[] {ContactsContract.Contacts.Photo.PHOTO}, null, null, null);
-        if (cursor == null) return null;
-        try {
-            if (cursor.moveToFirst()) {
-                byte[] data = cursor.getBlob(0);
-                if (data != null) {
-                    return BitmapFactory.decodeStream(new ByteArrayInputStream(data));
-                }
-            }
-        } finally {
-            cursor.close();
-        }
         return null;
     }
 
     @Override
     public int getItemCount() {
-        return mContactsCursor.getCount();
+        if (mSearchResults != null) return mSearchResults.size();
+
+        return mContactDetails.size();
     }
 }
