@@ -14,10 +14,9 @@ class TranslateInfoBarDelegate;
 
 @interface BeforeTranslateInfoBarController : InfoBarController
 
-- (instancetype)init NS_UNAVAILABLE;
-
 - (instancetype)initWithInfoBarDelegate:
-    (translate::TranslateInfoBarDelegate*)delegate;
+    (translate::TranslateInfoBarDelegate*)infoBarDelegate
+    NS_DESIGNATED_INITIALIZER;
 
 @property(nonatomic, weak) id<LanguageSelectionHandler>
     languageSelectionHandler;

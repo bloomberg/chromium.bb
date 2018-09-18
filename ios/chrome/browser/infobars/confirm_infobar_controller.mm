@@ -33,24 +33,26 @@ typedef NS_ENUM(NSInteger, ConfirmInfoBarUITags) {
 
 #pragma mark - ConfirmInfoBarController
 
-@interface ConfirmInfoBarController () {
-  ConfirmInfoBarDelegate* _confirmInfobarDelegate;
-  __weak ConfirmInfoBarView* _infoBarView;
-}
+@interface ConfirmInfoBarController ()
+
+// Overrides superclass property.
+@property(nonatomic, readonly) ConfirmInfoBarDelegate* infoBarDelegate;
+
+@property(nonatomic, weak) ConfirmInfoBarView* infoBarView;
 
 @end
 
 @implementation ConfirmInfoBarController
 
+@dynamic infoBarDelegate;
+@synthesize infoBarView = _infoBarView;
+
 #pragma mark -
 #pragma mark InfoBarController
 
-- (instancetype)initWithInfoBarDelegate:(ConfirmInfoBarDelegate*)delegate {
-  self = [super init];
-  if (self) {
-    _confirmInfobarDelegate = delegate;
-  }
-  return self;
+- (instancetype)initWithInfoBarDelegate:
+    (ConfirmInfoBarDelegate*)infoBarDelegate {
+  return [super initWithInfoBarDelegate:infoBarDelegate];
 }
 
 - (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)frame {
@@ -58,17 +60,17 @@ typedef NS_ENUM(NSInteger, ConfirmInfoBarUITags) {
       [[ConfirmInfoBarView alloc] initWithFrame:frame];
   _infoBarView = infoBarView;
   // Model data.
-  gfx::Image modelIcon = _confirmInfobarDelegate->GetIcon();
-  int buttons = _confirmInfobarDelegate->GetButtons();
+  gfx::Image modelIcon = self.infoBarDelegate->GetIcon();
+  int buttons = self.infoBarDelegate->GetButtons();
   NSString* buttonOK = nil;
   if (buttons & ConfirmInfoBarDelegate::BUTTON_OK) {
-    buttonOK = base::SysUTF16ToNSString(_confirmInfobarDelegate->GetButtonLabel(
+    buttonOK = base::SysUTF16ToNSString(self.infoBarDelegate->GetButtonLabel(
         ConfirmInfoBarDelegate::BUTTON_OK));
   }
   NSString* buttonCancel = nil;
   if (buttons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
     buttonCancel =
-        base::SysUTF16ToNSString(_confirmInfobarDelegate->GetButtonLabel(
+        base::SysUTF16ToNSString(self.infoBarDelegate->GetButtonLabel(
             ConfirmInfoBarDelegate::BUTTON_CANCEL));
   }
 
@@ -97,22 +99,22 @@ typedef NS_ENUM(NSInteger, ConfirmInfoBarUITags) {
                     action:@selector(infoBarButtonDidPress:)];
   } else {
     // No buttons, only message.
-    DCHECK(!_confirmInfobarDelegate->GetMessageText().empty() && !buttonCancel);
+    DCHECK(!self.infoBarDelegate->GetMessageText().empty() && !buttonCancel);
   }
   return infoBarView;
 }
 
 - (void)updateInfobarLabel:(ConfirmInfoBarView*)view {
-  if (!_confirmInfobarDelegate->GetMessageText().length())
+  if (!self.infoBarDelegate->GetMessageText().length())
     return;
-  if (_confirmInfobarDelegate->GetLinkText().length()) {
+  if (self.infoBarDelegate->GetLinkText().length()) {
     base::string16 msgLink = base::SysNSStringToUTF16([[view class]
         stringAsLink:base::SysUTF16ToNSString(
-                         _confirmInfobarDelegate->GetLinkText())
+                         self.infoBarDelegate->GetLinkText())
                  tag:ConfirmInfoBarUITags::TITLE_LINK]);
-    base::string16 messageText = _confirmInfobarDelegate->GetMessageText();
+    base::string16 messageText = self.infoBarDelegate->GetMessageText();
     base::ReplaceFirstSubstringAfterOffset(
-        &messageText, 0, _confirmInfobarDelegate->GetLinkText(), msgLink);
+        &messageText, 0, self.infoBarDelegate->GetLinkText(), msgLink);
 
     __weak ConfirmInfoBarController* weakSelf = self;
     [view addLabel:base::SysUTF16ToNSString(messageText)
@@ -121,7 +123,7 @@ typedef NS_ENUM(NSInteger, ConfirmInfoBarUITags) {
             }];
   } else {
     NSString* label =
-        base::SysUTF16ToNSString(_confirmInfobarDelegate->GetMessageText());
+        base::SysUTF16ToNSString(self.infoBarDelegate->GetMessageText());
     [view addLabel:label];
   }
 }
@@ -133,27 +135,23 @@ typedef NS_ENUM(NSInteger, ConfirmInfoBarUITags) {
 #pragma mark - Handling of User Events
 
 - (void)infoBarButtonDidPress:(id)sender {
-  // This press might have occurred after the user has already pressed a button,
-  // in which case the view has been detached from the delegate and this press
-  // should be ignored.
-  if (!self.delegate) {
+  if ([self shouldIgnoreUserInteraction])
     return;
-  }
 
   NSUInteger buttonId = base::mac::ObjCCastStrict<UIButton>(sender).tag;
   switch (buttonId) {
     case ConfirmInfoBarUITags::OK:
-      if (_confirmInfobarDelegate->Accept()) {
+      if (self.infoBarDelegate->Accept()) {
         self.delegate->RemoveInfoBar();
       }
       break;
     case ConfirmInfoBarUITags::CANCEL:
-      if (_confirmInfobarDelegate->Cancel()) {
+      if (self.infoBarDelegate->Cancel()) {
         self.delegate->RemoveInfoBar();
       }
       break;
     case ConfirmInfoBarUITags::CLOSE:
-      _confirmInfobarDelegate->InfoBarDismissed();
+      self.infoBarDelegate->InfoBarDismissed();
       self.delegate->RemoveInfoBar();
       break;
     default:
@@ -164,13 +162,11 @@ typedef NS_ENUM(NSInteger, ConfirmInfoBarUITags) {
 
 // Title link was clicked.
 - (void)infobarLinkDidPress:(NSUInteger)tag {
-  if (!self.delegate) {
+  if ([self shouldIgnoreUserInteraction])
     return;
-  }
 
   DCHECK(tag == ConfirmInfoBarUITags::TITLE_LINK);
-  _confirmInfobarDelegate->LinkClicked(
-      WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  self.infoBarDelegate->LinkClicked(WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
 @end

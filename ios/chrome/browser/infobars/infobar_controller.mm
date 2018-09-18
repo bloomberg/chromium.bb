@@ -22,6 +22,16 @@
 @implementation InfoBarController
 
 @synthesize delegate = _delegate;
+@synthesize infoBarDelegate = _infoBarDelegate;
+
+- (instancetype)initWithInfoBarDelegate:
+    (infobars::InfoBarDelegate*)infoBarDelegate {
+  self = [super init];
+  if (self) {
+    _infoBarDelegate = infoBarDelegate;
+  }
+  return self;
+}
 
 - (void)dealloc {
   [_infoBarView removeFromSuperview];
@@ -60,6 +70,12 @@
 - (void)detachView {
   [_infoBarView setSizingDelegate:nil];
   _delegate = nullptr;
+  _infoBarDelegate = nullptr;
+}
+
+- (BOOL)shouldIgnoreUserInteraction {
+  // Ignore user interaction if view is already detached or is about to.
+  return !_delegate || !_delegate->IsOwned() || !_infoBarDelegate;
 }
 
 #pragma mark - InfoBarViewDelegate
