@@ -62,6 +62,10 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
                     bool crop_to_square,
                     GetThumbnailCallback callback) override;
 
+  void CopyFile(const base::FilePath& source,
+                const base::FilePath& target,
+                CopyFileCallback callback) override;
+
   const base::FilePath mount_path_;
 
   std::map<base::FilePath, FileMetadata> metadata_;

@@ -43,6 +43,12 @@ interface DriveFs {
   // does not exist or does not have a thumbnail, |thumbnail| will be null.
   GetThumbnail(mojo_base.mojom.FilePath path, bool crop_to_square) => (
       array<uint8>? thumbnail);
+
+  // Copy a file at |source| to |target|. If |source| refers to a directory,
+  // kNotAFile is returned. |target| is the path to the desired output of the
+  // copy; its parent must be an existing directory.
+  CopyFile(mojo_base.mojom.FilePath source, mojo_base.mojom.FilePath target) =>
+      (FileError error);
 };
 
 // Implemented by Chrome, used from DriveFS.
