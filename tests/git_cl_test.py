@@ -24,7 +24,6 @@ import metrics
 # We have to disable monitoring before importing git_cl.
 metrics.DISABLE_METRICS_COLLECTION = True
 
-import gerrit_util
 import git_cl
 import git_common
 import git_footers
@@ -2104,18 +2103,6 @@ class TestGitCl(TestCase):
     cl = self._test_gerrit_ensure_authenticated_common(
         auth={}, skip_auth_check=True)
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
-
-  def test_gerrit_ensure_authenticated_bearer_token(self):
-    cl = self._test_gerrit_ensure_authenticated_common(auth={
-      'chromium.googlesource.com':
-          ('', None, 'secret'),
-      'chromium-review.googlesource.com':
-          ('', None, 'secret'),
-    })
-    self.assertIsNone(cl.EnsureAuthenticated(force=False))
-    header = gerrit_util.CookiesAuthenticator().get_auth_header(
-        'chromium.googlesource.com')
-    self.assertTrue('Bearer' in header)
 
   def test_cmd_set_commit_rietveld(self):
     self.mock(git_cl._RietveldChangelistImpl, 'SetFlags',
