@@ -1063,6 +1063,8 @@ jumbo_source_set("browser") {
     "loader/resource_requester_info.h",
     "loader/resource_scheduler_filter.cc",
     "loader/resource_scheduler_filter.h",
+    "loader/shared_cors_origin_access_list_impl.cc",
+    "loader/shared_cors_origin_access_list_impl.h",
     "loader/source_stream_to_data_pipe.cc",
     "loader/source_stream_to_data_pipe.h",
     "loader/stream_resource_handler.cc",

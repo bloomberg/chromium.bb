@@ -74,6 +74,8 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
             nullptr,
             nullptr,
             nullptr,
+            BrowserContext::GetSharedCorsOriginAccessList(
+                browser_context_.get()),
             base::Bind(&URLLoaderFactoryImplTest::GetContexts,
                        base::Unretained(this)),
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO))) {

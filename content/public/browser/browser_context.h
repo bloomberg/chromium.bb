@@ -77,6 +77,7 @@ class PermissionControllerDelegate;
 class PushMessagingService;
 class ResourceContext;
 class ServiceManagerConnection;
+class SharedCorsOriginAccessList;
 class SiteInstance;
 class StoragePartition;
 class SSLHostStateDelegate;
@@ -213,6 +214,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static service_manager::Connector* GetConnectorFor(
       BrowserContext* browser_context);
   static ServiceManagerConnection* GetServiceManagerConnectionFor(
+      BrowserContext* browser_context);
+
+  // Returns a SharedCorsOriginAccessList instance for the |browser_context|.
+  static SharedCorsOriginAccessList* GetSharedCorsOriginAccessList(
       BrowserContext* browser_context);
 
   BrowserContext();
