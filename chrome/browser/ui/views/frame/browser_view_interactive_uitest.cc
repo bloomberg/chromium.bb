@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/views/scoped_macviews_browser_mode.h"
@@ -75,6 +76,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
   chrome::ToggleFullscreenMode(browser());
   EXPECT_TRUE(browser_view->IsFullscreen());
 
+  bool top_view_in_browser_fullscreen = false;
 #if defined(OS_MACOSX)
   // The top view should show up by default.
   EXPECT_TRUE(browser_view->IsTabStripVisible());
@@ -93,15 +95,14 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
   // Test toggling toolbar while being in fullscreen mode.
   chrome::ToggleFullscreenToolbar(browser());
   EXPECT_TRUE(browser_view->IsFullscreen());
-  EXPECT_TRUE(browser_view->IsTabStripVisible());
+  top_view_in_browser_fullscreen = true;
 #else
   // In immersive fullscreen mode, the top view should show up; otherwise, it
   // always hides.
   if (browser_view->immersive_mode_controller()->IsEnabled())
-    EXPECT_TRUE(browser_view->IsTabStripVisible());
-  else
-    EXPECT_FALSE(browser_view->IsTabStripVisible());
+    top_view_in_browser_fullscreen = true;
 #endif
+  EXPECT_EQ(top_view_in_browser_fullscreen, browser_view->IsTabStripVisible());
 
   // Enter into tab fullscreen mode from browser fullscreen mode.
   FullscreenController* controller =
@@ -115,7 +116,19 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
   else
     EXPECT_FALSE(browser_view->IsTabStripVisible());
 
-  // Return back to regular mode.
+  // Return back to browser fullscreen mode.
+  content::NativeWebKeyboardEvent event(
+      blink::WebInputEvent::kKeyDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  event.windows_key_code = ui::VKEY_ESCAPE;
+  browser()->exclusive_access_manager()->HandleUserKeyEvent(event);
+  EXPECT_TRUE(browser_view->IsFullscreen());
+  EXPECT_EQ(top_view_in_browser_fullscreen, browser_view->IsTabStripVisible());
+  // This makes sure that the layout was updated accordingly.
+  EXPECT_EQ(top_view_in_browser_fullscreen,
+            browser_view->tabstrip()->visible());
+
+  // Return to regular mode.
   chrome::ToggleFullscreenMode(browser());
   EXPECT_FALSE(browser_view->IsFullscreen());
   EXPECT_TRUE(browser_view->IsTabStripVisible());
