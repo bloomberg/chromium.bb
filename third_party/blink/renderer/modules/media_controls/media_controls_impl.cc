@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_animated_arrow_container_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_button_panel_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_cast_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
@@ -368,6 +369,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       media_button_panel_(nullptr),
       loading_panel_(nullptr),
       picture_in_picture_button_(nullptr),
+      animated_arrow_container_element_(nullptr),
       cast_button_(nullptr),
       fullscreen_button_(nullptr),
       display_cutout_fullscreen_button_(nullptr),
@@ -1425,6 +1427,19 @@ void MediaControlsImpl::OnAccessibleFocus() {
   MaybeShow();
 }
 
+void MediaControlsImpl::ShowArrowAnimation(bool is_right) {
+  if (!animated_arrow_container_element_) {
+    animated_arrow_container_element_ =
+        new MediaControlAnimatedArrowContainerElement(*this);
+    ParserAppendChild(animated_arrow_container_element_);
+  }
+  MediaControlAnimatedArrowContainerElement::ArrowDirection direction =
+      (is_right)
+          ? MediaControlAnimatedArrowContainerElement::ArrowDirection::kRight
+          : MediaControlAnimatedArrowContainerElement::ArrowDirection::kLeft;
+  animated_arrow_container_element_->ShowArrowAnimation(direction);
+}
+
 void MediaControlsImpl::DefaultEventHandler(Event& event) {
   HTMLDivElement::DefaultEventHandler(event);
 
@@ -2068,6 +2083,7 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(mute_button_);
   visitor->Trace(volume_slider_);
   visitor->Trace(picture_in_picture_button_);
+  visitor->Trace(animated_arrow_container_element_);
   visitor->Trace(toggle_closed_captions_button_);
   visitor->Trace(fullscreen_button_);
   visitor->Trace(download_button_);

@@ -7,6 +7,8 @@ import("//tools/grit/grit_rule.gni")
 
 blink_modules_sources("media_controls") {
   sources = [
+    "elements/media_control_animated_arrow_container_element.cc",
+    "elements/media_control_animated_arrow_container_element.h",
     "elements/media_control_animation_event_listener.cc",
     "elements/media_control_animation_event_listener.h",
     "elements/media_control_button_panel_element.cc",

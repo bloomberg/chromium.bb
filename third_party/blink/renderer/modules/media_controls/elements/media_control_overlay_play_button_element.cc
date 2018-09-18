@@ -12,14 +12,12 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
-#include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_source.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
-#include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -50,66 +48,6 @@ const char kHiddenClassName[] = "hidden";
 
 namespace blink {
 
-MediaControlOverlayPlayButtonElement::AnimatedArrow::AnimatedArrow(
-    const AtomicString& id,
-    Document& document)
-    : HTMLDivElement(document) {
-  setAttribute("id", id);
-}
-
-void MediaControlOverlayPlayButtonElement::AnimatedArrow::HideInternal() {
-  DCHECK(!hidden_);
-  svg_container_->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-  hidden_ = true;
-}
-
-void MediaControlOverlayPlayButtonElement::AnimatedArrow::ShowInternal() {
-  DCHECK(hidden_);
-  hidden_ = false;
-
-  if (svg_container_) {
-    svg_container_->RemoveInlineStyleProperty(CSSPropertyDisplay);
-    return;
-  }
-
-  SetInnerHTMLFromString(MediaControlsResourceLoader::GetJumpSVGImage());
-
-  last_arrow_ = getElementById("arrow-3");
-  svg_container_ = getElementById("jump");
-
-  event_listener_ = new MediaControlAnimationEventListener(this);
-}
-
-void MediaControlOverlayPlayButtonElement::AnimatedArrow::
-    OnAnimationIteration() {
-  counter_--;
-
-  if (counter_ == 0)
-    HideInternal();
-}
-
-void MediaControlOverlayPlayButtonElement::AnimatedArrow::Show() {
-  if (hidden_)
-    ShowInternal();
-
-  counter_++;
-}
-
-Element&
-MediaControlOverlayPlayButtonElement::AnimatedArrow::WatchedAnimationElement()
-    const {
-  return *last_arrow_;
-}
-
-void MediaControlOverlayPlayButtonElement::AnimatedArrow::Trace(
-    Visitor* visitor) {
-  MediaControlAnimationEventListener::Observer::Trace(visitor);
-  HTMLDivElement::Trace(visitor);
-  visitor->Trace(last_arrow_);
-  visitor->Trace(svg_container_);
-  visitor->Trace(event_listener_);
-}
-
 // The DOM structure looks like:
 //
 // MediaControlOverlayPlayButtonElement
@@ -123,9 +61,7 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
       tap_timer_(GetDocument().GetTaskRunner(TaskType::kMediaElementEvent),
                  this,
                  &MediaControlOverlayPlayButtonElement::TapTimerFired),
-      internal_button_(nullptr),
-      left_jump_arrow_(nullptr),
-      right_jump_arrow_(nullptr) {
+      internal_button_(nullptr) {
   EnsureUserAgentShadowRoot();
   setType(InputTypeNames::button);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button"));
@@ -180,40 +116,11 @@ void MediaControlOverlayPlayButtonElement::MaybePlayPause() {
 }
 
 void MediaControlOverlayPlayButtonElement::MaybeJump(int seconds) {
-  // Load the arrow icons and associate CSS the first time we jump.
-  if (!left_jump_arrow_) {
-    DCHECK(!right_jump_arrow_);
-    ShadowRoot* shadow_root = GetShadowRoot();
-
-    // This stylesheet element and will contain rules that are specific to the
-    // jump arrows. The shadow DOM protects these rules from the parent DOM
-    // from bleeding across the shadow DOM boundary.
-    auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
-    style->setTextContent(
-        MediaControlsResourceLoader::GetOverlayPlayStyleSheet());
-    shadow_root->ParserAppendChild(style);
-
-    // Insert the left jump arrow to the left of the play button.
-    left_jump_arrow_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
-        "left-arrow", GetDocument());
-    shadow_root->ParserInsertBefore(left_jump_arrow_,
-                                    *shadow_root->firstChild());
-
-    // Insert the right jump arrow to the right of the play button.
-    right_jump_arrow_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
-        "right-arrow", GetDocument());
-    shadow_root->ParserAppendChild(right_jump_arrow_);
-  }
-
-  DCHECK(left_jump_arrow_ && right_jump_arrow_);
   double new_time = std::max(0.0, MediaElement().currentTime() + seconds);
   new_time = std::min(new_time, MediaElement().duration());
   MediaElement().setCurrentTime(new_time);
 
-  if (seconds > 0)
-    right_jump_arrow_->Show();
-  else
-    left_jump_arrow_->Show();
+  GetMediaControls().ShowArrowAnimation(seconds > 0);
 }
 
 void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event& event) {
@@ -341,8 +248,6 @@ void MediaControlOverlayPlayButtonElement::TapTimerFired(TimerBase*) {
 void MediaControlOverlayPlayButtonElement::Trace(blink::Visitor* visitor) {
   MediaControlInputElement::Trace(visitor);
   visitor->Trace(internal_button_);
-  visitor->Trace(left_jump_arrow_);
-  visitor->Trace(right_jump_arrow_);
 }
 
 }  // namespace blink

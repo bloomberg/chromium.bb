@@ -42,6 +42,7 @@ class MediaControlsDisplayCutoutDelegate;
 class MediaControlsOrientationLockDelegate;
 class MediaControlsRotateToFullscreenDelegate;
 class MediaControlsWindowEventListener;
+class MediaControlAnimatedArrowContainerElement;
 class MediaControlButtonPanelElement;
 class MediaControlCastButtonElement;
 class MediaControlCurrentTimeDisplayElement;
@@ -189,6 +190,10 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // accessibility tool. This is meant to be replaced by AOM when the event will
   // be exposed to the platform.
   void OnAccessibleFocus();
+
+  // TODO(884770): This should only be here until the double-tap-to-jump logic
+  // is moved to the controls from the overlay play button.
+  void ShowArrowAnimation(bool);
 
  private:
   // MediaControlsMediaEventListener is a component that is listening to events
@@ -347,6 +352,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   Member<MediaControlButtonPanelElement> media_button_panel_;
   Member<MediaControlLoadingPanelElement> loading_panel_;
   Member<MediaControlPictureInPictureButtonElement> picture_in_picture_button_;
+  Member<MediaControlAnimatedArrowContainerElement>
+      animated_arrow_container_element_;
 
   Member<MediaControlCastButtonElement> cast_button_;
   Member<MediaControlFullscreenButtonElement> fullscreen_button_;

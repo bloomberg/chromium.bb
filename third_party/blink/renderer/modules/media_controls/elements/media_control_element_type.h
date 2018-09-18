@@ -39,6 +39,7 @@ enum MediaControlElementType {
   kMediaEnterPictureInPictureButton,
   kMediaExitPictureInPictureButton,
   kMediaDisplayCutoutFullscreenButton,
+  kMediaAnimatedArrowContainer,
 };
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ELEMENT_TYPE_H_

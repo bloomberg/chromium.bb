@@ -37,8 +37,8 @@ class MediaControlsResourceLoader
   // Returns the scrubbing message stylesheet content as a string.
   static String GetScrubbingMessageStyleSheet();
 
-  // Returns the overlay play button stylesheet content as a string.
-  static String GetOverlayPlayStyleSheet();
+  // Returns the animated arrow stylesheet content as a string.
+  static String GetAnimatedArrowStyleSheet();
 
   // Returns the specific stylesheet used for media related interstitials.
   static String GetMediaInterstitialsStyleSheet();
