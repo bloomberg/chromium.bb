@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
@@ -70,10 +71,10 @@ class ScriptTrackerTest : public testing::Test,
     tracker_.SetAndCheckScripts(std::move(scripts));
   }
 
-  static void AddScript(SupportsScriptResponseProto* response,
-                        const std::string& name,
-                        const std::string& path,
-                        const std::string& selector) {
+  static SupportedScriptProto* AddScript(SupportsScriptResponseProto* response,
+                                         const std::string& name,
+                                         const std::string& path,
+                                         const std::string& selector) {
     SupportedScriptProto* script = response->add_scripts();
     script->set_path(path);
     script->mutable_presentation()->set_name(name);
@@ -81,6 +82,13 @@ class ScriptTrackerTest : public testing::Test,
         ->mutable_precondition()
         ->add_elements_exist()
         ->add_selectors(selector);
+    return script;
+  }
+
+  static SupportedScriptProto* AddRunnableScript(
+      SupportsScriptResponseProto* response,
+      const std::string& name_and_path) {
+    return AddScript(response, name_and_path, name_and_path, "exists");
   }
 
   const std::vector<ScriptHandle>& runnable_scripts() {

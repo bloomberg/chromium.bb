@@ -19,6 +19,10 @@ struct ScriptHandle {
 
   std::string name;
   std::string path;
+
+  // When set to true this script can be run in 'autostart mode'. Script won't
+  // be shown.
+  bool autostart;
 };
 
 // Script represents a sequence of actions.

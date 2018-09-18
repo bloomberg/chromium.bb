@@ -53,6 +53,7 @@ bool ProtocolUtils::ParseScripts(
 
     const auto& presentation = script_proto.presentation();
     script->handle.name = presentation.name();
+    script->handle.autostart = presentation.autostart();
     script->precondition =
         ScriptPrecondition::FromProto(presentation.precondition());
     script->priority = presentation.priority();
