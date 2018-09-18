@@ -140,10 +140,12 @@ bool FakeBaseTabStripController::ShouldDrawStrokes() const {
   return false;
 }
 
-void FakeBaseTabStripController::OnStartedDraggingTabs() {
-}
+void FakeBaseTabStripController::OnStartedDraggingTabs() {}
 
-void FakeBaseTabStripController::OnStoppedDraggingTabs() {
+void FakeBaseTabStripController::OnStoppedDraggingTabs() {}
+
+bool FakeBaseTabStripController::IsFrameCondensed() const {
+  return false;
 }
 
 bool FakeBaseTabStripController::HasVisibleBackgroundTabShapes() const {

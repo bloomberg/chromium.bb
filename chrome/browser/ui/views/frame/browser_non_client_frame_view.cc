@@ -101,6 +101,10 @@ bool BrowserNonClientFrameView::ShouldHideTopUIForFullscreen() const {
   return frame_->IsFullscreen();
 }
 
+bool BrowserNonClientFrameView::IsFrameCondensed() const {
+  return frame_ && (frame_->IsMaximized() || frame_->IsFullscreen());
+}
+
 bool BrowserNonClientFrameView::HasClientEdge() const {
   return !MD::IsRefreshUi();
 }

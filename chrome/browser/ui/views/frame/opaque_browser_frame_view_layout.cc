@@ -144,14 +144,12 @@ gfx::Rect OpaqueBrowserFrameViewLayout::GetWindowBoundsForClientBounds(
 }
 
 int OpaqueBrowserFrameViewLayout::FrameBorderThickness(bool restored) const {
-  return (!restored && (IsTitleBarCondensed() || delegate_->IsFullscreen())) ?
-      0 : kFrameBorderThickness;
+  return !restored && delegate_->IsFrameCondensed() ? 0 : kFrameBorderThickness;
 }
 
 int OpaqueBrowserFrameViewLayout::FrameTopBorderThickness(bool restored) const {
   int thickness = FrameBorderThickness(restored);
-  if (MD::IsRefreshUi() &&
-      (restored || (!IsTitleBarCondensed() && !delegate_->IsFullscreen())))
+  if (MD::IsRefreshUi() && (restored || !delegate_->IsFrameCondensed()))
     thickness += kRefreshNonClientExtraTopThickness;
   return thickness;
 }
@@ -163,8 +161,7 @@ bool OpaqueBrowserFrameViewLayout::HasClientEdge() const {
 int OpaqueBrowserFrameViewLayout::NonClientBorderThickness() const {
   const int frame = FrameBorderThickness(false);
   // When we fill the screen, we don't show a client edge.
-  return (!HasClientEdge() || IsTitleBarCondensed() ||
-          delegate_->IsFullscreen())
+  return !HasClientEdge() || delegate_->IsFrameCondensed()
              ? frame
              : (frame + views::NonClientFrameView::kClientEdgeThickness);
 }
@@ -194,7 +191,7 @@ int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {
 
 int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
   const int top = NonClientTopHeight(restored);
-  return (!restored && (IsTitleBarCondensed() || delegate_->IsFullscreen()))
+  return !restored || !delegate_->IsFrameCondensed()
              ? top
              : (top + GetNonClientRestoredExtraThickness());
 }
@@ -202,17 +199,18 @@ int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
 int OpaqueBrowserFrameViewLayout::TitlebarTopThickness(bool restored) const {
   if (!delegate_->UseCustomFrame())
     return 0;
-  return (restored || !IsTitleBarCondensed()) ?
-      kTitlebarTopEdgeThickness : FrameBorderThickness(false);
+  return restored || !delegate_->IsFrameCondensed()
+             ? kTitlebarTopEdgeThickness
+             : FrameBorderThickness(false);
 }
 
 int OpaqueBrowserFrameViewLayout::DefaultCaptionButtonY(bool restored) const {
   // Maximized buttons start at window top, since the window has no border. This
   // offset is for the image (the actual clickable bounds extend all the way to
   // the top to take Fitts' Law into account).
-  const int frame = (!restored && IsTitleBarCondensed()) ?
-      FrameBorderThickness(false) :
-      views::NonClientFrameView::kFrameShadowThickness;
+  const int frame = !restored && delegate_->IsFrameCondensed()
+                        ? FrameBorderThickness(false)
+                        : views::NonClientFrameView::kFrameShadowThickness;
   return frame + extra_caption_y_;
 }
 
@@ -266,9 +264,9 @@ int OpaqueBrowserFrameViewLayout::GetWindowCaptionSpacing(
     if (is_leading_button) {
       // If we're the first button and maximized, add width to the right
       // hand side of the screen.
-      return (IsTitleBarCondensed() && is_leading_button)
-                 ? (kFrameBorderThickness -
-                    views::NonClientFrameView::kFrameShadowThickness)
+      return delegate_->IsFrameCondensed() && is_leading_button
+                 ? kFrameBorderThickness -
+                       views::NonClientFrameView::kFrameShadowThickness
                  : 0;
     }
     if (forced_window_caption_spacing_ >= 0)
@@ -276,13 +274,6 @@ int OpaqueBrowserFrameViewLayout::GetWindowCaptionSpacing(
     return kCaptionButtonSpacing;
   }
   return 0;
-}
-
-bool OpaqueBrowserFrameViewLayout::IsTitleBarCondensed() const {
-  // If there are no caption buttons, there is no need to have an uncondensed
-  // title bar. If the window is maximized, the title bar is condensed
-  // regardless of whether there are caption buttons.
-  return !delegate_->ShouldShowCaptionButtons() || delegate_->IsMaximized();
 }
 
 int OpaqueBrowserFrameViewLayout::GetNonClientRestoredExtraThickness() const {
@@ -315,14 +306,14 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
     button_width_with_offset += kCaptionSpacing;
 
   const int button_x = available_space_trailing_x_ - button_width_with_offset;
-  const int button_y = DefaultCaptionButtonY(!IsTitleBarCondensed());
+  const int button_y = DefaultCaptionButtonY(!delegate_->IsFrameCondensed());
 
   minimum_size_for_buttons_ += button_width_with_offset;
   available_space_trailing_x_ -= button_width_with_offset;
 
   // In non-maximized mode, allow the new tab button to completely slide under
   // the avatar button.
-  if (!IsTitleBarCondensed()) {
+  if (!delegate_->IsFrameCondensed()) {
     available_space_trailing_x_ +=
         delegate_->GetNewTabButtonPreferredSize().width() + kCaptionSpacing;
   }
@@ -353,8 +344,9 @@ int OpaqueBrowserFrameViewLayout::TabStripCaptionSpacing() const {
   if (MD::IsRefreshUi())
     return 0;
 
-  return (has_trailing_buttons_ && IsTitleBarCondensed()) ?
-      kNewTabCaptionCondensedSpacing : kCaptionSpacing;
+  return has_trailing_buttons_ && delegate_->IsFrameCondensed()
+             ? kNewTabCaptionCondensedSpacing
+             : kCaptionSpacing;
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutWindowControls(views::View* host) {
@@ -554,7 +546,7 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
   // side of the caption buttons.  In maximized mode we extend buttons to the
   // screen top and the rightmost button to the screen right (or leftmost button
   // to the screen left, for left-aligned buttons) to obey Fitts' Law.
-  bool title_bar_condensed = IsTitleBarCondensed();
+  bool is_frame_condensed = delegate_->IsFrameCondensed();
 
   // When we are the first button on the leading side and are the close
   // button, we must flip ourselves, because the close button assets have
@@ -571,9 +563,9 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
       available_space_leading_x_ += button_start_spacing;
       minimum_size_for_buttons_ += button_start_spacing;
 
-      bool top_spacing_clickable = title_bar_condensed;
+      bool top_spacing_clickable = is_frame_condensed;
       bool start_spacing_clickable =
-          title_bar_condensed && !has_leading_buttons_;
+          is_frame_condensed && !has_leading_buttons_;
       button->SetBounds(
           available_space_leading_x_ - (start_spacing_clickable
                                             ? button_start_spacing + extra_width
@@ -598,9 +590,9 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
       available_space_trailing_x_ -= button_start_spacing;
       minimum_size_for_buttons_ += button_start_spacing;
 
-      bool top_spacing_clickable = title_bar_condensed;
+      bool top_spacing_clickable = is_frame_condensed;
       bool start_spacing_clickable =
-          title_bar_condensed && !has_trailing_buttons_;
+          is_frame_condensed && !has_trailing_buttons_;
       button->SetBounds(
           available_space_trailing_x_ - button_size.width(),
           top_spacing_clickable ? 0 : caption_y,

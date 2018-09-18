@@ -131,10 +131,6 @@ class TabStrip : public views::View,
   // Returns the bounds of the new tab button.
   gfx::Rect new_tab_button_bounds() const { return new_tab_button_bounds_; }
 
-  // Returns true if the new tab button should be sized to the top of the tab
-  // strip.
-  bool SizeTabButtonToTopOfTabStrip();
-
   // Starts highlighting the tab at the specified index.
   void StartHighlight(int model_index);
 
