@@ -420,14 +420,24 @@ void InstantService::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED:
-      SendNewTabPageURLToRenderer(
-          content::Source<content::RenderProcessHost>(source).ptr());
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
+      content::RenderProcessHost* rph =
+          content::Source<content::RenderProcessHost>(source).ptr();
+      Profile* renderer_profile =
+          static_cast<Profile*>(rph->GetBrowserContext());
+      if (profile_ == renderer_profile)
+        SendNewTabPageURLToRenderer(rph);
       break;
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-      OnRendererProcessTerminated(
-          content::Source<content::RenderProcessHost>(source)->GetID());
+    }
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
+      content::RenderProcessHost* rph =
+          content::Source<content::RenderProcessHost>(source).ptr();
+      Profile* renderer_profile =
+          static_cast<Profile*>(rph->GetBrowserContext());
+      if (profile_ == renderer_profile)
+        OnRendererProcessTerminated(rph->GetID());
       break;
+    }
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       BuildThemeInfo();
       NotifyAboutThemeInfo();
