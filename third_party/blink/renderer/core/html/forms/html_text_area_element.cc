@@ -394,7 +394,7 @@ void HTMLTextAreaElement::SetValueCommon(
     TextControlSetValueSelection selection) {
   // Code elsewhere normalizes line endings added by the user via the keyboard
   // or pasting.  We normalize line endings coming from JavaScript here.
-  String normalized_value = new_value.IsNull() ? "" : new_value;
+  String normalized_value = new_value;
   normalized_value.Replace("\r\n", "\n");
   normalized_value.Replace('\r', '\n');
 
