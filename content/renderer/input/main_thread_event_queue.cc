@@ -316,18 +316,32 @@ void MainThreadEventQueue::HandleEvent(
     event_callback = std::move(callback);
   }
 
-  // TODO(nzolghadr): For now only expose raw move events for mouse.
-  // Then we'll need to extend it to touch events as well.
-  if (has_pointerrawmove_handlers_ &&
-      event->GetType() == WebInputEvent::kMouseMove) {
-    ui::WebScopedInputEvent raw_event(new blink::WebPointerEvent(
-        WebInputEvent::kPointerRawMove,
-        *(static_cast<blink::WebMouseEvent*>(event.get()))));
-    std::unique_ptr<QueuedWebInputEvent> raw_queued_event(
-        new QueuedWebInputEvent(std::move(raw_event), latency, false,
-                                HandledEventCallback(), false));
+  if (has_pointerrawmove_handlers_) {
+    if (event->GetType() == WebInputEvent::kMouseMove) {
+      ui::WebScopedInputEvent raw_event(new blink::WebPointerEvent(
+          WebInputEvent::kPointerRawMove,
+          *(static_cast<blink::WebMouseEvent*>(event.get()))));
+      std::unique_ptr<QueuedWebInputEvent> raw_queued_event(
+          new QueuedWebInputEvent(std::move(raw_event), latency, false,
+                                  HandledEventCallback(), false));
 
-    QueueEvent(std::move(raw_queued_event));
+      QueueEvent(std::move(raw_queued_event));
+    } else if (event->GetType() == WebInputEvent::kTouchMove) {
+      const blink::WebTouchEvent& touch_event =
+          *static_cast<const blink::WebTouchEvent*>(event.get());
+      for (unsigned i = 0; i < touch_event.touches_length; ++i) {
+        const blink::WebTouchPoint& touch_point = touch_event.touches[i];
+        if (touch_point.state == blink::WebTouchPoint::kStateMoved) {
+          ui::WebScopedInputEvent raw_event(
+              new blink::WebPointerEvent(touch_event, touch_point));
+          raw_event->SetType(WebInputEvent::kPointerRawMove);
+          std::unique_ptr<QueuedWebInputEvent> raw_queued_event(
+              new QueuedWebInputEvent(std::move(raw_event), latency, false,
+                                      HandledEventCallback(), false));
+          QueueEvent(std::move(raw_queued_event));
+        }
+      }
+    }
   }
 
   std::unique_ptr<QueuedWebInputEvent> queued_event(new QueuedWebInputEvent(
