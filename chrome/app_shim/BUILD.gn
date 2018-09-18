@@ -21,6 +21,7 @@ source_set("app_shim") {
     "//ipc",
     "//mojo/core/embedder",
     "//ui/base",
+    "//ui/views:views",
   ]
 }
 
