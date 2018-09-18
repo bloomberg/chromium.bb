@@ -4561,7 +4561,8 @@ const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
     {"901", UNKNOWN_TYPE},
 };
 
-// Tests that DeterminePossibleFieldTypesForUpload makes accurate matches.
+// Tests that DeterminePossibleFieldTypesForUpload finds accurate possible types
+// and validities.
 TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
   // Unpack the test paramters
   const auto& test_case = std::get<0>(GetParam());
@@ -4675,6 +4676,23 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
     EXPECT_EQ(*possible_types.begin(), vote_using_invalid_profile_data
                                            ? test_case.field_type
                                            : UNKNOWN_TYPE);
+
+    ServerFieldTypeValidityStatesMap possible_types_validities =
+        form_structure.field(0)->possible_types_validities();
+    bool has_possible_types_validities =
+        field_type_group != CREDIT_CARD &&
+        (vote_using_invalid_profile_data ||
+         validity_state != AutofillProfile::INVALID);
+    EXPECT_EQ(has_possible_types_validities ? 1U : 0U,
+              possible_types_validities.size());
+    if (has_possible_types_validities) {
+      EXPECT_NE(possible_types_validities.end(),
+                possible_types_validities.find(test_case.field_type));
+      EXPECT_EQ(possible_types_validities[test_case.field_type][0],
+                (validation_source == AutofillProfile::SERVER)
+                    ? validity_state
+                    : AutofillProfile::UNVALIDATED);
+    }
   } else {
     EXPECT_EQ(*possible_types.begin(), test_case.field_type);
   }
@@ -4739,6 +4757,106 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload_IsTriggered) {
 
   autofill_manager_->SetExpectedSubmittedFieldTypes(expected_types);
   FormSubmitted(form);
+}
+
+// Test that the possible field types with multiple validities are determined
+// correctly.
+TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesWithMultipleValidities) {
+  // Set up the user's profiles.
+  std::vector<AutofillProfile> profiles;
+  {
+    AutofillProfile profile;
+    test::SetProfileInfo(&profile, "Elvis", "Aaron", "Presley",
+                         "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
+                         "", "Memphis", "Tennessee", "38116", "US",
+                         "(234) 567-8901");
+    profile.set_guid("00000000-0000-0000-0000-000000000001");
+    profile.SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::VALID,
+                             AutofillProfile::SERVER);
+    profiles.push_back(profile);
+  }
+  {
+    AutofillProfile profile;
+    test::SetProfileInfo(&profile, "Alice", "", "Munro", "munro@gmail.com", "",
+                         "1331 W Georgia", "", "Vancouver", "Tennessee",
+                         "V4D 4S4", "CA", "(778) 567-8901");
+    profile.set_guid("00000000-0000-0000-0000-000000000002");
+    profile.SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::INVALID,
+                             AutofillProfile::SERVER);
+    profiles.push_back(profile);
+  }
+
+  // Set up the test cases:
+  typedef struct {
+    std::string input_value;
+    ServerFieldType field_type;
+    std::vector<AutofillProfile::ValidityState> expected_validity_states;
+  } TestFieldData;
+
+  std::vector<TestFieldData> test_cases[2];
+  // Tennessee appears in both of the user's profile as ADDRESS_HOME_STATE. In
+  // the first one, it's VALID, and for the other, it's INVALID. Therefore, the
+  // possible_field_types would only include the type ADDRESS_HOME_STATE, and
+  // the corresponding validity of that type would include both VALID and
+  // INVALID.
+  test_cases[0].push_back({"Tennessee",
+                           ADDRESS_HOME_STATE,
+                           {AutofillProfile::VALID, AutofillProfile::INVALID}});
+  // Alice appears only in the second profile as a NAME_FIRST, and it's
+  // UNVALIDATED.
+  test_cases[1].push_back(
+      {"Alice", NAME_FIRST, {AutofillProfile::UNVALIDATED}});
+
+  for (const std::vector<TestFieldData>& test_fields : test_cases) {
+    FormData form;
+    form.name = ASCIIToUTF16("MyForm");
+    form.origin = GURL("http://myform.com/form.html");
+    form.action = GURL("http://myform.com/submit.html");
+
+    // Create the form fields specified in the test case.
+    FormFieldData field;
+    ServerFieldTypeSet possible_types;
+    ServerFieldTypeValidityStatesMap possible_types_validities;
+    for (const TestFieldData& test_field : test_fields) {
+      test::CreateTestFormField("", "1", "", "text", &field);
+      field.value = ASCIIToUTF16(test_field.input_value);
+      form.fields.push_back(field);
+    }
+
+    // Assign the specified predicted type for each field in the test case.
+    FormStructure form_structure(form);
+    for (size_t i = 0; i < test_fields.size(); ++i) {
+      form_structure.field(i)->set_server_type(test_fields[i].field_type);
+    }
+
+    AutofillManager::DeterminePossibleFieldTypesForUpload(profiles, {}, "en-us",
+                                                          &form_structure);
+
+    ASSERT_EQ(test_fields.size(), form_structure.field_count());
+
+    for (size_t i = 0; i < test_fields.size(); ++i) {
+      possible_types = form_structure.field(i)->possible_types();
+      // For both cases we only expect one possible type.
+      EXPECT_EQ(1U, possible_types.size());
+      // Expect to see the field_type as the possible type.
+      EXPECT_NE(possible_types.end(),
+                possible_types.find(test_fields[i].field_type));
+
+      // Expect the same for possible_types_validities.
+      possible_types_validities =
+          form_structure.field(i)->possible_types_validities();
+      EXPECT_EQ(1U, possible_types_validities.size());
+      EXPECT_NE(possible_types_validities.end(),
+                possible_types_validities.find(test_fields[i].field_type));
+      // Check for the expected validity states for the possible type.
+      EXPECT_EQ(test_fields[i].expected_validity_states.size(),
+                possible_types_validities[test_fields[i].field_type].size());
+      for (size_t j = 0; j < test_fields[i].expected_validity_states.size();
+           ++j)
+        EXPECT_EQ(possible_types_validities[test_fields[i].field_type][j],
+                  test_fields[i].expected_validity_states[j]);
+    }
+  }
 }
 
 // Tests that DisambiguateUploadTypes makes the correct choices.

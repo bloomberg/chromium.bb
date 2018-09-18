@@ -620,6 +620,8 @@ class AutofillManager : public AutofillHandler,
                            DisabledAutofillDispatchesError);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DetermineHeuristicsWithOverallPrediction);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           DeterminePossibleFieldTypesWithMultipleValidities);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressFilledFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressSubmittedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressWillSubmitFormEvents);

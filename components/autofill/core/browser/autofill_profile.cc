@@ -280,6 +280,7 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   server_id_ = profile.server_id();
   has_converted_ = profile.has_converted();
   SetClientValidityFromBitfieldValue(profile.GetClientValidityBitfieldValue());
+  server_validity_states_ = profile.GetServerValidityMap();
 
   return *this;
 }
@@ -308,6 +309,43 @@ void AutofillProfile::GetMatchingTypes(
         continue;
     }
     matching_types->insert(type);
+  }
+}
+
+void AutofillProfile::GetMatchingTypesAndValidities(
+    const base::string16& text,
+    const std::string& app_locale,
+    ServerFieldTypeSet* matching_types,
+    std::map<ServerFieldType, AutofillProfile::ValidityState>*
+        matching_types_validities) const {
+  if (!matching_types && !matching_types_validities)
+    return;
+
+  ServerFieldTypeSet matching_types_in_this_profile;
+  FormGroupList info = FormGroups();
+  for (const auto* form_group : info) {
+    form_group->GetMatchingTypes(text, app_locale,
+                                 &matching_types_in_this_profile);
+  }
+
+  for (auto type : matching_types_in_this_profile) {
+    if (GetValidityState(type, CLIENT) == INVALID ||
+        GetValidityState(type, SERVER) == INVALID ||
+        IsAnInvalidPhoneNumber(type)) {
+      bool vote_using_invalid_data = base::FeatureList::IsEnabled(
+          features::kAutofillVoteUsingInvalidProfileData);
+      UMA_HISTOGRAM_BOOLEAN("Autofill.InvalidProfileData.UsedForMetrics",
+                            vote_using_invalid_data);
+      if (!vote_using_invalid_data)
+        continue;
+    }
+    if (matching_types_validities) {
+      // TODO(crbug.com/879655): Set the client validities and look them up when
+      // the server validities are not available.
+      (*matching_types_validities)[type] = GetValidityState(type, SERVER);
+    }
+    if (matching_types)
+      matching_types->insert(type);
   }
 }
 
@@ -825,6 +863,20 @@ void AutofillProfile::SetValidityState(ServerFieldType type,
   }
   DCHECK_EQ(SERVER, validation_source);
   server_validity_states_[type] = validity;
+}
+
+void AutofillProfile::UpdateServerValidityMap(
+    const ProfileValidityMap& validity_map) {
+  server_validity_states_.clear();
+
+  const auto& field_validity_states = validity_map.field_validity_states();
+  for (auto current_pair = field_validity_states.begin();
+       current_pair != field_validity_states.end(); ++current_pair) {
+    const auto& field_type = static_cast<ServerFieldType>(current_pair->first);
+    const auto& field_validity =
+        static_cast<ValidityState>(current_pair->second);
+    server_validity_states_[field_type] = field_validity;
+  }
 }
 
 // static

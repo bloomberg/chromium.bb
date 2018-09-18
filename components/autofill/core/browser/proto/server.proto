@@ -279,8 +279,8 @@ message AutofillUploadContents {
     optional VoteType vote_type = 23;
 
     message AutofillTypeValiditiesPair {
-      required fixed32 type = 1;
-      repeated fixed32 validity = 2;
+      required int32 type = 1;
+      repeated int32 validity = 2;
     }
     repeated AutofillTypeValiditiesPair autofill_type_validities = 24;
   }
@@ -362,7 +362,7 @@ message ProfileValidityMap {
   // from the AutofillProfile::ValidityState. Plain integers are used
   // instead of enums because proto2 treats unknown enum values as unknown
   // fields, which is confusing when the enums are in maps.
-  map<fixed32, fixed32> field_validity_states = 1;
+  map<int32, int32> field_validity_states = 1;
 }
 
 // Map from profile GUIDs to profile validity maps for that profile. Each

@@ -1156,6 +1156,16 @@ std::vector<AutofillProfile*> PersonalDataManager::GetProfiles() const {
   return result;
 }
 
+void PersonalDataManager::UpdateProfilesValidityMapsIfNeeded(
+    std::vector<AutofillProfile*>& profiles) {
+  if (!profile_validities_need_update)
+    return;
+  profile_validities_need_update = false;
+  for (auto* profile : profiles) {
+    profile->UpdateServerValidityMap(GetProfileValidityByGUID(profile->guid()));
+  }
+}
+
 std::vector<AutofillProfile*> PersonalDataManager::GetServerProfiles() const {
   std::vector<AutofillProfile*> result;
   if (!IsAutofillProfileEnabled())
@@ -1299,6 +1309,8 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
           AutofillClock::Now() - kDisusedProfileTimeDelta;
       RemoveProfilesNotUsedSinceTimestamp(min_last_used, &profiles);
     }
+    // We need the updated information on the validity states of the profiles.
+    UpdateProfilesValidityMapsIfNeeded(profiles);
     MaybeRemoveInvalidSuggestions(type, &profiles);
   }
 
@@ -1600,18 +1612,22 @@ void PersonalDataManager::MoveJapanCityToStreetAddress() {
 }
 
 const ProfileValidityMap& PersonalDataManager::GetProfileValidityByGUID(
-    std::string& guid) {
+    const std::string& guid) {
   static const ProfileValidityMap& empty_validity_map = ProfileValidityMap();
   if (!synced_profile_validity_) {
+    profile_validities_need_update = true;
     synced_profile_validity_ = std::make_unique<UserProfileValidityMap>();
     if (!synced_profile_validity_->ParseFromString(
             ::autofill::prefs::GetAllProfilesValidityMapsEncodedString(
                 pref_service_)))
       return empty_validity_map;
   }
+
   auto it = synced_profile_validity_->profile_validity().find(guid);
-  if (it != synced_profile_validity_->profile_validity().end())
+  if (it != synced_profile_validity_->profile_validity().end()) {
     return it->second;
+  }
+
   return empty_validity_map;
 }
 
