@@ -4,12 +4,25 @@
 
 #include "net/third_party/quic/core/quic_unacked_packet_map.h"
 
+#include <limits>
+#include <type_traits>
+
 #include "net/third_party/quic/core/quic_connection_stats.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 
 namespace quic {
+
+namespace {
+bool WillStreamFrameLengthSumWrapAround(QuicPacketLength lhs,
+                                        QuicPacketLength rhs) {
+  static_assert(
+      std::is_unsigned<QuicPacketLength>::value,
+      "This function assumes QuicPacketLength is an unsigned integer type.");
+  return std::numeric_limits<QuicPacketLength>::max() - lhs < rhs;
+}
+}  // namespace
 
 QuicUnackedPacketMap::QuicUnackedPacketMap()
     : largest_sent_packet_(0),
@@ -418,7 +431,14 @@ void QuicUnackedPacketMap::MaybeAggregateAckedStreamFrame(
         frame.type == STREAM_FRAME &&
         frame.stream_frame.stream_id == aggregated_stream_frame_.stream_id &&
         frame.stream_frame.offset == aggregated_stream_frame_.offset +
-                                         aggregated_stream_frame_.data_length;
+                                         aggregated_stream_frame_.data_length &&
+        // We would like to increment aggregated_stream_frame_.data_length by
+        // frame.stream_frame.data_length, so we need to make sure their sum is
+        // representable by QuicPacketLength, which is the type of the former.
+        !WillStreamFrameLengthSumWrapAround(
+            aggregated_stream_frame_.data_length,
+            frame.stream_frame.data_length);
+
     if (can_aggregate) {
       // Aggregate stream frame.
       aggregated_stream_frame_.data_length += frame.stream_frame.data_length;

@@ -38,11 +38,11 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
   void OnDecryptedPacket(EncryptionLevel level) override {}
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
+  bool OnCryptoFrame(const QuicCryptoFrame& frame) override;
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override;
-  bool OnAckRange(QuicPacketNumber start,
-                  QuicPacketNumber end,
-                  bool last_range) override;
+  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override;
+  bool OnAckFrameEnd(QuicPacketNumber start) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
   bool OnPingFrame(const QuicPingFrame& frame) override;
   bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
@@ -140,14 +140,22 @@ bool ChloFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
   return true;
 }
 
+bool ChloFramerVisitor::OnCryptoFrame(const QuicCryptoFrame& frame) {
+  // TODO(nharper): Implement.
+  return false;
+}
+
 bool ChloFramerVisitor::OnAckFrameStart(QuicPacketNumber /*largest_acked*/,
                                         QuicTime::Delta /*ack_delay_time*/) {
   return true;
 }
 
 bool ChloFramerVisitor::OnAckRange(QuicPacketNumber /*start*/,
-                                   QuicPacketNumber /*end*/,
-                                   bool /*last_range*/) {
+                                   QuicPacketNumber /*end*/) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnAckFrameEnd(QuicPacketNumber /*start*/) {
   return true;
 }
 

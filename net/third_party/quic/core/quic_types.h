@@ -184,6 +184,7 @@ enum QuicFrameType : uint8_t {
   PATH_CHALLENGE_FRAME,
   STOP_SENDING_FRAME,
   MESSAGE_FRAME,
+  CRYPTO_FRAME,
 
   NUM_FRAME_TYPES
 };
@@ -217,6 +218,7 @@ enum QuicIetfFrameType : uint8_t {
   // whether the frame is a stream frame or not, and then examine each
   // bit specifically when/as needed.
   IETF_STREAM = 0x10,
+  IETF_CRYPTO = 0x18,
   // MESSAGE frame type is not yet determined, use 0x2x temporarily to give
   // stream frame some wiggle room.
   IETF_EXTENSION_MESSAGE_NO_LENGTH = 0x20,
@@ -434,15 +436,16 @@ typedef std::vector<LostPacket> LostPacketVector;
 enum QuicIetfTransportErrorCodes : uint16_t {
   NO_IETF_QUIC_ERROR = 0x0,
   INTERNAL_ERROR = 0x1,
+  SERVER_BUSY_ERROR = 0x2,
   FLOW_CONTROL_ERROR = 0x3,
   STREAM_ID_ERROR = 0x4,
   STREAM_STATE_ERROR = 0x5,
   FINAL_OFFSET_ERROR = 0x6,
-  FRAME_FORMAT_ERROR = 0x7,
+  FRAME_ENCODING_ERROR = 0x7,
   TRANSPORT_PARAMETER_ERROR = 0x8,
   VERSION_NEGOTIATION_ERROR = 0x9,
   PROTOCOL_VIOLATION = 0xA,
-  UNSOLICITED_PONG = 0xB,
+  INVALID_MIGRATION = 0xC,
   FRAME_ERROR_base = 0x100,  // add frame type to this base
 };
 
