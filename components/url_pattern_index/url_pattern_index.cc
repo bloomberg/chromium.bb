@@ -197,6 +197,8 @@ class UrlRuleFlatBufferConverter {
     if (!base::IsStringASCII(rule_.url_pattern()))
       return UrlRuleOffset();
 
+    // TODO(crbug.com/884063): Lower case case-insensitive patterns here if we
+    // want to support case-insensitive rules for subresource filter.
     auto url_pattern_offset = builder->CreateString(rule_.url_pattern());
 
     return flat::CreateUrlRule(
@@ -380,8 +382,8 @@ void UrlPatternIndexBuilder::IndexUrlRule(UrlRuleOffset offset) {
   const auto* rule = flatbuffers::GetTemporaryPointer(*flat_builder_, offset);
   DCHECK(rule);
 
-// Sanity check that the rule does not have fields with non-ascii characters.
 #if DCHECK_IS_ON()
+  // Sanity check that the rule does not have fields with non-ascii characters.
   DCHECK(base::IsStringASCII(ToStringPiece(rule->url_pattern())));
   if (rule->domains_included()) {
     for (auto* domain : *rule->domains_included())
@@ -391,6 +393,10 @@ void UrlPatternIndexBuilder::IndexUrlRule(UrlRuleOffset offset) {
     for (auto* domain : *rule->domains_excluded())
       DCHECK(base::IsStringASCII(ToStringPiece(domain)));
   }
+
+  // Case-insensitive patterns should be lower-cased.
+  if (rule->options() & flat::OptionFlag_IS_CASE_INSENSITIVE)
+    DCHECK(HasNoUpperAscii(ToStringPiece(rule->url_pattern())));
 #endif
 
   NGram ngram = GetMostDistinctiveNGram(ToStringPiece(rule->url_pattern()));
