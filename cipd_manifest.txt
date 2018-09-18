@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Pin resolved versions in the repo, to reduce trust in the CIPD backend.
+$ResolvedVersions cipd_manifest.versions
+
 # Fully supported plaforms.
 $VerifiedPlatform linux-amd64 mac-amd64 windows-amd64 windows-386
 
