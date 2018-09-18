@@ -34,7 +34,7 @@ testcase.mountCrostini = function() {
     },
     function() {
       // Unmount and ensure fake root is shown.
-      remoteCall.callRemoteTestUtil('unmount', null, ['crostini']);
+      chrome.test.sendMessage(JSON.stringify({name: 'unmountCrostini'}));
       remoteCall.waitForElement(appId, fake).then(this.next);
     },
     function() {
