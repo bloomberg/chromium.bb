@@ -1233,7 +1233,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // its QuitClosure to the BrowserProcessImpl to call when it is time to exit.
   DCHECK(!g_run_loop);
   g_run_loop = new base::RunLoop;
-  browser_process_->SetQuitClosure(g_run_loop->QuitWhenIdleClosure());
 
   // These members must be initialized before returning from this function.
   // Android doesn't use StartupBrowserCreator.
@@ -2002,8 +2001,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
     const base::TimeDelta delta = base::TimeTicks::Now() - browser_open_start;
     startup_metric_utils::RecordBrowserOpenTabsDelta(delta);
+
+    // Transfer ownership of the browser's lifetime to the BrowserProcess.
+    browser_process_->SetQuitClosure(g_run_loop->QuitWhenIdleClosure());
+    DCHECK(!run_message_loop_);
+    run_message_loop_ = true;
   }
-  run_message_loop_ = started;
   browser_creator_.reset();
 #endif  // !defined(OS_ANDROID)
 
