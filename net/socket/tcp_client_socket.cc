@@ -77,6 +77,20 @@ int TCPClientSocket::Bind(const IPEndPoint& address) {
   return OK;
 }
 
+bool TCPClientSocket::SetKeepAlive(bool enable, int delay) {
+  return socket_->SetKeepAlive(enable, delay);
+}
+
+bool TCPClientSocket::SetNoDelay(bool no_delay) {
+  return socket_->SetNoDelay(no_delay);
+}
+
+void TCPClientSocket::SetBeforeConnectCallback(
+    const BeforeConnectCallback& before_connect_callback) {
+  DCHECK_EQ(CONNECT_STATE_NONE, next_connect_state_);
+  before_connect_callback_ = before_connect_callback;
+}
+
 int TCPClientSocket::Connect(CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
 
@@ -177,6 +191,13 @@ int TCPClientSocket::DoConnect() {
         return result;
       }
     }
+  }
+
+  if (before_connect_callback_) {
+    int result = before_connect_callback_.Run();
+    DCHECK_NE(ERR_IO_PENDING, result);
+    if (result != net::OK)
+      return result;
   }
 
   // Notify |socket_performance_watcher_| only if the |socket_| is reused to
@@ -321,12 +342,8 @@ int TCPClientSocket::SetSendBufferSize(int32_t size) {
     return socket_->SetSendBufferSize(size);
 }
 
-bool TCPClientSocket::SetKeepAlive(bool enable, int delay) {
-  return socket_->SetKeepAlive(enable, delay);
-}
-
-bool TCPClientSocket::SetNoDelay(bool no_delay) {
-  return socket_->SetNoDelay(no_delay);
+SocketDescriptor TCPClientSocket::SocketDescriptorForTesting() const {
+  return socket_->SocketDescriptorForTesting();
 }
 
 void TCPClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {

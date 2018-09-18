@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
@@ -30,6 +31,8 @@ class SocketTag;
 
 class NET_EXPORT StreamSocket : public Socket {
  public:
+  using BeforeConnectCallback = base::RepeatingCallback<int()>;
+
   // This is used in DumpMemoryStats() to track the estimate of memory usage of
   // a socket.
   struct NET_EXPORT_PRIVATE SocketMemoryStats {
@@ -50,6 +53,16 @@ class NET_EXPORT StreamSocket : public Socket {
   };
 
   ~StreamSocket() override {}
+
+  // Sets a callback to be invoked before establishing a connection. This allows
+  // setting options, like receive and send buffer size, when they will take
+  // effect. The callback should return net::OK on success, and an error on
+  // failure. It must not return net::ERR_IO_PENDING.
+  //
+  // If multiple connection attempts are made, the callback will be invoked for
+  // each one.
+  virtual void SetBeforeConnectCallback(
+      const BeforeConnectCallback& before_connect_callback);
 
   // Called to establish a connection.  Returns OK if the connection could be
   // established synchronously.  Otherwise, ERR_IO_PENDING is returned and the

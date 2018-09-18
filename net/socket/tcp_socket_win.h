@@ -128,6 +128,10 @@ class NET_EXPORT TCPSocketWin : public base::win::ObjectWatcher::Delegate {
   // write, or accept operations should be pending.
   SocketDescriptor ReleaseSocketDescriptorForTesting();
 
+  // Exposes the underlying socket descriptor for testing its state. Does not
+  // release ownership of the descriptor.
+  SocketDescriptor SocketDescriptorForTesting() const;
+
   // Apply |tag| to this socket.
   void ApplySocketTag(const SocketTag& tag);
 
