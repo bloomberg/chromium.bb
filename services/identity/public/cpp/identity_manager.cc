@@ -51,9 +51,6 @@ IdentityManager::IdentityManager(
       token_service_(token_service),
       account_tracker_service_(account_tracker_service),
       gaia_cookie_manager_service_(gaia_cookie_manager_service) {
-  // Initialize the state of the primary account.
-  primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
-
   // Initialize the state of accounts with refresh tokens.
   // |account_id| is moved into |accounts_with_refresh_tokens_|.
   // Do not change this to "const std::string&".
@@ -83,10 +80,6 @@ IdentityManager::IdentityManager(
   }
 
   signin_manager_->AddObserver(this);
-#if !defined(OS_CHROMEOS)
-  SigninManager::FromSigninManagerBase(signin_manager_)
-      ->set_diagnostics_client(this);
-#endif
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
   token_service_->set_diagnostics_client(this);
@@ -95,10 +88,6 @@ IdentityManager::IdentityManager(
 
 IdentityManager::~IdentityManager() {
   signin_manager_->RemoveObserver(this);
-#if !defined(OS_CHROMEOS)
-  SigninManager::FromSigninManagerBase(signin_manager_)
-      ->set_diagnostics_client(nullptr);
-#endif
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   token_service_->set_diagnostics_client(nullptr);
@@ -106,52 +95,11 @@ IdentityManager::~IdentityManager() {
 }
 
 AccountInfo IdentityManager::GetPrimaryAccountInfo() const {
-#if defined(OS_CHROMEOS)
-  // On ChromeOS in production, the authenticated account is set very early in
-  // startup and never changed. Hence, the information held by the
-  // IdentityManager should always correspond to that held by SigninManager.
-  // NOTE: the above invariant is not guaranteed to hold in tests. If you
-  // are seeing this DCHECK go off in a testing context, it means that you need
-  // to set the IdentityManager's primary account info in the test at the place
-  // where you are setting the authenticated account info in the SigninManager.
-  // TODO(blundell): Add the API to do this once we hit the first case and
-  // document the API to use here.
-  DCHECK_EQ(signin_manager_->GetAuthenticatedAccountId(),
-            primary_account_info_.account_id);
-
-  // Note: If the primary account's refresh token gets revoked, then the account
-  // gets removed from AccountTrackerService (via
-  // AccountFetcherService::OnRefreshTokenRevoked), and so SigninManager's
-  // GetAuthenticatedAccountInfo is empty (even though
-  // GetAuthenticatedAccountId is NOT empty).
-  if (!signin_manager_->GetAuthenticatedAccountInfo().account_id.empty()) {
-    DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().account_id,
-              primary_account_info_.account_id);
-    DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().gaia,
-              primary_account_info_.gaia);
-
-    // TODO(842670): As described in the bug, AccountTrackerService's email
-    // address can be updated after it is initially set on ChromeOS. Figure out
-    // right long-term solution for this problem.
-    if (signin_manager_->GetAuthenticatedAccountInfo().email !=
-        primary_account_info_.email) {
-      // This update should only be to move it from normalized form to the form
-      // in which the user entered the email when creating the account. The
-      // below check verifies that the normalized forms of the two email
-      // addresses are identical.
-      DCHECK(gaia::AreEmailsSame(
-          signin_manager_->GetAuthenticatedAccountInfo().email,
-          primary_account_info_.email));
-      primary_account_info_.email =
-          signin_manager_->GetAuthenticatedAccountInfo().email;
-    }
-  }
-#endif  // defined(OS_CHROMEOS)
-  return primary_account_info_;
+  return signin_manager_->GetAuthenticatedAccountInfo();
 }
 
 bool IdentityManager::HasPrimaryAccount() const {
-  return !primary_account_info_.account_id.empty();
+  return !GetPrimaryAccountInfo().account_id.empty();
 }
 
 #if !defined(OS_CHROMEOS)
@@ -176,8 +124,7 @@ void IdentityManager::ClearPrimaryAccount(
       break;
   }
 
-  // NOTE: |primary_account_| member is cleared in WillFireGoogleSignedOut()
-  // and IdentityManager::Observers are notified in GoogleSignedOut();
+  // NOTE: IdentityManager::Observers are notified in GoogleSignedOut().
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -269,38 +216,14 @@ void IdentityManager::SetPrimaryAccountSynchronously(
     const std::string& email_address,
     const std::string& refresh_token) {
   signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
-  primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
 
   if (!refresh_token.empty()) {
-    token_service_->UpdateCredentials(primary_account_info_.account_id,
+    token_service_->UpdateCredentials(GetPrimaryAccountInfo().account_id,
                                       refresh_token);
   }
 }
 
-#if !defined(OS_CHROMEOS)
-void IdentityManager::WillFireGoogleSigninSucceeded(
-    const AccountInfo& account_info) {
-  // TODO(843510): Consider setting this info and notifying observers
-  // asynchronously in response to GoogleSigninSucceeded() once there are no
-  // direct clients of SigninManager.
-  primary_account_info_ = account_info;
-}
-
-void IdentityManager::WillFireGoogleSignedOut(const AccountInfo& account_info) {
-  // TODO(843510): Consider setting this info and notifying observers
-  // asynchronously in response to GoogleSigninSucceeded() once there are no
-  // direct clients of SigninManager.
-  DCHECK_EQ(account_info.account_id, primary_account_info_.account_id);
-  DCHECK_EQ(account_info.gaia, primary_account_info_.gaia);
-  DCHECK(gaia::AreEmailsSame(account_info.email, primary_account_info_.email));
-  primary_account_info_ = AccountInfo();
-}
-#endif
-
 void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
-  DCHECK(account_info.account_id == primary_account_info_.account_id);
-  DCHECK(account_info.gaia == primary_account_info_.gaia);
-  DCHECK(account_info.email == primary_account_info_.email);
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountSet(account_info);
   }
