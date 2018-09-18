@@ -152,6 +152,9 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateReplacedContentTransform();
   ALWAYS_INLINE void UpdateScrollAndScrollTranslation();
   ALWAYS_INLINE void UpdateOutOfFlowContext();
+  ALWAYS_INLINE void UpdateTransformIsolationNode();
+  ALWAYS_INLINE void UpdateEffectIsolationNode();
+  ALWAYS_INLINE void UpdateClipIsolationNode();
 
   bool NeedsPaintPropertyUpdate() const {
     return object_.NeedsPaintPropertyUpdate() ||
@@ -269,6 +272,10 @@ static bool NeedsPaintOffsetTranslationForScrollbars(
   return false;
 }
 
+static bool NeedsIsolationNodes(const LayoutObject& object) {
+  return object.HasLayer() && object.ShouldApplyPaintContainment();
+}
+
 static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   if (!object.IsBoxModelObject())
     return false;
@@ -288,6 +295,11 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
   if (box_model.IsLayoutView()) {
     // A translation node for LayoutView is always created to ensure fixed and
     // absolute contexts use the correct transform space.
+    return true;
+  }
+
+  if (NeedsIsolationNodes(box_model)) {
+    DCHECK(box_model.HasLayer());
     return true;
   }
 
@@ -1649,6 +1661,48 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
     OnClear(properties_->ClearCssClipFixedPosition());
 }
 
+void FragmentPaintPropertyTreeBuilder::UpdateTransformIsolationNode() {
+  if (NeedsPaintPropertyUpdate()) {
+    if (NeedsIsolationNodes(object_)) {
+      OnUpdate(properties_->UpdateTransformIsolationNode(
+          *context_.current.transform, TransformPaintPropertyNode::State{},
+          true /* is_parent_alias */));
+    } else {
+      OnClear(properties_->ClearTransformIsolationNode());
+    }
+  }
+  if (properties_->TransformIsolationNode())
+    context_.current.transform = properties_->TransformIsolationNode();
+}
+
+void FragmentPaintPropertyTreeBuilder::UpdateEffectIsolationNode() {
+  if (NeedsPaintPropertyUpdate()) {
+    if (NeedsIsolationNodes(object_)) {
+      OnUpdate(properties_->UpdateEffectIsolationNode(
+          *context_.current_effect, EffectPaintPropertyNode::State{},
+          true /* is_parent_alias */));
+    } else {
+      OnClear(properties_->ClearEffectIsolationNode());
+    }
+  }
+  if (properties_->EffectIsolationNode())
+    context_.current_effect = properties_->EffectIsolationNode();
+}
+
+void FragmentPaintPropertyTreeBuilder::UpdateClipIsolationNode() {
+  if (NeedsPaintPropertyUpdate()) {
+    if (NeedsIsolationNodes(object_)) {
+      OnUpdate(properties_->UpdateClipIsolationNode(
+          *context_.current.clip, ClipPaintPropertyNode::State{},
+          true /* is_parent_alias */));
+    } else {
+      OnClear(properties_->ClearClipIsolationNode());
+    }
+  }
+  if (properties_->ClipIsolationNode())
+    context_.current.clip = properties_->ClipIsolationNode();
+}
+
 static LayoutRect MapLocalRectToAncestorLayer(
     const LayoutBox& box,
     const LayoutRect& local_rect,
@@ -2045,6 +2099,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
     UpdatePerspective();
     UpdateReplacedContentTransform();
     UpdateScrollAndScrollTranslation();
+    UpdateTransformIsolationNode();
+    UpdateEffectIsolationNode();
+    UpdateClipIsolationNode();
   }
   UpdateOutOfFlowContext();
 

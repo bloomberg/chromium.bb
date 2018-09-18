@@ -188,7 +188,7 @@ class CORE_EXPORT FragmentData {
   // overflow clip, scroll translation) that apply to contents.
   PropertyTreeState ContentsProperties() const {
     return PropertyTreeState(PostScrollTranslation(), PostOverflowClip(),
-                             LocalBorderBoxProperties().Effect());
+                             PostIsolationEffect());
   }
 
   // This is the complete set of property nodes that can be used to
@@ -209,6 +209,7 @@ class CORE_EXPORT FragmentData {
   const ClipPaintPropertyNode* PostOverflowClip() const;
   const EffectPaintPropertyNode* PreEffect() const;
   const EffectPaintPropertyNode* PreFilter() const;
+  const EffectPaintPropertyNode* PostIsolationEffect() const;
 
   ~FragmentData() {
     if (next_fragment_)

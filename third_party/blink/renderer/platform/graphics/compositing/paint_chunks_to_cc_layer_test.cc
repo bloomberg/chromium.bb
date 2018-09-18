@@ -1186,43 +1186,6 @@ TEST_F(PaintChunksToCcLayerTest, StartWithAliasClip) {
   EXPECT_THAT(*output, PaintRecordMatcher::Make({cc::PaintOpType::DrawRecord}));
 }
 
-TEST_F(PaintChunksToCcLayerTest, NoopEffectDoesNotEmitItems) {
-  auto e1 = CreateOpacityEffect(e0(), 0.5f);
-  auto noop_e2 = EffectPaintPropertyNode::CreateAlias(*e1);
-  auto noop_e3 = EffectPaintPropertyNode::CreateAlias(*noop_e2);
-  auto e4 = CreateOpacityEffect(*noop_e3, 0.5f);
-
-  TestChunks chunks;
-  chunks.AddChunk(t0(), c0(), e0());
-  chunks.AddChunk(t0(), c0(), *e1);
-  chunks.AddChunk(t0(), c0(), *noop_e2);
-  chunks.AddChunk(t0(), c0(), *noop_e3);
-  chunks.AddChunk(t0(), c0(), *e4);
-  chunks.AddChunk(t0(), c0(), *noop_e2);
-  chunks.AddChunk(t0(), c0(), *e1);
-
-  auto output =
-      PaintChunksToCcLayer::Convert(
-          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
-          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
-          ->ReleaseAsRecord();
-
-  EXPECT_THAT(*output,
-              PaintRecordMatcher::Make({
-                  cc::PaintOpType::DrawRecord,      // e0
-                  cc::PaintOpType::SaveLayerAlpha,  // e1
-                  cc::PaintOpType::DrawRecord,      // draw with e1
-                  cc::PaintOpType::DrawRecord,      // draw with noop_e2
-                  cc::PaintOpType::DrawRecord,      // draw_with noop_e3
-                  cc::PaintOpType::SaveLayerAlpha,  // e4
-                  cc::PaintOpType::DrawRecord,      // draw with e4
-                  cc::PaintOpType::Restore,         // end e4
-                  cc::PaintOpType::DrawRecord,      // draw with noop_e2
-                  cc::PaintOpType::DrawRecord,      // draw with e1
-                  cc::PaintOpType::Restore          // end noop_e2 (or e1)
-              }));
-}
-
 // These tests are testing error recovery path that are only used in
 // release builds. A DCHECK'd build will trap instead.
 #if !DCHECK_IS_ON()
@@ -1292,6 +1255,43 @@ TEST_F(PaintChunksToCcLayerTest, SPv1ChunkEscapeLayerClipDoubleFault) {
   // We don't care about the exact output as long as it didn't crash.
 }
 #endif
+
+TEST_F(PaintChunksToCcLayerTest, NoopEffectDoesNotEmitItems) {
+  auto e1 = CreateOpacityEffect(e0(), 0.5f);
+  auto noop_e2 = EffectPaintPropertyNode::CreateAlias(*e1);
+  auto noop_e3 = EffectPaintPropertyNode::CreateAlias(*noop_e2);
+  auto e4 = CreateOpacityEffect(*noop_e3, 0.5f);
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c0(), e0());
+  chunks.AddChunk(t0(), c0(), *e1);
+  chunks.AddChunk(t0(), c0(), *noop_e2);
+  chunks.AddChunk(t0(), c0(), *noop_e3);
+  chunks.AddChunk(t0(), c0(), *e4);
+  chunks.AddChunk(t0(), c0(), *noop_e2);
+  chunks.AddChunk(t0(), c0(), *e1);
+
+  auto output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make({
+                  cc::PaintOpType::DrawRecord,      // e0
+                  cc::PaintOpType::SaveLayerAlpha,  // e1
+                  cc::PaintOpType::DrawRecord,      // draw with e1
+                  cc::PaintOpType::DrawRecord,      // draw with noop_e2
+                  cc::PaintOpType::DrawRecord,      // draw_with noop_e3
+                  cc::PaintOpType::SaveLayerAlpha,  // e4
+                  cc::PaintOpType::DrawRecord,      // draw with e4
+                  cc::PaintOpType::Restore,         // end e4
+                  cc::PaintOpType::DrawRecord,      // draw with noop_e2
+                  cc::PaintOpType::DrawRecord,      // draw with e1
+                  cc::PaintOpType::Restore          // end noop_e2 (or e1)
+              }));
+}
 
 }  // namespace
 }  // namespace blink
