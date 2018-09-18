@@ -12,7 +12,7 @@
 #include "base/sys_info.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
@@ -32,7 +32,7 @@
 namespace syncer {
 
 std::string GetSessionNameBlocking() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   std::string session_name;
 #if defined(OS_CHROMEOS)
   switch (chromeos::GetDeviceType()) {
