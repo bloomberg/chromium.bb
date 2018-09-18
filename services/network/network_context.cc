@@ -458,6 +458,10 @@ void NetworkContext::CreateURLLoaderFactory(
       std::move(request)));
 }
 
+void NetworkContext::SetClient(mojom::NetworkContextClientPtr client) {
+  client_ = std::move(client);
+}
+
 void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     mojom::URLLoaderFactoryParamsPtr params) {

@@ -82,34 +82,44 @@ bool NetworkServiceNetworkDelegate::OnCanAccessFile(
 
 bool NetworkServiceNetworkDelegate::OnCanQueueReportingReport(
     const url::Origin& origin) const {
-  // TODO(crbug.com/845559): Disable all Reporting uploads until we can perform
-  // a BACKGROUND_SYNC permissions check across service boundaries.
-  return false;
+  return network_context_->cookie_manager()
+      ->cookie_settings()
+      .IsCookieAccessAllowed(origin.GetURL(), origin.GetURL());
 }
 
 void NetworkServiceNetworkDelegate::OnCanSendReportingReports(
     std::set<url::Origin> origins,
     base::OnceCallback<void(std::set<url::Origin>)> result_callback) const {
-  // TODO(crbug.com/845559): Disable all Reporting uploads until we can perform
-  // a BACKGROUND_SYNC permissions check across service boundaries.
-  origins.clear();
-  std::move(result_callback).Run(std::move(origins));
+  auto* client = network_context_->client();
+  if (!client) {
+    origins.clear();
+    std::move(result_callback).Run(std::move(origins));
+    return;
+  }
+
+  std::vector<url::Origin> origin_vector;
+  std::copy(origins.begin(), origins.end(), std::back_inserter(origin_vector));
+  client->OnCanSendReportingReports(
+      origin_vector,
+      base::BindOnce(
+          &NetworkServiceNetworkDelegate::FinishedCanSendReportingReports,
+          weak_ptr_factory_.GetWeakPtr(), std::move(result_callback)));
 }
 
 bool NetworkServiceNetworkDelegate::OnCanSetReportingClient(
     const url::Origin& origin,
     const GURL& endpoint) const {
-  // TODO(crbug.com/845559): Disable all Reporting uploads until we can perform
-  // a BACKGROUND_SYNC permissions check across service boundaries.
-  return false;
+  return network_context_->cookie_manager()
+      ->cookie_settings()
+      .IsCookieAccessAllowed(origin.GetURL(), origin.GetURL());
 }
 
 bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
     const url::Origin& origin,
     const GURL& endpoint) const {
-  // TODO(crbug.com/845559): Disable all Reporting uploads until we can perform
-  // a BACKGROUND_SYNC permissions check across service boundaries.
-  return false;
+  return network_context_->cookie_manager()
+      ->cookie_settings()
+      .IsCookieAccessAllowed(origin.GetURL(), origin.GetURL());
 }
 
 int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(
@@ -154,6 +164,13 @@ bool NetworkServiceNetworkDelegate::OnCanEnablePrivacyMode(
   return !network_context_->cookie_manager()
               ->cookie_settings()
               .IsCookieAccessAllowed(url, site_for_cookies);
+}
+
+void NetworkServiceNetworkDelegate::FinishedCanSendReportingReports(
+    base::OnceCallback<void(std::set<url::Origin>)> result_callback,
+    const std::vector<url::Origin>& origins) {
+  std::set<url::Origin> origin_set(origins.begin(), origins.end());
+  std::move(result_callback).Run(origin_set);
 }
 
 }  // namespace network

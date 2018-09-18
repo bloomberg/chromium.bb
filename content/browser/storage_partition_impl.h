@@ -34,6 +34,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
@@ -53,7 +54,8 @@ class GeneratedCodeCacheContext;
 
 class CONTENT_EXPORT StoragePartitionImpl
     : public StoragePartition,
-      public blink::mojom::StoragePartitionService {
+      public blink::mojom::StoragePartitionService,
+      public network::mojom::NetworkContextClient {
  public:
   // It is guaranteed that storage partitions are destructed before the
   // browser context starts shutting down its corresponding IO thread residents
@@ -151,6 +153,11 @@ class CONTENT_EXPORT StoragePartitionImpl
   void OpenSessionStorage(
       const std::string& namespace_id,
       blink::mojom::SessionStorageNamespaceRequest request) override;
+
+  // network::mojom::NetworkContextClient interface.
+  void OnCanSendReportingReports(
+      const std::vector<url::Origin>& origins,
+      OnCanSendReportingReportsCallback callback) override;
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter() {
     return url_loader_factory_getter_;
@@ -331,6 +338,9 @@ class CONTENT_EXPORT StoragePartitionImpl
   // provided by the embedder, or is created by the StoragePartition and owned
   // by |network_context_owner_|.
   network::mojom::NetworkContextPtr network_context_;
+
+  mojo::Binding<network::mojom::NetworkContextClient>
+      network_context_client_binding_;
 
   scoped_refptr<URLLoaderFactoryForBrowserProcess>
       shared_url_loader_factory_for_browser_process_;

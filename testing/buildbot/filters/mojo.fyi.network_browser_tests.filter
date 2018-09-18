@@ -141,11 +141,6 @@
 -NativeBindings/ExternallyConnectableMessagingTest.WebConnectableWithNonEmptyTlsChannelId/0
 -NativeBindings/MessagingApiTest.DifferentStoragePartitionTLSChannelID/0
 
-# https://crbug.com/845559
-# Reporting needs to check BACKGROUND_SYNC permission before uploading reports
-# about an origin.
--ReportingBrowserTest.TestReportingHeadersProcessed
-
 # https://crbug.com/721403
 -ContextMenuBrowserTest.DataSaverOpenOrigImageInNewTab
 

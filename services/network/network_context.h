@@ -128,6 +128,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   NetworkService* network_service() { return network_service_; }
 
+  mojom::NetworkContextClient* client() { return client_.get(); }
+
   ResourceScheduler* resource_scheduler() { return resource_scheduler_.get(); }
 
   CookieManager* cookie_manager() { return cookie_manager_.get(); }
@@ -141,6 +143,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client);
 
   // mojom::NetworkContext implementation:
+  void SetClient(mojom::NetworkContextClientPtr client) override;
   void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
                               mojom::URLLoaderFactoryParamsPtr params) override;
   void GetCookieManager(mojom::CookieManagerRequest request) override;
@@ -291,6 +294,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnCertVerifyForSignedExchangeComplete(int cert_verify_id, int result);
 
   NetworkService* const network_service_;
+
+  mojom::NetworkContextClientPtr client_;
 
   std::unique_ptr<ResourceScheduler> resource_scheduler_;
 

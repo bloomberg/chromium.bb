@@ -326,9 +326,22 @@ struct URLLoaderFactoryParams {
   bool disable_web_security = false;
 };
 
+// Callback interface for NetworkContext when routing identifiers aren't
+// available. Otherwise generally callbacks from the network service go on
+// NetworkServiceClient.
+interface NetworkContextClient {
+  // Checks if network error reports could be sent for the given origins.
+  // Replies with the origins that are allowed.
+  OnCanSendReportingReports(array<url.mojom.Origin> origins) =>
+      (array<url.mojom.Origin> origins);
+};
+
 // Represents a distinct context for making network requests, with its own
 // storage (e.g. cookies and cache).
 interface NetworkContext {
+  // Sets a client for this network context.
+  SetClient(NetworkContextClient client);
+
   // Creates a new URLLoaderFactory with the given |params|.
   CreateURLLoaderFactory(URLLoaderFactory& url_loader_factory,
                          URLLoaderFactoryParams params);
