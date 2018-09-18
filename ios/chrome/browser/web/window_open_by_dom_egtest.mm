@@ -218,6 +218,24 @@ id<GREYMatcher> PopupBlocker() {
   [ChromeEarlGrey waitForMainTabCount:2];
 }
 
+// Tests that the correct URL is displayed for a child window opened with the
+// script window.open('', '').location.replace('about:blank#hash').
+// This is a regression test for crbug.com/866142.
+- (void)testLocationReplaceInWindowOpenWithEmptyTarget {
+  GREYAssert(TapWebViewElementWithId(
+                 "webScenarioLocationReplaceInWindowOpenWithEmptyTarget"),
+             @"Failed to tap "
+             @"\"webScenarioLocationReplaceInWindowOpenWithEmptyTarget\"");
+  [ChromeEarlGrey waitForMainTabCount:2];
+  // WebKit doesn't parse 'about:blank#hash' as about:blank with URL fragment.
+  // Instead, it percent encodes '#hash' and considers 'blank%23hash' as the
+  // resource identifier. Nevertheless, the '#' is significant in triggering the
+  // edge case in the bug. TODO(crbug.com/885249): Change back to '#'.
+  const GURL URL("about:blank%23hash");
+  [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank%23hash")]
+      assertWithMatcher:grey_notNil()];
+}
+
 // Tests a link with JavaScript in the href.
 + (void)testWindowOpenWithJavaScriptInHref {
   GREYAssert(
