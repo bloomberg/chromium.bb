@@ -14,6 +14,7 @@
 #include "media/base/media_log.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_media_player_encrypted_media_client.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace {
 
@@ -112,7 +113,7 @@ blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
 
 void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
                    const GURL& url,
-                   const blink::WebSecurityOrigin& security_origin,
+                   const blink::WebLocalFrame& frame,
                    MediaLog* media_log) {
   DCHECK(media_log);
 
@@ -125,13 +126,19 @@ void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
   UMA_HISTOGRAM_ENUMERATION("Media.LoadType", load_type,
                             blink::WebMediaPlayer::kLoadTypeMax + 1);
 
+  // Report load type separately for ad frames.
+  if (frame.IsAdSubframe()) {
+    UMA_HISTOGRAM_ENUMERATION("Ads.Media.LoadType", load_type,
+                              blink::WebMediaPlayer::kLoadTypeMax + 1);
+  }
+
   // Report the origin from where the media player is created.
   media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl." +
                                             LoadTypeToString(load_type));
 
   // For MSE, also report usage by secure/insecure origin.
   if (load_type == blink::WebMediaPlayer::kLoadTypeMediaSource) {
-    if (security_origin.IsPotentiallyTrustworthy()) {
+    if (frame.GetSecurityOrigin().IsPotentiallyTrustworthy()) {
       media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.MSE.Secure");
     } else {
       media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.MSE.Insecure");

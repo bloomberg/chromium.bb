@@ -380,8 +380,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
   if (frame) {
     // Report UMA and RAPPOR metrics.
-    media::ReportMetrics(load_type, url, frame_->GetSecurityOrigin(),
-                         media_log_.get());
+    media::ReportMetrics(load_type, url, *frame_, media_log_.get());
     routing_id = frame->GetRoutingID();
   }
 
