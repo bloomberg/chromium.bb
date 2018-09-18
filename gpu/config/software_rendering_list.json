@@ -280,18 +280,14 @@
     },
     {
       "id": 30,
-      "description": "NVIDIA cards with nouveau drivers in Linux are crash-prone",
-      "cr_bugs": [94103],
+      "description": "NVIDIA cards with nouveau drivers in Linux are unstable",
+      "cr_bugs": [94103, 876523],
       "os": {
         "type": "linux"
       },
       "vendor_id": "0x10de",
       "gl_vendor": "(?i)nouveau.*",
       "driver_vendor": "Mesa",
-      "driver_version": {
-        "op": "<",
-        "value": "10.1"
-      },
       "features": [
         "all"
       ]
