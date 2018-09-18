@@ -683,10 +683,11 @@ void VRDisplay::BeginPresent() {
   // For GVR, we shut down normal vsync processing during VR presentation.
   // Run window.rAF once manually so that applications get a chance to
   // schedule a VRDisplay.rAF in case they do so only while presenting.
-  if (!pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
+  if (doc && !pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
     TimeTicks timestamp = WTF::CurrentTimeTicks();
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
+    doc->GetTaskRunner(blink::TaskType::kInternalMedia)
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
                              WrapWeakPersistent(this), timestamp));
   }
 }
@@ -1051,6 +1052,10 @@ void VRDisplay::OnPresentingVSync(
     NOTIMPLEMENTED();
   }
 
+  Document* doc = GetDocument();
+  if (!doc)
+    return;
+
   // Post a task to handle scheduled animations after the current
   // execution context finishes, so that we yield to non-mojo tasks in
   // between frames. Executing mojo tasks back to back within the same
@@ -1059,10 +1064,13 @@ void VRDisplay::OnPresentingVSync(
   // this is due to WaitForIncomingMethodCall receiving the OnVSync
   // but queueing it for immediate execution since it doesn't match
   // the interface being waited on.
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
-                           WrapWeakPersistent(this),
-                           TimeTicks() + frame_data->time_delta));
+  //
+  // Used kInternalMedia since 1) this is not spec-ed and 2) this is media
+  // related then tasks should not be throttled or frozen in background tabs.
+  doc->GetTaskRunner(blink::TaskType::kInternalMedia)
+      ->PostTask(FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
+                                      WrapWeakPersistent(this),
+                                      TimeTicks() + frame_data->time_delta));
 }
 
 void VRDisplay::OnNonImmersiveVSync(TimeTicks timestamp) {
