@@ -409,7 +409,15 @@ void HeadlessShell::InputExpression() {
   std::stringstream expression;
   while (true) {
     int c = fgetc(stdin);
-    if (c == EOF || c == '\n') {
+    if (c == '\n')
+      break;
+    if (c == EOF) {
+      // If there's no expression, then quit.
+      if (expression.str().size() == 0) {
+        printf("\n");
+        Shutdown();
+        return;
+      }
       break;
     }
     expression << static_cast<char>(c);
