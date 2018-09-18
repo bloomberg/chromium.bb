@@ -70,6 +70,8 @@ class HostConnectionMetricsLogger
                            RecordConnectionResultSuccess);
   FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
                            RecordConnectionResultSuccess_Background);
+  FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
+                           RecordConnectionResultSuccess_MultiDeviceApiEnabled);
   FRIEND_TEST_ALL_PREFIXES(
       HostConnectionMetricsLoggerTest,
       RecordConnectionResultSuccess_Background_DifferentDevice);
@@ -77,6 +79,8 @@ class HostConnectionMetricsLogger
                            RecordConnectionResultFailure);
   FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
                            RecordConnectionResultFailure_Background);
+  FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
+                           RecordConnectionResultFailure_MultiDeviceApiEnabled);
   FRIEND_TEST_ALL_PREFIXES(
       HostConnectionMetricsLoggerTest,
       RecordConnectionResultFailure_Background_DifferentDevice);
@@ -107,6 +111,8 @@ class HostConnectionMetricsLogger
                            RecordConnectToHostDuration);
   FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
                            RecordConnectToHostDuration_Background);
+  FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
+                           RecordConnectToHostDuration_MultiDeviceApiEnabled);
   FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
                            RecordConnectionResultFailureNoResponse);
   FRIEND_TEST_ALL_PREFIXES(
