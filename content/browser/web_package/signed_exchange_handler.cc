@@ -393,6 +393,7 @@ void SignedExchangeHandler::RunErrorCallback(net::Error error) {
 }
 
 void SignedExchangeHandler::OnCertReceived(
+    SignedExchangeLoadResult result,
     std::unique_ptr<SignedExchangeCertificateChain> cert_chain) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::OnCertReceived");
