@@ -638,6 +638,10 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   if (model()->user_input_in_progress())
     return false;
 
+  // Don't unelide if we are currently displaying Query in Omnibox search terms.
+  if (model()->GetQueryInOmniboxSearchTerms(nullptr /* search_terms */))
+    return false;
+
   // If everything is selected, the user likely does not intend to edit the URL.
   // But if the Home key is pressed, the user probably does want to interact
   // with the beginning of the URL - in which case we unelide.

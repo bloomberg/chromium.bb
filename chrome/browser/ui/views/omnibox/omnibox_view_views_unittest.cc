@@ -19,6 +19,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
+#include "chrome/browser/ui/omnibox/query_in_omnibox_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "chrome/test/views/scoped_macviews_browser_mode.h"
@@ -279,6 +280,8 @@ void OmniboxViewViewsTest::SetUp() {
 #endif
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
+  QueryInOmniboxFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, &QueryInOmniboxFactory::BuildInstanceFor);
   omnibox_view_ = new TestingOmniboxView(
       &omnibox_edit_controller_, std::make_unique<ChromeOmniboxClient>(
                                      &omnibox_edit_controller_, &profile_));
@@ -477,6 +480,10 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
             {omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains}) {}
 
  protected:
+  explicit OmniboxViewViewsSteadyStateElisionsTest(
+      const std::vector<base::Feature>& enabled_features)
+      : OmniboxViewViewsTest(enabled_features) {}
+
   const int kCharacterWidth = 10;
   const base::string16 kFullUrl = base::ASCIIToUTF16("https://www.example.com");
 
@@ -864,4 +871,43 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, SaveSelectAllOnBlurAndRefocus) {
   EXPECT_TRUE(omnibox_view()->HasFocus());
   EXPECT_TRUE(IsElidedUrlDisplayed());
   EXPECT_TRUE(omnibox_view()->IsSelectAll());
+}
+
+class OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest
+    : public OmniboxViewViewsSteadyStateElisionsTest {
+ public:
+  OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest()
+      : OmniboxViewViewsSteadyStateElisionsTest({
+            omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains,
+            omnibox::kQueryInOmnibox,
+        }) {}
+};
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
+       DontUnelideQueryInOmniboxSearchTerms) {
+  const GURL kValidSearchResultsPage =
+      GURL("https://www.google.com/search?q=foo+query");
+  toolbar_model()->set_url(kValidSearchResultsPage);
+  toolbar_model()->set_security_level(security_state::SecurityLevel::SECURE);
+
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+
+  // Sanity check that Query in Omnibox is working with Steady State Elisions.
+  EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->text());
+
+  // Focus the Omnibox.
+  SendMouseClick(0);
+
+  // Right key should NOT unelide, and should correctly place the cursor at the
+  // end of the search query.
+  omnibox_textfield_view()->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, 0));
+  EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->text());
+  EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
+
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(9U, start);
+  EXPECT_EQ(9U, end);
 }
