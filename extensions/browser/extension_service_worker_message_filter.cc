@@ -22,11 +22,11 @@ ExtensionServiceWorkerMessageFilter::ExtensionServiceWorkerMessageFilter(
       browser_context_(context),
       render_process_id_(render_process_id),
       service_worker_context_(service_worker_context),
-      dispatcher_(new ExtensionFunctionDispatcher(context)) {}
-
-ExtensionServiceWorkerMessageFilter::~ExtensionServiceWorkerMessageFilter() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+      dispatcher_(new ExtensionFunctionDispatcher(context)) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
+
+ExtensionServiceWorkerMessageFilter::~ExtensionServiceWorkerMessageFilter() {}
 
 void ExtensionServiceWorkerMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
