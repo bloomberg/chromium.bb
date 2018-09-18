@@ -1165,6 +1165,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool did_receive_first_frame_after_navigation_ = true;
 
+  bool sent_autoscroll_scroll_begin_ = false;
+  gfx::PointF autoscroll_start_position_;
+
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
