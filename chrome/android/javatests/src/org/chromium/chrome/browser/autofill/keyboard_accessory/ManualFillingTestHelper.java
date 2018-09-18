@@ -34,6 +34,8 @@ import org.junit.Assert;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContents;
@@ -57,7 +59,7 @@ public class ManualFillingTestHelper {
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
     private class FakeKeyboard extends KeyboardVisibilityDelegate {
-        static final int KEYBOARD_HEIGHT = 678;
+        static final int KEYBOARD_HEIGHT = 400;
         private boolean mIsShowing;
 
         @Override
@@ -88,6 +90,20 @@ public class ManualFillingTestHelper {
         public int calculateKeyboardHeight(Context context, View rootView) {
             return mIsShowing ? KEYBOARD_HEIGHT : 0;
         }
+
+        /**
+         * Creates an inset observer view calculating the bottom inset based on the fake keyboard.
+         * @param context Context used to instantiate this view.
+         * @return a {@link InsetObserverView}
+         */
+        InsetObserverView createInsetObserver(Context context) {
+            return new InsetObserverView(context) {
+                @Override
+                public int getSystemWindowInsetsBottom() {
+                    return mIsShowing ? KEYBOARD_HEIGHT : 0;
+                }
+            };
+        }
     }
     private final FakeKeyboard mKeyboard = new FakeKeyboard();
 
@@ -107,7 +123,14 @@ public class ManualFillingTestHelper {
                 + "</form></body></html>"));
         setRtlForTesting(isRtl);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mWebContentsRef.set(mActivityTestRule.getActivity().getActivityTab().getWebContents());
+            ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+            mWebContentsRef.set(activity.getActivityTab().getWebContents());
+            activity.getManualFillingController()
+                    .getMediatorForTesting()
+                    .setInsetObserverViewSupplier(() -> {
+                        return mKeyboard.createInsetObserver(
+                                activity.getInsetObserverView().getContext());
+                    });
             // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is
             // never brought up.
             final ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mWebContentsRef.get());

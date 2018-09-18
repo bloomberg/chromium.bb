@@ -4,15 +4,16 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -43,6 +44,7 @@ class ManualFillingMediator
     private @Px int mPreviousControlHeight;
     private final WindowAndroid.KeyboardVisibilityListener mVisibilityListener =
             this::onKeyboardVisibilityChanged;
+    private Supplier<InsetObserverView> mInsetObserverViewSupplier;
 
     /**
      * Provides a cache for a given Provider which can repeat the last notification to all
@@ -146,6 +148,7 @@ class ManualFillingMediator
         mKeyboardAccessory = keyboardAccessory;
         mAccessorySheet = accessorySheet;
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
+        setInsetObserverViewSupplier(mActivity::getInsetObserverView);
         LayoutManager manager = getLayoutManager();
         if (manager != null) manager.addSceneChangeObserver(mTabSwitcherObserver);
         windowAndroid.addKeyboardVisibilityListener(mVisibilityListener);
@@ -371,20 +374,12 @@ class ManualFillingMediator
     }
 
     private @Px int calculateAccessorySheetHeight(View rootView) {
-        int accessorySheetSuggestionHeight = mActivity.getResources().getDimensionPixelSize(
-                org.chromium.chrome.R.dimen.keyboard_accessory_suggestion_height);
-        // Ensure that the minimum height is always sufficient to display a suggestion.
-
-        int calculcatedHeight =
-                mWindowAndroid.getKeyboardDelegate().calculateKeyboardHeight(mActivity, rootView);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            // Before Lollipop: The nav bars seem to be ignored while estimating the height.
-            // During Lollipop: The nav bars (esp. the accessory bar) are counted extra.
-            // After Lollipop: The height is already exact.
-            calculcatedHeight -= accessorySheetSuggestionHeight;
-        }
-        return Math.max(accessorySheetSuggestionHeight, calculcatedHeight);
+        InsetObserverView insetObserver = mInsetObserverViewSupplier.get();
+        if (insetObserver != null) return insetObserver.getSystemWindowInsetsBottom();
+        // Without known inset (which is keyboard + bottom soft keys), use the keyboard height.
+        return Math.max(mActivity.getResources().getDimensionPixelSize(
+                                org.chromium.chrome.R.dimen.keyboard_accessory_suggestion_height),
+                mWindowAndroid.getKeyboardDelegate().calculateKeyboardHeight(mActivity, rootView));
     }
 
     private @Px int calculateAccessoryBarHeight() {
@@ -429,6 +424,11 @@ class ManualFillingMediator
             addTab(state.mPasswordAccessorySheet.getTab());
         }
         return state.mPasswordAccessorySheet;
+    }
+
+    @VisibleForTesting
+    void setInsetObserverViewSupplier(Supplier<InsetObserverView> insetObserverViewSupplier) {
+        mInsetObserverViewSupplier = insetObserverViewSupplier;
     }
 
     // TODO(fhorschig): Should be @VisibleForTesting.
