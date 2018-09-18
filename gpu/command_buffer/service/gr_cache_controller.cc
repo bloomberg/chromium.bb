@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/gr_cache_controller.h"
 
+#include <chrono>
+
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "ui/gl/gl_context.h"
 
@@ -26,6 +28,14 @@ void GrCacheController::ScheduleGrContextCleanup() {
   current_idle_id_++;
   if (!purge_gr_cache_cb_.IsCancelled())
     return;
+
+  constexpr int kOldResourceCleanupDelaySeconds = 30;
+  // Here we ask GrContext to free any resources that haven't been used in
+  // a long while even if it is under budget. Below we set a call back to
+  // purge all possible GrContext resources if the context itself is not being
+  // used.
+  context_state_->gr_context->performDeferredCleanup(
+      std::chrono::seconds(kOldResourceCleanupDelaySeconds));
 
   constexpr int kIdleCleanupDelaySeconds = 1;
   purge_gr_cache_cb_.Reset(base::BindOnce(&GrCacheController::PurgeGrCache,
