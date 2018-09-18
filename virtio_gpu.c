@@ -26,8 +26,8 @@
 #define MESA_LLVMPIPE_TILE_SIZE (1 << MESA_LLVMPIPE_TILE_ORDER)
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
-						  DRM_FORMAT_BGR888,   DRM_FORMAT_RGB565,
-						  DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888 };
+						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
+						  DRM_FORMAT_XRGB8888 };
 
 static const uint32_t dumb_texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
 							DRM_FORMAT_YVU420_ANDROID,
@@ -185,6 +185,9 @@ static int virtio_gpu_init(struct driver *drv)
 		drv_add_combinations(drv, dumb_texture_source_formats,
 				     ARRAY_SIZE(dumb_texture_source_formats), &LINEAR_METADATA,
 				     BO_USE_TEXTURE_MASK);
+
+	/* Android CTS tests require this. */
+	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
 
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);

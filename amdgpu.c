@@ -37,9 +37,8 @@ const static uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB8888 };
 
-const static uint32_t texture_source_formats[] = { DRM_FORMAT_BGR888, DRM_FORMAT_GR88,
-						   DRM_FORMAT_R8,     DRM_FORMAT_NV21,
-						   DRM_FORMAT_NV12,   DRM_FORMAT_YVU420_ANDROID };
+const static uint32_t texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8, DRM_FORMAT_NV21,
+						   DRM_FORMAT_NV12, DRM_FORMAT_YVU420_ANDROID };
 
 static int amdgpu_init(struct driver *drv)
 {
@@ -78,6 +77,9 @@ static int amdgpu_init(struct driver *drv)
 
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &metadata, BO_USE_TEXTURE_MASK);
+
+	/* Android CTS tests require this. */
+	drv_add_combination(drv, DRM_FORMAT_BGR888, &metadata, BO_USE_SW_MASK);
 
 	/* Linear formats supported by display. */
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
@@ -154,7 +156,7 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	gem_create.in.alignment = 256;
 	gem_create.in.domain_flags = 0;
 
-	if (use_flags & (BO_USE_LINEAR | BO_USE_SW))
+	if (use_flags & (BO_USE_LINEAR | BO_USE_SW_MASK))
 		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED;
 
 	gem_create.in.domains = AMDGPU_GEM_DOMAIN_GTT;

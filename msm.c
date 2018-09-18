@@ -14,8 +14,8 @@
 #define MESA_LLVMPIPE_TILE_SIZE (1 << MESA_LLVMPIPE_TILE_ORDER)
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
-						  DRM_FORMAT_BGR888,   DRM_FORMAT_RGB565,
-						  DRM_FORMAT_XBGR8888, DRM_FORMAT_XRGB8888 };
+						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
+						  DRM_FORMAT_XRGB8888 };
 
 static const uint32_t supported_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_R8, DRM_FORMAT_YVU420,
 					      DRM_FORMAT_YVU420_ANDROID };
@@ -27,6 +27,9 @@ static int msm_init(struct driver *drv)
 
 	drv_add_combinations(drv, supported_formats, ARRAY_SIZE(supported_formats),
 			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK | BO_USE_HW_VIDEO_DECODER);
+
+	/* Android CTS tests require this. */
+	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
 
 	return drv_modify_linear_combinations(drv);
 }

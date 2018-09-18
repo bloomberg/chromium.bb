@@ -23,10 +23,10 @@
 #define I915_CACHELINE_MASK (I915_CACHELINE_SIZE - 1)
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888,    DRM_FORMAT_ARGB1555,
-						  DRM_FORMAT_ARGB8888,    DRM_FORMAT_BGR888,
-						  DRM_FORMAT_RGB565,      DRM_FORMAT_XBGR2101010,
-						  DRM_FORMAT_XBGR8888,    DRM_FORMAT_XRGB1555,
-						  DRM_FORMAT_XRGB2101010, DRM_FORMAT_XRGB8888 };
+						  DRM_FORMAT_ARGB8888,    DRM_FORMAT_RGB565,
+						  DRM_FORMAT_XBGR2101010, DRM_FORMAT_XBGR8888,
+						  DRM_FORMAT_XRGB1555,    DRM_FORMAT_XRGB2101010,
+						  DRM_FORMAT_XRGB8888 };
 
 static const uint32_t tileable_texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8,
 							    DRM_FORMAT_UYVY, DRM_FORMAT_YUYV };
@@ -136,6 +136,9 @@ static int i915_add_combinations(struct driver *drv)
 	drv_add_combinations(drv, tileable_texture_source_formats,
 			     ARRAY_SIZE(tileable_texture_source_formats), &metadata,
 			     texture_use_flags);
+
+	/* Android CTS tests require this. */
+	drv_add_combination(drv, DRM_FORMAT_BGR888, &metadata, BO_USE_SW_MASK);
 
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
