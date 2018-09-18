@@ -8,9 +8,6 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
-import android.app.Activity;
-import android.app.Instrumentation;
-import android.app.Instrumentation.ActivityMonitor;
 import android.content.ComponentCallbacks2;
 import android.graphics.Canvas;
 import android.support.test.InstrumentationRegistry;
@@ -41,14 +38,11 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.bookmarks.BookmarkActivity;
-import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
@@ -60,7 +54,6 @@ import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.search_engines.TemplateUrlServiceTestUtils;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.TileSectionType;
 import org.chromium.chrome.browser.suggestions.TileSource;
@@ -89,7 +82,6 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -226,66 +218,6 @@ public class NewTabPageTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         RenderTestRule.sanitize(mNtp.getView());
         mRenderTestRule.render(mNtp.getView().getRootView(), "simplified_new_tab_page");
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
-    @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testSimplifiedNtp_BookmarksShortcuts(boolean interestFeedEnabled) {
-        ActivityMonitor activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
-                BookmarkActivity.class.getName(),
-                new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            View button = mNtp.getView().findViewById(R.id.bookmarks_button);
-            button.performClick();
-        });
-
-        Assert.assertEquals(1, activityMonitor.getHits());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
-    @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testSimplifiedNtp_DownloadsShortcuts(boolean interestFeedEnabled) {
-        ActivityMonitor activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
-                DownloadActivity.class.getName(),
-                new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            View button = mNtp.getView().findViewById(R.id.downloads_button);
-            button.performClick();
-        });
-
-        Assert.assertEquals(1, activityMonitor.getHits());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"NewTabPage", "FeedNewTabPage"})
-    @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
-    public void testSimplifiedNtp_DefaultSearchEngineChange(boolean interestFeedEnabled)
-            throws Exception {
-        View logo = mNtp.getView().findViewById(R.id.search_provider_logo);
-        View shortcuts = mNtp.getView().findViewById(R.id.shortcuts);
-        Assert.assertEquals(View.VISIBLE, logo.getVisibility());
-        Assert.assertEquals(View.VISIBLE, shortcuts.getVisibility());
-
-        TemplateUrlServiceTestUtils.setSearchEngine("bing.com");
-        Assert.assertEquals(View.GONE, logo.getVisibility());
-        Assert.assertEquals(View.VISIBLE, shortcuts.getVisibility());
-
-        TemplateUrlServiceTestUtils.setSearchEngine("google.com");
-        Assert.assertEquals(View.VISIBLE, logo.getVisibility());
-        Assert.assertEquals(View.VISIBLE, shortcuts.getVisibility());
     }
 
     @Test

@@ -134,7 +134,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      */
     public static boolean isSimplifiedNtpAblationEnabled() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.SIMPLIFIED_NTP, PARAM_SIMPLIFIED_NTP_ABLATION, false);
+                ChromeFeatureList.SIMPLIFIED_NTP, PARAM_SIMPLIFIED_NTP_ABLATION, true);
     }
 
     /**
