@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojo") {
   cpp_only = true
+  assert(is_mac)
 
   sources = [
     "mojo/bridge_factory.mojom",
