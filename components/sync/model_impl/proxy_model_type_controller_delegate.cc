@@ -17,6 +17,7 @@ void OnSyncStartingHelperOnModelThread(
     const DataTypeActivationRequest& request,
     ModelTypeControllerDelegate::StartCallback callback_bound_to_ui_thread,
     base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  CHECK(delegate);
   delegate->OnSyncStarting(request, std::move(callback_bound_to_ui_thread));
 }
 
@@ -24,6 +25,7 @@ void GetAllNodesForDebuggingHelperOnModelThread(
     ProxyModelTypeControllerDelegate::AllNodesCallback
         callback_bound_to_ui_thread,
     base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  CHECK(delegate);
   delegate->GetAllNodesForDebugging(std::move(callback_bound_to_ui_thread));
 }
 
@@ -31,6 +33,7 @@ void GetStatusCountersForDebuggingHelperOnModelThread(
     ProxyModelTypeControllerDelegate::StatusCountersCallback
         callback_bound_to_ui_thread,
     base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  CHECK(delegate);
   delegate->GetStatusCountersForDebugging(
       std::move(callback_bound_to_ui_thread));
 }
@@ -38,11 +41,13 @@ void GetStatusCountersForDebuggingHelperOnModelThread(
 void StopSyncHelperOnModelThread(
     SyncStopMetadataFate metadata_fate,
     base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  CHECK(delegate);
   delegate->OnSyncStopping(metadata_fate);
 }
 
 void RecordMemoryUsageAndCountsHistogramsHelperOnModelThread(
     base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  CHECK(delegate);
   delegate->RecordMemoryUsageAndCountsHistograms();
 }
 
