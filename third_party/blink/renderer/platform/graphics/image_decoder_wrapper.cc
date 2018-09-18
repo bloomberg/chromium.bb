@@ -163,8 +163,8 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
   DCHECK_EQ(scaled_size_bitmap.width(), scaled_size_.width());
   DCHECK_EQ(scaled_size_bitmap.height(), scaled_size_.height());
 
-// If we decoded into external memory, the bitmap should be backed by the
-// pixels passed to the allocator.
+  // If we decoded into external memory, the bitmap should be backed by the
+  // pixels passed to the allocator.
   DCHECK(!decode_to_external_memory ||
          scaled_size_bitmap.getPixels() == pixels_);
 
