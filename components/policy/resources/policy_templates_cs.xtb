@@ -124,6 +124,7 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
 <translation id="1387596372902085462">Zda důvěřovat starší infrastruktuře PKI od společnosti Symantec</translation>
 <translation id="1393485621820363363">Povolené podnikové tiskárny pro zařízení</translation>
 <translation id="1397855852561539316">URL výchozího vyhledávače pro návrhy</translation>
+<translation id="142346659686073702">Povolit cizím uživatelům používat Crostini</translation>
 <translation id="1426410128494586442">Ano</translation>
 <translation id="1427655258943162134">Adresa (nebo adresa URL) proxy serveru</translation>
 <translation id="1435659902881071157">Konfigurace sítě na úrovni zařízení</translation>
@@ -363,6 +364,12 @@ Pokud toto nastavení deaktivujete, Vyhledání klepnutím bude zcela vypnuté.
 
 Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše).</translation>
 <translation id="2113068765175018713">Omezit provozní dobu zařízení automatickým restartováním</translation>
+<translation id="2116790137063002724">Tato zásada určuje, zda se mají hlásit informace, pomocí kterých lze identifikovat uživatele, jako jsou například přihlašovací údaje operačního systému, přihlašovací údaje profilu <ph name="PRODUCT_NAME" />, název profilu <ph name="PRODUCT_NAME" />, cesta profilu <ph name="PRODUCT_NAME" /> a cesta ke spustitelnému souboru <ph name="PRODUCT_NAME" />.
+
+      Když je tato zásada ponechána nenastavená nebo je nastavena na hodnotu True, informace, pomocí nichž lze identifikovat uživatele, se shromažďují.
+      když je tato zásada nastavena na hodnotu False, informace, pomocí nichž lze identifikovat uživatele, se neshromažďují.
+
+      Tato zásada je účinná, když je zapnuto rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Povolit na těchto stránkách oznámení</translation>
 <translation id="2131902621292742709">Prodleva snížení jasu obrazovky při napájení z baterie</translation>
 <translation id="2132732175597591362">Určuje seznam povolených vzorů adres URL, na nichž bude vždy povoleno automatické přehrávání.
@@ -1543,6 +1550,12 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="5272684451155669299">Pokud má hodnotu true, uživatel může pomocí hardwaru, který je součástí zařízení Chrome, vzdáleně potvrdit svou identitu certifikační autoritě (CA) pro zajištění soukromí prostřednictvím rozhraní <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> pomocí funkce <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Pokud má tato zásada hodnotu false nebo není nastavena, volání rozhraní API se nezdaří a bude vrácen kód chyby.</translation>
+<translation id="5277806246014825877">Umožnit tomuto uživateli spouštět Crostini.
+
+      Pokud je tato zásada nastavena na hodnotu false, uživatel Crostini spustit nemůže.
+      Pokud je nastavena na hodnotu true nebo je ponechána nenastavená, je program Crostini pro uživatele povolen (pokud jej povolují i jiná nastavení).
+      Aby bylo povoleno spouštět Crostini, musejí být všechny tři zásady, VirtualMachinesAllowed, CrostiniAllowed a DeviceUnaffiliatedCrostiniAllowed pro Crostini nastaveny na hodnotu true.
+      ;Pokud se tato zásada změní na hodnotu false, bude platit pro spouštění nových kontejnerů Crostini, ale již spuštěné kontejnery nebudou ukončeny.</translation>
 <translation id="5283457834853986457">Deaktivovat nástroj pro vyhledávání pluginů (podpora ukončena)</translation>
 <translation id="5288772341821359899">Je-li nastavena tato zásada, je rozsah portů UDP používaný rozhraním WebRTC omezen na zadaný interval portů (včetně mezních hodnot).
 
@@ -1607,6 +1620,7 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
           Pokud není tato zásada nastavena, vykresluje obsah ve výchozím nastavení hostitelský prohlížeč, toto nastavení však můžete přepsat a namísto toho vykreslovat stránky HTML pomocí pluginu <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="5464816904705580310">Konfigurace nastavení pro spravované uživatele</translation>
 <translation id="546726650689747237">Prodleva snížení jasu obrazovky při napájení ze sítě</translation>
+<translation id="5469143988693423708">Uživatel může spouštět Crostini</translation>
 <translation id="5469825884154817306">Blokovat obrázky na těchto stránkách</translation>
 <translation id="5475361623548884387">Povolit tisk</translation>
 <translation id="547601067149622666">Nepovolovat reklamy na webech s rušivými reklamami</translation>
@@ -1663,6 +1677,9 @@ Pokud tuto zásadu ponecháte nenastavenou, uživatelé budou moci nastavit auto
       Zapnutí této možnost se nedoporučuje, protože může umožnit obejití rozšíření nameConstraints, jež omezuje názvy hostitelů, pro které může být certifikát autorizován.
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, certifikáty serverů bez rozšíření subjectAlternativeName, které obsahují buď název DNS nebo IP adresu, nebudou považovány za důvěryhodné.</translation>
+<translation id="5581292529942108810">Konfiguruje zásady související s rozšířením Chrome Reporting.
+
+      Tato zásada platí, pouze pokud je povoleno rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Ovládání služeb určování polohy Google systému Android</translation>
 <translation id="5586942249556966598">Nedělat nic</translation>
 <translation id="5630352020869108293">Obnovit poslední relaci</translation>
@@ -2264,6 +2281,11 @@ Pokud je tato zásada ponechána nenastavená, režim na pozadí je ve výchozí
 
           Pokud je tato zásada ponechána nenastavená, uživatel toto nastavení bude moci ručně změnit.</translation>
 <translation id="723103540848640830">Určit minimální délku kódu PIN pro odemknutí obrazovky</translation>
+<translation id="7232816984286843471">Je-li tato zásada nastavena na hodnotu false, cizí uživatelé nebudou moci používat Crostini.
+
+      Pokud tato zásada není nastavena nebo je nastavena na hodnotu true, mohou Crostini používat všichni uživatelé (jestliže to povolují i jiná nastavení).
+      Aby bylo povoleno spouštět Crostini, musejí být všechny tři zásady, VirtualMachinesAllowed, CrostiniAllowed a DeviceUnaffiliatedCrostiniAllowed pro Crostini nastaveny na hodnotu true.
+      Pokud se tato zásada změní na hodnotu false, bude platit pro spouštění nových kontejnerů Crostini, ale již spuštěné kontejnery nebudou ukončeny.</translation>
 <translation id="7234280155140786597">Názvy zakázaných hostitelů zasílání nativních zpráv (nebo * pro vše)</translation>
 <translation id="7236775576470542603">Nastavuje výchozí typ lupy, který je aktivován na přihlašovací obrazovce.
 
@@ -2311,6 +2333,12 @@ V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS
 <translation id="7311458740754205918">Pokud je tato zásada nastavena na hodnotu True nebo je ponechána nenastavená, na stránce Nová karta se mohou zobrazovat návrhy obsahu na základě historie procházení, zájmů nebo polohy uživatele.
 
       Pokud je tato zásada nastavena na hodnotu False, automaticky generované návrhy obsahu se na stránce Nová karta nezobrazují.</translation>
+<translation id="7313793931637495417">Tato zásada určuje, zda budou hlášeny informace o verzi, jako je verze, platforma a architektura operačního systému, verze prohlížeče <ph name="PRODUCT_NAME" /> a kanál prohlížeče <ph name="PRODUCT_NAME" />.
+
+Pokud tato zásada není nastavena nebo je nastavena na hodnotu True, informace o verzi se shromažďují.
+Pokud je tato zásada nastavena na hodnotu False, informace o verzi se neshromažďují.
+
+Tato zásada platí, pouze pokud je povoleno rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Dodatečné parametry příkazového řádku pro <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Podobné jako možnost Wipe (hodnota 2), ale pokusí se zachovat přihlašovací tokeny, aby se uživatel nemusel znovu přihlašovat.</translation>
 <translation id="7329842439428490522">Udává dobu nečinnosti uživatele, po které bude obrazovka při napájení z baterie vypnuta.
@@ -2343,6 +2371,12 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
 <translation id="7349338075015720646">Určuje seznam webových stránek, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat.
 
       Každá položka v seznamu zásady je objekt se dvěma členy: „url“ a „launch_container“. „url“ má být adresa URL webové aplikace k instalaci a „launch_container“ má být buď „window“ (okno) nebo „tab“ (karta), aby bylo zadáno, jak bude webová aplikace po nainstalování otevřena. Pokud člen „launch_container“ vynecháte, aplikace se spustí v okně, jestliže Chrome vyhodnotí, že se jedná o progresivní webovou aplikaci, a v ostatních případech se spustí na kartě.</translation>
+<translation id="735902178936442460">Tato zásada určuje, zda se mají hlásit informace umožňující identifikaci počítačů, jako jsou název počítače a síťové adresy.
+
+Pokud tato zásada není nastavena nebo je nastavena na hodnotu True, informace umožňující identifikaci počítačů se shromažďují.
+Pokud je tato zásada nastavena na hodnotu False, informace umožňující identifikaci počítačů se neshromažďují.
+
+Tato zásada platí, pouze pokud je povoleno rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Když uživatel přejde na web, který je označen jako potenciálně škodlivý, zobrazí služba Bezpečné prohlížení stránku s upozorněním. Aktivace tohoto nastavení zabrání uživatelům pokračovat ze stránky s upozorněním na škodlivý web.
 
       Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, uživatelé mohou po zobrazení upozornění pokračovat na nahlášený web.
@@ -2605,6 +2639,14 @@ V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou ho
 <translation id="7976157349247117979">Název cíle <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Bez zvláštních omezení</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Umožňuje určit, zda má být v systému Chrome OS povoleno spouštění virtuálních počítačů.
+
+      Pokud je tato zásada nastavena na hodnotu True, spouštění virtuálních počítačů je na zařízení povoleno.
+      Pokud je tato zásada nastavena na hodnotu False, spouštění virtuálních počítačů na zařízení povoleno není.
+      Aby bylo povoleno spouštět Crostini, musejí být všechny tři zásady, VirtualMachinesAllowed, CrostiniAllowed a DeviceUnaffiliatedCrostiniAllowed pro Crostini nastaveny na hodnotu true.
+      Při změně na hodnotu False se pro spouštění nových virtuálních počítačů použije nové nastavení, ale již spuštěné virtuální počítače nebudou ukončeny.
+      Pokud na spravovaném zařízení není nastavena tato zásada, je v něm spouštění virtuálních počítačů zakázáno.
+      Na zařízeních, která nejsou spravována, je spouštění virtuálních počítačů povoleno.</translation>
 <translation id="802147957407376460">Otočit obrazovku o 0 stupňů</translation>
 <translation id="8033913082323846868">Podpora této zásada byla ve verzi M70 ukončena. Použijte namísto ní zásady AutofillAddressEnabled a AutofillCreditCardEnabled.
 
@@ -2648,6 +2690,12 @@ V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou ho
            Není-li tato zásada nastavena, bude použita výchozí doba.
 
            Hodnotu zásady zadávejte v milisekundách. Maximální hodnota je stejná jako prodleva režimu spánku.</translation>
+<translation id="8138009212169037227">Tato zásada určuje, zda se mají hlásit údaje o zásadách a doba načtení zásad.
+
+      Když je tato zásada ponechána nenastavená nebo je nastavena na hodnotu True, údaje o zásadách a čas načtení zásady se shromažďují.
+      Když je tato zásada nastavena na hodnotu False, údaje o zásadách a čas načtení zásad se neshromažďují.
+
+      Tato zásada se projeví, pouze pokud je povoleno rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Odesílá seznam síťových rozhraní s informacemi o typu a hardwarových adresách na server.
 
       Pokud je tato zásada nastavena na hodnotu false, seznam rozhraní odesílán nebude.</translation>

@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
 <translation id="2761704814324807722">מגש מערכת, שעה <ph name="TIME" />‏, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">מתחבר מחדש אל <ph name="NAME" /></translation>
+<translation id="2790844815106384441">יש לקבוע אם אתרים יכולים להשתמש בשירותי מיקום או במיקרופון, במצלמה או בתכונות אחרות של המכשיר</translation>
 <translation id="2792498699870441125">‏Alt + חיפוש</translation>
 <translation id="2805756323405976993">אפליקציות</translation>
 <translation id="2808012452536866044">‏Better Together הועבר אל טלפון חדש</translation>
@@ -194,6 +195,7 @@
 <translation id="4200057768455216496">לחצת על מקש הקיצור של זכוכית מגדלת במצב עגינה. להפעיל אותה?</translation>
 <translation id="4217571870635786043">הכתבה</translation>
 <translation id="4261870227682513959">צפייה בהגדרות של הודעות. ההודעות מושבתות</translation>
+<translation id="4269883910223712419">מנהל המכשיר הזה יכול:</translation>
 <translation id="4274921305979314545">‏חיבור ה-Chromebook אל הטלפון</translation>
 <translation id="4279490309300973883">שיקוף</translation>
 <translation id="4292681942966152062">המערכת מפעילה את <ph name="NETWORK_NAME" /></translation>
@@ -221,6 +223,7 @@
 <translation id="4734965478015604180">אופקי</translation>
 <translation id="476166673298332917">למנהל המכשיר הזה יש גישה אל כל הפעילות, כולל סיסמאות ותקשורת.</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="4778095205580009397">‏Google Assistant אינו זמין בסשן הדמיה.</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">נתק</translation>
 <translation id="4849058404725798627">הדגשה של האובייקט במיקוד המקלדת</translation>
@@ -305,6 +308,7 @@
 <translation id="6297287540776456956">בחר אזור באמצעות הסטיילוס</translation>
 <translation id="6310121235600822547">בוצע סיבוב של <ph name="DISPLAY_NAME" /> אל <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">שכבת-על של מקלדת</translation>
+<translation id="6344698853700675736">החלפת מצב של תאורת לילה</translation>
 <translation id="6376931439017688372">‏Bluetooth פועל</translation>
 <translation id="639644700271529076">‏CAPS LOCK כבוי</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -336,6 +340,7 @@
 <translation id="6751826523481687655">מעקב הביצועים פועל</translation>
 <translation id="6785414152754474415">‏הסוללה טעונה ברמה של ‎<ph name="PERCENTAGE" />%‎ ומתבצעת טעינה.</translation>
 <translation id="6803622936009808957">לא ניתן היה לשקף מסכים מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב.</translation>
+<translation id="6814658242098378692">ניהול אפליקציות, תוספים ועיצובים</translation>
 <translation id="6820676911989879663">הגיע הזמן להפסקה</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">הפעל את <ph name="NETWORKSERVICE" /></translation>
@@ -359,6 +364,7 @@
 <translation id="7168224885072002358">חוזר לרזולוציה הקודמת בעוד <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">מיקרופון אחורי</translation>
 <translation id="726276584504105859">לשימוש במסך מפוצל יש לגרור לכאן</translation>
+<translation id="7303365578352795231">התשובה מתקבלת במכשיר אחר.</translation>
 <translation id="7348093485538360975">מקלדת על המסך</translation>
 <translation id="735745346212279324">‏VPN מנותק</translation>
 <translation id="7377169924702866686">‏Caps Lock מופעל.</translation>
@@ -393,6 +399,7 @@
 <translation id="7842211907556571265">המערכת מתחברת אל <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">אזהרה: תכונה ניסיונית</translation>
 <translation id="7846634333498149051">מקלדת</translation>
+<translation id="7886169021410746335">התאמת הגדרות הפרטיות</translation>
 <translation id="7886277072580235377">סשן הגלישה שלך יימחק אחרי היציאה. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">שליחת אימייל</translation>
 <translation id="7904094684485781019">מנהל החשבון הזה אסר על כניסה עם מספר חשבונות.</translation>

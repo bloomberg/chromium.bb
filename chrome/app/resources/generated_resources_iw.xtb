@@ -567,6 +567,7 @@
 <translation id="1817310072033858383">‏מומלץ להגדיר את Smart Lock ל-<ph name="DEVICE_TYPE" /> שלך</translation>
 <translation id="1817871734039893258">‏שחזור קבצים של Microsoft</translation>
 <translation id="1818007989243628752">מחיקת הסיסמה של <ph name="USERNAME" /></translation>
+<translation id="1818913467757368489">העלאת היומן מתבצעת.</translation>
 <translation id="1819721979226826163">‏מקישים על 'הודעות אפליקציה' &gt; 'שירותי Google Play'.</translation>
 <translation id="1826516787628120939">מתבצעת בדיקה</translation>
 <translation id="1828378091493947763">הפלאגין אינו נתמך במכשיר זה</translation>
@@ -615,11 +616,13 @@
 <translation id="1890674179660343635">‏&lt;span&gt;מזהה: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">פתח מסך מלא</translation>
 <translation id="189358972401248634">שפות אחרות</translation>
+<translation id="1894591787927543791">‏שמירת הכרטיס לשימוש ב-Google Pay</translation>
 <translation id="1895658205118569222">כיבוי</translation>
 <translation id="1895934970388272448">עליך לאשר את הרישום במדפסת כדי לסיים תהליך זה - בדוק את המדפסת כעת.</translation>
 <translation id="1897762215429052132">הגדרה של חיבור רשת, שפה, פריסת מקלדת...</translation>
 <translation id="1901303067676059328">בחר &amp;הכל</translation>
 <translation id="1902576642799138955">תקופת תוקף</translation>
+<translation id="1904518222538904133">אחד מהכרטיסים שלך זמין לשימוש רק במכשיר הזה</translation>
 <translation id="1905375423839394163">‏שם מכשיר Chromebook</translation>
 <translation id="1905710495812624430">חריגה ממספר הניסיונות המרבי המותר.</translation>
 <translation id="1909880997794698664">האם אתה בטוח שברצונך להשאיר מכשיר זה במצב קיוסק באופן קבוע?</translation>
@@ -656,6 +659,7 @@
 <translation id="1962969542251276847">נעל מסך</translation>
 <translation id="1963227389609234879">הסר הכל</translation>
 <translation id="1965624977906726414">אין הרשאות מיוחדות.</translation>
+<translation id="1969654639948595766">‏יומני טקסט של WebRTC (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1970368523891847084">עברת למצב וידאו</translation>
 <translation id="197288927597451399">שמור</translation>
 <translation id="1974043046396539880">‏נקודות הפצה של CRL</translation>
@@ -799,6 +803,7 @@
 <translation id="2190069059097339078">‏מאחזר פרטי כניסה ל-Wi-Fi</translation>
 <translation id="219008588003277019">‏<ph name="NEXE_NAME" /> :Native Client יישום </translation>
 <translation id="2190355936436201913">(ריק)</translation>
+<translation id="2191223688506386601">דבר אחרון</translation>
 <translation id="2192505247865591433">מ:</translation>
 <translation id="2193365732679659387">הגדרות אמון</translation>
 <translation id="2195729137168608510">הגנת אימייל </translation>
@@ -1022,6 +1027,7 @@
 <translation id="2534460670861217804">‏שרת proxy של Secure HTTP</translation>
 <translation id="253557089021624350">‏ספירת Keepalive</translation>
 <translation id="2538361623464451692">הסינכרון מושבת</translation>
+<translation id="2539876824180063438">יש להזיז מעט את האצבע המורה כדי להוסיף את החלקים השונים של טביעת האצבע.</translation>
 <translation id="2541002089857695151">לבצע אופטימיזציה של העברת מסך מלא?</translation>
 <translation id="2542049655219295786">‏טבלה של Google</translation>
 <translation id="2544853746127077729">אישור האימות נדחה על ידי הרשת</translation>
@@ -1255,7 +1261,9 @@
 <translation id="287286579981869940">הוסף את <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2874343608108773609">‏כדי שהסיסמאות שלך יהיו זמינות בכל המכשירים, צריך להיכנס ל-Chrome.</translation>
 <translation id="2875698561019555027">‏(דפי שגיאה ב-Chrome)</translation>
+<translation id="2876336351874743617">אצבע שנייה</translation>
 <translation id="288042212351694283">‏גישה למכשירי Universal 2nd Factor שלך</translation>
+<translation id="2881076733170862447">בלחיצה על התוסף</translation>
 <translation id="2881966438216424900">גישה אחרונה:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> יבצע אתחול ואיפוס בעוד מספר רגעים</translation>
 <translation id="2885378588091291677">מנהל המשימות</translation>
@@ -1441,6 +1449,7 @@
 <translation id="3154429428035006212">לא מקוונת במשך יותר מחודש</translation>
 <translation id="3156531245809797194">‏כדי להשתמש ב-Chrome יש להיכנס לחשבון</translation>
 <translation id="3157931365184549694">שחזר</translation>
+<translation id="3158033540161634471">הגדרת טביעת האצבע</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (בגיבוי חומרה)</translation>
 <translation id="316125635462764134">הסר יישום</translation>
 <translation id="3161522574479303604">כל השפות</translation>
@@ -1512,6 +1521,8 @@
 <translation id="3289856944988573801">‏כדי לבדוק אם יש עדכונים, השתמש ב-Ethernet או ב-Wi-Fi.</translation>
 <translation id="32939749466444286">‏הקונטיינר של Linux לא הופעל. צריך לנסות שוב.</translation>
 <translation id="3294437725009624529">אורח</translation>
+<translation id="329703603001918157">לא ניתן לערוך את קיצור הדרך</translation>
+<translation id="3297951628821704004">הסרת החשבון מהמכשיר הזה</translation>
 <translation id="329838636886466101">תיקון</translation>
 <translation id="3298789223962368867">הוזנה כתובת אתר לא חוקית.</translation>
 <translation id="32991397311664836">מכשירים:</translation>
@@ -1678,6 +1689,7 @@
 <translation id="3534879087479077042">מהו משתמש בפיקוח?</translation>
 <translation id="3538066758857505094">‏קרתה שגיאה בהסרת ההתקנה של Linux. צריך לנסות שוב.</translation>
 <translation id="354060433403403521">‏מתאם AC</translation>
+<translation id="354068948465830244">התוסף יכול לקרוא ולשנות נתוני אתרים</translation>
 <translation id="3541661933757219855">‏הקלד Ctrl+Alt+/ או Escape כדי להסתיר</translation>
 <translation id="3543393733900874979">העדכון נכשל (שגיאה: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="3543597750097719865">‏חתימת X9.62 ECDSA עם SHA-512</translation>
@@ -1723,6 +1735,7 @@
 <translation id="3606712892509067288">‏הסרה מ-Better Together</translation>
 <translation id="3608454375274108141">F10</translation>
 <translation id="3608576286259426129">תצוגה מקדימה של תמונת המשתמש</translation>
+<translation id="3609446736023031597">‏קבלת העדכונים האחרונים והמלצות לגבי אפליקציות מחנות Play</translation>
 <translation id="3609785682760573515">מסנכרן ...</translation>
 <translation id="3609895557594655134">‏הוספת VPN של Android...</translation>
 <translation id="361106536627977100">‏נתוני Flash</translation>
@@ -1755,6 +1768,7 @@
 <translation id="3645372836428131288">יש להזיז קצת את האצבע כדי לסרוק חלק אחר של טביעת האצבע.</translation>
 <translation id="3648348069317717750">המערכת זיהתה את <ph name="USB_DEVICE_NAME" /></translation>
 <translation id="3649138363871392317">צולמה תמונה</translation>
+<translation id="3650845953328929506">העלאת היומן בהמתנה.</translation>
 <translation id="3650952250015018111">הענקת גישה ל-"<ph name="APP_NAME" />":</translation>
 <translation id="3651488188562686558">‏נתק את חיבור ה-Wi-Fi</translation>
 <translation id="3652817283076144888">מתבצע אתחול</translation>
@@ -1906,6 +1920,7 @@
 <translation id="3856800405688283469">בחירת אזור זמן</translation>
 <translation id="3857228364945137633">‏כדאי לנסות את Smart Lock כדי לבטל את הנעילה של <ph name="DEVICE_TYPE" /> כשהטלפון בקרבת מקום, בלי להזין סיסמה.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
+<translation id="3857807444929313943">להרים ולגעת בחיישן שוב</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" />: הסינכרון הושהה</translation>
 <translation id="3860381078714302691">‏ברכות על הצטרפותך אל Hangouts Meet</translation>
 <translation id="3861241522664181545">הדף מושהה.</translation>
@@ -1924,6 +1939,7 @@
 <translation id="3873315167136380065">כדי להפעיל את האפשרות הזאת, צריך <ph name="BEGIN_LINK" />לאפס את הסנכרון<ph name="END_LINK" /> כדי להסיר את ביטוי הסיסמה של הסנכרון</translation>
 <translation id="3878840326289104869">יוצר משתמש בפיקוח</translation>
 <translation id="3879748587602334249">מנהל ההורדות</translation>
+<translation id="3885455691202481064">‏יש לגעת בחיישן עם האצבע המורה. הוא ממוקם בפינה השמאלית העליונה של ה-Chromebook.</translation>
 <translation id="3888550877729210209">כתיבת הערות בעזרת <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">‏הוסף OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">קרא ושנה את הגדרות הנגישות שלך</translation>
@@ -1976,6 +1992,7 @@
 <translation id="3950820424414687140">כניסה</translation>
 <translation id="3954354850384043518">מתבצע</translation>
 <translation id="3954469006674843813">‏<ph name="HEIGHT" />x<ph name="WIDTH" /> (<ph name="REFRESH_RATE" /> הרץ)</translation>
+<translation id="3954953195017194676">‏אין לך יומנים של אירועי WebRTC שתועדו לאחרונה.</translation>
 <translation id="3955193568934677022">התר לאתרים להפעיל תוכן מוגן (מומלץ)</translation>
 <translation id="3956702100721821638">‏לא ניתן היה להתחבר אל Google Play</translation>
 <translation id="3958088479270651626">יבא סימניות והגדרות</translation>
@@ -2178,7 +2195,6 @@
 <translation id="4296575653627536209">הוסף משתמש בפיקוח</translation>
 <translation id="4297219207642690536">הפעלה מחדש ואתחול</translation>
 <translation id="4297322094678649474">החלפת שפות</translation>
-<translation id="4300305918532693141"><ph name="BEGIN_LINK" />אפס את הסנכרון<ph name="END_LINK" /> כדי לשנות את ההגדרה הזו.</translation>
 <translation id="4305227814872083840">ארוכה (שתי שניות)</translation>
 <translation id="4306119971288449206">הפעלת אפליקציות חייבת להתבצע עם סוג תוכן "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243">‏‎<ph name="NUM_KILOBYTES" />K ‏‎(<ph name="NUM_KILOBYTES_LIVE" />K בשימוש)‎‎</translation>
@@ -2321,8 +2337,10 @@
 <translation id="4555769855065597957">צל</translation>
 <translation id="4556110439722119938">‏הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות יסונכרנו עם חשבון Google, כך שתוכל להשתמש בהם בכל המכשירים שלך.</translation>
 <translation id="4558426062282641716">התבקשה הרשאה להפעלה אוטומטית</translation>
+<translation id="4558491878126948419">‏קבלת טיפים ל-<ph name="DEVICE_TYPE" />, עדכונים על מוצרי Google ושיתוף משוב. אפשר תמיד לבטל את הרישום.</translation>
 <translation id="4559617833001311418">האתר הזה ניגש לחיישני התנועה או התאורה שלך.</translation>
 <translation id="4562155214028662640">הוסף טביעת אצבע</translation>
+<translation id="4563880231729913339">אצבע שלישית</translation>
 <translation id="4565377596337484307">הסתר סיסמה</translation>
 <translation id="4567772783389002344">הוסף מילה</translation>
 <translation id="4568213207643490790">‏מצטערים, לא ניתן להשתמש בחשבונות Google במכשיר זה.</translation>
@@ -2397,6 +2415,7 @@
 <translation id="4681930562518940301">פתח את ה&amp;תמונה המקורית בכרטיסייה חדשה</translation>
 <translation id="4682551433947286597">טפטים מופיעים במסך הכניסה.</translation>
 <translation id="4684427112815847243">סנכרן הכל</translation>
+<translation id="4688036121858134881">מזהה יומן מקומי: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />.</translation>
 <translation id="4689235506267737042">בחירת העדפות ההדגמה</translation>
 <translation id="4689421377817139245">‏סנכרון הסימניה עם ה-iPhone</translation>
 <translation id="4690091457710545971">‏&lt;קושחת ה-Wi-Fi של Intel יצרה ארבעה קבצים: csr.lst‏, fh_regs.lst‏, radio_reg.lst‏, monitor.lst.sysmon. שלושת הקבצים הראשונים הם קובצי Dump בינאריים של הרישום, והמערכת של Intel מטפלת בהם מתוך הנחה שהם לא מכילים מידע שמאפשר זיהוי אישי או זיהוי של המכשיר. הקובץ האחרון הוא מעקב ביצוע מהקושחה של Intel. נמחק ממנו מידע שמאפשר זיהוי אישי או זיהוי של המכשיר, אבל הוא גדול מדי מכדי להציג אותו כאן. הקבצים האלה נוצרו בתגובה לבעיות שאירעו לאחרונה בחיבור ה-Wi-Fi של המכשיר שלך, והם ישותפו עם Intel בניסיון לפתור את הבעיות האלה.&gt;</translation>
@@ -2646,6 +2665,7 @@
 <translation id="5050042263972837708">שם הקבוצה</translation>
 <translation id="5052499409147950210">עריכת אתר</translation>
 <translation id="5053604404986157245">‏סיסמת ה-TPM הנוצרת באופן אקראי אינה זמינה. המצב הזה נורמלי לאחר Powerwash.</translation>
+<translation id="5057110919553308744">בלחיצה על התוסף</translation>
 <translation id="5061347216700970798">{NUM_BOOKMARKS,plural, =1{תיקייה זו מכילה סימניה. האם אתה בטוח שברצונך למחוק אותה?}two{תיקייה זו מכילה שתי סימניות. האם אתה בטוח שברצונך למחוק אותה?}many{תיקייה זו מכילה # סימניות. האם אתה בטוח שברצונך למחוק אותה?}other{תיקייה זו מכילה # סימניות. האם אתה בטוח שברצונך למחוק אותה?}}</translation>
 <translation id="5061708541166515394">ניגודיות</translation>
 <translation id="5062930723426326933">הכניסה נכשלה. התחבר לאינטרנט ונסה שוב.</translation>
@@ -3163,6 +3183,7 @@
 <translation id="5804241973901381774">הרשאות</translation>
 <translation id="580571955903695899">סדר מחדש לפי כותרת</translation>
 <translation id="5807290661599647102">הגדרה של נעילת מסך</translation>
+<translation id="5811750797187914944">סיימת</translation>
 <translation id="5814126672212206791">סוג חיבור</translation>
 <translation id="5815645614496570556">‏כתובת X.400</translation>
 <translation id="5816434091619127343">אם יבוצעו שינויי המדפסת שהתבקשו, לא ניתן יהיה להשתמש בה.</translation>
@@ -3200,6 +3221,7 @@
 <translation id="5855773610748894548">אופס, שגיאה במודול המאובטח.</translation>
 <translation id="5856721540245522153">הפעל תכונות לניפוי באגים</translation>
 <translation id="5857090052475505287">תיקייה חדשה</translation>
+<translation id="5858490737742085133">Terminal</translation>
 <translation id="585979798156957858">‏מקש Meta חיצוני</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5860209693144823476">כרטיסייה 3</translation>
@@ -3222,6 +3244,7 @@
 <translation id="5882919346125742463">רשתות מוכרות</translation>
 <translation id="5884474295213649357">‏הכרטיסייה הזו מחוברת להתקן USB.</translation>
 <translation id="5885324376209859881">נהל הגדרות מדיה...</translation>
+<translation id="5886009770935151472">אצבע 1</translation>
 <translation id="5889282057229379085">המספר המרבי של רשויות אישורים ברמת ביניים: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5895187275912066135">הונפק בתאריך</translation>
@@ -3306,6 +3329,7 @@
 <translation id="6025215716629925253">התחקות אחר ערימה</translation>
 <translation id="6026047032548434446">להתקין את האפליקציה?</translation>
 <translation id="6026819612896463875">‏<ph name="WINDOW_TITLE" /> - USB מחובר</translation>
+<translation id="6028117231645531007">הוספת טביעת אצבע</translation>
 <translation id="6029027682598229313">‏התקנת Linux הושלמה.</translation>
 <translation id="6029587122245504742">הכי איטי</translation>
 <translation id="6032912588568283682">מערכת קבצים</translation>
@@ -3342,6 +3366,7 @@
 <translation id="6075907793831890935">החלפת נתונים עם המכשיר בשם <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">כלול את צילום המסך הזה</translation>
 <translation id="6077131872140550515">הסרה מרשימת הרשתות המועדפות</translation>
+<translation id="6077189836672154517">טיפים ועדכונים בנושא <ph name="DEVICE_TYPE" /></translation>
 <translation id="6078323886959318429">הוספת קיצור דרך</translation>
 <translation id="6078752646384677957">יש לבדוק את עוצמת הקול למיקרופון ולאודיו.</translation>
 <translation id="6080515710685820702">האם זהו מחשב משותף? כדאי לפתוח חלון גלישה בסתר.</translation>
@@ -3391,6 +3416,7 @@
 <translation id="6144938890088808325">‏עזור לנו לשפר את מחשבי Chromebook</translation>
 <translation id="6146563240635539929">סרטונים</translation>
 <translation id="6147020289383635445">התצוגה המקדימה של ההדפסה נכשלה.</translation>
+<translation id="6148052338549899048">אין מכשירים כשירים. <ph name="LINK_BEGIN" />מידע נוסף.<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">נסה:</translation>
 <translation id="6150853954427645995">כדי לשמור קובץ זה לשימוש לא מקוון, חזור למצב מקוון, לחץ לחיצה ימנית על הקובץ ובחר את האפשרות <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">לחץ על <ph name="SEARCH_KEY" /> כדי לחפש ב-<ph name="SITE_NAME" /></translation>
@@ -3599,6 +3625,7 @@
 <translation id="6456394469623773452">טוב</translation>
 <translation id="6456631036739229488">‏הטלפון שהוגדר ל-Smart Lock השתנה. עליך להזין את הסיסמה שלך כדי לעדכן את Smart Lock. בפעם הבאה, הטלפון שלך יבטל את הנעילה של <ph name="DEVICE_TYPE" />. בהגדרות אפשר להשבית את Smart Lock.</translation>
 <translation id="645705751491738698">‏המשך לחסום JavaScript</translation>
+<translation id="6458701200018867744">ההעלאה נכשלה (<ph name="WEBRTC_LOG_UPLOAD_TIME" />).</translation>
 <translation id="6459488832681039634">השתמש בבחירה כדי לחפש</translation>
 <translation id="6459799433792303855">החלון הפעיל הועבר אל צג אחר.</translation>
 <translation id="6460601847208524483">חפש את הבא</translation>
@@ -3779,6 +3806,7 @@
 <translation id="6725206449694821596">‏פרוטוקול הדפסה באינטרנט (IPP)</translation>
 <translation id="6727005317916125192">החלונית הקודמת</translation>
 <translation id="6732801395666424405">האישורים לא נטענו</translation>
+<translation id="6732900235521116609">לא ניתן להסיר את קיצור הדרך</translation>
 <translation id="6735304988756581115">‏הצג קובצי Cookie ונתוני אתר אחרים...</translation>
 <translation id="6736045498964449756">אופס, הסיסמאות אינן תואמות!</translation>
 <translation id="6736243959894955139">כתובת</translation>
@@ -3862,6 +3890,7 @@
 <translation id="6860427144121307915">פתח בכרטיסייה</translation>
 <translation id="6862635236584086457">כל הקבצים השמורים בתיקיה זו מגובים באופן אוטומטי באינטרנט</translation>
 <translation id="6865313869410766144">נתוני טפסים למילוי אוטומטי</translation>
+<translation id="6865708901122695652">‏יומני אירועים של WebRTC (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
 <translation id="686664946474413495">טמפרטורת צבע</translation>
 <translation id="6870888490422746447">בחר אפליקציה לשיתוף:</translation>
 <translation id="6871644448911473373">‏מגיב OCSP: <ph name="LOCATION" /></translation>
@@ -3906,6 +3935,7 @@
 <translation id="694592694773692225">הפניה לכתובת אתר אחרת נחסמה בדף הזה.</translation>
 <translation id="6949306908218145636">הוספת דפים פתוחים לסימניות...</translation>
 <translation id="6950627417367801484">שחזור אפליקציות</translation>
+<translation id="6950943362443484797">נתקין את האפליקציה עבורך</translation>
 <translation id="6951153907720526401">‏מעבדי handler לתשלומים</translation>
 <translation id="6955446738988643816">בדוק חלון מוקפץ</translation>
 <translation id="6957231940976260713">שם שירות</translation>
@@ -3941,6 +3971,7 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> תיקיות נבחרו</translation>
 <translation id="6998793565256476099">רישום של מכשיר לשיחות ועידה בטלפון</translation>
 <translation id="7000347579424117903">‏יש לכלול את Ctrl,‏ Alt או מקש החיפוש</translation>
+<translation id="700203306553508933">‏שמירת כרטיסים לשימוש ב-Google Pay</translation>
 <translation id="7002055706763150362">‏כדי להגדיר את ‏Smart Lock for Chromebook‏, Google צריכה לאמת את הזהות שלך - כדי להתחיל הזן את הסיסמה.</translation>
 <translation id="7002454948392136538">בחר את המנהל עבור משתמש בפיקוח זה</translation>
 <translation id="7003339318920871147">מסדי נתונים באינטרנט</translation>
@@ -3989,6 +4020,7 @@
 <translation id="706626672220389329">קרתה שגיאה בטעינת התקן הרשת לשיתוף קבצים. ההתקן שצוין כבר נטען.</translation>
 <translation id="7066944511817949584">נכשלה ההתחברות אל "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7067725467529581407">לעולם אל תציג זאת שוב.</translation>
+<translation id="7070484045139057854">התוסף יכול לקרוא ולשנות נתוני אתרים</translation>
 <translation id="7072010813301522126">שם קיצור הדרך</translation>
 <translation id="707392107419594760">בחר מקלדת:</translation>
 <translation id="7075513071073410194">‏PKCS #1 MD5 עם הצפנת RSA</translation>
@@ -4223,6 +4255,7 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{פתח הכל ב&amp;חלון חדש}=1{פתח ב&amp;חלון חדש}two{פתח הכל (2) ב&amp;חלון חדש}many{פתח הכל (#) ב&amp;חלון חדש}other{פתח הכל (#) ב&amp;חלון חדש}}</translation>
 <translation id="7434509671034404296">למפתחים</translation>
 <translation id="7436921188514130341">אופס: הייתה שגיאה במהלך שינוי השם.</translation>
+<translation id="7441736921018636843">כדי לשנות את ההגדרה הזאת, צריך להסיר את ביטוי הסיסמה של הסנכרון על ידי <ph name="BEGIN_LINK" />איפוס הסנכרון<ph name="END_LINK" /></translation>
 <translation id="7441830548568730290">משתמשים אחרים</translation>
 <translation id="7442465037756169001">‏Hangouts Meet hardware מוכן להגדרה.</translation>
 <translation id="744341768939279100">צור פרופיל חדש</translation>
@@ -4265,6 +4298,7 @@
 <translation id="7494694779888133066">‏<ph name="WIDTH" /> ‏x ‏<ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">שכחת את הסיסמה הקודמת?</translation>
 <translation id="7497215489070763236">‏אישור CA של שרת</translation>
+<translation id="7497981768003291373">‏אין לך יומני טקסט של WebRTC שתועדו לאחרונה.</translation>
 <translation id="7502658306369382406">‏כתובת IPv6</translation>
 <translation id="7503191893372251637">‏סוג אישור Netscape</translation>
 <translation id="7503821294401948377">לא היתה אפשרות לטעון את האייקון '<ph name="ICON" />' עבור פעולת דפדפן.</translation>
@@ -4305,6 +4339,7 @@
 <translation id="7564847347806291057">סיים תהליך</translation>
 <translation id="7566118625369982896">‏ניהול קישורים של אפליקציות מ-Play</translation>
 <translation id="7566723889363720618">F12</translation>
+<translation id="7567772679638539078">יש להניח את האצבע</translation>
 <translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
 <translation id="7568790562536448087">מעדכן</translation>
 <translation id="7571643774869182231">אין מספיק שטח אחסון לעדכון</translation>
@@ -4466,6 +4501,7 @@
     <ph name="LINE_BREAK2" />
     אפשר לנסות לבחור פחות תמונות.</translation>
 <translation id="782590969421016895">השתמש בדפים הנוכחיים</translation>
+<translation id="7826346148677309647">‏אפליקציות נוספות בשביל המכשיר זמינות בחנות Play.</translation>
 <translation id="7826790948326204519">‏<ph name="BEGIN_H3" />תכונות ניפוי באגים<ph name="END_H3" />
     <ph name="BR" />
     אפשר להפעיל את תכונות ניפוי הבאגים במכשיר ה-Chrome OS כדי להתקין ולבדוק במכשיר קוד מותאם אישית. הפעלת התכונות תאפשר לך:<ph name="BR" />
@@ -4662,6 +4698,7 @@
 <translation id="8059417245945632445">&amp;בדוק מכשירים</translation>
 <translation id="8063235345342641131">דמות ברירת מחדל ירוקה</translation>
 <translation id="8064671687106936412">מפתח:</translation>
+<translation id="8065485338434000013">חלק מהכרטיסים שלך זמינים לשימוש רק במכשיר הזה</translation>
 <translation id="806812017500012252">סדר מחדש לפי כותרת</translation>
 <translation id="8068253693380742035">גע כדי להיכנס</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
@@ -4732,6 +4769,7 @@
 <translation id="8184318863960255706">מידע נוסף</translation>
 <translation id="8185331656081929126">הצג הודעות כאשר מזוהות מדפסות חדשות ברשת</translation>
 <translation id="8186609076106987817">השרת לא הצליח למצוא את הקובץ.</translation>
+<translation id="8186639008852027301">השמעת חיווי קולי בעת ההפעלה</translation>
 <translation id="8188120771410500975">בדוק את האיות של &amp;שדות הטקסט</translation>
 <translation id="8188389033983459049">יש לבדוק את הגדרות המכשיר ולהפעיל אותו כדי להמשיך</translation>
 <translation id="8190193592390505034">מתחבר אל <ph name="PROVIDER_NAME" /></translation>
@@ -4739,6 +4777,7 @@
 <translation id="8191453843330043793">V8 Proxy Resolver</translation>
 <translation id="8193175696669055101">דגם מכשיר</translation>
 <translation id="8195027750202970175">גודל בדיסק</translation>
+<translation id="8198323535106903877">נתקין את <ph name="NUMBER_OF_APPS" /> האפליקציות האלה עבורך</translation>
 <translation id="8199300056570174101">מאפייני רשת (שירות) ומכשיר</translation>
 <translation id="8200772114523450471">חדש</translation>
 <translation id="8202160505685531999">הזן שוב את הסיסמה כדי לעדכן את פרופיל <ph name="DEVICE_TYPE" />.</translation>
@@ -5070,6 +5109,8 @@
 <translation id="8716931980467311658">‏למחוק את כל האפליקציות ונתוני Linux מתיקיית קובצי Linux ב-<ph name="DEVICE_TYPE" /> הזה?</translation>
 <translation id="8719653885894320876">הורדת <ph name="PLUGIN_NAME" /> נכשלה</translation>
 <translation id="8723829621484579639">תת-מסגרות במצב גלישה בסתר של: <ph name="PARENT_SITE" /></translation>
+<translation id="8724405322205516354">כשיוצג לך הסמל הזה, משמעות הדבר היא שאפשר להשתמש בטביעת אצבע לצורכי זיהוי או לאישור רכישה.</translation>
+<translation id="8724409975248965964">טביעת האצבע שלך נקלטה</translation>
 <translation id="8724859055372736596">&amp;הצג בתיקייה</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8725178340343806893">מועדפים/סימניות</translation>
@@ -5151,6 +5192,7 @@
 <translation id="883911313571074303">רשום הערה לתמונה</translation>
 <translation id="8844690305858050198">‏סיימנו! התוכנות המזיקות הוסרו. כדי להפעיל מחדש את התוספים, צריך לעבור אל &lt;a href="chrome://extensions"&gt;תוספים.&lt;/a&gt;</translation>
 <translation id="8845001906332463065">קבל עזרה</translation>
+<translation id="8846132060409673887">קריאת היצרן והדגם של המחשב הזה</translation>
 <translation id="8846141544112579928">מחפש מקלדת...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8859057652521303089">בחר שפה:</translation>
@@ -5364,6 +5406,7 @@
 <translation id="9161070040817969420">תת-מסגרות של: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">‏שליחת נתוני מערכת. נכון לעכשיו, המכשיר הזה שולח אל Google באופן אוטומטי נתוני ניתוח ונתוני שימוש במכשיר ובאפליקציות. ההגדרה הזו נאכפת על-ידי הבעלים. אם הפעלת פריטים נוספים 'בפעילות באינטרנט ובאפליקציות', המידע הזה יאוחסן בחשבון כדי לאפשר לך לנהל אותו דרך 'הפעילות שלי'. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
 <translation id="916607977885256133">תמונה בתוך תמונה</translation>
+<translation id="9168436347345867845">מאוחר יותר</translation>
 <translation id="9169496697824289689">הצג מקשי קיצור</translation>
 <translation id="9169931577761441333">הוספה של <ph name="APP_NAME" /> למסך דף הבית</translation>
 <translation id="9170848237812810038">&amp;ביטול</translation>

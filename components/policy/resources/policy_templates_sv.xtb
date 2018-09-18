@@ -140,6 +140,7 @@
 <translation id="1387596372902085462">Om Symantec Corporations äldre PKI-infrastruktur ska vara betrodd eller inte</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
+<translation id="142346659686073702">Tillåt oanknutna användare att använda Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
@@ -393,6 +394,12 @@
 
       Om principen inte ges något värde innebär det att den är aktiverad (se beskrivningen ovan).</translation>
 <translation id="2113068765175018713">Begränsa enhetens upptid genom att starta om automatiskt</translation>
+<translation id="2116790137063002724">Den här principen styr om information som kan användas för att identifiera användarna ska rapporteras. Det kan till exempel vara inloggning på operativsystemet, profilinloggning i <ph name="PRODUCT_NAME" />, namn på profil i <ph name="PRODUCT_NAME" />, sökväg till profil i <ph name="PRODUCT_NAME" /> och sökväg till den körbara filen för <ph name="PRODUCT_NAME" />.
+
+      När principen har lämnats utan inställning eller är inställd på sant samlas information som kan användas för att identifiera användarna in.
+      När principen är inställd på falskt samlas information som kan användas för att identifiera användarna inte in.
+
+      Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
 <translation id="2132732175597591362">Styr vitlista över webbadressmallar som automatisk uppspelning alltid är aktiverad för.
@@ -1600,6 +1607,12 @@
 <translation id="5272684451155669299">Om den är inställd på sant kan användaren använda maskinvaran i Chrome-enheten för att fjärrattestera sin identitet i sekretessinställningarna CA via <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> med hjälp av <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Om den är inställd på falskt, eller om den saknar inställning, fungerar inte anslutningen till API:et och en felkod visas.</translation>
+<translation id="5277806246014825877">Gör det möjligt för användaren att köra Crostini.
+
+      När principen är inställd på falskt är Crostini inte tillgängligt för användaren.
+      När principen är inställd på sant eller har lämnats utan inställning är Crostini tillgängligt för användaren förutsatt att andra inställningar tillåter det.
+      Crostini får bara köras om alla tre principerna VirtualMachinesAllowed, CrostiniAllowed och DeviceUnaffiliatedCrostiniAllowed är inställda på sant när de är tillämpliga.
+      Om principen ändras till falskt gäller detta för nya Crostini-behållare som ska startas, men behållare som redan körs avslutas inte.</translation>
 <translation id="5283457834853986457">Inaktivera plugin-sökaren (utfasad)</translation>
 <translation id="5288772341821359899">Om den här principen har angetts används bara UDP-portarna inom det angivna intervallet (ändvärdena inräknade) för WebRTC.
 
@@ -1666,6 +1679,7 @@
           Standardinställningen som används om policyn inte ställs in är att tillåta att värdwebbläsaren utför renderingen, men du kan åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME" /> rendera HTML-sidor som standard.</translation>
 <translation id="5464816904705580310">Konfigurera inställningar för hanterade användare.</translation>
 <translation id="546726650689747237">Skärmdämpningstid när enheten är ansluten till elnätet</translation>
+<translation id="5469143988693423708">Crostini har aktiverats för användaren</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
 <translation id="5475361623548884387">Aktivera utskrift</translation>
 <translation id="547601067149622666">Tillåt inte annonser på webbplatser med påträngande annonser</translation>
@@ -1722,6 +1736,9 @@
       Observera att detta inte rekommenderas eftersom det kan användas för att förbigå tillägget nameConstraints som begränsar värdnamnen som ett visst certifikat kan auktoriseras för.
 
       Om den här principen inte har ställts in eller har ställts in på falskt betraktas servercertifikat som saknar tillägget subjectAlternativeName och innehåller antingen ett DNS-namn eller en IP-adress som otillförlitliga.</translation>
+<translation id="5581292529942108810">Konfigurera principer som gäller tillägget Chrome Reporting Extension.
+
+      Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Styr Googles platstjänster för Android</translation>
 <translation id="5586942249556966598">Gör ingenting</translation>
 <translation id="5630352020869108293">Återställ den senaste sessionen</translation>
@@ -2336,6 +2353,11 @@
 
           Om denna princip inte anges kan användaren ändra denna inställning manuellt.</translation>
 <translation id="723103540848640830">Ange minimilängd för pinkod till låsskärm</translation>
+<translation id="7232816984286843471">Om principen är inställd på falskt får oanknutna användare inte använda Crostini.
+
+      Om principen lämnas utan inställning eller ställs in på sant får alla användare använda Crostini förutsatt att övriga inställningar tillåter det.
+      Crostini får bara köras om alla tre principerna VirtualMachinesAllowed, CrostiniAllowed och DeviceUnaffiliatedCrostiniAllowed är inställda på sant när de är tillämpliga.
+      Om principen ändras till falskt gäller detta för nya Crostini-behållare som ska startas, men behållare som redan körs avslutas inte.</translation>
 <translation id="7234280155140786597">Namn på de värdar för Native Messaging som ska vara förbjudna (* betyder alla)</translation>
 <translation id="7236775576470542603">Konfigurera standardtypen av skärmförstorare som är aktiverad på inloggningsskärmen.
           Om den här principen har angetts bestämmer den vilken typ av skärmförstorare som aktiveras när inloggningsskärmen visas. Om principen har värdet Ingen är skärmförstoraren inaktiv.
@@ -2382,6 +2404,12 @@
 <translation id="7311458740754205918">Om policyn är inställd på sant eller inte inställd alls kan förslag på innehåll utifrån användarens webbhistorik, intressen eller plats visas på sidan Ny flik.
 
       Om policyn är inställd på falskt visas inte förslag på innehåll som genererats automatiskt på sidan Ny flik.</translation>
+<translation id="7313793931637495417">Den här principen styr om versionsinformation ska rapporteras. Det kan till exempel vara version av operativsystemet, plattform för operativsystemet, operativsystemets arkitektur, version av <ph name="PRODUCT_NAME" /> och kanal för <ph name="PRODUCT_NAME" />.
+
+      När principen har lämnats utan inställning eller är inställd på sant samlas versionsinformation in.
+      När principen är inställd på falskt samlas versionsinformation inte in.
+
+      Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Ytterligare kommandoradsparametrar för <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Som Wipe (värde 2), med skillnaden att inloggningstoken om möjligt sparas så att användaren inte behöver logga in på nytt.</translation>
 <translation id="7329842439428490522">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska stängas av när enheten drivs av batteriet.
@@ -2414,6 +2442,12 @@
 <translation id="7349338075015720646">Anger en lista över webbplatser som installeras obemärkt utan att användaren gör något och som användaren inte kan avinstallera eller inaktivera.
 
       Varje post i principens listan är ett objekt med två medlemmar: "url" och "launch_container". "url" bör vara webbadressen till webbappen som ska installeras och "launch_container" ska anges antingen som "window" eller "tab" för att visa hur webbappen ska öppnas när den har installerats. Om "launch_container" utelämnas öppnas appen i ett fönster om den anses vara en progressiv webbapp i Chrome och på en flik i annat fall.</translation>
+<translation id="735902178936442460">Den här principen styr om information som kan användas för att identifiera enheter ska rapporteras. Det kan till exempel vara enhetens namn och nätverksadress.
+
+      När principen har lämnats utan inställning eller är inställd på sant samlas information som kan användas för att identifiera enheter in.
+      När principen är inställd på falskt samlas information som kan användas för att identifiera enheter inte in.
+
+      Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Med tjänsten Säker webbsökning visas en varningssida när användare navigerar till webbplatser som flaggats som skadliga. Om du aktiverar inställningen kan användare inte fortsätta från varningssidan till den skadliga webbplatsen.
 
       Om inställningen inaktiveras eller inte konfigureras kan användare välja att fortsätta från den flaggade webbplatsen efter att varningen har visats.
@@ -2683,6 +2717,14 @@
 <translation id="7976157349247117979">Namn på <ph name="PRODUCT_NAME" />-mål</translation>
 <translation id="7980227303582973781">Inga särskilda begränsningar</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Styr om virtuella maskiner får köras eller inte i Chrome OS.
+
+      Om principen är inställd på sant får virtuella maskiner köras på enheten.
+      Om principen är inställd på falskt får virtuella maskiner inte köras på enheten.
+      Crostini får bara köras om alla tre principerna VirtualMachinesAllowed, CrostiniAllowed och DeviceUnaffiliatedCrostiniAllowed är inställda på sant när de är tillämpliga.
+      När principen ändras till falskt tillämpas den på nya virtuella maskiner, men virtuella maskiner som redan körs avslutas inte.
+      Om principen lämnas utan inställning på en hanterad enhet får virtuella maskiner inte köras på den.
+      Virtuella maskiner får köras på enheter som inte hanteras.</translation>
 <translation id="802147957407376460">Rotera skärmen 0 grader</translation>
 <translation id="8033913082323846868">Den här principen fasas ut i M70. Använd AutofillAddressEnabled och AutofillCreditCardEnabled i stället.
 
@@ -2727,6 +2769,12 @@
           Om policyn inte ställs in används en standardtid.
 
           Policyns värde anges i millisekunder. Värdet måste vara mindre än inaktivitetstiden.</translation>
+<translation id="8138009212169037227">Den här principen styr om principdata och tidpunkten då principen hämtades ska rapporteras.
+
+      När principen har lämnats utan inställning eller är inställd på sant samlas principdata och tiden då principen hämtades in.
+      När principen är inställd på falskt görs ingen insamling av principdata eller tiden då principen hämtades.
+
+      Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Rapportera en lista över nätverksgränssnitt med typ och maskinvaruadress till servern.
 
       Om principen anges som False skickas inte gränssnittslistan.</translation>

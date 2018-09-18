@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Faire confiance à l'ancienne infrastructure PKI de Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
+<translation id="142346659686073702">Autoriser les utilisateurs non affiliés à utiliser Crostini</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
@@ -395,6 +396,12 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 
       Si cette règle n'est pas configurée, la fonctionnalité sera activée, conformément à la description ci-dessus.</translation>
 <translation id="2113068765175018713">Limiter le temps de fonctionnement de l'appareil en redémarrant automatiquement</translation>
+<translation id="2116790137063002724">Cette règle détermine si les informations pouvant être utilisées pour identifier les utilisateurs, telles que la connexion à l'OS, la connexion au profil <ph name="PRODUCT_NAME" />, le nom du profil <ph name="PRODUCT_NAME" />, le chemin d'accès au profil <ph name="PRODUCT_NAME" /> et le chemin d'accès exécutable <ph name="PRODUCT_NAME" /> doivent être enregistrées.
+
+      Lorsque cette règle n'est pas définie ou est définie sur True, les informations pouvant être utilisées pour identifier les utilisateurs sont collectées.
+      Lorsque cette règle est définie sur False, les informations pouvant être utilisées pour identifier les utilisateurs ne sont pas collectées.
+
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activé et que l'ordinateur est enregistré pour suivre la règle "<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />".</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>
 <translation id="2132732175597591362">Permet de contrôler la lecture automatique pour tous les formats d'URL de la liste blanche.
@@ -1609,6 +1616,12 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="5272684451155669299">Si cette règle est définie sur "true", l'utilisateur peut utiliser le matériel sur des appareils Chrome afin d'attester, à distance, de son identité auprès de l'autorité de certification de la confidentialité par le biais de l'API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> à l'aide de la fonction <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Si cette règle est définie sur "false", ou si vous ne l'avez pas définie, les appels vers l'API échouent, et un code d'erreur est renvoyé.</translation>
+<translation id="5277806246014825877">Autoriser cet utilisateur à utiliser Crostini.
+
+      Lorsque cette règle est définie sur False, l'utilisateur n'est pas autorisé à utiliser Crostini.
+      Lorsque cette règle n'est pas définie ou est définie sur True, l'utilisateur est autorisé à utiliser Crostini tant que les autres paramètres le permettent.
+      Les trois règles, VirtualMachinesAllowed, CrostiniAllowed et DeviceUnaffiliatedCrostiniAllowed doivent être définies sur True lorsqu'elles s'appliquent pour que Crostini puisse être exécuté.
+      Si vous modifiez cette règle en la définissant sur False, elle est appliquée aux conteneurs Crostini qui vont être lancés, mais elle n'arrête pas ceux qui le sont déjà.</translation>
 <translation id="5283457834853986457">Désactiver l'outil de recherche de plug-ins (obsolète)</translation>
 <translation id="5288772341821359899">Si cette règle est définie, la portée du port UDP utilisé par WebRTC est restreinte à l'intervalle de port spécifié (points de terminaison inclus).
 
@@ -1676,6 +1689,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé consiste à permettre au navigateur d'accueil d'effectuer le rendu. Mais vous avez la possibilité de remplacer ce paramètre et de demander que les pages HTML soient affichées par <ph name="PRODUCT_FRAME_NAME" /> par défaut.</translation>
 <translation id="5464816904705580310">Configurer les paramètres des utilisateurs gérés</translation>
 <translation id="546726650689747237">Délai d'assombrissement de l'écran (secteur)</translation>
+<translation id="5469143988693423708">L'utilisateur est autorisé à exécuter Crostini</translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
 <translation id="5475361623548884387">Activer l'impression</translation>
 <translation id="547601067149622666">Ne pas autoriser les annonces sur les sites présentant des annonces intrusives</translation>
@@ -1732,6 +1746,9 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Sachez que cette méthode n'est pas recommandée, car l'extension nameConstraints qui limite les noms d'hôtes pour lesquels un certificat donné peut être autorisé risque d'être ignorée.
 
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les certificats de serveur qui ne comportent pas d'extension subjectAlternativeName contenant soit un nom DNS, soit une adresse IP, ne seront pas approuvés.</translation>
+<translation id="5581292529942108810">Configurez les règles relatives à Chrome Reporting Extension.
+
+      Ces règles ne sont effectives que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Gérer les services de localisation Android</translation>
 <translation id="5586942249556966598">Ne rien faire</translation>
 <translation id="5630352020869108293">Restaurer la dernière session</translation>
@@ -2347,6 +2364,11 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Si cette règle n'est pas définie, l'utilisateur peut modifier ce paramètre manuellement.</translation>
 <translation id="723103540848640830">Définir le nombre minimal de caractères pour le code de l'écran de verrouillage</translation>
+<translation id="7232816984286843471">Si cette règle est définie sur False, les utilisateurs non affiliés n'ont pas accès à Crostini.
+
+      Lorsque cette règle n'est pas définie ou est définie sur True, tous les utilisateurs sont autorisés à utiliser Crostini tant que les autres paramètres le permettent.
+      Les trois règles, VirtualMachinesAllowed, CrostiniAllowed et DeviceUnaffiliatedCrostiniAllowed doivent être définies sur True lorsqu'elles s'appliquent pour que Crostini puisse être exécuté.
+      Si vous modifiez cette règle en la définissant sur False, elle est appliquée aux conteneurs Crostini qui vont être lancés, mais elle n'arrête pas ceux qui le sont déjà.</translation>
 <translation id="7234280155140786597">Noms des hôtes de messagerie native non autorisés (ou "*" pour tous)</translation>
 <translation id="7236775576470542603">Définit le type de loupe par défaut activée sur l'écran de connexion.
 
@@ -2394,6 +2416,12 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="7311458740754205918">Si cette règle est définie sur "True" ou n'est pas définie, la page "Nouvel onglet" peut proposer des recommandations de contenus en fonction de l'historique de navigation, des centres d'intérêt ou de la position de l'utilisateur.
 
       Si cette règle est définie sur "False", aucune recommandation de contenus générée automatiquement ne s'affiche sur la page "Nouvel onglet".</translation>
+<translation id="7313793931637495417">Cette règle détermine si les informations de version doivent être enregistrées. Cela concerne notamment la version, la plate-forme et l'architecture de l'OS, la version de <ph name="PRODUCT_NAME" /> et le canal de <ph name="PRODUCT_NAME" />.
+
+      Lorsque cette règle n'est pas définie ou est définie sur True, les informations de version sont collectées.
+      Lorsque cette règle est définie sur False, les informations de version ne sont pas collectées.
+
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Paramètres de ligne de commande supplémentaires pour <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Semblable à l'option "Nettoyer" (valeur 2), celle-ci essaie de conserver les jetons de connexion pour éviter à l'utilisateur de devoir se reconnecter.</translation>
 <translation id="7329842439428490522">Indiquer le délai d'inactivité au terme duquel l'écran s'éteint en cas d'utilisation de la batterie
@@ -2426,6 +2454,12 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7349338075015720646">Établit une liste de sites Web installés de façon silencieuse, sans intervention de l'utilisateur, qui ne peuvent être ni désinstallés, ni désactivés par l'utilisateur.
 
       Chaque élément de la liste de cette règle est un objet constitué de deux paramètres : "url" et "launch_container". "url" correspond à l'URL de l'application Web à installer et "launch_container" désigne l'endroit où celle-ci doit s'ouvrir ("window" ou "tab"). Lorsque le paramètre "launch_container" n'est pas défini, l'application se lance dans une fenêtre si Chrome considère qu'il s'agit d'une progressive web app. Sinon, elle s'affiche dans un onglet.</translation>
+<translation id="735902178936442460">Cette règle détermine si les informations pouvant être utilisées pour identifier les ordinateurs, telles que le nom de l'ordinateur et les adresses réseau doivent être enregistrées.
+
+      Lorsque cette règle n'est pas définie ou est définie sur True, les informations pouvant être utilisées pour identifier les ordinateurs sont collectées.
+      Lorsque cette règle est définie sur False, les informations pouvant être utilisées pour identifier les ordinateurs ne sont pas collectées.
+
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Dans le cadre du service de navigation sécurisée, un avertissement s'affiche lorsque les utilisateurs essaient d'accéder à des sites potentiellement malveillants. Si cette règle est activée, les utilisateurs ne peuvent pas poursuivre et accéder aux sites en question lorsqu'un cet avertissement s'affiche.
 
       Si cette règle est désactivée ou n'est pas configurée, les utilisateurs peuvent choisir de poursuivre et accéder ainsi aux sites potentiellement malveillants après avoir lu l'avertissement.
@@ -2697,6 +2731,14 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 <translation id="7976157349247117979">Nom de la destination <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Aucune restriction particulière</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Permet de définir si votre appareil Chrome OS peut exécuter ou non des machines virtuelles.
+
+      Si cette règle est définie sur True, l'appareil est autorisé à exécuter des machines virtuelles.
+      Si cette règle est définie sur False, l'appareil n'est pas autorisé à exécuter de machines virtuelles.
+      Les trois règles, VirtualMachinesAllowed, CrostiniAllowed et DeviceUnaffiliatedCrostiniAllowed doivent être définies sur True lorsqu'elles s'appliquent pour que Crostini puisse être exécuté.
+      Si vous modifiez cette règle en la définissant sur False, elle est appliquée aux machines virtuelles qui vont être lancées, mais elle n'arrête pas celles qui le sont déjà.
+      Si cette règle n'est pas définie sur un appareil géré, l'appareil n'est pas autorisé à exécuter de machines virtuelles.
+      Les appareils non gérés sont autorisés à exécuter des machines virtuelles.</translation>
 <translation id="802147957407376460">Faire pivoter l'écran de 0 degré</translation>
 <translation id="8033913082323846868">Cette règle a été abandonnée dans la version M70. Veuillez utiliser les règles AutofillAddressEnabled et AutofillCreditCardEnabled à la place.
 
@@ -2741,6 +2783,12 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
           Si elle n'est pas définie, la durée par défaut est utilisée.
 
           La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures ou égales au délai d'inactivité.</translation>
+<translation id="8138009212169037227">Cette règle détermine si les données de la règle et l'heure de récupération de la règle doivent être enregistrées.
+
+      Lorsque cette règle n'est pas définie ou est définie sur True, les données de la règle et l'heure de récupération de la règle sont collectées.
+      Lorsque cette règle est définie sur False, les données de la règle et l'heure de récupération de la règle ne sont pas collectées.
+
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Générer une liste des interfaces réseau, ainsi que leurs types et leurs adresses matérielles sur le serveur.
 
       Si la règle est définie sur "False", aucune liste d'interfaces n'est générée.</translation>

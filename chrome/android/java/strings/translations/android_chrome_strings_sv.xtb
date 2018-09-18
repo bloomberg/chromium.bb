@@ -239,6 +239,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="2762000892062317888">nyss</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
+<translation id="2803478378562657435">Sparade lösenord och lösenordsalternativ visas</translation>
 <translation id="2810645512293415242">Förenklad sida visades för att spara data och minska inläsningstiden.</translation>
 <translation id="281504910091592009">Visa och hantera sparade lösenord i <ph name="BEGIN_LINK" />Google-kontot<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Logga in och aktivera synkronisering om du vill ha dina bokmärken tillgängliga på alla enheter</translation>
@@ -829,6 +830,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="748127970106343339">Bekräfta borttagning av användaruppgifter för enheten</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (uppdaterades <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Visa lösenord</translation>
 <translation id="7494974237137038751">Sparad data</translation>
 <translation id="7498271377022651285">Vänta …</translation>
 <translation id="7514365320538308">Ladda ned</translation>
@@ -951,6 +953,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8503559462189395349">Lösenord i Chrome</translation>
 <translation id="8503813439785031346">Användarnamn</translation>
 <translation id="8504988642345501642">Visar snabblänkar till relaterade sidor när du rullar uppåt. Webbadresserna till sidor du besöker skickas till Google.</translation>
+<translation id="8507520749471379845">Lösenord finns tillgängliga</translation>
 <translation id="8514477925623180633">Exportera lösenord som har sparats i Chrome</translation>
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
 <translation id="851751545965956758">Förhindra att webbplatser ansluter till enheter</translation>

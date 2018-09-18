@@ -239,6 +239,7 @@
 <translation id="2762000892062317888">هم‌اکنون</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> ثانیه باقی‌مانده است</translation>
 <translation id="2781151931089541271">۱ ثانیه باقی‌مانده است</translation>
+<translation id="2803478378562657435">درحال نمایش گذرواژه‌های ذخیره‌شده و گزینه‌های گذرواژه</translation>
 <translation id="2810645512293415242">صفحه ساده‌شده برای ذخیره داده‌ها و بارگیری با سرعت بیشتر.</translation>
 <translation id="281504910091592009">‏در <ph name="BEGIN_LINK" />حساب Google<ph name="END_LINK" /> خود گذرواژه‌های ذخیره‌شده را مشاهده و مدیریت کنید</translation>
 <translation id="2818669890320396765">برای اینکه نشانک‌هایتان را در همه دستگاه‌ها داشته باشید، به سیستم وارد شوید و همگام‌سازی را روشن کنید</translation>
@@ -828,6 +829,7 @@
 <translation id="748127970106343339">تأیید حذف اعتبارنامه دستگاه</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (زمان به‌روزرسانی <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">نمایش گذرواژه‌ها</translation>
 <translation id="7494974237137038751">داده صرفه‌جویی‌شده</translation>
 <translation id="7498271377022651285">لطفاً صبر کنید...</translation>
 <translation id="7514365320538308">بارگیری</translation>
@@ -950,6 +952,7 @@
 <translation id="8503559462189395349">‏گذرواژه‌های Chrome</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
 <translation id="8504988642345501642">‏وقتی به بالا پیمایش می‌کنید، پیوندهای سریع به صفحه‌های مرتبط نمایش داده می‌شوند. نشانی وب صفحاتی که بازدید می‌کنید برای Google ارسال می‌شوند.</translation>
+<translation id="8507520749471379845">گذرواژه‌ها دردسترس است</translation>
 <translation id="8514477925623180633">‏صادر کردن گذرواژه‌های ذخیره‌شده در Chrome</translation>
 <translation id="8514577642972634246">ورود به حالت ناشناس</translation>
 <translation id="851751545965956758">مسدود کردن سایت‌ها برای اتصال به دستگاه‌ها</translation>

@@ -239,6 +239,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2762000892062317888">przed chwilą</translation>
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
 <translation id="2781151931089541271">Pozostała sekunda</translation>
+<translation id="2803478378562657435">Wyświetlam zapisane hasła i opcje haseł</translation>
 <translation id="2810645512293415242">Uproszczona wersja strony pozwala szybciej zapisywać i wczytywać dane.</translation>
 <translation id="281504910091592009">Zapisane hasła znajdziesz na swoim <ph name="BEGIN_LINK" />koncie Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, zaloguj się i włącz synchronizację</translation>
@@ -829,6 +830,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="748127970106343339">Potwierdź usunięcie z urządzenia danych logowania</translation>
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (zaktualizowana <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Pokazuj hasła</translation>
 <translation id="7494974237137038751">zaoszczędzone dane</translation>
 <translation id="7498271377022651285">Czekaj…</translation>
 <translation id="7514365320538308">Pobierz</translation>
@@ -854,7 +856,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7665369617277396874">Dodaj konto</translation>
 <translation id="7682724950699840886">Skorzystaj z tych wskazówek: upewnij się, że masz wystarczająco dużo miejsca na urządzeniu, i ponownie spróbuj wyeksportować hasła.</translation>
 <translation id="7698359219371678927">Utwórz e-maila w aplikacji <ph name="APP_NAME" /></translation>
-<translation id="7704317875155739195">Autouzupełnianie wyszukiwania i adresów URL</translation>
+<translation id="7704317875155739195">Autouzupełniaj wyszukiwania i adresy URL</translation>
 <translation id="773466115871691567">Zawsze tłumacz strony, których językiem jest <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Chroni Ciebie i Twoje urządzenie przed niebezpiecznymi witrynami</translation>
@@ -951,6 +953,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8503559462189395349">Hasła w Chrome</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
 <translation id="8504988642345501642">Podczas przewijania w górę wyświetlaj szybkie linki do podobnych stron. Adresy URL odwiedzanych przez Ciebie stron są przesyłane do Google.</translation>
+<translation id="8507520749471379845">Dostępne są hasła</translation>
 <translation id="8514477925623180633">Eksportuj hasła zapisane w Chrome</translation>
 <translation id="8514577642972634246">Włącz tryb incognito</translation>
 <translation id="851751545965956758">Nie zezwalaj stronom na łączenie się z urządzeniami</translation>

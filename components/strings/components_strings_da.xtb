@@ -272,6 +272,7 @@
 <translation id="2781030394888168909">Eksportér MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Forbindelsen blev nulstillet.</translation>
+<translation id="2785008241190445880">Bogmærket er udskiftet</translation>
 <translation id="2788784517760473862">Accepterede kreditkort</translation>
 <translation id="2794233252405721443">Websitet er blokeret</translation>
 <translation id="2799020568854403057">Det website, du er på vej til, indeholder skadelige apps</translation>
@@ -644,6 +645,7 @@
 <translation id="5324080437450482387">Vælg kontaktoplysninger</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5332219387342487447">Leveringsmetode</translation>
+<translation id="5344579389779391559">Denne side forsøger muligvis at opkræve penge af dig</translation>
 <translation id="5355557959165512791">Du kan ikke besøge <ph name="SITE" /> lige nu, da dets certifikat er blevet tilbagekaldt. Netværksfejl og angreb er normalt midlertidige, så siden vil sandsynligvis fungere igen senere.</translation>
 <translation id="536296301121032821">Der kunne ikke gemmes indstillinger for politik</translation>
 <translation id="5371425731340848620">Opdater kortet</translation>
@@ -739,6 +741,7 @@
 <translation id="6015796118275082299">År</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Side 1}one{Side #}other{Side #}}</translation>
 <translation id="6017850046339264347">Hackere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan installere vildledende apps, der foregiver at være noget andet, eller som indsamler data, der kan anvendes til at overvåge dig. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Gør Chrome til din egen</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synkroniseret)</translation>
 <translation id="6027201098523975773">Angiv et navn</translation>
 <translation id="6039846035001940113">Kontakt ejeren af websitet, hvis problemet fortsætter.</translation>
@@ -747,6 +750,7 @@
 <translation id="6047927260846328439">Dette indhold forsøger muligvis at narre dig til at installere software eller afsløre personlige oplysninger. <ph name="BEGIN_LINK" />Vis alligevel<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Du kan ikke besøge <ph name="SITE" /> lige nu, da websitet bruger certifikatlåsning. Netværksfejl og angreb er normalt midlertidige, så siden vil sandsynligvis fungere igen senere.</translation>
 <translation id="6059925163896151826">USB-enheder</translation>
+<translation id="6060991652695587932">Vælg din mailtjeneste for at få hurtig adgang</translation>
 <translation id="6071091556643036997">Politiktypen er ugyldig.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Dette kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}one{Dette kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}other{Disse kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}}</translation>
 <translation id="6080696365213338172">Du har opnår adgang til indhold vha. et administratorcertifikat. De data, du angiver til <ph name="DOMAIN" />, kan indhentes af din administrator.</translation>
@@ -994,6 +998,7 @@ Yderligere oplysninger:
 <translation id="7815407501681723534">Der blev fundet <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for "<ph name="SEARCH_STRING" />"</translation>
 <translation id="7818867226424560206">Administration af politikker</translation>
 <translation id="782886543891417279">Det Wi-Fi-netværk, du bruger (<ph name="WIFI_NAME" />), kan kræve, at du går til netværkets loginside.</translation>
+<translation id="7835178595033117206">Bogmærket blev fjernet</translation>
 <translation id="785549533363645510">Du er dog ikke usynlig. Inkognitotilstand skjuler ikke din browserhistorik over for din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Vil du forlade websitet?</translation>

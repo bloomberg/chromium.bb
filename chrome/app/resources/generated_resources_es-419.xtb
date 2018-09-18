@@ -2195,7 +2195,6 @@
 <translation id="4296575653627536209">Agregar usuario supervisado</translation>
 <translation id="4297219207642690536">Reiniciar y restablecer</translation>
 <translation id="4297322094678649474">Cambiar idiomas</translation>
-<translation id="4300305918532693141">Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">largo (2 s)</translation>
 <translation id="4306119971288449206">Las apps deben incluir el encabezado content-type "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K en vivo)</translation>

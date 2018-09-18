@@ -2191,7 +2191,6 @@
 <translation id="4296575653627536209">添加受监管用户</translation>
 <translation id="4297219207642690536">重启并重置</translation>
 <translation id="4297322094678649474">更改语言</translation>
-<translation id="4300305918532693141">要更改此设置，请<ph name="BEGIN_LINK" />重置同步<ph name="END_LINK" />。</translation>
 <translation id="4305227814872083840">长（2 秒）</translation>
 <translation id="4306119971288449206">应用必须以“<ph name="CONTENT_TYPE" />”这种内容类型提供</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K（实际大小为 <ph name="NUM_KILOBYTES_LIVE" /> K）</translation>

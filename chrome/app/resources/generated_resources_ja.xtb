@@ -2198,7 +2198,6 @@
 <translation id="4296575653627536209">監視対象ユーザーを追加</translation>
 <translation id="4297219207642690536">再起動してリセット</translation>
 <translation id="4297322094678649474">言語を変更</translation>
-<translation id="4300305918532693141">この設定を変更するには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します。</translation>
 <translation id="4305227814872083840">長い（2 秒）</translation>
 <translation id="4306119971288449206">アプリはコンテンツタイプ「<ph name="CONTENT_TYPE" />」で配信される必要があります</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K（<ph name="NUM_KILOBYTES_LIVE" /> K ライブ）</translation>

@@ -239,6 +239,7 @@
 <translation id="2762000892062317888">только что</translation>
 <translation id="2777555524387840389">Осталось <ph name="SECONDS" /> сек.</translation>
 <translation id="2781151931089541271">Осталась 1 сек.</translation>
+<translation id="2803478378562657435">На экране показаны сохраненные пароли и настройки паролей</translation>
 <translation id="2810645512293415242">Страница была открыта в упрощенном виде, чтобы уменьшить объем трафика и время загрузки.</translation>
 <translation id="281504910091592009">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />Аккаунт Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Чтобы получить доступ к закладкам на всех устройствах, войдите в аккаунт и включите синхронизацию.</translation>
@@ -829,6 +830,7 @@
 <translation id="748127970106343339">Подтвердите удаление учетных данных устройства</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (последнее обновление: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Показать пароли</translation>
 <translation id="7494974237137038751">сэкономлено</translation>
 <translation id="7498271377022651285">Подождите…</translation>
 <translation id="7514365320538308">Скачать</translation>
@@ -951,6 +953,7 @@
 <translation id="8503559462189395349">Пароли Chrome</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>
 <translation id="8504988642345501642">URL посещенных вами страниц отправляются в Google, поэтому при прокручивании вы можете увидеть ссылки на похожие страницы.</translation>
+<translation id="8507520749471379845">Доступные варианты паролей</translation>
 <translation id="8514477925623180633">Экспорт паролей, сохраненных в Chrome</translation>
 <translation id="8514577642972634246">Включить режим инкогнито</translation>
 <translation id="851751545965956758">Не разрешать сайтам подключаться к устройствам</translation>

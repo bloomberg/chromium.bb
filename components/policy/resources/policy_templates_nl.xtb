@@ -138,6 +138,7 @@
 <translation id="1387596372902085462">Of je vertrouwen wilt stellen in de Legacy PKI-infrastructuur van Symantec Corporation</translation>
 <translation id="1393485621820363363">Zakelijke apparaatprinters ingeschakeld</translation>
 <translation id="1397855852561539316">Voorgestelde URL voor standaardzoekprovider</translation>
+<translation id="142346659686073702">Toestaan dat niet-gelieerde gebruikers Crostini gebruiken</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adres of URL van proxyserver</translation>
 <translation id="1435659902881071157">Netwerkconfiguratie op apparaatniveau</translation>
@@ -387,6 +388,12 @@
 
       Als er geen instelling voor dit beleid is opgegeven, staat dit gelijk aan het inschakelen van het beleid (zie de beschrijving hierboven).</translation>
 <translation id="2113068765175018713">Uptime van apparaat beperken door automatisch opnieuw op te starten</translation>
+<translation id="2116790137063002724">Met dit beleid wordt bepaald of er gegevens worden gerapporteerd die kunnen worden gebruikt om gebruikers te identificeren, zoals de OS-inloggegevens, de inloggegevens voor het <ph name="PRODUCT_NAME" />-profiel, de profielnaam voor <ph name="PRODUCT_NAME" />, het profielpad voor <ph name="PRODUCT_NAME" /> en het uitvoerbare pad voor <ph name="PRODUCT_NAME" />.
+
+      Als dit beleid niet is ingesteld of is ingesteld op 'true' (waar), worden er gegevens verzameld die kunnen worden gebruikt om gebruikers te identificeren.
+      Als dit beleid is ingesteld op 'false' (onwaar), worden er geen gegevens verzameld die kunnen worden gebruikt om gebruikers te identificeren.
+
+      Dit beleid is alleen van toepassing wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Meldingen op deze sites toestaan</translation>
 <translation id="2131902621292742709">Vertraging van dimmen van scherm wanneer op de batterij wordt gewerkt</translation>
 <translation id="2132732175597591362">Hiermee wordt de witte lijst van URL-patronen beheerd waarvoor autoplay altijd is ingeschakeld.
@@ -1581,6 +1588,12 @@
 <translation id="5272684451155669299">Als dit beleid is ingesteld op 'true', kan de gebruiker met de hardware van Chrome-apparaten de identiteit ervan extern bevestigen aan de privacy-CA via de <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> met <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Als dit beleid is ingesteld op 'false' of niet is ingesteld, mislukt het aanroepen van de API en wordt er een foutcode weergegeven.</translation>
+<translation id="5277806246014825877">Deze gebruiker toestaan om Crostini uit te voeren.
+
+      Als dit beleid is ingesteld op 'false' (onwaar), is Crostini niet ingeschakeld voor de gebruiker.
+      Als het beleid is ingesteld op 'true' (waar) of niet is ingesteld, is Crostini ingeschakeld voor de gebruiker, op voorwaarde dat de andere instellingen dit ook toestaan.
+      Alle drie beleidsregels (VirtualMachinesAllowed, CrostiniAllowed en DeviceUnaffiliatedCrostiniAllowed) moeten voor Crostini zijn ingesteld op 'true' (waar) om Crostini te kunnen uitvoeren.
+      Wanneer dit beleid wordt gewijzigd in 'false' (onwaar), is het beleid van toepassing op nieuwe Crostini-containers die worden gestart. Containers die al worden uitgevoerd, worden niet uitgeschakeld.</translation>
 <translation id="5283457834853986457">Plug-inzoeker uitschakelen (beëindigd)</translation>
 <translation id="5288772341821359899">Als het beleid is ingesteld, wordt het door WebRTC gebruikte UDP-poortbereik beperkt tot het opgegeven poortinterval (inclusief eindpunten).
 
@@ -1648,6 +1661,7 @@
           De standaardinstelling die wordt gebruikt wanneer dit beleid niet wordt ingesteld, wordt gebruikt om de hostbrowser de rendering te laten regelen, maar je kunt dit naar wens aanpassen en <ph name="PRODUCT_FRAME_NAME" /> HTML-pagina's standaard laten renderen.</translation>
 <translation id="5464816904705580310">Hiermee configureer je instellingen voor beheerde gebruikers.</translation>
 <translation id="546726650689747237">Vertraging van dimmen van scherm wanneer op netstroom wordt gewerkt</translation>
+<translation id="5469143988693423708">Gebruiker mag Crostini uitvoeren</translation>
 <translation id="5469825884154817306">Afbeeldingen blokkeren op deze sites</translation>
 <translation id="5475361623548884387">Afdrukken inschakelen</translation>
 <translation id="547601067149622666">Geen advertenties toestaan op sites met opdringerige advertenties</translation>
@@ -1704,6 +1718,9 @@
       Houd er rekening mee dat dit niet wordt aanbevolen, aangezien zodoende de extensie nameConstraints, waarmee kan worden beperkt voor welke hostnamen een bepaald certificaat kan worden geautoriseerd, kan worden omzeild.
 
       Als dit beleid niet is ingesteld of is ingesteld op 'false' (onwaar), worden de servercertificaten die geen subjectAlternativeName-extensie met een DNS-naam of IP-adres bevatten, niet vertrouwd.</translation>
+<translation id="5581292529942108810">Aan Chrome Reporting Extension gerelateerde beleidsregels.
+
+      Dit beleid is alleen effectief wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Beheer van Google-locatieservices op Android</translation>
 <translation id="5586942249556966598">Niets doen</translation>
 <translation id="5630352020869108293">De laatste sessie herstellen</translation>
@@ -2308,6 +2325,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als dit beleid niet wordt ingesteld, kan de gebruiker deze instelling handmatig aanpassen.</translation>
 <translation id="723103540848640830">De minimumlengte van de pincode voor het vergrendelingsscherm instellen</translation>
+<translation id="7232816984286843471">Als het beleid is ingesteld op 'false' (onwaar), mogen niet-gelieerde gebruikers Crostini niet gebruiken.
+
+      Als het beleid niet is ingesteld of is ingesteld op 'true' (waar), mogen alle gebruikers Crostini gebruiken, op voorwaarde dat de andere instellingen dit ook toestaan.
+      Alle drie beleidsregels (VirtualMachinesAllowed, CrostiniAllowed en DeviceUnaffiliatedCrostiniAllowed) moeten voor Crostini zijn ingesteld op 'true' (waar) om Crostini te kunnen uitvoeren.
+      Wanneer dit beleid wordt gewijzigd in 'false' (onwaar), is het beleid van toepassing op nieuwe Crostini-containers die worden gestart. Containers die al worden uitgevoerd, worden niet uitgeschakeld.</translation>
 <translation id="7234280155140786597">Namen van de verboden hosts voor systeemeigen berichten (of * voor alle)</translation>
 <translation id="7236775576470542603">Het standaardtype van vergrootglas instellen dat op het inlogscherm is ingeschakeld.
 
@@ -2355,6 +2377,12 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7311458740754205918">Als dit beleid is ingesteld op 'waar' of niet is ingesteld, kunnen op de nieuwe tabbladpagina contentsuggesties worden weergegeven op basis van de browsegeschiedenis, interesses en locatie van de gebruiker.
 
       Als dit is ingesteld op 'onwaar', worden er geen automatisch gegenereerde contentsuggesties weergegeven op de nieuwe tabbladpagina.</translation>
+<translation id="7313793931637495417">Met dit beleid wordt bepaald of er versiegegevens worden gerapporteerd, zoals OS-versie, OS-platform, OS-architectuur, <ph name="PRODUCT_NAME" />-versie en <ph name="PRODUCT_NAME" />-kanaal.
+
+      Als dit beleid niet is ingesteld of is ingesteld op 'true' (waar), worden er versiegegevens verzameld.
+      Als dit beleid is ingesteld op 'false' (onwaar), worden er geen versiegegevens verzameld.
+
+      Dit beleid is alleen van toepassing wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Extra opdrachtregelparameters voor <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Vergelijkbaar met Wipe (waarde 2), maar probeert inlogtokens te behouden, zodat de gebruiker niet opnieuw hoeft in te loggen.</translation>
 <translation id="7329842439428490522">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt uitgeschakeld als er op de batterij wordt gewerkt.
@@ -2387,6 +2415,12 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7349338075015720646">Specificeert een lijst met web-apps die op de achtergrond worden geïnstalleerd zonder interactie van de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker.
 
       Elk lijstitem van het beleid is een tweeledig object, bestaande uit 'url' en 'launch_container'. 'url' moet de URL van de te installeren web-app zijn en 'launch_container' moet 'window' of 'tab' zijn om aan te duiden hoe de web-app na de installatie wordt geopend. Als 'launch_container' wordt weggelaten, wordt de app geopend in een venster indien Chrome de app als progressieve web-app beschouwt en op een tabblad indien de app niet als progressieve web-app wordt beschouwd.</translation>
+<translation id="735902178936442460">Met dit beleid wordt bepaald of er gegevens worden gerapporteerd die kunnen worden gebruikt om machines te identificeren, zoals de machinenaam en netwerkadressen.
+
+      Als dit beleid niet is ingesteld of is ingesteld op 'true' (waar), worden er gegevens verzameld die kunnen worden gebruikt om machines te identificeren.
+      Als dit beleid is ingesteld op 'false' (onwaar), worden er geen gegevens verzameld die kunnen worden gebruik om machines te identificeren.
+
+      Dit beleid is alleen van toepassing wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">De service Safe Browsing geeft een waarschuwingspagina weer wanneer gebruikers naar sites gaan die als potentieel schadelijk zijn gemarkeerd. Als je deze instelling inschakelt, voorkom je dat gebruikers vanaf de waarschuwingspagina toch doorgaan naar de schadelijke site.
 
       Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers ervoor kiezen door te gaan naar de gemarkeerde site nadat de waarschuwing is weergegeven.
@@ -2651,6 +2685,14 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7976157349247117979">Naam van de bestemming van <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Geen speciale beperkingen</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Hiermee kun je aangeven of er virtuele machines mogen worden uitgevoerd met Chrome OS.
+
+      Als het beleid is ingesteld op 'true' (waar), mogen virtuele machines worden uitgevoerd op het apparaat.
+      Als het beleid is ingesteld op 'false' (onwaar), mogen er geen virtuele machines worden uitgevoerd op het apparaat.
+      Alle drie beleidsregels (VirtualMachinesAllowed, CrostiniAllowed en DeviceUnaffiliatedCrostiniAllowed) moeten voor Crostini zijn ingesteld op 'true' (waar) om Crostini te kunnen uitvoeren.
+      Wanneer dit beleid wordt gewijzigd in 'false' (onwaar), wordt dit toegepast op nieuwe virtuele machines die worden gestart. Virtuele machines die al worden uitgevoerd, worden niet uitgeschakeld.
+      Wanneer dit beleid niet is ingesteld op een beheerd apparaat, mogen er geen virtuele machines worden uitgevoerd op het apparaat.
+      Virtuele machines mogen worden uitgevoerd op onbeheerde apparaten.</translation>
 <translation id="802147957407376460">Scherm 0 graden draaien</translation>
 <translation id="8033913082323846868">Dit beleid is beëindigd in M70. Gebruik in plaats hiervan AutofillAddressEnabled en AutofillCreditCardEnabled.
 
@@ -2695,6 +2737,12 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als dit beleid niet is ingesteld, wordt een standaardtijdsduur gebruikt.
 
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moet lager zijn dan of gelijk zijn aan de inactieve vertraging.</translation>
+<translation id="8138009212169037227">Met dit beleid wordt bepaald of beleidsgegevens en het tijdstip van de beleidsfetch worden gerapporteerd.
+
+      Als dit beleid niet is ingesteld of is ingesteld op 'true' (waar), worden beleidsgegevens en het tijdstip van de beleidsfetch verzameld.
+      Als dit beleid is ingesteld op 'false' (onwaar), worden beleidsgegevens en het tijdstip van de beleidsfetch niet verzameld.
+
+      Dit beleid is alleen van toepassing wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">De lijst met netwerkinterfaces met hun typen en hardwareadressen rapporteren aan de server.
 
       Als het beleid is ingesteld op 'onwaar' (false), wordt de interfacelijst niet gerapporteerd.</translation>

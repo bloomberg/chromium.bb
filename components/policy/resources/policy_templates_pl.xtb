@@ -140,6 +140,7 @@
 <translation id="1387596372902085462">Czy włączyć zaufanie w starszej infrastrukturze klucza publicznego Symantec Corporation</translation>
 <translation id="1393485621820363363">Włączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
+<translation id="142346659686073702">Zezwalaj użytkownikom z innych domen na używanie Crostini</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres IP lub URL serwera proxy</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
@@ -384,6 +385,12 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 
       Pozostawienie tej zasady nieustawionej jest równoznaczne z jej włączeniem – patrz opis powyżej.</translation>
 <translation id="2113068765175018713">Ogranicz czas działania urządzenia przez automatyczne ponowne uruchamianie</translation>
+<translation id="2116790137063002724">Ta zasada określa, czy mają być zgłaszane informacje, na podstawie których można zidentyfikować użytkowników, takie jak login użytkownika systemu operacyjnego, login profilu <ph name="PRODUCT_NAME" />, nazwa profilu <ph name="PRODUCT_NAME" />, ścieżka profilu <ph name="PRODUCT_NAME" /> i ścieżka pliku wykonywalnego <ph name="PRODUCT_NAME" />.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje, na podstawie których można zidentyfikować użytkowników, są zbierane.
+      Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować użytkowników, nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Zezwalaj na powiadomienia w tych witrynach.</translation>
 <translation id="2131902621292742709">Opóźnienie przyciemnienia ekranu przy zasilaniu z baterii</translation>
 <translation id="2132732175597591362">Określa białą listę wzorców adresów URL, w przypadku których zawsze będzie działać autoodtwarzanie.
@@ -1537,6 +1544,12 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5272684451155669299">Jeśli ustawiono wartość „prawda”, użytkownik może używać modułu sprzętowego w urządzeniach z Chrome do zdalnego poświadczania tożsamości przez wywołanie funkcji <ph name="CHALLENGE_USER_KEY_FUNCTION" /> interfejsu <ph name="ENTERPRISE_PLATFORM_KEYS_API" />.
 
           Jeśli ustawiono wartość „fałsz” lub nie jest ona określona, wywołania kierowane do interfejsu API zakończą się błędem.</translation>
+<translation id="5277806246014825877">Zezwolenie temu użytkownikowi na uruchamianie Crostini.
+
+      Gdy zasada ma wartość fałsz, użytkownik nie może uruchamiać Crostini.
+      Gdy zasada ma wartość prawda lub jest nieskonfigurowana, użytkownik może uruchamiać Crostini, o ile pozwalają na to inne ustawienia.
+      Aby można było uruchamiać Crostini, wartość prawda muszą mieć wszystkie te trzy zasady: VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed.
+      Gdy wartość zasady zostanie zmieniona na fałsz, będzie dotyczyć uruchamiania nowych kontenerów Crostini, ale kontenery uruchomione wcześniej nie zostaną wyłączone.</translation>
 <translation id="5283457834853986457">Wyłącz znajdowanie wtyczek (wycofane)</translation>
 <translation id="5288772341821359899">Jeśli ta zasada jest ustawiona, zakres portów UDP używany przez WebRTC jest ograniczony do określonego zakresu portów (wraz z punktami końcowymi).
 
@@ -1596,6 +1609,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5457924070961220141">Umożliwia skonfigurowanie domyślnego mechanizmu renderowania HTML po zainstalowaniu wtyczki <ph name="PRODUCT_FRAME_NAME" />. Ustawieniem domyślnym, stosowanym w przypadku nieskonfigurowania tej zasady, jest zezwolenie przeglądarce hosta na wykonywanie renderowania, jednak możesz opcjonalnie zastąpić to ustawienie, tak aby strony HTML były domyślnie renderowane przez wtyczkę <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="5464816904705580310">Konfiguruj ustawienia dla zarządzanych użytkowników.</translation>
 <translation id="546726650689747237">Opóźnienie przyciemnienia ekranu przy zasilaniu sieciowym</translation>
+<translation id="5469143988693423708">Użytkownik może uruchamiać Crostini</translation>
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
 <translation id="5475361623548884387">Włącz drukowanie</translation>
 <translation id="547601067149622666">Blokuj reklamy na stronach zawierających uciążliwe reklamy</translation>
@@ -1652,6 +1666,9 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Nie jest to zalecane, bo może spowodować pominięcie rozszerzenia nameConstraints, które ogranicza nazwy hostów, na których dany certyfikat może być autoryzowany.
 
       Jeśli ta zasada nie jest skonfigurowana lub jest wyłączona, certyfikaty serwera, które nie mają rozszerzenia subjectAlternativeName zawierającego nazwę DNS lub adres IP, nie będą uważane za zaufane.</translation>
+<translation id="5581292529942108810">Konfigurowanie zasad związanych z Rozszerzeniem zgłaszającym informacje o Chrome.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Kontroluj usługi lokalizacyjne Google na Androidzie</translation>
 <translation id="5586942249556966598">Nic nie rób</translation>
 <translation id="5630352020869108293">Przywróć ostatnią sesję</translation>
@@ -2229,6 +2246,11 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Jeśli ta zasada nie jest ustawiona, użytkownik może zmienić to ustawienie ręcznie.</translation>
 <translation id="723103540848640830">Określ minimalną długość kodu PIN blokady ekranu</translation>
+<translation id="7232816984286843471">Gdy zasada ma wartość fałsz, użytkownicy z innych domen nie mogą używać Crostini.
+
+      Gdy zasada jest nieskonfigurowana lub ma wartość prawda, wszyscy użytkownicy mogą używać Crostini, o ile pozwalają na to inne ustawienia.
+      Aby można było uruchamiać Crostini, wartość prawda muszą mieć wszystkie te trzy zasady: VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed.
+      Gdy wartość zasady zostanie zmieniona na fałsz, będzie dotyczyć uruchamiania nowych kontenerów Crostini, ale kontenery uruchomione wcześniej nie zostaną wyłączone.</translation>
 <translation id="7234280155140786597">Nazwy zabronionych hostów wiadomości natywnych (lub * dla wszystkich)</translation>
 <translation id="7236775576470542603">Ustawia domyślny typ lupy włączony na ekranie logowania.
 
@@ -2279,6 +2301,12 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7311458740754205918">Jeśli ta zasada ma wartość prawda lub nie jest skonfigurowana, na stronie Nowa karta mogą pojawiać się polecane treści wybrane na podstawie historii przeglądania, zainteresowań lub lokalizacji użytkownika.
 
       Jeśli ta zasada ma wartość fałsz, automatycznie wybierane polecane treści nie będą wyświetlać się na stronie Nowa karta.</translation>
+<translation id="7313793931637495417">Ta zasada określa, czy mają być zgłaszane informacje o wersji, takie jak wersja, platforma i architektura systemu operacyjnego, wersja <ph name="PRODUCT_NAME" /> i kanał <ph name="PRODUCT_NAME" />.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje o wersji są zbierane.
+      Gdy ta zasada ma wartość fałsz, informacje o wersji nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Dodatkowe parametry wiersza poleceń dla <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Ta opcja jest podobna do zasady Wipe (wartość 2), ale próbuje zachować tokeny logowania, by użytkownik nie musiał ponownie się logować.</translation>
 <translation id="7329842439428490522">Określa, po jakim czasie nieaktywności użytkownika wyłączany jest ekran przy zasilaniu z baterii.
@@ -2309,6 +2337,12 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7349338075015720646">Określa listę witryn internetowych instalowanych dyskretnie, bez interakcji z użytkownikiem, których użytkownik nie może odinstalować ani wyłączyć.
 
       Każda pozycja na liście jest obiektem o dwóch składowych: „url” i „launch_container”. „url” to URL aplikacji internetowej do zainstalowania, a „launch_container” może mieć wartość „window” (okno) lub „tab” (karta) wskazującą sposób otwierania zainstalowanej aplikacji. Jeśli element „launch_container” zostanie pominięty, aplikacja będzie otwierana w oknie, o ile Chrome uzna ją za progresywną aplikację internetową, a w przeciwnym razie na karcie.</translation>
+<translation id="735902178936442460">Ta zasada określa, czy mają być zgłaszane informacje umożliwiające identyfikację urządzeń, takie jak nazwa urządzenia i adresy sieciowe.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje, na podstawie których można zidentyfikować urządzenia, są zbierane.
+      Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować urządzenia, nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Funkcja Bezpieczne przeglądanie wyświetla ostrzeżenie, gdy użytkownik chce wejść na stronę oznaczoną jako potencjalnie szkodliwa. Jeśli włączysz to ustawienie, użytkownicy nie będą mogli przechodzić ze strony ostrzeżenia na strony szkodliwe.
 
       Jeśli nie skonfigurujesz tego ustawienia lub je wyłączysz, użytkownicy będą mogli wybrać, czy chcą przejść ze strony ostrzeżenia na stronę oznaczoną jako szkodliwa.
@@ -2569,6 +2603,14 @@ optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym c
 <translation id="7976157349247117979">Nazwa miejsca docelowego <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Brak ograniczeń specjalnych</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Określa, czy w Chrome OS mogą działać maszyny wirtualne.
+
+      Gdy zasada ma wartość prawda, na urządzeniu można uruchamiać maszyny wirtualne.
+      Gdy zasada ma wartość fałsz, na urządzeniu nie można uruchamiać maszyn wirtualnych.
+      Aby można uruchamiać Crostini, wartość prawda muszą mieć wszystkie te trzy zasady: VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed.
+      Gdy wartość zasady zostanie zmieniona na fałsz, będzie dotyczyć uruchamiania nowych maszyn wirtualnych, ale maszyny wirtualne uruchomione wcześniej nie zostaną wyłączone.
+      Gdy zasada jest nieskonfigurowana na urządzeniu zarządzanym, nie można na nim uruchamiać maszyn wirtualnych.
+      Na urządzeniach niezarządzanych można uruchamiać maszyny wirtualne.</translation>
 <translation id="802147957407376460">Obróć ekran o 0 stopni</translation>
 <translation id="8033913082323846868">Ta zasada została wycofana w M70. Zamiast niej należy używać zasad AutofillAddressEnabled i AutofillCreditCardEnabled.
 
@@ -2613,6 +2655,12 @@ optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym c
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach. Wartości nie mogą być wyższe od opóźnienia bezczynności.</translation>
+<translation id="8138009212169037227">Ta zasada określa, czy będą zgłaszane informacje o zasadach i czas pobrania zasad.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje o zasadach i czas pobrania zasad są zbierane.
+      Gdy zasada ma wartość fałsz, informacje o zasadach i czas pobrania zasad nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Zgłasza serwerowi listę interfejsów sieciowych wraz z ich typami i adresami sprzętowymi.
 
       Jeśli ta zasada ma wartość Fałsz, lista interfejsów nie zostanie zgłoszona.</translation>

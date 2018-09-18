@@ -272,6 +272,7 @@
 <translation id="2781030394888168909">Exporter pour MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">La connexion a été réinitialisée.</translation>
+<translation id="2785008241190445880">Favori remplacé</translation>
 <translation id="2788784517760473862">Cartes de crédit acceptées</translation>
 <translation id="2794233252405721443">Site bloqué</translation>
 <translation id="2799020568854403057">Ce site contient des applications malveillantes</translation>
@@ -644,6 +645,7 @@
 <translation id="5324080437450482387">Sélectionner les coordonnées</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5332219387342487447">Mode de livraison</translation>
+<translation id="5344579389779391559">L'accès à la page suivante peut engendrer des frais</translation>
 <translation id="5355557959165512791">Le site <ph name="SITE" /> est actuellement inaccessible, car son certificat a été révoqué. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page plus tard.</translation>
 <translation id="536296301121032821">Échec du stockage des paramètres de la règle.</translation>
 <translation id="5371425731340848620">Mettre à jour la carte</translation>
@@ -739,6 +741,7 @@
 <translation id="6015796118275082299">Année</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}one{Page #}other{Page #}}</translation>
 <translation id="6017850046339264347">Les pirates informatiques qui contrôlent le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> peuvent installer des applications trompeuses se faisant passer pour d'autres, ou collecter des données afin de vous surveiller. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Personnalisez Chrome</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synchronisés)</translation>
 <translation id="6027201098523975773">Saisissez un nom</translation>
 <translation id="6039846035001940113">Si le problème persiste, contactez le propriétaire du site.</translation>
@@ -747,6 +750,7 @@
 <translation id="6047927260846328439">Ce contenu peut vous inciter à installer un logiciel ou vous soutirer des informations personnelles. <ph name="BEGIN_LINK" />Je souhaite y accéder malgré tout.<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Le site <ph name="SITE" /> est actuellement inaccessible, car il utilise l'épinglage des certificats. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page plus tard.</translation>
 <translation id="6059925163896151826">Appareils USB</translation>
+<translation id="6060991652695587932">Choisissez votre service de messagerie pour un accès rapide</translation>
 <translation id="6071091556643036997">Ce type de règle n'est pas valide.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Cette carte sera enregistrée dans votre compte Google, ce qui vous permettra de payer plus rapidement sur tous vos appareils.}one{Cette carte sera enregistrée dans votre compte Google, ce qui vous permettra de payer plus rapidement sur tous vos appareils.}other{Ces cartes seront enregistrées dans votre compte Google, ce qui vous permettra de payer plus rapidement sur tous vos appareils.}}</translation>
 <translation id="6080696365213338172">Vous avez accédé à du contenu à l'aide d'un certificat fourni par l'administrateur. Les données que vous fournissez à <ph name="DOMAIN" /> peuvent être interceptées par votre administrateur.</translation>
@@ -994,6 +998,7 @@ Informations supplémentaires :
 <translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> trouvé(s) pour "<ph name="SEARCH_STRING" />"</translation>
 <translation id="7818867226424560206">Gestion des règles</translation>
 <translation id="782886543891417279">Pour utiliser ce réseau Wi-Fi (<ph name="WIFI_NAME" />), il est possible que vous deviez vous rendre sur la page de connexion correspondante.</translation>
+<translation id="7835178595033117206">Favori supprimé</translation>
 <translation id="785549533363645510">Cependant, cela ne vous rend pas invisible. Si vous passez en mode navigation privée, votre employeur, votre fournisseur d'accès à Internet ou les sites Web que vous consultez pourront toujours avoir accès à votre historique de navigation.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> : <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Quitter le site Web ?</translation>

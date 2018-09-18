@@ -272,6 +272,7 @@
 <translation id="2781030394888168909">Esporta Mac OS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">La connessione è stata reimpostata.</translation>
+<translation id="2785008241190445880">Segnalibro sostituito</translation>
 <translation id="2788784517760473862">Carte di credito accettate</translation>
 <translation id="2794233252405721443">Sito bloccato</translation>
 <translation id="2799020568854403057">Il sito che stai per visitare contiene app dannose</translation>
@@ -641,6 +642,7 @@
 <translation id="5324080437450482387">Scegli le informazioni di contatto</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5332219387342487447">Modalità di spedizione</translation>
+<translation id="5344579389779391559">Questa pagina potrebbe tentare di addebitarti dei costi</translation>
 <translation id="5355557959165512791">Al momento non puoi visitare il sito <ph name="SITE" /> perché il relativo certificato è stato revocato. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
 <translation id="536296301121032821">Archiviazione delle impostazioni criterio non riuscita</translation>
 <translation id="5371425731340848620">Aggiorna carta</translation>
@@ -736,6 +738,7 @@
 <translation id="6015796118275082299">Anno</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}other{Pagina #}}</translation>
 <translation id="6017850046339264347">Gli utenti malintenzionati presenti sul sito <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> potrebbero installare app ingannevoli che si spacciano per qualcos'altro o raccolgono dati che potrebbero essere usati per monitorare la tua attività. <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Personalizza il tuo Chrome</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sincronizzati)</translation>
 <translation id="6027201098523975773">Inserisci un nome</translation>
 <translation id="6039846035001940113">Se il problema persiste, contatta il proprietario del sito.</translation>
@@ -744,6 +747,7 @@
 <translation id="6047927260846328439">Questi contenuti potrebbero cercare di indurti con l'inganno a installare software o a rivelare informazioni personali. <ph name="BEGIN_LINK" />Mostra comunque<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Al momento non puoi visitare il sito web <ph name="SITE" /> perché utilizza il blocco dei certificati. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
 <translation id="6059925163896151826">Dispositivi USB</translation>
+<translation id="6060991652695587932">Scegli il tuo servizio email per un accesso rapido</translation>
 <translation id="6071091556643036997">Il tipo di norma non è valido.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{ Questa carta verrà salvata nel tuo Account Google per un pagamento più rapido su tutti i dispositivi.}other{ Queste carte verranno salvate nel tuo Account Google per un pagamento più rapido su tutti i dispositivi.}}</translation>
 <translation id="6080696365213338172">Hai raggiunto i contenuti utilizzando un certificato fornito dall'amministratore. I dati che fornisci a <ph name="DOMAIN" /> possono essere intercettati dal tuo amministratore.</translation>
@@ -990,6 +994,7 @@ Ulteriori dettagli:
 <translation id="7815407501681723534"><ph name="SEARCH_RESULTS" /> per "<ph name="SEARCH_STRING" />": <ph name="NUMBER_OF_RESULTS" /></translation>
 <translation id="7818867226424560206">Gestione norme</translation>
 <translation id="782886543891417279">La rete Wi-Fi in uso (<ph name="WIFI_NAME" />) potrebbe richiedere la visita della relativa pagina di accesso.</translation>
+<translation id="7835178595033117206">Segnalibro rimosso</translation>
 <translation id="785549533363645510">Non sei completamente invisibile: se navighi in incognito, la tua navigazione non viene nascosta al tuo datore di lavoro, al provider di servizi Internet o ai siti web che visiti.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Vuoi uscire dal sito?</translation>

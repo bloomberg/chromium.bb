@@ -27,7 +27,7 @@
 <translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1151972924205500581">كلمة المرور مطلوبة</translation>
 <translation id="1152921474424827756">الدخول إلى <ph name="BEGIN_LINK" />النسخة المخزنة مؤقتًا<ph name="END_LINK" /> من <ph name="URL" /></translation>
-<translation id="1156303062776767266">أنت تعرض ملفًا محليًا أو مشتركًا.</translation>
+<translation id="1156303062776767266">يتمّ عرض ملف محلي أو مشترك.</translation>
 <translation id="1158211211994409885">أغلق <ph name="HOST_NAME" /> الاتصال على نحو غير متوقع.</translation>
 <translation id="1161325031994447685">‏إعادة الاتصال بـ Wi-Fi</translation>
 <translation id="1165039591588034296">خطأ</translation>
@@ -272,6 +272,7 @@
 <translation id="2781030394888168909">‏تصدير نظام التشغيل MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">تمت إعادة تعيين الاتصال.</translation>
+<translation id="2785008241190445880">تم استبدال الإشارة المرجعية</translation>
 <translation id="2788784517760473862">بطاقات الائتمان المقبولة</translation>
 <translation id="2794233252405721443">تم حظر الموقع</translation>
 <translation id="2799020568854403057">يحتوي موقع الويب المقصود على تطبيقات ضارة</translation>
@@ -536,7 +537,7 @@
 <translation id="4592951414987517459">يتم ترميز اتصالك بالنطاق <ph name="DOMAIN" /> باستخدام مجموعة تشفير حديثة.</translation>
 <translation id="4594403342090139922">تراجع عن الحذ&amp;ف</translation>
 <translation id="4619615317237390068">علامات التبويب من الأجهزة الأخرى</translation>
-<translation id="4646534391647090355">الانتقال إلى ذلك الآن</translation>
+<translation id="4646534391647090355">الانتقال الآن</translation>
 <translation id="4668929960204016307">،</translation>
 <translation id="467662567472608290">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان تحتوي على أخطاء. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="4690462567478992370">التوقف عن استخدام شهادة غير صالحة</translation>
@@ -644,6 +645,7 @@
 <translation id="5324080437450482387">اختيار معلومات الاتصال</translation>
 <translation id="5327248766486351172">الاسم</translation>
 <translation id="5332219387342487447">طريقة الشحن</translation>
+<translation id="5344579389779391559">قد تُحاول هذه الصفحة تحصيل رسوم منك</translation>
 <translation id="5355557959165512791">لا يمكنك زيارة <ph name="SITE" /> الآن لأنه تم إبطال شهادته. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة في وقت على الأرجح.</translation>
 <translation id="536296301121032821">تعذّر تخزين إعدادات السياسة</translation>
 <translation id="5371425731340848620">تحديث البطاقة</translation>
@@ -739,6 +741,7 @@
 <translation id="6015796118275082299">عام</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{صفحة 1}zero{صفحة #}two{صفحة #}few{صفحة #}many{صفحة #}other{صفحة #}}</translation>
 <translation id="6017850046339264347">يمكن للمهاجمين على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> تثبيت تطبيقات مضللة تدعي أنها شيء آخر أو تجمع بيانات قد يتم استخدامها لتتبعك. <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">‏جعل Chrome متصفِّحك الخاص</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /> (تمت المزامنة)</translation>
 <translation id="6027201098523975773">أدخِل اسمًا</translation>
 <translation id="6039846035001940113">في حال استمرت المشكلة، اتصل بمالك الموقع.</translation>
@@ -747,6 +750,7 @@
 <translation id="6047927260846328439">قد يحاول هذا المحتوى خداعك لتثبيت برامج أو الكشف عن معلومات شخصية. <ph name="BEGIN_LINK" />عرض على أي حال<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">لا يمكنك زيارة <ph name="SITE" /> في الوقت الحالي لأن الموقع يستخدم أداة التحقق من صحة الشهادات. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة في وقت لاحق على الأرجح.</translation>
 <translation id="6059925163896151826">‏أجهزة USB</translation>
+<translation id="6060991652695587932">اختيار خدمة البريد الإلكتروني للوصول السريع</translation>
 <translation id="6071091556643036997">نوع السياسة غير صالح.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{‏سيتم حفظ هذه البطاقة في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}zero{‏سيتم حفظ هذه البطاقات في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}two{‏سيتم حفظ هاتين البطاقتين في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}few{‏سيتم حفظ هذه البطاقات في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}many{‏سيتم حفظ هذه البطاقات في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}other{‏سيتم حفظ هذه البطاقات في حسابك على Google للدفع بشكلٍ أسرع على جميع الأجهزة.}}</translation>
 <translation id="6080696365213338172">لقد دخلت إلى المحتوى باستخدام شهادة وفرها المشرف. ويمكن أن يعترض المشرف طريق البيانات التي تقدمها إلى <ph name="DOMAIN" />.</translation>
@@ -994,6 +998,7 @@
 <translation id="7815407501681723534">تم العثور على <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> لـ "<ph name="SEARCH_STRING" />"</translation>
 <translation id="7818867226424560206">إدارة السياسات</translation>
 <translation id="782886543891417279">‏قد يتطلب Wi-Fi الذي تستخدمه (<ph name="WIFI_NAME" />) زيارة صفحة تسجيل الدخول.</translation>
+<translation id="7835178595033117206">تمت إزالة إشارة مرجعية</translation>
 <translation id="785549533363645510">ومع ذلك، أنت غير مرئي. لا يخفي الانتقال إلى وضع التخفي التصفح من صاحب العمل أو مزود خدمة الإنترنت أو المواقع التي تزورها.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">هل تريد مغادرة الموقع؟</translation>

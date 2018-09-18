@@ -2196,7 +2196,6 @@
 <translation id="4296575653627536209">관리 대상 사용자 추가</translation>
 <translation id="4297219207642690536">다시 시작 및 재설정</translation>
 <translation id="4297322094678649474">언어 변경</translation>
-<translation id="4300305918532693141">이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="4305227814872083840">길게(2초)</translation>
 <translation id="4306119971288449206">앱은 '<ph name="CONTENT_TYPE" />' 콘텐츠 유형으로 제공되어야 합니다</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K(<ph name="NUM_KILOBYTES_LIVE" />K 활성)</translation>

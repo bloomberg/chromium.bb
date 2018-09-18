@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
+<translation id="142346659686073702">Payagan ang mga hindi affiliate na user na gamitin ang Crostini</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="1427655258943162134">Address o URL ng mga proxy server</translation>
 <translation id="1435659902881071157">Configuration ng network sa antas ng device</translation>
@@ -391,6 +392,12 @@
 
       Kung hindi itatakda ang patakarang ito, parang naka-enable na rin ito, tingnan ang paglalarawan sa itaas.</translation>
 <translation id="2113068765175018713">Limitahan ang uptime ng device sa pamamagitan ng awtomatikong pag-reboot</translation>
+<translation id="2116790137063002724">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyong magagamit para makilala ang mga user, gaya ng login ng OS, login ng Profile sa <ph name="PRODUCT_NAME" />, pangalan ng Profile sa <ph name="PRODUCT_NAME" />, path ng Profile sa <ph name="PRODUCT_NAME" />, at nae-execute na path sa <ph name="PRODUCT_NAME" />.
+
+      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukuha ng impormasyong magagamit sa pagkilala ng mga user.
+      Kapag nakatakda ang patakarang ito sa False, hindi kukuha ng impormasyong magagamit sa pagkilala ng mga user.
+
+      May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="2127599828444728326">Payagan ang mga notification sa mga site na ito</translation>
 <translation id="2131902621292742709">Delay ng pag-dim ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="2132732175597591362">Kinokontrol ang whitelist ng mga pattern ng URL kung saan palaging naka-enable ang autoplay.
@@ -1586,6 +1593,12 @@
 <translation id="5272684451155669299">Kung true, magagamit ng user ang hardware sa mga Chrome device upang malayuang patunayan ang pagkakakilanlan nito sa CA ng privacy sa pamamagitan ng <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> gamit ang <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Kung nakatakda ito sa false, o kung hindi ito nakatakda, papalya ang mga call sa API na may code ng error.</translation>
+<translation id="5277806246014825877">I-enable ang user na itong patakbuhin ang Crostini.
+
+      Kung itatakda sa false ang patakarang ito, hindi ie-enable ang Crostini para sa user.
+      Kung itatakda sa true o hindi itatakda, ie-enable ang Crostini para sa user hangga't pinapayagan din ito ng iba pang setting.
+      Kinakailangang nakatakda sa true ang lahat ng tatlong patakarang VirtualMachinesAllowed, CrostiniAllowed, at DeviceUnaffiliatedCrostiniAllowed kapag nag-apply sila para sa Crostini para mapayagang tumakbo.
+      Kapag binago sa false ang patakarang ito, ilalapat ito sa mga nagsisimulang bagong container ng Crostini ngunit hindi nito isa-shut down ang mga container na tumatakbo na.</translation>
 <translation id="5283457834853986457">I-disable ang finder ng plugin (hindi na ginagamit)</translation>
 <translation id="5288772341821359899">Kung nakatakda ang patakaran, paghihigpitan ang hanay ng UDP port na ginagamit ng WebRTC sa tinukoy na interval ng port (kasama ang mga endpoint).
 
@@ -1652,6 +1665,7 @@
           Ang default na setting na ginagamit kapag hinayaang hindi nakatakda ang patakarang ito ay ang pagpayag sa browser ng host na gawin ang pag-render, ngunit maaari mo itong i-override at ipa-render sa <ph name="PRODUCT_FRAME_NAME" /> ang mga pahina ng HTML bilang default.</translation>
 <translation id="5464816904705580310">I-configure ang mga setting para sa mga pinapamahalaang user.</translation>
 <translation id="546726650689747237">Delay ng pag-dim ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
+<translation id="5469143988693423708">Naka-enable ang user na patakbuhin ang Crostini</translation>
 <translation id="5469825884154817306">I-block ang mga larawan sa mga site na ito</translation>
 <translation id="5475361623548884387">Paganahin ang pag-print</translation>
 <translation id="547601067149622666">Huwag payagan ang mga ad sa mga site na may mga nakakasagabal na ad</translation>
@@ -1709,6 +1723,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tandaan na hindi ito inirerekomenda, dahil maaari itong maging daan sa pag-bypass sa nameConstraints na extension na naghihigpit sa mga hostname kung saan maaaring awtorisahan ang isang certificate.
 
       Kung hindi naitakda ang patakarang ito, o kung naitakda ito sa false, hindi pagkakatiwalaan ang mga certificate ng server na walang subjectAlternativeName na extension na naglalaman ng DNS name o IP address.</translation>
+<translation id="5581292529942108810">I-configure ang mga patakarang nauugnay sa Chrome Reporting Extension.
+
+      May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="5584132346604748282">Kontrolin ang mga serbisyo ng lokasyon ng Google sa Android</translation>
 <translation id="5586942249556966598">Walang gawin</translation>
 <translation id="5630352020869108293">Ipanumbalik ang huling session</translation>
@@ -2322,6 +2339,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, manual na mababago ng user ang setting na ito.</translation>
 <translation id="723103540848640830">Itakda ang minimum na haba ng PIN ng lock screen</translation>
+<translation id="7232816984286843471">Kung itatakda ang patakaran sa false, hindi papayagan ang mga hindi affiliate na user na gamitin ang Crostini.
+
+      Kung hindi itatakda ang patakaran o kung itatakda ito sa true, papayagan ang lahat ng user na gamitin ang Crostini hangga't pinapayagan din ito ng iba pang setting.
+      Kinakailangang nakatakda sa true ang lahat ng tatlong patakarang VirtualMachinesAllowed, CrostiniAllowed, at DeviceUnaffiliatedCrostiniAllowed kapag nag-apply sila para sa Crostini para mapayagang tumakbo.
+      Kapag pinalitan sa false ang patakarang ito, malalapat ito sa pagsisimula ng mga bagong container ng Crostini ngunit hindi nito isa-shut down ang mga container na tumatakbo na.</translation>
 <translation id="7234280155140786597">Mga pangalan ng ipinagbabawal na mga host ng native na pagmemensahe (o * para sa lahat)</translation>
 <translation id="7236775576470542603">Piliin ang default na uri ng magnifier ng screen na naka-enable sa screen sa pag-login.
 
@@ -2369,6 +2391,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7311458740754205918">Kung itinakda ito sa true o hindi ito itinakda, ang page ng Bagong Tab ay maaaring magpakita ng mga suhestyon sa content batay sa history ng pagba-browse, mga interes o lokasyon ng user.
 
       Kung itinakda ito sa false, hindi makikita ang awtomatikong ginawang suhestyon sa content sa page ng Bagong Tab.</translation>
+<translation id="7313793931637495417">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyon ng bersyon, gaya ng bersyon ng OS, platform ng OS, architecture ng OS, bersyon ng <ph name="PRODUCT_NAME" />, at channel ng <ph name="PRODUCT_NAME" />
+
+      Kapag hinayaang hindi nakatakda ang patakarang ito o nakatakda sa True, kukuha ng impormasyon ng bersyon. 
+      Kapag nakatakda ang patakarang ito sa False, hindi kukuha ng impormasyon ng bersyon.
+
+      May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="7323896582714668701">Mga karagdagang command line na parameter para sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Katulad ng Pag-wipe (value 2), ngunit sinusubukang panatilihin ang mga token sa pag-log in upang hindi na kailanganin ng user na mag-sign in muli.</translation>
 <translation id="7329842439428490522">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay i-o-off ang screen kapag tumatakbo gamit ang power ng baterya.
@@ -2401,6 +2429,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7349338075015720646">Tumutukoy ng listahan ng mga website na na-install nang hindi napapansin, nang walang pakikipag-ugnayan ng user, at hindi maa-uninstall o madi-disable ng user.
 
       Ang bawat item ng patakaran ay isang object na may dalawang miyembro: "url" at "launch_container." Ang "url" ay dapat ang URL ng web app na ii-install at ang "launch_container" ay dapat alinman sa "window" o "tab" para maisaad kung paano bubuksan ang Web App kapag na-install na. Kung tatanggalin ang "launch_container," ilulunsad ang app sa window kung ituturing ito ng Chrome na Progressive Web App at kung hindi naman, ilulunsad ito sa tab.</translation>
+<translation id="735902178936442460">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyong magagamit para makilala ang mga machine, gaya ng pangalan ng machine at mga address ng network.
+
+      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukuha ng impormasyong magagamit sa pagkilala ng mga machine.
+      Kapag nakatakda ang patakarang ito sa False, hindi kukuha ng impormasyong magagamit sa pagkilala ng mga machine.
+
+      May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="7367028210010532881">Nagpapakita ang serbisyo ng Ligtas na Pag-browse ng page ng babala kapag nag-navigate ang mga user sa mga site na naka-flag bilang posibleng nakakahamak. Kapag na-enable ang setting na ito, mapipigilan ang mga user na tumuloy pa rin sa nakakahamak na site mula sa page ng babala.
 
       Kung naka-disable o hindi naka-configure ang setting na ito, maaaring piliin ng mga user na tumuloy sa naka-flag na site pagkatapos mabigyan ng babala.
@@ -2672,6 +2706,14 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7976157349247117979">Pangalan ng patutunguhan ng <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Walang espesyal na paghihigpit</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Magbibigay-daan sa iyong kontrolin kung papayagan ang pagtakbo ng mga virtual machine sa Chrome OS.
+
+      Kung itatakda ang patakaran sa True, papayagan ang device na magpatakbo ng mga virtual machine.
+      Kung itatakda ang patakaran sa False, hindi papayagan ang device na magpatakbo ng mga virtual machine.
+      Kinakailangang nakatakda sa true ang lahat ng tatlong patakarang VirtualMachinesAllowed, CrostiniAllowed, at DeviceUnaffiliatedCrostiniAllowed kapag nag-apply sila para sa Crostini para mapayagang tumakbo.
+      Kapag binago sa False ang patakarang ito, ilalapat ito sa mga nagsisimulang bagong virtual machine ngunit hindi nito isa-shut down ang mga virtual machine na tumatakbo na.
+      Kapag hindi nakatakda ang patakaran sa isang pinamamahalaang device, hindi pinapayagan ang device na magpatakbo ng mga virtual machine.
+      Pinapayagan ang mga hindi pinapamahalaang device na magpatakbo ng mga virtual machine.</translation>
 <translation id="802147957407376460">I-rotate ang screen nang 0 degrees</translation>
 <translation id="8033913082323846868">Hindi na ginagamit ang patakarang ito sa M70, pakigamit na lang ang AutofillAddressEnabled at AutofillCreditCardEnabled.
 
@@ -2716,6 +2758,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kapag hindi nakatakda ang patakarang ito, may default na tagal ng oras na gagamitin.
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa o katumbas ng idle delay ang mga halaga.</translation>
+<translation id="8138009212169037227">Kinokontrol ng patakarang ito kung mag-uulat ng data ng patakaran at oras ng pagkuha ng patakaran.
+
+      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukuha ng data ng patakaran at oras ng pagkuha ng patakaran.
+      Kapag nakatakda ang patakarang ito sa False, hindi kukuha ng data ng patakaran at oras ng pagkuha ng patakaran.
+
+      May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="8140204717286305802">Iulat ang listahan ng mga interface ng network kasama ang mga uri at hardware address ng mga ito sa server.
 
       Kung nakatakda ang patakarang ito sa false, hindi i-uulat ang listahan ng interface.</translation>

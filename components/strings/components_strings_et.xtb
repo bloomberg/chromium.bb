@@ -272,6 +272,7 @@
 <translation id="2781030394888168909">Ekspordi MacOS-i jaoks</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Ühendus lähtestati.</translation>
+<translation id="2785008241190445880">Järjehoidja on asendatud</translation>
 <translation id="2788784517760473862">Aktsepteeritavad krediitkaardid</translation>
 <translation id="2794233252405721443">Sait on blokeeritud</translation>
 <translation id="2799020568854403057">Sait, mille soovite avada, sisaldab kahjulikke rakendusi</translation>
@@ -644,6 +645,7 @@
 <translation id="5324080437450482387">Valige kontaktteave</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5332219387342487447">Tarneviis</translation>
+<translation id="5344579389779391559">Leht võib üritada teilt tasu võtta</translation>
 <translation id="5355557959165512791">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest selle sertifikaat on tühistatud. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
 <translation id="536296301121032821">Reegli seadete talletamine ebaõnnestus</translation>
 <translation id="5371425731340848620">Värskendage kaarti</translation>
@@ -739,6 +741,7 @@
 <translation id="6015796118275082299">Aasta</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Lk 1}other{Lk #}}</translation>
 <translation id="6017850046339264347">Ründajad saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> võivad installida petlikke rakendusi, mis esinevad millegi muuna või koguvad andmeid, mida võidakse kasutada teie jälgimiseks. <ph name="BEGIN_LEARN_MORE_LINK" />Lisateave<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Isikupärastage Chrome'i</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sünkroonitud)</translation>
 <translation id="6027201098523975773">Sisestage nimi</translation>
 <translation id="6039846035001940113">Kui probleem jätkub, võtke ühendust saidi omanikuga.</translation>
@@ -747,6 +750,7 @@
 <translation id="6047927260846328439">See sisu võib meelitada teid installima tarkvara või avaldama isiklikke andmeid. <ph name="BEGIN_LINK" />Kuva ikkagi<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait kasutab sertifikaadi kinnitamist. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
 <translation id="6059925163896151826">USB-seadmed</translation>
+<translation id="6060991652695587932">Valige oma meiliteenus, et sellele kiiresti juurde pääseda</translation>
 <translation id="6071091556643036997">Reegli tüüp on sobimatu.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{See kaart salvestatakse teie Google'i kontole, et saaksite kõigis seadmetes kiiremini ostude eest tasuda.}other{Need kaardid salvestatakse teie Google'i kontole, et saaksite kõigis seadmetes kiiremini ostude eest tasuda.}}</translation>
 <translation id="6080696365213338172">Olete sisule juurde pääsenud administraatori antud sertifikaadiga. Administraator saab domeenile <ph name="DOMAIN" /> edastatavaid andmeid kinni pidada.</translation>
@@ -994,6 +998,7 @@ Lisateave:
 <translation id="7815407501681723534">Otsingule „<ph name="SEARCH_STRING" />” leiti <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" />.</translation>
 <translation id="7818867226424560206">Eeskirjade haldamine</translation>
 <translation id="782886543891417279">WiFi-võrk, mida kasutate (<ph name="WIFI_NAME" />), võib nõuda sisselogimislehe külastamist.</translation>
+<translation id="7835178595033117206">Järjehoidja on eemaldatud</translation>
 <translation id="785549533363645510">Te pole siiski nähtamatu. Inkognito režiimi kasutamine ei varja teie sirvimist tööandja, Interneti-teenuse pakkuja ega külastatavate veebisaitide eest.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Kas lahkuda saidilt?</translation>

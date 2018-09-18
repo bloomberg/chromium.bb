@@ -619,13 +619,13 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Abrir en pantalla completa</translation>
 <translation id="189358972401248634">Otros idiomas</translation>
-<translation id="1894591787927543791">Guardar tarjeta para usar Google Play</translation>
+<translation id="1894591787927543791">Guardar tarjeta para usarla en Google Pay</translation>
 <translation id="1895658205118569222">Cierre del navegador</translation>
 <translation id="1895934970388272448">Debes confirmar el registro de tu impresora para finalizar este proceso. Compruébalo ahora.</translation>
 <translation id="1897762215429052132">Configuración de conexión de red, idioma, diseño de teclado...</translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
 <translation id="1902576642799138955">Período de validez</translation>
-<translation id="1904518222538904133">Una de tus tarjetas solo puede usarse en este dispositivo</translation>
+<translation id="1904518222538904133">1 de tus tarjetas solo puede usarse en este dispositivo</translation>
 <translation id="1905375423839394163">Nombre del dispositivo Chromebook</translation>
 <translation id="1905710495812624430">Se ha superado el máximo de intentos permitidos.</translation>
 <translation id="1909880997794698664">¿Seguro que quieres que se utilice el modo de kiosco en este dispositivo de forma permanente?</translation>
@@ -2195,7 +2195,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4296575653627536209">Añadir usuario supervisado</translation>
 <translation id="4297219207642690536">Reiniciar y restablecer</translation>
 <translation id="4297322094678649474">Cambiar idiomas</translation>
-<translation id="4300305918532693141">Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">largo (2 s)</translation>
 <translation id="4306119971288449206">Las aplicaciones deben incluir el encabezado content-type "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K activos)</translation>
@@ -3969,7 +3968,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> carpetas seleccionadas</translation>
 <translation id="6998793565256476099">Registrar dispositivo para hacer videoconferencias</translation>
 <translation id="7000347579424117903">Incluye Ctrl, Alt o la tecla de búsqueda</translation>
-<translation id="700203306553508933">Guarda tarjetas para usar Google Play</translation>
+<translation id="700203306553508933">Guarda tarjetas para usarlas en Google Pay</translation>
 <translation id="7002055706763150362">Para configurar Smart Lock para Chromebook, Google necesita asegurarse de que eres el usuario legítimo. Escribe tu contraseña para empezar.</translation>
 <translation id="7002454948392136538">Selecciona el administrador de este usuario supervisado</translation>
 <translation id="7003339318920871147">Bases de datos web</translation>

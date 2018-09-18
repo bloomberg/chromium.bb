@@ -143,6 +143,7 @@
 <translation id="1387596372902085462">Määrab, kas usaldada Symantec Corporationi PKI pärandtaristut</translation>
 <translation id="1393485621820363363">Ettevõtte seadmete jaoks lubatud printerid</translation>
 <translation id="1397855852561539316">Vaikeotsingupakkuja soovitatud URL</translation>
+<translation id="142346659686073702">Seoseta kasutajatel Crostini kasutamise lubamine</translation>
 <translation id="1426410128494586442">Jah</translation>
 <translation id="1427655258943162134">Puhverserveri aadress või URL</translation>
 <translation id="1435659902881071157">Seadme tasemel võrgukonfigureerimine</translation>
@@ -395,6 +396,12 @@
 
       Kui seda reeglit ei määrata, on see võrdväärne lubatuga (vt eelnevat kirjeldust).</translation>
 <translation id="2113068765175018713">Seadme tööaja piiramine automaatse taaskäivitamisega</translation>
+<translation id="2116790137063002724">Reegel määrab, kas rakendus edastab teavet, mis võimaldab kasutajaid tuvastada, nagu operatsioonisüsteemi sisselogimisteave, rakenduse <ph name="PRODUCT_NAME" /> profiili sisselogimisteave, rakenduse <ph name="PRODUCT_NAME" /> profiili nimi, rakenduse <ph name="PRODUCT_NAME" /> profiili tee ja rakenduse <ph name="PRODUCT_NAME" /> täitmistee.
+
+      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse teavet, mille alusel saab kasutajaid tuvastada.
+      Kui reegel on seatud väärtusele Väär, ei koguta teavet, mille alusel saab kasutajaid tuvastada.
+
+      Reegel kehtib ainult juhul, kui <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on lubatud ja seade on reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registreeritud.</translation>
 <translation id="2127599828444728326">Luba märguanded nendel saitidel</translation>
 <translation id="2131902621292742709">Ekraani hämardamise viiteaeg akutoite kasutamisel</translation>
 <translation id="2132732175597591362">Juhib lubatud loendit URL-i mustritest, mille puhul on automaatesitus alati lubatud.
@@ -1588,6 +1595,12 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="5272684451155669299">Kui selle väärtuseks on määratud Tõene, saab kasutaja kasutada Chrome'i seadmete riistvara, et tõendada enda isikut distantsilt privaatsuse CA abil API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> kaudu, kasutades funktsiooni <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Kui selle väärtuseks on määratud Väär või väärtus on määramata, siis kõned API-le ebaõnnestuvad ja saate vastuseks veakoodi.</translation>
+<translation id="5277806246014825877">Lubab sellel kasutajal Crostinit käitada.
+
+      Kui reegel on seatud väärtusele Väär, ei ole Crostini kasutaja jaoks lubatud.
+      Kui reegel on määramata või seatud väärtusele Tõene, on Crostini kasutaja jaoks lubatud eeldusel, et muud seaded seda lubavad.
+      Kõik kolm reeglit – VirtualMachinesAllowed, CrostiniAllowed ja DeviceUnaffiliatedCrostiniAllowed – peavad olema tõesed, et Crostini käitamine oleks lubatud.
+      Kui reegel seatakse väärtusele Väär, kehtib see uute Crostini ümbriste käitamise puhul, ent ei lülita välja juba käivitatud ümbriseid.</translation>
 <translation id="5283457834853986457">Pistikprogrammide leidja keelamine (tugi on katkestatud)</translation>
 <translation id="5288772341821359899">Kui reegel on määratud, piiratakse WebRTC kasutatava UDP-pordi vahemikku määratud pordi intervalliga (sh lõpp-punktid).
 
@@ -1655,6 +1668,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
           Kui jätate selle reegli määramata, siis lubatakse vaikeseadena hostbrauseril renderdada, kuid võite selle alistada ja lasta rakendusel <ph name="PRODUCT_FRAME_NAME" /> vaikimisi HTML-lehti renderdada.</translation>
 <translation id="5464816904705580310">Hallatud kasutajate seadete konfigureerimine.</translation>
 <translation id="546726650689747237">Ekraani hämardamise viiteaeg võrgutoite kasutamisel</translation>
+<translation id="5469143988693423708">Kasutajal on lubatud Crostinit käitada</translation>
 <translation id="5469825884154817306">Blokeeri kujutised nendel saitidel</translation>
 <translation id="5475361623548884387">Luba printimine</translation>
 <translation id="547601067149622666">Ära luba sekkuvate reklaamidega saitidel reklaame</translation>
@@ -1711,6 +1725,9 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Pange tähele, et me ei soovita seda teha, kuna see võib lubada möödumise laiendist nameConstraints, mis piirab hostinimesid, millele antud sertifikaadil võib olla volitus juurde pääseda.
 
       Kui see reegel on määramata või määratud väärtusele Väär, ei usaldata serveri sertifikaate, millel pole laiendit subjectAlternativeName koos DNS-i nime või IP-aadressiga.</translation>
+<translation id="5581292529942108810">Võimaldab seadistada Chrome'i aruandluse laiendusega seotud reeglid.
+
+      Reegel kehtib ainult juhul, kui <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on lubatud ja seade on reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registreeritud.</translation>
 <translation id="5584132346604748282">Androidis Google'i asukohateenuste juhtimine</translation>
 <translation id="5586942249556966598">Ära tee midagi</translation>
 <translation id="5630352020869108293">Viimase seansi taastamine</translation>
@@ -2325,6 +2342,11 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
           Kui see reegel on määramata, saab kasutaja seda seadet käsitsi muuta.</translation>
 <translation id="723103540848640830">Lukustuskuva PIN-koodi miinimumpikkuse määramine</translation>
+<translation id="7232816984286843471">Kui reegel on seatud väärtusele Väär, ei lubata seoseta kasutajatel Crostinit kasutada.
+
+      Kui reegel on määramata või seatud väärtusele Tõene, tohivad kõik kasutajad Crostinit kasutada eeldusel, et ka muud seaded lubavad seda.
+      Kõik kolm reeglit – VirtualMachinesAllowed, CrostiniAllowed ja DeviceUnaffiliatedCrostiniAllowed – peavad olema tõesed, et Crostini käitamine oleks lubatud.
+      Kui reegel seatakse väärtusele Väär, kehtib see uute Crostini ümbriste käitamise puhul, ent ei lülita välja juba käivitatud ümbriseid.</translation>
 <translation id="7234280155140786597">Keelatud omasõnumside hostide nimed (või väärtus * kõikide keelamiseks)</translation>
 <translation id="7236775576470542603">Sisselogimisekraanil lubatud ekraaniluubi vaiketüübi määramine.
 
@@ -2372,6 +2394,12 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="7311458740754205918">Kui selle väärtuseks määratakse Tõene või seda ei määrata, võidakse uuel vahelehel näidata sisu soovitusi kasutaja sirvimisajaloo, huvide või asukoha põhjal.
 
       Kui selle väärtuseks määratakse Väär, ei näidata uuel vahelehel automaatselt loodud sisu soovitusi.</translation>
+<translation id="7313793931637495417">Reegel määrab, kas edastada versiooniteavet, nagu operatsioonisüsteemi versioon, platvorm ja arhitektuur, rakenduse <ph name="PRODUCT_NAME" /> versioon ja rakenduse <ph name="PRODUCT_NAME" /> kanal.
+
+      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse versiooniteavet.
+      Kui reegel on seatud väärtusele Väär, ei koguta versiooniteavet.
+
+      Reegel kehtib ainult juhul, kui laiendus <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on lubatud ja seade on reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registreeritud.</translation>
 <translation id="7323896582714668701">Rakenduse <ph name="PRODUCT_NAME" /> täiendavad käsureaparameetrid</translation>
 <translation id="7326394567531622570">Sarnane väärtusega Wipe (väärtus 2), kuid see üritab säilitada sisselogimismärgid, et kasutaja ei peaks uuesti sisse logima.</translation>
 <translation id="7329842439428490522">Määrab aja, pärast mida ekraan akutoitega töötamisel välja lülitatakse, kui kasutaja pole midagi sisestanud.
@@ -2404,6 +2432,12 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="7349338075015720646">Määrab loendi veebisaitidest, mis installitakse märkamatult, ilma et kasutaja peaks sekkuma.
 
       Reegli iga loendiüksus on objekt, mis koosneb kahest liikmest: „url” ja „launch_container”. Väärtus „url” peab olema installitava veebirakenduse URL ja „launch_container” peab olema „window” või „tab”, mis näitab, kuidas veebirakendus pärast installimist avatakse. Kui väärtus „launch_container” jäetakse tühjaks ja Chrome peab rakendust progressiivseks veebirakenduseks, avaneb see aknas, muidu avaneb rakendus vahelehel.</translation>
+<translation id="735902178936442460">Reegel määrab, kas koguda teavet, mille alusel saab masinaid identifitseerida, nagu masina nimi ja võrguaadressid.
+
+      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse teavet, mille alusel saab masinaid identifitseerida.
+      Kui reegel on seatud väärtusele Väär, ei koguta teavet, mille alusel saab masinaid identifitseerida.
+
+      Reegel kehtib ainult juhul, kui laiendus <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on lubatud ja seade on reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registreeritud.</translation>
 <translation id="7367028210010532881">Kui kasutajad satuvad navigeerides saitidele, mis on märgistatud potentsiaalselt pahatahtlikuks, kuvab teenus Google'i ohutu sirvimine hoiatuslehe. Selle seade lubamine takistab kasutajatel hoiatuslehelt pahatahtlikule saidile edasi liikuda.
 
       Kui seade on keelatud või seadistamata, saavad kasutajad pärast hoiatuse kuvamist teha valiku edasiminekuks märgistatud saidile.
@@ -2675,6 +2709,14 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="7976157349247117979">Teenuse <ph name="PRODUCT_NAME" /> sihtkoha nimi</translation>
 <translation id="7980227303582973781">Eripiirangud puuduvad</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Võimaldab juhtida, kas virtuaalsete masinate käitamine Chrome OS-is on lubatud.
+
+      Kui reegel on määratud väärtusele Tõene, lubatakse seadmes käitada virtuaalseid masinaid.
+      Kui reegel on määratud väärtusele Väär, ei lubata seadmes virtuaalseid masinaid käitada.
+      Kõik kolm reeglit – VirtualMachinesAllowed, CrostiniAllowed ja DeviceUnaffiliatedCrostiniAllowed – peavad olema tõesed, et Crostini käitamine oleks lubatud.
+      Kui reegli seade muudetakse väärtusele Väär, kehtib see uute virtuaalsete masinate käivitamisel, ent juba töötavaid virtuaalseid masinaid välja ei lülitata.
+      Kui reegel jäetakse hallatavas seadmes määramata, on seadmes virtuaalsete masinate käitamine keelatud.
+      Haldamata seadmetes on virtuaalsete masinate käitamine lubatud.</translation>
 <translation id="802147957407376460">Ekraani pööramine 0 kraadi</translation>
 <translation id="8033913082323846868">See reegel on versioonist M70 eemaldatud, kasutage selle asemel reegleid AutofillAddressEnabled and AutofillCreditCardEnabled.
 
@@ -2719,6 +2761,12 @@ Vaadake ka reegleid „CookiesAllowedForUrls” ja „CookiesSessionOnlyForUrls�
           Kui jätate selle reegli määramata, kasutatakse vaikeaega.
 
           Reegli väärtus tuleb määrata millisekundites. Väärtused tuleb kinnitada väiksematena kui jõudeoleku viiteaeg või sellega võrdsetena.</translation>
+<translation id="8138009212169037227">Reegel määrab, kas edastada reegli andmed ja reegli toomise aeg.
+
+      Kui reegel on määramata või seatud väärtusele Tõene, kogutakse reegli andmed ja reegli toomise aeg.
+      Kui reegel on seatud väärtusele väär, ei koguta reegli andmeid ja reegli toomise aega.
+
+      Reegel kehtib ainult juhul, kui laiendus <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on lubatud ja seade on reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registreeritud.</translation>
 <translation id="8140204717286305802">Saadab serverile loendi võrguliideste ning nende tüüpide ja riistvara aadresside kohta.
 
       Kui reegel määratakse olekule Väär, siis liideseloendit ei edastata.</translation>

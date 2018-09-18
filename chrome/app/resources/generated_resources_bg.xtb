@@ -2197,7 +2197,6 @@
 <translation id="4296575653627536209">Добавяне на контролиран потребител</translation>
 <translation id="4297219207642690536">Рестартиране и нулиране</translation>
 <translation id="4297322094678649474">Промяна на езиците</translation>
-<translation id="4300305918532693141">За да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">дълго (2 сек)</translation>
 <translation id="4306119971288449206">Приложенията трябва да се показват с тип съдържание „<ph name="CONTENT_TYPE" />“</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> КБ (<ph name="NUM_KILOBYTES_LIVE" /> КБ активни)</translation>
@@ -4258,6 +4257,7 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{Отваряне на всички в &amp;нов прозорец}=1{Отваряне в &amp;нов прозорец}other{Отваряне на всички (#) в &amp;нов прозорец}}</translation>
 <translation id="7434509671034404296">Програмист</translation>
 <translation id="7436921188514130341">Ужас! При преименуването възникна грешка.</translation>
+<translation id="7441736921018636843">За да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" />, така че да премахнете съответния си пропуск</translation>
 <translation id="7441830548568730290">Други потребители</translation>
 <translation id="7442465037756169001">Хардуерът Hangouts Meet е готов за настройване.</translation>
 <translation id="744341768939279100">Създаване на нов потребителски профил</translation>

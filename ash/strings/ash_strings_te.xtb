@@ -110,6 +110,7 @@
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
 <translation id="2761704814324807722">స్థితి ట్రే, సమయం <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" />కి మళ్లీ కనెక్ట్ చేస్తోంది</translation>
+<translation id="2790844815106384441">స్థాన సేవలు లేదా పరికర మైక్రోఫోన్, కెమెరా లేదా ఇతర ఫీచర్‌లను వెబ్‌సైట్‌లు ఉపయోగించవచ్చో లేదో ఎంచుకోండి</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">యాప్స్</translation>
 <translation id="2808012452536866044">Better Together కొత్త ఫోన్‌కు మార్చబడింది</translation>
@@ -195,6 +196,7 @@
 <translation id="4200057768455216496">డాక్ చేసిన మాగ్నిఫైయర్‌కు సంబంధించిన షార్ట్‌కట్‌ను మీరు నొక్కారు. మీరు దీనిని ఆన్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="4217571870635786043">డిక్టేషన్</translation>
 <translation id="4261870227682513959">నోటిఫికేషన్ సెట్టింగ్‌లను చూపుతుంది. నోటిఫికేషన్‌లు ఆఫ్ చేయబడి ఉన్నాయి</translation>
+<translation id="4269883910223712419">ఈ పరికర నిర్వాహకుడికి వీటిని చేయగల సామర్థ్యం ఉంది:</translation>
 <translation id="4274921305979314545">మీ Chromebookను మీ ఫోన్‌కు కనెక్ట్ చేయండి</translation>
 <translation id="4279490309300973883">ప్రతిబింబిస్తుంది</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> యాక్టివేట్ చేయబడుతోంది</translation>
@@ -222,6 +224,7 @@
 <translation id="4734965478015604180">అడ్డంగా ఉంది</translation>
 <translation id="476166673298332917">ఈ పరికరం నిర్వాహకులు పాస్‌వర్డ్‌లు, అలాగే కమ్యూనికేషన్‌లతో సహా మొత్తం కార్యకలాపానికి యాక్సెస్‌ని కలిగి ఉన్నారు.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> కోసం పాస్‌వర్డ్</translation>
+<translation id="4778095205580009397">Google అసిస్టెంట్ డెమో సెషన్‌లో అందుబాటులో లేదు.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">డిస్‌కనెక్ట్ చెయ్యి</translation>
 <translation id="4849058404725798627">కీబోర్డ్ దృష్టి కేంద్రీకరణతో అంశాన్ని హైలైట్ చేయి</translation>
@@ -337,6 +340,7 @@
 <translation id="6751826523481687655">పనితీరు స్థితిగతి కనుగొనడం ఆన్‌లో ఉంది</translation>
 <translation id="6785414152754474415">బ్యాటరీ <ph name="PERCENTAGE" />% నిండింది మరియు ఛార్జ్ అవుతోంది.</translation>
 <translation id="6803622936009808957">మద్దతు ఉన్న రిజల్యూషన్‌లు కనుగొనబడనందున ప్రదర్శనలను ప్రతిబింబించడం సాధ్యపడలేదు. దానికి బదులుగా విస్తారిత డెస్క్‌టాప్‌కు మారారు.</translation>
+<translation id="6814658242098378692">యాప్‌లు, ఎక్స్‌టెన్షన్‌లు మరియు థీమ్‌లను నిర్వహించండి</translation>
 <translation id="6820676911989879663">విరామం తీసుకోండి!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" />ని సక్రియం చెయ్యి</translation>
@@ -360,6 +364,7 @@
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
 <translation id="7256634071279256947">వెనుకవైపు మైక్రోఫోన్</translation>
 <translation id="726276584504105859">విభజన స్క్రీన్‌ను ఉపయోగించడానికి ఇక్కడికి లాగండి</translation>
+<translation id="7303365578352795231">మరొక పరికరంలో సమాధానం ఇవ్వబడుతోంది.</translation>
 <translation id="7348093485538360975">ఆన్-స్క్రీన్ కీబోర్డ్</translation>
 <translation id="735745346212279324">VPN డిస్‌కనెక్ట్ చేయబడింది</translation>
 <translation id="7377169924702866686">Caps Lock ఆన్‌లో ఉంది.</translation>
@@ -392,6 +397,7 @@
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" />కి కనెక్ట్ చేయబడుతోంది</translation>
 <translation id="7842569679327885685">హెచ్చరిక: ప్రయోగాత్మక ఫీచర్</translation>
 <translation id="7846634333498149051">కీబోర్డ్</translation>
+<translation id="7886169021410746335">గోప్యతా సెట్టింగ్‌లను సర్దుబాటు చేయండి</translation>
 <translation id="7886277072580235377">మీరు సైన్ అవుట్ చేసినప్పుడు మీ ఇంటర్నెట్ సెషన్ క్లియర్ చేయబడుతుంది. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ఇమెయిల్ పంపు</translation>
 <translation id="7904094684485781019">ఈ ఖాతా నిర్వాహకులు బహుళ సైన్-ఇన్‌కు అనుమతించలేదు.</translation>

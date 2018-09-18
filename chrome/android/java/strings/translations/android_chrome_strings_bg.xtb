@@ -239,6 +239,7 @@
 <translation id="2762000892062317888">току-що</translation>
 <translation id="2777555524387840389">Остават <ph name="SECONDS" /> сек</translation>
 <translation id="2781151931089541271">Остава 1 сек</translation>
+<translation id="2803478378562657435">Запазените пароли и опциите за пароли са показани</translation>
 <translation id="2810645512293415242">Страницата е опростена с цел пестене на данни и по-бързо зареждане.</translation>
 <translation id="281504910091592009">Преглеждайте и управлявайте запазените пароли в <ph name="BEGIN_LINK" />профила си в Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Влезте в профила си и включете синхронизирането, за да получите отметките си на всичките си устройства</translation>
@@ -830,6 +831,7 @@
 <translation id="748127970106343339">Потвърждаване на изтриването на идентификационните данни на устройството</translation>
 <translation id="7481312909269577407">Препращане</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Актуализирано: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Показване на паролите</translation>
 <translation id="7494974237137038751">спестени данни</translation>
 <translation id="7498271377022651285">Моля, изчакайте...</translation>
 <translation id="7514365320538308">Изтегляне</translation>
@@ -952,6 +954,7 @@
 <translation id="8503559462189395349">Пароли в Chrome</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="8504988642345501642">При превъртане нагоре се показват връзки за бърз достъп до сродни страници. URL адресите на страниците, които посещавате, се изпращат до Google.</translation>
+<translation id="8507520749471379845">Има налични пароли</translation>
 <translation id="8514477925623180633">Експортиране на паролите, съхранявани в Chrome</translation>
 <translation id="8514577642972634246">Влизане в режим „инкогнито“</translation>
 <translation id="851751545965956758">Блокиране на сайтовете, така че да не се свързват с устройства</translation>

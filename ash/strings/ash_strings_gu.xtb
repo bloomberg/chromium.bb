@@ -50,6 +50,7 @@
 <translation id="1746730358044914197">ઇનપુટ પદ્ધતિઓને તમારા વ્યવસ્થાપક દ્વારા ગોઠવવામાં આવી છે.</translation>
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
 <translation id="1761222317188459878">નેટવર્ક કનેક્શન ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">મારી સ્ક્રીન પર શું છે?</translation>
 <translation id="1823873187264960516">ઇથરનેટ: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">સહાયક (લોડ થઈ રહ્યું છે…)</translation>
 <translation id="1850504506766569011">વાઇ-ફાઇ બંધ છે.</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">કનેક્શન ઉમેરો</translation>
 <translation id="2961963223658824723">કંઈક ખોટું થયું. થોડીવારમાં ફરીથી પ્રયાસ કરો.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">નોટિફિકેશનનું બધું કન્ટેન્ટ બતાવો</translation>
 <translation id="2995447421581609334">કાસ્ટ ઉપકરણો બતાવો.</translation>
 <translation id="2996462380875591307">ડૉક કરેલ મૅગ્નિફાયર ચાલુ કર્યું. ટૉગલ કરવાનું બંધ કરવા માટે ફરીથી Ctrl+Search+D દબાવો.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> એ <ph name="DOMAIN" /> દ્વારા સંચાલિત સાર્વજનિક સત્ર છે</translation>
@@ -219,6 +221,7 @@
 <translation id="4628757576491864469">ઉપકરણો</translation>
 <translation id="4659419629803378708">ChromeVox સક્ષમ કર્યું</translation>
 <translation id="4734965478015604180">આડી</translation>
+<translation id="476166673298332917">આ ડિવાઇસના વ્યવસ્થાપક પાસે પાસવર્ડ અને સંચાર સહિતની, બધી જ પ્રવૃત્તિઓનો ઍક્સેસ છે.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> માટેનો પાસવર્ડ </translation>
 <translation id="4778095205580009397">ડેમો સત્રમાં Google આસિસ્ટંટ ઉપલબ્ધ નથી.</translation>
 <translation id="479989351350248267">search</translation>
@@ -226,6 +229,7 @@
 <translation id="4849058404725798627">કીબોર્ડ ફોકસ વડે ઑબ્જેક્ટને હાઇલાઇટ કરો</translation>
 <translation id="4872237917498892622">Alt+Search અથવા Shift</translation>
 <translation id="4890187583552566966">તમારા વ્યવસ્થાપકે Google સહાયક બંધ કરેલું છે.</translation>
+<translation id="4893522937062257019">લૉક સ્ક્રીન પર</translation>
 <translation id="4895488851634969361">બેટરી સંપૂર્ણ છે.</translation>
 <translation id="490375751687810070">વર્ટિકલ</translation>
 <translation id="4905614135390995787">હાઇ કોન્ટ્રાસ્ટ મોડને ટૉગલ કરવાનો શૉર્ટકટ બદલાઇ ગયો છો. <ph name="OLD_SHORTCUT" />ને બદલે કૃપા કરીને <ph name="NEW_SHORTCUT" />નો ઉપયોગ કરો.</translation>
@@ -241,6 +245,7 @@
 <translation id="523505283826916779">ઍક્સેસિબિલિટી સેટિંગ્સ</translation>
 <translation id="5313326810920013265">Bluetooth સેટિંગ</translation>
 <translation id="5331975486040154427">USB-C ઉપકરણ (ડાબી બાજુનું પાછળનું પોર્ટ)</translation>
+<translation id="5379115545237091094">ઘણા બધા પ્રયાસો</translation>
 <translation id="5397578532367286026">આ વપરાશકર્તાના ઉપયોગ અને ઇતિહાસની chrome.com પર સંચાલક (<ph name="MANAGER_EMAIL" />) દ્વારા સમીક્ષા કરવામાં આવી શકે છે.</translation>
 <translation id="5430931332414098647">ઝટપટ ટિથરિંગ</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -272,6 +277,7 @@
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5911533659001334206">શૉર્ટકટ દર્શક</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">ચાલુ</translation>
 <translation id="592343074608792716">આ Chromebook અને તમારો ફોન આપમેળે કનેક્ટ થશે</translation>
 <translation id="5947494881799873997">પાછા ફરો</translation>
@@ -364,6 +370,7 @@
 <translation id="7398254312354928459">સ્વિચ કરેલ નેટવર્ક કનેક્શન</translation>
 <translation id="742594950370306541">કૅમેરો ઉપયોગમાં છે.</translation>
 <translation id="743058460480092004">કૅમેરો અને માઇક્રોફોન ઉપયોગમાં છે.</translation>
+<translation id="7497767806359279797">ભાષા અને કીબોર્ડ પસંદ કરો</translation>
 <translation id="7510334386202674593">ctrl + shift + L</translation>
 <translation id="7526573455193969409">નેટવર્કને મોનિટર કરવામાં આવી શકે છે</translation>
 <translation id="7536035074519304529">IP સરનામું: <ph name="ADDRESS" /></translation>
@@ -373,6 +380,7 @@
 <translation id="7569509451529460200">બ્રેઇલ અને ChromeVox સક્ષમ કર્યાં</translation>
 <translation id="7593891976182323525">Search અથવા Shift</translation>
 <translation id="7604942372593434070">તમારી બ્રાઉઝિંગ પ્રવૃત્તિને ઍક્સેસ કરો</translation>
+<translation id="7642778300616172920">સંવેદનશીલ કન્ટેન્ટ છુપાવો</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (માલિક)</translation>
 <translation id="7647488630410863958">તમારી સૂચનાઓ જોવા માટે ઉપકરણને અનલૉક કરો</translation>
 <translation id="7649070708921625228">સહાય</translation>
@@ -389,6 +397,7 @@
 <translation id="7842569679327885685">ચેતવણી: પ્રાયોગિક સુવિધા</translation>
 <translation id="7846634333498149051">કીબોર્ડ</translation>
 <translation id="7886169021410746335">ગોપનીયતા સેટિંગ ગોઠવો</translation>
+<translation id="7886277072580235377">જ્યારે તમે સાઇન આઉટ કરશો, ત્યારે તમારા ઇન્ટરનેટ સત્રની માહિતી સાફ કરવામાં આવશે. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">ઇમેઇલ મોકલો</translation>
 <translation id="7904094684485781019">આ એકાઉન્ટ માટે વ્યસ્થાપકે બહુવિધ સાઇન-ઇનને નામંજૂર કર્યું છે.</translation>
 <translation id="7933084174919150729">Google સહાયક માત્ર પ્રાથમિક પ્રોફાઇલ માટે જ ઉપલબ્ધ છે.</translation>
@@ -429,6 +438,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: ફરીથી કનેક્ટ કરી રહ્યાં છે...</translation>
 <translation id="8513108775083588393">આપમેળે ફેરવો</translation>
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
+<translation id="8592141010104017453">કોઈપણ નોટિફિકેશન બતાવશો નહીં</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> સાથે કનેક્ટ થયા</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> બાકી</translation>
 <translation id="8649101189709089199">બોલીને-પસંદ-કરો</translation>

@@ -2197,7 +2197,6 @@
 <translation id="4296575653627536209">新增受監管的使用者</translation>
 <translation id="4297219207642690536">重新啟動並重設</translation>
 <translation id="4297322094678649474">變更語言</translation>
-<translation id="4300305918532693141">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" />。</translation>
 <translation id="4305227814872083840">長 (2 秒)</translation>
 <translation id="4306119971288449206">應用程式的內容類型應設為「<ph name="CONTENT_TYPE" />」</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K 作用中)</translation>
