@@ -21,8 +21,17 @@ DownloadMimeTypeResult GetUmaResult(const std::string& mime_type) {
   if (mime_type == kPkPassMimeType)
     return DownloadMimeTypeResult::PkPass;
 
+  if (mime_type == "application/zip")
+    return DownloadMimeTypeResult::ZipArchive;
+
   if (mime_type == "application/x-apple-aspen-config")
     return DownloadMimeTypeResult::iOSMobileConfig;
+
+  if (mime_type == "application/x-msdownload")
+    return DownloadMimeTypeResult::MicrosoftApplication;
+
+  if (mime_type == "application/vnd.android.package-archive")
+    return DownloadMimeTypeResult::AndroidPackageArchive;
 
   return DownloadMimeTypeResult::Other;
 }
