@@ -31,12 +31,15 @@ class FaviconLoader : public KeyedService {
   // Returns the FaviconAttributes for the favicon retrieved from |url|.
   // If no icon is in favicon_cache_, will start an asynchronous load with the
   // favicon service and return the default favicon.
-  // Calls |block| when the load completes with a valid image/attributes.
-  // Note: If no successful favicon was retrieved by LargeIconService, it
-  // returns the default favicon.
+  // |fallback_to_google_server|, if set to YES, will make a call to a Google
+  // Server if no valid favicon was retrieved from LargeIconService. Calls
+  // |block| when the load completes with a valid image/attributes. Note: If no
+  // successful favicon was retrieved by LargeIconService, it returns the
+  // default favicon.
   FaviconAttributes* FaviconForUrl(const GURL& url,
                                    float size,
                                    float min_size,
+                                   bool fallback_to_google_server,
                                    FaviconAttributesCompletionBlock block);
 
   // Cancel all incomplete requests.

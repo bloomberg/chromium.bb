@@ -121,7 +121,7 @@ const CGFloat kFaviconMinWidthHeight = 16;
       IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
   FaviconAttributes* cachedAttributes = faviconLoader->FaviconForUrl(
       URL, kFaviconMinWidthHeight, kFaviconWidthHeight,
-      ^(FaviconAttributes* attributes) {
+      /*fallback_to_google_server=*/false, ^(FaviconAttributes* attributes) {
         completion(attributes);
       });
   DCHECK(cachedAttributes);

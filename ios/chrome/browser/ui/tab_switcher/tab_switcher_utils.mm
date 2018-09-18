@@ -101,8 +101,9 @@ void TabSwitcherGetFavicon(GURL const& url,
   FaviconLoader* loader =
       IOSChromeFaviconLoaderFactory::GetForBrowserState(browser_state);
   if (loader) {
-    FaviconAttributes* attr = loader->FaviconForUrl(url, kfaviconMinWidthHeight,
-                                                    kfaviconWidthHeight, block);
+    FaviconAttributes* attr =
+        loader->FaviconForUrl(url, kfaviconMinWidthHeight, kfaviconWidthHeight,
+                              /*fallback_to_google_server=*/false, block);
     DCHECK(attr);
     block(attr);
     return;
