@@ -267,19 +267,6 @@ class GclientApi(recipe_api.RecipeApi):
     with self.m.context(cwd=(self.m.context.cwd or self.m.path['checkout'])):
       return self(name, ['runhooks'] + list(args), infra_step=False, **kwargs)
 
-  @property
-  def is_blink_mode(self):
-    """ Indicates wether the caller is to use the Blink config rather than the
-    Chromium config. This may happen for one of two reasons:
-    1. The builder is configured to always use TOT Blink. (factory property
-       top_of_tree_blink=True)
-    2. A try job comes in that applies to the Blink tree. (patch_project is
-       blink)
-    """
-    return (
-      self.m.properties.get('top_of_tree_blink') or
-      self.m.properties.get('patch_project') == 'blink')
-
   def break_locks(self):
     """Remove all index.lock files. If a previous run of git crashed, bot was
     reset, etc... we might end up with leftover index.lock files.
