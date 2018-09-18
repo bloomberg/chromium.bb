@@ -186,20 +186,20 @@ bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
 void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
   if (!content_layer_)
     return;
-  viz::SurfaceId surface_id;
-  if (content_layer_->fallback_surface_id()) {
-    surface_id = *content_layer_->fallback_surface_id();
-    content_layer_->SetFallbackSurfaceId(viz::SurfaceId());
-  }
+  content_layer_->SetFallbackSurfaceId(viz::SurfaceId());
   content_layer_->SetPrimarySurfaceId(viz::SurfaceId(),
                                       cc::DeadlinePolicy::UseDefaultDeadline());
   if (!enable_surface_synchronization_) {
     content_layer_->RemoveFromParent();
     content_layer_ = nullptr;
   }
-  if (!surface_id.is_valid())
+  if (!HasSavedFrame())
     return;
-  std::vector<viz::SurfaceId> surface_ids = {surface_id};
+  std::vector<viz::SurfaceId> surface_ids = {
+      viz::SurfaceId(frame_sink_id_, active_local_surface_id_)};
+  // Reset information about the active surface because it will get destroyed.
+  active_local_surface_id_ = viz::LocalSurfaceId();
+  active_device_scale_factor_ = 0;
   host_frame_sink_manager_->EvictSurfaces(surface_ids);
   frame_evictor_->DiscardedFrame();
 }
