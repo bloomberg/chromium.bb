@@ -47,7 +47,7 @@ class DemoWindow : public PlatformWindowDelegate {
  private:
   // Since we pretend to have a GPU process, we should also pretend to
   // initialize the GPU resources via a posted task.
-  void StartOnGpu();
+  void StartRendererIfNecessary();
 
   WindowManager* window_manager_;      // Not owned.
   RendererFactory* renderer_factory_;  // Not owned.
