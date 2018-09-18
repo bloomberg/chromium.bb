@@ -81,7 +81,13 @@ void MediaRouterDialogControllerViews::Reset() {
 }
 
 void MediaRouterDialogControllerViews::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_EQ(CastDialogView::GetCurrentDialogWidget(), widget);
   Reset();
+}
+
+void MediaRouterDialogControllerViews::OnWidgetDestroying(
+    views::Widget* widget) {
+  widget->RemoveObserver(this);
 }
 
 MediaRouterDialogControllerViews::MediaRouterDialogControllerViews(
