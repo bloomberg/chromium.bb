@@ -528,8 +528,8 @@ GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
   return GetMostVisitedItemWithID(item_id, &item) ? item.url : GURL();
 }
 
-void SearchBox::DidCommitProvisionalLoad(bool is_new_navigation,
-                                         bool is_same_document_navigation) {
+void SearchBox::DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                         ui::PageTransition transition) {
   can_run_js_in_renderframe_ = true;
 }
 

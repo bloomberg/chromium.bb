@@ -53,11 +53,11 @@ class MetricsRenderFrameObserver
       int request_id,
       const network::URLLoaderCompletionStatus& status) override;
   void DidCancelResponse(int request_id) override;
-  void DidStartProvisionalLoad(
-      blink::WebDocumentLoader* document_loader) override;
+  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
+                               bool is_content_initiated) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error) override;
-  void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_document_navigation) override;
+  void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                ui::PageTransition transition) override;
   void OnDestruct() override;
 
   // Invoked when a frame is going away. This is our last chance to send IPCs

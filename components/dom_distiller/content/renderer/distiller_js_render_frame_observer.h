@@ -28,8 +28,8 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
   ~DistillerJsRenderFrameObserver() override;
 
   // RenderFrameObserver implementation.
-  void DidStartProvisionalLoad(
-      blink::WebDocumentLoader* document_loader) override;
+  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
+                               bool is_content_initiated) override;
   void DidFinishLoad() override;
   void DidCreateScriptContext(v8::Local<v8::Context> context,
                               int world_id) override;

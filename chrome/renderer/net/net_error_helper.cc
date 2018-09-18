@@ -272,14 +272,14 @@ void NetErrorHelper::Feedback() {
 }
 
 void NetErrorHelper::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader) {
+    blink::WebDocumentLoader* document_loader,
+    bool is_content_initiated) {
   core_->OnStartLoad(GetFrameType(render_frame()),
                      GetLoadingPageType(document_loader));
 }
 
-void NetErrorHelper::DidCommitProvisionalLoad(
-    bool is_new_navigation,
-    bool is_same_document_navigation) {
+void NetErrorHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                              ui::PageTransition transition) {
   // If this is a "same-document" navigation, it's not a real navigation.  There
   // wasn't a start event for it, either, so just ignore it.
   if (is_same_document_navigation)
