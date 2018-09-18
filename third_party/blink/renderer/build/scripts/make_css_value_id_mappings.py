@@ -107,10 +107,10 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
         self.css_values_dictionary_file = json5_file_paths[2]
         css_properties = self.css_properties.longhands
         # We sort the enum values based on each value's position in
-        # the keywords as listed in CSSProperties.json5. This will ensure that if there is a continuous
-        # segment in CSSProperties.json5 matching the segment in this enum then
+        # the keywords as listed in css_properties.json5. This will ensure that if there is a continuous
+        # segment in css_properties.json5 matching the segment in this enum then
         # the generated enum will have the same order and continuity as
-        # CSSProperties.json5 and we can get the longest continuous segment.
+        # css_properties.json5 and we can get the longest continuous segment.
         # Thereby reduce the switch case statement to the minimum.
         css_properties = keyword_utils.sort_keyword_properties_by_canonical_order(
             css_properties, json5_file_paths[2], self.default_parameters)

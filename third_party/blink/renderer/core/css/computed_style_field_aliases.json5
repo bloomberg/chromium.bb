@@ -1,5 +1,5 @@
 {
-// This file specifies all alias used in CSSProperties.json5, these alias
+// This file specifies all alias used in css_properties.json5, these alias
 // replace frequently used combination of property.
     "parameters": {
     },
