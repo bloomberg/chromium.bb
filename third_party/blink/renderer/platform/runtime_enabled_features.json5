@@ -781,10 +781,6 @@
       status: "test",
     },
     {
-      name: "MultipleColorStopPositions",
-      status: "experimental",
-    },
-    {
       name: "NavigatorContentUtils",
     },
     {
