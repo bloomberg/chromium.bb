@@ -85,6 +85,12 @@ BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
 }
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
+  if (bridge_factory_host_) {
+    bridge_factory_host_->GetFactory()->DestroyBridge(id_);
+    bridge_factory_host_->RemoveObserver(this);
+    bridge_factory_host_ = nullptr;
+  }
+
   // Ensure that |this| cannot be reached by its id while it is being destroyed.
   auto found = GetIdToWidgetHostImplMap().find(id_);
   DCHECK(found != GetIdToWidgetHostImplMap().end());
@@ -124,10 +130,11 @@ void BridgedNativeWidgetHostImpl::CreateLocalBridge(
 }
 
 void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
-    views_bridge_mac::mojom::BridgeFactory* bridge_factory,
+    BridgeFactoryHost* bridge_factory_host,
     views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params,
     uint64_t parent_bridge_id) {
-  bridge_factory_ = bridge_factory;
+  bridge_factory_host_ = bridge_factory_host;
+  bridge_factory_host_->AddObserver(this);
 
   // Create the local window with the same parameters as will be used in the
   // other process.
@@ -138,8 +145,8 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
   // Initialize |bridge_ptr_| to point to a bridge created by |factory|.
   views_bridge_mac::mojom::BridgedNativeWidgetHostPtr host_ptr;
   host_mojo_binding_.Bind(mojo::MakeRequest(&host_ptr));
-  bridge_factory_->CreateBridge(id_, mojo::MakeRequest(&bridge_ptr_),
-                                std::move(host_ptr));
+  bridge_factory_host_->GetFactory()->CreateBridge(
+      id_, mojo::MakeRequest(&bridge_ptr_), std::move(host_ptr));
 
   // Create the window in its process, and attach it to its parent window.
   bridge()->CreateWindow(std::move(window_create_params), parent_bridge_id);
@@ -430,6 +437,16 @@ bool BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuController(
 
 double BridgedNativeWidgetHostImpl::SheetPositionY() {
   return native_widget_mac_->SheetPositionY();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidgetHostImpl, BridgeFactoryHost::Observer:
+void BridgedNativeWidgetHostImpl::OnBridgeFactoryHostDestroying(
+    BridgeFactoryHost* host) {
+  DCHECK_EQ(host, bridge_factory_host_);
+  bridge_factory_host_->RemoveObserver(this);
+  bridge_factory_host_ = nullptr;
+  // TODO(ccameron): This should be treated as the window closing.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

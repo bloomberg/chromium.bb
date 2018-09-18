@@ -438,6 +438,8 @@ jumbo_component("views") {
   # Internal sources. TODO(https://crbug.com/871123): Move more headers from
   # public into this list, along with the implementation file.
   sources += [
+    "cocoa/bridge_factory_host.cc",
+    "cocoa/bridge_factory_host.h",
     "cocoa/bridge_factory_impl.h",
     "cocoa/bridge_factory_impl.mm",
     "cocoa/bridged_content_view.h",
