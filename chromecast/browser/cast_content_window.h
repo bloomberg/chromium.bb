@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "chromecast/graphics/gestures/cast_gesture_handler.h"
 #include "content/public/browser/web_contents.h"
@@ -143,11 +145,21 @@ class CastContentWindow {
     CreateParams() = default;
   };
 
+  class Observer : public base::CheckedObserver {
+   public:
+    // Notify visibility change for this window.
+    virtual void OnVisibilityChange(VisibilityType visibility_type) {}
+
+   protected:
+    ~Observer() override {}
+  };
+
   // Creates the platform specific CastContentWindow. |delegate| should outlive
   // the created CastContentWindow.
   static std::unique_ptr<CastContentWindow> Create(const CreateParams& params);
 
-  virtual ~CastContentWindow() {}
+  CastContentWindow();
+  virtual ~CastContentWindow();
 
   // Creates a full-screen window for |web_contents| and displays it if screen
   // access has been granted.
@@ -184,6 +196,13 @@ class CastContentWindow {
   // Cast activity or application calls it to request for moving out of the
   // screen.
   virtual void RequestMoveOut() = 0;
+
+  // Observer interface:
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+ protected:
+  base::ObserverList<Observer> observer_list_;
 };
 
 }  // namespace shell
