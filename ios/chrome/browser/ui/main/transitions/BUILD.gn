@@ -12,7 +12,7 @@ source_set("transitions") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/browser/ui/main:tab_switcher",
   ]
   libs = [ "UIKit.framework" ]
 }

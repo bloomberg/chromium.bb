@@ -20,6 +20,7 @@ source_set("main") {
   ]
   deps = [
     ":feature_flags",
+    ":tab_switcher",
     "//base",
     "//ios/chrome/app/resources:launchscreen_xib",
     "//ios/chrome/browser",
@@ -32,7 +33,6 @@ source_set("main") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs:tabs_internal",
     "//ios/chrome/browser/ui/main/transitions",
-    "//ios/chrome/browser/ui/tab_switcher",
     "//ios/public/provider/chrome/browser",
   ]
   public_deps = [
@@ -52,6 +52,22 @@ source_set("feature_flags") {
   ]
 }
 
+source_set("tab_switcher") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "tab_switcher.h",
+    "tab_switcher_mode.h",
+    "tab_switcher_mode.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/commands",
+    "//ui/base",
+    "//url",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -63,6 +79,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":main",
+    ":tab_switcher",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -71,7 +88,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:ui_internal",
-    "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/test:block_cleanup_test",
     "//ios/web/public/test",
     "//testing/gtest",
@@ -86,8 +102,8 @@ source_set("test_support") {
     "main_view_controller_test.mm",
   ]
   deps = [
+    ":tab_switcher",
     "//base",
-    "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/test:test_support",
   ]
 }
