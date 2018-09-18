@@ -57,17 +57,18 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
                   ::media::ChannelLayout output_channel_layout) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     DCHECK(!initialized_);
-    config_ = config;
-    output_channel_layout_ = output_channel_layout;
 
-    // Media pipeline should already decrypt the stream with the selected key
-    // system. If media pipeline fails to decrypt the stream for some reason,
-    // the decoder will report kDecodeError when decoding.
-    config_.encryption_scheme = Unencrypted();
+    input_channel_count_ = config_.channel_number;
+    output_channel_layout_ = output_channel_layout;
+    config_ = config;
+    if (config.is_encrypted()) {
+      LOG(ERROR) << "Cannot decode encrypted audio";
+      OnInitialized(false);
+      return;
+    }
 
     // Remix to desired channel layout; update config_ to match what this class
     // outputs.
-    input_channel_count_ = config_.channel_number;
     CreateMixerIfNeeded(config_.channel_number);
     config_.channel_number =
         ::media::ChannelLayoutToChannelCount(output_channel_layout_);
@@ -75,8 +76,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     decoder_ = std::make_unique<::media::FFmpegAudioDecoder>(task_runner_,
                                                              &media_log_);
     decoder_->Initialize(
-        media::DecoderConfigAdapter::ToMediaAudioDecoderConfig(config_),
-        nullptr,
+        media::DecoderConfigAdapter::ToMediaAudioDecoderConfig(config), nullptr,
         base::BindRepeating(&CastAudioDecoderImpl::OnInitialized, weak_this_),
         base::BindRepeating(&CastAudioDecoderImpl::OnDecoderOutput, weak_this_),
         ::media::AudioDecoder::WaitingForDecryptionKeyCB());
@@ -169,7 +169,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
                 << (config_.is_encrypted() ? "true" : "false");
       LOG(INFO) << "\tCodec: " << config_.codec;
       LOG(INFO) << "\tSample format: " << config_.sample_format;
-      LOG(INFO) << "\tChannels: " << config_.channel_number;
+      LOG(INFO) << "\tChannels: " << input_channel_count_;
       LOG(INFO) << "\tSample rate: " << config_.samples_per_second;
     }
 
