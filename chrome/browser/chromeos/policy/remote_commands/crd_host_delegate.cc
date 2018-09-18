@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
@@ -148,16 +149,26 @@ bool CRDHostDelegate::AreServicesReady() const {
 bool CRDHostDelegate::IsRunningKiosk() const {
   auto* user_manager = user_manager::UserManager::Get();
   // TODO(antrim): find out if Arc Kiosk is also eligible.
-  if (!user_manager->IsLoggedInAsKioskApp())
+  if (!user_manager->IsLoggedInAsKioskApp() &&
+      !user_manager->IsLoggedInAsArcKioskApp()) {
     return false;
+  }
   if (!GetKioskProfile())
     return false;
-  chromeos::KioskAppManager* manager = chromeos::KioskAppManager::Get();
-  if (manager->GetAutoLaunchApp().empty())
-    return false;
-  chromeos::KioskAppManager::App app;
-  CHECK(manager->GetApp(manager->GetAutoLaunchApp(), &app));
-  return app.was_auto_launched_with_zero_delay;
+
+  if (user_manager->IsLoggedInAsKioskApp()) {
+    chromeos::KioskAppManager* manager = chromeos::KioskAppManager::Get();
+    if (manager->GetAutoLaunchApp().empty())
+      return false;
+    chromeos::KioskAppManager::App app;
+    CHECK(manager->GetApp(manager->GetAutoLaunchApp(), &app));
+    return app.was_auto_launched_with_zero_delay;
+  } else {  // ARC Kiosk
+    chromeos::ArcKioskAppManager* manager = chromeos::ArcKioskAppManager::Get();
+    if (!manager->GetAutoLaunchAccountId().is_valid())
+      return false;
+    return manager->current_app_was_auto_launched_with_zero_delay();
+  }
 }
 
 base::TimeDelta CRDHostDelegate::GetIdlenessPeriod() const {
