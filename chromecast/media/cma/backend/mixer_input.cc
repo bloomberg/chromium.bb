@@ -81,7 +81,11 @@ MixerInput::MixerInput(Source* source,
                              input_samples_per_second_);
   }
 
-  slew_volume_.SetSampleRate(output_samples_per_second_);
+  if (output_samples_per_second_ != 0) {
+    // If output_samples_per_second_ is 0, this stream will be unusable.
+    // OnError() will be called shortly.
+    slew_volume_.SetSampleRate(output_samples_per_second_);
+  }
   source_->InitializeAudioPlayback(source_read_size, initial_rendering_delay);
 
   SetFilterGroup(filter_group);
