@@ -7,6 +7,8 @@
 enum ScrollDirection {
     "block",
     "inline",
+    "horizontal",
+    "vertical"
 };
 
 enum ScrollTimelineAutoKeyword { "auto" };

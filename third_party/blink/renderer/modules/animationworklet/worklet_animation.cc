@@ -148,6 +148,10 @@ CompositorScrollTimeline::ScrollDirection ConvertOrientation(
     case ScrollTimeline::Inline:
       return is_horizontal_writing_mode ? CompositorScrollTimeline::Horizontal
                                         : CompositorScrollTimeline::Vertical;
+    case ScrollTimeline::Horizontal:
+      return CompositorScrollTimeline::Horizontal;
+    case ScrollTimeline::Vertical:
+      return CompositorScrollTimeline::Vertical;
     default:
       NOTREACHED();
       return CompositorScrollTimeline::Vertical;
