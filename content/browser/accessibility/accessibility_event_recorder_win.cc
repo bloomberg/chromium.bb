@@ -87,8 +87,10 @@ class AccessibilityEventRecorderWin : public AccessibilityEventRecorder {
                                          DWORD event_time);
 
  private:
-  AccessibilityEventRecorderWin(BrowserAccessibilityManager* manager,
-                                base::ProcessId pid);
+  AccessibilityEventRecorderWin(
+      BrowserAccessibilityManager* manager,
+      base::ProcessId pid,
+      const base::StringPiece& application_name_match_pattern);
 
   // Called by the thunk registered by SetWinEventHook. Retrieves accessibility
   // info about the node the event was fired on and appends a string to
@@ -115,9 +117,16 @@ class AccessibilityEventRecorderWin : public AccessibilityEventRecorder {
 // static
 AccessibilityEventRecorder& AccessibilityEventRecorder::GetInstance(
     BrowserAccessibilityManager* manager,
-    base::ProcessId pid) {
-  static base::NoDestructor<AccessibilityEventRecorderWin> instance(manager,
-                                                                    pid);
+    base::ProcessId pid,
+    const base::StringPiece& application_name_match_pattern) {
+  if (!application_name_match_pattern.empty()) {
+    LOG(ERROR) << "Recording accessibility events from an application name "
+                  "match pattern not supported on this platform yet.";
+    NOTREACHED();
+  }
+
+  static base::NoDestructor<AccessibilityEventRecorderWin> instance(
+      manager, pid, application_name_match_pattern);
   return *instance;
 }
 
@@ -137,8 +146,9 @@ CALLBACK void AccessibilityEventRecorderWin::WinEventHookThunk(
 
 AccessibilityEventRecorderWin::AccessibilityEventRecorderWin(
     BrowserAccessibilityManager* manager,
-    base::ProcessId pid)
-    : AccessibilityEventRecorder(manager, pid) {
+    base::ProcessId pid,
+    const base::StringPiece& application_name_match_pattern)
+    : AccessibilityEventRecorder(manager) {
   // For now, just use out of context events when running as a utility to watch
   // events (no BrowserAccessibilityManager), because otherwise Chrome events
   // are not getting reported. Being in context is better so that for

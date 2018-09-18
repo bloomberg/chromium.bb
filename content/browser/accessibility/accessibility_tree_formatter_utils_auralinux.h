@@ -12,6 +12,7 @@
 namespace content {
 
 CONTENT_EXPORT const char* ATSPIStateToString(AtspiStateType state);
+CONTENT_EXPORT const char* ATSPIRoleToString(AtspiRole role);
 
 }  // namespace content
 

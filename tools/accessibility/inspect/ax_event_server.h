@@ -17,7 +17,13 @@ namespace tools {
 
 class AXEventServer final {
  public:
-  explicit AXEventServer(base::ProcessId pid);
+  // `application_name_match_pattern` is a matching pattern, which may contain
+  // wildcard characters, to be matched against the accessibility application
+  // name. Only events that match the pattern will be shown. If the pattern is
+  // empty, it is unused.
+  explicit AXEventServer(
+      base::ProcessId pid,
+      const base::StringPiece& application_name_match_pattern);
   ~AXEventServer();
 
  private:

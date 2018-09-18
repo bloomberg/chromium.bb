@@ -40,7 +40,9 @@ class AccessibilityEventRecorder {
   // Get the right platform-specific subclass.
   static AccessibilityEventRecorder& GetInstance(
       BrowserAccessibilityManager* manager = nullptr,
-      base::ProcessId pid = 0);
+      base::ProcessId pid = 0,
+      const base::StringPiece& application_name_match_pattern =
+          base::StringPiece());
   virtual ~AccessibilityEventRecorder();
 
   void set_only_web_events(bool only_web_events) {
@@ -55,8 +57,7 @@ class AccessibilityEventRecorder {
   const std::vector<std::string>& event_logs() { return event_logs_; }
 
  protected:
-  AccessibilityEventRecorder(BrowserAccessibilityManager* manager,
-                             base::ProcessId pid);
+  AccessibilityEventRecorder(BrowserAccessibilityManager* manager);
 
   void OnEvent(const std::string& event);
 
