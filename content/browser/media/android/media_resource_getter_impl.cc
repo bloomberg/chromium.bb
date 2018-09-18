@@ -141,6 +141,11 @@ MediaResourceGetterTask::~MediaResourceGetterTask() {}
 net::AuthCredentials MediaResourceGetterTask::RequestAuthCredentials(
     const GURL& url) const {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  if (!url.IsStandard()) {
+    // Non-standard URLs, such as data, will not be found in HTTP auth cache
+    // anyway, because they have no valid origin, so don't waste the time.
+    return net::AuthCredentials();
+  }
   net::HttpTransactionFactory* factory =
       context_getter_->GetURLRequestContext()->http_transaction_factory();
   if (!factory)
