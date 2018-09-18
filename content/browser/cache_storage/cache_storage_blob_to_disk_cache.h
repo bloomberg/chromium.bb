@@ -38,6 +38,7 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
   void StreamBlobToCache(disk_cache::ScopedEntryPtr entry,
                          int disk_cache_body_index,
                          blink::mojom::BlobPtr blob,
+                         uint64_t blob_size,
                          EntryAndBoolCallback callback);
 
   // BlobReaderClient:

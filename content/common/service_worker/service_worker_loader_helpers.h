@@ -47,6 +47,7 @@ class ServiceWorkerLoaderHelpers {
   // couldn't start. In that case |on_blob_read_complete| isn't called.
   static int ReadBlobResponseBody(
       blink::mojom::BlobPtr* blob,
+      uint64_t blob_size,
       const net::HttpRequestHeaders& headers,
       base::OnceCallback<void(int net_error)> on_blob_read_complete,
       mojo::ScopedDataPipeConsumerHandle* handle_out);

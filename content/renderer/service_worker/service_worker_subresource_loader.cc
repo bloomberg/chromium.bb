@@ -25,6 +25,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/dispatch_fetch_event_params.mojom.h"
@@ -156,6 +157,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       url_loader_client_(std::move(client)),
       url_loader_binding_(this, std::move(request)),
       response_callback_binding_(this),
+      body_as_blob_size_(blink::BlobUtils::kUnknownSize),
       controller_connector_(std::move(controller_connector)),
       controller_connector_observer_(this),
       fetch_request_restarted_(false),
@@ -465,6 +467,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     DCHECK(!body_as_stream);
     DCHECK(response->blob->blob.is_valid());
     body_as_blob_.Bind(std::move(response->blob->blob));
+    body_as_blob_size_ = response->blob->size;
     body_as_blob_->ReadSideData(base::BindOnce(
         &ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete,
         base::Unretained(this)));
@@ -559,7 +562,7 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
     url_loader_client_->OnReceiveCachedMetadata(metadata.value());
   mojo::ScopedDataPipeConsumerHandle data_pipe;
   int error = ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
-      &body_as_blob_, resource_request_.headers,
+      &body_as_blob_, body_as_blob_size_, resource_request_.headers,
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnBlobReadingComplete,
                      weak_factory_.GetWeakPtr()),
       &data_pipe);

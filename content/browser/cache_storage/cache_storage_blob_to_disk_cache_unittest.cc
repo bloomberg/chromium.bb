@@ -170,6 +170,7 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
 
     cache_storage_blob_to_disk_cache_->StreamBlobToCache(
         std::move(disk_cache_entry_), kCacheEntryIndex, std::move(blob_ptr),
+        blob_handle_->size(),
         base::BindOnce(&CacheStorageBlobToDiskCacheTest::StreamCallback,
                        base::Unretained(this)));
 

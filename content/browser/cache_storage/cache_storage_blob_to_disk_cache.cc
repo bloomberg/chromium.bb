@@ -32,6 +32,7 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
     disk_cache::ScopedEntryPtr entry,
     int disk_cache_body_index,
     blink::mojom::BlobPtr blob,
+    uint64_t blob_size,
     EntryAndBoolCallback callback) {
   DCHECK(entry);
   DCHECK_LE(0, disk_cache_body_index);
@@ -39,7 +40,8 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
   DCHECK(!consumer_handle_.is_valid());
   DCHECK(!pending_read_);
 
-  mojo::DataPipe pipe(blink::BlobUtils::GetDataPipeCapacity());
+  mojo::DataPipe pipe(blink::BlobUtils::GetDataPipeCapacity(blob_size));
+
   if (!pipe.consumer_handle.is_valid()) {
     std::move(callback).Run(std::move(entry), false /* success */);
     return;

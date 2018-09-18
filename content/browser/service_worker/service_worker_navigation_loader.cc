@@ -492,7 +492,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
     body_as_blob_.Bind(std::move(response->blob->blob));
     mojo::ScopedDataPipeConsumerHandle data_pipe;
     int error = ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
-        &body_as_blob_, resource_request_.headers,
+        &body_as_blob_, response->blob->size, resource_request_.headers,
         base::BindOnce(&ServiceWorkerNavigationLoader::OnBlobReadingComplete,
                        weak_factory_.GetWeakPtr()),
         &data_pipe);
