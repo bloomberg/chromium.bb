@@ -31,6 +31,7 @@ namespace blink {
 constexpr const char* kImageOrientationFlipY = "flipY";
 constexpr const char* kImageBitmapOptionNone = "none";
 constexpr const char* kImageBitmapOptionDefault = "default";
+constexpr const char* kImageBitmapPixelFormat8888 = "8-8-8-8";
 constexpr const char* kImageBitmapOptionPremultiply = "premultiply";
 constexpr const char* kImageBitmapOptionResizeQualityHigh = "high";
 constexpr const char* kImageBitmapOptionResizeQualityMedium = "medium";
@@ -69,6 +70,10 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
     parsed_options.flip_y = false;
     DCHECK(options.imageOrientation() == kImageBitmapOptionNone);
   }
+
+  if (options.imagePixelFormat() == kImageBitmapPixelFormat8888)
+    parsed_options.pixel_format = kImageBitmapPixelFormat_8888;
+
   if (options.premultiplyAlpha() == kImageBitmapOptionNone) {
     parsed_options.premultiply_alpha = false;
   } else {
@@ -420,17 +425,24 @@ scoped_refptr<StaticBitmapImage> MakeBlankImage(
   return StaticBitmapImage::Create(surface->makeImageSnapshot());
 }
 
-}  // namespace
+scoped_refptr<StaticBitmapImage> GetImageWithPixelFormat(
+    scoped_refptr<StaticBitmapImage>&& image,
+    ImageBitmapPixelFormat pixel_format) {
+  if (pixel_format == kImageBitmapPixelFormat_Default)
+    return std::move(image);
+  // If the the image is not half float backed, default and 8-8-8-8 image bitmap
+  // pixel formats result in the same 8-8-8-8 backed image bitmap.
+  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
+  if (skia_image->colorType() != kRGBA_F16_SkColorType)
+    return std::move(image);
 
-sk_sp<SkImage> ImageBitmap::GetSkImageFromDecoder(
-    std::unique_ptr<ImageDecoder> decoder) {
-  if (!decoder->FrameCount())
-    return nullptr;
-  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
-  if (!frame || frame->GetStatus() != ImageFrame::kFrameComplete)
-    return nullptr;
-  DCHECK(!frame->Bitmap().isNull() && !frame->Bitmap().empty());
-  return frame->FinalizePixelsAndGetImage();
+  SkPixmap pixmap;
+  skia_image->peekPixels(&pixmap);
+  SkImageInfo target_info = pixmap.info().makeColorType(kN32_SkColorType);
+  SkBitmap target_bitmap;
+  target_bitmap.allocPixels(target_info);
+  pixmap.readPixels(target_bitmap.pixmap(), 0, 0);
+  return StaticBitmapImage::Create(SkImage::MakeFromBitmap(target_bitmap));
 }
 
 static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
@@ -517,6 +529,11 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
                                         parsed_options.premultiply_alpha
                                             ? kPremultiplyAlpha
                                             : kUnpremultiplyAlpha);
+
+  // convert pixel format if needed
+  result =
+      GetImageWithPixelFormat(std::move(result), parsed_options.pixel_format);
+
   // resize if up-scaling
   if (up_scaling) {
     result = ScaleImage(std::move(result), parsed_options);
@@ -525,6 +542,18 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   }
 
   return result;
+}
+}  // namespace
+
+sk_sp<SkImage> ImageBitmap::GetSkImageFromDecoder(
+    std::unique_ptr<ImageDecoder> decoder) {
+  if (!decoder->FrameCount())
+    return nullptr;
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  if (!frame || frame->GetStatus() != ImageFrame::kFrameComplete)
+    return nullptr;
+  DCHECK(!frame->Bitmap().isNull() && !frame->Bitmap().empty());
+  return frame->FinalizePixelsAndGetImage();
 }
 
 ImageBitmap::ImageBitmap(ImageElementBase* image,
