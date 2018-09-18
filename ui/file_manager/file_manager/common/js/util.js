@@ -728,6 +728,33 @@ util.isRecentRoot = function(entry) {
 };
 
 /**
+ * Obtains whether an entry is the root directory of a Computer.
+ * @param {Entry|FilesAppEntry} entry Entry or a fake entry.
+ * @return {boolean} True if the given entry is root of a Computer.
+ */
+util.isComputersRoot = function(entry) {
+  if (entry === null)
+    return false;
+  if (!entry.fullPath)
+    return false;
+  var tree = entry.fullPath.split('/');
+  return tree.length == 3 && util.isComputersEntry(entry);
+};
+
+/**
+ * Obtains whether an entry is descendant of the My Computers directory.
+ * @param {!Entry|!FilesAppEntry} entry Entry or a fake entry.
+ * @return {boolean} True if the given entry is under My Computers.
+ */
+util.isComputersEntry = function(entry) {
+  if (!entry.fullPath)
+    return false;
+  var tree = entry.fullPath.split('/');
+  return tree[0] == '' &&
+      tree[1] == VolumeManagerCommon.COMPUTERS_DIRECTORY_NAME;
+};
+
+/**
  * Creates an instance of UserDOMError with given error name that looks like a
  * FileError except that it does not have the deprecated FileError.code member.
  *

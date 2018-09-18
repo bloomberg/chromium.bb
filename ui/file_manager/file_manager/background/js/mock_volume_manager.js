@@ -86,6 +86,14 @@ MockVolumeManager.prototype.getLocationInfo = function(entry) {
         rootType = VolumeManagerCommon.RootType.TEAM_DRIVE;
         isRootEntry = util.isTeamDriveRoot(entry);
       }
+    } else if (entry.fullPath.startsWith('/Computers')) {
+      if (entry.fullPath === '/Computers') {
+        rootType = VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT;
+        isRootEntry = true;
+      } else {
+        rootType = VolumeManagerCommon.RootType.COMPUTER;
+        isRootEntry = util.isComputersRoot(entry);
+      }
     }
     return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, true);
   }

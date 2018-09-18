@@ -43,8 +43,9 @@ function EntryLocationImpl(volumeInfo, rootType, isRootEntry, isReadOnly) {
   this.isReadOnly = isReadOnly;
 
   /** @type{boolean} */
-  this.hasFixedLabel =
-      this.isRootEntry && rootType !== VolumeManagerCommon.RootType.TEAM_DRIVE;
+  this.hasFixedLabel = this.isRootEntry &&
+      (rootType !== VolumeManagerCommon.RootType.TEAM_DRIVE &&
+       rootType !== VolumeManagerCommon.RootType.COMPUTER);
 
   Object.freeze(this);
 }
