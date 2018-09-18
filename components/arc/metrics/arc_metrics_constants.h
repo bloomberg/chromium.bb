@@ -67,6 +67,9 @@ enum class UserInteractionType {
   // browser.
   APP_STARTED_FROM_LINK_CONTEXT_MENU = 16,
 
+  // User started an app from Smart Text Selection context menu.
+  APP_STARTED_FROM_SMART_TEXT_SELECTION_CONTEXT_MENU = 17,
+
   // The size of this enum; keep last.
   SIZE,
 };
