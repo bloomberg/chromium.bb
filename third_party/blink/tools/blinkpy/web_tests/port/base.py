@@ -383,37 +383,12 @@ class Port(object):
     def check_sys_deps(self, needs_http):
         """Checks whether the system is properly configured.
 
-        If the port needs to do some runtime checks to ensure that the
-        tests can be run successfully, it should override this routine.
-        This step can be skipped with --nocheck-sys-deps.
+        Most checks happen during invocation of the driver prior to running
+        tests. This can be overridden to run custom checks.
 
         Returns:
             An exit status code.
         """
-        cmd = [self._path_to_driver(), '--check-layout-test-sys-deps']
-
-        additional_flags = self.get_option('additional_driver_flag', [])
-        if additional_flags:
-            cmd.append(additional_flags[0])
-
-        local_error = ScriptError()
-
-        def error_handler(script_error):
-            local_error.exit_code = script_error.exit_code
-
-        if self.host.platform.is_linux():
-            _log.debug('DISPLAY = %s', self.host.environ.get('DISPLAY', ''))
-        output = self._executive.run_command(cmd, error_handler=error_handler)
-        if local_error.exit_code:
-            _log.error('System dependencies check failed.')
-            _log.error('To override, invoke with --nocheck-sys-deps')
-            _log.error('')
-            _log.error(output)
-            if self.BUILD_REQUIREMENTS_URL is not '':
-                _log.error('')
-                _log.error('For complete build requirements, please see:')
-                _log.error(self.BUILD_REQUIREMENTS_URL)
-            return exit_codes.SYS_DEPS_EXIT_STATUS
         return exit_codes.OK_EXIT_STATUS
 
     def check_image_diff(self):

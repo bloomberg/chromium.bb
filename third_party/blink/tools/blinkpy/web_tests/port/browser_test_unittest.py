@@ -38,11 +38,6 @@ from blinkpy.web_tests.port import port_testcase
 
 class _BrowserTestTestCaseMixin(object):
 
-    def test_check_sys_deps(self):
-        port = self.make_port()
-        port._executive = MockExecutive(exit_code=0)  # pylint: disable=protected-access
-        self.assertEqual(port.check_sys_deps(needs_http=False), exit_codes.OK_EXIT_STATUS)
-
     def test_driver_name_option(self):
         self.assertTrue(self.make_port()._path_to_driver().endswith(self.driver_name_endswith))
 

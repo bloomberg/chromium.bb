@@ -20,7 +20,6 @@ extern const char kAndroidStderrPort[];
 extern const char kAndroidStdinPort[];
 extern const char kAndroidStdoutPort[];
 #endif // defined(OS_ANDROID)
-extern const char kCheckLayoutTestSysDeps[];
 extern const char kCrashOnFailure[];
 extern const char kCustomDevToolsFrontend[];
 extern const char kDebugDevTools[];
