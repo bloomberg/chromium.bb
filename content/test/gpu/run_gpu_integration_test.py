@@ -25,7 +25,25 @@ def PostprocessJSON(file_name, run_test_args):
     with open(file_name, 'w') as f:
       json.dump(test_result, f, indent=2)
 
+def FailIfScreenLockedOnMac():
+  # Detect if the Mac lockscreen is present, which causes issues when running
+  # tests.
+  if not sys.platform.startswith('darwin'):
+    return
+  import Quartz
+  current_session = Quartz.CGSessionCopyCurrentDictionary()
+  if not current_session:
+    # Using the logging module doesn't seem to be guaranteed to show up in
+    # stdout, so use print instead.
+    print ('WARNING: Unable to obtain CGSessionCoppyCurrentDictionary via '
+           'Quartz - unable to determine whether Mac lockscreen is present or '
+           'not.')
+    return
+  if current_session.get('CGSSessionScreenIsLocked'):
+    raise RuntimeError('Mac lockscreen detected, aborting.')
+
 def main():
+  FailIfScreenLockedOnMac()
   rest_args = sys.argv[1:]
   parser = argparse.ArgumentParser(description='Extra argument parser',
                                    add_help=False)
