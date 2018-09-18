@@ -36,7 +36,7 @@ class VR_EXPORT SchedulerDelegate {
   virtual void SetBrowserRenderer(
       SchedulerBrowserRendererInterface* browser_renderer) = 0;
   virtual void SubmitDrawnFrame(FrameType frame_type,
-                                const gfx::Transform& transform) = 0;
+                                const gfx::Transform& head_pose) = 0;
   virtual void AddInputSourceState(
       device::mojom::XRInputSourceStatePtr state) = 0;
   virtual void ConnectPresentingService(

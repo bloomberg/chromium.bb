@@ -372,6 +372,7 @@ source_set("vr_base") {
 test("vr_common_unittests") {
   sources = [
     "animation_unittest.cc",
+    "base_scheduler_delegate_unittest.cc",
     "browser_renderer_unittest.cc",
     "databinding/binding_unittest.cc",
     "databinding/vector_binding_unittest.cc",
