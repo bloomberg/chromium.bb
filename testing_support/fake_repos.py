@@ -743,23 +743,6 @@ deps = {
       'origin': 'git/repo_13@2\n',
     })
 
-    # src/repo12 is now a CIPD dependency.
-    self._commit_git('repo_13', {
-      'DEPS': """
-deps = {
-  'src/repo12': {
-    'packages': [
-      {
-        'package': 'foo',
-        'version': '1.3',
-      },
-    ],
-    'dep_type': 'cipd',
-  },
-}""",
-      'origin': 'git/repo_13@3\n'
-    })
-
     self._commit_git('repo_14', {
       'DEPS': textwrap.dedent("""\
         vars = {}
@@ -949,9 +932,9 @@ class FakeReposTestBase(trial_dir.TestCase):
     actual = read_tree(tree_root)
     diff = dict_diff(tree, actual)
     if diff:
-      logging.error('Actual %s\n%s' % (tree_root, pprint.pformat(actual)))
-      logging.error('Expected\n%s' % pprint.pformat(tree))
-      logging.error('Diff\n%s' % pprint.pformat(diff))
+      logging.debug('Actual %s\n%s' % (tree_root, pprint.pformat(actual)))
+      logging.debug('Expected\n%s' % pprint.pformat(tree))
+      logging.debug('Diff\n%s' % pprint.pformat(diff))
     self.assertEquals(diff, {})
 
   def mangle_git_tree(self, *args):

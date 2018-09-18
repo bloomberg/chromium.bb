@@ -514,8 +514,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     if not self.enabled:
       return
     self.gclient(['config', self.git_base + 'repo_13', '--name', 'src'])
-    _out, _err, rc = self.gclient(
-        ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 2)])
+    _out, _err, rc = self.gclient(['sync', '-v', '-v', '-v'])
     self.assertEquals(0, rc)
 
   def testSyncFetchUpdate(self):
@@ -530,8 +529,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertEquals(0, rc)
 
     # Make sure update that pulls a non-standard ref works.
-    _out, _err, rc = self.gclient(
-        ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 2)])
+    _out, _err, rc = self.gclient(['sync', '-v', '-v', '-v'])
     self.assertEquals(0, rc)
 
   def testSyncDirect(self):
@@ -696,7 +694,7 @@ class GClientSmokeGIT(GClientSmokeBase):
                              '--revision', 'src@' + self.githash('repo_5', 2)],
                             expectation)
     self.assertEquals('Cloning into ', out[0][1][:13])
-    self.assertEquals(2, len(out[1]), out[1])
+    self.assertEquals(2, len(out[1]))
     self.assertEquals('pre-deps hook', out[1][1])
     tree = self.mangle_git_tree(('repo_5@2', 'src'),
                                 ('repo_1@2', 'src/repo1'),
@@ -1895,103 +1893,25 @@ class GClientSmokeCipd(GClientSmokeBase):
 
   def testSyncCipd(self):
     self.gclient(['config', self.git_base + 'repo_14', '--name', 'src'])
-    out, err, rc = self.gclient(['sync'])
-    self.assertEquals(0, rc, out + err)
+    self.gclient(['sync'])
 
-    tree = self.mangle_git_tree(('repo_14@1', 'src'))
-    tree.update({
-        '_cipd': '\n'.join([
-            '$ParanoidMode CheckPresence',
-            '',
-            '@Subdir src/another_cipd_dep',
-            'package1 1.1-cr0',
-            'package2 1.13',
-            '',
-            '@Subdir src/cipd_dep',
-            'package0 0.1',
-            '',
-            '@Subdir src/cipd_dep_with_cipd_variable',
-            'package3/${platform} 1.2',
-            '',
-            '',
-        ]),
-        'src/another_cipd_dep/_cipd': '\n'.join([
-            'package1 1.1-cr0',
-            'package2 1.13',
-        ]),
-        'src/cipd_dep/_cipd': 'package0 0.1',
-        'src/cipd_dep_with_cipd_variable/_cipd': 'package3/${platform} 1.2',
-    })
-    self.assertTree(tree)
+    with open(os.path.join(self.root_dir, '.cipd', 'ensure')) as f:
+      contents = f.read()
 
-  def testConvertGitToCipd(self):
-    self.gclient(['config', self.git_base + 'repo_13', '--name', 'src'])
-
-    # repo_13@1 has src/repo12 as a git dependency.
-    out, err, rc = self.gclient(
-        ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 1)])
-    self.assertEquals(0, rc, out + err)
-
-    tree = self.mangle_git_tree(('repo_13@1', 'src'),
-                                ('repo_12@1', 'src/repo12'))
-    tree['_cipd'] = '$ParanoidMode CheckPresence\n\n'
-    self.assertTree(tree)
-
-    # repo_13@3 has src/repo12 as a cipd dependency.
-    out, err, rc = self.gclient(
-        ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 3),
-         '--delete_unversioned_trees'])
-    self.assertEquals(0, rc, out + err)
-
-    tree = self.mangle_git_tree(('repo_13@3', 'src'))
-    tree.update({
-        '_cipd': '\n'.join([
-            '$ParanoidMode CheckPresence',
-            '',
-            '@Subdir src/repo12',
-            'foo 1.3',
-            '',
-            '',
-        ]),
-        'src/repo12/_cipd': 'foo 1.3',
-    })
-    self.assertTree(tree)
-
-  def testConvertCipdToGit(self):
-    self.gclient(['config', self.git_base + 'repo_13', '--name', 'src'])
-
-    # repo_13@3 has src/repo12 as a cipd dependency.
-    out, err, rc = self.gclient(
-        ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 3),
-         '--delete_unversioned_trees'])
-    self.assertEquals(0, rc, out + err)
-
-    tree = self.mangle_git_tree(('repo_13@3', 'src'))
-    tree.update({
-        '_cipd': '\n'.join([
-            '$ParanoidMode CheckPresence',
-            '',
-            '@Subdir src/repo12',
-            'foo 1.3',
-            '',
-            '',
-        ]),
-        'src/repo12/_cipd': 'foo 1.3',
-    })
-    self.assertTree(tree)
-
-    # repo_13@1 has src/repo12 as a git dependency.
-    out, err, rc = self.gclient(
-        ['sync', '-v', '-v', '-v', '--revision', self.githash('repo_13', 1)])
-    self.assertEquals(0, rc, out + err)
-
-    tree = self.mangle_git_tree(('repo_13@1', 'src'),
-                                ('repo_12@1', 'src/repo12'))
-    tree.update({
-        '_cipd': '$ParanoidMode CheckPresence\n\n',
-        'src/repo12/_cipd': 'foo 1.3',
-    })
-    self.assertTree(tree)
+    self.assertEqual([
+        '$ParanoidMode CheckPresence',
+        '',
+        '@Subdir src/another_cipd_dep',
+        'package1 1.1-cr0',
+        'package2 1.13',
+        '',
+        '@Subdir src/cipd_dep',
+        'package0 0.1',
+        '',
+        '@Subdir src/cipd_dep_with_cipd_variable',
+        'package3/${platform} 1.2',
+        '',
+    ], contents.splitlines())
 
 
 if __name__ == '__main__':

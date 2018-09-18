@@ -1614,6 +1614,9 @@ it or fix the checkout.
               patch_repo + '@' + patch_ref
               for patch_repo, patch_ref in patch_refs.iteritems())))
 
+    if self._cipd_root:
+      self._cipd_root.run(command)
+
     # Once all the dependencies have been processed, it's now safe to write
     # out the gn_args_file and run the hooks.
     if command == 'update':
@@ -1721,12 +1724,6 @@ it or fix the checkout.
             gclient_utils.rmtree(e_dir)
       # record the current list of entries for next time
       self._SaveEntries()
-
-    # Sync CIPD dependencies once removed deps are deleted. In case a git
-    # dependency was moved to CIPD, we want to remove the old git directory
-    # first and then sync the CIPD dep.
-    self.GetCipdRoot().run(command)
-
     return 0
 
   def PrintRevInfo(self):

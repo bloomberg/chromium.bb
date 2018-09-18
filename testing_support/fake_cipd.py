@@ -5,25 +5,8 @@
 
 import argparse
 import os
-import re
 import shutil
 import sys
-
-
-CIPD_SUBDIR_RE = '@Subdir (.*)'
-
-
-def parse_cipd(root, contents):
-  tree = {}
-  current_subdir = None
-  for line in contents:
-    line = line.strip()
-    match = re.match(CIPD_SUBDIR_RE, line)
-    if match:
-      current_subdir = os.path.join(root, *match.group(1).split('/'))
-    elif line and current_subdir:
-      tree.setdefault(current_subdir, []).append(line)
-  return tree
 
 
 def main():
@@ -33,18 +16,12 @@ def main():
   parser.add_argument('-root')
   args, _ = parser.parse_known_args()
 
-  with open(args.ensure_file) as f:
-    new_content = parse_cipd(args.root, f.readlines())
+  cipd_root = os.path.join(args.root, '.cipd')
+  if not os.path.isdir(cipd_root):
+    os.makedirs(cipd_root)
 
-  # Install new packages
-  for path, packages in new_content.iteritems():
-    if not os.path.exists(path):
-      os.makedirs(path)
-    with open(os.path.join(path, '_cipd'), 'w') as f:
-      f.write('\n'.join(packages))
-
-  # Save the ensure file that we got
-  shutil.copy(args.ensure_file, os.path.join(args.root, '_cipd'))
+  if args.ensure_file:
+    shutil.copy(args.ensure_file, os.path.join(cipd_root, 'ensure'))
 
   return 0
 
