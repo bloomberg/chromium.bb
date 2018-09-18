@@ -38,9 +38,8 @@ declare_args() {
   #   "desktop" - Windows Desktop Applications
   target_winuwp_family = "app"
 
-  # Set this to use clang style diagnostics format. Available only on clang.
-  # Tune this on for the editor integrations like Emacs compilation mode that
-  # match clang style error messages.
+  # Set this to use clang-style diagnostics format instead of MSVC-style, which
+  # is useful in e.g. Emacs compilation mode.
   # E.g.:
   #  Without this, clang emits a diagnostic message like this:
   #    foo/bar.cc(12,34): error: something went wrong
@@ -103,7 +102,7 @@ config("compiler") {
       ]
     }
 
-    if (is_clang && use_clang_diagnostics_format) {
+    if (use_clang_diagnostics_format) {
       cflags += [
         "-Xclang",
         "-fdiagnostics-format",
