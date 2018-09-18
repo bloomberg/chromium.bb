@@ -423,13 +423,13 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeBe
 
         @Override
         public void swipeFinished() {
-            if (mToolbarSwipeLayout == null) return;
+            if (mToolbarSwipeLayout == null || !mToolbarSwipeLayout.isActive()) return;
             mToolbarSwipeLayout.swipeFinished(time());
         }
 
         @Override
         public void swipeFlingOccurred(float x, float y, float tx, float ty, float vx, float vy) {
-            if (mToolbarSwipeLayout == null) return;
+            if (mToolbarSwipeLayout == null || !mToolbarSwipeLayout.isActive()) return;
             mToolbarSwipeLayout.swipeFlingOccurred(time(), x, y, tx, ty, vx, vy);
         }
 
