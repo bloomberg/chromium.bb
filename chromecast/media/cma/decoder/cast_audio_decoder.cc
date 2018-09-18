@@ -58,7 +58,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     DCHECK(!initialized_);
 
-    input_channel_count_ = config_.channel_number;
+    input_channel_count_ = config.channel_number;
     output_channel_layout_ = output_channel_layout;
     config_ = config;
     if (config.is_encrypted()) {
@@ -69,7 +69,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
 
     // Remix to desired channel layout; update config_ to match what this class
     // outputs.
-    CreateMixerIfNeeded(config_.channel_number);
+    CreateMixerIfNeeded(input_channel_count_);
     config_.channel_number =
         ::media::ChannelLayoutToChannelCount(output_channel_layout_);
 
