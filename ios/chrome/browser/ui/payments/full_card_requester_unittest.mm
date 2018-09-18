@@ -20,6 +20,9 @@
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
+#include "ios/web/public/test/fakes/fake_web_frame.h"
+#import "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -70,6 +73,9 @@ class PaymentRequestFullCardRequesterTest : public PaymentRequestUnitTestBase,
         [[AutofillAgent alloc] initWithPrefService:browser_state()->GetPrefs()
                                           webState:web_state()];
     InfoBarManagerImpl::CreateForWebState(web_state());
+    web_state()->CreateWebFramesManager();
+    auto main_frame = std::make_unique<web::FakeWebFrame>("main", true, GURL());
+    web_state()->AddWebFrame(std::move(main_frame));
     autofill_controller_ =
         [[AutofillController alloc] initWithBrowserState:browser_state()
                                                 webState:web_state()
@@ -99,9 +105,10 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismiss) {
   FullCardRequester full_card_requester(base_view_controller, browser_state());
 
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
-
+  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
   autofill::AutofillManager* autofill_manager =
-      autofill::AutofillDriverIOS::FromWebState(web_state())
+      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state(),
+                                                           main_frame)
           ->autofill_manager();
   FakeResultDelegate* fake_result_delegate = new FakeResultDelegate;
   full_card_requester.GetFullCard(*credit_cards()[0], autofill_manager,

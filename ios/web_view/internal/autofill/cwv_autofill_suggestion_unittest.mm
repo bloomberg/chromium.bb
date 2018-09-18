@@ -24,6 +24,7 @@ TEST_F(CWVAutofillSuggestionTest, Initialization) {
   NSString* formName = @"TestFormName";
   NSString* fieldName = @"TestFieldName";
   NSString* fieldIdentifier = @"TestFieldIdentifier";
+  NSString* frameID = @"TestFrameID";
   FormSuggestion* formSuggestion =
       [FormSuggestion suggestionWithValue:@"TestValue"
                        displayDescription:@"TestDisplayDescription"
@@ -33,10 +34,12 @@ TEST_F(CWVAutofillSuggestionTest, Initialization) {
       [[CWVAutofillSuggestion alloc] initWithFormSuggestion:formSuggestion
                                                    formName:formName
                                                   fieldName:fieldName
-                                            fieldIdentifier:fieldIdentifier];
+                                            fieldIdentifier:fieldIdentifier
+                                                    frameID:frameID];
   EXPECT_NSEQ(formName, suggestion.formName);
   EXPECT_NSEQ(fieldName, suggestion.fieldName);
   EXPECT_NSEQ(fieldIdentifier, suggestion.fieldIdentifier);
+  EXPECT_NSEQ(frameID, suggestion.frameID);
   EXPECT_NSEQ(formSuggestion.displayDescription, suggestion.displayDescription);
   EXPECT_NSEQ(formSuggestion.value, suggestion.value);
   EXPECT_EQ(formSuggestion, suggestion.formSuggestion);

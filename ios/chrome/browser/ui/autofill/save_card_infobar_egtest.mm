@@ -16,6 +16,8 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
+#include "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -70,8 +72,9 @@ class SaveCardInfobarEGTestHelper {
 
   static CreditCardSaveManager* credit_card_save_manager() {
     web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+    web::WebFrame* main_frame = web::GetMainWebFrame(web_state);
     DCHECK(web_state);
-    return AutofillDriverIOS::FromWebState(web_state)
+    return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
         ->autofill_manager()
         ->form_data_importer_.get()
         ->credit_card_save_manager_.get();
@@ -79,8 +82,9 @@ class SaveCardInfobarEGTestHelper {
 
   static payments::PaymentsClient* payments_client() {
     web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+    web::WebFrame* main_frame = web::GetMainWebFrame(web_state);
     DCHECK(web_state);
-    return AutofillDriverIOS::FromWebState(web_state)
+    return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
         ->autofill_manager()
         ->payments_client();
   }

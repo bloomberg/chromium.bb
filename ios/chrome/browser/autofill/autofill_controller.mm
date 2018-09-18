@@ -27,6 +27,9 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
+#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -66,15 +69,17 @@ using autofill::AutofillPopupDelegate;
     _autofillClient.reset(new autofill::ChromeAutofillClientIOS(
         browserState, webState, infobarManager, self,
         passwordGenerationManager));
-    autofill::AutofillDriverIOS::CreateForWebStateAndDelegate(
-        webState, _autofillClient.get(), self,
+    web::WebFrame* frame = web::GetMainWebFrame(webState);
+    autofill::AutofillDriverIOS::CreateForWebStateWebFrameAndDelegate(
+        webState, frame, _autofillClient.get(), self,
         GetApplicationContext()->GetApplicationLocale(),
         downloadEnabled
             ? autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER
             : autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
     _autofillAgent = autofillAgent;
     _autofillManager =
-        autofill::AutofillDriverIOS::FromWebState(webState)->autofill_manager();
+        autofill::AutofillDriverIOS::FromWebStateAndWebFrame(webState, frame)
+            ->autofill_manager();
   }
   return self;
 }

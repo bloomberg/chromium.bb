@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/form_data.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #include "components/prefs/pref_service.h"
+#include "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,7 +46,11 @@ class AutofillAgentTests : public PlatformTest {
         [OCMockObject mockForClass:[CRWJSInjectionReceiver class]];
     test_web_state_.SetJSInjectionReceiver(mock_js_injection_receiver_);
     test_web_state_.SetContentIsHTML(true);
-    test_web_state_.SetCurrentURL(GURL("https://example.com"));
+    GURL url("https://example.com");
+    test_web_state_.SetCurrentURL(url);
+    test_web_state_.CreateWebFramesManager();
+    auto main_frame = std::make_unique<web::FakeWebFrame>("frameID", true, url);
+    test_web_state_.AddWebFrame(std::move(main_frame));
 
     prefs_ = autofill::test::PrefServiceForTesting();
     autofill::prefs::SetAutofillEnabled(prefs_.get(), true);
@@ -173,6 +178,7 @@ TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity1) {
                                             fieldType:@"text"
                                                  type:@"focus"
                                            typedValue:@""
+                                              frameID:@"frameID"
                                           isMainFrame:YES
                                        hasUserGesture:YES
                                              webState:&test_web_state_
@@ -197,6 +203,7 @@ TEST_F(AutofillAgentTests, CheckIfSuggestionsAvailable_UserInitiatedActivity2) {
                                             fieldType:@"text"
                                                  type:@"focus"
                                            typedValue:@""
+                                              frameID:@"frameID"
                                           isMainFrame:YES
                                        hasUserGesture:YES
                                              webState:&test_web_state_
@@ -220,6 +227,7 @@ TEST_F(AutofillAgentTests,
                                             fieldType:@"text"
                                                  type:@"focus"
                                            typedValue:@""
+                                              frameID:@"frameID"
                                           isMainFrame:YES
                                        hasUserGesture:NO
                                              webState:&test_web_state_
@@ -274,6 +282,7 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearForm) {
                                     fieldType:@"text"
                                          type:@"focus"
                                    typedValue:@""
+                                      frameID:@"frameID"
                                      webState:&test_web_state_
                             completionHandler:completionHandler];
   test_web_state_.WasShown();
@@ -333,6 +342,7 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
                                     fieldType:@"text"
                                          type:@"focus"
                                    typedValue:@""
+                                      frameID:@"frameID"
                                      webState:&test_web_state_
                             completionHandler:completionHandler];
   test_web_state_.WasShown();

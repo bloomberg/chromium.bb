@@ -30,6 +30,7 @@ NSString* const kTestFormName = @"FormName";
 NSString* const kTestFormID = @"FormID";
 NSString* const kTestFieldName = @"FieldName";
 NSString* const kTestFieldID = @"FieldID";
+NSString* const kTestFrameID = @"FrameID";
 NSString* const kTestFieldValue = @"FieldValue";
 NSString* const kTestSubmitID = @"SubmitID";
 NSString* const kTestFormHtml =
@@ -82,6 +83,7 @@ class WebViewAutofillTest : public WebViewInttestBase {
         fetchSuggestionsForFormWithName:kTestFormName
                               fieldName:kTestFieldName
                         fieldIdentifier:kTestFieldID
+                                frameID:kTestFrameID
                       completionHandler:^(
                           NSArray<CWVAutofillSuggestion*>* suggestions) {
                         fetched_suggestions = suggestions;
@@ -109,6 +111,7 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
                 didFocusOnFieldWithName:kTestFieldName
                         fieldIdentifier:kTestFieldID
                                formName:kTestFormName
+                                frameID:[OCMArg any]
                                   value:kTestFieldValue];
   NSString* focus_script = [NSString
       stringWithFormat:@"document.getElementById('%@').focus();", kTestFieldID];
@@ -121,6 +124,7 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
                  didBlurOnFieldWithName:kTestFieldName
                         fieldIdentifier:kTestFieldID
                                formName:kTestFormName
+                                frameID:[OCMArg any]
                                   value:kTestFieldValue];
   NSString* blur_script =
       [NSString stringWithFormat:
@@ -136,6 +140,7 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
                 didInputInFieldWithName:kTestFieldName
                         fieldIdentifier:kTestFieldID
                                formName:kTestFormName
+                                frameID:[OCMArg any]
                                   value:kTestFieldValue];
   // The 'input' event listener defined in form.js is only called during the
   // bubbling phase.
@@ -180,6 +185,7 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
   EXPECT_NSEQ(kTestFieldValue, fetched_suggestion.value);
   EXPECT_NSEQ(kTestFormName, fetched_suggestion.formName);
   EXPECT_NSEQ(kTestFieldName, fetched_suggestion.fieldName);
+  EXPECT_NSEQ(kTestFrameID, fetched_suggestion.frameID);
 
   // The input element needs to be focused before it can be filled or cleared.
   NSString* focus_script = [NSString

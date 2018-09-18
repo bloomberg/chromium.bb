@@ -7,9 +7,10 @@
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
+#include "components/autofill/ios/browser/autofill_driver_ios_webstate.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/origin_util.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -18,24 +19,25 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(autofill::AutofillDriverIOS);
-
 namespace autofill {
 
 // static
-void AutofillDriverIOS::CreateForWebStateAndDelegate(
+void AutofillDriverIOS::CreateForWebStateWebFrameAndDelegate(
     web::WebState* web_state,
+    web::WebFrame* web_frame,
     AutofillClient* client,
     id<AutofillDriverIOSBridge> bridge,
     const std::string& app_locale,
     AutofillManager::AutofillDownloadManagerState enable_download_manager) {
-  if (FromWebState(web_state))
-    return;
+  AutofillDriverIOSWebState::CreateForWebStateAndDelegate(
+      web_state, client, bridge, app_locale, enable_download_manager);
+}
+// static
 
-  web_state->SetUserData(
-      UserDataKey(),
-      base::WrapUnique(new AutofillDriverIOS(
-          web_state, client, bridge, app_locale, enable_download_manager)));
+AutofillDriverIOS* AutofillDriverIOS::FromWebStateAndWebFrame(
+    web::WebState* web_state,
+    web::WebFrame* web_frame) {
+  return AutofillDriverIOSWebState::FromWebState(web_state);
 }
 
 AutofillDriverIOS::AutofillDriverIOS(

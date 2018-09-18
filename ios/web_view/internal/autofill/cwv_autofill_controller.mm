@@ -21,6 +21,9 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
@@ -107,12 +110,14 @@
                 browserState, ServiceAccessType::EXPLICIT_ACCESS),
         ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
             browserState)));
-    autofill::AutofillDriverIOS::CreateForWebStateAndDelegate(
-        _webState, _autofillClient.get(), self,
+    web::WebFrame* frame = web::GetMainWebFrame(_webState);
+    autofill::AutofillDriverIOS::CreateForWebStateWebFrameAndDelegate(
+        _webState, frame, _autofillClient.get(), self,
         ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale(),
         autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-    _autofillManager = autofill::AutofillDriverIOS::FromWebState(_webState)
-                           ->autofill_manager();
+    _autofillManager =
+        autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_webState, frame)
+            ->autofill_manager();
 
     _JSAutofillManager = JSAutofillManager;
 
@@ -147,6 +152,7 @@
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
                               fieldName:(NSString*)fieldName
                         fieldIdentifier:(NSString*)fieldIdentifier
+                                frameID:(NSString*)frameID
                       completionHandler:
                           (void (^)(NSArray<CWVAutofillSuggestion*>*))
                               completionHandler {
@@ -161,12 +167,12 @@
                            id<FormSuggestionProvider> delegate) {
       NSMutableArray* autofillSuggestions = [NSMutableArray array];
       for (FormSuggestion* formSuggestion in suggestions) {
-        CWVAutofillSuggestion* autofillSuggestion =
-            [[CWVAutofillSuggestion alloc]
-                initWithFormSuggestion:formSuggestion
-                              formName:formName
-                             fieldName:fieldName
-                       fieldIdentifier:fieldIdentifier];
+        CWVAutofillSuggestion* autofillSuggestion = [
+            [CWVAutofillSuggestion alloc] initWithFormSuggestion:formSuggestion
+                                                        formName:formName
+                                                       fieldName:fieldName
+                                                 fieldIdentifier:fieldIdentifier
+                                                         frameID:frameID];
         [autofillSuggestions addObject:autofillSuggestion];
       }
       completionHandler([autofillSuggestions copy]);
@@ -177,6 +183,7 @@
                                                  fieldType:@""
                                                       type:nil
                                                 typedValue:@" "
+                                                   frameID:frameID
                                                   webState:strongSelf->_webState
                                          completionHandler:retrieveHandler];
   };
@@ -189,6 +196,7 @@
                                            fieldType:@""
                                                 type:nil
                                           typedValue:@" "
+                                             frameID:frameID
                                          isMainFrame:YES
                                       hasUserGesture:YES
                                             webState:_webState
@@ -201,6 +209,7 @@
                             fieldName:suggestion.fieldName
                       fieldIdentifier:suggestion.fieldIdentifier
                                  form:suggestion.formName
+                              frameID:suggestion.frameID
                     completionHandler:^{
                       if (completionHandler) {
                         completionHandler();
@@ -355,35 +364,39 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   NSString* nsFieldName = base::SysUTF8ToNSString(params.field_name);
   NSString* nsFieldIdentifier =
       base::SysUTF8ToNSString(params.field_identifier);
+  NSString* nsFrameID = base::SysUTF8ToNSString(GetWebFrameId(frame));
   NSString* nsValue = base::SysUTF8ToNSString(params.value);
   if (params.type == "focus") {
     if ([_delegate respondsToSelector:@selector
                    (autofillController:didFocusOnFieldWithName:fieldIdentifier
-                                         :formName:value:)]) {
+                                         :formName:frameID:value:)]) {
       [_delegate autofillController:self
             didFocusOnFieldWithName:nsFieldName
                     fieldIdentifier:nsFieldIdentifier
                            formName:nsFormName
+                            frameID:nsFrameID
                               value:nsValue];
     }
   } else if (params.type == "input") {
     if ([_delegate respondsToSelector:@selector
                    (autofillController:didInputInFieldWithName:fieldIdentifier
-                                         :formName:value:)]) {
+                                         :formName:frameID:value:)]) {
       [_delegate autofillController:self
             didInputInFieldWithName:nsFieldName
                     fieldIdentifier:nsFieldIdentifier
                            formName:nsFormName
+                            frameID:nsFrameID
                               value:nsValue];
     }
   } else if (params.type == "blur") {
     if ([_delegate respondsToSelector:@selector
                    (autofillController:didBlurOnFieldWithName:fieldIdentifier
-                                         :formName:value:)]) {
+                                         :formName:frameID:value:)]) {
       [_delegate autofillController:self
              didBlurOnFieldWithName:nsFieldName
                     fieldIdentifier:nsFieldIdentifier
                            formName:nsFormName
+                            frameID:nsFrameID
                               value:nsValue];
     }
   }

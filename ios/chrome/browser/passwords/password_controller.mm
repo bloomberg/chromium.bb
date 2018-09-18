@@ -371,6 +371,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
+                                   frameID:(NSString*)frameID
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
@@ -416,6 +417,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
+                           frameID:(NSString*)frameID
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   DCHECK(GetPageURLAndCheckTrustLevel(webState, nullptr));
@@ -427,6 +429,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                   fieldName:(NSString*)fieldName2
             fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
+                    frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   if (suggestion.identifier == 1) {
     // Navigate to the settings list.

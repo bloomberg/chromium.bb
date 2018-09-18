@@ -32,6 +32,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
@@ -44,6 +45,9 @@
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
+#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -131,6 +135,7 @@ void GetFormAndField(autofill::FormData* form,
                fieldIdentifier:(NSString*)fieldIdentifier
                           type:(NSString*)type
                     typedValue:(NSString*)typedValue
+                       frameID:(NSString*)frameID
                       webState:(web::WebState*)webState
              completionHandler:(SuggestionsAvailableCompletion)completion;
 
@@ -257,11 +262,13 @@ void GetFormAndField(autofill::FormData* form,
 // Returns nullptr if there is no autofill manager associated anymore, this can
 // happen when |close| has been called on the |webState|. Also returns nullptr
 // if detachFromWebState has been called.
-- (autofill::AutofillManager*)autofillManagerFromWebState:
-    (web::WebState*)webState {
+- (autofill::AutofillManager*)
+autofillManagerFromWebState:(web::WebState*)webState
+                   webFrame:(web::WebFrame*)webFrame {
   if (!webState || !webStateObserverBridge_)
     return nullptr;
-  return autofill::AutofillDriverIOS::FromWebState(webState)
+  return autofill::AutofillDriverIOS::FromWebStateAndWebFrame(webState,
+                                                              webFrame)
       ->autofill_manager();
 }
 
@@ -360,10 +367,14 @@ void GetFormAndField(autofill::FormData* form,
                fieldIdentifier:(NSString*)fieldIdentifier
                           type:(NSString*)type
                     typedValue:(NSString*)typedValue
+                       frameID:(NSString*)frameID
                       webState:(web::WebState*)webState
              completionHandler:(SuggestionsAvailableCompletion)completion {
+  web::WebFrame* frame =
+      web::WebFramesManager::FromWebState(webState)->GetFrameWithId(
+          base::SysNSStringToUTF8(frameID));
   autofill::AutofillManager* autofillManager =
-      [self autofillManagerFromWebState:webState];
+      [self autofillManagerFromWebState:webState webFrame:frame];
   if (!autofillManager)
     return;
 
@@ -393,6 +404,7 @@ void GetFormAndField(autofill::FormData* form,
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
+                                   frameID:(NSString*)frameID
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
@@ -427,6 +439,7 @@ void GetFormAndField(autofill::FormData* form,
                        fieldIdentifier:fieldIdentifier
                                   type:type
                             typedValue:typedValue
+                               frameID:frameID
                               webState:webState
                      completionHandler:completion];
     }
@@ -451,12 +464,13 @@ void GetFormAndField(autofill::FormData* form,
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
+                           frameID:(NSString*)frameID
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   DCHECK(mostRecentSuggestions_)
       << "Requestor should have called "
       << "|checkIfSuggestionsAvailableForForm:fieldName:fieldIdentifier:type:"
-      << "completionHandler:| "
+      << "typedValue:frameID:isMainFrame:completionHandler:| "
       << "and waited for the result before calling "
       << "|retrieveSuggestionsForForm:field:type:completionHandler:|.";
   completion(mostRecentSuggestions_, self);
@@ -466,6 +480,7 @@ void GetFormAndField(autofill::FormData* form,
                   fieldName:(NSString*)fieldName
             fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
+                    frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   [[UIDevice currentDevice] playInputClick];
   suggestionHandledCompletion_ = [completion copy];
@@ -516,8 +531,9 @@ void GetFormAndField(autofill::FormData* form,
     return;
 
   // Reset AutofillManager before processing the new page.
+  web::WebFrame* frame = web::GetMainWebFrame(webState);
   autofill::AutofillManager* autofillManager =
-      [self autofillManagerFromWebState:webState];
+      [self autofillManagerFromWebState:webState webFrame:frame];
   DCHECK(autofillManager);
   autofillManager->Reset();
 
@@ -552,17 +568,20 @@ void GetFormAndField(autofill::FormData* form,
   [jsAutofillManager_ toggleTrackingUserEditedFields:
                           base::FeatureList::IsEnabled(
                               autofill::features::kAutofillPrefilledFields)];
-  [self scanFormsInPage:webState pageURL:pageURL];
+  web::WebFrame* frame = web::GetMainWebFrame(webState);
+  [self scanFormsInPage:webState inFrame:frame pageURL:pageURL];
 }
 
-- (void)scanFormsInPage:(web::WebState*)webState pageURL:(const GURL&)pageURL {
+- (void)scanFormsInPage:(web::WebState*)webState
+                inFrame:(web::WebFrame*)webFrame
+                pageURL:(const GURL&)pageURL {
   __weak AutofillAgent* weakSelf = self;
   id completionHandler = ^(BOOL success, const FormDataVector& forms) {
     AutofillAgent* strongSelf = weakSelf;
     if (!strongSelf || !success)
       return;
     autofill::AutofillManager* autofillManager =
-        [strongSelf autofillManagerFromWebState:webState];
+        [strongSelf autofillManagerFromWebState:webState webFrame:webFrame];
     if (!autofillManager || forms.empty())
       return;
     [strongSelf notifyAutofillManager:autofillManager ofFormsSeen:forms];
@@ -596,6 +615,10 @@ void GetFormAndField(autofill::FormData* form,
   if (params.input_missing)
     return;
 
+  if (!params.is_main_frame) {
+    return;
+  }
+
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
 
@@ -603,7 +626,7 @@ void GetFormAndField(autofill::FormData* form,
   // not a particular form. The whole page need to be reparsed to find the new
   // forms.
   if (params.type == "form_changed") {
-    [self scanFormsInPage:webState pageURL:pageURL];
+    [self scanFormsInPage:webState inFrame:frame pageURL:pageURL];
     return;
   }
 
@@ -624,7 +647,7 @@ void GetFormAndField(autofill::FormData* form,
 
     DCHECK_EQ(webState_, webState);
     autofill::AutofillManager* autofillManager =
-        [weakSelf autofillManagerFromWebState:webState];
+        [weakSelf autofillManagerFromWebState:webState webFrame:frame];
     if (!autofillManager)
       return;
 
@@ -663,7 +686,7 @@ void GetFormAndField(autofill::FormData* form,
     if (!strongSelf || !success)
       return;
     autofill::AutofillManager* autofillManager =
-        [strongSelf autofillManagerFromWebState:webState];
+        [strongSelf autofillManagerFromWebState:webState webFrame:frame];
     if (!autofillManager || forms.empty())
       return;
     if (forms.size() > 1) {

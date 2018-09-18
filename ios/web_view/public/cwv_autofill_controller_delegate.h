@@ -37,6 +37,7 @@ typedef NS_ENUM(NSInteger, CWVStoragePolicy) {
     didFocusOnFieldWithName:(NSString*)fieldName
             fieldIdentifier:(NSString*)fieldIdentifier
                    formName:(NSString*)formName
+                    frameID:(NSString*)frameID
                       value:(NSString*)value;
 
 // Called when a form field element receives an "input" event.
@@ -44,6 +45,7 @@ typedef NS_ENUM(NSInteger, CWVStoragePolicy) {
     didInputInFieldWithName:(NSString*)fieldName
             fieldIdentifier:(NSString*)fieldIdentifier
                    formName:(NSString*)formName
+                    frameID:(NSString*)frameID
                       value:(NSString*)value;
 
 // Called when a form field element receives a "blur" (un-focused) event.
@@ -51,6 +53,7 @@ typedef NS_ENUM(NSInteger, CWVStoragePolicy) {
     didBlurOnFieldWithName:(NSString*)fieldName
            fieldIdentifier:(NSString*)fieldIdentifier
                   formName:(NSString*)formName
+                   frameID:(NSString*)frameID
                      value:(NSString*)value;
 
 // Called when a form was submitted. |userInitiated| is YES if form is submitted

@@ -66,7 +66,10 @@
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
-#include "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
@@ -665,8 +668,11 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
           _activeWebState->GetLastCommittedURL()));
   BOOL connectionSecure =
       _activeWebState->GetLastCommittedURL().SchemeIs(url::kHttpsScheme);
+  // Payment Request is only enabled in main frame.
+  web::WebFrame* main_frame = web::GetMainWebFrame(_activeWebState);
   autofill::AutofillManager* autofillManager =
-      autofill::AutofillDriverIOS::FromWebState(_activeWebState)
+      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_activeWebState,
+                                                           main_frame)
           ->autofill_manager();
   _paymentRequestCoordinator = [[PaymentRequestCoordinator alloc]
       initWithBaseViewController:_baseViewController];

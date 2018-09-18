@@ -23,6 +23,9 @@ std::string GetMainWebFrameId(WebState* web_state);
 // Returns nullptr if |web_state| does not have a frame with this ID.
 WebFrame* GetWebFrameWithId(WebState* web_state, const std::string& frame_id);
 
+// Returns the ID of |frame|. Returns std::string() if |frame| is nullptr.
+std::string GetWebFrameId(WebFrame* frame);
+
 }  // namespace web
 
 #endif  // IOS_WEB_PUBLIC_WEB_STATE_WEB_FRAME_UTIL_H_

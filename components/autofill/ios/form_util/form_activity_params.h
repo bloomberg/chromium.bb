@@ -24,6 +24,8 @@ namespace autofill {
 // type: "focus"
 // value: "LouisLane" (assuming that was the password typed)
 // input_missing:  false
+// frame_id: will be the unique ID generated in for the frame containing the
+// form (see __gCrWeb.message.getFrameId for details).
 struct FormActivityParams {
   FormActivityParams();
   FormActivityParams(const FormActivityParams& other);
@@ -35,6 +37,7 @@ struct FormActivityParams {
   std::string field_type;
   std::string type;
   std::string value;
+  std::string frame_id;
 
   // |input_missing| is set to true if at least one of the members above isn't
   // set.
