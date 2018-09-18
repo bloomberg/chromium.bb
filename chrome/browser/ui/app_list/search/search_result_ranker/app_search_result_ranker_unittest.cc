@@ -172,7 +172,8 @@ TEST_F(AppSearchResultRankerSerializationTest,
   EXPECT_TRUE(ranker.Rank().empty());
 }
 
-TEST_F(AppSearchResultRankerSerializationTest, SaveToDiskSucceed) {
+// Test is flaky. See https://crbug.com/884140
+TEST_F(AppSearchResultRankerSerializationTest, DISABLED_SaveToDiskSucceed) {
   // Construct ranker.
   AppSearchResultRanker ranker(temp_dir_.GetPath(), kNotAnEphemeralUser);
   // Wait for the loading to finish.
