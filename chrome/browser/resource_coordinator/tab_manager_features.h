@@ -25,6 +25,13 @@ extern const base::Feature kTabRanker;
 
 namespace resource_coordinator {
 
+// The name of the ProactiveTabFreezeAndDiscard feature.
+extern const char kProactiveTabFreezeAndDiscardFeatureName[];
+
+// The name of the |ShouldProactivelyDiscard| parameter of the
+// ProactiveTabFreezeAndDiscard feature.
+extern const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[];
+
 // Parameters used by the proactive tab discarding feature.
 //
 // Proactive discarding has 5 key parameters:
@@ -69,8 +76,8 @@ struct ProactiveTabFreezeAndDiscardParams {
   // feature.
 
   static constexpr base::FeatureParam<bool> kShouldProactivelyDiscard{
-      &features::kProactiveTabFreezeAndDiscard, "ShouldProactivelyDiscard",
-      false};
+      &features::kProactiveTabFreezeAndDiscard,
+      kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam, false};
   static constexpr base::FeatureParam<bool> kShouldPeriodicallyUnfreeze{
       &features::kProactiveTabFreezeAndDiscard, "ShouldPeriodicallyUnfreeze",
       false};

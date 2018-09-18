@@ -1218,13 +1218,13 @@ const FeatureEntry::FeatureVariation
 
 #if !defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kProactiveTabFreezeAndDiscard_FreezeOnly[] = {
-    {resource_coordinator::ProactiveTabFreezeAndDiscardParams::
-         kShouldProactivelyDiscard.name,
+    {resource_coordinator::
+         kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam,
      "false"}};
 const FeatureEntry::FeatureParam
     kProactiveTabFreezeAndDiscard_FreezeAndDiscard[] = {
-        {resource_coordinator::ProactiveTabFreezeAndDiscardParams::
-             kShouldProactivelyDiscard.name,
+        {resource_coordinator::
+             kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam,
          "true"}};
 const FeatureEntry::FeatureVariation kProactiveTabFreezeAndDiscardVariations[] =
     {{"Freeze only", kProactiveTabFreezeAndDiscard_FreezeOnly,
@@ -4235,7 +4235,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          features::kProactiveTabFreezeAndDiscard,
          kProactiveTabFreezeAndDiscardVariations,
-         features::kProactiveTabFreezeAndDiscard.name)},
+         resource_coordinator::kProactiveTabFreezeAndDiscardFeatureName)},
     {"site-characteristics-database",
      flag_descriptions::kSiteCharacteristicsDatabaseName,
      flag_descriptions::kSiteCharacteristicsDatabaseDescription, kOsDesktop,
