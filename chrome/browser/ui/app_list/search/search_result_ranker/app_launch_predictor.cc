@@ -78,6 +78,64 @@ void MrfuAppLaunchPredictor::UpdateScore(Score* score) {
   }
 }
 
+SerializedMrfuAppLaunchPredictor::SerializedMrfuAppLaunchPredictor()
+    : MrfuAppLaunchPredictor(), last_save_timestamp_(base::Time::Now()) {}
+
+SerializedMrfuAppLaunchPredictor::~SerializedMrfuAppLaunchPredictor() = default;
+
+const char SerializedMrfuAppLaunchPredictor::kPredictorName[] =
+    "SerializedMrfuAppLaunchPredictor";
+const char* SerializedMrfuAppLaunchPredictor::GetPredictorName() const {
+  return kPredictorName;
+}
+
+bool SerializedMrfuAppLaunchPredictor::ShouldSave() {
+  const base::Time now = base::Time::Now();
+  if (now - last_save_timestamp_ >= kSaveInternal) {
+    last_save_timestamp_ = now;
+    return true;
+  }
+  return false;
+}
+
+AppLaunchPredictorProto SerializedMrfuAppLaunchPredictor::ToProto() const {
+  AppLaunchPredictorProto output;
+  auto& predictor_proto =
+      *output.mutable_serialized_mrfu_app_launch_predictor();
+  predictor_proto.set_num_of_trains(num_of_trains_);
+  for (const auto& pair : scores_) {
+    auto& score_item = (*predictor_proto.mutable_scores())[pair.first];
+    score_item.set_last_score(pair.second.last_score);
+    score_item.set_num_of_trains_at_last_update(
+        pair.second.num_of_trains_at_last_update);
+  }
+  return output;
+}
+
+bool SerializedMrfuAppLaunchPredictor::FromProto(
+    const AppLaunchPredictorProto& proto) {
+  if (proto.predictor_case() !=
+      AppLaunchPredictorProto::kSerializedMrfuAppLaunchPredictor) {
+    return false;
+  }
+
+  const auto& predictor_proto = proto.serialized_mrfu_app_launch_predictor();
+  num_of_trains_ = predictor_proto.num_of_trains();
+
+  scores_.clear();
+  for (const auto& pair : predictor_proto.scores()) {
+    // Skip the case where the last_score has already dropped to 0.0f.
+    if (pair.second.last_score() == 0.0f)
+      continue;
+    auto& score_item = scores_[pair.first];
+    score_item.last_score = pair.second.last_score();
+    score_item.num_of_trains_at_last_update =
+        pair.second.num_of_trains_at_last_update();
+  }
+
+  return true;
+}
+
 HourAppLaunchPredictor::HourAppLaunchPredictor()
     : last_save_timestamp_(base::Time::Now()) {}
 

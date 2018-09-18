@@ -57,9 +57,7 @@ class MrfuAppLaunchPredictor : public AppLaunchPredictor {
   // Name of the predictor;
   static const char kPredictorName[];
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(AppLaunchPredictorTest, MrfuAppLaunchPredictor);
-
+ protected:
   // Records last updates of the Score for an app.
   struct Score {
     int32_t num_of_trains_at_last_update = 0;
@@ -68,6 +66,14 @@ class MrfuAppLaunchPredictor : public AppLaunchPredictor {
 
   // Updates the Score to now.
   void UpdateScore(Score* score);
+  // Map from app_id to its Score.
+  base::flat_map<std::string, Score> scores_;
+  // Increment 1 for each Train() call.
+  int32_t num_of_trains_ = 0;
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(AppLaunchPredictorTest, MrfuAppLaunchPredictor);
+  friend class SerializedMrfuAppLaunchPredictorTest;
 
   // Controls how much the score decays for each Train() call.
   // This decay_coeff_ should be within [0.5f, 1.0f]. Setting it as 0.5f means
@@ -76,12 +82,31 @@ class MrfuAppLaunchPredictor : public AppLaunchPredictor {
   // (1) Set a better initial value based on real user data.
   // (2) Dynamically change this coeff instead of setting it as constant.
   static constexpr float decay_coeff_ = 0.8f;
-  // Map from app_id to its Score.
-  base::flat_map<std::string, Score> scores_;
-  // Increment 1 for each Train() call.
-  int32_t num_of_trains_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MrfuAppLaunchPredictor);
+};
+
+// SerializedMrfuAppLaunchPredictor is MrfuAppLaunchPredictor with supporting of
+// AppLaunchPredictor::ToProto and AppLaunchPredictor::FromProto.
+class SerializedMrfuAppLaunchPredictor : public MrfuAppLaunchPredictor {
+ public:
+  SerializedMrfuAppLaunchPredictor();
+  ~SerializedMrfuAppLaunchPredictor() override;
+
+  // AppLaunchPredictor:
+  const char* GetPredictorName() const override;
+  bool ShouldSave() override;
+  AppLaunchPredictorProto ToProto() const override;
+  bool FromProto(const AppLaunchPredictorProto& proto) override;
+
+  // Name of the predictor;
+  static const char kPredictorName[];
+
+ private:
+  // Last time the predictor was saved.
+  base::Time last_save_timestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(SerializedMrfuAppLaunchPredictor);
 };
 
 // HourAppLaunchPredictor is a AppLaunchPredictor that uses hour of the day as
