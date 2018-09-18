@@ -9,9 +9,6 @@
 
 // This file defines constants common to all Widevine CDM versions.
 
-// Widevine CDM version contains 4 components, e.g. 1.4.0.195.
-const int kWidevineCdmVersionNumComponents = 4;
-
 // "alpha" is a temporary name until a convention is defined.
 const char kWidevineKeySystem[] = "com.widevine.alpha";
 
@@ -26,10 +23,6 @@ const char kWidevineCdmBaseDirectory[] = "WidevineCdm";
 const char kWidevineKeySystemNameForUMA[] = "Widevine";
 
 const char kWidevineCdmDisplayName[] = "Widevine Content Decryption Module";
-
-// Will be parsed as HTML.
-const char kWidevineCdmDescription[] =
-    "Enables Widevine licenses for playback of HTML audio/video content.";
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // Identifier used by the PluginPrivateFileSystem to identify the files stored
