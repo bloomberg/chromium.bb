@@ -565,7 +565,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   GURL gurl(url);
-  ReportMetrics(load_type, gurl, frame_->GetSecurityOrigin(), media_log_.get());
+  ReportMetrics(load_type, gurl, *frame_, media_log_.get());
 
   // Report poster availability for SRC=.
   if (load_type == kLoadTypeURL) {
