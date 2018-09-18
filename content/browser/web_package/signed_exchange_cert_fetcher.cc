@@ -147,7 +147,7 @@ void SignedExchangeCertFetcher::Abort() {
   handle_watcher_ = nullptr;
   body_string_.clear();
   devtools_proxy_ = nullptr;
-  std::move(callback_).Run(nullptr);
+  std::move(callback_).Run(SignedExchangeLoadResult::kCertFetchError, nullptr);
 }
 
 void SignedExchangeCertFetcher::OnHandleReady(MojoResult result) {
@@ -191,10 +191,12 @@ void SignedExchangeCertFetcher::OnDataComplete() {
   if (!cert_chain) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_, "Failed to get certificate chain from message.");
-    std::move(callback_).Run(nullptr);
+    std::move(callback_).Run(SignedExchangeLoadResult::kCertParseError,
+                             nullptr);
     return;
   }
-  std::move(callback_).Run(std::move(cert_chain));
+  std::move(callback_).Run(SignedExchangeLoadResult::kSuccess,
+                           std::move(cert_chain));
 }
 
 // network::mojom::URLLoaderClient

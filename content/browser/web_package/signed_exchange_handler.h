@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
+#include "content/browser/web_package/signed_exchange_error.h"
 #include "content/browser/web_package/signed_exchange_prologue.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -104,6 +105,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void RunErrorCallback(net::Error);
 
   void OnCertReceived(
+      SignedExchangeLoadResult result,
       std::unique_ptr<SignedExchangeCertificateChain> cert_chain);
   bool CheckCertExtension(const net::X509Certificate* verified_cert);
   bool CheckOCSPStatus(const net::OCSPVerifyResult& ocsp_result);

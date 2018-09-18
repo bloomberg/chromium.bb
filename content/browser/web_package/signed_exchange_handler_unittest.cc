@@ -100,7 +100,9 @@ class MockSignedExchangeCertFetcherFactory
     EXPECT_TRUE(cert_chain);
 
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::move(cert_chain)));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), SignedExchangeLoadResult::kSuccess,
+                       std::move(cert_chain)));
     return nullptr;
   }
 
