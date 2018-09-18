@@ -63,7 +63,6 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
@@ -380,8 +379,6 @@ public class Tab
 
     private int mDefaultThemeColor;
     private int mThemeColor;
-
-    private ChromeDownloadDelegate mDownloadDelegate;
 
     /**
      * The Text bubble used to display In Product help widget for download feature on videos.
@@ -1763,8 +1760,6 @@ public class Tab
             updateInteractableState();
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
             mWebContentsObserver = new TabWebContentsObserver(mWebContents, this);
-
-            mDownloadDelegate = new ChromeDownloadDelegate(mThemedApplicationContext, this);
 
             int parentId = getParentId();
             if (parentId != INVALID_TAB_ID) {
@@ -3155,16 +3150,6 @@ public class Tab
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT_STRING, tabId);
         return intent;
-    }
-
-    /**
-     * Check whether the context menu download should be intercepted.
-     *
-     * @param url URL to be downloaded.
-     * @return whether the download should be intercepted.
-     */
-    protected boolean shouldInterceptContextMenuDownload(String url) {
-        return mDownloadDelegate.shouldInterceptContextMenuDownload(url);
     }
 
     void handleRendererResponsiveStateChanged(boolean isResponsive) {

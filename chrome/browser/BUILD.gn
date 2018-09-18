@@ -4590,7 +4590,6 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerServiceFactory.java",
       "../android/java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerTabUtils.java",
       "../android/java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerUIUtils.java",
-      "../android/java/src/org/chromium/chrome/browser/download/ChromeDownloadDelegate.java",
       "../android/java/src/org/chromium/chrome/browser/download/DownloadController.java",
       "../android/java/src/org/chromium/chrome/browser/download/DownloadInfo.java",
       "../android/java/src/org/chromium/chrome/browser/download/DownloadItem.java",
