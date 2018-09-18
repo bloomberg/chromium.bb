@@ -27,15 +27,15 @@ public class MockDownloadNotificationService2 extends DownloadNotificationServic
     private final List<Integer> mNotificationIds = new ArrayList<Integer>();
     private boolean mPaused = false;
     private int mLastNotificationId = DEFAULT_NOTIFICATION_ID;
+    private int mNumberOfNotifications;
 
     List<String> mResumedDownloads = new ArrayList<>();
 
     @Override
     void updateNotification(int id, Notification notification) {
-        if (!mNotificationIds.contains(id)) {
-            mNotificationIds.add(id);
-            mLastNotificationId = id;
-        }
+        mNumberOfNotifications++;
+        mLastNotificationId = id;
+        if (!mNotificationIds.contains(id)) mNotificationIds.add(id);
     }
 
     public boolean isPaused() {
@@ -48,6 +48,10 @@ public class MockDownloadNotificationService2 extends DownloadNotificationServic
 
     public int getLastNotificationId() {
         return mLastNotificationId;
+    }
+
+    public int getNumberOfNotifications() {
+        return mNumberOfNotifications;
     }
 
     @Override
