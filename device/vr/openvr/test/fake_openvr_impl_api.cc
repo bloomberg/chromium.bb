@@ -528,7 +528,7 @@ float TestVRSystem::GetFloatTrackedDeviceProperty(
   }
   switch (prop) {
     case Prop_UserIpdMeters_Float:
-      return g_test_helper.GetIpd();
+      return g_test_helper.GetInterpupillaryDistance();
     default:
       NOTIMPLEMENTED();
   }

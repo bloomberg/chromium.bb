@@ -5,7 +5,8 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "xr_device_provider": [ "device.mojom.IsolatedXRRuntimeProvider" ]
+        "xr_device_provider": [ "device.mojom.IsolatedXRRuntimeProvider" ],
+        "xr_device_test_hook": [ "device_test.mojom.XRTestHookRegistration" ]
       },
       "requires": {
       }

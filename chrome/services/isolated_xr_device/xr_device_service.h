@@ -5,6 +5,7 @@
 #ifndef CHROME_SERVICES_ISOLATED_XR_DEVICE_XR_DEVICE_SERVICE_H_
 #define CHROME_SERVICES_ISOLATED_XR_DEVICE_XR_DEVICE_SERVICE_H_
 
+#include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -22,6 +23,8 @@ class XrDeviceService : public service_manager::Service {
   ~XrDeviceService() override;
   void OnDeviceProviderRequest(
       device::mojom::IsolatedXRRuntimeProviderRequest request);
+  void OnTestHookRequest(
+      device_test::mojom::XRTestHookRegistrationRequest request);
 
  private:
   // service_manager::Service

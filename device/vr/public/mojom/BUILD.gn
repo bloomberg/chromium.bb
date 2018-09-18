@@ -22,3 +22,17 @@ mojom_component("mojom") {
     "//ui/gfx/mojo:mojo",
   ]
 }
+
+mojom_component("test_mojom") {
+  output_prefix = "device_vr_test_mojo_bindings"
+  macro_prefix = "DEVICE_VR_TEST_MOJO_BINDINGS"
+
+  sources = [
+    "browser_test_interfaces.mojom",
+  ]
+
+  public_deps = [
+    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/mojo:mojo",
+  ]
+}

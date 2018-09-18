@@ -11,12 +11,17 @@ source_set("lib") {
     "xr_device_service.h",
     "xr_runtime_provider.cc",
     "xr_runtime_provider.h",
+    "xr_test_hook_registration.cc",
+    "xr_test_hook_registration.h",
+    "xr_test_hook_wrapper.cc",
+    "xr_test_hook_wrapper.h",
   ]
 
   deps = [
     "//base",
     "//device/vr:vr",
     "//device/vr/public/mojom",
+    "//device/vr/public/mojom:test_mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
   ]

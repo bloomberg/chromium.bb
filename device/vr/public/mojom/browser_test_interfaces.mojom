@@ -1,0 +1,66 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module device_test.mojom;
+
+import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/transform.mojom";
+
+struct Color {
+  uint8 r;
+  uint8 g;
+  uint8 b;
+  uint8 a;
+};
+
+enum Eye {
+  LEFT = 1,
+  RIGHT = 2
+};
+
+struct SubmittedFrameData {
+  Color color;
+
+  Eye eye;
+
+  gfx.mojom.Rect viewport;
+  gfx.mojom.Size image_size;
+};
+
+struct PoseFrameData {
+  gfx.mojom.Transform? device_to_origin;
+};
+
+// Each component is the tangent of the up/down/left/right view frustum.
+struct ProjectionRaw {
+  float left;
+  float right;
+  float top;
+  float bottom;
+};
+
+struct DeviceConfig {
+  float interpupillary_distance; // Distance between the eyes.
+
+  ProjectionRaw projection_left;
+  ProjectionRaw projection_right;
+};
+
+// Tests may implement this, and register it to control behavior of devices for
+// tests.  The test interface lives in the browser process, and may be consumed
+// by the device utility process.
+// It is only implemented when running in browser tests.
+interface XRTestHook {
+  [Sync] OnFrameSubmitted(SubmittedFrameData frame_data) => ();
+  [Sync] WaitGetDeviceConfig() => (DeviceConfig config);
+  [Sync] WaitGetPresentingPose() => (PoseFrameData data);
+  [Sync] WaitGetMagicWindowPose() => (PoseFrameData data);
+};
+
+// Interface exposed by IsolatedXRService to allow browser tests to hook VR APIs
+// It is always hosted in the XRDevice process, but only has effects while
+// running in browser tests with mock implementations of runtimes.
+interface XRTestHookRegistration {
+  [Sync] SetTestHook(XRTestHook? hook) => ();
+};
