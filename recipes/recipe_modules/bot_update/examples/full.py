@@ -7,6 +7,7 @@ DEPS = [
   'gclient',
   'gerrit',
   'tryserver',
+  'recipe_engine/buildbucket',
   'recipe_engine/json',
   'recipe_engine/path',
   'recipe_engine/platform',
@@ -16,12 +17,13 @@ DEPS = [
 
 def RunSteps(api):
   api.gclient.use_mirror = True
+  commit = api.buildbucket.build.input.gitiles_commit
 
   src_cfg = api.gclient.make_config(CACHE_DIR='[GIT_CACHE]')
   soln = src_cfg.solutions.add()
   soln.name = 'src'
   soln.url = 'https://chromium.googlesource.com/chromium/src.git'
-  soln.revision = api.properties.get('revision')
+  soln.revision = commit.id or commit.ref or None
   api.gclient.c = src_cfg
   api.gclient.c.revisions.update(api.properties.get('revisions', {}))
   if api.properties.get('deprecated_got_revision_mapping'):
@@ -75,142 +77,147 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic') + api.properties(
-      patch=False,
-      revision='abc'
+
+  def try_build(**kwargs):
+    kwargs.setdefault(
+        'git_repo', 'https://chromium.googlesource.com/chromium/src')
+    return api.buildbucket.try_build('chromium', 'linux', **kwargs)
+
+  def ci_build(**kwargs):
+    kwargs.setdefault(
+        'git_repo', 'https://chromium.googlesource.com/chromium/src')
+    return (
+        api.buildbucket.ci_build('chromium', 'linux', **kwargs) +
+        api.properties(patch=False)
+    )
+
+
+  yield (
+      api.test('basic') +
+      ci_build()
   )
-  yield api.test('basic_luci') + api.properties(
-      patch=False,
-      revision='abc'
-  ) + api.runtime(is_experimental=False, is_luci=True)
-  yield api.test('with_manifest_name_no_patch') + api.properties(
-      manifest_name='checkout',
-      patch=False
+  yield (
+      api.test('input_commit_with_id_without_repo') +
+      api.buildbucket.build(api.buildbucket.build_pb2.Build(
+          input={
+              'gitiles_commit': {
+                  'id': 'a' * 40,
+              },
+          },
+      ))
   )
-  yield api.test('with_manifest_name') + api.properties(
-      manifest_name='checkout'
+  yield (
+      api.test('unrecognized_commit_repo') +
+      ci_build(git_repo='https://unrecognized/repo')
   )
-  yield api.test('buildbot') + api.properties(
-      path_config='buildbot',
-      patch=False,
-      revision='abc'
+  yield (
+      api.test('basic_luci') +
+      ci_build() +
+      api.runtime(is_experimental=False, is_luci=True)
   )
-  yield api.test('basic_with_branch_heads') + api.properties(
-      with_branch_heads=True,
-      suffix='with branch heads'
+  yield (
+      api.test('with_manifest_name') +
+      ci_build() +
+      api.properties(manifest_name='checkout')
   )
-  yield api.test('with_tags') + api.properties(with_tags=True)
-  yield api.test('tryjob') + api.properties(
-      issue=12345,
-      patchset=654321,
-      rietveld='https://rietveld.example.com/',
+  yield (
+      api.test('basic_with_branch_heads') +
+      ci_build() +
+      api.properties(
+          with_branch_heads=True,
+          suffix='with branch heads'
+      )
   )
-  yield api.test('tryjob_empty_revision') + api.properties(
-      issue=12345,
-      patchset=654321,
-      rietveld='https://rietveld.example.com/',
-      revisions={'src': ''},
+  yield (
+      api.test('with_tags') +
+      api.properties(with_tags=True)
   )
-  yield api.test('deprecated_got_revision_mapping') + api.properties(
-      deprecated_got_revision_mapping=True,
-      issue=12345,
-      patchset=654321,
-      rietveld='https://rietveld.example.com/',
+  yield (
+      api.test('deprecated_got_revision_mapping') +
+      try_build() +
+      api.properties(deprecated_got_revision_mapping=True)
   )
-  yield api.test('trychange') + api.properties(
-      refs=['+refs/change/1/2/333'],
+  yield (
+      api.test('refs') +
+      api.properties(refs=['+refs/change/1/2/333'])
   )
-  yield api.test('tryjob_fail') + api.properties(
-      issue=12345,
-      patchset=654321,
-      rietveld='https://rietveld.example.com/',
-  ) + api.step_data('bot_update', api.json.invalid(None), retcode=1)
-  yield api.test('tryjob_fail_patch') + api.properties(
-      issue=12345,
-      patchset=654321,
-      rietveld='https://rietveld.example.com/',
-      fail_patch='apply',
-  ) + api.step_data('bot_update', retcode=88)
-  yield api.test('tryjob_fail_patch_download') + api.properties(
-      issue=12345,
-      patchset=654321,
-      rietveld='https://rietveld.example.com/',
-      fail_patch='download'
-  ) + api.step_data('bot_update', retcode=87)
-  yield api.test('clobber') + api.properties(
-      clobber=1
+  yield (
+      api.test('tryjob_fail') +
+      try_build() +
+      api.step_data('bot_update', api.json.invalid(None), retcode=1)
   )
-  yield api.test('reset_root_solution_revision') + api.properties(
-      root_solution_revision='revision',
+  yield (
+      api.test('tryjob_fail_patch') +
+      try_build() +
+      api.properties(fail_patch='apply') +
+      api.step_data('bot_update', retcode=88)
   )
-  yield api.test('gerrit_no_reset') + api.properties(
-      gerrit_no_reset=1
+  yield (
+      api.test('tryjob_fail_patch_download') +
+      try_build() +
+      api.properties(fail_patch='download') +
+      api.step_data('bot_update', retcode=87)
   )
-  yield api.test('gerrit_no_rebase_patch_ref') + api.properties(
-      gerrit_no_rebase_patch_ref=True
+  yield (
+      api.test('clobber') +
+      api.properties(clobber=1)
   )
-  yield api.test('tryjob_v8') + api.properties(
-      repository='https://chromium.googlesource.com/v8/v8',
-      issue=12345,
-      patchset=654321,
-      rietveld='https://rietveld.example.com/',
-      patch_project='v8',
-      revisions={'src/v8': 'abc'},
+  yield (
+      api.test('reset_root_solution_revision') +
+      api.properties(root_solution_revision='revision')
   )
-  yield api.test('tryjob_v8_head_by_default') + api.properties.tryserver(
-      repository='https://chromium.googlesource.com/v8/v8',
-      patch_project='v8/v8',
+  yield (
+      api.test('gerrit_no_reset') +
+      api.properties(gerrit_no_reset=1)
   )
-  yield api.test('tryjob_gerrit_angle') + api.properties.tryserver(
-      repository='https://chromium.googlesource.com/angle/angle',
-      gerrit_project='angle/angle',
-      patch_issue=338811,
-      patch_set=3,
+  yield (
+      api.test('gerrit_no_rebase_patch_ref') +
+      api.properties(gerrit_no_rebase_patch_ref=True)
   )
-  yield api.test('no_apply_patch_on_gclient') + api.properties.tryserver(
-      repository='https://chromium.googlesource.com/angle/angle',
-      gerrit_project='angle/angle',
-      patch_issue=338811,
-      patch_set=3,
-  ) + api.bot_update.properties(
-      apply_patch_on_gclient=False,
+  yield (
+      api.test('tryjob_v8') +
+      try_build(git_repo='https://chromium.googlesource.com/v8/v8') +
+       api.properties(revisions={'src/v8': 'abc'})
   )
-  yield api.test('tryjob_gerrit_v8') + api.properties.tryserver(
-      repository='https://chromium.googlesource.com/v8/v8',
-      gerrit_project='v8/v8',
-      patch_issue=338811,
-      patch_set=3,
+  yield (
+      api.test('tryjob_v8_head_by_default') +
+      try_build(git_repo='https://chromium.googlesource.com/v8/v8')
   )
-  yield api.test('tryjob_gerrit_v8_feature_branch') + api.properties.tryserver(
-      repository='https://chromium.googlesource.com/v8/v8',
-      gerrit_project='v8/v8',
-      patch_issue=338811,
-      patch_set=3,
-  ) + api.tryserver.gerrit_change_target_ref('refs/heads/experimental/feature')
-  yield api.test('tryjob_gerrit_feature_branch') + api.properties.tryserver(
-      buildername='feature_rel',
-      repository='https://chromium.googlesource.com/chromium/src',
-      gerrit_project='chromium/src',
-      patch_issue=338811,
-      patch_set=3,
-  ) + api.tryserver.gerrit_change_target_ref('refs/heads/experimental/feature')
-  yield api.test('tryjob_gerrit_branch_heads') + api.properties.tryserver(
-      repository='https://chromium.googlesource.com/chromium/src',
-      gerrit_project='chromium/src',
-      patch_issue=338811,
-      patch_set=3,
-  ) + api.tryserver.gerrit_change_target_ref('refs/branch-heads/67')
-  yield api.test('tryjob_gerrit_webrtc') + api.properties.tryserver(
-      repository='https://chromium.googlesource.com/chromium/src',
-      gerrit_project='src',
-      git_url='https://webrtc.googlesource.com/src',
-      patch_issue=338811,
-      patch_set=3,
+  yield (
+      api.test('tryjob_gerrit_angle') +
+      try_build(git_repo='https://chromium.googlesource.com/angle/angle')
   )
-  yield api.test('multiple_patch_refs') + api.properties(
-      patch=True,
-      patch_refs=[
-          'https://chromium.googlesource.com/chromium/src@refs/changes/12/34/5',
-          'https://chromium.googlesource.com/v8/v8@refs/changes/124/45/6',
-      ],
+  yield (
+      api.test('no_apply_patch_on_gclient') +
+      try_build(git_repo='https://chromium.googlesource.com/angle/angle') +
+      api.bot_update.properties(apply_patch_on_gclient=False)
+  )
+  yield (
+      api.test('tryjob_gerrit_v8_feature_branch') +
+      try_build(git_repo='https://chromium.googlesource.com/v8/v8') +
+      api.tryserver.gerrit_change_target_ref('refs/heads/experimental/feature')
+  )
+  yield (
+      api.test('tryjob_gerrit_feature_branch') +
+      try_build() +
+      api.tryserver.gerrit_change_target_ref('refs/heads/experimental/feature')
+  )
+  yield (
+      api.test('tryjob_gerrit_branch_heads') +
+      try_build() +
+      api.tryserver.gerrit_change_target_ref('refs/branch-heads/67')
+  )
+  yield (
+      api.test('tryjob_gerrit_webrtc') +
+      try_build(git_repo='https://webrtc.googlesource.com/src')
+  )
+  yield (
+      api.test('multiple_patch_refs') +
+      api.properties(
+          patch_refs=[
+              ('https://chromium.googlesource.com/chromium/src@'
+               'refs/changes/12/34/5'),
+              'https://chromium.googlesource.com/v8/v8@refs/changes/124/45/6',
+          ],
+      )
   )

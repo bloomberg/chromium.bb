@@ -1,8 +1,0 @@
-[
-  {
-    "name": "$result",
-    "reason": "invalid (host, project) pair in buildbucket.build.input.gitiles_commit: (u'chromium.googlesource.com', u'trash') does not match any of configured gclient solutions and not present in gclient_config.repo_path_map",
-    "recipe_result": null,
-    "status_code": 1
-  }
-]
