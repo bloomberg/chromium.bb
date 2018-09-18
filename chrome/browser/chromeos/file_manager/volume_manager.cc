@@ -563,11 +563,12 @@ void VolumeManager::AddSshfsCrostiniVolume(
 void VolumeManager::RemoveSshfsCrostiniVolume(
     const base::FilePath& sshfs_mount_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
-                 *Volume::CreateForSshfsCrostini(sshfs_mount_path));
+  // Call DiskMountManager first since DoUnmountEvent deletes Volume.
   disk_mount_manager_->UnmountPath(
       sshfs_mount_path.value(), chromeos::UNMOUNT_OPTIONS_NONE,
       chromeos::disks::DiskMountManager::UnmountPathCallback());
+  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                 *Volume::CreateForSshfsCrostini(sshfs_mount_path));
 }
 
 bool VolumeManager::RegisterAndroidFilesDirectoryForTesting(
