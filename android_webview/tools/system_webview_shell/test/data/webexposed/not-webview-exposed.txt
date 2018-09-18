@@ -18,7 +18,7 @@ interface Notification : EventTarget
 interface PaymentAddress
 interface PaymentRequest : EventTarget
 interface PaymentRequestUpdateEvent : Event
-interface PaymentResponse
+interface PaymentResponse : EventTarget
 
 # not yet supported in webview and chrome on android in general, crbug.com/154571
 interface SharedWorker : EventTarget
