@@ -64,7 +64,7 @@ class DeviceCommandStartCRDSessionJob : public RemoteCommandJob {
     // Check if required system services are ready.
     virtual bool AreServicesReady() const = 0;
 
-    // Check if device is running in Kiosk mode.
+    // Check if device is running an auto-launched Kiosk.
     virtual bool IsRunningKiosk() const = 0;
 
     // Return current user idleness period.
