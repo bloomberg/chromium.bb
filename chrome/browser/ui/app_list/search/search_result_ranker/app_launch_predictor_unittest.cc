@@ -42,6 +42,52 @@ TEST(AppLaunchPredictorTest, MrfuAppLaunchPredictor) {
                                    Pair(kTarget2, FloatEq(score_1))));
 }
 
+// Test Serialization logic of SerializedMrfuAppLaunchPredictor.
+class SerializedMrfuAppLaunchPredictorTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    score1_ = (1.0f - decay) * decay + (1.0f - decay);
+    score2_ = 1.0f - decay;
+
+    auto& predictor_proto =
+        *proto_.mutable_serialized_mrfu_app_launch_predictor();
+
+    predictor_proto.set_num_of_trains(3);
+    auto& item1 = (*predictor_proto.mutable_scores())[kTarget1];
+    item1.set_last_score(score1_);
+    item1.set_num_of_trains_at_last_update(2);
+
+    auto& item2 = (*predictor_proto.mutable_scores())[kTarget2];
+    item2.set_last_score(score2_);
+    item2.set_num_of_trains_at_last_update(3);
+  }
+
+  float score1_ = 0.0f;
+  float score2_ = 0.0f;
+  static constexpr float decay = MrfuAppLaunchPredictor::decay_coeff_;
+  AppLaunchPredictorProto proto_;
+};
+
+TEST_F(SerializedMrfuAppLaunchPredictorTest, ToProto) {
+  SerializedMrfuAppLaunchPredictor predictor;
+
+  predictor.Train(kTarget1);
+  predictor.Train(kTarget1);
+  predictor.Train(kTarget2);
+
+  EXPECT_EQ(predictor.ToProto().SerializeAsString(),
+            proto_.SerializeAsString());
+}
+
+TEST_F(SerializedMrfuAppLaunchPredictorTest, FromProto) {
+  SerializedMrfuAppLaunchPredictor predictor;
+  EXPECT_TRUE(predictor.FromProto(proto_));
+
+  EXPECT_THAT(predictor.Rank(),
+              UnorderedElementsAre(Pair(kTarget1, FloatEq(score1_ * decay)),
+                                   Pair(kTarget2, FloatEq(score2_))));
+}
+
 class HourAppLaunchPredictorTest : public testing::Test {
  protected:
   // Sets local time according to |day_of_week| and |hour_of_day|.
