@@ -508,6 +508,36 @@ public class VideoCaptureCamera2 extends VideoCapture {
                         || mode == CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE) {
                     exposureModes.add(Integer.valueOf(AndroidMeteringMode.CONTINUOUS));
                     break;
+                } else {
+                    // Exposure mode is Manual. Here we can set exposure time.
+                    // All exposure time values from Android are in nano seconds.
+                    // Spec (https://w3c.github.io/mediacapture-image/#exposure-time)
+                    // expects exposureTime to be in 100 microsecond units.
+                    // A value of 1.0 means an exposure time of 1/10000th of a second
+                    // and a value of 10000.0 means an exposure time of 1 second.
+                    if (cameraCharacteristics.get(
+                                CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE)
+                            != null) {
+                        // The minimum exposure time will be less than 100 micro-seconds.
+                        // For FULL capability devices (android.info.supportedHardwareLevel ==
+                        // FULL), the maximum exposure time will be greater than 100 millisecond.
+                        Range<Long> range = cameraCharacteristics.get(
+                                CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
+                        final long minExposureTime = range.getLower();
+                        final long maxExposureTime = range.getUpper();
+
+                        if (minExposureTime != 0 && maxExposureTime != 0) {
+                            builder.setMaxExposureTime(
+                                    maxExposureTime / kNanosecondsPer100Microsecond);
+                            builder.setMinExposureTime(
+                                    minExposureTime / kNanosecondsPer100Microsecond);
+                        }
+                        // Smallest step by which exposure time can be changed. This value is not
+                        // exposed by Android.
+                        builder.setStepExposureTime(10000 / kNanosecondsPer100Microsecond);
+                        builder.setCurrentExposureTime(
+                                mLastExposureTimeNs / kNanosecondsPer100Microsecond);
+                    }
                 }
             }
             try {
@@ -626,6 +656,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         public final float[] pointsOfInterest2D;
         public final boolean hasExposureCompensation;
         public final double exposureCompensation;
+        public final double exposureTime;
         public final int whiteBalanceMode;
         public final double iso;
         public final boolean hasRedEyeReduction;
@@ -637,9 +668,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         public PhotoOptions(double zoom, int focusMode, double currentFocusDistance,
                 int exposureMode, double width, double height, float[] pointsOfInterest2D,
-                boolean hasExposureCompensation, double exposureCompensation, int whiteBalanceMode,
-                double iso, boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
-                boolean hasTorch, boolean torch, double colorTemperature) {
+                boolean hasExposureCompensation, double exposureCompensation, double exposureTime,
+                int whiteBalanceMode, double iso, boolean hasRedEyeReduction,
+                boolean redEyeReduction, int fillLightMode, boolean hasTorch, boolean torch,
+                double colorTemperature) {
             this.zoom = zoom;
             this.focusMode = focusMode;
             this.currentFocusDistance = currentFocusDistance;
@@ -649,6 +681,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             this.pointsOfInterest2D = pointsOfInterest2D;
             this.hasExposureCompensation = hasExposureCompensation;
             this.exposureCompensation = exposureCompensation;
+            this.exposureTime = exposureTime;
             this.whiteBalanceMode = whiteBalanceMode;
             this.iso = iso;
             this.hasRedEyeReduction = hasRedEyeReduction;
@@ -692,6 +725,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 mCurrentFocusDistance = (float) mOptions.currentFocusDistance;
             if (mOptions.exposureMode != AndroidMeteringMode.NOT_SET)
                 mExposureMode = mOptions.exposureMode;
+            if (mOptions.exposureTime != 0) mLastExposureTimeNs = (long) mOptions.exposureTime;
             if (mOptions.whiteBalanceMode != AndroidMeteringMode.NOT_SET)
                 mWhiteBalanceMode = mOptions.whiteBalanceMode;
 
@@ -849,6 +883,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     }
 
     private static final double kNanosecondsPerSecond = 1000000000;
+    private static final long kNanosecondsPer100Microsecond = 100000;
     private static final String TAG = "VideoCapture";
 
     // Map of the equivalent color temperature in Kelvin for the White Balance setting. The
@@ -1024,15 +1059,18 @@ public class VideoCaptureCamera2 extends VideoCapture {
             // We need to configure by hand the exposure time when AE mode is off.  Set it to the
             // last known exposure interval if known, otherwise set it to the middle of the allowed
             // range. Further tuning will be done via |mIso| and |mExposureCompensation|.
+            // mLastExposureTimeNs and range are in nanoseconds (from Android platform), but spec
+            // expects exposureTime to be in 100 microsecond units.
+            // https://w3c.github.io/mediacapture-image/#exposure-time
             if (mLastExposureTimeNs != 0) {
-                requestBuilder.set(
-                        CaptureRequest.SENSOR_EXPOSURE_TIME, mLastExposureTimeNs /* nanoseconds*/);
+                requestBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,
+                        mLastExposureTimeNs / kNanosecondsPer100Microsecond);
             } else {
                 Range<Long> range = cameraCharacteristics.get(
                         CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
                 requestBuilder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,
-                        range.getLower()
-                                + (range.getUpper() + range.getLower()) / 2 /* nanoseconds*/);
+                        (range.getLower() + (range.getUpper() + range.getLower()) / 2)
+                                / kNanosecondsPer100Microsecond);
             }
 
         } else {
@@ -1407,15 +1445,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
     @Override
     public void setPhotoOptions(double zoom, int focusMode, double currentFocusDistance,
             int exposureMode, double width, double height, float[] pointsOfInterest2D,
-            boolean hasExposureCompensation, double exposureCompensation, int whiteBalanceMode,
-            double iso, boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
-            boolean hasTorch, boolean torch, double colorTemperature) {
+            boolean hasExposureCompensation, double exposureCompensation, double exposureTime,
+            int whiteBalanceMode, double iso, boolean hasRedEyeReduction, boolean redEyeReduction,
+            int fillLightMode, boolean hasTorch, boolean torch, double colorTemperature) {
         nativeDCheckCurrentlyOnIncomingTaskRunner(mNativeVideoCaptureDeviceAndroid);
-        mCameraThreadHandler.post(
-                new SetPhotoOptionsTask(new PhotoOptions(zoom, focusMode, currentFocusDistance,
-                        exposureMode, width, height, pointsOfInterest2D, hasExposureCompensation,
-                        exposureCompensation, whiteBalanceMode, iso, hasRedEyeReduction,
-                        redEyeReduction, fillLightMode, hasTorch, torch, colorTemperature)));
+        mCameraThreadHandler.post(new SetPhotoOptionsTask(
+                new PhotoOptions(zoom, focusMode, currentFocusDistance, exposureMode, width, height,
+                        pointsOfInterest2D, hasExposureCompensation, exposureCompensation,
+                        exposureTime, whiteBalanceMode, iso, hasRedEyeReduction, redEyeReduction,
+                        fillLightMode, hasTorch, torch, colorTemperature)));
     }
 
     @Override

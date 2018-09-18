@@ -368,6 +368,10 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_EQ(0, state->exposure_compensation->max);
   EXPECT_EQ(0, state->exposure_compensation->current);
   EXPECT_EQ(0, state->exposure_compensation->step);
+  EXPECT_EQ(0, state->exposure_time->min);
+  EXPECT_EQ(0, state->exposure_time->max);
+  EXPECT_EQ(0, state->exposure_time->current);
+  EXPECT_EQ(0, state->exposure_time->step);
   EXPECT_EQ(0, state->color_temperature->min);
   EXPECT_EQ(0, state->color_temperature->max);
   EXPECT_EQ(0, state->color_temperature->current);

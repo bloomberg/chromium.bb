@@ -437,6 +437,13 @@ void VideoCaptureDeviceAndroid::OnGetPhotoCapabilitiesReply(
       caps.getMinExposureCompensation();
   photo_capabilities->exposure_compensation->step =
       caps.getStepExposureCompensation();
+
+  photo_capabilities->exposure_time = mojom::Range::New();
+  photo_capabilities->exposure_time->current = caps.getCurrentExposureTime();
+  photo_capabilities->exposure_time->max = caps.getMaxExposureTime();
+  photo_capabilities->exposure_time->min = caps.getMinExposureTime();
+  photo_capabilities->exposure_time->step = caps.getStepExposureTime();
+
   photo_capabilities->color_temperature = mojom::Range::New();
   photo_capabilities->color_temperature->current =
       caps.getCurrentColorTemperature();
@@ -689,6 +696,8 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
   const double exposure_compensation = settings->has_exposure_compensation
                                            ? settings->exposure_compensation
                                            : 0.0;
+  const double exposure_time =
+      settings->has_exposure_time ? settings->exposure_time : 0.0;
 
   const PhotoCapabilities::AndroidMeteringMode white_balance_mode =
       settings->has_white_balance_mode
@@ -708,7 +717,7 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
   Java_VideoCapture_setPhotoOptions(
       env, j_capture_, zoom, static_cast<int>(focus_mode), focusDistance,
       static_cast<int>(exposure_mode), width, height, points_of_interest,
-      settings->has_exposure_compensation, exposure_compensation,
+      settings->has_exposure_compensation, exposure_compensation, exposure_time,
       static_cast<int>(white_balance_mode), iso,
       settings->has_red_eye_reduction, settings->red_eye_reduction,
       static_cast<int>(fill_light_mode), settings->has_torch, settings->torch,

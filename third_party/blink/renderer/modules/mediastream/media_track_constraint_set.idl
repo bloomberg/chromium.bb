@@ -47,6 +47,7 @@ dictionary MediaTrackConstraintSet {
     ConstrainDOMString focusMode;
     ConstrainPoint2D   pointsOfInterest;
     ConstrainDouble    exposureCompensation;
+    ConstrainDouble    exposureTime;
     ConstrainDouble    colorTemperature;
     ConstrainDouble    iso;
     ConstrainDouble    brightness;

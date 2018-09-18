@@ -69,6 +69,10 @@ class PhotoCapabilities {
   double getMaxExposureCompensation() const;
   double getCurrentExposureCompensation() const;
   double getStepExposureCompensation() const;
+  double getMinExposureTime() const;
+  double getMaxExposureTime() const;
+  double getCurrentExposureTime() const;
+  double getStepExposureTime() const;
   AndroidMeteringMode getWhiteBalanceMode() const;
   std::vector<AndroidMeteringMode> getWhiteBalanceModes() const;
   std::vector<AndroidFillLightMode> getFillLightModes() const;
