@@ -64,35 +64,44 @@ bool VulkanOverlayRenderer::Initialize() {
   }
 
   VkAttachmentDescription render_pass_attachments[] = {{
-      .format = VK_FORMAT_B8G8R8A8_SRGB,
-      .samples = VK_SAMPLE_COUNT_1_BIT,
-      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-      .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-      .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+      /* .flags = */ 0,
+      /* .format = */ VK_FORMAT_B8G8R8A8_SRGB,
+      /* .samples = */ VK_SAMPLE_COUNT_1_BIT,
+      /* .loadOp = */ VK_ATTACHMENT_LOAD_OP_CLEAR,
+      /* .storeOp = */ VK_ATTACHMENT_STORE_OP_STORE,
+      /* .stencilLoadOp = */ VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+      /* .stencilStoreOp = */ VK_ATTACHMENT_STORE_OP_DONT_CARE,
+      /* .initialLayout = */ VK_IMAGE_LAYOUT_UNDEFINED,
+      /* .finalLayout = */ VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
   }};
 
   VkAttachmentReference color_attachment_references[] = {
-      {.attachment = 0, .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}};
+      {/* .attachment = */ 0,
+       /* .layout = */ VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}};
 
   VkSubpassDescription render_pass_subpasses[] = {{
-      .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-      .inputAttachmentCount = 0,
-      .colorAttachmentCount = base::size(color_attachment_references),
-      .pColorAttachments = color_attachment_references,
-      .pResolveAttachments = nullptr,
-      .pDepthStencilAttachment = nullptr,
-      .preserveAttachmentCount = 0,
-      .pPreserveAttachments = nullptr,
+      /* .flags = */ 0,
+      /* .pipelineBindPoint = */ VK_PIPELINE_BIND_POINT_GRAPHICS,
+      /* .inputAttachmentCount = */ 0,
+      /* .pInputAttachments = */ nullptr,
+      /* .colorAttachmentCount = */ base::size(color_attachment_references),
+      /* .pColorAttachments = */ color_attachment_references,
+      /* .pResolveAttachments = */ nullptr,
+      /* .pDepthStencilAttachment = */ nullptr,
+      /* .preserveAttachmentCount = */ 0,
+      /* .pPreserveAttachments = */ nullptr,
   }};
 
   VkRenderPassCreateInfo render_pass_create_info = {
-      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-      .attachmentCount = base::size(render_pass_attachments),
-      .pAttachments = render_pass_attachments,
-      .subpassCount = base::size(render_pass_subpasses),
-      .pSubpasses = render_pass_subpasses,
-      .dependencyCount = 0,
+      /* .sType = */ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+      /* .pNext = */ nullptr,
+      /* .flags = */ 0,
+      /* .attachmentCount = */ base::size(render_pass_attachments),
+      /* .pAttachments = */ render_pass_attachments,
+      /* .subpassCount = */ base::size(render_pass_subpasses),
+      /* .pSubpasses = */ render_pass_subpasses,
+      /* .dependencyCount = */ 0,
+      /* .pDependencies = */ nullptr,
   };
 
   CHECK_EQ(vkCreateRenderPass(device_queue_->GetVulkanDevice(),
@@ -146,7 +155,7 @@ void VulkanOverlayRenderer::RenderFrame() {
   TRACE_EVENT0("ozone", "VulkanOverlayRenderer::RenderFrame");
 
   VkClearValue clear_value = {
-      .color = {.float32 = {.5f, 1.f - NextFraction(), .5f, 1.f}}};
+      /* .color = */ {/* .float32 = */ {.5f, 1.f - NextFraction(), .5f, 1.f}}};
 
   const Buffer& buffer = *buffers_[next_buffer_];
   next_buffer_++;
@@ -159,14 +168,26 @@ void VulkanOverlayRenderer::RenderFrame() {
   {
     gpu::ScopedSingleUseCommandBufferRecorder recorder(command_buffer);
 
-    VkRenderPassBeginInfo begin_info = {};
-    begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    begin_info.renderPass = render_pass_;
-    begin_info.framebuffer = buffer.vk_framebuffer();
-    begin_info.renderArea.extent.width = buffer.size().width();
-    begin_info.renderArea.extent.height = buffer.size().height();
-    begin_info.clearValueCount = 1;
-    begin_info.pClearValues = &clear_value;
+    VkRenderPassBeginInfo begin_info = {
+        /* .sType = */ VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        /* .pNext = */ nullptr,
+        /* .renderPass = */ render_pass_,
+        /* .framebuffer = */ buffer.vk_framebuffer(),
+        /* .renderArea = */
+        {
+            /* .offset = */ {
+                /* .x = */ 0,
+                /* .y = */ 0,
+            },
+            /* .extent = */
+            {
+                /* .width = */ buffer.size().width(),
+                /* .height = */ buffer.size().height(),
+            },
+        },
+        /* .clearValueCount = */ 1,
+        /* .pClearValues = */ &clear_value,
+    };
 
     vkCmdBeginRenderPass(recorder.handle(), &begin_info,
                          VK_SUBPASS_CONTENTS_INLINE);
@@ -303,25 +324,27 @@ VulkanOverlayRenderer::Buffer::Create(
   }
 
   VkImageViewCreateInfo vk_image_view_create_info = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-      .image = vk_image,
-      .viewType = VK_IMAGE_VIEW_TYPE_2D,
-      .format = VK_FORMAT_B8G8R8A8_SRGB,
-      .components =
-          {
-              .r = VK_COMPONENT_SWIZZLE_IDENTITY,
-              .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-              .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-              .a = VK_COMPONENT_SWIZZLE_IDENTITY,
-          },
-      .subresourceRange =
-          {
-              .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-              .baseMipLevel = 0,
-              .levelCount = 1,
-              .baseArrayLayer = 0,
-              .layerCount = 1,
-          },
+      /* .sType = */ VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      /* .pNext = */ nullptr,
+      /* .flags = */ 0,
+      /* .image = */ vk_image,
+      /* .viewType = */ VK_IMAGE_VIEW_TYPE_2D,
+      /* .format = */ VK_FORMAT_B8G8R8A8_SRGB,
+      /* .components = */
+      {
+          /* .r = */ VK_COMPONENT_SWIZZLE_IDENTITY,
+          /* .b = */ VK_COMPONENT_SWIZZLE_IDENTITY,
+          /* .g = */ VK_COMPONENT_SWIZZLE_IDENTITY,
+          /* .a = */ VK_COMPONENT_SWIZZLE_IDENTITY,
+      },
+      /* .subresourceRange = */
+      {
+          /* .aspectMask = */ VK_IMAGE_ASPECT_COLOR_BIT,
+          /* .baseMipLevel = */ 0,
+          /* .levelCount = */ 1,
+          /* .baseArrayLayer = */ 0,
+          /* .layerCount = */ 1,
+      },
   };
 
   VkResult result;
@@ -332,13 +355,15 @@ VulkanOverlayRenderer::Buffer::Create(
     LOG(FATAL) << "Failed to create a Vulkan image view.";
   }
   VkFramebufferCreateInfo vk_framebuffer_create_info = {
-      .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-      .renderPass = vk_render_pass,
-      .attachmentCount = 1,
-      .pAttachments = &vk_image_view,
-      .width = size.width(),
-      .height = size.height(),
-      .layers = 1,
+      /* .sType = */ VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+      /* .pNext = */ nullptr,
+      /* .flags = */ 0,
+      /* .renderPass = */ vk_render_pass,
+      /* .attachmentCount = */ 1,
+      /* .pAttachments = */ &vk_image_view,
+      /* .width = */ size.width(),
+      /* .height = */ size.height(),
+      /* .layers = */ 1,
   };
 
   VkFramebuffer vk_framebuffer = VK_NULL_HANDLE;
