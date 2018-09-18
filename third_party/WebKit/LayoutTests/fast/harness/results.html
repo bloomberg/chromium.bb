@@ -453,8 +453,12 @@ class PathParser {
     let href;
     [href, this.dir, this.file] = path.match("/(.*/)?(.*)");
     this.dir = this.dir || "";
-    [, this.raw_basename, this.raw_extension] = this.file.match(/(.+)\.(.+)/);
-
+    try {
+      [, this.raw_basename, this.raw_extension] = this.file.match(/(.+)\.(.+)/);
+    } catch {
+      this.raw_basename = "ERROR";
+      this.raw_extension = "ERROR";
+    }
     // blink/tools/blinkpy/web_tests/port/base.py output_filename()
     let index = this.raw_extension.indexOf("?");
     if (index > -1) {
