@@ -343,7 +343,8 @@ cvox.ChromeVoxEditableTextBase.prototype.changed = function(evt) {
   if (evt.value == this.value) {
     this.describeSelectionChanged(evt);
   } else {
-    this.describeTextChanged(evt);
+    this.describeTextChanged(
+        new cvox.TextChangeEvent(this.value, this.start, this.end, true), evt);
   }
   this.lastChangeDescribed = true;
 
@@ -460,11 +461,13 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged = function(
 
 /**
  * Describe a change where the text changes.
+ * @param {cvox.TextChangeEvent} prev The previous text change event.
  * @param {cvox.TextChangeEvent} evt The text change event.
  */
-cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
+cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(
+    prev, evt) {
   var personality = {};
-  if (evt.value.length < (this.value.length - 1)) {
+  if (evt.value.length < (prev.value.length - 1)) {
     personality = cvox.AbstractTts.PERSONALITY_DELETED;
   }
   if (this.isPassword) {
@@ -476,7 +479,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
     return;
   }
 
-  var value = this.value;
+  var value = prev.value;
   var len = value.length;
   var newLen = evt.value.length;
   var autocompleteSuffix = '';
@@ -497,11 +500,11 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
   // and any new text was inserted at that character position.
   // This would handle pasting and entering text by typing, both from
   // a cursor and from a selection.
-  var prefixLen = this.start;
-  var suffixLen = len - this.end;
+  var prefixLen = prev.start;
+  var suffixLen = len - prev.end;
   if (newLen >= prefixLen + suffixLen + (evtEnd - evt.start) &&
       evtValue.substr(0, prefixLen) == value.substr(0, prefixLen) &&
-      evtValue.substr(newLen - suffixLen) == value.substr(this.end)) {
+      evtValue.substr(newLen - suffixLen) == value.substr(prev.end)) {
     // However, in a dynamic content editable, defer to authoritative events
     // (clipboard, key press) to reduce guess work when observing insertions.
     // Only use this logic when observing deletions (and insertion of word
@@ -511,7 +514,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
           this instanceof cvox.ChromeVoxEditableContentEditable) ||
         newLen < len || this.isWordBreakChar(evt.value[newLen - 1] || '')) {
       this.describeTextChangedHelper(
-          evt, prefixLen, suffixLen, autocompleteSuffix, personality);
+          prev, evt, prefixLen, suffixLen, autocompleteSuffix, personality);
     }
     return;
   }
@@ -522,18 +525,18 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
   // a word or line.
   prefixLen = evt.start;
   suffixLen = newLen - evtEnd;
-  if (this.start == this.end && evt.start == evtEnd &&
+  if (prev.start == prev.end && evt.start == evtEnd &&
       evtValue.substr(0, prefixLen) == value.substr(0, prefixLen) &&
       evtValue.substr(newLen - suffixLen) == value.substr(len - suffixLen)) {
     // Forward deletions causes reading of the character immediately to the
     // right of the caret or the deleted text depending on the iBeam cursor
     // setting.
-    if (this.start == evt.start && this.end == evt.end &&
+    if (prev.start == evt.start && prev.end == evt.end &&
         !cvox.ChromeVoxEditableTextBase.useIBeamCursor) {
       this.speak(evt.value[evt.start], evt.triggeredByUser);
     } else {
       this.describeTextChangedHelper(
-          evt, prefixLen, suffixLen, autocompleteSuffix, personality);
+          prev, evt, prefixLen, suffixLen, autocompleteSuffix, personality);
     }
     return;
   }
@@ -573,7 +576,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
 
   if (this.multiline) {
     // Fall back to announce deleted but omit the text that was deleted.
-    if (evt.value.length < this.value.length) {
+    if (evt.value.length < prev.value.length) {
       this.speak(Msgs.getMsg('text_deleted'), evt.triggeredByUser, personality);
     }
     // The below is a somewhat loose way to deal with non-standard
@@ -588,7 +591,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
 
   // If the text is short, just speak the whole thing.
   if (newLen <= this.maxShortPhraseLen) {
-    this.describeTextChangedHelper(evt, 0, 0, '', personality);
+    this.describeTextChangedHelper(prev, evt, 0, 0, '', personality);
     return;
   }
 
@@ -612,7 +615,8 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
     suffixLen--;
   }
 
-  this.describeTextChangedHelper(evt, prefixLen, suffixLen, '', personality);
+  this.describeTextChangedHelper(
+      prev, evt, prefixLen, suffixLen, '', personality);
 };
 
 
@@ -620,6 +624,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
  * The function called by describeTextChanged after it's figured out
  * what text was deleted, what text was inserted, and what additional
  * autocomplete text was added.
+ * @param {cvox.TextChangeEvent} prev The previous text change event.
  * @param {cvox.TextChangeEvent} evt The text change event.
  * @param {number} prefixLen The number of characters in the common prefix
  *     of this.value and newValue.
@@ -631,11 +636,11 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
  * @param {Object=} opt_personality Personality to speak the text.
  */
 cvox.ChromeVoxEditableTextBase.prototype.describeTextChangedHelper = function(
-    evt, prefixLen, suffixLen, autocompleteSuffix, opt_personality) {
-  var len = this.value.length;
+    prev, evt, prefixLen, suffixLen, autocompleteSuffix, opt_personality) {
+  var len = prev.value.length;
   var newLen = evt.value.length;
   var deletedLen = len - prefixLen - suffixLen;
-  var deleted = this.value.substr(prefixLen, deletedLen);
+  var deleted = prev.value.substr(prefixLen, deletedLen);
   var insertedLen = newLen - prefixLen - suffixLen;
   var inserted = evt.value.substr(prefixLen, insertedLen);
   var utterance = '';
