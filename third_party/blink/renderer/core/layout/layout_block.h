@@ -27,13 +27,13 @@
 #include <memory>
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
 
 namespace blink {
 
 struct PaintInfo;
 class LineLayoutBox;
-class NGConstraintSpace;
 class WordMeasurement;
 
 typedef WTF::ListHashSet<LayoutBox*, 16> TrackedLayoutBoxListHashSet;
@@ -538,7 +538,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual bool UpdateLogicalWidthAndColumnWidth();
 
   LayoutObjectChildList children_;
-  scoped_refptr<const NGConstraintSpace> cached_constraint_space_;
+  base::Optional<NGConstraintSpace> cached_constraint_space_;
 
   unsigned
       has_margin_before_quirk_ : 1;  // Note these quirk values can't be put

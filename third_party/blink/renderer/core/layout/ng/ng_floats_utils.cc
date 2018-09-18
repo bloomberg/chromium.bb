@@ -59,7 +59,7 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
 
 // Creates a constraint space for an unpositioned float. origin_block_offset
 // should only be set when we want to fragmentation to occur.
-scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForFloat(
+NGConstraintSpace CreateConstraintSpaceForFloat(
     const NGLogicalSize& float_available_size,
     const NGLogicalSize& float_percentage_size,
     const NGLogicalSize& float_replaced_percentage_size,
@@ -119,7 +119,7 @@ std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(
       break;
     case CSSBoxType::kPadding:
       shape_insets =
-          ComputeBorders(*CreateConstraintSpaceForFloat(
+          ComputeBorders(CreateConstraintSpaceForFloat(
                              float_available_size, float_percentage_size,
                              float_replaced_percentage_size, unpositioned_float,
                              parent_space),
@@ -129,12 +129,11 @@ std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(
                                 TextDirection::kLtr);
       break;
     case CSSBoxType::kContent:
-      const scoped_refptr<NGConstraintSpace> space =
-          CreateConstraintSpaceForFloat(
-              float_available_size, float_percentage_size,
-              float_replaced_percentage_size, unpositioned_float, parent_space);
+      const NGConstraintSpace space = CreateConstraintSpaceForFloat(
+          float_available_size, float_percentage_size,
+          float_replaced_percentage_size, unpositioned_float, parent_space);
       NGBoxStrut border_padding =
-          ComputeBorders(*space, style) + ComputePadding(*space, style);
+          ComputeBorders(space, style) + ComputePadding(space, style);
       shape_insets =
           border_padding
               .ConvertToPhysical(style.GetWritingMode(), style.Direction())
@@ -191,13 +190,13 @@ void LayoutFloatWithoutFragmentation(
   if (unpositioned_float->layout_result)
     return;
 
-  const scoped_refptr<NGConstraintSpace> space = CreateConstraintSpaceForFloat(
+  const NGConstraintSpace space = CreateConstraintSpaceForFloat(
       float_available_size, float_percentage_size,
       float_replaced_percentage_size, *unpositioned_float, parent_space);
 
-  unpositioned_float->layout_result = unpositioned_float->node.Layout(*space);
+  unpositioned_float->layout_result = unpositioned_float->node.Layout(space);
   unpositioned_float->margins =
-      ComputeMarginsFor(*space, unpositioned_float->node.Style(), parent_space);
+      ComputeMarginsFor(space, unpositioned_float->node.Style(), parent_space);
 }
 
 }  // namespace
@@ -254,14 +253,14 @@ NGPositionedFloat PositionFloat(
     layout_result = unpositioned_float->layout_result;
     fragment_margins = unpositioned_float->margins;
   } else {
-    scoped_refptr<NGConstraintSpace> space = CreateConstraintSpaceForFloat(
+    NGConstraintSpace space = CreateConstraintSpaceForFloat(
         float_available_size, float_percentage_size,
         float_replaced_percentage_size, *unpositioned_float, parent_space,
         origin_bfc_offset.block_offset);
-    layout_result = unpositioned_float->node.Layout(
-        *space, unpositioned_float->token.get());
+    layout_result =
+        unpositioned_float->node.Layout(space, unpositioned_float->token.get());
     fragment_margins = ComputeMarginsFor(
-        *space, unpositioned_float->node.Style(), parent_space);
+        space, unpositioned_float->node.Style(), parent_space);
 
     // Make the margins fragmentation aware.
     if (ShouldIgnoreBlockStartMargin(parent_space, unpositioned_float->node,

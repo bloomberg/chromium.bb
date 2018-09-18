@@ -37,15 +37,16 @@ enum NGFragmentationType {
 // This enum is used for communicating to *direct* children of table cells,
 // which layout phase the table cell is in.
 enum NGTableCellChildLayoutPhase {
-  kNone,     // The node isn't a table cell child.
+  kNotTableCellChild,  // The node isn't a table cell child.
   kMeasure,  // The node is a table cell child, in the "measure" phase.
   kLayout    // The node is a table cell child, in the "layout" phase.
 };
 
 // The NGConstraintSpace represents a set of constraints and available space
 // which a layout algorithm may produce a NGFragment within.
-class CORE_EXPORT NGConstraintSpace final
-    : public RefCounted<NGConstraintSpace> {
+class CORE_EXPORT NGConstraintSpace final {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
  public:
   enum ConstraintSpaceFlags {
     kOrthogonalWritingModeRoot = 1 << 0,
@@ -64,11 +65,16 @@ class CORE_EXPORT NGConstraintSpace final
     kNumberOfConstraintSpaceFlags = 11
   };
 
+  NGConstraintSpace() {}
+  NGConstraintSpace(const NGConstraintSpace&) = default;
+  NGConstraintSpace(NGConstraintSpace&&) = default;
+  NGConstraintSpace& operator=(const NGConstraintSpace&) = default;
+  NGConstraintSpace& operator=(NGConstraintSpace&&) = default;
+
   // Creates NGConstraintSpace representing LayoutObject's containing block.
   // This should live on NGBlockNode or another layout bridge and probably take
   // a root NGConstraintSpace.
-  static scoped_refptr<NGConstraintSpace> CreateFromLayoutObject(
-      const LayoutBox&);
+  static NGConstraintSpace CreateFromLayoutObject(const LayoutBox&);
 
   const NGExclusionSpace& ExclusionSpace() const { return exclusion_space_; }
 
@@ -322,7 +328,7 @@ class CORE_EXPORT NGConstraintSpace final
   NGBfcOffset bfc_offset_;
   base::Optional<LayoutUnit> floats_bfc_block_offset_;
 
-  const NGExclusionSpace exclusion_space_;
+  NGExclusionSpace exclusion_space_;
   LayoutUnit clearance_offset_;
 
   Vector<NGBaselineRequest> baseline_requests_;

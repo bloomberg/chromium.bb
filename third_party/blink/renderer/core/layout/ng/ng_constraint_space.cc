@@ -57,7 +57,7 @@ NGConstraintSpace::NGConstraintSpace(
   baseline_requests_.swap(baseline_requests);
 }
 
-scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
+NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
   auto writing_mode = box.StyleRef().GetWritingMode();
   bool parallel_containing_block = IsParallelWritingMode(

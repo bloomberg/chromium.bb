@@ -32,7 +32,7 @@ class CORE_EXPORT NGPageLayoutAlgorithm
       const MinMaxSizeInput&) const override;
 
  private:
-  scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForPages(
+  NGConstraintSpace CreateConstraintSpaceForPages(
       const NGLogicalSize& size) const;
 };
 

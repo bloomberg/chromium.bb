@@ -323,7 +323,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     return ComputeMinMaxSizeFromLegacy(input.size_type);
   }
 
-  scoped_refptr<NGConstraintSpace> zero_constraint_space =
+  NGConstraintSpace zero_constraint_space =
       CreateConstraintSpaceBuilderForMinMax(*this).ToConstraintSpace(
           Style().GetWritingMode());
 
@@ -332,7 +332,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     // flow root isn't going to give the right result.
     DCHECK(!is_orthogonal_flow_root);
 
-    constraint_space = zero_constraint_space.get();
+    constraint_space = &zero_constraint_space;
   }
 
   if (is_orthogonal_flow_root || !CanUseNewLayout()) {
@@ -369,7 +369,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   }
 
   // Have to synthesize this value.
-  scoped_refptr<NGLayoutResult> layout_result = Layout(*zero_constraint_space);
+  scoped_refptr<NGLayoutResult> layout_result = Layout(zero_constraint_space);
   NGBoxFragment min_fragment(
       container_writing_mode,
       TextDirection::kLtr,  // irrelevant here
@@ -377,13 +377,13 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   sizes.min_size = min_fragment.Size().inline_size;
 
   // Now, redo with infinite space for max_content
-  scoped_refptr<NGConstraintSpace> infinite_constraint_space =
+  NGConstraintSpace infinite_constraint_space =
       CreateConstraintSpaceBuilderForMinMax(*this)
           .SetAvailableSize({LayoutUnit::Max(), LayoutUnit()})
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .ToConstraintSpace(Style().GetWritingMode());
 
-  layout_result = Layout(*infinite_constraint_space);
+  layout_result = Layout(infinite_constraint_space);
   NGBoxFragment max_fragment(
       container_writing_mode,
       TextDirection::kLtr,  // irrelevant here
@@ -738,7 +738,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
   }
 
   const ComputedStyle& style = Style();
-  scoped_refptr<NGConstraintSpace> constraint_space =
+  NGConstraintSpace constraint_space =
       space_builder.SetIsNewFormattingContext(true)
           .SetIsShrinkToFit(true)
           .SetAvailableSize(parent_constraint_space.AvailableSize())
@@ -748,7 +748,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
               parent_constraint_space.ReplacedPercentageResolutionSize())
           .SetTextDirection(style.Direction())
           .ToConstraintSpace(style.GetWritingMode());
-  return Layout(*constraint_space);
+  return Layout(constraint_space);
 }
 
 scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(

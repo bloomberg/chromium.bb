@@ -103,7 +103,7 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::AddBaselineRequest(
   return *this;
 }
 
-scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
+const NGConstraintSpace NGConstraintSpaceBuilder::ToConstraintSpace(
     WritingMode out_writing_mode) {
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
@@ -181,7 +181,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   base::Optional<LayoutUnit> floats_bfc_block_offset =
       is_new_fc_ ? base::nullopt : floats_bfc_block_offset_;
 
-  return base::AdoptRef(new NGConstraintSpace(
+  return NGConstraintSpace(
       out_writing_mode, text_direction_, available_size,
       percentage_resolution_size, replaced_percentage_resolution_size,
       parent_percentage_resolution_size.inline_size,
@@ -189,7 +189,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       fragmentainer_space_at_bfc_start_, fragmentation_type_,
       table_cell_child_layout_phase_, adjoining_floats_, margin_strut,
       bfc_offset, floats_bfc_block_offset, exclusion_space, clearance_offset,
-      baseline_requests_, resolved_flags));
+      baseline_requests_, resolved_flags);
 }
 
 }  // namespace blink

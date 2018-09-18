@@ -732,7 +732,8 @@ static LayoutUnit ComputeContentSize(
                                   node.InitialContainingBlockSize())
       << constraint_space->InitialContainingBlockSize() << " vs "
       << node.InitialContainingBlockSize();
-  scoped_refptr<NGConstraintSpace> space =
+
+  NGConstraintSpace space =
       NGConstraintSpaceBuilder(writing_mode, icb_size)
           .SetTextDirection(style.Direction())
           .SetAvailableSize({available_inline_size, NGSizeIndefinite})
@@ -754,7 +755,7 @@ static LayoutUnit ComputeContentSize(
 
     NGLineInfo line_info;
     NGLineBreaker line_breaker(
-        node, mode, *space, &positioned_floats, &unpositioned_floats,
+        node, mode, space, &positioned_floats, &unpositioned_floats,
         nullptr /* container_builder */, &empty_exclusion_space, 0u,
         line_opportunity, break_token.get());
     line_breaker.NextLine(&line_info);
@@ -786,14 +787,14 @@ static LayoutUnit ComputeContentSize(
       MinMaxSizeInput zero_input;  // Floats don't intrude into floats.
       // We'll need extrinsic sizing data when computing min/max for orthogonal
       // flow roots.
-      scoped_refptr<NGConstraintSpace> extrinsic_constraint_space;
+      NGConstraintSpace extrinsic_constraint_space;
       const NGConstraintSpace* optional_constraint_space = nullptr;
       if (!IsParallelWritingMode(container_writing_mode,
                                  float_node.Style().GetWritingMode())) {
         DCHECK(constraint_space);
         extrinsic_constraint_space = CreateExtrinsicConstraintSpaceForChild(
             *constraint_space, input.extrinsic_block_size, float_node);
-        optional_constraint_space = extrinsic_constraint_space.get();
+        optional_constraint_space = &extrinsic_constraint_space;
       }
 
       MinMaxSize child_sizes = ComputeMinAndMaxContentContribution(

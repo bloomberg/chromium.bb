@@ -296,11 +296,11 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   // ResolveInlineLength.
   // The constraint space's writing mode has to match the style, so we can't
   // use the passed-in mode here.
-  NGConstraintSpaceBuilder builder(
-      style.GetWritingMode(),
-      /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite});
-  scoped_refptr<NGConstraintSpace> space =
-      builder.ToConstraintSpace(style.GetWritingMode());
+  NGConstraintSpace space =
+      NGConstraintSpaceBuilder(
+          style.GetWritingMode(),
+          /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
+          .ToConstraintSpace(style.GetWritingMode());
 
   LayoutUnit content_size =
       min_and_max ? min_and_max->max_size : NGSizeIndefinite;
@@ -317,11 +317,11 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   } else {
     if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
       computed_sizes.min_size = computed_sizes.max_size = ResolveInlineLength(
-          *space, style, min_and_max, inline_size,
+          space, style, min_and_max, inline_size,
           LengthResolveType::kContentSize, LengthResolvePhase::kIntrinsic);
     } else {
       computed_sizes.min_size = computed_sizes.max_size = ResolveBlockLength(
-          *space, style, inline_size, content_size,
+          space, style, inline_size, content_size,
           LengthResolveType::kContentSize, LengthResolvePhase::kIntrinsic);
     }
   }
@@ -331,11 +331,11 @@ MinMaxSize ComputeMinAndMaxContentContribution(
                           : style.MaxHeight();
   LayoutUnit max;
   if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
-    max = ResolveInlineLength(*space, style, min_and_max, max_length,
+    max = ResolveInlineLength(space, style, min_and_max, max_length,
                               LengthResolveType::kMaxSize,
                               LengthResolvePhase::kIntrinsic);
   } else {
-    max = ResolveBlockLength(*space, style, max_length, content_size,
+    max = ResolveBlockLength(space, style, max_length, content_size,
                              LengthResolveType::kMaxSize,
                              LengthResolvePhase::kIntrinsic);
   }
@@ -347,11 +347,11 @@ MinMaxSize ComputeMinAndMaxContentContribution(
                           : style.MinHeight();
   LayoutUnit min;
   if (IsParallelWritingMode(writing_mode, style.GetWritingMode())) {
-    min = ResolveInlineLength(*space, style, min_and_max, min_length,
+    min = ResolveInlineLength(space, style, min_and_max, min_length,
                               LengthResolveType::kMinSize,
                               LengthResolvePhase::kIntrinsic);
   } else {
-    min = ResolveBlockLength(*space, style, min_length, content_size,
+    min = ResolveBlockLength(space, style, min_length, content_size,
                              LengthResolveType::kMinSize,
                              LengthResolvePhase::kIntrinsic);
   }
@@ -392,23 +392,23 @@ MinMaxSize ComputeMinAndMaxContentContribution(
 
   base::Optional<MinMaxSize> minmax;
   if (NeedMinMaxSizeForContentContribution(writing_mode, node.Style())) {
-    scoped_refptr<NGConstraintSpace> adjusted_constraint_space;
+    NGConstraintSpace adjusted_constraint_space;
     if (constraint_space) {
       // TODO(layout-ng): Check if our constraint space produces spec-compliant
       // outputs.
       // It is important to set a floats bfc block offset so that we don't get a
       // partial layout. It is also important that we shrink to fit, by
       // definition.
-      NGConstraintSpaceBuilder builder(*constraint_space);
-      builder.SetAvailableSize(constraint_space->AvailableSize())
-          .SetPercentageResolutionSize(
-              constraint_space->PercentageResolutionSize())
-          .SetFloatsBfcBlockOffset(LayoutUnit())
-          .SetIsNewFormattingContext(node.CreatesNewFormattingContext())
-          .SetIsShrinkToFit(true);
       adjusted_constraint_space =
-          builder.ToConstraintSpace(node.Style().GetWritingMode());
-      constraint_space = adjusted_constraint_space.get();
+          NGConstraintSpaceBuilder(*constraint_space)
+              .SetAvailableSize(constraint_space->AvailableSize())
+              .SetPercentageResolutionSize(
+                  constraint_space->PercentageResolutionSize())
+              .SetFloatsBfcBlockOffset(LayoutUnit())
+              .SetIsNewFormattingContext(node.CreatesNewFormattingContext())
+              .SetIsShrinkToFit(true)
+              .ToConstraintSpace(node.Style().GetWritingMode());
+      constraint_space = &adjusted_constraint_space;
     }
     minmax = node.ComputeMinMaxSize(writing_mode, input, constraint_space);
   }
@@ -1036,7 +1036,8 @@ NGLogicalSize CalculateChildPercentageSize(
   // Table cell children don't apply the "percentage-quirk". I.e. if their
   // percentage resolution block-size is indefinite, they don't pass through
   // their parent's percentage resolution block-size.
-  if (space.TableCellChildLayoutPhase() != NGTableCellChildLayoutPhase::kNone)
+  if (space.TableCellChildLayoutPhase() !=
+      NGTableCellChildLayoutPhase::kNotTableCellChild)
     return child_percentage_size;
 
   return AdjustChildPercentageSizeForQuirksAndFlex(

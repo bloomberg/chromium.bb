@@ -87,7 +87,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                               const NGBreakToken* child_break_token);
 
   // Creates a new constraint space for the current child.
-  scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForChild(
+  NGConstraintSpace CreateConstraintSpaceForChild(
       const NGLayoutInputNode child,
       const NGInflowChildData& child_data,
       const NGLogicalSize child_available_size,

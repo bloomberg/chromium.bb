@@ -33,7 +33,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
 
     node.PrepareLayoutIfNeeded();
 
-    scoped_refptr<NGConstraintSpace> space =
+    NGConstraintSpace space =
         NGConstraintSpaceBuilder(
             WritingMode::kHorizontalTb,
             /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
@@ -50,7 +50,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
     NGLineLayoutOpportunity line_opportunity(available_width);
     while (!break_token || !break_token->IsFinished()) {
       NGLineInfo line_info;
-      NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, *space,
+      NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, space,
                                  &positioned_floats, &unpositioned_floats,
                                  /* container_builder */ nullptr,
                                  &exclusion_space, 0u, line_opportunity,

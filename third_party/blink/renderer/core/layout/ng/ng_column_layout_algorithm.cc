@@ -108,11 +108,10 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
     do {
       // Lay out one column. Each column will become a fragment.
-      scoped_refptr<NGConstraintSpace> child_space =
-          CreateConstraintSpaceForColumns(column_size,
-                                          separate_leading_margins);
+      NGConstraintSpace child_space = CreateConstraintSpaceForColumns(
+          column_size, separate_leading_margins);
 
-      NGBlockLayoutAlgorithm child_algorithm(Node(), *child_space.get(),
+      NGBlockLayoutAlgorithm child_algorithm(Node(), child_space,
                                              break_token.get());
       child_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
       scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
@@ -256,13 +255,13 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
   // make us lay out all the multicol content as one single tall strip. When
   // we're done with this layout pass, we can examine the result and calculate
   // an ideal column block size.
-  auto space = CreateConstaintSpaceForBalancing(column_size);
-  NGBlockLayoutAlgorithm balancing_algorithm(Node(), *space.get());
+  NGConstraintSpace space = CreateConstaintSpaceForBalancing(column_size);
+  NGBlockLayoutAlgorithm balancing_algorithm(Node(), space);
   scoped_refptr<NGLayoutResult> result = balancing_algorithm.Layout();
 
   // TODO(mstensho): This is where the fun begins. We need to examine the entire
   // fragment tree, not just the root.
-  NGFragment fragment(space->GetWritingMode(), *result->PhysicalFragment());
+  NGFragment fragment(space.GetWritingMode(), *result->PhysicalFragment());
   LayoutUnit single_strip_block_size = fragment.BlockSize();
 
   // Some extra care is required the division here. We want a the resulting
@@ -288,8 +287,7 @@ LayoutUnit NGColumnLayoutAlgorithm::StretchColumnBlockSize(
   return ConstrainColumnBlockSize(length, Node(), ConstraintSpace());
 }
 
-scoped_refptr<NGConstraintSpace>
-NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
+NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
     const NGLogicalSize& column_size,
     bool separate_leading_margins) const {
   NGConstraintSpaceBuilder space_builder(ConstraintSpace());
@@ -316,8 +314,7 @@ NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
   return space_builder.ToConstraintSpace(Style().GetWritingMode());
 }
 
-scoped_refptr<NGConstraintSpace>
-NGColumnLayoutAlgorithm::CreateConstaintSpaceForBalancing(
+NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstaintSpaceForBalancing(
     const NGLogicalSize& column_size) const {
   NGConstraintSpaceBuilder space_builder(ConstraintSpace());
   space_builder.SetAvailableSize({column_size.inline_size, NGSizeIndefinite});
