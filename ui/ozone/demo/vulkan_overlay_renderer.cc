@@ -15,7 +15,6 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
-#include "gpu/vulkan/vulkan_render_pass.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
 #include "ui/display/types/display_snapshot.h"
@@ -48,6 +47,7 @@ VulkanOverlayRenderer::VulkanOverlayRenderer(
 
 VulkanOverlayRenderer::~VulkanOverlayRenderer() {
   DestroyBuffers();
+  DestroyRenderPass();
   command_pool_->Destroy();
   command_pool_.reset();
   device_queue_->Destroy();
@@ -116,6 +116,14 @@ bool VulkanOverlayRenderer::Initialize() {
   // Schedule the initial render.
   PostRenderFrameTask();
   return true;
+}
+
+void VulkanOverlayRenderer::DestroyRenderPass() {
+  if (render_pass_ == VK_NULL_HANDLE)
+    return;
+
+  vkDestroyRenderPass(device_queue_->GetVulkanDevice(), render_pass_, nullptr);
+  render_pass_ = VK_NULL_HANDLE;
 }
 
 void VulkanOverlayRenderer::DestroyBuffers() {
