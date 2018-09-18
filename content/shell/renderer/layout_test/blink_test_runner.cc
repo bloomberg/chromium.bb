@@ -199,14 +199,12 @@ void BlinkTestRunner::PrintMessage(const std::string& message) {
 }
 
 void BlinkTestRunner::PostTask(base::OnceClosure task) {
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-      FROM_HERE, std::move(task));
+  GetTaskRunner()->PostTask(FROM_HERE, std::move(task));
 }
 
 void BlinkTestRunner::PostDelayedTask(base::OnceClosure task,
                                       base::TimeDelta delay) {
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostDelayedTask(
-      FROM_HERE, std::move(task), delay);
+  GetTaskRunner()->PostDelayedTask(FROM_HERE, std::move(task), delay);
 }
 
 WebString BlinkTestRunner::RegisterIsolatedFileSystem(
@@ -887,6 +885,15 @@ void BlinkTestRunner::OnReplyBluetoothManualChooserEvents(
 
 void BlinkTestRunner::OnDestruct() {
   delete this;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> BlinkTestRunner::GetTaskRunner() {
+  if (render_view()->GetWebView()->MainFrame()->IsWebLocalFrame()) {
+    WebLocalFrame* main_frame =
+        render_view()->GetWebView()->MainFrame()->ToWebLocalFrame();
+    return main_frame->GetTaskRunner(blink::TaskType::kInternalTest);
+  }
+  return Platform::Current()->CurrentThread()->GetTaskRunner();
 }
 
 }  // namespace content

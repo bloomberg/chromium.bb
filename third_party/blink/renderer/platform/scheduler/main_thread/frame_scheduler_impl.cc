@@ -433,7 +433,6 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // Media events should not be deferred to ensure that media playback is
     // smooth.
     case TaskType::kMediaElementEvent:
-    case TaskType::kInternalTest:
     case TaskType::kInternalWebCrypto:
     case TaskType::kInternalIndexedDB:
     case TaskType::kInternalMedia:
@@ -449,6 +448,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // unthrottled and undeferred) not to prevent service workers that may
     // control browser navigation on multiple tabs.
     case TaskType::kInternalWorker:
+    // Some tasks in the tests need to run when objects are paused e.g. to hook
+    // when recovering from debugger JavaScript statetment.
+    case TaskType::kInternalTest:
       return UnpausableTaskQueueTraits();
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
