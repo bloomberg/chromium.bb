@@ -28,6 +28,7 @@ class InputDelegate {
   virtual ~InputDelegate() {}
 
   virtual gfx::Transform GetHeadPose() = 0;
+  virtual void OnTriggerEvent(bool pressed) = 0;
   virtual void UpdateController(const gfx::Transform& head_pose,
                                 base::TimeTicks current_time,
                                 bool is_webxr_frame) = 0;

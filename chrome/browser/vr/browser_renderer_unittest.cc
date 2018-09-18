@@ -88,7 +88,6 @@ class MockSchedulerDelegate : public SchedulerDelegate {
   void OnPause() override {}
   void OnResume() override {}
   MOCK_METHOD0(OnExitPresent, void());
-  void OnTriggerEvent(bool pressed) override {}
   MOCK_METHOD1(SetWebXrMode, void(bool));
   MOCK_METHOD1(SetShowingVrDialog, void(bool));
   void SetBrowserRenderer(SchedulerBrowserRendererInterface*) override {}
@@ -156,6 +155,7 @@ class MockInputDelegate : public InputDelegate {
 
   // InputDelegate
   gfx::Transform GetHeadPose() override { return {}; }
+  void OnTriggerEvent(bool pressed) override {}
   MOCK_METHOD3(UpdateController,
                void(const gfx::Transform&, base::TimeTicks, bool));
   MOCK_METHOD1(GetControllerModel, ControllerModel(const gfx::Transform&));

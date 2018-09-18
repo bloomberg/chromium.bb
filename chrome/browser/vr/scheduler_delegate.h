@@ -31,7 +31,6 @@ class VR_EXPORT SchedulerDelegate {
   virtual void OnResume() = 0;
 
   virtual void OnExitPresent() = 0;
-  virtual void OnTriggerEvent(bool pressed) = 0;
   virtual void SetWebXrMode(bool enabled) = 0;
   virtual void SetShowingVrDialog(bool showing) = 0;
   virtual void SetBrowserRenderer(

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/android/vr/cardboard_input_delegate.h"
 #include "chrome/browser/android/vr/gvr_input_delegate.h"
 #include "chrome/browser/android/vr/gvr_keyboard_delegate.h"
 #include "chrome/browser/android/vr/gvr_scheduler_delegate.h"
@@ -63,8 +64,13 @@ std::unique_ptr<BrowserRenderer> BrowserRendererFactory::Create(
       vr_gl_thread, vr_gl_thread, std::move(keyboard_delegate),
       std::move(text_input_delegate), std::move(audio_delegate),
       params->ui_initial_state);
-  auto input_delegate =
-      std::make_unique<GvrInputDelegate>(params->gvr_api, vr_gl_thread);
+  std::unique_ptr<InputDelegate> input_delegate;
+  if (params->cardboard_gamepad) {
+    input_delegate = std::make_unique<CardboardInputDelegate>(params->gvr_api);
+  } else {
+    input_delegate =
+        std::make_unique<GvrInputDelegate>(params->gvr_api, vr_gl_thread);
+  }
   auto graphics_delegate = std::make_unique<GvrGraphicsDelegate>(
       vr_gl_thread,
       base::BindOnce(&UiInterface::OnGlInitialized, base::Unretained(ui.get())),

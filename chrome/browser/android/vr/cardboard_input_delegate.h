@@ -2,27 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_INPUT_DELEGATE_FOR_TESTING_H_
-#define CHROME_BROWSER_VR_INPUT_DELEGATE_FOR_TESTING_H_
-
-#include <queue>
+#ifndef CHROME_BROWSER_ANDROID_VR_CARDBOARD_INPUT_DELEGATE_H_
+#define CHROME_BROWSER_ANDROID_VR_CARDBOARD_INPUT_DELEGATE_H_
 
 #include "base/macros.h"
 #include "chrome/browser/vr/input_delegate.h"
-#include "chrome/browser/vr/model/controller_model.h"
+
+namespace gvr {
+class GvrApi;
+}
 
 namespace vr {
 
-class UiInterface;
-struct ControllerTestInput;
-
-class InputDelegateForTesting : public InputDelegate {
+class CardboardInputDelegate : public InputDelegate {
  public:
-  explicit InputDelegateForTesting(UiInterface* ui);
-  ~InputDelegateForTesting() override;
-
-  void QueueControllerActionForTesting(ControllerTestInput controller_input);
-  bool IsQueueEmpty() const;
+  explicit CardboardInputDelegate(gvr::GvrApi* gvr_api);
+  ~CardboardInputDelegate() override;
 
   // InputDelegate implementation.
   gfx::Transform GetHeadPose() override;
@@ -37,13 +32,13 @@ class InputDelegateForTesting : public InputDelegate {
   void OnPause() override;
 
  private:
-  UiInterface* ui_;
-  std::queue<ControllerModel> controller_model_queue_;
-  ControllerModel cached_controller_model_;
+  gvr::GvrApi* gvr_api_;
+  bool cardboard_trigger_pressed_ = false;
+  bool cardboard_trigger_clicked_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(InputDelegateForTesting);
+  DISALLOW_COPY_AND_ASSIGN(CardboardInputDelegate);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_INPUT_DELEGATE_FOR_TESTING_H_
+#endif  // CHROME_BROWSER_ANDROID_VR_CARDBOARD_INPUT_DELEGATE_H_

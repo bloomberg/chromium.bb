@@ -34,6 +34,10 @@ gfx::Transform GvrInputDelegate::GetHeadPose() {
   return head_pose;
 }
 
+void GvrInputDelegate::OnTriggerEvent(bool pressed) {
+  NOTREACHED();
+}
+
 void GvrInputDelegate::UpdateController(const gfx::Transform& head_pose,
                                         base::TimeTicks current_time,
                                         bool is_webxr_frame) {
