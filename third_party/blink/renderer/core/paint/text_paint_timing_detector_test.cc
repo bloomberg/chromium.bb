@@ -97,8 +97,8 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_ReportFirstPaintTime) {
                            .FindLargestPaintCandidate();
   EXPECT_EQ(record->text, "a long-long-long-long moving text");
   TimeTicks firing_time = record->first_paint_time;
-  EXPECT_GT(firing_time, time1);
-  EXPECT_GT(time2, firing_time);
+  EXPECT_GE(firing_time, time1);
+  EXPECT_GE(time2, firing_time);
 }
 
 TEST_F(TextPaintTimingDetectorTest,
@@ -238,8 +238,8 @@ TEST_F(TextPaintTimingDetectorTest, LastTextPaint_ReportFirstPaintTime) {
       GetPaintTracker().GetTextPaintTimingDetector().FindLastPaintCandidate();
   EXPECT_EQ(record->text, "latest text");
   TimeTicks firing_time = record->first_paint_time;
-  EXPECT_GT(firing_time, time1);
-  EXPECT_GT(time2, firing_time);
+  EXPECT_GE(firing_time, time1);
+  EXPECT_GE(time2, firing_time);
 }
 
 TEST_F(TextPaintTimingDetectorTest, LastTextPaint_IgnoreRemovedText) {
