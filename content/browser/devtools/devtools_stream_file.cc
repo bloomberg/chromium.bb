@@ -12,7 +12,6 @@
 #include "base/task/lazy_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/third_party/icu/icu_utf.h"
-#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
@@ -46,7 +45,6 @@ DevToolsStreamFile::~DevToolsStreamFile() {
 
 bool DevToolsStreamFile::InitOnFileSequenceIfNeeded() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  base::AssertBlockingAllowed();
   if (had_errors_)
     return false;
   if (file_.IsValid())

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -159,7 +158,6 @@ void DevToolsDownloadManagerDelegate::GenerateFilename(
     const std::string& mime_type,
     const base::FilePath& suggested_directory,
     const FilenameDeterminedCallback& callback) {
-  base::AssertBlockingAllowed();
   base::FilePath generated_name =
       net::GenerateFileName(url, content_disposition, std::string(),
                             suggested_filename, mime_type, "download");
