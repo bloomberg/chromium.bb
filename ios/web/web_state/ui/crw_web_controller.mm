@@ -79,6 +79,7 @@
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
@@ -2440,9 +2441,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   web::WebFrame* senderFrame = nullptr;
   std::string frameID;
   if (message->GetString("crwFrameId", &frameID)) {
-    web::WebFramesManagerImpl* framesManager =
-        web::WebFramesManagerImpl::FromWebState([self webState]);
-    senderFrame = framesManager->GetFrameWithId(frameID);
+    senderFrame = web::GetWebFrameWithId([self webState], frameID);
   }
 
   if (base::FeatureList::IsEnabled(web::features::kWebFrameMessaging)) {
@@ -2500,10 +2499,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
+  std::string frameID = base::SysNSStringToUTF8(message.body[@"crwFrameId"]);
   web::WebFramesManagerImpl* framesManager =
       web::WebFramesManagerImpl::FromWebState([self webState]);
-
-  std::string frameID = base::SysNSStringToUTF8(message.body[@"crwFrameId"]);
   if (!framesManager->GetFrameWithId(frameID)) {
     GURL messageFrameOrigin =
         web::GURLOriginWithWKSecurityOrigin(message.frameInfo.securityOrigin);

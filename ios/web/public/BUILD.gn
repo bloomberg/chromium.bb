@@ -82,6 +82,7 @@ source_set("public") {
     "web_state/url_verification_constants.h",
     "web_state/web_frame.h",
     "web_state/web_frame_user_data.h",
+    "web_state/web_frame_util.h",
     "web_state/web_frames_manager.h",
     "web_state/web_state.h",
     "web_state/web_state_delegate.h",

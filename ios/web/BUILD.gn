@@ -405,6 +405,7 @@ source_set("ios_web_web_state_unittests") {
     "web_state/session_certificate_policy_cache_impl_unittest.mm",
     "web_state/session_certificate_policy_cache_storage_builder_unittest.mm",
     "web_state/web_frame_impl_unittest.mm",
+    "web_state/web_frame_util_unittest.mm",
     "web_state/web_frames_manager_impl_unittest.mm",
     "web_state/web_state_delegate_bridge_unittest.mm",
     "web_state/web_state_impl_unittest.mm",

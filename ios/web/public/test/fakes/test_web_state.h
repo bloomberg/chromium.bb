@@ -104,6 +104,7 @@ class TestWebState : public WebState {
   void SetIsEvicted(bool value);
   void SetWebViewProxy(CRWWebViewProxyType web_view_proxy);
   void ClearLastExecutedJavascript();
+  void CreateWebFramesManager();
   void AddWebFrame(std::unique_ptr<web::WebFrame> frame);
   void RemoveWebFrame(std::string frame_id);
 
