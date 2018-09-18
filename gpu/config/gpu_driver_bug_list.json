@@ -2616,13 +2616,16 @@
     },
     {
       "id": 249,
-      "description": "Direct composition causes slow presents on old Nvidia GPUs",
-      "cr_bugs": [775898],
+      "description": "Direct composition isn't needed except for Intel GPUs",
+      "cr_bugs": [775898, 800950],
       "os": {
         "type": "win"
       },
-      "vendor_id": "0x10de",
-      "device_id": ["0x10d8"],
+      "exceptions": [
+        {
+          "vendor_id": "0x8086"
+        }
+      ],
       "features": [
         "disable_direct_composition"
       ]
