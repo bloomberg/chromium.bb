@@ -2518,12 +2518,15 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     with self.assertRaises(chromedriver.SessionNotCreated):
       self.CreateDriver(send_w3c_request=True)
 
-    # W3C capability flag is ignored in a legacy format request.
+    # OK (though unusual) to enable W3C capability in a legacy format request.
     driver = self.CreateDriver(send_w3c_capability=True)
+    self.assertTrue(driver.w3c_compliant)
+
+    # Can disable W3C capability in a legacy format request.
+    driver = self.CreateDriver(send_w3c_capability=False)
     self.assertFalse(driver.w3c_compliant)
 
-    # W3C compliant responses should only be received when the capability has
-    # been set and the request was sent in the correct format.
+    # Can set W3C capability flag in a W3C format request.
     driver = self.CreateDriver(send_w3c_capability=True, send_w3c_request=True)
     self.assertTrue(driver.w3c_compliant)
 
