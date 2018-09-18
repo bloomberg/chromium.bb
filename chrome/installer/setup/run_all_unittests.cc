@@ -23,8 +23,7 @@ int main(int argc, char** argv) {
 
   install_static::ScopedInstallDetails scoped_install_details;
 
-  return base::LaunchUnitTests(
-      argc,
-      argv,
+  return base::LaunchUnitTestsSerially(
+      argc, argv,
       base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }
