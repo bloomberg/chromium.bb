@@ -294,9 +294,10 @@ class FileSystemExtensionApiTestBase : public extensions::ExtensionApiTest {
     // Mock the Media Router in extension api tests. Dispatches to the message
     // loop now try to handle mojo messages that will call back into Profile
     // creation through the media router, which then confuse the drive code.
-    ON_CALL(media_router_, RegisterMediaSinksObserver(testing::_))
+    media_router_ = std::make_unique<media_router::MockMediaRouter>();
+    ON_CALL(*media_router_, RegisterMediaSinksObserver(testing::_))
         .WillByDefault(testing::Return(true));
-    CastConfigClientMediaRouter::SetMediaRouterForTest(&media_router_);
+    CastConfigClientMediaRouter::SetMediaRouterForTest(media_router_.get());
 
     extensions::ExtensionApiTest::SetUpOnMainThread();
   }
@@ -370,7 +371,7 @@ class FileSystemExtensionApiTestBase : public extensions::ExtensionApiTest {
   virtual void AddTestMountPoint() = 0;
 
  private:
-  media_router::MockMediaRouter media_router_;
+  std::unique_ptr<media_router::MockMediaRouter> media_router_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemExtensionApiTestBase);
 };
