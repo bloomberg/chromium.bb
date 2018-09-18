@@ -334,6 +334,7 @@ cast_source_set("browser") {
 # This target should only include interfaces which are required for unit tests.
 cast_source_set("public") {
   sources = [
+    "cast_content_window.cc",
     "cast_content_window.h",
     "cast_web_view.cc",
     "cast_web_view.h",

@@ -143,6 +143,9 @@ void CastContentWindowAura::RequestVisibility(
 void CastContentWindowAura::NotifyVisibilityChange(
     VisibilityType visibility_type) {
   delegate_->OnVisibilityChange(visibility_type);
+  for (auto& observer : observer_list_) {
+    observer.OnVisibilityChange(visibility_type);
+  }
 }
 
 void CastContentWindowAura::RequestMoveOut(){};
