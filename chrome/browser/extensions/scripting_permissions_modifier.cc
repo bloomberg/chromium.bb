@@ -149,13 +149,15 @@ void ScriptingPermissionsModifier::SetWithholdHostPermissions(
   if (HasWithheldHostPermissions() == should_withhold)
     return;
 
+  // Set the pref first, so that listeners for permission changes get the proper
+  // value if they query HasWithheldHostPermissions().
+  SetWithholdPermissionsPrefValue(extension_prefs_, extension_->id(),
+                                  should_withhold);
+
   if (should_withhold)
     WithholdHostPermissions();
   else
     GrantWithheldHostPermissions();
-
-  SetWithholdPermissionsPrefValue(extension_prefs_, extension_->id(),
-                                  should_withhold);
 }
 
 bool ScriptingPermissionsModifier::HasWithheldHostPermissions() const {

@@ -39,6 +39,14 @@ class ExtensionPrefsObserver {
   // events might not match up.
   virtual void OnExtensionStateChanged(const std::string& extension_id,
                                        bool state) {}
+
+  // Called when the runtime permissions for an extension are changed.
+  // TODO(devlin): This is a bit out of place here, and may be better suited on
+  // a general "extension permissions" observer, if/when we have one. See
+  // discussion at
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1196107/3/chrome/browser/extensions/runtime_permissions_observer.h#26.
+  virtual void OnExtensionRuntimePermissionsChanged(
+      const std::string& extension_id) {}
 };
 
 }  // namespace extensions
