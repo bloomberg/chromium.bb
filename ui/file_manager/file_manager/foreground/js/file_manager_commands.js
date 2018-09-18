@@ -238,7 +238,7 @@ CommandUtil.getOnlyOneSelectedDirectory = function(selection) {
 
 /**
  * Returns true if the given entry is the root entry of the volume.
- * @param {VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if the entry is a root entry.
  */
@@ -262,7 +262,7 @@ CommandUtil.isFromSelectionMenu = function(event) {
 
 /**
  * If entry is fake/invalid/root, we don't show menu items for regular entries.
- * @param {VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if we should show the menu items for regular entries.
  */

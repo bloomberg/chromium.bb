@@ -3,6 +3,70 @@
 // found in the LICENSE file.
 
 /**
+ * Implementation of VolumeInfoList for VolumeManagerWrapper.
+ * In foreground/ we want to enforce this list to be filtered, so we forbid
+ * adding/removing/splicing of the list.
+ * The inner list ownership is shared between VolumeInfoListWrapper and
+ * VolumeManagerWrapper to enforce these constraints.
+ *
+ * @implements {VolumeInfoList}
+ */
+class VolumeInfoListWrapper {
+  /**
+   * @param {!cr.ui.ArrayDataModel} list
+   */
+  constructor(list) {
+    /** @private */
+    this.list_ = list;
+  }
+  /** @override */
+  get length() {
+    return this.list_.length;
+  }
+  /** @override */
+  addEventListener(type, handler) {
+    this.list_.addEventListener(type, handler);
+  }
+  /** @override */
+  removeEventListener(type, handler) {
+    this.list_.removeEventListener(type, handler);
+  }
+  /** @override */
+  add(volumeInfo) {
+    throw new Error('VolumeInfoListWrapper.add not implemented');
+  }
+  /** @override */
+  remove(volumeInfo) {
+    throw new Error('VolumeInfoListWrapper.remove not implemented');
+  }
+  /** @override */
+  findIndex(volumeId) {
+    throw new Error('VolumeInfoListWrapper.findIndex not implemented');
+  }
+  /** @override */
+  findByEntry(entry) {
+    throw new Error('VolumeInfoListWrapper.findByEntry not implemented');
+  }
+  /** @override */
+  findByDevicePath(devicePath) {
+    throw new Error('VolumeInfoListWrapper.findByDevicePath not implemented');
+  }
+  /** @override */
+  findByVolumeId(volumeId) {
+    throw new Error('VolumeInfoListWrapper.findByVolumeId not implemented');
+  }
+  /** @override */
+  whenVolumeInfoReady(volumeId) {
+    throw new Error(
+        'VolumeInfoListWrapper.whenVolumeInfoReady not implemented');
+  }
+  /** @override */
+  item(index) {
+    return /** @type {!VolumeInfo} */ (this.list_.item(index));
+  }
+}
+
+/**
  * Thin wrapper for VolumeManager. This should be an interface proxy to talk
  * to VolumeManager. This class also filters some "disallowed" volumes;
  * for example, Drive volumes are dropped if Drive is disabled, and read-only
@@ -10,7 +74,7 @@
  *
  * @constructor
  * @extends {cr.EventTarget}
- * @implements {VolumeManagerCommon.VolumeInfoProvider}
+ * @implements {VolumeManager}
  *
  * @param {!AllowedPaths} allowedPaths Which paths are supported in the Files
  *     app dialog.
@@ -25,7 +89,11 @@ function VolumeManagerWrapper(allowedPaths, writableOnly, opt_backgroundPage) {
 
   this.allowedPaths_ = allowedPaths;
   this.writableOnly_ = writableOnly;
-  this.volumeInfoList = new cr.ui.ArrayDataModel([]);
+  // Internal list holds filtered VolumeInfo instances.
+  /** @private */
+  this.list_ = new cr.ui.ArrayDataModel([]);
+  // Public VolumeManager.volumeInfoList property accessed by callers.
+  this.volumeInfoList = new VolumeInfoListWrapper(this.list_);
 
   this.volumeManager_ = null;
   this.pendingTasks_ = [];
@@ -134,9 +202,8 @@ VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
       continue;
     volumeInfoList.push(volumeInfo);
   }
-  this.volumeInfoList.splice.apply(
-      this.volumeInfoList,
-      [0, this.volumeInfoList.length].concat(volumeInfoList));
+  this.list_.splice.apply(
+      this.list_, [0, this.volumeInfoList.length].concat(volumeInfoList));
 
   // Subscribe to VolumeInfoList.
   // In VolumeInfoList, we only use 'splice' event.
@@ -219,8 +286,8 @@ VolumeManagerWrapper.prototype.onVolumeInfoListUpdated_ = function(event) {
     }
   }
 
-  this.volumeInfoList.splice.apply(
-      this.volumeInfoList, [index, numRemovedVolumes].concat(addedVolumes));
+  this.list_.splice.apply(
+      this.list_, [index, numRemovedVolumes].concat(addedVolumes));
 };
 
 /**

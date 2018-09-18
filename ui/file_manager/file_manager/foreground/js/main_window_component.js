@@ -13,7 +13,7 @@
  *
  * @param {DialogType} dialogType
  * @param {!FileManagerUI} ui
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @param {!DirectoryModel} directoryModel
  * @param {!FileFilter} fileFilter
  * @param {!FileSelectionHandler} selectionHandler
@@ -41,7 +41,7 @@ function MainWindowComponent(
   this.ui_ = ui;
 
   /**
-   * @type {!VolumeManagerWrapper}
+   * @type {!VolumeManager}
    * @const
    * @private
    */

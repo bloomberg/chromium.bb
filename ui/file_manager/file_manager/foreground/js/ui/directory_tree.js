@@ -1541,7 +1541,7 @@ function DirectoryTree() {}
  * Decorates an element.
  * @param {HTMLElement} el Element to be DirectoryTree.
  * @param {!DirectoryModel} directoryModel Current DirectoryModel.
- * @param {!VolumeManagerWrapper} volumeManager VolumeManager of the system.
+ * @param {!VolumeManager} volumeManager VolumeManager of the system.
  * @param {!MetadataModel} metadataModel Shared MetadataModel instance.
  * @param {!FileOperationManager} fileOperationManager
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
@@ -1803,7 +1803,7 @@ DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
 /**
  * Decorates an element.
  * @param {!DirectoryModel} directoryModel Current DirectoryModel.
- * @param {!VolumeManagerWrapper} volumeManager VolumeManager of the system.
+ * @param {!VolumeManager} volumeManager VolumeManager of the system.
  * @param {!MetadataModel} metadataModel Shared MetadataModel instance.
  * @param {!FileOperationManager} fileOperationManager
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.

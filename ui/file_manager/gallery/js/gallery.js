@@ -11,7 +11,7 @@ ContentMetadataProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
 /**
  * Gallery for viewing and editing image files.
  *
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @constructor
  * @struct
  */

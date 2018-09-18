@@ -7,7 +7,7 @@ import("//third_party/closure_compiler/js_unit_tests.gni")
 
 visibility = [
   "//ui/file_manager/file_manager/foreground/*",
-  "//ui/file_manager/file_manager/test/js/*",
+  "//ui/file_manager/file_manager/test/*",
 ]
 
 js_type_check("closure_compile_module") {
@@ -152,7 +152,6 @@ js_library("dialog_action_controller") {
     ":file_selection",
     ":launch_param",
     ":naming_controller",
-    ":volume_manager_wrapper",
     "../../common/js:metrics",
     "metadata:metadata_model",
     "ui:dialog_footer",
@@ -161,9 +160,7 @@ js_library("dialog_action_controller") {
 }
 
 js_library("crostini") {
-  deps = [
-    ":volume_manager_wrapper",
-  ]
+  deps = []
 }
 
 js_library("dialog_type") {
@@ -187,7 +184,6 @@ js_library("directory_model") {
   deps = [
     ":directory_contents",
     ":file_watcher",
-    ":volume_manager_wrapper",
     "../../common/js:importer_common",
     "../../common/js:metrics_events",
     "ui:file_list_selection_model",
@@ -197,7 +193,6 @@ js_library("directory_model") {
 js_library("navigation_uma") {
   deps = [
     ":dialog_type",
-    ":volume_manager_wrapper",
     "../../common/js:metrics",
   ]
 }
@@ -286,7 +281,6 @@ js_library("file_manager_commands") {
     ":providers_model",
     ":spinner_controller",
     ":task_controller",
-    ":volume_manager_wrapper",
     "ui:directory_tree",
     "ui:file_manager_ui",
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
@@ -297,7 +291,6 @@ js_library("file_selection") {
   deps = [
     ":constants",
     ":directory_model",
-    ":volume_manager_wrapper",
     "../../common/js:file_type",
     "../../common/js:util",
     "../../common/js:volume_manager_common",
@@ -313,7 +306,6 @@ js_library("file_tasks") {
     ":crostini",
     ":directory_model",
     ":task_history",
-    ":volume_manager_wrapper",
     "metadata:metadata_model",
     "ui:file_manager_ui",
   ]
@@ -324,7 +316,6 @@ js_library("file_transfer_controller") {
     ":directory_model",
     ":drop_effect_and_label",
     ":file_selection",
-    ":volume_manager_wrapper",
     ":webui_command_extender",
     "../../common/js:progress_center_common",
     "metadata:metadata_model",
@@ -402,7 +393,6 @@ js_library("list_thumbnail_loader") {
     ":directory_model",
     ":file_list_model",
     ":thumbnail_loader",
-    ":volume_manager_wrapper",
     "../../common/js:volume_manager_common",
     "metadata:thumbnail_model",
   ]
@@ -426,7 +416,6 @@ js_library("main_window_component") {
     ":file_selection",
     ":naming_controller",
     ":task_controller",
-    ":volume_manager_wrapper",
     "ui:file_manager_ui",
   ]
 }
@@ -470,7 +459,6 @@ js_library("naming_controller") {
 js_library("navigation_list_model") {
   deps = [
     ":folder_shortcuts_data_model",
-    ":volume_manager_wrapper",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
@@ -485,7 +473,6 @@ js_library("progress_center_item_group") {
 
 js_library("providers_model") {
   deps = [
-    ":volume_manager_wrapper",
     "//ui/webui/resources/js:assert",
   ]
 }
@@ -498,7 +485,6 @@ js_library("quick_view_controller") {
     ":quick_view_model",
     ":quick_view_uma",
     ":task_controller",
-    ":volume_manager_wrapper",
     "metadata:metadata_model",
     "ui:list_container",
     "//ui/webui/resources/js/cr/ui:list_selection_model",
@@ -516,7 +502,6 @@ js_library("quick_view_uma") {
   deps = [
     ":dialog_type",
     ":file_tasks",
-    ":volume_manager_wrapper",
     "../../common/js:file_type",
   ]
 }
@@ -570,7 +555,6 @@ js_library("task_controller") {
     ":file_tasks",
     ":metadata_update_controller",
     ":task_history",
-    ":volume_manager_wrapper",
     "metadata:metadata_model",
     "ui:file_manager_ui",
   ]
@@ -620,16 +604,13 @@ js_library("volume_manager_wrapper") {
     "//ui/file_manager/video_player/*",
   ]
   deps = [
-    "../../../externs:file_manager_private",
     "../../common/js:async_util",
-    "../../common/js:volume_manager_common",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
   externs_list = [
     "../../../externs/background/volume_manager_factory.js",
-    "../../../externs/volume_info.js",
     "../../../externs/volume_info_list.js",
     "../../../externs/volume_manager.js",
   ]

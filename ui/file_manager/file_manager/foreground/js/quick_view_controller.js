@@ -16,7 +16,7 @@
  * @param {!QuickViewUma} quickViewUma
  * @param {!MetadataBoxController} metadataBoxController
  * @param {DialogType} dialogType
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  *
  * @constructor
  */
@@ -85,7 +85,7 @@ function QuickViewController(
   this.dialogType_ = dialogType;
 
   /**
-   * @type {!VolumeManagerWrapper}
+   * @type {!VolumeManager}
    * @private
    */
   this.volumeManager_ = volumeManager;

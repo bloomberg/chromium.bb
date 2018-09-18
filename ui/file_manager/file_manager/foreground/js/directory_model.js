@@ -19,7 +19,7 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {FileFilter} fileFilter Instance of FileFilter.
  * @param {!MetadataModel} metadataModel Metadata model.
  *     service.
- * @param {VolumeManagerWrapper} volumeManager The volume manager.
+ * @param {!VolumeManager} volumeManager The volume manager.
  * @param {!FileOperationManager} fileOperationManager File operation manager.
  * @param {!analytics.Tracker} tracker
  */

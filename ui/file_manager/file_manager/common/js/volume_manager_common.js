@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * Namespace for common types shared between VolumeManager and
- * VolumeManagerWrapper.
+ * Namespace for common types.
  */
 var VolumeManagerCommon = {};
 

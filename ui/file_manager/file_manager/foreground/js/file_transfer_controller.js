@@ -30,7 +30,7 @@ var FileAsyncData;
  * @param {!MetadataModel} metadataModel Metadata cache service.
  * @param {!ThumbnailModel} thumbnailModel
  * @param {!DirectoryModel} directoryModel Directory model instance.
- * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {!VolumeManager} volumeManager Volume manager instance.
  * @param {!FileSelectionHandler} selectionHandler Selection handler.
  * @param {function((!Entry|!FakeEntry)): boolean} shouldShowCommandFor
  * @struct
@@ -78,7 +78,7 @@ function FileTransferController(
   this.directoryModel_ = directoryModel;
 
   /**
-   * @private {!VolumeManagerWrapper}
+   * @private {!VolumeManager}
    * @const
    */
   this.volumeManager_ = volumeManager;

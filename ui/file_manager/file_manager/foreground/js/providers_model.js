@@ -118,13 +118,13 @@ ProvidersModelItem.prototype = {
  * providing extensions as well as performing operations on them, such as
  * requesting a new mount point.
  *
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @constructor
  * @struct
  */
 function ProvidersModel(volumeManager) {
   /**
-   * @private {!VolumeManagerWrapper}
+   * @private {!VolumeManager}
    * @const
    */
   this.volumeManager_ = volumeManager;

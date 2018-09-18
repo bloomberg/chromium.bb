@@ -4,7 +4,7 @@
 
 /**
  * @param {DialogType} dialogType
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @param {!FileManagerUI} ui
  * @param {!MetadataModel} metadataModel
  * @param {!DirectoryModel} directoryModel
@@ -23,7 +23,7 @@ function TaskController(
   this.dialogType_ = dialogType;
 
   /**
-   * @private {!VolumeManagerWrapper}
+   * @private {!VolumeManager}
    * @const
    */
   this.volumeManager_ = volumeManager;

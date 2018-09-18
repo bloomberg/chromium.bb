@@ -18,7 +18,7 @@
  * @param {!ThumbnailModel} thumbnailModel
  * @param {!{appWindow: chrome.app.window.AppWindow, readonlyDirName: string,
  displayStringFunction: function(), loadTimeData: Object}} context Context.
- * @param {!VolumeManagerWrapper} volumeManager Volume manager.
+ * @param {!VolumeManager} volumeManager Volume manager.
  * @param {function(function())} toggleMode Function to toggle the Gallery mode.
  * @param {function(string):string} displayStringFunction String formatting
  *     function.
@@ -102,7 +102,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   this.context_ = context;
 
   /**
-   * @type {!VolumeManagerWrapper}
+   * @type {!VolumeManager}
    * @private
    * @const
    */

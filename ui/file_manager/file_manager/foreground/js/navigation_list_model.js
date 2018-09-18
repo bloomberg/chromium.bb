@@ -182,7 +182,7 @@ NavigationModelFakeItem.prototype = /** @struct */ {
 
 /**
  * A navigation list model. This model combines multiple models.
- * @param {!VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
+ * @param {!VolumeManager} volumeManager VolumeManager instance.
  * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)} shortcutListModel
  *     The list of folder shortcut.
  * @param {NavigationModelFakeItem} recentModelItem Recent folder.
@@ -199,7 +199,7 @@ function NavigationListModel(
   cr.EventTarget.call(this);
 
   /**
-   * @private {!VolumeManagerWrapper}
+   * @private {!VolumeManager}
    * @const
    */
   this.volumeManager_ = volumeManager;
@@ -268,8 +268,11 @@ function NavigationListModel(
   Object.freeze(ListType);
 
   // Generates this.volumeList_ and this.shortcutList_ from the models.
-  this.volumeList_ =
-      this.volumeManager_.volumeInfoList.slice().map(volumeInfoToModelItem);
+  this.volumeList_ = [];
+  for (let i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
+    this.volumeList_.push(
+        volumeInfoToModelItem(this.volumeManager_.volumeInfoList.item(i)));
+  }
 
   this.shortcutList_ = [];
   for (var i = 0; i < this.shortcutListModel_.length; i++) {
