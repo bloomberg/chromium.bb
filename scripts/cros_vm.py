@@ -112,15 +112,13 @@ class VM(object):
 
   def _CreateVMDir(self):
     """Safely create vm_dir."""
-    if not osutils.SafeMakedirs(self.vm_dir, sudo=self.use_sudo):
-      # For security, ensure that vm_dir is not a symlink, and is owned by us or
-      # by root.
+    if not osutils.SafeMakedirs(self.vm_dir):
+      # For security, ensure that vm_dir is not a symlink, and is owned by us.
       error_str = ('VM state dir is misconfigured; please recreate: %s'
                    % self.vm_dir)
       assert os.path.isdir(self.vm_dir), error_str
       assert not os.path.islink(self.vm_dir), error_str
-      st_uid = os.stat(self.vm_dir).st_uid
-      assert st_uid == 0 or st_uid == os.getuid(), error_str
+      assert os.stat(self.vm_dir).st_uid == os.getuid(), error_str
 
   def _RmVMDir(self):
     """Cleanup vm_dir."""
