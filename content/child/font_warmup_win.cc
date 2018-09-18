@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,12 +40,6 @@ namespace {
 
 // The Skia font manager, used for the life of the process (leaked at the end).
 SkFontMgr* g_warmup_fontmgr = nullptr;
-
-base::win::IATPatchFunction g_iat_patch_open_sc_manager;
-base::win::IATPatchFunction g_iat_patch_close_service_handle;
-base::win::IATPatchFunction g_iat_patch_open_service;
-base::win::IATPatchFunction g_iat_patch_start_service;
-base::win::IATPatchFunction g_iat_patch_nt_connect_port;
 
 // These are from ntddk.h
 #if !defined(STATUS_ACCESS_DENIED)
@@ -400,27 +395,33 @@ void PatchServiceManagerCalls() {
 
   is_patched = true;
 
-  DWORD patched = g_iat_patch_open_sc_manager.Patch(
+  static base::NoDestructor<base::win::IATPatchFunction> patch_open_sc_manager;
+  DWORD patched = patch_open_sc_manager->Patch(
       L"dwrite.dll", service_provider_dll, "OpenSCManagerW",
       reinterpret_cast<void*>(OpenSCManagerWPatch));
   DCHECK(patched == 0);
 
-  patched = g_iat_patch_close_service_handle.Patch(
+  static base::NoDestructor<base::win::IATPatchFunction>
+      patch_close_service_handle;
+  patched = patch_close_service_handle->Patch(
       L"dwrite.dll", service_provider_dll, "CloseServiceHandle",
       reinterpret_cast<void*>(CloseServiceHandlePatch));
   DCHECK(patched == 0);
 
-  patched = g_iat_patch_open_service.Patch(
+  static base::NoDestructor<base::win::IATPatchFunction> patch_open_service;
+  patched = patch_open_service->Patch(
       L"dwrite.dll", service_provider_dll, "OpenServiceW",
       reinterpret_cast<void*>(OpenServiceWPatch));
   DCHECK(patched == 0);
 
-  patched = g_iat_patch_start_service.Patch(
+  static base::NoDestructor<base::win::IATPatchFunction> patch_start_service;
+  patched = patch_start_service->Patch(
       L"dwrite.dll", service_provider_dll, "StartServiceW",
       reinterpret_cast<void*>(StartServiceWPatch));
   DCHECK(patched == 0);
 
-  patched = g_iat_patch_nt_connect_port.Patch(
+  static base::NoDestructor<base::win::IATPatchFunction> patch_nt_connect_port;
+  patched = patch_nt_connect_port->Patch(
       L"dwrite.dll", "ntdll.dll", "NtAlpcConnectPort",
       reinterpret_cast<void*>(NtALpcConnectPortPatch));
   DCHECK(patched == 0);

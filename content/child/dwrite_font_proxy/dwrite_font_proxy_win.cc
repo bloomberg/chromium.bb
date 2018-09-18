@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "content/child/dwrite_font_proxy/dwrite_localized_strings_win.h"
@@ -381,9 +382,10 @@ FontProxyScopeWrapper DWriteFontCollectionProxy::GetFontProxyScopeWrapper() {
     }
     SetProxy(std::move(dwrite_font_proxy));
   }
-  static base::ThreadLocalBoolean font_proxy_method_in_flight;
-
-  return FontProxyScopeWrapper(font_proxy_.get(), &font_proxy_method_in_flight);
+  static base::NoDestructor<base::ThreadLocalBoolean>
+      font_proxy_method_in_flight;
+  return FontProxyScopeWrapper(font_proxy_.get(),
+                               font_proxy_method_in_flight.get());
 }
 
 DWriteFontFamilyProxy::DWriteFontFamilyProxy() = default;
