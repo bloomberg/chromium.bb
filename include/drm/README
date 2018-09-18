@@ -71,7 +71,7 @@ Note: One should not do _any_ changes to the files apart from the steps below.
 
 In order to update the files do the following:
  - Switch to a Linux kernel tree/branch which is not rebased.
-For example: airlied/drm-next
+   For example: drm-next (https://cgit.freedesktop.org/drm/drm)
  - Install the headers via `make headers_install' to a separate location.
  - Copy the drm header[s] + git add + git commit.
  - Note: Your commit message must include:
