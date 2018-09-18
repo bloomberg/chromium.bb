@@ -1002,6 +1002,15 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
+  // If the event is a scroll down in clamshell mode on the first page, don't
+  // let |pagination_controller_| handle it. Unless it occurs in a folder.
+  if (!folder_delegate_ && event->type() == ui::ET_GESTURE_SCROLL_BEGIN &&
+      !contents_view_->app_list_view()->IsHomeLauncherEnabledInTabletMode() &&
+      pagination_model_.selected_page() == 0 &&
+      event->details().scroll_y_hint() > 0) {
+    return;
+  }
+
   // Scroll begin events should not be passed to ancestor views if it occurs
   // inside the folder bounds even it is not handled. This prevents user from
   // closing the folder when scrolling inside it.
