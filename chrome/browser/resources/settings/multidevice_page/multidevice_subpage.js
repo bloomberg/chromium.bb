@@ -52,6 +52,11 @@ Polymer({
   },
 
   /** @private */
+  handleVerifyButtonClick_: function(event) {
+    this.browserProxy_.retryPendingHostSetup();
+  },
+
+  /** @private */
   handleAndroidMessagesButtonClick_: function() {
     this.browserProxy_.setUpAndroidSms();
   },
@@ -71,6 +76,26 @@ Polymer({
    * @private
    */
   shouldShowIndividualFeatures_: function() {
+    return this.pageContentData.mode ===
+        settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowVerifyButton_: function() {
+    return [
+      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
+      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
+    ].includes(this.pageContentData.mode);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowSuiteToggle_: function() {
     return this.pageContentData.mode ===
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },
@@ -95,7 +120,13 @@ Polymer({
    * @return {string}
    * @private
    */
-  getStatusText_: function() {
+  getStatusInnerHtml_: function() {
+    if ([
+          settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
+          settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
+        ].includes(this.pageContentData.mode)) {
+      return this.i18nAdvanced('multideviceVerificationText');
+    }
     return this.isSuiteOn() ? this.i18n('multideviceEnabled') :
                               this.i18n('multideviceDisabled');
   },
