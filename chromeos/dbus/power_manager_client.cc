@@ -169,6 +169,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
     return observers_.HasObserver(observer);
   }
 
+  void WaitForServiceToBeAvailable(
+      WaitForServiceToBeAvailableCallback callback) override {
+    power_manager_proxy_->WaitForServiceToBeAvailable(std::move(callback));
+  }
+
   void SetRenderProcessManagerDelegate(
       base::WeakPtr<RenderProcessManagerDelegate> delegate) override {
     DCHECK(!render_process_manager_delegate_)
