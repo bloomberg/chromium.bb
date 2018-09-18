@@ -49,6 +49,8 @@ PlatformAppBrowserTest::PlatformAppBrowserTest() {
   ChromeAppDelegate::DisableExternalOpenForTesting();
 }
 
+PlatformAppBrowserTest::~PlatformAppBrowserTest() {}
+
 void PlatformAppBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   // Skips ExtensionApiTest::SetUpCommandLine.
   ExtensionBrowserTest::SetUpCommandLine(command_line);
@@ -58,25 +60,26 @@ void PlatformAppBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   ProcessManager::SetEventPageSuspendingTimeForTesting(1000);
 }
 
-void PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture() {
-  ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+void PlatformAppBrowserTest::SetUpOnMainThread() {
+  ExtensionApiTest::SetUpOnMainThread();
 #if defined(OS_CHROMEOS)
   // Mock the Media Router in extension api tests. Several of the
   // PlatformAppBrowserTest suites call RunAllPendingInMessageLoop() when there
   // are mojo messages that will call back into Profile creation through the
   // media router.
-  ON_CALL(media_router_, RegisterMediaSinksObserver(testing::_))
+  media_router_ = std::make_unique<media_router::MockMediaRouter>();
+  ON_CALL(*media_router_, RegisterMediaSinksObserver(testing::_))
       .WillByDefault(testing::Return(true));
 
-  CastConfigClientMediaRouter::SetMediaRouterForTest(&media_router_);
+  CastConfigClientMediaRouter::SetMediaRouterForTest(media_router_.get());
 #endif
 }
 
-void PlatformAppBrowserTest::TearDownInProcessBrowserTestFixture() {
+void PlatformAppBrowserTest::TearDownOnMainThread() {
 #if defined(OS_CHROMEOS)
   CastConfigClientMediaRouter::SetMediaRouterForTest(nullptr);
 #endif
-  ExtensionApiTest::TearDownInProcessBrowserTestFixture();
+  ExtensionApiTest::TearDownOnMainThread();
 }
 
 // static

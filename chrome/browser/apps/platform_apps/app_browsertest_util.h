@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -35,10 +36,11 @@ class Extension;
 class PlatformAppBrowserTest : public ExtensionApiTest {
  public:
   PlatformAppBrowserTest();
+  ~PlatformAppBrowserTest() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
-  void SetUpInProcessBrowserTestFixture() override;
-  void TearDownInProcessBrowserTestFixture() override;
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // Gets the first app window that is found for a given browser.
   static AppWindow* GetFirstAppWindowForBrowser(Browser* browser);
@@ -129,7 +131,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
  private:
 #if defined(OS_CHROMEOS)
-  media_router::MockMediaRouter media_router_;
+  std::unique_ptr<media_router::MockMediaRouter> media_router_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAppBrowserTest);
