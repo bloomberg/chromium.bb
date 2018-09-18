@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <MobileCoreServices/MobileCoreServices.h>
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/image_util/image_util.h"
@@ -12,6 +13,16 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+NSString* kImageExtensionJPG = @"jpg";
+NSString* kImageExtensionPNG = @"png";
+NSString* kImageExtensionTIF = @"tif";
+NSString* kImageExtensionBMP = @"bmp";
+NSString* kImageExtensionGIF = @"gif";
+NSString* kImageExtensionICO = @"ico";
+NSString* kImageExtensionWebP = @"webp";
+}
 
 UIColor* DominantColorForImage(const gfx::Image& image, CGFloat opacity) {
   SkColor color = color_utils::CalculateKMeanColorOfBitmap(*image.ToSkBitmap());
@@ -58,28 +69,41 @@ NSString* GetImageExtensionFromData(NSData* data) {
   const char* pdata = static_cast<const char*>(data.bytes);
   switch (pdata[0]) {
     case '\xFF':
-      return strncmp(pdata, "\xFF\xD8\xFF", 3) ? nil : @"jpg";
+      return strncmp(pdata, "\xFF\xD8\xFF", 3) ? nil : kImageExtensionJPG;
     case '\x89':
-      return strncmp(pdata, "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8) ? nil
-                                                                   : @"png";
+      return strncmp(pdata, "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8)
+                 ? nil
+                 : kImageExtensionPNG;
     case 'G':
       return (strncmp(pdata, "GIF87a", 6) && strncmp(pdata, "GIF89a", 6))
                  ? nil
-                 : @"gif";
+                 : kImageExtensionGIF;
     case '\x49':
-      return strncmp(pdata, "\x49\x49\x2A\x00", 4) ? nil : @"tif";
+      return strncmp(pdata, "\x49\x49\x2A\x00", 4) ? nil : kImageExtensionTIF;
     case '\x4D':
-      return strncmp(pdata, "\x4D\x4D\x00\x2A", 4) ? nil : @"tif";
+      return strncmp(pdata, "\x4D\x4D\x00\x2A", 4) ? nil : kImageExtensionTIF;
     case 'B':
-      return strncmp(pdata, "BM", 2) ? nil : @"bmp";
+      return strncmp(pdata, "BM", 2) ? nil : kImageExtensionBMP;
     case 'R':
       return (strncmp(pdata, "RIFF", 4) || strncmp(pdata + 8, "WEBP", 4))
                  ? nil
-                 : @"webp";
+                 : kImageExtensionWebP;
     case '\0':
-      return strncmp(pdata, "\x00\x00\x01\x00", 4) ? nil : @"ico";
+      return strncmp(pdata, "\x00\x00\x01\x00", 4) ? nil : kImageExtensionICO;
     default:
       return nil;
   }
   return nil;
+}
+
+NSString* GetImageUTIFromData(NSData* data) {
+  static NSDictionary* dict = @{
+    kImageExtensionJPG : (__bridge NSString*)kUTTypeJPEG,
+    kImageExtensionPNG : (__bridge NSString*)kUTTypePNG,
+    kImageExtensionGIF : (__bridge NSString*)kUTTypeGIF,
+    kImageExtensionTIF : (__bridge NSString*)kUTTypeTIFF,
+    kImageExtensionBMP : (__bridge NSString*)kUTTypeBMP,
+    kImageExtensionICO : (__bridge NSString*)kUTTypeICO
+  };
+  return dict[GetImageExtensionFromData(data)];
 }

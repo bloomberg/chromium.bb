@@ -4,9 +4,13 @@
 
 #import "image_copier.h"
 
+#include <MobileCoreServices/MobileCoreServices.h>
+
+#import "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/web_task_traits.h"
@@ -61,7 +65,7 @@ const int kNoActiveCopy = 0;
 - (void)copyImageAtURL:(const GURL&)url
               referrer:(const web::Referrer&)referrer
               webState:(web::WebState*)webState {
-  // Dismisses current alert.
+  // Dismiss current alert.
   [self.alertCoordinator stop];
 
   __weak ImageCopier* weakSelf = self;
@@ -74,7 +78,7 @@ const int kNoActiveCopy = 0;
   [self.alertCoordinator
       addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)
                 action:^() {
-                  // Cancels current copy and closes the alert.
+                  // Cancel current copy and closes the alert.
                   weakSelf.activeID = kNoActiveCopy;
                   [weakSelf.alertCoordinator stop];
                 }
@@ -93,20 +97,27 @@ const int kNoActiveCopy = 0;
 
   ImageFetchTabHelper* tabHelper = ImageFetchTabHelper::FromWebState(webState);
   DCHECK(tabHelper);
+  NSString* urlStr = base::SysUTF8ToNSString(url.spec());
   tabHelper->GetImageData(url, referrer, ^(NSData* data) {
-    // Checks that the copy has not been canceled.
+    // Check that the copy has not been canceled.
     if (callbackID == weakSelf.activeID) {
-      UIImage* image = [UIImage imageWithData:data];
-      if (image) {
-        UIPasteboard.generalPasteboard.image = image;
-      }
+      NSMutableDictionary* item =
+          [NSMutableDictionary dictionaryWithCapacity:3];
+      [item setValue:urlStr forKey:(__bridge NSString*)kUTTypeText];
+      [item setValue:[NSURL URLWithString:urlStr]
+              forKey:(__bridge NSString*)kUTTypeURL];
+      NSString* uti = GetImageUTIFromData(data);
+      if (uti)
+        [item setValue:data forKey:uti];
+      UIPasteboard.generalPasteboard.items =
+          [NSMutableArray arrayWithObject:item];
       // Finishes this copy.
       weakSelf.activeID = kNoActiveCopy;
       [weakSelf.alertCoordinator stop];
     }
   });
 
-  // Delays launching alert by |kAlertDelayInMs|.
+  // Delay launching alert by |kAlertDelayInMs|.
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         // Checks that the copy has not finished yet.
