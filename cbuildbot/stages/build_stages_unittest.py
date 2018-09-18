@@ -86,8 +86,10 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
     self._run.config.useflags = ['foo']
     self._Run(dir_exists=True)
     self.assertCommandContains([self.cros_sdk], expected=False)
-    self.assertCommandContains(['./run_chroot_version_hooks'],
-                               enter_chroot=True, extra_env={'USE': 'foo'})
+
+    extra_env = {'USE': 'foo', 'FEATURES': ' -separatedebug splitdebug'}
+    self.assertCommandContains(['./update_chroot'],
+                               enter_chroot=True, extra_env=extra_env)
 
 
 class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):

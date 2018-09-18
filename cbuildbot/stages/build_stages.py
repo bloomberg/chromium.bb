@@ -411,20 +411,26 @@ class InitSDKStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
+    chroot_exists = os.path.isdir(self._build_root)
     replace = self._run.config.chroot_replace or self.force_chroot_replace
-    pre_ver = post_ver = None
-    if os.path.isdir(self._build_root) and not replace:
-      try:
-        pre_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
-        if pre_ver is not None:
-          commands.RunChrootUpgradeHooks(
-              self._build_root, chrome_root=self._run.options.chrome_root,
-              extra_env=self._portage_extra_env)
-      except failures_lib.BuildScriptFailure:
+    pre_ver = None
+
+    if chroot_exists and not replace:
+      # Make sure the chroot has a valid version before we update it.
+      pre_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
+      if pre_ver is None:
         logging.PrintBuildbotStepText('Replacing broken chroot')
         logging.PrintBuildbotStepWarnings()
+        replace = True
 
-    if not os.path.isdir(chroot_path) or replace:
+    if chroot_exists and not replace:
+      # The chroot exists, we are not replacing it, and it is valid.
+      # Update the chroot.
+      usepkg_toolchain = (self._run.config.usepkg_toolchain and
+                          not self._latest_toolchain)
+      commands.UpdateChroot(self._build_root, usepkg=usepkg_toolchain,
+                            extra_env=self._portage_extra_env)
+    else:
       use_sdk = (self._run.config.use_sdk and not self._run.options.nosdk)
       pre_ver = None
       commands.MakeChroot(
