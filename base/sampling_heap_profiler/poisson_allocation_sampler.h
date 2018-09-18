@@ -95,8 +95,8 @@ class BASE_EXPORT PoissonAllocationSampler {
   static size_t GetNextSampleInterval(size_t base_interval);
   static LockFreeAddressHashSet& sampled_addresses_set();
 
-  void DoRecordAlloc(size_t total_allocated,
-                     size_t allocation_size,
+  void DoRecordAlloc(intptr_t accumulated_bytes,
+                     size_t size,
                      void* address,
                      AllocatorType type,
                      const char* context);
@@ -110,8 +110,9 @@ class BASE_EXPORT PoissonAllocationSampler {
 
   static PoissonAllocationSampler* instance_;
 
-  friend class ScopedMuteThreadSamples;
   friend class NoDestructor<PoissonAllocationSampler>;
+  friend class SamplingHeapProfilerTest;
+  friend class ScopedMuteThreadSamples;
 
   DISALLOW_COPY_AND_ASSIGN(PoissonAllocationSampler);
 };
