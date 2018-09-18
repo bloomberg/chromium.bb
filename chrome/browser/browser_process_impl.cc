@@ -38,6 +38,7 @@
 #include "chrome/browser/chrome_child_process_watcher.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_device_client.h"
+#include "chrome/browser/chrome_feature_list_creator.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -216,8 +217,8 @@ rappor::RapporService* GetBrowserRapporService() {
 }
 
 BrowserProcessImpl::BrowserProcessImpl(
-    scoped_refptr<PersistentPrefStore> user_pref_store)
-    : user_pref_store_(std::move(user_pref_store)),
+    ChromeFeatureListCreator* chrome_feature_list_creator)
+    : chrome_feature_list_creator_(chrome_feature_list_creator),
       pref_service_factory_(
           std::make_unique<prefs::InProcessPrefServiceFactory>()) {
   g_browser_process = this;
@@ -1110,17 +1111,29 @@ void BrowserProcessImpl::CreateLocalState() {
 
   base::FilePath local_state_path;
   CHECK(base::PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
+
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+  if (chrome_feature_list_creator_)
+    local_state_ = chrome_feature_list_creator_->TakePrefService();
+  PrefRegistrySimple* pref_pregistry_simple =
+      local_state_ ? static_cast<PrefRegistrySimple*>(
+                         local_state_->DeprecatedGetPrefRegistry())
+                   : pref_registry.get();
 
   // Register local state preferences.
-  RegisterLocalState(pref_registry.get());
+  RegisterLocalState(pref_pregistry_simple);
 
   auto delegate = pref_service_factory_->CreateDelegate();
-  delegate->InitPrefRegistry(pref_registry.get());
-  local_state_ = chrome_prefs::CreateLocalState(
-      local_state_path, policy_service(), std::move(pref_registry), false,
-      std::move(delegate), std::move(user_pref_store_));
-  DCHECK(local_state_);
+  delegate->InitPrefRegistry(pref_pregistry_simple);
+  if (local_state_) {
+    chrome_prefs::InstallPoliciesOnLocalState(
+        local_state_.get(), policy_service(), std::move(delegate));
+  } else {
+    local_state_ = chrome_prefs::CreateLocalState(
+        local_state_path, policy_service(), std::move(pref_registry), false,
+        std::move(delegate));
+    DCHECK(local_state_);
+  }
 
   sessions::SessionIdGenerator::GetInstance()->Init(local_state_.get());
 }

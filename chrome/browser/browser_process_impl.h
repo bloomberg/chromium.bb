@@ -35,6 +35,7 @@
 
 class ChromeChildProcessWatcher;
 class ChromeDeviceClient;
+class ChromeFeatureListCreator;
 class ChromeMetricsServicesManagerClient;
 class ChromeResourceDispatcherHostDelegate;
 class DevToolsAutoOpener;
@@ -82,7 +83,7 @@ class BrowserProcessImpl : public BrowserProcess,
   // destination) of user prefs for Local State instead of loading the JSON file
   // from disk.
   explicit BrowserProcessImpl(
-      scoped_refptr<PersistentPrefStore> user_pref_store);
+      ChromeFeatureListCreator* chrome_feature_list_creator);
   ~BrowserProcessImpl() override;
 
   // Called to complete initialization.
@@ -329,10 +330,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
-  // A pref store that is created from the Local State file. This is handed-off
-  // to |local_state_| when it's created. It will use it, if non-null, instead
-  // of loading the user prefs from disk.
-  scoped_refptr<PersistentPrefStore> user_pref_store_;
+  // If non-null, this object holds a pref store that will be taken by
+  // BrowserProcessImpl to create the |local_state_|.
+  ChromeFeatureListCreator* chrome_feature_list_creator_;
 
   // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.

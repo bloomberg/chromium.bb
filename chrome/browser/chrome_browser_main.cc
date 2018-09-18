@@ -405,9 +405,9 @@ void InitializeLocalState() {
       registry->RegisterStringPref(language::prefs::kApplicationLocale,
                                    std::string());
       const std::unique_ptr<PrefService> parent_local_state =
-          chrome_prefs::CreateLocalState(
-              parent_profile, g_browser_process->policy_service(),
-              std::move(registry), false, nullptr, nullptr);
+          chrome_prefs::CreateLocalState(parent_profile,
+                                         g_browser_process->policy_service(),
+                                         std::move(registry), false, nullptr);
       // Right now, we only inherit the locale setting from the parent profile.
       local_state->SetString(
           language::prefs::kApplicationLocale,
@@ -1004,8 +1004,8 @@ int ChromeBrowserMainParts::PreEarlyInitialization() {
 
   // Create BrowserProcess in PreEarlyInitialization() so that we can load
   // field trials (and all it depends upon).
-  browser_process_ = std::make_unique<BrowserProcessImpl>(
-      chrome_feature_list_creator_->GetPrefStore());
+  browser_process_ =
+      std::make_unique<BrowserProcessImpl>(chrome_feature_list_creator_);
 
   bool failed_to_load_resource_bundle = false;
   const int load_local_state_result =
