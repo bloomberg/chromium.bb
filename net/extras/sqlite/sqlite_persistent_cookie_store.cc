@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -41,6 +42,11 @@
 using base::Time;
 
 namespace {
+
+// Changes the recommended priority of |background_task_runner| to
+// USER_BLOCKING.
+const base::Feature kCookieStorePriorityBoost{
+    "CookieStorePriorityBoost", base::FEATURE_DISABLED_BY_DEFAULT};
 
 std::unique_ptr<base::Value> CookieKeyedLoadNetLogCallback(
     const std::string& key,
@@ -146,6 +152,12 @@ class TimeoutTracker : public base::RefCountedThreadSafe<TimeoutTracker> {
 }  // namespace
 
 namespace net {
+
+base::TaskPriority GetCookieStoreBackgroundSequencePriority() {
+  return base::FeatureList::IsEnabled(kCookieStorePriorityBoost)
+             ? base::TaskPriority::USER_BLOCKING
+             : base::TaskPriority::BEST_EFFORT;
+}
 
 // This class is designed to be shared between any client thread and the
 // background task runner. It batches operations and commits them on a timer.

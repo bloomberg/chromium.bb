@@ -1060,7 +1060,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         base::MessageLoopCurrent::Get()->task_runner();
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+            {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
     std::unique_ptr<net::ChannelIDService> channel_id_service;

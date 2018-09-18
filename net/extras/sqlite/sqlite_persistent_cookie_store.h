@@ -14,6 +14,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/task_traits.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/log/net_log_with_source.h"
 
@@ -25,6 +26,10 @@ class SequencedTaskRunner;
 namespace net {
 class CanonicalCookie;
 class CookieCryptoDelegate;
+
+// Returns recommended task priority for |background_task_runner|.
+base::TaskPriority COMPONENT_EXPORT(NET_EXTRAS)
+    GetCookieStoreBackgroundSequencePriority();
 
 // Implements the PersistentCookieStore interface in terms of a SQLite database.
 // For documentation about the actual member functions consult the documentation
