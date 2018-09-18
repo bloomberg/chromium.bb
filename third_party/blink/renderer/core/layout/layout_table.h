@@ -430,7 +430,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   void EnsureIsReadyForPaintInvalidation() override;
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
-  void ColumnStructureChanged();
 
  private:
   bool IsOfType(LayoutObjectType type) const override {
@@ -562,12 +561,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   mutable bool needs_section_recalc_ : 1;
 
   bool column_logical_width_changed_ : 1;
-  // This flag indicates whether any columns (with or without fixed widths) have
-  // been added or removed since the last layout. If they have, then the true
-  // size of the cell contents needs to be determined with a full layout before
-  // the layout cache is updated. The layout cache can be invalid when layout is
-  // valid (e.g. if the table is being painted for the first time).
-  mutable bool column_structure_changed_ : 1;
   mutable bool column_layout_objects_valid_ : 1;
   mutable unsigned no_cell_colspan_at_least_;
   unsigned CalcNoCellColspanAtLeast() const {
