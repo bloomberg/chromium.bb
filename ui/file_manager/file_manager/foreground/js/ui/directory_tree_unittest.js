@@ -96,7 +96,7 @@ function testCreateDirectoryTree(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {
     addEventListener: function(name, callback) {}
   };
@@ -159,7 +159,7 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {addEventListener: function(name, callback) {}};
 
   // Set entry which is returned by
@@ -221,7 +221,7 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {addEventListener: function(name, callback) {}};
 
   // Set entry which is returned by
@@ -275,7 +275,7 @@ function testUpdateSubElementsFromList() {
 
   // Creates mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {
     addEventListener: function(name, callback) {}
   };
@@ -298,11 +298,10 @@ function testUpdateSubElementsFromList() {
   ], getDirectoryTreeItemLabelsAsAList(directoryTree));
 
   // Mounts a removable volume.
-  var removableVolume = MockVolumeManagerWrapper.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.REMOVABLE,
-      'removable',
+  var removableVolume = MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable',
       str('REMOVABLE_DIRECTORY_LABEL'));
-  volumeManager.volumeInfoList.push(removableVolume);
+  volumeManager.volumeInfoList.add(removableVolume);
 
   // Asserts that the directoryTree is not updated before the update.
   assertArrayEquals([
@@ -318,12 +317,11 @@ function testUpdateSubElementsFromList() {
     str('REMOVABLE_DIRECTORY_LABEL')
   ], getDirectoryTreeItemLabelsAsAList(directoryTree));
 
-  // Mounts an archive volume before the removable directory.
-  var archiveVolume = MockVolumeManagerWrapper.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.ARCHIVE,
-      'archive',
+  // Mounts an archive volume.
+  var archiveVolume = MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.ARCHIVE, 'archive',
       str('ARCHIVE_DIRECTORY_LABEL'));
-  volumeManager.volumeInfoList.splice(2, 0, archiveVolume);
+  volumeManager.volumeInfoList.add(archiveVolume);
 
   // Asserts that the directoryTree is not updated before the update.
   assertArrayEquals([
@@ -334,23 +332,27 @@ function testUpdateSubElementsFromList() {
 
   // Asserts that an archive directory is added before the removable directory.
   directoryTree.updateSubElementsFromList(false);
-  assertArrayEquals([
-    str('DRIVE_DIRECTORY_LABEL'),
-    str('DOWNLOADS_DIRECTORY_LABEL'),
-    str('ARCHIVE_DIRECTORY_LABEL'),
-    str('REMOVABLE_DIRECTORY_LABEL')
-  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
+  assertArrayEquals(
+      [
+        str('DRIVE_DIRECTORY_LABEL'),
+        str('DOWNLOADS_DIRECTORY_LABEL'),
+        str('REMOVABLE_DIRECTORY_LABEL'),
+        str('ARCHIVE_DIRECTORY_LABEL'),
+      ],
+      getDirectoryTreeItemLabelsAsAList(directoryTree));
 
   // Deletes an archive directory.
-  volumeManager.volumeInfoList.splice(2, 1);
+  volumeManager.volumeInfoList.remove('archive');
 
   // Asserts that the directoryTree is not updated before the update.
-  assertArrayEquals([
-    str('DRIVE_DIRECTORY_LABEL'),
-    str('DOWNLOADS_DIRECTORY_LABEL'),
-    str('ARCHIVE_DIRECTORY_LABEL'),
-    str('REMOVABLE_DIRECTORY_LABEL')
-  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
+  assertArrayEquals(
+      [
+        str('DRIVE_DIRECTORY_LABEL'),
+        str('DOWNLOADS_DIRECTORY_LABEL'),
+        str('REMOVABLE_DIRECTORY_LABEL'),
+        str('ARCHIVE_DIRECTORY_LABEL'),
+      ],
+      getDirectoryTreeItemLabelsAsAList(directoryTree));
 
   // Asserts that an archive directory is deleted.
   directoryTree.updateSubElementsFromList(false);
@@ -379,7 +381,7 @@ function testAddFirstTeamDrive(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {addEventListener: function(name, callback) {}};
 
   // Set entry which is returned by
@@ -449,7 +451,7 @@ function testRemoveLastTeamDrive(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {addEventListener: function(name, callback) {}};
 
   // Set entry which is returned by
@@ -526,7 +528,7 @@ function testInsideMyDriveAndInsideDrive(callback) {
 
   // Create mocks.
   const directoryModel = new MockDirectoryModel();
-  const volumeManager = new MockVolumeManagerWrapper();
+  const volumeManager = new MockVolumeManager();
   const fileOperationManager = {addEventListener: function(name, callback) {}};
 
   // Setup My Drive and Downloads and one folder inside each of them.

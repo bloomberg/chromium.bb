@@ -6,7 +6,7 @@
  * Represents a collection of available tasks to execute for a specific list
  * of entries.
  *
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @param {!MetadataModel} metadataModel
  * @param {!DirectoryModel} directoryModel
  * @param {!FileManagerUI} ui
@@ -22,7 +22,7 @@ function FileTasks(
     volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes, tasks,
     defaultTask, taskHistory) {
   /**
-   * @private {!VolumeManagerWrapper}
+   * @private {!VolumeManager}
    * @const
    */
   this.volumeManager_ = volumeManager;
@@ -155,7 +155,7 @@ FileTasks.zipArchiverUnpackerEnabledPromise_ = null;
  * Creates an instance of FileTasks for the specified list of entries with mime
  * types.
  *
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @param {!MetadataModel} metadataModel
  * @param {!DirectoryModel} directoryModel
  * @param {!FileManagerUI} ui

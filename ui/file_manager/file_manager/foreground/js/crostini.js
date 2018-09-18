@@ -15,7 +15,7 @@ Crostini.SHARED_PATHS_ = {};
 /**
  * Add entry as a shared path.
  * @param {!Entry} entry
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  */
 Crostini.addSharedPath = function(entry, volumeManager) {
   const root = volumeManager.getLocationInfo(entry).rootType;
@@ -30,7 +30,7 @@ Crostini.addSharedPath = function(entry, volumeManager) {
 /**
  * Returns true if entry is shared.
  * @param {!Entry} entry
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @return {boolean} True if path is shared either by a direct
  * share or from one of its ancestor directories.
  */
@@ -51,7 +51,7 @@ Crostini.isPathShared = function(entry, volumeManager) {
 
 /**
  * @param {!Entry} entry
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @return {boolean} True if the entry is from crostini.
  */
 Crostini.isCrostiniEntry = function(entry, volumeManager) {

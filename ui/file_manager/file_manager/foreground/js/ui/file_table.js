@@ -351,7 +351,7 @@ FileTable.prototype.__proto__ = cr.ui.Table.prototype;
  * @param {!Element} self Table to decorate.
  * @param {!MetadataModel} metadataModel To retrieve
  *     metadata.
- * @param {VolumeManagerWrapper} volumeManager To retrieve volume info.
+ * @param {!VolumeManager} volumeManager To retrieve volume info.
  * @param {!importer.HistoryLoader} historyLoader
  * @param {boolean} fullPage True if it's full page File Manager,
  *                           False if a file open/save dialog.

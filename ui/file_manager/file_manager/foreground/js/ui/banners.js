@@ -7,7 +7,7 @@
  *  - WelcomeBanner
  *  - AuthFailBanner
  * @param {DirectoryModel} directoryModel The model.
- * @param {VolumeManagerWrapper} volumeManager The manager.
+ * @param {!VolumeManager} volumeManager The manager.
  * @param {Document} document HTML document.
  * @param {boolean} showWelcome True if the welcome banner can be shown.
  * @constructor

@@ -113,7 +113,6 @@ js_library("gallery_item") {
     ":gallery_util",
     "../../file_manager/common/js:metrics",
     "../../file_manager/common/js:util",
-    "../../file_manager/foreground/js:volume_manager_wrapper",
     "../../file_manager/foreground/js/metadata:metadata_model",
     "../../file_manager/foreground/js/metadata:thumbnail_model",
     "image_editor:image_encoder",
@@ -136,7 +135,10 @@ js_library("gallery_util") {
     "../../file_manager/common/js:file_type",
     "../../file_manager/common/js:util",
     "../../file_manager/common/js:volume_manager_common",
-    "../../file_manager/foreground/js:volume_manager_wrapper",
+  ]
+  externs_list = [
+    "../../externs/volume_manager.js",
+    "../../externs/volume_info_list.js",
   ]
 }
 

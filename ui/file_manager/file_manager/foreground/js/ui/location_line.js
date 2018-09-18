@@ -7,7 +7,7 @@
  *
  * @extends {cr.EventTarget}
  * @param {!Element} breadcrumbs Container element for breadcrumbs.
- * @param {!VolumeManagerWrapper} volumeManager Volume manager.
+ * @param {!VolumeManager} volumeManager Volume manager.
  * @constructor
  */
 function LocationLine(breadcrumbs, volumeManager) {

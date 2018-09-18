@@ -234,7 +234,7 @@ GalleryItem.prototype.isWritableFormat = function() {
 
 /**
  * Returns true if the entry of item is writable.
- * @param {!VolumeManagerWrapper} volumeManager Volume manager.
+ * @param {!VolumeManager} volumeManager Volume manager.
  * @return {boolean} True if the entry of item is writable.
  */
 GalleryItem.prototype.isWritableFile = function(volumeManager) {
@@ -266,7 +266,7 @@ GalleryItem.prototype.getCopyName = function(dirEntry) {
 /**
  * Writes the new item content to either the existing or a new file.
  *
- * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {!VolumeManager} volumeManager Volume manager instance.
  * @param {!MetadataModel} metadataModel
  * @param {!DirectoryEntry} fallbackDir Fallback directory in case the current
  *     directory is read only.
@@ -354,7 +354,7 @@ GalleryItem.prototype.saveToFile = function(
  * @param {boolean} overwrite True to overwrite original file.
  * @param {!DirectoryEntry} fallbackDirectory Directory to fallback if current
  *     directory is not writable.
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @return {!Promise<!FileEntry>}
  * @private
  */

@@ -82,7 +82,6 @@ js_library("actions_submenu") {
 js_library("banners") {
   deps = [
     "..:directory_model",
-    "..:volume_manager_wrapper",
     "../../../common/js:util",
     "../../../common/js:volume_manager_common",
     "//ui/webui/resources/js:assert",
@@ -129,7 +128,6 @@ js_library("directory_tree") {
   deps = [
     "..:directory_model",
     "..:navigation_list_model",
-    "..:volume_manager_wrapper",
     "../../../common/js:util",
     "../../../common/js:volume_manager_common",
     "../metadata:metadata_model",
@@ -307,12 +305,12 @@ js_library("list_container") {
 
 js_library("location_line") {
   deps = [
-    "..:volume_manager_wrapper",
     "../../../common/js:files_app_entry_types",
     "../../../common/js:metrics",
     "../../../common/js:util",
     "../../../common/js:volume_manager_common",
   ]
+  externs_list = [ "../../../../externs/volume_manager.js" ]
 }
 
 js_library("multi_profile_share_dialog") {

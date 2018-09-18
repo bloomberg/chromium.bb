@@ -5,13 +5,13 @@
 /**
  * UMA exporter for navigation in the Files app.
  *
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  *
  * @constructor
  */
 function NavigationUma(volumeManager) {
   /**
-   * @type {!VolumeManagerWrapper}
+   * @type {!VolumeManager}
    * @private
    */
   this.volumeManager_ = volumeManager;

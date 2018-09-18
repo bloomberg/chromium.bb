@@ -8,87 +8,14 @@
  * @implements {VolumeInfoList}
  */
 function VolumeInfoListImpl() {
-  var field = 'volumeType,volumeId';
-
   /**
    * Holds VolumeInfo instances.
    * @type {cr.ui.ArrayDataModel}
    * @private
    */
   this.model_ = new cr.ui.ArrayDataModel([]);
-  this.model_.setCompareFunction(field,
-                                 /** @type {function(*, *): number} */
-                                 (VolumeInfoListImpl.compareVolumeInfo_));
-  this.model_.sort(field, 'asc');
-
   Object.freeze(this);
 }
-
-/**
- * The order of the volume list based on root type.
- * @type {Array<VolumeManagerCommon.VolumeType>}
- * @const
- * @private
- */
-VolumeInfoListImpl.VOLUME_LIST_ORDER_ = [
-  VolumeManagerCommon.VolumeType.DRIVE,
-  VolumeManagerCommon.VolumeType.DOWNLOADS,
-  VolumeManagerCommon.VolumeType.CROSTINI,
-  VolumeManagerCommon.VolumeType.ANDROID_FILES,
-  VolumeManagerCommon.VolumeType.ARCHIVE,
-  VolumeManagerCommon.VolumeType.REMOVABLE,
-  VolumeManagerCommon.VolumeType.MTP,
-  VolumeManagerCommon.VolumeType.PROVIDED,
-  VolumeManagerCommon.VolumeType.MEDIA_VIEW,
-];
-
-/**
- * The order of the media view roots.
- * @type {Array<VolumeManagerCommon.MediaViewRootType>}
- * @const
- * @private
- */
-VolumeInfoListImpl.MEDIA_VIEW_ROOT_ORDER_ = [
-  VolumeManagerCommon.MediaViewRootType.IMAGES,
-  VolumeManagerCommon.MediaViewRootType.VIDEOS,
-  VolumeManagerCommon.MediaViewRootType.AUDIO,
-];
-
-/**
- * Orders two volumes by volumeType and volumeId.
- *
- * The volumes at first are compared by volume type in the order of
- * volumeListOrder_.  Then they are compared by volume ID, except for media
- * views which are sorted in a fixed order.
- *
- * @param {!VolumeInfo} volumeInfo1 Volume info to be compared.
- * @param {!VolumeInfo} volumeInfo2 Volume info to be compared.
- * @return {number} Returns -1 if volume1 < volume2, returns 1 if volume2 >
- *     volume1, returns 0 if volume1 === volume2.
- * @private
- */
-VolumeInfoListImpl.compareVolumeInfo_ = function(volumeInfo1, volumeInfo2) {
-  var typeIndex1 =
-      VolumeInfoListImpl.VOLUME_LIST_ORDER_.indexOf(volumeInfo1.volumeType);
-  var typeIndex2 =
-      VolumeInfoListImpl.VOLUME_LIST_ORDER_.indexOf(volumeInfo2.volumeType);
-  if (typeIndex1 !== typeIndex2)
-    return typeIndex1 < typeIndex2 ? -1 : 1;
-  if (volumeInfo1.volumeType === VolumeManagerCommon.VolumeType.MEDIA_VIEW) {
-    var mediaTypeIndex1 = VolumeInfoListImpl.MEDIA_VIEW_ROOT_ORDER_.indexOf(
-        VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
-            volumeInfo1.volumeId));
-    var mediaTypeIndex2 = VolumeInfoListImpl.MEDIA_VIEW_ROOT_ORDER_.indexOf(
-        VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
-            volumeInfo2.volumeId));
-    if (mediaTypeIndex1 !== mediaTypeIndex2)
-      return mediaTypeIndex1 < mediaTypeIndex2 ? -1 : 1;
-    return 0;
-  }
-  if (volumeInfo1.volumeId !== volumeInfo2.volumeId)
-    return volumeInfo1.volumeId < volumeInfo2.volumeId ? -1 : 1;
-  return 0;
-};
 
 VolumeInfoListImpl.prototype = {
   get length() { return this.model_.length; }
