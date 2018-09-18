@@ -81,9 +81,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   blink::WebData GetDataResource(const char* name) override;
   blink::WebString QueryLocalizedString(
       blink::WebLocalizedString::Name name) override;
-  virtual blink::WebString queryLocalizedString(
-      blink::WebLocalizedString::Name name,
-      int numeric_value);
   blink::WebString QueryLocalizedString(blink::WebLocalizedString::Name name,
                                         const blink::WebString& value) override;
   blink::WebString QueryLocalizedString(
