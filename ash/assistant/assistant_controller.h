@@ -112,6 +112,7 @@ class ASH_EXPORT AssistantController
   // mojom::ManagedWebContentsOpenUrlDelegate:
   void ShouldOpenUrlFromTab(
       const GURL& url,
+      WindowOpenDisposition disposition,
       mojom::ManagedWebContentsOpenUrlDelegate::ShouldOpenUrlFromTabCallback
           callback) override;
 

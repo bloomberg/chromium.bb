@@ -214,6 +214,7 @@ void AssistantController::OnDeepLinkReceived(
 
 void AssistantController::ShouldOpenUrlFromTab(
     const GURL& url,
+    WindowOpenDisposition disposition,
     ash::mojom::ManagedWebContentsOpenUrlDelegate::ShouldOpenUrlFromTabCallback
         callback) {
   // We always handle deep links ourselves.
@@ -223,10 +224,13 @@ void AssistantController::ShouldOpenUrlFromTab(
     return;
   }
 
+  AssistantUiMode ui_mode = assistant_ui_controller_->model()->ui_mode();
+
   // When in main UI mode, WebContents should not navigate as they are hosting
-  // Assistant cards. Instead, we route navigation attempts to the browser.
-  if (assistant_ui_controller_->model()->ui_mode() ==
-      AssistantUiMode::kMainUi) {
+  // Assistant cards. Instead, we route navigation attempts to the browser. We
+  // also respect open |disposition| to launch in the browser if appropriate.
+  if (ui_mode == AssistantUiMode::kMainUi ||
+      disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
     std::move(callback).Run(/*should_open=*/false);
     OpenUrl(url);
     return;
