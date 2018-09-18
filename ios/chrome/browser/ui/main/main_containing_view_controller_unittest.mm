@@ -9,7 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #import "ios/chrome/browser/ui/main/main_view_controller_test.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
+#import "ios/chrome/browser/ui/main/tab_switcher.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #include "testing/gtest_mac.h"
 

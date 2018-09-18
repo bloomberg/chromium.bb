@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_SWITCHER_H_
-#define IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_SWITCHER_H_
+#ifndef IOS_CHROME_BROWSER_UI_MAIN_TAB_SWITCHER_H_
+#define IOS_CHROME_BROWSER_UI_MAIN_TAB_SWITCHER_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#include "ios/chrome/browser/ui/tab_switcher/tab_switcher_transition_context.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 @protocol OmniboxFocuser;
 @class Tab;
 @class TabModel;
+@class TabSwitcherTransitionContext;
 @protocol TabSwitcher;
 @protocol ToolbarCommands;
 @protocol ToolbarOwner;
@@ -114,4 +114,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_SWITCHER_H_
+#endif  // IOS_CHROME_BROWSER_UI_MAIN_TAB_SWITCHER_H_

@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
+#import "ios/chrome/browser/ui/main/tab_switcher.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

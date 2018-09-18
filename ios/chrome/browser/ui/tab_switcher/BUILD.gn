@@ -7,7 +7,6 @@ source_set("tab_switcher") {
   sources = [
     "tab_model_snapshot.h",
     "tab_model_snapshot.mm",
-    "tab_switcher.h",
     "tab_switcher_button.h",
     "tab_switcher_button.mm",
     "tab_switcher_cache.h",
@@ -78,12 +77,14 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/keyboard",
+    "//ios/chrome/browser/ui/main:tab_switcher",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/ntp/recent_tabs/views",
     "//ios/chrome/browser/ui/settings/sync_utils",
@@ -109,18 +110,6 @@ source_set("tab_switcher") {
   libs = [
     "QuartzCore.framework",
     "UIKit.framework",
-  ]
-}
-
-source_set("modes") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "tab_switcher_mode.h",
-    "tab_switcher_mode.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/browser/ui",
   ]
 }
 
@@ -199,7 +188,6 @@ source_set("eg_tests") {
   ]
   deps = [
     ":egtest_support",
-    ":modes",
     ":tab_switcher",
     "//base",
     "//base/test:test_support",
@@ -209,6 +197,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/authentication:eg_test_support",
+    "//ios/chrome/browser/ui/main:tab_switcher",
     "//ios/chrome/browser/ui/tab_grid:egtest_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
