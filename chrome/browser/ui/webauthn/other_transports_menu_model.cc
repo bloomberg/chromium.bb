@@ -14,7 +14,7 @@
 namespace {
 
 gfx::ImageSkia GetTransportIcon(AuthenticatorTransport transport) {
-  constexpr int kTransportIconSize = 24;
+  constexpr int kTransportIconSize = 16;
   return gfx::CreateVectorIcon(GetTransportVectorIcon(transport),
                                kTransportIconSize, gfx::kGoogleGrey700);
 }

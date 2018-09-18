@@ -132,36 +132,43 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
 std::unique_ptr<views::View>
 AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
   auto contents = std::make_unique<views::View>();
-  BoxLayout* box_layout =
+  BoxLayout* contents_layout =
       contents->SetLayoutManager(std::make_unique<BoxLayout>(
           BoxLayout::kVertical, gfx::Insets(),
           views::LayoutProvider::Get()->GetDistanceMetric(
-              views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+              views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
 
   contents->SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
           views::CONTROL, views::CONTROL)));
+
+  auto label_container = std::make_unique<views::View>();
+  label_container->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::kVertical, gfx::Insets(),
+      views::LayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   auto title_label = std::make_unique<views::Label>(
       model()->GetStepTitle(), views::style::CONTEXT_DIALOG_TITLE,
       views::style::STYLE_PRIMARY);
   title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  contents->AddChildView(title_label.release());
+  label_container->AddChildView(title_label.release());
 
   auto description_label = std::make_unique<views::Label>(
       model()->GetStepDescription(),
       views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
   description_label->SetMultiLine(true);
   description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  contents->AddChildView(description_label.release());
+  label_container->AddChildView(description_label.release());
+  contents->AddChildView(label_container.release());
 
   std::unique_ptr<views::View> step_specific_content =
       BuildStepSpecificContent();
   if (step_specific_content) {
     step_specific_content_ = step_specific_content.get();
     contents->AddChildView(step_specific_content.release());
-    box_layout->SetFlexForView(step_specific_content_, 1);
+    contents_layout->SetFlexForView(step_specific_content_, 1);
   }
 
   return contents;
