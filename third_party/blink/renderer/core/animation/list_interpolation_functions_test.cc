@@ -66,8 +66,6 @@ InterpolationValue CreateInterpolableList(const std::vector<double>& values) {
 
 bool NonInterpolableValuesAreCompatible(const NonInterpolableValue* a,
                                         const NonInterpolableValue* b) {
-  // Note that '0' may never be held by TestNonInterpolableValues. See
-  // DCHECK in TestNonInterpolableValue::Create.
   return (a ? ToTestNonInterpolableValue(*a).GetValue() : 0) ==
          (b ? ToTestNonInterpolableValue(*b).GetValue() : 0);
 }

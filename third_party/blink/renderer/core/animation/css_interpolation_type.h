@@ -32,6 +32,26 @@ class CORE_EXPORT CSSInterpolationType : public InterpolationType {
                          const InterpolationValue& underlying) const = 0;
   };
 
+  virtual InterpolationValue MaybeConvertNeutral(
+      const InterpolationValue& underlying,
+      ConversionCheckers&) const = 0;
+  virtual InterpolationValue MaybeConvertInitial(const StyleResolverState&,
+                                                 ConversionCheckers&) const = 0;
+  virtual InterpolationValue MaybeConvertInherit(const StyleResolverState&,
+                                                 ConversionCheckers&) const = 0;
+  virtual InterpolationValue MaybeConvertValue(const CSSValue&,
+                                               const StyleResolverState*,
+                                               ConversionCheckers&) const = 0;
+  virtual const CSSValue* CreateCSSValue(const InterpolableValue&,
+                                         const NonInterpolableValue*,
+                                         const StyleResolverState&) const {
+    // TODO(alancutter): Implement this for all subclasses and make this an
+    // abstract declaration so the return type can be changed to
+    // const CSSValue&.
+    NOTREACHED();
+    return nullptr;
+  }
+
  protected:
   CSSInterpolationType(PropertyHandle, const PropertyRegistration* = nullptr);
 
@@ -43,16 +63,7 @@ class CORE_EXPORT CSSInterpolationType : public InterpolationType {
                                         const InterpolationEnvironment&,
                                         const InterpolationValue& underlying,
                                         ConversionCheckers&) const final;
-  virtual InterpolationValue MaybeConvertNeutral(
-      const InterpolationValue& underlying,
-      ConversionCheckers&) const = 0;
-  virtual InterpolationValue MaybeConvertInitial(const StyleResolverState&,
-                                                 ConversionCheckers&) const = 0;
-  virtual InterpolationValue MaybeConvertInherit(const StyleResolverState&,
-                                                 ConversionCheckers&) const = 0;
-  virtual InterpolationValue MaybeConvertValue(const CSSValue&,
-                                               const StyleResolverState*,
-                                               ConversionCheckers&) const = 0;
+
   virtual void AdditiveKeyframeHook(InterpolationValue&) const {}
 
   InterpolationValue MaybeConvertUnderlyingValue(
@@ -79,16 +90,6 @@ class CORE_EXPORT CSSInterpolationType : public InterpolationType {
       const StyleResolverState&,
       CSSVariableResolver&,
       ConversionCheckers&) const;
-
-  virtual const CSSValue* CreateCSSValue(const InterpolableValue&,
-                                         const NonInterpolableValue*,
-                                         const StyleResolverState&) const {
-    // TODO(alancutter): Implement this for all subclasses and make this an
-    // abstract declaration so the return type can be changed to
-    // const CSSValue&.
-    NOTREACHED();
-    return nullptr;
-  }
 
   const PropertyRegistration& Registration() const {
     DCHECK(GetProperty().IsCSSCustomProperty());
