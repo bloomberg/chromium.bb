@@ -44,6 +44,8 @@ class TestingAppShim : public chrome::mojom::AppShim {
     received_launch_done_result_ = true;
     launch_done_result_ = result;
   }
+  void CreateViewsBridgeFactory(
+      views_bridge_mac::mojom::BridgeFactoryRequest request) override {}
   void Hide() override {}
   void UnhideWithoutActivation() override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}

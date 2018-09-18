@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
+#include "ui/views/cocoa/bridge_factory_host.h"
 
 // This is the counterpart to AppShimController in
 // chrome/app/chrome_main_app_mode_mac.mm. The AppShimHost owns itself, and is
@@ -61,6 +62,7 @@ class AppShimHost : public chrome::mojom::AppShimHost,
 
   mojo::IsolatedConnection mojo_connection_;
   chrome::mojom::AppShimPtr app_shim_;
+  std::unique_ptr<views::BridgeFactoryHost> views_bridge_factory_host_;
   mojo::Binding<chrome::mojom::AppShimHost> host_binding_;
   std::string app_id_;
   base::FilePath profile_path_;

@@ -85,6 +85,8 @@ jumbo_component("views") {
     "bubble/info_bubble.h",
     "bubble/tooltip_icon.h",
     "button_drag_utils.h",
+    "cocoa/bridge_factory_host.h",
+    "cocoa/bridge_factory_impl.h",
     "cocoa/bridged_native_widget.h",
     "cocoa/native_widget_mac_nswindow.h",
     "cocoa/window_touch_bar_delegate.h",
@@ -439,8 +441,6 @@ jumbo_component("views") {
   # public into this list, along with the implementation file.
   sources += [
     "cocoa/bridge_factory_host.cc",
-    "cocoa/bridge_factory_host.h",
-    "cocoa/bridge_factory_impl.h",
     "cocoa/bridge_factory_impl.mm",
     "cocoa/bridged_content_view.h",
     "cocoa/bridged_content_view.mm",

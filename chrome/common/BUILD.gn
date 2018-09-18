@@ -738,6 +738,10 @@ mojom("mojo_bindings") {
     "//url/mojom:url_mojom_origin",
   ]
 
+  if (is_mac) {
+    public_deps += [ "//ui/views_bridge_mac:mojo" ]
+  }
+
   if (safe_browsing_mode == 1) {
     public_deps += [ "//chrome/services/file_util/public/mojom" ]
   }

@@ -8,6 +8,7 @@
 // those app bundles.
 
 #import <Cocoa/Cocoa.h>
+#include <utility>
 #include <vector>
 
 #include "base/at_exit.h"
@@ -43,6 +44,8 @@
 #include "mojo/public/cpp/system/isolated_connection.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/cocoa/bridge_factory_impl.h"
+#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
 namespace {
 
@@ -126,6 +129,8 @@ class AppShimController : public chrome::mojom::AppShim {
 
   // chrome::mojom::AppShim implementation.
   void LaunchAppDone(apps::AppShimLaunchResult result) override;
+  void CreateViewsBridgeFactory(
+      views_bridge_mac::mojom::BridgeFactoryRequest request) override;
   void Hide() override;
   void UnhideWithoutActivation() override;
   void SetUserAttention(apps::AppShimAttentionType attention_type) override;
@@ -301,6 +306,11 @@ void AppShimController::LaunchAppDone(apps::AppShimLaunchResult result) {
     SendFocusApp(apps::APP_SHIM_FOCUS_OPEN_FILES, files);
 
   launch_app_done_ = true;
+}
+
+void AppShimController::CreateViewsBridgeFactory(
+    views_bridge_mac::mojom::BridgeFactoryRequest request) {
+  views_bridge_mac::BridgeFactoryImpl::Get()->BindRequest(std::move(request));
 }
 
 void AppShimController::Hide() {

@@ -11,6 +11,8 @@
 #include "base/logging.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
 AppShimHost::AppShimHost()
     : host_binding_(this), initial_launch_finished_(false) {}
@@ -63,6 +65,15 @@ void AppShimHost::LaunchApp(chrome::mojom::AppShimPtr app_shim_ptr,
     return;
 
   app_shim_ = std::move(app_shim_ptr);
+  // Create the interface that will be used by views::NativeWidgetMac to create
+  // NSWindows hosted in the app shim process.
+  if (features::HostWindowsInAppShimProcess()) {
+    views_bridge_mac::mojom::BridgeFactoryRequest views_bridge_factory_request;
+    views_bridge_factory_host_ = std::make_unique<views::BridgeFactoryHost>(
+        &views_bridge_factory_request);
+    app_shim_->CreateViewsBridgeFactory(
+        std::move(views_bridge_factory_request));
+  }
   profile_path_ = profile_dir;
   app_id_ = app_id;
 
