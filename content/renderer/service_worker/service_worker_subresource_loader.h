@@ -66,9 +66,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   void StartRequest(const network::ResourceRequest& resource_request);
   void DispatchFetchEvent();
-  void OnFetchEventFinished(base::Time request_dispatch_time,
+  void OnFetchEventFinished(base::TimeTicks request_dispatch_time,
                             blink::mojom::ServiceWorkerEventStatus status,
-                            base::Time dispatch_event_time);
+                            base::TimeTicks dispatch_event_time);
   // Called when this loader no longer needs to restart dispatching the fetch
   // event on failure. Null |status| means the event dispatch was not attempted.
   void SettleFetchEventDispatch(
@@ -76,12 +76,12 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   // blink::mojom::ServiceWorkerFetchResponseCallback overrides:
   void OnResponse(blink::mojom::FetchAPIResponsePtr response,
-                  base::Time dispatch_event_time) override;
+                  base::TimeTicks dispatch_event_time) override;
   void OnResponseStream(
       blink::mojom::FetchAPIResponsePtr response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-      base::Time dispatch_event_time) override;
-  void OnFallback(base::Time dispatch_event_time) override;
+      base::TimeTicks dispatch_event_time) override;
+  void OnFallback(base::TimeTicks dispatch_event_time) override;
 
   void StartResponse(blink::mojom::FetchAPIResponsePtr response,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);

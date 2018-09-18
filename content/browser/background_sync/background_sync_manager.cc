@@ -149,7 +149,7 @@ void OnSyncEventFinished(scoped_refptr<ServiceWorkerVersion> active_version,
                          int request_id,
                          ServiceWorkerVersion::StatusCallback callback,
                          blink::mojom::ServiceWorkerEventStatus status,
-                         base::Time dispatch_event_time) {
+                         base::TimeTicks dispatch_event_time) {
   if (!active_version->FinishRequest(
           request_id,
           status == blink::mojom::ServiceWorkerEventStatus::COMPLETED,

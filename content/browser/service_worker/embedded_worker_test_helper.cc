@@ -48,10 +48,10 @@ void OnFetchEventCommon(
   response->status_code = 200;
   response->status_text = "OK";
   response->response_type = network::mojom::FetchResponseType::kDefault;
-  response_callback->OnResponse(std::move(response), base::Time::Now());
+  response_callback->OnResponse(std::move(response), base::TimeTicks::Now());
   std::move(finish_callback)
       .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-           base::Time::Now());
+           base::TimeTicks::Now());
 }
 
 }  // namespace
@@ -581,28 +581,28 @@ void EmbeddedWorkerTestHelper::OnActivateEvent(
     mojom::ServiceWorker::DispatchActivateEventCallback callback) {
   dispatched_events()->push_back(Event::Activate);
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
     const BackgroundFetchRegistration& registration,
     mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
     const BackgroundFetchRegistration& registration,
     mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
     const BackgroundFetchRegistration& registration,
     mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
@@ -610,7 +610,7 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
     mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
         callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnCookieChangeEvent(
@@ -618,21 +618,21 @@ void EmbeddedWorkerTestHelper::OnCookieChangeEvent(
     ::network::mojom::CookieChangeCause cause,
     mojom::ServiceWorker::DispatchCookieChangeEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(
     mojom::ExtendableMessageEventPtr event,
     mojom::ServiceWorker::DispatchExtendableMessageEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEvent(
     mojom::ServiceWorker::DispatchInstallEventCallback callback) {
   dispatched_events()->push_back(Event::Install);
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          true /* has_fetch_handler */, base::Time::Now());
+                          true /* has_fetch_handler */, base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
@@ -649,7 +649,7 @@ void EmbeddedWorkerTestHelper::OnPushEvent(
     base::Optional<std::string> payload,
     mojom::ServiceWorker::DispatchPushEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnNotificationClickEvent(
@@ -659,7 +659,7 @@ void EmbeddedWorkerTestHelper::OnNotificationClickEvent(
     const base::Optional<base::string16>& reply,
     mojom::ServiceWorker::DispatchNotificationClickEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnNotificationCloseEvent(
@@ -667,15 +667,15 @@ void EmbeddedWorkerTestHelper::OnNotificationCloseEvent(
     const blink::PlatformNotificationData& notification_data,
     mojom::ServiceWorker::DispatchNotificationCloseEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnAbortPaymentEvent(
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     mojom::ServiceWorker::DispatchAbortPaymentEventCallback callback) {
-  response_callback->OnResponseForAbortPayment(true, base::Time::Now());
+  response_callback->OnResponseForAbortPayment(true, base::TimeTicks::Now());
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnCanMakePaymentEvent(
@@ -690,9 +690,9 @@ void EmbeddedWorkerTestHelper::OnCanMakePaymentEvent(
     }
   }
   response_callback->OnResponseForCanMakePayment(can_make_payment,
-                                                 base::Time::Now());
+                                                 base::TimeTicks::Now());
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
@@ -700,9 +700,9 @@ void EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     mojom::ServiceWorker::DispatchPaymentRequestEventCallback callback) {
   response_callback->OnResponseForPaymentRequest(
-      payments::mojom::PaymentHandlerResponse::New(), base::Time::Now());
+      payments::mojom::PaymentHandlerResponse::New(), base::TimeTicks::Now());
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                          base::Time::Now());
+                          base::TimeTicks::Now());
 }
 
 void EmbeddedWorkerTestHelper::OnSetIdleTimerDelayToZero(

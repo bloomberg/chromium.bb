@@ -137,10 +137,10 @@ class NavigationPreloadLoaderClient final
     response->status_text = response_head_.headers->GetStatusText();
     response->response_type = response_head_.response_type;
     response_callback_->OnResponseStream(
-        std::move(response), std::move(stream_handle), base::Time::Now());
+        std::move(response), std::move(stream_handle), base::TimeTicks::Now());
     std::move(finish_callback_)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::Time::Now());
+             base::TimeTicks::Now());
     stream_callback->OnCompleted();
     delete this;
   }
@@ -231,7 +231,7 @@ class Helper : public EmbeddedWorkerTestHelper {
   void FinishWaitUntil() {
     std::move(finish_callback_)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::Time::Now());
+             base::TimeTicks::Now());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -240,11 +240,11 @@ class Helper : public EmbeddedWorkerTestHelper {
   void DeferResponse() { response_mode_ = ResponseMode::kDeferredResponse; }
   void FinishRespondWith() {
     response_callback_->OnResponse(OkResponse(nullptr /* blob_body */),
-                                   base::Time::Now());
+                                   base::TimeTicks::Now());
     response_callback_.FlushForTesting();
     std::move(finish_callback_)
         .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::Time::Now());
+             base::TimeTicks::Now());
   }
 
   void ReadRequestBody(std::string* out_string) {
@@ -289,30 +289,30 @@ class Helper : public EmbeddedWorkerTestHelper {
         break;
       case ResponseMode::kBlob:
         response_callback->OnResponse(OkResponse(std::move(blob_body_)),
-                                      base::Time::Now());
+                                      base::TimeTicks::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                 base::Time::Now());
+                 base::TimeTicks::Now());
         break;
       case ResponseMode::kStream:
         response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
                                             std::move(stream_handle_),
-                                            base::Time::Now());
+                                            base::TimeTicks::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                 base::Time::Now());
+                 base::TimeTicks::Now());
         break;
       case ResponseMode::kFallbackResponse:
-        response_callback->OnFallback(base::Time::Now());
+        response_callback->OnFallback(base::TimeTicks::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                 base::Time::Now());
+                 base::TimeTicks::Now());
         break;
       case ResponseMode::kErrorResponse:
-        response_callback->OnResponse(ErrorResponse(), base::Time::Now());
+        response_callback->OnResponse(ErrorResponse(), base::TimeTicks::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                 base::Time::Now());
+                 base::TimeTicks::Now());
         break;
       case ResponseMode::kNavigationPreloadResponse:
         // Deletes itself when done.
@@ -334,7 +334,7 @@ class Helper : public EmbeddedWorkerTestHelper {
         // callbacks after an unexpected stop.
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-                 base::Time::Now());
+                 base::TimeTicks::Now());
         break;
       case ResponseMode::kDeferredResponse:
         finish_callback_ = std::move(finish_callback);
@@ -344,15 +344,15 @@ class Helper : public EmbeddedWorkerTestHelper {
       case ResponseMode::kEarlyResponse:
         finish_callback_ = std::move(finish_callback);
         response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
-                                      base::Time::Now());
+                                      base::TimeTicks::Now());
         // Now the caller must call FinishWaitUntil() to finish the event.
         break;
       case ResponseMode::kRedirect:
         response_callback->OnResponse(RedirectResponse(redirected_url_.spec()),
-                                      base::Time::Now());
+                                      base::TimeTicks::Now());
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                 base::Time::Now());
+                 base::TimeTicks::Now());
         break;
     }
 

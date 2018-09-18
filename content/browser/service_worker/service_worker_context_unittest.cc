@@ -93,7 +93,8 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchInstallEventCallback callback) override {
     dispatched_events()->push_back(Event::Install);
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                            true /* has_fetch_handler */, base::Time::Now());
+                            true /* has_fetch_handler */,
+                            base::TimeTicks::Now());
   }
 };
 
@@ -105,7 +106,7 @@ class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorker::DispatchActivateEventCallback callback) override {
     dispatched_events()->push_back(Event::Activate);
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   }
 };
 
