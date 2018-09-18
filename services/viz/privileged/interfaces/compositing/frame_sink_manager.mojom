@@ -27,6 +27,8 @@ struct RootCompositorFrameSinkParams {
   bool gpu_compositing = true;
   RendererSettings renderer_settings;
   bool send_swap_size_notifications = false;
+  // Disables begin frame rate limiting for the display compositor.
+  bool disable_frame_rate_limit = false;
 
   associated CompositorFrameSink& compositor_frame_sink;
   CompositorFrameSinkClient compositor_frame_sink_client;

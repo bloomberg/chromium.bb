@@ -54,10 +54,18 @@ RootCompositorFrameSinkImpl::Create(
     external_begin_frame_source =
         std::make_unique<ExternalBeginFrameSourceAndroid>(restart_id);
 #else
-    synthetic_begin_frame_source = std::make_unique<DelayBasedBeginFrameSource>(
-        std::make_unique<DelayBasedTimeSource>(
-            base::ThreadTaskRunnerHandle::Get().get()),
-        restart_id);
+    if (params->disable_frame_rate_limit) {
+      synthetic_begin_frame_source =
+          std::make_unique<BackToBackBeginFrameSource>(
+              std::make_unique<DelayBasedTimeSource>(
+                  base::ThreadTaskRunnerHandle::Get().get()));
+    } else {
+      synthetic_begin_frame_source =
+          std::make_unique<DelayBasedBeginFrameSource>(
+              std::make_unique<DelayBasedTimeSource>(
+                  base::ThreadTaskRunnerHandle::Get().get()),
+              restart_id);
+    }
 #endif
   }
 

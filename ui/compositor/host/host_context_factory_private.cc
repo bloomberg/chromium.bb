@@ -4,11 +4,13 @@
 
 #include "ui/compositor/host/host_context_factory_private.h"
 
+#include "base/command_line.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
@@ -93,6 +95,10 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   root_params->widget = surface_handle;
   root_params->gpu_compositing = gpu_compositing;
   root_params->renderer_settings = renderer_settings_;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableFrameRateLimit))
+    root_params->disable_frame_rate_limit = true;
 
   // Connects the viz process end of CompositorFrameSink message pipes. The
   // browser compositor may request a new CompositorFrameSink on context loss,
