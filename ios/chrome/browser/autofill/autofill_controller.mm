@@ -17,6 +17,7 @@
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
+#include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -42,7 +43,7 @@ using autofill::AutofillPopupDelegate;
                                  AutofillDriverIOSBridge> {
   AutofillAgent* _autofillAgent;
   std::unique_ptr<autofill::ChromeAutofillClientIOS> _autofillClient;
-  autofill::AutofillManager* _autofillManager;  // weak
+  web::WebState* _webState;
 }
 
 @end
@@ -63,23 +64,20 @@ using autofill::AutofillPopupDelegate;
   self = [super init];
   if (self) {
     _browserState = browserState;
+    _webState = webState;
     infobars::InfoBarManager* infobarManager =
         InfoBarManagerImpl::FromWebState(webState);
     DCHECK(infobarManager);
     _autofillClient.reset(new autofill::ChromeAutofillClientIOS(
         browserState, webState, infobarManager, self,
         passwordGenerationManager));
-    web::WebFrame* frame = web::GetMainWebFrame(webState);
-    autofill::AutofillDriverIOS::CreateForWebStateWebFrameAndDelegate(
-        webState, frame, _autofillClient.get(), self,
+    autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+        webState, _autofillClient.get(), self,
         GetApplicationContext()->GetApplicationLocale(),
         downloadEnabled
             ? autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER
             : autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
     _autofillAgent = autofillAgent;
-    _autofillManager =
-        autofill::AutofillDriverIOS::FromWebStateAndWebFrame(webState, frame)
-            ->autofill_manager();
   }
   return self;
 }
@@ -108,13 +106,27 @@ using autofill::AutofillPopupDelegate;
 }
 
 - (void)detachFromWebState {
-  _autofillManager = nullptr;
   [_autofillAgent detachFromWebState];
   _autofillAgent = nil;
+  _webState = nullptr;
 }
 
 - (void)setBaseViewController:(UIViewController*)baseViewController {
   _autofillClient->SetBaseViewController(baseViewController);
+}
+
+// Return the AutofillManager associated to |frame|.
+// If autofill in iframes is disabled, ignore the frame parameter and return the
+// AutofillManager associated with |_webState|.
+- (autofill::AutofillManager*)autofillManagerForFrame:(web::WebFrame*)frame {
+  if (!_webState) {
+    return nil;
+  }
+  if (autofill::switches::IsAutofillIFrameMessagingEnabled() && !frame) {
+    return nil;
+  }
+  return autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_webState, frame)
+      ->autofill_manager();
 }
 
 #pragma mark - AutofillClientIOSBridge
@@ -177,14 +189,17 @@ showAutofillPopup:(const std::vector<autofill::Suggestion>&)popup_suggestions
 #pragma mark - AutofillDriverIOSBridge
 
 - (void)onFormDataFilled:(uint16_t)query_id
+                 inFrame:(web::WebFrame*)frame
                   result:(const autofill::FormData&)result {
   [_autofillAgent onFormDataFilled:result];
-  if (_autofillManager)
-    _autofillManager->OnDidFillAutofillFormData(result, base::TimeTicks::Now());
+  autofill::AutofillManager* manager = [self autofillManagerForFrame:frame];
+  if (manager)
+    manager->OnDidFillAutofillFormData(result, base::TimeTicks::Now());
 }
 
 - (void)sendAutofillTypePredictionsToRenderer:
-    (const std::vector<autofill::FormDataPredictions>&)forms {
+            (const std::vector<autofill::FormDataPredictions>&)forms
+                                      toFrame:(web::WebFrame*)frame {
   [_autofillAgent renderAutofillTypePredictions:forms];
 }
 

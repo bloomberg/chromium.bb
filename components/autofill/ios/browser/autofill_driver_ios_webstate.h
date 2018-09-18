@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_DRIVER_IOS_WEBSTATE_H_
 
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "ios/web/public/web_state/web_state_user_data.h"
 
 namespace web {
 class WebState;
@@ -24,7 +25,6 @@ class AutofillDriverIOSWebState
       id<AutofillDriverIOSBridge> bridge,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
-  static AutofillClient* ClientForWebState(web::WebState* web_state);
 
   ~AutofillDriverIOSWebState() override;
 

@@ -14,6 +14,7 @@
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
+#include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
@@ -51,9 +52,6 @@
 
   // Autofill agent associated with |webState|.
   AutofillAgent* _autofillAgent;
-
-  // Autofill manager associated with |webState|.
-  autofill::AutofillManager* _autofillManager;
 
   // Autofill client associated with |webState|.
   std::unique_ptr<autofill::WebViewAutofillClientIOS> _autofillClient;
@@ -110,14 +108,10 @@
                 browserState, ServiceAccessType::EXPLICIT_ACCESS),
         ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
             browserState)));
-    web::WebFrame* frame = web::GetMainWebFrame(_webState);
-    autofill::AutofillDriverIOS::CreateForWebStateWebFrameAndDelegate(
-        _webState, frame, _autofillClient.get(), self,
+    autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
+        _webState, _autofillClient.get(), self,
         ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale(),
         autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-    _autofillManager =
-        autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_webState, frame)
-            ->autofill_manager();
 
     _JSAutofillManager = JSAutofillManager;
 
@@ -219,11 +213,17 @@
 
 - (void)removeSuggestion:(CWVAutofillSuggestion*)suggestion {
   // Identifier is greater than 0 when it is an autofill profile.
+  web::WebFrame* frame = web::GetWebFrameWithId(
+      _webState, base::SysNSStringToUTF8(suggestion.frameID));
+  autofill::AutofillManager* manager = [self autofillManagerForFrame:frame];
+  if (!manager) {
+    return;
+  }
   if (suggestion.formSuggestion.identifier > 0) {
-    _autofillManager->RemoveAutofillProfileOrCreditCard(
+    manager->RemoveAutofillProfileOrCreditCard(
         suggestion.formSuggestion.identifier);
   } else {
-    _autofillManager->RemoveAutocompleteEntry(
+    manager->RemoveAutocompleteEntry(
         base::SysNSStringToUTF16(suggestion.fieldName),
         base::SysNSStringToUTF16(suggestion.value));
   }
@@ -242,6 +242,17 @@
   [_JSSuggestionManager
       fetchPreviousAndNextElementsPresenceWithCompletionHandler:
           completionHandler];
+}
+
+- (autofill::AutofillManager*)autofillManagerForFrame:(web::WebFrame*)frame {
+  if (!_webState) {
+    return nil;
+  }
+  if (autofill::switches::IsAutofillIFrameMessagingEnabled() && !frame) {
+    return nil;
+  }
+  return autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_webState, frame)
+      ->autofill_manager();
 }
 
 #pragma mark - CWVAutofillClientIOSBridge
@@ -339,15 +350,18 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 #pragma mark - AutofillDriverIOSBridge
 
 - (void)onFormDataFilled:(uint16_t)query_id
+                 inFrame:(web::WebFrame*)frame
                   result:(const autofill::FormData&)result {
   [_autofillAgent onFormDataFilled:result];
-  if (_autofillManager) {
-    _autofillManager->OnDidFillAutofillFormData(result, base::TimeTicks::Now());
+  autofill::AutofillManager* manager = [self autofillManagerForFrame:frame];
+  if (manager) {
+    manager->OnDidFillAutofillFormData(result, base::TimeTicks::Now());
   }
 }
 
 - (void)sendAutofillTypePredictionsToRenderer:
-    (const std::vector<autofill::FormDataPredictions>&)forms {
+            (const std::vector<autofill::FormDataPredictions>&)forms
+                                      toFrame:(web::WebFrame*)frame {
   // Not supported.
 }
 

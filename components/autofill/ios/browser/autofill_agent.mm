@@ -529,13 +529,14 @@ autofillManagerFromWebState:(web::WebState*)webState
   // Ignore navigations within the same document, e.g., history.pushState().
   if (navigation->IsSameDocument())
     return;
-
-  // Reset AutofillManager before processing the new page.
-  web::WebFrame* frame = web::GetMainWebFrame(webState);
-  autofill::AutofillManager* autofillManager =
-      [self autofillManagerFromWebState:webState webFrame:frame];
-  DCHECK(autofillManager);
-  autofillManager->Reset();
+  if (!autofill::switches::IsAutofillIFrameMessagingEnabled()) {
+    // Reset AutofillManager before processing the new page.
+    web::WebFrame* frame = web::GetMainWebFrame(webState);
+    autofill::AutofillManager* autofillManager =
+        [self autofillManagerFromWebState:webState webFrame:frame];
+    DCHECK(autofillManager);
+    autofillManager->Reset();
+  }
 
   // Mark the page as not processed.
   pageProcessed_ = NO;
