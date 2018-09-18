@@ -571,15 +571,13 @@ class SingleEntryPropertiesGetterForDriveFs {
                               base::File::Error error)>;
 
   // Creates an instance and starts the process.
-  static void Start(base::FilePath local_path,
-                    bool want_thumbnail,
+  static void Start(const storage::FileSystemURL& file_system_url,
                     Profile* const profile,
                     ResultCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     SingleEntryPropertiesGetterForDriveFs* instance =
-        new SingleEntryPropertiesGetterForDriveFs(std::move(local_path),
-                                                  want_thumbnail, profile,
+        new SingleEntryPropertiesGetterForDriveFs(file_system_url, profile,
                                                   std::move(callback));
     instance->StartProcess();
 
@@ -587,13 +585,12 @@ class SingleEntryPropertiesGetterForDriveFs {
   }
 
  private:
-  SingleEntryPropertiesGetterForDriveFs(base::FilePath local_path,
-                                        bool want_thumbnail,
-                                        Profile* const profile,
-                                        ResultCallback callback)
+  SingleEntryPropertiesGetterForDriveFs(
+      const storage::FileSystemURL& file_system_url,
+      Profile* const profile,
+      ResultCallback callback)
       : callback_(std::move(callback)),
-        local_path_(std::move(local_path)),
-        want_thumbnail_(want_thumbnail),
+        file_system_url_(file_system_url),
         running_profile_(profile),
         properties_(std::make_unique<EntryProperties>()),
         weak_ptr_factory_(this) {
@@ -611,7 +608,8 @@ class SingleEntryPropertiesGetterForDriveFs {
       return;
     }
     base::FilePath path;
-    if (!integration_service->GetRelativeDrivePath(local_path_, &path)) {
+    if (!integration_service->GetRelativeDrivePath(file_system_url_.path(),
+                                                   &path)) {
       CompleteGetEntryProperties(drive::FILE_ERROR_INVALID_OPERATION);
       return;
     }
@@ -623,7 +621,7 @@ class SingleEntryPropertiesGetterForDriveFs {
     }
 
     drivefs_interface->GetMetadata(
-        path, want_thumbnail_,
+        path, /* want_thumbnail = */ false,
         mojo::WrapCallbackWithDefaultInvokeIfNotRun(
             base::BindOnce(
                 &SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo,
@@ -704,34 +702,8 @@ class SingleEntryPropertiesGetterForDriveFs {
     properties_->can_share =
         std::make_unique<bool>(metadata->capabilities->can_share);
 
-    if (metadata->thumbnail) {
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE,
-          base::BindOnce(&SingleEntryPropertiesGetterForDriveFs::
-                             MakeThumbnailDataUrlOnSequence,
-                         std::move(*metadata->thumbnail)),
-          base::BindOnce(
-              &SingleEntryPropertiesGetterForDriveFs::SetThumbnailAndComplete,
-              weak_ptr_factory_.GetWeakPtr()));
-      return;
-    }
-
-    CompleteGetEntryProperties(drive::FILE_ERROR_OK);
-  }
-
-  static std::string MakeThumbnailDataUrlOnSequence(
-      const std::vector<uint8_t>& png_data) {
-    std::string encoded;
-    base::Base64Encode(
-        base::StringPiece(reinterpret_cast<const char*>(png_data.data()),
-                          png_data.size()),
-        &encoded);
-    return base::StrCat({"data:image/png;base64,", encoded});
-  }
-
-  void SetThumbnailAndComplete(std::string thumbnail_data_url) {
-    properties_->thumbnail_url =
-        std::make_unique<std::string>(std::move(thumbnail_data_url));
+    properties_->thumbnail_url = std::make_unique<std::string>(
+        base::StrCat({"drivefs:", file_system_url_.ToGURL().spec()}));
 
     CompleteGetEntryProperties(drive::FILE_ERROR_OK);
   }
@@ -747,8 +719,7 @@ class SingleEntryPropertiesGetterForDriveFs {
 
   // Given parameters.
   ResultCallback callback_;
-  const base::FilePath local_path_;
-  const bool want_thumbnail_;
+  const storage::FileSystemURL file_system_url_;
   Profile* const running_profile_;
 
   // Values used in the process.
@@ -758,6 +729,16 @@ class SingleEntryPropertiesGetterForDriveFs {
 
   DISALLOW_COPY_AND_ASSIGN(SingleEntryPropertiesGetterForDriveFs);
 };
+
+std::string MakeThumbnailDataUrlOnSequence(
+    const std::vector<uint8_t>& png_data) {
+  std::string encoded;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(png_data.data()),
+                        png_data.size()),
+      &encoded);
+  return base::StrCat({"data:image/png;base64,", encoded});
+}
 
 }  // namespace
 
@@ -804,10 +785,7 @@ bool FileManagerPrivateInternalGetEntryPropertiesFunction::RunAsync() {
         break;
       case storage::kFileSystemTypeDriveFs:
         SingleEntryPropertiesGetterForDriveFs::Start(
-            file_system_url.path(),
-            names_as_set.count(
-                api::file_manager_private::ENTRY_PROPERTY_NAME_THUMBNAILURL),
-            GetProfile(),
+            file_system_url, GetProfile(),
             base::BindOnce(
                 &FileManagerPrivateInternalGetEntryPropertiesFunction::
                     CompleteGetEntryProperties,
@@ -1466,6 +1444,69 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotMetadata(
     drive::FileError error,
     drivefs::mojom::FileMetadataPtr metadata) {
   OnGotDownloadUrl(metadata ? GURL(metadata->download_url) : GURL());
+}
+
+FileManagerPrivateInternalGetThumbnailFunction::
+    FileManagerPrivateInternalGetThumbnailFunction() = default;
+
+FileManagerPrivateInternalGetThumbnailFunction::
+    ~FileManagerPrivateInternalGetThumbnailFunction() = default;
+
+// ChromeAsyncExtensionFunction overrides.
+bool FileManagerPrivateInternalGetThumbnailFunction::RunAsync() {
+  using extensions::api::file_manager_private_internal::GetThumbnail::Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          GetProfile(), render_frame_host());
+  const GURL url = GURL(params->url);
+  const storage::FileSystemURL file_system_url =
+      file_system_context->CrackURL(url);
+
+  if (file_system_url.type() != storage::kFileSystemTypeDriveFs) {
+    return false;
+  }
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(GetProfile());
+  base::FilePath path;
+  if (!integration_service || !integration_service->GetRelativeDrivePath(
+                                  file_system_url.path(), &path)) {
+    return false;
+  }
+  auto* drivefs_interface = integration_service->GetDriveFsInterface();
+  if (!drivefs_interface) {
+    return false;
+  }
+  drivefs_interface->GetThumbnail(
+      path, params->crop_to_square,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(
+              &FileManagerPrivateInternalGetThumbnailFunction::GotThumbnail,
+              this),
+          base::Optional<std::vector<uint8_t>>()));
+  return true;
+}
+
+void FileManagerPrivateInternalGetThumbnailFunction::GotThumbnail(
+    const base::Optional<std::vector<uint8_t>>& data) {
+  if (!data) {
+    SetResult(std::make_unique<base::Value>(""));
+    SendResponse(true);
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&MakeThumbnailDataUrlOnSequence, *data),
+      base::BindOnce(
+          &FileManagerPrivateInternalGetThumbnailFunction::SendEncodedThumbnail,
+          this));
+}
+
+void FileManagerPrivateInternalGetThumbnailFunction::SendEncodedThumbnail(
+    std::string thumbnail_data_url) {
+  SetResult(std::make_unique<base::Value>(std::move(thumbnail_data_url)));
+  SendResponse(true);
 }
 
 }  // namespace extensions

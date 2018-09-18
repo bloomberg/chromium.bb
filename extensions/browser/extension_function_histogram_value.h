@@ -1338,6 +1338,7 @@ enum HistogramValue {
   TABCAPTURE_GETMEDIASTREAMID = 1275,
   WEBVIEWINTERNAL_SETSPATIALNAVIGATIONENABLED = 1276,
   WEBVIEWINTERNAL_ISSPATIALNAVIGATIONENABLED = 1277,
+  FILEMANAGERPRIVATEINTERNAL_GETTHUMBNAIL = 1278,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

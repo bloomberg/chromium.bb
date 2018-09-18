@@ -229,6 +229,12 @@ binding.registerCustomHook(function(bindingsAPI) {
     var url = fileManagerPrivateNatives.GetEntryURL(entry);
     fileManagerPrivateInternal.installLinuxPackage(url, callback);
   });
+
+  apiFunctions.setHandleRequest('getThumbnail', function(
+        entry, cropToSquare, callback) {
+    var url = fileManagerPrivateNatives.GetEntryURL(entry);
+    fileManagerPrivateInternal.getThumbnail(url, cropToSquare, callback);
+  });
 });
 
 registerArgumentMassager('fileManagerPrivate.onDirectoryChanged',

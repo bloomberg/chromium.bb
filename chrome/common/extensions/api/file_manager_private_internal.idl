@@ -35,6 +35,7 @@ namespace fileManagerPrivateInternal {
   callback InstallLinuxPackageCallback =
       void(fileManagerPrivate.InstallLinuxPackageResponse response,
            optional DOMString failure_reason);
+  callback GetThumbnailCallback = void(DOMString ThumbnailDataUrl);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
@@ -103,5 +104,8 @@ namespace fileManagerPrivateInternal {
                                                SimpleCallback callback);
     static void installLinuxPackage(DOMString url,
                                     InstallLinuxPackageCallback callback);
+    static void getThumbnail(DOMString url,
+                             boolean cropToSquare,
+                             GetThumbnailCallback callback);
   };
 };

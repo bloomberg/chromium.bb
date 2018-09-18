@@ -953,6 +953,18 @@ chrome.fileManagerPrivate.sharePathWithCrostini = function(
  */
 chrome.fileManagerPrivate.installLinuxPackage = function(entry, callback) {};
 
+/**
+ * For a file in DriveFS, retrieves its thumbnail. If |cropToSquare| is true,
+ * returns a thumbnail appropriate for file list or grid views; otherwise,
+ * returns a thumbnail appropriate for quickview.
+ * @param {Object} entry
+ * @param {boolean} cropToSquare
+ * @param {function(string):void} callback |thumbnailDataUrl| A data URL for the
+ *     thumbnail as a PNG; |thumbnailDataUrl| is empty if no thumbnail was
+ *     available.
+ */
+chrome.fileManagerPrivate.getThumbnail = function(entry, cropToSquare, callback) {};
+
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
 
