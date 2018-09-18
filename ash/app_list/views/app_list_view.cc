@@ -366,6 +366,9 @@ void AppListView::Initialize(const InitParams& params) {
 
   SetState(app_list_state_);
 
+  // Ensures that the launcher won't open underneath the a11y keyboard
+  CloseKeyboardIfVisible();
+
   // Tablet mode is enabled before the app list is shown, so apply the changes
   // that should occur upon entering the tablet mode here.
   if (IsHomeLauncherEnabledInTabletMode())
@@ -386,11 +389,11 @@ void AppListView::ShowWhenReady() {
 }
 
 void AppListView::Dismiss() {
+  CloseKeyboardIfVisible();
   app_list_main_view_->Close();
   delegate_->DismissAppList();
   SetState(AppListViewState::CLOSED);
   GetWidget()->Deactivate();
-  CloseKeyboardIfVisible();
 }
 
 bool AppListView::CloseOpenedPage() {
@@ -1618,8 +1621,10 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
 
 bool AppListView::CloseKeyboardIfVisible() {
   // TODO(ginko) abstract this function to be in |keyboard::KeyboardController|
+  if (!keyboard::KeyboardController::HasInstance())
+    return false;
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller && keyboard_controller->enabled() &&
+  if (keyboard_controller->enabled() &&
       keyboard_controller->IsKeyboardVisible()) {
     keyboard_controller->HideKeyboardByUser();
     return true;
