@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -261,10 +262,41 @@ void ModelTypeWorker::ApplyPendingUpdates() {
       client_tag_hashes.push_back(update.entity->client_tag_hash);
     }
   }
+  bool contains_duplicate = ContainsDuplicate(std::move(client_tag_hashes));
+
   std::string suffix = ModelTypeToHistogramSuffix(type_);
   base::UmaHistogramBoolean(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates." + suffix,
-      ContainsDuplicate(std::move(client_tag_hashes)));
+      contains_duplicate);
+
+  // Having duplicates should be rare, so only do the de-duping if we've
+  // actually detected one.
+  if (contains_duplicate) {
+    UpdateResponseDataList candidates;
+    pending_updates_.swap(candidates);
+
+    std::map<std::string, size_t> tag_to_index;
+    for (const UpdateResponseData& candidate : candidates) {
+      // Items with empty client tag hash just get passed through.
+      if (candidate.entity->client_tag_hash.empty()) {
+        pending_updates_.push_back(candidate);
+        continue;
+      }
+      // Try to insert. If we already saw an item with the same client tag hash,
+      // this will fail but give us its iterator.
+      auto it_and_success = tag_to_index.insert(std::make_pair(
+          candidate.entity->client_tag_hash, pending_updates_.size()));
+      if (it_and_success.second) {
+        // New client tag hash, append at the end. Note that we already inserted
+        // the correct index (|pending_updates_.size()|) above.
+        pending_updates_.push_back(candidate);
+      } else {
+        // Duplicate! Overwrite the existing item.
+        size_t existing_index = it_and_success.first->second;
+        pending_updates_[existing_index] = candidate;
+      }
+    }
+  }
 
   model_type_processor_->OnUpdateReceived(model_type_state_, pending_updates_);
 
