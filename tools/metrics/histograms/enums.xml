@@ -1789,6 +1789,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="13" label="App started from stylus tools"/>
   <int value="14" label="App started from file manager"/>
   <int value="15" label="App started by left-clicking on link"/>
+  <int value="16" label="App started from link context menu"/>
 </enum>
 
 <enum name="ArcVideoDecodeAcceleratorResult">
