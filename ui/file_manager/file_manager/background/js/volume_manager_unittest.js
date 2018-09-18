@@ -310,6 +310,29 @@ function testGetLocationInfo(callback) {
             volumeManager.getLocationInfo(androidSubFolder);
         assertFalse(androidSubFolderLocationInfo.isReadOnly);
         assertFalse(androidSubFolderLocationInfo.isRootEntry);
+
+        const computersGrandRoot = new MockFileEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/Computers');
+        const computersGrandRootLocationInfo =
+            volumeManager.getLocationInfo(computersGrandRoot);
+        assertEquals(
+            VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT,
+            computersGrandRootLocationInfo.rootType);
+        assertTrue(computersGrandRootLocationInfo.hasFixedLabel);
+        assertTrue(computersGrandRootLocationInfo.isReadOnly);
+        assertTrue(computersGrandRootLocationInfo.isRootEntry);
+
+        const computer = new MockFileEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/Computers/MyComputer');
+        const computerLocationInfo = volumeManager.getLocationInfo(computer);
+        assertEquals(
+            VolumeManagerCommon.RootType.COMPUTER,
+            computerLocationInfo.rootType);
+        assertFalse(computerLocationInfo.hasFixedLabel);
+        assertFalse(computerLocationInfo.isReadOnly);
+        assertTrue(computerLocationInfo.isRootEntry);
       }),
       callback);
 }

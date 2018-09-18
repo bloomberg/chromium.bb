@@ -315,8 +315,8 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
   var isReadOnly;
   var isRootEntry;
   if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
-    // For Drive, the roots are /root, /team_drives and /other, instead of /.
-    // Root URLs contain trailing slashes.
+    // For Drive, the roots are /root, /team_drives, /Computers and /other,
+    // instead of /. Root URLs contain trailing slashes.
     if (entry.fullPath == '/root' || entry.fullPath.indexOf('/root/') === 0) {
       rootType = VolumeManagerCommon.RootType.DRIVE;
       isReadOnly = volumeInfo.isReadOnly;
@@ -336,6 +336,25 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
           isRootEntry = true;
         } else {
           // Regular files/directories under Team Drives.
+          isRootEntry = false;
+          isReadOnly = volumeInfo.isReadOnly;
+        }
+      }
+    } else if (
+        entry.fullPath == VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH ||
+        entry.fullPath.indexOf(
+            VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH + '/') === 0) {
+      if (entry.fullPath == VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH) {
+        rootType = VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT;
+        isReadOnly = true;
+        isRootEntry = true;
+      } else {
+        rootType = VolumeManagerCommon.RootType.COMPUTER;
+        if (util.isComputersRoot(entry)) {
+          isReadOnly = false;
+          isRootEntry = true;
+        } else {
+          // Regular files/directories under a Computer entry.
           isRootEntry = false;
           isReadOnly = volumeInfo.isReadOnly;
         }
