@@ -5,6 +5,7 @@
 #ifndef CHROME_SERVICES_ISOLATED_XR_DEVICE_XR_RUNTIME_PROVIDER_H_
 #define CHROME_SERVICES_ISOLATED_XR_DEVICE_XR_RUNTIME_PROVIDER_H_
 
+#include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -29,8 +30,13 @@ class IsolatedXRRuntimeProvider
 
   IsolatedXRRuntimeProvider();
 
+#if BUILDFLAG(ENABLE_OCULUS_VR)
   std::unique_ptr<device::OculusDevice> oculus_device_;
+#endif
+
+#if BUILDFLAG(ENABLE_OPENVR)
   std::unique_ptr<device::OpenVRDevice> openvr_device_;
+#endif
 
   device::mojom::IsolatedXRRuntimeProviderClientPtr client_;
 };

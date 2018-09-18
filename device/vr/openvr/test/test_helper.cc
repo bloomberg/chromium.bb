@@ -113,12 +113,12 @@ vr::TrackedDevicePose_t TranslatePose(device::PoseFrameData pose) {
 
 }  // namespace
 
-float TestHelper::GetIpd() {
+float TestHelper::GetInterpupillaryDistance() {
   lock_.Acquire();
   if (test_hook_) {
     auto config = test_hook_->WaitGetDeviceConfig();
     lock_.Release();
-    return config.ipd;
+    return config.interpupillary_distance;
   }
   lock_.Release();
   return 0.1f;

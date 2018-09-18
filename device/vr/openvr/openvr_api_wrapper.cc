@@ -72,6 +72,7 @@ bool OpenVRWrapper::Initialize(bool for_rendering) {
         vr::VR_GetGenericInterface(kChromeOpenVRTestHookAPI, &eError));
     if (test_hook_registration_) {
       test_hook_registration_->SetTestHook(test_hook_);
+      test_hook_->AttachCurrentThread();
     }
   }
 
@@ -85,6 +86,8 @@ void OpenVRWrapper::Uninitialize() {
   compositor_ = nullptr;
   test_hook_registration_ = nullptr;
   current_task_runner_ = nullptr;
+  if (test_hook_)
+    test_hook_->DetachCurrentThread();
   vr::VR_Shutdown();
 
   any_initialized_ = false;

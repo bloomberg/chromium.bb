@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/debugger.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -156,7 +157,11 @@ bool XrBrowserTestBase::BlockOnConditionUnsafe(
     const base::TimeDelta& period) {
   base::Time start = base::Time::Now();
   bool successful = false;
-  while (base::Time::Now() - start < timeout) {
+
+  // Poll until the timeout has elapsed, or never if a debugger is attached
+  // because that allows code to be slowly stepped through without breaking
+  // tests.
+  while (base::Time::Now() - start < timeout || base::debug::BeingDebugged()) {
     successful = condition.Run();
     if (successful) {
       break;

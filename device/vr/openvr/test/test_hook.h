@@ -39,7 +39,7 @@ struct PoseFrameData {
 };
 
 struct DeviceConfig {
-  float ipd;
+  float interpupillary_distance;
   float viewport_left[4];   // raw projection left {left, right, top, bottom}
   float viewport_right[4];  // raw projection right {left, right, top, bottom}
 };
@@ -51,6 +51,9 @@ class OpenVRTestHook {
   virtual DeviceConfig WaitGetDeviceConfig() = 0;
   virtual PoseFrameData WaitGetPresentingPose() = 0;
   virtual PoseFrameData WaitGetMagicWindowPose() = 0;
+
+  virtual void AttachCurrentThread() = 0;
+  virtual void DetachCurrentThread() = 0;
 };
 
 class TestHookRegistration {

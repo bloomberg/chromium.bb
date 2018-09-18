@@ -73,7 +73,7 @@
         "unzip": [ "unzip_file" ],
         "util_win" : [ "shell_util_win" ],
         "wifi_util_win": [ "wifi_credentials" ],
-        "xr_device_service": [ "xr_device_provider" ]
+        "xr_device_service": [ "xr_device_provider", "xr_device_test_hook" ]
       }
     },
     "navigation:frame": {
