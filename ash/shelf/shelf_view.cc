@@ -658,12 +658,15 @@ void ShelfView::CreateDragIconProxyByLocationWithNoAnimation(
     const gfx::Point& origin_in_screen_coordinates,
     const gfx::ImageSkia& icon,
     views::View* replaced_view,
-    float scale_factor) {
+    float scale_factor,
+    int blur_radius) {
   drag_replaced_view_ = replaced_view;
   aura::Window* root_window =
       drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
   drag_image_ = std::make_unique<DragImageView>(
       root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  if (blur_radius > 0)
+    SetDragImageBlur(icon.size(), blur_radius);
   drag_image_->SetImage(icon);
   gfx::Size size = drag_image_->GetPreferredSize();
   size.set_width(size.width() * scale_factor);
@@ -2223,6 +2226,17 @@ void ShelfView::UpdateBackButton() {
   GetBackButton()->layer()->SetOpacity(IsTabletModeEnabled() ? 1.f : 0.f);
   GetBackButton()->SetFocusBehavior(
       IsTabletModeEnabled() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
+}
+
+void ShelfView::SetDragImageBlur(const gfx::Size& size, int blur_radius) {
+  drag_image_->SetPaintToLayer();
+  drag_image_->layer()->SetFillsBoundsOpaquely(false);
+  drag_image_mask_ = views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
+                                                  size.width() / 2.0f));
+  drag_image_mask_->layer()->SetBounds(gfx::Rect(size));
+  drag_image_->layer()->SetMaskLayer(drag_image_mask_->layer());
+  drag_image_->layer()->SetBackgroundBlur(blur_radius);
 }
 
 }  // namespace ash
