@@ -1015,8 +1015,9 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   AutocompleteController controller(
-      std::make_unique<ChromeAutocompleteProviderClient>(&profile_), nullptr,
-      AutocompleteProvider::TYPE_SEARCH);
+      std::make_unique<TestAutocompleteProviderClient>(
+          &profile_, &test_url_loader_factory_),
+      nullptr, AutocompleteProvider::TYPE_SEARCH);
   AutocompleteInput input(ASCIIToUTF16("k t"),
                           metrics::OmniboxEventProto::OTHER,
                           ChromeAutocompleteSchemeClassifier(&profile_));
