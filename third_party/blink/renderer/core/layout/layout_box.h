@@ -1789,7 +1789,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     // The first fragment of the inline box containing this LayoutBox, for
     // atomic inline elements. Valid only when
     // IsInLayoutNGInlineFormattingContext().
-    scoped_refptr<NGPaintFragment> first_paint_fragment_;
+    NGPaintFragment* first_paint_fragment_;
   };
 
   std::unique_ptr<LayoutBoxRareData> rare_data_;
@@ -1873,7 +1873,7 @@ inline void LayoutBox::SetInlineBoxWrapper(InlineBox* box_wrapper) {
 }
 
 inline NGPaintFragment* LayoutBox::FirstInlineFragment() const {
-  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_.get()
+  return IsInLayoutNGInlineFormattingContext() ? first_paint_fragment_
                                                : nullptr;
 }
 

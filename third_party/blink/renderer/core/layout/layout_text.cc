@@ -258,7 +258,6 @@ void LayoutText::SetFirstInlineFragment(NGPaintFragment* first_fragment) {
   // NGAbstractInlineTextBox for them.
   for (NGPaintFragment* fragment : NGPaintFragment::InlineFragmentsFor(this))
     NGAbstractInlineTextBox::WillDestroy(fragment);
-  NGPaintFragment::ResetInlineFragmentsFor(this);
   first_paint_fragment_ = first_fragment;
 }
 

@@ -634,7 +634,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void DirtyLinesFromChangedChild(
       LayoutObject* child,
-      MarkingBehavior marking_behaviour = kMarkContainerChain) final {
+      MarkingBehavior marking_behaviour = kMarkContainerChain) override {
     line_boxes_.DirtyLinesFromChangedChild(
         LineLayoutItem(this), LineLayoutItem(child),
         marking_behaviour == kMarkContainerChain);

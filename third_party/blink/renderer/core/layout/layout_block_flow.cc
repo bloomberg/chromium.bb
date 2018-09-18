@@ -2637,6 +2637,8 @@ RootInlineBox* LayoutBlockFlow::CreateAndAppendRootInlineBox() {
   return root_box;
 }
 
+// Note: When this function is called from |LayoutInline::SplitFlow()|, some
+// fragments point to destroyed |LayoutObject|.
 void LayoutBlockFlow::DeleteLineBoxTree() {
   if (ContainsFloats())
     floating_objects_->ClearLineBoxTreePointers();

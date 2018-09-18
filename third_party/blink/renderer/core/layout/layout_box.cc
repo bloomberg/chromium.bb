@@ -2215,7 +2215,6 @@ void LayoutBox::DirtyLineBoxes(bool full_layout) {
 
 void LayoutBox::SetFirstInlineFragment(NGPaintFragment* fragment) {
   CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
-  NGPaintFragment::ResetInlineFragmentsFor(this);
   first_paint_fragment_ = fragment;
 }
 
