@@ -5,25 +5,47 @@
 Polymer({
   is: 'print-preview-other-options-settings',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, I18nBehavior],
 
   properties: {
     disabled: Boolean,
 
-    /** @private */
-    headerFooterCheckboxDisabled_: {
-      type: Boolean,
-      computed: 'computeHeaderFooterCheckboxDisabled_(disabled, ' +
-          'settings.headerFooter.setByPolicy)'
+    /**
+     * @private {!Array<!{name: string,
+     *                    label: string,
+     *                    value: (boolean | undefined),
+     *                    managed: (boolean | undefined),
+     *                    available: (boolean | undefined)}>}
+     */
+    options_: {
+      type: Array,
+      value: function() {
+        return [
+          {name: 'headerFooter', label: 'optionHeaderFooter'},
+          {name: 'duplex', label: 'optionTwoSided'},
+          {name: 'cssBackground', label: 'optionBackgroundColorsAndImages'},
+          {name: 'rasterize', label: 'optionRasterize'},
+          {name: 'selectionOnly', label: 'optionSelectionOnly'},
+        ];
+      },
+    },
+
+    /**
+     * The index of the checkbox that should display the "Options" title.
+     * @private {number}
+     */
+    titleIndex_: {
+      type: Number,
+      value: 0,
     },
   },
 
   observers: [
-    'onHeaderFooterSettingChange_(settings.headerFooter.value)',
-    'onDuplexSettingChange_(settings.duplex.value)',
-    'onCssBackgroundSettingChange_(settings.cssBackground.value)',
-    'onRasterizeSettingChange_(settings.rasterize.value)',
-    'onSelectionOnlySettingChange_(settings.selectionOnly.value)',
+    'onHeaderFooterSettingChange_(settings.headerFooter.*)',
+    'onDuplexSettingChange_(settings.duplex.*)',
+    'onCssBackgroundSettingChange_(settings.cssBackground.*)',
+    'onRasterizeSettingChange_(settings.rasterize.*)',
+    'onSelectionOnlySettingChange_(settings.selectionOnly.*)',
   ],
 
   /** @private {!Map<string, ?number>} */
@@ -54,79 +76,67 @@ Polymer({
   },
 
   /**
-   * @param {boolean} globallyDisabled Value of the |disabled| property.
-   * @param {boolean} setByPolicy Value of |settings.headerFooter.setByPolicy|.
-   * @return {boolean} New value for |headerFooterCheckboxDisabled_|.
+   * @param {number} index The index of the option to update.
    * @private
    */
-  computeHeaderFooterCheckboxDisabled_(globallyDisabled, setByPolicy) {
-    return globallyDisabled || setByPolicy;
+  updateOptionFromSetting_: function(index) {
+    const setting = this.getSetting(this.options_[index].name);
+    this.set(`options_.${index}.available`, setting.available);
+    this.set(`options_.${index}.value`, setting.value);
+    this.set(`options_.${index}.managed`, setting.setByPolicy);
+    this.titleIndex_ = this.options_.findIndex(option => !!option.available);
   },
 
   /**
-   * @param {boolean} value The new value of the header footer setting.
+   * @param {boolean} managed Whether the setting is managed by policy.
+   * @param {boolean} disabled value of this.disabled
+   * @return {boolean} Whether the checkbox should be disabled.
    * @private
    */
-  onHeaderFooterSettingChange_: function(value) {
-    this.$.headerFooter.checked = value;
+  getDisabled_: function(managed, disabled) {
+    return managed || disabled;
+  },
+
+  /** @private */
+  onHeaderFooterSettingChange_: function() {
+    this.updateOptionFromSetting_(0);
+  },
+
+  /** @private */
+  onDuplexSettingChange_: function() {
+    this.updateOptionFromSetting_(1);
+  },
+
+  /** @private */
+  onCssBackgroundSettingChange_: function() {
+    this.updateOptionFromSetting_(2);
+  },
+
+  /** @private */
+  onRasterizeSettingChange_: function() {
+    this.updateOptionFromSetting_(3);
+  },
+
+  /** @private */
+  onSelectionOnlySettingChange_: function() {
+    this.updateOptionFromSetting_(4);
   },
 
   /**
-   * @param {boolean} value The new value of the duplex setting.
+   * @param {!Event} e Contains the checkbox item that was checked.
    * @private
    */
-  onDuplexSettingChange_: function(value) {
-    this.$.duplex.checked = value;
+  onChange_: function(e) {
+    const name = e.model.item.name;
+    this.updateSettingWithTimeout_(name, this.$$(`#${name}`).checked);
   },
 
   /**
-   * @param {boolean} value The new value of the css background setting.
+   * @param {number} index The index of the settings section.
+   * @return {boolean} Whether the title should be displayed on the section.
    * @private
    */
-  onCssBackgroundSettingChange_: function(value) {
-    this.$.cssBackground.checked = value;
-  },
-
-  /**
-   * @param {boolean} value The new value of the rasterize setting.
-   * @private
-   */
-  onRasterizeSettingChange_: function(value) {
-    this.$.rasterize.checked = value;
-  },
-
-  /**
-   * @param {boolean} value The new value of the selection only setting.
-   * @private
-   */
-  onSelectionOnlySettingChange_: function(value) {
-    this.$.selectionOnly.checked = value;
-  },
-
-  /** @private */
-  onHeaderFooterChange_: function() {
-    this.updateSettingWithTimeout_('headerFooter', this.$.headerFooter.checked);
-  },
-
-  /** @private */
-  onDuplexChange_: function() {
-    this.updateSettingWithTimeout_('duplex', this.$.duplex.checked);
-  },
-
-  /** @private */
-  onCssBackgroundChange_: function() {
-    this.updateSettingWithTimeout_(
-        'cssBackground', this.$.cssBackground.checked);
-  },
-
-  /** @private */
-  onRasterizeChange_: function() {
-    this.updateSettingWithTimeout_('rasterize', this.$.rasterize.checked);
-  },
-
-  /** @private */
-  onSelectionOnlyChange_: function() {
-    this.updateSettingWithTimeout_(
-        'selectionOnly', this.$.selectionOnly.checked);
+  isTitleHidden_: function(index) {
+    return index !== this.titleIndex_;
   },
 });
