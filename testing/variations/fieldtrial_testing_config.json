@@ -3609,6 +3609,21 @@
             ]
         }
     ],
+    "ResourceLoadingHints": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ResourceLoadingHints"
+                    ]
+                }
+            ]
+        }
+    ],
     "SRTPromptFieldTrial": [
         {
             "platforms": [
