@@ -27,6 +27,7 @@ aggregate_vector_icons("views_vector_icons") {
     "info.icon",
     "launch.icon",
     "menu_check.icon",
+    "menu_drop_arrow.icon",
     "menu_radio_empty.icon",
     "menu_radio_selected.icon",
     "new_incognito_window.icon",
