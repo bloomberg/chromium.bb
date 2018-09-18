@@ -150,6 +150,7 @@ android_aidl("content_javatests_aidl") {
 }
 
 android_assets("content_shell_assets") {
+  testonly = true
   sources = [
     "$root_out_dir/content_shell.pak",
   ]

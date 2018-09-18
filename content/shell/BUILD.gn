@@ -450,6 +450,8 @@ static_library("content_shell_lib") {
 }
 
 grit("content_shell_resources_grit") {
+  testonly = true
+
   # External code should depend on ":resources" instead.
   visibility = [ ":*" ]
   source = "shell_resources.grd"
@@ -470,6 +472,8 @@ grit("content_shell_resources_grit") {
 }
 
 copy("copy_shell_resources") {
+  testonly = true
+
   sources = [
     "$target_gen_dir/shell_resources.pak",
   ]
@@ -483,6 +487,8 @@ copy("copy_shell_resources") {
 }
 
 group("resources") {
+  testonly = true
+
   public_deps = [
     ":copy_shell_resources",
   ]
@@ -495,6 +501,8 @@ group("resources") {
 }
 
 repack("pak") {
+  testonly = true
+
   sources = [
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
@@ -664,6 +672,7 @@ if (is_mac) {
   }
 
   bundle_data("content_shell_framework_resources") {
+    testonly = true
     sources = [
       "$root_out_dir/content_shell.pak",
       "resources/missingImage.png",
@@ -908,6 +917,8 @@ mojom("mojo_bindings") {
 }
 
 service_manifest("content_shell_packaged_services_manifest_overlay") {
+  testonly = true
+
   source = "//content/shell/browser/content_shell_packaged_services_manifest_overlay.json"
   packaged_services = [ "//services/test/echo:manifest" ]
 }

@@ -36,6 +36,8 @@ service("test_ws") {
 }
 
 service_manifest("manifest") {
+  testonly = true
+
   name = "test_ws"
   source = "manifest.json"
   packaged_services = [ "//services/ws:manifest" ]

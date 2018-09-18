@@ -161,6 +161,8 @@ jumbo_static_library("test_support") {
 }
 
 repack("shell_and_test_pak") {
+  testonly = true
+
   sources = [
     "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
     "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
