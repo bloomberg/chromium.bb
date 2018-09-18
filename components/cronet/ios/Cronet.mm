@@ -198,8 +198,12 @@ class CronetHttpProtocolHandlerDelegate
 }
 
 + (void)setMetricsEnabled:(BOOL)metricsEnabled {
-  [self checkNotStarted];
-  gMetricsEnabled = metricsEnabled;
+  // https://crbug.com/878589
+  // Don't collect NSURLSessionTaskMetrics until iOS 10.2 to avoid crash in iOS.
+  if (@available(iOS 10.2, *)) {
+    [self checkNotStarted];
+    gMetricsEnabled = metricsEnabled;
+  }
 }
 
 + (BOOL)addQuicHint:(NSString*)host port:(int)port altPort:(int)altPort {

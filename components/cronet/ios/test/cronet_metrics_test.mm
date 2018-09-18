@@ -66,7 +66,7 @@ class CronetDisabledMetricsTest : public CronetMetricsTest {
 
 // Tests that metrics data is sane for a QUIC request.
 TEST_F(CronetEnabledMetricsTest, ProtocolIsQuic) {
-  if (@available(iOS 10, *)) {
+  if (@available(iOS 10.2, *)) {
     NSURL* url = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
 
     __block BOOL block_used = NO;
@@ -125,7 +125,7 @@ TEST_F(CronetEnabledMetricsTest, ProtocolIsQuic) {
 
 // Tests that metrics data is sane for an HTTP/1.1 request.
 TEST_F(CronetEnabledMetricsTest, ProtocolIsNotQuic) {
-  if (@available(iOS 10, *)) {
+  if (@available(iOS 10.2, *)) {
     NSURL* url = net::NSURLWithGURL(GURL(TestServer::GetSimpleURL()));
 
     __block BOOL block_used = NO;
@@ -154,7 +154,7 @@ TEST_F(CronetEnabledMetricsTest, ProtocolIsNotQuic) {
 
 // Tests that Cronet provides similar metrics data to iOS.
 TEST_F(CronetEnabledMetricsTest, PlatformComparison) {
-  if (@available(iOS 10, *)) {
+  if (@available(iOS 10.2, *)) {
     NSURL* url = net::NSURLWithGURL(GURL(TestServer::GetSimpleURL()));
 
     // Perform a connection using Cronet.
@@ -209,7 +209,7 @@ TEST_F(CronetEnabledMetricsTest, PlatformComparison) {
 // Tests that the metrics API behaves sanely when making a request to an
 // invalid URL.
 TEST_F(CronetEnabledMetricsTest, InvalidURL) {
-  if (@available(iOS 10, *)) {
+  if (@available(iOS 10.2, *)) {
     NSURL* url = net::NSURLWithGURL(GURL("http://notfound.example.com"));
 
     __block BOOL block_used = NO;
@@ -245,7 +245,7 @@ TEST_F(CronetEnabledMetricsTest, InvalidURL) {
 
 // Tests that the metrics API behaves sanely when the request is canceled.
 TEST_F(CronetEnabledMetricsTest, CanceledRequest) {
-  if (@available(iOS 10, *)) {
+  if (@available(iOS 10.2, *)) {
     NSURL* url = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
 
     __block BOOL block_used = NO;
@@ -266,7 +266,7 @@ TEST_F(CronetEnabledMetricsTest, CanceledRequest) {
 
 // Tests the metrics data for a reused connection is correct.
 TEST_F(CronetEnabledMetricsTest, ReusedConnection) {
-  if (@available(iOS 10, *)) {
+  if (@available(iOS 10.2, *)) {
     NSURL* url = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
 
     __block BOOL block_used = NO;
@@ -324,7 +324,7 @@ TEST_F(CronetEnabledMetricsTest, ReusedConnection) {
 // and contains 0 records at the end of the request. This is a regression test
 // for http://crbug/834401.
 TEST_F(CronetEnabledMetricsTest, SessionWithoutDelegate) {
-  if (@available(iOS 10, *)) {
+  if (@available(iOS 10.2, *)) {
     NSURLSessionConfiguration* default_config =
         [NSURLSessionConfiguration defaultSessionConfiguration];
     [Cronet installIntoSessionConfiguration:default_config];
@@ -365,7 +365,7 @@ TEST_F(CronetEnabledMetricsTest, SessionWithoutDelegate) {
 
 // Tests that the metrics disable switch works.
 TEST_F(CronetDisabledMetricsTest, MetricsDisabled) {
-  if (@available(iOS 10, *)) {
+  if (@available(iOS 10.2, *)) {
     NSURL* url = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
 
     __block BOOL block_used = NO;
