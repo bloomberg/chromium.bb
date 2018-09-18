@@ -102,6 +102,9 @@
         "browse:tech:discourse_infinite_scroll": {
             "DEFAULT": "system_health_mobile_062.wprgo"
         },
+        "browse:tech:discourse_infinite_scroll:2018": {
+            "DEFAULT": "system_health_mobile_067.wprgo"
+        },
         "browse:tools:maps": {
             "DEFAULT": "system_health_mobile_059.wprgo"
         },

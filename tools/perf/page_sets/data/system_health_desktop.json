@@ -63,6 +63,9 @@
         "browse:tech:discourse_infinite_scroll": {
             "DEFAULT": "system_health_desktop_058.wprgo"
         },
+        "browse:tech:discourse_infinite_scroll:2018": {
+            "DEFAULT": "system_health_desktop_065.wprgo"
+        },
         "browse:tools:earth": {
             "DEFAULT": "system_health_desktop_050.wprgo"
         },
