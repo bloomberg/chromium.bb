@@ -8,6 +8,7 @@
       "fuchsia.netstack.Netstack",
       "fuchsia.process.Launcher",
       "fuchsia.ui.scenic.Scenic",
-      "fuchsia.ui.viewsv1.ViewManager"
+      "fuchsia.ui.viewsv1.ViewManager",
+      "fuchsia.vulkan.loader.Loader"
   ]
 }
