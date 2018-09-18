@@ -312,10 +312,13 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     ClearIOSSnapshots(CreatePendingTaskCompletionClosure());
   }
 
+  constexpr base::TaskTraits task_traits = {
+      web::WebThread::IO, base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
+
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
     base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cookies"));
     base::PostTaskWithTraits(
-        FROM_HERE, {web::WebThread::IO},
+        FROM_HERE, task_traits,
         base::BindOnce(
             &ClearCookies, context_getter_,
             net::CookieDeletionInfo::TimeRange(delete_begin, delete_end),
@@ -327,7 +330,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS)) {
     base::RecordAction(base::UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     base::PostTaskWithTraits(
-        FROM_HERE, {web::WebThread::IO},
+        FROM_HERE, task_traits,
         base::BindOnce(
             &ClearChannelIDs, context_getter_, delete_begin, delete_end,
             base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
@@ -370,7 +373,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
         GetApplicationContext()->GetIOSChromeIOThread();
     if (ios_chrome_io_thread) {
       base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {web::WebThread::IO},
+          FROM_HERE, task_traits,
           base::BindOnce(&IOSChromeIOThread::ClearHostCache,
                          base::Unretained(ios_chrome_io_thread)),
           CreatePendingTaskCompletionClosure());
@@ -477,13 +480,12 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE)) {
     base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cache"));
-    ClearHttpCache(
-        context_getter_,
-        base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
-        delete_begin, delete_end,
-        AdaptCallbackForRepeating(
-            base::BindOnce(&NetCompletionCallbackAdapter,
-                           CreatePendingTaskCompletionClosure())));
+    ClearHttpCache(context_getter_,
+                   base::CreateSingleThreadTaskRunnerWithTraits(task_traits),
+                   delete_begin, delete_end,
+                   AdaptCallbackForRepeating(
+                       base::BindOnce(&NetCompletionCallbackAdapter,
+                                      CreatePendingTaskCompletionClosure())));
   }
 
   // Remove omnibox zero-suggest cache results.
