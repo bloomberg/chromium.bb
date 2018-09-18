@@ -159,6 +159,7 @@
     },
     {
       name: "CallCaptureListenersAtCapturePhaseAtShadowHosts",
+      status: "stable",
     },
     {
       name: "Canvas2dContextLostRestored",
