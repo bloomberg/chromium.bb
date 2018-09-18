@@ -277,4 +277,26 @@ bool SVGPathNormalizer::DecomposeArcToCubic(
   return true;
 }
 
+void SVGPathAbsolutizer::EmitSegment(const PathSegmentData& segment) {
+  PathSegmentData absolute_segment = segment;
+  if (!IsAbsolutePathSegType(segment.command)) {
+    absolute_segment.command = ToAbsolutePathSegType(segment.command);
+    if (segment.command != kPathSegArcRel) {
+      absolute_segment.point1 += current_point_;
+      absolute_segment.point2 += current_point_;
+    }
+    absolute_segment.target_point += current_point_;
+  }
+  consumer_->EmitSegment(absolute_segment);
+
+  if (absolute_segment.command == kPathSegClosePath) {
+    current_point_ = sub_path_point_;
+  } else {
+    current_point_ = absolute_segment.target_point;
+    if (absolute_segment.command == kPathSegMoveToAbs) {
+      sub_path_point_ = current_point_;
+    }
+  }
+}
+
 }  // namespace blink

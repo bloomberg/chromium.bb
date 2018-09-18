@@ -46,13 +46,19 @@ bool BuildPathFromByteStream(const SVGPathByteStream& stream, Path& result) {
   return SVGPathParser::ParsePath(source, builder);
 }
 
-String BuildStringFromByteStream(const SVGPathByteStream& stream) {
+String BuildStringFromByteStream(const SVGPathByteStream& stream,
+                                 PathSerializationFormat format) {
   if (stream.IsEmpty())
     return String();
 
   SVGPathStringBuilder builder;
   SVGPathByteStreamSource source(stream);
-  SVGPathParser::ParsePath(source, builder);
+  if (format == kTransformToAbsolute) {
+    SVGPathAbsolutizer absolutizer(&builder);
+    SVGPathParser::ParsePath(source, absolutizer);
+  } else {
+    SVGPathParser::ParsePath(source, builder);
+  }
   return builder.Result();
 }
 

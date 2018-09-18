@@ -37,7 +37,9 @@ bool BuildPathFromByteStream(const SVGPathByteStream&, Path&);
 SVGParsingError BuildByteStreamFromString(const String&, SVGPathByteStream&);
 
 // SVGPathByteStream -> String
-String BuildStringFromByteStream(const SVGPathByteStream&);
+enum PathSerializationFormat { kNoTransformation, kTransformToAbsolute };
+String BuildStringFromByteStream(const SVGPathByteStream&,
+                                 PathSerializationFormat);
 
 }  // namespace blink
 

@@ -412,8 +412,9 @@ static WTF::TextStream& operator<<(WTF::TextStream& ts,
   } else if (IsSVGPathElement(*svg_element)) {
     const StylePath& path =
         svg_style.D() ? *svg_style.D() : *StylePath::EmptyPath();
-    WriteNameAndQuotedValue(ts, "data",
-                            BuildStringFromByteStream(path.ByteStream()));
+    WriteNameAndQuotedValue(
+        ts, "data",
+        BuildStringFromByteStream(path.ByteStream(), kNoTransformation));
   } else {
     NOTREACHED();
   }

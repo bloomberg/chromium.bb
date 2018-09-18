@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/svg/svg_path_data.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -68,6 +69,22 @@ class SVGPathNormalizer {
   FloatPoint current_point_;
   FloatPoint sub_path_point_;
   SVGPathSegType last_command_;
+};
+
+class SVGPathAbsolutizer {
+  STACK_ALLOCATED();
+
+ public:
+  SVGPathAbsolutizer(SVGPathConsumer* consumer) : consumer_(consumer) {
+    DCHECK(consumer_);
+  }
+
+  void EmitSegment(const PathSegmentData&);
+
+ private:
+  SVGPathConsumer* consumer_;
+  FloatPoint sub_path_point_;
+  FloatPoint current_point_;
 };
 
 }  // namespace blink
