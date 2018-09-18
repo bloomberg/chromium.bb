@@ -200,4 +200,46 @@ void FakeDriveFs::GetThumbnail(const base::FilePath& path,
   std::move(callback).Run(base::nullopt);
 }
 
+void FakeDriveFs::CopyFile(const base::FilePath& source,
+                           const base::FilePath& target,
+                           CopyFileCallback callback) {
+  base::FilePath source_absolute_path = mount_path_;
+  base::FilePath target_absolute_path = mount_path_;
+  CHECK(base::FilePath("/").AppendRelativePath(source, &source_absolute_path));
+  CHECK(base::FilePath("/").AppendRelativePath(target, &target_absolute_path));
+
+  base::File::Info source_info;
+  if (!base::GetFileInfo(source_absolute_path, &source_info)) {
+    std::move(callback).Run(drive::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  if (source_info.is_directory) {
+    std::move(callback).Run(drive::FILE_ERROR_NOT_A_FILE);
+    return;
+  }
+
+  base::File::Info target_directory_info;
+  if (!base::GetFileInfo(target_absolute_path.DirName(),
+                         &target_directory_info)) {
+    std::move(callback).Run(drive::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  if (!target_directory_info.is_directory) {
+    std::move(callback).Run(drive::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
+  if (base::PathExists(target_absolute_path)) {
+    std::move(callback).Run(drive::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
+  if (!base::CopyFile(source_absolute_path, target_absolute_path)) {
+    std::move(callback).Run(drive::FILE_ERROR_FAILED);
+    return;
+  }
+  metadata_[target_absolute_path] = metadata_[source_absolute_path];
+  std::move(callback).Run(drive::FILE_ERROR_OK);
+}
+
 }  // namespace drivefs

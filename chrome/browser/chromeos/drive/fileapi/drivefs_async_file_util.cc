@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
@@ -45,64 +46,60 @@ class CopyOperation {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     auto* drive_integration_service =
-        drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-    if (!drive_integration_service->IsMounted()) {
-      return Fail();
+        drive::util::GetIntegrationServiceByProfile(profile_);
+    base::FilePath source_path("/");
+    base::FilePath destination_path("/");
+    if (!drive_integration_service ||
+        !drive_integration_service->GetMountPointPath().AppendRelativePath(
+            src_url_.path(), &source_path) ||
+        !drive_integration_service->GetMountPointPath().AppendRelativePath(
+            dest_url_.path(), &destination_path)) {
+      origin_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback_),
+                                    base::File::FILE_ERROR_INVALID_OPERATION));
+      origin_task_runner_->DeleteSoon(FROM_HERE, this);
+      return;
     }
-    base::FilePath path("/");
-    if (!drive_integration_service->GetMountPointPath().AppendRelativePath(
-            src_url_.path(), &path)) {
-      return Fail();
-    }
-    drive_integration_service->GetDriveFsInterface()->GetMetadata(
-        path, false,
-        mojo::WrapCallbackWithDropHandler(
-            base::BindOnce(&CopyOperation::GotMetadata, base::Unretained(this)),
-            base::BindOnce(&CopyOperation::Fail, base::Unretained(this))));
+    drive_integration_service->GetDriveFsInterface()->CopyFile(
+        source_path, destination_path,
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            base::BindOnce(&CopyOperation::CopyComplete,
+                           base::Unretained(this)),
+            drive::FILE_ERROR_ABORT));
   }
 
  private:
-  void Fail() {
+  void CopyComplete(drive::FileError error) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    origin_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback_), base::File::FILE_ERROR_FAILED));
-    delete this;
-  }
+    switch (error) {
+      case drive::FILE_ERROR_NOT_FOUND:
+      case drive::FILE_ERROR_NO_CONNECTION:
+        origin_task_runner_->PostTask(
+            FROM_HERE,
+            base::BindOnce(&CopyOperation::FallbackToNativeCopyOnOriginThread,
+                           base::Unretained(this)));
+        break;
 
-  void FallbackToNativeCopy() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    origin_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CopyOperation::FallbackToNativeCopyOnOriginThread,
-                       base::Unretained(this)));
+      default:
+        origin_task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(std::move(callback_),
+                                      FileErrorToBaseFileError(error)));
+        origin_task_runner_->DeleteSoon(FROM_HERE, this);
+    }
   }
 
   void FallbackToNativeCopyOnOriginThread() {
     DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
 
+    if (!async_file_util_) {
+      std::move(callback_).Run(base::File::FILE_ERROR_ABORT);
+      return;
+    }
     async_file_util_->AsyncFileUtilAdapter::CopyFileLocal(
         std::move(context_), src_url_, dest_url_, option_,
         std::move(progress_callback_), std::move(callback_));
     delete this;
-  }
-
-  void GotMetadata(drive::FileError error,
-                   drivefs::mojom::FileMetadataPtr metadata) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    if (!metadata) {
-      return Fail();
-    }
-    if (metadata->type != drivefs::mojom::FileMetadata::Type::kHosted) {
-      return FallbackToNativeCopy();
-    }
-
-    // TODO(crbug.com/870009): Implement copy for hosted files once DriveFS
-    // provides an API.
-    Fail();
   }
 
   Profile* const profile_;
@@ -114,6 +111,8 @@ class CopyOperation {
   storage::AsyncFileUtil::StatusCallback callback_;
   scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
   base::WeakPtr<DriveFsAsyncFileUtil> async_file_util_;
+
+  DISALLOW_COPY_AND_ASSIGN(CopyOperation);
 };
 
 }  // namespace
