@@ -122,8 +122,7 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
   if (IsMash())
     return;
 
-  ash::wm::InstallResizeHandleWindowTargeterForWindow(frame->GetNativeWindow(),
-                                                      nullptr);
+  ash::wm::InstallResizeHandleWindowTargeterForWindow(frame->GetNativeWindow());
   ash::Shell::Get()->AddShellObserver(this);
 
   // The ServiceManagerConnection may be nullptr in tests.

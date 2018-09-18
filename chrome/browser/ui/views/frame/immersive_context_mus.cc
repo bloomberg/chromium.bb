@@ -17,12 +17,6 @@ ImmersiveContextMus::ImmersiveContextMus() {}
 
 ImmersiveContextMus::~ImmersiveContextMus() {}
 
-void ImmersiveContextMus::InstallResizeHandleWindowTargeter(
-    ash::ImmersiveFullscreenController* controller) {
-  // There shouldn't be a need to do anything here, the windowmanager takes care
-  // of this for us.
-}
-
 void ImmersiveContextMus::OnEnteringOrExitingImmersive(
     ash::ImmersiveFullscreenController* controller,
     bool entering) {

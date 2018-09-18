@@ -25,8 +25,6 @@ class EventHandler;
 
 namespace ash {
 
-class ImmersiveFullscreenController;
-
 namespace wm {
 
 // Utility functions for window activation.
@@ -111,10 +109,9 @@ ASH_EXPORT void RemoveLimitedPreTargetHandlerForWindow(
     aura::Window* window);
 
 // Installs a resize handler on the window that makes it easier to resize
-// the window. See ResizeHandleWindowTargeter for the specifics.
+// the window.
 ASH_EXPORT void InstallResizeHandleWindowTargeterForWindow(
-    aura::Window* window,
-    ImmersiveFullscreenController* immersive_fullscreen_controller);
+    aura::Window* window);
 
 // Returns true if |window| is currently in tab-dragging process.
 ASH_EXPORT bool IsDraggingTabs(const aura::Window* window);

@@ -18,6 +18,10 @@
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
+namespace aura {
+class WindowTargeter;
+}
+
 namespace gfx {
 class Point;
 class SlideAnimation;
@@ -240,6 +244,12 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   // kImmersiveIsActive property.
   void UpdateEnabled();
 
+  // Adds insets that redirect touch events at the top of the Widget to the
+  // Widget's window instead of a child window. These insets allow triggering
+  // immersive reveal and are not used when the immersive reveal is already
+  // active.
+  void EnableTouchInsets(bool enable);
+
   // Not owned.
   ImmersiveFullscreenControllerDelegate* delegate_;
   views::View* top_container_;
@@ -281,6 +291,11 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
 
   std::unique_ptr<ImmersiveFocusWatcher> immersive_focus_watcher_;
   std::unique_ptr<ImmersiveGestureHandler> immersive_gesture_handler_;
+
+  // The window targeter that was in use before immersive fullscreen mode was
+  // entered, if any. Will be re-installed on the window after leaving immersive
+  // fullscreen.
+  std::unique_ptr<aura::WindowTargeter> normal_targeter_;
 
   // |animations_disabled_for_test_| is initialized to this. See
   // ImmersiveFullscreenControllerTestApi::GlobalAnimationDisabler for details.
