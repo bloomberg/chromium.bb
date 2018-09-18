@@ -1027,10 +1027,14 @@ void PersonalDataManager::ClearAllServerData() {
   // database on startup, and it could get called when the wallet pref is
   // off (meaning this class won't even query for the server data) so don't
   // check the server_credit_cards_/profiles_ before posting to the DB.
-  DCHECK(database_helper_->GetServerDatabase())
-      << "Updating server card metadata without server storage.";
 
-  database_helper_->GetServerDatabase()->ClearAllServerData();
+  // TODO(crbug.com/864519): Move this nullcheck logic to the database helper.
+  // The server database can be null for a limited amount of time before the
+  // sync service gets initialize. Not clearing it does not matter in that case
+  // since it will either point to the local database (cleared next), or not
+  // have been created yet (nothing to clear).
+  if (database_helper_->GetServerDatabase())
+    database_helper_->GetServerDatabase()->ClearAllServerData();
 
   // TODO(crbug.com/864519): Remove this call once addresses support account
   // storage, and also use the database_helper_->GetServerDatabase()
