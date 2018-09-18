@@ -175,6 +175,7 @@ class WebViewPlugin : public blink::WebPlugin,
     // TODO(ojan): Remove this override and have this class use a non-null
     // layerTreeView.
     bool AllowsBrokenNullLayerTreeView() const override;
+    blink::WebLayerTreeView* InitializeLayerTreeView() override;
     void DidInvalidateRect(const blink::WebRect&) override;
     void DidChangeCursor(const blink::WebCursorInfo& cursor) override;
     void ScheduleAnimation() override;

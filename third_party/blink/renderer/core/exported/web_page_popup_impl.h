@@ -61,7 +61,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
  public:
   ~WebPagePopupImpl() override;
-  bool Initialize(WebViewImpl*, PagePopupClient*);
+  void Initialize(WebViewImpl*, PagePopupClient*);
   void ClosePopup();
   WebWidgetClient* WidgetClient() const { return widget_client_; }
   bool HasSamePopupClient(WebPagePopupImpl* other) {
@@ -112,7 +112,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void SetWindowRect(const IntRect&) override;
 
   explicit WebPagePopupImpl(WebWidgetClient*);
-  bool InitializePage();
   void DestroyPage();
   void InitializeLayerTreeView();
   void SetRootLayer(cc::Layer*);
