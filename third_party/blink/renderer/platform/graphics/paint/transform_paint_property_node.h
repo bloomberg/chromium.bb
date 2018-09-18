@@ -162,6 +162,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
            CompositingReason::kComboActiveAnimation;
   }
 
+  bool RequiresCompositingForRootScroller() const {
+    return state_.direct_compositing_reasons & CompositingReason::kRootScroller;
+  }
+
   const CompositorElementId& GetCompositorElementId() const {
     return state_.compositor_element_id;
   }

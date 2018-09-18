@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -301,16 +302,29 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
         layer_bounds.MoveBy(fragment_data.PaintOffset());
         layer_bounds.MoveBy(-context.root_fragment->PaintOffset());
       } else {
-        const TransformationMatrix& transform =
-            GeometryMapper::SourceToDestinationProjection(current_transform,
-                                                          root_transform);
+        const TransformationMatrix* transform;
 
-        if (transform.IsIdentityOr2DTranslation()) {
+        if (current_transform->RequiresCompositingForRootScroller()) {
+          // This is a fast-path for computing the SourceToDestinationProjection
+          // when the current transform is the root scroller's scroll
+          // translation.
+          transform = &current_transform->Matrix();
+#if DCHECK_IS_ON()
+          DCHECK(current_transform->Matrix().IsIdentityOr2DTranslation());
+          DCHECK(transform->ApproximatelyEquals(
+              GeometryMapper::SourceToDestinationProjection(current_transform,
+                                                            root_transform)));
+#endif
+        } else {
+          transform = &GeometryMapper::SourceToDestinationProjection(
+              current_transform, root_transform);
+        }
+        if (transform->IsIdentityOr2DTranslation()) {
           layer_bounds.MoveBy(fragment_data.PaintOffset());
           // The transform should be an integer translation, up to floating
           // point error.
           layer_bounds.Move(
-              LayoutSize((float)transform.E(), (float)transform.F()));
+              LayoutSize((float)transform->E(), (float)transform->F()));
           layer_bounds.MoveBy(-context.root_fragment->PaintOffset());
         } else {
           // This branch can happen due to perspective transforms.
