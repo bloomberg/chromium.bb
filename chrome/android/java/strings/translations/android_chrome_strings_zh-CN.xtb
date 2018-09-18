@@ -238,6 +238,7 @@
 <translation id="2762000892062317888">刚刚</translation>
 <translation id="2777555524387840389">还剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2781151931089541271">还剩 1 秒</translation>
+<translation id="2803478378562657435">正在显示已保存的密码和密码选项</translation>
 <translation id="2810645512293415242">简化版网页不仅可节省数据流量，还可更快速地进行加载。</translation>
 <translation id="281504910091592009">查看和管理您的 <ph name="BEGIN_LINK" />Google 帐号<ph name="END_LINK" />中保存的密码</translation>
 <translation id="2818669890320396765">要将您的书签同步到您的所有设备上，请登录您的帐号并开启同步功能</translation>
@@ -600,7 +601,6 @@
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="572328651809341494">最近打开的标签页</translation>
 <translation id="5726692708398506830">放大网页上的所有内容</translation>
-<translation id="5731185123186077399">个性化的 Google 服务（例如 Google Pay）</translation>
 <translation id="5738816946784116349">Chrome 下载内容</translation>
 <translation id="5748802427693696783">已切换到标准标签页</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
@@ -711,6 +711,7 @@
 <translation id="6573431926118603307">您在其他设备上的 Chrome 中打开的标签页将列在此处。</translation>
 <translation id="6575643671698722332">重置失败。请确保您的设备已联网，然后重试。</translation>
 <translation id="6583199322650523874">为当前网页添加书签</translation>
+<translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">桌面版网站</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +828,7 @@
 <translation id="748127970106343339">确认删除设备凭据</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
+<translation id="7494879913343971937">显示密码</translation>
 <translation id="7494974237137038751">已节省的流量</translation>
 <translation id="7498271377022651285">请稍候…</translation>
 <translation id="7514365320538308">下载</translation>
@@ -894,6 +896,7 @@
 <translation id="802154636333426148">下载失败</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8035133914807600019">新建文件夹…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">更多类似内容</translation>
 <translation id="8037750541064988519">还剩 <ph name="DAYS" /> 天</translation>
 <translation id="804335162455518893">找不到 SD 卡</translation>
@@ -950,6 +953,7 @@
 <translation id="8503559462189395349">Chrome 密码</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="8504988642345501642">当您向上滚动屏幕时，系统会显示指向相关页面的快速链接。您所访问的网页的网址会被发送给 Google。</translation>
+<translation id="8507520749471379845">有可用密码</translation>
 <translation id="8514477925623180633">导出存储在 Chrome 中的密码</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="851751545965956758">禁止网站连接到设备</translation>

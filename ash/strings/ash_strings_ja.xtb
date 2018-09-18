@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">USB-C デバイス（左側面のポート）</translation>
 <translation id="1294929383540927798">ロック画面の通知設定を変更</translation>
 <translation id="1302880136325416935">Bluetooth の設定を表示します。<ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">シェルフを常に表示</translation>
 <translation id="1346748346194534595">右</translation>
 <translation id="1351937230027495976">メニューを折りたたむ</translation>
 <translation id="1383876407941801731">検索</translation>
@@ -89,6 +90,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">通知のミュートを切り替え</translation>
 <translation id="2412593942846481727">アップデートが利用可能</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> は <ph name="DOMAIN" /> が管理する管理対象セッションです</translation>
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" /> に接続されています</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">通知</translation>
@@ -98,11 +100,11 @@
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
 <translation id="2575685495496069081">マルチログインは無効にされています</translation>
 <translation id="2582112259361606227">再起動して更新</translation>
-<translation id="2597972630681408282">読書灯: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2597972630681408282">夜間モード: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
 <translation id="2653659639078652383">送信</translation>
 <translation id="2700493154570097719">キーボードを設定</translation>
-<translation id="2718395828230677721">読書灯</translation>
+<translation id="2718395828230677721">夜間モード</translation>
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="2761704814324807722">ステータス トレイ、時刻 <ph name="TIME" />、<ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> に再接続しています</translation>
@@ -337,8 +339,7 @@
 <translation id="7066646422045619941">このネットワークは管理者によって無効にされています。</translation>
 <translation id="7067196344162293536">自動回転</translation>
 <translation id="7068360136237591149">ファイルを開いて</translation>
-<translation id="7076293881109082629">ログイン中</translation>
-<translation id="7092922358121866860">読書灯の設定を表示</translation>
+<translation id="7092922358121866860">夜間モードの設定を表示</translation>
 <translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
 <translation id="7131634465328662194">制限時間になると自動的にログアウトします。</translation>
 <translation id="7143207342074048698">接続中</translation>

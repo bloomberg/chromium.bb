@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">USB-C ierīce (pieslēgvieta pa kreisi)</translation>
 <translation id="1294929383540927798">Mainiet bloķēšanas ekrāna paziņojumu rādīšanas iestatījumus</translation>
 <translation id="1302880136325416935">Rādīt Bluetooth iestatījumus. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">Vienmēr rādīt plauktu</translation>
 <translation id="1346748346194534595">Pa labi</translation>
 <translation id="1351937230027495976">Sakļaut izvēlni</translation>
 <translation id="1383876407941801731">Meklēt</translation>
@@ -89,6 +90,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Pārslēgt režīmu “Netraucēt”</translation>
 <translation id="2412593942846481727">Ir pieejams atjauninājums</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ir pārvaldīta sesija, kas tiek pārvaldīta domēnā <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Izveidots savienojums ar tīklu <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Pirms piekrītat, lūdzu, pārliecinieties, vai ierīcē tiek parādīta šī ieejas atslēga: <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
@@ -337,7 +339,6 @@
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
 <translation id="7067196344162293536">Pagriezt automātiski</translation>
 <translation id="7068360136237591149">Atvērt failus</translation>
-<translation id="7076293881109082629">Pierakstīšanās</translation>
 <translation id="7092922358121866860">Rādīt nakts režīma iestatījumus</translation>
 <translation id="7098389117866926363">USB-C ierīce (pieslēgvieta aizmugurē pa kreisi)</translation>
 <translation id="7131634465328662194">Jūs tiksiet automātiski izrakstīts.</translation>

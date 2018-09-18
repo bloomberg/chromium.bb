@@ -11,7 +11,7 @@
 <translation id="1843424232666537147">Chromium कडे अशी वैशिष्ट्ये आहेत जी आपल्याला आपला इंटरनेट डेटा आणि आपण किती द्रुतपणे वेबपृष्ठे लोड करण्यात सक्षम आहात हे व्यवस्थापित करण्यास मदत करतात.
 <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="2075400798887076382">आपण आपल्‍या संगणकावर उघडलेल्‍या टॅबमध्‍ये, थेट येथून प्रवेश करा. आपल्‍या संगणकावर फक्त Chromium उघडा, मेनूवर जा आणि "Chromium वर साइन इन करा…" निवडा</translation>
-<translation id="2168108852149185974">Chromium क्रॅश होण्याचे कारण काही अॅड-ऑन आहेत. कृपया ती अनइंस्टॉल करा:</translation>
+<translation id="2168108852149185974">काही अॅड-ऑनमुळे Chromium क्रॅश होते. कृपया ती अनइंस्टॉल करा:</translation>
 <translation id="2178608107313874732">Chromium आत्ता आपला कॅमेरा वापरू शकत नाही</translation>
 <translation id="2195025571279539885">Chromium ने या साइटवरून पुढील वेळी <ph name="LANGUAGE_NAME" /> पेज भाषांतरित करण्याची ऑफर द्यावी असे आपण इच्छिता?</translation>
 <translation id="2647554856022461007">Chromium तुमचा ब्राउझिंग अनुभवात सुधारणा करण्यासाठी वेब सेवा वापरू शकते. तुमच्याकडे या सेवा बंद करण्याचा पर्याय आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
@@ -42,7 +42,7 @@
 <translation id="6626296268883197964">हे अॅप्लिकेशन वापरून, तुम्ही Chromium च्या <ph name="BEGIN_LINK_TOS" />सेवा अटी<ph name="END_LINK_TOS" /> आणि <ph name="BEGIN_LINK_PRIVACY" />गोपनीयता सूचनां<ph name="END_LINK_PRIVACY" /> शी सहमत होता.</translation>
 <translation id="7099326575020694068">Chromium विभाजित दृश्य मोड मध्ये आपला कॅमेरा वापरू शकत नाही</translation>
 <translation id="7208566199746267865">तुमची खाती वेबवर आणून Chromium तुमचा वेळ वाचविते. तुम्ही सेटिंग्जमध्ये खाती जोडू किंवा काढू शकता.</translation>
-<translation id="7269362888766543920">Chromium क्रॅश होण्याचे कारण काही अॅड-ऑन आहेत. कृपया ते अनइंस्टॉल करून पहा.</translation>
+<translation id="7269362888766543920">काही अॅड-ऑनमुळे Chromium क्रॅश होते. कृपया ते अनइंस्टॉल करून पहा.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">निवडलेला डेटा Chromium आणि संकालित केलेल्या डिव्हाइस मधून काढला गेला आहे. आपल्या Google खात्यामध्ये history.google.com येथे Google च्या इतर सेवांमधील शोध आणि क्रियाकलाप यासारख्या ब्राउझिंग इतिहासाची इतर स्वरूपे असू शकतात.</translation>
 <translation id="7400689562045506105">Chromium सर्वत्र वापरा</translation>
@@ -52,10 +52,10 @@
 <translation id="786327964234957808">आपण संकालित केलेली खाती <ph name="USER_EMAIL1" /> वरून <ph name="USER_EMAIL2" /> वर स्विच करीत आहात. आपला विद्यमान Chromium डेटा <ph name="DOMAIN" /> द्वारे व्यवस्थापित केला आहे. हे आपला डेटा या डिव्हाइस वरून हटवेल परंतु आपला डेटा <ph name="USER_EMAIL1" /> मध्ये असेल.</translation>
 <translation id="8175055321229419309">टीप: <ph name="BEGIN_LINK" />Chromium आपल्या डॉकमध्ये हलवा<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">आपल्या स्थानावर आधारित Chromium मध्ये उत्कृष्ट Google अनुभव मिळवा.</translation>
-<translation id="8353224596138547809">आपण या साइटसाठी Chromium ने आपला पासवर्ड सेव्ह करू इच्छिता?</translation>
+<translation id="8353224596138547809">या साइटसाठी Chromium ने तुमचा पासवर्ड सेव्ह करावा का?</translation>
 <translation id="8508544542427105412"><ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> कधीही कस्टमाइझ केली जाऊ शकतात. Chromium आणि भाषांतर, शोध आणि जाहिरातींसारख्या Google सेवा पर्सनलाइझ करण्यासाठी Google तुम्ही भेट देत असलेल्या साइटवरील आशय, ब्राउझर परस्परसंवाद आणि अॅक्टिव्हिटी वापरू शकते.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium लेखक. सर्व हक्क राखीव.</translation>
-<translation id="8809780021347235332">इमेज सेव्ह करण्‍यासाठी, Chromium ला आपले फोटो वापरू देण्‍यासाठी सेटिंग्जवर टॅप करा</translation>
+<translation id="8809780021347235332">इमेज सेव्ह करण्‍यासाठी, Chromium ला तुमचे फोटो वापरू देण्‍यासाठी सेटिंग्जवर टॅप करा</translation>
 <translation id="9022552996538154597">Chromium वर साइन इन करा</translation>
 <translation id="985602178874221306">Chromium लेखक</translation>
 </translationbundle>

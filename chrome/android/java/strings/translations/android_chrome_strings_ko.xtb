@@ -238,6 +238,7 @@
 <translation id="2762000892062317888">방금 전</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" />초 남음</translation>
 <translation id="2781151931089541271">1초 남음</translation>
+<translation id="2803478378562657435">저장된 비밀번호 및 비밀번호 옵션 표시 중</translation>
 <translation id="2810645512293415242">페이지가 간소화되어 데이터가 절약되고 로드 속도가 빨라졌습니다.</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google 계정<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
 <translation id="2818669890320396765">어느 기기에서나 내 북마크를 사용하려면 로그인하고 동기화를 사용 설정하세요.</translation>
@@ -600,7 +601,6 @@
 하지만 완전한 비밀이 보장되는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체(ISP), 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
 <translation id="572328651809341494">최근 탭</translation>
 <translation id="5726692708398506830">페이지의 모든 항목 확대</translation>
-<translation id="5731185123186077399">Google Pay와 같은 맞춤형 Google 서비스</translation>
 <translation id="5738816946784116349">Chrome 다운로드</translation>
 <translation id="5748802427693696783">일반 탭으로 전환됨</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
@@ -711,6 +711,7 @@
 <translation id="6573431926118603307">다른 기기의 Chrome에서 연 탭이 여기에 표시됩니다.</translation>
 <translation id="6575643671698722332">재설정하지 못했습니다. 온라인 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="6583199322650523874">현재 페이지 북마크</translation>
+<translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">데스크톱 사이트</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" />GB</translation>
@@ -827,6 +828,7 @@
 <translation id="748127970106343339">기기 사용자 인증 정보 삭제 확인</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />(<ph name="TIME_SINCE_UPDATE" />에 업데이트됨)</translation>
+<translation id="7494879913343971937">비밀번호 표시</translation>
 <translation id="7494974237137038751">절약한 데이터</translation>
 <translation id="7498271377022651285">잠시 기다려 주세요…</translation>
 <translation id="7514365320538308">다운로드</translation>
@@ -894,6 +896,7 @@
 <translation id="802154636333426148">다운로드 실패</translation>
 <translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>
 <translation id="8035133914807600019">새 폴더…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">비슷한 항목 더보기</translation>
 <translation id="8037750541064988519"><ph name="DAYS" />일 남음</translation>
 <translation id="804335162455518893">SD 카드가 없음</translation>
@@ -950,6 +953,7 @@
 <translation id="8503559462189395349">Chrome 비밀번호</translation>
 <translation id="8503813439785031346">사용자이름</translation>
 <translation id="8504988642345501642">위로 스크롤하면 관련 페이지의 빠른 링크가 표시됩니다. 방문한 페이지의 URL이 Google로 전송됩니다.</translation>
+<translation id="8507520749471379845">사용할 수 있는 비밀번호</translation>
 <translation id="8514477925623180633">Chrome으로 저장한 비밀번호 내보내기</translation>
 <translation id="8514577642972634246">시크릿 모드로 들어가기</translation>
 <translation id="851751545965956758">사이트에서 기기에 연결하지 못하도록 차단</translation>

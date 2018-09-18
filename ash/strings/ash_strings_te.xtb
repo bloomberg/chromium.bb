@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">USB-C పరికరం (ఎడమ పోర్ట్)</translation>
 <translation id="1294929383540927798">లాక్-స్క్రీన్ నోటిఫికేషన్ సెట్టింగ్‌లను మార్చండి</translation>
 <translation id="1302880136325416935">బ్లూటూత్ సెట్టింగ్‌లను చూపుతుంది. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">ఎల్లప్పుడూ అరను చూపించు</translation>
 <translation id="1346748346194534595">కుడి</translation>
 <translation id="1351937230027495976">మెనూను కుదించు</translation>
 <translation id="1383876407941801731">శోధించు</translation>
@@ -89,6 +90,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">అంతరాయం కలిగించవద్దు ఎంపికను టోగుల్ చేయండి</translation>
 <translation id="2412593942846481727">అప్‌డేట్ అందుబాటులో ఉంది</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ఒక నిర్వహిత సెషన్, ఇది <ph name="DOMAIN" /> ద్వారా నిర్వహించబడుతుంది</translation>
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" />కి కనెక్ట్ చేయబడింది</translation>
 <translation id="2429753432712299108">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది. ఆమోదించడానికి ముందు, దయచేసి ఆ పరికరంలో ఈ పాస్‌కీ చూపబడుతోందని నిర్ధారించుకోండి: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">ప్రకటనలు</translation>
@@ -338,7 +340,6 @@
 <translation id="7066646422045619941">ఈ నెట్‌వర్క్‌ను మీ నిర్వాహకులు నిలిపివేసారు.</translation>
 <translation id="7067196344162293536">స్వయంచాలకంగా తిప్పు</translation>
 <translation id="7068360136237591149">ఫైల్‌లు తెరువు</translation>
-<translation id="7076293881109082629">సైన్ ఇన్ చేస్తోంది</translation>
 <translation id="7092922358121866860">రాత్రి కాంతి సెట్టింగ్‌లను చూపుతుంది</translation>
 <translation id="7098389117866926363">USB-C పరికరం (వెనుక భాగంలో ఎడమ పోర్ట్)</translation>
 <translation id="7131634465328662194">మీరు ఆటోమేటిక్‌గా సైన్ అవుట్ చేయబడతారు.</translation>

@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">USB-C 裝置 (左側連接埠)</translation>
 <translation id="1294929383540927798">變更螢幕鎖定通知設定</translation>
 <translation id="1302880136325416935">顯示藍牙設定。<ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">一律顯示檔案櫃</translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="1351937230027495976">收合選單</translation>
 <translation id="1383876407941801731">搜尋</translation>
@@ -89,6 +90,7 @@
 <translation id="2391579633712104609">180 度</translation>
 <translation id="239188844683466770">切換「零打擾」模式</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
+<translation id="2413728805700750528">「<ph name="DISPLAY_NAME" />」是由 <ph name="DOMAIN" /> 管理的工作階段</translation>
 <translation id="2416346634399901812">已連線至<ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。接受要求前，請確認裝置顯示以下密碼金鑰：<ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">通知</translation>
@@ -337,7 +339,6 @@
 <translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
 <translation id="7067196344162293536">自動旋轉</translation>
 <translation id="7068360136237591149">開啟檔案</translation>
-<translation id="7076293881109082629">登入中</translation>
 <translation id="7092922358121866860">顯示夜燈設定</translation>
 <translation id="7098389117866926363">USB-C 裝置 (背面左側連接埠)</translation>
 <translation id="7131634465328662194">系統會自動將你登出。</translation>

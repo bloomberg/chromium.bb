@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Numărul de telefon este obligatoriu</translation>
 <translation id="1517500485252541695">Carduri de credit și de debit acceptate</translation>
 <translation id="1519264250979466059">Dată versiune:</translation>
+<translation id="1521655867290435174">Foi de calcul Google</translation>
 <translation id="1527263332363067270">Se așteaptă conectarea…</translation>
 <translation id="1532118530259321453">Această pagină afișează mesajul</translation>
 <translation id="153384715582417236">Asta este tot</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Exportă în format MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Conexiunea a fost resetată.</translation>
+<translation id="2785008241190445880">Marcajul a fost înlocuit</translation>
 <translation id="2788784517760473862">Carduri de credit acceptate</translation>
 <translation id="2794233252405721443">Site blocat</translation>
 <translation id="2799020568854403057">Site-ul pe care urmează să îl accesezi conține aplicații dăunătoare</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">Accesez acum</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate conține erori. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
+<translation id="467809019005607715">Prezentări Google</translation>
 <translation id="4690462567478992370">Nu mai folosi un certificat nevalid</translation>
 <translation id="4690954380545377795">Este posibil să pierzi accesul la Contul Google sau să fii victima unui furt de identitate. Chrome îți recomandă să îți schimbi acum parola.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">Alege informațiile de contact</translation>
 <translation id="5327248766486351172">Nume</translation>
 <translation id="5332219387342487447">Metoda de expediere</translation>
+<translation id="5344579389779391559">Această pagină poate să genereze costuri</translation>
 <translation id="5355557959165512791">Nu poți accesa <ph name="SITE" /> acum, deoarece certificatul său a fost revocat. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="536296301121032821">Setările pentru politică nu au putut fi stocate</translation>
 <translation id="5371425731340848620">Actualizează cardul</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">An</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}few{Pagina #}other{Pagina #}}</translation>
 <translation id="6017850046339264347">Atacatorii de pe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ar putea instala aplicații înșelătoare care pretind a fi altceva sau culeg date care pot fi folosite pentru a te urmări. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Personalizează Chrome</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sincronizate)</translation>
 <translation id="6027201098523975773">Introdu un nume</translation>
 <translation id="6039846035001940113">Dacă problema persistă, contactează proprietarul site-ului.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">Acest conținut ar putea încerca să te păcălească să instalezi software sau să dezvălui informații cu caracter personal. <ph name="BEGIN_LINK" />Afișează oricum<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Nu poți accesa <ph name="SITE" /> acum, deoarece site-ul folosește fixarea certificatelor. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="6059925163896151826">Dispozitive USB</translation>
+<translation id="6060991652695587932">Alege-ți serviciul de e-mail pentru acces rapid</translation>
 <translation id="6071091556643036997">Tipul de politică nu este valid.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Acest card va fi salvat în Contul Google pentru finalizarea mai ușoară a plății pe toate dispozitivele.}few{Aceste carduri vor fi salvate în Contul Google pentru finalizarea mai ușoară a plății pe toate dispozitivele.}other{Aceste carduri vor fi salvate în Contul Google pentru finalizarea mai ușoară a plății pe toate dispozitivele.}}</translation>
 <translation id="6080696365213338172">Ați accesat conținut utilizând un certificat oferit de administrator. Datele pe care le transmiteți către <ph name="DOMAIN" /> pot fi interceptate de administratorul dvs.</translation>
@@ -904,6 +910,7 @@ Detalii suplimentare:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nu</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Modificarea sesiunii gestionate</translation>
 <translation id="7390545607259442187">Confirmă cardul</translation>
 <translation id="7400418766976504921">Adresă URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;Această eroare se va afișa dacă ai un software Superfish pe computerul Windows.&lt;/p&gt;
@@ -994,6 +1001,7 @@ Detalii suplimentare:
 <translation id="7815407501681723534">S-au găsit <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> pentru „<ph name="SEARCH_STRING" />”</translation>
 <translation id="7818867226424560206">Gestionarea politicilor</translation>
 <translation id="782886543891417279">Rețeaua Wi-Fi pe care o folosești (<ph name="WIFI_NAME" />) poate solicita accesarea paginii de conectare.</translation>
+<translation id="7835178595033117206">Marcajul a fost eliminat</translation>
 <translation id="785549533363645510">Cu toate acestea, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Ieși de pe site?</translation>
@@ -1130,6 +1138,7 @@ Detalii suplimentare:
 <translation id="8874824191258364635">Introdu un număr de card valid</translation>
 <translation id="8876793034577346603">Configurația rețelei nu a putut fi analizată.</translation>
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
+<translation id="8892964541482452187">Butonul Comută între file, apasă pe Enter pentru a comuta la această filă</translation>
 <translation id="8903921497873541725">Mărește</translation>
 <translation id="8931333241327730545">Dorești să salvezi acest card în Contul Google?</translation>
 <translation id="8932102934695377596">Ora este setată în trecut</translation>
@@ -1155,6 +1164,7 @@ Detalii suplimentare:
 <translation id="9035022520814077154">Eroare de securitate</translation>
 <translation id="9038649477754266430">Folosește un serviciu de predicții pentru a încărca paginile mai rapid</translation>
 <translation id="9039213469156557790">În plus, această pagină include alte resurse care nu sunt securizate. Aceste resurse sunt vizibile pentru alți utilizatori în cursul transferului și pot fi modificate de un atacator pentru a schimba comportamentul paginii.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat nevalid.</translation>
 <translation id="9050666287014529139">Expresie de acces</translation>
 <translation id="9065203028668620118">Editează</translation>
@@ -1178,6 +1188,7 @@ Detalii suplimentare:
 <translation id="9170848237812810038">&amp;Anulează</translation>
 <translation id="9171296965991013597">Ieși din aplicație?</translation>
 <translation id="917450738466192189">Certificatul serverului nu este valid.</translation>
+<translation id="9183302530794969518">Documente Google</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> folosește un protocol neacceptat.</translation>
 <translation id="9205078245616868884">Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru a începe sincronizarea.</translation>
 <translation id="9207861905230894330">Articolul nu a fost adăugat.</translation>

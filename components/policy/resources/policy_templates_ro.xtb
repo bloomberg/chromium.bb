@@ -129,6 +129,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1387596372902085462">Dacă se acordă încredere infrastructurii PKI vechi a Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantele activate asociate dispozitivelor companiei</translation>
 <translation id="1397855852561539316">Adresă URL de sugerare a furnizorului de căutare prestabilit</translation>
+<translation id="142346659686073702">Permite utilizatorilor neafiliați să folosească Crostini</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa IP sau adresa URL a serverului proxy</translation>
 <translation id="1435659902881071157">Configurare de rețea la nivel de dispozitiv</translation>
@@ -373,6 +374,12 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă politica nu este configurată, va fi considerată ca fiind activată. Vezi descrierea de mai sus.</translation>
 <translation id="2113068765175018713">Limitează durata de funcționare a dispozitivului prin repornirea automată a acestuia</translation>
+<translation id="2116790137063002724">Această politică stabilește dacă se raportează informațiile care se pot folosi pentru a identifica utilizatorii, precum datele de conectare la sistemul de operare, datele de conectare la profilul <ph name="PRODUCT_NAME" />, numele profilului <ph name="PRODUCT_NAME" />, calea profilului <ph name="PRODUCT_NAME" /> și calea executabilă <ph name="PRODUCT_NAME" />.
+
+      Când politica nu este setată sau este activată, se colectează informații care se pot folosi pentru a identifica utilizatorii.
+      Când politica este dezactivată, nu se colectează informații care se pot folosi pentru a identifica utilizatorii.
+
+      Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Permiteți notificări pentru aceste site-uri</translation>
 <translation id="2131902621292742709">Interval până la reducerea luminozității ecranului la funcționarea pe baterie</translation>
 <translation id="2132732175597591362">Controlează lista albă cu șabloane de adrese URL pentru care redarea automată va fi întotdeauna activată.
@@ -854,6 +861,22 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultCookiesSetting” dacă este setată, fie din configurația personală a utilizatorului, în caz contrar.
 
           Consultă și politicile „CookiesBlockedForUrls” și „CookiesSessionOnlyForUrls”. Reține că nu trebuie să existe șabloane de adrese URL conflictuale între aceste trei politici, deoarece nu se specifică politica pentru care se va acorda prioritate.</translation>
+<translation id="3373364525435227558">Setează una sau mai multe limbi recomandate pentru o sesiune gestionată, astfel încât utilizatorii să poată alege cu ușurință una dintre limbile respective.
+
+      Utilizatorul poate să aleagă o limbă și un aspect al tastaturii înainte de a începe o sesiune gestionată. În mod prestabilit, toate limbile compatibile cu <ph name="PRODUCT_OS_NAME" /> sunt afișate în ordine alfabetică. Poți să folosești această politică pentru a muta un set de limbi recomandate în capul listei.
+
+      Dacă politica nu este setată, limba actuală a interfeței de utilizare va fi preselectată.
+
+      Dacă politica este setată, limbile recomandate vor fi mutate în partea de sus a listei și vor fi separate vizual de restul limbilor. Limbile recomandate se vor afișa în ordinea în care apar în politică. Prima limbă recomandată va fi preselectată.
+
+      Dacă există mai multe limbi recomandate, se presupune că utilizatorii vor dori să selecteze dintre limbile respective. Opțiunea de selectare a limbii și a aspectului tastaturii va fi afișată foarte vizibil la începerea unei sesiuni gestionate. În caz contrar, se va presupune că majoritatea utilizatorilor doresc să folosească limba preselectată. Opțiunea de selectare a limbii și a aspectului tastaturii va fi afișată mai puțin vizibil la începerea unei sesiuni gestionate.
+
+      Când această politică este setată, iar conectarea automată este activată (consultă politicile |DeviceLocalAccountAutoLoginId| și |DeviceLocalAccountAutoLoginDelay|), sesiunea gestionată inițiată automat va folosi prima limbă recomandată și cel mai popular aspect al tastaturii pentru limba respectivă.
+
+      Aspectul preselectat al tastaturii va fi întotdeauna aspectul cel mai popular pentru limba respectivă.
+
+      Această politică poate fi setată numai ca recomandare. O poți folosi pentru a muta un set de limbi recomandate în capul listei, însă utilizatorii vor avea întotdeauna posibilitatea să aleagă pentru sesiunea lor orice limbă compatibilă cu <ph name="PRODUCT_OS_NAME" />.
+      </translation>
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
 <translation id="3414260318408232239">Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> folosește versiunea minimă prestabilită, care este TLS 1.0.
 
@@ -1090,6 +1113,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este activată sau nu este configurată, utilizatorii pot valorifica oferte prin înregistrarea sistemului de operare Chrome.
 
       Dacă politica nu este activată, utilizatorii nu vor putea valorifica oferte.</translation>
+<translation id="4008507541867797979">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va afișa utilizatorii existenți pe ecranul de conectare și va permite alegerea unuia.
+
+      Dacă politica este dezactivată, <ph name="PRODUCT_OS_NAME" /> nu va afișa utilizatorii existenți pe ecranul de conectare. Se va afișa ecranul de conectare normal (care solicită adresa de e-mail și parola sau numărul de telefon al utilizatorului) sau ecranul interstițial SAML (dacă este activat prin politica <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), cu excepția cazului în care s-a configurat o sesiune gestionată, caz în care se vor afișa numai conturile pentru sesiuni gestionate și se va permite alegerea unuia.
+
+      Reține că această politică nu afectează păstrarea sau eliminarea de pe dispozitiv a datelor locale ale utilizatorului.</translation>
 <translation id="4010738624545340900">Permiteți invocarea casetelor de dialog pentru selectarea fișierelor</translation>
 <translation id="4012737788880122133">Când politica este activată, se dezactivează actualizările automate.
 
@@ -1484,6 +1512,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este activată sau nu este specificată, ciclurile de viață ale filelor sunt activate.</translation>
 <translation id="5208240613060747912">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea să afișeze notificări. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultNotificationsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="5219844027738217407">În cazul aplicațiilor Android, această politică afectează numai microfonul. Când politica este activată, microfonul este dezactivat pentru toate aplicațiile Android, fără excepții.</translation>
+<translation id="5228316810085661003">Întârzierea până la conectarea automată la contul local de pe dispozitiv.
+
+      Dacă politica |DeviceLocalAccountAutoLoginId| nu este setată, această politică nu are niciun efect. În caz contrar:
+
+      Dacă această politică este setată, aceasta stabilește intervalul de inactivitate al utilizatorului care trebuie să treacă înainte de conectarea automată la contul local de pe dispozitiv indicat de politica |DeviceLocalAccountAutoLoginId|.
+
+      Dacă politica nu este setată, timpul limită va fi de 0 milisecunde.
+
+      Această politică este specificată în milisecunde.</translation>
 <translation id="523505283826916779">Setări de accesibilitate</translation>
 <translation id="5247006254130721952">Blochează descărcările periculoase</translation>
 <translation id="5248863213023520115">Setează tipurile de criptare permise la solicitarea tichetelor Kerberos de la un server <ph name="MS_AD_NAME" />.
@@ -1504,6 +1541,12 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5272684451155669299">Dacă este activată, utilizatorul poate folosi hardware-ul de pe dispozitivele Chrome pentru a-și atesta la distanță identitatea către autoritatea de certificare pentru confidențialitate prin <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> folosind <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Dacă este dezactivată sau dacă nu este configurată, apelurile către API nu vor reuși și vor genera un cod de eroare.</translation>
+<translation id="5277806246014825877">Permite acestui utilizator să ruleze Crostini.
+
+      Dacă politica este dezactivată, Crostini nu este activat pentru acest utilizator.
+      Dacă este activată sau nu este setată, Crostini este activat pentru utilizator atât timp cât și celelalte setări permit acest lucru.
+      Toate cele trei politici, VirtualMachinesAllowed, CrostiniAllowed și DeviceUnaffiliatedCrostiniAllowed, trebuie să fie activate atunci când se aplică pentru a permite rularea Crostini.
+      Atunci când se dezactivează politica, se aplică noilor containere Crostini care pornesc, dar nu le închide pe cele care rulează deja.</translation>
 <translation id="5283457834853986457">Dezactivează instrumentul de găsire de pluginuri (învechit)</translation>
 <translation id="5288772341821359899">Dacă politica este configurată, intervalul de porturi UDP folosit de WebRTC este limitat la intervalul de porturi specificat (porturile limită ale intervalului sunt incluse).
 
@@ -1540,6 +1583,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5370279767682621504">Activează compatibilitatea cu HTTP/0.9 pentru porturile care nu sunt prestabilite</translation>
 <translation id="5378985487213287085">Vă permite să setați dacă site-urile web au permisiunea de a afișa notificări pe desktop. Afișarea notificărilor pe desktop poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web vrea să afișeze notificări pe desktop. Dacă această politică nu este setată, va fi utilizată politica „AskNotifications”, iar utilizatorul va putea să o schimbe.</translation>
 <translation id="538108065117008131">Permite <ph name="PRODUCT_FRAME_NAME" /> să gestioneze următoarele tipuri de conținut.</translation>
+<translation id="5391388690191341203">Contul local de pe dispozitiv pentru conectarea automată</translation>
 <translation id="5392172595902933844">Informațiile despre starea Android sunt trimise la
       server.
 
@@ -1564,6 +1608,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5457924070961220141">Vă permite să configurați motorul de redare HTML prestabilit atunci când <ph name="PRODUCT_FRAME_NAME" /> este instalat. Setarea prestabilită este să permiteți browserului gazdă să efectueze redarea, dar opțional o puteți anula, pentru ca <ph name="PRODUCT_FRAME_NAME" /> să redea paginile HTML în mod prestabilit.</translation>
 <translation id="5464816904705580310">Configurați setările pentru utilizatorii gestionați.</translation>
 <translation id="546726650689747237">Interval până la reducerea luminozității ecranului la funcționarea pe c.a.</translation>
+<translation id="5469143988693423708">Utilizatorul are permisiunea de a rula Crostini</translation>
 <translation id="5469825884154817306">Blochează imagini de pe aceste site-uri</translation>
 <translation id="5475361623548884387">Activează printarea</translation>
 <translation id="547601067149622666">Nu permite anunțurile pe site-urile cu anunțuri deranjante</translation>
@@ -1615,6 +1660,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Reține că acest lucru nu este recomandat, deoarece astfel se poate permite evitarea extensiei nameConstraints care limitează numele de gazdă pentru care poate fi autorizat un anumit certificat.
 
       Dacă politica nu este configurată sau dacă este dezactivată, certificatele de server din care lipsește extensia subjectAlternativeName cu un nume DNS sau o adresă IP nu vor fi considerate de încredere.</translation>
+<translation id="5581292529942108810">Configurează politicile privind Chrome Reporting Extension.
+
+      Această politică se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Gestionează serviciile de localizare Google Android</translation>
 <translation id="5586942249556966598">Nicio acțiune</translation>
 <translation id="5630352020869108293">Restabiliți ultima sesiune</translation>
@@ -1850,6 +1898,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6310223829319187614">Activează completarea automată a numelui de domeniu la conectarea utilizatorului</translation>
 <translation id="6315673513957120120">Chrome afișează o pagină de avertisment atunci când utilizatorii accesează site-uri care au erori SSL. În mod prestabilit sau atunci când această politică este activată, utilizatorii au permisiunea să-și continue navigarea dând clic pe aceste pagini de avertisment.
       Dacă această politică este dezactivată, utilizatorii nu mai au permisiunea să-și continue navigarea dând clic pe aceste pagini de avertisment.</translation>
+<translation id="6352543686437322588">Contul local de pe dispozitiv pentru conectare automată după o întârziere.
+
+      Dacă această politică este setată, sesiunea indicată se va conecta automat după o anumită perioadă de timp care s-a scurs după afișarea ecranului de conectare fără ca utilizatorul să interacționeze cu acesta. Contul local de pe dispozitiv trebuie să fie deja configurat (consultă |DeviceLocalAccounts|).
+
+      Dacă politica nu este setată, nu va avea loc conectarea automată.</translation>
 <translation id="6353901068939575220">Specifică parametrii utilizați la căutarea unei adrese URL cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
 
           Această politică este opțională. Dacă nu este setată, solicitarea de căutare va fi trimisă prin metoda GET.
@@ -2201,6 +2254,11 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă politica nu este setată, utilizatorul va putea modifica această setare manual.</translation>
 <translation id="723103540848640830">Stabilește lungimea minimă a codului PIN pentru ecranul de blocare</translation>
+<translation id="7232816984286843471">Dacă politica este dezactivată, utilizatorii neafiliați nu vor avea permisiunea de a folosi Crostini.
+
+      Dacă politica este activată sau nu este setată, toți utilizatorii au permisiunea de a folosi Crostini atât timp cât și celelalte setări permit acest lucru.
+      Toate cele trei politici, VirtualMachinesAllowed, CrostiniAllowed și DeviceUnaffiliatedCrostiniAllowed, trebuie să fie activate atunci când se aplică pentru a permite rularea Crostini.
+      Atunci când se dezactivează politica, se aplică noilor containere Crostini care pornesc, dar nu le închide pe cele care rulează deja.</translation>
 <translation id="7234280155140786597">Numele gazdelor de mesagerie nativă interzise (sau * pentru toate)</translation>
 <translation id="7236775576470542603">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare.
 
@@ -2247,6 +2305,12 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7311458740754205918">Dacă politica este activată sau nu este configurată, este posibil ca pagina Filă nouă să afișeze sugestii privind conținutul pe baza istoricului de navigare, a intereselor și a locației utilizatorului.
 
       Dacă politica este dezactivată, sugestiile generate automat privind conținutul nu sunt afișate pe pagina Filă nouă.</translation>
+<translation id="7313793931637495417">Această politică stabilește dacă se raportează informațiile privind versiunea, precum versiunea, platforma și arhitectura sistemului de operare, versiunea <ph name="PRODUCT_NAME" /> și canalul <ph name="PRODUCT_NAME" />.
+
+      Când politica nu este setată sau este activată, se colectează informații privind versiunea.
+      Când politica este dezactivată, nu se colectează informații privind versiunea.
+
+      Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Parametri de linie de comandă suplimentari pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Similar cu Golirea (valoarea 2), însă încearcă să păstreze indicativele de conectare, astfel încât utilizatorul să nu trebuiască să se conecteze din nou.</translation>
 <translation id="7329842439428490522">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este oprit atunci când dispozitivul funcționează pe baterie.
@@ -2277,6 +2341,12 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7349338075015720646">Specifică o listă cu site-uri care sunt instalate silențios, fără intervenția utilizatorului și care nu pot fi dezinstalate sau dezactivate de utilizator.
 
       Fiecare element din lista politicii este un obiect cu două componente: „url” și „launch_container”. „url” trebuie să fie adresa URL a aplicației web de instalat, iar „launch_container” trebuie să fie „window” sau „tab” pentru a indica modul în care va fi deschisă aplicația web după instalare. Dacă se omite „launch_container”, aplicația se va lansa într-o fereastră dacă Chrome o consideră a fi o aplicație web progresivă și într-o filă în caz contrar.</translation>
+<translation id="735902178936442460">Această politică stabilește dacă se raportează informațiile care se pot folosi pentru a identifica dispozitivele, cum ar fi numele și adresele de rețea ale acestora.
+
+      Când politica nu este setată sau este activată, se colectează informații care se pot folosi pentru a identifica dispozitivele.
+      Când politica este dezactivată, nu se colectează informații care se pot folosi pentru a identifica dispozitivele.
+
+      Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Serviciul Navigare sigură afișează o pagină de avertisment când utilizatorii navighează pe site-uri semnalate ca fiind potențial dăunătoare. Dacă activezi această setare, utilizatorii nu vor putea să navigheze mai departe de pe pagina de avertisment pe site-ul dăunător.
 
       Dacă setarea este dezactivată sau nu este configurată, utilizatorii pot alege să acceseze site-ul semnalat după ce li se afișează avertismentul.
@@ -2519,6 +2589,14 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7976157349247117979">Numele destinației pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Fără restricții speciale</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Îți permite să stabilești dacă mașinile virtuale au permisiunea de a rula pe sistemul de operare Chrome.
+
+      Dacă politica este activată, dispozitivul poate rula mașini virtuale.
+      Dacă politica este dezactivată, dispozitivul nu va avea permisiunea de a rula mașini virtuale.
+      Toate cele trei politici, VirtualMachinesAllowed, CrostiniAllowed și DeviceUnaffiliatedCrostiniAllowed, trebuie să fie activate atunci când se aplică pentru a permite rularea Crostini.
+      Atunci când se dezactivează politica, ea se aplică mașinilor virtuale noi care pornesc, dar nu le închide pe cele care rulează deja.
+      Atunci când politica nu este setată pe un dispozitiv gestionat, acesta nu are permisiunea de a rula mașini virtuale.
+      Dispozitivele care nu sunt gestionate au permisiunea de a rula mașini virtuale.</translation>
 <translation id="802147957407376460">Rotește ecranul la 0 grade</translation>
 <translation id="8033913082323846868">În M70 s-a renunțat la dezvoltarea acestei politici; folosește AutofillAddressEnabled și AutofillCreditCardEnabled.
 
@@ -2563,10 +2641,17 @@ nu poate fi stabilit de utilizator din setările browserului.
           Dacă politica nu este setată, se utilizează o perioadă de timp prestabilită.
 
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici sau egale cu intervalul de inactivitate.</translation>
+<translation id="8138009212169037227">Această politică stabilește dacă se raportează date privind politica și ora la care s-a preluat aceasta.
+
+      Când politica nu este setată sau este activată, se colectează date privind politica și ora la care s-a preluat aceasta.
+      Când politica este dezactivată, nu se colectează date privind politica și ora la care s-a preluat aceasta.
+
+      Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Raportează către server lista cu interfețe de rețea, care cuprinde tipurile acestora și adresele hardware.
 
       Dacă politica este dezactivată, lista cu interfețe nu va fi raportată.</translation>
 <translation id="8141795997560411818">Această politică nu împiedică utilizatorul să folosească aplicația Android Google Drive. Dacă vrei să împiedici accesul la Google Drive, îți recomandăm să nu permiți instalarea aplicației Android Google Drive.</translation>
+<translation id="8142894094385450823">Setează limbile recomandate pentru o sesiune gestionată</translation>
 <translation id="8146727383888924340">Permiteți utilizatorilor să valorifice oferte prin înregistrarea sistemului de operare Chrome</translation>
 <translation id="8148785525797916822">Elimină avertismentul care apare când <ph name="PRODUCT_NAME" /> rulează pe un computer sau pe un sistem de operare care nu mai este acceptat.</translation>
 <translation id="8148901634826284024">Activați funcția de accesibilitate pentru modul de contrast ridicat.
@@ -2614,6 +2699,21 @@ Aceste politici sunt destinate exclusiv pentru a configura instanțe ale <ph nam
 Nu e nevoie ca aceste setări să fie configurate manual! Poți să descarci șabloane ușor de folosit pentru Windows, Mac și Linux de la <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Este recomandat să configurezi politica în Windows prin GPO, cu toate că gestionarea politicii prin registry este încă acceptată pentru instanțele Windows care sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
+<translation id="8264653492961233132">Specifică o listă de aplicații și extensii instalate în fundal, fără intervenția utilizatorului și care nu pot fi dezinstalate sau dezactivate de acesta. Toate permisiunile solicitate de aplicații/extensii sunt acordate în mod prestabilit, fără intervenția utilizatorului, inclusiv orice permisiune suplimentară solicitată de viitoarele versiuni ale aplicației/extensiei. În plus, permisiunile sunt acordate pentru API-urile extensiei enterprise.deviceAttributes și enterprise.platformKeys. (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile care nu sunt instalate forțat.)
+
+          Această politică are prioritate față de o politică <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> care poate crea conflicte. Dacă o aplicație sau o extensie care a fost instalată forțat anterior este eliminată din listă, aceasta este dezinstalată automat de <ph name="PRODUCT_NAME" />.
+
+          Pentru instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea forțată se limitează la aplicațiile și extensiile afișate în Magazinul web Chrome.
+
+          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii cu ajutorul Instrumentelor pentru dezvoltatori (ceea ce poate face extensia nefuncțională). Dacă acest aspect creează probleme, trebuie să se seteze politica <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Fiecare element din lista politicii este un șir care include un ID al extensiei și, opțional, o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul de extensie este un șir alcătuit din 32 de litere găsit, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> în modul pentru dezvoltatori. Adresa URL de „actualizare”, dacă este specificată, trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. În mod prestabilit, se folosește adresa URL de actualizare a Magazinului web Chrome (care acum este „https://clients2.google.com/service/update2/crx”). Reține că adresa URL de „actualizare” setată în această politică este folosită numai la instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Reține și că specificarea explicită a adresei URL de „actualizare” era obligatorie în versiunile <ph name="PRODUCT_NAME" /> de până la 67, inclusiv.
+
+          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalează aplicația <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> de la adresa URL standard de „actualizare” din Magazinul web Chrome. Pentru mai multe informații despre găzduirea extensiilor, accesează <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Dacă politica nu este setată, nicio aplicație sau extensie nu va fi instalată automat, iar utilizatorul poate dezinstala orice aplicație sau extensie din <ph name="PRODUCT_NAME" />.
+
+          Reține că politica nu se aplică modului incognito.</translation>
 <translation id="8274603902181597201">Șterge directorul principal ecryptfs al utilizatorului și începe cu un nou director principal ext4-encrypted.</translation>
 <translation id="8285435910062771358">Lupă ecran complet activată</translation>
 <translation id="8288199156259560552">Activează Serviciul de localizare Google pentru Android</translation>
@@ -2879,6 +2979,7 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
 <translation id="9042911395677044526">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de către formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9077227880520270584">Temporizatorul pentru conectarea automată la contul local de pe dispozitiv</translation>
 <translation id="9084985621503260744">Specificați dacă activitatea video afectează gestionarea consumului de energie</translation>
 <translation id="9088433379343318874">Activează furnizorul de conținut pentru utilizatori monitorizați</translation>
 <translation id="9088444059179765143">Configurează metoda de detectare automată a fusului orar</translation>

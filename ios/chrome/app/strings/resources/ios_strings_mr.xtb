@@ -130,7 +130,7 @@
 <translation id="3024255823539804759">काल</translation>
 <translation id="3037605927509011580">च्चक!</translation>
 <translation id="3112556859945124369">चिन्हांकित करा…</translation>
-<translation id="3151924044251363314">फक्त आपला सांकेतिक वाक्यांश असलेली एखादी व्यक्ती आपला कूटबद्ध डेटा वाचू शकते. सांकेतिक वाक्यांश Google कडे पाठविला किंवा त्याद्वारे संचयित केला जात नाही. आपण आपला सांकेतिक वाक्यांश विसरल्यास किंवा हे सेटिंग बदलू इच्छित असल्यास, आपल्याला संकालन रीसेट करावे लागेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
+<translation id="3151924044251363314">फक्त तुमचा पासफ्रेज असलेली एखादी व्यक्ती तुमचा एंक्रिप्ट केलेला डेटा वाचू शकते. पासफ्रेज Google कडे पाठवला किंवा त्याद्वारे स्टोअर केला जात नाही. तुम्ही तुमचा पासफ्रेज विसरल्यास किंवा हे सेटिंग बदलू इच्छित असल्यास, तुम्हाला सिंक रीसेट करावे लागेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">सर्व चिन्हांकित करा…</translation>
 <translation id="3172213052701798825">संकेतशब्दांसाठी Google Smart Lock</translation>
 <translation id="3175081911749765310">वेब सेवा</translation>
@@ -160,7 +160,7 @@
 <translation id="3519193562722059437">वेब ब्राउझ करण्‍यासाठी एक टॅब उघडा.</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
 <translation id="3551320343578183772">टॅब बंद करा</translation>
-<translation id="3567664240939803299">या साइटसाठी Google Smart Lock ने आपला पासवर्ड सेव्ह करावा असे आपण इच्छिता?</translation>
+<translation id="3567664240939803299">या साइटसाठी Google Smart Lock ने तुमचा पासवर्ड सेव्ह करावा का?</translation>
 <translation id="3588820906588687999">नवीन टॅबमध्ये इमेज उघडा</translation>
 <translation id="3603009562372709545">दुवा URL कॉपी करा</translation>
 <translation id="3607167657931203000">स्वयं-भरण डेटा</translation>
@@ -222,7 +222,7 @@
 <translation id="4659667755519643272">टॅब स्विचर प्रविष्‍ट करा</translation>
 <translation id="4666531726415300315"><ph name="EMAIL" /> म्हणून साइन इन केले.
 
-आपला डेटा आपल्या संकालित वाक्यांशासह कूटबद्ध केला आहे. संकालन सुरू करण्यासाठी तो एंटर करा.</translation>
+तुमचा डेटा तुमच्या सिंक केलेल्या पासफ्रेजसह एंक्रिप्ट केला आहे. सिंक सुरू करण्यासाठी तो एंटर करा.</translation>
 <translation id="473775607612524610">अपडेट करा</translation>
 <translation id="4807020197310989387">एक न वाचलेला वाचन सूची लेख.</translation>
 <translation id="481968316161811770">कुकीज, साइट डेटा</translation>
@@ -314,7 +314,7 @@
 <translation id="6308436439357671616">हे आपल्याला फोटो घेऊ आणि अपलोड करू देते.</translation>
 <translation id="6324528485781869530">संकालन खाते स्विच करा</translation>
 <translation id="6324669097367352121">साइन इन सेटिंग्ज</translation>
-<translation id="6337234675334993532">कूटबद्धीकरण</translation>
+<translation id="6337234675334993532">एंक्रिप्शन</translation>
 <translation id="633809752005859102">खरोखर काहीतरी चूक झाली. आम्ही त्यावर कार्य करू.</translation>
 <translation id="6342069812937806050">आत्ताच</translation>
 <translation id="6344783595350022745">मजकूर साफ करा</translation>
@@ -328,7 +328,7 @@
 <translation id="6417838470969808600">आपल्याकडे <ph name="USER_EMAIL1" /> मधील बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज आहेत.</translation>
 <translation id="641799622251403418"><ph name="EMAIL" /> म्हणून साइन इन केले.
 
-आपला डेटा आपल्या संकालन सांकेतिक वाक्यांशासह <ph name="TIME" /> वाजता कूटबद्ध केला होता. संकालन सुरु करण्यासाठी तो एंटर करा.</translation>
+तुमचा डेटा तुमच्या सिंक पासफ्रेजसह <ph name="TIME" /> वाजता एंक्रिप्ट केला होता. सिंक सुरु करण्यासाठी तो एंटर करा.</translation>
 <translation id="6418346271604475326">पीडीएफ तयार करत आहे</translation>
 <translation id="6434591244308415567">एरर आली. नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="6445051938772793705">देश</translation>
@@ -414,7 +414,7 @@
 <translation id="7971521879845308059">पॉप-अप अवरोधित करा</translation>
 <translation id="7981313251711023384">जलद ब्राउझिंग आणि शोधाकरता पेज आधीच लोड करा</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
-<translation id="8019783059653722575">हे आपल्याला फोटो सेव्ह आणि अपलोड करू देते.</translation>
+<translation id="8019783059653722575">हे तुम्हाला फोटो सेव्ह आणि अपलोड करू देते.</translation>
 <translation id="802154636333426148">डाउनलोड अयशस्वी झाले</translation>
 <translation id="8023878949384262191">विभाग विस्तृत करते.</translation>
 <translation id="8059533439631660104">विभाग संकुचित करा.</translation>
@@ -461,7 +461,7 @@
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">समस्या नोंदवणे</translation>
 <translation id="8971089644512329999">ठीक आहे, समजले</translation>
-<translation id="8981454092730389528">Google क्रियाकलाप नियंत्रणे</translation>
+<translation id="8981454092730389528">Google अॅक्टिव्हिटी नियंत्रणे</translation>
 <translation id="8985320356172329008">Google मध्ये हे म्हणून साइन इन केले</translation>
 <translation id="902659348151742535">शोध, जाहिरात आणि इतर Google सेवा वैयक्तीकृत करण्यासाठी Google आपल्या ब्राउझिंग इतिहासाचा वापर करू शकते.</translation>
 <translation id="9034759925968272072">आपल्याला आपल्या Google खात्यामधून साइन आउट केले जाणार नाही. आपल्या Google खात्यात <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची इतर स्वरूपे असू शकतात.</translation>
@@ -476,7 +476,6 @@
 <translation id="9188680907066685419">व्यवस्थापित केलेल्या खात्यामधून साइन आउट करा</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">क्रॅश अहवाल पाठवला.</translation>
-<translation id="932327136139879170">घर</translation>
 <translation id="935490618240037774">आपले बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज आपल्या Google खात्यात संकालित केल्या जातील जेणेकरून आपण आपल्या सर्व डिव्हाइसेसवर त्यांचा वापर करू शकता.</translation>
 <translation id="939598580284253335">सांकेतिक वाक्यांश एंटर करा</translation>
 <translation id="976982866697960176">संकालित केलेला डेटा व्यवस्थापित करा...</translation>
