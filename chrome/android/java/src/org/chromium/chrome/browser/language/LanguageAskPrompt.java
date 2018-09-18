@@ -98,9 +98,12 @@ public class LanguageAskPrompt implements ModalDialogView.Controller {
      */
     public static boolean maybeShowLanguageAskPrompt(ChromeActivity activity) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.EXPLICIT_LANGUAGE_ASK)) return false;
+        if (PrefServiceBridge.getInstance().getExplicitLanguageAskPromptShown()) return false;
 
         LanguageAskPrompt prompt = new LanguageAskPrompt();
         prompt.show(activity);
+
+        PrefServiceBridge.getInstance().setExplicitLanguageAskPromptShown(true);
 
         return true;
     }
