@@ -2771,6 +2771,8 @@ crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentat
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/hyphens/hyphens-auto-001.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-tall.html [ Failure ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-pause-resume.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/presentation-api/controlling-ua/reconnectToPresentation_notfound_error-manual.https.html [ Skip ]

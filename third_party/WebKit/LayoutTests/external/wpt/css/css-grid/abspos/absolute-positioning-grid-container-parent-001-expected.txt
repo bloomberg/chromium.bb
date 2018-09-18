@@ -1,0 +1,51 @@
+This is a testharness.js-based test.
+FAIL .container 1 assert_equals: 
+<div class="container relative">
+  <div class="grid">
+    <div class="sizedToGridArea absolute autoRowAutoColumn" data-offset-x="50" data-offset-y="10" data-expected-width="500" data-expected-height="400"></div>
+  </div>
+</div>
+offsetLeft expected 50 but got 35
+FAIL .container 2 assert_equals: 
+<div class="container relative">
+  <div class="grid">
+    <div class="sizedToGridArea absolute firstRowFirstColumn" data-offset-x="50" data-offset-y="10" data-expected-width="500" data-expected-height="400"></div>
+  </div>
+</div>
+offsetLeft expected 50 but got 35
+FAIL .container 3 assert_equals: 
+<div class="container relative">
+  <div class="grid">
+    <div class="sizedToGridArea absolute secondRowSecondColumn" data-offset-x="50" data-offset-y="10" data-expected-width="500" data-expected-height="400"></div>
+  </div>
+</div>
+offsetLeft expected 50 but got 35
+PASS .container 4
+PASS .container 5
+PASS .container 6
+FAIL .container 7 assert_equals: 
+<div class="container relative">
+  <div class="grid directionRTL">
+    <div class="sizedToGridArea absolute autoRowAutoColumn" data-offset-x="-150" data-offset-y="10" data-expected-width="500" data-expected-height="400"></div>
+  </div>
+</div>
+offsetLeft expected -150 but got -135
+FAIL .container 8 assert_equals: 
+<div class="container relative">
+  <div class="grid directionRTL">
+    <div class="sizedToGridArea absolute firstRowFirstColumn" data-offset-x="-150" data-offset-y="10" data-expected-width="500" data-expected-height="400"></div>
+  </div>
+</div>
+offsetLeft expected -150 but got -135
+FAIL .container 9 assert_equals: 
+<div class="container relative">
+  <div class="grid directionRTL">
+    <div class="sizedToGridArea absolute secondRowSecondColumn" data-offset-x="-150" data-offset-y="10" data-expected-width="500" data-expected-height="400"></div>
+  </div>
+</div>
+offsetLeft expected -150 but got -135
+PASS .container 10
+PASS .container 11
+PASS .container 12
+Harness: the test ran to completion.
+
