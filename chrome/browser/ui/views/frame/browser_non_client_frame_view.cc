@@ -95,7 +95,7 @@ bool BrowserNonClientFrameView::CaptionButtonsOnLeadingEdge() const {
 }
 
 void BrowserNonClientFrameView::UpdateFullscreenTopUI(
-    bool is_exiting_fullscreen) {}
+    bool needs_check_tab_fullscreen) {}
 
 bool BrowserNonClientFrameView::ShouldHideTopUIForFullscreen() const {
   return frame_->IsFullscreen();

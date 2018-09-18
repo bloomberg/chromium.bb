@@ -2975,7 +2975,7 @@ Profile* BrowserView::GetProfile() {
 
 void BrowserView::UpdateUIForTabFullscreen(TabFullscreenState state) {
   frame()->GetFrameView()->UpdateFullscreenTopUI(
-      state == ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN);
+      state == ExclusiveAccessContext::STATE_ENTER_TAB_FULLSCREEN);
 }
 
 WebContents* BrowserView::GetActiveWebContents() {
