@@ -16,16 +16,10 @@ def CheckIndexedRulesetVersion(input_api, output_api):
    - components/subresource_filter/core/common/flat/indexed_ruleset.fbs
   and kIndexedFormatVersion constant stays intact, this check returns a
   presubmit warning to make sure the value should not be updated.
-
-  Additionally, checks to ensure the format version in
-  tools/perf/core/default_local_state.json stays up to date with
-  kIndexedFormatVersion.
   """
 
   indexed_ruleset_changed = False
   indexed_ruleset_version_changed = False
-
-  new_indexed_ruleset_version = None
 
   for affected_file in input_api.AffectedFiles():
     path = affected_file.LocalPath()
@@ -38,29 +32,11 @@ def CheckIndexedRulesetVersion(input_api, output_api):
       for (_, line) in affected_file.ChangedContents():
         if 'const int RulesetIndexer::kIndexedFormatVersion =' in line:
           indexed_ruleset_version_changed = True
-          new_indexed_ruleset_version = int(line.split()[-1].replace(';',''))
           break
 
   # If the indexed ruleset version changed, ensure the perf benchmarks are using
   # the new format.
   out = []
-  if indexed_ruleset_version_changed:
-    assert new_indexed_ruleset_version is not None
-    current_path = input_api.PresubmitLocalPath()
-    local_state_path = input_api.os_path.join(
-        current_path, '..', '..', '..', '..', 'tools', 'perf', 'core',
-        'default_local_state.json')
-
-    assert input_api.os_path.exists(local_state_path)
-    with open(local_state_path, 'r') as f:
-      json_state = input_api.json.load(f)
-      version = json_state['subresource_filter']['ruleset_version']['format']
-      if new_indexed_ruleset_version != version:
-        out.append(output_api.PresubmitPromptWarning(
-            'Please make sure that kIndexedFormatVersion (%d) and '
-            'the format version in tools/perf/core/default_local_state.json '
-            '(%d) are in sync' % (new_indexed_ruleset_version, version)))
-
   if indexed_ruleset_changed and not indexed_ruleset_version_changed:
     out.append(output_api.PresubmitPromptWarning(
         'Please make sure that IndexedRuleset modifications in '
