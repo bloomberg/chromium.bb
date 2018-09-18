@@ -151,7 +151,6 @@ class CONTENT_EXPORT ThrottlingURLLoader
   };
   DeferredStage deferred_stage_ = DEFERRED_NONE;
   bool loader_completed_ = false;
-  bool is_synchronous_ = false;
 
   struct ThrottleEntry {
     ThrottleEntry(ThrottlingURLLoader* loader,
