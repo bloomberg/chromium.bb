@@ -234,8 +234,7 @@ if(NOT MSVC AND NOT APPLE)
 endif()
 
 # List of object and static library targets.
-set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_rtcd aom_encoder_stats aom_mem
-    aom_scale aom)
+set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_rtcd aom_mem aom_scale aom)
 
 # Setup dependencies.
 setup_aom_dsp_targets()
