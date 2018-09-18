@@ -18,6 +18,8 @@ class PaintLayer;
 // PaintTracker contains some of paint metric detectors, providing common
 // infrastructure for these detectors.
 //
+// Users has to enable 'loading' trace category to enable the metrics.
+//
 // See also:
 // https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit
 class CORE_EXPORT PaintTracker : public GarbageCollected<PaintTracker> {

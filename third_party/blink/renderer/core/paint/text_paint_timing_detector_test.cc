@@ -23,7 +23,7 @@ class TextPaintTimingDetectorTest : public RenderingTest {
     GetFrameView().UpdateAllLifecyclePhases();
     TextPaintTimingDetector& detector =
         GetPaintTracker().GetTextPaintTimingDetector();
-    if (detector.texts_to_record_swap_time.size() > 0) {
+    if (detector.texts_to_record_swap_time_.size() > 0) {
       detector.ReportSwapTime(WebLayerTreeView::SwapResult::kDidSwap,
                               CurrentTimeTicks());
     }

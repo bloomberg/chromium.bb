@@ -20,15 +20,10 @@ class TracedValue;
 class LocalFrameView;
 
 struct TextRecord {
-  DOMNodeId node_id;
+  DOMNodeId node_id = kInvalidDOMNodeId;
   double first_size = 0.0;
-  base::TimeTicks first_paint_time;
+  base::TimeTicks first_paint_time = base::TimeTicks();
   String text = "";
-};
-
-struct TextRect {
-  LayoutRect invalidated_rect;
-  IntRect transformed_rect_in_viewport;
 };
 
 // TextPaintTimingDetector contains Largest Text Paint and Last Text Paint.
@@ -81,8 +76,8 @@ class CORE_EXPORT TextPaintTimingDetector final
                       base::TimeTicks timestamp);
   void RegisterNotifySwapTime(ReportTimeCallback callback);
 
-  HashSet<DOMNodeId> recorded_text_node_ids;
-  HashSet<DOMNodeId> size_zero_node_ids;
+  HashSet<DOMNodeId> recorded_text_node_ids_;
+  HashSet<DOMNodeId> size_zero_node_ids_;
   std::priority_queue<std::unique_ptr<TextRecord>,
                       std::vector<std::unique_ptr<TextRecord>>,
                       std::function<bool(std::unique_ptr<TextRecord>&,
@@ -93,8 +88,10 @@ class CORE_EXPORT TextPaintTimingDetector final
                       std::function<bool(std::unique_ptr<TextRecord>&,
                                          std::unique_ptr<TextRecord>&)>>
       latest_text_heap_;
-  std::vector<TextRecord> texts_to_record_swap_time;
+  std::vector<TextRecord> texts_to_record_swap_time_;
 
+  // Make sure that at most one swap promise is ongoing.
+  bool awaiting_swap_promise_ = false;
   unsigned largest_text_report_count_ = 0;
   unsigned last_text_report_count_ = 0;
   TaskRunnerTimer<TextPaintTimingDetector> timer_;
