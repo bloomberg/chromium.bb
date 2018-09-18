@@ -146,7 +146,7 @@ class GclientApi(recipe_api.RecipeApi):
 
   def sync(self, cfg, extra_sync_flags=None, **kwargs):
     revisions = []
-    self.set_patch_project_revision(self.m.properties.get('patch_project'), cfg)
+    self.set_patch_repo_revision(gclient_config=cfg)
     for i, s in enumerate(cfg.solutions):
       if i == 0 and s.revision is None:
         s.revision = RevisionFallbackChain()
@@ -396,14 +396,14 @@ class GclientApi(recipe_api.RecipeApi):
     # and include actual solution name in them.
     return self.m.path.join(*root.split('/'))
 
-  def set_patch_project_revision(self, patch_project, gclient_config=None):
+  def set_patch_repo_revision(self, gclient_config=None):
     """Updates config revision corresponding to patch_project.
 
     Useful for bot_update only, as this is the only consumer of gclient's config
     revision map. This doesn't overwrite the revision if it was already set.
     """
-    assert patch_project is None or isinstance(patch_project, basestring)
     cfg = gclient_config or self.c
-    path, revision = cfg.patch_projects.get(patch_project, (None, None))
+    repo_url = self.m.tryserver.gerrit_change_repo_url
+    path, revision = cfg.repo_path_map.get(repo_url, (None, None))
     if path and revision and path not in cfg.revisions:
       cfg.revisions[path] = revision

@@ -113,8 +113,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Allow patch_project's revision if necessary.
     # This is important for projects which are checked out as DEPS of the
     # gclient solution.
-    self.m.gclient.set_patch_project_revision(
-        self.m.properties.get('patch_project'), cfg)
+    self.m.gclient.set_patch_repo_revision(cfg)
 
     reverse_rev_map = self.m.gclient.got_revision_reverse_mapping(cfg)
 

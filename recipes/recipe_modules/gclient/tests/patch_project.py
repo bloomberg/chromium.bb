@@ -56,7 +56,7 @@ def RunSteps(api, patch_project, patch_repository_url):
   api.gclient.calculate_patch_root(
       patch_project, None, patch_repository_url)
 
-  api.gclient.set_patch_project_revision(patch_project)
+  api.gclient.set_patch_repo_revision()
 
 
 def GenTests(api):
