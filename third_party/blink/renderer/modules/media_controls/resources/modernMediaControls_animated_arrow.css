@@ -5,6 +5,7 @@
 #left-arrow,
 #right-arrow {
   flex: 1;
+  text-align: center;
 }
 
 #left-arrow svg,

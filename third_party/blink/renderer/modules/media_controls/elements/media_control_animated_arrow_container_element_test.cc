@@ -1,8 +1,8 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/media_controls/elements/media_control_overlay_play_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_animated_arrow_container_element.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -12,13 +12,14 @@
 
 namespace blink {
 
-class MediaControlOverlayPlayButtonElementTest : public PageTestBase {
+class MediaControlAnimatedArrowContainerElementTest : public PageTestBase {
  public:
   void SetUp() final {
     // Create page and instance of AnimatedArrow to run tests on.
     PageTestBase::SetUp();
-    arrow_element_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
-        "test", GetDocument());
+    arrow_element_ =
+        new MediaControlAnimatedArrowContainerElement::AnimatedArrow(
+            "test", GetDocument());
     GetDocument().body()->AppendChild(arrow_element_);
   }
 
@@ -54,11 +55,11 @@ class MediaControlOverlayPlayButtonElementTest : public PageTestBase {
     return GetDocument().body()->getElementById(id);
   }
 
-  Persistent<MediaControlOverlayPlayButtonElement::AnimatedArrow>
+  Persistent<MediaControlAnimatedArrowContainerElement::AnimatedArrow>
       arrow_element_;
 };
 
-TEST_F(MediaControlOverlayPlayButtonElementTest, ShowIncrementsCounter) {
+TEST_F(MediaControlAnimatedArrowContainerElementTest, ShowIncrementsCounter) {
   ExpectNotPresent();
 
   // Start a new show.

@@ -81,9 +81,9 @@ String MediaControlsResourceLoader::GetScrubbingMessageStyleSheet() {
 };
 
 // static
-String MediaControlsResourceLoader::GetOverlayPlayStyleSheet() {
+String MediaControlsResourceLoader::GetAnimatedArrowStyleSheet() {
   return ResourceBundleHelper::UncompressResourceAsString(
-      IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_OVERLAY_PLAY_CSS);
+      IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_ANIMATED_ARROW_CSS);
 };
 
 // static
