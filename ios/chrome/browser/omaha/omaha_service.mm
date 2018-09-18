@@ -42,6 +42,8 @@
 #include "net/base/backoff_entry.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -294,15 +296,16 @@ OmahaService* OmahaService::GetInstance() {
 }
 
 // static
-void OmahaService::Start(net::URLRequestContextGetter* request_context_getter,
+void OmahaService::Start(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                             url_loader_factory_info,
                          const UpgradeRecommendedCallback& callback) {
-  DCHECK(request_context_getter);
+  DCHECK(url_loader_factory_info);
   DCHECK(!callback.is_null());
   OmahaService* result = GetInstance();
   result->set_upgrade_recommended_callback(callback);
   // This should only be called once.
-  DCHECK(!result->request_context_getter_);
-  result->request_context_getter_ = request_context_getter;
+  DCHECK(!result->url_loader_factory_info_ || !result->url_loader_factory_);
+  result->url_loader_factory_info_ = std::move(url_loader_factory_info);
   result->locale_lang_ = GetApplicationContext()->GetApplicationLocale();
   base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
                            base::Bind(&OmahaService::SendOrScheduleNextPing,
@@ -310,16 +313,14 @@ void OmahaService::Start(net::URLRequestContextGetter* request_context_getter,
 }
 
 OmahaService::OmahaService()
-    : request_context_getter_(NULL),
-      schedule_(true),
+    : schedule_(true),
       application_install_date_(0),
       sending_install_event_(false) {
   Initialize();
 }
 
 OmahaService::OmahaService(bool schedule)
-    : request_context_getter_(NULL),
-      schedule_(schedule),
+    : schedule_(schedule),
       application_install_date_(0),
       sending_install_event_(false) {
   Initialize();
@@ -524,7 +525,7 @@ std::string OmahaService::GetCurrentPingContent() {
 
 void OmahaService::SendPing() {
   // Check that no request is in progress.
-  DCHECK(!fetcher_);
+  DCHECK(!url_loader_);
 
   GURL url(ios::GetChromeBrowserProvider()
                ->GetOmahaServiceProvider()
@@ -533,17 +534,30 @@ void OmahaService::SendPing() {
     return;
   }
 
-  fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::POST, this);
-  fetcher_->SetRequestContext(request_context_getter_);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetUploadData("text/xml", GetCurrentPingContent());
+  // There are 2 situations here:
+  // 1) production code, where |url_loader_factory_info_| is used.
+  // 2) testing code, where the |url_loader_factory_| creation is triggered by
+  // the test.
+  if (url_loader_factory_info_) {
+    DCHECK(!url_loader_factory_);
+    url_loader_factory_ = network::SharedURLLoaderFactory::Create(
+        std::move(url_loader_factory_info_));
+  }
+
+  DCHECK(url_loader_factory_);
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  resource_request->method = "POST";
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
 
   // If this is not the first try, notify the omaha server.
   if (number_of_tries_ && IsNextPingInstallRetry()) {
-    fetcher_->SetExtraRequestHeaders(base::StringPrintf(
-        "X-RequestAge: %lld",
-        (base::Time::Now() - current_ping_time_).InSeconds()));
+    resource_request->headers.SetHeader(
+        "X-RequestAge",
+        base::StringPrintf(
+            "%lld", (base::Time::Now() - current_ping_time_).InSeconds()));
   }
 
   // Update last fail time and number of tries, so that if anything fails
@@ -553,7 +567,12 @@ void OmahaService::SendPing() {
   next_tries_time_ = base::Time::Now() + GetBackOff(number_of_tries_);
   PersistStates();
 
-  fetcher_->Start();
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 NO_TRAFFIC_ANNOTATION_YET);
+  url_loader_->AttachStringForUpload(GetCurrentPingContent(), "text/xml");
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&OmahaService::OnURLLoadComplete, base::Unretained(this)));
 }
 
 void OmahaService::SendOrScheduleNextPing() {
@@ -563,8 +582,9 @@ void OmahaService::SendOrScheduleNextPing() {
     return;
   }
   if (schedule_) {
-    timer_.Start(FROM_HERE, next_tries_time_ - now, this,
-                 &OmahaService::SendPing);
+    timer_.Start(
+        FROM_HERE, next_tries_time_ - now,
+        base::BindOnce(&OmahaService::SendPing, base::Unretained(this)));
   }
 }
 
@@ -585,21 +605,19 @@ void OmahaService::PersistStates() {
   [defaults synchronize];
 }
 
-void OmahaService::OnURLFetchComplete(const net::URLFetcher* fetcher) {
-  DCHECK(fetcher_.get() == fetcher);
-  // Transfer the ownership of fetcher_ to this method.
-  std::unique_ptr<net::URLFetcher> local_fetcher = std::move(fetcher_);
+void OmahaService::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
+  // Reset the loader.
+  url_loader_.reset();
 
-  if (fetcher->GetResponseCode() != 200) {
+  if (!response_body) {
     DLOG(WARNING) << "Error contacting the Omaha server";
     SendOrScheduleNextPing();
     return;
   }
 
-  std::string response;
-  bool result = fetcher->GetResponseAsString(&response);
-  DCHECK(result);
-  NSData* xml = [NSData dataWithBytes:response.data() length:response.length()];
+  NSData* xml = [NSData dataWithBytes:response_body->data()
+                               length:response_body->length()];
   NSXMLParser* parser = [[NSXMLParser alloc] initWithData:xml];
   const std::string application_id = ios::GetChromeBrowserProvider()
                                          ->GetOmahaServiceProvider()
@@ -699,6 +717,11 @@ void OmahaService::ClearInstallRetryRequestId() {
   [defaults removeObjectForKey:kRetryRequestIdKey];
   // Clear critical state information for usage reporting.
   [defaults synchronize];
+}
+
+void OmahaService::InitializeURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_ = url_loader_factory;
 }
 
 void OmahaService::ClearPersistentStateForTests() {
