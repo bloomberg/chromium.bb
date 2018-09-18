@@ -7,7 +7,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 
@@ -289,9 +288,6 @@ void ThrottlingURLLoader::Start(
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
 
-  if (options & network::mojom::kURLLoadOptionSynchronous)
-    is_synchronous_ = true;
-
   bool deferred = false;
   DCHECK(deferring_throttles_.empty());
   if (!throttles_.empty()) {
@@ -545,11 +541,7 @@ void ThrottlingURLLoader::OnComplete(
 }
 
 void ThrottlingURLLoader::OnClientConnectionError() {
-  // TODO(reillyg): Temporary workaround for crbug.com/756751 where without
-  // browser-side navigation this error on async loads will confuse the loading
-  // of cross-origin iframes.
-  if (is_synchronous_ || content::IsBrowserSideNavigationEnabled())
-    CancelWithError(net::ERR_ABORTED, nullptr);
+  CancelWithError(net::ERR_ABORTED, nullptr);
 }
 
 void ThrottlingURLLoader::CancelWithError(int error_code,
