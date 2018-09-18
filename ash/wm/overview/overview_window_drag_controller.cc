@@ -193,6 +193,11 @@ void OverviewWindowDragController::Fling(const gfx::Point& location_in_screen,
   if (current_drag_behavior_ == DragBehavior::kDragToClose ||
       current_drag_behavior_ == DragBehavior::kUndefined) {
     if (std::abs(velocity_y) > kFlingToCloseVelocityThreshold) {
+      if (SplitViewController::ShouldAllowSplitView()) {
+        split_view_controller_->OnWindowDragEnded(
+            item_->GetWindow(), snap_position_, location_in_screen);
+      }
+
       item_->AnimateAndCloseWindow(
           (location_in_screen - initial_event_location_).y() < 0);
       did_move_ = false;
