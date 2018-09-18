@@ -12,6 +12,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_client_metrics.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme_win.h"
 
@@ -20,6 +21,13 @@ using ui::NativeTheme;
 namespace views {
 
 void MenuConfig::Init() {
+  if (ui::MaterialDesignController::IsRefreshUi()) {
+    InitMaterialMenuConfig();
+  } else {
+    separator_upper_height = 5;
+    separator_lower_height = 7;
+  }
+
   arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
 
   NONCLIENTMETRICS_XP metrics;
@@ -36,7 +44,7 @@ void MenuConfig::Init() {
   if (!arrow_size.IsEmpty()) {
     arrow_width = arrow_size.width();
   } else {
-    // Sadly I didn't see a specify metrics for this.
+    // Sadly I didn't see a specific metric for this.
     arrow_width = GetSystemMetrics(SM_CXMENUCHECK);
   }
 
@@ -46,9 +54,6 @@ void MenuConfig::Init() {
        show_cues == TRUE);
 
   SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &show_delay, 0);
-
-  separator_upper_height = 5;
-  separator_lower_height = 7;
 }
 
 }  // namespace views
