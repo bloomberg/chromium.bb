@@ -662,7 +662,7 @@ template <typename Function>
 static void ForAllFragments(GraphicsContext& context,
                             const PaintLayerFragments& fragments,
                             const Function& function) {
-  for (size_t i = 0; i < fragments.size(); ++i) {
+  for (wtf_size_t i = 0; i < fragments.size(); ++i) {
     base::Optional<ScopedDisplayItemFragment> scoped_display_item_fragment;
     if (i)
       scoped_display_item_fragment.emplace(context, i);

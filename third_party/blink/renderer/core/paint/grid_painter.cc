@@ -18,16 +18,16 @@ static GridSpan DirtiedGridAreas(const Vector<LayoutUnit>& coordinates,
   // This doesn't work with grid items overflowing their grid areas, but that is
   // managed with m_gridItemsOverflowingGridArea.
 
-  size_t start_grid_area_index =
+  wtf_size_t start_grid_area_index = static_cast<wtf_size_t>(
       std::upper_bound(coordinates.begin(), coordinates.end() - 1, start) -
-      coordinates.begin();
+      coordinates.begin());
   if (start_grid_area_index > 0)
     --start_grid_area_index;
 
-  size_t end_grid_area_index =
+  wtf_size_t end_grid_area_index = static_cast<wtf_size_t>(
       std::upper_bound(coordinates.begin() + start_grid_area_index,
                        coordinates.end() - 1, end) -
-      coordinates.begin();
+      coordinates.begin());
   if (end_grid_area_index > 0)
     --end_grid_area_index;
 
@@ -55,7 +55,7 @@ void GridPainter::PaintChildren(const PaintInfo& paint_info,
   if (!layout_grid_.StyleRef().IsLeftToRightDirection()) {
     // Translate columnPositions in RTL as we need the physical coordinates of
     // the columns in order to call dirtiedGridAreas().
-    for (size_t i = 0; i < column_positions.size(); i++)
+    for (wtf_size_t i = 0; i < column_positions.size(); i++)
       column_positions[i] =
           layout_grid_.TranslateRTLCoordinate(column_positions[i]);
     // We change the order of tracks in columnPositions, as in RTL the leftmost
@@ -72,13 +72,13 @@ void GridPainter::PaintChildren(const PaintInfo& paint_info,
   if (!layout_grid_.StyleRef().IsLeftToRightDirection()) {
     // As we changed the order of tracks previously, we need to swap the dirtied
     // columns in RTL.
-    size_t last_line = column_positions.size() - 1;
+    wtf_size_t last_line = column_positions.size() - 1;
     dirtied_columns = GridSpan::TranslatedDefiniteGridSpan(
         last_line - dirtied_columns.EndLine(),
         last_line - dirtied_columns.StartLine());
   }
 
-  Vector<std::pair<LayoutBox*, size_t>> grid_items_to_be_painted;
+  Vector<std::pair<LayoutBox*, wtf_size_t>> grid_items_to_be_painted;
 
   // TODO(svillar): This way of retrieving cells is extremelly
   // inefficient for the list-based grid implementation. We must

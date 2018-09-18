@@ -224,12 +224,12 @@ void PaintLayerStackingNode::CollectLayers(
 void PaintLayerStackingNode::UpdateStackingParentForZOrderLists(
     PaintLayerStackingNode* stacking_parent) {
   if (pos_z_order_list_) {
-    for (size_t i = 0; i < pos_z_order_list_->size(); ++i)
+    for (wtf_size_t i = 0; i < pos_z_order_list_->size(); ++i)
       pos_z_order_list_->at(i)->SetStackingParent(stacking_parent);
   }
 
   if (neg_z_order_list_) {
-    for (size_t i = 0; i < neg_z_order_list_->size(); ++i)
+    for (wtf_size_t i = 0; i < neg_z_order_list_->size(); ++i)
       neg_z_order_list_->at(i)->SetStackingParent(stacking_parent);
   }
 }

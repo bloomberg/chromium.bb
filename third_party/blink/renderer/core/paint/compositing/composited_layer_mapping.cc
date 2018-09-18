@@ -227,7 +227,7 @@ CompositedLayerMapping::~CompositedLayerMapping() {
 
   // Do not leave the destroyed pointer dangling on any Layers that painted to
   // this mapping's squashing layer.
-  for (size_t i = 0; i < squashed_layers_.size(); ++i) {
+  for (wtf_size_t i = 0; i < squashed_layers_.size(); ++i) {
     PaintLayer* old_squashed_layer = squashed_layers_[i].paint_layer;
     // Assert on incorrect mappings between layers and groups
     DCHECK_EQ(old_squashed_layer->GroupedMapping(), this);
@@ -1067,7 +1067,7 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
   }
 
   LayoutRect total_squash_bounds;
-  for (size_t i = 0; i < layers.size(); ++i) {
+  for (wtf_size_t i = 0; i < layers.size(); ++i) {
     LayoutRect squashed_bounds =
         layers[i].paint_layer->BoundingBoxForCompositing();
 
@@ -1112,7 +1112,7 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
   // subtracting squashLayerOriginInCompositingContainerSpace, but then the
   // offset overall needs to be negated because that's the direction that the
   // painting code expects the offset to be.
-  for (size_t i = 0; i < layers.size(); ++i) {
+  for (wtf_size_t i = 0; i < layers.size(); ++i) {
     const LayoutPoint squashed_layer_offset_from_transformed_ancestor =
         layers[i].paint_layer->ComputeOffsetFromAncestor(
             *common_transform_ancestor);
@@ -1163,7 +1163,7 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
   offset_from_transformed_ancestor->Move(
       squash_layer_origin_in_compositing_container_space);
 
-  for (size_t i = 0; i < layers.size(); ++i) {
+  for (wtf_size_t i = 0; i < layers.size(); ++i) {
     LocalClipRectForSquashedLayer(owning_layer_, layers, layers[i]);
   }
 }
@@ -3078,7 +3078,8 @@ const GraphicsLayerPaintInfo* CompositedLayerMapping::ContainingSquashedLayer(
     unsigned max_squashed_layer_index) {
   if (!layout_object)
     return nullptr;
-  for (size_t i = 0; i < layers.size() && i < max_squashed_layer_index; ++i) {
+  for (wtf_size_t i = 0; i < layers.size() && i < max_squashed_layer_index;
+       ++i) {
     if (layout_object->IsDescendantOf(
             &layers[i].paint_layer->GetLayoutObject()))
       return &layers[i];
@@ -3490,7 +3491,7 @@ void CompositedLayerMapping::PaintContents(
     DoPaintTask(paint_info, *graphics_layer, paint_layer_flags, context,
                 interest_rect);
   } else if (graphics_layer == squashing_layer_.get()) {
-    for (size_t i = 0; i < squashed_layers_.size(); ++i) {
+    for (wtf_size_t i = 0; i < squashed_layers_.size(); ++i) {
       DoPaintTask(squashed_layers_[i], *graphics_layer, paint_layer_flags,
                   context, interest_rect);
     }
@@ -3585,9 +3586,9 @@ void CompositedLayerMapping::InvalidateTargetElementForTesting() {
 }
 
 bool CompositedLayerMapping::InvalidateLayerIfNoPrecedingEntry(
-    size_t index_to_clear) {
+    wtf_size_t index_to_clear) {
   PaintLayer* layer_to_remove = squashed_layers_[index_to_clear].paint_layer;
-  size_t previous_index = 0;
+  wtf_size_t previous_index = 0;
   for (; previous_index < index_to_clear; ++previous_index) {
     if (squashed_layers_[previous_index].paint_layer == layer_to_remove)
       break;
@@ -3602,7 +3603,7 @@ bool CompositedLayerMapping::InvalidateLayerIfNoPrecedingEntry(
 
 bool CompositedLayerMapping::UpdateSquashingLayerAssignment(
     PaintLayer* squashed_layer,
-    size_t next_squashed_layer_index) {
+    wtf_size_t next_squashed_layer_index) {
   GraphicsLayerPaintInfo paint_info;
   paint_info.paint_layer = squashed_layer;
   // NOTE: composited bounds are updated elsewhere
@@ -3638,7 +3639,7 @@ bool CompositedLayerMapping::UpdateSquashingLayerAssignment(
 
 void CompositedLayerMapping::RemoveLayerFromSquashingGraphicsLayer(
     const PaintLayer* layer) {
-  size_t layer_index = 0;
+  wtf_size_t layer_index = 0;
   for (; layer_index < squashed_layers_.size(); ++layer_index) {
     if (squashed_layers_[layer_index].paint_layer == layer)
       break;
@@ -3655,7 +3656,7 @@ void CompositedLayerMapping::RemoveLayerFromSquashingGraphicsLayer(
 #if DCHECK_IS_ON()
 bool CompositedLayerMapping::VerifyLayerInSquashingVector(
     const PaintLayer* layer) {
-  for (size_t layer_index = 0; layer_index < squashed_layers_.size();
+  for (wtf_size_t layer_index = 0; layer_index < squashed_layers_.size();
        ++layer_index) {
     if (squashed_layers_[layer_index].paint_layer == layer)
       return true;
@@ -3666,14 +3667,14 @@ bool CompositedLayerMapping::VerifyLayerInSquashingVector(
 #endif
 
 void CompositedLayerMapping::FinishAccumulatingSquashingLayers(
-    size_t next_squashed_layer_index,
+    wtf_size_t next_squashed_layer_index,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {
   if (next_squashed_layer_index < squashed_layers_.size()) {
     // Any additional squashed Layers in the array no longer belong here, but
     // they might have been added already at an earlier index. Clear pointers on
     // those that do not appear in the valid set before removing all the extra
     // entries.
-    for (size_t i = next_squashed_layer_index; i < squashed_layers_.size();
+    for (wtf_size_t i = next_squashed_layer_index; i < squashed_layers_.size();
          ++i) {
       if (InvalidateLayerIfNoPrecedingEntry(i)) {
         squashed_layers_[i].paint_layer->SetGroupedMapping(
