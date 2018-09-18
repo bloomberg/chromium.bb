@@ -122,4 +122,24 @@ suite('RuntimeHostsDialog', function() {
         'https://example.com:80/*',
         extensions.getPatternFromSite('https://example.com:80/*'));
   });
+
+  test('update site access', function() {
+    dialog.updateHostAccess = true;
+    const input = dialog.$$('cr-input');
+    const site = 'http://www.example.com';
+    input.value = site;
+    input.fire('input');
+    assertFalse(input.invalid);
+
+    const submit = dialog.$.submit;
+    assertFalse(submit.disabled);
+    submit.click();
+    return delegate.whenCalled('setItemHostAccess').then((args) => {
+      let id = args[0];
+      let access = args[1];
+      assertEquals(ITEM_ID, id);
+      assertEquals(
+          chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES, access);
+    });
+  });
 });
