@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -35,6 +36,7 @@
 #include "media/cdm/cdm_auxiliary_helper.h"
 #include "media/cdm/cdm_helpers.h"
 #include "media/cdm/cdm_wrapper.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
 
@@ -237,6 +239,29 @@ cdm::VideoFormat ToCdmVideoFormat(VideoPixelFormat format) {
       DVLOG(1) << "Unsupported VideoPixelFormat " << format;
       return cdm::kUnknownVideoFormat;
   }
+}
+
+cdm::ColorRange ToCdmColorRange(gfx::ColorSpace::RangeID range) {
+  switch (range) {
+    case gfx::ColorSpace::RangeID::LIMITED:
+      return cdm::ColorRange::kLimited;
+    case gfx::ColorSpace::RangeID::FULL:
+      return cdm::ColorRange::kFull;
+    case gfx::ColorSpace::RangeID::DERIVED:
+      return cdm::ColorRange::kDerived;
+    default:
+      DVLOG(1) << "Invalid color range";
+      return cdm::ColorRange::kInvalid;
+  }
+}
+
+cdm::ColorSpace ToCdmColorSpace(const VideoColorSpace& color_space) {
+  // Cast is okay because both VideoColorSpace and cdm::ColorSpace follow the
+  // standard ISO 23001-8:2016.
+  return {base::checked_cast<uint8_t>(color_space.primaries),
+          base::checked_cast<uint8_t>(color_space.transfer),
+          base::checked_cast<uint8_t>(color_space.matrix),
+          ToCdmColorRange(color_space.range)};
 }
 
 cdm::StreamType ToCdmStreamType(Decryptor::StreamType stream_type) {
@@ -791,10 +816,11 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(video_init_cb_.is_null());
 
-  cdm::VideoDecoderConfig_2 cdm_decoder_config = {};
+  cdm::VideoDecoderConfig_3 cdm_decoder_config = {};
   cdm_decoder_config.codec = ToCdmVideoCodec(config.codec());
   cdm_decoder_config.profile = ToCdmVideoCodecProfile(config.profile());
   cdm_decoder_config.format = ToCdmVideoFormat(config.format());
+  cdm_decoder_config.color_space = ToCdmColorSpace(config.color_space_info());
   cdm_decoder_config.coded_size.width = config.coded_size().width();
   cdm_decoder_config.coded_size.height = config.coded_size().height();
   cdm_decoder_config.extra_data =

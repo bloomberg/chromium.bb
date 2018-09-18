@@ -25,13 +25,13 @@ class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
   ~LibvpxCdmVideoDecoder() override;
 
   // CdmVideoDecoder implementation.
-  bool Initialize(const cdm::VideoDecoderConfig_2& config) override;
+  bool Initialize(const cdm::VideoDecoderConfig_3& config) override;
   void Deinitialize() override;
   void Reset() override;
   cdm::Status DecodeFrame(const uint8_t* compressed_frame,
                           int32_t compressed_frame_size,
                           int64_t timestamp,
-                          cdm::VideoFrame* decoded_frame) override;
+                          CdmVideoFrame* decoded_frame) override;
   bool is_initialized() const override;
 
   // Returns true when |format| and |data_size| specify a supported video
@@ -42,7 +42,7 @@ class LibvpxCdmVideoDecoder : public CdmVideoDecoder {
  private:
   // Allocates storage, then copies video frame stored in |vpx_image_| to
   // |cdm_video_frame|. Returns true when allocation and copy succeed.
-  bool CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame);
+  bool CopyVpxImageTo(CdmVideoFrame* cdm_video_frame);
 
   bool is_initialized_ = false;
 

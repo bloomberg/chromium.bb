@@ -390,6 +390,63 @@ cdm::InputBuffer_2 ToInputBuffer_2(cdm::InputBuffer_1 encrypted_buffer) {
   return buffer;
 }
 
+// See ISO 23001-8:2016, section 7. Value 2 means "Unspecified".
+constexpr cdm::ColorSpace kUnspecifiedColorSpace = {2, 2, 2,
+                                                    cdm::ColorRange::kInvalid};
+
+cdm::VideoDecoderConfig_3 ToVideoDecoderConfig_3(
+    cdm::VideoDecoderConfig_1 config) {
+  // VideoDecoderConfig_1 doesn't specify the encryption scheme, but only
+  // supports 'cenc' or unencrypted media, so expect encrypted video.
+  cdm::VideoDecoderConfig_3 result = {
+      config.codec,           config.profile,
+      config.format,          kUnspecifiedColorSpace,
+      config.coded_size,      config.extra_data,
+      config.extra_data_size, cdm::EncryptionScheme::kCenc};
+  return result;
+}
+
+cdm::VideoDecoderConfig_3 ToVideoDecoderConfig_3(
+    cdm::VideoDecoderConfig_2 config) {
+  cdm::VideoDecoderConfig_3 result = {
+      config.codec,           config.profile,          config.format,
+      kUnspecifiedColorSpace, config.coded_size,       config.extra_data,
+      config.extra_data_size, config.encryption_scheme};
+  return result;
+}
+
+// Adapting a cdm::VideoFrame to a cdm::VideoFrame_2 interface. Simply pass all
+// calls through except for SetColorSpace() and ColorSpace().
+class CdmVideoFrameAdapter : public cdm::VideoFrame_2 {
+ public:
+  explicit CdmVideoFrameAdapter(cdm::VideoFrame* video_frame)
+      : video_frame_(video_frame) {}
+
+  // cdm::VideoFrame_2 implementation.
+  void SetFormat(cdm::VideoFormat format) final {
+    video_frame_->SetFormat(format);
+  }
+  void SetSize(cdm::Size size) final { video_frame_->SetSize(size); }
+  void SetFrameBuffer(cdm::Buffer* frame_buffer) final {
+    video_frame_->SetFrameBuffer(frame_buffer);
+  }
+  void SetPlaneOffset(cdm::VideoPlane plane, uint32_t offset) final {
+    video_frame_->SetPlaneOffset(plane, offset);
+  }
+  void SetStride(cdm::VideoPlane plane, uint32_t stride) final {
+    video_frame_->SetStride(plane, stride);
+  }
+  void SetTimestamp(int64_t timestamp) final {
+    video_frame_->SetTimestamp(timestamp);
+  }
+  void SetColorSpace(cdm::ColorSpace color_space) final {
+    // Do nothing since cdm::VideoFrame does not support colorspace.
+  }
+
+ private:
+  cdm::VideoFrame* const video_frame_ = nullptr;
+};
+
 }  // namespace
 
 template <typename HostInterface>
@@ -714,18 +771,16 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
 
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig_1& video_decoder_config) {
-  // VideoDecoderConfig_1 doesn't specify the encryption scheme, but only
-  // supports 'cenc' or unencrypted media, so expect encrypted video.
-  cdm::VideoDecoderConfig_2 video_config = {
-      video_decoder_config.codec,      video_decoder_config.profile,
-      video_decoder_config.format,     video_decoder_config.coded_size,
-      video_decoder_config.extra_data, video_decoder_config.extra_data_size,
-      cdm::EncryptionScheme::kCenc};
-  return InitializeVideoDecoder(video_config);
+  return InitializeVideoDecoder(ToVideoDecoderConfig_3(video_decoder_config));
 }
 
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig_2& video_decoder_config) {
+  return InitializeVideoDecoder(ToVideoDecoderConfig_3(video_decoder_config));
+}
+
+cdm::Status ClearKeyCdm::InitializeVideoDecoder(
+    const cdm::VideoDecoderConfig_3& video_decoder_config) {
   if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem ||
       key_system_ == kExternalClearKeyCdmProxyKeySystem) {
     return cdm::kInitializationError;
@@ -787,6 +842,13 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
 cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer_2& encrypted_buffer,
     cdm::VideoFrame* decoded_frame) {
+  CdmVideoFrameAdapter adapted_frame(decoded_frame);
+  return DecryptAndDecodeFrame(encrypted_buffer, &adapted_frame);
+}
+
+cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
+    const cdm::InputBuffer_2& encrypted_buffer,
+    cdm::VideoFrame_2* decoded_frame) {
   DVLOG(1) << __func__;
   TRACE_EVENT0("media", "ClearKeyCdm::DecryptAndDecodeFrame");
 

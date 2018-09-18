@@ -17,8 +17,10 @@ class CdmHostProxy;
 
 class CdmVideoDecoder {
  public:
+  using CdmVideoFrame = cdm::VideoFrame_2;
+
   virtual ~CdmVideoDecoder() {}
-  virtual bool Initialize(const cdm::VideoDecoderConfig_2& config) = 0;
+  virtual bool Initialize(const cdm::VideoDecoderConfig_3& config) = 0;
   virtual void Deinitialize() = 0;
   virtual void Reset() = 0;
   virtual bool is_initialized() const = 0;
@@ -33,7 +35,7 @@ class CdmVideoDecoder {
   virtual cdm::Status DecodeFrame(const uint8_t* compressed_frame,
                                   int32_t compressed_frame_size,
                                   int64_t timestamp,
-                                  cdm::VideoFrame* decoded_frame) = 0;
+                                  CdmVideoFrame* decoded_frame) = 0;
 };
 
 // Initializes the appropriate video decoder based on build flags and the value
@@ -41,7 +43,7 @@ class CdmVideoDecoder {
 // CdmVideoDecoder pointer upon success.
 std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
     CdmHostProxy* cdm_host_proxy,
-    const cdm::VideoDecoderConfig_2& config);
+    const cdm::VideoDecoderConfig_3& config);
 
 }  // namespace media
 

@@ -16,7 +16,7 @@ namespace media {
 
 std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
     CdmHostProxy* cdm_host_proxy,
-    const cdm::VideoDecoderConfig_2& config) {
+    const cdm::VideoDecoderConfig_3& config) {
   std::unique_ptr<CdmVideoDecoder> video_decoder;
 
 #if defined(CLEAR_KEY_CDM_USE_LIBVPX_DECODER)

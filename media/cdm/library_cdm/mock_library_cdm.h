@@ -53,6 +53,22 @@ class MockLibraryCdm : public cdm::ContentDecryptionModule_9,
                cdm::Status(const cdm::InputBuffer_1& encrypted_buffer,
                            cdm::AudioFrames* audio_frames));
 
+  // cdm::ContentDecryptionModule_10 implementation.
+  MOCK_METHOD1(
+      InitializeVideoDecoder,
+      cdm::Status(const cdm::VideoDecoderConfig_2& video_decoder_config));
+  MOCK_METHOD2(DecryptAndDecodeFrame,
+               cdm::Status(const cdm::InputBuffer_2& encrypted_buffer,
+                           cdm::VideoFrame* video_frame));
+
+  // cdm::ContentDecryptionModule_11 implementation.
+  MOCK_METHOD1(
+      InitializeVideoDecoder,
+      cdm::Status(const cdm::VideoDecoderConfig_3& video_decoder_config));
+  MOCK_METHOD2(DecryptAndDecodeFrame,
+               cdm::Status(const cdm::InputBuffer_2& encrypted_buffer,
+                           cdm::VideoFrame_2* video_frame));
+
   // cdm::ContentDecryptionModule_10/11 implementation.
   void Initialize(bool allow_distinctive_identifier,
                   bool allow_persistent_state,
@@ -60,15 +76,9 @@ class MockLibraryCdm : public cdm::ContentDecryptionModule_9,
   MOCK_METHOD1(
       InitializeAudioDecoder,
       cdm::Status(const cdm::AudioDecoderConfig_2& audio_decoder_config));
-  MOCK_METHOD1(
-      InitializeVideoDecoder,
-      cdm::Status(const cdm::VideoDecoderConfig_2& video_decoder_config));
   MOCK_METHOD2(Decrypt,
                cdm::Status(const cdm::InputBuffer_2& encrypted_buffer,
                            cdm::DecryptedBlock* decrypted_block));
-  MOCK_METHOD2(DecryptAndDecodeFrame,
-               cdm::Status(const cdm::InputBuffer_2& encrypted_buffer,
-                           cdm::VideoFrame* video_frame));
   MOCK_METHOD2(DecryptAndDecodeSamples,
                cdm::Status(const cdm::InputBuffer_2& encrypted_buffer,
                            cdm::AudioFrames* audio_frames));

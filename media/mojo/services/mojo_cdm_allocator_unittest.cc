@@ -95,15 +95,15 @@ TEST_F(MojoCdmAllocatorTest, CreateCdmVideoFrame) {
   std::unique_ptr<VideoFrameImpl> video_frame = CreateCdmVideoFrame();
   video_frame->SetFormat(cdm::kI420);
   video_frame->SetSize({kWidth, kHeight});
-  video_frame->SetStride(VideoFrameImpl::kYPlane,
-                         static_cast<uint32_t>(VideoFrame::RowBytes(
-                             VideoFrame::kYPlane, kFormat, kWidth)));
-  video_frame->SetStride(VideoFrameImpl::kUPlane,
-                         static_cast<uint32_t>(VideoFrame::RowBytes(
-                             VideoFrame::kUPlane, kFormat, kWidth)));
-  video_frame->SetStride(VideoFrameImpl::kVPlane,
-                         static_cast<uint32_t>(VideoFrame::RowBytes(
-                             VideoFrame::kVPlane, kFormat, kWidth)));
+  video_frame->SetStride(
+      cdm::kYPlane, static_cast<uint32_t>(
+                        VideoFrame::RowBytes(cdm::kYPlane, kFormat, kWidth)));
+  video_frame->SetStride(
+      cdm::kUPlane, static_cast<uint32_t>(
+                        VideoFrame::RowBytes(cdm::kUPlane, kFormat, kWidth)));
+  video_frame->SetStride(
+      cdm::kVPlane, static_cast<uint32_t>(
+                        VideoFrame::RowBytes(cdm::kVPlane, kFormat, kWidth)));
   EXPECT_EQ(nullptr, video_frame->FrameBuffer());
 
   // Now create a buffer to hold the frame and assign it to the VideoFrameImpl.

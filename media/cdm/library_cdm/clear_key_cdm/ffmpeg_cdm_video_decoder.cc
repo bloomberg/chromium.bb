@@ -84,7 +84,7 @@ static int CdmVideoCodecProfileToProfileID(cdm::VideoCodecProfile profile) {
 }
 
 static void CdmVideoDecoderConfigToAVCodecContext(
-    const cdm::VideoDecoderConfig_2& config,
+    const cdm::VideoDecoderConfig_3& config,
     AVCodecContext* codec_context) {
   codec_context->codec_type = AVMEDIA_TYPE_VIDEO;
   codec_context->codec_id = CdmVideoCodecToCodecID(config.codec);
@@ -132,7 +132,7 @@ FFmpegCdmVideoDecoder::~FFmpegCdmVideoDecoder() {
 }
 
 bool FFmpegCdmVideoDecoder::Initialize(
-    const cdm::VideoDecoderConfig_2& config) {
+    const cdm::VideoDecoderConfig_3& config) {
   DVLOG(1) << "Initialize()";
 
   if (!IsValidOutputConfig(config.format, config.coded_size)) {
@@ -199,7 +199,7 @@ bool FFmpegCdmVideoDecoder::IsValidOutputConfig(cdm::VideoFormat format,
 cdm::Status FFmpegCdmVideoDecoder::DecodeFrame(const uint8_t* compressed_frame,
                                                int32_t compressed_frame_size,
                                                int64_t timestamp,
-                                               cdm::VideoFrame* decoded_frame) {
+                                               CdmVideoFrame* decoded_frame) {
   DVLOG(1) << "DecodeFrame()";
   DCHECK(decoded_frame);
 
@@ -244,9 +244,8 @@ bool FFmpegCdmVideoDecoder::is_initialized() const {
 bool FFmpegCdmVideoDecoder::OnNewFrame(AVFrame* frame) {
   // The decoder is in a bad state and not decoding correctly.
   // Checking for NULL avoids a crash.
-  if (!frame->data[cdm::VideoFrame::kYPlane] ||
-      !frame->data[cdm::VideoFrame::kUPlane] ||
-      !frame->data[cdm::VideoFrame::kVPlane]) {
+  if (!frame->data[cdm::kYPlane] || !frame->data[cdm::kUPlane] ||
+      !frame->data[cdm::kVPlane]) {
     LOG(ERROR) << "DecodeFrame(): Video frame has invalid frame data.";
     return false;
   }
@@ -256,7 +255,7 @@ bool FFmpegCdmVideoDecoder::OnNewFrame(AVFrame* frame) {
 }
 
 bool FFmpegCdmVideoDecoder::CopyAvFrameTo(AVFrame* frame,
-                                          cdm::VideoFrame* cdm_video_frame) {
+                                          CdmVideoFrame* cdm_video_frame) {
   DCHECK(cdm_video_frame);
   DCHECK_EQ(frame->format, AV_PIX_FMT_YUV420P);
   DCHECK_EQ(frame->width % 2, 0);
@@ -266,42 +265,37 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(AVFrame* frame,
   const int uv_size = y_size / 2;
   const int space_required = y_size + (uv_size * 2);
 
-  DCHECK(!cdm_video_frame->FrameBuffer());
-  cdm_video_frame->SetFrameBuffer(cdm_host_proxy_->Allocate(space_required));
-  if (!cdm_video_frame->FrameBuffer()) {
-    LOG(ERROR) << "CopyAvFrameTo() ClearKeyCdmHost::Allocate failed.";
+  auto* frame_buffer = cdm_host_proxy_->Allocate(space_required);
+  if (!frame_buffer) {
+    LOG(ERROR) << __func__ << ": Buffer allocation failed.";
     return false;
   }
-  cdm_video_frame->FrameBuffer()->SetSize(space_required);
 
-  CopyPlane(frame->data[cdm::VideoFrame::kYPlane],
-            frame->linesize[cdm::VideoFrame::kYPlane], frame->width,
-            frame->height, frame->width,
-            cdm_video_frame->FrameBuffer()->Data());
-
+  // Prepare and set the frame buffer.
   const int uv_stride = frame->width / 2;
   const int uv_rows = frame->height / 2;
-  CopyPlane(frame->data[cdm::VideoFrame::kUPlane],
-            frame->linesize[cdm::VideoFrame::kUPlane], uv_stride, uv_rows,
-            uv_stride, cdm_video_frame->FrameBuffer()->Data() + y_size);
-
-  CopyPlane(frame->data[cdm::VideoFrame::kVPlane],
-            frame->linesize[cdm::VideoFrame::kVPlane], uv_stride, uv_rows,
-            uv_stride,
-            cdm_video_frame->FrameBuffer()->Data() + y_size + uv_size);
+  uint8_t* data = frame_buffer->Data();
+  CopyPlane(frame->data[cdm::kYPlane], frame->linesize[cdm::kYPlane],
+            frame->width, frame->height, frame->width, data);
+  CopyPlane(frame->data[cdm::kUPlane], frame->linesize[cdm::kUPlane], uv_stride,
+            uv_rows, uv_stride, data + y_size);
+  CopyPlane(frame->data[cdm::kVPlane], frame->linesize[cdm::kVPlane], uv_stride,
+            uv_rows, uv_stride, data + y_size + uv_size);
+  frame_buffer->SetSize(space_required);
+  cdm_video_frame->SetFrameBuffer(frame_buffer);
 
   AVPixelFormat format = static_cast<AVPixelFormat>(frame->format);
   cdm_video_frame->SetFormat(AVPixelFormatToCdmVideoFormat(format));
 
   cdm_video_frame->SetSize({frame->width, frame->height});
 
-  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kYPlane, 0);
-  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kUPlane, y_size);
-  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kVPlane, y_size + uv_size);
+  cdm_video_frame->SetPlaneOffset(cdm::kYPlane, 0);
+  cdm_video_frame->SetPlaneOffset(cdm::kUPlane, y_size);
+  cdm_video_frame->SetPlaneOffset(cdm::kVPlane, y_size + uv_size);
 
-  cdm_video_frame->SetStride(cdm::VideoFrame::kYPlane, frame->width);
-  cdm_video_frame->SetStride(cdm::VideoFrame::kUPlane, uv_stride);
-  cdm_video_frame->SetStride(cdm::VideoFrame::kVPlane, uv_stride);
+  cdm_video_frame->SetStride(cdm::kYPlane, frame->width);
+  cdm_video_frame->SetStride(cdm::kUPlane, uv_stride);
+  cdm_video_frame->SetStride(cdm::kVPlane, uv_stride);
 
   cdm_video_frame->SetTimestamp(frame->reordered_opaque);
 

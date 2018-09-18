@@ -29,13 +29,13 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
   ~FFmpegCdmVideoDecoder() override;
 
   // CdmVideoDecoder implementation.
-  bool Initialize(const cdm::VideoDecoderConfig_2& config) override;
+  bool Initialize(const cdm::VideoDecoderConfig_3& config) override;
   void Deinitialize() override;
   void Reset() override;
   cdm::Status DecodeFrame(const uint8_t* compressed_frame,
                           int32_t compressed_frame_size,
                           int64_t timestamp,
-                          cdm::VideoFrame* decoded_frame) override;
+                          CdmVideoFrame* decoded_frame) override;
   bool is_initialized() const override;
 
   // Returns true when |format| and |data_size| specify a supported video
@@ -48,7 +48,7 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
 
   // Allocates storage, then copies video frame stored in |frame| to
   // |cdm_video_frame|. Returns true when allocation and copy succeed.
-  bool CopyAvFrameTo(AVFrame* frame, cdm::VideoFrame* cdm_video_frame);
+  bool CopyAvFrameTo(AVFrame* frame, CdmVideoFrame* cdm_video_frame);
 
   void ReleaseFFmpegResources();
 
