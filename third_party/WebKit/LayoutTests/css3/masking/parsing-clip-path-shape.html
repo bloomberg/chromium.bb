@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html>
+<title>clip-path shapes accept different length units</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <style>
 * { font-size: 16px; }
 div { font-size: 8px; }
 </style>
 <body>
-<script src="../../resources/js-test.js"></script>
 <script>
-description('Test that clip-path shapes accept different length units');
-
 function computedStyle(property, value) {
     var div = document.createElement("div");
     document.body.appendChild(div);
@@ -18,21 +17,22 @@ function computedStyle(property, value) {
     return computedValue;
 }
 
-function innerStyle(property, value) {
+function specifiedStyle(property, value) {
     var div = document.createElement("div");
     div.style.setProperty(property, value);
     return div.style.getPropertyValue(property);
 }
 
 function testComputed(property, value, expected) {
-    shouldBeEqualToString('computedStyle("' + property + '", "' + value + '")', expected);
+    test(function() {
+        assert_equals(computedStyle(property, value), expected);
+    }, document.title + ', ' + property + ': ' + value + ' (computed)');
 }
 
 function testInner(property, value, expected) {
-    if (expected === null)
-        shouldBeNull('innerStyle("' + property + '", "' + value + '")');
-    else
-        shouldBeEqualToString('innerStyle("' + property + '", "' + value + '")', expected);
+    test(function() {
+        assert_equals(specifiedStyle(property, value), expected);
+    }, document.title + ', ' + property + ': ' + value + ' (specified)');
 }
 
 function negativeTest(property, value) {
@@ -93,7 +93,5 @@ negativeTest("-webkit-clip-path", "polygon(0)");
 negativeTest("-webkit-clip-path", "polygon()");
 negativeTest("-webkit-clip-path", "polygon(evenodd)");
 negativeTest("-webkit-clip-path", "polygon(nonzero)");
-
 </script>
 </body>
-</html>
