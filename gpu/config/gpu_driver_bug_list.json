@@ -2930,11 +2930,7 @@
       "cr_bugs": [866613],
       "description": "Frequent crashes on Adreno (TM) on L and below",
       "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "6.0"
-        }
+        "type": "android"
       },
       "gl_renderer": "Adreno.*",
       "features": [
