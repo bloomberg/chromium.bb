@@ -15,6 +15,8 @@ namespace auto_screen_brightness {
 class AlsReader {
  public:
   // Status of AlsReader initialization.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class AlsInitStatus {
     kSuccess = 0,
     kInProgress = 1,
@@ -24,8 +26,7 @@ class AlsReader {
     kMaxValue = kMissingPath
   };
 
-  // Observers should take WeakPtr of AlsReader and remove themselves
-  // in observers' destructors if AlsReader hasn't be destructed.
+  // AlsReader must outlive the observers.
   class Observer : public base::CheckedObserver {
    public:
     Observer() = default;

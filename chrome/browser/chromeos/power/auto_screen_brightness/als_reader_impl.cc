@@ -130,11 +130,8 @@ AlsReader::AlsInitStatus AlsReaderImpl::GetInitStatus() const {
 void AlsReaderImpl::Init() {
   base::PostTaskAndReplyWithResult(
       als_task_runner_.get(), FROM_HERE, base::BindOnce(&IsAlsEnabled),
-      base::BindOnce(&AlsReaderImpl::OnAlsEnableCheckDone, AsWeakPtr()));
-}
-
-base::WeakPtr<AlsReaderImpl> AlsReaderImpl::AsWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
+      base::BindOnce(&AlsReaderImpl::OnAlsEnableCheckDone,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AlsReaderImpl::SetTaskRunnerForTesting(
@@ -160,7 +157,8 @@ void AlsReaderImpl::OnAlsEnableCheckDone(const bool is_enabled) {
 
   base::PostTaskAndReplyWithResult(
       als_task_runner_.get(), FROM_HERE, base::BindOnce(&VerifyAlsConfig),
-      base::BindOnce(&AlsReaderImpl::OnAlsConfigCheckDone, AsWeakPtr()));
+      base::BindOnce(&AlsReaderImpl::OnAlsConfigCheckDone,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AlsReaderImpl::OnAlsConfigCheckDone(const bool is_config_valid) {
@@ -197,7 +195,8 @@ void AlsReaderImpl::OnAlsPathReadAttempted(const std::string& path) {
 void AlsReaderImpl::RetryAlsPath() {
   base::PostTaskAndReplyWithResult(
       als_task_runner_.get(), FROM_HERE, base::BindOnce(&GetAlsPath),
-      base::BindOnce(&AlsReaderImpl::OnAlsPathReadAttempted, AsWeakPtr()));
+      base::BindOnce(&AlsReaderImpl::OnAlsPathReadAttempted,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AlsReaderImpl::OnInitializationComplete() {
@@ -210,7 +209,8 @@ void AlsReaderImpl::ReadAlsPeriodically() {
   base::PostTaskAndReplyWithResult(
       als_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ReadAlsFromFile, ambient_light_path_),
-      base::BindOnce(&AlsReaderImpl::OnAlsRead, AsWeakPtr()));
+      base::BindOnce(&AlsReaderImpl::OnAlsRead,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AlsReaderImpl::OnAlsRead(const std::string& data) {

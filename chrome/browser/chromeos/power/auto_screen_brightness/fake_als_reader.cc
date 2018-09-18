@@ -36,10 +36,6 @@ void FakeAlsReader::RemoveObserver(Observer* const observer) {
   observers_.RemoveObserver(observer);
 }
 
-base::WeakPtr<FakeAlsReader> FakeAlsReader::AsWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
 }  // namespace auto_screen_brightness
 }  // namespace power
 }  // namespace chromeos

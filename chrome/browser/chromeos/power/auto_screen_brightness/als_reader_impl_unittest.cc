@@ -63,7 +63,7 @@ class AlsReaderImplTest : public testing::Test {
     als_reader_.InitForTesting(ambient_light_path_);
   }
 
-  ~AlsReaderImplTest() override { als_reader_.RemoveObserver(&test_observer_); }
+  ~AlsReaderImplTest() override = default;
 
  protected:
   void WriteLux(int lux) {
@@ -80,8 +80,8 @@ class AlsReaderImplTest : public testing::Test {
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
-  TestObserver test_observer_;
   AlsReaderImpl als_reader_;
+  TestObserver test_observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AlsReaderImplTest);
