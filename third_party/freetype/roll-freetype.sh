@@ -62,5 +62,5 @@ updatereadme &&
 mergeinclude ftoption.h &&
 mergeinclude ftconfig.h &&
 checkmodules &&
-commit &&
-true || echo "Failed step ${STEP}" && false
+commit ||
+{ echo "Failed step ${STEP}"; exit 1; }
