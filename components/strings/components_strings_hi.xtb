@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">फ़ोन नंबर आवश्यक है</translation>
 <translation id="1517500485252541695">स्वीकृत क्रेडिट और डेबिट कार्ड</translation>
 <translation id="1519264250979466059">बिल्ड दिनांक</translation>
+<translation id="1521655867290435174">Google पत्रक</translation>
 <translation id="1527263332363067270">कनेक्‍शन के इंतज़ार में…</translation>
 <translation id="1532118530259321453">इस पेज का कहना है कि</translation>
 <translation id="153384715582417236">अभी के लिए हो गया</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">MacOS निर्यात करें</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">कनेक्‍शन रीसेट किया गया था.</translation>
+<translation id="2785008241190445880">बुकमार्क बदला गया</translation>
 <translation id="2788784517760473862">स्वीकृत क्रेडिट कार्ड</translation>
 <translation id="2794233252405721443">साइट अवरोधित है</translation>
 <translation id="2799020568854403057">आगे आने वाली साइट में नुकसान पहुंचाने वाले ऐप्लिकेशन हैं</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">मुझे अभी वहां ले जाएं</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसके सुरक्षा प्रमाणपत्र में त्रुटियां हैं. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
+<translation id="467809019005607715">Google स्लाइड</translation>
 <translation id="4690462567478992370">अमान्य प्रमाणपत्र का उपयोग करना बंद करें</translation>
 <translation id="4690954380545377795">आप अपने Google खाते का एक्सेस खो सकते हैं या आपकी पहचान चोरी हो सकती है. Chrome आपको इसी समय अपना पासवर्ड बदलने का सुझाव देता है.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">संपर्क जानकारी चुनें</translation>
 <translation id="5327248766486351172">नाम</translation>
 <translation id="5332219387342487447">शिपिंग का तरीका</translation>
+<translation id="5344579389779391559">यह पेज आपसे शुल्क लेने की कोशिश कर सकता है</translation>
 <translation id="5355557959165512791">आप इस समय <ph name="SITE" /> पर नहीं जा सकते हैं क्योंकि उसका प्रमाणपत्र रद्द कर दिया गया है. नेटवर्क की गड़बड़ी और हमले आमतौर पर कुछ देर के लिए होते हैं, इसलिए मुमकिन है कि यह पेज बाद में काम करे.</translation>
 <translation id="536296301121032821">नीति सेटिंग संग्रहित करने में विफल</translation>
 <translation id="5371425731340848620">कार्ड अपडेट करें</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">वर्ष</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{पेज 1}one{पेज #}other{पेज #}}</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> पर मौजूद हमलावर ऐसे भ्रामक ऐप्लिकेशन इंस्टॉल कर सकते हैं जो कुछ और होने का दावा करते हैं या ऐसा डेटा एकत्रित करते हैं जिसका उपयोग आप पर नज़र रखने के लिए किया जा सके. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Chrome को अपने मुताबिक बनाएं</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (सिंक किए गए)</translation>
 <translation id="6027201098523975773">नाम डालें</translation>
 <translation id="6039846035001940113">अगर समस्या बनी रहती है, तो साइट के मालिक से संपर्क करें.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">यह सामग्री आपसे धोखे से सॉफ़्टवेयर इंस्‍टॉल करवाने या व्यक्तिगत जानकारी का खुलासा करवाने की कोशिश कर सकती है. <ph name="BEGIN_LINK" />फिर भी दिखाएं<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">आप इस समय <ph name="SITE" /> पर नहीं जा सकते क्योंकि वेबसाइट, प्रमाणपत्र पिनिंग का उपयोग करती है. नेटवर्क की गड़बड़ियां और हमले आमतौर पर कुछ समय के लिए होते हैं इसलिए यह पेज शायद बाद में ठीक से काम करेगा.</translation>
 <translation id="6059925163896151826">USB डिवाइस</translation>
+<translation id="6060991652695587932">झटपट एक्सेस के लिए अपनी ईमेल सेवा चुनें</translation>
 <translation id="6071091556643036997">नीति का प्रकार गलत है.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{सभी डिवाइस पर तेज़ी से चेकआउट करने के लिए यह कार्ड आपके Google खाते में सेव किया जाएगा.}one{सभी डिवाइस पर तेज़ी से चेकआउट करने के लिए ये कार्ड आपके Google खाते में सेव किए जाएंगे.}other{सभी डिवाइस पर तेज़ी से चेकआउट करने के लिए ये कार्ड आपके Google खाते में सेव किए जाएंगे.}}</translation>
 <translation id="6080696365213338172">आपने व्यवस्थापक द्वारा प्रदत्त प्रमाणपत्र के उपयोग से सामग्री एक्सेस की है. आपके द्वारा <ph name="DOMAIN" /> को प्रदान किया गया डेटा आपके व्यवस्थापक द्वारा बीच में रोका जा सकता है.</translation>
@@ -904,6 +910,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">नहीं</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">प्रबंधित सत्र ओवरराइड</translation>
 <translation id="7390545607259442187">कार्ड की पुष्टि करें</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;अगर आपके Windows कंप्यूटर पर Superfish सॉफ़्टवेयर है तो, आपको यह गड़बड़ी दिखाई देगी.&lt;/p&gt;
@@ -994,6 +1001,7 @@
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' के लिए <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> मिले</translation>
 <translation id="7818867226424560206">नीति प्रबंधन</translation>
 <translation id="782886543891417279">आप जिस वाई-फ़ाई का उपयोग कर रहे हैं (<ph name="WIFI_NAME" />) आपको उसके लॉगिन पेज पर जाने की ज़रूरत पड़ सकती है.</translation>
+<translation id="7835178595033117206">बुकमार्क हटाया गया</translation>
 <translation id="785549533363645510">हालांकि, गुप्त मोड का मतलब यह नहीं है कि आपको कोई भी नहीं देख सकता. गुप्त मोड में आप जो भी ब्राउजिंग करते हैं उसे, आपके नियोक्ता, इंटरनेट सेवा देने वाली कंपनी या आप जिन वेबसाइटों को देखते हैं, वे देख सकते हैं.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">साइट छोड़ें?</translation>
@@ -1130,6 +1138,7 @@
 <translation id="8874824191258364635">मान्य कार्ड संख्या डालें</translation>
 <translation id="8876793034577346603">नेटवर्क कॉन्फ़िगरेशन पार्स होने में विफल रहा.</translation>
 <translation id="8891727572606052622">अमान्य प्रॉक्सी मोड.</translation>
+<translation id="8892964541482452187">टैब बदलने का बटन, इस टैब पर स्विच करने के लिए enter दबाएं</translation>
 <translation id="8903921497873541725">ज़ूम इन करें</translation>
 <translation id="8931333241327730545">क्या आप इस कार्ड को अपने Google खाते में सहेजना चाहते हैं?</translation>
 <translation id="8932102934695377596">आपकी घड़ी पीछे है</translation>
@@ -1155,6 +1164,7 @@
 <translation id="9035022520814077154">सुरक्षा गड़बड़ी</translation>
 <translation id="9038649477754266430">अधिक तेज़ी से पेज लोड करने के लिए किसी पूर्वानुमान सेवा का उपयोग करें</translation>
 <translation id="9039213469156557790">इसके अतिरिक्त, इस पेज में ऐसे अन्य संसाधन भी शामिल हैं, जो सुरक्षित नहीं हैं. ट्रांज़िट में होने के दौरान ये संसाधन अन्य लोगों द्वारा देखे जा सकते हैं और पेज का व्यवहार बदलने के लिए किसी हमवलावर द्वारा इनमें बदलाव किए जा सकते हैं.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">आपने <ph name="DOMAIN" /> पर पहुंचने की कोशिश की लेकिन सर्वर ने एक अमान्‍य प्रमाणपत्र पेश किया.</translation>
 <translation id="9050666287014529139">पासफ़्रेज़</translation>
 <translation id="9065203028668620118">संपादित करें</translation>
@@ -1178,6 +1188,7 @@
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
 <translation id="9171296965991013597">ऐप्लिकेशन बंद करें?</translation>
 <translation id="917450738466192189">सर्वर का प्रमाणपत्र अमान्य है.</translation>
+<translation id="9183302530794969518">Google दस्तावेज़</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> एक असमर्थित प्रोटोकॉल का उपयोग करता है.</translation>
 <translation id="9205078245616868884">आपका डेटा आपके समन्वयन पासफ़्रेज़ के साथ एन्क्रिप्ट किया गया है. समन्वयन शुरू करने के लिए इसे डालें.</translation>
 <translation id="9207861905230894330">लेख जोड़ने में विफल रहा.</translation>

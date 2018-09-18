@@ -124,6 +124,7 @@
 <translation id="1387596372902085462">Symantec Corporation'ın Eski PKI Altyapısı'ndaki güvenin etkinleştirilip etkinleştirilmemesi</translation>
 <translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
 <translation id="1397855852561539316">Arama önerileri için varsayılan arama sağlayıcı URL'si</translation>
+<translation id="142346659686073702">Bağlı olmayan kullanıcıların Crostini'yi kullanmasına izin verir</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1427655258943162134">Proxy sunucunun adresi veya URL'si</translation>
 <translation id="1435659902881071157">Cihaz düzeyinde ağ yapılandırması</translation>
@@ -377,6 +378,12 @@
 
       Bu politika ayarlanmadan bırakılırsa, etkinleştirilmiş gibi görev görür (yukarıdaki açıklamaya bakın).</translation>
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
+<translation id="2116790137063002724">Bu politika; OS giriş bilgileri, <ph name="PRODUCT_NAME" /> Profili giriş bilgileri, <ph name="PRODUCT_NAME" /> Profili adı, <ph name="PRODUCT_NAME" /> Profili yolu ve <ph name="PRODUCT_NAME" /> yürütülebilir dosya yolu gibi kullanıcıları tanımlamak için kullanılabilecek bilgilerin bildirilip bildirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakılır veya True (Doğru) değerine ayarlanırsa kullanıcıları tanımlamak için kullanılabilecek bilgiler toplanır.
+      Bu politika False (Yanlış) değerine ayarlanırsa kullanıcıları tanımlamak için kullanılabilecek bilgiler toplanmaz.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>
 <translation id="2132732175597591362">Otomatik oynatmanın her zaman etkin olacağı URL kalıpları beyaz listesini kontrol eder.
@@ -874,6 +881,22 @@
           Bu politika ayarlanmadan bırakılırsa, "DefaultCookiesSetting" politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.
 
           Ayrıca "CookiesBlockedForUrls" ve "CookiesSessionOnlyForUrls" politikalarına bakın. Bu üç politika arasında çakışan URL kalıplarının olmaması gerektiğini unutmayın. Hangi politikaya öncelik verileceği belirtilmemiştir.</translation>
+<translation id="3373364525435227558">Yönetilen bir oturum için önerilen yerel ayarlardan bir veya daha fazlasını yapılandırarak kullanıcıların bunlardan birini kolayca seçmelerine olanak tanır.
+
+      Kullanıcı yönetilen oturumu başlatmadan önce yerel ayar ve klavye düzeni seçebilir. Varsayılan olarak, <ph name="PRODUCT_OS_NAME" /> tarafından desteklenen tüm yerel ayarlar alfabetik sırayla listelenir. Bu politikayı kullanarak, önerilen yerel ayarların bir kısmını listenin başına taşıyabilirsiniz.
+
+      Bu politika ayarlanmazsa, geçerli kullanıcı arayüzü yerel ayarı önceden seçilir.
+
+      Bu politika ayarlanırsa, önerilen yerel ayarlar listenin başına taşınır ve geri kalan yerel ayarlardan görsel olarak ayrılır. Önerilen yerel ayarlar politikada göründükleri sırayla listelenir. Önerilen ilk yerel ayar önceden seçilir.
+
+      Birden fazla önerilen yerel ayar varsa, kullanıcıların bu yerel ayarlardan birini seçmek isteyeceği varsayılır. Yönetilen oturum başlatılırken, yerel ayar ve klavye düzeni seçimi göze çarpacak şekilde sunulur. Aksi takdirde, çoğu kullanıcının önceden seçilmiş olan yerel ayarı kullanmak isteyeceği varsayılır. Yönetilen oturum başlatılırken yerel ayar ve klavye düzeni seçimi fazla göze çarpacak şekilde sunulmaz.
+
+      Bu politika ayarlandığında ve otomatik giriş etkinleştirildiğinde (bkz. |DeviceLocalAccountAutoLoginId| ve |DeviceLocalAccountAutoLoginDelay| politikaları), otomatik olarak başlatılan yönetilen oturum için ilk önerilen yerel ayar ve bu yerel ayarla eşleşen en popüler klavye düzeni kullanılır.
+
+      Önceden seçilmiş olan klavye düzeni her zaman, önceden seçilmiş yerel ayarla eşleşen en popüler düzen olur.
+
+      Bu politika yalnızca önerildiği şekilde ayarlanabilir. Önerilen yerel ayarları en üste taşımak için bu politikayı kullanabilirsiniz, ancak kullanıcıların oturumları için <ph name="PRODUCT_OS_NAME" /> tarafından desteklenen herhangi bir yerel ayarı seçmesine her zaman izin verilir.
+      </translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
 <translation id="3414260318408232239">Bu politika yapılandırılmazsa, <ph name="PRODUCT_NAME" /> varsayılan minimum sürüm olarak TLS 1.0'ı kullanır.
 
@@ -1101,6 +1124,11 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
       Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa kullanıcılar Chrome OS Kaydı aracılığıyla tekliflerden yararlanabilirler.
 
       Bu politika yanlış seçeneğine ayarlanırsa kullanıcılar tekliflerden yararlanamazlar.</translation>
+<translation id="4008507541867797979">Bu politika true (doğru) değerine ayarlanırsa veya yapılandırılmazsa, <ph name="PRODUCT_OS_NAME" /> mevcut kullanıcıları giriş ekranında gösterir ve birinin seçilmesine izin verir.
+
+      Bu politika false (yanlış) değerine ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> mevcut kullanıcıları giriş ekranında göstermez. Yönetilen Oturum yapılandırılmadığı takdirde normal oturum açma ekranı (kullanıcı e-postasını ve şifresini veya telefonunu ister) veya SAML geçiş ekranı (<ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> politikası tarafından etkinleştirilmişse) gösterilir. Yönetilen Oturum yapılandırıldığında yalnızca Yönetilen Oturum hesapları gösterilir ve birinin seçilmesine izin verilir.
+
+      Bu politikanın, cihazın yerel kullanıcı verilerini saklaması veya silmesi üzerinde herhangi bir etkisi olmadığını unutmayın.</translation>
 <translation id="4010738624545340900">Dosya seçimi iletişim kutularının çağrılmasına izin ver</translation>
 <translation id="4012737788880122133">Doğru (True) değerine ayarlandığında otomatik güncellemeleri devre dışı bırakır.
 
@@ -1516,6 +1544,15 @@ politikayı geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultNotificationsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
 <translation id="5219844027738217407">Bu politika Android uygulamalarında sadece mikrofonu etkiler. Bu politika doğru olarak ayarlandığında, istisnasız tüm Android uygulamaları için mikrofon kapatılır.</translation>
+<translation id="5228316810085661003">Cihaz yerel hesabına otomatik girişin gecikmesi.
+
+      |DeviceLocalAccountAutoLoginId| politikası ayarlanmazsa bu politika geçerli olmaz. Aksi halde:
+
+      Bu politika ayarlanırsa, |DeviceLocalAccountAutoLoginId| politikası tarafından belirtilen cihaz yerel hesabına otomatik olarak giriş yapılmadan önce kullanıcı etkinliği olmadan geçmesi gereken süreyi belirler.
+
+      Bu politika ayarlanmazsa, zaman aşımı süresi olarak 0 milisaniye kullanılır.
+
+      Bu politika milisaniye olarak belirlenir.</translation>
 <translation id="523505283826916779">Erişilebilirlik ayarları</translation>
 <translation id="5247006254130721952">Tehlikeli indirmeleri engelle</translation>
 <translation id="5248863213023520115">Bir <ph name="MS_AD_NAME" /> sunucusundan Kerberos biletleri istenirken izin verilen şifreleme türlerini belirler.
@@ -1536,6 +1573,12 @@ politikayı geçersiz kılamaz.
 <translation id="5272684451155669299">True (doğru) olarak ayarlanırsa kullanıcı, cihaz kimliğini gizlilik CA'sına uzaktan doğrulatmak için Chrome cihazlardaki donanımı kullanabilir. Bu işlem <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> üzerinden <ph name="CHALLENGE_USER_KEY_FUNCTION" /> işlevi kullanılarak gerçekleştirilir.
 
           False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, API'ye yapılan çağrılar başarısız olur ve hata kodu görüntülenir.</translation>
+<translation id="5277806246014825877">Bu kullanıcının Crostini'yi çalıştırabilmesini sağlar.
+
+      Bu politika false (yanlış) değerine ayarlanırsa kullanıcı Crostini'yi kullanamaz.
+      Bu politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa kullanıcı, diğer ayarlar da izin verdiği sürece Crostini'yi kullanabilir.
+      Crostini'nin çalıştırılmasına izin verilmesi için üç politikanın da (VirtualMachinesAllowed, CrostiniAllowed ve DeviceUnaffiliatedCrostiniAllowed) true (doğru) değerine ayarlanması gerekir.
+     Bu politika false (yanlış) olarak değiştirildiğinde, ayar yeni Crostini kapsayıcıların başlatılmasında geçerli olur, ancak halihazırda çalıştırılmakta olan kapsayıcıları kapatmaz.</translation>
 <translation id="5283457834853986457">Eklenti bulucuyu devre dışı bırak (kullanımdan kaldırıldı)</translation>
 <translation id="5288772341821359899">Politika ayarlanırsa, WebRTC tarafından kullanılan UDP bağlantı noktası aralığı, belirtilen bağlantı noktası aralığı (başlangıç ve bitiş noktaları dahil) kullanılacak şekilde kısıtlanır.
 
@@ -1574,6 +1617,7 @@ politikayı geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa, 'AskNotifications' kullanılır ve kullanıcı ayarı değiştirebilir.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> için aşağıdaki içerik türlerini işlemeye izin ver.</translation>
+<translation id="5391388690191341203">Cihaz yerel hesabına otomatik giriş</translation>
 <translation id="5392172595902933844">Android'in durumuyla ilgili bilgiler sunucuya geri gönderilir.
 
       Politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa durum bilgisi bildirilmez.
@@ -1602,6 +1646,7 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadan bırakılırsa kullanılan varsayılan ayar, oluşturma işlemini ana makine tarayıcısının yapmasına izin vermektir, ancak isteğe bağlı olarak bu ayarı geçersiz kılabilir ve HTML sayfalarını oluşturma işleminin varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> tarafından yapılmasını sağlayabilirsiniz.</translation>
 <translation id="5464816904705580310">Yönetilen kullanıcılar için ayarları yapılandırın.</translation>
 <translation id="546726650689747237">AC güçle çalışırken ekran karartma gecikmesi</translation>
+<translation id="5469143988693423708">Kullanıcı Crostini'yi çalıştırabilmek üzere etkinleştirilir</translation>
 <translation id="5469825884154817306">Bu sitelerdeki resimleri engelle</translation>
 <translation id="5475361623548884387">Yazdırmayı etkinleştir</translation>
 <translation id="547601067149622666">Arayan giren reklamların yer aldığı sitelerde reklamlara izin verme</translation>
@@ -1653,6 +1698,9 @@ politikayı geçersiz kılamaz.
       Belirli bir sertifikanın yetkilendirilebileceği ana makine adlarını sınırlandıran nameConstraints uzantısının atlanmasına olanak tanıyabileceği için bunun önerilen bir yöntem olmadığını unutmayın.
 
       Bu politika ayarlanmazsa veya false (yanlış) değerine ayarlanırsa bir DNS adı veya IP adresi içerip de subjectAlternativeName uzantısı bulunmayan sunucu sertifikalarına güvenilmez.</translation>
+<translation id="5581292529942108810">Chrome Raporlama Uzantısı ile ilişkili politikaları yapılandırır.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="5584132346604748282">Android Google konum hizmetlerini kontrol et</translation>
 <translation id="5586942249556966598">Hiçbir şey yapma</translation>
 <translation id="5630352020869108293">Son oturumu geri yükle</translation>
@@ -1899,6 +1947,11 @@ politikayı geçersiz kılamaz.
 <translation id="6310223829319187614">Kullanıcı oturum açarken alan adı otomatik doldurma özelliğini etkinleştir</translation>
 <translation id="6315673513957120120">Kullanıcılar SSL hatalarına neden olan sitelere gittiğinde Chrome bir uyarı iletisi görüntüler. Varsayılan olarak veya bu politika doğru seçeneğine ayarlandığında, kullanıcıların bu uyarı sayfalarını tıklamalarına izin verilir.
       Bu politika yanlış seçeneğine ayarlanırsa, kullanıcılar uyarı sayfalarını tıklayamazlar.</translation>
+<translation id="6352543686437322588">Gecikme sonrasında otomatik olarak giriş yapılacak cihaz yerel hesabı.
+
+      Bu politika ayarlanırsa, giriş ekranında kullanıcı etkileşimi olmadan bir süre geçtikten sonra, belirlenen oturuma otomatik olarak giriş yapılır. Cihaz yerel hesabının önceden yapılandırılmış olması gerekir (bkz. |DeviceLocalAccounts|).
+
+      Bu politika ayarlanmazsa otomatik giriş yapılmaz.</translation>
 <translation id="6353901068939575220">POST ile bir URL ararken kullanılacak parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {searchTerms} gibi bir şablon parametresi ise, gerçek arama terimleri verisiyle değiştirilir.
 
           Bu politika isteğe bağlıdır. Ayarlanmazsa, arama isteği GET yöntemi kullanılarak gönderilir.
@@ -2266,6 +2319,11 @@ politikayı geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa kullanıcı bu ayarı manuel olarak değiştirebilir.</translation>
 <translation id="723103540848640830">Kilit ekranı PIN'inin minimum uzunluğunu ayarla</translation>
+<translation id="7232816984286843471">Politika false (yanlış) değerine ayarlanırsa bağlı olmayan kullanıcıların Crostini'yi kullanmasına izin verilmez.
+
+      Politika ayarlanmazsa veya true (doğru) değerine ayarlanırsa diğer ayarlar da izin verdiği sürece tüm kullanıcılar Crostini'yi kullanabilir.
+      Crostini'nin çalıştırılmasına izin verilmesi için üç politikanın da (VirtualMachinesAllowed, CrostiniAllowed ve DeviceUnaffiliatedCrostiniAllowed) true (doğru) değerine ayarlanması gerekir.
+      Bu politika false (yanlış) olarak değiştirildiğinde, ayar yeni Crostini kapsayıcıların başlatılmasında geçerli olur, ancak halihazırda çalıştırılmakta olan kapsayıcıları kapatmaz.</translation>
 <translation id="7234280155140786597">Yasak yerel mesajlaşma ana makinelerinin adları (veya hepsi için *)</translation>
 <translation id="7236775576470542603">Giriş ekranında etkinleştirilen ekran büyütecinin varsayılan türünü ayarla.
 
@@ -2311,6 +2369,12 @@ politikayı geçersiz kılamaz.
 <translation id="7311458740754205918">Bunun için doğru (true) değeri ayarlanır veya herhangi bir değer belirtilmezse Yeni Sekme sayfasında kullanıcının tarama geçmişi, ilgi alanları veya konumuna dayalı içerik önerileri gösterilebilir.
 
 Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otomatik oluşturulan içerik önerileri gösterilmez.</translation>
+<translation id="7313793931637495417">Bu politika OS sürümü, OS platformu, OS mimarisi, <ph name="PRODUCT_NAME" /> sürümü ve <ph name="PRODUCT_NAME" /> kanalı gibi sürüm bilgilerinin bildirilip bildirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakılır veya True (Doğru) değerine ayarlanırsa sürüm bilgileri toplanır.
+      Bu politika False (Yanlış) değerine ayarlanırsa sürüm bilgileri toplanmaz.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> için ek komut satırı parametreleri</translation>
 <translation id="7326394567531622570">Wipe (2 değeri) seçeneğine benzer, ancak kullanıcının tekrar oturum açmak zorunda kalmaması için giriş jetonlarını saklar.</translation>
 <translation id="7329842439428490522">Pil gücüyle çalışırken, ekran kapatılmadan önce kullanıcı girişi olmadan geçecek süreyi belirtir.
@@ -2343,6 +2407,12 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7349338075015720646">Kullanıcı etkileşimi olmadan, sessizce yüklenen ve kullanıcı tarafından yüklemesi kaldırılamayan veya devre dışı bırakılamayan web sitelerinin bir listesini belirtir.
 
       Politikanın her liste öğesi, iki üyeli bir nesnedir: "url" ve "launch_container". "url", yüklenecek web uygulamasının URL'si olmalı ve "launch_container", Web Uygulamasının yüklendikten sonra nasıl açılacağını belirtmek için "window" veya "tab" değerini almalıdır. "launch_container" değeri ihmal edilirse ve Chrome, uygulamayı bir Progresif Web Uygulaması olarak değerlendirirse uygulama bir pencerede; aksi halde, bir sekmede başlar.</translation>
+<translation id="735902178936442460">Bu politika, makine adı ve ağ adresleri gibi makineleri tanımlamak için kullanılabilecek bilgilerin bildirilip bildirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakıldığında veya True (Doğru) değerine ayarlandığında, makineleri tanımlamak için kullanılabilecek bilgiler toplanır.
+      Bu politika False (Yanlış) değerine ayarlandığında makineleri tanımlamak için kullanılabilecek bilgiler toplanmaz.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="7367028210010532881">Güvenli Tarama hizmeti, kullanıcıların, kötü amaçlı kod yükleme potansiyeli olduğu işaretlenmiş sitelere gitmesi durumunda bir uyarı sayfası görüntüler. Bu ayar etkinleştirildiğinde kullanıcılar uyarı sayfasından zararlı siteye geçemezler.
 
       Bu ayar devre dışı bırakılırsa veya yapılandırılmazsa uyarı görüntülendikten sonra kullanıcılar devam ederek işaretli siteyi ziyaret edebilirler.
@@ -2593,6 +2663,14 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> hedefinin adı</translation>
 <translation id="7980227303582973781">Özel kısıtlama yok</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Chrome OS'de sanal makinelerin çalıştırılmasına izin verilip verilmeyeceğini kontrol etmenize olanak tanır.
+
+      Politika True (Doğru) değerine ayarlanırsa cihazın sanal makine çalıştırmasına izin verilir.
+      Politika False (Yanlış) değerine ayarlanırsa cihazın sanal makine çalıştırmasına izin verilmez.
+      Crostini'nin çalıştırılmasına izin verilmesi için üç politikanın da (VirtualMachinesAllowed, CrostiniAllowed ve DeviceUnaffiliatedCrostiniAllowed) true (doğru) değerine ayarlanması gerekir.
+      Bu politika Yanlış (False) olarak değiştirildiğinde, ayar yeni sanal makinelerin başlatılmasında geçerli olur, ancak halihazırda çalıştırılmakta olan sanal makineleri kapatmaz.
+      Bu politika yönetilen bir cihazda ayarlanmadığında cihazın sanal makine çalıştırmasına izin verilmez.
+      Yönetilmeyen cihazların sanal makine çalıştırmasına izin verilir.</translation>
 <translation id="802147957407376460">Ekranı 0 derece döndür</translation>
 <translation id="8033913082323846868">Bu politika M70 sürümünde kullanımdan kaldırılmıştır. Lütfen bunun yerine AutofillAddressEnabled ve AutofillCreditCardEnabled politikalarını kullanın.
 
@@ -2637,10 +2715,17 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinden küçük veya ona eşit olacak şekilde bir aralığa sıkıştırılır.</translation>
+<translation id="8138009212169037227">Bu politika; politika verilerinin ve politika getirme zamanının bildirilip bildirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakılır veya True (Doğru) değerine ayarlanırsa politika verileri ve politika getirme zamanı toplanır.
+      Bu politika False (Yanlış) değerine ayarlanırsa politika verileri ve politika getirme zamanı toplanmaz.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="8140204717286305802">Türleri ve donanım adresleriyle birlikte ağ arayüzleri listesini sunucuya rapor edin.
 
       Bu politika yanlış değerine ayarlanırsa arayüz listesi rapor edilmez.</translation>
 <translation id="8141795997560411818">Bu politika, kullanıcının Android Google Drive uygulamasını kullanmasını engellemez. Google Drive'a erişimi engellemek isterseniz Android Google Drive uygulamasının yüklenmesine de izin vermemeniz gerekir.</translation>
+<translation id="8142894094385450823">Yönetilen oturum için önerilen yerel ayarları belirtir</translation>
 <translation id="8146727383888924340">Kullanıcıların Chrome OS Kaydını kullanarak tekliflerden yararlanmasına izin ver</translation>
 <translation id="8148785525797916822"><ph name="PRODUCT_NAME" />, artık desteklenmeyen bir bilgisayarda veya işletim sisteminde çalışırken görüntülenen uyarıyı gizler.</translation>
 <translation id="8148901634826284024">Yüksek kontrast modu erişilebilirlik özelliğini etkinleştir.
@@ -2688,6 +2773,28 @@ Bu politikalar sadece kuruluşunuz dahilindeki <ph name="PRODUCT_NAME" /> örnek
 Bu ayarların manuel olarak yapılandırılması gerekmez! Windows, Mac ve Linux için kullanımı kolay şablonlar <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> adresinden indirilebilir.
 
 Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak, bir <ph name="MS_AD_NAME" /> alanına katılmış Windows örnekleri için politikanın temel hazırlığının kayıt defteri kullanılarak yapılması da desteklenir.</translation>
+<translation id="8264653492961233132">Kullanıcı müdahalesi olmadan, sessiz şekilde yüklenecek ve
+          kullanıcı tarafından kaldırılamayacak uygulamaların ve uzantıların
+          listesini belirler. Uygulamalar/uzantılar tarafından istenen tüm
+          izinler ve uygulamanın/uzantının gelecekteki sürümleri tarafından
+          istenecek diğer izinler kullanıcı etkileşimi olmadan, örtülü olarak verilir.
+          Ayrıca, enterprise.deviceAttributes ve enterprise.platformKeys uzantı
+          API'leri için izinler verilir. (Bu iki API zorunlu olarak yüklenmemiş
+          uygulamalar/uzantılar tarafından kullanılamaz.)
+
+          Bu politika, kendisiyle çakışabilecek bir <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> politikasına göre önceliklidir. Daha önce zorunlu olarak yüklenmiş bir uygulama veya uzantı bu listeden kaldırılırsa <ph name="PRODUCT_NAME" /> tarafından da yüklemesi otomatik olarak kaldırılır.
+
+          <ph name="MS_AD_NAME" /> alan adına katılmamış Windows örnekleri için, zorunlu olarak yüklenen uygulamalar ve uzantılar yalnızca Chrome Web Mağazası'nda listelenenlerle sınırlıdır.
+
+          Bir uzantının kaynak kodunun kullanıcılar tarafından Geliştirici Araçları kullanılarak (uzantının işlevselliğini devre dışı bırakabilecek şekilde) değiştirilebileceğini unutmayın. Böyle bir endişe olması durumunda <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> politikası ayarlanmalıdır.
+
+          Politikaya ait her liste öğesi, noktalı virgülle (<ph name="SEMICOLON" />) ayrılmış bir uzantı kimliği ve isteğe bağlı bir "güncelleme" URL'si içeren bir dizedir. Uzantı kimliği, örneğin geliştirici modundayken <ph name="CHROME_EXTENSIONS_LINK" /> bağlantısında bulunabilen 32 harfli bir dizedir. "Güncelleme" URL'si (belirtilmişse) <ph name="LINK_TO_EXTENSION_DOC1" /> dokümanında açıklandığı gibi bir Güncelleme Manifest XML dokümanına işaret etmelidir. Varsayılan olarak Chrome Web Mağazası'nın güncelleme URL'si kullanılır (şu anda "https://clients2.google.com/service/update2/crx" şeklindedir). Bu politikada ayarlanan "güncelleme" URL'sinin sadece ilk yükleme için kullanıldığına, uzantının sonraki güncellemelerinde ise uzantının manifest dosyasında belirtilen güncelleme URL'sinin kullanıldığına dikkat edin. "Güncelleme" URL'sinin açıkça belirtilmesinin <ph name="PRODUCT_NAME" /> ürününün 67. ve önceki sürümlerinde zorunlu olduğunu da unutmayın.
+
+          Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE" />, standart Chrome Web Mağazası "güncelleme" URL'sinden <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> uygulamasını yükler. Uzantıların barındırılması hakkında daha fazla bilgi için <ph name="LINK_TO_EXTENSION_DOC2" /> adresine bakın.
+
+          Bu politika ayarlanmadan bırakılırsa, hiçbir uygulama veya uzantı otomatik olarak yüklenmez ve kullanıcı <ph name="PRODUCT_NAME" /> ürünündeki uygulama veya uzantıların yüklemesini kaldırabilir.
+
+          Bu politikanın gizli mod için geçerli olmadığını unutmayın.</translation>
 <translation id="8274603902181597201">Kullanıcının ecryptfs ana dizinini sil ve yeni bir ext4-encrypted ana diziniyle başla.</translation>
 <translation id="8285435910062771358">Tam ekran büyüteci etkin</translation>
 <translation id="8288199156259560552">Android Google Konum Hizmetini Etkinleştir</translation>
@@ -2957,6 +3064,7 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
       Bu politika, bir <ph name="MS_AD_NAME" /> alanına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="9035964157729712237">Kara listeden muaf tutulacak uzantı kimlikleri</translation>
 <translation id="9042911395677044526">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME" /> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
+<translation id="9077227880520270584">Cihaz yerel hesabına otomatik giriş zamanlayıcısı</translation>
 <translation id="9084985621503260744">Video etkinliğinin güç yönetimini etkileyip etkilemeyeceğini belirtme</translation>
 <translation id="9088433379343318874">Denetlenen kullanıcı içerik sağlayıcısını etkinleştirme</translation>
 <translation id="9088444059179765143">Otomatik saat dilimi algılama yöntemini yapılandır</translation>

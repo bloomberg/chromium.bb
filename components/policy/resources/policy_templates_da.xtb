@@ -129,6 +129,7 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 <translation id="1387596372902085462">Angiver, om der skal aktiveres tillid til Symantec Corporations forældede PKI-infrastruktur</translation>
 <translation id="1393485621820363363">Aktiverede virksomhedsprintere for enheder</translation>
 <translation id="1397855852561539316">Foreslået webadresse fra standardsøgemaskinen</translation>
+<translation id="142346659686073702">Tillad, at brugere uden tilknytning benytter Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller webadresse på proxyserveren</translation>
 <translation id="1435659902881071157">Netværkskonfiguration på enhedsniveau</translation>
@@ -372,6 +373,12 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis politikken ikke angives, svarer det til, at den er aktiveret som i beskrivelsen ovenfor.</translation>
 <translation id="2113068765175018713">Begræns oppetid for enheden vha. automatisk genstart</translation>
+<translation id="2116790137063002724">Denne politik styrer, om der skal rapporteres oplysninger, der kan bruges til at identificere brugere, f.eks. login i OS, login på <ph name="PRODUCT_NAME" />-profil, <ph name="PRODUCT_NAME" />-profilnavn, <ph name="PRODUCT_NAME" />-profilsti og eksekverbar sti i <ph name="PRODUCT_NAME" />.
+
+      Når denne politik ikke er angivet eller er angivet som Sand, indhentes der oplysninger, der kan bruges til at identificere brugere.
+      Når denne politik er angivet som Falsk, indhentes der ikke oplysninger, der kan bruges til at identificere brugere.
+
+      Denne politik gælder kun, når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Tillad underretninger på disse websites</translation>
 <translation id="2131902621292742709">Skærmnedtoningsforsinkelse, når batteriet bruges</translation>
 <translation id="2132732175597591362">Styrer hvidlisten over webadressemønstre, hvor automatisk afspilning altid er aktiveret.
@@ -851,6 +858,22 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis politikken ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultCookiesSetting", hvis den er angivet, eller brugerens personlige konfiguration.
 
           Se også politikkerne "CookiesBlockedForUrls" og "CookiesSessionOnlyForUrls. Bemærk, at der ikke må være nogen modstridende webadressemønstre mellem disse tre politikker – det er ikke angivet, hvilken af politikkerne der har forrang.</translation>
+<translation id="3373364525435227558">Angiver én eller flere landestandarder for en administreret session, så brugerne nemt kan vælge en af disse landestandarder.
+
+      Brugeren kan vælge en landestandard og et tastaturlayout, før en administreret session påbegyndes. Som standard angives alle landestandarder, der understøttes af <ph name="PRODUCT_OS_NAME" />, i alfabetisk rækkefølge. Du kan bruge denne politik til at flytte udvalgte landestandarder til toppen af listen.
+
+      Hvis denne politik ikke er angivet, bliver den landestandard, der aktuelt bruges til brugerfladen, valgt som standard.
+
+      Hvis denne politik er indstillet, flyttes de anbefalede landestandarder til toppen af listen og bliver visuelt adskilt fra alle andre landestandarder. De anbefalede landestandarder bliver angivet i den rækkefølge, som de er angivet i politikken. Den første anbefalede landestandard bliver valgt som standard.
+
+      Hvis der er mere end én anbefalet landestandard, antages det, at brugerne vil vælge mellem disse landestandarder. Valg af landestandard og tastaturlayout bliver tydeligt tilbudt, når der startes en administreret session. Ellers antages det, at de fleste brugere vil vælge den forudvalgte landestandard. Valg af landestandard og tastaturlayout bliver mindre tydeligt tilbudt, når der startes en administreret session.
+
+      Når denne politik er angivet, og automatisk login er aktiveret (se politikkerne |DeviceLocalAccountAutoLoginId| og |DeviceLocalAccountAutoLoginDelay|), bruger den automatisk påbegyndte administrerede session den første anbefalede landestandard og det mest populære tastaturlayout, der matcher denne landestandard.
+
+      Det forudvalgte tastaturlayout er altid det mest populære layout, der matcher den forudvalgte landestandard.
+
+      Denne politik kan kun angives som anbefalet. Du kan bruge denne politik til at flytte udvalgte landestandarder til toppen af listen, men brugerne har altid tilladelse til vælge en hvilken som helst landestandard, der understøttes af <ph name="PRODUCT_OS_NAME" />, til deres session.
+      </translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3414260318408232239">Hvis denne politik ikke konfigureres, anvender <ph name="PRODUCT_NAME" /> en standardminimumversion, som er TLS 1.0.
 
@@ -1087,6 +1110,11 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Hvis denne politik er angivet til Sand eller ikke er angivet, kan brugerne indløse kampagnetilbud via Chrome OS-registrering.
 
       Hvis denne politik er angivet til Falsk, kan brugerne ikke indløse kampagnetilbud.</translation>
+<translation id="4008507541867797979">Hvis denne politik er angivet som Sand eller ikke konfigureret, viser <ph name="PRODUCT_OS_NAME" /> eksisterende brugere på loginskærmen og giver mulighed for at vælge en.
+
+      Hvis politikken er angivet som Falsk, viser <ph name="PRODUCT_OS_NAME" /> ikke eksisterende brugere på loginskærmen. Den almindelige loginskærm (der beder om brugerens mailadresse og adgangskode eller telefonnummer) eller den mellemliggende SAML-skærm (hvis denne er aktiveret via politikken <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) vises, medmindre der er konfigureret en administreret session. Når der er konfigureret en administreret session, vises kun konti i den administrerede session, og der kan vælges én af dem.
+
+      Bemærk, at denne politik ikke påvirker, om enheden beholder eller kasserer de lokale brugerdata.</translation>
 <translation id="4010738624545340900">Tillad aktivering af dialogbokse for filvalg</translation>
 <translation id="4012737788880122133">Deaktiverer automatiske opdateringer, når indstillingen angives til sand.
 
@@ -1476,6 +1504,15 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Hvis politikken er indstillet til sand, eller hvis der ikke angives en værdi, aktiveres fanelivscyklusser.</translation>
 <translation id="5208240613060747912">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor det ikke er tilladt at vise underretninger. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultNotificationsSetting", hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="5219844027738217407">I Android-apps påvirker denne politik kun mikrofonen. Når denne politik angives som Sand, slås lyden på mikrofonen fra i alle Android-apps uden undtagelser.</translation>
+<translation id="5228316810085661003">Forsinkelse af automatisk login på den lokale konto på enheden.
+
+      Hvis politikken |DeviceLocalAccountAutoLoginId| ikke er angivet, har politikken ingen effekt. Ellers:
+
+      Hvis politikken er angivet, fastlægger den mængden af tid uden brugeraktivitet, der skal gå, før der automatisk logges ind på den lokale konto på enheden, der er angivet i politikken |DeviceLocalAccountAutoLoginId|.
+
+      Hvis politikken ikke er angivet, anvendes 0 millisekunder som timeout.
+
+      Denne politik angives i millisekunder.</translation>
 <translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>
 <translation id="5247006254130721952">Bloker farlige downloads</translation>
 <translation id="5248863213023520115">Angiver krypteringstyper, som tillades, når der anmodes om Kerberos-billetter fra en <ph name="MS_AD_NAME" />-server.
@@ -1496,6 +1533,12 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5272684451155669299">Hvis denne er angivet som sand, kan brugeren benytte hardwaren på Chrome-enheder til at fjernbekræfte sin identitet over for privatlivs-CA'en via <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> med <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Hvis denne er angivet som falsk eller ikke er angivet, vil kald til API'en mislykkes og returnere en fejlkode.</translation>
+<translation id="5277806246014825877">Aktivér kørsel af Crostini for denne bruger.
+
+      Hvis politikken er angivet som Falsk, er Crostini ikke aktiveret for brugeren.
+      Hvis politikken er angivet som Sand eller ikke angivet, er Crostini aktiveret for brugeren, så længe andre indstillinger også tillader det.
+      Alle tre politikker, VirtualMachinesAllowed, CrostiniAllowed og DeviceUnaffiliatedCrostiniAllowed, skal være angivet som Sand, når de anvendes, for at tillade, at Crostini køres.
+      Når politikken ændres til Falsk, gælder den for opstart af nye Crostini-containere, men lukker ikke containere, som allerede kører.</translation>
 <translation id="5283457834853986457">Deaktiver pluginsøgning (udfaset)</translation>
 <translation id="5288772341821359899">Hvis politikken er angivet, er UDP-portintervallet, som anvendes af WebRTC, begrænset til det specifikke portinterval (inklusive slutpunkter).
 
@@ -1532,6 +1575,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5370279767682621504">Aktivér understøttelse af HTTP/0.9 på ikke-standard-porte</translation>
 <translation id="5378985487213287085">Giver dig mulighed for at angive, om websites må vise underretninger på skrivebordet. Visning af underretninger på skrivebordet kan tillades som standard, nægtes som standard, eller brugeren kan blive spurgt, hver gang et website ønsker at vise underretninger på skrivebordet. Hvis denne politik ikke angives, anvendes "AskNotifications", og brugeren vil kunne ændre det.</translation>
 <translation id="538108065117008131">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> håndterer følgende indholdstyper.</translation>
+<translation id="5391388690191341203">Automatisk login lokalt på enhed</translation>
 <translation id="5392172595902933844">Der sendes oplysninger om status for Android tilbage til
       serveren.
 
@@ -1556,6 +1600,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5457924070961220141">Giver dig mulighed for at konfigurere standard-HTML-gengivelse, når <ph name="PRODUCT_FRAME_NAME" /> er installeret. Den standardindstilling, der anvendes, når denne politik ikke er angivet, er at lade værtsbrowseren foretage gengivelsen, men du kan vælge at tilsidesætte dette og få <ph name="PRODUCT_FRAME_NAME" /> til at gengive HTML-sider som standard.</translation>
 <translation id="5464816904705580310">Konfigurer indstillingerne for administrerede brugere.</translation>
 <translation id="546726650689747237">Forsinkelse på skærmnedtoning, når strømforsyning er tilsluttet</translation>
+<translation id="5469143988693423708">Kørsel af Crostini er aktiveret for denne bruger</translation>
 <translation id="5469825884154817306">Bloker billeder på disse websites</translation>
 <translation id="5475361623548884387">Aktiver udskrivning</translation>
 <translation id="547601067149622666">Tillad ikke annoncer på websites med påtrængende annoncer</translation>
@@ -1607,6 +1652,9 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Bemærk, at dette ikke anbefales, da det kan tillade tilsidesættelse af udvidelsen nameConstraints, som begrænser de hostnavne, et givet certifikat kan godkendes til.
 
       Hvis denne politik ikke er indstillet eller er indstillet til falsk, anses servercertifikater, som ikke indeholder en subjectAlternativeName-udvidelse med enten et DNS-navn eller en IP-adresse, ikke for pålidelige.</translation>
+<translation id="5581292529942108810">Konfigurer politikker, der er relateret til Chrome Reporting Extension.
+
+      Disse politikker gælder kun, hvis <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Styring af Googles placeringstjenester på Android-enheder</translation>
 <translation id="5586942249556966598">Gør ingenting</translation>
 <translation id="5630352020869108293">Gendan den seneste session</translation>
@@ -1842,6 +1890,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6310223829319187614">Aktivér autofuldførelse af domænenavn under brugers login</translation>
 <translation id="6315673513957120120">Chrome viser en advarselsside, når brugerne går til websites med SSL-fejl. Som standard, eller når denne politik er angivet til sand, kan brugerne klikke sig videre fra disse advarselssider.
       Hvis denne politik angives til falsk, kan brugerne ikke klikke sig videre fra nogen advarselssider.</translation>
+<translation id="6352543686437322588">Automatisk login på en lokal konto på enheden efter en forsinkelse.
+
+      Hvis politikken er angivet, logges der automatisk ind på den angivne session, når der er gået en mængde tid på loginskærmen uden brugerinteraktion. Den lokale konto på enheden skal allerede være konfigureret (se |DeviceLocalAccounts|).
+
+      Hvis denne politik ikke er angivet, bliver der ikke automatisk logget ind.</translation>
 <translation id="6353901068939575220">Specificerer de anvendte parametre ved søgning efter en webadresse med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes de med rigtige søgetermdata.
 
           Denne politik er valgfri. Hvis den ikke angives, sendes der søgeanmodninger ved hjælp af GET-metoden.
@@ -2187,6 +2240,11 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 
           Hvis denne politik ikke angives, kan brugeren ændre indstillingen manuelt.</translation>
 <translation id="723103540848640830">Angiv minimumslængden for pinkoden til låseskærmen</translation>
+<translation id="7232816984286843471">Hvis politikken er angivet som Falsk, har brugere uden tilknytning ikke tilladelse til at bruge Crostini.
+
+      Hvis politikken ikke er angivet eller er angivet som Sand, har alle brugere tilladelse til at bruge Crostini, så længe andre indstillinger også tillader det.
+      Alle tre politikker, VirtualMachinesAllowed, CrostiniAllowed og DeviceUnaffiliatedCrostiniAllowed, skal være angivet som Sand, når de anvendes for at tillade, at Crostini køres.
+      Når politikken ændres til Falsk, gælder den for opstart af nye Crostini-containere, men lukker ikke containere, som allerede kører.</translation>
 <translation id="7234280155140786597">Navne på forbudte indbyggede beskedhosts (eller * for alle)</translation>
 <translation id="7236775576470542603">Indstil standardtypen for den lup, der er aktiveret på loginskærmen.
 
@@ -2234,6 +2292,12 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 <translation id="7311458740754205918">Hvis denne politik er angivet som Sand eller ikke er angivet, viser siden Ny fane muligvis forslag til indhold baseret på brugerens browserhistorik, interesser eller placering.
 
       Hvis politikken er angivet som Falsk, vises automatisk genererede forslag til indhold ikke på siden Ny fane.</translation>
+<translation id="7313793931637495417">Denne politik styrer, om der skal rapporteres oplysninger om versionen, f.eks. operativsystemets version, operativsystemets arkitektur, <ph name="PRODUCT_NAME" />-version og <ph name="PRODUCT_NAME" />-kanal.
+
+      Hvis denne politik ikke er angivet eller er angivet som Sand, indhentes versionsoplysningerne.
+      Hvis denne politik er angivet som Falsk, indhentes versionsoplysningerne ikke.
+
+      Denne politik gælder kun, hvis <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Yderligere kommandolinjeparametre for <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Minder om Wipe (værdi 2), men forsøger at bevare logintokens, så brugeren ikke behøver at logge ind igen.</translation>
 <translation id="7329842439428490522">Angiver den tid uden brugerinput, der aktiverer skærmsluk, når batteriet bruges.
@@ -2266,6 +2330,12 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 <translation id="7349338075015720646">Angiver en liste over websites, som installeres uovervåget uden brugerinteraktion, og som ikke kan afinstalleres af brugeren.
 
       Hvert listepunkt i politikken er et objekt med to medlemmer: "url" og "launch_container". "url" bør være webadressen til den webapp, der skal installeres, og "launch_container" bør enten være "window" eller "tab" for at indikere, hvordan webappen åbnes, når den er installeret. Hvis "launch_container" udelades, åbnes appen i et vindue, hvis Chrome betragter den som en progressiv webapp, og ellers åbnes den på en fane.</translation>
+<translation id="735902178936442460">Denne politik styrer, om der skal rapporteres oplysninger, der kan bruges til at identificere maskiner, f.eks. maskinnavn og netværksadresser.
+
+     Hvis denne politik ikke er angivet eller er angivet som Sand, indhentes der oplysninger, der kan bruges til at identificere maskinerne.
+      Hvis denne politik er angivet som Falsk, indhentes der ikke oplysninger, der kan bruges til at identificere maskinerne.
+
+      Denne politik gælder kun, hvis <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Tjenesten Beskyttet browsing viser en advarselsside, når brugerne går til websites, der er rapporteret som potentielt skadelige. Denne indstilling forhindrer brugerne i at fortsætte fra advarselssiden til det skadelige website.
 
       Hvis denne indstilling er deaktiveret eller ikke er angivet, kan brugerne vælge at gå til det rapporterede website, efter advarslen er blevet vist.
@@ -2507,6 +2577,14 @@ BEMÆRK! Op til version 45 var denne funktion kun understøttet i terminaltilsta
 <translation id="7976157349247117979">Navnet på destinationen for <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Ingen særlige begrænsninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Giver dig mulighed for at styre, om det er tilladt for virtuelle maskiner at køre i Chrome OS.
+
+      Hvis politikken er angivet som Sand, har enheden tilladelse til at køre virtuelle maskiner.
+      Hvis politikken er angivet som Falsk, har enheden ikke tilladelse til at køre virtuelle maskiner.
+      Alle tre politikker, VirtualMachinesAllowed, CrostiniAllowed og DeviceUnaffiliatedCrostiniAllowed, skal være angivet som Sand, når de anvendes for at tillade, at Crostini køres.
+      Når politikken ændres til Falsk, gælder den for opstart af nye virtuelle maskiner, men lukker ikke maskiner, som allerede kører.
+      Når denne politik ikke er angivet på en administreret enhed, har enheden ikke tilladelse til at køre virtuelle maskiner.
+      Enheder, der ikke administreres, har tilladelse til at køre virtuelle maskiner.</translation>
 <translation id="802147957407376460">Roter skærmen 0 grader</translation>
 <translation id="8033913082323846868">Denne politik er udfaset i M70. Brug AutofillAddressEnabled og AutofillCreditCardEnabled i stedet for.
 
@@ -2551,10 +2629,17 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
           Hvis denne politik ikke indstilles, anvendes standardindstillingen.
 
           Politikkens værdi skal angives i millisekunder. Værdierne reduceres, så de er mindre end eller lig med inaktivitetsforsinkelsen.</translation>
+<translation id="8138009212169037227">Denne politik styrer, om der skal rapporteres data om politikken og tidspunktet for hentning af politikken.
+
+      Hvis denne politik ikke er angivet eller er angivet som Sand, indhentes der data om politikken og tidspunktet for hentning af politikken.
+      Hvis denne politik er angivet til Falsk, indhentes der ikke data om politikken eller tidspunktet for hentning af politikken.
+
+      Denne politik gælder kun, når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Rapportér en liste over netværksgrænseflader med deres typer og hardwareadresser til serveren.
 
       Hvis politikken er angivet til Falsk, rapporteres listen over grænseflader ikke.</translation>
 <translation id="8141795997560411818">Denne politik forhindrer ikke brugeren i at bruge Google Drev-appen til Android. Hvis du vil forhindre adgang til Google Drev, skal du heller ikke tillade installation af Google Drev-appen til Android.</translation>
+<translation id="8142894094385450823">Angiv de anbefalede landestandarder for en administreret session</translation>
 <translation id="8146727383888924340">Tillad, at brugerne indløser kampagnetilbud via Chrome OS-registrering</translation>
 <translation id="8148785525797916822">Ignorerer den advarsel, der vises, når <ph name="PRODUCT_NAME" /> kører på en computer eller et operativsystem, der ikke længere understøttes.</translation>
 <translation id="8148901634826284024">Aktivér hjælpefunktionen Høj kontrast.
@@ -2602,6 +2687,29 @@ Disse politikker er udelukkende beregnet til at blive brugt til konfiguration af
 Du behøver ikke at konfigurere disse indstillinger manuelt. Du kan downloade tilgængelige Windows-, Mac- og Linux-skabeloner på <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via GPO, selvom provisionering af politikker via registreringsdatabasen fortsat understøttes for forekomster i Windows, der er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
+<translation id="8264653492961233132">Angiver en liste over apps og udvidelser, der installeres uovervåget.
+          Dette foregår i baggrunden uden brugerinteraktion, og hverken apps eller udvidelser kan
+          afinstalleres af brugeren. Alle tilladelser, som apps/udvidelser
+          anmoder om, gives implicit uden brugerinteraktion, herunder
+          eventuelle ekstra tilladelser, der anmodes om af fremtidige
+          versioner af appen/udvidelsen. Derudover gives der tilladelser til
+          udvidelses-API'erne enterprise.deviceAttributes og enterprise.platformKeys.
+          (Disse to API'er er ikke tilgængelige for apps/udvidelser, der ikke
+          tvangsinstalleres).
+
+          Denne politik prioriteres, hvis der skulle opstå en konflikt med en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-politik. Hvis en app eller udvidelse, som tidligere er tvangsinstalleret, fjernes fra denne liste, afinstalleres den automatisk af <ph name="PRODUCT_NAME" />.
+
+          I forbindelse med Windows-forekomster, som ikke er knyttet til et <ph name="MS_AD_NAME" />-domæne, er gennemtvunget installation begrænset til apps og udvidelser, som fås i Chrome Webshop.
+
+          Bemærk, at kildekoden i alle udvidelser kan ændres af brugere via Udviklerværktøjer (hvilket kan medføre, at udvidelsen ikke fungerer). Hvis du vil undgå dette, skal politikken <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> angives.
+
+          Hvert listepunkt i politikken er en streng, som indeholder et udvidelses-id og en "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver, som f.eks. kan findes på <ph name="CHROME_EXTENSIONS_LINK" />, når udviklertilstanden bruges. "Opdateringswebadressen" skal pege på et XML-dokument med et opdateringsmanifest som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />. Bemærk, at "opdateringswebadressen", der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse, som er angivet i udvidelsens manifest. Bemærk også, at det var påkrævet eksplicit at angive "opdateringswebadressen" i <ph name="PRODUCT_NAME" />-versioner op til og med 67.
+
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer f.eks. appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> fra "standardopdateringswebadressen" fra Chrome Webshop. Du kan få flere oplysninger om hosting af udvidelser her: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Hvis denne politik ikke angives, installeres ingen apps eller udvidelser automatisk, og brugeren kan afinstallere alle apps og udvidelser i <ph name="PRODUCT_NAME" />.
+
+          Bemærk, at denne politik ikke gælder for inkognitotilstand.</translation>
 <translation id="8274603902181597201">Slet brugerens eCryptfs-hovedmapper, og start med en frisk ext4-krypteret hovedmappe.</translation>
 <translation id="8285435910062771358">Lup i fuld skærm er aktiveret</translation>
 <translation id="8288199156259560552">Aktivér Googles placeringstjeneste til Android</translation>
@@ -2865,6 +2973,7 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9077227880520270584">Timer for automatisk login lokalt på enhed</translation>
 <translation id="9084985621503260744">Angiv, om videoaktiviteten påvirker strømstyringen</translation>
 <translation id="9088433379343318874">Aktivér indholdsudbyderen for den administrerede bruger</translation>
 <translation id="9088444059179765143">Konfigurer metoden for automatisk registrering af tidszone.</translation>

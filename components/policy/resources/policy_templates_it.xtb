@@ -126,6 +126,7 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 <translation id="1387596372902085462">Consente di stabilire se considerare attendibile o meno l'infrastruttura PKI precedente di Symantec Corporation</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
 <translation id="1397855852561539316">URL di suggerimento del provider di ricerca predefinito</translation>
+<translation id="142346659686073702">Consenti agli utenti non affiliati di usare Crostini</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
@@ -361,6 +362,12 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Non impostare questa norma equivale ad attivarla; leggi la descrizione precedente.</translation>
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
+<translation id="2116790137063002724">Questa norma consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare gli utenti, ad esempio i dati di accesso al sistema operativo, i dati di accesso del profilo <ph name="PRODUCT_NAME" />, il nome del profilo <ph name="PRODUCT_NAME" />, il percorso del profilo <ph name="PRODUCT_NAME" /> e il percorso eseguibile di <ph name="PRODUCT_NAME" />.
+
+      Se questa norma non viene impostata o viene impostata su true, vengono raccolte le informazioni che possono essere usate per identificare gli utenti.
+      Se questa norma viene impostata su false, non vengono raccolte le informazioni che possono essere usate per identificare gli utenti.
+
+      Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
 <translation id="2132732175597591362">Consente di definire la whitelist di pattern URL su cui la riproduzione automatica sarà sempre attiva.
@@ -831,6 +838,22 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultCookiesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.
 
           Vedi anche le norme "CookiesBlockedForUrls" e "CookiesSessionOnlyForUrls". Tieni presente che non ci deve essere conflitto di pattern URL tra queste tre norme. Non viene specificato quale norma debba avere la precedenza.</translation>
+<translation id="3373364525435227558">Consente di selezionare una o più impostazioni internazionali per una sessione gestita, consentendo agli utenti di sceglierne facilmente una.
+
+      L'utente può scegliere un'impostazione internazionale e un layout tastiera prima di iniziare una sessione gestita. Per impostazione predefinita, tutte le impostazioni internazionali supportate da <ph name="PRODUCT_OS_NAME" /> sono elencate in ordine alfabetico. È possibile utilizzare questa norma per spostare un set di impostazioni internazionali consigliate nella parte superiore dell'elenco.
+
+      Se questa norma non viene impostata, viene preselezionata l'impostazione internazionale corrente per l'interfaccia utente.
+
+      Se questa norma viene impostata, le impostazioni internazionali consigliate verranno spostate nella parte superiore dell'elenco e verranno separate visivamente dalle altre impostazioni internazionali. Le impostazioni internazionali consigliate saranno elencate nell'ordine in cui sono indicate nella norma. Viene preselezionata la prima impostazione internazionale consigliata.
+
+      Se sono presenti più impostazioni internazionali consigliate, si presuppone che gli utenti ne vogliano selezionare una. La selezione dell'impostazione internazionale e del layout tastiera verrà offerta in una posizione più visibile all'avvio di una sessione gestita. In caso contrario, si presuppone che la maggior parte degli utenti vuole utilizzare l'impostazione internazionale preselezionata. La selezione dell'impostazione internazionale e del layout tastiera verrà offerta in una posizione meno visibile all'avvio di una sessione gestita.
+
+      Quando questa norma è impostata ed è abilitato l'accesso automatico (vedere le norme |DeviceLocalAccountAutoLoginId| e |DeviceLocalAccountAutoLoginDelay|), la sessione gestita avviata automaticamente utilizzerà la prima impostazione internazionale consigliata e il layout tastiera più popolare corrispondente a questa impostazione internazionale.
+
+      Il layout tastiera preselezionato sarà sempre il layout più popolare corrispondente all'impostazione internazionale preselezionata.
+
+      Questa norma può essere impostata solo come consigliata. È possibile utilizzare questa norma per spostare un set di impostazioni internazionali consigliate nella parte superiore, ma gli utenti possono sempre scegliere una qualsiasi impostazione internazionale supportata da <ph name="PRODUCT_OS_NAME" /> per la sessione.
+      </translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
 <translation id="3414260318408232239">Se questa norma non viene configurata, <ph name="PRODUCT_NAME" /> utilizza una versione minima predefinita, ossia TLS 1.0.
 
@@ -1056,6 +1079,11 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa norma viene impostata su true o non viene impostata, gli utenti potranno utilizzare le offerte tramite la registrazione a Chrome OS.
 
       Se questa norma viene impostata su false, gli utenti non potranno utilizzare le offerte.</translation>
+<translation id="4008507541867797979">Se questa norma viene impostata su true o non viene configurata, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> verranno visualizzati gli utenti esistenti tra cui sarà possibile selezionare un utente.
+
+      Se la norma è impostata su false, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> non verranno visualizzati gli utenti esistenti. Verrà visualizzata la normale schermata di accesso (richiesta di email utente e password o telefono) o la schermata interstiziale SAML (se attivata tramite la norma <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), a meno che non sia stata configurata una sessione gestita. Quando viene configurata una sessione gestita, verranno visualizzati solo gli account della sessione gestita, consentendo di selezionarne uno.
+
+      Tieni presente che questa norma non influisce sull'eliminazione o meno dei dati utenti locali sul dispositivo.</translation>
 <translation id="4010738624545340900">Consenti richiamo di finestre di dialogo di selezione file</translation>
 <translation id="4012737788880122133">Se questa norma viene impostata su True, gli aggiornamenti automatici vengono disattivati.
 
@@ -1438,6 +1466,15 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
       Se la norma è impostata su true o non viene impostata in alcun modo, i cicli di vita delle schede verranno attivati.</translation>
 <translation id="5208240613060747912">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultNotificationsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="5219844027738217407">Nell'ambito delle app Android, la norma influisce solo sul microfono. Se la norma viene impostata su true, il microfono viene disattivato per tutte le app Android, senza alcuna eccezione.</translation>
+<translation id="5228316810085661003">Il ritardo prima dell'accesso automatico all'account locale del dispositivo.
+
+      Se non è impostata, la norma |DeviceLocalAccountAutoLoginId| non ha effetto. In caso contrario:
+
+      Se è impostata, questa norma determina quanto tempo deve trascorrere senza attività dell'utente prima che venga eseguito l'accesso automatico all'account locale del dispositivo specificato dalla norma |DeviceLocalAccountAutoLoginId|.
+
+      Se questa norma non è impostata, verrà utilizzato un timeout di 0 millisecondi.
+
+      Questa norma è specificata in millisecondi.</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
 <translation id="5247006254130721952">Blocca download pericolosi</translation>
 <translation id="5248863213023520115">Permette di impostare i tipi di crittografia consentiti quando vengono richiesti ticket Kerberos a un server <ph name="MS_AD_NAME" />.
@@ -1458,6 +1495,12 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5272684451155669299">Se questa opzione viene impostata su true, l'utente può usare l'hardware su dispositivi Chrome per attestare da remoto la propria identità all'autorità di certificazione della privacy utilizzando la funzione <ph name="CHALLENGE_USER_KEY_FUNCTION" /> dell'<ph name="ENTERPRISE_PLATFORM_KEYS_API" />.
 
           Se viene impostata su false o non viene impostata, le chiamate all'API non vanno a buon fine e viene generato un codice di errore.</translation>
+<translation id="5277806246014825877">Questa norma consente all'utente di eseguire Crostini.
+
+      Se la norma viene impostata su false, Crostini non è abilitato per l'utente.
+      Se la norma viene impostata su true o non viene impostata, Crostini è abilitato per l'utente, a patto che anche le altre impostazioni lo permettano.
+      Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su true affinché Crostini possa essere eseguito.
+      Quando l'impostazione di questa norma viene modificata in false, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
 <translation id="5283457834853986457">Disattiva la ricerca dei plug-in (ritirata)</translation>
 <translation id="5288772341821359899">Se la norma viene impostata, l'intervallo di porte UDP utilizzato da WebRTC viene limitato all'intervallo di porte specificato (endpoint inclusi).
 
@@ -1494,6 +1537,7 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5370279767682621504">Attiva il supporto HTTP/0.9 sulle porte non predefinite</translation>
 <translation id="5378985487213287085">Permette di stabilire se consentire o meno la visualizzazione di notifiche desktop nei siti web. La visualizzazione di notifiche desktop può essere consentita o negata per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera visualizzare le notifiche desktop. Se questa norma non viene impostata, verrà utilizzato il valore "AskNotifications", che potrà essere modificato dagli utenti.</translation>
 <translation id="538108065117008131">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuto.</translation>
+<translation id="5391388690191341203">Account locale del dispositivo per l'accesso automatico</translation>
 <translation id="5392172595902933844">Le informazioni sullo stato di Android vengono rimandate al server.
 
       Se la norma viene impostata su false o non viene del tutto impostata, le informazioni sullo stato non vengono segnalate.
@@ -1517,6 +1561,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5457924070961220141">Consente di configurare il renderer HTML predefinito se <ph name="PRODUCT_FRAME_NAME" /> è installato. Se questa norma non viene impostata, per impostazione predefinita il rendering viene eseguito dal browser host; tuttavia, in alternativa, puoi sostituire tale impostazione e consentire che l'esecuzione del rendering delle pagine HTML venga eseguita, per impostazione predefinita, da <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="5464816904705580310">Configurazione delle impostazioni per gli utenti gestiti.</translation>
 <translation id="546726650689747237">Ritardo oscuramento schermo in caso di utilizzo di CA</translation>
+<translation id="5469143988693423708">L'utente è abilitato a eseguire Crostini</translation>
 <translation id="5469825884154817306">Blocca immagini su questi siti</translation>
 <translation id="5475361623548884387">Attiva la stampa</translation>
 <translation id="547601067149622666">Non consentire gli annunci su siti con annunci invasivi</translation>
@@ -1568,6 +1613,9 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Tieni presente che è sconsigliato farlo, perché potrebbe essere consentita l'elusione dell'estensione nameConstraints, che limita i nomi host per cui può essere autorizzato un determinato certificato.
 
       Se questa norma non viene impostata, o viene impostata su false, i certificati server privi di estensione subjectAlternativeName e contenenti un nome DNS o un indirizzo IP non verranno considerati attendibili.</translation>
+<translation id="5581292529942108810">Consente di configurare le norme relative all'estensione Chrome Reporting Extension.
+
+      Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Controlla i servizi di geolocalizzazione di Google per Android</translation>
 <translation id="5586942249556966598">Non fare niente</translation>
 <translation id="5630352020869108293">Ripristina l'ultima sessione</translation>
@@ -1800,6 +1848,11 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6310223829319187614">Consente il completamento automatico del nome di dominio durante l'accesso dell'utente</translation>
 <translation id="6315673513957120120">Chrome mostra una pagina di avviso quando gli utenti visitano siti che presentano errori SSL. Per impostazione predefinita, o se la norma viene impostata su true, gli utenti possono fare clic nelle pagine di avviso.
       Se questa norma viene impostata su false, gli utenti non possono fare clic nelle pagine di avviso.</translation>
+<translation id="6352543686437322588">Un account locale del dispositivo a cui accedere automaticamente dopo un ritardo.
+
+      Se questa norma è impostata, verrà eseguito l'accesso automatico alla sessione specificata dopo che è trascorso un periodo di tempo senza interazioni dell'utente nella schermata di accesso. L'account locale del dispositivo deve essere già configurato (vedi |DeviceLocalAccounts|).
+
+      Se questa norma non è impostata, non avverrà l'accesso automatico.</translation>
 <translation id="6353901068939575220">Consente di specificare i parametri utilizzati durante la ricerca di un URL con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
 
 Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca verrà inviata utilizzando il metodo GET.
@@ -2141,6 +2194,11 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
 
           Se questa norma non viene impostata, l'utente potrà cambiare manualmente questa impostazione.</translation>
 <translation id="723103540848640830">Imposta la lunghezza minima del PIN per la schermata di blocco</translation>
+<translation id="7232816984286843471">Se la norma viene impostata su false, gli utenti non affiliati non potranno usare Crostini.
+
+      Se la norma non viene impostata o viene impostata su true, tutti gli utenti potranno utilizzare Crostini, a patto che anche le altre impostazioni lo permettano.
+      Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su true affinché Crostini possa essere eseguito.
+      Quando l'impostazione di questa norma viene modificata in false, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
 <translation id="7234280155140786597">Nomi degli host di messaggi nativi vietati (o * per indicarli tutti)</translation>
 <translation id="7236775576470542603">Consente di impostare il tipo di ingrandimento dello schermo predefinito che viene attivato nella schermata di accesso.
 
@@ -2188,6 +2246,12 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7311458740754205918">Se questa norma viene impostata su true o non viene impostata, nella pagina Nuova scheda potrebbero essere mostrati suggerimenti di contenuti basati sulla cronologia di navigazione, sugli interessi o sulla posizione dell'utente.
 
       Se viene impostata su false, i suggerimenti di contenuti generati automaticamente non vengono mostrati nella pagina Nuova scheda.</translation>
+<translation id="7313793931637495417">Questa norma consente di stabilire se segnalare o meno informazioni sulla versione, ad esempio la versione del sistema operativo, la piattaforma e l'architettura del sistema operativo, la versione di <ph name="PRODUCT_NAME" /> e il canale di <ph name="PRODUCT_NAME" />.
+
+      Se questa norma non viene impostata o viene impostata su true, le informazioni sulla versione vengono raccolte.
+      Se questa norma viene impostata su false, le informazioni sulla versione non vengono raccolte.
+
+      Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Parametri aggiuntivi della riga di comando per <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Simile a Wipe (valore 2), ma prova a mantenere i token di accesso per evitare all'utente di dover accedere di nuovo.</translation>
 <translation id="7329842439428490522">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene disattivato quando viene utilizzata la batteria.
@@ -2218,6 +2282,12 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="7349338075015720646">Consente di specificare un elenco di app web installate automaticamente, senza interazione dell'utente e che non possono essere disinstallate o disattivate dall'utente
 
       Ogni elemento dell'elenco della norma è un oggetto con due componenti: "url" e "launch_container". "url" deve essere l'URL dell'app web da installare e "launch_container" deve essere "finestra" o "scheda" per indicare in che modo l'app web verrà aperta una volta installata. Se il valore di "launch_container" non viene specificato, l'app verrà avviata in una finestra se Chrome la considera un'applicazione web progressiva, altrimenti in una scheda.</translation>
+<translation id="735902178936442460">Questa norma consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare i computer, ad esempio il nome del computer e gli indirizzi di rete.
+
+      Se questa norma non viene impostata o viene impostata su true, vengono raccolte le informazioni che possono essere usate per identificare i computer.
+      Se questa norma viene impostata su false, non vengono raccolte le informazioni che possono essere usate per identificare i computer.
+
+      Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Il servizio Navigazione sicura mostra una pagina di avviso quando gli utenti visitano siti che sono segnalati come potenzialmente dannosi. L'attivazione di questa impostazione impedisce agli utenti di proseguire dalla pagina di avviso al sito dannoso.
 
       Se questa impostazione viene disattivata o non viene configurata, gli utenti possono scegliere di visitare il sito segnalato dopo che è stato mostrato l'avviso.
@@ -2460,6 +2530,14 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="7976157349247117979">Nome della destinazione di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Nessuna limitazione speciale</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Questa norma consente di controllare se le macchine virtuali possono essere eseguite su Chrome OS.
+
+      Se la norma viene impostata su true, al dispositivo è consentito eseguire le macchine virtuali.
+      Se la norma viene impostata su false, al dispositivo non è consentito eseguire le macchine virtuali.
+      Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su true affinché Crostini possa essere eseguito.
+      Quando l'impostazione di questa norma viene modificata in false, la norma viene applicata all'avvio di nuove macchine virtuali, ma non determina l'arresto delle macchine virtuali già in esecuzione.
+      Quando questa norma non è impostata su un dispositivo gestito, il dispositivo non può eseguire macchine virtuali.
+       I dispositivi non gestiti sono autorizzati a eseguire macchine virtuali.</translation>
 <translation id="802147957407376460">Ruota lo schermo di 0°</translation>
 <translation id="8033913082323846868">Questa norma è stata ritirata in M70, utilizza le norme AutofillAddressEnabled e AutofillCreditCardEnabled.
 
@@ -2504,8 +2582,15 @@ Se questa norma viene impostata su zero, <ph name="PRODUCT_OS_NAME" /> non disat
 Se questa norma non viene impostata, viene utilizzato un periodo di tempo predefinito.
 
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di inattività.</translation>
+<translation id="8138009212169037227">Questa norma consente di stabilire se segnalare o meno i dati delle norme e data/ora del recupero delle norme.
+
+      Se questa norma non viene impostata o viene impostata su true, i dati delle norme e data/ora del recupero delle norme vengono raccolti.
+      Se questa norma viene impostata su false, i dati delle norme e data/ora del recupero delle norme non vengono raccolti.
+
+      Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Consente di comunicare al server l'elenco di interfacce di rete con i relativi tipi e indirizzi hardware. Se la norma viene impostata su False, l'elenco di interfacce non viene comunicato.</translation>
 <translation id="8141795997560411818">Questa norma non impedisce all'utente di utilizzare l'app Google Drive per Android. Se vuoi impedire l'accesso a Google Drive, non devi consentire l'installazione dell'app Google Drive per Android.</translation>
+<translation id="8142894094385450823">Questa norma consente di impostare le impostazioni internazionali consigliate per una sessione gestita</translation>
 <translation id="8146727383888924340">Consenti agli utenti di utilizzare le offerte tramite la registrazione a Chrome OS</translation>
 <translation id="8148785525797916822">Elimina l'avviso che viene mostrato quando <ph name="PRODUCT_NAME" /> è in esecuzione su un computer o l'avviso di sistema operativo non più supportato.</translation>
 <translation id="8148901634826284024">Consente di attivare la funzione di accessibilità della modalità ad alto contrasto.
@@ -2553,6 +2638,29 @@ Queste norme devono essere utilizzate esclusivamente per la configurazione delle
 Non è necessario configurare manualmente queste impostazioni. È possibile scaricare modelli di facile utilizzo per Windows, Mac e Linux da <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Su Windows è consigliabile configurare le norme tramite Criteri di gruppo, anche se la specifica di norme tramite il registro di sistema è ancora supportata per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
+<translation id="8264653492961233132">Consente di specificare un elenco di app ed estensioni che vengono installate automaticamente,
+          senza l'interazione dell'utente, e che non possono essere disinstallate né
+          disattivate dall'utente. Tutte le autorizzazioni richieste dalle 
+          app/estensioni vengono concesse implicitamente, senza interazione dell'utente,
+          comprese le eventuali autorizzazioni aggiuntive richieste dalle future versioni delle 
+          app/estensioni. Inoltre, le autorizzazioni sono concesse
+          per le API delle estensioni enterprise.deviceAttributes ed enterprise.platformKeys.
+          (Queste due API non sono disponibili per le app/estensioni
+          prive di installazione forzata).
+
+          Questa norma ha precedenza su una norma <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potenzialmente in conflitto. Se un'app o un'estensione con installazione forzata viene rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
+
+          Per le istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni elencate nel Chrome Web Store.
+
+          Tieni presente che il codice sorgente delle estensioni può essere modificato dagli utenti tramite Strumenti per sviluppatori (causando potenzialmente il malfunzionamento dell'estensione). Per evitare un problema di questo tipo, è consigliabile impostare la norma <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Ogni voce della norma è una stringa contenente un ID estensione e un URL di "aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attivata la modalità sviluppatore. L'URL di "aggiornamento", se specificato, deve indirizzare a un documento XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store (che attualmente è "https://clients2.google.com/service/update2/crx"). Nota che l'URL di "aggiornamento" impostato in questa norma viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione. Inoltre, specificare l'URL di "aggiornamento" in modo esplicito era obbligatorio nelle versioni di <ph name="PRODUCT_NAME" /> fino alla 67 inclusa.
+
+          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dall'URL di "aggiornamento" del Chrome Web Store standard. Informazioni sulle estensioni in hosting sono disponibili all'indirizzo <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se questa norma non è impostata, le app e le estensioni non vengono installate automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.
+
+          Tieni presente che questa norma non si applica alla modalità di navigazione in incognito.</translation>
 <translation id="8274603902181597201">Cancella la home directory ecryptfs dell'utente e inizia con una nuova home directory criptata tramite ext4</translation>
 <translation id="8285435910062771358">Ingrandimento a schermo intero attivo</translation>
 <translation id="8288199156259560552">Attiva il servizio di geolocalizzazione di Google per Android</translation>
@@ -2814,6 +2922,7 @@ https://www.w3.org/TR/secure-contexts/
       Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>
+<translation id="9077227880520270584">Timer accesso automatico all'account locale del dispositivo</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
 <translation id="9088433379343318874">Abilita il provider di contenuti dell'utente supervisionato</translation>
 <translation id="9088444059179765143">Configura il metodo di rilevamento automatico del fuso orario</translation>

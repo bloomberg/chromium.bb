@@ -238,6 +238,7 @@ Azonban Ön nem lesz láthatatlan. A privát mód használatával nem rejtheti e
 <translation id="2762000892062317888">éppen most</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> másodperc van hátra</translation>
 <translation id="2781151931089541271">1 másodperc van hátra</translation>
+<translation id="2803478378562657435">Mentett jelszavak és jelszóbeállítások megjelenítve</translation>
 <translation id="2810645512293415242">Egyszerűsített oldal az alacsonyabb adathasználat és a gyorsabb betöltés érdekében.</translation>
 <translation id="281504910091592009">Mentett jelszavait megtekintheti és kezelheti <ph name="BEGIN_LINK" />Google-fiókjában<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Ha az összes eszközén szeretné elérni könyvjelzőit, jelentkezzen be, és kapcsolja be a szinkronizálást</translation>
@@ -711,6 +712,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6573431926118603307">A más eszközökön futó Chrome böngészőben megnyitott lapok itt jelennek meg.</translation>
 <translation id="6575643671698722332">Nem sikerült. Ellenőrizze a hálózatot, és próbálja újra.</translation>
 <translation id="6583199322650523874">Az aktuális oldal felvétele a könyvjelzők közé</translation>
+<translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Asztali webhely</translation>
 <translation id="6600954340915313787">A Chrome-ba másolva</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +829,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="748127970106343339">Eszközhitelesítési adatok törlésének megerősítése</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Frissítve: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Jelszavak mutatása</translation>
 <translation id="7494974237137038751">megtakarított adatmennyiség</translation>
 <translation id="7498271377022651285">Kérjük, várjon…</translation>
 <translation id="7514365320538308">Letöltés</translation>
@@ -894,6 +897,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="802154636333426148">Nem sikerült a letöltés</translation>
 <translation id="8026334261755873520">Böngészési adatok törlése</translation>
 <translation id="8035133914807600019">Új mappa…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">További hasonlók</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> nap van hátra</translation>
 <translation id="804335162455518893">Az SD-kártya nem található</translation>
@@ -950,6 +954,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8503559462189395349">Chrome-jelszavak</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>
 <translation id="8504988642345501642">Felfelé görgetéskor kapcsolódó oldalakhoz tartozó gyorslinkeket jelenít meg. A felkeresett oldalak URL-jeit a rendszer elküldi a Google-nak.</translation>
+<translation id="8507520749471379845">Mentett jelszavak használhatók</translation>
 <translation id="8514477925623180633">A Chrome-ban tárolt jelszavak exportálása</translation>
 <translation id="8514577642972634246">Belépés inkognitómódba</translation>
 <translation id="851751545965956758">Eszközhöz való csatlakozás megtiltása webhelyeknek</translation>

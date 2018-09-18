@@ -1,8 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="1510238584712386396">ማስጀመሪያ</translation>
+<translation id="1734367976349034509">ይህ መሣሪያ በድርጅት የሚቀናበር ነው</translation>
+<translation id="2049639323467105390">ይህ መሣሪያ በ<ph name="DOMAIN" /> ነው የሚቀናበረው።</translation>
 <translation id="2083960536266308407">በማያ ገጹ ላይ ምንም አልተገኘም</translation>
+<translation id="2338501278241028356">በአቅራቢያ ያሉ መሣሪያዎችን ለማግኘት ብሉቱዝን ያብሩ</translation>
+<translation id="2805756323405976993">መተግበሪያዎች</translation>
+<translation id="2872961005593481000">ዝጋ</translation>
+<translation id="3147142846278915599">ማስጀመሪያ (መተግበሪያዎችን በማመሳሰል ላይ...)</translation>
 <translation id="5212543919916444558">እኔ ላግዝ የምችልበት ምንም ነገር በእርስዎ ማያ ገጽ ላይ አላገኘሁም።
 ማንኛውም ነገር እኔን ለመጠየቅ ማይክሮፎኑን መታ አድርገው ይሞክሩ።</translation>
+<translation id="5222676887888702881">ዘግተህ ውጣ</translation>
+<translation id="5457599981699367932">እንደ እንግዳ ያስሱ</translation>
+<translation id="54609108002486618">የተቀናበረ</translation>
+<translation id="5832805196449965646">ሰው አክል</translation>
+<translation id="5895138241574237353">እንደገና ጀምር</translation>
+<translation id="7222902781030499995">ሰዓት ቆጣሪ አቁም</translation>
+<translation id="7658239707568436148">ይቅር</translation>
+<translation id="7837740436429729974">ጊዜው አብቅቷል</translation>
 <translation id="8898978413391960553">00:00 ሴ</translation>
+<translation id="9111102763498581341">ክፈት</translation>
 </translationbundle>

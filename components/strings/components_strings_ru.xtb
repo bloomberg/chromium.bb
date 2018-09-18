@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Укажите номер телефона</translation>
 <translation id="1517500485252541695">Дебетовые и кредитные карты, которые принимаются к оплате</translation>
 <translation id="1519264250979466059">Дата сборки</translation>
+<translation id="1521655867290435174">Google Таблицы</translation>
 <translation id="1527263332363067270">Ожидание подключения…</translation>
 <translation id="1532118530259321453">Подтвердите действие</translation>
 <translation id="153384715582417236">Пока это всё</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Экспортировать для macOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Соединение сброшено.</translation>
+<translation id="2785008241190445880">Закладка заменена</translation>
 <translation id="2788784517760473862">Кредитные карты, которые принимаются к оплате</translation>
 <translation id="2794233252405721443">Сайт заблокирован</translation>
 <translation id="2799020568854403057">Сайт содержит вредоносные приложения</translation>
@@ -538,6 +540,7 @@
 <translation id="4646534391647090355">Перейти сейчас</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности содержит ошибки. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
+<translation id="467809019005607715">Google Презентации</translation>
 <translation id="4690462567478992370">Прекратить использование недействительного сертификата</translation>
 <translation id="4690954380545377795">Кто-то посторонний мог получить доступ к вашим личным данным или аккаунту Google. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -643,6 +646,7 @@
 <translation id="5324080437450482387">Выбрать контактные данные</translation>
 <translation id="5327248766486351172">Название</translation>
 <translation id="5332219387342487447">Способ доставки</translation>
+<translation id="5344579389779391559">Если вы откроете эту страницу, с вашего счета могут быть списаны средства</translation>
 <translation id="5355557959165512791">Сертификат веб-сайта <ph name="SITE" /> отозван. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время.</translation>
 <translation id="536296301121032821">Не удалось сохранить настройки политики</translation>
 <translation id="5371425731340848620">Изменить информацию о карте</translation>
@@ -738,6 +742,7 @@
 <translation id="6015796118275082299">Год</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}one{Страница #}few{Страница #}many{Страница #}other{Страница #}}</translation>
 <translation id="6017850046339264347">Злоумышленники могут использовать сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, чтобы установить вредоносные приложения, маскирующиеся под безопасные программы или собирающие данные, по которым вас можно отследить. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Настройте Chrome для себя</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (данные синхронизируются)</translation>
 <translation id="6027201098523975773">Введите имя.</translation>
 <translation id="6039846035001940113">Если проблема не исчезнет, свяжитесь с владельцем сайта.</translation>
@@ -746,6 +751,7 @@
 <translation id="6047927260846328439">Посещение этой страницы может привести к установке вредоносной программы или хищению вашей личной информации. <ph name="BEGIN_LINK" />Все равно продолжить<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Веб-сайт <ph name="SITE" /> использует механизм Certificate Pinning, поэтому на нем могла произойти подмена сертификата. Открыть сайт в настоящее время нельзя. Сбой мог быть вызван сетевой ошибкой или действиями злоумышленников. Скорее всего, сайт заработает через некоторое время.</translation>
 <translation id="6059925163896151826">USB-устройства</translation>
+<translation id="6060991652695587932">Выберите почтовый клиент для быстрого доступа</translation>
 <translation id="6071091556643036997">Указан неверный тип правил.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Данные этой карты будут сохранены в аккаунте Google и доступны на других устройствах.}one{Данные этих карт будут сохранены в аккаунте Google и доступны на других устройствах.}few{Данные этих карт будут сохранены в аккаунте Google и доступны на других устройствах.}many{Данные этих карт будут сохранены в аккаунте Google и доступны на других устройствах.}other{Данные этих карт будут сохранены в аккаунте Google и доступны на других устройствах.}}</translation>
 <translation id="6080696365213338172">Вы используете сертификат, предоставленный администратором, поэтому он может заблокировать передачу данных на сайт <ph name="DOMAIN" />.</translation>
@@ -903,6 +909,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Нет</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Управляемый сеанс (переопределено)</translation>
 <translation id="7390545607259442187">Подтвердите карту</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;Эта проблема возникает, когда на компьютере с Windows установлено ПО Superfish.&lt;/p&gt;
@@ -993,6 +1000,7 @@
 <translation id="7815407501681723534"><ph name="SEARCH_RESULTS" /> по запросу "<ph name="SEARCH_STRING" />" (<ph name="NUMBER_OF_RESULTS" />)</translation>
 <translation id="7818867226424560206">Управление правилами</translation>
 <translation id="782886543891417279">Возможно, вам нужно перейти на страницу входа сети Wi-Fi (<ph name="WIFI_NAME" />).</translation>
+<translation id="7835178595033117206">Закладка удалена</translation>
 <translation id="785549533363645510">Тем не менее ваши действия будут видны системному администратору и интернет-провайдеру, а также доступны веб-сайтам, которые вы посещаете.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Закрыть сайт?</translation>
@@ -1128,6 +1136,7 @@
 <translation id="8874824191258364635">Введите действительный номер карты.</translation>
 <translation id="8876793034577346603">Не удалось выполнить анализ конфигурации сети.</translation>
 <translation id="8891727572606052622">Недопустимый режим работы прокси-сервера.</translation>
+<translation id="8892964541482452187">Кнопка переключения между вкладками. Нажмите Ввод, чтобы переключиться на эту вкладку.</translation>
 <translation id="8903921497873541725">Увеличить</translation>
 <translation id="8931333241327730545">Сохранить эту карту в аккаунте Google?</translation>
 <translation id="8932102934695377596">Часы отстают</translation>
@@ -1153,6 +1162,7 @@
 <translation id="9035022520814077154">Ошибка безопасности</translation>
 <translation id="9038649477754266430">Использовать подсказки для ускорения загрузки страниц</translation>
 <translation id="9039213469156557790">Обратите внимание, что на странице обнаружен небезопасный контент. Возможно, при передаче ресурсы просматриваются третьими лицами, а злоумышленники могут получить доступ к странице и изменить ее поведение.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Вы попытались открыть <ph name="DOMAIN" />, однако представленный сервером сертификат недействителен.</translation>
 <translation id="9050666287014529139">Кодовая фраза</translation>
 <translation id="9065203028668620118">Изменить</translation>
@@ -1176,6 +1186,7 @@
 <translation id="9170848237812810038">&amp;Отменить</translation>
 <translation id="9171296965991013597">Закрыть приложение?</translation>
 <translation id="917450738466192189">Сертификат сервера недействителен</translation>
+<translation id="9183302530794969518">Google Документы</translation>
 <translation id="9183425211371246419">На сайте <ph name="HOST_NAME" /> используется неподдерживаемый протокол.</translation>
 <translation id="9205078245616868884">Данные зашифрованы с помощью кодовой фразы. Введите ее, чтобы начать синхронизацию.</translation>
 <translation id="9207861905230894330">Не удалось добавить статью</translation>

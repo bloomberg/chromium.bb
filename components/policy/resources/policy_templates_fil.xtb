@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
+<translation id="142346659686073702">Payagan ang mga hindi affiliate na user na gamitin ang Crostini</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="1427655258943162134">Address o URL ng mga proxy server</translation>
 <translation id="1435659902881071157">Configuration ng network sa antas ng device</translation>
@@ -390,6 +391,12 @@
 
       Kung hindi itatakda ang patakarang ito, parang naka-enable na rin ito, tingnan ang paglalarawan sa itaas.</translation>
 <translation id="2113068765175018713">Limitahan ang uptime ng device sa pamamagitan ng awtomatikong pag-reboot</translation>
+<translation id="2116790137063002724">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyong magagamit para makilala ang mga user, gaya ng login ng OS, login ng Profile sa <ph name="PRODUCT_NAME" />, pangalan ng Profile sa <ph name="PRODUCT_NAME" />, path ng Profile sa <ph name="PRODUCT_NAME" />, at nae-execute na path sa <ph name="PRODUCT_NAME" />.
+
+      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukuha ng impormasyong magagamit sa pagkilala ng mga user.
+      Kapag nakatakda ang patakarang ito sa False, hindi kukuha ng impormasyong magagamit sa pagkilala ng mga user.
+
+      May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="2127599828444728326">Payagan ang mga notification sa mga site na ito</translation>
 <translation id="2131902621292742709">Delay ng pag-dim ng screen kapag tumatakbo gamit ang power ng baterya</translation>
 <translation id="2132732175597591362">Kinokontrol ang whitelist ng mga pattern ng URL kung saan palaging naka-enable ang autoplay.
@@ -888,6 +895,22 @@
           Kung hahayaang hindi nakatakda ang patakarang ito, ang pangkalahatang default na value ang gagamitin para sa lahat ng site mula sa patakarang 'DefaultCookiesSetting' kung nakatakda ito, o kung hindi, sa personal na pag-configure ng user.
 
           Tingnan din ang mga patakarang 'CookiesBlockedForUrls' at 'CookiesSessionOnlyForUrls.' Tandaang wala dapat magkakasalungat na pattern ng URL sa tatlong patakarang ito - hindi tinutukoy kung aling patakaran ang nangingibabaw.</translation>
+<translation id="3373364525435227558">Nagtatakda ng isa o higit pang inirerekomendang lokalidad para sa pinapamahalaang session na nagbibigay-daan sa mga user na walang kahirap-hirap na pumili ng isa sa mga lokalidad na ito.
+
+      Maaaring pumili ang user ng lokalidad at layout ng keyboard bago magsimula ng pinapamahalaang session. Bilang default, nakalista nang sunud-sunod ayon sa alpabeto ang lahat ng lokalidad na sinusuportahan ng <ph name="PRODUCT_OS_NAME" />. Maaari mong gamitin ang patakarang ito para maglipat ng hanay ng mga inirerekomendang lokalidad sa itaas ng listahan.
+
+      Kung hindi nakatakda ang patakarang ito, paunang pipiliin ang kasalukuyang lokalidad ng UI.
+
+      Kung itatakda ang patakarang ito, ililipat sa itaas ng listahan ang mga inirerekomendang lokalidad at makikita itong nakahiwalay sa lahat ng iba pang lokalidad. Ililista ang mga inirerekomendang lokalidad sa pagkakasunud-sunod ng mga ito sa paglabas sa patakaran. Paunang pipiliin ang unang inirerekomendang lokalidad.
+
+      Kung may mahigit isang inirerekomendang lokalidad, ipinagpapalagay na gugustuhin ng mga user na pumili sa mga lokalidad na ito. Lantarang iaalok ang pagpili ng lokalidad at layout ng keyboard kapag magsisimula ng pinapamahalaang session. Kung hindi, ipinagpapalagay na gugustuhin ng karamihan ng mga user na gamitin ang na-preselect na lokalidad. Hindi gaanong lantarang iaalok ang pagpili ng lokalidad at layout ng keyboard kapag magsisimula ng pinapamahalaang session.
+
+      Kapag itinakda ang patakarang ito at naka-enable ang awtomatikong pag-log in (tingnan ang mga patakaran ng |DeviceLocalAccountAutoLoginId| at |DeviceLocalAccountAutoLoginDelay|), gagamitin ng awtomatikong sinimulang pinapamahalaang session ang unang inirerekomendang lokalidad at ang pinakasikat na layout ng keyboard na tumutugma sa lokalidad na ito.
+
+      Ang na-preselect na layout ng keyboard ay ang palaging magiging pinakasikat na layout na tumutugma sa na-preselect na lokalidad.
+
+      Maitatakda lang bilang inirerekomenda ang patakarang ito. Magagamit mo ang patakarang ito para maglipat ng hanay ng mga inirerekomendang lokalidad sa itaas, ngunit maaaring pumili anumang oras ang mga user ng anumang lokalidad na sinusuportahan ng <ph name="PRODUCT_OS_NAME" /> para sa kanilang session.
+      </translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
 <translation id="3414260318408232239">Kung hindi na-configure ang patakarang ito, gumagamit ang <ph name="PRODUCT_NAME" /> ng default na minimum na bersyon na TLS 1.0.
 
@@ -1120,6 +1143,11 @@
       Kung itinakda sa true o iniwang hindi nakatakda ang patakarang ito, makakakuha ng mga alok ang mga user sa pamamagitan ng Pagpaparehistro ng Chrome OS.
 
       Kung itinakda sa false ang patakarang ito, hindi makakakuha ng mga alok ang user.</translation>
+<translation id="4008507541867797979">Kung itatakda sa true o hindi naka-configure ang patakarang ito, ipapakita ng <ph name="PRODUCT_OS_NAME" /> sa screen ng pag-log in ang mga kasalukuyang user at papayag itong pumili ng isa.
+
+      Kung itatakda sa false ang patakarang ito, hindi ipapakita ng <ph name="PRODUCT_OS_NAME" /> sa screen ng pag-log in ang mga kasalukuyang user. Ipapakita ang karaniwang screen ng pag-sign in (na nagpo-prompt para sa email at password o telepono ng user) o ang interstitial na screen ng SAML (kung ie-enable sa pamamagitan ng patakaran ng <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), maliban na lang kung may naka-configure na Pinapamahalaang Session. Kapag may naka-configure na Pinapamahalaang Session, ang mga Pinapamahalaang Account lang ang ipapakita na nagbibigay-daang makapili ng isa sa mga ito.
+
+      Tandaang hindi naaapektuhan ng patakarang ito kung papanatilihin o idi-discard ng device ang lokal na data ng user.</translation>
 <translation id="4010738624545340900">Payagan ang invocation ng mga dialog sa pagpili ng file</translation>
 <translation id="4012737788880122133">Dini-disable ang awtomatikong pag-update kapag nakatakda sa True.
 
@@ -1534,6 +1562,15 @@
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="5219844027738217407">Para sa mga Android app, nakakaapekto lang sa mikropono ang patakarang ito. Kapag nakatakda sa true ang patakarang ito, imu-mute ang mikropono para sa lahat ng Android app, nang walang exception.</translation>
+<translation id="5228316810085661003">Ang delay sa awtomatikong pag-log in ng lokal na account ng device
+
+      Kung hindi itatakda ang patakaran ng |DeviceLocalAccountAutoLoginId|, walang bisa ang patakarang ito. Kung hindi:
+
+      Kung itatakda ang patakarang ito, tutukuyin nito ang haba ng oras na walang aktibidad ng user na dapat lumipas bago awtomatikong mag-log in sa lokal na account ng device na tinukoy ng patakarang |DeviceLocalAccountAutoLoginId|.
+
+      Kung hindi itatakda ang patakarang ito, gagamitin ang 0 milliseconds bilang pag-timeout.
+
+      Tinutukoy ang patakarang ito gamit ang milliseconds.</translation>
 <translation id="523505283826916779">Mga setting ng accessibility</translation>
 <translation id="5247006254130721952">I-block ang mga mapanganib na pag-download</translation>
 <translation id="5248863213023520115">Nagtatakda ng mga uri ng pag-encrypt na pinapayagan kapag humihiling ng mga Kerberos ticket mula sa isang <ph name="MS_AD_NAME" /> server.
@@ -1554,6 +1591,12 @@
 <translation id="5272684451155669299">Kung true, magagamit ng user ang hardware sa mga Chrome device upang malayuang patunayan ang pagkakakilanlan nito sa CA ng privacy sa pamamagitan ng <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> gamit ang <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Kung nakatakda ito sa false, o kung hindi ito nakatakda, papalya ang mga call sa API na may code ng error.</translation>
+<translation id="5277806246014825877">I-enable ang user na itong patakbuhin ang Crostini.
+
+      Kung itatakda sa false ang patakarang ito, hindi ie-enable ang Crostini para sa user.
+      Kung itatakda sa true o hindi itatakda, ie-enable ang Crostini para sa user hangga't pinapayagan din ito ng iba pang setting.
+      Kinakailangang nakatakda sa true ang lahat ng tatlong patakarang VirtualMachinesAllowed, CrostiniAllowed, at DeviceUnaffiliatedCrostiniAllowed kapag nag-apply sila para sa Crostini para mapayagang tumakbo.
+      Kapag binago sa false ang patakarang ito, ilalapat ito sa mga nagsisimulang bagong container ng Crostini ngunit hindi nito isa-shut down ang mga container na tumatakbo na.</translation>
 <translation id="5283457834853986457">I-disable ang finder ng plugin (hindi na ginagamit)</translation>
 <translation id="5288772341821359899">Kung nakatakda ang patakaran, paghihigpitan ang hanay ng UDP port na ginagamit ng WebRTC sa tinukoy na interval ng port (kasama ang mga endpoint).
 
@@ -1592,6 +1635,7 @@
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskNotifications' at magagawa ng user na baguhin ito.</translation>
 <translation id="538108065117008131">Payagan ang <ph name="PRODUCT_FRAME_NAME" /> na pamahalaan ang mga sumusunod na uri ng nilalaman.</translation>
+<translation id="5391388690191341203">Lokal na account ng device para sa awtomatikong pag-log in</translation>
 <translation id="5392172595902933844">Ibinabalik ang impormasyon tungkol sa status ng Android sa server.
 
       Kung itatakda sa false o hahayaang hindi nakatakda ang patakaran, walang iuulat na impormasyon ng status.
@@ -1620,6 +1664,7 @@
           Ang default na setting na ginagamit kapag hinayaang hindi nakatakda ang patakarang ito ay ang pagpayag sa browser ng host na gawin ang pag-render, ngunit maaari mo itong i-override at ipa-render sa <ph name="PRODUCT_FRAME_NAME" /> ang mga pahina ng HTML bilang default.</translation>
 <translation id="5464816904705580310">I-configure ang mga setting para sa mga pinapamahalaang user.</translation>
 <translation id="546726650689747237">Delay ng pag-dim ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
+<translation id="5469143988693423708">Naka-enable ang user na patakbuhin ang Crostini</translation>
 <translation id="5469825884154817306">I-block ang mga larawan sa mga site na ito</translation>
 <translation id="5475361623548884387">Paganahin ang pag-print</translation>
 <translation id="547601067149622666">Huwag payagan ang mga ad sa mga site na may mga nakakasagabal na ad</translation>
@@ -1672,6 +1717,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tandaan na hindi ito inirerekomenda, dahil maaari itong maging daan sa pag-bypass sa nameConstraints na extension na naghihigpit sa mga hostname kung saan maaaring awtorisahan ang isang certificate.
 
       Kung hindi naitakda ang patakarang ito, o kung naitakda ito sa false, hindi pagkakatiwalaan ang mga certificate ng server na walang subjectAlternativeName na extension na naglalaman ng DNS name o IP address.</translation>
+<translation id="5581292529942108810">I-configure ang mga patakarang nauugnay sa Chrome Reporting Extension.
+
+      May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="5584132346604748282">Kontrolin ang mga serbisyo ng lokasyon ng Google sa Android</translation>
 <translation id="5586942249556966598">Walang gawin</translation>
 <translation id="5630352020869108293">Ipanumbalik ang huling session</translation>
@@ -1919,6 +1967,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6310223829319187614">I-enable ang pag-autocomplete ng domain name sa pag-sign in ng user</translation>
 <translation id="6315673513957120120">Nagpapakita ang Chrome ng page ng babala kapag nag-navigate ang mga user sa mga site na may mga SSL error. Bilang default o kapag itinakda ang patakarang ito sa true, maaaring mag-click ang mga user sa mga page ng babala na ito.
       Kapag itinakda ang patakarang ito sa false, hindi makakapag-click ang mga user sa anumang page ng babala.</translation>
+<translation id="6352543686437322588">Awtomatikong pag-log in ng lokal na account ng device pagkatapos ng pagkaantala.
+
+      Kung itatakda ang patakarang ito, ang tinukoy na session ay awtomatikong mala-log in pagkalipas ng takdang panahon sa screen sa pag-log in nang walang pakikipag-ugnayan ng user. Dapat ay naka-configure na ang lokal na account ng device (tingnan ang |DeviceLocalAccounts|).
+
+      Kung hindi itatakda ang patakarang ito, walang magaganap na awtomatikong pag-log in.</translation>
 <translation id="6353901068939575220">Tinutukoy ang mga parameter na ginamit kapag naghahanap ng URL gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {searchTerms} sa halimbawa sa itaas, papalitan ito ng data ng tunay na mga termino para sa paghahanap.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, ipapadala ang kahilingan sa paghahanap gamit ang GET na paraan.
@@ -2285,6 +2338,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, manual na mababago ng user ang setting na ito.</translation>
 <translation id="723103540848640830">Itakda ang minimum na haba ng PIN ng lock screen</translation>
+<translation id="7232816984286843471">Kung itatakda ang patakaran sa false, hindi papayagan ang mga hindi affiliate na user na gamitin ang Crostini.
+
+      Kung hindi itatakda ang patakaran o kung itatakda ito sa true, papayagan ang lahat ng user na gamitin ang Crostini hangga't pinapayagan din ito ng iba pang setting.
+      Kinakailangang nakatakda sa true ang lahat ng tatlong patakarang VirtualMachinesAllowed, CrostiniAllowed, at DeviceUnaffiliatedCrostiniAllowed kapag nag-apply sila para sa Crostini para mapayagang tumakbo.
+      Kapag pinalitan sa false ang patakarang ito, malalapat ito sa pagsisimula ng mga bagong container ng Crostini ngunit hindi nito isa-shut down ang mga container na tumatakbo na.</translation>
 <translation id="7234280155140786597">Mga pangalan ng ipinagbabawal na mga host ng native na pagmemensahe (o * para sa lahat)</translation>
 <translation id="7236775576470542603">Piliin ang default na uri ng magnifier ng screen na naka-enable sa screen sa pag-login.
 
@@ -2332,6 +2390,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7311458740754205918">Kung itinakda ito sa true o hindi ito itinakda, ang page ng Bagong Tab ay maaaring magpakita ng mga suhestyon sa content batay sa history ng pagba-browse, mga interes o lokasyon ng user.
 
       Kung itinakda ito sa false, hindi makikita ang awtomatikong ginawang suhestyon sa content sa page ng Bagong Tab.</translation>
+<translation id="7313793931637495417">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyon ng bersyon, gaya ng bersyon ng OS, platform ng OS, architecture ng OS, bersyon ng <ph name="PRODUCT_NAME" />, at channel ng <ph name="PRODUCT_NAME" />
+
+      Kapag hinayaang hindi nakatakda ang patakarang ito o nakatakda sa True, kukuha ng impormasyon ng bersyon. 
+      Kapag nakatakda ang patakarang ito sa False, hindi kukuha ng impormasyon ng bersyon.
+
+      May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="7323896582714668701">Mga karagdagang command line na parameter para sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Katulad ng Pag-wipe (value 2), ngunit sinusubukang panatilihin ang mga token sa pag-log in upang hindi na kailanganin ng user na mag-sign in muli.</translation>
 <translation id="7329842439428490522">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay i-o-off ang screen kapag tumatakbo gamit ang power ng baterya.
@@ -2364,6 +2428,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7349338075015720646">Tumutukoy ng listahan ng mga website na na-install nang hindi napapansin, nang walang pakikipag-ugnayan ng user, at hindi maa-uninstall o madi-disable ng user.
 
       Ang bawat item ng patakaran ay isang object na may dalawang miyembro: "url" at "launch_container." Ang "url" ay dapat ang URL ng web app na ii-install at ang "launch_container" ay dapat alinman sa "window" o "tab" para maisaad kung paano bubuksan ang Web App kapag na-install na. Kung tatanggalin ang "launch_container," ilulunsad ang app sa window kung ituturing ito ng Chrome na Progressive Web App at kung hindi naman, ilulunsad ito sa tab.</translation>
+<translation id="735902178936442460">Kinokontrol ng patakarang ito kung mag-uulat ng impormasyong magagamit para makilala ang mga machine, gaya ng pangalan ng machine at mga address ng network.
+
+      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukuha ng impormasyong magagamit sa pagkilala ng mga machine.
+      Kapag nakatakda ang patakarang ito sa False, hindi kukuha ng impormasyong magagamit sa pagkilala ng mga machine.
+
+      May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="7367028210010532881">Nagpapakita ang serbisyo ng Ligtas na Pag-browse ng page ng babala kapag nag-navigate ang mga user sa mga site na naka-flag bilang posibleng nakakahamak. Kapag na-enable ang setting na ito, mapipigilan ang mga user na tumuloy pa rin sa nakakahamak na site mula sa page ng babala.
 
       Kung naka-disable o hindi naka-configure ang setting na ito, maaaring piliin ng mga user na tumuloy sa naka-flag na site pagkatapos mabigyan ng babala.
@@ -2619,6 +2689,14 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7976157349247117979">Pangalan ng patutunguhan ng <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Walang espesyal na paghihigpit</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Magbibigay-daan sa iyong kontrolin kung papayagan ang pagtakbo ng mga virtual machine sa Chrome OS.
+
+      Kung itatakda ang patakaran sa True, papayagan ang device na magpatakbo ng mga virtual machine.
+      Kung itatakda ang patakaran sa False, hindi papayagan ang device na magpatakbo ng mga virtual machine.
+      Kinakailangang nakatakda sa true ang lahat ng tatlong patakarang VirtualMachinesAllowed, CrostiniAllowed, at DeviceUnaffiliatedCrostiniAllowed kapag nag-apply sila para sa Crostini para mapayagang tumakbo.
+      Kapag binago sa False ang patakarang ito, ilalapat ito sa mga nagsisimulang bagong virtual machine ngunit hindi nito isa-shut down ang mga virtual machine na tumatakbo na.
+      Kapag hindi nakatakda ang patakaran sa isang pinamamahalaang device, hindi pinapayagan ang device na magpatakbo ng mga virtual machine.
+      Pinapayagan ang mga hindi pinapamahalaang device na magpatakbo ng mga virtual machine.</translation>
 <translation id="802147957407376460">I-rotate ang screen nang 0 degrees</translation>
 <translation id="8033913082323846868">Hindi na ginagamit ang patakarang ito sa M70, pakigamit na lang ang AutofillAddressEnabled at AutofillCreditCardEnabled.
 
@@ -2663,10 +2741,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kapag hindi nakatakda ang patakarang ito, may default na tagal ng oras na gagamitin.
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa o katumbas ng idle delay ang mga halaga.</translation>
+<translation id="8138009212169037227">Kinokontrol ng patakarang ito kung mag-uulat ng data ng patakaran at oras ng pagkuha ng patakaran.
+
+      Kapag hinayaang hindi nakatakda o nakatakda sa True ang patakarang ito, kukuha ng data ng patakaran at oras ng pagkuha ng patakaran.
+      Kapag nakatakda ang patakarang ito sa False, hindi kukuha ng data ng patakaran at oras ng pagkuha ng patakaran.
+
+      May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="8140204717286305802">Iulat ang listahan ng mga interface ng network kasama ang mga uri at hardware address ng mga ito sa server.
 
       Kung nakatakda ang patakarang ito sa false, hindi i-uulat ang listahan ng interface.</translation>
 <translation id="8141795997560411818">Hindi pinipigilan ng patakarang ito ang user na gamitin ang Google Drive app sa Android. Kung gusto mong pigilan ang access sa Google Drive, hindi mo rin dapat payagan ang pag-install ng Google Drive app sa Android.</translation>
+<translation id="8142894094385450823">Itakda ang mga inirerekomendang lokalidad para sa isang pinapamahalaang session</translation>
 <translation id="8146727383888924340">Payagan ang mga user na kumuha ng mga alok sa pamamagitan ng Pagpaparehistro ng Chrome OS</translation>
 <translation id="8148785525797916822">Pinipigilan ang babalang lumalabas kapag gumagana ang <ph name="PRODUCT_NAME" /> sa isang computer o operating system na hindi na sinusuportahan.</translation>
 <translation id="8148901634826284024">I-enable ang tampok na high contrast mode.
@@ -2714,6 +2799,29 @@ Ang mga patakarang ito ay mahigpit na nilalayong gamitin upang i-configure ang m
 Hindi kailangang i-configure nang manual ang mga setting na ito! May mga template na madaling gamitin para sa Windows, Mac, at Linux na mada-download sa <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pamamagitan ng GPO, bagama't sinusuportahan pa rin ang pagbibigay ng patakaran sa pamamagitan ng registry para sa mga instance sa Windows na kasali sa isang domain ng <ph name="MS_AD_NAME" />.</translation>
+<translation id="8264653492961233132">Tumutukoy ng listahan ng mga app at extension na na-install nang hindi napapansin,
+          nang walang pakikipag-ugnayan sa user, at hindi maa-uninstall o 
+          madi-disable ng user. Ang lahat ng pahintulot
+          na hiniling ng mga app/extension ay ibinibigay nang hindi hayagan, nang walang pakikipag-ugnayan sa user,
+          kabilang ang anumang karagdagang pahintulot na hiniling ng mga bersyon sa
+          hinaharap ng app/extension. Bukod pa rito, ibinibigay ang mga pahintulot para sa
+          enterprise.deviceAttributes at enterprise.platformKeys na extension
+          API. (Hindi available ang dalawang API na ito sa mga app/extension na
+          hindi sapilitang na-install.)
+
+          Mangingibabaw ang patakarang ito sa posibleng salungat na patakarang <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kung may inalis na app o extension sa listahang ito na kamakailang sapilitang na-install, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME" />.
+
+          Para sa mga sitwasyon ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> na domain, para lang sa mga app at extension na nakalista sa Chrome Web Store ang sapilitang pag-install.
+
+          Tandaang maaaring mabago ng mga user ang source code ng anumang extension sa pamamagitan ng Mga Tool ng Developer (na maaaring humantong sa maling paggana ng extension). Kung isa itong alalahanin, dapat itakda ang patakarang <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Ang bawat item sa listahan ng patakaran ay isang string na may extension ID at, bilang opsyon, isang URL ng "update" na hinihiwalay ng semicolon (<ph name="SEMICOLON" />). Ang extension ID ay ang 32 titik na string na makikita halimbawa sa <ph name="CHROME_EXTENSIONS_LINK" /> kapag nasa developer mode. Dapat ay nakadirekta ang URL ng "update," kung tutukuyin, sa isang dokumentong Update Manifest XML gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />. Bilang default, ginagamit ang URL ng update ng Chrome Web Store (na kasalukuyang "https://clients2.google.com/service/update2/crx"). Tandaang ginagamit lang ang nakatakdang URL ng "update" sa patakarang ito para sa paunang pag-install; gagamitin ng mga susunod na pag-update ng extension ang URL ng update na nakasaad sa manifest ng extension. Tandaan ding mandatoryo ang hayagang pagtukoy sa URL ng "update" sa mga bersyon ng <ph name="PRODUCT_NAME" /> hanggang sa at kabilang ang 67.
+
+          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE" /> ang <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app mula sa karaniwang URL ng "update" ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa pag-host ng mga extension, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Kung hahayaang hindi nakatakda ang patakarang ito, walang app o extension ang awtomatikong ii-install at makakapag-uninstall ng anumang app o extension ang user sa <ph name="PRODUCT_NAME" />.
+
+          Tandaang hindi nalalapat sa incognito mode ang patakarang ito.</translation>
 <translation id="8274603902181597201">Nagwa-wipe sa ecryptfs na home directory ng user at nagsisimula gamit ang isang bagong ext4-encrypted na home directory.</translation>
 <translation id="8285435910062771358">Naka-enable ang magnifier na full-screen</translation>
 <translation id="8288199156259560552">I-enable ang Serbisyo sa Lokasyon ng Google sa Android</translation>
@@ -3000,6 +3108,7 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="9035964157729712237">Ang mga ID ng Extension upang maibukod mula sa blacklist</translation>
 <translation id="9042911395677044526">Nagbibigay-daan na malapat sa bawat user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang naka-format sa JSON  na string tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9077227880520270584">Timer ng awtomatikong pag-log in ng lokal na account ng device</translation>
 <translation id="9084985621503260744">Tukuyin kung nakakaapekto ang aktibidad ng video sa pamamahala ng power</translation>
 <translation id="9088433379343318874">I-enable ang content provider ng pinangangasiwaang user</translation>
 <translation id="9088444059179765143">I-configure ang awtomatikong paraan ng pag-detect ng timezone</translation>

@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Telefoonnummer vereist</translation>
 <translation id="1517500485252541695">Geaccepteerde creditcards en betaalpassen</translation>
 <translation id="1519264250979466059">Datum van build</translation>
+<translation id="1521655867290435174">Google Spreadsheets</translation>
 <translation id="1527263332363067270">Wachten op verbinding...</translation>
 <translation id="1532118530259321453">Deze pagina meldt het volgende</translation>
 <translation id="153384715582417236">Dat is voorlopig alles</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Exporteren naar Mac OS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">De verbinding is opnieuw ingesteld.</translation>
+<translation id="2785008241190445880">Bladwijzer vervangen</translation>
 <translation id="2788784517760473862">Geaccepteerde creditcards</translation>
 <translation id="2794233252405721443">Site geblokkeerd</translation>
 <translation id="2799020568854403057">De volgende site bevat schadelijke apps</translation>
@@ -535,6 +537,7 @@
 <translation id="4646534391647090355">Breng me daar nu naartoe</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server bevat fouten. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
+<translation id="467809019005607715">Google Presentaties</translation>
 <translation id="4690462567478992370">Stoppen met het gebruik van een ongeldig certificaat</translation>
 <translation id="4690954380545377795">Je kunt de toegang tot je Google-account kwijtraken of slachtoffer worden van identiteitsdiefstal. Chrome raadt je aan je wachtwoord nu te wijzigen.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -640,6 +643,7 @@
 <translation id="5324080437450482387">Contactgegevens kiezen</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5332219387342487447">Verzendmethode</translation>
+<translation id="5344579389779391559">Deze pagina brengt je mogelijk kosten in rekening</translation>
 <translation id="5355557959165512791">Je kunt <ph name="SITE" /> momenteel niet bezoeken, omdat het bijbehorende certificaat is ingetrokken. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="536296301121032821">Opslaan van beleidsinstellingen is mislukt</translation>
 <translation id="5371425731340848620">Kaart updaten</translation>
@@ -735,6 +739,7 @@
 <translation id="6015796118275082299">Jaar</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}other{Pagina #}}</translation>
 <translation id="6017850046339264347">Aanvallers op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kunnen misleidende apps installeren die zich voordoen als iets anders of gegevens verzamelen die kunnen worden gebruikt om je te volgen. <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Stel Chrome naar wens in</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (gesynchroniseerd)</translation>
 <translation id="6027201098523975773">Geef een naam op</translation>
 <translation id="6039846035001940113">Als het probleem blijft optreden, neem je contact op met de site-eigenaar.</translation>
@@ -743,6 +748,7 @@
 <translation id="6047927260846328439">Deze content probeert je mogelijk te misleiden om software te installeren of persoonlijke gegevens openbaar te maken. <ph name="BEGIN_LINK" />Toch weergeven<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Je kunt <ph name="SITE" /> momenteel niet bezoeken, omdat de website gebruikmaakt van certificaatpinning. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="6059925163896151826">USB-apparaten</translation>
+<translation id="6060991652695587932">Kies je e-mailservice voor snelle toegang</translation>
 <translation id="6071091556643036997">Het type beleid is ongeldig.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Deze kaart wordt opgeslagen in je Google-account, zodat je op verschillende apparaten sneller kunt betalen.}other{Deze kaarten worden opgeslagen in je Google-account, zodat je op verschillende apparaten sneller kunt betalen.}}</translation>
 <translation id="6080696365213338172">Je hebt toegang tot content gekregen met behulp van een certificaat van je beheerder. Gegevens die je verstrekt aan <ph name="DOMAIN" />, kunnen door je beheerder worden onderschept.</translation>
@@ -899,6 +905,7 @@ Aanvullende informatie:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nee</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Overschrijving voor beheerde sessie</translation>
 <translation id="7390545607259442187">Creditcard bevestigen</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;Deze foutmelding wordt weergegeven als je Superfish-software op je Windows-computer hebt geïnstalleerd.&lt;/p&gt;
@@ -989,6 +996,7 @@ Aanvullende informatie:
 <translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> gevonden voor '<ph name="SEARCH_STRING" />'</translation>
 <translation id="7818867226424560206">Beleidsbeheer</translation>
 <translation id="782886543891417279">Het is mogelijk dat je de inlogpagina moet bezoeken van het wifi-netwerk (<ph name="WIFI_NAME" />) dat je gebruikt.</translation>
+<translation id="7835178595033117206">Bladwijzer verwijderd</translation>
 <translation id="785549533363645510">Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiedenis niet verborgen voor je werkgever, je internetprovider of de websites die je bezoekt.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Site verlaten?</translation>
@@ -1124,6 +1132,7 @@ Aanvullende informatie:
 <translation id="8874824191258364635">Geef een geldig kaartnummer op</translation>
 <translation id="8876793034577346603">Netwerkconfiguratie kan niet worden geparseerd.</translation>
 <translation id="8891727572606052622">Ongeldige proxymodus.</translation>
+<translation id="8892964541482452187">Schakelknop voor tabbladen, druk op Enter om naar dit tabblad te schakelen</translation>
 <translation id="8903921497873541725">Inzoomen</translation>
 <translation id="8931333241327730545">Wil je deze kaart opslaan in je Google-account?</translation>
 <translation id="8932102934695377596">Je klok loopt achter</translation>
@@ -1149,6 +1158,7 @@ Aanvullende informatie:
 <translation id="9035022520814077154">Beveiligingsfout</translation>
 <translation id="9038649477754266430">Een voorspellingsservice gebruiken om pagina's sneller te laden</translation>
 <translation id="9039213469156557790">Bovendien bevat deze pagina bronnen die niet beveiligd zijn. Deze bronnen kunnen tijdens verzending door anderen worden bekeken en kunnen door een aanvaller worden gewijzigd om het gedrag van de pagina aan te passen.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Je probeert <ph name="DOMAIN" /> te bereiken, maar de server heeft een ongeldig certificaat geretourneerd.</translation>
 <translation id="9050666287014529139">Wachtwoordzin</translation>
 <translation id="9065203028668620118">Bewerken</translation>
@@ -1172,6 +1182,7 @@ Aanvullende informatie:
 <translation id="9170848237812810038">&amp;Ongedaan maken</translation>
 <translation id="9171296965991013597">App verlaten?</translation>
 <translation id="917450738466192189">Het servercertificaat is ongeldig.</translation>
+<translation id="9183302530794969518">Google Documenten</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> gebruikt een niet-ondersteund protocol.</translation>
 <translation id="9205078245616868884">Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze op om de synchronisatie te starten.</translation>
 <translation id="9207861905230894330">Kan artikel niet toevoegen.</translation>

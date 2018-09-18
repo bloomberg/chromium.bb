@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">El número de telèfon és obligatori</translation>
 <translation id="1517500485252541695">Targetes de crèdit i de dèbit acceptades</translation>
 <translation id="1519264250979466059">Data de creació</translation>
+<translation id="1521655867290435174">Fulls de càlcul de Google</translation>
 <translation id="1527263332363067270">S'està esperant que hi hagi connexió…</translation>
 <translation id="1532118530259321453">Aquesta pàgina diu</translation>
 <translation id="153384715582417236">De moment, això és tot</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Exporta a MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">S'ha restablert la connexió.</translation>
+<translation id="2785008241190445880">L'adreça d'interès s'ha substituït</translation>
 <translation id="2788784517760473862">Targetes de crèdit acceptades</translation>
 <translation id="2794233252405721443">Lloc bloquejat</translation>
 <translation id="2799020568854403057">Aquest lloc web conté aplicacions perjudicials</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">Porta-m'hi ara</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat conté errors. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
+<translation id="467809019005607715">Presentacions de Google</translation>
 <translation id="4690462567478992370">Deixa de fer servir un certificat no vàlid</translation>
 <translation id="4690954380545377795">Podries perdre l'accés al compte de Google o tenir problemes de suplantació d'identitat. Chrome et recomana que canviïs la contrasenya ara.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">Tria la informació de contacte</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5332219387342487447">Mètode d'enviament</translation>
+<translation id="5344579389779391559">És possible que aquesta pàgina provi de fer-te algun càrrec</translation>
 <translation id="5355557959165512791">En aquest moment no pots visitar <ph name="SITE" /> perquè se li ha revocat el certificat. Els atacs i els errors de xarxa acostumen a ser temporals, o sigui que probablement la pàgina funcionarà més endavant.</translation>
 <translation id="536296301121032821">No s'ha pogut emmagatzemar la configuració de la política</translation>
 <translation id="5371425731340848620">Actualitza la targeta</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">Any</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pàgina 1}other{Pàgina #}}</translation>
 <translation id="6017850046339264347">Pot ser que els atacants que es troben a <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> instal·lin aplicacions enganyoses que es facin passar per d'altres o que recullin dades que podrien utilitzar-se per fer un seguiment de la teva activitat. <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Personalitza Chrome</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (informació sincronitzada)</translation>
 <translation id="6027201098523975773">Escriu un nom</translation>
 <translation id="6039846035001940113">Si el problema continua, contacta amb el propietari del lloc web.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">Aquest contingut pot provar d'enganyar-te perquè instal·lis programari o proporcionis informació personal. <ph name="BEGIN_LINK" />Mostra igualment<ph name="END_LINK" />.</translation>
 <translation id="6051221802930200923">En aquests moments no pots visitar <ph name="SITE" /> perquè el lloc web fa servir una fixació de certificat. Els atacs i els errors de xarxa acostumen a ser temporals, o sigui que probablement la pàgina funcionarà més endavant.</translation>
 <translation id="6059925163896151826">Dispositius USB</translation>
+<translation id="6060991652695587932">Tria el teu servei de correu electrònic per poder accedir-hi ràpidament</translation>
 <translation id="6071091556643036997">El tipus de política no és vàlid.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Aquesta targeta es desarà al Compte de Google per poder pagar més ràpidament des de qualsevol dispositiu.}other{Aquestes targetes es desaran al Compte de Google per poder pagar més ràpidament des de qualsevol dispositiu.}}</translation>
 <translation id="6080696365213338172">Heu accedit a contingut mitjançant un certificat proporcionat per l'administrador. Per tant, l'administrador por interceptar les dades que proporcioneu a <ph name="DOMAIN" />.</translation>
@@ -904,6 +910,7 @@ Detalls addicionals:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">No</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Substitució de la sessió gestionada</translation>
 <translation id="7390545607259442187">Confirma la targeta</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;Aquest error es mostra si teniu el programari Superfish en un ordinador Windows.&lt;/p&gt;
@@ -994,6 +1001,7 @@ Detalls addicionals:
 <translation id="7815407501681723534">S'han trobat <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> per a "<ph name="SEARCH_STRING" />"</translation>
 <translation id="7818867226424560206">Gestió de polítiques</translation>
 <translation id="782886543891417279">És possible que la xarxa Wi-Fi (<ph name="WIFI_NAME" />) que esteu fent servir requereixi que visiteu la seva pàgina d'inici de sessió.</translation>
+<translation id="7835178595033117206">L'adreça d'interès s'ha suprimit</translation>
 <translation id="785549533363645510">Tanmateix, no sou invisible. La vostra empresa, el vostre proveïdor de serveis d'Internet i els llocs web que visiteu poden veure la vostra navegació d'incògnit.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Vols sortir del lloc web?</translation>
@@ -1129,6 +1137,7 @@ Detalls addicionals:
 <translation id="8874824191258364635">Introdueix un número de targeta vàlid</translation>
 <translation id="8876793034577346603">No s'ha pogut analitzar la configuració de la xarxa.</translation>
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
+<translation id="8892964541482452187">Botó per canviar de pestanya; prem Retorn per canviar a aquesta pestanya</translation>
 <translation id="8903921497873541725">Amplia</translation>
 <translation id="8931333241327730545">Voleu desar aquesta targeta al vostre compte de Google?</translation>
 <translation id="8932102934695377596">El rellotge està endarrerit</translation>
@@ -1154,6 +1163,7 @@ Detalls addicionals:
 <translation id="9035022520814077154">Error de seguretat</translation>
 <translation id="9038649477754266430">Utilitza un servei de predicció per poder carregar les pàgines més ràpidament</translation>
 <translation id="9039213469156557790">A més, aquesta pàgina conté altres recursos que no són segurs. La resta d'usuaris poden visualitzar-los mentre estan en trànsit, i algun atacant podria modificar-los per canviar el comportament de la pàgina.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" />, <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Heu provat d'accedir a <ph name="DOMAIN" />, però el servidor ha presentat un certificat no vàlid.</translation>
 <translation id="9050666287014529139">Frase de contrasenya</translation>
 <translation id="9065203028668620118">Edita</translation>
@@ -1177,6 +1187,7 @@ Detalls addicionals:
 <translation id="9170848237812810038">&amp;Desfés</translation>
 <translation id="9171296965991013597">Vols sortir de l'aplicació?</translation>
 <translation id="917450738466192189">El certificat del servidor no és vàlid.</translation>
+<translation id="9183302530794969518">Documents de Google</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> fa servir un protocol no admès.</translation>
 <translation id="9205078245616868884">Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincronització. Introduïu-la per començar la sincronització.</translation>
 <translation id="9207861905230894330">No s'ha pogut afegir l'article.</translation>

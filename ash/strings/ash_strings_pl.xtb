@@ -25,13 +25,13 @@
 <translation id="1293264513303784526">Urządzenie USB-C (lewy port)</translation>
 <translation id="1294929383540927798">Zmień ustawienia powiadomień na ekranie blokady</translation>
 <translation id="1302880136325416935">Pokaż ustawienia Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">Zawsze pokazuj półkę</translation>
 <translation id="1346748346194534595">W prawo</translation>
 <translation id="1351937230027495976">Zwiń menu</translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1419738280318246476">Odblokuj urządzenie, by zareagować na powiadomienie</translation>
 <translation id="1467432559032391204">W lewo</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1510238584712386396">Menu z aplikacjami</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Pokaż ustawienia powiadomień. Jedna aplikacja ma wyłączone powiadomienia.}few{Pokaż ustawienia powiadomień. # aplikacje mają wyłączone powiadomienia.}many{Pokaż ustawienia powiadomień. # aplikacji ma wyłączone powiadomienia.}other{Pokaż ustawienia powiadomień. # aplikacji ma wyłączone powiadomienia.}}</translation>
 <translation id="1525508553941733066">ZAMKNIJ</translation>
 <translation id="1537254971476575106">Lupa pełnego ekranu</translation>
@@ -45,7 +45,6 @@
 <translation id="1658406695958299976">Nadal nie można zweryfikować Twojego hasła. Uwaga: jeśli ostatnio hasło było zmieniane, nowe hasło zostanie zastosowane, gdy się wylogujesz. Tu podaj stare hasło.</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adres IPv6: <ph name="ADDRESS" /></translation>
-<translation id="1734367976349034509">Tym urządzeniem zarządza firma</translation>
 <translation id="1743570585616704562">Nie rozpoznano</translation>
 <translation id="1746730358044914197">Metody wprowadzania zostały skonfigurowane przez administratora.</translation>
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
@@ -69,7 +68,6 @@
 <translation id="1995660704900986789">Wyłącz</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Wpisz wiadomość</translation>
-<translation id="2049639323467105390">To urządzenie jest zarządzane przez: <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pionowo</translation>
 <translation id="2067602449040652523">Jasność klawiatury</translation>
 <translation id="2081529251031312395">$1 może się wciąż zalogować później.</translation>
@@ -83,7 +81,6 @@
 <translation id="2268813581635650749">Wyloguj wszystkich</translation>
 <translation id="2292698582925480719">Skala wyświetlania</translation>
 <translation id="2303600792989757991">Przełącz widok ogólny okna</translation>
-<translation id="2338501278241028356">Włącz Bluetooth, by wykryć urządzenia w pobliżu</translation>
 <translation id="2339073806695260576">Kliknij przycisk rysika na półce, by zrobić notatkę lub zrzut ekranu albo użyć wskaźnika laserowego bądź lupy.</translation>
 <translation id="2341729377289034582">Zablokowano w orientacji pionowej</translation>
 <translation id="2352467521400612932">Ustawienia rysika</translation>
@@ -93,6 +90,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Włącz lub wyłącz tryb Nie przeszkadzać</translation>
 <translation id="2412593942846481727">Dostępna aktualizacja</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> jest sesją zarządzaną, którą zarządza <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Połączono z siecią <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Zanim to zaakceptujesz, sprawdź, czy na tym urządzeniu wyświetla się klucz: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
@@ -112,7 +110,6 @@
 <translation id="277257480934873581">Ponownie łączę z: <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Decydować, czy strony mogą korzystać z usług lokalizacyjnych oraz z mikrofonu, aparatu fotograficznego i innych funkcji urządzenia</translation>
 <translation id="2792498699870441125">Alt+Szukaj</translation>
-<translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2808012452536866044">Telefon w Razem lepiej został zastąpiony</translation>
 <translation id="2819276065543622893">Zostaniesz teraz wylogowany.</translation>
 <translation id="2825619548187458965">Półka</translation>
@@ -127,7 +124,6 @@
 <translation id="2946119680249604491">Dodaj połączenie</translation>
 <translation id="2961963223658824723">Coś poszło nie tak. Spróbuj ponownie za kilka sekund.</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2992931425024192067">Pokazuj wszystkie powiadomienia</translation>
 <translation id="2995447421581609334">Pokaż urządzenia przesyłające.</translation>
 <translation id="2996462380875591307">Lupa zadokowana została włączona. Aby ją wyłączyć, naciśnij ponownie Ctrl+Search+D.</translation>
 <translation id="3000461861112256445">Dźwięk mono</translation>
@@ -138,7 +134,6 @@
 <translation id="3087734570205094154">Na dół</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Uruchom ponownie i zaktualizuj</translation>
-<translation id="3147142846278915599">Menu z aplikacjami (synchronizuję aplikacje...)</translation>
 <translation id="315116470104423982">Komórkowa transmisja danych</translation>
 <translation id="3151786313568798007">Orientacja</translation>
 <translation id="3153444934357957346">W wielokrotnym logowaniu nie możesz mieć więcej kont niż <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
@@ -214,7 +209,6 @@
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do pełnego naładowania</translation>
 <translation id="4544944664594876241">Zmieniliśmy skrót, który blokuje ekran. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
-<translation id="4564869809620998694">Usługa czcionek</translation>
 <translation id="4570957409596482333">Przycisk Przeczytaj na głos</translation>
 <translation id="4585337515783392668">Zakończ przesyłanie do nieznanego odbiornika</translation>
 <translation id="4628757576491864469">Urządzenia</translation>
@@ -228,7 +222,6 @@
 <translation id="4849058404725798627">Podświetlaj obiekt wybrany za pomocą klawiatury</translation>
 <translation id="4872237917498892622">Alt+Szukaj lub Shift</translation>
 <translation id="4890187583552566966">Asystenta Google wyłączył administrator.</translation>
-<translation id="4893522937062257019">Na ekranie blokady</translation>
 <translation id="4895488851634969361">Bateria jest pełna.</translation>
 <translation id="490375751687810070">Orientacja pionowa</translation>
 <translation id="4905614135390995787">Zmieniliśmy skrót, który włącza i wyłącza tryb wysokiego kontrastu. Użyj <ph name="NEW_SHORTCUT" /> zamiast <ph name="OLD_SHORTCUT" />.</translation>
@@ -249,8 +242,6 @@
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Wszyscy dostępni użytkownicy zostali już dodani do tej sesji.</translation>
-<translation id="5457599981699367932">Przeglądaj jako gość</translation>
-<translation id="54609108002486618">Zarządzany</translation>
 <translation id="5496819745535887422">Administrator przywraca wcześniejszą wersję oprogramowania na urządzeniu. Po ponownym uruchomieniu urządzenia wszystkie dane zostaną usunięte.</translation>
 <translation id="553675580533261935">Zamykanie sesji</translation>
 <translation id="5537725057119320332">Przesyłaj</translation>
@@ -268,14 +259,11 @@
 <translation id="5750765938512549687">Bluetooth jest wyłączony</translation>
 <translation id="5777841717266010279">Zakończyć udostępnianie ekranu?</translation>
 <translation id="57838592816432529">Wycisz</translation>
-<translation id="5805697420284793859">Menedżer okien</translation>
 <translation id="5820394555380036790">System operacyjny Chromium</translation>
-<translation id="5832805196449965646">Dodaj osobę</translation>
 <translation id="5837036133683224804">Zatrzymaj usługę <ph name="ROUTE_TITLE" /> na urządzeniu <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Wyłączone</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
-<translation id="5911533659001334206">Przeglądarka skrótów</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="592343074608792716">Ten Chromebook i Twój telefon będą się łączyć automatycznie</translation>
@@ -334,7 +322,6 @@
 <translation id="6715542151869432661">Nie znaleziono urządzeń mobilnych.</translation>
 <translation id="671928215901716392">Zablokuj ekran</translation>
 <translation id="6723839937902243910">Zasilanie</translation>
-<translation id="6725073593266469338">Usługa UI</translation>
 <translation id="6751826523481687655">Śledzenie wydajności jest włączone</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="6803622936009808957">Nie można wyświetlić odbicia lustrzanego, ponieważ nie znaleziono obsługiwanych rozdzielczości. Zamiast tego został włączony pulpit rozszerzony.</translation>
@@ -379,12 +366,10 @@
 <translation id="7569509451529460200">Włączono Braille'a i ChromeVox</translation>
 <translation id="7593891976182323525">Szukaj lub Shift</translation>
 <translation id="7604942372593434070">Uzyskać dostęp do Twojej aktywności związanej z przeglądaniem</translation>
-<translation id="7642778300616172920">Ukryj informacje poufne</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (właściciel)</translation>
 <translation id="7647488630410863958">Odblokuj urządzenie, by zobaczyć swoje powiadomienia</translation>
 <translation id="7649070708921625228">Pomoc</translation>
 <translation id="7654687942625752712">Naciśnij i przytrzymaj przez pięć sekund oba klawisze głośności, by wyłączyć komunikaty głosowe.</translation>
-<translation id="7658239707568436148">Anuluj</translation>
 <translation id="7692480393933218409">Ładowanie urządzeń podłączonych do portu USB-C</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">Kliknij, by wyświetlić szczegóły aktualizacji</translation>
@@ -427,7 +412,6 @@
 <translation id="8425213833346101688">Zmień</translation>
 <translation id="8427213022735114808">Dyktowanie wysyła Twój głos do Google, by umożliwić pisanie głosowe w dowolnym polu tekstowym.</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
-<translation id="8431190899827883166">Pokaż kliknięcia</translation>
 <translation id="8433186206711564395">Ustawienia sieci</translation>
 <translation id="8433977262951327081">Zmieniliśmy skrót, który pokazuje dymek menu opcji wejścia na półce. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">Brak karty SIM</translation>
@@ -437,7 +421,6 @@
 <translation id="8484916590211895857"><ph name="NAME" />: ponownie łączę...</translation>
 <translation id="8513108775083588393">Autoobracanie</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
-<translation id="8592141010104017453">Nie pokazuj żadnych powiadomień</translation>
 <translation id="8627191004499078455">Połączono z urządzeniem <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">Pozostało <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Przeczytaj na głos</translation>
@@ -464,7 +447,6 @@
 <translation id="8921624153894383499">Asystent Google nie mówi w tym języku.</translation>
 <translation id="8938800817013097409">Urządzenie USB-C (prawy port z tyłu)</translation>
 <translation id="8940956008527784070">Niski stan baterii (<ph name="PERCENTAGE" />%)</translation>
-<translation id="8984179138335769204">Szybkie uruchamianie</translation>
 <translation id="899350903320462459">Odblokuj urządzenie jako <ph name="LOGIN_ID" />, by zareagować na powiadomienie</translation>
 <translation id="8995603266996330174">Zarządzane przez <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Dostępna jest aktualizacja Adobe Flash Playera</translation>
@@ -475,7 +457,6 @@
 <translation id="9080206825613744995">Mikrofon jest używany.</translation>
 <translation id="9089416786594320554">Wprowadzanie tekstu</translation>
 <translation id="9091626656156419976">Wyświetlacz <ph name="DISPLAY_NAME" /> został usunięty</translation>
-<translation id="9111102763498581341">Odblokuj</translation>
 <translation id="9151726767154816831">Uruchom ponownie i wykonaj Powerwash, by zaktualizować</translation>
 <translation id="9179259655489829027">Ta funkcja umożliwia szybki dostęp do każdego konta zalogowanego użytkownika bez konieczności podawania hasła. Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="9193626018745640770">Przesyłam do nieznanego odbiornika</translation>

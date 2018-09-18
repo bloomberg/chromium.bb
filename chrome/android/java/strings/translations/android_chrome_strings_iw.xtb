@@ -24,6 +24,7 @@
 <translation id="1157102636231978136">‏סינכרון הנתונים ופעילות הגלישה עם חשבון Google שלך</translation>
 <translation id="116280672541001035">צרכת</translation>
 <translation id="1172593791219290334">דף פתיחה</translation>
+<translation id="1175310183703641346">‏הסנכרון של הסימניות, ההיסטוריה, הסיסמאות ונתונים אחרים שלך עם חשבון Google יופסק</translation>
 <translation id="1178581264944972037">השהה</translation>
 <translation id="1181037720776840403">הסר</translation>
 <translation id="1197267115302279827">העבר סימניות</translation>
@@ -48,6 +49,7 @@
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
 <translation id="1326317727527857210">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, היכנס ל-Chrome.</translation>
 <translation id="1332501820983677155">‏מקשי קיצור לתכונות של Google Chrome‏</translation>
+<translation id="1360432990279830238">לצאת ולהשבית את הסנכרון?</translation>
 <translation id="136248372334525878">טעינה מקדימה של דפים מאפשרת טעינה מהירה יותר וקריאה במצב לא מקוון</translation>
 <translation id="1369915414381695676">האתר <ph name="SITE_NAME" /> נוסף</translation>
 <translation id="1373696734384179344">אין מספיק זיכרון להורדת התוכן הנבחר.</translation>
@@ -158,6 +160,7 @@
 <translation id="2131665479022868825"><ph name="DATA" /> נשמרו</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> נסגר</translation>
 <translation id="2139186145475833000">הוסף למסך דף הבית</translation>
+<translation id="2142289305367051020">כאן נמצאים הדפים המועדפים שלך</translation>
 <translation id="2146738493024040262">פתח אפליקציית אינסטנט</translation>
 <translation id="2148716181193084225">היום</translation>
 <translation id="2154484045852737596">עריכת כרטיס</translation>
@@ -235,6 +238,7 @@
 <translation id="2762000892062317888">ברגע זה</translation>
 <translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
 <translation id="2781151931089541271">נותרה שניה אחת</translation>
+<translation id="2803478378562657435">הצגת סיסמאות שמורות ואפשרויות סיסמה</translation>
 <translation id="2810645512293415242">דף פשוט יותר שחוסך בנתונים ונטען מהר יותר.</translation>
 <translation id="281504910091592009">‏הצגה וניהול של סיסמאות שמורות ב<ph name="BEGIN_LINK" />חשבון Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">כדי לקבל גישה אל הסימניות שלך בכל המכשירים, יש להיכנס לחשבון ולהפעיל את הסנכרון</translation>
@@ -348,6 +352,7 @@
 <translation id="3822502789641063741">למחוק נתוני אתר מהאחסון?</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="3859306556332390985">הרץ קדימה</translation>
+<translation id="3868004864571585162">‏קובצי Cookie, רישיונות מדיה ונתוני אתרים</translation>
 <translation id="3894427358181296146">הוספת תיקייה</translation>
 <translation id="3895926599014793903">אלץ הפעלת שינוי מרחק מתצוגה</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
@@ -707,6 +712,7 @@
 <translation id="6573431926118603307">‏כרטיסיות שפתחת ב-Chrome במכשירים האחרים שלך יופיעו כאן.</translation>
 <translation id="6575643671698722332">האיפוס נכשל. ודא שהמכשיר שלך במצב מקוון ונסה שוב.</translation>
 <translation id="6583199322650523874">סמן את הדף הנוכחי בסימנייה</translation>
+<translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">אתר למחשבים</translation>
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -810,6 +816,7 @@
 <translation id="7413229368719586778">תאריך התחלה <ph name="DATE" /></translation>
 <translation id="7423098979219808738">בקש אישור</translation>
 <translation id="7423538860840206698">הגישה לקריאה מלוח העריכה נחסמה</translation>
+<translation id="7431991332293347422">קביעת אופן השימוש בהיסטוריית הגלישה להתאמה אישית של החיפוש ועוד</translation>
 <translation id="7437998757836447326">‏יציאה מ-Chrome</translation>
 <translation id="7444811645081526538">קטגוריות נוספות</translation>
 <translation id="7445411102860286510">התר לאתרים להפעיל באופן אוטומטי סרטונים מושתקים (מומלץ)</translation>
@@ -822,6 +829,7 @@
 <translation id="748127970106343339">אשר את מחיקת פרטי הכניסה של המכשיר</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (עודכן <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">הצגת סיסמאות</translation>
 <translation id="7494974237137038751">נתונים שנחסכו</translation>
 <translation id="7498271377022651285">המתן…</translation>
 <translation id="7514365320538308">הורד</translation>
@@ -878,6 +886,7 @@
 <translation id="7963646190083259054">ספק:</translation>
 <translation id="7981313251711023384">טעינה מראש של דפים כדי לאפשר גלישה וחיפוש מהירים יותר</translation>
 <translation id="79859296434321399">‏כדי להציג תוכן של מציאות רבודה, צריך להתקין את ARCore</translation>
+<translation id="7986741934819883144">בחירת איש קשר</translation>
 <translation id="7987073022710626672">‏התנאים וההגבלות של Chrome</translation>
 <translation id="7987764905897278458">‏גישה אל עוד יכולות חכמות של Google</translation>
 <translation id="7998918019931843664">פתח מחדש כרטיסייה שנסגרה</translation>
@@ -888,6 +897,7 @@
 <translation id="802154636333426148">ההורדה נכשלה</translation>
 <translation id="8026334261755873520">נקה נתוני גלישה</translation>
 <translation id="8035133914807600019">תיקייה חדשה…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">עוד הצעות כאלה</translation>
 <translation id="8037750541064988519">נותרו <ph name="DAYS" /> ימים</translation>
 <translation id="804335162455518893">‏לא נמצא כרטיס SD</translation>
@@ -906,6 +916,7 @@
 <translation id="8109613176066109935">כדי שהסימניות יופיעו בכל המכשירים שלך, יש להפעיל את הסנכרון</translation>
 <translation id="8116925261070264013">מושתקים</translation>
 <translation id="813082847718468539">הצג נתוני אתר</translation>
+<translation id="8156139159503939589">באילו שפות באפשרותך לקרוא?</translation>
 <translation id="8168435359814927499">תוכן</translation>
 <translation id="8186512483418048923">נותרו עוד <ph name="FILES" /> קבצים</translation>
 <translation id="8190358571722158785">נותר יום אחד</translation>
@@ -918,6 +929,7 @@
 <translation id="8260126382462817229">נסה להיכנס שוב</translation>
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8266862848225348053">מיקום ההורדה</translation>
+<translation id="8274165955039650276">הצגת הורדות</translation>
 <translation id="8283853025636624853">מסנכרן עם <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">כרטיסיות רגילות</translation>
 <translation id="8313455859591948645">עריכת דף הפתיחה</translation>
@@ -934,6 +946,7 @@
 <translation id="8441146129660941386">הרץ לאחור</translation>
 <translation id="8445448999790540984">אי אפשר לייצא סיסמאות</translation>
 <translation id="8447861592752582886">שלול הרשאות מכשיר</translation>
+<translation id="8477071352266846533">הסנכרון כבוי בשביל <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8487700953926739672">זמין במצב לא מקוון</translation>
 <translation id="8489271220582375723">פתח את דף ההיסטוריה</translation>
 <translation id="8493948351860045254">פנה שטח אחסון</translation>
@@ -941,6 +954,7 @@
 <translation id="8503559462189395349">‏סיסמאות Chrome</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
 <translation id="8504988642345501642">‏גלילה כלפי מעלה מציגה קישורים מהירים אל דפים קשורים. כתובות האתרים של דפים שאליהם נכנסת נשלחות אל Google.</translation>
+<translation id="8507520749471379845">סיסמאות זמינות</translation>
 <translation id="8514477925623180633">‏ייצוא סיסמאות המאוחסנות ב-Chrome</translation>
 <translation id="8514577642972634246">עבור למצב גלישה בסתר</translation>
 <translation id="851751545965956758">חסימת התחברות של אתרים אל התקנים</translation>
@@ -971,6 +985,7 @@
 <translation id="8728487861892616501">‏השימוש שלך באפליקציה הזו מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />מדיניות הפרטיות<ph name="END_LINK2" /> של Chrome, וכן ל<ph name="BEGIN_LINK3" />הודעת הפרטיות לחשבונות Google שמנוהלים ב-Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">בוצע</translation>
 <translation id="8748850008226585750">התוכן מוסתר</translation>
+<translation id="8751914237388039244">בחירת תמונה</translation>
 <translation id="8788968922598763114">פתח מחדש את הכרטיסייה האחרונה שנסגרה</translation>
 <translation id="8812260976093120287">באתרים מסוימים ניתן לשלם דרך המכשיר באמצעות אפליקציות התשלום הנתמכות שמופיעות למעלה.</translation>
 <translation id="8816439037877937734">‏האפליקציה <ph name="APP_NAME" /> תיפתח ב-Chrome. המשך השימוש מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome, וכן ל<ph name="BEGIN_LINK3" />הודעת הפרטיות לחשבונות Google שמנוהלים ב-Family Link<ph name="END_LINK3" />.</translation>

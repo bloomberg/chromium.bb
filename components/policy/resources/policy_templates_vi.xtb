@@ -141,6 +141,7 @@
 <translation id="1387596372902085462">Xem có cho phép tin cậy Cơ sở hạ tầng khóa công khai (KPI) cũ của Symantec Corporation hay không</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="142346659686073702">Cho phép người dùng chưa liên kết sử dụng Crostini</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
@@ -386,6 +387,12 @@
 
       Nếu bạn không đặt chính sách này, thì tùy chọn này tương đương với tùy chọn cài đặt đang bật, hãy xem mô tả ở trên.</translation>
 <translation id="2113068765175018713">Giới hạn thời gian hoạt động của thiết bị bằng cách tự động khởi động lại</translation>
+<translation id="2116790137063002724">Chính sách này kiểm soát xem có báo cáo thông tin dùng để nhận dạng người dùng, chẳng hạn như thông tin đăng nhập trên hệ điều hành, thông tin đăng nhập hồ sơ trên <ph name="PRODUCT_NAME" />, tên hồ sơ trên <ph name="PRODUCT_NAME" />, đường dẫn hồ sơ trên <ph name="PRODUCT_NAME" /> và đường dẫn thực thi trên <ph name="PRODUCT_NAME" /> hay không.
+
+      Khi không đặt hoặc đặt chính sách này thành True, thông tin có thể dùng để nhận dạng người dùng sẽ được thu thập.
+      Khi đặt chính sách này thành False, thông tin có thể dùng để nhận dạng người dùng sẽ không được thu thập.
+
+      Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Cho phép thông báo trên các trang web này</translation>
 <translation id="2131902621292742709">Độ trễ mờ màn hình khi chạy trên nguồn pin</translation>
 <translation id="2132732175597591362">Kiểm soát danh sách cho phép gồm các mẫu URL mà chế độ tự động phát luôn được bật.
@@ -891,6 +898,22 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu không đặt chính sách này, thì giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web từ chính sách 'DefaultCookiesSetting', nếu chính sách đó được đặt, hoặc từ cấu hình cá nhân của người dùng.
 
           Ngoài ra, hãy xem các chính sách 'CookiesBlockedForUrls' và 'CookiesSessionOnlyForUrls'. Lưu ý rằng không được có các mẫu URL xung đột giữa 3 chính sách này - chưa có chính sách nào được chỉ định là chính sách ưu tiên.</translation>
+<translation id="3373364525435227558">Đặt một hoặc nhiều ngôn ngữ được đề xuất cho phiên được quản lý, giúp người dùng dễ dàng chọn một trong số các ngôn ngữ này.
+
+      Người dùng có thể chọn ngôn ngữ và bố cục bàn phím trước khi bắt đầu một phiên được quản lý. Theo mặc định, tất cả các ngôn ngữ mà <ph name="PRODUCT_OS_NAME" /> hỗ trợ sẽ được liệt kê theo thứ tự trong bảng chữ cái. Bạn có thể sử dụng chính sách này để di chuyển một nhóm ngôn ngữ được đề xuất lên đầu danh sách.
+
+      Nếu chưa đặt chính sách này, thì ngôn ngữ hiện áp dụng cho giao diện người dùng sẽ được chọn trước.
+
+      Nếu đặt chính sách này, thì các ngôn ngữ được đề xuất sẽ được chuyển lên đầu danh sách cũng như được tách biệt rõ ràng với tất cả các ngôn ngữ khác. Các ngôn ngữ được đề xuất sẽ được liệt kê theo trình tự mà chúng xuất hiện trong chính sách. Ngôn ngữ đầu tiên được đề xuất sẽ được chọn trước.
+
+      Nếu có nhiều ngôn ngữ được đề xuất, thì có thể giả định rằng người dùng sẽ muốn chọn giữa các ngôn ngữ này. Mục lựa chọn bố cục bàn phím và ngôn ngữ sẽ được hiển thị một cách nổi bật khi bắt đầu một phiên được quản lý. Nếu không, có thể giả định rằng hầu hết người dùng đều muốn sử dụng ngôn ngữ đã chọn trước. Khi đó mục lựa chọn bố cục bàn phím và ngôn ngữ sẽ được hiển thị một cách ít nổi bật hơn khi bắt đầu một phiên được quản lý.
+
+      Khi đã đặt chính sách này cũng như khi tính năng đăng nhập tự động ở trạng thái bật (hãy xem các chính sách |DeviceLocalAccountAutoLoginId| và |DeviceLocalAccountAutoLoginDelay|), phiên được quản lý đã tự động bắt đầu sẽ sử dụng ngôn ngữ được đề xuất đầu tiên và bố cục bàn phím phổ biến nhất phù hợp với ngôn ngữ đó.
+
+      Bố cục bàn phím đã chọn trước sẽ luôn là bố cục bàn phím phổ biến nhất phù hợp với ngôn ngữ đã chọn trước.
+
+      Chỉ có thể đặt chính sách này thành được đề xuất. Bạn có thể sử dụng chính sách này để di chuyển một nhóm ngôn ngữ được đề xuất lên trên cùng, tuy nhiên, người dùng luôn được phép chọn bất kỳ ngôn ngữ nào được <ph name="PRODUCT_OS_NAME" /> hỗ trợ cho phiên của họ.
+      </translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
 <translation id="3414260318408232239">Nếu bạn chưa định cấu hình chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng phiên bản tối thiểu mặc định là TLS 1.0.
 
@@ -1123,6 +1146,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành true hoặc không được đặt, người dùng sẽ có thể đổi phiếu mua hàng thông qua Đăng ký Chrome OS.
 
       Nếu chính sách này được đặt thành false, người dùng sẽ không thể đổi phiếu mua hàng.</translation>
+<translation id="4008507541867797979">Nếu đặt chính sách này thành true hoặc để ở trạng thái chưa định cấu hình, thì <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị người dùng hiện có trên màn hình đăng nhập và cho phép chọn một người dùng.
+
+      Nếu đặt chính sách này thành false, <ph name="PRODUCT_OS_NAME" /> sẽ không hiển thị người dùng hiện có trên màn hình đăng nhập. Thay vào đó, màn hình đăng nhập thông thường (nhắc người dùng nhập email và mật khẩu hoặc số điện thoại) hoặc màn hình quảng cáo xen kẽ SAML (nếu đã bật qua chính sách <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) sẽ hiển thị, trừ khi đã định cấu hình phiên được quản lý. Khi đã định cấu hình phiên được quản lý, thì chỉ có các tài khoản của phiên được quản lý hiển thị, giúp bạn chọn một trong số các tài khoản đó.
+
+      Hãy lưu ý rằng chính sách này không ảnh hưởng đến việc thiết bị có lưu hoặc hủy bỏ dữ liệu trên máy của người dùng hay không.</translation>
 <translation id="4010738624545340900">Cho phép kích hoạt các hộp thoại chọn tệp</translation>
 <translation id="4012737788880122133">Tắt cập nhật tự động khi được đặt thành True.
 
@@ -1535,6 +1563,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="5219844027738217407">Đối với các ứng dụng Android, chính sách này chỉ ảnh hưởng đến micrô. Khi chính sách này được đặt thành true, micrô sẽ bị tắt tiếng cho tất cả ứng dụng Android mà không có ngoại lệ nào.</translation>
+<translation id="5228316810085661003">Thời gian chờ trước khi tự động đăng nhập vào tài khoản trên thiết bị.
+
+      Nếu chưa đặt chính sách |DeviceLocalAccountAutoLoginId|, thì chính sách này sẽ không có hiệu lực. Ngược lại:
+
+      Nếu đã đặt chính sách này, thì chính sách sẽ xác định thời gian chờ trước khi tự động đăng nhập vào tài khoản trên thiết bị theo chỉ định của chính sách |DeviceLocalAccountAutoLoginId| khi không có hoạt động của người dùng.
+
+      Nếu chưa đặt chính sách này, thì 0 mili giây sẽ được dùng làm thời gian chờ.
+
+      Chính sách này được chỉ định bằng đơn vị mili giây.</translation>
 <translation id="523505283826916779">Cài đặt trợ năng</translation>
 <translation id="5247006254130721952">Chặn các mục tải xuống nguy hiểm</translation>
 <translation id="5248863213023520115">Đặt các loại mã hóa được phép khi yêu cầu vé Kerberos từ một máy chủ <ph name="MS_AD_NAME" />.
@@ -1555,6 +1592,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5272684451155669299">Nếu true, người dùng có thể sử dụng phần cứng trên thiết bị Chrome để chứng thực từ xa danh tính của thiết bị với CA bảo mật qua <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> bằng <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Nếu cài đặt được đặt thành false hoặc chưa được đặt, cuộc gọi tới API sẽ không thực hiện được với mã lỗi.</translation>
+<translation id="5277806246014825877">Cho phép người dùng này sử dụng Crostini.
+
+      Nếu đặt chính sách này thành false, thì người dùng không được phép sử dụng Crostini.
+      Nếu đặt thành true hoặc không đặt, thì người dùng được phép sử dụng Crostini miễn là các tùy chọn cài đặt khác cũng cho phép sử dụng Crostini.
+      Cần đặt tất cả ba chính sách, VirtualMachinesAllowed, CrostiniAllowed và DeviceUnaffiliatedCrostiniAllowed thành true khi áp dụng cho Crostini được phép sử dụng.
+      Khi đổi chính sách này thành false, chính sách sẽ áp dụng cho quá trình khởi động các vùng chứa Crostini mới nhưng không tắt các vùng chứa đang sử dụng.</translation>
 <translation id="5283457834853986457">Tắt trình tìm kiếm plugin (không được dùng nữa)</translation>
 <translation id="5288772341821359899">Nếu đã đặt chính sách, phạm vi cổng UDP mà WebRTC sử dụng sẽ được hạn chế đến phạm vi cổng được chỉ định (đã bao gồm cả điểm cuối).
 
@@ -1597,6 +1640,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, 'AskNotifications' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="538108065117008131">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung sau.</translation>
+<translation id="5391388690191341203">Tự động đăng nhập vào tài khoản trên thiết bị</translation>
 <translation id="5392172595902933844">Thông tin về trạng thái của Android được gửi lại cho
       máy chủ.
 
@@ -1626,6 +1670,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Cài đặt mặc định, được sử dụng khi không thiết lập chính sách này, cho phép trình duyệt chính thực hiện chức năng hiển thị nhưng bạn có thể tùy chọn ghi đè cài đặt này và yêu cầu  <ph name="PRODUCT_FRAME_NAME" /> hiển thị các trang HTML theo mặc định.</translation>
 <translation id="5464816904705580310">Định cấu hình cài đặt cho người dùng được quản lý.</translation>
 <translation id="546726650689747237">Độ trễ mờ màn hình khi chạy trên nguồn AC</translation>
+<translation id="5469143988693423708">Người dùng được phép sử dụng Crostini</translation>
 <translation id="5469825884154817306">Chặn hình ảnh trên các trang web này</translation>
 <translation id="5475361623548884387">Bật tính năng in</translation>
 <translation id="547601067149622666">Không cho phép quảng cáo trên các trang web chứa quảng cáo xâm nhập</translation>
@@ -1677,6 +1722,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Lưu ý rằng tùy chọn này không được đề xuất, vì điều này có thể cho phép bỏ qua tiện ích nameConstraints hạn chế tên máy chủ mà một chứng chỉ đã cho có thể được ủy quyền.
 
       Nếu chính sách này chưa được đặt hoặc được đặt thành false, chứng chỉ máy chủ thiếu tiện ích subjectAlternativeName chứa tên DNS hoặc địa chỉ IP sẽ không được tin tưởng.</translation>
+<translation id="5581292529942108810">Định cấu hình các chính sách liên quan đến Tiện ích báo cáo của Chrome.
+
+      Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Kiểm soát các dịch vụ vị trí của Google trên thiết bị Android</translation>
 <translation id="5586942249556966598">Không làm gì</translation>
 <translation id="5630352020869108293">Khôi phục phiên trước đó</translation>
@@ -1924,6 +1972,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6310223829319187614">Bật tự động hoàn tất tên miền trong khi người dùng đăng nhập</translation>
 <translation id="6315673513957120120">Chrome hiển thị trang cảnh báo khi người dùng truy cập các trang web gặp lỗi SSL. Theo mặc định hoặc khi chính sách này được đặt thành true, người dùng được phép nhấp qua các trang cảnh báo này.
       Đặt chính sách này thành false sẽ không cho phép người dùng nhấp qua bất kỳ trang cảnh báo nào.</translation>
+<translation id="6352543686437322588">Tự động đăng nhập vào tài khoản trên thiết bị sau một khoảng thời gian chờ.
+
+      Nếu đặt chính sách này, thì phiên đã chỉ định sẽ tự động được đăng nhập tại màn hình đăng nhập sau một khoảng thời gian chờ mà không cần có sự tương tác của người dùng. Bạn phải định cấu hình sẵn tài khoản trên thiết bị (hãy xem |DeviceLocalAccounts|).
+
+      Nếu chưa đặt chính sách này, thì quá trình tự động đăng nhập sẽ không diễn ra.</translation>
 <translation id="6353901068939575220">Chỉ định tham số được dùng khi tìm kiếm URL với POST. Tham số này bao gồm các cặp tên/giá trị phân tách bằng dấu phẩy. Nếu một giá trị là tham số mẫu như {searchTerms} trong ví dụ trên, tham số đó sẽ được thay thế bằng dữ liệu cụm từ tìm kiếm thực.
 
           Chính sách này là tùy chọn. Nếu không đặt, yêu cầu tìm kiếm sẽ được gửi bằng phương thức GET.
@@ -2288,6 +2341,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu bạn không đặt chính sách này, người dùng sẽ có thể thay đổi cài đặt này theo cách thủ công.</translation>
 <translation id="723103540848640830">Đặt độ dài tối thiểu của mã PIN màn hình khóa</translation>
+<translation id="7232816984286843471">Nếu đặt chính sách thành false, thì người dùng chưa liên kết sẽ không được phép sử dụng Crostini.
+
+      Nếu chưa đặt hoặc đặt chính sách thành true, thì tất cả người dùng đều được phép sử dụng Crostini miễn là các tùy chọn cài đặt khác cũng cho phép sử dụng Crostini.
+      Cần đặt cả ba chính sách, VirtualMachinesAllowed, CrostiniAllowed và DeviceUnaffiliatedCrostiniAllowed thành true khi áp dụng cho Crostini được phép sử dụng.
+      Khi đổi chính sách này thành false, chính sách sẽ áp dụng cho quá trình khởi động các vùng chứa Crostini mới nhưng không tắt các vùng chứa đang sử dụng.</translation>
 <translation id="7234280155140786597">Tên của các máy chủ nhắn tin gốc bị cấm (hoặc * cho tất cả)</translation>
 <translation id="7236775576470542603">Đặt loại kính lúp màn hình mặc định được bật trên màn hình đăng nhập.
           Nếu đặt chính sách này, chính sách sẽ kiểm soát loại kính lúp màn hình được bật khi màn hình đăng nhập hiển thị. Đặt chính sách thành ''None'' sẽ tắt kính lúp màn hình.
@@ -2334,6 +2392,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7311458740754205918">Nếu giá trị này được đặt thành true hoặc không được đặt, trang Tab mới có thể hiển thị đề xuất nội dung dựa trên lịch sử duyệt web, sở thích hoặc vị trí của người dùng.
 
       Nếu giá trị này được đặt thành false, các đề xuất nội dung được tạo tự động sẽ không hiển thị trên trang Tab mới.</translation>
+<translation id="7313793931637495417">Chính sách này kiểm soát xem có báo cáo thông tin phiên bản, chẳng hạn như phiên bản hệ điều hành, nền tảng hệ điều hành, cấu trúc hệ điều hành, phiên bản <ph name="PRODUCT_NAME" /> và kênh <ph name="PRODUCT_NAME" /> hay không.
+
+      Khi không đặt chính sách này hoặc đặt thành True, thông tin phiên bản sẽ được thu thập.
+      Khi đặt chính sách này thành False, thông tin phiên bản sẽ không được thu thập.
+
+      Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Tham số dòng lệnh bổ sung cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Tương tự như Wipe (giá trị 2) nhưng cố gắng giữ lại mã đăng nhập để người dùng không phải đăng nhập lại.</translation>
 <translation id="7329842439428490522">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị tắt khi chạy trên nguồn pin.
@@ -2366,6 +2430,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7349338075015720646">Xác định danh sách các trang web được cài đặt tự động mà không cần sự can thiệp của người dùng và các trang web mà người dùng không thể gỡ cài đặt cũng như tắt.
 
       Mỗi mục danh sách của chính sách này là một đối tượng chứa hai thành phần: "url" và "launch_container". "url" phải là URL của ứng dụng web cần cài đặt và "launch_container" phải là "cửa sổ" hoặc "tab" để xác định cách mở Ứng dụng web sau khi cài đặt. Khi thiếu phần "launch_container", ứng dụng sẽ chạy trong một cửa sổ nếu Chrome cho rằng đây là Ứng dụng web tiến bộ, nếu không thì ứng dụng sẽ chạy trong tab.</translation>
+<translation id="735902178936442460">Chính sách này kiểm soát xem có báo cáo thông tin dùng để nhận dạng máy, chẳng hạn như tên máy và địa chỉ mạng hay không.
+
+      Khi không đặt chính sách này hoặc đặt thành True, thông tin dùng để nhận dạng máy sẽ được thu thập.
+      Khi đặt chính sách này thành False, thông tin dùng để nhận dạng máy sẽ không được thu thập.
+
+      Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Dịch vụ Duyệt web an toàn hiển thị trang cảnh báo khi người dùng chuyển đến các trang web được gắn cờ là có thể độc hại. Việc bật mục cài đặt này sẽ ngăn người dùng vẫn tiếp tục truy cập vào trang web độc hại từ trang cảnh báo.
 
       Nếu bạn đã tắt hoặc chưa định cấu hình mục cài đặt này, thì người dùng sẽ có thể chọn tiếp tục truy cập vào trang web bị gắn cờ sau khi cảnh báo hiển thị.
@@ -2613,6 +2683,14 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7976157349247117979">Tên của đích <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Không có hạn chế đặc biệt</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Giúp bạn kiểm soát xem có được phép sử dụng máy ảo trên Chrome OS hay không.
+
+      Nếu đặt chính sách thành True, thì thiết bị này được phép sử dụng máy ảo.
+      Nếu đặt chính sách thành False, thì thiết bị này sẽ không được phép sử dụng máy ảo.
+      Cần đặt cả ba chính sách, VirtualMachinesAllowed, CrostiniAllowed và DeviceUnaffiliatedCrostiniAllowed thành true khi áp dụng cho Crostini được phép sử dụng.
+      Khi đổi chính sách này thành False, chính sách sẽ áp dụng cho quá trình khởi động các máy ảo mới mà không tắt các máy ảo đang hoạt động.
+      Khi không đặt chính sách này trên thiết bị được quản lý, thiết bị sẽ không được phép sử dụng máy ảo.
+      Các thiết bị chưa được quản lý được phép sử dụng máy ảo.</translation>
 <translation id="802147957407376460">Xoay màn hình 0 độ</translation>
 <translation id="8033913082323846868">Chính sách này không còn dùng trong M70, thay vào đó, hãy sử dụng AutofillAddressEnabled và AutofillCreditCardEnabled.
 
@@ -2657,10 +2735,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
 
           Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn độ trễ khi không sử dụng.</translation>
+<translation id="8138009212169037227">Chính sách này kiểm soát xem có báo cáo dữ liệu chính sách và thời gian tìm nạp chính sách hay không.
+
+      Khi không đặt chính sách này hoặc đặt thành True, dữ liệu chính sách và thời gian tìm nạp chính sách sẽ được thu thập.
+      Khi đặt chính sách này thành False, dữ liệu chính sách và thời gian tìm nạp chính sách sẽ không được thu thập.
+
+      Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Danh sách báo cáo giao diện mạng chứa thông tin về loại và địa chỉ phần cứng đến máy chủ.
 
       Nếu chính sách được đặt giá trị thành sai, danh sách giao diện sẽ không được báo cáo.</translation>
 <translation id="8141795997560411818">Chính sách này không ngăn người dùng sử dụng ứng dụng Google Drive trên Android. Nếu muốn ngăn việc truy cập vào Google Drive, bạn cũng phải không cho phép cài đặt ứng dụng Google Drive trên Android.</translation>
+<translation id="8142894094385450823">Đặt ngôn ngữ được đề xuất cho phiên được quản lý</translation>
 <translation id="8146727383888924340">Cho phép người dùng đổi phiếu mua hàng thông qua Đăng ký Chrome OS</translation>
 <translation id="8148785525797916822">Ẩn cảnh báo xuất hiện khi <ph name="PRODUCT_NAME" /> đang chạy trên máy tính hoặc hệ điều hành không được hỗ trợ nữa.</translation>
 <translation id="8148901634826284024">Bật tính năng trợ năng chế độ tương phản cao.
@@ -2706,6 +2791,29 @@ Những chính sách này chỉ dùng cho mục đích định cấu hình các 
 Bạn không cần định cấu hình các cài đặt này theo cách thủ công! Bạn có thể tải xuống các mẫu dễ sử dụng dành cho Windows, Mac và Linux từ <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù việc cấp phép chính sách qua cổng đăng ký vẫn được hỗ trợ cho các phiên bản Windows tham gia miền <ph name="MS_AD_NAME" />.</translation>
+<translation id="8264653492961233132">Chỉ định danh sách ứng dụng và tiện ích được cài đặt tự động mà không
+          có sự tương tác của người dùng và người dùng không thể gỡ cài
+          đặt hoặc vô hiệu hóa. Tất cả các quyền do ứng dụng/tiện ích
+          yêu cầu được cấp trực tiếp mà không có sự tương tác của người
+          dùng, kể cả mọi quyền bổ sung mà các phiên bản trong tương lai
+          của ứng dụng/tiện ích đó yêu cầu. Ngoài ra, các quyền được cấp
+          cho các API tiện ích enterprise.deviceAttributes và 
+          enterprise.platformKeys.(Không sử dụng được hai API này cho các
+          ứng dụng/tiện ích chưa buộc cài đặt.)
+
+          Chính sách này được ưu tiên hơn trong trường hợp xung đột với chính sách <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Nếu một ứng dụng hoặc tiện ích mà trước đây bị buộc cài đặt hiện đã bị xóa khỏi danh sách này, thì <ph name="PRODUCT_NAME" /> sẽ tự động gỡ cài đặt ứng dụng hoặc tiện ích đó.
+
+          Đối với các phiên bản Windows không tham gia miền <ph name="MS_AD_NAME" />, thì cài đặt bắt buộc sẽ bị giới hạn ở các ứng dụng và tiện ích trong Cửa hàng Chrome trực tuyến.
+
+          Lưu ý rằng người dùng có thể thay đổi mã nguồn của bất cứ tiện ích nào thông qua Công cụ dành cho nhà phát triển (điều này có thể khiến tiện ích hoạt động không chính xác). Nếu bạn lo ngại về điều này thì cần phải đặt chính sách <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Mỗi mục danh sách của chính sách là một chuỗi có chứa một ID tiện ích và một URL "cập nhật" (không bắt buộc) được phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). ID tiện ích là một chuỗi gồm 32 chữ cái được tìm thấy chẳng hạn như, trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở chế độ nhà phát triển. URL "cập nhật", nếu được chỉ định, sẽ trỏ tới tài liệu XML của tệp kê khai cập nhật như được mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Theo mặc định, URL cập nhật của Cửa hàng Chrome trực tuyến sẽ được sử dụng (hiện là "https://clients2.google.com/service/update2/crx"). Lưu ý rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho lần cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. Ngoài ra, xin lưu ý rằng việc chỉ định URL "cập nhật" một cách rõ ràng là bắt buộc trong các phiên bản <ph name="PRODUCT_NAME" /> bao gồm cả phiên bản 67.
+
+          Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" /> cài đặt ứng dụng <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> từ URL "cập nhật" tiêu chuẩn của Cửa hàng Chrome trực tuyến. Để biết thêm thông tin về việc lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Nếu không đặt chính sách này, thì sẽ không có ứng dụng hoặc tiện ích nào được tự động cài đặt và người dùng có thể gỡ cài đặt mọi ứng dụng hoặc tiện ích trong <ph name="PRODUCT_NAME" />.
+
+          Lưu ý rằng chính sách này không áp dụng cho chế độ ẩn danh.</translation>
 <translation id="8274603902181597201">Xóa thư mục chính ecryptf của người dùng và bắt đầu bằng một thư mục chính mới được mã hóa ext4.</translation>
 <translation id="8285435910062771358">Đã bật kính lúp toàn màn hình</translation>
 <translation id="8288199156259560552">Bật Dịch vụ vị trí của Google trên thiết bị Android</translation>
@@ -2992,6 +3100,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Chính sách này không có trên các phiên bản Windows chưa tham gia miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
 <translation id="9042911395677044526">Cho phép áp dụng cấu hình mạng cho mỗi người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9077227880520270584">Lịch hẹn giờ tự động đăng nhập vào tài khoản trên thiết bị</translation>
 <translation id="9084985621503260744">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không</translation>
 <translation id="9088433379343318874">Cho phép nhà cung cấp nội dung của người dùng được giám sát</translation>
 <translation id="9088444059179765143">Định cấu hình phương thức phát hiện múi giờ tự động</translation>

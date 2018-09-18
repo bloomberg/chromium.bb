@@ -8,6 +8,7 @@
 <translation id="1008186147501209563">Εξαγωγή σελιδοδεικτών</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Μη ανταποκρίσιμη σελίδα}other{Μη ανταποκρίσιμες σελίδες}}</translation>
 <translation id="1012794136286421601">Τα αρχεία Εγγράφων, Φύλλων, Διαφανειών και Σχεδίων συγχρονίζονται. Ανοίξτε την εφαρμογή Google Drive, για να τα προσπελάσετε στο διαδίκτυο ή εκτός σύνδεσης.</translation>
+<translation id="1012876632442809908">Συσκευή USB-C (μπροστινή θύρα)</translation>
 <translation id="1013707859758800957">Επιτράπηκε η εκτέλεση μιας προσθήκης εκτός περιβάλλοντος δοκιμών σε αυτήν τη σελίδα.</translation>
 <translation id="1015318665228971643">Επεξεργασία ονόματος φακέλου</translation>
 <translation id="1016437870506746108">{COUNT,plural, =0{Άνοιγμα όλων σε &amp;νέο παράθυρο}=1{Άνοιγμα σε &amp;νέο παράθυρο}other{Άνοιγμα όλων (#) σε &amp;νέο παράθυρο}}</translation>
@@ -203,6 +204,7 @@
 <translation id="1288037062697528143">Ο Νυχτερινός φωτισμός θα ενεργοποιηθεί αυτόματα.</translation>
 <translation id="1288300545283011870">Ιδιότητες ομιλίας</translation>
 <translation id="1293177648337752319">Κατάργηση σίγασης Ιστοτόπου</translation>
+<translation id="1293264513303784526">Συσκευή USB-C (αριστερή θύρα)</translation>
 <translation id="1293556467332435079">Αρχεία</translation>
 <translation id="1295794900245526845">Επιλέξτε το λογαριασμό σας που έχει αποθηκευτεί στο <ph name="PASSWORD_MANAGER_BRAND" /> για να συνδεθείτε</translation>
 <translation id="1296497012903089238">Τύπος πιστοποιητικού</translation>
@@ -518,7 +520,6 @@
 <translation id="1744060673522309905">Δεν είναι δυνατή η σύνδεση της συσκευής στον τομέα. Βεβαιωθείτε ότι δεν έχετε υπερβεί τον αριθμό των συσκευών που μπορείτε να προσθέσετε.</translation>
 <translation id="1744108098763830590">σελίδα παρασκηνίου</translation>
 <translation id="1745520510852184940">Να γίνεται πάντα</translation>
-<translation id="1746417874336251387">Προσφέρετε νέες λειτουργίες που χρησιμοποιούν τη σύνδεση του τηλεφώνου σας με το Chromebook</translation>
 <translation id="174937106936716857">Συνολικός αριθμός αρχείων</translation>
 <translation id="175196451752279553">Ε&amp;παναφορά καρτέλας που έχει κλείσει</translation>
 <translation id="1753905327828125965">Πιο Δημοφιλή</translation>
@@ -601,6 +602,7 @@
 <translation id="1861262398884155592">Αυτός ο φάκελος είναι άδειος</translation>
 <translation id="1864111464094315414">Σύνδεση</translation>
 <translation id="1864400682872660285">Ψυχρότερο</translation>
+<translation id="1864454756846565995">Συσκευή USB-C (πίσω θύρα)</translation>
 <translation id="1864676585353837027">Αλλάξτε τον τρόπο με τον οποίο κοινοποιούνται αυτά τα αρχεία</translation>
 <translation id="1864756863218646478">Δεν ήταν δυνατή η εύρεση του αρχείου.</translation>
 <translation id="1865678028973512614">Διαγραφή αρχείων</translation>
@@ -1236,6 +1238,7 @@
 <translation id="2838379631617906747">Γίνεται Εγκατάσταση</translation>
 <translation id="2841837950101800123">Πάροχος</translation>
 <translation id="2843806747483486897">Αλλαγή προεπιλογής...</translation>
+<translation id="2844169650293029770">Συσκευή USB-C (αριστερή μπροστινή θύρα)</translation>
 <translation id="2845382757467349449">Διαρκής εμφάνιση γραμμής σελιδοδεικτών</translation>
 <translation id="2847759467426165163">Μετάδοση σε</translation>
 <translation id="284805635805850872">Κατάργηση επιβλαβούς λογισμικού;</translation>
@@ -1330,6 +1333,7 @@
 <translation id="2986010903908656993">Αυτή η σελίδα έχει αποκλειστεί από τον πλήρη έλεγχο των συσκευών MIDI.</translation>
 <translation id="2989474696604907455">αποσυνδεδεμένη</translation>
 <translation id="2989786307324390836">Κωδικοποιημένο δυαδικό DER, πιστοποιητικό</translation>
+<translation id="2992931425024192067">Εμφάνιση όλου του περιεχομένου ειδοποιήσεων</translation>
 <translation id="2993517869960930405">Πληροφορίες εφαρμογής</translation>
 <translation id="2994669386200004489">Δεν ήταν δυνατή η δημιουργία αντιγράφου ασφαλείας για το <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Εγκαταστάθηκε από το γονέα σας.</translation>
@@ -1573,6 +1577,7 @@
 <translation id="3367047597842238025">Ρυθμίστε τη συσκευή <ph name="DEVICE_TYPE" /> όπως θέλετε και ανακαλύψτε όλες τις εκπληκτικές δυνατότητες που είναι στη διάθεσή σας.</translation>
 <translation id="3368922792935385530">Σε σύνδεση</translation>
 <translation id="3369624026883419694">Ανάλυση της διεύθυνσης του κεντρικού υπολογιστή...</translation>
+<translation id="3371140690572404006">Συσκευή USB-C (δεξιά μπροστινή θύρα)</translation>
 <translation id="337286756654493126">Ανάγνωση φακέλων που ανοίγετε στην εφαρμογή</translation>
 <translation id="3378503599595235699">Διατήρηση τοπικών δεδομένων μόνο μέχρι να κλείσετε το πρόγραμμα περιήγησής σας</translation>
 <translation id="3378572629723696641">Αυτή η επέκταση ενδεχομένως να είναι κατεστραμμένη.</translation>
@@ -1621,7 +1626,7 @@
 <translation id="3440663250074896476">Περισσότερες ενέργειες για το σελιδοδείκτη <ph name="BOOKMARK_NAME" /></translation>
 <translation id="3440761377721825626">Να γίνεται ερώτηση κάθε φορά που ένας ιστότοπος επιθυμεί να χρησιμοποιήσει μια προσθήκη, για να αποκτήσει πρόσβαση στον υπολογιστή σας</translation>
 <translation id="3441653493275994384">Έλεγχος</translation>
-<translation id="344339666025504323"><ph name="FOOTNOTE_TARGET" />Οι λειτουργίες διαφέρουν ανά συσκευή</translation>
+<translation id="3445925074670675829">Συσκευή USB-C</translation>
 <translation id="344630545793878684">Ανάγνωση των δεδομένων σας σε ορισμένους ιστότοπους</translation>
 <translation id="3449839693241009168">Πατήστε <ph name="SEARCH_KEY" /> για να αποστείλετε εντολές στο <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Ποσοστό κατοχής κατάστασης αδράνειας</translation>
@@ -1635,7 +1640,6 @@
 <translation id="3462413494201477527">Ακύρωση ρύθμισης λογαριασμού;</translation>
 <translation id="346431825526753">Αυτός είναι ένας λογαριασμός για παιδιά τον οποίο διαχειρίζεται ο χρήστης <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Κάντε κλικ στη φωτογραφία σας</translation>
-<translation id="3465800511193611451">Αναμονή για επαλήθευση. <ph name="LINK_BEGIN" />Μάθετε περισσότερα.<ph name="LINK_END" /></translation>
 <translation id="3466147780910026086">Σάρωση της συσκευής μέσων σας…</translation>
 <translation id="3467267818798281173">Ρωτήστε την Google για προτάσεις</translation>
 <translation id="3468275649641751422">Μεταδώστε σε ροή ένα αρχείο βίντεο ή ήχου</translation>
@@ -1675,6 +1679,7 @@
 <translation id="351152300840026870">Γραμματοσειρά σταθερού πλάτους</translation>
 <translation id="3511528412952710609">Βραχύ</translation>
 <translation id="3514373592552233661">Τα προτιμώμενα δίκτυα θα προτιμώνται έναντι των υπόλοιπων γνωστών δικτύων εάν υπάρχουν περισσότερα από ένα</translation>
+<translation id="3518985090088779359">Αποδοχή και συνέχεια</translation>
 <translation id="3523642406908660543">Να γίνεται ερώτηση κάθε φορά που ένας ιστότοπος επιθυμεί να χρησιμοποιήσει μια προσθήκη για να αποκτήσει πρόσβαση στον υπολογιστή σας (συνιστάται)</translation>
 <translation id="3527085408025491307">Φάκελος</translation>
 <translation id="3527276236624876118">Δημιουργήθηκε εποπτευόμενος χρήστης με όνομα <ph name="USER_DISPLAY_NAME" />.</translation>
@@ -2016,6 +2021,7 @@
 <translation id="399179161741278232">Έγινε εισαγωγή</translation>
 <translation id="3994374631886003300">Ξεκλειδώστε το τηλέφωνό σας και πλησιάστε το, για να ξεκλειδώσετε το <ph name="DEVICE_TYPE" />.</translation>
 <translation id="3994878504415702912">&amp;Εστίαση</translation>
+<translation id="3995138139523574647">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="4002066346123236978">Τίτλος</translation>
 <translation id="40027638859996362">Μετακίνηση λέξης</translation>
 <translation id="4005817994523282006">Μέθοδος ανίχνευσης ζώνης ώρας</translation>
@@ -2316,7 +2322,6 @@
 <translation id="4538417792467843292">Διαγραφή λέξης</translation>
 <translation id="4538684596480161368">Να γίνεται πάντα αποκλεισμός των προσθηκών εκτός περιβάλλοντος δοκιμών σε <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Εγκαταστάθηκε από την εταιρική πολιτική.</translation>
-<translation id="4539754285405390318">Η λειτουργία Better Together μπορεί:</translation>
 <translation id="4542520061254486227">Ανάγνωση των δεδομένων σας στο <ph name="WEBSITE_1" /> και στο <ph name="WEBSITE_2" /></translation>
 <translation id="4543733025292526486">esc</translation>
 <translation id="4543778593405494224">Πρόγραμμα διαχείρισης πιστοποιητικών</translation>
@@ -2564,6 +2569,7 @@
 <translation id="4890773143211625964">Εμφάνιση σύνθετων επιλογών εκτυπωτή</translation>
 <translation id="4891089016822695758">Φόρουμ για την έκδοση beta</translation>
 <translation id="4893336867552636863">Με αυτήν την ενέργεια θα διαγραφούν οριστικά τα δεδομένα περιήγησής σας από αυτή τη συσκευή.</translation>
+<translation id="4893522937062257019">Στην οθόνη κλειδώματος</translation>
 <translation id="4898011734382862273">Το πιστοποιητικό "<ph name="CERTIFICATE_NAME" />" αντιπροσωπεύει μια Αρχή Πιστοποίησης</translation>
 <translation id="489985760463306091">Για να ολοκληρώσετε την κατάργηση του επιβλαβούς λογισμικού, κάντε επανεκκίνηση του υπολογιστή σας</translation>
 <translation id="4900392736118574277">Η σελίδα εκκίνησής σας άλλαξε σε <ph name="URL" />.</translation>
@@ -2855,6 +2861,7 @@
 <translation id="5330512191124428349">Λήψη πληροφοριών</translation>
 <translation id="5331069282670671859">Δεν έχετε πιστοποιητικά σε αυτήν την κατηγορία</translation>
 <translation id="5331425616433531170">Η επέκταση "<ph name="CHROME_EXTENSION_NAME" />" επιθυμεί σύζευξη</translation>
+<translation id="5331975486040154427">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="5332624210073556029">Ζώνη ώρας:</translation>
 <translation id="5334142896108694079">Προσωρινή μνήμη σεναρίου</translation>
 <translation id="5334844597069022743">Προβολή κώδικα</translation>
@@ -3180,6 +3187,7 @@
 <translation id="5800020978570554460">Το αρχείο προορισμού περικόπηκε ή καταργήθηκε από την τελευταία λήψη.</translation>
 <translation id="5801568494490449797">Προτιμήσεις</translation>
 <translation id="5804241973901381774">Άδειες</translation>
+<translation id="5805697420284793859">Διαχείριση παραθύρου</translation>
 <translation id="580571955903695899">Αναδιοργάνωση κατά τίτλο</translation>
 <translation id="5807290661599647102">Ορισμός κλειδώματος οθόνης</translation>
 <translation id="5811750797187914944">Όλα είναι έτοιμα</translation>
@@ -3252,6 +3260,7 @@
 <translation id="5906732635754427568">Τα δεδομένα που σχετίζονται με αυτήν την εφαρμογή θα καταργηθούν από αυτήν τη συσκευή.</translation>
 <translation id="5908769186679515905">Αποκλεισμός ιστοτόπων από την εκτέλεση Flash</translation>
 <translation id="5910363049092958439">Απο&amp;θήκευση Εικόνας Ως...</translation>
+<translation id="5911533659001334206">Πρόγραμμα προβολής συντομεύσεων</translation>
 <translation id="5911737117543891828">Τα προσωρινά αρχεία εκτός σύνδεσης του Google Drive θα διαγραφούν. Τα αρχεία που έχετε ορίσει ως διαθέσιμα εκτός σύνδεσης δεν θα διαγραφούν από αυτήν τη συσκευή.</translation>
 <translation id="5911887972742538906">Παρουσιάστηκε σφάλμα κατά την εγκατάσταση της εφαρμογής σας Linux.</translation>
 <translation id="5912378097832178659">&amp;Επεξεργασία μηχανών αναζήτησης...</translation>
@@ -3416,7 +3425,6 @@
 <translation id="6144938890088808325">Βοηθήστε μας να βελτιώσουμε τα Chromebook</translation>
 <translation id="6146563240635539929">Βίντεο</translation>
 <translation id="6147020289383635445">Η προεπισκόπηση εκτύπωσης απέτυχε.</translation>
-<translation id="6148052338549899048">Δεν υπάρχουν κατάλληλες συσκευές. <ph name="LINK_BEGIN" />Μάθετε περισσότερα.<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Δοκιμάστε να κάνετε τα εξής:</translation>
 <translation id="6150853954427645995">Για να αποθηκεύσετε αυτό το αρχείο για χρήση εκτός σύνδεσης, συνδεθείτε ξανά στο διαδίκτυο, κάντε δεξί κλικ στο αρχείο και ενεργοποιήστε την επιλογή <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Πατήστε <ph name="SEARCH_KEY" /> για αναζήτηση <ph name="SITE_NAME" /></translation>
@@ -3647,6 +3655,7 @@
 <translation id="648637985389593741">Να ενεργοποιηθούν οι λειτουργίες συγχρονισμού και εξατομίκευσης</translation>
 <translation id="6488384360522318064">Επιλογή γλώσσας</translation>
 <translation id="648927581764831596">Κανένα διαθέσιμο</translation>
+<translation id="6490471652906364588">Συσκευή USB-C (δεξιά θύρα)</translation>
 <translation id="6491376743066338510">Αποτυχία εξουσιοδότησης</translation>
 <translation id="6492313032770352219">Μέγεθος στο δίσκο:</translation>
 <translation id="6494445798847293442">Δεν είναι Αρχή πιστοποίησης</translation>
@@ -3767,7 +3776,6 @@
 <translation id="6664237456442406323">Δυστυχώς, ο υπολογιστής σας έχει διαμορφωθεί με ένα εσφαλμένο αναγνωριστικό υλικού. Αυτό παρεμποδίζει την ενημέρωση του Chrome OS με τις πιο πρόσφατες επιδιορθώσεις ασφαλείας και ο υπολογιστής σας <ph name="BEGIN_BOLD" />ενδέχεται να είναι ευάλωτος σε κακόβουλες επιθέσεις<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Παρουσιάστηκε ένα πρόβλημα κατά το άνοιγμα του προφίλ σας. Αποσυνδεθείτε και συνδεθείτε ξανά.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
-<translation id="6674412557034343536">διακοπή χρονομέτρου</translation>
 <translation id="667517062706956822">Θέλετε να μεταφράσει το Google αυτήν τη σελίδα από <ph name="SOURCE_LANGUAGE" /> σε <ph name="TARGET_LANGUAGE" />;</translation>
 <translation id="6675665718701918026">Η συσκευή κατάδειξης είναι συνδεδεμένη</translation>
 <translation id="6678717876183468697">URL ερωτήματος</translation>
@@ -3797,13 +3805,13 @@
 <translation id="6710213216561001401">Προηγούμενο</translation>
 <translation id="6718273304615422081">Συμπίεση…</translation>
 <translation id="671928215901716392">Κλείδωμα οθόνης</translation>
-<translation id="6720847671508630642">Μοιραστείτε αυτόματα τις καλύτερες λειτουργίες του Android με το Chromebook. Συνδέστε το τηλέφωνό σας, για να μπορείτε να στέλνετε μηνύματα κειμένου από τον υπολογιστή σας, να μοιράζεστε τη σύνδεση του τηλεφώνου σας στο διαδίκτυο και να ξεκλειδώνετε την οθόνη του Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Μάθετε περισσότερα<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Προβολή της κατασκευής και του μοντέλου του Κλειδιού ασφαλείας</translation>
 <translation id="6721972322305477112">&amp;Αρχείο</translation>
 <translation id="672213144943476270">Ξεκλειδώστε το προφίλ σας προτού ξεκινήσετε την περιήγηση ως επισκέπτης.</translation>
 <translation id="6723354935081862304">Εκτύπωση στα Έγγραφα Google και σε άλλους προορισμούς νέφους. <ph name="BEGIN_LINK" />Συνδεθείτε<ph name="END_LINK" /> για να κάνετε εκτύπωση στο Google Cloud Print.</translation>
 <translation id="6723661294526996303">Εισαγωγή σελιδοδεικτών και ρυθμίσεων...</translation>
 <translation id="6723839937902243910">Ενεργοποίηση</translation>
+<translation id="6725073593266469338">Υπηρεσία διεπαφής χρήστη</translation>
 <translation id="6725206449694821596">Πρωτόκολλο εκτύπωσης στο διαδίκτυο (IPP)</translation>
 <translation id="6727005317916125192">Προηγούμενο παράθυρο</translation>
 <translation id="6732801395666424405">Δεν έχουν φορτωθεί τα πιστοποιητικά</translation>
@@ -4039,6 +4047,7 @@
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Ανταλλαγή δεδομένων με συσκευές με την ονομασία: <ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">Εναλλαγή μεγεθυντικού φακού πλήρους οθόνης</translation>
+<translation id="7098389117866926363">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="7098447629416471489">Οι άλλες αποθηκευμένες μηχανές αναζήτησης θα εμφανίζονται εδώ.</translation>
 <translation id="7099337801055912064">Δεν είναι δυνατή η φόρτωση μεγάλου PPD. Το μέγιστο μέγεθος είναι 250 KB.</translation>
 <translation id="7100897339030255923">Έχουν επιλεγεί <ph name="COUNT" /> στοιχεία</translation>
@@ -4219,7 +4228,6 @@
 <translation id="7366909168761621528">Δεδομένα περιήγησης</translation>
 <translation id="7371006317849674875">Ώρα έναρξης</translation>
 <translation id="737439367876257440">Βελτιώστε το Chrome και την ασφάλειά του αποστέλλοντας πληροφορίες συστήματος και χρήσης στην Google</translation>
-<translation id="7374989181012106167">Το Chromebook λειτουργεί ακόμα καλύτερα με το τηλέφωνό σας. <ph name="LINK_BEGIN" />Μάθετε περισσότερα.<ph name="LINK_END" /></translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Επισήμανση του δείκτη του ποντικιού όταν κινείται</translation>
 <translation id="7377169924702866686">Το Caps Lock είναι ενεργοποιημένο.</translation>
@@ -4270,7 +4278,6 @@
 <translation id="7464490149090366184">Αποτυχία συμπίεσης, υπάρχει το αρχείο: "$1"</translation>
 <translation id="7465778193084373987">URL ανάκλησης πιστοποιητικού Netscape</translation>
 <translation id="7469406957790636836">Για ενεργοποίηση, πρώτα ενεργοποιήστε τον ορθογραφικό έλεγχο στην επιλογή <ph name="BEGIN_LINK" />Γλώσσες και είσοδος<ph name="END_LINK" /></translation>
-<translation id="7469518857922439236">Να λαμβάνετε ειδοποιήσεις και να οριστεί ως προεπιλογή η απομνημόνευση αυτού του υπολογιστή για τα Μηνύματα</translation>
 <translation id="7469894403370665791">Αυτόματη σύνδεση σε αυτό το δίκτυο</translation>
 <translation id="747114903913869239">Σφάλμα: Δεν είναι δυνατή η αποκωδικοποίηση της επέκτασης</translation>
 <translation id="7473891865547856676">Όχι, ευχαριστώ</translation>
@@ -4382,6 +4389,7 @@
 <translation id="763632859238619983">Να μην επιτρέπεται σε κανέναν ιστότοπο η εγκατάσταση δεικτών χειρισμού για πληρωμές</translation>
 <translation id="7639178625568735185">Κατάλαβα!</translation>
 <translation id="764017888128728">Το <ph name="PASSWORD_MANAGER_BRAND" /> σάς συνδέει αυτόματα σε κατάλληλους ιστότοπους, χρησιμοποιώντας τους κωδικούς πρόσβασης που έχετε αποθηκεύσει.</translation>
+<translation id="7642778300616172920">Απόκρυψη ευαίσθητου περιεχομένου</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (κάτοχος)</translation>
 <translation id="7648992873808071793">Αποθήκευση αρχείων σε αυτήν τη συσκευή</translation>
 <translation id="7649070708921625228">Βοήθεια</translation>
@@ -4912,6 +4920,7 @@
 <translation id="8427292751741042100">ενσωματωμένο σε οποιονδήποτε κεντρικό υπολογιστή</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="84297032718407999">Θα αποσυνδεθείτε σε <ph name="LOGOUT_TIME_LEFT" /></translation>
+<translation id="8431190899827883166">Εμφάνιση πατημάτων</translation>
 <translation id="8431909052837336408">Αλλαγή αριθμού PIN της κάρτας SIM</translation>
 <translation id="8434480141477525001">NaCl Εντοπισμός σφαλμάτων θύρας</translation>
 <translation id="8435395510592618362">Επαληθεύστε την ταυτότητά σας με την εφαρμογή <ph name="APP_NAME" /></translation>
@@ -5013,6 +5022,7 @@
 <translation id="8584280235376696778">&amp;Άνοιγμα βίντεο σε νέα καρτέλα</translation>
 <translation id="8588866096426746242">Εμφάνιση στατιστικών στοιχείων προφίλ</translation>
 <translation id="8590375307970699841">Ρύθμιση αυτόματων ενημερώσεων</translation>
+<translation id="8592141010104017453">Να μην εμφανίζονται ειδοποιήσεις</translation>
 <translation id="8594908476761052472">Λήψη βίντεο</translation>
 <translation id="8596540852772265699">Προσαρμοσμένα αρχεία</translation>
 <translation id="8597845839771543242">Μορφή ιδιότητας:</translation>
@@ -5028,7 +5038,6 @@
 <translation id="8620765578342452535">Διαμόρφωση συνδέσεων δικτύου</translation>
 <translation id="8624205858755890468">Επιτρέπει στον Βοηθό να σας εμφανίζει σχετικές πληροφορίες, εφαρμογές και ενέργειες.</translation>
 <translation id="862542460444371744">&amp;Επεκτάσεις</translation>
-<translation id="8626219642120025691">Ολοκλήρωση χρονομέτρου</translation>
 <translation id="8627151598708688654">Επιλογή πηγής</translation>
 <translation id="862727964348362408">Σε αναστολή</translation>
 <translation id="862750493060684461">Προσωρινή μνήμη CSS</translation>
@@ -5243,6 +5252,7 @@
 <translation id="8931394284949551895">Νέες συσκευές</translation>
 <translation id="8933960630081805351">&amp;Εμφάνιση στο Finder</translation>
 <translation id="8934732568177537184">Συνέχεια</translation>
+<translation id="8938800817013097409">Συσκευή USB-C (πίσω δεξιά θύρα)</translation>
 <translation id="8940081510938872932">Αυτήν τη στιγμή, ο υπολογιστής σας εκτελεί πολλές εργασίες. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="8941173171815156065">Ανάκληση της άδειας "<ph name="PERMISSION" />"</translation>
 <translation id="8941882480823041320">Προηγούμενη λέξη</translation>
@@ -5274,6 +5284,7 @@
 <translation id="897939795688207351">Ενεργό <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Παρουσίασε σφάλμα</translation>
 <translation id="8983677657449185470">Συμβάλλετε στη βελτίωση της Ασφαλούς περιήγησης</translation>
+<translation id="8984179138335769204">Γρήγορη εκκίνηση</translation>
 <translation id="8984654317541110628">URL κοινής χρήσης αρχείου</translation>
 <translation id="8986362086234534611">Διαγραφή από τη μνήμη</translation>
 <translation id="8986494364107987395">Αυτόματη αποστολή στατιστικών στοιχείων χρήσης και αναφορών σφαλμάτων στην Google</translation>

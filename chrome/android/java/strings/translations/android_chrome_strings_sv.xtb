@@ -238,6 +238,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="2762000892062317888">nyss</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
+<translation id="2803478378562657435">Sparade lösenord och lösenordsalternativ visas</translation>
 <translation id="2810645512293415242">Förenklad sida visades för att spara data och minska inläsningstiden.</translation>
 <translation id="281504910091592009">Visa och hantera sparade lösenord i <ph name="BEGIN_LINK" />Google-kontot<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Logga in och aktivera synkronisering om du vill ha dina bokmärken tillgängliga på alla enheter</translation>
@@ -711,6 +712,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6573431926118603307">Här visas flikar som du har öppnat i Chrome på andra enheter.</translation>
 <translation id="6575643671698722332">Fel vid återställning. Kolla att enheten är online. Försök igen.</translation>
 <translation id="6583199322650523874">Infoga ett bokmärke för den aktuella sidan</translation>
+<translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Datoranpassad webbplats</translation>
 <translation id="6600954340915313787">Kopierat till Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +829,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="748127970106343339">Bekräfta borttagning av användaruppgifter för enheten</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (uppdaterades <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Visa lösenord</translation>
 <translation id="7494974237137038751">Sparad data</translation>
 <translation id="7498271377022651285">Vänta …</translation>
 <translation id="7514365320538308">Ladda ned</translation>
@@ -894,6 +897,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="802154636333426148">Nedladdningen misslyckades</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8035133914807600019">Ny mapp …</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">Fler liknande</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagar kvar</translation>
 <translation id="804335162455518893">Det gick inte att hitta SD-kortet</translation>
@@ -950,6 +954,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8503559462189395349">Lösenord i Chrome</translation>
 <translation id="8503813439785031346">Användarnamn</translation>
 <translation id="8504988642345501642">Visar snabblänkar till relaterade sidor när du rullar uppåt. Webbadresserna till sidor du besöker skickas till Google.</translation>
+<translation id="8507520749471379845">Lösenord finns tillgängliga</translation>
 <translation id="8514477925623180633">Exportera lösenord som har sparats i Chrome</translation>
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
 <translation id="851751545965956758">Förhindra att webbplatser ansluter till enheter</translation>

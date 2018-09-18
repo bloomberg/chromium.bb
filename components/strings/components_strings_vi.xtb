@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Phải có số điện thoại</translation>
 <translation id="1517500485252541695">Thẻ tín dụng và thẻ ghi nợ được chấp nhận</translation>
 <translation id="1519264250979466059">Ngày tạo</translation>
+<translation id="1521655867290435174">Google Trang tính</translation>
 <translation id="1527263332363067270">Đang chờ kết nối…</translation>
 <translation id="1532118530259321453">Trang này cho biết</translation>
 <translation id="153384715582417236">Hiện đã hoàn tất</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Xuất ở định dạng MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Kết nối đã được đặt lại.</translation>
+<translation id="2785008241190445880">Đã thay thế dấu trang</translation>
 <translation id="2788784517760473862">Thẻ tín dụng được chấp nhận</translation>
 <translation id="2794233252405721443">Trang web đã bị chặn</translation>
 <translation id="2799020568854403057">Trang web bạn sắp truy cập chứa ứng dụng có hại</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">Chuyển đến đó ngay</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có lỗi. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
+<translation id="467809019005607715">Google Trang trình bày</translation>
 <translation id="4690462567478992370">Dừng sử dụng chứng chỉ không hợp lệ</translation>
 <translation id="4690954380545377795">Bạn có thể mất quyền truy cập vào Tài khoản Google của mình hoặc bị đánh cắp danh tính. Chrome khuyên bạn nên thay đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">Chọn thông tin liên hệ</translation>
 <translation id="5327248766486351172">Tên</translation>
 <translation id="5332219387342487447">Phương thức giao hàng</translation>
+<translation id="5344579389779391559">Trang này có thể tìm cách tính phí bạn</translation>
 <translation id="5355557959165512791">Bạn không thể truy cập vào <ph name="SITE" /> ngay bây giờ vì chứng chỉ của trang này đã bị thu hồi. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời nên trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
 <translation id="5371425731340848620">Cập nhật thẻ</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">Năm</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Trang 1}other{Trang #}}</translation>
 <translation id="6017850046339264347">Những kẻ tấn công trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cài đặt ứng dụng lừa đảo giả vờ là nội dung khác hoặc thu thập dữ liệu có thể dùng để theo dõi bạn. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Tùy chỉnh Chrome theo cách của bạn</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (được đồng bộ hóa)</translation>
 <translation id="6027201098523975773">Nhập tên</translation>
 <translation id="6039846035001940113">Nếu sự cố vẫn tiếp diễn, hãy liên hệ với chủ sở hữu trang web.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">Nội dung này có thể tìm cách đánh lừa bạn cài đặt phần mềm hoặc tiết lộ thông tin cá nhân. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Bạn không thể truy cập vào <ph name="SITE" /> ngay bây giờ do trang web sử dụng tính năng ghim chứng chỉ. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời nên trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="6059925163896151826">Thiết bị USB</translation>
+<translation id="6060991652695587932">Chọn dịch vụ email để truy cập nhanh</translation>
 <translation id="6071091556643036997">Loại chính sách là không hợp lệ.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Thẻ này sẽ được lưu vào Tài khoản Google của bạn để thanh toán nhanh hơn trên các thiết bị.}other{Các thẻ này sẽ được lưu vào Tài khoản Google của bạn để thanh toán nhanh hơn trên các thiết bị.}}</translation>
 <translation id="6080696365213338172">Bạn đã truy cập nội dung bằng chứng chỉ do quản trị viên cấp. Dữ liệu mà bạn cung cấp cho <ph name="DOMAIN" /> có thể bị quản trị viên của bạn chặn.</translation>
@@ -904,6 +910,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Không</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Ghi đè phiên được quản lý</translation>
 <translation id="7390545607259442187">Xác nhận thẻ</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;Bạn sẽ thấy lỗi này nếu bạn có phần mềm Superfish trên máy tính chạy Windows.&lt;/p&gt;
@@ -994,6 +1001,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7815407501681723534">Đã tìm thấy <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> cho '<ph name="SEARCH_STRING" />'</translation>
 <translation id="7818867226424560206">Quản lý chính sách</translation>
 <translation id="782886543891417279">Wi-Fi mà bạn đang sử dụng (<ph name="WIFI_NAME" />) có thể yêu cầu bạn phải truy cập trang đăng nhập của mạng đó.</translation>
+<translation id="7835178595033117206">Đã xóa dấu trang</translation>
 <translation id="785549533363645510">Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ không ẩn thao tác duyệt của bạn với chủ lao động, nhà cung cấp dịch vụ internet hoặc các trang web bạn truy cập.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Rời khỏi trang web?</translation>
@@ -1130,6 +1138,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8874824191258364635">Nhập số thẻ hợp lệ</translation>
 <translation id="8876793034577346603">Không thể phân tích cú pháp cấu hình mạng.</translation>
 <translation id="8891727572606052622">Chế độ proxy không hợp lệ.</translation>
+<translation id="8892964541482452187">Nút chuyển đổi tab, hãy nhấn phím enter để chuyển sang tab này</translation>
 <translation id="8903921497873541725">Phóng to</translation>
 <translation id="8931333241327730545">Bạn có muốn lưu thẻ này vào Tài khoản Google của mình không?</translation>
 <translation id="8932102934695377596">Đồng hồ của bạn chạy chậm</translation>
@@ -1155,6 +1164,7 @@ Thông tin chi tiết bổ sung:
 <translation id="9035022520814077154">Lỗi bảo mật</translation>
 <translation id="9038649477754266430">Sử dụng dịch vụ gợi ý để tải trang nhanh hơn</translation>
 <translation id="9039213469156557790">Ngoài ra, trang này bao gồm các tài nguyên khác không an toàn. Những tài nguyên này có thể bị người khác xem khi đang gửi và có thể bị kẻ tấn công sửa đổi nhằm thay đổi hành vi của trang.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Bạn đã cố truy cập vào <ph name="DOMAIN" />, nhưng máy chủ cho biết chứng chỉ không hợp lệ.</translation>
 <translation id="9050666287014529139">Cụm mật khẩu</translation>
 <translation id="9065203028668620118">Chỉnh sửa</translation>
@@ -1178,6 +1188,7 @@ Thông tin chi tiết bổ sung:
 <translation id="9170848237812810038">H&amp;oàn tác</translation>
 <translation id="9171296965991013597">Thoát khỏi ứng dụng?</translation>
 <translation id="917450738466192189">Chứng chỉ của máy chủ không hợp lệ.</translation>
+<translation id="9183302530794969518">Google Tài liệu</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> sử dụng giao thức không được hỗ trợ.</translation>
 <translation id="9205078245616868884">Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng bộ hóa. Nhập cụm mật khẩu đó để bắt đầu đồng bộ hóa.</translation>
 <translation id="9207861905230894330">Không thêm được bài viết.</translation>

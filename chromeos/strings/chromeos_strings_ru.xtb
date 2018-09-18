@@ -1,8 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1510238584712386396">Панель запуска</translation>
+<translation id="1734367976349034509">Это корпоративное устройство</translation>
+<translation id="2049639323467105390">Это устройство находится в домене <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Ничего не найдено</translation>
+<translation id="2338501278241028356">Включите Bluetooth, чтобы найти устройства</translation>
+<translation id="2805756323405976993">Приложения</translation>
+<translation id="2872961005593481000">Завершить работу</translation>
+<translation id="3147142846278915599">Панель запуска (синхронизация приложений...)</translation>
 <translation id="5212543919916444558">Я не нашла на экране ничего подходящего.
 Попробуйте озвучить запрос, нажав на значок микрофона.</translation>
+<translation id="5222676887888702881">Выйти</translation>
+<translation id="5457599981699367932">Войти в гостевой режим</translation>
+<translation id="54609108002486618">Автоматическое управление</translation>
+<translation id="5832805196449965646">Добавить пользователя</translation>
+<translation id="5895138241574237353">Перезапустить</translation>
+<translation id="7222902781030499995">Остановить таймер</translation>
+<translation id="7658239707568436148">Отмена</translation>
+<translation id="7837740436429729974">Время истекло</translation>
 <translation id="8898978413391960553">00:00 сек.</translation>
+<translation id="9111102763498581341">Разблокировать</translation>
 </translationbundle>

@@ -1,8 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="1510238584712386396">Menu z aplikacjami</translation>
+<translation id="1734367976349034509">Tym urządzeniem zarządza firma</translation>
+<translation id="2049639323467105390">To urządzenie jest zarządzane przez: <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Na ekranie nic nie znaleziono</translation>
+<translation id="2338501278241028356">Włącz Bluetooth, by wykryć urządzenia w pobliżu</translation>
+<translation id="2805756323405976993">Aplikacje</translation>
+<translation id="2872961005593481000">Wyłącz</translation>
+<translation id="3147142846278915599">Menu z aplikacjami (synchronizuję aplikacje...)</translation>
 <translation id="5212543919916444558">Na Twoim ekranie nie ma nic, w czym mogę pomóc.
 Kliknij mikrofon i zadaj pytanie.</translation>
+<translation id="5222676887888702881">Wyloguj się</translation>
+<translation id="5457599981699367932">Przeglądaj jako gość</translation>
+<translation id="54609108002486618">Zarządzany</translation>
+<translation id="5832805196449965646">Dodaj osobę</translation>
+<translation id="5895138241574237353">Uruchom ponownie</translation>
+<translation id="7222902781030499995">Zatrzymaj licznik</translation>
+<translation id="7658239707568436148">Anuluj</translation>
+<translation id="7837740436429729974">Czas minął</translation>
 <translation id="8898978413391960553">00:00 s</translation>
+<translation id="9111102763498581341">Odblokuj</translation>
 </translationbundle>

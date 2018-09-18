@@ -238,6 +238,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="2762000892062317888">vừa xong</translation>
 <translation id="2777555524387840389">Còn <ph name="SECONDS" /> giây</translation>
 <translation id="2781151931089541271">Còn 1 giây</translation>
+<translation id="2803478378562657435">Hiển thị mật khẩu đã lưu và các tùy chọn mật khẩu</translation>
 <translation id="2810645512293415242">Trang đơn giản giúp lưu dữ liệu và tải nhanh hơn.</translation>
 <translation id="281504910091592009">Xem và quản lý các mật khẩu đã lưu trong <ph name="BEGIN_LINK" />Tài khoản Google<ph name="END_LINK" /> của bạn</translation>
 <translation id="2818669890320396765">Để sử dụng dấu trang trên tất cả các thiết bị, hãy đăng nhập và bật tính năng đồng bộ hóa</translation>
@@ -711,6 +712,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6573431926118603307">Các tab bạn đã mở trong Chrome trên thiết bị khác sẽ xuất hiện tại đây.</translation>
 <translation id="6575643671698722332">Không đặt lại được. Hãy đảm bảo thiết bị ở chế độ trực tuyến và thử lại.</translation>
 <translation id="6583199322650523874">Đánh dấu trang hiện tại</translation>
+<translation id="6584721918629302382">AR (Thực tế tăng cường)</translation>
 <translation id="6593061639179217415">Trang web cho máy tính</translation>
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -726,7 +728,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="666268767214822976">Sử dụng dịch vụ gợi ý để hiển thị các truy vấn có liên quan và các trang web phổ biến khi bạn nhập vào thanh địa chỉ</translation>
 <translation id="666731172850799929">Mở trong <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Thông báo bảo mật của Chrome</translation>
-<translation id="6697492270171225480">Hiển thị đề xuất về các trang tương tự khi không tìm thấy một trang nào đó</translation>
+<translation id="6697492270171225480">Hiển thị phần đề xuất các trang tương tự khi không tìm thấy một trang</translation>
 <translation id="6697947395630195233">Chrome cần truy cập vị trí của bạn để chia sẻ thông tin vị trí với trang web này.</translation>
 <translation id="6698801883190606802">Quản lý dữ liệu đã đồng bộ hóa</translation>
 <translation id="6710213216561001401">Trước đó</translation>
@@ -827,6 +829,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="748127970106343339">Xác nhận xóa thông tin đăng nhập thiết bị</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Đã cập nhật <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Hiển thị mật khẩu</translation>
 <translation id="7494974237137038751">dữ liệu đã tiết kiệm</translation>
 <translation id="7498271377022651285">Vui lòng đợi…</translation>
 <translation id="7514365320538308">Tải xuống</translation>
@@ -894,6 +897,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="802154636333426148">Tải xuống không thành công</translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
 <translation id="8035133914807600019">Thư mục mới...</translation>
+<translation id="8037411810184515274">VR (Thực tế ảo)</translation>
 <translation id="8037686209485537503">Đề xuất khác tương tự</translation>
 <translation id="8037750541064988519">Còn <ph name="DAYS" /> ngày</translation>
 <translation id="804335162455518893">Không tìm thấy thẻ SD</translation>
@@ -950,6 +954,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8503559462189395349">Mật khẩu Chrome</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8504988642345501642">Khi cuộn lên, bạn sẽ thấy các liên kết nhanh đến trang liên quan. URL của các trang bạn truy cập sẽ được gửi tới Google.</translation>
+<translation id="8507520749471379845">Mật khẩu sẵn có</translation>
 <translation id="8514477925623180633">Xuất mật khẩu đã lưu trữ với Chrome</translation>
 <translation id="8514577642972634246">Vào chế độ ẩn danh</translation>
 <translation id="851751545965956758">Chặn các trang web kết nối với thiết bị</translation>

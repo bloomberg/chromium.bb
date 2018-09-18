@@ -238,6 +238,7 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="2762000892062317888">gerade eben</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> Sekunden übrig</translation>
 <translation id="2781151931089541271">1 Sekunde übrig</translation>
+<translation id="2803478378562657435">Gespeicherte Passwörter und Passwortoptionen werden angezeigt</translation>
 <translation id="2810645512293415242">Vereinfachte Seite für einen geringeren Datenverbrauch und schnelleres Laden.</translation>
 <translation id="281504910091592009">Gespeicherte Passwörter in Ihrem <ph name="BEGIN_LINK" />Google-Konto<ph name="END_LINK" /> ansehen und verwalten</translation>
 <translation id="2818669890320396765">Melden Sie sich an und aktivieren Sie die Synchronisierung, um Ihre Lesezeichen auf allen Ihren Geräten zu sehen</translation>
@@ -711,6 +712,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6573431926118603307">Hier werden Tabs angezeigt, die Sie auf Ihren anderen Geräten in Chrome geöffnet haben.</translation>
 <translation id="6575643671698722332">Fehler beim Zurücksetzen, da das Gerät nicht online ist. Versuchen Sie es erneut.</translation>
 <translation id="6583199322650523874">Aktuelle Seite als Lesezeichen speichern</translation>
+<translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Desktopwebsite</translation>
 <translation id="6600954340915313787">In Chrome kopiert</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +829,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="748127970106343339">Löschen der Anmeldedaten des Geräts bestätigen</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualisiert <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Passwörter anzeigen</translation>
 <translation id="7494974237137038751">eingesparte Datenmenge</translation>
 <translation id="7498271377022651285">Bitte warten...</translation>
 <translation id="7514365320538308">Herunterladen</translation>
@@ -894,6 +897,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8026334261755873520">Browserdaten löschen</translation>
 <translation id="8035133914807600019">Neuer Ordner…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">Weitere ähnliche</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> Tage übrig</translation>
 <translation id="804335162455518893">SD-Karte nicht gefunden</translation>
@@ -950,6 +954,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8503559462189395349">Chrome-Passwörter</translation>
 <translation id="8503813439785031346">Nutzername</translation>
 <translation id="8504988642345501642">Wenn Sie nach oben scrollen, werden Quick Links zu ähnlichen Seiten angezeigt. Die URLs der von Ihnen besuchten Seiten werden an Google gesendet.</translation>
+<translation id="8507520749471379845">Passwörter verfügbar</translation>
 <translation id="8514477925623180633">In Chrome gespeicherte Passwörter exportieren</translation>
 <translation id="8514577642972634246">Inkognitomodus aktivieren</translation>
 <translation id="851751545965956758">Verhindern, dass Websites eine Verbindung zu Geräten herstellen</translation>

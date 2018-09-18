@@ -31,7 +31,6 @@
 <translation id="1419738280318246476">Lås opp enheten for å utføre varselhandlingen</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1510238584712386396">Appvelger</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis innstillinger for varsler. Varsler er slått av for en app}other{Vis innstillinger for varsler. Varsler er slått av for # apper}}</translation>
 <translation id="1525508553941733066">AVVIS</translation>
 <translation id="1537254971476575106">Lupe for hele skjermen</translation>
@@ -45,7 +44,6 @@
 <translation id="1658406695958299976">Beklager, men passordet ditt kunne fremdeles ikke bekreftes. Merk: Hvis du endret passordet ditt nylig, trer det nye passordet ditt i kraft så snart du logger av. Bruk det gamle passordet ditt her.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
-<translation id="1734367976349034509">Denne enheten er administrert av en bedrift</translation>
 <translation id="1743570585616704562">Ikke gjenkjent</translation>
 <translation id="1746730358044914197">Inndatametoder konfigureres av administratoren din.</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
@@ -69,7 +67,6 @@
 <translation id="1995660704900986789">Slå av</translation>
 <translation id="2012624427112548395">Ctrl + Søk + H</translation>
 <translation id="2016340657076538683">Skriv inn en melding</translation>
-<translation id="2049639323467105390">Denne enheten administreres av <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke på tastaturet</translation>
 <translation id="2081529251031312395">$1 kan likevel logge på senere.</translation>
@@ -83,7 +80,6 @@
 <translation id="2268813581635650749">Logg alle av</translation>
 <translation id="2292698582925480719">Visningsskala</translation>
 <translation id="2303600792989757991">Vis eller skjul vindusoversikten</translation>
-<translation id="2338501278241028356">Slå på Bluetooth for å finne enheter i nærheten</translation>
 <translation id="2339073806695260576">Trykk på pekepennknappen på hyllen for å ta et notat, ta en skjermdump, bruke laserpekeren eller bruke forstørrelsesglasset.</translation>
 <translation id="2341729377289034582">Låst til vertikal</translation>
 <translation id="2352467521400612932">Innstillinger for pekepenn</translation>
@@ -112,7 +108,6 @@
 <translation id="277257480934873581">Kobler til <ph name="NAME" /> på nytt</translation>
 <translation id="2790844815106384441">Velg om nettsteder kan bruke posisjonstjenester eller enhetens mikrofon, kamera eller andre funksjoner</translation>
 <translation id="2792498699870441125">Alt + Søk</translation>
-<translation id="2805756323405976993">Apper</translation>
 <translation id="2808012452536866044">Bedre sammen byttet til en ny telefon</translation>
 <translation id="2819276065543622893">Du blir nå logget av.</translation>
 <translation id="2825619548187458965">Hylle</translation>
@@ -127,7 +122,6 @@
 <translation id="2946119680249604491">Legg til forbindelse</translation>
 <translation id="2961963223658824723">Noe gikk galt. Prøv på nytt om noen sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2992931425024192067">Vis alt innhold i varsler</translation>
 <translation id="2995447421581609334">Vis Cast-enheter.</translation>
 <translation id="2996462380875591307">Dokket lupe er slått på. Trykk på Ctrl + Søk + D igjen for å slå det av.</translation>
 <translation id="3000461861112256445">Monolyd</translation>
@@ -138,7 +132,6 @@
 <translation id="3087734570205094154">Bunn</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Start på nytt for å oppdatere</translation>
-<translation id="3147142846278915599">Appoversikt (synkroniserer apper ...)</translation>
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3151786313568798007">Retning</translation>
 <translation id="3153444934357957346">Du kan bare ha opptil <ph name="MULTI_PROFILE_USER_LIMIT" /> kontoer i multipålogging.</translation>
@@ -213,7 +206,6 @@
 <translation id="4527045527269911712">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> til batteriet er fulladet</translation>
 <translation id="4544944664594876241">Snarveien for å låse skjermen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="4564869809620998694">Skrifttypetjeneste</translation>
 <translation id="4570957409596482333">Tekstopplesingsknapp</translation>
 <translation id="4585337515783392668">Stopp casting på en ukjent mottaker</translation>
 <translation id="4628757576491864469">Enheter</translation>
@@ -227,7 +219,6 @@
 <translation id="4849058404725798627">Fremhev objektet med tastaturfokus</translation>
 <translation id="4872237917498892622">Alt + Søk eller Shift</translation>
 <translation id="4890187583552566966">Administratoren din har slått av Google-assistenten.</translation>
-<translation id="4893522937062257019">På låseskjermen</translation>
 <translation id="4895488851634969361">Batteriet er fullt.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Hurtigtasten for å slå høykontrastmodus av eller på er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
@@ -248,8 +239,6 @@
 <translation id="5430931332414098647">Umiddelbar internettdeling</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle tilgjengelige brukere er allerede lagt til i denne økten.</translation>
-<translation id="5457599981699367932">Surf som gjest</translation>
-<translation id="54609108002486618">Administrert</translation>
 <translation id="5496819745535887422">Administratoren din tilbakestiller enheten din til forrige versjon. Alle data blir slettet når enheten starter på nytt.</translation>
 <translation id="553675580533261935">Avslutning av økten</translation>
 <translation id="5537725057119320332">Cast</translation>
@@ -267,14 +256,11 @@
 <translation id="5750765938512549687">Bluetooth er av</translation>
 <translation id="5777841717266010279">Vil du stoppe skjermdelingen?</translation>
 <translation id="57838592816432529">Kutt lyden</translation>
-<translation id="5805697420284793859">Window Manager</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5832805196449965646">Legg til person</translation>
 <translation id="5837036133683224804">Stopp <ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
-<translation id="5911533659001334206">Snarveivisning</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="592343074608792716">Denne Chromebooken og telefonen din kobles sammen automatisk</translation>
@@ -306,6 +292,7 @@
 <translation id="6297287540776456956">Bruk pekepennen til å velge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ble rotert til <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Tastaturoverlegg</translation>
+<translation id="6344698853700675736">Slå av/på nattlys</translation>
 <translation id="6376931439017688372">Bluetooth er på</translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>
 <translation id="6406704438230478924">alt gr</translation>
@@ -333,7 +320,6 @@
 <translation id="6715542151869432661">Fant ingen mobilenheter.</translation>
 <translation id="671928215901716392">Lås skjerm</translation>
 <translation id="6723839937902243910">Strøm</translation>
-<translation id="6725073593266469338">UI-tjeneste</translation>
 <translation id="6751826523481687655">Ytelsessporing er slått på</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % fullt og til lading.</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
@@ -378,12 +364,10 @@
 <translation id="7569509451529460200">Braille og ChromeVox er slått på</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
 <translation id="7604942372593434070">Gå til surfeaktiviteten din</translation>
-<translation id="7642778300616172920">Skjul sensitivt innhold</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eier)</translation>
 <translation id="7647488630410863958">Lås opp enheten for å se varslene dine</translation>
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="7654687942625752712">Trykk og hold på begge volumknappene i fem sekunder for å slå av taletilbakemelding.</translation>
-<translation id="7658239707568436148">Avbryt</translation>
 <translation id="7692480393933218409">Lader de tilkoblede USB-C-enhetene</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">Klikk for å se oppdateringsdetaljene</translation>
@@ -426,7 +410,6 @@
 <translation id="8425213833346101688">Endre</translation>
 <translation id="8427213022735114808">Diktat sender stemmen din til Google for å muliggjøre stemmestyrt skriving i alle tekstfelt.</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
-<translation id="8431190899827883166">Vis trykk</translation>
 <translation id="8433186206711564395">Nettverksinnstillinger</translation>
 <translation id="8433977262951327081">Hurtigtasten for å vise boblen med menyen for valg av inndataalternativer på hyllen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">SIM-kort mangler</translation>
@@ -436,7 +419,6 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Kobler til på nytt ...</translation>
 <translation id="8513108775083588393">Automatisk rotasjon</translation>
 <translation id="8517041960877371778">Det kan hende at din <ph name="DEVICE_TYPE" /> ikke lader når den er slått på.</translation>
-<translation id="8592141010104017453">Ikke vis varsler i det hele tatt</translation>
 <translation id="8627191004499078455">Koblet til <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> igjen</translation>
 <translation id="8649101189709089199">Tekstopplesing</translation>
@@ -463,7 +445,6 @@
 <translation id="8921624153894383499">Google-assistenten kan ikke dette språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE" /> %)</translation>
-<translation id="8984179138335769204">Hurtigtaster</translation>
 <translation id="899350903320462459">Lås opp enheten som <ph name="LOGIN_ID" /> for å utføre varselhandlingen</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>
@@ -474,7 +455,6 @@
 <translation id="9080206825613744995">Mikrofonen er i bruk.</translation>
 <translation id="9089416786594320554">Inndatametoder</translation>
 <translation id="9091626656156419976">Fjernet skjermen <ph name="DISPLAY_NAME" /></translation>
-<translation id="9111102763498581341">Lås opp</translation>
 <translation id="9151726767154816831">Start på nytt, og kjør Powerwash for å oppdatere</translation>
 <translation id="9179259655489829027">Med denne funksjonen får du rask tilgang til påloggede brukere uten å måtte skrive inn passord. Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="9193626018745640770">Caster på en ukjent mottaker</translation>

@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Numer telefonu jest wymagany</translation>
 <translation id="1517500485252541695">Akceptowane karty kredytowe i debetowe</translation>
 <translation id="1519264250979466059">Data kompilacji</translation>
+<translation id="1521655867290435174">Arkusze Google</translation>
 <translation id="1527263332363067270">Czekam na połączenie…</translation>
 <translation id="1532118530259321453">Komunikat z bieżącej strony</translation>
 <translation id="153384715582417236">Na razie to wszystko</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Eksportuj (MacOS)</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Połączenie zostało zresetowane.</translation>
+<translation id="2785008241190445880">Zakładka została zastąpiona</translation>
 <translation id="2788784517760473862">Akceptowane karty kredytowe</translation>
 <translation id="2794233252405721443">Strona zablokowana</translation>
 <translation id="2799020568854403057">Strona, którą chcesz otworzyć, zawiera szkodliwe aplikacje</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">Przejdź tam teraz</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa ma błędy. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
+<translation id="467809019005607715">Prezentacje Google</translation>
 <translation id="4690462567478992370">Przestań używać nieprawidłowego certyfikatu</translation>
 <translation id="4690954380545377795">Możesz stracić dostęp do swojego konta Google lub paść ofiarą kradzieży tożsamości. Chrome zaleca natychmiastową zmianę hasła.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">Wybierz dane kontaktowe</translation>
 <translation id="5327248766486351172">Nazwa</translation>
 <translation id="5332219387342487447">Metoda wysyłki</translation>
+<translation id="5344579389779391559">Ta strona może próbować obciążyć Cię płatnością</translation>
 <translation id="5355557959165512791">Nie możesz teraz otworzyć strony <ph name="SITE" />, bo jej certyfikat został unieważniony. Błędy sieci i ataki są zazwyczaj przejściowe, więc prawdopodobnie strona będzie wkrótce działać.</translation>
 <translation id="536296301121032821">Zapisanie ustawień zasady nie powiodło się</translation>
 <translation id="5371425731340848620">Zaktualizuj dane karty</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Strona 1}few{Strona #}many{Strona #}other{Strona #}}</translation>
 <translation id="6017850046339264347">Osoby atakujące stronę <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogą instalować wprowadzające w błąd aplikacje, które udają, że są przeznaczone do czegoś innego niż w rzeczywistości, lub zbierają dane, na podstawie których można Cię śledzić. <ph name="BEGIN_LEARN_MORE_LINK" />Więcej informacji<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Dostosuj Chrome do swoich potrzeb</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (zsynchronizowane)</translation>
 <translation id="6027201098523975773">Wpisz imię i nazwisko</translation>
 <translation id="6039846035001940113">Jeśli problem nie ustąpi, skontaktuj się z właścicielem strony.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">Te treści mogą próbować podstępem nakłonić Cię do zainstalowania oprogramowania lub ujawnienia danych osobowych. <ph name="BEGIN_LINK" />Wyświetl mimo to<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Nie możesz teraz otworzyć strony <ph name="SITE" />, ponieważ stosuje ona przypinanie certyfikatów. Błędy sieciowe i ataki są zazwyczaj tymczasowe, więc prawdopodobnie strona będzie dostępna później.</translation>
 <translation id="6059925163896151826">Urządzenia USB</translation>
+<translation id="6060991652695587932">Wybierz swoją usługę e-mail, by mieć do niej szybki dostęp</translation>
 <translation id="6071091556643036997">Typ zasady jest nieprawidłowy.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Ta karta zostanie zapisana na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}few{Te karty zostaną zapisane na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}many{Te karty zostaną zapisane na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}other{Te karty zostaną zapisane na Twoim koncie Google, by umożliwić Ci szybsze płacenie na wszystkich urządzeniach.}}</translation>
 <translation id="6080696365213338172">Masz dostęp do treści dzięki certyfikatowi dostarczonemu przez administratora. Administrator może odczytać dane, jakie udostępnisz w <ph name="DOMAIN" />.</translation>
@@ -904,6 +910,7 @@ Dodatkowe informacje:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nie</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Zastąpienie sesji zarządzanej</translation>
 <translation id="7390545607259442187">Potwierdź kartę</translation>
 <translation id="7400418766976504921">Adres URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;Ten błąd występuje, jeśli na komputerze z systemem Windows masz zainstalowane oprogramowanie Superfish.&lt;/p&gt;
@@ -994,6 +1001,7 @@ Dodatkowe informacje:
 <translation id="7815407501681723534">Znalezione <ph name="SEARCH_RESULTS" /> dla zapytania „<ph name="SEARCH_STRING" />”: <ph name="NUMBER_OF_RESULTS" /></translation>
 <translation id="7818867226424560206">Zarządzanie zasadami</translation>
 <translation id="782886543891417279">Sieć Wi-Fi (<ph name="WIFI_NAME" />), której używasz, może wymagać otwarcia strony logowania.</translation>
+<translation id="7835178595033117206">Zakładka została usunięta</translation>
 <translation id="785549533363645510">To jednak nie znaczy, że Cię nie widać. Nawet gdy przejdziesz w tryb incognito, Twój pracodawca, dostawca usług internetowych czy webmasterzy stron, na które wchodzisz, mogą dowiedzieć się, co przeglądasz.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Opuścić stronę?</translation>
@@ -1129,6 +1137,7 @@ Dodatkowe informacje:
 <translation id="8874824191258364635">Wpisz prawidłowy numer karty</translation>
 <translation id="8876793034577346603">Przetwarzanie konfiguracji sieci nie powiodło się.</translation>
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
+<translation id="8892964541482452187">Przycisk przełączania kart, naciśnij enter, by przełączyć na tę kartę</translation>
 <translation id="8903921497873541725">Powiększ</translation>
 <translation id="8931333241327730545">Chcesz zapisać tę kartę na swoim koncie Google?</translation>
 <translation id="8932102934695377596">Twój zegar się spóźnia</translation>
@@ -1154,6 +1163,7 @@ Dodatkowe informacje:
 <translation id="9035022520814077154">Błąd zabezpieczeń</translation>
 <translation id="9038649477754266430">Używaj podpowiedzi, by strony ładowały się szybciej</translation>
 <translation id="9039213469156557790">Ta strona zawiera także niezabezpieczone zasoby. Podczas przesyłania mogą je wyświetlić inni użytkownicy, a osoby atakujące mogą je zmodyfikować, by zmienić sposób działania strony.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Podjęto próbę nawiązania połączenia z witryną <ph name="DOMAIN" />, jednak serwer przedstawił nieprawidłowy certyfikat.</translation>
 <translation id="9050666287014529139">Hasło</translation>
 <translation id="9065203028668620118">Edytuj</translation>
@@ -1177,6 +1187,7 @@ Dodatkowe informacje:
 <translation id="9170848237812810038">&amp;Cofnij</translation>
 <translation id="9171296965991013597">Zamknąć aplikację?</translation>
 <translation id="917450738466192189">Certyfikat serwera jest nieprawidłowy.</translation>
+<translation id="9183302530794969518">Dokumenty Google</translation>
 <translation id="9183425211371246419">Serwer <ph name="HOST_NAME" /> używa nieobsługiwanego protokołu.</translation>
 <translation id="9205078245616868884">Twoje dane są szyfrowane z użyciem hasła synchronizacji. Wpisz je, by rozpocząć synchronizację.</translation>
 <translation id="9207861905230894330">Nie udało się dodać artykułu.</translation>

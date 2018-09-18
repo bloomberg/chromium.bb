@@ -238,6 +238,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> segundos restantes</translation>
 <translation id="2781151931089541271">Um segundo restante</translation>
+<translation id="2803478378562657435">Mostrando as senhas salvas e as opções de senha</translation>
 <translation id="2810645512293415242">Página simplificada para economizar dados e carregar mais rapidamente.</translation>
 <translation id="281504910091592009">Ver e gerenciar as senhas salvas na sua <ph name="BEGIN_LINK" />Conta do Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Para ter seus favoritos em todos os seus dispositivos, faça login e ative a sincronização</translation>
@@ -711,6 +712,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6573431926118603307">As guias que você abriu no Chrome nos seus outros dispositivos serão exibidas aqui.</translation>
 <translation id="6575643671698722332">Falha na redefinição. Veja se o dispositivo está on-line e tente novamente.</translation>
 <translation id="6583199322650523874">Adicionar a página atual aos favoritos</translation>
+<translation id="6584721918629302382">RA</translation>
 <translation id="6593061639179217415">Site para computador</translation>
 <translation id="6600954340915313787">Copiado no Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +829,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="748127970106343339">Confirmar exclusão da credencial do dispositivo</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Mostrar senhas</translation>
 <translation id="7494974237137038751">dados economizados</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
 <translation id="7514365320538308">Fazer o download</translation>
@@ -894,6 +897,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="802154636333426148">Falha no download</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8035133914807600019">Nova pasta...</translation>
+<translation id="8037411810184515274">RV</translation>
 <translation id="8037686209485537503">Mais opções semelhantes</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dias restantes</translation>
 <translation id="804335162455518893">Cartão SD não encontrado</translation>
@@ -950,6 +954,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8503559462189395349">Senhas do Chrome</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="8504988642345501642">Quando você rola para cima, são exibidos links rápidos para páginas relacionadas. Os URLs das páginas visitadas são enviados ao Google.</translation>
+<translation id="8507520749471379845">Senhas disponíveis</translation>
 <translation id="8514477925623180633">Exportar senhas armazenadas com o Chrome</translation>
 <translation id="8514577642972634246">Entrar no modo de navegação anônima</translation>
 <translation id="851751545965956758">Impedir a conexão de sites a dispositivos</translation>

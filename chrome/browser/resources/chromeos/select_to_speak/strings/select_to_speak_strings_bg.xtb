@@ -9,6 +9,7 @@
 <translation id="2089387485033699258">bg</translation>
 <translation id="2714180132046334502">Тъмен фон</translation>
 <translation id="27349076983469322">Светъл фон</translation>
+<translation id="3283583562490372694">без отметка</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="4004802134384979325">с отметка</translation>
 <translation id="4827410568042294688">отмяна на открояването</translation>
@@ -17,9 +18,11 @@
 <translation id="6475604559827479857">Цвят за открояване на думи:</translation>
 <translation id="6837853484260746864">Изберете глас:</translation>
 <translation id="7261612856573623172">Системен глас за синтезиран говор</translation>
+<translation id="7317017974771324508">частично избрано</translation>
 <translation id="7768784765476638775">Прочитане на глас</translation>
 <translation id="7914870167134465181">Открояване</translation>
 <translation id="8033827949643255796">откроени</translation>
 <translation id="8324974933005349667">Персонализиране на настройките за синтезиран говор</translation>
+<translation id="8944511129464116546">частично отметнато</translation>
 <translation id="992256792861109788">розово</translation>
 </translationbundle>

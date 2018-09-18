@@ -31,7 +31,6 @@
 <translation id="1419738280318246476">解鎖裝置即可執行通知動作</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1510238584712386396">啟動器</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{顯示通知設定。已關閉一個應用程式的通知}other{顯示通知設定。已關閉 # 個應用程式的通知}}</translation>
 <translation id="1525508553941733066">關閉</translation>
 <translation id="1537254971476575106">全螢幕放大鏡</translation>
@@ -45,7 +44,6 @@
 <translation id="1658406695958299976">很抱歉，系統仍然無法驗證你的密碼。注意：如果你的密碼最近有所異動，新密碼會在你登出後立即生效，目前請在這裡使用舊密碼。</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 後用盡</translation>
 <translation id="1698760176351776263">IPv6 位址：<ph name="ADDRESS" /></translation>
-<translation id="1734367976349034509">這個裝置受到企業管理</translation>
 <translation id="1743570585616704562">無法識別</translation>
 <translation id="1746730358044914197">輸入法是由你的管理員所設定。</translation>
 <translation id="1747827819627189109">螢幕小鍵盤已啟用</translation>
@@ -69,7 +67,6 @@
 <translation id="1995660704900986789">關閉</translation>
 <translation id="2012624427112548395">Ctrl 鍵 + 搜尋鍵 + H 鍵</translation>
 <translation id="2016340657076538683">輸入訊息</translation>
-<translation id="2049639323467105390">這個裝置由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2050339315714019657">縱向</translation>
 <translation id="2067602449040652523">鍵盤亮度</translation>
 <translation id="2081529251031312395">「$1」日後仍可登入。</translation>
@@ -83,7 +80,6 @@
 <translation id="2268813581635650749">登出所有使用者</translation>
 <translation id="2292698582925480719">顯示比例</translation>
 <translation id="2303600792989757991">切換視窗總覽</translation>
-<translation id="2338501278241028356">開啟藍牙即可偵測附近的裝置</translation>
 <translation id="2339073806695260576">輕觸檔案櫃的觸控筆圖示即可做筆記、擷取螢幕畫面，以及使用雷射筆或放大鏡。</translation>
 <translation id="2341729377289034582">已鎖定為垂直畫面</translation>
 <translation id="2352467521400612932">觸控筆設定</translation>
@@ -112,7 +108,6 @@
 <translation id="277257480934873581">正在重新連線至 <ph name="NAME" /></translation>
 <translation id="2790844815106384441">選擇網站是否可使用定位服務，或是裝置的麥克風、相機或其他功能</translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
-<translation id="2805756323405976993">應用程式</translation>
 <translation id="2808012452536866044">Better Together 已改與新手機連結</translation>
 <translation id="2819276065543622893">現在即將登出。</translation>
 <translation id="2825619548187458965">檔案櫃</translation>
@@ -127,7 +122,6 @@
 <translation id="2946119680249604491">新增連線</translation>
 <translation id="2961963223658824723">發生錯誤，請於幾秒後再試一次。</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2992931425024192067">顯示所有通知內容</translation>
 <translation id="2995447421581609334">顯示投放裝置。</translation>
 <translation id="2996462380875591307">停駐放大鏡已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + D 鍵即可停用。</translation>
 <translation id="3000461861112256445">單聲道音訊</translation>
@@ -138,7 +132,6 @@
 <translation id="3087734570205094154">置底</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (藍牙)</translation>
 <translation id="3126069444801937830">重新啟動即可更新</translation>
-<translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="315116470104423982">行動數據</translation>
 <translation id="3151786313568798007">方向</translation>
 <translation id="3153444934357957346">使用多帳戶登入功能時，一次最多只能登入 <ph name="MULTI_PROFILE_USER_LIMIT" /> 個帳戶。</translation>
@@ -213,7 +206,6 @@
 <translation id="4527045527269911712">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。</translation>
 <translation id="453661520163887813"><ph name="TIME" /> 後充飽</translation>
 <translation id="4544944664594876241">螢幕鎖定快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
-<translation id="4564869809620998694">字型服務</translation>
 <translation id="4570957409596482333">隨選朗讀按鈕</translation>
 <translation id="4585337515783392668">停止透過不明接收器投放</translation>
 <translation id="4628757576491864469">裝置</translation>
@@ -227,7 +219,6 @@
 <translation id="4849058404725798627">醒目顯示鍵盤焦點所在物件</translation>
 <translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
 <translation id="4890187583552566966">你的管理員停用了 Google 助理。</translation>
-<translation id="4893522937062257019">螢幕鎖定時</translation>
 <translation id="4895488851634969361">電池電量已滿。</translation>
 <translation id="490375751687810070">縱向</translation>
 <translation id="4905614135390995787">切換高對比模式的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
@@ -248,8 +239,6 @@
 <translation id="5430931332414098647">即時網路共用</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
-<translation id="5457599981699367932">以訪客身分瀏覽</translation>
-<translation id="54609108002486618">管理</translation>
 <translation id="5496819745535887422">你的管理員正在復原你的裝置。重新啟動後，裝置上的資料將全數刪除。</translation>
 <translation id="553675580533261935">結束工作階段</translation>
 <translation id="5537725057119320332">投放</translation>
@@ -267,14 +256,11 @@
 <translation id="5750765938512549687">藍牙已關閉</translation>
 <translation id="5777841717266010279">停止共用螢幕？</translation>
 <translation id="57838592816432529">靜音</translation>
-<translation id="5805697420284793859">視窗管理員</translation>
 <translation id="5820394555380036790">Chromium 作業系統</translation>
-<translation id="5832805196449965646">新增使用者</translation>
 <translation id="5837036133683224804">停止透過<ph name="RECEIVER_NAME" />投放「<ph name="ROUTE_TITLE" />」</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5895138241574237353">重新啟動</translation>
 <translation id="5901316534475909376">Shift + Esc 鍵</translation>
-<translation id="5911533659001334206">快速鍵檢視器</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">開啟</translation>
 <translation id="592343074608792716">這部 Chromebook 和你的手機會自動連結</translation>
@@ -333,7 +319,6 @@
 <translation id="6715542151869432661">找不到行動裝置。</translation>
 <translation id="671928215901716392">鎖定螢幕</translation>
 <translation id="6723839937902243910">電源</translation>
-<translation id="6725073593266469338">UI 服務</translation>
 <translation id="6751826523481687655">效能追蹤已啟用</translation>
 <translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE" />% (充電中)。</translation>
 <translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
@@ -378,12 +363,10 @@
 <translation id="7569509451529460200">點字模式和 ChromeVox 已啟用</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7604942372593434070">存取你的瀏覽活動</translation>
-<translation id="7642778300616172920">隱藏敏感內容</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (擁有者)</translation>
 <translation id="7647488630410863958">解鎖裝置即可查看通知</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7654687942625752712">同時按住音量調高和調低鍵五秒，即可停用互動朗讀。</translation>
-<translation id="7658239707568436148">取消</translation>
 <translation id="7692480393933218409">正在為連接的 USB-C 裝置充電</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">按一下即可查看更新詳細資料</translation>
@@ -426,7 +409,6 @@
 <translation id="8425213833346101688">變更</translation>
 <translation id="8427213022735114808">語音輸入功能會將你的語音資料傳送給 Google，讓你使用自己的語音在任何文字欄位中輸入內容。</translation>
 <translation id="8428213095426709021">設定</translation>
-<translation id="8431190899827883166">顯示觸控回應</translation>
 <translation id="8433186206711564395">網路設定</translation>
 <translation id="8433977262951327081">在檔案櫃中顯示輸入選項選單方塊的快速鍵已變更，請改用：<ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="8452135315243592079">找不到 SIM 卡</translation>
@@ -436,7 +418,6 @@
 <translation id="8484916590211895857"><ph name="NAME" />：正在重新連線...</translation>
 <translation id="8513108775083588393">自動旋轉</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> 在開啟時可能無法充電。</translation>
-<translation id="8592141010104017453">完全不顯示通知</translation>
 <translation id="8627191004499078455">已連線至<ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">剩餘電量：<ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">隨選朗讀</translation>
@@ -463,7 +444,6 @@
 <translation id="8921624153894383499">Google 助理不支援這個語言。</translation>
 <translation id="8938800817013097409">USB-C 裝置 (背面右側連接埠)</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE" />%)</translation>
-<translation id="8984179138335769204">快速啓動</translation>
 <translation id="899350903320462459">以 <ph name="LOGIN_ID" /> 帳戶解鎖裝置，即可執行通知動作</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
@@ -474,7 +454,6 @@
 <translation id="9080206825613744995">麥克風正在使用中。</translation>
 <translation id="9089416786594320554">輸入法</translation>
 <translation id="9091626656156419976">「<ph name="DISPLAY_NAME" />」螢幕已移除</translation>
-<translation id="9111102763498581341">解除鎖定</translation>
 <translation id="9151726767154816831">重新啟動並執行 Powerwash 即可更新</translation>
 <translation id="9179259655489829027">這項功能可讓你快速存取任何已登入的使用者帳戶，不需提供密碼。使用這項功能時，請務必只存取你信任的帳戶。</translation>
 <translation id="9193626018745640770">正在透過不明接收器投放</translation>

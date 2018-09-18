@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Telefonnummer er påkrævet</translation>
 <translation id="1517500485252541695">Accepterede betalingskort</translation>
 <translation id="1519264250979466059">Versionsdato</translation>
+<translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">Venter på forbindelse…</translation>
 <translation id="1532118530259321453">Denne side siger</translation>
 <translation id="153384715582417236">Det var det hele indtil videre.</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Eksportér MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Forbindelsen blev nulstillet.</translation>
+<translation id="2785008241190445880">Bogmærket er udskiftet</translation>
 <translation id="2788784517760473862">Accepterede kreditkort</translation>
 <translation id="2794233252405721443">Websitet er blokeret</translation>
 <translation id="2799020568854403057">Det website, du er på vej til, indeholder skadelige apps</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">Før mig dertil nu</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet indeholder fejl. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
+<translation id="467809019005607715">Google Slides</translation>
 <translation id="4690462567478992370">Stop med at bruge et ugyldigt certifikat</translation>
 <translation id="4690954380545377795">Du kan miste adgang til din Google-konto eller udsættes for identitetstyveri. Chrome anbefaler, at du skifter din adgangskode nu.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">Vælg kontaktoplysninger</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5332219387342487447">Leveringsmetode</translation>
+<translation id="5344579389779391559">Denne side forsøger muligvis at opkræve penge af dig</translation>
 <translation id="5355557959165512791">Du kan ikke besøge <ph name="SITE" /> lige nu, da dets certifikat er blevet tilbagekaldt. Netværksfejl og angreb er normalt midlertidige, så siden vil sandsynligvis fungere igen senere.</translation>
 <translation id="536296301121032821">Der kunne ikke gemmes indstillinger for politik</translation>
 <translation id="5371425731340848620">Opdater kortet</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">År</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Side 1}one{Side #}other{Side #}}</translation>
 <translation id="6017850046339264347">Hackere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan installere vildledende apps, der foregiver at være noget andet, eller som indsamler data, der kan anvendes til at overvåge dig. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Gør Chrome til din egen</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synkroniseret)</translation>
 <translation id="6027201098523975773">Angiv et navn</translation>
 <translation id="6039846035001940113">Kontakt ejeren af websitet, hvis problemet fortsætter.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">Dette indhold forsøger muligvis at narre dig til at installere software eller afsløre personlige oplysninger. <ph name="BEGIN_LINK" />Vis alligevel<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Du kan ikke besøge <ph name="SITE" /> lige nu, da websitet bruger certifikatlåsning. Netværksfejl og angreb er normalt midlertidige, så siden vil sandsynligvis fungere igen senere.</translation>
 <translation id="6059925163896151826">USB-enheder</translation>
+<translation id="6060991652695587932">Vælg din mailtjeneste for at få hurtig adgang</translation>
 <translation id="6071091556643036997">Politiktypen er ugyldig.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Dette kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}one{Dette kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}other{Disse kort gemmes på din Google-konto for at gøre det hurtigere at betale på tværs af enheder.}}</translation>
 <translation id="6080696365213338172">Du har opnår adgang til indhold vha. et administratorcertifikat. De data, du angiver til <ph name="DOMAIN" />, kan indhentes af din administrator.</translation>
@@ -904,6 +910,7 @@ Yderligere oplysninger:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nej</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Tilsidesættelse af administreret session</translation>
 <translation id="7390545607259442187">Bekræft kort</translation>
 <translation id="7400418766976504921">Webadresse</translation>
 <translation id="7407424307057130981">&lt;p&gt;Denne fejl vises, hvis du har Superfish-software på din Windows-computer.&lt;/p&gt;
@@ -994,6 +1001,7 @@ Yderligere oplysninger:
 <translation id="7815407501681723534">Der blev fundet <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> for "<ph name="SEARCH_STRING" />"</translation>
 <translation id="7818867226424560206">Administration af politikker</translation>
 <translation id="782886543891417279">Det Wi-Fi-netværk, du bruger (<ph name="WIFI_NAME" />), kan kræve, at du går til netværkets loginside.</translation>
+<translation id="7835178595033117206">Bogmærket blev fjernet</translation>
 <translation id="785549533363645510">Du er dog ikke usynlig. Inkognitotilstand skjuler ikke din browserhistorik over for din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Vil du forlade websitet?</translation>
@@ -1130,6 +1138,7 @@ Yderligere oplysninger:
 <translation id="8874824191258364635">Angiv et gyldigt kortnummer</translation>
 <translation id="8876793034577346603">Netværkskonfiguration kunne ikke parses.</translation>
 <translation id="8891727572606052622">Ugyldig proxytilstand.</translation>
+<translation id="8892964541482452187">Tryk på knappen Skift, og tryk på Enter for at skifte til denne fane</translation>
 <translation id="8903921497873541725">Zoom ind</translation>
 <translation id="8931333241327730545">Vil du gemme dette kort på din Google-konto?</translation>
 <translation id="8932102934695377596">Dit ur er bagud</translation>
@@ -1155,6 +1164,7 @@ Yderligere oplysninger:
 <translation id="9035022520814077154">Sikkerhedsfejl</translation>
 <translation id="9038649477754266430">Brug en forudsigelsestjeneste til hurtigere sideindlæsning</translation>
 <translation id="9039213469156557790">Desuden indeholder denne side andre ressourcer, som ikke er sikre. Disse ressourcer kan ses af andre under overførslen og kan ændres af en hacker, så siden opfører sig anderledes.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Du har forsøgt at nå <ph name="DOMAIN" />, men serveren præsenterede et ugyldigt certifikat.</translation>
 <translation id="9050666287014529139">Adgangssætning</translation>
 <translation id="9065203028668620118">Rediger</translation>
@@ -1178,6 +1188,7 @@ Yderligere oplysninger:
 <translation id="9170848237812810038">&amp;Fortryd</translation>
 <translation id="9171296965991013597">Vil du lukke appen?</translation>
 <translation id="917450738466192189">Serverens certifikat er ugyldigt.</translation>
+<translation id="9183302530794969518">Google Docs</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> anvender en ikke-understøttet protokol.</translation>
 <translation id="9205078245616868884">Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for at starte synkroniseringen.</translation>
 <translation id="9207861905230894330">Artiklen kunne ikke tilføjes.</translation>

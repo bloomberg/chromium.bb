@@ -25,13 +25,13 @@
 <translation id="1293264513303784526">USB-C-enhet (vänster port)</translation>
 <translation id="1294929383540927798">Ändra aviseringsinställningarna för låsskärmen</translation>
 <translation id="1302880136325416935">Visa Bluetooth-inställningar. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">Visa alltid hyllan</translation>
 <translation id="1346748346194534595">Höger</translation>
 <translation id="1351937230027495976">Komprimera menyn</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1419738280318246476">Lås upp enheten så att aviseringen kan göras</translation>
 <translation id="1467432559032391204">Vänster</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1510238584712386396">Startprogram</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Visa aviseringsinställningar. Aviseringar har inaktiverats för 1 app}other{Visa aviseringsinställningar. Aviseringar har inaktiverats för # appar}}</translation>
 <translation id="1525508553941733066">IGNORERA</translation>
 <translation id="1537254971476575106">Helskärmsförstorare</translation>
@@ -45,7 +45,6 @@
 <translation id="1658406695958299976">Det gick inte att verifiera lösenordet. Obs! Om du nyligen har bytt lösenord börjar det nya lösenordet att gälla först när du loggar ut. Använd det gamla lösenordet här.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
 <translation id="1698760176351776263">IPv6-adress: <ph name="ADDRESS" /></translation>
-<translation id="1734367976349034509">Enheten är företagshanterad</translation>
 <translation id="1743570585616704562">Identifierades inte</translation>
 <translation id="1746730358044914197">Inmatningsmetoderna konfigureras av administratören.</translation>
 <translation id="1747827819627189109">Skärmen på tangentbordet har aktiverats</translation>
@@ -69,7 +68,6 @@
 <translation id="1995660704900986789">Stäng av</translation>
 <translation id="2012624427112548395">Ctrl+Sök+H</translation>
 <translation id="2016340657076538683">Skriv ett meddelande</translation>
-<translation id="2049639323467105390">Den här enheten hanteras av <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Ljusstyrka för tangentbordet</translation>
 <translation id="2081529251031312395">$1 kan fortfarande logga in senare.</translation>
@@ -83,7 +81,6 @@
 <translation id="2268813581635650749">Logga ut alla</translation>
 <translation id="2292698582925480719">Skala på skärmen</translation>
 <translation id="2303600792989757991">Växla fönsteröversikt</translation>
-<translation id="2338501278241028356">Aktivera Bluetooth så att det går att upptäcka enheter i närheten</translation>
 <translation id="2339073806695260576">När du har tryckt på e-pennan på hyllan kan du anteckna, ta en skärmdump eller använda laserpekaren eller förstoringsglaset.</translation>
 <translation id="2341729377289034582">Låst i stående läge</translation>
 <translation id="2352467521400612932">Inställningar för e-penna</translation>
@@ -93,6 +90,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Aktivera och inaktivera Stör ej</translation>
 <translation id="2412593942846481727">Det finns en uppdatering</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> är en hanterad session som hanteras av <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Ansluten till <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Innan du godkänner bekräftar du att den här lösenordsnyckeln visas på den enheten: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Aviseringar</translation>
@@ -112,7 +110,6 @@
 <translation id="277257480934873581">Återansluter till <ph name="NAME" /></translation>
 <translation id="2790844815106384441">Välj om webbplatser ska kunna använda platstjänster eller enhetens mikrofon, kamera eller andra funktioner</translation>
 <translation id="2792498699870441125">Alt + Sök</translation>
-<translation id="2805756323405976993">Appar</translation>
 <translation id="2808012452536866044">Funktionen Better Together har flyttats till en ny mobil</translation>
 <translation id="2819276065543622893">Du loggas nu ut.</translation>
 <translation id="2825619548187458965">Hylla</translation>
@@ -127,7 +124,6 @@
 <translation id="2946119680249604491">Lägg till anslutning</translation>
 <translation id="2961963223658824723">Ett fel har uppstått. Försök igen om några sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2992931425024192067">Visa allt aviseringsinnehåll</translation>
 <translation id="2995447421581609334">Visa cast-enheter</translation>
 <translation id="2996462380875591307">Dockad skärmförstoring har aktiverats. Tryck på Ctrl + Sök + D igen om du vill inaktivera funktionen.</translation>
 <translation id="3000461861112256445">Monoljud</translation>
@@ -138,7 +134,6 @@
 <translation id="3087734570205094154">Nederst</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Starta om för att uppdatera</translation>
-<translation id="3147142846278915599">Översikt (appar synkroniseras …)</translation>
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3151786313568798007">Orientering</translation>
 <translation id="3153444934357957346">Du kan högst använda <ph name="MULTI_PROFILE_USER_LIMIT" /> konton för multiinloggning.</translation>
@@ -213,7 +208,6 @@
 <translation id="4527045527269911712">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> tills batteriet är fullt</translation>
 <translation id="4544944664594876241">Kortkommandot för att låsa skärmen har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="4564869809620998694">Teckensnittstjänst</translation>
 <translation id="4570957409596482333">Knappen Textuppläsning</translation>
 <translation id="4585337515783392668">Sluta casta till en okänd mottagare</translation>
 <translation id="4628757576491864469">Enheter</translation>
@@ -227,7 +221,6 @@
 <translation id="4849058404725798627">Markera objekt med tangentbordsfokus</translation>
 <translation id="4872237917498892622">Alt + Sök eller Skift</translation>
 <translation id="4890187583552566966">Administratören har inaktiverat Google Assistent.</translation>
-<translation id="4893522937062257019">På låsskärmen</translation>
 <translation id="4895488851634969361">Batteriet är fullt.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Kortkommandot för att aktivera och inaktivera högkontrastläget har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
@@ -248,8 +241,6 @@
 <translation id="5430931332414098647">Direktinternetdelning</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alla tillgängliga användare har redan lagts till i den här sessionen.</translation>
-<translation id="5457599981699367932">Använd som gäst</translation>
-<translation id="54609108002486618">Hanterade</translation>
 <translation id="5496819745535887422">Enheten återställs av administratören. All data raderas när enheten startas om.</translation>
 <translation id="553675580533261935">Sessionen avslutas</translation>
 <translation id="5537725057119320332">Casta</translation>
@@ -267,14 +258,11 @@
 <translation id="5750765938512549687">Bluetooth är inaktiverat</translation>
 <translation id="5777841717266010279">Vill du avbryta skärmdelningen?</translation>
 <translation id="57838592816432529">Stäng av ljudet</translation>
-<translation id="5805697420284793859">Fönsterhanterare</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5832805196449965646">Lägg till person</translation>
 <translation id="5837036133683224804">Sluta casta <ph name="ROUTE_TITLE" /> till <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="5901316534475909376">Skift+Escape</translation>
-<translation id="5911533659001334206">Kortkommandovisare</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="592343074608792716">Denna Chromebook ansluts automatiskt till din mobil</translation>
@@ -333,7 +321,6 @@
 <translation id="6715542151869432661">Inga mobila enheter hittades.</translation>
 <translation id="671928215901716392">Lås skärmen</translation>
 <translation id="6723839937902243910">Batteri</translation>
-<translation id="6725073593266469338">Gränssnittstjänst</translation>
 <translation id="6751826523481687655">Prestandaspårning har aktiverats</translation>
 <translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE" /> % och laddas.</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
@@ -378,12 +365,10 @@
 <translation id="7569509451529460200">Punktskrift och ChromeVox har aktiverats</translation>
 <translation id="7593891976182323525">Sök eller Skift</translation>
 <translation id="7604942372593434070">Få tillgång till webbaktiviteten</translation>
-<translation id="7642778300616172920">Dölj känsligt innehåll</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ägare)</translation>
 <translation id="7647488630410863958">Lås upp enheten om du vill visa aviseringarna</translation>
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="7654687942625752712">Inaktivera talad feedback genom att hålla båda volymknapparna nedtryckta i fem sekunder.</translation>
-<translation id="7658239707568436148">Avbryt</translation>
 <translation id="7692480393933218409">Laddar anslutna USB-C-enheter</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">Klicka här om du vill se mer information om uppdateringen</translation>
@@ -426,7 +411,6 @@
 <translation id="8425213833346101688">Ändra</translation>
 <translation id="8427213022735114808">Med diktering skickas det du säger till Google så att du kan tala in text i vilket textfält som helst.</translation>
 <translation id="8428213095426709021">Inställningar</translation>
-<translation id="8431190899827883166">Visa tryck</translation>
 <translation id="8433186206711564395">Nätverksinställningar</translation>
 <translation id="8433977262951327081">Kortkommandot för att visa menybubblan för inmatningsalternativ i hyllan har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">SIM-kort saknas</translation>
@@ -436,7 +420,6 @@
 <translation id="8484916590211895857"><ph name="NAME" />: återansluter …</translation>
 <translation id="8513108775083588393">Rotera automatiskt</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> laddas eventuellt inte så länge den är på.</translation>
-<translation id="8592141010104017453">Visa inga aviseringar alls</translation>
 <translation id="8627191004499078455">Ansluten till <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> återstår</translation>
 <translation id="8649101189709089199">Textuppläsning</translation>
@@ -463,7 +446,6 @@
 <translation id="8921624153894383499">Google Assistent talar inte det här språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (högra porten på baksidan)</translation>
 <translation id="8940956008527784070">Låg batterinivå (<ph name="PERCENTAGE" /> %)</translation>
-<translation id="8984179138335769204">Snabbstart</translation>
 <translation id="899350903320462459">Lås upp enheten som <ph name="LOGIN_ID" /> så att aviseringen kan göras</translation>
 <translation id="8995603266996330174">Hanteras av <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">En uppdatering av Adobe Flash Player är tillgänglig</translation>
@@ -474,7 +456,6 @@
 <translation id="9080206825613744995">Mikrofonen används.</translation>
 <translation id="9089416786594320554">Inmatningsmetoder</translation>
 <translation id="9091626656156419976">Skärmen <ph name="DISPLAY_NAME" /> har tagits bort</translation>
-<translation id="9111102763498581341">Lås upp</translation>
 <translation id="9151726767154816831">Starta om och utför en Powerwash-återställning för att uppdatera</translation>
 <translation id="9179259655489829027">Med den här funktionen kan du snabbt öppna en inloggad användare utan att behöva ange lösenordet. Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="9193626018745640770">Castar till en okänd mottagare</translation>

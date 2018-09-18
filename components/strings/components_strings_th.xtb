@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">ต้องระบุหมายเลขโทรศัพท์</translation>
 <translation id="1517500485252541695">บัตรเครดิตและบัตรเดบิตที่ยอมรับ</translation>
 <translation id="1519264250979466059">วันที่สร้าง</translation>
+<translation id="1521655867290435174">Google ชีต</translation>
 <translation id="1527263332363067270">กำลังรอการเชื่อมต่อ…</translation>
 <translation id="1532118530259321453">หน้านี้บอกว่า</translation>
 <translation id="153384715582417236">เสร็จเรียบร้อย</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">ส่งออก MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">การเชื่อมต่อได้รับการรีเซ็ตแล้ว</translation>
+<translation id="2785008241190445880">แทนที่บุ๊กมาร์กแล้ว</translation>
 <translation id="2788784517760473862">บัตรเครดิตที่ยอมรับ</translation>
 <translation id="2794233252405721443">เว็บไซต์ที่ถูกบล็อก</translation>
 <translation id="2799020568854403057">ไซต์ที่จะเปิดมีแอปอันตราย</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">พาฉันไปที่นั่นเลย</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะใบรับรองความปลอดภัยมีข้อผิดพลาด โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
+<translation id="467809019005607715">Google สไลด์</translation>
 <translation id="4690462567478992370">หยุดใช้ใบรับรองที่ไม่ถูกต้อง</translation>
 <translation id="4690954380545377795">คุณอาจไม่สามารถเข้าถึงบัญชี Google หรือถูกโจรกรรมข้อมูลประจำตัว Chrome ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">เลือกข้อมูลติดต่อ</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
 <translation id="5332219387342487447">วิธีการจัดส่ง</translation>
+<translation id="5344579389779391559">อาจมีการพยายามเรียกเก็บเงินจากคุณในหน้านี้</translation>
 <translation id="5355557959165512791">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากใบรับรองถูกเพิกถอนแล้ว โดยปกติข้อผิดพลาดของเครือข่ายและการโจมตีจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงอาจจะใช้งานได้ในภายหลัง</translation>
 <translation id="536296301121032821">ไม่สามารถจัดเก็บการตั้งค่านโยบาย</translation>
 <translation id="5371425731340848620">อัปเดตบัตร</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">ปี</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{หน้า 1}other{หน้า #}}</translation>
 <translation id="6017850046339264347">ผู้โจมตี <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> สามารถติดตั้งแอปที่หลอกลวงซึ่งปลอมเป็นเนื้อหาอย่างอื่นหรือรวบรวมข้อมูลที่อาจนำไปใช้ติดตามคุณ <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">ปรับเปลี่ยน Chrome ในแบบของคุณ</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" /> <ph name="TYPE_2" /> <ph name="TYPE_3" /> (ซิงค์แล้ว)</translation>
 <translation id="6027201098523975773">ป้อนชื่อ</translation>
 <translation id="6039846035001940113">หากยังคงพบปัญหา ให้ติดต่อเจ้าของเว็บไซต์</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">เนื้อหานี้อาจพยายามหลอกล่อให้คุณติดตั้งซอฟต์แวร์หรือเปิดเผยข้อมูลส่วนบุคคล <ph name="BEGIN_LINK" />แสดงเนื้อหา<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากเว็บไซต์ใช้การตรึงใบรับรอง โดยปกติข้อผิดพลาดของเครือข่ายและการโจมตีจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงอาจใช้งานได้ในภายหลัง</translation>
 <translation id="6059925163896151826">อุปกรณ์ USB</translation>
+<translation id="6060991652695587932">เลือกบริการอีเมลสำหรับการเข้าถึงด่วน</translation>
 <translation id="6071091556643036997">ประเภทนโยบายไม่ถูกต้อง</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{ระบบจะบันทึกบัตรใบนี้ลงในบัญชี Google ของคุณเพื่อการชำระเงินที่เร็วขึ้นในอุปกรณ์ทุกเครื่อง}other{ระบบจะบันทึกบัตรเหล่านี้ลงในบัญชี Google ของคุณเพื่อการชำระเงินที่เร็วขึ้นในอุปกรณ์ทุกเครื่อง}}</translation>
 <translation id="6080696365213338172">คุณเข้าถึงเนื้อหาโดยใช้ใบรับรองที่ผู้ดูแลระบบออกให้ ข้อมูลที่คุณให้กับ <ph name="DOMAIN" /> อาจถูกสกัดกั้นโดยผู้ดูแลระบบ</translation>
@@ -904,6 +910,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">ไม่</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">ลบล้างเซสชันที่มีการจัดการ</translation>
 <translation id="7390545607259442187">ยืนยันบัตร</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;คุณจะเห็นข้อผิดพลาดนี้หากมีซอฟต์แวร์ Superfish ในคอมพิวเตอร์ที่ใช้ระบบปฏิบัติการ Windows&lt;/p&gt;
@@ -994,6 +1001,7 @@
 <translation id="7815407501681723534">พบ<ph name="SEARCH_RESULTS" /> <ph name="NUMBER_OF_RESULTS" /> รายการสำหรับ "<ph name="SEARCH_STRING" />"</translation>
 <translation id="7818867226424560206">การจัดการนโยบาย</translation>
 <translation id="782886543891417279">Wi-Fi ที่คุณใช้ (<ph name="WIFI_NAME" />) อาจต้องการให้คุณไปที่หน้าการเข้าสู่ระบบ</translation>
+<translation id="7835178595033117206">นำบุ๊กมาร์กออกแล้ว</translation>
 <translation id="785549533363645510">อย่างไรก็ตาม ระบบยังมองเห็นคุณ การเข้าสู่โหมดไม่ระบุตัวตนไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้างของคุณ ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">ออกจากเว็บไซต์ไหม</translation>
@@ -1130,6 +1138,7 @@
 <translation id="8874824191258364635">ป้อนหมายเลขบัตรที่ถูกต้อง</translation>
 <translation id="8876793034577346603">ไม่สามารถแยกวิเคราะห์การกำหนดค่าเครือข่าย</translation>
 <translation id="8891727572606052622">โหมดพร็อกซีไม่ถูกต้อง</translation>
+<translation id="8892964541482452187">ปุ่มเปลี่ยนแท็บ โปรดกด Enter เพื่อเปลี่ยนไปยังแท็บนี้</translation>
 <translation id="8903921497873541725">ขยาย</translation>
 <translation id="8931333241327730545">คุณต้องการบันทึกบัตรนี้ในบัญชี Google ไหม</translation>
 <translation id="8932102934695377596">นาฬิกาช้าเกินไป</translation>
@@ -1155,6 +1164,7 @@
 <translation id="9035022520814077154">ข้อผิดพลาดของการรักษาความปลอดภัย</translation>
 <translation id="9038649477754266430">ใช้บริการการคาดคะเนเพื่อโหลดหน้าได้เร็วขึ้น</translation>
 <translation id="9039213469156557790">นอกจากนี้ หน้านี้ประกอบด้วยทรัพยากรอื่นๆ ซึ่งไม่ปลอดภัย ผู้อื่นสามารถดูทรัพยากรเหล่านี้ขณะถ่ายโอน และผู้บุกรุกสามารถแก้ไขเพื่อเปลี่ยนการทำงานของหน้าได้</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่ไม่ถูกต้อง</translation>
 <translation id="9050666287014529139">ข้อความรหัสผ่าน</translation>
 <translation id="9065203028668620118">แก้ไข</translation>
@@ -1178,6 +1188,7 @@
 <translation id="9170848237812810038">เ&amp;ลิกทำ</translation>
 <translation id="9171296965991013597">ออกจากแอปไหม</translation>
 <translation id="917450738466192189">ใบรับรองของเซิร์ฟเวอร์ไม่ถูกต้อง</translation>
+<translation id="9183302530794969518">Google เอกสาร</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> ใช้โปรโตคอลที่ไม่รองรับ</translation>
 <translation id="9205078245616868884">ข้อมูลของคุณมีการเข้ารหัสด้วยรหัสผ่านการซิงค์ โปรดป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="9207861905230894330">การเพิ่มบทความล้มเหลว</translation>

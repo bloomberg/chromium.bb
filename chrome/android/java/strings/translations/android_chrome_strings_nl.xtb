@@ -238,6 +238,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="2762000892062317888">zojuist</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> seconden resterend</translation>
 <translation id="2781151931089541271">1 seconde resterend</translation>
+<translation id="2803478378562657435">Opgeslagen wachtwoorden en wachtwoordopties weergeven</translation>
 <translation id="2810645512293415242">Vereenvoudigde pagina om data te besparen en sneller te laden.</translation>
 <translation id="281504910091592009">Bekijk en beheer opgeslagen wachtwoorden in je <ph name="BEGIN_LINK" />Google-account<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Log in en schakel synchronisatie in om op al je apparaten toegang tot je bladwijzers te hebben</translation>
@@ -711,6 +712,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6573431926118603307">Tabbladen die je op andere apparaten in Chrome hebt geopend, worden hier weergegeven.</translation>
 <translation id="6575643671698722332">Herstel mislukt. Kijk of apparaat online is en probeer opnieuw.</translation>
 <translation id="6583199322650523874">Een bladwijzer toevoegen voor de huidige pagina</translation>
+<translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Desktopsite</translation>
 <translation id="6600954340915313787">Gekopieerd naar Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +829,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="748127970106343339">Verwijderen van apparaatinloggegevens bevestigen</translation>
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (geüpdatet: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Wachtwoorden weergeven</translation>
 <translation id="7494974237137038751">data bespaard</translation>
 <translation id="7498271377022651285">Een ogenblik geduld…</translation>
 <translation id="7514365320538308">Downloaden</translation>
@@ -894,6 +897,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="802154636333426148">Downloaden mislukt</translation>
 <translation id="8026334261755873520">Browsegegevens wissen</translation>
 <translation id="8035133914807600019">Nieuwe map…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">Meer zoals dit</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagen resterend</translation>
 <translation id="804335162455518893">SD-kaart niet gevonden</translation>
@@ -950,6 +954,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8503559462189395349">Chrome-wachtwoorden</translation>
 <translation id="8503813439785031346">Gebruikersnaam</translation>
 <translation id="8504988642345501642">Wanneer je omhoog scrollt, worden er snelle links naar gerelateerde pagina's weergegeven. De URL's van pagina's die je bezoekt, worden verzonden naar Google.</translation>
+<translation id="8507520749471379845">Wachtwoorden beschikbaar</translation>
 <translation id="8514477925623180633">Wachtwoorden exporteren die zijn opgeslagen in Chrome</translation>
 <translation id="8514577642972634246">Incognitomodus starten</translation>
 <translation id="851751545965956758">Voorkomen dat sites verbinding maken met apparaten</translation>

@@ -56,6 +56,7 @@
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID" /></translation>
 <translation id="7068383018033524534">ম্যানিফেস্ট ফাইলটি ভুল</translation>
 <translation id="7217838517480956708">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME" /> ইনস্টল করার প্রয়োজন৷ এটি সরানো অথবা সংশোধন করা যাবে না৷</translation>
+<translation id="7612608473764576263">ব্যক্তিগত কীয়ের জন্য ইনপুট করা মান সঠিক ফর্ম্যাটে হওয়া আবশ্যক (PKCS#8-format PEM-encoded RSA key)।</translation>
 <translation id="7939686037314084444">এই এক্সটেনশনটি সঠিকভাবে লোড করা যায়নি। এটি নেটওয়ার্ক অনুরোধগুলি হয়ত আটকাতে পারেনি।</translation>
 <translation id="7972881773422714442">বিকল্পগুলি: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">ব্যবহারকারীর দিকে মুখ করা</translation>

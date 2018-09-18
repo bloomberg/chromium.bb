@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Telefon numarası gerekli</translation>
 <translation id="1517500485252541695">Kabul edilen kredi ve banka kartları</translation>
 <translation id="1519264250979466059">Oluşturma Tarihi</translation>
+<translation id="1521655867290435174">Google E-Tablolar</translation>
 <translation id="1527263332363067270">Bağlantı bekleniyor…</translation>
 <translation id="1532118530259321453">Bu sayfanın mesajı</translation>
 <translation id="153384715582417236">Şimdilik hepsi bu</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">MacOS Biçiminde Dışa Aktar</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Bağlantı sıfırlandı.</translation>
+<translation id="2785008241190445880">Yer işareti değiştirildi</translation>
 <translation id="2788784517760473862">Kabul edilen kredi kartları</translation>
 <translation id="2794233252405721443">Site engellenmiş</translation>
 <translation id="2799020568854403057">Girmekte olduğunuz site zararlı uygulamalar içeriyor</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">İndirilenlere git</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasında hatalar var. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
+<translation id="467809019005607715">Google Slaytlar</translation>
 <translation id="4690462567478992370">Geçersiz sertifika kullanımını durdur</translation>
 <translation id="4690954380545377795">Google Hesabınıza erişimi kaybedebilir veya kimlik hırsızlığına maruz kalabilirsiniz. Chrome, şifrenizi hemen değiştirmenizi önerir.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">İletişim Bilgisi Seç</translation>
 <translation id="5327248766486351172">Ad</translation>
 <translation id="5332219387342487447">Gönderim Yöntemi</translation>
+<translation id="5344579389779391559">Bu sayfa sizden para almaya çalışabilir</translation>
 <translation id="5355557959165512791">Sertifikası iptal edildiği için <ph name="SITE" /> sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan, bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="536296301121032821">Politika ayarları saklanamadı</translation>
 <translation id="5371425731340848620">Kartı güncelle</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">Yıl</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. sayfa}other{#. sayfa}}</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> öğesini kullanan saldırganlar başka bir şeyi taklit eden aldatıcı uygulamalar yükleyebilir veya sizi izlemek için kullanılabilecek veriler toplayabilirler. <ph name="BEGIN_LEARN_MORE_LINK" />Daha fazla bilgi<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Chrome'u kendinize uyarlayın</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (senkronize edildi)</translation>
 <translation id="6027201098523975773">Bir ad girin</translation>
 <translation id="6039846035001940113">Sorun devam ederse site sahibiyle iletişime geçin.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">Bu içerik sizi kandırarak yazılım yüklemenizi veya kişisel bilgilerinizi ifşa etmenizi sağlamaya çalışabilir. <ph name="BEGIN_LINK" />Yine de göster<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923"><ph name="SITE" /> sitesi sertifika sabitleme yöntemi kullandığından siteyi şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="6059925163896151826">USB cihazları</translation>
+<translation id="6060991652695587932">Hızlı erişim için e-posta hizmetinizi seçin</translation>
 <translation id="6071091556643036997">Politika türü geçersiz.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Bu kart, tüm cihazlarınızda daha hızlı ödeme yapılabilmesi için Google Hesabınıza kaydedilecek.}other{Bu kartlar, tüm cihazlarınızda daha hızlı ödeme yapılabilmesi için Google Hesabınıza kaydedilecek.}}</translation>
 <translation id="6080696365213338172">Yönetici tarafından sağlanmış bir sertifika kullanan içeriğe eriştiniz. <ph name="DOMAIN" /> alan adına sağladığınız verileri yöneticiniz görebilir ve bunlara müdahale edebilir.</translation>
@@ -904,6 +910,7 @@ Ek ayrıntılar:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Hayır</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Yönetilen oturumu geçersiz kılma</translation>
 <translation id="7390545607259442187">Kartı Onayla</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;Windows bilgisayarınızda Superfish yazılımı varsa bu hatayı görürsünüz.&lt;/p&gt;
@@ -994,6 +1001,7 @@ Ek ayrıntılar:
 <translation id="7815407501681723534">"<ph name="SEARCH_STRING" />" için <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> bulundu.</translation>
 <translation id="7818867226424560206">Politika yönetimi</translation>
 <translation id="782886543891417279">Kullandığınız kablosuz bağlantı ağı (<ph name="WIFI_NAME" />) giriş sayfasını ziyaret etmenizi gerektiriyor olabilir.</translation>
+<translation id="7835178595033117206">Yer işareti kaldırıldı</translation>
 <translation id="785549533363645510">Ancak görünmez olmazsınız. Gizli moda geçmek göz atma etkinliğinizi işvereninizden, İnternet servis sağlayıcınızdan veya ziyaret ettiğiniz web sitelerinden gizlemez.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Siteden çıkılsın mı?</translation>
@@ -1130,6 +1138,7 @@ Ek ayrıntılar:
 <translation id="8874824191258364635">Geçerli bir kart numarası girin</translation>
 <translation id="8876793034577346603">Ağ yapılandırması ayrıştırılamadı.</translation>
 <translation id="8891727572606052622">Geçersiz proxy modu.</translation>
+<translation id="8892964541482452187">Sekme değiştirme düğmesi, bu sekmeye geçmek için enter tuşuna basın</translation>
 <translation id="8903921497873541725">Yakınlaştır</translation>
 <translation id="8931333241327730545">Bu kartı Google Hesabınıza kaydetmek istiyor musunuz?</translation>
 <translation id="8932102934695377596">Saatiniz geri</translation>
@@ -1155,6 +1164,7 @@ Ek ayrıntılar:
 <translation id="9035022520814077154">Güvenlik hatası</translation>
 <translation id="9038649477754266430">Sayfaları daha hızlı yüklemek için bir tahmin hizmeti kullan</translation>
 <translation id="9039213469156557790">Ayrıca, bu sayfa güvenli olmayan başka kaynaklar içeriyor. Bu kaynaklar, aktarım sırasında başkaları tarafından görülebilir ve bir saldırgan tarafından sayfanın davranışını değiştirmek üzere kullanılabilir.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619"><ph name="DOMAIN" /> alan adına erişmeye çalıştınız, ancak sunucu geçersiz bir sertifika sağladı.</translation>
 <translation id="9050666287014529139">Parola</translation>
 <translation id="9065203028668620118">Düzenle</translation>
@@ -1178,6 +1188,7 @@ Ek ayrıntılar:
 <translation id="9170848237812810038">&amp;Geri al</translation>
 <translation id="9171296965991013597">Uygulamadan çıkılsın mı?</translation>
 <translation id="917450738466192189">Sunucunun sertifikası geçersiz.</translation>
+<translation id="9183302530794969518">Google Dokümanlar</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> desteklenmeyen bir protokol kullanıyor.</translation>
 <translation id="9205078245616868884">Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak için senkronizasyon parolanızı girin.</translation>
 <translation id="9207861905230894330">Makale eklenemedi.</translation>
