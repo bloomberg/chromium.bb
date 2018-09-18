@@ -424,7 +424,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
       case printing::JobEventDetails::DOC_DONE:
         DCHECK(event_details.document());
         service_->JobIdGenerated(
-            this, chromeos::CupsPrintJob::GetUniqueId(
+            this, chromeos::CupsPrintJob::CreateUniqueId(
                       base::UTF16ToUTF8(
                           event_details.document()->settings().device_name()),
                       event_details.job_id()));

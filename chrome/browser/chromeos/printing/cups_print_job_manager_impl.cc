@@ -433,7 +433,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     std::vector<std::string> active_jobs;
     for (const auto& queue : result->queues) {
       for (auto& job : queue.jobs) {
-        std::string key = CupsPrintJob::GetUniqueId(job.printer_id, job.id);
+        std::string key = CupsPrintJob::CreateUniqueId(job.printer_id, job.id);
         const auto& entry = jobs_.find(key);
         if (entry == jobs_.end())
           continue;

@@ -21,7 +21,7 @@ CupsPrintJob::CupsPrintJob(const Printer& printer,
 CupsPrintJob::~CupsPrintJob() {}
 
 std::string CupsPrintJob::GetUniqueId() const {
-  return GetUniqueId(printer_.id(), job_id_);
+  return CreateUniqueId(printer_.id(), job_id_);
 }
 
 base::WeakPtr<CupsPrintJob> CupsPrintJob::GetWeakPtr() {
@@ -29,18 +29,18 @@ base::WeakPtr<CupsPrintJob> CupsPrintJob::GetWeakPtr() {
 }
 
 // static
-std::string CupsPrintJob::GetUniqueId(const std::string& printer_id,
-                                      int job_id) {
+std::string CupsPrintJob::CreateUniqueId(const std::string& printer_id,
+                                         int job_id) {
   return base::StringPrintf("%s%d", printer_id.c_str(), job_id);
 }
 
-bool CupsPrintJob::IsJobFinished() {
+bool CupsPrintJob::IsJobFinished() const {
   return state_ == CupsPrintJob::State::STATE_CANCELLED ||
          state_ == CupsPrintJob::State::STATE_ERROR ||
          state_ == CupsPrintJob::State::STATE_DOCUMENT_DONE;
 }
 
-bool CupsPrintJob::PipelineDead() {
+bool CupsPrintJob::PipelineDead() const {
   return error_code_ == CupsPrintJob::ErrorCode::FILTER_FAILED;
 }
 
