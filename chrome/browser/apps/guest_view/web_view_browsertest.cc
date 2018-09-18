@@ -1081,14 +1081,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoplayPolicy) {
 }
 
 // This test exercises the webview spatial navigation API
-#if defined(OS_WIN)
-// Flaky on Windows. See https://crbug.com/884570.
-#define MAYBE_SpatialNavigationJavascriptAPI \
-  DISABLED_SpatialNavigationJavascriptAPI
-#else
-#define MAYBE_SpatialNavigationJavascriptAPI SpatialNavigationJavascriptAPI
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_SpatialNavigationJavascriptAPI) {
+// This test is disabled due to being flaky. http://crbug.com/884306
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_SpatialNavigationJavascriptAPI) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableSpatialNavigation);
 
