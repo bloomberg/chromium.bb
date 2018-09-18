@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editing_boundary.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -1280,12 +1281,27 @@ bool IsLinkSelection(const MouseEventWithHitTestResults& event) {
          event.IsOverLink();
 }
 
+bool IsUserNodeDraggable(const MouseEventWithHitTestResults& event) {
+  Node* inner_node = event.InnerNode();
+
+  // TODO(huangdarwin): event.InnerNode() should never be nullptr, but unit
+  // tests WebFrameTest.FrameWidgetTest and WebViewTest.ClientTapHandling fail
+  // without a nullptr check, as they don't set the InnerNode() appropriately.
+  // Remove the if statement nullptr check when those tests are fixed.
+  if (!inner_node)
+    return false;
+
+  const ComputedStyle* kStyle = inner_node->GetComputedStyle();
+  return kStyle && kStyle->UserDrag() == EUserDrag::kElement;
+}
+
 bool IsExtendingSelection(const MouseEventWithHitTestResults& event) {
   bool is_mouse_down_on_link_or_image =
       event.IsOverLink() || event.GetHitTestResult().GetImage();
+
   return (event.Event().GetModifiers() & WebInputEvent::Modifiers::kShiftKey) !=
              0 &&
-         !is_mouse_down_on_link_or_image;
+         !is_mouse_down_on_link_or_image && !IsUserNodeDraggable(event);
 }
 
 }  // namespace blink
