@@ -26,6 +26,7 @@ class MODULES_EXPORT MediaControlPanelElement final
   void MakeOpaque();
   void MakeTransparent();
 
+  bool KeepDisplayedForAccessibility();
   void SetKeepDisplayedForAccessibility(bool);
 
   // Node override;

@@ -128,4 +128,14 @@ void MediaControlElementsHelper::NotifyMediaControlAccessibleFocus(
       ->OnAccessibleFocus();
 }
 
+void MediaControlElementsHelper::NotifyMediaControlAccessibleBlur(
+    Element* element) {
+  const HTMLMediaElement* media_element = ToParentMediaElement(element);
+  if (!media_element || !media_element->GetMediaControls())
+    return;
+
+  static_cast<MediaControlsImpl*>(media_element->GetMediaControls())
+      ->OnAccessibleBlur();
+}
+
 }  // namespace blink

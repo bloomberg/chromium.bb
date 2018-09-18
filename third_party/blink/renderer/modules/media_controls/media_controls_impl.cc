@@ -1041,6 +1041,10 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
   if (download_iph_manager_ && download_iph_manager_->IsShowingInProductHelp())
     return false;
 
+  // Don't hide if we have accessiblity focus.
+  if (panel_->KeepDisplayedForAccessibility())
+    return false;
+
   return true;
 }
 
@@ -1417,6 +1421,9 @@ void MediaControlsImpl::MaybeToggleControlsFromTap() {
 }
 
 void MediaControlsImpl::OnAccessibleFocus() {
+  if (panel_->KeepDisplayedForAccessibility())
+    return;
+
   panel_->SetKeepDisplayedForAccessibility(true);
 
   if (!MediaElement().ShouldShowControls())
@@ -1438,6 +1445,16 @@ void MediaControlsImpl::ShowArrowAnimation(bool is_right) {
           ? MediaControlAnimatedArrowContainerElement::ArrowDirection::kRight
           : MediaControlAnimatedArrowContainerElement::ArrowDirection::kLeft;
   animated_arrow_container_element_->ShowArrowAnimation(direction);
+}
+
+void MediaControlsImpl::OnAccessibleBlur() {
+  panel_->SetKeepDisplayedForAccessibility(false);
+
+  if (MediaElement().ShouldShowControls())
+    return;
+
+  keep_showing_until_timer_fires_ = false;
+  ResetHideMediaControlsTimer();
 }
 
 void MediaControlsImpl::DefaultEventHandler(Event& event) {

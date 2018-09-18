@@ -64,6 +64,7 @@ class MediaControlElementsHelper final {
   // Utility function that notifies the media controls in which the element is
   // that it was focused by an accessibility tool.
   static void NotifyMediaControlAccessibleFocus(Element*);
+  static void NotifyMediaControlAccessibleBlur(Element*);
 };
 
 }  // namespace blink
