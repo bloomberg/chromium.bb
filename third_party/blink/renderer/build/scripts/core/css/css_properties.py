@@ -54,10 +54,10 @@ def check_property_parameters(property_to_check):
 class CSSProperties(object):
     def __init__(self, file_paths):
         assert len(file_paths) >= 2, \
-            "CSSProperties at least needs both CSSProperties.json5 and \
-            ComputedStyleFieldAliases.json5 to function"
+            "CSSProperties at least needs both css_properties.json5 and \
+            computed_style_field_aliases.json5 to function"
 
-        # ComputedStyleFieldAliases.json5. Used to expand out parameters used
+        # computed_style_field_aliases.json5. Used to expand out parameters used
         # in the various generators for ComputedStyle.
         self._field_alias_expander = FieldAliasExpander(file_paths[1])
 
@@ -75,7 +75,7 @@ class CSSProperties(object):
         self._shorthands = []
         self._properties_including_aliases = []
 
-        # Add default data in CSSProperties.json5. This must be consistent
+        # Add default data in css_properties.json5. This must be consistent
         # across instantiations of this class.
         css_properties_file = json5_generator.Json5File.load_from_files(
             [file_paths[0]])
@@ -232,7 +232,7 @@ class CSSProperties(object):
                     property_['type_name'] = '{}<{}>'.format(
                         property_['wrapper_pointer_name'], type_name)
 
-        # Default values for extra parameters in ComputedStyleExtraFields.json5.
+        # Default values for extra parameters in computed_style_extra_fields.json5.
         set_if_none(property_, 'custom_copy', False)
         set_if_none(property_, 'custom_compare', False)
         set_if_none(property_, 'mutable', False)

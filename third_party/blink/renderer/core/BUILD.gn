@@ -446,7 +446,7 @@ action("generated_testing_idls_internal_runtime_flags") {
 
 css_properties("make_core_generated_computed_style_initial_values") {
   script = "../build/scripts/core/style/make_computed_style_initial_values.py"
-  in_files = [ "css/ComputedStyleExtraFields.json5" ]
+  in_files = [ "css/computed_style_extra_fields.json5" ]
   other_inputs = [ "../build/scripts/core/style/templates/computed_style_initial_values.h.tmpl" ]
   outputs = [
     "$blink_core_output_dir/style/computed_style_initial_values.h",
@@ -456,11 +456,11 @@ css_properties("make_core_generated_computed_style_initial_values") {
 css_properties("make_core_generated_computed_style_base") {
   script = "../build/scripts/make_computed_style_base.py"
   in_files = [
-    "css/ComputedStyleExtraFields.json5",
-    "css/ComputedStyleDiffFunctions.json5",
-    "css/CSSValueKeywords.json5",
-    "css/CSSPropertiesRanking.json5",
-    "css/CSSGroupConfig.json5",
+    "css/computed_style_extra_fields.json5",
+    "css/computed_style_diff_functions.json5",
+    "css/css_value_keywords.json5",
+    "css/css_properties_ranking.json5",
+    "css/css_group_config.json5",
   ]
   other_inputs = [
     "../build/scripts/templates/fields/field.tmpl",
@@ -485,7 +485,7 @@ css_properties("make_core_generated_computed_style_base") {
 
 css_properties("make_core_generated_css_value_id_mappings") {
   script = "../build/scripts/make_css_value_id_mappings.py"
-  in_files = [ "css/CSSValueKeywords.json5" ]
+  in_files = [ "css/css_value_keywords.json5" ]
   other_inputs = [
     "../build/scripts/templates/css_value_id_mappings_generated.h.tmpl",
     "../build/scripts/keyword_utils.py",
@@ -515,9 +515,9 @@ css_properties("make_core_generated_css_property_baseclass") {
 css_properties("make_core_generated_css_longhand_property_classes") {
   script =
       "../build/scripts/core/css/properties/make_css_property_subclasses.py"
-  in_files = [ "css/properties/CSSPropertyMethods.json5" ]
+  in_files = [ "css/properties/css_property_methods.json5" ]
   other_inputs = [
-    "css/CSSProperties.json5",
+    "css/css_properties.json5",
     "../build/scripts/core/css/properties/templates/css_property_subclass.h.tmpl",
     "../build/scripts/core/css/properties/templates/css_property_subclass.cc.tmpl",
   ]
@@ -1023,9 +1023,9 @@ css_properties("make_core_generated_css_longhand_property_classes") {
 css_properties("make_core_generated_css_shorthand_property_classes") {
   script =
       "../build/scripts/core/css/properties/make_css_property_subclasses.py"
-  in_files = [ "css/properties/CSSPropertyMethods.json5" ]
+  in_files = [ "css/properties/css_property_methods.json5" ]
   other_inputs = [
-    "css/CSSProperties.json5",
+    "css/css_properties.json5",
     "../build/scripts/core/css/properties/templates/css_property_subclass.h.tmpl",
   ]
   outputs = [
@@ -1192,8 +1192,8 @@ css_properties("make_core_generated_cssom_types") {
 code_generator("make_core_generated_css_value_keywords") {
   script = "../build/scripts/core/css/make_css_value_keywords.py"
   json_inputs = [
-    "css/CSSValueKeywords.json5",
-    "css/SVGCSSValueKeywords.json5",
+    "css/css_value_keywords.json5",
+    "css/svg_css_value_keywords.json5",
   ]
   other_inputs = [ "../build/scripts/gperf.py" ]
   templates = [

@@ -161,7 +161,7 @@
     // Leave this out if the field is stored directly on ComputedStyle.
     // If you want to auto group this property use: field_group: "*[->subgroup]"
     // If you use the auto grouping function check if your property is in
-    // CSSPropertiesRanking.json5
+    // css_properties_ranking.json5
     // -  If yes, only provide: field_group: "*"
     // -  If no, you can specify a subgroup following the asterisk:
     //    field_group: "*[->subgroup]"

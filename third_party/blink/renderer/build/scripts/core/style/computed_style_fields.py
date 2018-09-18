@@ -111,7 +111,7 @@ class Field(object):
     Almost all properties will have at least one Field, often more than one.
 
     Most attributes in this class correspond to parameters in
-    CSSProperties.json5. See that file for a more detailed explanation of
+    css_properties.json5. See that file for a more detailed explanation of
     each attribute.
 
     Attributes:

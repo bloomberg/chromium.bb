@@ -16,9 +16,9 @@ import math
 
 
 CSS_RANKING_API = "http://www.chromestatus.com/data/csspopularity"
-CSS_RANKING_FILE = "../../core/css/CSSPropertiesRanking.json5"
-CSS_PROPERTIES = "../../core/css/CSSProperties.json5"
-CONFIG_FILE = "../../core/css/CSSGroupConfig.json5"
+CSS_RANKING_FILE = "../../core/css/css_properties_ranking.json5"
+CSS_PROPERTIES = "../../core/css/css_properties.json5"
+CONFIG_FILE = "../../core/css/css_group_config.json5"
 
 
 def reformat_properties_name(css_properties):
@@ -30,10 +30,10 @@ def reformat_properties_name(css_properties):
 
 
 def update_css_ranking(css_ranking_file, css_ranking_api):
-    """Create the CSSPropertiesRanking.json5 for uses in Computed Style grouping
+    """Create the css_properties_ranking.json5 for uses in Computed Style grouping
 
     Args:
-        css_ranking_file: file directory to CSSPropertiesRanking.json5
+        css_ranking_file: file directory to css_properties_ranking.json5
         css_ranking_api: url to CSS ranking api
 
     """

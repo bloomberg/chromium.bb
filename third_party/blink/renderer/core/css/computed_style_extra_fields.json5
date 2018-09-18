@@ -20,7 +20,7 @@
       default: false,
     },
 
-    // The rest is the same as CSSProperties.json5, but the only relevant ones in
+    // The rest is the same as css_properties.json5, but the only relevant ones in
     // this file are:
     // name, field_template, include_paths, default_value, type_name, keyword,
     // inherited
