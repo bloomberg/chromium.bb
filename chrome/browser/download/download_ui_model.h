@@ -7,14 +7,14 @@
 
 #include <stdint.h>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
+#include "chrome/browser/download/download_commands.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
-
-namespace download {
-class DownloadItem;
-}
+#include "components/download/public/common/download_item.h"
 
 namespace gfx {
 class FontList;
@@ -172,12 +172,52 @@ class DownloadUIModel {
   // otherwise.
   virtual download::DownloadItem* download();
 
-  // Returns a string reprGesentations of the current download progress sizes.
+  // Returns a string representations of the current download progress sizes.
   // If the total size of the download is known, this string looks like:
   // "100/200 MB" where the numerator is the transferred size and the
   // denominator is the total size. If the total isn't known, returns the
   // transferred size as a string (e.g.: "100 MB").
   virtual base::string16 GetProgressSizesString() const;
+
+  // Returns the file-name that should be reported to the user.
+  virtual base::FilePath GetFileNameToReportUser() const;
+
+  // Target path of an in-progress download.
+  // May be empty if the target path hasn't yet been determined.
+  virtual base::FilePath GetTargetFilePath() const;
+
+  // Opens the file associated with this download.  If the download is
+  // still in progress, marks the download to be opened when it is complete.
+  virtual void OpenDownload();
+
+  // Returns the current state of the download.
+  virtual download::DownloadItem::DownloadState GetState() const;
+
+  // Returns whether the download is currently paused.
+  virtual bool IsPaused() const;
+
+  // Returns the danger type associated with this download.
+  virtual download::DownloadDangerType GetDangerType() const;
+
+  // Returns true if the download will be auto-opened when complete.
+  virtual bool GetOpenWhenComplete() const;
+
+  // Simple calculation of the amount of time remaining to completion. Fills
+  // |*remaining| with the amount of time remaining if successful. Fails and
+  // returns false if we do not have the number of bytes or the download speed,
+  // and so can't give an estimate.
+  virtual bool TimeRemaining(base::TimeDelta* remaining) const;
+
+  // Returns true if the download has been opened.
+  virtual bool GetOpened() const;
+
+  // Marks the download as having been opened (without actually opening it).
+  virtual void SetOpened(bool opened);
+
+#if !defined(OS_ANDROID)
+  // Creates a download command for the underlying download item.
+  virtual DownloadCommands GetDownloadCommands() const;
+#endif
 
  protected:
   base::ObserverList<Observer>::Unchecked observers_;

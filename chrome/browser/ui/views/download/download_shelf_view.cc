@@ -120,7 +120,8 @@ void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
 }
 
 void DownloadShelfView::DoAddDownload(DownloadItem* download) {
-  AddDownloadView(new DownloadItemView(download, this, accessible_alert_));
+  AddDownloadView(new DownloadItemView(
+      std::make_unique<DownloadItemModel>(download), this, accessible_alert_));
 }
 
 void DownloadShelfView::MouseMovedOutOfHost() {
@@ -378,7 +379,7 @@ void DownloadShelfView::Closed() {
   // When the close animation is complete, remove all completed downloads.
   size_t i = 0;
   while (i < download_views_.size()) {
-    DownloadItem* download = download_views_[i]->download();
+    DownloadUIModel* download = download_views_[i]->model();
     DownloadItem::DownloadState state = download->GetState();
     bool is_transfer_done = state == DownloadItem::COMPLETE ||
                             state == DownloadItem::CANCELLED ||
@@ -397,7 +398,7 @@ void DownloadShelfView::Closed() {
 
 bool DownloadShelfView::CanAutoClose() {
   for (size_t i = 0; i < download_views_.size(); ++i) {
-    if (!download_views_[i]->download()->GetOpened())
+    if (!download_views_[i]->model()->GetOpened())
       return false;
   }
   return true;
