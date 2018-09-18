@@ -87,7 +87,7 @@ class StreamMixer::ExternalMediaVolumeChangeRequestObserver
   }
 
   void OnMuteChangeRequest(bool new_muted) override {
-    mixer_->SetVolume(AudioContentType::kMedia, new_muted);
+    mixer_->SetMuted(AudioContentType::kMedia, new_muted);
   }
 
  private:
