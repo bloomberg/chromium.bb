@@ -485,7 +485,8 @@
     },
     {
       name: "FontSrcLocalMatching",
-      status: "test",
+      // No status, as the web platform runtime enabled feature is controlled by
+      // a Chromium level feature.
     },
     // For simulating Android's overlay fullscreen video in layout tests on Linux.
     {

@@ -94,4 +94,23 @@ void GetRenderStyleForStrike(sk_sp<font_service::FontLoader> font_loader,
       static_cast<char>(font_render_style->use_subpixel_positioning);
 }
 
+void MatchFontByPostscriptNameOrFullFontName(
+    sk_sp<font_service::FontLoader> font_loader,
+    const char* font_unique_name,
+    blink::OutOfProcessFont* fallback_font) {
+  font_service::mojom::FontIdentityPtr font_identity;
+  std::string family_name;
+  if (!font_loader->MatchFontByPostscriptNameOrFullFontName(font_unique_name,
+                                                            &font_identity)) {
+    LOG(ERROR) << "FontService unique font name matching request did not "
+                  "receive a response.";
+    return;
+  }
+
+  fallback_font->fontconfig_interface_id = font_identity->id;
+  fallback_font->filename.Assign(font_identity->str_representation.c_str(),
+                                 font_identity->str_representation.length());
+  fallback_font->ttc_index = font_identity->ttc_index;
+}
+
 }  // namespace content

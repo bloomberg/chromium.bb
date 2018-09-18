@@ -56,7 +56,7 @@
 
 namespace blink {
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 namespace {
 
 static PaintTypeface CreateTypefaceFromUniqueName(
@@ -298,7 +298,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
   CString name;
 
   PaintTypeface paint_tf;
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
   if (alternate_name == AlternateFontName::kLocalUniqueFace &&
       RuntimeEnabledFeatures::FontSrcLocalMatchingEnabled()) {
     paint_tf = CreateTypefaceFromUniqueName(creation_params, name);
