@@ -97,7 +97,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
+  int StartBlobReading(mojo::ScopedDataPipeConsumerHandle* body_pipe);
   void OnBlobSideDataReadingComplete(
+      mojo::ScopedDataPipeConsumerHandle data_pipe,
       const base::Optional<std::vector<uint8_t>>& metadata);
   void OnBlobReadingComplete(int net_error);
 
@@ -130,6 +132,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
                  ServiceWorkerSubresourceLoader>
       controller_connector_observer_;
   bool fetch_request_restarted_;
+  bool blob_reading_complete_;
+  bool side_data_reading_complete_;
 
   // These are given by the constructor (as the params for
   // URLLoaderFactory::CreateLoaderAndStart).
