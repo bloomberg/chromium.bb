@@ -2386,6 +2386,7 @@ static_library("interactive_ui_test_support") {
     "//testing/gtest",
     "//ui/aura",
     "//ui/base",
+    "//ui/base:test_support",
     "//ui/gl:test_support",
   ]
 }
