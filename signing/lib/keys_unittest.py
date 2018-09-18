@@ -8,10 +8,28 @@
 from __future__ import print_function
 
 import os
+import textwrap
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 from chromite.signing.lib import keys
+
+
+MOCK_SHA1SUM = 'e2c1c92d7d7aa7dfed5e8375edd30b7ae52b7450'
+
+
+def MockVbutilKey(rc, sha1sum=MOCK_SHA1SUM):
+  """Adds vbutil_key mocks to |rc|"""
+
+  cmd_output = textwrap.dedent('''
+    Public Key file:   firmware_data_key.vbpubk
+    Algorithm:         7 RSA4096 SHA256
+    Key Version:       1
+    Key sha1sum:       ''' + sha1sum)
+
+  rc.AddCmdResult(partial_mock.ListRegex('vbutil_key --unpack .*'),
+                  output=cmd_output)
 
 
 class KeysetMock(keys.Keyset):
@@ -178,19 +196,11 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
 
   def testGetSha1sumMockCmd(self):
     """Test GetSha1sum with mock cmd output."""
+    MockVbutilKey(self.rc)
     k1 = keys.KeyPair('firmware_data_key', self.tempdir)
 
-    sha1sum = 'e2c1c92d7d7aa7dfed5e8375edd30b7ae52b7450'
-
-    cmd_output = ('Public Key file:   firmware_data_key.vbpubk'
-                  '\nAlgorithm:         7 RSA4096 SHA256'
-                  '\nKey Version:       1'
-                  '\nKey sha1sum:       ' + sha1sum)
-
-    self.rc.SetDefaultCmdResult(output=cmd_output)
-
     k1sum = k1.GetSHA1sum()
-    self.assertEqual(k1sum, sha1sum)
+    self.assertEqual(k1sum, MOCK_SHA1SUM)
     self.assertCommandCalled(['vbutil_key', '--unpack', k1.public],
                              error_code_ok=True)
 

@@ -80,11 +80,11 @@ class ECSigner(signer.BaseSigner):
 
   required_keys_private = ('key_ec_efs',)
 
-  def IsROSigned(self, firmware_image):
-    """Returns True if the given firmware has RO signed ec."""
+  def IsROSigned(self, ec_image):
+    """Returns True if the given ec.bin is RO signed"""
 
     # Check fmap for KEY_RO
-    fmap = cros_build_lib.RunCommand(['futility', 'dump_fmap', firmware_image],
+    fmap = cros_build_lib.RunCommand(['futility', 'dump_fmap', '-p', ec_image],
                                      capture_output=True)
 
     return re.search('KEY_RO', fmap.output) is not None
@@ -104,7 +104,7 @@ class ECSigner(signer.BaseSigner):
     ec_path = os.path.abspath(input_name)
     bios_path = os.path.abspath(output_name)
 
-    if self.IsROSigned(bios_path):
+    if self.IsROSigned(ec_path):
       # Only sign if not read-only, nothing to do
       return
 
