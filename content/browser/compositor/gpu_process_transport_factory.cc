@@ -841,18 +841,6 @@ void GpuProcessTransportFactory::SetDisplayColorSpace(
     data->display->SetColorSpace(blending_color_space, output_color_space);
 }
 
-void GpuProcessTransportFactory::SetAuthoritativeVSyncInterval(
-    ui::Compositor* compositor,
-    base::TimeDelta interval) {
-  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
-  if (it == per_compositor_data_.end())
-    return;
-  PerCompositorData* data = it->second.get();
-  DCHECK(data);
-  if (data->synthetic_begin_frame_source)
-    data->synthetic_begin_frame_source->SetAuthoritativeVSyncInterval(interval);
-}
-
 void GpuProcessTransportFactory::SetDisplayVSyncParameters(
     ui::Compositor* compositor,
     base::TimeTicks timebase,
