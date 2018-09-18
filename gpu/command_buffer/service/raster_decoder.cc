@@ -802,7 +802,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   bool gpu_debug_commands_ = false;
 
   // Raster helpers.
-  ServiceFontManager font_manager_;
+  scoped_refptr<ServiceFontManager> font_manager_;
   sk_sp<SkSurface> sk_surface_;
 
   std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
@@ -900,7 +900,7 @@ RasterDecoderImpl::RasterDecoderImpl(
           group_->gpu_preferences().enable_gpu_service_logging_gpu),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))),
-      font_manager_(this),
+      font_manager_(base::MakeRefCounted<ServiceFontManager>(this)),
       weak_ptr_factory_(this) {
   DCHECK(raster_decoder_context_state_);
 }
@@ -1106,6 +1106,9 @@ void RasterDecoderImpl::Destroy(bool have_context) {
     context_->ReleaseCurrent(nullptr);
     context_ = nullptr;
   }
+
+  font_manager_->Destroy();
+  font_manager_.reset();
 }
 
 // Make this decoder's GL context current.
@@ -3173,8 +3176,8 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
     }
 
     std::vector<SkDiscardableHandleId> new_locked_handles;
-    if (!font_manager_.Deserialize(font_buffer_memory, font_shm_size,
-                                   &new_locked_handles)) {
+    if (!font_manager_->Deserialize(font_buffer_memory, font_shm_size,
+                                    &new_locked_handles)) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
                          "Invalid font buffer.");
       return;
@@ -3198,7 +3201,8 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   SkMatrix original_ctm;
   cc::PlaybackParams playback_params(nullptr, original_ctm);
   TransferCacheDeserializeHelperImpl impl(raster_decoder_id_, transfer_cache());
-  cc::PaintOp::DeserializeOptions options(&impl, font_manager_.strike_client());
+  cc::PaintOp::DeserializeOptions options(&impl,
+                                          font_manager_->strike_client());
 
   int op_idx = 0;
   size_t paint_buffer_size = raster_shm_size;
@@ -3248,7 +3252,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   // skia that access the glyph data.
   // TODO(khushalsagar): We just unlocked a bunch of handles, do we need to give
   // a call to skia to attempt to purge any unlocked handles?
-  if (!font_manager_.Unlock(locked_handles_)) {
+  if (!font_manager_->Unlock(locked_handles_)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
                        "Invalid font discardable handle.");
   }
