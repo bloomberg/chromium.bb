@@ -160,7 +160,14 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest, LaunchProcess) {
   RunUtilityProcess(false, false);
 }
 
-IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest, LaunchProcessAndCrash) {
+// Flaky on Windows, crbug.com/879555
+#if defined(OS_WIN)
+#define MAYBE_LaunchProcessAndCrash DISABLED_LaunchProcessAndCrash
+#else
+#define MAYBE_LaunchProcessAndCrash LaunchProcessAndCrash
+#endif
+IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest,
+                       MAYBE_LaunchProcessAndCrash) {
   RunUtilityProcess(false, true);
 }
 
