@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 209: The Web Audio autoplay policy will be re-enabled in Chrome 70 (October 2018). Please check that your website is compatible with it. https://goo.gl/7K7WLu
+CONSOLE WARNING: line 209: The Web Audio autoplay policy will be re-enabled in Chrome 71 (December 2018). Please check that your website is compatible with it. https://goo.gl/7K7WLu
 CONSOLE WARNING: line 392: Delay.delayTime.value -1 outside nominal range [0, 1.5]; value will be clamped.
 CONSOLE WARNING: line 392: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1.5]; value will be clamped.
 CONSOLE WARNING: line 404: Delay.delayTime.value 4 outside nominal range [0, 1.5]; value will be clamped.
