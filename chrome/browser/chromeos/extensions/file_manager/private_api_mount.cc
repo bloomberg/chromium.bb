@@ -245,10 +245,6 @@ bool FileManagerPrivateRemoveMountFunction::RunAsync() {
       }
       break;
     }
-    case file_manager::VOLUME_TYPE_CROSTINI:
-      file_manager::VolumeManager::Get(GetProfile())
-          ->RemoveSshfsCrostiniVolume(volume->mount_path());
-      break;
     default:
       // Requested unmounting a device which is not unmountable.
       return false;
