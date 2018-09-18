@@ -192,15 +192,6 @@ imageset("incognito_icon") {
   ]
 }
 
-imageset("incognito_legacy_icon") {
-  sources = [
-    "incognito_legacy_icon.imageset/Contents.json",
-    "incognito_legacy_icon.imageset/incognito_legacy_icon.png",
-    "incognito_legacy_icon.imageset/incognito_legacy_icon@2x.png",
-    "incognito_legacy_icon.imageset/incognito_legacy_icon@3x.png",
-  ]
-}
-
 imageset("ntp_opentabs_recent_arrow") {
   sources = [
     "ntp_opentabs_recent_arrow.imageset/Contents.json",
