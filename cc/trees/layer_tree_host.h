@@ -646,8 +646,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // free of slow-paths before toggling the flag.
   enum { kNumFramesToConsiderBeforeRemovingSlowPathFlag = 60 };
 
-  void ApplyViewportDeltas(ScrollAndScaleSet* info);
-  void RecordWheelAndTouchScrollingCount(ScrollAndScaleSet* info);
+  void ApplyViewportDeltas(const ScrollAndScaleSet& info);
+  void RecordWheelAndTouchScrollingCount(const ScrollAndScaleSet& info);
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
   void InitializeProxy(std::unique_ptr<Proxy> proxy);
 

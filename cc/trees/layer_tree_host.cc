@@ -869,13 +869,13 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   return did_paint_content;
 }
 
-void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
+void LayerTreeHost::ApplyViewportDeltas(const ScrollAndScaleSet& info) {
   gfx::Vector2dF inner_viewport_scroll_delta;
-  if (info->inner_viewport_scroll.element_id)
-    inner_viewport_scroll_delta = info->inner_viewport_scroll.scroll_delta;
+  if (info.inner_viewport_scroll.element_id)
+    inner_viewport_scroll_delta = info.inner_viewport_scroll.scroll_delta;
 
-  if (inner_viewport_scroll_delta.IsZero() && info->page_scale_delta == 1.f &&
-      info->elastic_overscroll_delta.IsZero() && !info->top_controls_delta)
+  if (inner_viewport_scroll_delta.IsZero() && info.page_scale_delta == 1.f &&
+      info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta)
     return;
 
   // Preemptively apply the scroll offset and scale delta here before sending
@@ -888,21 +888,21 @@ void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
             inner_viewport_scroll_delta));
   }
 
-  ApplyPageScaleDeltaFromImplSide(info->page_scale_delta);
+  ApplyPageScaleDeltaFromImplSide(info.page_scale_delta);
   SetElasticOverscrollFromImplSide(elastic_overscroll_ +
-                                   info->elastic_overscroll_delta);
+                                   info.elastic_overscroll_delta);
   // TODO(ccameron): pass the elastic overscroll here so that input events
   // may be translated appropriately.
   client_->ApplyViewportDeltas(inner_viewport_scroll_delta, gfx::Vector2dF(),
-                               info->elastic_overscroll_delta,
-                               info->page_scale_delta,
-                               info->top_controls_delta);
+                               info.elastic_overscroll_delta,
+                               info.page_scale_delta, info.top_controls_delta);
   SetNeedsUpdateLayers();
 }
 
-void LayerTreeHost::RecordWheelAndTouchScrollingCount(ScrollAndScaleSet* info) {
-  bool has_scrolled_by_wheel = info->has_scrolled_by_wheel;
-  bool has_scrolled_by_touch = info->has_scrolled_by_touch;
+void LayerTreeHost::RecordWheelAndTouchScrollingCount(
+    const ScrollAndScaleSet& info) {
+  bool has_scrolled_by_wheel = info.has_scrolled_by_wheel;
+  bool has_scrolled_by_touch = info.has_scrolled_by_touch;
 
   if (has_scrolled_by_wheel || has_scrolled_by_touch) {
     client_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
@@ -911,6 +911,7 @@ void LayerTreeHost::RecordWheelAndTouchScrollingCount(ScrollAndScaleSet* info) {
 }
 
 void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
+  DCHECK(info);
   for (auto& swap_promise : info->swap_promises) {
     TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                            TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
@@ -939,9 +940,9 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   // This needs to happen after scroll deltas have been sent to prevent top
   // controls from clamping the layout viewport both on the compositor and
   // on the main thread.
-  ApplyViewportDeltas(info);
+  ApplyViewportDeltas(*info);
 
-  RecordWheelAndTouchScrollingCount(info);
+  RecordWheelAndTouchScrollingCount(*info);
 }
 
 const base::WeakPtr<InputHandler>& LayerTreeHost::GetInputHandler()
