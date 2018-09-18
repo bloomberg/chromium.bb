@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_TASK_SCHEDULER_TASK_TRACKER_H_
 #define BASE_TASK_TASK_SCHEDULER_TASK_TRACKER_H_
 
+#include <atomic>
 #include <functional>
 #include <limits>
 #include <memory>
@@ -183,11 +184,21 @@ class BASE_EXPORT TaskTracker {
   // cannot be called after this.
   void SetHasShutdownStartedForTesting();
 
-  // Records |Now() - posted_time| to the appropriate |latency_histogram_type|
-  // based on |task_traits|.
-  void RecordLatencyHistogram(LatencyHistogramType latency_histogram_type,
-                              TaskTraits task_traits,
-                              TimeTicks posted_time) const;
+  // Records two histograms
+  // 1. TaskScheduler.[label].HeartbeatLatencyMicroseconds.[suffix]:
+  //    Now() - posted_time
+  // 2. TaskScheduler.[label].NumTasksRunWhileQueuing.[suffix]:
+  //    GetNumTasksRun() - num_tasks_run_when_posted.
+  // [label] is the histogram label provided to the constructor.
+  // [suffix] is derived from |task_priority| and |may_block|.
+  void RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms(
+      TaskPriority task_priority,
+      bool may_block,
+      TimeTicks posted_time,
+      int num_tasks_run_when_posted) const;
+
+  // Returns the number of tasks run so far
+  int GetNumTasksRun() const;
 
   TrackedRef<TaskTracker> GetTrackedRef() {
     return tracked_ref_factory_.GetTrackedRef();
@@ -323,6 +334,14 @@ class BASE_EXPORT TaskTracker {
   // manner.
   void CallFlushCallbackForTesting();
 
+  // Records |Now() - posted_time| to the appropriate |latency_histogram_type|
+  // based on |task_traits|.
+  void RecordLatencyHistogram(LatencyHistogramType latency_histogram_type,
+                              TaskTraits task_traits,
+                              TimeTicks posted_time) const;
+
+  void IncrementNumTasksRun();
+
   debug::TaskAnnotator task_annotator_;
 
   // Number of tasks blocking shutdown and boolean indicating whether shutdown
@@ -358,8 +377,13 @@ class BASE_EXPORT TaskTracker {
   // completes.
   std::unique_ptr<WaitableEvent> shutdown_event_;
 
-  // TaskScheduler.TaskLatencyMicroseconds.* and
-  // TaskScheduler.HeartbeatLatencyMicroseconds.* histograms. The first index is
+  // Counter for number of tasks run so far, used to record tasks run while
+  // a task queued to histogram.
+  std::atomic_int num_tasks_run_{0};
+
+  // TaskScheduler.TaskLatencyMicroseconds.*,
+  // TaskScheduler.HeartbeatLatencyMicroseconds.*, and
+  // TaskScheduler.NumTasksRunWhileQueuing.* histograms. The first index is
   // a TaskPriority. The second index is 0 for non-blocking tasks, 1 for
   // blocking tasks. Intentionally leaked.
   // TODO(scheduler-dev): Consider using STATIC_HISTOGRAM_POINTER_GROUP for
@@ -368,6 +392,8 @@ class BASE_EXPORT TaskTracker {
       static_cast<int>(TaskPriority::HIGHEST) + 1;
   HistogramBase* const task_latency_histograms_[kNumTaskPriorities][2];
   HistogramBase* const heartbeat_latency_histograms_[kNumTaskPriorities][2];
+  HistogramBase* const
+      num_tasks_run_while_queuing_histograms_[kNumTaskPriorities][2];
 
   PreemptionState preemption_state_[kNumTaskPriorities];
 
