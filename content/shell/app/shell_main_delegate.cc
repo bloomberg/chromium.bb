@@ -181,16 +181,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
   InitLogging(command_line);
 
-  if (command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
-    // If CheckLayoutSystemDeps succeeds, we don't exit early. Instead we
-    // continue and try to load the fonts in BlinkTestPlatformInitialize
-    // below, and then try to bring up the rest of the content module.
-    if (!CheckLayoutSystemDeps()) {
-      *exit_code = 1;
-      return true;
-    }
-  }
-
   if (command_line.HasSwitch("run-layout-test")) {
     std::cerr << std::string(79, '*') << "\n"
               << "* The flag --run-layout-test is obsolete. Please use --"
@@ -200,6 +190,16 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 
   if (command_line.HasSwitch(switches::kRunWebTests)) {
+    // Only run CheckLayoutSystemDeps on the browser process.
+    if (!command_line.HasSwitch(switches::kProcessType)) {
+      // If CheckLayoutSystemDeps fails, we early exit as there's no point in
+      // running the tests.
+      if (!CheckLayoutSystemDeps()) {
+        *exit_code = 1;
+        return true;
+      }
+    }
+
     EnableBrowserLayoutTestMode();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -357,8 +357,7 @@ int ShellMainDelegate::RunProcess(
 
   browser_runner_.reset(BrowserMainRunner::Create());
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kRunWebTests) ||
-                 command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)
+  return command_line.HasSwitch(switches::kRunWebTests)
              ? LayoutTestBrowserMain(main_function_params, browser_runner_)
              : ShellBrowserMain(main_function_params, browser_runner_);
 }
@@ -420,8 +419,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
 void ShellMainDelegate::PreCreateMainMessageLoop() {
 #if defined(OS_ANDROID)
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRunWebTests) ||
-      command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
+  if (command_line.HasSwitch(switches::kRunWebTests)) {
     bool success =
         base::MessageLoop::InitMessagePumpForUIFactory(&CreateMessagePumpForUI);
     CHECK(success) << "Unable to initialize the message pump for Android";

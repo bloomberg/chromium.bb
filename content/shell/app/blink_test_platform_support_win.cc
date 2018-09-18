@@ -54,7 +54,7 @@ bool CheckLayoutSystemDeps() {
   metrics.cbSize = sizeof(NONCLIENTMETRICS);
   bool success = !!::SystemParametersInfo(
       SPI_GETNONCLIENTMETRICS, metrics.cbSize, &metrics, 0);
-  CHECK(success);
+  PCHECK(success);
   LOGFONTW* system_fonts[] =
       {&metrics.lfStatusFont, &metrics.lfMenuFont, &metrics.lfSmCaptionFont};
   const wchar_t required_font[] = L"Segoe UI";

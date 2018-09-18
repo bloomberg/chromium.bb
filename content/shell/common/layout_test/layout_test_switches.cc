@@ -20,10 +20,6 @@ const char kAndroidStdinPort[] = "android-stdin-port";
 const char kAndroidStdoutPort[] = "android-stdout-port";
 #endif // defined(OS_ANDROID)
 
-// Check whether all system dependencies for running layout tests are met.
-// TODO(tkent): Rename this to "check-web-test-sys-deps".
-const char kCheckLayoutTestSysDeps[] = "check-layout-test-sys-deps";
-
 // When specified to "enable-leak-detection" command-line option,
 // causes the leak detector to cause immediate crash when found leak.
 const char kCrashOnFailure[] = "crash-on-failure";
