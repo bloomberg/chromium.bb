@@ -67,6 +67,9 @@ void RequestProxyResolvingSocketFactory(
 
 }  // namespace
 
+BrowserContextKeyedServiceFactory::TestingFactoryFunction
+    GCMProfileServiceFactory::testing_factory_ = nullptr;
+
 // static
 GCMProfileService* GCMProfileServiceFactory::GetForProfile(
     content::BrowserContext* profile) {
@@ -81,6 +84,12 @@ GCMProfileService* GCMProfileServiceFactory::GetForProfile(
 // static
 GCMProfileServiceFactory* GCMProfileServiceFactory::GetInstance() {
   return base::Singleton<GCMProfileServiceFactory>::get();
+}
+
+// static
+void GCMProfileServiceFactory::SetGlobalTestingFactory(
+    BrowserContextKeyedServiceFactory::TestingFactoryFunction factory) {
+  testing_factory_ = factory;
 }
 
 GCMProfileServiceFactory::GCMProfileServiceFactory()
@@ -100,6 +109,9 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   DCHECK(!profile->IsOffTheRecord());
+
+  if (testing_factory_)
+    return testing_factory_(context).release();
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
       base::CreateSequencedTaskRunnerWithTraits(
