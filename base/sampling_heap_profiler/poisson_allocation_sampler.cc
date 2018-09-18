@@ -388,14 +388,18 @@ void PoissonAllocationSampler::RecordAlloc(void* address,
                                            const char* context) {
   if (UNLIKELY(!subtle::NoBarrier_Load(&g_running)))
     return;
-
-  intptr_t accumulated_bytes = TLSGetValue(g_accumulated_bytes_tls);
-  accumulated_bytes += size;
-  if (LIKELY(accumulated_bytes < 0)) {
+  intptr_t accumulated_bytes = TLSGetValue(g_accumulated_bytes_tls) + size;
+  if (LIKELY(accumulated_bytes < 0))
     TLSSetValue(g_accumulated_bytes_tls, accumulated_bytes);
-    return;
-  }
+  else
+    instance_->DoRecordAlloc(accumulated_bytes, size, address, type, context);
+}
 
+void PoissonAllocationSampler::DoRecordAlloc(intptr_t accumulated_bytes,
+                                             size_t size,
+                                             void* address,
+                                             AllocatorType type,
+                                             const char* context) {
   size_t mean_interval = subtle::NoBarrier_Load(&g_sampling_interval);
   size_t samples = accumulated_bytes / mean_interval;
   accumulated_bytes %= mean_interval;
@@ -407,27 +411,22 @@ void PoissonAllocationSampler::RecordAlloc(void* address,
 
   TLSSetValue(g_accumulated_bytes_tls, accumulated_bytes);
 
-  instance_->DoRecordAlloc(samples * mean_interval, size, address, type,
-                           context);
-}
-
-void PoissonAllocationSampler::DoRecordAlloc(size_t total_allocated,
-                                             size_t size,
-                                             void* address,
-                                             AllocatorType type,
-                                             const char* context) {
   if (UNLIKELY(TLSGetValue(g_internal_reentry_guard)))
     return;
+
   ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
+
   // TODO(alph): Sometimes RecordAlloc is called twice in a row without
   // a RecordFree in between. Investigate it.
-  if (!sampled_addresses_set().Contains(address)) {
-    sampled_addresses_set().Insert(address);
-    BalanceAddressesHashSet();
-    for (auto* observer : observers_)
-      observer->SampleAdded(address, size, total_allocated, type, context);
-  }
+  if (sampled_addresses_set().Contains(address))
+    return;
+  sampled_addresses_set().Insert(address);
+  BalanceAddressesHashSet();
+
+  size_t total_allocated = mean_interval * samples;
+  for (auto* observer : observers_)
+    observer->SampleAdded(address, size, total_allocated, type, context);
 }
 
 // static
