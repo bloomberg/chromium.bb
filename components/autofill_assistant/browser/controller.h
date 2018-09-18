@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/autofill_assistant/browser/client.h"
@@ -81,6 +82,7 @@ class Controller : public ScriptExecutorDelegate,
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;
   std::unique_ptr<ClientMemory> memory_;
+  bool allow_autostart_;
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };

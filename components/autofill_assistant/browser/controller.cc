@@ -5,7 +5,6 @@
 #include "components/autofill_assistant/browser/controller.h"
 
 #include <utility>
-#include <vector>
 
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
@@ -50,7 +49,8 @@ Controller::Controller(content::WebContents* web_contents,
       web_controller_(std::move(web_controller)),
       service_(std::move(service)),
       script_tracker_(std::make_unique<ScriptTracker>(this, this)),
-      memory_(std::make_unique<ClientMemory>()) {
+      memory_(std::make_unique<ClientMemory>()),
+      allow_autostart_(true) {
   GetUiController()->SetUiDelegate(this);
   GetUiController()->ShowOverlay();
   if (!web_contents->IsLoading()) {
@@ -114,6 +114,7 @@ void Controller::OnScriptSelected(const std::string& script_path) {
   DCHECK(!script_path.empty());
 
   GetUiController()->ShowOverlay();
+  allow_autostart_ = false;  // Only ever autostart the very first script.
   script_tracker_->ExecuteScript(
       script_path, base::BindOnce(&Controller::OnScriptExecuted,
                                   // script_tracker_ is owned by Controller.
@@ -128,6 +129,9 @@ void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
   switch (type) {
     case blink::WebInputEvent::kGestureLongTap:
     case blink::WebInputEvent::kGestureTap:
+      // Disable autostart after interaction with the web page.
+      allow_autostart_ = false;
+
       if (!script_tracker_->running())
         script_tracker_->CheckScripts();
       break;
@@ -143,6 +147,16 @@ void Controller::OnRunnableScriptsChanged(
   // check again and maybe update when the current script has finished.
   if (script_tracker_->running())
     return;
+
+  // Under specific conditions, we can directly run a script without first
+  // displaying it. This is meant to work only at the very beginning, when
+  // no scripts have run, there has been no interaction with the webpage and
+  // only if there's exactly one runnable script, flagged for autostart.
+  if (allow_autostart_ && runnable_scripts.size() == 1 &&
+      runnable_scripts[0].autostart) {
+    OnScriptSelected(runnable_scripts[0].path);
+    return;
+  }
 
   GetUiController()->UpdateScripts(runnable_scripts);
 }

@@ -42,6 +42,10 @@ message SupportedScriptProto {
     // means a script with priority 0 should be displayed before a script with
     // priority 1.
     optional int32 priority = 5;
+
+    // When set to true this script can be run in 'autostart mode'. Script won't
+    // be shown.
+    optional bool autostart = 8;
   }
   optional PresentationProto presentation = 2;
 }

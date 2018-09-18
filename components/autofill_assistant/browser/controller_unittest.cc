@@ -32,7 +32,7 @@ namespace {
 
 class FakeClient : public Client {
  public:
-  FakeClient(std::unique_ptr<UiController> ui_controller)
+  explicit FakeClient(std::unique_ptr<UiController> ui_controller)
       : ui_controller_(std::move(ui_controller)) {}
 
   // Implements Client
@@ -72,10 +72,6 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     ON_CALL(*mock_service_, OnGetActions(_, _))
         .WillByDefault(RunOnceCallback<1>(true, ""));
 
-    // Element "exists" exists.
-    ON_CALL(*mock_web_controller_, OnElementExists(ElementsAre("exists"), _))
-        .WillByDefault(RunOnceCallback<1>(true));
-
     // Make WebController::GetUrl accessible.
     ON_CALL(*mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
 
@@ -88,16 +84,13 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   }
 
  protected:
-  static void AddRunnableScript(SupportsScriptResponseProto* response,
-                                const std::string& name,
-                                const std::string& path) {
+  static SupportedScriptProto* AddRunnableScript(
+      SupportsScriptResponseProto* response,
+      const std::string& name_and_path) {
     SupportedScriptProto* script = response->add_scripts();
-    script->set_path(path);
-    script->mutable_presentation()->set_name(name);
-    script->mutable_presentation()
-        ->mutable_precondition()
-        ->add_elements_exist()
-        ->add_selectors("exists");
+    script->set_path(name_and_path);
+    script->mutable_presentation()->set_name(name_and_path);
+    return script;
   }
 
   // Updates the current url of the controller and forces a refresh, without
@@ -105,6 +98,10 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   void SimulateNavigateToUrl(const GURL& url) {
     tester_->SetLastCommittedURL(url);
     controller_->DidFinishLoad(nullptr, url);
+  }
+
+  void SimulateUserInteraction(const blink::WebInputEvent::Type type) {
+    controller_->DidGetUserInteraction(type);
   }
 
   // Sets up the next call to the service for scripts to return |response|.
@@ -130,8 +127,8 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
   // Going to the URL triggers a whole flow:
   // 1. loading scripts
   SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "script1 name", "script1");
-  AddRunnableScript(&script_response, "script2 name", "script2");
+  AddRunnableScript(&script_response, "script1");
+  AddRunnableScript(&script_response, "script2");
   SetNextScriptResponse(script_response);
 
   // 2. checking the scripts
@@ -175,6 +172,50 @@ TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
   SimulateNavigateToUrl(GURL("http://a.example.com/path2"));
   SimulateNavigateToUrl(GURL("http://b.example.com/path1"));
   SimulateNavigateToUrl(GURL("http://b.example.com/path2"));
+}
+
+TEST_F(ControllerTest, Autostart) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "runnable")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetNextScriptResponse(script_response);
+
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _))
+      .WillOnce(RunOnceCallback<1>(true, ""));
+  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(0)));
+
+  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+}
+
+TEST_F(ControllerTest, AutostartFallsBackToUpdateScriptAfterTap) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "runnable")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetNextScriptResponse(script_response);
+
+  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(1)));
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _)).Times(0);
+
+  SimulateUserInteraction(blink::WebInputEvent::kGestureTap);
+  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+}
+
+TEST_F(ControllerTest, AutostartFallsBackToUpdateScriptAfterExecution) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "runnable")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetNextScriptResponse(script_response);
+
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script1"), _));
+  GetUiDelegate()->OnScriptSelected("script1");
+
+  EXPECT_CALL(*mock_ui_controller_, UpdateScripts(SizeIs(1)));
+  EXPECT_CALL(*mock_service_, OnGetActions(StrEq("runnable"), _)).Times(0);
+
+  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 }
 
 }  // namespace autofill_assistant

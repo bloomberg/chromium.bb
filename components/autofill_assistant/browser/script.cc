@@ -6,7 +6,7 @@
 
 namespace autofill_assistant {
 
-ScriptHandle::ScriptHandle() = default;
+ScriptHandle::ScriptHandle() : autostart(false) {}
 
 ScriptHandle::~ScriptHandle() = default;
 
