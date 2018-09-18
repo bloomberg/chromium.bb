@@ -755,6 +755,59 @@ static const GInterfaceInfo HyperlinkImplInfo = {
     nullptr, nullptr};
 
 //
+// AtkHypertext interface.
+//
+
+static AtkHyperlink* ax_platform_node_auralinux_hypertext_get_link(
+    AtkHypertext* hypertext,
+    int index) {
+  g_return_val_if_fail(ATK_HYPERTEXT(hypertext), 0);
+  auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(hypertext));
+  if (!obj)
+    return nullptr;
+
+  const ui::AXHypertext& ax_hypertext = obj->GetHypertext();
+  if (index > static_cast<int>(ax_hypertext.hyperlinks.size()) || index < 0)
+    return nullptr;
+
+  int32_t id = ax_hypertext.hyperlinks[index];
+  auto* link = ui::AXPlatformNodeAuraLinux::GetFromUniqueId(id);
+  if (!link)
+    return nullptr;
+
+  return link->GetAtkHyperlink();
+}
+
+static int ax_platform_node_auralinux_get_n_links(AtkHypertext* hypertext) {
+  g_return_val_if_fail(ATK_HYPERTEXT(hypertext), 0);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(hypertext));
+  return obj ? obj->GetHypertext().hyperlinks.size() : 0;
+}
+
+static int ax_platform_node_auralinux_get_link_index(AtkHypertext* hypertext,
+                                                     int char_index) {
+  g_return_val_if_fail(ATK_HYPERTEXT(hypertext), 0);
+  ui::AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(hypertext));
+
+  auto it = obj->GetHypertext().hyperlink_offset_to_index.find(char_index);
+  if (it == obj->GetHypertext().hyperlink_offset_to_index.end())
+    return -1;
+  return it->second;
+}
+
+void ax_hypertext_interface_base_init(AtkHypertextIface* iface) {
+  iface->get_link = ax_platform_node_auralinux_hypertext_get_link;
+  iface->get_n_links = ax_platform_node_auralinux_get_n_links;
+  iface->get_link_index = ax_platform_node_auralinux_get_link_index;
+}
+
+static const GInterfaceInfo HypertextInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(ax_hypertext_interface_base_init),
+    nullptr, nullptr};
+
+//
 // AtkText interface.
 //
 
@@ -932,6 +985,9 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // as well.
   interface_mask |= 1 << ATK_TEXT_INTERFACE;
 
+  if (!IsPlainTextField() && !IsChildOfLeaf())
+    interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
+
   // Value Interface
   AtkRole role = GetAtkRole();
   if (IsRoleWithValueInterface(role)) {
@@ -987,6 +1043,8 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
   if (interface_mask_ & (1 << ATK_HYPERLINK_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_HYPERLINK_IMPL,
                                 &HyperlinkImplInfo);
+  if (interface_mask_ & (1 << ATK_HYPERTEXT_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_HYPERTEXT, &HypertextInfo);
   if (interface_mask_ & (1 << ATK_TEXT_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_TEXT, &TextInfo);
 
@@ -1031,6 +1089,22 @@ AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
 AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
     gfx::NativeViewAccessible accessible) {
   return AtkObjectToAXPlatformNodeAuraLinux(accessible);
+}
+
+using UniqueIdMap = base::hash_map<int32_t, AXPlatformNodeAuraLinux*>;
+// Map from each AXPlatformNode's unique id to its instance.
+base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
+    LAZY_INSTANCE_INITIALIZER;
+
+// static
+AXPlatformNodeAuraLinux* AXPlatformNodeAuraLinux::GetFromUniqueId(
+    int32_t unique_id) {
+  UniqueIdMap* unique_ids = g_unique_id_map.Pointer();
+  auto iter = unique_ids->find(unique_id);
+  if (iter != unique_ids->end())
+    return iter->second;
+
+  return nullptr;
 }
 
 //
@@ -1533,6 +1607,8 @@ AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
 }
 
 void AXPlatformNodeAuraLinux::Destroy() {
+  g_unique_id_map.Get().erase(GetUniqueId());
+
   DestroyAtkObjects();
   AXPlatformNodeBase::Destroy();
 }
@@ -1540,6 +1616,7 @@ void AXPlatformNodeAuraLinux::Destroy() {
 void AXPlatformNodeAuraLinux::Init(AXPlatformNodeDelegate* delegate) {
   // Initialize ATK.
   AXPlatformNodeBase::Init(delegate);
+  g_unique_id_map.Get()[GetUniqueId()] = this;
   DataChanged();
 }
 
@@ -1724,6 +1801,10 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
   hypertext_ = ComputeHypertext();
 }
 
+const AXHypertext& AXPlatformNodeAuraLinux::GetHypertext() {
+  return hypertext_;
+}
+
 int AXPlatformNodeAuraLinux::GetIndexInParent() {
   if (!GetParent())
     return -1;
@@ -1876,9 +1957,6 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::GetDocumentAttributes() const {
 //
 
 AtkHyperlink* AXPlatformNodeAuraLinux::GetAtkHyperlink() {
-  DCHECK(ATK_HYPERLINK_IMPL(atk_object_));
-  g_return_val_if_fail(ATK_HYPERLINK_IMPL(atk_object_), 0);
-
   if (!atk_hyperlink_) {
     atk_hyperlink_ =
         ATK_HYPERLINK(g_object_new(AX_PLATFORM_ATK_HYPERLINK_TYPE, 0));
