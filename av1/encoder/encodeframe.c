@@ -2527,6 +2527,9 @@ static void rd_pick_sqr_partition(AV1_COMP *const cpi, ThreadData *td,
     subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
     int idx;
 
+    sum_rdc.rate = partition_cost[PARTITION_SPLIT];
+    sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
+
     for (idx = 0; idx < 4 && sum_rdc.rdcost < temp_best_rdcost; ++idx) {
       const int x_idx = (idx & 1) * mi_step;
       const int y_idx = (idx >> 1) * mi_step;
@@ -2538,12 +2541,12 @@ static void rd_pick_sqr_partition(AV1_COMP *const cpi, ThreadData *td,
 
       pc_tree->split[idx]->index = idx;
       int64_t *p_split_rd = &split_rd[idx];
-      // TODO(Cherma) : Account for partition cost while passing best rd to
-      // rd_pick_sqr_partition()
-      rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row + y_idx,
-                            mi_col + x_idx, subsize, &this_rdc,
-                            temp_best_rdcost - sum_rdc.rdcost,
-                            pc_tree->split[idx], p_split_rd);
+      int64_t best_remain_rdcost = (temp_best_rdcost == INT64_MAX)
+                                       ? INT64_MAX
+                                       : (temp_best_rdcost - sum_rdc.rdcost);
+      rd_pick_sqr_partition(
+          cpi, td, tile_data, tp, mi_row + y_idx, mi_col + x_idx, subsize,
+          &this_rdc, best_remain_rdcost, pc_tree->split[idx], p_split_rd);
 
       pc_tree->pc_tree_stats.sub_block_rdcost[idx] = this_rdc.rdcost;
       pc_tree->pc_tree_stats.sub_block_skip[idx] =
@@ -2561,7 +2564,6 @@ static void rd_pick_sqr_partition(AV1_COMP *const cpi, ThreadData *td,
     reached_last_index = (idx == 4);
 
     if (reached_last_index && sum_rdc.rdcost < best_rdc.rdcost) {
-      sum_rdc.rate += partition_cost[PARTITION_SPLIT];
       sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
 
       if (sum_rdc.rdcost < best_rdc.rdcost) {
