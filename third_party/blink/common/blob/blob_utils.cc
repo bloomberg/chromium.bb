@@ -13,6 +13,8 @@
 
 namespace blink {
 
+constexpr uint64_t BlobUtils::kUnknownSize;
+
 // static
 bool BlobUtils::MojoBlobURLsEnabled() {
   return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
@@ -40,8 +42,14 @@ constexpr base::FeatureParam<int> kBlobDataPipeChunkSize{
 }  // namespace
 
 // static
-uint32_t BlobUtils::GetDataPipeCapacity() {
-  return std::max(kBlobDataPipeCapacity.Get(), kBlobMinDataPipeCapacity);
+uint32_t BlobUtils::GetDataPipeCapacity(uint64_t target_blob_size) {
+  static_assert(kUnknownSize > kBlobDefaultDataPipeCapacity,
+                "The unknown size constant must be greater than our capacity.");
+  uint32_t result =
+      std::min(base::saturated_cast<uint32_t>(target_blob_size),
+               base::saturated_cast<uint32_t>(kBlobDataPipeCapacity.Get()));
+  return std::max(result,
+                  base::saturated_cast<uint32_t>(kBlobMinDataPipeCapacity));
 }
 
 // static

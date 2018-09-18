@@ -118,7 +118,7 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
   DCHECK_GE(http_info->response_data_size, 0);
   uint64_t body_size = http_info->response_data_size;
   uint64_t meta_data_size = 0;
-  mojo::DataPipe body_pipe(blink::BlobUtils::GetDataPipeCapacity());
+  mojo::DataPipe body_pipe(blink::BlobUtils::GetDataPipeCapacity(body_size));
   if (!body_pipe.producer_handle.is_valid()) {
     CompleteSendIfNeeded(FinishedReason::kCreateDataPipeError);
     return;
@@ -126,7 +126,10 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
   body_handle_ = std::move(body_pipe.producer_handle);
   // Start sending meta data (V8 code cache data).
   if (http_info->http_info->metadata) {
-    mojo::DataPipe meta_pipe(blink::BlobUtils::GetDataPipeCapacity());
+    DCHECK_GE(http_info->http_info->metadata->size(), 0);
+    meta_data_size = http_info->http_info->metadata->size();
+    mojo::DataPipe meta_pipe(
+        blink::BlobUtils::GetDataPipeCapacity(meta_data_size));
     if (!meta_pipe.producer_handle.is_valid()) {
       CompleteSendIfNeeded(FinishedReason::kCreateDataPipeError);
       return;
@@ -136,8 +139,6 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
         http_info->http_info->metadata, std::move(meta_pipe.producer_handle));
     meta_data_sender_->Start(base::BindOnce(
         &ServiceWorkerInstalledScriptReader::OnMetaDataSent, AsWeakPtr()));
-    DCHECK_GE(http_info->http_info->metadata->size(), 0);
-    meta_data_size = http_info->http_info->metadata->size();
   }
 
   // Start sending body.

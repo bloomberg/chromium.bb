@@ -181,6 +181,7 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
 
 int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
     blink::mojom::BlobPtr* blob,
+    uint64_t blob_size,
     const net::HttpRequestHeaders& headers,
     base::OnceCallback<void(int)> on_blob_read_complete,
     mojo::ScopedDataPipeConsumerHandle* handle_out) {
@@ -194,7 +195,7 @@ int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
     return net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
   }
 
-  mojo::DataPipe data_pipe(blink::BlobUtils::GetDataPipeCapacity());
+  mojo::DataPipe data_pipe(blink::BlobUtils::GetDataPipeCapacity(blob_size));
   blink::mojom::BlobReaderClientPtr blob_reader_client;
   mojo::MakeStrongBinding(
       std::make_unique<BlobCompleteCaller>(std::move(on_blob_read_complete)),

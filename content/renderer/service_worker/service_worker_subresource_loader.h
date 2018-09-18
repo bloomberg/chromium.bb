@@ -119,6 +119,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       response_callback_binding_;
   // The blob needs to be held while it's read to keep it alive.
   blink::mojom::BlobPtr body_as_blob_;
+  uint64_t body_as_blob_size_;
 
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 

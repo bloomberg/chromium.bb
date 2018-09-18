@@ -7,6 +7,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_BLOB_BLOB_UTILS_H_
 
 #include <stdint.h>
+#include <limits>
 
 #include "third_party/blink/common/common_export.h"
 
@@ -19,11 +20,16 @@ class BlobUtils {
   static bool BLINK_COMMON_EXPORT MojoBlobURLsEnabled();
 
   // Get the preferred capacity a mojo::DataPipe being used to read a blob.
-  static uint32_t BLINK_COMMON_EXPORT GetDataPipeCapacity();
+  static uint32_t BLINK_COMMON_EXPORT
+  GetDataPipeCapacity(uint64_t target_blob_size);
 
   // Get the preferred chunk size to use when reading a blob to copy
   // into a mojo::DataPipe.
   static uint32_t BLINK_COMMON_EXPORT GetDataPipeChunkSize();
+
+  // Constant used to represent when a blob's size is unknown.
+  static constexpr uint64_t BLINK_COMMON_EXPORT kUnknownSize =
+      std::numeric_limits<uint64_t>::max();
 };
 
 }  // namespace blink
