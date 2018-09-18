@@ -43,6 +43,8 @@ namespace {
 // They need to be invalidated when moving across inline formatting context
 // (i.e., to a different LayoutBlockFlow.)
 void InvalidateInlineItems(LayoutObject* object) {
+  if (object->IsInLayoutNGInlineFormattingContext())
+    object->SetFirstInlineFragment(nullptr);
   if (object->IsLayoutNGText()) {
     ToLayoutNGText(object)->InvalidateInlineItems();
   } else if (object->IsLayoutInline()) {

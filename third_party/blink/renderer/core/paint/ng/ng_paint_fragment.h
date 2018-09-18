@@ -185,7 +185,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       NGPaintFragment* operator->() const { return current_; }
       iterator& operator++() {
         CHECK(current_);
-        current_ = current_->next_for_same_layout_object_.get();
+        current_ = current_->next_for_same_layout_object_;
         return *this;
       }
       bool operator==(const iterator& other) const {
@@ -233,9 +233,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // for a LayoutObject.
   static FragmentRange InlineFragmentsFor(const LayoutObject*);
 
-  // Reset a range of NGPaintFragment in an inline formatting context that are
-  // for a LayoutObject.
-  static void ResetInlineFragmentsFor(const LayoutObject*);
+  // Called when lines containing |child| is dirty.
+  static void DirtyLinesFromChangedChild(LayoutObject* child);
 
   // Computes LocalVisualRect for an inline LayoutObject in the
   // LayoutObject::LocalVisualRect semantics; i.e., physical coordinates with
@@ -273,7 +272,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // The next fragment for when this is fragmented.
   scoped_refptr<NGPaintFragment> next_fragmented_;
 
-  scoped_refptr<NGPaintFragment> next_for_same_layout_object_;
+  NGPaintFragment* next_for_same_layout_object_ = nullptr;
   NGPhysicalOffset inline_offset_to_container_box_;
 
   //

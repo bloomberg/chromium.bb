@@ -99,6 +99,9 @@ class LayoutNGMixin : public Base {
 
   const NGBaseline* FragmentBaseline(NGBaselineAlgorithmType) const;
 
+  void DirtyLinesFromChangedChild(LayoutObject* child,
+                                  MarkingBehavior marking_behavior) override;
+
   std::unique_ptr<NGInlineNodeData> ng_inline_node_data_;
 
   scoped_refptr<const NGLayoutResult> cached_result_;

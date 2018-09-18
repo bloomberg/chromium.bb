@@ -163,9 +163,7 @@ NGPaintFragment::NGPaintFragment(
   DCHECK(physical_fragment_);
 }
 
-NGPaintFragment::~NGPaintFragment() {
-  DCHECK(!next_for_same_layout_object_);
-}
+NGPaintFragment::~NGPaintFragment() = default;
 
 scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
     scoped_refptr<const NGPhysicalFragment> fragment,
@@ -357,16 +355,19 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
   return FragmentRange(nullptr, false);
 }
 
-void NGPaintFragment::ResetInlineFragmentsFor(
-    const LayoutObject* layout_object) {
-  // Because |next_for_same_layout_object_| can be the last reference, we should
-  // have another reference during resetting |next_for_same_layout_object_|
-  // |FragmentRange|..
-  scoped_refptr<NGPaintFragment> current = layout_object->FirstInlineFragment();
-  while (current) {
-    scoped_refptr<NGPaintFragment> next;
-    next.swap(current->next_for_same_layout_object_);
-    current.swap(next);
+void NGPaintFragment::DirtyLinesFromChangedChild(LayoutObject* child) {
+  if (!child->IsInLayoutNGInlineFormattingContext())
+    return;
+  // We should rest first inline fragment for following tests:
+  //  * fast/dom/HTMLObjectElement/fallback-content-behaviour.html
+  //  * fast/dom/shadow/exposed-object-within-shadow.html
+  //  * fast/lists/inline-before-content-after-list-marker.html
+  //  * fast/lists/list-with-image-display-changed.html
+  for (LayoutObject* runner = child; runner;
+       runner = runner->NextInPreOrder(child)) {
+    if (!runner->IsInLayoutNGInlineFormattingContext())
+      continue;
+    runner->SetFirstInlineFragment(nullptr);
   }
 }
 

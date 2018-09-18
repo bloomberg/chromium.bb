@@ -401,6 +401,14 @@ PositionWithAffinity LayoutNGMixin<Base>::PositionForPoint(
   return Base::CreatePositionWithAffinity(0);
 }
 
+template <typename Base>
+void LayoutNGMixin<Base>::DirtyLinesFromChangedChild(
+    LayoutObject* child,
+    MarkingBehavior marking_behavior) {
+  DCHECK_EQ(marking_behavior, kMarkContainerChain);
+  NGPaintFragment::DirtyLinesFromChangedChild(child);
+}
+
 template class LayoutNGMixin<LayoutTableCaption>;
 template class LayoutNGMixin<LayoutTableCell>;
 template class LayoutNGMixin<LayoutBlockFlow>;

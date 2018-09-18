@@ -143,7 +143,6 @@ void LayoutInline::DeleteLineBoxes() {
 
 void LayoutInline::SetFirstInlineFragment(NGPaintFragment* fragment) {
   CHECK(IsInLayoutNGInlineFormattingContext());
-  NGPaintFragment::ResetInlineFragmentsFor(this);
   first_paint_fragment_ = fragment;
 }
 
@@ -1458,6 +1457,7 @@ void LayoutInline::DirtyLinesFromChangedChild(
     MarkingBehavior marking_behavior) {
   if (IsInLayoutNGInlineFormattingContext()) {
     SetAncestorLineBoxDirty();
+    NGPaintFragment::DirtyLinesFromChangedChild(child);
     return;
   }
   MutableLineBoxes()->DirtyLinesFromChangedChild(
