@@ -6,14 +6,20 @@
 
 #include "base/logging.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/credit_card_save_manager_test_observer_bridge.h"
 #include "components/autofill/ios/browser/ios_test_event_waiter.h"
+#include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/web_state/web_frame_util.h"
@@ -59,6 +65,15 @@ enum InfobarEvent : int {
   SENT_UPLOAD_CARD_REQUEST,
 };
 
+id<GREYMatcher> closeButtonMatcher() {
+  return chrome_test_util::ButtonWithAccessibilityLabelId(IDS_CLOSE);
+}
+
+id<GREYMatcher> saveButtonMatcher() {
+  return chrome_test_util::ButtonWithAccessibilityLabelId(
+      IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT);
+}
+
 }  // namepsace
 
 namespace autofill {
@@ -102,6 +117,7 @@ class SaveCardInfobarEGTestHelper {
   std::unique_ptr<autofill::CreditCardSaveManagerTestObserverBridge>
       credit_card_save_manager_observer_;
   std::unique_ptr<autofill::IOSTestEventWaiter<InfobarEvent>> event_waiter_;
+  autofill::PersonalDataManager* personal_data_manager_;
 }
 
 @end
@@ -110,6 +126,10 @@ class SaveCardInfobarEGTestHelper {
 
 - (void)setUp {
   [super setUp];
+
+  personal_data_manager_ =
+      autofill::PersonalDataManagerFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState());
 
   // Set up the URL loader factory for the PaymentsClient so we can intercept
   // those network requests.
@@ -127,6 +147,15 @@ class SaveCardInfobarEGTestHelper {
   credit_card_save_manager_observer_ =
       std::make_unique<autofill::CreditCardSaveManagerTestObserverBridge>(
           credit_card_save_manager, self);
+}
+
+- (void)tearDown {
+  // Clear existing credit cards.
+  for (const auto* creditCard : personal_data_manager_->GetCreditCards()) {
+    personal_data_manager_->RemoveByGUID(creditCard->guid());
+  }
+
+  [super tearDown];
 }
 
 #pragma mark - autofill::IOSTestEventWaiter helper methods
@@ -197,7 +226,7 @@ class SaveCardInfobarEGTestHelper {
 
 #pragma mark - Helper methods
 
-- (BOOL)waitForSaveCardInfobarOrTimeout:(NSString*)accessibilityIdentifier {
+- (BOOL)waitForUIElementToAppearOrTimeout:(NSString*)accessibilityIdentifier {
   ConditionBlock condition = ^{
     NSError* error = nil;
     [[EarlGrey
@@ -209,11 +238,24 @@ class SaveCardInfobarEGTestHelper {
   return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
 }
 
+- (BOOL)waitForUIElementToDisappearOrTimeout:
+    (NSString*)accessibilityIdentifier {
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityID(accessibilityIdentifier)]
+        assertWithMatcher:grey_nil()
+                    error:&error];
+    return error == nil;
+  };
+  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition);
+}
+
 #pragma mark - Tests
 
 // Ensures that submitting the form should query Google Payments; and the
-// fallback local save infobar appears if the request unexpectedly fails but the
-// form data is complete.
+// fallback local save infobar becomes visible if the request unexpectedly fails
+// but the form data is complete.
 - (void)testOfferLocalSave_FullData_RequestFails {
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
@@ -232,14 +274,14 @@ class SaveCardInfobarEGTestHelper {
   [self waitForEvents];
 
   // Wait until the save card infobar becomes visible.
-  GREYAssert([self waitForSaveCardInfobarOrTimeout:
+  GREYAssert([self waitForUIElementToAppearOrTimeout:
                        kSaveCardInfobarViewLocalAccessibilityID],
              @"Save card infobar failed to show.");
 }
 
 // Ensures that submitting the form should query Google Payments; and the
-// fallback local save infobar appears if the request is declined but the form
-// data is complete.
+// fallback local save infobar becomes visible if the request is declined but
+// the form data is complete.
 - (void)testOfferLocalSave_FullData_PaymentsDeclines {
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
@@ -257,7 +299,7 @@ class SaveCardInfobarEGTestHelper {
   [self waitForEvents];
 
   // Wait until the save card infobar becomes visible.
-  GREYAssert([self waitForSaveCardInfobarOrTimeout:
+  GREYAssert([self waitForUIElementToAppearOrTimeout:
                        kSaveCardInfobarViewLocalAccessibilityID],
              @"Save card infobar failed to show.");
 }
@@ -265,7 +307,7 @@ class SaveCardInfobarEGTestHelper {
 // Ensures that submitting the form, even with only card number and expiration
 // date, should query Google Payments; but the fallback local save infobar
 // should not appear if the request is declined and the form data is incomplete.
-- (void)testNoLocalSave_PartialData_PaymentsDeclines {
+- (void)testNotOfferLocalSave_PartialData_PaymentsDeclines {
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
 
@@ -281,7 +323,7 @@ class SaveCardInfobarEGTestHelper {
   [self waitForEvents];
 
   // Make sure the save card infobar does not become visible.
-  GREYAssertFalse([self waitForSaveCardInfobarOrTimeout:
+  GREYAssertFalse([self waitForUIElementToAppearOrTimeout:
                             kSaveCardInfobarViewLocalAccessibilityID],
                   @"Save card infobar should not show.");
 }
@@ -304,7 +346,7 @@ class SaveCardInfobarEGTestHelper {
   [self waitForEvents];
 
   // Wait until the save card infobar becomes visible.
-  GREYAssert([self waitForSaveCardInfobarOrTimeout:
+  GREYAssert([self waitForUIElementToAppearOrTimeout:
                        kSaveCardInfobarViewUploadAccessibilityID],
              @"Save card infobar failed to show.");
 }
@@ -328,9 +370,179 @@ class SaveCardInfobarEGTestHelper {
   [self waitForEvents];
 
   // Wait until the save card infobar becomes visible.
-  GREYAssert([self waitForSaveCardInfobarOrTimeout:
+  GREYAssert([self waitForUIElementToAppearOrTimeout:
                        kSaveCardInfobarViewUploadAccessibilityID],
              @"Save card infobar failed to show.");
+}
+
+// Ensures that the infobar goes away and UMA metrics are correctly logged if
+// the user declines upload.
+- (void)testUMA_Upstream_UserDeclines {
+  base::HistogramTester histogram_tester;
+
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+
+  // Set up the Google Payments server response.
+  test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
+                                       kResponseGetUploadDetailsSuccess);
+
+  [self resetEventWaiterForEvents:
+            {InfobarEvent::REQUESTED_UPLOAD_SAVE,
+             InfobarEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE}
+                          timeout:kWaitForDownloadTimeout];
+  [self fillAndSubmitForm];
+  [self waitForEvents];
+
+  // Wait until the save card infobar becomes visible.
+  GREYAssert([self waitForUIElementToAppearOrTimeout:
+                       kSaveCardInfobarViewUploadAccessibilityID],
+             @"Save card infobar failed to show.");
+
+  // Tap the X button.
+  [[EarlGrey selectElementWithMatcher:closeButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Wait until the save card infobar disappears.
+  GREYAssert([self waitForUIElementToDisappearOrTimeout:
+                       kSaveCardInfobarViewUploadAccessibilityID],
+             @"Save card infobar failed to disappear.");
+
+  // Ensure that UMA was logged correctly.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.UploadOfferedCardOrigin",
+      autofill::AutofillMetrics::OFFERING_UPLOAD_OF_NEW_CARD, 1);
+  histogram_tester.ExpectTotalCount("Autofill.UploadAcceptedCardOrigin", 0);
+}
+
+// Ensures that the infobar goes away, an UploadCardRequest RPC is sent to
+// Google Payments, and UMA metrics are correctly logged if the user accepts
+// upload.
+- (void)testUMA_Upstream_UserAccepts {
+  base::HistogramTester histogram_tester;
+
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+
+  // Set up the Google Payments server response.
+  test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
+                                       kResponseGetUploadDetailsSuccess);
+
+  [self resetEventWaiterForEvents:
+            {InfobarEvent::REQUESTED_UPLOAD_SAVE,
+             InfobarEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE}
+                          timeout:kWaitForDownloadTimeout];
+  [self fillAndSubmitForm];
+  [self waitForEvents];
+
+  // Wait until the save card infobar becomes visible.
+  GREYAssert([self waitForUIElementToAppearOrTimeout:
+                       kSaveCardInfobarViewUploadAccessibilityID],
+             @"Save card infobar failed to show.");
+
+  // Disable EarlGrey's synchronization since it's blocked by infobar animation.
+  [[GREYConfiguration sharedInstance]
+          setValue:@NO
+      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+
+  [self resetEventWaiterForEvents:{InfobarEvent::SENT_UPLOAD_CARD_REQUEST}
+                          timeout:kWaitForDownloadTimeout];
+  // Tap the save button.
+  [[EarlGrey selectElementWithMatcher:saveButtonMatcher()]
+      performAction:grey_tap()];
+  [self waitForEvents];
+
+  // Reenable synchronization now that the infobar animation is over.
+  [[GREYConfiguration sharedInstance]
+          setValue:@YES
+      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+
+  // Wait until the save card infobar disappears.
+  GREYAssert([self waitForUIElementToDisappearOrTimeout:
+                       kSaveCardInfobarViewUploadAccessibilityID],
+             @"Save card infobar failed to disappear.");
+
+  // Ensure that UMA was logged correctly.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.UploadOfferedCardOrigin",
+      autofill::AutofillMetrics::OFFERING_UPLOAD_OF_NEW_CARD, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.UploadAcceptedCardOrigin",
+      autofill::AutofillMetrics::USER_ACCEPTED_UPLOAD_OF_NEW_CARD, 1);
+}
+
+// Ensures that the infobar goes away and no credit card is saved to Chrome if
+// the user declines local save.
+- (void)testUserData_LocalSave_UserDeclines {
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+
+  // Set up the Google Payments server response.
+  test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
+                                       kResponseGetUploadDetailsFailure);
+
+  [self resetEventWaiterForEvents:
+            {InfobarEvent::REQUESTED_UPLOAD_SAVE,
+             InfobarEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+             InfobarEvent::OFFERED_LOCAL_SAVE}
+                          timeout:kWaitForDownloadTimeout];
+  [self fillAndSubmitForm];
+  [self waitForEvents];
+
+  // Wait until the save card infobar becomes visible.
+  GREYAssert([self waitForUIElementToAppearOrTimeout:
+                       kSaveCardInfobarViewLocalAccessibilityID],
+             @"Save card infobar failed to show.");
+
+  // Tap the X button.
+  [[EarlGrey selectElementWithMatcher:closeButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Wait until the save card infobar disappears.
+  GREYAssert([self waitForUIElementToDisappearOrTimeout:
+                       kSaveCardInfobarViewLocalAccessibilityID],
+             @"Save card infobar failed to disappear.");
+
+  // Ensure credit card is not saved locally.
+  GREYAssertEqual(0U, personal_data_manager_->GetCreditCards().size(),
+                  @"No credit card should have been saved.");
+}
+
+// Ensures that the infobar goes away and the credit card is saved to Chrome if
+// the user accepts local save.
+- (void)testUserData_LocalSave_UserAccepts {
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
+
+  // Set up the Google Payments server response.
+  test_url_loader_factory_.AddResponse(kURLGetUploadDetailsRequest,
+                                       kResponseGetUploadDetailsFailure);
+
+  [self resetEventWaiterForEvents:
+            {InfobarEvent::REQUESTED_UPLOAD_SAVE,
+             InfobarEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+             InfobarEvent::OFFERED_LOCAL_SAVE}
+                          timeout:kWaitForDownloadTimeout];
+  [self fillAndSubmitForm];
+  [self waitForEvents];
+
+  // Wait until the save card infobar becomes visible.
+  GREYAssert([self waitForUIElementToAppearOrTimeout:
+                       kSaveCardInfobarViewLocalAccessibilityID],
+             @"Save card infobar failed to show.");
+
+  // Tap the save button.
+  [[EarlGrey selectElementWithMatcher:saveButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Wait until the save card infobar disappears.
+  GREYAssert([self waitForUIElementToDisappearOrTimeout:
+                       kSaveCardInfobarViewLocalAccessibilityID],
+             @"Save card infobar failed to disappear.");
+
+  // Ensure credit card is saved locally.
+  GREYAssertEqual(1U, personal_data_manager_->GetCreditCards().size(),
+                  @"Credit card should have been saved.");
 }
 
 @end

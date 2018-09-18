@@ -106,6 +106,8 @@ source_set("eg_tests") {
     ":autofill_ui",
     "//components/autofill/core/browser",
     "//components/autofill/ios/browser:test_support",
+    "//components/strings:components_strings_grit",
+    "//ios/chrome/browser/autofill",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/web/public/test/http_server",
