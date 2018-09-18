@@ -1,14 +1,15 @@
-This README covers documentation on how to develop with and test against
-a local CIDB instance. Whenever you add or modify a cidb feature you should run
-cidb_integration_test.py. Specifically, there are two large sets of data that
-can be used for adding tests. Data for these are stored in individual json files
-that are stored in .test_data/. Each series has a readme that roughly describes
-what is in the data.
+### [Deployment Docs](go/cros-cidb-admin)
 
-However, when adding a new test, this may not be sufficient. The test launches a
-local mysqld instance that runs out of a temporary directory. To prevent this
-directory from disappearing at the end of the test, run the test with --no-wipe.
+### update schema.dump
 
+If you add new CIDB scema migrations, you'll need to update the schema.dump file.
+
+With a full ChromeOS (not ChromiumOS) checkout, inside the chroot:
+  $ lib/cidb_integration_test --update
+
+### Local, interactiveCIDB instance.
+
+Create a DB with a full ChromeOS (not ChromiumOS) checkout, inside the chroot:
   $ lib/cidb_integration_test --debug --no-wipe
 
 The test logs the path to the temporary working directory at the end.
@@ -44,5 +45,3 @@ temporary directory.
 
 $ mysqladmin -u root -S ${tmpdir}/mysqld_dir/mysqld.socket shutdown
 $ rm -rf ${tmpdir}
-
-Please see ./schema.dump.readme for more information on how to read the schema.
