@@ -136,7 +136,6 @@ source_set("ntp_internal") {
     "resources:bookmarks_button_border",
     "resources:disclosure_open",
     "resources:incognito_icon",
-    "resources:incognito_legacy_icon",
     "resources:ntp_bookmarks",
     "resources:ntp_bottom_bar_shadow",
     "resources:ntp_delete_button",
