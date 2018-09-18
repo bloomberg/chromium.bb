@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   ExpectDefaultCreditCardValues(*cards[0]);
 
   // Now sign back out.
-  GetClient(0)->SignOutPrimaryAccount();
+  GetClient(0)->SignoutSyncService();
 
   // Verify that sync is stopped.
   ASSERT_EQ(syncer::SyncService::TransportState::DISABLED,
@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnSignOut) {
   ASSERT_EQ(1uL, pdm->GetCreditCards().size());
 
   // Turn off sync, the card should be gone.
-  GetClient(0)->SignOutPrimaryAccount();
+  GetClient(0)->SignoutSyncService();
 
   ASSERT_EQ(0uL, pdm->GetCreditCards().size());
 }
