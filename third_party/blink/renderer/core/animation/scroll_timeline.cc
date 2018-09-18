@@ -30,6 +30,14 @@ bool StringToScrollDirection(String scroll_direction,
     result = ScrollTimeline::Inline;
     return true;
   }
+  if (scroll_direction == "horizontal") {
+    result = ScrollTimeline::Horizontal;
+    return true;
+  }
+  if (scroll_direction == "vertical") {
+    result = ScrollTimeline::Vertical;
+    return true;
+  }
   return false;
 }
 }  // namespace
@@ -104,12 +112,18 @@ double ScrollTimeline::currentTime(bool& is_null) {
         is_horizontal ? scroll_offset.Height() : scroll_offset.Width();
     max_offset =
         is_horizontal ? scroll_dimensions.Height() : scroll_dimensions.Width();
-  } else {
-    DCHECK(orientation_ == Inline);
+  } else if (orientation_ == Inline) {
     current_offset =
         is_horizontal ? scroll_offset.Width() : scroll_offset.Height();
     max_offset =
         is_horizontal ? scroll_dimensions.Width() : scroll_dimensions.Height();
+  } else if (orientation_ == Horizontal) {
+    current_offset = scroll_offset.Width();
+    max_offset = scroll_dimensions.Width();
+  } else {
+    DCHECK(orientation_ == Vertical);
+    current_offset = scroll_offset.Height();
+    max_offset = scroll_dimensions.Height();
   }
 
   // 3. If current scroll offset is less than startScrollOffset, return an
@@ -139,6 +153,10 @@ String ScrollTimeline::orientation() {
       return "block";
     case Inline:
       return "inline";
+    case Horizontal:
+      return "horizontal";
+    case Vertical:
+      return "vertical";
     default:
       NOTREACHED();
       return "";

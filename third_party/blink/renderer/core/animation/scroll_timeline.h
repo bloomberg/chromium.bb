@@ -30,6 +30,8 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   enum ScrollDirection {
     Block,
     Inline,
+    Horizontal,
+    Vertical,
   };
 
   static ScrollTimeline* Create(Document&,
