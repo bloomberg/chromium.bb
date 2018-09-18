@@ -731,6 +731,12 @@ AutotestPrivateSetCrostiniEnabledFunction::Run() {
   // Set the preference to indicate Crostini is enabled/disabled.
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
       crostini::prefs::kCrostiniEnabled, params->enabled);
+  // Set the flag to indicate we are in testing mode so that Chrome doesn't
+  // try to start the VM/container itself.
+  crostini::CrostiniManager* crostini_manager =
+      crostini::CrostiniManager::GetForProfile(
+          ProfileManager::GetActiveUserProfile());
+  crostini_manager->set_skip_restart_for_testing();
   return RespondNow(NoArguments());
 #else
   return RespondNow(Error(kOnlyAvailableOnChromeOSError));
