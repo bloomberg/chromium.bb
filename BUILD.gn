@@ -153,6 +153,7 @@ static_library("simd") {
     sources = [
       "simd/arm/arm/jsimd.c",
       "simd/arm/arm/jsimd_neon.S",
+      "simd/arm/common/jidctred-neon.c",
       "simd/arm/common/jdcolor-neon.c",
       "simd/arm/common/jdmerge-neon.c",
       "simd/arm/common/jdsample-neon.c",
@@ -163,6 +164,7 @@ static_library("simd") {
     sources = [
       "simd/arm/arm64/jsimd.c",
       "simd/arm/arm64/jsimd_neon.S",
+      "simd/arm/common/jidctred-neon.c",
       "simd/arm/common/jdcolor-neon.c",
       "simd/arm/common/jdmerge-neon.c",
       "simd/arm/common/jdsample-neon.c",
