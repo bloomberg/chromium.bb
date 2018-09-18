@@ -627,6 +627,7 @@ class BASE_EXPORT PersistentMemoryAllocator {
   const MemoryType mem_type_;      // Type of memory allocation.
   const uint32_t mem_size_;        // Size of entire memory segment.
   const uint32_t mem_page_;        // Page size allocations shouldn't cross.
+  const size_t vm_page_size_;      // The page size used by the OS.
 
  private:
   struct SharedMetadata;
@@ -672,7 +673,6 @@ class BASE_EXPORT PersistentMemoryAllocator {
   // Record an error in the internal histogram.
   void RecordError(int error) const;
 
-  const size_t vm_page_size_;          // The page size used by the OS.
   const bool readonly_;                // Indicates access to read-only memory.
   mutable std::atomic<bool> corrupt_;  // Local version of "corrupted" flag.
 
@@ -758,6 +758,14 @@ class BASE_EXPORT FilePersistentMemoryAllocator
   // won't cause the program to abort. The existing IsCorrupt() call will handle
   // the rest.
   static bool IsFileAcceptable(const MemoryMappedFile& file, bool read_only);
+
+  // Load all or a portion of the file into memory for fast access. This can
+  // be used to force the disk access to be done on a background thread and
+  // then have the data available to be read on the main thread with a greatly
+  // reduced risk of blocking due to I/O. The risk isn't eliminated completely
+  // because the system could always release the memory when under pressure
+  // but this can happen to any block of memory (i.e. swapped out).
+  void Cache();
 
  protected:
   // PersistentMemoryAllocator:
