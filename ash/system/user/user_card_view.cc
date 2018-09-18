@@ -342,16 +342,24 @@ void UserCardView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void UserCardView::OnMediaCaptureChanged(
-    const std::vector<mojom::MediaCaptureState>& capture_states) {
+    const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states) {
   mojom::MediaCaptureState state = mojom::MediaCaptureState::NONE;
+  auto account_id = Shell::Get()
+                        ->session_controller()
+                        ->GetUserSession(user_index_)
+                        ->user_info->account_id;
   if (is_active_user()) {
     int cumulative_state = 0;
     // The active user reports media capture states for all /other/ users.
-    for (size_t i = 1; i < capture_states.size(); ++i)
-      cumulative_state |= static_cast<int32_t>(capture_states[i]);
+    for (const auto& entry : capture_states) {
+      if (entry.first == account_id)
+        continue;
+      cumulative_state |= static_cast<int32_t>(entry.second);
+    }
     state = static_cast<mojom::MediaCaptureState>(cumulative_state);
   } else {
-    state = capture_states[user_index_];
+    auto matched = capture_states.find(account_id);
+    state = matched->second;
   }
 
   int res_id = 0;

@@ -191,20 +191,14 @@ void MediaClient::HandleMediaPrevTrack() {
 }
 
 void MediaClient::RequestCaptureState() {
-  // TODO(erg): Ash doesn't have stable user indexes. Given the asynchronous
-  // nature of sending messages over mojo pipes, this could theoretically cause
-  // bad data, as one side thinks the vector is [user1, user2] while the other
-  // thinks [user2, user1]. However, since parts of this system are already
-  // asynchronous (see OnRequestUpdate's PostTask()), we're not worrying about
-  // this right now.
-  std::vector<MediaCaptureState> state;
+  base::flat_map<AccountId, MediaCaptureState> capture_states;
   for (user_manager::User* user :
-       user_manager::UserManager::Get()->GetLoggedInUsers()) {
-    state.push_back(GetMediaCaptureStateOfAllWebContents(
-        chromeos::ProfileHelper::Get()->GetProfileByUser(user)));
+       user_manager::UserManager::Get()->GetLRULoggedInUsers()) {
+    capture_states[user->GetAccountId()] = GetMediaCaptureStateOfAllWebContents(
+        chromeos::ProfileHelper::Get()->GetProfileByUser(user));
   }
 
-  media_controller_->NotifyCaptureState(std::move(state));
+  media_controller_->NotifyCaptureState(std::move(capture_states));
 }
 
 void MediaClient::SuspendMediaSessions() {

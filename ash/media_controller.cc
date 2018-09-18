@@ -27,7 +27,7 @@ void MediaController::SetClient(mojom::MediaClientAssociatedPtrInfo client) {
 }
 
 void MediaController::NotifyCaptureState(
-    const std::vector<mojom::MediaCaptureState>& capture_states) {
+    const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states) {
   for (auto& observer : observers_)
     observer.OnMediaCaptureChanged(capture_states);
 }

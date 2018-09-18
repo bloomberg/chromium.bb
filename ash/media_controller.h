@@ -8,6 +8,7 @@
 #include "ash/public/interfaces/media.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/account_id/interfaces/account_id.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -18,7 +19,8 @@ class MediaCaptureObserver {
  public:
   // Called when media capture state has changed.
   virtual void OnMediaCaptureChanged(
-      const std::vector<mojom::MediaCaptureState>& capture_states) = 0;
+      const base::flat_map<AccountId, mojom::MediaCaptureState>&
+          capture_states) = 0;
 
  protected:
   virtual ~MediaCaptureObserver() {}
@@ -40,7 +42,8 @@ class MediaController : public mojom::MediaController {
   // mojom::MediaController:
   void SetClient(mojom::MediaClientAssociatedPtrInfo client) override;
   void NotifyCaptureState(
-      const std::vector<mojom::MediaCaptureState>& capture_states) override;
+      const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states)
+      override;
 
   // Methods that forward to |client_|.
   void HandleMediaNextTrack();

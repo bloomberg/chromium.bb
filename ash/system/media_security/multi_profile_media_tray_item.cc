@@ -7,6 +7,7 @@
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
@@ -37,10 +38,17 @@ class MultiProfileMediaTrayView : public TrayItemView,
 
   // MediaCaptureObserver:
   void OnMediaCaptureChanged(
-      const std::vector<mojom::MediaCaptureState>& capture_states) override {
+      const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states)
+      override {
     // The user at 0 is the current active desktop user.
-    for (size_t index = 1; index < capture_states.size(); ++index) {
-      if (capture_states[index] != mojom::MediaCaptureState::NONE) {
+    const auto& current_account_id = Shell::Get()
+                                         ->session_controller()
+                                         ->GetUserSession(0)
+                                         ->user_info->account_id;
+    for (const auto& entry : capture_states) {
+      if (entry.first == current_account_id)
+        continue;
+      if (entry.second != mojom::MediaCaptureState::NONE) {
         SetVisible(true);
         return;
       }

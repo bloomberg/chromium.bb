@@ -28,10 +28,13 @@ class MultiProfileMediaTrayItemTest : public AshTestBase {
   void SetMediaCaptureState(mojom::MediaCaptureState state) {
     // Create the fake update.
     SessionController* controller = Shell::Get()->session_controller();
-    std::vector<mojom::MediaCaptureState> v;
-    for (int i = 0; i < controller->NumberOfLoggedInUsers(); ++i)
-      v.push_back(state);
-    Shell::Get()->media_controller()->NotifyCaptureState(v);
+    base::flat_map<AccountId, mojom::MediaCaptureState> capture_states;
+    for (int i = 0; i < controller->NumberOfLoggedInUsers(); ++i) {
+      capture_states.emplace(
+          controller->GetUserSession(i)->user_info->account_id, state);
+    }
+    Shell::Get()->media_controller()->NotifyCaptureState(
+        std::move(capture_states));
   }
 
  private:
