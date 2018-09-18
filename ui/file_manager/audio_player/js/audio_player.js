@@ -625,7 +625,15 @@ AudioPlayer.TrackInfo.prototype.setMetadata = function(
   this.artworkUrl = metadata.contentThumbnailUrl || "";
 };
 
-// Starts loading the audio player.
-window.addEventListener('DOMContentLoaded', function(e) {
+/**
+ * initializeAudioPlayer: loads the audio player.
+ */
+function initializeAudioPlayer() {
   AudioPlayer.load();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeAudioPlayer);
+} else {
+  initializeAudioPlayer();
+}
