@@ -397,7 +397,8 @@ const char* ProtoEnumToString(
         PasswordReuseDialogInteraction::InteractionResult interaction_result) {
   ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                          PasswordReuseDialogInteraction,
-                     InteractionResult, UNSPECIFIED, WARNING_UI_IGNORED);
+                     InteractionResult, UNSPECIFIED,
+                     WARNING_ACTION_TAKEN_ON_SETTINGS);
   switch (interaction_result) {
     ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                   PasswordReuseDialogInteraction,
@@ -411,6 +412,9 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                   PasswordReuseDialogInteraction,
               WARNING_UI_IGNORED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
+                  PasswordReuseDialogInteraction,
+              WARNING_ACTION_TAKEN_ON_SETTINGS);
   }
   NOTREACHED();
   return "";

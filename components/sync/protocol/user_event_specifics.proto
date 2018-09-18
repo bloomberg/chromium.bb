@@ -241,7 +241,7 @@ message UserEventSpecifics {
     // Phishing or a Low-reputation site.
     optional PasswordReuseLookup reuse_lookup = 2;
 
-    // Logged when the user interacts with the dialog shown to encourage
+    // Logged when the user interacts with the warning UI shown to encourage
     // password change if the site is Phishing or Low-reputation.
     message PasswordReuseDialogInteraction {
       enum InteractionResult {
@@ -253,6 +253,8 @@ message UserEventSpecifics {
         // The warning UI was ignored, i.e. not interacted with by the user.
         // This could happen if the user navigates away from the page.
         WARNING_UI_IGNORED = 3;
+        // The user clicked "Change Password" on chrome://settings page.
+        WARNING_ACTION_TAKEN_ON_SETTINGS = 4;
       }
       optional InteractionResult interaction_result = 1;
     }

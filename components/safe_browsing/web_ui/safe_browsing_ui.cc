@@ -675,6 +675,9 @@ base::DictionaryValue SerializePGEvent(
       case PasswordReuseDialogInteraction::WARNING_UI_IGNORED:
         interaction_result = "WARNING_UI_IGNORED";
         break;
+      case PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN_ON_SETTINGS:
+        interaction_result = "WARNING_ACTION_TAKEN_ON_SETTINGS";
+        break;
     }
     event_dict.SetPath({"dialog_interaction", "interaction_result"},
                        base::Value(interaction_result));

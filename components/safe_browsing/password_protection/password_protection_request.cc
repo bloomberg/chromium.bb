@@ -184,10 +184,10 @@ void PasswordProtectionRequest::FillRequestProto() {
           reused_password_type_ ==
           LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD;
       reuse_event->set_is_chrome_signin_password(matches_sync_password);
+      reuse_event->set_reused_password_type(reused_password_type_);
       if (matches_sync_password) {
         reuse_event->set_sync_account_type(
             password_protection_service_->GetSyncAccountType());
-        reuse_event->set_reused_password_type(reused_password_type_);
         LogSyncAccountType(reuse_event->sync_account_type());
       }
       if (password_protection_service_->IsExtendedReporting() &&
