@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_value_store.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
@@ -63,16 +64,12 @@ extern const char kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE[];
 // the created PrefService or NULL if creation has failed. Note, it is
 // guaranteed that in asynchronous version initialization happens after this
 // function returned.
-
-// |user_pref_store| instance is an existing pref store that the local state
-// PrefService uses as its persistent user pref store.
 std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     policy::PolicyService* policy_service,
     scoped_refptr<PrefRegistry> pref_registry,
     bool async,
-    std::unique_ptr<PrefValueStore::Delegate> delegate,
-    scoped_refptr<PersistentPrefStore> user_pref_store);
+    std::unique_ptr<PrefValueStore::Delegate> delegate);
 
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& pref_filename,
@@ -83,6 +80,18 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry,
     bool async,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+    std::unique_ptr<PrefValueStore::Delegate> delegate);
+
+// Installs policy related PrefStores on |preexisting_local_state|.
+// |preexisting_local_state| instance is a local state that has user PrefStore
+// and commandline PrefStore initialized. It is missing the mandatory and
+// recommended PrefStores and this method will add them to it.
+// |policy_service| is used as the source for mandatory or recommended
+// policies.
+// |delegate| is passed to listen to PrefStore initialization events.
+void InstallPoliciesOnLocalState(
+    PrefService* preexisting_local_state,
+    policy::PolicyService* policy_service,
     std::unique_ptr<PrefValueStore::Delegate> delegate);
 
 // Call before startup tasks kick in to ignore the presence of a domain when
@@ -105,6 +114,11 @@ void ClearResetTime(Profile* profile);
 
 // Register user prefs used by chrome preference system.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+// Shows notifications which correspond to PersistentPrefStore's reading errors.
+void HandlePersistentPrefStoreReadError(
+    const base::FilePath& pref_filename,
+    PersistentPrefStore::PrefReadError error);
 
 }  // namespace chrome_prefs
 

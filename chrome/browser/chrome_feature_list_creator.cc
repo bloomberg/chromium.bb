@@ -7,6 +7,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "chrome/browser/prefs/chrome_command_line_pref_store.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry.h"
@@ -28,13 +30,21 @@ void ChromeFeatureListCreator::CreatePrefService() {
 
   PrefServiceFactory factory;
   factory.set_user_prefs(pref_store_);
-
+  factory.set_command_line_prefs(
+      base::MakeRefCounted<ChromeCommandLinePrefStore>(
+          base::CommandLine::ForCurrentProcess()));
+  factory.set_read_error_callback(base::BindRepeating(
+      &chrome_prefs::HandlePersistentPrefStoreReadError, local_state_file));
   scoped_refptr<PrefRegistry> registry = new PrefRegistrySimple();
   simple_local_state_ = factory.Create(registry);
 }
 
 scoped_refptr<PersistentPrefStore> ChromeFeatureListCreator::GetPrefStore() {
   return pref_store_;
+}
+
+std::unique_ptr<PrefService> ChromeFeatureListCreator::TakePrefService() {
+  return std::move(simple_local_state_);
 }
 
 void ChromeFeatureListCreator::CreateFeatureList() {

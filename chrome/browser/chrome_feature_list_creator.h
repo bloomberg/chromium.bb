@@ -19,6 +19,9 @@ class ChromeFeatureListCreator {
   // Gets the pref store that is used to create feature list.
   scoped_refptr<PersistentPrefStore> GetPrefStore();
 
+  // Passing ownership of the |simple_local_state_| to the caller.
+  std::unique_ptr<PrefService> TakePrefService();
+
   // Initializes all necessary parameters to create the feature list and calls
   // base::FeatureList::SetInstance() to set the global instance.
   void CreateFeatureList();
@@ -30,6 +33,8 @@ class ChromeFeatureListCreator {
 
   scoped_refptr<PersistentPrefStore> pref_store_;
 
+  // If TakePrefService() is called, the caller will take the ownership
+  // of this variable. Stop using this variable afterwards.
   std::unique_ptr<PrefService> simple_local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeFeatureListCreator);
