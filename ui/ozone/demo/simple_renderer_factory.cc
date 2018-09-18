@@ -18,6 +18,7 @@
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/init/vulkan_factory.h"
+#include "gpu/vulkan/vulkan_surface.h"
 #include "ui/ozone/demo/vulkan_overlay_renderer.h"
 #include "ui/ozone/demo/vulkan_renderer.h"
 #endif
@@ -102,7 +103,10 @@ std::unique_ptr<Renderer> SimpleRendererFactory::CreateRenderer(
             std::move(overlay_surface), surface_factory_ozone,
             vulkan_implementation_.get(), widget, size);
       }
-      return std::make_unique<VulkanRenderer>(vulkan_implementation_.get(),
+      std::unique_ptr<gpu::VulkanSurface> vulkan_surface =
+          vulkan_implementation_->CreateViewSurface(widget);
+      return std::make_unique<VulkanRenderer>(std::move(vulkan_surface),
+                                              vulkan_implementation_.get(),
                                               widget, size);
     }
 #endif

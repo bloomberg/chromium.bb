@@ -89,6 +89,7 @@ class VulkanOverlayRenderer : public RendererBase {
     const VkFence fence_;
   };
 
+  void DestroyRenderPass();
   void DestroyBuffers();
   void RecreateBuffers();
   void RenderFrame();
@@ -111,7 +112,7 @@ class VulkanOverlayRenderer : public RendererBase {
   std::unique_ptr<gpu::VulkanCommandPool> command_pool_;
   std::unique_ptr<OverlaySurface> overlay_surface_;
 
-  VkRenderPass render_pass_;
+  VkRenderPass render_pass_ = VK_NULL_HANDLE;
 
   base::WeakPtrFactory<VulkanOverlayRenderer> weak_ptr_factory_;
 

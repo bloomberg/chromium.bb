@@ -45,6 +45,7 @@ class VULKAN_EXPORT VulkanSurface {
 
   bool SetSize(const gfx::Size& size);
   const gfx::Size& size() const { return size_; }
+  VkSurfaceFormatKHR surface_format() const { return surface_format_; }
 
  private:
   const VkInstance vk_instance_;

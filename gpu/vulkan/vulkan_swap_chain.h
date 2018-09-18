@@ -20,7 +20,7 @@ class VulkanCommandBuffer;
 class VulkanCommandPool;
 class VulkanDeviceQueue;
 
-class VulkanSwapChain {
+class VULKAN_EXPORT VulkanSwapChain {
  public:
   VulkanSwapChain();
   ~VulkanSwapChain();
@@ -41,6 +41,11 @@ class VulkanSwapChain {
   VulkanCommandBuffer* GetCurrentCommandBuffer() const {
     DCHECK_LT(current_image_, images_.size());
     return images_[current_image_]->pre_raster_command_buffer.get();
+  }
+
+  VkImage GetImage(uint32_t index) const {
+    DCHECK_LT(index, images_.size());
+    return images_[index]->image;
   }
 
   VkImage GetCurrentImage() const {

@@ -5,16 +5,21 @@
 #ifndef UI_OZONE_DEMO_VULKAN_RENDERER_H_
 #define UI_OZONE_DEMO_VULKAN_RENDERER_H_
 
+#include <vulkan/vulkan.h>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/gfx/buffer_types.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/demo/renderer_base.h"
 
 namespace gpu {
 class VulkanDeviceQueue;
 class VulkanImplementation;
-class VulkanRenderPass;
+class VulkanCommandBuffer;
+class VulkanCommandPool;
 class VulkanSurface;
 }  // namespace gpu
 
@@ -22,7 +27,8 @@ namespace ui {
 
 class VulkanRenderer : public RendererBase {
  public:
-  VulkanRenderer(gpu::VulkanImplementation* vulkan_instance,
+  VulkanRenderer(std::unique_ptr<gpu::VulkanSurface> surface,
+                 gpu::VulkanImplementation* vulkan_instance,
                  gfx::AcceleratedWidget widget,
                  const gfx::Size& size);
   ~VulkanRenderer() override;
@@ -31,13 +37,47 @@ class VulkanRenderer : public RendererBase {
   bool Initialize() override;
 
  private:
+  class Framebuffer {
+   public:
+    Framebuffer(VkImageView vk_image_view,
+                VkFramebuffer vk_framebuffer,
+                std::unique_ptr<gpu::VulkanCommandBuffer> command_buffer);
+    ~Framebuffer();
+
+    static std::unique_ptr<Framebuffer> Create(
+        gpu::VulkanDeviceQueue* vulkan_device_queue,
+        gpu::VulkanCommandPool* vulkan_command_pool,
+        VkRenderPass vk_render_pass,
+        gpu::VulkanSurface* vulkan_surface,
+        uint32_t vulkan_swap_chain_image_index);
+
+    VkImageView vk_image_view() const { return vk_image_view_; }
+    VkFramebuffer vk_framebuffer() const { return vk_framebuffer_; }
+    gpu::VulkanCommandBuffer* command_buffer() const {
+      return command_buffer_.get();
+    }
+
+   private:
+    const VkImageView vk_image_view_;
+    const VkFramebuffer vk_framebuffer_;
+    const std::unique_ptr<gpu::VulkanCommandBuffer> command_buffer_;
+  };
+
+  void DestroyRenderPass();
+  void DestroyFramebuffers();
+  void RecreateFramebuffers();
   void RenderFrame();
   void PostRenderFrameTask();
 
+  std::vector<std::unique_ptr<Framebuffer>> framebuffers_;
+
   gpu::VulkanImplementation* const vulkan_implementation_;
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
+  std::unique_ptr<gpu::VulkanCommandPool> command_pool_;
   std::unique_ptr<gpu::VulkanSurface> surface_;
-  std::unique_ptr<gpu::VulkanRenderPass> render_pass_;
+  gfx::Size size_;
+
+  VkRenderPass render_pass_ = VK_NULL_HANDLE;
 
   base::WeakPtrFactory<VulkanRenderer> weak_ptr_factory_;
 
