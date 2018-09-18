@@ -1268,10 +1268,24 @@ void VrShell::SetUiExpectingActivityForTesting(
                      gl_thread_->GetBrowserRenderer(), ui_expectation));
 }
 
-void VrShell::ReportUiActivityResultForTesting(VrUiTestActivityResult result) {
+void VrShell::SaveNextFrameBufferToDiskForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jstring filepath_base) {
+  PostToGlThread(
+      FROM_HERE,
+      base::BindOnce(
+          &BrowserRenderer::SaveNextFrameBufferToDiskForTesting,
+          gl_thread_->GetBrowserRenderer(),
+          base::android::ConvertJavaStringToUTF8(env, filepath_base)));
+}
+
+void VrShell::ReportUiOperationResultForTesting(UiTestOperationType action_type,
+                                                VrUiTestActivityResult result) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShell_reportUiActivityResultForTesting(env, j_vr_shell_,
-                                                static_cast<int>(result));
+  Java_VrShell_reportUiOperationResultForTesting(env, j_vr_shell_,
+                                                 static_cast<int>(action_type),
+                                                 static_cast<int>(result));
 }
 
 void VrShell::PerformControllerActionForTesting(

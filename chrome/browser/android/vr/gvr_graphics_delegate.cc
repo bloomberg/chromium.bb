@@ -13,6 +13,8 @@
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/vr_geometry_util.h"
 #include "chrome/browser/vr/vr_gl_util.h"
+#include "third_party/skia/include/core/SkImageEncoder.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
@@ -291,6 +293,10 @@ void GvrGraphicsDelegate::ResumeContentRendering() {
   content_surface_texture_->UpdateTexImage();
 }
 
+void GvrGraphicsDelegate::SetFrameDumpFilepathBase(std::string& filepath_base) {
+  frame_buffer_dump_filepath_base_ = filepath_base;
+}
+
 void GvrGraphicsDelegate::OnContentFrameAvailable() {
   if (content_paused_)
     return;
@@ -538,6 +544,10 @@ void GvrGraphicsDelegate::PrepareBufferForWebXr() {
   glDisable(GL_POLYGON_OFFSET_FILL);
 
   glViewport(0, 0, webxr_surface_size_.width(), webxr_surface_size_.height());
+  if (!frame_buffer_dump_filepath_base_.empty()) {
+    frame_buffer_dump_filepath_suffix_ = "_WebXrContent";
+    last_bound_buffer_index_ = kNoMultiSampleBuffer;
+  }
 }
 
 void GvrGraphicsDelegate::PrepareBufferForWebXrOverlayElements() {
@@ -548,6 +558,10 @@ void GvrGraphicsDelegate::PrepareBufferForWebXrOverlayElements() {
   viewport_list_.SetBufferViewport(2, webvr_overlay_viewport_.left);
   viewport_list_.SetBufferViewport(3, webvr_overlay_viewport_.right);
   glClear(GL_COLOR_BUFFER_BIT);
+  if (!frame_buffer_dump_filepath_base_.empty()) {
+    frame_buffer_dump_filepath_suffix_ = "_WebXrOverlay";
+    last_bound_buffer_index_ = kMultiSampleBuffer;
+  }
 }
 
 void GvrGraphicsDelegate::PrepareBufferForContentQuadLayer(
@@ -575,6 +589,10 @@ void GvrGraphicsDelegate::PrepareBufferForContentQuadLayer(
                  kContentBorderPixels,
              content_tex_buffer_size_.width() + 2 * kContentBorderPixels,
              content_tex_buffer_size_.height() + 2 * kContentBorderPixels);
+  if (!frame_buffer_dump_filepath_base_.empty()) {
+    frame_buffer_dump_filepath_suffix_ = "_BrowserContent";
+    last_bound_buffer_index_ = kNoMultiSampleBuffer;
+  }
 }
 
 void GvrGraphicsDelegate::PrepareBufferForBrowserUi() {
@@ -585,6 +603,10 @@ void GvrGraphicsDelegate::PrepareBufferForBrowserUi() {
                                    main_viewport_.right);
   acquired_frame_.BindBuffer(kMultiSampleBuffer);
   glClear(GL_COLOR_BUFFER_BIT);
+  if (!frame_buffer_dump_filepath_base_.empty()) {
+    frame_buffer_dump_filepath_suffix_ = "_BrowserUi";
+    last_bound_buffer_index_ = kMultiSampleBuffer;
+  }
 }
 
 FovRectangles GvrGraphicsDelegate::GetRecommendedFovs() {
@@ -611,6 +633,7 @@ RenderInfo GvrGraphicsDelegate::GetOptimizedRenderInfoForFovs(
 }
 
 void GvrGraphicsDelegate::OnFinishedDrawingBuffer() {
+  MaybeDumpFrameBufferToDisk();
   acquired_frame_.Unbind();
 }
 
@@ -665,6 +688,39 @@ void GvrGraphicsDelegate::WebVrWaitForServerFence() {
   gpu_fence->ServerWait();
   // Fence will be destroyed on going out of scope here.
   return;
+}
+
+void GvrGraphicsDelegate::MaybeDumpFrameBufferToDisk() {
+  if (frame_buffer_dump_filepath_base_.empty())
+    return;
+
+  // Create buffer
+  std::unique_ptr<SkBitmap> bitmap = std::make_unique<SkBitmap>();
+  int width = swap_chain_.GetBufferSize(last_bound_buffer_index_).width;
+  int height = swap_chain_.GetBufferSize(last_bound_buffer_index_).height;
+  CHECK(bitmap->tryAllocN32Pixels(width, height, false));
+
+  // Read pixels from frame buffer
+  SkPixmap pixmap;
+  CHECK(bitmap->peekPixels(&pixmap));
+  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
+               pixmap.writable_addr());
+  DCHECK(glGetError() == GL_NO_ERROR);
+
+  // Flip image vertically since SkBitmap expects the pixels in a different
+  // order.
+  for (int col = 0; col < width; ++col) {
+    for (int row = 0; row < height / 2; ++row) {
+      std::swap(*pixmap.writable_addr32(col, row),
+                *pixmap.writable_addr32(col, height - row - 1));
+    }
+  }
+
+  std::string filename = frame_buffer_dump_filepath_base_ +
+                         frame_buffer_dump_filepath_suffix_ + ".png";
+  SkFILEWStream stream(filename.c_str());
+  DCHECK(stream.isValid());
+  CHECK(SkEncodeImage(&stream, *bitmap, SkEncodedImageFormat::kPNG, 100));
 }
 
 void GvrGraphicsDelegate::SubmitToGvr(const gfx::Transform& head_pose) {

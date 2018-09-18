@@ -137,6 +137,7 @@ class GvrGraphicsDelegate : public BaseGraphicsDelegate {
   void BufferBoundsChanged(const gfx::Size& content_buffer_size,
                            const gfx::Size& overlay_buffer_size) override;
   void ResumeContentRendering() override;
+  void SetFrameDumpFilepathBase(std::string& filepath_base) override;
   // End GraphicsDelegate overrides.
 
   void UIBoundsChanged(int width, int height);
@@ -156,6 +157,7 @@ class GvrGraphicsDelegate : public BaseGraphicsDelegate {
   void OnUiFrameAvailable();
 
   void WebVrWaitForServerFence();
+  void MaybeDumpFrameBufferToDisk();
 
   WebXrPresentationState* webxr_;
 
@@ -212,6 +214,10 @@ class GvrGraphicsDelegate : public BaseGraphicsDelegate {
   RenderInfo render_info_;
 
   std::vector<gvr::BufferSpec> specs_;
+
+  std::string frame_buffer_dump_filepath_base_;
+  std::string frame_buffer_dump_filepath_suffix_;
+  unsigned int last_bound_buffer_index_;
 
   base::WeakPtrFactory<GvrGraphicsDelegate> weak_ptr_factory_;
 

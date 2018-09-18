@@ -516,12 +516,13 @@ void VrGLThread::RemoveAllTabs() {
       base::BindOnce(&BrowserUiInterface::RemoveAllTabs, weak_browser_ui_));
 }
 
-void VrGLThread::ReportUiActivityResultForTesting(
+void VrGLThread::ReportUiOperationResultForTesting(
+    const UiTestOperationType& action_type,
     const VrUiTestActivityResult& result) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VrShell::ReportUiActivityResultForTesting,
-                                weak_vr_shell_, result));
+      FROM_HERE, base::BindOnce(&VrShell::ReportUiOperationResultForTesting,
+                                weak_vr_shell_, action_type, result));
 }
 
 bool VrGLThread::OnMainThread() const {

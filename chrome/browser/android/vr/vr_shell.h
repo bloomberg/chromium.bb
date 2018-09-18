@@ -56,6 +56,7 @@ class VrGLThread;
 class VrInputConnection;
 class VrShellDelegate;
 class VrWebContentsObserver;
+enum class UiTestOperationType;
 enum class VrUiTestActivityResult;
 struct Assets;
 struct AutocompleteRequest;
@@ -280,7 +281,13 @@ class VrShell : device::GvrGamepadDataProvider,
       const base::android::JavaParamRef<jobject>& obj,
       jint quiescence_timeout_ms);
 
-  void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
+  void SaveNextFrameBufferToDiskForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jstring filepath_base);
+
+  void ReportUiOperationResultForTesting(UiTestOperationType action_type,
+                                         VrUiTestActivityResult result);
 
   void PerformControllerActionForTesting(
       JNIEnv* env,

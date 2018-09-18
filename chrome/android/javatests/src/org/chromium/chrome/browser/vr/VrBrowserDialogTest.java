@@ -13,7 +13,6 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import android.graphics.PointF;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
-import android.support.test.uiautomator.UiDevice;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -47,6 +46,10 @@ Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=VrBrowsingNat
 public class VrBrowserDialogTest {
     // A long enough sleep after entering VR to ensure that the VR entry animations are complete.
     private static final int VR_ENTRY_SLEEP_MS = 1000;
+    // We need to make sure the port is constant, otherwise the URL changes between test runs, which
+    // is really bad for image diff tests. There's nothing special about this port other than that
+    // it shouldn't be in use by anything.
+    private static final int SERVER_PORT = 39558;
     // A long enough sleep after triggering/interacting with a dialog to ensure that the interaction
     // has propagated through the render pipeline, i.e. the result of the interaction will actually
     // be visible on the screen.
@@ -83,14 +86,8 @@ public class VrBrowserDialogTest {
         // Ensure that any UI changes that have been rendered and submitted have actually propogated
         // to the screen.
         NativeUiUtils.waitNumFrames(2);
-        // TODO(bsheedy): Make this work on Android P by drawing the view hierarchy to a bitmap.
-        File screenshotFile = new File(sBaseDirectory, filename + ".png");
-        Assert.assertFalse("Failed to delete existing screenshot",
-                screenshotFile.exists() && !screenshotFile.delete());
-
-        final UiDevice uiDevice =
-                UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        Assert.assertTrue("Failed to take screenshot", uiDevice.takeScreenshot(screenshotFile));
+        File baseFilename = new File(sBaseDirectory, filename);
+        NativeUiUtils.dumpNextFramesFrameBuffers(baseFilename.getPath());
     }
 
     private void navigateAndDisplayPermissionPrompt(String page, String promptCommand)
@@ -98,7 +95,8 @@ public class VrBrowserDialogTest {
         // Trying to grant permissions on file:// URLs ends up hitting DCHECKS, so load from a local
         // server instead.
         if (mServer == null) {
-            mServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+            mServer = EmbeddedTestServer.createAndStartServerWithPort(
+                    InstrumentationRegistry.getContext(), SERVER_PORT);
         }
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 mServer.getURL(VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(page)),
@@ -106,6 +104,7 @@ public class VrBrowserDialogTest {
 
         // Display the given permission prompt.
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
+        NativeUiUtils.enableMockedInput();
         mVrBrowserTestFramework.runJavaScriptOrFail(promptCommand, POLL_TIMEOUT_LONG_MS);
         VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
 
@@ -121,6 +120,7 @@ public class VrBrowserDialogTest {
 
         // Display the JavaScript dialog.
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
+        NativeUiUtils.enableMockedInput();
         // We can't use runJavaScriptOrFail here because JavaScript execution is blocked while a
         // JS dialog is visible, so runJavaScriptOrFail will always time out.
         JavaScriptUtils.executeJavaScript(
@@ -308,7 +308,7 @@ public class VrBrowserDialogTest {
         // element, meaning we can't specify it as a click target for the Chrome-side controller.
         // We also can't use the MockBrowserKeyboardInterface like we do for web input testing, as
         // that does not seem to work with the omnibox.
-        NativeUiUtils.revertToRealController();
+        NativeUiUtils.revertToRealInput();
         // Point at the keyboard and click an arbitrary key
         EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
         controller.recenterView();

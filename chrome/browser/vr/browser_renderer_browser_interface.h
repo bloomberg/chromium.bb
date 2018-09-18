@@ -15,7 +15,8 @@ class BrowserRendererBrowserInterface {
   virtual ~BrowserRendererBrowserInterface() = default;
 
   virtual void ForceExitVr() = 0;
-  virtual void ReportUiActivityResultForTesting(
+  virtual void ReportUiOperationResultForTesting(
+      const UiTestOperationType& action_type,
       const VrUiTestActivityResult& result) = 0;
 };
 

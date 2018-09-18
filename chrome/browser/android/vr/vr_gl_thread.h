@@ -76,7 +76,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
   // BrowserRendererBrowserInterface implementation (BrowserRenderer calling to
   // VrShell).
   void ForceExitVr() override;
-  void ReportUiActivityResultForTesting(
+  void ReportUiOperationResultForTesting(
+      const UiTestOperationType& action_type,
       const VrUiTestActivityResult& result) override;
 
   // PlatformInputHandler

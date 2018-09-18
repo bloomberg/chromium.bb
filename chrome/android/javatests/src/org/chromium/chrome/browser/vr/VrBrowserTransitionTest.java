@@ -389,7 +389,7 @@ public class VrBrowserTransitionTest {
 
         // Enable the mock controller even though we don't use it, because the real controller will
         // never allow the scene to reach quiescense.
-        NativeUiUtils.enableMockedController();
+        NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             ThreadUtils.runOnUiThreadBlocking(() -> {
                 Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
@@ -490,7 +490,7 @@ public class VrBrowserTransitionTest {
                 (IncognitoNewTabPage) mTestRule.getActivity().getActivityTab().getNativePage();
         // Enable the mock controller even though we don't use it, because the real controller will
         // never allow the scene to reach quiescense.
-        NativeUiUtils.enableMockedController();
+        NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             ThreadUtils.runOnUiThreadBlocking(
                     () -> { ntp.getView().findViewById(R.id.learn_more).performClick(); });

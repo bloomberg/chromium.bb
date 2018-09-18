@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
+import org.chromium.chrome.browser.vr.UiTestOperationType;
 import org.chromium.chrome.browser.vr.UserFriendlyElementName;
 import org.chromium.chrome.browser.vr.VrControllerTestAction;
 import org.chromium.chrome.browser.vr.VrDialog;
@@ -21,6 +22,7 @@ import org.chromium.chrome.browser.vr.VrShell;
 import org.chromium.chrome.browser.vr.VrUiTestActivityResult;
 import org.chromium.chrome.browser.vr.VrViewContainer;
 
+import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -32,9 +34,13 @@ public class NativeUiUtils {
     // with an element.
     private static final int DEFAULT_UI_QUIESCENCE_TIMEOUT_MS = 1000;
 
-    public static void enableMockedController() {
+    /**
+     * Enables the use of both the mock head pose (locked forward) and Chrome-side mocked controller
+     * without performing any specific actions.
+     */
+    public static void enableMockedInput() {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
-                0 /* elementName, unused */, VrControllerTestAction.ENABLE_MOCKED_CONTROLLER,
+                0 /* elementName, unused */, VrControllerTestAction.ENABLE_MOCKED_INPUT,
                 new PointF() /* position, unused */);
     }
 
@@ -110,21 +116,13 @@ public class NativeUiUtils {
     }
 
     /**
-     * Sets the native code to start using the real controller data again instead of fake testing
-     * data.
+     * Sets the native code to start using the real controller and head pose data again instead of
+     * fake testing data.
      */
-    public static void revertToRealController() {
+    public static void revertToRealInput() {
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
-                0 /* elementName, unused */, VrControllerTestAction.REVERT_TO_REAL_CONTROLLER,
+                0 /* elementName, unused */, VrControllerTestAction.REVERT_TO_REAL_INPUT,
                 new PointF() /* position, unused */);
-    }
-
-    /**
-     * Sets the native code to start using the real controller data again and waits for the UI to
-     * update as a result.
-     */
-    public static void revertToRealControllerAndWaitForUiQuiescence() throws InterruptedException {
-        performActionAndWaitForUiQuiescence(() -> { revertToRealController(); });
     }
 
     /**
@@ -137,16 +135,17 @@ public class NativeUiUtils {
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
         // Run on the UI thread to prevent issues with registering a new callback before
-        // reportUiActivityResultForTesting has finished.
+        // ReportUiOperationResultForTesting has finished.
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            instance.setUiExpectingActivityForTesting(
-                    DEFAULT_UI_QUIESCENCE_TIMEOUT_MS, () -> { resultLatch.countDown(); });
+            instance.registerUiOperationCallbackForTesting(UiTestOperationType.UI_ACTIVITY_RESULT,
+                    () -> { resultLatch.countDown(); }, DEFAULT_UI_QUIESCENCE_TIMEOUT_MS);
         });
         action.run();
 
         // Wait for any outstanding animations to finish.
         resultLatch.await();
-        int uiResult = instance.getLastUiActivityResultForTesting();
+        int uiResult =
+                instance.getLastUiOperationResultForTesting(UiTestOperationType.UI_ACTIVITY_RESULT);
         Assert.assertEquals("UI reported non-quiescent result '"
                         + vrUiTestActivityResultToString(uiResult) + "'",
                 VrUiTestActivityResult.QUIESCENT, uiResult);
@@ -171,6 +170,35 @@ public class NativeUiUtils {
             Choreographer.getInstance().postFrameCallback(callback);
         });
         frameLatch.await();
+    }
+
+    /**
+     * Tells the native UI to dump the next frame's frame buffers to disk and waits for it to
+     * signal that the dump is complete.
+     *
+     * @param filepathBase The filepath to use as a base for image dumps. Will have a suffix and
+     *        file extension automatically appended.
+     */
+    public static void dumpNextFramesFrameBuffers(String filepathBase) throws InterruptedException {
+        // Clear out any existing images with the names of the files that may be created.
+        for (String suffix :
+                new String[] {"_WebXrOverlay", "_WebXrContent", "_BrowserUi", "_BrowserContent"}) {
+            File dumpFile = new File(filepathBase, suffix + ".png");
+            Assert.assertFalse("Failed to delete existing screenshot",
+                    dumpFile.exists() && !dumpFile.delete());
+        }
+
+        final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
+        final CountDownLatch resultLatch = new CountDownLatch(1);
+
+        // Run on the UI thread to prevent issues with registering a new callback before
+        // ReportUiOperationResultForTesting has finished.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            instance.registerUiOperationCallbackForTesting(UiTestOperationType.FRAME_BUFFER_DUMPED,
+                    () -> { resultLatch.countDown(); }, 0 /* unused */);
+        });
+        instance.saveNextFrameBufferToDiskForTesting(filepathBase);
+        resultLatch.await();
     }
 
     /**

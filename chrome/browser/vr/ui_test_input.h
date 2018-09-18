@@ -27,6 +27,15 @@ enum class UserFriendlyElementName : int {
                         // menu
 };
 
+// These are the types of actions that Java can request callbacks for once
+// they are complete.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
+enum class UiTestOperationType : int {
+  kUiActivityResult = 0,     // Result after being told to wait for quiescence
+  kFrameBufferDumped,        // Signal that the frame buffer was dumped to disk
+  kNumUiTestOperationTypes,  // Must be last
+};
+
 // These are used to report the current state of the UI after performing an
 // action
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
@@ -43,8 +52,8 @@ enum class VrUiTestActivityResult : int {
 enum class VrControllerTestAction : int {
   kClick,
   kHover,
-  kEnableMockedController,
-  kRevertToRealController,
+  kEnableMockedInput,
+  kRevertToRealInput,
   kClickDown,
   kClickUp,
   kMove,
