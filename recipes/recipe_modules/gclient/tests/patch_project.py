@@ -53,9 +53,6 @@ def RunSteps(api, patch_project, patch_repository_url):
   patch_root = api.gclient.get_gerrit_patch_root(gclient_config=src_cfg)
   assert patch_root == api.properties['expected_patch_root'], patch_root
 
-  api.gclient.calculate_patch_root(
-      patch_project, None, patch_repository_url)
-
   api.gclient.set_patch_repo_revision()
 
 

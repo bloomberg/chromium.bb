@@ -61,7 +61,7 @@ def GenTests(api):
       'git_cl description', stdout=api.raw_io.output_text('foobar'))
   # The 'test_patch_root' property used below is just so that these
   # tests can avoid using the gclient module to calculate the
-  # patch root. Normal users would use gclient.calculate_patch_root().
+  # patch root. Normal users would use gclient.get_gerrit_patch_root().
   yield (api.test('with_git_patch') +
          api.properties(
              path_config='buildbot',

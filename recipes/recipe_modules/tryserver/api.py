@@ -138,7 +138,7 @@ class TryserverApi(recipe_api.RecipeApi):
 
     Argument:
       patch_root: path relative to api.path['root'], usually obtained from
-        api.gclient.calculate_patch_root(patch_project)
+        api.gclient.get_gerrit_patch_root().
 
     Returned paths will be relative to to patch_root.
     """

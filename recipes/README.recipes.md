@@ -247,27 +247,6 @@ Wrapper for easy calling of gclient steps.
 Remove all index.lock files. If a previous run of git crashed, bot was
 reset, etc... we might end up with leftover index.lock files.
 
-&mdash; **def [calculate\_patch\_root](/recipes/recipe_modules/gclient/api.py#362)(self, patch_project, gclient_config=None, patch_repo=None):**
-
-Returns path where a patch should be applied to based patch_project.
-
-TODO(nodir): delete this function in favor of get_repo_path.
-
-Maps the patch's repo to a path of directories relative to checkout's root,
-which describe where to place the patch. If no mapping is found for the
-repo url, falls back to trying to find a mapping for the old-style
-"patch_project".
-
-For now, considers only first solution (c.solutions[0]), but in theory can
-be extended to all of them.
-
-See patch_projects and repo_path_map solution config property.
-
-Returns:
-  Relative path, including solution's root.
-  If patch_project is not given or not recognized, it'll be just first
-  solution root.
-
 &mdash; **def [checkout](/recipes/recipe_modules/gclient/api.py#230)(self, gclient_config=None, revert=RevertOnTryserver, inject_parent_got_revision=True, extra_sync_flags=None, \*\*kwargs):**
 
 Return a step generator function for gclient checkouts.
@@ -328,7 +307,7 @@ Chromium config. This may happen for one of two reasons:
 
 &mdash; **def [runhooks](/recipes/recipe_modules/gclient/api.py#264)(self, args=None, name='runhooks', \*\*kwargs):**
 
-&mdash; **def [set\_patch\_repo\_revision](/recipes/recipe_modules/gclient/api.py#399)(self, gclient_config=None):**
+&mdash; **def [set\_patch\_repo\_revision](/recipes/recipe_modules/gclient/api.py#362)(self, gclient_config=None):**
 
 Updates config revision corresponding to patch_project.
 
@@ -813,7 +792,7 @@ Returns list of paths to files affected by the patch.
 
 Argument:
   patch_root: path relative to api.path['root'], usually obtained from
-    api.gclient.calculate_patch_root(patch_project)
+    api.gclient.get_gerrit_patch_root().
 
 Returned paths will be relative to to patch_root.
 

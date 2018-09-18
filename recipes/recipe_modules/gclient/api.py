@@ -359,43 +359,6 @@ class GclientApi(recipe_api.RecipeApi):
 
     return None
 
-  def calculate_patch_root(self, patch_project, gclient_config=None,
-                           patch_repo=None):  # pragma: no cover
-    """Returns path where a patch should be applied to based patch_project.
-
-    TODO(nodir): delete this function in favor of get_repo_path.
-
-    Maps the patch's repo to a path of directories relative to checkout's root,
-    which describe where to place the patch. If no mapping is found for the
-    repo url, falls back to trying to find a mapping for the old-style
-    "patch_project".
-
-    For now, considers only first solution (c.solutions[0]), but in theory can
-    be extended to all of them.
-
-    See patch_projects and repo_path_map solution config property.
-
-    Returns:
-      Relative path, including solution's root.
-      If patch_project is not given or not recognized, it'll be just first
-      solution root.
-    """
-    if patch_repo:
-      path = self.get_repo_path(patch_repo, gclient_config=gclient_config)
-      if path is not None:
-        return path
-
-    cfg = gclient_config or self.c
-    root, _ = cfg.patch_projects.get(patch_project, ('', ''))
-    if not root:
-      # Failure case - assume patch is for first solution, as this is what most
-      # projects rely on.
-      return cfg.solutions[0].name
-    # Note, that c.patch_projects contains patch roots as
-    # slash(/)-separated path, which are roots of the respective project repos
-    # and include actual solution name in them.
-    return self.m.path.join(*root.split('/'))
-
   def set_patch_repo_revision(self, gclient_config=None):
     """Updates config revision corresponding to patch_project.
 
