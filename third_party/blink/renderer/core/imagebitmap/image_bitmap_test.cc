@@ -759,6 +759,68 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
   }
 }
 
+TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
+  SkImageInfo info = SkImageInfo::MakeS32(10, 10, kPremul_SkAlphaType);
+  sk_sp<SkSurface> surface(SkSurface::MakeRaster(info));
+  sk_sp<SkImage> sk_image = surface->makeImageSnapshot();
+  scoped_refptr<StaticBitmapImage> bitmap_image =
+      StaticBitmapImage::Create(sk_image);
+
+  // source: 8888, bitmap pixel format: default
+  ImageBitmapOptions options;
+  ImageBitmap* image_bitmap =
+      ImageBitmap::Create(bitmap_image, bitmap_image->Rect(), options);
+
+  ASSERT_TRUE(image_bitmap);
+  sk_sp<SkImage> sk_image_internal =
+      image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
+  ASSERT_EQ(kN32_SkColorType, sk_image_internal->colorType());
+
+  // source: 8888, bitmap pixel format: 8888
+  options.setImagePixelFormat("8-8-8-8");
+  ImageBitmap* image_bitmap_8888 =
+      ImageBitmap::Create(bitmap_image, bitmap_image->Rect(), options);
+  ASSERT_TRUE(image_bitmap_8888);
+  sk_sp<SkImage> sk_image_internal_8888 = image_bitmap_8888->BitmapImage()
+                                              ->PaintImageForCurrentFrame()
+                                              .GetSkImage();
+  ASSERT_EQ(kN32_SkColorType, sk_image_internal_8888->colorType());
+
+  // Since there is no conversion from 8888 to default for image bitmap pixel
+  // format option, we expect the two image bitmaps to refer to the same
+  // internal SkImage back storage.
+  ASSERT_EQ(sk_image_internal, sk_image_internal_8888);
+
+  sk_sp<SkColorSpace> p3_color_space = SkColorSpace::MakeRGB(
+      SkColorSpace::kLinear_RenderTargetGamma, SkColorSpace::kDCIP3_D65_Gamut);
+  SkImageInfo info_f16 = SkImageInfo::Make(10, 10, kRGBA_F16_SkColorType,
+                                           kPremul_SkAlphaType, p3_color_space);
+  sk_sp<SkSurface> surface_f16(SkSurface::MakeRaster(info_f16));
+  sk_sp<SkImage> sk_image_f16 = surface_f16->makeImageSnapshot();
+  scoped_refptr<StaticBitmapImage> bitmap_image_f16 =
+      StaticBitmapImage::Create(sk_image_f16);
+
+  // source: f16, bitmap pixel format: default
+  ImageBitmapOptions options_f16;
+  ImageBitmap* image_bitmap_f16 = ImageBitmap::Create(
+      bitmap_image_f16, bitmap_image_f16->Rect(), options_f16);
+  ASSERT_TRUE(image_bitmap_f16);
+  sk_sp<SkImage> sk_image_internal_f16 =
+      image_bitmap_f16->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
+  ASSERT_EQ(kRGBA_F16_SkColorType, sk_image_internal_f16->colorType());
+
+  // source: f16, bitmap pixel format: 8888
+  options_f16.setImagePixelFormat("8-8-8-8");
+  ImageBitmap* image_bitmap_f16_8888 = ImageBitmap::Create(
+      bitmap_image_f16, bitmap_image_f16->Rect(), options_f16);
+  ASSERT_TRUE(image_bitmap_f16_8888);
+  sk_sp<SkImage> sk_image_internal_f16_8888 =
+      image_bitmap_f16_8888->BitmapImage()
+          ->PaintImageForCurrentFrame()
+          .GetSkImage();
+  ASSERT_EQ(kN32_SkColorType, sk_image_internal_f16_8888->colorType());
+}
+
 // This test is failing on asan-clang-phone because memory allocation is
 // declined. See <http://crbug.com/782286>.
 #if defined(OS_ANDROID)

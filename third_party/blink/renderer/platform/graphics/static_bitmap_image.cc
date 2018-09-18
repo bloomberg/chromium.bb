@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
 namespace blink {
@@ -90,8 +91,31 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
   if (SkColorSpace::Equals(src_color_space.get(), dst_color_space.get()))
     return this;
 
-  sk_sp<SkImage> converted_skia_image =
-      skia_image->makeColorSpace(dst_color_space);
+  // SkImage::makeColorSpace() converts all the color types to kN32_SkColorType.
+  // If the input color type is kRGBA_F16_SkColorType, we draw on a canvas to
+  // color convert the pixels. crbug.com/8847788: Fix this when skia:8382 is
+  // fixed.
+  sk_sp<SkImage> converted_skia_image = nullptr;
+  if (skia_image->colorType() != kRGBA_F16_SkColorType) {
+    converted_skia_image = skia_image->makeColorSpace(dst_color_space);
+  } else {
+    // Draw on a canvas to color convert.
+    SkImageInfo info = SkImageInfo::Make(
+        skia_image->width(), skia_image->height(), kRGBA_F16_SkColorType,
+        skia_image->alphaType(), dst_color_space);
+    sk_sp<SkSurface> surface = nullptr;
+    if (skia_image->isTextureBacked()) {
+      GrContext* gr =
+          ContextProviderWrapper()->ContextProvider()->GetGrContext();
+      surface = SkSurface::MakeRenderTarget(gr, SkBudgeted::kNo, info);
+    } else {
+      surface = SkSurface::MakeRaster(info);
+    }
+    SkPaint paint;
+    surface->getCanvas()->drawImage(skia_image, 0, 0, &paint);
+    converted_skia_image = surface->makeImageSnapshot();
+  }
+
   DCHECK(converted_skia_image.get());
   DCHECK(skia_image.get() != converted_skia_image.get());
 
