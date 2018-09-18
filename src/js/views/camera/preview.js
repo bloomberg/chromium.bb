@@ -68,6 +68,7 @@ camera.views.camera.Preview.prototype.setSource = function(
   return new Promise(resolve => {
     var video = document.createElement('video');
     video.id = 'preview-video';
+    video.setAttribute('aria-hidden', 'true');
 
     var onLoadedMetadata = () => {
       video.removeEventListener('loadedmetadata', onLoadedMetadata);
