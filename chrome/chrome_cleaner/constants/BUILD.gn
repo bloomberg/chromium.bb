@@ -51,3 +51,10 @@ source_set("uws_id") {
     "uws_id.h",
   ]
 }
+
+source_set("quarantine_constants") {
+  sources = [
+    "quarantine_constants.cc",
+    "quarantine_constants.h",
+  ]
+}
