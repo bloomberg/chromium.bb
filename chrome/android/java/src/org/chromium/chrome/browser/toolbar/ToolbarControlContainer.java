@@ -70,6 +70,7 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
 
     @Override
     public void getProgressBarDrawingInfo(DrawingInfo drawingInfoOut) {
+        if (mToolbar == null) return;
         // TODO(yusufo): Avoid casting to the layout without making the interface bigger.
         ToolbarProgressBar progressBar = ((ToolbarLayout) mToolbar).getProgressBar();
         if (progressBar != null) progressBar.getDrawingInfo(drawingInfoOut);
@@ -77,6 +78,7 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
 
     @Override
     public int getToolbarBackgroundColor() {
+        if (mToolbar == null) return 0;
         return ((ToolbarLayout) mToolbar).getToolbarDataProvider().getPrimaryColor();
     }
 
@@ -304,7 +306,7 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
         @Override
         public boolean shouldRecognizeSwipe(MotionEvent e1, MotionEvent e2) {
             if (isOnTabStrip(e1)) return false;
-            if (mToolbar.shouldIgnoreSwipeGesture()) return false;
+            if (mToolbar != null && mToolbar.shouldIgnoreSwipeGesture()) return false;
             if (KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
                         getContext(), ToolbarControlContainer.this))
                 return false;
