@@ -5,22 +5,23 @@
 #include "third_party/blink/renderer/platform/testing/layer_tree_host_embedder.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 LayerTreeHostEmbedder::LayerTreeHostEmbedder()
     : LayerTreeHostEmbedder(/*client=*/nullptr,
-                            /*single_thread_client=*/nullptr,
-                            /*use_layer_lists=*/false) {}
+                            /*single_thread_client=*/nullptr) {}
 
 LayerTreeHostEmbedder::LayerTreeHostEmbedder(
     cc::LayerTreeHostClient* client,
-    cc::LayerTreeHostSingleThreadClient* single_thread_client,
-    bool use_layer_lists) {
+    cc::LayerTreeHostSingleThreadClient* single_thread_client) {
   cc::LayerTreeSettings settings;
   settings.layer_transforms_should_scale_layer_contents = true;
   settings.single_thread_proxy_scheduler = false;
-  settings.use_layer_lists = use_layer_lists;
+  settings.use_layer_lists =
+      RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled();
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
   cc::LayerTreeHost::InitParams params;

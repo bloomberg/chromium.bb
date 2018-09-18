@@ -888,7 +888,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateLinkHighlightEffect() {
 static bool NeedsFilter(const LayoutObject& object) {
   // TODO(trchen): SVG caches filters in SVGResources. Implement it.
   if (object.IsBoxModelObject() && ToLayoutBoxModelObject(object).Layer() &&
-      (object.StyleRef().HasFilter() || object.HasReflection()))
+      (object.StyleRef().HasFilter() || object.HasReflection() ||
+       CompositingReasonFinder::RequiresCompositingForFilterAnimation(
+           object.StyleRef())))
     return true;
   if (object.IsLayoutImage() && ToLayoutImage(object).ShouldInvertColor())
     return true;

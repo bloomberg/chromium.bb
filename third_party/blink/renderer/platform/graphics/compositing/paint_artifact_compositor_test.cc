@@ -85,8 +85,7 @@ class PaintArtifactCompositorTest : public testing::Test,
     // the compositor to run and submit frames.
     layer_tree_ = std::make_unique<LayerTreeHostEmbedder>(
         &layer_tree_host_client_,
-        /*single_thread_client=*/nullptr,
-        /*use_layer_lists=*/true);
+        /*single_thread_client=*/nullptr);
     layer_tree_host_client_.SetLayerTreeHost(layer_tree_->layer_tree_host());
     layer_tree_->layer_tree_host()->SetRootLayer(
         paint_artifact_compositor_->RootLayer());
