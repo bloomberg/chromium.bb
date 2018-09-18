@@ -231,4 +231,24 @@ TEST_F(MemoryInfoTest, FlagEnabled) {
             precise_memory->usedJSHeapSize());
 }
 
+TEST_F(MemoryInfoTest, ZeroTime) {
+  // In this test, we make sure that even if the CurrentTimeTicks() value is
+  // very close to 0, we still obtain memory information from the first call to
+  // MemoryInfo::Create. We cannot just subtract CurrentTimeTicks() here
+  // because many places have DCHECKs for !time.is_null(), which would be hit if
+  // we set the clock to be exactly 0.
+  AdvanceClock(-CurrentTimeTicksInSeconds() + 0.0001);
+  V8TestingScope scope;
+  v8::Isolate* isolate = scope.GetIsolate();
+  std::vector<v8::Local<v8::ArrayBuffer>> objects;
+  objects.push_back(v8::ArrayBuffer::New(isolate, 100));
+
+  MemoryInfo* precise_memory =
+      MemoryInfo::Create(MemoryInfo::Precision::Precise);
+  CheckValues(precise_memory, MemoryInfo::Precision::Precise);
+  EXPECT_LT(0u, precise_memory->usedJSHeapSize());
+  EXPECT_LT(0u, precise_memory->totalJSHeapSize());
+  EXPECT_LT(0u, precise_memory->jsHeapSizeLimit());
+}
+
 }  // namespace blink
