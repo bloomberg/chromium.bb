@@ -103,12 +103,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     # Construct our bot_update command.  This basically be inclusive of
     # everything required for bot_update to know:
-    root = patch_root
-    if root is None:
-      # TODO(nodir): use m.gclient.get_repo_path instead.
-      root = self.m.gclient.calculate_patch_root(
-          self.m.properties.get('patch_project'), cfg,
-          self.m.tryserver.gerrit_change_repo_url)
+    patch_root = patch_root or self.m.gclient.get_gerrit_patch_root(
+        gclient_config=cfg)
 
     # Allow patch_project's revision if necessary.
     # This is important for projects which are checked out as DEPS of the
@@ -121,7 +117,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         # What do we want to check out (spec/root/rev/reverse_rev_map).
         ['--spec-path', self.m.raw_io.input(
             self.m.gclient.config_to_pythonish(cfg))],
-        ['--patch_root', root],
+        ['--patch_root', patch_root],
         ['--revision_mapping_file', self.m.json.input(reverse_rev_map)],
         ['--git-cache-dir', cfg.cache_dir],
         ['--cleanup-dir', self.m.path['cleanup'].join('bot_update')],
@@ -237,7 +233,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name
     step_test_data = lambda: self.test_api.output_json(
-        root, first_sln, reverse_rev_map, self._fail_patch,
+        patch_root, first_sln, reverse_rev_map, self._fail_patch,
         fixed_revisions=fixed_revisions)
 
     name = 'bot_update'
