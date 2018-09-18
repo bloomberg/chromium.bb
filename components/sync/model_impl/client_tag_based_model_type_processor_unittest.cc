@@ -1921,22 +1921,9 @@ TEST_F(
   ResetState(/*keep_db=*/true);
 
   // Initializing the processor will trigger it to commit again. It does not
-  // have a copy of the data so it will ask the bridge. And it will report an
-  // orphan.
+  // have a copy of the data so it will ask the bridge.
   base::HistogramTester histogram_tester;
-  bridge()->ExpectSynchronousDataCallback();
   InitializeToReadyState();
-
-  histogram_tester.ExpectBucketCount(
-      "Sync.ModelTypeOrphanMetadata",
-      /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/1);
-
-  // Do it again, explicitly. The processor cannot return the entity as a
-  // LocalChange (because it cannot load its data) so it needs to ask the
-  // bridge.
-  CommitRequestDataList commit_request;
-  type_processor()->GetLocalChanges(
-      INT_MAX, base::BindOnce(&CaptureCommitRequest, &commit_request));
 
   // The bridge has not passed the data back to the processor, we untrack the
   // entity.
@@ -1945,10 +1932,35 @@ TEST_F(
   // Make the bridge pass the data back to the processor. Because the entity is
   // already deleted in the processor, no further orphan gets reported.
   std::move(bridge()->GetDataCallback()).Run();
-  EXPECT_EQ(0U, commit_request.size());
-  histogram_tester.ExpectBucketCount(
-      "Sync.ModelTypeOrphanMetadata",
-      /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/1);
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeOrphanMetadata",
+                                    /*count=*/0);
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldNotReportOrphanMetadataInGetLocalChangesWhenDataIsAlreadyDeleted) {
+  InitializeToReadyState();
+  bridge()->WriteItem(kKey1, kValue1);
+
+  // Loose the entity in the bridge (keeping the metadata around as an orphan).
+  bridge()->MimicBugToLooseItemWithoutNotifyingProcessor(kKey1);
+
+  // Reset "the browser" so that the processor looses the copy of the data.
+  ResetState(/*keep_db=*/true);
+
+  // Initializing the processor will trigger it to commit again. It does not
+  // have a copy of the data so it will ask the bridge.
+  base::HistogramTester histogram_tester;
+  InitializeToReadyState();
+
+  // The bridge has not passed the data back to the processor, we delete the
+  // entity.
+  bridge()->DeleteItem(kKey1);
+
+  // Make the bridge pass the data back to the processor. Because the entity is
+  // already deleted in the processor, no further orphan gets reported.
+  std::move(bridge()->GetDataCallback()).Run();
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeOrphanMetadata",
+                                    /*count=*/0);
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
