@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
@@ -131,6 +132,8 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
 
     if (document_ && image.IsSVGImage())
       ToSVGImage(image).UpdateUseCounters(*document_);
+
+    image_->UpdateImageAnimationPolicy();
   }
 
   // Oilpan: do not prolong the Document's lifetime.
@@ -159,6 +162,14 @@ void StyleFetchedImage::LoadDeferredImage(const Document& document) {
   is_lazyload_possibly_deferred_ = false;
   document_ = &document;
   image_->LoadDeferredImage(document_->Fetcher());
+}
+
+bool StyleFetchedImage::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
+  if (!document_ || !document_->GetSettings()) {
+    return false;
+  }
+  policy = document_->GetSettings()->GetImageAnimationPolicy();
+  return true;
 }
 
 void StyleFetchedImage::Trace(blink::Visitor* visitor) {
