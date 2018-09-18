@@ -5305,9 +5305,20 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // update NavigationItem URL.
     if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
       const GURL webViewURL = net::GURLWithNSURL(_webView.URL);
-      web::NavigationItem* currentItem = [[CRWNavigationItemHolder
-          holderForBackForwardListItem:_webView.backForwardList.currentItem]
-          navigationItem];
+      web::NavigationItem* currentItem = nullptr;
+      if (_webView.backForwardList.currentItem) {
+        currentItem = [[CRWNavigationItemHolder
+            holderForBackForwardListItem:_webView.backForwardList.currentItem]
+            navigationItem];
+      } else {
+        // WKBackForwardList.currentItem may be nil in a corner case when
+        // location.replace is called with about:blank#hash in an empty window
+        // open tab. See crbug.com/866142.
+        DCHECK(self.webStateImpl->HasOpener());
+        DCHECK(!self.navigationManagerImpl->GetTransientItem());
+        DCHECK(!self.navigationManagerImpl->GetPendingItem());
+        currentItem = self.navigationManagerImpl->GetLastCommittedItem();
+      }
       if (currentItem && webViewURL != currentItem->GetURL())
         currentItem->SetURL(webViewURL);
     }
@@ -5385,7 +5396,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)newURL {
   DCHECK(newURL == net::GURLWithNSURL([_webView URL]));
-  DCHECK(!_documentURL.host().empty() || _documentURL.SchemeIsFile());
 
   if (base::FeatureList::IsEnabled(
           web::features::kCrashOnUnexpectedURLChange)) {

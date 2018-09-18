@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
 #import "ios/web/navigation/navigation_item_impl.h"
@@ -215,7 +216,10 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
     // WKWebView.
     if (proxy.backForwardList && !proxy.backForwardList.currentItem) {
       // WKWebView's URL should be about:blank for empty window open item.
-      DCHECK_EQ(url::kAboutBlankURL, net::GURLWithNSURL(proxy.URL).spec());
+      // TODO(crbug.com/885249): Use GURL::IsAboutBlank() instead.
+      DCHECK(base::StartsWith(net::GURLWithNSURL(proxy.URL).spec(),
+                              url::kAboutBlankURL,
+                              base::CompareCase::SENSITIVE));
       // There should be no back-forward history for empty window open item.
       DCHECK_EQ(0UL, proxy.backForwardList.backList.count);
       DCHECK_EQ(0UL, proxy.backForwardList.forwardList.count);
