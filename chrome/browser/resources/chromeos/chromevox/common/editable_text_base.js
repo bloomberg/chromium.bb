@@ -41,7 +41,7 @@ cvox.TextChangeEvent = function(newValue, newStart, newEnd, triggeredByUser) {
       return this.value_;
     }.bind(this),
     set: function(val) {
-      this.value_ = val.replace('\u00a0', ' ');
+      this.value_ = val.replace(/\u00a0/g, ' ');
     }.bind(this)
   });
   this.value = newValue;
