@@ -4,6 +4,7 @@
 
 #include "base/task/task_scheduler/task_tracker.h"
 
+#include <atomic>
 #include <string>
 #include <vector>
 
@@ -96,6 +97,39 @@ HistogramBase* GetLatencyHistogram(StringPiece histogram_name,
       histogram, TimeDelta::FromMicroseconds(1),
       TimeDelta::FromMilliseconds(20), 50,
       HistogramBase::kUmaTargetedHistogramFlag);
+}
+
+// Constructs a histogram to track task count which is logging to
+// "TaskScheduler.{histogram_name}.{histogram_label}.{task_type_suffix}".
+HistogramBase* GetCountHistogram(StringPiece histogram_name,
+                                 StringPiece histogram_label,
+                                 StringPiece task_type_suffix) {
+  DCHECK(!histogram_name.empty());
+  DCHECK(!histogram_label.empty());
+  DCHECK(!task_type_suffix.empty());
+  // Mimics the UMA_HISTOGRAM_CUSTOM_COUNTS macro.
+  const std::string histogram = JoinString(
+      {"TaskScheduler", histogram_name, histogram_label, task_type_suffix},
+      ".");
+  // 500 was chosen as the maximum number of tasks run while queuing because
+  // values this high would likely indicate an error, beyond which knowing the
+  // actual number of tasks is not informative.
+  return Histogram::FactoryGet(histogram, 1, 500, 50,
+                               HistogramBase::kUmaTargetedHistogramFlag);
+}
+
+// Returns a histogram stored in a 2D array indexed by task priority and
+// whether it may block.
+// TODO(jessemckenna): use the STATIC_HISTOGRAM_POINTER_GROUP macro from
+// histogram_macros.h instead.
+HistogramBase* GetHistogramForTaskTraits(
+    TaskTraits task_traits,
+    HistogramBase* const (*histograms)[2]) {
+  return histograms[static_cast<int>(task_traits.priority())]
+                   [task_traits.may_block() ||
+                            task_traits.with_base_sync_primitives()
+                        ? 1
+                        : 0];
 }
 
 // Upper bound for the
@@ -249,6 +283,7 @@ TaskTracker::PreemptionState::~PreemptionState() = default;
 TaskTracker::TaskTracker(StringPiece histogram_label)
     : TaskTracker(histogram_label, GetMaxNumScheduledBestEffortSequences()) {}
 
+// TODO(jessemckenna): Write a helper function to avoid code duplication below.
 TaskTracker::TaskTracker(StringPiece histogram_label,
                          int max_num_scheduled_best_effort_sequences)
     : state_(new State),
@@ -292,6 +327,25 @@ TaskTracker::TaskTracker(StringPiece histogram_label,
            GetLatencyHistogram("HeartbeatLatencyMicroseconds",
                                histogram_label,
                                "UserBlockingTaskPriority_MayBlock")}},
+      num_tasks_run_while_queuing_histograms_{
+          {GetCountHistogram("NumTasksRunWhileQueuing",
+                             histogram_label,
+                             "BackgroundTaskPriority"),
+           GetCountHistogram("NumTasksRunWhileQueuing",
+                             histogram_label,
+                             "BackgroundTaskPriority_MayBlock")},
+          {GetCountHistogram("NumTasksRunWhileQueuing",
+                             histogram_label,
+                             "UserVisibleTaskPriority"),
+           GetCountHistogram("NumTasksRunWhileQueuing",
+                             histogram_label,
+                             "UserVisibleTaskPriority_MayBlock")},
+          {GetCountHistogram("NumTasksRunWhileQueuing",
+                             histogram_label,
+                             "UserBlockingTaskPriority"),
+           GetCountHistogram("NumTasksRunWhileQueuing",
+                             histogram_label,
+                             "UserBlockingTaskPriority_MayBlock")}},
       tracked_ref_factory_(this) {
   // Confirm that all |task_latency_histograms_| have been initialized above.
   DCHECK(*(&task_latency_histograms_[static_cast<int>(TaskPriority::HIGHEST) +
@@ -435,8 +489,10 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   const bool is_delayed = !task->delayed_run_time.is_null();
 
   RunOrSkipTask(std::move(task.value()), sequence.get(), can_run_task);
-  if (can_run_task)
+  if (can_run_task) {
+    IncrementNumTasksRun();
     AfterRunTask(shutdown_behavior);
+  }
 
   if (!is_delayed)
     DecrementNumIncompleteUndelayedTasks();
@@ -485,11 +541,31 @@ void TaskTracker::RecordLatencyHistogram(
       latency_histogram_type == LatencyHistogramType::TASK_LATENCY
           ? task_latency_histograms_
           : heartbeat_latency_histograms_;
-  histograms[static_cast<int>(task_traits.priority())]
-            [task_traits.may_block() || task_traits.with_base_sync_primitives()
-                 ? 1
-                 : 0]
-                ->AddTimeMicrosecondsGranularity(task_latency);
+  GetHistogramForTaskTraits(task_traits, histograms)
+      ->AddTimeMicrosecondsGranularity(task_latency);
+}
+
+void TaskTracker::RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms(
+    TaskPriority task_priority,
+    bool may_block,
+    TimeTicks posted_time,
+    int num_tasks_run_when_posted) const {
+  TaskTraits task_traits = {task_priority};
+  if (may_block)
+    task_traits = TaskTraits::Override(task_traits, {MayBlock()});
+  RecordLatencyHistogram(LatencyHistogramType::HEARTBEAT_LATENCY, task_traits,
+                         posted_time);
+  GetHistogramForTaskTraits(task_traits,
+                            num_tasks_run_while_queuing_histograms_)
+      ->Add(GetNumTasksRun() - num_tasks_run_when_posted);
+}
+
+int TaskTracker::GetNumTasksRun() const {
+  return num_tasks_run_.load(std::memory_order_relaxed);
+}
+
+void TaskTracker::IncrementNumTasksRun() {
+  num_tasks_run_.fetch_add(1, std::memory_order_relaxed);
 }
 
 void TaskTracker::RunOrSkipTask(Task task,
