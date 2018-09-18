@@ -242,8 +242,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                   WindowOpenDisposition disposition,
                   const gfx::Rect& initial_rect,
                   bool user_gesture);
-  void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
-  void OnShowFullscreenWidget(int route_id);
+  void OnShowWidget(int widget_route_id, const gfx::Rect& initial_rect);
+  void OnShowFullscreenWidget(int widget_route_id);
   void OnUpdateTargetURL(const GURL& url);
   void OnClose();
   void OnDocumentAvailableInMainFrame(bool uses_temporary_zoom_level);

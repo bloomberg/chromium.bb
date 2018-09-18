@@ -2750,16 +2750,16 @@ void WebContentsImpl::CreateNewWindow(
 }
 
 void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
-                                      int32_t route_id,
+                                      int32_t widget_route_id,
                                       mojom::WidgetPtr widget) {
-  CreateNewWidget(render_process_id, route_id, /*is_fullscreen=*/false,
+  CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/false,
                   std::move(widget));
 }
 
 void WebContentsImpl::CreateNewFullscreenWidget(int32_t render_process_id,
-                                                int32_t route_id,
+                                                int32_t widget_route_id,
                                                 mojom::WidgetPtr widget) {
-  CreateNewWidget(render_process_id, route_id, /*is_fullscreen=*/true,
+  CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/true,
                   std::move(widget));
 }
 
@@ -2824,14 +2824,14 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
 }
 
 void WebContentsImpl::ShowCreatedWidget(int process_id,
-                                        int route_id,
+                                        int widget_route_id,
                                         const gfx::Rect& initial_rect) {
-  ShowCreatedWidget(process_id, route_id, false, initial_rect);
+  ShowCreatedWidget(process_id, widget_route_id, false, initial_rect);
 }
 
 void WebContentsImpl::ShowCreatedFullscreenWidget(int process_id,
-                                                  int route_id) {
-  ShowCreatedWidget(process_id, route_id, true, gfx::Rect());
+                                                  int widget_route_id) {
+  ShowCreatedWidget(process_id, widget_route_id, true, gfx::Rect());
 }
 
 void WebContentsImpl::ShowCreatedWidget(int process_id,

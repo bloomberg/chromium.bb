@@ -358,7 +358,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnShowPopup(RenderFrameHost* render_frame_host,
                    const FrameHostMsg_ShowPopup_Params& params);
 #endif
-  void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
+  void OnShowWidget(int widget_route_id, const gfx::Rect& initial_rect);
   void OnTakeFocus(bool reverse);
   void OnUpdateFrameName(int frame_id,
                          bool is_top_level,

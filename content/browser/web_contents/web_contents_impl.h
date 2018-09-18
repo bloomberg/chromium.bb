@@ -631,12 +631,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                        int32_t route_id,
                        mojom::WidgetPtr widget) override;
   void CreateNewFullscreenWidget(int32_t render_process_id,
-                                 int32_t route_id,
+                                 int32_t widget_route_id,
                                  mojom::WidgetPtr widget) override;
   void ShowCreatedWidget(int process_id,
-                         int route_id,
+                         int widget_route_id,
                          const gfx::Rect& initial_rect) override;
-  void ShowCreatedFullscreenWidget(int process_id, int route_id) override;
+  void ShowCreatedFullscreenWidget(int process_id,
+                                   int widget_route_id) override;
   void RequestMediaAccessPermission(const MediaStreamRequest& request,
                                     MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(RenderFrameHost* render_frame_host,
