@@ -2578,7 +2578,7 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
 
   // Need to update subtree paint properties for the changed fragments.
   if (fragments_changed)
-    object_.GetMutableForPainting().SetSubtreeNeedsPaintPropertyUpdate();
+    object_.GetMutableForPainting().SetSubtreeNeedsForcedPaintPropertyUpdate();
 }
 
 bool PaintPropertyTreeBuilder::ObjectIsRepeatingTableSectionInPagedMedia()
@@ -2804,7 +2804,8 @@ bool PaintPropertyTreeBuilder::UpdateForChildren() {
     builder.UpdateForChildren();
     property_changed |= builder.PropertyChanged();
     property_added_or_removed |= builder.PropertyAddedOrRemoved();
-    context_.force_subtree_update |= object_.SubtreeNeedsPaintPropertyUpdate();
+    context_.force_subtree_update |=
+        object_.SubtreeNeedsForcedPaintPropertyUpdate();
     fragment_data = fragment_data->NextFragment();
   }
   DCHECK(!fragment_data);

@@ -990,9 +990,9 @@ void LocalFrameView::SetNeedsPaintPropertyUpdate() {
     layout_view->SetNeedsPaintPropertyUpdate();
 }
 
-void LocalFrameView::SetSubtreeNeedsPaintPropertyUpdate() {
+void LocalFrameView::SetSubtreeNeedsForcedPaintPropertyUpdate() {
   if (auto* layout_view = GetLayoutView())
-    layout_view->SetSubtreeNeedsPaintPropertyUpdate();
+    layout_view->SetSubtreeNeedsForcedPaintPropertyUpdate();
 }
 
 FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
@@ -3516,7 +3516,7 @@ void LocalFrameView::AttachToLayout() {
   // We may have updated paint properties in detached frame subtree for
   // printing (see UpdateLifecyclePhasesForPrinting()). The paint properties
   // may change after the frame is attached.
-  SetSubtreeNeedsPaintPropertyUpdate();
+  SetSubtreeNeedsForcedPaintPropertyUpdate();
 }
 
 void LocalFrameView::DetachFromLayout() {
@@ -3535,7 +3535,7 @@ void LocalFrameView::DetachFromLayout() {
 
   // We may need update paint properties in detached frame subtree for printing.
   // See UpdateLifecyclePhasesForPrinting().
-  SetSubtreeNeedsPaintPropertyUpdate();
+  SetSubtreeNeedsForcedPaintPropertyUpdate();
 }
 
 void LocalFrameView::AddPlugin(WebPluginContainerImpl* plugin) {
@@ -4050,7 +4050,7 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
       layout_view->InvalidatePaintForViewAndCompositedLayers();
     // Also need to update all paint properties that might be skipped while
     // the frame was throttled.
-    SetSubtreeNeedsPaintPropertyUpdate();
+    SetSubtreeNeedsForcedPaintPropertyUpdate();
   }
 
   EventHandlerRegistry& registry = frame_->GetEventHandlerRegistry();

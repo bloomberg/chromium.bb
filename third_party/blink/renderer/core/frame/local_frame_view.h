@@ -579,7 +579,7 @@ class CORE_EXPORT LocalFrameView final
 
   // Shorthands of LayoutView's corresponding methods.
   void SetNeedsPaintPropertyUpdate();
-  void SetSubtreeNeedsPaintPropertyUpdate();
+  void SetSubtreeNeedsForcedPaintPropertyUpdate();
 
   // Viewport size that should be used for viewport units (i.e. 'vh'/'vw').
   // May include the size of browser controls. See implementation for further

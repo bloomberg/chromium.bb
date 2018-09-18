@@ -1893,7 +1893,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                 DocumentLifecycle::kInPrePaint);
       layout_object_.ClearPaintInvalidationFlags();
       layout_object_.bitfields_.SetNeedsPaintPropertyUpdate(false);
-      layout_object_.bitfields_.SetSubtreeNeedsPaintPropertyUpdate(false);
+      layout_object_.bitfields_.SetSubtreeNeedsForcedPaintPropertyUpdate(false);
       layout_object_.bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
       layout_object_.bitfields_.SetEffectiveWhitelistedTouchActionChanged(
           false);
@@ -1945,8 +1945,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void SetNeedsPaintPropertyUpdate() {
       layout_object_.SetNeedsPaintPropertyUpdate();
     }
-    void SetSubtreeNeedsPaintPropertyUpdate() {
-      layout_object_.SetSubtreeNeedsPaintPropertyUpdate();
+    void SetSubtreeNeedsForcedPaintPropertyUpdate() {
+      layout_object_.SetSubtreeNeedsForcedPaintPropertyUpdate();
     }
 
     void SetPartialInvalidationVisualRect(const LayoutRect& r) {
@@ -2011,12 +2011,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool NeedsPaintPropertyUpdate() const {
     return bitfields_.NeedsPaintPropertyUpdate();
   }
-  void SetSubtreeNeedsPaintPropertyUpdate() {
-    bitfields_.SetSubtreeNeedsPaintPropertyUpdate(true);
+  void SetSubtreeNeedsForcedPaintPropertyUpdate() {
+    bitfields_.SetSubtreeNeedsForcedPaintPropertyUpdate(true);
     SetNeedsPaintPropertyUpdate();
   }
-  bool SubtreeNeedsPaintPropertyUpdate() const {
-    return bitfields_.SubtreeNeedsPaintPropertyUpdate();
+  bool SubtreeNeedsForcedPaintPropertyUpdate() const {
+    return bitfields_.SubtreeNeedsForcedPaintPropertyUpdate();
   }
   bool DescendantNeedsPaintPropertyUpdate() const {
     return bitfields_.DescendantNeedsPaintPropertyUpdate();
@@ -2463,7 +2463,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           scroll_anchor_disabling_style_changed_(false),
           has_box_decoration_background_(false),
           needs_paint_property_update_(true),
-          subtree_needs_paint_property_update_(true),
+          subtree_needs_forced_paint_property_update_(true),
           descendant_needs_paint_property_update_(true),
           background_changed_since_last_paint_invalidation_(true),
           outline_may_be_affected_by_descendants_(false),
@@ -2666,8 +2666,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(needs_paint_property_update_,
                          NeedsPaintPropertyUpdate);
     // Whether paint properties of the whole subtree need to be updated.
-    ADD_BOOLEAN_BITFIELD(subtree_needs_paint_property_update_,
-                         SubtreeNeedsPaintPropertyUpdate)
+    ADD_BOOLEAN_BITFIELD(subtree_needs_forced_paint_property_update_,
+                         SubtreeNeedsForcedPaintPropertyUpdate)
     // Whether the paint properties of a descendant need to be updated. For more
     // details, see LayoutObject::descendantNeedsPaintPropertyUpdate().
     ADD_BOOLEAN_BITFIELD(descendant_needs_paint_property_update_,

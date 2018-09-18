@@ -645,7 +645,7 @@ void LocalFrame::SetPrinting(bool printing,
     }
   }
 
-  View()->SetSubtreeNeedsPaintPropertyUpdate();
+  View()->SetSubtreeNeedsForcedPaintPropertyUpdate();
 
   if (!printing)
     GetDocument()->SetPrinting(Document::kNotPrinting);
