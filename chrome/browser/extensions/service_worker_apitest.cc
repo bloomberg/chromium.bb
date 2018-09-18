@@ -457,20 +457,30 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
         ::switches::kEnableExperimentalWebPlatformFeatures);
     ServiceWorkerTest::SetUpCommandLine(command_line);
   }
+
+  void SetUp() override {
+    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
+        &gcm::FakeGCMProfileService::Build);
+    ServiceWorkerTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     NotificationDisplayServiceFactory::GetInstance()->SetTestingFactory(
         profile(), &StubNotificationDisplayService::FactoryForTests);
 
     gcm::FakeGCMProfileService* gcm_service =
         static_cast<gcm::FakeGCMProfileService*>(
-            gcm::GCMProfileServiceFactory::GetInstance()
-                ->SetTestingFactoryAndUse(profile(),
-                                          &gcm::FakeGCMProfileService::Build));
+            gcm::GCMProfileServiceFactory::GetForProfile(profile()));
     gcm_driver_ = static_cast<instance_id::FakeGCMDriverForInstanceID*>(
         gcm_service->driver());
     push_service_ = PushMessagingServiceFactory::GetForProfile(profile());
 
     ServiceWorkerTest::SetUpOnMainThread();
+  }
+
+  void TearDown() override {
+    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(nullptr);
+    ServiceWorkerTest::TearDown();
   }
 
   instance_id::FakeGCMDriverForInstanceID* gcm_driver() const {

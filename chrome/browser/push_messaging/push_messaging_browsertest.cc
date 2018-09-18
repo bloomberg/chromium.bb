@@ -137,6 +137,9 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_server_->Start());
 
+    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
+        &gcm::FakeGCMProfileService::Build);
+
     SiteEngagementScore::SetParamValuesForTesting();
     InProcessBrowserTest::SetUp();
   }
@@ -148,11 +151,13 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
-    gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(
-        gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            GetBrowser()->profile(), &gcm::FakeGCMProfileService::Build));
-    gcm_driver_ = static_cast<instance_id::FakeGCMDriverForInstanceID*>(
-        gcm_service_->driver());
+    KeyedService* keyed_service =
+        gcm::GCMProfileServiceFactory::GetForProfile(GetBrowser()->profile());
+    if (keyed_service) {
+      gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(keyed_service);
+      gcm_driver_ = static_cast<instance_id::FakeGCMDriverForInstanceID*>(
+          gcm_service_->driver());
+    }
 
     notification_tester_ = std::make_unique<NotificationDisplayServiceTester>(
         GetBrowser()->profile());
@@ -161,6 +166,11 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
         PushMessagingServiceFactory::GetForProfile(GetBrowser()->profile());
 
     LoadTestPage();
+  }
+
+  void TearDown() override {
+    gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(nullptr);
+    InProcessBrowserTest::TearDown();
   }
 
   void TearDownOnMainThread() override {

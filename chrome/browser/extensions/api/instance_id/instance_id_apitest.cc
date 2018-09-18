@@ -28,7 +28,8 @@ class InstanceIDApiTest : public ExtensionApiTest {
   InstanceIDApiTest();
 
  protected:
-  void SetUpOnMainThread() override;
+  void SetUp() override;
+  void TearDown() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstanceIDApiTest);
@@ -37,11 +38,14 @@ class InstanceIDApiTest : public ExtensionApiTest {
 InstanceIDApiTest::InstanceIDApiTest() {
 }
 
-void InstanceIDApiTest::SetUpOnMainThread() {
-  gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
-      browser()->profile(), &gcm::FakeGCMProfileService::Build);
+void InstanceIDApiTest::SetUp() {
+  gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(
+      &gcm::FakeGCMProfileService::Build);
+  ExtensionApiTest::SetUp();
+}
 
-  ExtensionApiTest::SetUpOnMainThread();
+void InstanceIDApiTest::TearDown() {
+  gcm::GCMProfileServiceFactory::SetGlobalTestingFactory(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, GetID) {

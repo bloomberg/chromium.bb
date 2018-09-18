@@ -21,6 +21,7 @@ class GCMProfileServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static GCMProfileService* GetForProfile(content::BrowserContext* profile);
   static GCMProfileServiceFactory* GetInstance();
+  static void SetGlobalTestingFactory(TestingFactoryFunction factory);
 
  private:
   friend struct base::DefaultSingletonTraits<GCMProfileServiceFactory>;
@@ -33,6 +34,8 @@ class GCMProfileServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* profile) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
+
+  static TestingFactoryFunction testing_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMProfileServiceFactory);
 };
