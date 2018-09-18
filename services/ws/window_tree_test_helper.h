@@ -110,6 +110,15 @@ class WindowTreeTestHelper {
   aura::Window* GetWindowByClientId(const ClientWindowId& id);
   ClientWindowId ClientWindowIdForWindow(aura::Window* window);
 
+  const std::queue<std::unique_ptr<WindowTree::InFlightEvent>>&
+  in_flight_key_events() {
+    return window_tree_->in_flight_key_events_;
+  }
+  const std::queue<std::unique_ptr<WindowTree::InFlightEvent>>&
+  in_flight_other_events() {
+    return window_tree_->in_flight_other_events_;
+  }
+
  private:
   WindowTree* window_tree_;
 
