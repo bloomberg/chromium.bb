@@ -59,6 +59,7 @@ struct DomainName {
   bool operator!=(const DomainName& other) const;
 
   bool EndsWithLocalDomain() const;
+  bool IsEmpty() const { return domain_name_.size() > 1 && domain_name_[0]; }
 
   bool Append(const DomainName& after);
   // TODO: If there's significant use of this, we would rather have string_span

@@ -19,6 +19,17 @@ struct InterfaceInfo {
     kOther,
   };
 
+  // TODO(btolsch): Only needed until c++14.
+  InterfaceInfo();
+  InterfaceInfo(int32_t index,
+                const uint8_t hardware_address[6],
+                const std::string& name,
+                Type type);
+  ~InterfaceInfo();
+
+  bool operator==(const InterfaceInfo& other) const;
+  bool operator!=(const InterfaceInfo& other) const;
+
   void CopyHardwareAddressTo(uint8_t x[6]) const;
 
   // Interface index, typically as specified by the operating system,
@@ -36,6 +47,11 @@ struct InterfaceInfo {
 };
 
 struct IPSubnet {
+  // TODO(btolsch): Only needed until c++14.
+  IPSubnet();
+  IPSubnet(const IPAddress& address, uint8_t prefix_length);
+  ~IPSubnet();
+
   IPAddress address;
 
   // Prefix length of |address|, which is another way of specifying a subnet

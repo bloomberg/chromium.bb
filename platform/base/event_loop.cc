@@ -29,6 +29,7 @@ bool ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
   }
   DCHECK_LE(len, kUdpMaxPacketSize);
   data->length = len;
+  data->socket = read_event.socket;
   return true;
 }
 

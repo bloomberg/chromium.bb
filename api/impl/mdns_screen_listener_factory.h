@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_PUBLIC_MDNS_SCREEN_LISTENER_H_
-#define API_PUBLIC_MDNS_SCREEN_LISTENER_H_
+#ifndef API_IMPL_MDNS_SCREEN_LISTENER_FACTORY_H_
+#define API_IMPL_MDNS_SCREEN_LISTENER_FACTORY_H_
+
+#include <memory>
 
 #include "api/public/screen_listener.h"
 
@@ -14,17 +16,13 @@ struct MdnsScreenListenerConfig {
   bool dummy_value = true;
 };
 
-class MdnsScreenListener : public ScreenListener {
+class MdnsScreenListenerFactory {
  public:
-  MdnsScreenListener(Observer* observer, MdnsScreenListenerConfig config);
-  virtual ~MdnsScreenListener();
-
-  // TODO: Subclass/implement remaining API
-
- private:
-  const MdnsScreenListenerConfig config_;
+  static std::unique_ptr<ScreenListener> Create(
+      const MdnsScreenListenerConfig& config,
+      ScreenListener::Observer* observer);
 };
 
 }  // namespace openscreen
 
-#endif  // API_PUBLIC_MDNS_SCREEN_LISTENER_H_
+#endif  // API_IMPL_MDNS_SCREEN_LISTENER_FACTORY_H_

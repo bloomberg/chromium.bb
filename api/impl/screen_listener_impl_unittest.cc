@@ -298,11 +298,11 @@ TEST_F(ScreenListenerImplTest, ObserveFromSearching) {
 }
 
 TEST_F(ScreenListenerImplTest, ScreenObserverPassThrough) {
-  const ScreenInfo screen1{"id1", "name1", "eth0", {{192, 168, 1, 10}, 12345}};
-  const ScreenInfo screen2{"id2", "name2", "eth0", {{192, 168, 1, 11}, 12345}};
-  const ScreenInfo screen3{"id3", "name3", "eth0", {{192, 168, 1, 12}, 12345}};
+  const ScreenInfo screen1{"id1", "name1", 1, {{192, 168, 1, 10}, 12345}};
+  const ScreenInfo screen2{"id2", "name2", 1, {{192, 168, 1, 11}, 12345}};
+  const ScreenInfo screen3{"id3", "name3", 1, {{192, 168, 1, 12}, 12345}};
   const ScreenInfo screen1_alt_name{
-      "id1", "name1 alt", "eth0", {{192, 168, 1, 10}, 12345}};
+      "id1", "name1 alt", 1, {{192, 168, 1, 10}, 12345}};
   MockObserver observer;
   MockMdnsDelegate mock_delegate;
   screen_listener_ = MakeUnique<ScreenListenerImpl>(&observer, &mock_delegate);

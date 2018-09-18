@@ -4,12 +4,7 @@
 
 #include "api/public/network_service_manager.h"
 
-#include <utility>
-
-#include "api/public/mdns_screen_listener.h"
-#include "api/public/mdns_screen_publisher.h"
-#include "api/public/screen_connection_client.h"
-#include "api/public/screen_connection_server.h"
+#include "api/impl/internal_services.h"
 
 namespace {
 
@@ -21,8 +16,8 @@ namespace openscreen {
 
 // static
 NetworkServiceManager* NetworkServiceManager::Create(
-    std::unique_ptr<MdnsScreenListener> mdns_listener,
-    std::unique_ptr<MdnsScreenPublisher> mdns_publisher,
+    std::unique_ptr<ScreenListener> mdns_listener,
+    std::unique_ptr<ScreenPublisher> mdns_publisher,
     std::unique_ptr<ScreenConnectionClient> connection_client,
     std::unique_ptr<ScreenConnectionServer> connection_server) {
   // TODO(mfoltz): Convert to assertion failure
@@ -51,11 +46,15 @@ void NetworkServiceManager::Dispose() {
   g_network_service_manager_instance = nullptr;
 }
 
-MdnsScreenListener* NetworkServiceManager::GetMdnsScreenListener() {
+void NetworkServiceManager::RunEventLoopOnce() {
+  InternalServices::RunEventLoopOnce();
+}
+
+ScreenListener* NetworkServiceManager::GetMdnsScreenListener() {
   return mdns_listener_.get();
 }
 
-MdnsScreenPublisher* NetworkServiceManager::GetMdnsScreenPublisher() {
+ScreenPublisher* NetworkServiceManager::GetMdnsScreenPublisher() {
   return mdns_publisher_.get();
 }
 
@@ -68,8 +67,8 @@ ScreenConnectionServer* NetworkServiceManager::GetScreenConnectionServer() {
 }
 
 NetworkServiceManager::NetworkServiceManager(
-    std::unique_ptr<MdnsScreenListener> mdns_listener,
-    std::unique_ptr<MdnsScreenPublisher> mdns_publisher,
+    std::unique_ptr<ScreenListener> mdns_listener,
+    std::unique_ptr<ScreenPublisher> mdns_publisher,
     std::unique_ptr<ScreenConnectionClient> connection_client,
     std::unique_ptr<ScreenConnectionServer> connection_server)
     : mdns_listener_(std::move(mdns_listener)),

@@ -4,6 +4,16 @@
 
 source_set("impl") {
   sources = [
+    "internal_services.cc",
+    "internal_services.h",
+    "mdns_platform_service.cc",
+    "mdns_platform_service.h",
+    "mdns_responder_service.cc",
+    "mdns_responder_service.h",
+    "mdns_screen_listener_factory.cc",
+    "mdns_screen_listener_factory.h",
+    "mdns_screen_publisher_factory.cc",
+    "mdns_screen_publisher_factory.h",
     "screen_list.cc",
     "screen_list.h",
     "screen_listener_impl.cc",

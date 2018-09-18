@@ -7,12 +7,12 @@
 
 #include <memory>
 
-namespace openscreen {
+#include "api/public/screen_connection_client.h"
+#include "api/public/screen_connection_server.h"
+#include "api/public/screen_listener.h"
+#include "api/public/screen_publisher.h"
 
-class MdnsScreenListener;
-class MdnsScreenPublisher;
-class ScreenConnectionClient;
-class ScreenConnectionServer;
+namespace openscreen {
 
 // Manages services run as part of the Open Screen Protocol Library.  Library
 // embedders should pass instances of required services to Create(), which will
@@ -26,8 +26,8 @@ class NetworkServiceManager final {
   // Creates the singleton instance of the NetworkServiceManager.  nullptr may
   // be passed for services not provided by the embedder.
   static NetworkServiceManager* Create(
-      std::unique_ptr<MdnsScreenListener> mdns_listener,
-      std::unique_ptr<MdnsScreenPublisher> mdns_publisher,
+      std::unique_ptr<ScreenListener> mdns_listener,
+      std::unique_ptr<ScreenPublisher> mdns_publisher,
       std::unique_ptr<ScreenConnectionClient> connection_client,
       std::unique_ptr<ScreenConnectionServer> connection_server);
 
@@ -40,13 +40,15 @@ class NetworkServiceManager final {
   // by the service instance destructors.
   static void Dispose();
 
+  void RunEventLoopOnce();
+
   // Returns an instance of the mDNS screen listener, or nullptr if
   // not provided.
-  MdnsScreenListener* GetMdnsScreenListener();
+  ScreenListener* GetMdnsScreenListener();
 
   // Returns an instance of the mDNS screen publisher, or nullptr
   // if not provided.
-  MdnsScreenPublisher* GetMdnsScreenPublisher();
+  ScreenPublisher* GetMdnsScreenPublisher();
 
   // Returns an instance of the screen connection client, or nullptr
   // if not provided.
@@ -58,15 +60,15 @@ class NetworkServiceManager final {
 
  private:
   NetworkServiceManager(
-      std::unique_ptr<MdnsScreenListener> mdns_listener,
-      std::unique_ptr<MdnsScreenPublisher> mdns_publisher,
+      std::unique_ptr<ScreenListener> mdns_listener,
+      std::unique_ptr<ScreenPublisher> mdns_publisher,
       std::unique_ptr<ScreenConnectionClient> connection_client,
       std::unique_ptr<ScreenConnectionServer> connection_server);
 
   ~NetworkServiceManager();
 
-  std::unique_ptr<MdnsScreenListener> mdns_listener_;
-  std::unique_ptr<MdnsScreenPublisher> mdns_publisher_;
+  std::unique_ptr<ScreenListener> mdns_listener_;
+  std::unique_ptr<ScreenPublisher> mdns_publisher_;
   std::unique_ptr<ScreenConnectionClient> connection_client_;
   std::unique_ptr<ScreenConnectionServer> connection_server_;
 };

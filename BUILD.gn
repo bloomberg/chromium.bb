@@ -18,6 +18,19 @@ group("gn_all") {
   ]
 }
 
+executable("demo") {
+  sources = [
+    "//demo/demo.cc",
+  ]
+
+  deps = [
+    "//api",
+    "//base",
+    "//discovery/mdns",
+    "//platform",
+  ]
+}
+
 executable("unittests") {
   testonly = true
   deps = [

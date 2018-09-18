@@ -154,7 +154,7 @@ enum class MdnsResponderErrorCode {
 //   adapter->RunTasks();
 //
 //   // Eventually...
-//   adapter->DeregisterService("living-room", "_openscreen._udp");
+//   adapter->DeregisterService("living-room", "_openscreen", "_udp");
 //
 // Additionally, it's important to understand that mDNSResponder may defer some
 // tasks (e.g. parsing responses, sending queries, etc.) and those deferred
