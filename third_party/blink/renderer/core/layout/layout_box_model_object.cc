@@ -314,7 +314,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     // This may affect paint properties of the current object, and descendants
     // even if paint properties of the current object won't change. E.g. the
     // stacking context and/or containing block of descendants may change.
-    SetSubtreeNeedsPaintPropertyUpdate();
+    SetSubtreeNeedsForcedPaintPropertyUpdate();
   } else if (had_transform_related_property != HasTransformRelatedProperty()) {
     // This affects whether to create transform node.
     SetNeedsPaintPropertyUpdate();

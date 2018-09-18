@@ -2297,7 +2297,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
   if (old_style &&
       old_style->UsedTransformStyle3D() != StyleRef().UsedTransformStyle3D()) {
     // Change of transform-style may affect descendant transform property nodes.
-    SetSubtreeNeedsPaintPropertyUpdate();
+    SetSubtreeNeedsForcedPaintPropertyUpdate();
   }
 }
 
