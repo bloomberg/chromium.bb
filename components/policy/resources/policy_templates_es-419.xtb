@@ -140,6 +140,7 @@
 <translation id="1387596372902085462">Habilitar o inhabilitar la confianza en la infraestructura del PKI heredado de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impresoras empresariales habilitadas asociadas a dispositivos</translation>
 <translation id="1397855852561539316">Dirección URL sugerida para el proveedor de búsqueda predeterminado</translation>
+<translation id="142346659686073702">Permitir que los usuarios no afiliados usen Crostini</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Dirección o dirección URL del servidor proxy</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivo</translation>
@@ -383,6 +384,12 @@
 
       Si no se establece esta política, es equivalente a que esté habilitada; para obtener más información, consulta la descripción que se encuentra más arriba.</translation>
 <translation id="2113068765175018713">Limita el tiempo de actividad del dispositivo mediante un reinicio automático.</translation>
+<translation id="2116790137063002724">Esta política controla el envío de los datos que permiten identificar a los usuarios, como el acceso al SO, el acceso al perfil de <ph name="PRODUCT_NAME" />, el nombre de perfil de <ph name="PRODUCT_NAME" />, la ruta de acceso al perfil de <ph name="PRODUCT_NAME" /> y la ruta ejecutable de <ph name="PRODUCT_NAME" />.
+
+      Si se establece esta política como verdadera, o no se establece, se recopilará la información que permite identificar a los usuarios.
+      Si se configura como falsa, no se recopilará esta información.
+
+      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
 <translation id="2132732175597591362">Controla la lista blanca de los patrones de URL en los que la reproducción automática está siempre habilitada.
@@ -853,6 +860,22 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si no se configura esta política, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultCookiesSetting" (si está configurada) o de otro tipo de configuración personal del usuario.
 
           Consulta también las políticas "CookiesBlockedForUrls" y "CookiesSessionOnlyForUrls". Ten en cuenta que no debe haber patrones de URL en conflicto entre estas tres políticas. No se especifica qué política tiene prioridad.</translation>
+<translation id="3373364525435227558">Establece una o más configuraciones regionales para una sesión administrada y permite que los usuarios elijan fácilmente una de estas configuraciones regionales.
+
+      El usuario puede elegir una configuración regional y un diseño de teclado antes de empezar una sesión administrada. De forma predeterminada, todas las configuraciones regionales admitidas por <ph name="PRODUCT_OS_NAME" /> se incluyen en una lista ordenada alfabéticamente. Puedes utilizar esta política para colocar un conjunto de configuraciones regionales recomendadas en la parte superior de la lista.
+
+      Si no se establece esta política, se seleccionará automáticamente la configuración regional actual de la interfaz del usuario.
+
+      Si se establece esta política, las configuraciones regionales recomendadas se ubicarán en la parte superior de la lista y se separarán visualmente de las demás. Las configuraciones regionales recomendadas se ubicarán en la lista en el orden en el que aparecen en la política. Se seleccionará automáticamente la primera configuración regional recomendada.
+
+      Si hay más de una configuración regional recomendada, se supone que los usuarios querrán seleccionar una de estas configuraciones regionales. La selección de diseño de teclado y de configuración regional se ofrecerá de forma visible cuando se inicie una sesión administrada. De lo contrario, se supone que la mayoría de los usuarios querrán utilizar la configuración regional preseleccionada. La selección de diseño de teclado y de configuración regional se ofrecerá de forma menos visible cuando se inicie una sesión administrada.
+
+      Cuando esta política se establece y el acceso automático está habilitado (consulta las políticas |DeviceLocalAccountAutoLoginId| y |DeviceLocalAccountAutoLoginDelay|), la sesión administrada que comenzó automáticamente utilizará la primera configuración regional recomendada y el diseño de teclado más popular que coincida con ella.
+
+      El diseño de teclado preseleccionado siempre será el más popular que coincida con la configuración regional preseleccionada.
+
+      Esta política solo se puede establecer como recomendada. Puedes utilizar esta política para colocar un conjunto de configuraciones regionales recomendadas en la parte superior, pero los usuarios pueden elegir cualquier configuración regional entre las que admite <ph name="PRODUCT_OS_NAME" /> para su sesión.
+      </translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de manera predeterminada</translation>
 <translation id="3414260318408232239">Si no se configura esta política, <ph name="PRODUCT_NAME" /> usará la versión mínima predeterminada, que es TLS 1.0.
 
@@ -1085,6 +1108,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta política se establece en True o no se establece, los usuarios podrán canjear ofertas a través del registro del Sistema operativo de Chrome.
 
       Si esta política se establece en False, el usuario no podrá canjear ofertas.</translation>
+<translation id="4008507541867797979">Si se establece esta política como verdadera, o no se establece, <ph name="PRODUCT_OS_NAME" /> mostrará a los usuarios existentes en la pantalla de acceso y permitirá elegir uno.
+
+      Si se establece como falsa, <ph name="PRODUCT_OS_NAME" /> no mostrará a los usuarios existentes en la pantalla de acceso. Se mostrará la pantalla de acceso normal (en la que se solicita el correo electrónico y la contraseña o el teléfono del usuario) o la pantalla intersticial SAML (si se habilita a través de la política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), a menos que se configure una sesión administrada. Si ese es el caso, solo se mostrarán las cuentas de la sesión administrada, donde se podrá elegir una.
+
+      Hay que tener en cuenta que esta política no afecta si el dispositivo conserva o descarga los datos de usuario locales.</translation>
 <translation id="4010738624545340900">Permitir la invocación de los diálogos de selección de archivos</translation>
 <translation id="4012737788880122133">Cuando esta política se establece como verdadera, desactiva las actualizaciones automáticas.
 
@@ -1475,6 +1503,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se establece la política como verdadera o no se especifica, se inhabilitarán los ciclos de vida de las pestañas.</translation>
 <translation id="5208240613060747912">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultNotificationsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="5219844027738217407">Para las apps de Android, esta política solo afecta al micrófono. Cuando esta política se establece como falsa, se silencia el micrófono para todas las apps de Android, sin excepciones.</translation>
+<translation id="5228316810085661003">Se establece el retraso para el acceso automático de la cuenta local del dispositivo.
+
+      Si no se establece la política |DeviceLocalAccountAutoLoginId|, esta política no tiene efecto. De lo contrario:
+
+      Si se establece, determina el tiempo sin actividad del usuario que debe transcurrir antes de acceder automáticamente a la cuenta local del dispositivo especificada en la política |DeviceLocalAccountAutoLoginId|.
+
+      Si no se establece, el tiempo de espera será de 0 milisegundos.
+
+      Esta política se especifica en milisegundos.</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
 <translation id="5247006254130721952">Bloquear las descargas peligrosas</translation>
 <translation id="5248863213023520115">Establece los tipos de encriptación que se permiten cuando se solicitan tickets de Kerberos desde un servidor de <ph name="MS_AD_NAME" />.
@@ -1495,6 +1532,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5272684451155669299">Si la política se establece como verdadera, el usuario podrá usar el hardware en los dispositivos de Chrome para verificar su identidad de forma remota ante la CA de privacidad mediante la API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> con la función <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Si se establece como falsa o no se establece, las llamadas a la API fallarán y se mostrará un código de error.</translation>
+<translation id="5277806246014825877">Permite que este usuario ejecute Crostini.
+
+      Si se establece la política como falsa, el usuario no podrá utilizar Crostini.
+      Si se establece como verdadera, o no se establece, el usuario podrá utilizar Crostini, siempre que otras opciones de configuración también lo permitan.
+      Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas cuando se aplican.
+      Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.</translation>
 <translation id="5283457834853986457">Inhabilitar el buscador de complementos (obsoleto)</translation>
 <translation id="5288772341821359899">Si se establece la política, el intervalo de puertos UDP que usa WebRTC está restringido al intervalo de puertos especificado (extremos incluidos).
 
@@ -1531,6 +1574,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5370279767682621504">Habilitar la compatibilidad con HTTP/0.9 en puertos no predeterminados</translation>
 <translation id="5378985487213287085">Te permite configurar si los sitios web pueden mostrar notificaciones de escritorio. Esto se puede permitir de manera predeterminada, se puede denegar de manera predeterminada o se le puede preguntar al usuario cada vez que un sitio web quiera mostrar notificaciones de escritorio. Si esta política no se configura, se usará "AskNotifications" y el usuario podrá cambiarlo.</translation>
 <translation id="538108065117008131">Permitir que <ph name="PRODUCT_FRAME_NAME" /> maneje los siguientes tipos de contenido.</translation>
+<translation id="5391388690191341203">Cuenta local del dispositivo con acceso automático</translation>
 <translation id="5392172595902933844">La información sobre el estado de Android se envía nuevamente al
       servidor.
 
@@ -1551,6 +1595,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5457924070961220141">Te permite configurar el procesador HTML predeterminado cuando se instala <ph name="PRODUCT_FRAME_NAME" />. La configuración predeterminada que se usa cuando esta política no se configura es permitir que el navegador del host realice la representación, pero puedes anular esta opción y hacer que <ph name="PRODUCT_FRAME_NAME" /> muestre páginas HTML de forma predeterminada.</translation>
 <translation id="5464816904705580310">Permite establecer parámetros de configuración para los usuarios administrados.</translation>
 <translation id="546726650689747237">Demora de atenuación de pantalla con alimentación de CA</translation>
+<translation id="5469143988693423708">Permitir que el usuario ejecute Crostini</translation>
 <translation id="5469825884154817306">Bloquear imágenes en estos sitios</translation>
 <translation id="5475361623548884387">Habilitar la impresión</translation>
 <translation id="547601067149622666">No permitir anuncios en sitios con anuncios intrusivos</translation>
@@ -1601,6 +1646,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Ten en cuenta que no se recomienda esta acción, ya que puede permitir la omisión de la extensión nameConstraints, que restringe los nombres de host para los que se puede autorizar un certificado determinado.
 
       Si esta política no se establece, o se establece como falsa, los certificados de servidores que no tengan la extensión subjectAlternativeName con un nombre de DNS o una dirección IP no serán confiables.</translation>
+<translation id="5581292529942108810">Configura las políticas relacionadas con Chrome Reporting Extension.
+
+      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Controla los servicios de ubicación de Google para Android</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
@@ -1837,6 +1885,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6310223829319187614">Habilitar la opción de autocompletar el nombre de dominio durante el accceso del usuario</translation>
 <translation id="6315673513957120120">Chrome muestra una página de advertencia cuando los usuarios visitan sitios que tienen errores de SSL. De forma predeterminada o cuando esta política se establece en true, los usuarios pueden hacer clic en estas páginas de advertencia.
       Al establecer esta política en false, los usuarios no pueden hacer clic en ninguna página de advertencia.</translation>
+<translation id="6352543686437322588">Se establece una cuenta local del dispositivo con acceso automático después de un retraso.
+
+      Si se establece esta política, se accederá automáticamente a la sesión especificada después de un período determinado en la pantalla de acceso sin necesidad de que el usuario interactúe. La cuenta local del dispositivo ya debe estar configurada (consulta |DeviceLocalAccounts|).
+
+      Si no se establece esta política, no se producirá el acceso automático.</translation>
 <translation id="6353901068939575220">Especifica los parámetros utilizados al buscar una URL con POST. Se compone de pares de nombre/valor separados por comas. Si un valor es un parámetro de plantilla, como {searchTerms} en el ejemplo anterior, se reemplazará por datos de términos de búsqueda reales.
 
           Esta política es opcional. Si no se establece, la solicitud de búsqueda se enviará mediante el método GET.
@@ -2191,6 +2244,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si no estableces esta política, el usuario podrá cambiar la configuración de forma manual.</translation>
 <translation id="723103540848640830">Establecer la longitud mínima del PIN de la pantalla bloqueada</translation>
+<translation id="7232816984286843471">Si se establece la política como falsa, los usuarios no afiliados no podrán usar Crostini.
+
+      Si se establece como verdadera, o no se establece, todos los usuarios podrán usar Crostini, siempre que otras opciones de configuración también lo permitan.
+      Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas cuando se aplican.
+      Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.</translation>
 <translation id="7234280155140786597">Nombres de los hosts de mensajería nativa prohibidos (o * para todos)</translation>
 <translation id="7236775576470542603">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.
 
@@ -2238,6 +2296,12 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7311458740754205918">Si esta política se establece como verdadera o no se establece, la página Nueva pestaña mostrará sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
 
       Si se establece como falsa, la página Nueva pestaña no mostrará sugerencias de contenido generadas de forma automática.</translation>
+<translation id="7313793931637495417">Esta política controla el envío de los datos de la versión, como la arquitectura, la plataforma y la versión del SO, y la versión de <ph name="PRODUCT_NAME" /> y el canal de <ph name="PRODUCT_NAME" />.
+
+      Si se establece esta política como verdadera, o no se establece, se recopilarán los datos de la versión.
+      Si se configura como falsa, no se recopilarán estos datos.
+
+      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Similar a Wipe (valor 2), pero intenta preservar los tokens de acceso para que el usuario no tenga que volver a acceder.</translation>
 <translation id="7329842439428490522">Especifica el período de tiempo sin intervención del usuario luego del cual se apaga la pantalla si se usa alimentación de la batería.
@@ -2268,6 +2332,12 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7349338075015720646">Especifica una lista de sitios web instalados de manera silenciosa, sin interacción del usuario y que este no puede desinstalar ni inhabilitar.
 
       Cada elemento de la lista de la política es un objeto con dos miembros: "url" y "launch_container". "url" debe ser la URL de la aplicación web que se va a instalar y "launch_container" debe ser "window" o "tab" para indicar cómo se abrirá la app una vez que se instale. Si se omite "launch_container", se abrirá en una ventana en caso de que Chrome considere que es una app web progresiva; de lo contrario, usará una pestaña.</translation>
+<translation id="735902178936442460">Esta política controla el envío de datos que se pueden usar para identificar las máquinas, como su nombre y las direcciones de red.
+
+      Si se establece esta política como verdadera, o no se establece, se recopilará la información que permite identificar las máquinas.
+      Si se establece como falsa, no se recopilará esta información.
+
+      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">El servicio de Navegación segura muestra una página de advertencia cuando los usuarios visitan sitios marcados como potencialmente maliciosos. Habilitar esta configuración evita que los usuarios procedan desde la página de advertencia al sitio malicioso.
 
       Si se inhabilita esta opción o no se configura, los usuarios podrán elegir continuar hacia el sitio marcado después de que se les haya mostrado la advertencia.
@@ -2511,6 +2581,14 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="7976157349247117979">Nombre del destino de <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Sin restricciones especiales</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Te permite controlar si pueden ejecutarse las máquinas virtuales en el Sistema operativo Chrome.
+
+      Si la política se establece como verdadera, el dispositivo podrá ejecutar máquinas virtuales.
+      Si se establece como falsa, el dispositivo no podrá hacerlo.
+      Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas cuando se aplican.
+      Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.
+      Si no se establece esta política en un dispositivo administrado, el dispositivo no podrá ejecutar máquinas virtuales.
+      Los dispositivos no administrados pueden ejecutar máquinas virtuales.</translation>
 <translation id="802147957407376460">Rotar la pantalla 0 grados</translation>
 <translation id="8033913082323846868">Esta política deja de estar disponible en M70. En su lugar, utiliza AutofillAddressEnabled y AutofillCreditCardEnabled.
 
@@ -2555,10 +2633,17 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
           Si no se establece esta política, se utiliza un período de tiempo predeterminado.
 
           El valor de la política debe especificarse en milisegundos. Los valores se establecerán para que sean inferiores o iguales a la demora de inactividad.</translation>
+<translation id="8138009212169037227">Esta política controla el informe de los datos y la hora de obtención de la política.
+
+      Si esta política se establece como verdadera, o no se establece, se recopilarán los datos y la hora de obtención de la política.
+      Si se configura como falsa, no se recopilarán estos datos.
+
+      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Informa sobre la lista de interfaces de red con sus tipos y direcciones de hardware al servidor.
 
       Si esta política se establece en "False", no se informará sobre la lista de interfaces.</translation>
 <translation id="8141795997560411818">Esta política no impide que el usuario use la app de Google Drive de Android. Si deseas evitar el acceso a Google Drive, también debes inhabilitar la instalación de su app.</translation>
+<translation id="8142894094385450823">Establecer la configuración regional recomendada para una sesión administrada</translation>
 <translation id="8146727383888924340">Permite a los usuarios canjear ofertas a través del Registro del Sistema operativo Chrome.</translation>
 <translation id="8148785525797916822">Elimina la advertencia que aparece cuando se ejecuta <ph name="PRODUCT_NAME" /> en una computadora o sistema operativo que ya no son compatibles.</translation>
 <translation id="8148901634826284024">Habilita la función de accesibilidad del modo de contraste alto.
@@ -2616,6 +2701,29 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
       No es necesario ajustar manualmente estas opciones de configuración. Hay plantillas para Windows, Mac y Linux disponibles para descargar en <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
       Se recomienda configurar la política en Windows a través de GPO, aunque, para las instancias de Windows que son parte de un dominio de <ph name="MS_AD_NAME" />, todavía es posible hacer la disposición de políticas a través del registro.</translation>
+<translation id="8264653492961233132">Especifica una lista de apps y extensiones que se instalan de forma silenciosa,
+          sin interacción del usuario, y que este no puede desinstalar
+          ni inhabilitar. Todos los permisos que solicitan las apps y extensiones
+          se conceden de forma implícita, sin interacción del usuario, incluso los
+          permisos adicionales que soliciten las apps o extensiones en próximas
+          versiones. Además, los permisos se conceden para las API de las
+          extensiones enterprise.deviceAttributes y enterprise.platformKeys (estas
+          no están disponibles para las apps o extensiones instaladas de manera
+          automática).
+
+          Esta política tiene prioridad por sobre una política de <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> posiblemente conflictiva. Si una app o extensión, instalada de manera automática, se quita de esta lista, <ph name="PRODUCT_NAME" /> la desinstala de forma automática.
+
+          Para las instancias de Windows que no están unidas a un dominio de <ph name="MS_AD_NAME" />, solo se pueden instalar de manera automática las apps y extensiones que aparecen en Chrome Web Store.
+
+          Ten en cuenta que es posible que los usuarios modifiquen el código fuente de cualquier extensión a través de las Herramientas para desarrolladores (y muy probablemente deje de funcionar). Si esta situación te inquieta, establece la política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada elemento de la lista de la política es un string que contiene un ID de extensión y una URL de actualización separada por un punto y coma (<ph name="SEMICOLON" />). El ID de extensión es el string de 32 letras que se encuentra, p. ej., en <ph name="CHROME_EXTENSIONS_LINK" /> en el modo de desarrollador. Si se especifica, la URL de actualización debe direccionarte a un documento XML del manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. De forma predeterminada, se usa la URL de actualización de Chrome Web Store (actualmente es "https://clients2.google.com/service/update2/crx"). Ten en cuenta que la URL de actualización que se establece en esta política solo se usa para la instalación inicial; las actualizaciones posteriores de la extensión utilizan la URL de actualización que se indica en el manifiesto de la extensión. Ten en cuenta también que el uso de la URL de actualización era explícitamente obligatorio en las versiones de <ph name="PRODUCT_NAME" /> hasta la 67 inclusive.
+
+          Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala la app de <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> desde la URL de actualización convencional de Chrome Web Store. Para obtener más información sobre las extensiones de host, consulta: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Si no se establece esta política, no se instalan apps ni extensiones de forma automática, y el usuario puede desinstalar cualquier app o extensión en <ph name="PRODUCT_NAME" />.
+
+          Hay que tener en cuenta que esta política no se aplica al modo de navegación incógnito.</translation>
 <translation id="8274603902181597201">Borra el directorio principal de eCryptfs del usuario y crea un nuevo directorio principal ext4 encriptado.</translation>
 <translation id="8285435910062771358">La lupa de pantalla completa está habilitada.</translation>
 <translation id="8288199156259560552">Habilita el servicio de ubicación de Google para Android</translation>
@@ -2892,6 +3000,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
       Esta política no está disponible en instancias de Windows que no se hayan unido a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">Identificaciones de extensión para excluir de la lista negra</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> por usuario. La configuración de red es una cadena escrita en formato JSON, como la define el formato Open Network Configuration que se describe en <ph name="ONC_SPEC_URL" />.</translation>
+<translation id="9077227880520270584">Temporizador para el acceso automático de la cuenta local del dispositivo</translation>
 <translation id="9084985621503260744">Especificar si la actividad de video afecta a la administración de energía</translation>
 <translation id="9088433379343318874">Habilitar el proveedor de contenido de un usuario supervisado</translation>
 <translation id="9088444059179765143">Configurar el método de detección automática de la zona horaria</translation>

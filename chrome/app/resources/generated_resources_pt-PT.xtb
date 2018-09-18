@@ -137,6 +137,7 @@
 <translation id="1189418886587279221">Ativa as funcionalidades de acessibilidade para facilitar a utilização do dispositivo.</translation>
 <translation id="1190144681599273207">A obtenção deste ficheiro utilizará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Acesso a um ficheiro armazenado no computador}other{Acesso a # ficheiros armazenados no computador}}</translation>
+<translation id="1193273168751563528">Entrar na sessão gerida</translation>
 <translation id="1195076408729068893">Para iniciar o Smart Lock, introduza a sua palavra-passe. Da próxima vez, pode utilizar o telemóvel para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1195447618553298278">Erro desconhecido.</translation>
 <translation id="119738088725604856">Janela de captura de ecrã</translation>
@@ -1316,6 +1317,7 @@
 <translation id="29488703364906173">Navegador de Internet rápido, simples e seguro, concebido para a Web moderna.</translation>
 <translation id="2951247061394563839">Centrar janela</translation>
 <translation id="2958721676848865875">Aviso de extensão do pacote</translation>
+<translation id="296026337010986570">Concluído! Software prejudicial removido. Para voltar a ativar as extensões, aceda a &lt;a href="chrome://extensions"&gt;Extensões&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensão fornecida)</translation>
 <translation id="2961695502793809356">Clique para avançar, mantenha premido para ver o histórico</translation>
 <translation id="2963151496262057773">O seguinte plug-in está sem resposta: <ph name="PLUGIN_NAME" />
@@ -1723,6 +1725,7 @@ Pretende pará-lo?</translation>
 <translation id="358796204584394954">Introduza este código no "<ph name="DEVICE_NAME" />" para sincronizar:</translation>
 <translation id="3589766037099229847">Conteúdo inseguro bloqueado</translation>
 <translation id="3590194807845837023">Desbloquear perfil e reiniciar</translation>
+<translation id="3590295622232282437">A entrar na sessão gerida…</translation>
 <translation id="3592260987370335752">&amp;Saiba mais</translation>
 <translation id="359283478042092570">Aceder</translation>
 <translation id="3593965109698325041">Restrições de nome do certificado</translation>
@@ -2667,6 +2670,7 @@ Pretende pará-lo?</translation>
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5045550434625856497">Palavra-passe incorrecta</translation>
+<translation id="504561833207953641">A abrir numa sessão existente do navegador…</translation>
 <translation id="5047421709274785093">Impedir que os sites utilizem sensores de movimento e de luz</translation>
 <translation id="5050042263972837708">Nome do grupo</translation>
 <translation id="5052499409147950210">Editar site</translation>
@@ -2876,6 +2880,7 @@ Pretende pará-lo?</translation>
 <translation id="5341980496415249280">Aguarde, a acondicionar...</translation>
 <translation id="5342091991439452114">O PIN deve ter pelo menos <ph name="MINIMUM" /> dígitos</translation>
 <translation id="5352033265844765294">Carimbo de data/hora</translation>
+<translation id="5352285283572729470">Esta definição é gerida</translation>
 <translation id="5353252989841766347">Exportar palavras-passe do Chrome</translation>
 <translation id="5355097969896547230">Localizar novamente</translation>
 <translation id="5355926466126177564">A extensão "<ph name="EXTENSION_NAME" />" alterou a página apresentada quando pesquisa a partir da caixa geral.</translation>
@@ -3140,7 +3145,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5723508132121499792">Não há aplicações em execução em segundo plano</translation>
 <translation id="5727728807527375859">As extensões, as aplicações e os temas podem danificar o computador. Tem a certeza de que pretende continuar?</translation>
 <translation id="5729712731028706266">&amp;Ver</translation>
-<translation id="5731185123186077399">Serviços Google personalizados, como o Google Pay.</translation>
 <translation id="5731247495086897348">Co&amp;lar e ir</translation>
 <translation id="5731409020711461763">1 nova foto</translation>
 <translation id="5734362860645681824">Comunicações</translation>
@@ -3785,6 +3789,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6680650203439190394">Classificar</translation>
 <translation id="6681668084120808868">Tirar foto</translation>
 <translation id="6681964764822470072">O "<ph name="APP_NAME" />" será desinstalado.</translation>
+<translation id="6685083257944113180">Parar, <ph name="SINK_NAME" />, <ph name="SINK_STATUS" /></translation>
 <translation id="668599234725812620">Abrir o Google Play</translation>
 <translation id="6686490380836145850">Fechar separadores à direita</translation>
 <translation id="6686817083349815241">Guardar a sua palavra-passe</translation>
@@ -4265,6 +4270,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Abrir todos numa &amp;nova janela}=1{Abrir numa &amp;nova janela}other{Abrir todos (#) numa &amp;nova janela}}</translation>
 <translation id="7434509671034404296">Programador</translation>
 <translation id="7436921188514130341">Ah, bolas! Ocorreu um erro durante a mudança de nome.</translation>
+<translation id="7441736921018636843">Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /> para remover a sua frase de acesso de sincronização</translation>
 <translation id="7441830548568730290">Outros utilizadores</translation>
 <translation id="7442465037756169001">O hardware Hangouts Meet está pronto para ser configurado.</translation>
 <translation id="744341768939279100">Criar um novo perfil</translation>

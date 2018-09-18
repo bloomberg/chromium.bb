@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">ఫోన్ నంబర్ అవసరం</translation>
 <translation id="1517500485252541695">ఆమోదించబడిన క్రెడిట్ మరియు డెబిట్ కార్డ్‌లు</translation>
 <translation id="1519264250979466059">రూపకల్పన తేదీ</translation>
+<translation id="1521655867290435174">Google షీట్‌లు</translation>
 <translation id="1527263332363067270">కనెక్షన్ కోసం వేచి ఉన్నాము...</translation>
 <translation id="1532118530259321453">ఈ పేజీ ఇలా చెబుతోంది</translation>
 <translation id="153384715582417236">ఇప్పటికి ఇంతే</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">MacOS ఫార్మాట్‌లో ఎగుమతి చేయి</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">కనెక్షన్ మళ్ళీ సెట్ చెయ్యబడింది.</translation>
+<translation id="2785008241190445880">బుక్‌మార్క్ భర్తీ చేయబడింది</translation>
 <translation id="2788784517760473862">ఆమోదించబడిన క్రెడిట్ కార్డ్‌లు</translation>
 <translation id="2794233252405721443">సైట్ బ్లాక్ చేయబడింది</translation>
 <translation id="2799020568854403057">రాబోయే సైట్ హానికరమైన యాప్‌లను కలిగి ఉంది</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">ఇప్పుడు నన్ను అక్కడకు తీసుకు వెళ్లు</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రంలో లోపాలు ఉన్నాయి. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
+<translation id="467809019005607715">Google స్లయిడ్‌లు</translation>
 <translation id="4690462567478992370">చెల్లని ప్రమాణపత్రాన్ని ఉపయోగించడాన్ని ఆపివేయి</translation>
 <translation id="4690954380545377795">మీరు మీ Google ఖాతాకు యాక్సెస్‌ను కోల్పోవచ్చు లేదా గుర్తింపు సమాచారం చౌర్యం కావచ్చు. Chrome వెంటనే మీ పాస్‌వర్డ్‌ను మార్చుకోవాల్సిందిగా సిఫార్సు చేస్తోంది.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">సంప్రదింపు సమాచారాన్ని ఎంచుకోండి</translation>
 <translation id="5327248766486351172">పేరు</translation>
 <translation id="5332219387342487447">షిప్పింగ్ పద్ధతి</translation>
+<translation id="5344579389779391559">ఈ పేజీ మీకు డబ్బు ఛార్జీ చేయడానికి ప్రయత్నించవచ్చు</translation>
 <translation id="5355557959165512791"><ph name="SITE" /> యొక్క ప్రమాణపత్రం రద్దు చేయబడినందున మీరు ప్రస్తుతం దీన్ని సందర్శించలేరు. నెట్‌వర్క్ లోపాలు మరియు దాడులు సాధారణంగా తాత్కాలికమే, కనుక ఈ పేజీ తర్వాత పని చేయవచ్చు.</translation>
 <translation id="536296301121032821">విధాన సెట్టింగ్‌లను నిల్వ చేయడంలో విఫలమైంది</translation>
 <translation id="5371425731340848620">కార్డ్‌ని అప్‌డేట్ చేయండి</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">సంవత్సరం</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{పేజీ 1}other{పేజీ #}}</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />లోని హ్యాకర్‌లు మోసపూరిత యాప్‌లను ఇన్‌స్టాల్ చేయవచ్చు, ఇవి వేరే వాటిలా కనిపించవచ్చు లేదా మిమ్మల్ని ట్రాక్ చేయడానికి ఉపయోగించబడే డేటాని సేకరించవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Chromeని మీకు నచ్చినట్లు తయారుగా చేసుకోండి</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (సమకాలీకరించబడ్డాయి)</translation>
 <translation id="6027201098523975773">పేరుని నమోదు చేయండి</translation>
 <translation id="6039846035001940113">సమస్య కొనసాగుతుంటే, సైట్ యజమానిని సంప్రదించండి.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">ఈ కంటెంట్ సాఫ్ట్‌వేర్‌ని ఇన్‌స్టాల్ చేయడానికి లేదా వ్యక్తిగత సమాచారాన్ని బహిర్గతం చేయడానికి పురిగొల్పేలా మిమ్మల్ని మాయ చేయడానికి ప్రయత్నించవచ్చు. <ph name="BEGIN_LINK" />ఏదేమైనా చూపు<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">ప్రమాణపత్రాన్ని పిన్ చేసే పద్ధతిని వెబ్‌సైట్ ఉపయోగిస్తుంది కనుక మీరు ప్రస్తుతానికి <ph name="SITE" />ని సందర్శించలేరు. నెట్‌వర్క్ లోపాలు మరియు దాడులు సాధారణంగా తాత్కాలికమే, కనుక ఈ పేజీ తర్వాత పని చేయవచ్చు.</translation>
 <translation id="6059925163896151826">USB పరికరాలు</translation>
+<translation id="6060991652695587932">త్వరిత యాక్సెస్ కోసం మీ ఇమెయిల్ సేవను ఎంచుకోండి</translation>
 <translation id="6071091556643036997">విధాన రకం చెల్లదు.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{అన్ని పరికరాలలోనూ చెక్అవుట్‌ను వేగవంతంగా పూర్తి చేయడానికి, ఈ కార్డ్‌ మీ Google ఖాతాకు సేవ్ చేయబడుతుంది.}other{అన్ని పరికరాలలోనూ చెక్అవుట్‌ను వేగవంతంగా పూర్తి చేయడానికి, ఈ కార్డ్‌లు మీ Google ఖాతాకు సేవ్ చేయబడతాయి.}}</translation>
 <translation id="6080696365213338172">మీరు నిర్వాహకుని ద్వారా అందించబడిన ప్రమాణపత్రాన్ని ఉపయోగించి కంటెంట్‌ను ప్రాప్యత చేసారు. మీరు <ph name="DOMAIN" />కు అందించే డేటాకు మీ నిర్వాహకుని ద్వారా అంతరాయం ఏర్పడవచ్చు.</translation>
@@ -904,6 +910,7 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">వద్దు</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">సెషన్ భర్తీని నిర్వహించండి</translation>
 <translation id="7390545607259442187">కార్డ్‌ని నిర్ధారించండి</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;మీ Windows కంప్యూటర్‌లో Superfish సాఫ్ట్‌వేర్ ఉన్నట్లయితే మీకు ఈ ఎర్రర్ కనిపిస్తుంది.&lt;/p&gt;
@@ -994,6 +1001,7 @@
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' కోసం <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> కనుగొనబడ్డాయి</translation>
 <translation id="7818867226424560206">విధాన నిర్వహణ</translation>
 <translation id="782886543891417279">మీరు ఉపయోగిస్తున్న Wi-Fi (<ph name="WIFI_NAME" />)కి మీరు దాని లాగిన్ పేజీని సందర్శించడం అవసరం.</translation>
+<translation id="7835178595033117206">బుక్‌మార్క్ తీసివేయబడింది</translation>
 <translation id="785549533363645510">అయితే, మీరు అదృశ్యంగా ఉండరు. అజ్ఞాతంలోకి వెళ్లడం వలన మీ బ్రౌజింగ్ మీ యజమానికి, మీ ఇంటర్నెట్ సేవా ప్రదాతకు లేదా మీరు సందర్శించే వెబ్‌సైట్‌లకు కనిపించకుండా దాచబడదు.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">సైట్ నుండి నిష్క్రమించాలా?</translation>
@@ -1130,6 +1138,7 @@
 <translation id="8874824191258364635">చెల్లుబాటు అయ్యే కార్డ్ నంబర్‌ను నమోదు చేయండి</translation>
 <translation id="8876793034577346603">నెట్‌వర్క్ కాన్ఫిగరేషన్ అన్వయించబడటంలో విఫలమైంది.</translation>
 <translation id="8891727572606052622">చెల్లని ప్రాక్సీ మోడ్.</translation>
+<translation id="8892964541482452187">ట్యాబ్ స్విచ్ బటన్, ఈ ట్యాబ్‌కి మారడానికి ఎంటర్‌ని నొక్కండి</translation>
 <translation id="8903921497873541725">దగ్గరికి జూమ్ చెయ్యి</translation>
 <translation id="8931333241327730545">మీరు ఈ కార్డ్‌ను మీ Google ఖాతాకి సేవ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8932102934695377596">మీ గడియారం సమయం గతంలో ఉంది</translation>
@@ -1155,6 +1164,7 @@
 <translation id="9035022520814077154">భద్రతా లోపం</translation>
 <translation id="9038649477754266430">పేజీలను మరింత శీఘ్రంగా లోడ్ చేయడానికి సూచన సేవను ఉపయోగించండి</translation>
 <translation id="9039213469156557790">అలాగే, ఈ పేజీలో సురక్షితం కాని ఇతర వనరులు ఉన్నాయి. ఈ వనరులను బదిలీ చేస్తున్నప్పుడు ఇతరులు చూడగలరు మరియు దాడికి పాల్పడేవారు పేజీ ప్రవర్తనను మార్చేలా వీటిని సవరించగలరు.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">మీరు <ph name="DOMAIN" />ని చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ ఒక చెల్లుబాటులో లేని ప్రమాణపత్రంని అందించింది.</translation>
 <translation id="9050666287014529139">పాస్‌ఫ్రేజ్</translation>
 <translation id="9065203028668620118">సవరించు</translation>
@@ -1178,6 +1188,7 @@
 <translation id="9170848237812810038">&amp;అన్డు</translation>
 <translation id="9171296965991013597">యాప్ నుండి నిష్క్రమించాలా?</translation>
 <translation id="917450738466192189">సర్వర్ యొక్క ప్రమాణపత్రం చెల్లుబాటు కాదు.</translation>
+<translation id="9183302530794969518">Google డాక్స్</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> మద్దతు లేని ప్రోటోకాల్‌ను ఉపయోగిస్తోంది.</translation>
 <translation id="9205078245616868884">మీ సమకాలీకరణ రహస్య పదబంధంతో మీ డేటా గుప్తీకరించబడింది. సమకాలీకరణను ప్రారంభించడానికి దీన్ని నమోదు చేయండి.</translation>
 <translation id="9207861905230894330">కథనాన్ని జోడించడంలో విఫలమైంది.</translation>

@@ -91,6 +91,7 @@
 <translation id="1517433312004943670">Número de telefone obrigatório</translation>
 <translation id="1517500485252541695">Cartões de crédito e de débito admitidos</translation>
 <translation id="1519264250979466059">Data da Compilação</translation>
+<translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">A aguardar ligação…</translation>
 <translation id="1532118530259321453">Esta página diz</translation>
 <translation id="153384715582417236">É tudo por agora</translation>
@@ -272,6 +273,7 @@
 <translation id="2781030394888168909">Exportar para MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">A ligação foi reposta.</translation>
+<translation id="2785008241190445880">Marcador substituído</translation>
 <translation id="2788784517760473862">Cartões de crédito admitidos</translation>
 <translation id="2794233252405721443">Site bloqueado</translation>
 <translation id="2799020568854403057">O site que pretende visitar contém aplicações prejudiciais</translation>
@@ -539,6 +541,7 @@
 <translation id="4646534391647090355">Aceder agora</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança contém erros. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
+<translation id="467809019005607715">Google Slides</translation>
 <translation id="4690462567478992370">Parar de utilizar um certificado inválido</translation>
 <translation id="4690954380545377795">Pode perder o acesso à sua Conta Google ou ser vítima de roubo de identidade. O Chrome recomenda a alteração da palavra-passe agora.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -644,6 +647,7 @@
 <translation id="5324080437450482387">Escolher informações de contacto</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5332219387342487447">Método de envio</translation>
+<translation id="5344579389779391559">Esta página pode tentar cobrar-lhe dinheiro</translation>
 <translation id="5355557959165512791">Não pode visitar <ph name="SITE" /> neste momento, porque o certificado foi revogado. Os erros de rede e os ataques são geralmente temporários, pelo que esta página deverá funcionar mais tarde.</translation>
 <translation id="536296301121032821">Falha ao armazenar as definições da política</translation>
 <translation id="5371425731340848620">Atualizar cartão</translation>
@@ -739,6 +743,7 @@
 <translation id="6015796118275082299">Ano</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Página 1}other{Página #}}</translation>
 <translation id="6017850046339264347">Os utilizadores mal-intencionados em <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podem instalar aplicações fraudulentas que se fazem passar por algo diferente ou recolhem dados que podem ser utilizados para o monitorizar. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="6022659036123304283">Personalize o Google Chrome</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sincronizados)</translation>
 <translation id="6027201098523975773">Introduza um nome</translation>
 <translation id="6039846035001940113">Se o problema persistir, contacte o proprietário do site.</translation>
@@ -747,6 +752,7 @@
 <translation id="6047927260846328439">Este conteúdo pode tentar enganá-lo de forma a que instale software ou revele informações pessoais. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Não pode visitar <ph name="SITE" /> neste momento, porque o Website utiliza a afixação de certificados. Os erros de rede e os ataques são geralmente temporários, pelo que esta página deverá funcionar mais tarde.</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
+<translation id="6060991652695587932">Selecione o serviço de email que pretende para um acesso rápido</translation>
 <translation id="6071091556643036997">O tipo de política é inválido.</translation>
 <translation id="6078024795140153212">{NUM_CARDS,plural, =1{Este cartão será guardado na sua Conta Google para um pagamento mais rápido em vários dispositivos.}other{Estes cartões serão guardados na sua Conta Google para um pagamento mais rápido em vários dispositivos.}}</translation>
 <translation id="6080696365213338172">Acedeu a conteúdos utilizando um certificado fornecido por um gestor. Os dados que fornecer a <ph name="DOMAIN" /> podem ser intercetados pelo seu gestor.</translation>
@@ -904,6 +910,7 @@ Detalhes adicionais:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Não</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7381288752349550461">Substituição de sessão gerida</translation>
 <translation id="7390545607259442187">Confirmar cartão</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7407424307057130981">&lt;p&gt;Este erro é apresentado se tiver software Superfish no seu computador com Windows.&lt;/p&gt;
@@ -993,6 +1000,7 @@ Detalhes adicionais:
 <translation id="7815407501681723534">Encontrados <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> para "<ph name="SEARCH_STRING" />"</translation>
 <translation id="7818867226424560206">Gestão de políticas</translation>
 <translation id="782886543891417279">A rede Wi-Fi que está a utilizar (<ph name="WIFI_NAME" />) pode exigir que visite a respetiva página de início de sessão.</translation>
+<translation id="7835178595033117206">Marcador removido</translation>
 <translation id="785549533363645510">No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do fornecedor de serviços de Internet, nem dos Sites que visitar.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Pretende sair do site?</translation>
@@ -1129,6 +1137,7 @@ Detalhes adicionais:
 <translation id="8874824191258364635">Introduza um número de cartão válido</translation>
 <translation id="8876793034577346603">Falha ao analisar a configuração de rede.</translation>
 <translation id="8891727572606052622">Modo de proxy inválido.</translation>
+<translation id="8892964541482452187">Botão de mudança de separador: prima Enter para mudar para este separador</translation>
 <translation id="8903921497873541725">Ampliar</translation>
 <translation id="8931333241327730545">Pretende guardar este cartão na sua Conta Google?</translation>
 <translation id="8932102934695377596">O seu relógio está atrasado</translation>
@@ -1154,6 +1163,7 @@ Detalhes adicionais:
 <translation id="9035022520814077154">Erro de segurança</translation>
 <translation id="9038649477754266430">Utilizar um serviço de previsão para carregar páginas mais rapidamente</translation>
 <translation id="9039213469156557790">Além disso, esta página inclui outros recursos que não são seguros. Estes recursos podem ser vistos por outros utilizadores em trânsito e modificados por um utilizador mal intencionado com o intuito de alterar o comportamento da página.</translation>
+<translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado inválido.</translation>
 <translation id="9050666287014529139">Frase de acesso</translation>
 <translation id="9065203028668620118">Editar</translation>
@@ -1177,6 +1187,7 @@ Detalhes adicionais:
 <translation id="9170848237812810038">An&amp;ular</translation>
 <translation id="9171296965991013597">Pretende sair da aplicação?</translation>
 <translation id="917450738466192189">O certificado do servidor é inválido.</translation>
+<translation id="9183302530794969518">Google Docs</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> utiliza um protocolo não suportado.</translation>
 <translation id="9205078245616868884">Os dados estão encriptados com a sua frase de acesso de sincronização. Introduza-a para iniciar a sincronização.</translation>
 <translation id="9207861905230894330">Falha ao adicionar o artigo.</translation>

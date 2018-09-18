@@ -238,6 +238,7 @@
 <translation id="2762000892062317888">tikko</translation>
 <translation id="2777555524387840389">Atlikušas <ph name="SECONDS" /> s</translation>
 <translation id="2781151931089541271">Atlikusi 1 s</translation>
+<translation id="2803478378562657435">Tiek rādītas saglabātās paroles un paroļu iespējas</translation>
 <translation id="2810645512293415242">Lapa tika vienkāršota, lai samazinātu datu lietojumu un paātrinātu ielādi.</translation>
 <translation id="281504910091592009">Skatiet un pārvaldiet saglabātās paroles savā <ph name="BEGIN_LINK" />Google kontā<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs, pierakstieties un ieslēdziet sinhronizāciju.</translation>
@@ -600,7 +601,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 Ņemiet vērā, ka inkognito režīmā jūs neesat neredzams. Jūsu pārlūkošanas darbības inkognito režīmā netiek slēptas no jūsu darba devēja, interneta pakalpojumu sniedzēja vai apmeklētajām vietnēm.</translation>
 <translation id="572328651809341494">Nesen atvērtas cilnes</translation>
 <translation id="5726692708398506830">Palielināt visu lapas saturu</translation>
-<translation id="5731185123186077399">Google pakalpojumu, piemēram, Google Pay personalizēšana</translation>
 <translation id="5738816946784116349">Chrome lejupielādes</translation>
 <translation id="5748802427693696783">Notika pārslēgšanās uz standarta cilnēm</translation>
 <translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
@@ -711,6 +711,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6573431926118603307">Šeit būs redzamas cilnes, kuras esat atvēris pārlūkā Chrome citās ierīcēs.</translation>
 <translation id="6575643671698722332">Atiestatīšana neizdevās. Nodrošiniet, ka ierīce ir tiešsaistē, un mēģiniet vēlreiz.</translation>
 <translation id="6583199322650523874">Pievienot pašreizējo lapu grāmatzīmēm</translation>
+<translation id="6584721918629302382">PR</translation>
 <translation id="6593061639179217415">Vietne datoriem</translation>
 <translation id="6600954340915313787">Nokopēta pārlūkā Chrome.</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +828,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="748127970106343339">Ierīces akreditācijas datu dzēšanas apstiprināšana</translation>
 <translation id="7481312909269577407">Pārsūtīt</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atjaunināts: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Rādīt paroles</translation>
 <translation id="7494974237137038751">Saglabātie dati</translation>
 <translation id="7498271377022651285">Lūdzu, uzgaidiet...</translation>
 <translation id="7514365320538308">Lejupielādēt</translation>
@@ -894,6 +896,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="802154636333426148">Lejupielāde neizdevās</translation>
 <translation id="8026334261755873520">Notīrīt pārlūkošanas datus</translation>
 <translation id="8035133914807600019">Jauna mape…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">Līdzīgi produkti</translation>
 <translation id="8037750541064988519">Atlikušas <ph name="DAYS" /> dienas</translation>
 <translation id="804335162455518893">SD karte nav atrasta</translation>
@@ -950,6 +953,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8503559462189395349">Chrome paroles</translation>
 <translation id="8503813439785031346">Lietotājvārds</translation>
 <translation id="8504988642345501642">Ritinot augšup, varat skatīt ātrās saites uz saistītajām lapām. Apmeklēto lapu vietrāži URL tiek nosūtīti Google serveriem.</translation>
+<translation id="8507520749471379845">Ir pieejamas paroles</translation>
 <translation id="8514477925623180633">Eksportēt pārlūkā Chrome saglabātās paroles</translation>
 <translation id="8514577642972634246">Atvērt inkognito režīmā</translation>
 <translation id="851751545965956758">Neļaut vietnēm izveidot savienojumu ar ierīci</translation>

@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">Dispozitiv USB-C (portul din stânga)</translation>
 <translation id="1294929383540927798">Modifică setările pentru notificările de pe ecranul de blocare</translation>
 <translation id="1302880136325416935">Afișează setările Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">Afișează întotdeauna raftul</translation>
 <translation id="1346748346194534595">Dreapta</translation>
 <translation id="1351937230027495976">Restrânge meniul</translation>
 <translation id="1383876407941801731">Caută</translation>
@@ -89,6 +90,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Comută Nu deranja</translation>
 <translation id="2412593942846481727">Actualizare disponibilă</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> este o sesiune gestionată de <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Conectat la <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Înainte de a continua, verificați dacă această parolă apare pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notificări</translation>
@@ -337,7 +339,6 @@
 <translation id="7066646422045619941">Această rețea este dezactivată de administrator.</translation>
 <translation id="7067196344162293536">Rotire automată</translation>
 <translation id="7068360136237591149">Deschide fișierele</translation>
-<translation id="7076293881109082629">Conectare</translation>
 <translation id="7092922358121866860">Afișează setările pentru Lumină de noapte</translation>
 <translation id="7098389117866926363">Dispozitiv USB-C (portul din stânga în spate)</translation>
 <translation id="7131634465328662194">Vei fi deconectat(ă) automat.</translation>

@@ -238,6 +238,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2777555524387840389">Faltam <ph name="SECONDS" /> segundos</translation>
 <translation id="2781151931089541271">Falta 1 segundo</translation>
+<translation id="2803478378562657435">A mostrar palavras-passe guardadas e opções de palavra-passe</translation>
 <translation id="2810645512293415242">Página simplificada para poupar dados e carregar mais rapidamente.</translation>
 <translation id="281504910091592009">Veja e faça a gestão das palavras-passe guardadas na sua <ph name="BEGIN_LINK" />Conta Google<ph name="END_LINK" />.</translation>
 <translation id="2818669890320396765">Para obter os seus marcadores em todos os dispositivos, inicie sessão e ative a sincronização.</translation>
@@ -600,7 +601,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do prestador de serviços de Internet, nem os Sites que visitar.</translation>
 <translation id="572328651809341494">Separadores recentes</translation>
 <translation id="5726692708398506830">Aumentar o tamanho de todos os itens na página</translation>
-<translation id="5731185123186077399">Serviços Google personalizados, como o Google Pay.</translation>
 <translation id="5738816946784116349">Transferências do Chrome</translation>
 <translation id="5748802427693696783">Mudado para separadores padrão</translation>
 <translation id="5749068826913805084">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
@@ -711,6 +711,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6573431926118603307">Os separadores que abriu no Chrome nos seus outros dispositivos são apresentados aqui.</translation>
 <translation id="6575643671698722332">Falha ao repor. Verifique se o dispositivo está online e tente novamente.</translation>
 <translation id="6583199322650523874">Adicionar a página atual aos marcadores</translation>
+<translation id="6584721918629302382">RA</translation>
 <translation id="6593061639179217415">Site para computador</translation>
 <translation id="6600954340915313787">Copiado para o Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
@@ -827,6 +828,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="748127970106343339">Confirmar a eliminação das credenciais do dispositivo</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizado há <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Mostrar palavras-passe</translation>
 <translation id="7494974237137038751">dados guardados</translation>
 <translation id="7498271377022651285">Aguarde…</translation>
 <translation id="7514365320538308">Transferir</translation>
@@ -894,6 +896,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="802154636333426148">Falha ao transferir</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8035133914807600019">Nova pasta…</translation>
+<translation id="8037411810184515274">RV</translation>
 <translation id="8037686209485537503">Mais deste género</translation>
 <translation id="8037750541064988519">Faltam <ph name="DAYS" /> dias</translation>
 <translation id="804335162455518893">Cartão SD não encontrado.</translation>
@@ -950,6 +953,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8503559462189395349">Palavras-passe do Chrome</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="8504988642345501642">Quando se desloca para cima, são apresentados links rápidos para páginas relacionadas. Os URLs das páginas que visita são enviados para a Google.</translation>
+<translation id="8507520749471379845">Palavras-passe disponíveis</translation>
 <translation id="8514477925623180633">Exportar palavras-passe armazenadas com o Chrome</translation>
 <translation id="8514577642972634246">Entrar no modo de navegação anónima</translation>
 <translation id="851751545965956758">Impedir a ligação de sites a dispositivos</translation>

@@ -73,7 +73,7 @@
 <translation id="2586406160782125153">हे या डिव्‍हाइस मधून आपला ब्राउझिंग डेटा हटवेल. नंतर आपला डेटा पुनर्प्राप्त करण्‍यासाठी, Chrome मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="2588322182880276190">Chrome लोगो</translation>
 <translation id="2652691236519827073">लिंक नवीन Chrome &amp;टॅबमध्ये उघडा</translation>
-<translation id="2665296953892887393">Google कडे क्रॅश अहवाल आणि <ph name="UMA_LINK" /> पाठवून Google Chrome ला</translation>
+<translation id="2665296953892887393">Google कडे क्रॅश अहवाल आणि <ph name="UMA_LINK" /> पाठवून Google Chrome ला अधिक चांगले बनवण्यात मदत करा</translation>
 <translation id="2689103672227170538">आपण Chrome सुरू करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे या विस्ताराने बदलले आहे.</translation>
 <translation id="2765403129283291972">या साइटसाठी Chrome ला तुमचा मायक्रोफोन अॅक्सेस करण्याची परवानगी हवी आहे</translation>
 <translation id="2770231113462710648">डीफॉल्ट ब्राउझर यावर बदला:</translation>
@@ -148,7 +148,7 @@
 <translation id="4771048833395599659">ही फाईल कदाचित धोकादायक असू शकते, त्यामुळे Chrome ने ती अवरोधित केली आहे.</translation>
 <translation id="4794050651896644714">Chrome मध्ये तपशील सेव्ह करा</translation>
 <translation id="4804732725083176494">या डीव्हाइसच्या प्रशासकाने Chrome मध्ये साइन इन करणे बंद केले आहे.</translation>
-<translation id="4891791193823137474">पार्श्वभूमीत Google Chrome चालू द्या</translation>
+<translation id="4891791193823137474">बॅकग्राउंडमध्ये Google Chrome चालू द्या</translation>
 <translation id="4895437082222824641">लिंक नवीन Chrome &amp;टॅबमध्ये उघडा</translation>
 <translation id="4921569541910214635">एक कॉंप्युटर सामायिक करायचा? आपल्याला आवडते त्या प्रकारे आपण आता Chrome सेट करू शकता.</translation>
 <translation id="4945319281866068441">{0,plural, =1{Chrome OS एका दिवसात रीस्टार्ट करा}one{Chrome OS # दिवसात रीस्टार्ट करा}other{Chrome OS # दिवसांमध्ये रीस्टार्ट करा}}</translation>
@@ -186,7 +186,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="5941830788786076944">Google Chromeला डीफॉल्ट ब्राउझर बनवा</translation>
 <translation id="6014844626092547096">आपण आता Chrome वर साइन इन आहात! आपल्या प्रशासकाद्वारे संकालन अक्षम केले गेले आहे.</translation>
 <translation id="6040143037577758943">बंद करा</translation>
-<translation id="6070348360322141662">अतिरिक्त सुरक्षिततेसाठी, Google Chrome आपला डेटा कूटबद्ध करेल</translation>
+<translation id="6070348360322141662">अतिरिक्त सुरक्षिततेसाठी, Google Chrome तुमचा डेटा एंक्रिप्ट करेल</translation>
 <translation id="6113794647360055231">Chrome आता उत्कृष्ट झाले आहे</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> – Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> - Google Chrome बीटा</translation>
@@ -224,7 +224,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7398801000654795464">आपण <ph name="USER_EMAIL_ADDRESS" /> या रुपात Chrome मध्ये साइन इन केले होते. कृपया पुन्हा साइन इन करण्यासाठी समान खाते वापरा.</translation>
 <translation id="7408085963519505752">Chrome OS अटी</translation>
 <translation id="7419046106786626209">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Chrome OS आपला डेटा संकालित करू शकले नाही.</translation>
-<translation id="7459554271817304652">तुमची वैयक्तीकृत केलेली ब्राउझर वैशिष्ट्ये सेव्ह करण्यासाठी समक्रमण सेट करा आणि कोणत्याही संगणकावरील Google Chrome वरून त्यात प्रवेश करा.</translation>
+<translation id="7459554271817304652">तुमची पर्सनलाइझ केलेली ब्राउझर वैशिष्ट्ये सेव्ह करण्यासाठी सिंक सेट करा आणि कोणत्याही कॉंप्युटरवरील Google Chrome वरून ते अॅक्सेस करा.</translation>
 <translation id="7473136999113284234">Chrome स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते.</translation>
 <translation id="7486227612705979895">अॅड्रेस बारमध्ये सूचना देण्यासाठी Chrome तुमची ड्राइव्ह अॅक्सेस करेल</translation>
 <translation id="7535429826459677826">Google Chrome विकासक</translation>

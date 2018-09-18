@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">USB-C 기기(왼쪽 포트)</translation>
 <translation id="1294929383540927798">잠금 화면 알림 설정을 변경합니다.</translation>
 <translation id="1302880136325416935">블루투스 설정을 표시합니다. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">항상 실행기 표시</translation>
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="1351937230027495976">메뉴 접기</translation>
 <translation id="1383876407941801731">검색</translation>
@@ -89,6 +90,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">알림 일시중지 전환</translation>
 <translation id="2412593942846481727">업데이트 가능</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" />은(는) <ph name="DOMAIN" />에서 관리하는 관리 세션입니다.</translation>
 <translation id="2416346634399901812"><ph name="NETWORK_NAME" />에 연결됨</translation>
 <translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">알림</translation>
@@ -337,7 +339,6 @@
 <translation id="7066646422045619941">관리자가 사용 중지한 네트워크입니다.</translation>
 <translation id="7067196344162293536">자동 회전</translation>
 <translation id="7068360136237591149">파일을 열어 줘</translation>
-<translation id="7076293881109082629">로그인</translation>
 <translation id="7092922358121866860">야간 조명 설정 표시</translation>
 <translation id="7098389117866926363">USB-C 기기(좌측 후면 포트)</translation>
 <translation id="7131634465328662194">자동으로 로그아웃됩니다.</translation>

@@ -25,6 +25,7 @@
 <translation id="1293264513303784526">Dispositivo USB-C (porta esquerda)</translation>
 <translation id="1294929383540927798">Alterar as definições de notificação do ecrã de bloqueio</translation>
 <translation id="1302880136325416935">Mostrar definições de Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">Mostrar sempre a prateleira</translation>
 <translation id="1346748346194534595">Direita</translation>
 <translation id="1351937230027495976">Reduzir menu</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
@@ -89,6 +90,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Ativar/desativar opção Não incomodar</translation>
 <translation id="2412593942846481727">Atualização disponível</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> é uma sessão gerida por <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Ligado a <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Antes de aceitar, confirme que esta chave está indicada nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notificações</translation>
@@ -338,7 +340,6 @@
 <translation id="7066646422045619941">Esta rede foi desativada pelo gestor.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
 <translation id="7068360136237591149">Abrir ficheiros</translation>
-<translation id="7076293881109082629">Iniciar sessão</translation>
 <translation id="7092922358121866860">Mostrar definições de Luz noturna</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira esquerda)</translation>
 <translation id="7131634465328662194">A sessão será terminada automaticamente.</translation>
