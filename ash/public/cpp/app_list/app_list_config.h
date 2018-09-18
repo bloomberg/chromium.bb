@@ -90,6 +90,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
     return grid_tile_spacing_in_folder_;
   }
   int shelf_height() const { return shelf_height_; }
+  int blur_radius() const { return blur_radius_; }
 
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
@@ -255,6 +256,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The height/width of the shelf from the bottom/side of the screen.
   int shelf_height_;
+
+  // The blur radius used in the app list.
+  int blur_radius_ = 30;
 };
 
 }  // namespace app_list

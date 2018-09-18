@@ -41,11 +41,14 @@ class ApplicationDragAndDropHost {
   // |scale_factor| with its origin at |origin_in_screen_coordinates|.
   // Use |replaced_view| to find the screen which is used.
   // The proxy will be created without any visibility animation effect.
+  // Sets background blur with specified blur radius to the dragged icon if
+  // |blur_radius| is larger than 0.
   virtual void CreateDragIconProxyByLocationWithNoAnimation(
       const gfx::Point& origin_in_screen_coordinates,
       const gfx::ImageSkia& icon,
       views::View* replaced_view,
-      float scale_factor) = 0;
+      float scale_factor,
+      int blur_radius) = 0;
 
   // Updates the screen location of the Drag icon proxy.
   virtual void UpdateDragIconProxy(

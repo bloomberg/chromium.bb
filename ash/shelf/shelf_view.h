@@ -37,7 +37,7 @@ namespace views {
 class BoundsAnimator;
 class MenuRunner;
 class Separator;
-}
+}  // namespace views
 
 namespace ash {
 class AppListButton;
@@ -193,7 +193,8 @@ class ASH_EXPORT ShelfView : public views::View,
       const gfx::Point& origin_in_screen_coordinates,
       const gfx::ImageSkia& icon,
       views::View* replaced_view,
-      float scale_factor) override;
+      float scale_factor,
+      int blur_radius) override;
 
   void UpdateDragIconProxy(
       const gfx::Point& location_in_screen_coordinates) override;
@@ -468,6 +469,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Updates the back button opacity and focus behavior based on tablet mode.
   void UpdateBackButton();
 
+  // Set background blur to the dragged image. |size| is the image size.
+  void SetDragImageBlur(const gfx::Size& size, int blur_radius);
+
   // The model; owned by Launcher.
   ShelfModel* model_;
 
@@ -547,6 +551,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // The image proxy for drag operations when a drag and drop host exists and
   // the item can be dragged outside the app grid.
   std::unique_ptr<ash::DragImageView> drag_image_;
+
+  // The owner of a mask layer used to clip the background blur.
+  std::unique_ptr<ui::LayerOwner> drag_image_mask_;
 
   // The cursor offset to the middle of the dragged item.
   gfx::Vector2d drag_image_offset_;

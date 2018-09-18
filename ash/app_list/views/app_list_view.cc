@@ -80,9 +80,6 @@ constexpr int kAppListMinScrollToSwitchStates = 20;
 // closed app list.
 constexpr int kAppListBezelMargin = 50;
 
-// The blur radius of the app list background.
-constexpr int kAppListBlurRadius = 30;
-
 // The size of app info dialog in fullscreen app list.
 constexpr int kAppInfoDialogWidth = 512;
 constexpr int kAppInfoDialogHeight = 384;
@@ -500,12 +497,13 @@ void AppListView::InitContents(int initial_apps_page) {
   SetBackgroundShieldColor();
   if (is_background_blur_enabled_ && !IsHomeLauncherEnabledInTabletMode()) {
     app_list_background_shield_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                    kAppListBlurRadius));
+        views::Painter::CreateSolidRoundRectPainter(
+            SK_ColorBLACK, AppListConfig::instance().blur_radius()));
     app_list_background_shield_mask_->layer()->SetFillsBoundsOpaquely(false);
     app_list_background_shield_->layer()->SetMaskLayer(
         app_list_background_shield_mask_->layer());
-    app_list_background_shield_->layer()->SetBackgroundBlur(kAppListBlurRadius);
+    app_list_background_shield_->layer()->SetBackgroundBlur(
+        AppListConfig::instance().blur_radius());
   }
   AddChildView(app_list_background_shield_);
   app_list_main_view_ = new AppListMainView(delegate_, this);

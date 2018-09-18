@@ -49,11 +49,15 @@ class APP_LIST_EXPORT SuggestionChipView : public views::Button {
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // views::InkDropHost:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+
+  // ui::LayerOwner:
+  std::unique_ptr<ui::Layer> RecreateLayer() override;
 
   void SetIcon(const gfx::ImageSkia& icon);
 
@@ -63,6 +67,9 @@ class APP_LIST_EXPORT SuggestionChipView : public views::Button {
  private:
   void InitLayout(const Params& params);
 
+  // Sets a rounded rect mask layer with |corner_radius| to clip the chip.
+  void SetRoundedRectMaskLayer(int corner_radius);
+
   views::ImageView* icon_view_;  // Owned by view hierarchy.
   views::Label* text_view_;      // Owned by view hierarchy.
 
@@ -70,6 +77,9 @@ class APP_LIST_EXPORT SuggestionChipView : public views::Button {
 
   // True if this chip should use assistant style.
   bool assistant_style_;
+
+  // The owner of a mask layer used to clip the chip.
+  std::unique_ptr<ui::LayerOwner> chip_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionChipView);
 };

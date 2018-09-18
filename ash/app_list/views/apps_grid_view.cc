@@ -1992,7 +1992,10 @@ void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   DCHECK(!IsDraggingForReparentInRootLevelGridView());
   drag_and_drop_host_->CreateDragIconProxyByLocationWithNoAnimation(
       drag_view_->GetIconBoundsInScreen().origin(), drag_view_->GetIconImage(),
-      drag_view_, kDragAndDropProxyScale);
+      drag_view_, kDragAndDropProxyScale,
+      is_new_style_launcher_enabled_ && drag_view_->item()->is_folder()
+          ? AppListConfig::instance().blur_radius()
+          : 0);
 
   SetViewHidden(drag_view_, true /* hide */, true /* no animation */);
 }
