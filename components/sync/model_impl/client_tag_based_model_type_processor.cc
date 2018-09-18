@@ -1000,13 +1000,17 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     }
   }
 
-  // Report failed loading of entities to UMA (if they are still tracked here).
+  // Report failed loading of entities to UMA.
   for (const std::string& storage_key : storage_keys_to_load) {
-    if (GetEntityForStorageKey(storage_key)) {
-      UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeOrphanMetadata",
-                                ModelTypeToHistogramInt(type_),
-                                static_cast<int>(MODEL_TYPE_COUNT));
+    ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+    if (entity == nullptr || entity->metadata().is_deleted()) {
+      // Skip entities that are not tracked any more or already marked for
+      // deletion.
+      continue;
     }
+    UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeOrphanMetadata",
+                              ModelTypeToHistogramInt(type_),
+                              static_cast<int>(MODEL_TYPE_COUNT));
   }
 }
 
