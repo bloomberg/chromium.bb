@@ -6692,7 +6692,7 @@ the Bookmarks menu.">
         Google may use your browsing history to personalize Search, ads, and other Google services
       </message>
       <message name="IDS_SYNC_CONFIRMATION_DICE_PERSONALIZE_SERVICES_BODY" desc="Body of the personalize services section of the sync confirmation dialog in the tab modal signin flow">
-        Personalized Google services like Google Pay
+        More personal Google services, like better page suggestions
       </message>
       <message name="IDS_SYNC_CONFIRMATION_PERSONALIZE_SERVICES_BODY_CHILD_ACCOUNT" desc="Body of the personalize services section of the sync confirmation dialog in the tab modal signin flow for child accounts" formatter_data="android_java">
         Google may use your browsing history to personalize Search and other Google services
