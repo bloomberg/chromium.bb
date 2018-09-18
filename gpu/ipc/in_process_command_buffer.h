@@ -362,8 +362,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   base::circular_deque<SwapBufferParams> pending_presented_params_;
   base::circular_deque<SwapBufferParams> pending_swap_completed_params_;
 
-  base::WeakPtr<InProcessCommandBuffer> client_thread_weak_ptr_;
-  base::WeakPtr<InProcessCommandBuffer> gpu_thread_weak_ptr_;
   base::WeakPtrFactory<InProcessCommandBuffer> client_thread_weak_ptr_factory_;
   base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_;
 
