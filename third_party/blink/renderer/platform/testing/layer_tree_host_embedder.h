@@ -26,8 +26,7 @@ class LayerTreeHostEmbedder {
   // overrides of LayerTreeSettings.
   LayerTreeHostEmbedder(
       cc::LayerTreeHostClient* client,
-      cc::LayerTreeHostSingleThreadClient* single_thread_client,
-      bool use_layer_lists);
+      cc::LayerTreeHostSingleThreadClient* single_thread_client);
 
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
   cc::AnimationHost* animation_host() { return animation_host_.get(); }

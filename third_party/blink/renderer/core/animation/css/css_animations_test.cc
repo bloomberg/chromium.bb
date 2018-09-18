@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/paint/stub_chrome_client_for_spv2.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
 
@@ -14,7 +15,7 @@ namespace blink {
 
 class CSSAnimationsTest : public RenderingTest {
  public:
-  CSSAnimationsTest() {
+  CSSAnimationsTest() : chrome_client_(new StubChromeClientForSPv2()) {
     EnablePlatform();
     platform()->SetThreadedAnimationEnabled(true);
   }
@@ -31,6 +32,8 @@ class CSSAnimationsTest : public RenderingTest {
     platform()->SetAutoAdvanceNowToPendingTasks(true);
     platform()->RunUntilIdle();
   }
+
+  ChromeClient& GetChromeClient() const override { return *chrome_client_; }
 
   void StartAnimationOnCompositor(Animation* animation) {
     static_cast<CompositorAnimationDelegate*>(animation)
@@ -52,6 +55,9 @@ class CSSAnimationsTest : public RenderingTest {
     return static_cast<const BasicComponentTransferFilterOperation*>(filter)
         ->Amount();
   }
+
+ private:
+  Persistent<StubChromeClientForSPv2> chrome_client_;
 };
 
 // Verify that a composited animation is retargeted according to its composited
