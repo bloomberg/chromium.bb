@@ -295,10 +295,11 @@ bool UrlPattern::MatchesUrl(const UrlInfo& url) const {
                                 url.spec(), url.host());
   }
 
-  // For case-insensitive matching, convert both pattern and url to lower case.
-  return IsCaseSensitiveMatch(base::ToLowerASCII(url_pattern_), anchor_left_,
-                              anchor_right_, url.GetLowerCaseSpec(),
-                              url.host());
+  // Use the lower-cased url for case-insensitive comparison. Case-insensitive
+  // patterns should already be lower-cased.
+  DCHECK(!HasAnyUpperAscii(url_pattern_));
+  return IsCaseSensitiveMatch(url_pattern_, anchor_left_, anchor_right_,
+                              url.GetLowerCaseSpec(), url.host());
 }
 
 std::ostream& operator<<(std::ostream& out, const UrlPattern& pattern) {

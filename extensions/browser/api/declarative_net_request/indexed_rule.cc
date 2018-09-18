@@ -333,6 +333,10 @@ ParseResult IndexedRule::CreateIndexedRule(
   UrlFilterParser::Parse(std::move(parsed_rule->condition.url_filter),
                          indexed_rule);
 
+  // Lower-case case-insensitive patterns as required by url pattern index.
+  if (indexed_rule->options & flat_rule::OptionFlag_IS_CASE_INSENSITIVE)
+    indexed_rule->url_pattern = base::ToLowerASCII(indexed_rule->url_pattern);
+
   // Some sanity checks to ensure we return a valid IndexedRule.
   DCHECK_GE(indexed_rule->id, static_cast<uint32_t>(kMinValidID));
   DCHECK_GE(indexed_rule->priority, static_cast<uint32_t>(kMinValidPriority));

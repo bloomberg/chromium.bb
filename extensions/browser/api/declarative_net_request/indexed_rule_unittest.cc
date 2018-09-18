@@ -290,6 +290,31 @@ TEST_F(IndexedRuleTest, UrlFilterParsing) {
   }
 }
 
+// Ensure case-insensitive patterns are lower-cased as required by
+// url_pattern_index.
+TEST_F(IndexedRuleTest, CaseInsensitiveLowerCased) {
+  const std::string kPattern = "/QUERY";
+  struct {
+    std::unique_ptr<bool> is_url_filter_case_sensitive;
+    std::string expected_pattern;
+  } test_cases[] = {
+      {std::make_unique<bool>(false), "/query"},
+      {std::make_unique<bool>(true), "/QUERY"},
+      {nullptr, "/QUERY"}  // By default patterns are case sensitive.
+  };
+
+  for (auto& test_case : test_cases) {
+    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
+    rule->condition.url_filter = std::make_unique<std::string>(kPattern);
+    rule->condition.is_url_filter_case_sensitive =
+        std::move(test_case.is_url_filter_case_sensitive);
+    IndexedRule indexed_rule;
+    ASSERT_EQ(ParseResult::SUCCESS,
+              IndexedRule::CreateIndexedRule(std::move(rule), &indexed_rule));
+    EXPECT_EQ(test_case.expected_pattern, indexed_rule.url_pattern);
+  }
+}
+
 TEST_F(IndexedRuleTest, DomainsParsing) {
   using DomainVec = std::vector<std::string>;
   struct {
