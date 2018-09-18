@@ -9,6 +9,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -18,6 +19,7 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_observer.h"
+#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
@@ -67,6 +69,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
     return native_widget_mac_;
   }
 
+  // The bridge factory that was used to create the true NSWindow for this
+  // widget. This is nullptr for in-process windows.
+  views_bridge_mac::mojom::BridgeFactory* bridge_factory() const {
+    return bridge_factory_;
+  }
+
   // A NSWindow that is guaranteed to exist in this process. If the bridge
   // object for this host is in this process, then this points to the bridge's
   // NSWindow. Otherwise, it mirrors the id and bounds of the child window.
@@ -86,6 +94,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // Create and set the bridge object to be in this process.
   void CreateLocalBridge(base::scoped_nsobject<NativeWidgetMacNSWindow> window,
                          NSView* parent);
+
+  // Create and set the bridge object to be potentially in another process.
+  void CreateRemoteBridge(
+      views_bridge_mac::mojom::BridgeFactory* bridge_factory,
+      views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params,
+      uint64_t parent_bridge_id);
 
   void InitWindow(const Widget::InitParams& params);
 
@@ -268,9 +282,19 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   const uint64_t id_;
   views::NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |this_|.
 
+  // The factory that was used to create |bridge_ptr_|.
+  // TODO(ccameron): The lifetime of this pointer is not correctly managed yet,
+  // and has no way to be set to nullptr when the bridge is deleted (this
+  // pointer is never non-nullptr in production).
+  views_bridge_mac::mojom::BridgeFactory* bridge_factory_ = nullptr;
+
   Widget::InitParams::Type widget_type_ = Widget::InitParams::TYPE_WINDOW;
 
   views::View* root_view_ = nullptr;  // Weak. Owned by |native_widget_mac_|.
+
+  // The mojo pointer to a BridgedNativeWidget, which may exist in another
+  // process.
+  views_bridge_mac::mojom::BridgedNativeWidgetPtr bridge_ptr_;
 
   // TODO(ccameron): Rather than instantiate a BridgedNativeWidgetImpl here,
   // we will instantiate a mojo BridgedNativeWidgetImpl interface to a Cocoa
@@ -312,6 +336,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // Contains NativeViewHost->gfx::NativeView associations.
   std::map<const views::View*, NSView*> associated_views_;
 
+  mojo::Binding<views_bridge_mac::mojom::BridgedNativeWidgetHost>
+      host_mojo_binding_;
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetHostImpl);
 };
 

@@ -18,6 +18,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -249,11 +250,27 @@ BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromId(
   return found->second;
 }
 
+// static
+base::scoped_nsobject<NativeWidgetMacNSWindow>
+BridgedNativeWidgetImpl::CreateNSWindow(
+    views_bridge_mac::mojom::CreateWindowParams* params) {
+  base::scoped_nsobject<NativeWidgetMacNSWindow> result(
+      [[NativeWidgetMacNSWindow alloc]
+          initWithContentRect:ui::kWindowSizeDeterminedLater
+                    styleMask:params->style_mask
+                      backing:NSBackingStoreBuffered
+                        defer:NO]);
+  return result;
+}
+
 BridgedNativeWidgetImpl::BridgedNativeWidgetImpl(
     uint64_t bridged_native_widget_id,
     BridgedNativeWidgetHost* host,
     BridgedNativeWidgetHostHelper* host_helper)
-    : id_(bridged_native_widget_id), host_(host), host_helper_(host_helper) {
+    : id_(bridged_native_widget_id),
+      host_(host),
+      host_helper_(host_helper),
+      bridge_mojo_binding_(this) {
   DCHECK(GetIdToWidgetImplMap().find(id_) == GetIdToWidgetImplMap().end());
   GetIdToWidgetImplMap().insert(std::make_pair(id_, this));
 }
@@ -274,6 +291,11 @@ BridgedNativeWidgetImpl::~BridgedNativeWidgetImpl() {
   RemoveOrDestroyChildren();
   DCHECK(child_windows_.empty());
   DestroyContentView();
+}
+
+void BridgedNativeWidgetImpl::BindRequest(
+    views_bridge_mac::mojom::BridgedNativeWidgetRequest request) {
+  bridge_mojo_binding_.Bind(std::move(request));
 }
 
 void BridgedNativeWidgetImpl::SetWindow(
@@ -320,6 +342,16 @@ void BridgedNativeWidgetImpl::SetParent(NSView* new_parent) {
   // https://crbug.com/697829
   [window_ setCollectionBehavior:[window_ collectionBehavior] |
                                  NSWindowCollectionBehaviorTransient];
+}
+
+void BridgedNativeWidgetImpl::CreateWindow(
+    views_bridge_mac::mojom::CreateWindowParamsPtr params,
+    uint64_t parent_id) {
+  SetWindow(CreateNSWindow(params.get()));
+  BridgedNativeWidgetImpl* parent_bridge =
+      BridgedNativeWidgetImpl::GetFromId(parent_id);
+  if (parent_bridge)
+    SetParent(parent_bridge->ns_view());
 }
 
 void BridgedNativeWidgetImpl::InitWindow(

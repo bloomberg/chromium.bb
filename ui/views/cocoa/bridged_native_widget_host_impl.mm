@@ -74,7 +74,9 @@ BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromId(
 
 BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(
     NativeWidgetMac* parent)
-    : id_(++g_last_bridged_native_widget_id), native_widget_mac_(parent) {
+    : id_(++g_last_bridged_native_widget_id),
+      native_widget_mac_(parent),
+      host_mojo_binding_(this) {
   DCHECK(GetIdToWidgetHostImplMap().find(id_) ==
          GetIdToWidgetHostImplMap().end());
   GetIdToWidgetHostImplMap().insert(std::make_pair(id_, this));
@@ -104,6 +106,8 @@ NativeWidgetMacNSWindow* BridgedNativeWidgetHostImpl::GetLocalNSWindow() const {
 
 views_bridge_mac::mojom::BridgedNativeWidget*
 BridgedNativeWidgetHostImpl::bridge() const {
+  if (bridge_ptr_)
+    return bridge_ptr_.get();
   if (bridge_impl_)
     return bridge_impl_.get();
   return nullptr;
@@ -117,6 +121,28 @@ void BridgedNativeWidgetHostImpl::CreateLocalBridge(
   bridge_impl_->SetWindow(window);
   if (parent)
     bridge_impl_->SetParent(parent);
+}
+
+void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
+    views_bridge_mac::mojom::BridgeFactory* bridge_factory,
+    views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params,
+    uint64_t parent_bridge_id) {
+  bridge_factory_ = bridge_factory;
+
+  // Create the local window with the same parameters as will be used in the
+  // other process.
+  local_window_ =
+      BridgedNativeWidgetImpl::CreateNSWindow(window_create_params.get());
+  [local_window_ setBridgedNativeWidgetId:id_];
+
+  // Initialize |bridge_ptr_| to point to a bridge created by |factory|.
+  views_bridge_mac::mojom::BridgedNativeWidgetHostPtr host_ptr;
+  host_mojo_binding_.Bind(mojo::MakeRequest(&host_ptr));
+  bridge_factory_->CreateBridge(id_, mojo::MakeRequest(&bridge_ptr_),
+                                std::move(host_ptr));
+
+  // Create the window in its process, and attach it to its parent window.
+  bridge()->CreateWindow(std::move(window_create_params), parent_bridge_id);
 }
 
 void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {

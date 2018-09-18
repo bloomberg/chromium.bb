@@ -8,6 +8,7 @@ mojom("mojo") {
   cpp_only = true
 
   sources = [
+    "mojo/bridge_factory.mojom",
     "mojo/bridged_native_widget.mojom",
     "mojo/bridged_native_widget_host.mojom",
   ]
