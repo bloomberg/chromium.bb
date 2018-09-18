@@ -70,6 +70,14 @@ class WebController {
   virtual void FocusElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback);
 
+  // Get the value of all fields in |selector_list| and return the result
+  // through |callback|. The list of returned values will have the same size as
+  // |selectors_list|, and will be the empty string in case of error or empty
+  // value.
+  virtual void GetFieldsValue(
+      const std::vector<std::vector<std::string>>& selectors_list,
+      base::OnceCallback<void(const std::vector<std::string>&)> callback);
+
  private:
   void OnFindElementForClick(base::OnceCallback<void(bool)> callback,
                              std::string object_id);

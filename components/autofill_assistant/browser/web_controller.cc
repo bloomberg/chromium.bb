@@ -322,4 +322,15 @@ void WebController::FocusElement(const std::vector<std::string>& selectors,
   std::move(callback).Run(true);
 }
 
+void WebController::GetFieldsValue(
+    const std::vector<std::vector<std::string>>& selectors_list,
+    base::OnceCallback<void(const std::vector<std::string>&)> callback) {
+  // TODO(crbug.com/806868): Implement get fields value operation.
+  std::vector<std::string> values;
+  for (size_t i = 0; i < selectors_list.size(); i++) {
+    values.emplace_back("");
+  }
+  std::move(callback).Run(values);
+}
+
 }  // namespace autofill_assistant.
