@@ -199,7 +199,7 @@ const CGFloat kFaviconMinWidthHeight = 16;
   if (self.faviconLoader) {
     FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
         item.faviconPageURL, kFaviconMinWidthHeight, kFaviconWidthHeight,
-        completionBlock);
+        /*fallback_to_google_server=*/false, completionBlock);
     DCHECK(cachedAttributes);
     return completionBlock(cachedAttributes);
   } else {
