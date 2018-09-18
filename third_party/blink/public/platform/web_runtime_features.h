@@ -102,7 +102,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableLazyFrameVisibleLoadTimeMetrics(bool);
   BLINK_PLATFORM_EXPORT static void EnableLazyImageLoading(bool);
   BLINK_PLATFORM_EXPORT static void EnableLazyImageVisibleLoadTimeMetrics(bool);
-  BLINK_PLATFORM_EXPORT static void EnableLazyParseCSS(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaCapture(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaSession(bool);
   BLINK_PLATFORM_EXPORT static void EnableMiddleClickAutoscroll(bool);

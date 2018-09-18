@@ -204,10 +204,6 @@ void WebRuntimeFeatures::EnableLazyImageVisibleLoadTimeMetrics(bool enable) {
   RuntimeEnabledFeatures::SetLazyImageVisibleLoadTimeMetricsEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableLazyParseCSS(bool enable) {
-  RuntimeEnabledFeatures::SetLazyParseCSSEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableMediaCapture(bool enable) {
   RuntimeEnabledFeatures::SetMediaCaptureEnabled(enable);
 }

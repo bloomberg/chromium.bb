@@ -33,10 +33,12 @@ class CORE_EXPORT CSSParser {
   static StyleRuleBase* ParseRule(const CSSParserContext*,
                                   StyleSheetContents*,
                                   const String&);
+
   static void ParseSheet(const CSSParserContext*,
                          StyleSheetContents*,
                          const String&,
-                         bool defer_property_parsing = false);
+                         CSSDeferPropertyParsing defer_property_parsing =
+                             CSSDeferPropertyParsing::kNo);
   static CSSSelectorList ParseSelector(const CSSParserContext*,
                                        StyleSheetContents*,
                                        const String&);

@@ -669,10 +669,6 @@
       // This is enabled by features::kLazyInitializeMediaControls.
     },
     {
-      name: "LazyParseCSS",
-      status: "experimental",
-    },
-    {
       name: "LongTaskV2",
     },
     {
