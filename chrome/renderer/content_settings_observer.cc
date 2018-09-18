@@ -110,19 +110,11 @@ bool IsUniqueFrame(WebFrame* frame) {
 
 ContentSettingsObserver::ContentSettingsObserver(
     content::RenderFrame* render_frame,
-    extensions::Dispatcher* extension_dispatcher,
     bool should_whitelist,
     service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<ContentSettingsObserver>(
           render_frame),
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      extension_dispatcher_(extension_dispatcher),
-#endif
-      allow_running_insecure_content_(false),
-      content_setting_rules_(nullptr),
-      is_interstitial_page_(false),
-      current_request_id_(0),
       should_whitelist_(should_whitelist) {
   ClearBlockedContentSettings();
   render_frame->GetWebFrame()->SetContentSettingsClient(this);
@@ -148,6 +140,15 @@ ContentSettingsObserver::ContentSettingsObserver(
 
 ContentSettingsObserver::~ContentSettingsObserver() {
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void ContentSettingsObserver::SetExtensionDispatcher(
+    extensions::Dispatcher* extension_dispatcher) {
+  DCHECK(!extension_dispatcher_)
+      << "SetExtensionDispatcher() should only be called once.";
+  extension_dispatcher_ = extension_dispatcher;
+}
+#endif
 
 void ContentSettingsObserver::SetContentSettingRules(
     const RendererContentSettingRules* content_setting_rules) {

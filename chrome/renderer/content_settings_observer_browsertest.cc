@@ -65,7 +65,7 @@ class MockContentSettingsObserver : public ContentSettingsObserver {
 MockContentSettingsObserver::MockContentSettingsObserver(
     content::RenderFrame* render_frame,
     service_manager::BinderRegistry* registry)
-    : ContentSettingsObserver(render_frame, NULL, false, registry),
+    : ContentSettingsObserver(render_frame, false, registry),
       image_url_("http://www.foo.com/image.jpg"),
       image_origin_("http://www.foo.com") {}
 
