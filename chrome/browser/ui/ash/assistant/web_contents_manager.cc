@@ -26,6 +26,11 @@
 
 // ManagedWebContents ----------------------------------------------------------
 
+// This class wraps a WebContents and associated view. ManagedWebContents are
+// owned/managed by WebContentsManager on behalf of embedders in other code
+// areas/processes that cannot depend directly on chrome/browser. Instances are
+// created/destroyed via calls to WebContentsManager::ManageWebContents and
+// WebContentsManager::ReleaseWebContents respectively.
 class ManagedWebContents : public content::WebContentsDelegate,
                            public content::WebContentsObserver {
  public:
@@ -66,22 +71,30 @@ class ManagedWebContents : public content::WebContentsDelegate,
     web_view_->SetPreferredSize(new_size);
   }
 
+  bool ShouldCreateWebContents(
+      content::WebContents* web_contents,
+      content::RenderFrameHost* opener,
+      content::SiteInstance* source_site_instance,
+      int32_t route_id,
+      int32_t main_frame_route_id,
+      int32_t main_frame_widget_route_id,
+      content::mojom::WindowContainerType window_container_type,
+      const GURL& opener_url,
+      const std::string& frame_name,
+      const GURL& target_url,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace) override {
+    // This is fired when trying to open links in a new tab, e.g.:
+    // <a href="https://www.google.com/" target="_blank">Link</a>
+    HandleNavigationAttempt(target_url,
+                            WindowOpenDisposition::NEW_FOREGROUND_TAB);
+    return false;
+  }
+
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override {
-    if (!open_url_delegate_)
-      return content::WebContentsDelegate::OpenURLFromTab(source, params);
-
-    open_url_delegate_->ShouldOpenUrlFromTab(
-        params.url,
-        base::BindOnce(
-            [](base::WeakPtr<ManagedWebContents> managed_web_contents,
-               const GURL& url, bool should_open) {
-              if (should_open && managed_web_contents)
-                managed_web_contents->NavigateToUrl(url);
-            },
-            weak_factory_.GetWeakPtr(), params.url));
-
+    HandleNavigationAttempt(params.url, params.disposition);
     return nullptr;
   }
 
@@ -172,6 +185,22 @@ class ManagedWebContents : public content::WebContentsDelegate,
     } else {
       // TODO(dmblack): Handle Mash case. https://crbug.com/854787.
     }
+  }
+
+  void HandleNavigationAttempt(const GURL& url,
+                               WindowOpenDisposition disposition) {
+    if (!open_url_delegate_)
+      return;
+
+    open_url_delegate_->ShouldOpenUrlFromTab(
+        url, disposition,
+        base::BindOnce(
+            [](const base::WeakPtr<ManagedWebContents>& managed_web_contents,
+               const GURL& url, bool should_open) {
+              if (should_open && managed_web_contents)
+                managed_web_contents->NavigateToUrl(url);
+            },
+            weak_factory_.GetWeakPtr(), url));
   }
 
   ash::mojom::WebContentsManager::ManageWebContentsCallback callback_;
