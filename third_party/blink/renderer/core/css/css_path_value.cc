@@ -13,17 +13,24 @@ namespace blink {
 
 namespace cssvalue {
 
-CSSPathValue* CSSPathValue::Create(scoped_refptr<StylePath> style_path) {
-  return new CSSPathValue(std::move(style_path));
+CSSPathValue* CSSPathValue::Create(
+    scoped_refptr<StylePath> style_path,
+    PathSerializationFormat serialization_format) {
+  return new CSSPathValue(std::move(style_path), serialization_format);
 }
 
 CSSPathValue* CSSPathValue::Create(
-    std::unique_ptr<SVGPathByteStream> path_byte_stream) {
-  return CSSPathValue::Create(StylePath::Create(std::move(path_byte_stream)));
+    std::unique_ptr<SVGPathByteStream> path_byte_stream,
+    PathSerializationFormat serialization_format) {
+  return CSSPathValue::Create(StylePath::Create(std::move(path_byte_stream)),
+                              serialization_format);
 }
 
-CSSPathValue::CSSPathValue(scoped_refptr<StylePath> style_path)
-    : CSSValue(kPathClass), style_path_(std::move(style_path)) {
+CSSPathValue::CSSPathValue(scoped_refptr<StylePath> style_path,
+                           PathSerializationFormat serialization_format)
+    : CSSValue(kPathClass),
+      style_path_(std::move(style_path)),
+      serialization_format_(serialization_format) {
   DCHECK(style_path_);
 }
 
@@ -46,7 +53,8 @@ CSSPathValue& CSSPathValue::EmptyPathValue() {
 }
 
 String CSSPathValue::CustomCSSText() const {
-  return "path(\"" + BuildStringFromByteStream(ByteStream()) + "\")";
+  return "path(\"" +
+         BuildStringFromByteStream(ByteStream(), serialization_format_) + "\")";
 }
 
 bool CSSPathValue::Equals(const CSSPathValue& other) const {

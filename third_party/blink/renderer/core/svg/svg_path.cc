@@ -86,7 +86,7 @@ SVGPath::SVGPath(CSSPathValue* path_value) : path_value_(path_value) {
 SVGPath::~SVGPath() = default;
 
 String SVGPath::ValueAsString() const {
-  return BuildStringFromByteStream(ByteStream());
+  return BuildStringFromByteStream(ByteStream(), kNoTransformation);
 }
 
 SVGPath* SVGPath::Clone() const {
