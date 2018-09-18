@@ -7,8 +7,10 @@
 #include <memory>
 
 #include "ash/test/ash_test_views_delegate.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/network/test/test_network_connection_tracker.h"
 
 namespace ash {
 namespace {
@@ -32,9 +34,16 @@ std::string AshTestEnvironment::Get100PercentResourceFileName() {
 }
 
 AshTestEnvironmentContent::AshTestEnvironmentContent()
-    : thread_bundle_(std::make_unique<content::TestBrowserThreadBundle>()) {}
+    : network_connection_tracker_(
+          network::TestNetworkConnectionTracker::CreateInstance()),
+      thread_bundle_(std::make_unique<content::TestBrowserThreadBundle>()) {
+  content::SetNetworkConnectionTrackerForTesting(
+      network::TestNetworkConnectionTracker::GetInstance());
+}
 
-AshTestEnvironmentContent::~AshTestEnvironmentContent() = default;
+AshTestEnvironmentContent::~AshTestEnvironmentContent() {
+  content::SetNetworkConnectionTrackerForTesting(nullptr);
+}
 
 void AshTestEnvironmentContent::SetUp() {
   scoped_web_contents_creator_ =

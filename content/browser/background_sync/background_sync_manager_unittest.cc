@@ -37,7 +37,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/mock_background_sync_controller.h"
 #include "content/test/test_background_sync_manager.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -86,8 +86,7 @@ void UnregisterServiceWorkerCallback(bool* called,
 class BackgroundSyncManagerTest : public testing::Test {
  public:
   BackgroundSyncManagerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()) {
+      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     sync_options_1_.tag = "foo";
     sync_options_1_.network_state = NETWORK_STATE_ONLINE;
 
@@ -97,7 +96,7 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void SetUp() override {
     // Don't let the tests be confused by the real-world device connectivity
-    background_sync_test_util::SetIgnoreNetworkChangeNotifier(true);
+    background_sync_test_util::SetIgnoreNetworkChanges(true);
 
     // TODO(jkarlin): Create a new object with all of the necessary SW calls
     // so that we can inject test versions instead of bringing up all of this
@@ -129,7 +128,7 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   void TearDown() override {
     // Restore the network observer functionality for subsequent tests
-    background_sync_test_util::SetIgnoreNetworkChangeNotifier(false);
+    background_sync_test_util::SetIgnoreNetworkChanges(false);
   }
 
   void RegisterServiceWorkers() {
@@ -168,13 +167,13 @@ class BackgroundSyncManagerTest : public testing::Test {
     EXPECT_TRUE(sw_registration_2_);
   }
 
-  void SetNetwork(net::NetworkChangeNotifier::ConnectionType connection_type) {
-    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+  void SetNetwork(network::mojom::ConnectionType connection_type) {
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
         connection_type);
     if (test_background_sync_manager_) {
       BackgroundSyncNetworkObserver* network_observer =
           test_background_sync_manager_->GetNetworkObserverForTesting();
-      network_observer->NotifyManagerIfNetworkChangedForTesting(
+      network_observer->NotifyManagerIfConnectionChangedForTesting(
           connection_type);
       base::RunLoop().RunUntilIdle();
     }
@@ -216,7 +215,7 @@ class BackgroundSyncManagerTest : public testing::Test {
     // the sync event fires by manipulating the network state as needed.
     // NOTE: The setup of the network connection must happen after the
     //       BackgroundSyncManager has been created.
-    SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
+    SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
   }
 
   void InitBackgroundSyncManager() {
@@ -346,7 +345,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   void SetupForSyncEvent(
       const TestBackgroundSyncManager::DispatchSyncCallback& callback) {
     test_background_sync_manager_->set_dispatch_sync_callback(callback);
-    SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
+    SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   }
 
   void DispatchSyncStatusCallback(
@@ -411,7 +410,6 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::unique_ptr<BackgroundSyncManager> background_sync_manager_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
@@ -853,7 +851,7 @@ TEST_F(BackgroundSyncManagerTest, OverwritePendingRegistration) {
   InitFailedSyncEventTest();
 
   // Prevent the first sync from running so that it stays in a pending state.
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_1_));
 
@@ -862,7 +860,7 @@ TEST_F(BackgroundSyncManagerTest, OverwritePendingRegistration) {
   EXPECT_TRUE(GetRegistration(sync_options_1_));
 
   // Verify that it only gets to run once.
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, sync_events_called_);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
@@ -870,7 +868,7 @@ TEST_F(BackgroundSyncManagerTest, OverwritePendingRegistration) {
 
 TEST_F(BackgroundSyncManagerTest, DisableWhilePending) {
   InitDelayedSyncEventTest();
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
   EXPECT_TRUE(Register(sync_options_1_));
 
   // Corrupting the backend should result in the manager disabling itself on the
@@ -879,7 +877,7 @@ TEST_F(BackgroundSyncManagerTest, DisableWhilePending) {
   EXPECT_FALSE(Register(sync_options_2_));
 
   test_background_sync_manager_->set_corrupt_backend(false);
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, sync_events_called_);
 }
@@ -906,12 +904,12 @@ TEST_F(BackgroundSyncManagerTest, DisableWhileFiring) {
 TEST_F(BackgroundSyncManagerTest, FiresOnNetworkChange) {
   InitSyncEventTest();
 
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_EQ(0, sync_events_called_);
   EXPECT_TRUE(GetRegistration(sync_options_1_));
 
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, sync_events_called_);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
@@ -920,14 +918,14 @@ TEST_F(BackgroundSyncManagerTest, FiresOnNetworkChange) {
 TEST_F(BackgroundSyncManagerTest, MultipleRegistrationsFireOnNetworkChange) {
   InitSyncEventTest();
 
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(Register(sync_options_2_));
   EXPECT_EQ(0, sync_events_called_);
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_2_));
 
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
 
   EXPECT_EQ(2, sync_events_called_);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
@@ -938,7 +936,7 @@ TEST_F(BackgroundSyncManagerTest, FiresOnManagerRestart) {
   InitSyncEventTest();
 
   // Initially the event won't run because there is no network.
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_EQ(0, sync_events_called_);
   EXPECT_TRUE(GetRegistration(sync_options_1_));
@@ -947,7 +945,7 @@ TEST_F(BackgroundSyncManagerTest, FiresOnManagerRestart) {
   DeleteBackgroundSyncManager();
 
   // The next time the manager is started, the network is good.
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   SetupBackgroundSyncManager();
   InitSyncEventTest();
 
@@ -1138,7 +1136,7 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
   EXPECT_LT(0, GetController()->run_in_background_count());
   EXPECT_FALSE(GetController()->run_in_background_enabled());
 
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
   EXPECT_FALSE(GetController()->run_in_background_enabled());
 
   // Register a one-shot but it can't fire due to lack of network, wake up is
@@ -1148,7 +1146,7 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
 
   // Start the event but it will pause mid-sync due to
   // InitDelayedSyncEventTest() above.
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   EXPECT_TRUE(GetController()->run_in_background_enabled());
   EXPECT_EQ(test_background_sync_manager_->background_sync_parameters()
                 ->min_sync_recovery_time,
@@ -1435,7 +1433,7 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
   background_sync_manager_->EmulateServiceWorkerOffline(sw_registration_id_1_,
                                                         false);
 
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_NONE);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
   was_called = false;
   code = blink::ServiceWorkerStatusCode::kOk;
   background_sync_manager_->EmulateDispatchSyncEvent(
@@ -1445,7 +1443,7 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
   EXPECT_TRUE(was_called);
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNetwork, code);
 
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   was_called = false;
   background_sync_manager_->EmulateDispatchSyncEvent(
       "emulated_tag", sw_registration_1_->active_version(), false,

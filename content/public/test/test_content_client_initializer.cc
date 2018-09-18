@@ -19,7 +19,8 @@ namespace content {
 TestContentClientInitializer::TestContentClientInitializer() {
   test_network_connection_tracker_ =
       network::TestNetworkConnectionTracker::CreateInstance();
-  SetNetworkConnectionTrackerForTesting(test_network_connection_tracker_.get());
+  SetNetworkConnectionTrackerForTesting(
+      network::TestNetworkConnectionTracker::GetInstance());
 
   notification_service_.reset(new NotificationServiceImpl());
 

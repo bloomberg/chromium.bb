@@ -13,7 +13,7 @@ namespace content {
 // static
 scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer>
 BackgroundSyncNetworkObserverAndroid::Observer::Create(
-    base::Callback<void(net::NetworkChangeNotifier::ConnectionType)> callback) {
+    base::Callback<void(network::mojom::ConnectionType)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer> observer(
       new BackgroundSyncNetworkObserverAndroid::Observer(callback));
@@ -50,13 +50,12 @@ void BackgroundSyncNetworkObserverAndroid::Observer::
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(callback_,
-                 static_cast<net::NetworkChangeNotifier::ConnectionType>(
-                     new_connection_type)));
+      base::Bind(callback_, static_cast<network::mojom::ConnectionType>(
+                                new_connection_type)));
 }
 
 BackgroundSyncNetworkObserverAndroid::Observer::Observer(
-    base::Callback<void(net::NetworkChangeNotifier::ConnectionType)> callback)
+    base::Callback<void(network::mojom::ConnectionType)> callback)
     : callback_(callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
@@ -67,15 +66,16 @@ BackgroundSyncNetworkObserverAndroid::BackgroundSyncNetworkObserverAndroid(
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Remove the observer attached by the NetworkObserver constructor
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-
   observer_ = Observer::Create(
-      base::Bind(&BackgroundSyncNetworkObserverAndroid::OnNetworkChanged,
+      base::Bind(&BackgroundSyncNetworkObserverAndroid::OnConnectionChanged,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 BackgroundSyncNetworkObserverAndroid::~BackgroundSyncNetworkObserverAndroid() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
+
+void BackgroundSyncNetworkObserverAndroid::RegisterWithNetworkConnectionTracker(
+    network::NetworkConnectionTracker* network_connection_tracker) {}
+
 }  // namespace content

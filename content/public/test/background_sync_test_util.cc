@@ -29,11 +29,11 @@ void SetOnlineOnIOThread(
   BackgroundSyncNetworkObserver* network_observer =
       sync_manager->GetNetworkObserverForTesting();
   if (online) {
-    network_observer->NotifyManagerIfNetworkChangedForTesting(
-        net::NetworkChangeNotifier::CONNECTION_WIFI);
+    network_observer->NotifyManagerIfConnectionChangedForTesting(
+        network::mojom::ConnectionType::CONNECTION_WIFI);
   } else {
-    network_observer->NotifyManagerIfNetworkChangedForTesting(
-        net::NetworkChangeNotifier::CONNECTION_NONE);
+    network_observer->NotifyManagerIfConnectionChangedForTesting(
+        network::mojom::ConnectionType::CONNECTION_NONE);
   }
 }
 
@@ -45,8 +45,8 @@ StoragePartitionImpl* GetStoragePartition(WebContents* web_contents) {
 }  // namespace
 
 // static
-void SetIgnoreNetworkChangeNotifier(bool ignore) {
-  BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(ignore);
+void SetIgnoreNetworkChanges(bool ignore) {
+  BackgroundSyncNetworkObserver::SetIgnoreNetworkChangesForTests(ignore);
 }
 
 // static
