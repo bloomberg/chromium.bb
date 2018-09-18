@@ -2261,13 +2261,14 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
           DieWithError("Must specify reviewers to send email.", change_desc)
         upload_args.append('--send_mail')
 
-      # We check this before applying rietveld.private assuming that in
-      # rietveld.cc only addresses which we can send private CLs to are listed
-      # if rietveld.private is set, and so we should ignore rietveld.cc only
-      # when --private is specified explicitly on the command line.
-      if options.private:
-        logging.warn('rietveld.cc is ignored since private flag is specified.  '
-                     'You need to review and add them manually if necessary.')
+      # We only skip auto-CC-ing addresses from rietveld.cc when --private or
+      # --no-autocc is explicitly specified on the command line. Should private
+      # CL be created due to rietveld.private value, we assume that rietveld.cc
+      # only contains addresses where private CLs are allowed to be sent.
+      if options.private or options.no_autocc:
+        logging.warn('rietveld.cc is ignored since private/no-autocc flag is '
+                     'specified. You need to review and add them manually if '
+                     'necessary.')
         cc = self.GetCCListWithoutDefault()
       else:
         cc = self.GetCCList()
@@ -5094,9 +5095,12 @@ def CMDupload(parser, args):
                     help='Run all tests specified by input_api.RunTests in all '
                          'PRESUBMIT files in parallel.')
 
-  # TODO: remove Rietveld flags
+  parser.add_option('--no-autocc', action='store_true',
+                    help='Disables automatic addition of CC emails')
   parser.add_option('--private', action='store_true',
-                    help='set the review private (rietveld only)')
+                    help='Set the review private. This implies --no-autocc.')
+
+  # TODO: remove Rietveld flags
   parser.add_option('--email', default=None,
                     help='email address to use to connect to Rietveld')
 
