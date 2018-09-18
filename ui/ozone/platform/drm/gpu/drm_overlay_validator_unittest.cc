@@ -115,9 +115,9 @@ void DrmOverlayValidatorTest::SetUp() {
   gbm_ = gbm.get();
   drm_ = new ui::MockDrmDevice(std::move(gbm));
 
-  CrtcState crtc_state = {.planes = {
-                              {.formats = {DRM_FORMAT_XRGB8888}},
-                          }};
+  CrtcState crtc_state = {/* .planes = */ {
+      {/* .formats = */ {DRM_FORMAT_XRGB8888}},
+  }};
   InitializeDrmState({crtc_state});
 
   screen_manager_.reset(new ui::ScreenManager());
@@ -205,7 +205,7 @@ void DrmOverlayValidatorTest::InitializeDrmState(
         }
 
         crtc_plane_properties[plane_idx].properties.push_back(
-            {.id = pair.first, .value = value});
+            {/* .id = */ pair.first, /* .value = */ value});
       }
     }
 
@@ -279,11 +279,11 @@ TEST_F(DrmOverlayValidatorTest, OverlayFormat_XRGB) {
   plane_list_.back().display_bounds = overlay_rect_;
 
   CrtcState state = {
-      .planes =
-          {
-              {.formats = {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
-              {.formats = {DRM_FORMAT_XRGB8888}},
-          },
+      /*  .planes = */
+      {
+          {/* .formats = */ {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
+          {/* .formats = */ {DRM_FORMAT_XRGB8888}},
+      },
   };
   InitializeDrmState(std::vector<CrtcState>(1, state));
 
@@ -308,11 +308,11 @@ TEST_F(DrmOverlayValidatorTest, OverlayFormat_YUV) {
   AddPlane(overlay_params_.back());
 
   CrtcState state = {
-      .planes =
-          {
-              {.formats = {DRM_FORMAT_XRGB8888}},
-              {.formats = {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
-          },
+      /* .planes = */
+      {
+          {/* .formats = */ {DRM_FORMAT_XRGB8888}},
+          {/* .formats = */ {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
+      },
   };
   InitializeDrmState(std::vector<CrtcState>(1, state));
 
@@ -334,11 +334,11 @@ TEST_F(DrmOverlayValidatorTest, RejectYUVBuffersIfNotSupported) {
   AddPlane(overlay_params_.back());
 
   CrtcState state = {
-      .planes =
-          {
-              {.formats = {DRM_FORMAT_XRGB8888}},
-              {.formats = {DRM_FORMAT_XRGB8888}},
-          },
+      /* .planes = */
+      {
+          {/* .formats = */ {DRM_FORMAT_XRGB8888}},
+          {/* .formats = */ {DRM_FORMAT_XRGB8888}},
+      },
   };
   InitializeDrmState(std::vector<CrtcState>(1, state));
 
@@ -354,18 +354,18 @@ TEST_F(DrmOverlayValidatorTest,
        RejectYUVBuffersIfNotSupported_MirroredControllers) {
   std::vector<CrtcState> crtc_states = {
       {
-          .planes =
-              {
-                  {.formats = {DRM_FORMAT_XRGB8888}},
-                  {.formats = {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
-              },
+          /* .planes = */
+          {
+              {/* .formats = */ {DRM_FORMAT_XRGB8888}},
+              {/* .formats = */ {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
+          },
       },
       {
-          .planes =
-              {
-                  {.formats = {DRM_FORMAT_XRGB8888}},
-                  {.formats = {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
-              },
+          /* .planes = */
+          {
+              {/* .formats = */ {DRM_FORMAT_XRGB8888}},
+              {/* .formats = */ {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
+          },
       },
   };
   InitializeDrmState(crtc_states);
@@ -421,18 +421,18 @@ TEST_F(DrmOverlayValidatorTest,
 TEST_F(DrmOverlayValidatorTest, OptimalFormatXRGB_MirroredControllers) {
   std::vector<CrtcState> crtc_states = {
       {
-          .planes =
-              {
-                  {.formats = {DRM_FORMAT_XRGB8888}},
-                  {.formats = {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
-              },
+          /* .planes = */
+          {
+              {/* .formats = */ {DRM_FORMAT_XRGB8888}},
+              {/* .formats = */ {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
+          },
       },
       {
-          .planes =
-              {
-                  {.formats = {DRM_FORMAT_XRGB8888}},
-                  {.formats = {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
-              },
+          /* .planes = */
+          {
+              {/* .formats = */ {DRM_FORMAT_XRGB8888}},
+              {/* .formats = */ {DRM_FORMAT_XRGB8888, DRM_FORMAT_UYVY}},
+          },
       },
   };
   InitializeDrmState(crtc_states);

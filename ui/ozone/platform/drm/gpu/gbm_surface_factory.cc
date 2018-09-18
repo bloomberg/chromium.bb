@@ -183,13 +183,23 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
   base::ScopedFD vk_image_fd(dup(buffer->GetPlaneFd(0)));
   DCHECK(vk_image_fd.is_valid());
 
+  // TODO(spang): Fix this for formats other than gfx::BufferFormat::BGRA_8888
+  DCHECK_EQ(format, display::DisplaySnapshot::PrimaryFormat());
+  VKFormat format = VK_FORMAT_B8G8R8A8_SRGB;
+
   VkDmaBufImageCreateInfo dma_buf_image_create_info = {
-      .sType = static_cast<VkStructureType>(
+      /* .sType = */ static_cast<VkStructureType>(
           VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL),
-      .fd = vk_image_fd.release(),
-      .format = VK_FORMAT_B8G8R8A8_SRGB,
-      .extent = (VkExtent3D){size.width(), size.height(), 1},
-      .strideInBytes = buffer->GetPlaneStride(0),
+      /* .pNext = */ nullptr,
+      /* .fd = */ vk_image_fd.release(),
+      /* .format = */ format,
+      /* .extent = */
+      {
+          /* .width = */ size.width(),
+          /* .height = */ size.height(),
+          /* .depth = */ 1,
+      },
+      /* .strideInBytes = */ buffer->GetPlaneStride(0),
   };
 
   VkResult result =
