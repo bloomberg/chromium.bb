@@ -18,6 +18,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kMojoBlobURLs;
 BLINK_COMMON_EXPORT extern const base::Feature
     kServiceWorkerImportedScriptUpdateCheck;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kServiceWorkerParallelSideDataReading;
 BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerServicification;
 BLINK_COMMON_EXPORT extern const base::Feature kNestedWorkers;
 BLINK_COMMON_EXPORT extern const base::Feature kRecordAnchorMetricsClicked;
