@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/web_cache/public/interfaces/web_cache.mojom.h"
+#include "components/web_cache/public/mojom/web_cache.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace web_cache {
