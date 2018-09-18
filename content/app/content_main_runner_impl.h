@@ -72,9 +72,11 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
   CreatedMainPartsClosure* created_main_parts_closure_ = nullptr;
 
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   std::unique_ptr<base::MessageLoop> main_message_loop_;
 
   std::unique_ptr<StartupDataImpl> startup_data_;
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
   DISALLOW_COPY_AND_ASSIGN(ContentMainRunnerImpl);
 };
