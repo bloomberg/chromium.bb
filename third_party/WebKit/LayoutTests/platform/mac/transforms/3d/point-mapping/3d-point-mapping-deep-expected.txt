@@ -9,15 +9,15 @@ layer at (42,42) size 340x340
   LayoutBlockFlow {DIV} at (21,21) size 340x340 [bgcolor=#DDDDDD] [border: (1px solid #000000)]
 layer at (63,63) size 300x300
   LayoutBlockFlow {DIV} at (21,21) size 300x300 [bgcolor=#81AA8A] [border: (1px solid #000000)]
-layer at (104,104) size 300x300
+layer at (100,93) size 267x331
   LayoutBlockFlow {DIV} at (41,41) size 300x300 [border: (1px solid #000000)]
-layer at (145,145) size 300x300
+layer at (150,139) size 300x372
   LayoutBlockFlow {DIV} at (41,41) size 300x300 [bgcolor=#AA7994] [border: (1px solid #000000)]
-layer at (186,186) size 300x300
+layer at (213,194) size 291x373
   LayoutBlockFlow {DIV} at (41,41) size 300x300 [border: (1px solid #000000)]
-layer at (227,227) size 300x300
+layer at (257,238) size 270x359
   LayoutBlockFlow {DIV} at (41,41) size 300x300 [bgcolor=#81AA8A] [border: (1px solid #000000)]
-layer at (268,268) size 300x300
+layer at (293,260) size 278x370 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {DIV} at (41,41) size 300x300 [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (61,61) size 90x90 [bgcolor=#0000FF]
 layer at (30,650) size 349x144 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600

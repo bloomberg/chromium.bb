@@ -171,9 +171,9 @@ layer at (168,81) size 9x9 transparent
   LayoutBlockFlow {DIV} at (157,3.50) size 9x9
 layer at (8,334) size 173x36 backgroundClip at (11,323) size 167x118 clip at (11,336) size 167x32
   LayoutTextControl {INPUT} at (0,326) size 173x36 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-layer at (10,351) size 169x16 backgroundClip at (14,339) size 154x98 clip at (14,351) size 154x16
+layer at (14,339) size 154x98 clip at (14,339) size 154x16
   LayoutBlockFlow {DIV} at (2,17) size 169x16 [color=#757575]
     LayoutText {#text} at (0,0) size 66x16
       text run at (0,0) width 66: "placeholder"
-layer at (10,351) size 169x16 backgroundClip at (14,339) size 154x98 clip at (14,351) size 154x16
+layer at (14,339) size 154x98 clip at (14,339) size 154x16
   LayoutBlockFlow {DIV} at (2,17) size 169x16

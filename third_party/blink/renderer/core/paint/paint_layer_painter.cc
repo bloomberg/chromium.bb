@@ -230,10 +230,10 @@ static bool ShouldRepaintSubsequence(
 }
 
 void PaintLayerPainter::AdjustForPaintProperties(
+    const GraphicsContext& context,
     PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags& paint_flags) {
-  // TODO(wangxianzhu): Make this function fragment aware.
-  const auto& current_fragment = paint_layer_.GetLayoutObject().FirstFragment();
+  const auto& first_fragment = paint_layer_.GetLayoutObject().FirstFragment();
 
   bool use_infinite_dirty_rect =
       // Cull rects and clips can't be propagated across a filter which moves
@@ -246,7 +246,10 @@ void PaintLayerPainter::AdjustForPaintProperties(
       //   2) Complexity: Difficulty updating clips when ancestor transforms
       //      change.
       // For these reasons, we use an infinite dirty rect here.
-      paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags());
+      // The reasons don't apply for printing though, because when we enter and
+      // leaving printing mode, full invalidations occur.
+      (!context.Printing() &&
+       paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()));
 
   if (use_infinite_dirty_rect)
     painting_info.paint_dirty_rect = LayoutRect(LayoutRect::InfiniteIntRect());
@@ -255,15 +258,6 @@ void PaintLayerPainter::AdjustForPaintProperties(
     return;
 
   if (!use_infinite_dirty_rect) {
-    const auto* current_transform =
-        current_fragment.LocalBorderBoxProperties().Transform();
-    const auto& root_fragment =
-        painting_info.root_layer->GetLayoutObject().FirstFragment();
-    const auto* root_transform =
-        root_fragment.LocalBorderBoxProperties().Transform();
-    if (current_transform == root_transform)
-      return;
-
     // painting_info.paint_dirty_rect is currently in
     // |painting_info.root_layer|'s pixel-snapped border box space. We need to
     // adjust it into |paint_layer_|'s space.
@@ -272,14 +266,13 @@ void PaintLayerPainter::AdjustForPaintProperties(
     // - The current layer's transform state escapes the root layers contents
     //   transform, e.g. a fixed-position layer;
     // - Scroll offsets.
-    const auto& matrix = GeometryMapper::SourceToDestinationProjection(
-        root_transform, current_transform);
-    painting_info.paint_dirty_rect.MoveBy(
-        RoundedIntPoint(root_fragment.PaintOffset()));
-    painting_info.paint_dirty_rect =
-        matrix.MapRect(painting_info.paint_dirty_rect);
-    painting_info.paint_dirty_rect.MoveBy(
-        -RoundedIntPoint(current_fragment.PaintOffset()));
+    const auto& first_root_fragment =
+        painting_info.root_layer->GetLayoutObject().FirstFragment();
+    if (first_root_fragment.LocalBorderBoxProperties().Transform() ==
+        first_fragment.LocalBorderBoxProperties().Transform())
+      return;
+    first_root_fragment.MapRectToFragment(first_fragment,
+                                          painting_info.paint_dirty_rect);
   }
 
   // Make the current layer the new root layer.
@@ -289,11 +282,10 @@ void PaintLayerPainter::AdjustForPaintProperties(
   paint_flags &= ~kPaintLayerPaintingOverflowContents;
   paint_flags &= ~kPaintLayerPaintingCompositingScrollingPhase;
 
-  // TODO(wangxianzhu): Make this function fragment aware.
-  if (current_fragment.PaintProperties() &&
-      current_fragment.PaintProperties()->PaintOffsetTranslation()) {
+  if (first_fragment.PaintProperties() &&
+      first_fragment.PaintProperties()->PaintOffsetTranslation()) {
     painting_info.sub_pixel_accumulation =
-        ToLayoutSize(current_fragment.PaintOffset());
+        ToLayoutSize(first_fragment.PaintOffset());
   }
 }
 
@@ -352,7 +344,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           : painting_info_arg.sub_pixel_accumulation;
 
   PaintLayerPaintingInfo painting_info = painting_info_arg;
-  AdjustForPaintProperties(painting_info, paint_flags);
+  AdjustForPaintProperties(context, painting_info, paint_flags);
 
   ShouldRespectOverflowClipType respect_overflow_clip =
       ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
@@ -465,7 +457,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       for (auto& fragment : layer_fragments) {
         fragment.background_rect.Move(negative_offset);
         fragment.foreground_rect.Move(negative_offset);
-        fragment.pagination_offset.Move(negative_offset);
       }
     } else if (should_paint_content) {
       should_paint_content = AtLeastOneFragmentIntersectsDamageRect(
@@ -633,29 +624,19 @@ bool PaintLayerPainter::AtLeastOneFragmentIntersectsDamageRect(
     const PaintLayerPaintingInfo& local_painting_info,
     PaintLayerFlags local_paint_flags,
     const LayoutPoint& offset_from_root) {
-  if (paint_layer_.EnclosingPaginationLayer())
-    return true;  // The fragments created have already been found to intersect
-                  // with the damage rect.
-
   if (&paint_layer_ == local_painting_info.root_layer &&
       (local_paint_flags & kPaintLayerPaintingOverflowContents))
     return true;
 
-  for (PaintLayerFragment& fragment : fragments) {
-    LayoutPoint new_offset_from_root =
-        offset_from_root + fragment.pagination_offset;
-    // Note that this really only works reliably on the first fragment. If the
-    // layer has visible overflow and a subsequent fragment doesn't intersect
-    // with the border box of the layer (i.e. only contains an overflow portion
-    // of the layer), intersection will fail. The reason for this is that
-    // fragment.layerBounds is set to the border box, not the bounding box, of
-    // the layer.
-    if (paint_layer_.IntersectsDamageRect(fragment.layer_bounds,
-                                          fragment.background_rect.Rect(),
-                                          new_offset_from_root))
-      return true;
-  }
-  return false;
+  // Skip the optimization if the layer is fragmented to avoid complexity
+  // about overflows in fragments. LayoutObject painters will do cull rect
+  // optimization later.
+  if (paint_layer_.EnclosingPaginationLayer() || fragments.size() > 1)
+    return true;
+
+  return paint_layer_.IntersectsDamageRect(fragments[0].layer_bounds,
+                                           fragments[0].background_rect.Rect(),
+                                           offset_from_root);
 }
 
 template <typename Function>
@@ -772,13 +753,12 @@ void PaintLayerPainter::PaintFragmentWithPhase(
       DisplayItem::PaintPhaseToDrawingType(phase));
 
   LayoutRect new_cull_rect(clip_rect.Rect());
-  // We paint in the containing transform node's space. Now |new_cull_rect| is
-  // in the pixel-snapped border box space of |painting_info.root_layer|.
-  // Adjust it to the correct space.
+  // Now |new_cull_rect| is in the pixel-snapped border box space of
+  // |fragment.root_fragment_data|. Adjust it to the containing transform node's
+  // space in which we will paint.
   new_cull_rect.MoveBy(
-      RoundedIntPoint(painting_info.root_layer->GetLayoutObject()
-                          .FirstFragment()
-                          .PaintOffset()));
+      RoundedIntPoint(fragment.root_fragment_data->PaintOffset()));
+
   // If we had pending stylesheets, we should avoid painting descendants of
   // layout view to avoid FOUC.
   bool suppress_painting_descendants = paint_layer_.GetLayoutObject()
