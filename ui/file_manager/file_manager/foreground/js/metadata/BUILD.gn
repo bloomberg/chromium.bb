@@ -150,6 +150,10 @@ js_library("metadata_model") {
     ":multi_metadata_provider",
     "../../../common/js:util",
   ]
+  externs_list = [
+    "../../../../externs/volume_info_list.js",
+    "../../../../externs/volume_manager.js",
+  ]
 }
 
 js_library("metadata_parser") {
@@ -188,6 +192,7 @@ js_library("multi_metadata_provider") {
     ":file_system_metadata_provider",
     ":metadata_provider",
   ]
+  externs_list = [ "../../../../externs/volume_manager.js" ]
 }
 
 js_library("thumbnail_model") {

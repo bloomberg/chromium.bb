@@ -46,14 +46,6 @@ VolumeInfoList.prototype.remove = function(volumeId) {};
 VolumeInfoList.prototype.findIndex = function(volumeId) {};
 
 /**
- * Searches the information of the volume that contains the passed entry.
- * @param {!Entry|!FilesAppEntry} entry Entry on the volume to be
- *     found.
- * @return {VolumeInfo} The volume's information, or null if not found.
- */
-VolumeInfoList.prototype.findByEntry = function(entry) {};
-
-/**
  * Searches the information of the volume that exists on the given device path.
  * @param {string} devicePath Path of the device to search.
  * @return {VolumeInfo} The volume's information, or null if not found.

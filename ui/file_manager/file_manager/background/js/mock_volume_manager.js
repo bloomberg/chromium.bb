@@ -64,7 +64,14 @@ MockVolumeManager.prototype.createVolumeInfo =
  * @return {VolumeInfo} Corresponding VolumeInfo.
  */
 MockVolumeManager.prototype.getVolumeInfo = function(entry) {
-  return this.volumeInfoList.findByEntry(entry);
+  for (var i = 0; i < this.volumeInfoList.length; i++) {
+    var volumeInfo = this.volumeInfoList.item(i);
+    if (volumeInfo.fileSystem &&
+        util.isSameFileSystem(volumeInfo.fileSystem, entry.filesystem)) {
+      return volumeInfo;
+    }
+  }
+  return null;
 };
 
 /**
@@ -97,7 +104,7 @@ MockVolumeManager.prototype.getLocationInfo = function(entry) {
     return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, true);
   }
 
-  volumeInfo = this.volumeInfoList.findByEntry(entry);
+  volumeInfo = this.getVolumeInfo(entry);
   rootType =
       VolumeManagerCommon.getRootTypeFromVolumeType(volumeInfo.volumeType);
   isRootEntry = util.isSameEntry(entry, volumeInfo.fileSystem.root);

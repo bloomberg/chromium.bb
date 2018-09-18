@@ -44,10 +44,6 @@ class VolumeInfoListWrapper {
     throw new Error('VolumeInfoListWrapper.findIndex not implemented');
   }
   /** @override */
-  findByEntry(entry) {
-    throw new Error('VolumeInfoListWrapper.findByEntry not implemented');
-  }
-  /** @override */
   findByDevicePath(devicePath) {
     throw new Error('VolumeInfoListWrapper.findByDevicePath not implemented');
   }

@@ -270,7 +270,20 @@ VolumeManagerImpl.prototype.configure = function(volumeInfo) {
 
 /** @override */
 VolumeManagerImpl.prototype.getVolumeInfo = function(entry) {
-  return this.volumeInfoList.findByEntry(entry);
+  for (var i = 0; i < this.volumeInfoList.length; i++) {
+    var volumeInfo = this.volumeInfoList.item(i);
+    if (volumeInfo.fileSystem &&
+        util.isSameFileSystem(volumeInfo.fileSystem, entry.filesystem)) {
+      return volumeInfo;
+    }
+    // Additionally, check fake entries.
+    for (var key in volumeInfo.fakeEntries_) {
+      var fakeEntry = volumeInfo.fakeEntries_[key];
+      if (util.isSameEntry(fakeEntry, entry))
+        return volumeInfo;
+    }
+  }
+  return null;
 };
 
 /** @override */
@@ -286,7 +299,7 @@ VolumeManagerImpl.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
 
 /** @override */
 VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
-  var volumeInfo = this.volumeInfoList.findByEntry(entry);
+  var volumeInfo = this.getVolumeInfo(entry);
 
   if (util.isFakeEntry(entry)) {
     return new EntryLocationImpl(
