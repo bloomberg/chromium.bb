@@ -19,7 +19,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
@@ -64,7 +63,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 // The number of tabs to show in the google landing fake toolbar.
 @property(nonatomic, assign) int tabCount;
 
-@property(nonatomic, strong) UIView<NTPHeaderViewAdapter>* headerView;
+@property(nonatomic, strong) ContentSuggestionsHeaderView* headerView;
 @property(nonatomic, strong) UIButton* fakeOmnibox;
 @property(nonatomic, strong) UIButton* accessibilityButton;
 @property(nonatomic, strong) UILabel* searchHintLabel;
@@ -146,14 +145,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 - (void)dealloc {
   [self.accessibilityButton removeObserver:self forKeyPath:@"highlighted"];
-}
-
-#pragma mark - Property
-
-- (void)setIsShowing:(BOOL)isShowing {
-  _isShowing = isShowing;
-  if (isShowing)
-    [self.headerView hideToolbarViewsForNewTabPage];
 }
 
 #pragma mark - ContentSuggestionsHeaderControlling
@@ -242,12 +233,8 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 - (UIView*)headerForWidth:(CGFloat)width {
   if (!self.headerView) {
-    if (IsUIRefreshPhase1Enabled()) {
-      self.headerView = [[ContentSuggestionsHeaderView alloc] init];
-      [self addFakeTapView];
-    } else {
-      self.headerView = [[NewTabPageHeaderView alloc] init];
-    }
+    self.headerView = [[ContentSuggestionsHeaderView alloc] init];
+    [self addFakeTapView];
     [self addFakeOmnibox];
 
     [self.headerView addSubview:self.logoVendor.view];
@@ -275,16 +262,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
     [self addConstraintsForLogoView:self.logoVendor.view
                         fakeOmnibox:self.fakeOmnibox
                       andHeaderView:self.headerView];
-
-    // iPhone header also contains a toolbar since the normal toolbar is
-    // hidden.
-    if (!IsUIRefreshPhase1Enabled() && !IsIPadIdiom()) {
-      [_headerView addToolbarWithReadingListModel:self.readingListModel
-                                       dispatcher:self.dispatcher];
-      [_headerView setToolbarTabCount:self.tabCount];
-      [_headerView setCanGoForward:self.canGoForward];
-      [_headerView setCanGoBack:self.canGoBack];
-    }
 
     [self.headerView addViewsToSearchField:self.fakeOmnibox];
     [self.logoVendor fetchDoodle];
@@ -498,7 +475,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
         (!IsUIRefreshPhase1Enabled() &&
          !content_suggestions::IsRegularXRegularSizeClass(self))) {
       [self.dispatcher onFakeboxAnimationComplete];
-      [self.headerView fadeOutShadow];
     }
   };
   [self.collectionSynchronizer shiftTilesUpWithCompletionBlock:completionBlock];
@@ -534,21 +510,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 - (void)setLogoIsShowing:(BOOL)logoIsShowing {
   _logoIsShowing = logoIsShowing;
   [self updateLogoAndFakeboxDisplay];
-}
-
-- (void)setTabCount:(int)tabCount {
-  _tabCount = tabCount;
-  [self.headerView setToolbarTabCount:tabCount];
-}
-
-- (void)setCanGoForward:(BOOL)canGoForward {
-  _canGoForward = canGoForward;
-  [self.headerView setCanGoForward:self.canGoForward];
-}
-
-- (void)setCanGoBack:(BOOL)canGoBack {
-  _canGoBack = canGoBack;
-  [self.headerView setCanGoBack:self.canGoBack];
 }
 
 - (void)locationBarBecomesFirstResponder {

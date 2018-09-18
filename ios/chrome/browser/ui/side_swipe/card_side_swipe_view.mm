@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/background_generator.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
@@ -124,15 +123,6 @@ const CGFloat kResizeFactor = 4;
     ]];
 
     [NSLayoutConstraint activateConstraints:constraints];
-
-    if (!IsUIRefreshPhase1Enabled()) {
-      [NSLayoutConstraint activateConstraints:@[
-        [[_shadowView topAnchor] constraintEqualToAnchor:self.topAnchor
-                                                constant:topMargin],
-        [[_shadowView heightAnchor]
-            constraintEqualToConstant:kNewTabPageShadowHeight],
-      ]];
-    }
   }
   return self;
 }

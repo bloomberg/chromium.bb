@@ -7,10 +7,6 @@
 
 // Delete for NTP and it's subclasses to communicate with the toolbar.
 @protocol NewTabPageControllerDelegate
-// Sets the background color of the toolbar to the color of the incognito NTP,
-// with an |alpha|.
-// TODO(crbug.com/807330) Remove post UI refresh.
-- (void)setToolbarBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha;
 // Sets the toolbar location bar alpha and vertical offset based on |progress|.
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress;
 @end

@@ -114,7 +114,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     [self addEmptySectionPlaceholderIfNeeded:indexPath.section];
   }
       completion:^(BOOL) {
-        [self.audience contentOffsetDidChange];
         // The context menu could be displayed for the deleted entry.
         [self.suggestionCommandHandler dismissModals];
       }];
@@ -133,7 +132,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     [self.collectionView deleteSections:[NSIndexSet indexSetWithIndex:section]];
   }
       completion:^(BOOL) {
-        [self.audience contentOffsetDidChange];
         // The context menu could be displayed for the deleted entries.
         [self.suggestionCommandHandler dismissModals];
       }];
@@ -146,9 +144,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
         addSectionsForSectionInfoToModel:@[ sectionInfo ]];
     [self.collectionView insertSections:addedSections];
   }
-      completion:^(BOOL) {
-        [self.audience contentOffsetDidChange];
-      }];
+                                completion:nil];
 
   [self.collectionView performBatchUpdates:^{
     NSIndexPath* removedItem = [self.collectionUpdater
@@ -162,9 +158,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                                       withSectionInfo:sectionInfo];
     [self.collectionView insertItemsAtIndexPaths:addedItems];
   }
-      completion:^(BOOL) {
-        [self.audience contentOffsetDidChange];
-      }];
+                                completion:nil];
 }
 
 - (NSInteger)numberOfSuggestionsAbove:(NSInteger)section {
@@ -312,8 +306,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   // presented (e.g. rotation on stack view).
   [self correctMissingSafeArea];
   [self updateConstraints];
-  // Update the shadow bar.
-  [self.audience contentOffsetDidChange];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -642,7 +634,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   [super scrollViewDidScroll:scrollView];
-  [self.audience contentOffsetDidChange];
   [self.overscrollActionsController scrollViewDidScroll:scrollView];
   [self.headerSynchronizer updateFakeOmniboxOnCollectionScroll];
   self.scrolledToTop =
@@ -670,22 +661,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       scrollViewWillEndDragging:scrollView
                    withVelocity:velocity
             targetContentOffset:targetContentOffset];
-
-  CGFloat toolbarHeight = ntp_header::ToolbarHeight();
-  CGFloat targetY = targetContentOffset->y;
-
-  if (content_suggestions::IsRegularXRegularSizeClass(self) || targetY <= 0 ||
-      targetY >= toolbarHeight || !self.containsToolbar)
-    return;
-
-  CGFloat xOffset = self.collectionView.contentOffset.x;
-  // Adjust the toolbar to be all the way on or off screen.
-  if (targetY > toolbarHeight / 2) {
-    [self.collectionView setContentOffset:CGPointMake(xOffset, toolbarHeight)
-                                 animated:YES];
-  } else {
-    [self.collectionView setContentOffset:CGPointMake(xOffset, 0) animated:YES];
-  }
 }
 
 #pragma mark - UIGestureRecognizerDelegate

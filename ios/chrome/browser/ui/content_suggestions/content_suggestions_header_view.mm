@@ -68,17 +68,6 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
   return self;
 }
 
-#pragma mark - Private
-
-// Scale the the hint label down to at most content_suggestions::kHintTextScale.
-- (void)scaleHintLabel:(UIView*)hintLabel percent:(CGFloat)percent {
-  CGFloat scaleValue =
-      1 + (content_suggestions::kHintTextScale * (1 - percent));
-  hintLabel.transform = CGAffineTransformMakeScale(scaleValue, scaleValue);
-}
-
-#pragma mark - NTPHeaderViewAdapter
-
 - (void)addToolbarView:(UIView*)toolbarView {
   _toolBarView = toolbarView;
   [self addSubview:toolbarView];
@@ -267,24 +256,13 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
                    completion:nil];
 }
 
-- (void)fadeOutShadow {
-  // No-op.
-}
+#pragma mark - Private
 
-- (void)hideToolbarViewsForNewTabPage {
-  // No-op.
-}
-
-- (void)setToolbarTabCount:(int)tabCount {
-  // No-op.
-}
-
-- (void)setCanGoForward:(BOOL)canGoForward {
-  // No-op.
-}
-
-- (void)setCanGoBack:(BOOL)canGoBack {
-  // No-op.
+// Scale the the hint label down to at most content_suggestions::kHintTextScale.
+- (void)scaleHintLabel:(UIView*)hintLabel percent:(CGFloat)percent {
+  CGFloat scaleValue =
+      1 + (content_suggestions::kHintTextScale * (1 - percent));
+  hintLabel.transform = CGAffineTransformMakeScale(scaleValue, scaleValue);
 }
 
 #pragma mark - ToolbarOwner
