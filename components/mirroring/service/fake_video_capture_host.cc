@@ -52,7 +52,7 @@ void FakeVideoCaptureHost::SendOneFrame(const gfx::Size& size,
       0, media::mojom::VideoFrameInfo::New(
              base::TimeDelta(), metadata.GetInternalValues().Clone(),
              media::PIXEL_FORMAT_I420, size, gfx::Rect(size),
-             gfx::ColorSpace::CreateREC709()));
+             gfx::ColorSpace::CreateREC709(), nullptr));
 }
 
 }  // namespace mirroring

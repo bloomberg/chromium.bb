@@ -55,12 +55,14 @@ int SharedMemoryVirtualDeviceMojoAdapter::max_buffer_pool_buffer_count() {
 void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
     const gfx::Size& dimension,
     media::VideoPixelFormat pixel_format,
+    media::mojom::PlaneStridesPtr strides,
     RequestFrameBufferCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   int buffer_id_to_drop = media::VideoCaptureBufferPool::kInvalidId;
   const int buffer_id = buffer_pool_->ReserveForProducer(
-      dimension, pixel_format, 0 /* frame_feedback_id */, &buffer_id_to_drop);
+      dimension, pixel_format, strides, 0 /* frame_feedback_id */,
+      &buffer_id_to_drop);
 
   // Remove dropped buffer if there is one.
   if (buffer_id_to_drop != media::VideoCaptureBufferPool::kInvalidId) {

@@ -7,6 +7,29 @@
 #include "base/logging.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace {
+
+size_t CalculateRequiredBufferSize(
+    const gfx::Size& dimensions,
+    media::VideoPixelFormat format,
+    const media::mojom::PlaneStridesPtr& strides) {
+  if (strides) {
+    size_t result = 0u;
+    for (size_t plane_index = 0;
+         plane_index < media::VideoFrame::NumPlanes(format); plane_index++) {
+      result +=
+          strides->stride_by_plane[plane_index] *
+          media::VideoFrame::Rows(plane_index, format, dimensions.height());
+    }
+    return result;
+  } else {
+    return media::VideoCaptureFormat(dimensions, 0.0f, format)
+        .ImageAllocationSize();
+  }
+}
+
+}  // namespace
+
 namespace media {
 
 SharedMemoryBufferTracker::SharedMemoryBufferTracker() = default;
@@ -14,14 +37,19 @@ SharedMemoryBufferTracker::SharedMemoryBufferTracker() = default;
 SharedMemoryBufferTracker::~SharedMemoryBufferTracker() = default;
 
 bool SharedMemoryBufferTracker::Init(const gfx::Size& dimensions,
-                                     VideoPixelFormat format) {
-  DVLOG(2) << __func__ << "allocating ShMem of " << dimensions.ToString();
-  set_dimensions(dimensions);
-  // |dimensions| can be 0x0 for trackers that do not require memory backing.
-  set_max_pixel_count(dimensions.GetArea());
-  set_pixel_format(format);
-  return provider_.InitForSize(
-      VideoCaptureFormat(dimensions, 0.0f, format).ImageAllocationSize());
+                                     VideoPixelFormat format,
+                                     const mojom::PlaneStridesPtr& strides) {
+  const size_t buffer_size =
+      CalculateRequiredBufferSize(dimensions, format, strides);
+  return provider_.InitForSize(buffer_size);
+}
+
+bool SharedMemoryBufferTracker::IsReusableForFormat(
+    const gfx::Size& dimensions,
+    VideoPixelFormat format,
+    const mojom::PlaneStridesPtr& strides) {
+  return GetMemorySizeInBytes() >=
+         CalculateRequiredBufferSize(dimensions, format, strides);
 }
 
 std::unique_ptr<VideoCaptureBufferHandle>

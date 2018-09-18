@@ -511,13 +511,9 @@ void VideoCaptureController::OnFrameReadyInBuffer(
       if (!base::ContainsValue(client->known_buffer_context_ids,
                                buffer_context_id)) {
         client->known_buffer_context_ids.push_back(buffer_context_id);
-        const size_t mapped_size =
-            media::VideoCaptureFormat(frame_info->coded_size, 0.0f,
-                                      frame_info->pixel_format)
-                .ImageAllocationSize();
         client->event_handler->OnNewBuffer(
             client->controller_id, buffer_context_iter->CloneBufferHandle(),
-            mapped_size, buffer_context_id);
+            buffer_context_id);
       }
 
       if (!base::ContainsValue(client->buffers_in_use, buffer_context_id))

@@ -46,6 +46,7 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
       int buffer_id) override;
   int ReserveForProducer(const gfx::Size& dimensions,
                          VideoPixelFormat format,
+                         const mojom::PlaneStridesPtr& strides,
                          int frame_feedback_id,
                          int* buffer_id_to_drop) override;
   void RelinquishProducerReservation(int buffer_id) override;
@@ -59,6 +60,7 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
 
   int ReserveForProducerInternal(const gfx::Size& dimensions,
                                  VideoPixelFormat format,
+                                 const mojom::PlaneStridesPtr& strides,
                                  int frame_feedback_id,
                                  int* tracker_id_to_drop);
 

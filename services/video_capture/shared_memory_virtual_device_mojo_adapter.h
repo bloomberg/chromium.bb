@@ -28,6 +28,7 @@ class SharedMemoryVirtualDeviceMojoAdapter
   // mojom::SharedMemoryVirtualDevice implementation.
   void RequestFrameBuffer(const gfx::Size& dimension,
                           media::VideoPixelFormat pixel_format,
+                          media::mojom::PlaneStridesPtr strides,
                           RequestFrameBufferCallback callback) override;
   void OnFrameReadyInBuffer(
       int32_t buffer_id,

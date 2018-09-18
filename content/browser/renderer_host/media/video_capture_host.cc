@@ -118,7 +118,6 @@ void VideoCaptureHost::OnError(VideoCaptureControllerID controller_id,
 void VideoCaptureHost::OnNewBuffer(
     VideoCaptureControllerID controller_id,
     media::mojom::VideoBufferHandlePtr buffer_handle,
-    int length,
     int buffer_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (controllers_.find(controller_id) == controllers_.end())

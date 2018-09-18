@@ -75,7 +75,6 @@ class MockVideoCaptureControllerEventHandler
   }
   void OnNewBuffer(VideoCaptureControllerID id,
                    media::mojom::VideoBufferHandlePtr buffer_handle,
-                   int length,
                    int buffer_id) override {
     DoBufferCreated(id, buffer_id);
   }

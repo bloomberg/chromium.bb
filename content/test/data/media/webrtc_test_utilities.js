@@ -50,60 +50,82 @@ function detectVideoPlaying(videoElementName) {
   return detectVideo(videoElementName, isVideoPlaying);
 }
 
+function detectVideoWithDimensionPlaying(
+    videoElementName, video_width, video_height) {
+  return detectVideoWithDimension(
+      videoElementName, isVideoPlaying, video_width, video_height);
+}
+
 function detectVideoStopped(videoElementName) {
-  return detectVideo(videoElementName,
-                     function (pixels, previous_pixels) {
-                       return !isVideoPlaying(pixels, previous_pixels);
-                     });
+  return detectVideo(videoElementName, function(pixels, previous_pixels) {
+    return !isVideoPlaying(pixels, previous_pixels);
+  });
 }
 
 function detectBlackVideo(videoElementName) {
-  return detectVideo(videoElementName,
-                     function (pixels, previous_pixels) {
-                       return isVideoBlack(pixels);
-                     });
+  return detectVideo(videoElementName, function(pixels, previous_pixels) {
+    return isVideoBlack(pixels);
+  });
+}
+
+function detectUniformColorVideoWithDimensionPlaying(
+    videoElementName, video_width, video_height) {
+  return detectVideoWithDimension(
+      videoElementName, function(pixels, previous_pixels) {
+        return isVideoPlaying(pixels, previous_pixels) &&
+            arePixelsUniformColor(pixels) &&
+            arePixelsUniformColor(previous_pixels);
+      }, video_width, video_height);
 }
 
 function detectVideo(videoElementName, predicate) {
+  return detectVideoWithDimension(
+      videoElementName, predicate, VIDEO_TAG_WIDTH, VIDEO_TAG_HEIGHT);
+}
+
+function detectVideoWithDimension(
+    videoElementName, predicate, video_width, video_height) {
   console.log('Looking at video in element ' + videoElementName);
 
   return new Promise((resolve, reject) => {
-    var width = VIDEO_TAG_WIDTH;
-    var height = VIDEO_TAG_HEIGHT;
+    var width = video_width;
+    var height = video_height;
     var videoElement = $(videoElementName);
     var oldPixels = [];
     var startTimeMs = new Date().getTime();
     var waitVideo = setInterval(function() {
       var canvas = $(videoElementName + '-canvas');
       if (canvas == null) {
-        console.log('Waiting for ' + videoElementName + '-canvas' +
-                    ' to appear');
+        console.log(
+            'Waiting for ' + videoElementName + '-canvas' +
+            ' to appear');
         return;
       }
       var context = canvas.getContext('2d');
-      context.drawImage(videoElement, 0, 0, width, height);
-      var pixels = context.getImageData(0, 0 , width, height / 3).data;
+      context.drawImage(videoElement, 0, 0);
+      var pixels = context.getImageData(0, 0, width, height / 3).data;
 
       // Check that there is an old and a new picture with the same size to
       // compare and use the function |predicate| to detect the video state in
       // that case.
       // There's a failure(?) mode here where the video generated claims to
       // have size 2x2. Don't consider that a valid video.
-      if (oldPixels.length == pixels.length &&
-          predicate(pixels, oldPixels)) {
+      if (oldPixels.length == pixels.length && predicate(pixels, oldPixels)) {
         console.log('Done looking at video in element ' + videoElementName);
         console.log('DEBUG: video.width = ' + videoElement.videoWidth);
         console.log('DEBUG: video.height = ' + videoElement.videoHeight);
         clearInterval(waitVideo);
-        resolve({'width': videoElement.videoWidth,
-                 'height': videoElement.videoHeight});
+        resolve({
+          'width': videoElement.videoWidth,
+          'height': videoElement.videoHeight
+        });
       }
       oldPixels = pixels;
       var elapsedTime = new Date().getTime() - startTimeMs;
       if (elapsedTime > 3000) {
         startTimeMs = new Date().getTime();
-        console.log('Still waiting for video to satisfy ' +
-                    predicate.toString());
+        console.log(
+            'Still waiting for video to satisfy ' + predicate.toString());
         console.log('DEBUG: video.width = ' + videoElement.videoWidth);
         console.log('DEBUG: video.height = ' + videoElement.videoHeight);
       }
@@ -113,12 +135,13 @@ function detectVideo(videoElementName, predicate) {
 
 function waitForConnectionToStabilize(peerConnection) {
   return new Promise((resolve, reject) => {
-    peerConnection.onsignalingstatechange = function(event) {
-      if (peerConnection.signalingState == 'stable') {
-        peerConnection.onsignalingstatechange = null;
-        resolve();
-      }
-    }
+    peerConnection.onsignalingstatechange =
+        function(event) {
+          if (peerConnection.signalingState == 'stable') {
+            peerConnection.onsignalingstatechange = null;
+            resolve();
+          }
+        }
   });
 }
 
@@ -147,6 +170,36 @@ function isVideoBlack(pixels) {
   return true;
 }
 
+// |pixels| is in RGBA (i.e. pixels[0] is the R value for the first pixel).
+function arePixelsUniformColor(pixels) {
+  if (pixels.length < 4) {
+    failTest('expected at least one pixel');
+  }
+  var reference_r = pixels[0];
+  var reference_g = pixels[1];
+  var reference_b = pixels[2];
+  var reference_a = pixels[3];
+  for (var i = 4; i < pixels.length; i += 4) {
+    if (pixels[i + 0] != reference_r) {
+      console.log('red value at pixel ' + i + ' does not match reference');
+      return false;
+    }
+    if (pixels[i + 1] != reference_g) {
+      console.log('green value at pixel ' + i + ' does not match reference');
+      return false;
+    }
+    if (pixels[i + 2] != reference_b) {
+      console.log('blue value at pixel ' + i + ' does not match reference');
+      return false;
+    }
+    if (pixels[i + 3] != reference_a) {
+      console.log('alpha value at pixel ' + i + ' does not match reference');
+      return false;
+    }
+  }
+  return true;
+}
+
 // Checks if the given color is within 1 value away from COLOR_BACKGROUND_GREEN.
 function isAlmostBackgroundGreen(color) {
   if (Math.abs(color - COLOR_BACKGROUND_GREEN) > 1)
@@ -165,13 +218,13 @@ function rec702Luma_(r, g, b) {
 // types of the operands aren't checked).
 function assertEquals(expected, actual) {
   if (actual != expected) {
-    failTest("expected '" + expected + "', got '" + actual + "'.");
+    failTest('expected \'' + expected + '\', got \'' + actual + '\'.');
   }
 }
 
 function assertNotEquals(expected, actual) {
   if (actual === expected) {
-    failTest("expected '" + expected + "', got '" + actual + "'.");
+    failTest('expected \'' + expected + '\', got \'' + actual + '\'.');
   }
 }
 

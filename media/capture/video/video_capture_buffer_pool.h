@@ -73,6 +73,7 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   // returned via |buffer_id_to_drop|.
   virtual int ReserveForProducer(const gfx::Size& dimensions,
                                  VideoPixelFormat format,
+                                 const mojom::PlaneStridesPtr& strides,
                                  int frame_feedback_id,
                                  int* buffer_id_to_drop) = 0;
 

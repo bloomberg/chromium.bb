@@ -357,18 +357,43 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
   scoped_refptr<media::VideoFrame> frame;
   switch (buffer_context->buffer_type()) {
     case VideoFrameBufferHandleType::SHARED_BUFFER_HANDLE:
-      frame = media::VideoFrame::WrapExternalSharedMemory(
-          static_cast<media::VideoPixelFormat>(info->pixel_format),
-          info->coded_size, info->visible_rect, info->visible_rect.size(),
-          static_cast<uint8_t*>(buffer_context->shared_memory()->memory()),
-          buffer_context->shared_memory_size(),
-          buffer_context->shared_memory()->handle(),
-          0 /* shared_memory_offset */, info->timestamp);
+      if (info->strides) {
+        CHECK(IsYuvPlanar(info->pixel_format) &&
+              (media::VideoFrame::NumPlanes(info->pixel_format) == 3))
+            << "Currently, only YUV formats support custom strides.";
+        uint8_t* y_data =
+            static_cast<uint8_t*>(buffer_context->shared_memory()->memory());
+        uint8_t* u_data =
+            y_data + (media::VideoFrame::Rows(media::VideoFrame::kYPlane,
+                                              info->pixel_format,
+                                              info->coded_size.height()) *
+                      info->strides->stride_by_plane[0]);
+        uint8_t* v_data =
+            u_data + (media::VideoFrame::Rows(media::VideoFrame::kUPlane,
+                                              info->pixel_format,
+                                              info->coded_size.height()) *
+                      info->strides->stride_by_plane[1]);
+        frame = media::VideoFrame::WrapExternalYuvData(
+            info->pixel_format, info->coded_size, info->visible_rect,
+            info->visible_rect.size(), info->strides->stride_by_plane[0],
+            info->strides->stride_by_plane[1],
+            info->strides->stride_by_plane[2], y_data, u_data, v_data,
+            info->timestamp);
+        frame->AddSharedMemoryHandle(buffer_context->shared_memory()->handle());
+      } else {
+        frame = media::VideoFrame::WrapExternalSharedMemory(
+            info->pixel_format, info->coded_size, info->visible_rect,
+            info->visible_rect.size(),
+            static_cast<uint8_t*>(buffer_context->shared_memory()->memory()),
+            buffer_context->shared_memory_size(),
+            buffer_context->shared_memory()->handle(),
+            0 /* shared_memory_offset */, info->timestamp);
+      }
       break;
     case VideoFrameBufferHandleType::READ_ONLY_SHMEM_REGION:
       frame = media::VideoFrame::WrapExternalData(
-          static_cast<media::VideoPixelFormat>(info->pixel_format),
-          info->coded_size, info->visible_rect, info->visible_rect.size(),
+          info->pixel_format, info->coded_size, info->visible_rect,
+          info->visible_rect.size(),
           const_cast<uint8_t*>(
               static_cast<const uint8_t*>(buffer_context->read_only_shmem())),
           buffer_context->read_only_shmem_size(), info->timestamp);
@@ -384,10 +409,9 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
         mailbox_holder_array[i] = buffer_context->mailbox_holders()[i];
       }
       frame = media::VideoFrame::WrapNativeTextures(
-          static_cast<media::VideoPixelFormat>(info->pixel_format),
-          mailbox_holder_array, media::VideoFrame::ReleaseMailboxCB(),
-          info->coded_size, info->visible_rect, info->visible_rect.size(),
-          info->timestamp);
+          info->pixel_format, mailbox_holder_array,
+          media::VideoFrame::ReleaseMailboxCB(), info->coded_size,
+          info->visible_rect, info->visible_rect.size(), info->timestamp);
       break;
   }
   if (!frame) {

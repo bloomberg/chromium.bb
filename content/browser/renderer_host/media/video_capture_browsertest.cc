@@ -35,10 +35,9 @@ static const float kFrameRateToRequest = 15.0f;
 class MockVideoCaptureControllerEventHandler
     : public VideoCaptureControllerEventHandler {
  public:
-  MOCK_METHOD4(DoOnNewBuffer,
+  MOCK_METHOD3(DoOnNewBuffer,
                void(VideoCaptureControllerID id,
                     media::mojom::VideoBufferHandlePtr* buffer_handle,
-                    int length,
                     int buffer_id));
   MOCK_METHOD2(OnBufferDestroyed,
                void(VideoCaptureControllerID, int buffer_id));
@@ -55,9 +54,8 @@ class MockVideoCaptureControllerEventHandler
 
   void OnNewBuffer(VideoCaptureControllerID id,
                    media::mojom::VideoBufferHandlePtr buffer_handle,
-                   int length,
                    int buffer_id) override {
-    DoOnNewBuffer(id, &buffer_handle, length, buffer_id);
+    DoOnNewBuffer(id, &buffer_handle, buffer_id);
   }
 };
 
@@ -305,7 +303,7 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
           must_wait_for_gpu_decode_to_start = false;
         }));
   }
-  EXPECT_CALL(mock_controller_event_handler_, DoOnNewBuffer(_, _, _, _))
+  EXPECT_CALL(mock_controller_event_handler_, DoOnNewBuffer(_, _, _))
       .Times(AtLeast(1));
   EXPECT_CALL(mock_controller_event_handler_, OnBufferReady(_, _, _))
       .WillRepeatedly(Invoke(

@@ -6,18 +6,26 @@ $ = function(id) {
   return document.getElementById(id);
 };
 
-const WIDTH = 320;
-var CONSTRAINTS = {video: {width: {exact: WIDTH}}};
 var hasReceivedTrackEndedEvent = false;
 
-function startVideoCaptureAndVerifySize() {
+function startVideoCaptureAndVerifySize(video_width, video_height) {
   console.log('Calling getUserMediaAndWaitForVideoRendering.');
-  navigator.mediaDevices.getUserMedia(CONSTRAINTS)
-      .then(gotStreamCallback)
+  var constraints = {
+    video: {
+      width: {exact: video_width},
+      height: {exact: video_height},
+    }
+  };
+  navigator.mediaDevices.getUserMedia(constraints)
+      .then(function(stream) {
+        waitForVideoStreamToSatisfyRequirementFunction(
+            stream, detectVideoWithDimensionPlaying, video_width, video_height);
+      })
       .catch(failedCallback);
 }
 
-function startVideoCaptureFromDeviceNamedVirtualDeviceAndVerifySize() {
+function startVideoCaptureFromVirtualDeviceAndVerifyUniformColorVideoWithSize(
+    video_width, video_height) {
   console.log('Trying to find device named "Virtual Device".');
   navigator.mediaDevices.enumerateDevices().then(function(devices) {
     var target_device;
@@ -36,10 +44,18 @@ function startVideoCaptureFromDeviceNamedVirtualDeviceAndVerifySize() {
       return;
     }
     var device_specific_constraints = {
-      video: {width: {exact: WIDTH}, deviceId: {exact: target_device.deviceId}}
+      video: {
+        width: {exact: video_width},
+        height: {exact: video_height},
+        deviceId: {exact: target_device.deviceId}
+      }
     };
     navigator.mediaDevices.getUserMedia(device_specific_constraints)
-        .then(gotStreamCallback)
+        .then(function(stream) {
+          waitForVideoStreamToSatisfyRequirementFunction(
+              stream, detectUniformColorVideoWithDimensionPlaying, video_width,
+              video_height);
+        })
         .catch(failedCallback);
   });
 }
@@ -68,9 +84,16 @@ function failedCallback(error) {
   failTest('GetUserMedia call failed with code ' + error.code);
 }
 
-function gotStreamCallback(stream) {
+function waitForVideoStreamToSatisfyRequirementFunction(
+    stream, requirementFunction, video_width, video_height) {
   var localView = $('local-view');
+  localView.width = video_width;
+  localView.height = video_height;
   localView.srcObject = stream;
+
+  var canvas = $('local-view-canvas');
+  canvas.width = video_width;
+  canvas.height = video_height;
 
   var videoTracks = stream.getVideoTracks();
   if (videoTracks.length == 0) {
@@ -81,8 +104,8 @@ function gotStreamCallback(stream) {
     hasReceivedTrackEndedEvent = true;
   };
 
-  detectVideoPlaying('local-view').then(() => {
-    if (localView.videoWidth == WIDTH) {
+  requirementFunction('local-view', video_width, video_height).then(() => {
+    if (localView.videoWidth == video_width) {
       reportTestSuccess();
     } else {
       failTest('Video has unexpected width.');
