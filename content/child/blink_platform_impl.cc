@@ -627,12 +627,6 @@ WebString BlinkPlatformImpl::QueryLocalizedString(
       GetContentClient()->GetLocalizedString(message_id));
 }
 
-WebString BlinkPlatformImpl::queryLocalizedString(
-    WebLocalizedString::Name name, int numeric_value) {
-  return QueryLocalizedString(
-      name, WebString::FromUTF16(base::IntToString16(numeric_value)));
-}
-
 WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
                                                   const WebString& value) {
   int message_id = ToMessageID(name);
