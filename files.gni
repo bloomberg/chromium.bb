@@ -121,6 +121,7 @@ mr_test_files = [
   "persistent_data_test.js",
   "providers/common/id_generator_test.js",
   "providers/common/net_utils_test.js",
+  "providers/common/retry_test.js",
   "providers/dial/dial_activity_records_test.js",
   "providers/dial/dial_analytics_test.js",
   "providers/dial/dial_app_discovery_service_test.js",

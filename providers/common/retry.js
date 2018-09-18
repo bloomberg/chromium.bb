@@ -13,10 +13,13 @@
  * at most one attempt invocation at any time.
  */
 
-goog.provide('mr.Retry');
+goog.module('mr.Retry');
 
-goog.require('mr.Assertions');
-goog.require('mr.PromiseResolver');
+const PromiseResolver = goog.require('mr.PromiseResolver');
+const {assert} = goog.require('mr.Assertions');
+
+
+const BACKOFF_FACTOR = 2;
 
 
 /**
@@ -24,7 +27,7 @@ goog.require('mr.PromiseResolver');
  *
  * @template R
  */
-mr.Retry = class {
+class Retry {
   /**
    * @param {function():!Promise<R>} onAttempt An
    *     idempotent function to call repeatedly until it succeeds.
@@ -36,30 +39,17 @@ mr.Retry = class {
    *     It must be positive.
    */
   constructor(onAttempt, retryDelay, maxAttempts) {
-    /**
-     * @private {!function():!Promise<R>}
-     */
+    assert(maxAttempts > 0);
+    assert(retryDelay > 0);
+
+    /** @private @const */
     this.onAttempt_ = onAttempt;
 
-    /**
-     * @private {number}
-     */
-    this.retryDelay_ = retryDelay > 0 ? retryDelay : 10;
+    /** @private {number} */
+    this.retryDelay_ = retryDelay;
 
-    /**
-     * @private {number}
-     */
-    this.maxAttempts_ = maxAttempts > 0 ? maxAttempts : 1;
-
-    /**
-     * @private {number}
-     */
-    this.maxRetryDelay_ = 0;
-
-    /**
-     * @private {number}
-     */
-    this.backoffFactor_ = 1;
+    /** @private @const */
+    this.maxAttempts_ = maxAttempts;
 
     /**
      * The number of times `onAttempt_` has been called.
@@ -67,9 +57,7 @@ mr.Retry = class {
      */
     this.numAttemptsStarted_ = 0;
 
-    /**
-     * @private {boolean}
-     */
+    /** @private {boolean} */
     this.isFinished_ = false;
 
     /**
@@ -78,7 +66,7 @@ mr.Retry = class {
      */
     this.timerId_ = null;
 
-    /** @private {mr.PromiseResolver} */
+    /** @private {?PromiseResolver} */
     this.resolver_ = null;
   }
 
@@ -98,9 +86,9 @@ mr.Retry = class {
    */
   start() {
     if (this.resolver_ != null) {
-      return Promise.reject(Error('Cannot call Retry.start more than once.'));
+      throw new Error('Cannot call Retry.start more than once.');
     }
-    this.resolver_ = new mr.PromiseResolver();
+    this.resolver_ = new PromiseResolver();
     this.retryOnce_();
     return this.resolver_.promise;
   }
@@ -126,61 +114,23 @@ mr.Retry = class {
           if (this.numAttemptsStarted_ >= this.maxAttempts_) {
             // Maximum number of attempts has been reached, do not try again.
             this.cleanup_();
-            this.resolver_.reject(Error('Max attempts reached'));
+            this.resolver_.reject(error);
           } else {
             this.timerId_ =
                 setTimeout(this.retryOnce_.bind(this), this.retryDelay_);
-            this.updateRetryDelay_();
+            this.retryDelay_ *= BACKOFF_FACTOR;
           }
         });
   }
 
   /**
-   * Implement exponential backoff.
-   * @private
-   */
-  updateRetryDelay_() {
-    let newRetryDelay = this.retryDelay_ * this.backoffFactor_;
-    if (this.maxRetryDelay_ > 0) {
-      newRetryDelay = Math.min(newRetryDelay, this.maxRetryDelay_);
-    }
-    this.retryDelay_ = newRetryDelay;
-  }
-
-  /**
-   * Sets the backoff factor.  After each attempt, the retry delay is
-   * multiplied by the backoff factor, which must be at least 1.
-   *
-   * @param {number} backoffFactor The factor by which the retry delay should be
-   *     increased after each attempt.
-   * @return {!mr.Retry} this
-   */
-  setBackoffFactor(backoffFactor) {
-    mr.Assertions.assert(backoffFactor >= 1);
-    this.backoffFactor_ = backoffFactor;
-    return this;
-  }
-
-  /**
-   * Sets the maximum retry delay that can be used as a result of the backoff
-   * factor.  If 0, there is no maximum.
-   * @param {number} maxRetryDelay The maximum number of milliseconds to wait
-   *     before retrying.
-   * @return {!mr.Retry} this
-   */
-  setMaxRetryDelay(maxRetryDelay) {
-    mr.Assertions.assert(maxRetryDelay >= 0);
-    this.maxRetryDelay_ = maxRetryDelay;
-    return this;
-  }
-
-  /**
    * Causes this object to stop making attempts and puts it in a
    * finished state.  May be called any time after `start`.
+   * @param {*=} error
    */
-  abort() {
+  abort(error = undefined) {
     this.cleanup_();
-    this.resolver_.reject(Error('abort'));
+    this.resolver_.reject(error === undefined ? new Error('abort') : error);
   }
 
   /**
@@ -195,4 +145,7 @@ mr.Retry = class {
 
     this.isFinished_ = true;
   }
-};
+}
+
+
+exports = Retry;
