@@ -1089,6 +1089,9 @@
                   '|chrome/common/media_galleries/'\
                   '|chrome/test/data/extensions/api_test/media_galleries/'
     },
+    'media_gpu': {
+      'filepath': 'media/gpu/',
+    },
     'media_mojo': {
       'filepath': 'media/mojo/'
     },
@@ -1608,9 +1611,6 @@
     },
     'usb': {
       'filepath': '/usb/',
-    },
-    'v4l2': {
-      'filepath': 'media/gpu/v4l2',
     },
     'vaapi': {
       'filepath': 'media/gpu/vaapi',
@@ -2221,6 +2221,7 @@
     'media_controls': ['steimel+watch-mediacontrols@chromium.org'],
     'media_galleries': ['thestig@chromium.org',
                         'tommycli@chromium.org'],
+    'media_gpu': ['hiroh+watch@chromium.org'],
     'media_mojo': ['alokp+watch@chromium.org',
                    'xhwang+watch@chromium.org'],
     'media_recorder': ['emircan+watch+mediarecorder@chromium.org',
@@ -2407,7 +2408,6 @@
     'ui_resources': ['oshima+watch@chromium.org'],
     'ui_strings': ['srahim+watch@chromium.org'],
     'usb': ['mattreynolds+watch@chromium.org'],
-    'v4l2': ['hiroh+watch@chromium.org'],
     'vaapi': ['vaapi-reviews@chromium.org'],
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
