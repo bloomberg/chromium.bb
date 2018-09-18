@@ -184,6 +184,30 @@ HistogramBase* Histogram::Factory::Build() {
     DCHECK_EQ(minimum_, registered_ranges->range(1));
     DCHECK_EQ(maximum_, registered_ranges->range(bucket_count_ - 1));
 
+// Temporary check for https://crbug.com/836238
+#if defined(OS_WIN)  // Only Windows has a debugger that makes this useful.
+    if (maximum_ != registered_ranges->range(bucket_count_ - 1)) {
+      // Create local copies of the parameters to be sure they'll be available
+      // in the crash dump for the debugger to see.
+      Sample hash_32 = static_cast<Sample>(HashMetricName(name_));
+      debug::Alias(&hash_32);
+      DEBUG_ALIAS_FOR_CSTR(h_name, name_.c_str(), 100);
+      HistogramType h_type = histogram_type_;
+      Sample h_min = minimum_;
+      Sample h_max = maximum_;
+      uint32_t h_count = bucket_count_;
+      debug::Alias(&h_type);
+      debug::Alias(&h_min);
+      debug::Alias(&h_max);
+      debug::Alias(&h_count);
+      uint32_t ranges_min = registered_ranges->range(1);
+      uint32_t ranges_max = registered_ranges->range(bucket_count_ - 1);
+      debug::Alias(&ranges_min);
+      debug::Alias(&ranges_max);
+      CHECK(false) << name_;
+    }
+#endif
+
     // Try to create the histogram using a "persistent" allocator. As of
     // 2016-02-25, the availability of such is controlled by a base::Feature
     // that is off by default. If the allocator doesn't exist or if
