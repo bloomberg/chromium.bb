@@ -47,6 +47,7 @@ void AndroidSmsService::OnSessionStateChanged() {
   MultiDeviceSetupClient* multidevice_setup_client =
       MultiDeviceSetupClientFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context_));
+  DCHECK(multidevice_setup_client);
 
   connection_manager_ = std::make_unique<ConnectionManager>(
       service_worker_context, std::make_unique<ConnectionEstablisherImpl>(),
