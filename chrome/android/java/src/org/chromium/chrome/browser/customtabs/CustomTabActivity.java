@@ -903,7 +903,10 @@ public class CustomTabActivity extends ChromeActivity {
             mModuleActivityDelegate = null;
         }
         mModuleEntryPoint = null;
-        ComponentName moduleComponentName = mIntentDataProvider.getModuleComponentName();
+        ComponentName moduleComponentName = null;
+        if (mIntentDataProvider != null) {
+            moduleComponentName = mIntentDataProvider.getModuleComponentName();
+        }
         if (moduleComponentName != null) {
             mConnection.getModuleLoader(moduleComponentName).maybeUnloadModule();
         }
