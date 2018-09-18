@@ -1361,7 +1361,8 @@ TEST_F('BackgroundTest', 'EditableKeyCommand', function() {
   });
 });
 
-TEST_F('BackgroundTest', 'TextSelectionAndLiveRegion', function() {
+// Failing consistently, please see https://crbug.com/857382
+TEST_F('BackgroundTest', 'DISABLED_TextSelectionAndLiveRegion', function() {
   DesktopAutomationHandler.announceActions = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
