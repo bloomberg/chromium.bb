@@ -51,7 +51,10 @@ class ScriptExecutor : public ActionDelegate {
                     base::OnceCallback<void(bool)> callback) override;
   void FocusElement(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
-
+  void GetFieldsValue(
+      const std::vector<std::vector<std::string>>& selectors_list,
+      base::OnceCallback<void(const std::vector<std::string>&)> callback)
+      override;
   ClientMemory* GetClientMemory() override;
 
  private:

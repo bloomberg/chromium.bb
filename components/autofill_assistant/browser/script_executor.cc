@@ -84,6 +84,13 @@ void ScriptExecutor::FocusElement(const std::vector<std::string>& selectors,
   delegate_->GetWebController()->FocusElement(selectors, std::move(callback));
 }
 
+void ScriptExecutor::GetFieldsValue(
+    const std::vector<std::vector<std::string>>& selectors_list,
+    base::OnceCallback<void(const std::vector<std::string>&)> callback) {
+  delegate_->GetWebController()->GetFieldsValue(selectors_list,
+                                                std::move(callback));
+}
+
 ClientMemory* ScriptExecutor::GetClientMemory() {
   return delegate_->GetClientMemory();
 }
