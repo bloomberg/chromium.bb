@@ -215,8 +215,8 @@ class InProcessCommandBuffer::SharedImageInterface
       // time, cancelling tasks, before |this| is destroyed.
       parent_->ScheduleGpuTask(base::BindOnce(
           &InProcessCommandBuffer::CreateSharedImageOnGpuThread,
-          parent_->gpu_thread_weak_ptr_, mailbox, format, size, color_space,
-          usage, MakeSyncToken(next_fence_sync_release_++)));
+          parent_->gpu_thread_weak_ptr_factory_.GetWeakPtr(), mailbox, format,
+          size, color_space, usage, MakeSyncToken(next_fence_sync_release_++)));
     }
     return mailbox;
   }
