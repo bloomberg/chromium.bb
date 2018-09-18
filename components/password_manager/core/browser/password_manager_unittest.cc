@@ -2729,4 +2729,33 @@ TEST_F(PasswordManagerTest, CheckMetricsRecorder) {
             new_password_form_managers[0]->GetMetricsRecorder());
 }
 
+TEST_F(PasswordManagerTest, MetricForSchemeOfSuccessfulLogins) {
+  for (bool origin_is_secure : {false, true}) {
+    SCOPED_TRACE(testing::Message("origin_is_secure = ") << origin_is_secure);
+    PasswordForm form(MakeSimpleForm());
+    form.origin =
+        GURL(origin_is_secure ? "https://example.com" : "http://example.com");
+    std::vector<PasswordForm> observed = {form};
+    EXPECT_CALL(*store_, GetLogins(_, _))
+        .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+    manager()->OnPasswordFormsParsed(&driver_, observed);
+    manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+    EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+        .WillRepeatedly(Return(true));
+    OnPasswordFormSubmitted(form);
+
+    std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+    EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
+        .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+    observed.clear();
+    base::HistogramTester histogram_tester;
+    manager()->OnPasswordFormsParsed(&driver_, observed);
+    manager()->OnPasswordFormsRendered(&driver_, observed, true);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.SuccessfulLoginHappened", origin_is_secure, 1);
+  }
+}
+
 }  // namespace password_manager

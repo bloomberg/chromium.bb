@@ -969,6 +969,9 @@ void PasswordManager::OnLoginSuccessful() {
   provisional_save_manager_->LogSubmitPassed();
 
   RecordWhetherTargetDomainDiffers(main_frame_url_, client_->GetMainFrameURL());
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.SuccessfulLoginHappened",
+                        provisional_save_manager_->submitted_form()
+                            ->origin.SchemeIsCryptographic());
 
   // If the form is eligible only for saving fallback, it shouldn't go here.
   DCHECK(!provisional_save_manager_->GetPendingCredentials()
