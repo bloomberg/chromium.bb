@@ -231,7 +231,6 @@ fuchsia_sdk_fidl_pkg("media") {
     "audio_device_enumerator.fidl",
     "audio_in.fidl",
     "audio_out.fidl",
-    "audio_renderer.fidl",
     "gain_control.fidl",
     "stream.fidl",
     "stream_type.fidl",
