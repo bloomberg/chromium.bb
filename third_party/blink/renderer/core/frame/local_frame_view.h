@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
-#include "third_party/blink/renderer/core/paint/paint_tracker.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -78,6 +77,7 @@ class Page;
 class PaintArtifactCompositor;
 class PaintController;
 class PaintLayerScrollableArea;
+class PaintTracker;
 class PrintContext;
 class RootFrameViewport;
 class ScrollableArea;
