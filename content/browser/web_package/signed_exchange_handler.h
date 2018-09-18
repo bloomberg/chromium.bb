@@ -55,11 +55,24 @@ class SignedExchangeDevToolsProxy;
 // net::CertVerifier.
 class CONTENT_EXPORT SignedExchangeHandler {
  public:
+  // Callback that will be called when SXG header is parsed and its signature is
+  // validated against a verified certificate, or on failure.
+  // On success:
+  // - |result| is kSuccess.
+  // - |request_url| and |request_method| are the exchange's request's URL and
+  //   method.
+  // - |resource_response| contains inner response's headers.
+  // - The payload stream can be read from |payload_stream|.
+  // On failure:
+  // - |result| indicates the failure reason.
+  // - |error| indicates the net::Error if |result| is kSXGHeaderNetError.
+  // - |request_url| may refer to the fallback URL.
   using ExchangeHeadersCallback = base::OnceCallback<void(
+      SignedExchangeLoadResult result,
       net::Error error,
       const GURL& request_url,
       const std::string& request_method,
-      const network::ResourceResponseHead&,
+      const network::ResourceResponseHead& resource_response,
       std::unique_ptr<net::SourceStream> payload_stream)>;
 
   static void SetNetworkContextForTesting(
@@ -99,10 +112,10 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void SetupBuffers(size_t size);
   void DoHeaderLoop();
   void DidReadHeader(bool completed_syncly, int result);
-  bool ParsePrologueBeforeFallbackUrl();
-  bool ParsePrologueFallbackUrlAndAfter();
-  bool ParseHeadersAndFetchCertificate();
-  void RunErrorCallback(net::Error);
+  SignedExchangeLoadResult ParsePrologueBeforeFallbackUrl();
+  SignedExchangeLoadResult ParsePrologueFallbackUrlAndAfter();
+  SignedExchangeLoadResult ParseHeadersAndFetchCertificate();
+  void RunErrorCallback(SignedExchangeLoadResult result, net::Error);
 
   void OnCertReceived(
       SignedExchangeLoadResult result,

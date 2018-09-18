@@ -14,6 +14,7 @@
 namespace content {
 
 MockSignedExchangeHandler::MockSignedExchangeHandler(
+    SignedExchangeLoadResult result,
     net::Error error,
     const GURL& request_url,
     const std::string& mime_type,
@@ -31,18 +32,20 @@ MockSignedExchangeHandler::MockSignedExchangeHandler(
       head.headers->AddHeader(header);
   }
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(headers_callback), error, request_url,
-                                "GET", head, std::move(body)));
+      FROM_HERE, base::BindOnce(std::move(headers_callback), result, error,
+                                request_url, "GET", head, std::move(body)));
 }
 
 MockSignedExchangeHandler::~MockSignedExchangeHandler() {}
 
 MockSignedExchangeHandlerFactory::MockSignedExchangeHandlerFactory(
+    SignedExchangeLoadResult result,
     net::Error error,
     const GURL& request_url,
     const std::string& mime_type,
     std::vector<std::string> response_headers)
-    : error_(error),
+    : result_(result),
+      error_(error),
       request_url_(request_url),
       mime_type_(mime_type),
       response_headers_(std::move(response_headers)) {}
@@ -54,8 +57,8 @@ std::unique_ptr<SignedExchangeHandler> MockSignedExchangeHandlerFactory::Create(
     ExchangeHeadersCallback headers_callback,
     std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory) {
   return std::make_unique<MockSignedExchangeHandler>(
-      error_, request_url_, mime_type_, response_headers_, std::move(body),
-      std::move(headers_callback));
+      result_, error_, request_url_, mime_type_, response_headers_,
+      std::move(body), std::move(headers_callback));
 }
 
 }  // namespace content

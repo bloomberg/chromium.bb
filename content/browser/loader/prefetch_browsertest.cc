@@ -368,7 +368,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(0));
 
   MockSignedExchangeHandlerFactory factory(
-      net::OK, GURL(embedded_test_server()->GetURL(target_url)), "text/html",
+      SignedExchangeLoadResult::kSuccess, net::OK,
+      GURL(embedded_test_server()->GetURL(target_url)), "text/html",
       {base::StringPrintf(
           "Link: <%s>;rel=\"preload\";as=\"script\"",
           embedded_test_server()->GetURL(preload_url_in_sxg).spec().c_str())});

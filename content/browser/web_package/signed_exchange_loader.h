@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -105,6 +106,7 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   // Called from |signed_exchange_handler_| when it finds an origin-signed HTTP
   // exchange.
   void OnHTTPExchangeFound(
+      SignedExchangeLoadResult result,
       net::Error error,
       const GURL& request_url,
       const std::string& request_method,

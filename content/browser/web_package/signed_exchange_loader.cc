@@ -266,6 +266,7 @@ void SignedExchangeLoader::ConnectToClient(
 }
 
 void SignedExchangeLoader::OnHTTPExchangeFound(
+    SignedExchangeLoadResult result,
     net::Error error,
     const GURL& request_url,
     const std::string& request_method,
