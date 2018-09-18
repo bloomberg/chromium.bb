@@ -32,11 +32,6 @@ class ASH_PUBLIC_EXPORT ImmersiveContext {
  public:
   static ImmersiveContext* Get() { return instance_; }
 
-  // Mirrors that of Shell::InstallResizeHandleWindowTargeter(), see it
-  // for details
-  virtual void InstallResizeHandleWindowTargeter(
-      ImmersiveFullscreenController* controller) = 0;
-
   // Used to setup state necessary for entering or existing immersive mode. It
   // is expected this interacts with the shelf, and installs any other necessary
   // state.

@@ -14,6 +14,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -27,6 +28,24 @@
 namespace ash {
 
 namespace {
+
+// A window targeter installed on a Widget's window when it's in immersive mode.
+// This targeter insets the touch area for direct children of the window it's
+// installed on (see calls to SetInsets) so that gestures at the top of the
+// screen will be directed to the Widget window for triggering immersive reveal.
+// The insets are disabled while the top view is revealed.
+class ImmersiveWindowTargeter : public aura::WindowTargeter {
+ public:
+  ImmersiveWindowTargeter() = default;
+  ~ImmersiveWindowTargeter() override = default;
+
+  bool ShouldUseExtendedBounds(const aura::Window* target) const override {
+    return target->parent() == window();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveWindowTargeter);
+};
 
 // Duration for the reveal show/hide slide animation. The slower duration is
 // used for the initial slide out to give the user more change to see what
@@ -98,7 +117,6 @@ void ImmersiveFullscreenController::Init(
   delegate_ = delegate;
   top_container_ = top_container;
   widget_ = widget;
-  ImmersiveContext::Get()->InstallResizeHandleWindowTargeter(this);
 
   EnableWindowObservers(true);
 }
@@ -534,6 +552,8 @@ void ImmersiveFullscreenController::MaybeStartReveal(Animate animate) {
   RevealState previous_reveal_state = reveal_state_;
   reveal_state_ = SLIDING_OPEN;
   if (previous_reveal_state == CLOSED) {
+    EnableTouchInsets(false);
+
     delegate_->OnImmersiveRevealStarted();
 
     // Do not do any more processing if OnImmersiveRevealStarted() changed
@@ -589,6 +609,8 @@ void ImmersiveFullscreenController::MaybeEndReveal(Animate animate) {
 void ImmersiveFullscreenController::OnSlideClosedAnimationCompleted() {
   DCHECK_EQ(SLIDING_CLOSED, reveal_state_);
   reveal_state_ = CLOSED;
+
+  EnableTouchInsets(true);
   delegate_->OnImmersiveRevealEnded();
 }
 
@@ -689,6 +711,9 @@ void ImmersiveFullscreenController::UpdateEnabled() {
     // Animate enabling immersive mode by sliding out the top-of-window views.
     // No animation occurs if a lock is holding the top-of-window views open.
 
+    normal_targeter_ = widget_->GetNativeWindow()->SetEventTargeter(
+        std::make_unique<ImmersiveWindowTargeter>());
+
     // Do a reveal to set the initial state for the animation. (And any
     // required state in case the animation cannot run because of a lock holding
     // the top-of-window views open.)
@@ -714,6 +739,8 @@ void ImmersiveFullscreenController::UpdateEnabled() {
     top_edge_hover_timer_.Stop();
     reveal_state_ = CLOSED;
 
+    widget_->GetNativeWindow()->SetEventTargeter(std::move(normal_targeter_));
+
     delegate_->OnImmersiveFullscreenExited();
   }
 
@@ -724,6 +751,14 @@ void ImmersiveFullscreenController::UpdateEnabled() {
             widget_->GetNativeWindow()->GetProperty(kImmersiveWindowType)),
         WINDOW_TYPE_COUNT);
   }
+}
+
+void ImmersiveFullscreenController::EnableTouchInsets(bool enable) {
+  if (!widget_->GetNativeWindow()->targeter())
+    return;
+
+  widget_->GetNativeWindow()->targeter()->SetInsets(
+      {}, gfx::Insets(enable ? kImmersiveFullscreenTopEdgeInset : 0, 0, 0, 0));
 }
 
 }  // namespace ash

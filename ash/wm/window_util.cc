@@ -14,7 +14,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"
@@ -28,6 +27,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
@@ -67,6 +67,46 @@ bool AskRemoteClientToCloseWindow(aura::Window* window) {
       Shell::Get()->window_service_owner()->window_service();
   return window_service && window_service->RequestClose(window);
 }
+
+// This window targeter reserves space for the portion of the resize handles
+// that extend within a top level window.
+class InteriorResizeHandleTargeter : public aura::WindowTargeter {
+ public:
+  InteriorResizeHandleTargeter() {
+    SetInsets(gfx::Insets(kResizeInsideBoundsSize));
+  }
+
+  ~InteriorResizeHandleTargeter() override = default;
+
+  bool GetHitTestRects(aura::Window* target,
+                       gfx::Rect* hit_test_rect_mouse,
+                       gfx::Rect* hit_test_rect_touch) const override {
+    if (target == window() && window()->parent() &&
+        window()->parent()->targeter()) {
+      // Defer to the parent's targeter on whether |window_| should be able to
+      // receive the event. This should be EasyResizeWindowTargeter, which is
+      // installed on the container window, and is necessary for
+      // kResizeOutsideBoundsSize to work.
+      return window()->parent()->targeter()->GetHitTestRects(
+          target, hit_test_rect_mouse, hit_test_rect_touch);
+    }
+
+    return WindowTargeter::GetHitTestRects(target, hit_test_rect_mouse,
+                                           hit_test_rect_touch);
+  }
+
+  bool ShouldUseExtendedBounds(const aura::Window* target) const override {
+    // Fullscreen/maximized windows can't be drag-resized.
+    if (GetWindowState(window())->IsMaximizedOrFullscreenOrPinned())
+      return false;
+
+    // The shrunken hit region only applies to children of |window()|.
+    return target->parent() == window();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InteriorResizeHandleTargeter);
+};
 
 }  // namespace
 
@@ -218,11 +258,8 @@ void RemoveLimitedPreTargetHandlerForWindow(ui::EventHandler* handler,
   window->RemovePreTargetHandler(handler);
 }
 
-void InstallResizeHandleWindowTargeterForWindow(
-    aura::Window* window,
-    ImmersiveFullscreenController* immersive_fullscreen_controller) {
-  window->SetEventTargeter(std::make_unique<ResizeHandleWindowTargeter>(
-      window, immersive_fullscreen_controller));
+void InstallResizeHandleWindowTargeterForWindow(aura::Window* window) {
+  window->SetEventTargeter(std::make_unique<InteriorResizeHandleTargeter>());
 }
 
 bool IsDraggingTabs(const aura::Window* window) {

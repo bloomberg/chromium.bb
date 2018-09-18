@@ -17,8 +17,6 @@ class ASH_EXPORT ImmersiveContextAsh : public ImmersiveContext {
   ~ImmersiveContextAsh() override;
 
   // ImmersiveContext:
-  void InstallResizeHandleWindowTargeter(
-      ImmersiveFullscreenController* controller) override;
   void OnEnteringOrExitingImmersive(ImmersiveFullscreenController* controller,
                                     bool entering) override;
   gfx::Rect GetDisplayBoundsInScreen(views::Widget* widget) override;

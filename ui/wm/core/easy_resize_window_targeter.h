@@ -16,7 +16,10 @@ class Insets;
 namespace wm {
 
 // An EventTargeter for a container window that uses a slightly larger
-// hit-target region for easier resize.
+// hit-target region for easier resize. It extends the hit test region for child
+// windows (top level Widgets that are resizable) to outside their bounds. For
+// Ash, this correlates to ash::kResizeOutsideBoundsSize. For the interior
+// resize area, see ash::wm::InstallResizeHandleWindowTargeterForWindow().
 class WM_CORE_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
  public:
   // NOTE: the insets must be negative.

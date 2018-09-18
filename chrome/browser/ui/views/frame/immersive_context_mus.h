@@ -14,8 +14,6 @@ class ImmersiveContextMus : public ash::ImmersiveContext {
   ~ImmersiveContextMus() override;
 
   // ash::ImmersiveContext:
-  void InstallResizeHandleWindowTargeter(
-      ash::ImmersiveFullscreenController* controller) override;
   void OnEnteringOrExitingImmersive(
       ash::ImmersiveFullscreenController* controller,
       bool entering) override;

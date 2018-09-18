@@ -221,6 +221,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   std::unique_ptr<WindowTargeter> SetEventTargeter(
       std::unique_ptr<WindowTargeter> targeter);
   WindowTargeter* targeter() { return targeter_.get(); }
+  const WindowTargeter* targeter() const { return targeter_.get(); }
 
   // Changes the bounds of the window. If present, the window's parent's
   // LayoutManager may adjust the bounds.

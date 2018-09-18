@@ -1180,8 +1180,6 @@ component("ash") {
     "wm/overview/window_selector_item.h",
     "wm/property_util.cc",
     "wm/property_util.h",
-    "wm/resize_handle_window_targeter.cc",
-    "wm/resize_handle_window_targeter.h",
     "wm/resize_shadow.cc",
     "wm/resize_shadow.h",
     "wm/resize_shadow_controller.cc",

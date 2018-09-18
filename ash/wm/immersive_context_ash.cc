@@ -7,7 +7,6 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
@@ -21,12 +20,6 @@ namespace ash {
 ImmersiveContextAsh::ImmersiveContextAsh() = default;
 
 ImmersiveContextAsh::~ImmersiveContextAsh() = default;
-
-void ImmersiveContextAsh::InstallResizeHandleWindowTargeter(
-    ImmersiveFullscreenController* controller) {
-  wm::InstallResizeHandleWindowTargeterForWindow(
-      controller->widget()->GetNativeWindow(), controller);
-}
 
 void ImmersiveContextAsh::OnEnteringOrExitingImmersive(
     ImmersiveFullscreenController* controller,
