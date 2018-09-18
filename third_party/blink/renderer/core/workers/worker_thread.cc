@@ -72,7 +72,7 @@ constexpr TimeDelta kForcibleTerminationDelay = TimeDelta::FromSeconds(2);
 
 }  // namespace
 
-static Mutex& ThreadSetMutex() {
+Mutex& WorkerThread::ThreadSetMutex() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
