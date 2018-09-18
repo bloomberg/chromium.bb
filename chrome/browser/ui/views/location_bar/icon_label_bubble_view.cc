@@ -538,6 +538,10 @@ void IconLabelBubbleView::ResetSlideAnimation(bool show_label) {
   slide_animation_.Reset(show_label);
 }
 
+void IconLabelBubbleView::ReduceAnimationTimeForTesting() {
+  slide_animation_.SetSlideDuration(1);
+}
+
 void IconLabelBubbleView::PauseAnimation() {
   if (slide_animation_.is_animating()) {
     // If the user clicks while we're animating, the bubble arrow will be
