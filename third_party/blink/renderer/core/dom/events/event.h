@@ -136,6 +136,27 @@ class CORE_EXPORT Event : public ScriptWrappable {
   unsigned short eventPhase() const { return event_phase_; }
   void SetEventPhase(unsigned short event_phase) { event_phase_ = event_phase; }
 
+  void SetFireOnlyCaptureListenersAtTarget(
+      bool fire_only_capture_listeners_at_target) {
+    DCHECK_EQ(event_phase_, kAtTarget);
+    fire_only_capture_listeners_at_target_ =
+        fire_only_capture_listeners_at_target;
+  }
+
+  void SetFireOnlyNonCaptureListenersAtTarget(
+      bool fire_only_non_capture_listeners_at_target) {
+    DCHECK_EQ(event_phase_, kAtTarget);
+    fire_only_non_capture_listeners_at_target_ =
+        fire_only_non_capture_listeners_at_target;
+  }
+
+  bool FireOnlyCaptureListenersAtTarget() const {
+    return fire_only_capture_listeners_at_target_;
+  }
+  bool FireOnlyNonCaptureListenersAtTarget() const {
+    return fire_only_non_capture_listeners_at_target_;
+  }
+
   bool bubbles() const { return bubbles_; }
   bool cancelable() const { return cancelable_; }
   bool composed() const { return composed_; }
@@ -331,6 +352,11 @@ class CORE_EXPORT Event : public ScriptWrappable {
   // https://dom.spec.whatwg.org/#dispatching-events
   // https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
   unsigned legacy_did_listeners_throw_flag_ : 1;
+
+  // This fields are effective only when
+  // CallCaptureListenersAtCapturePhaseAtShadowHosts runtime flag is enabled.
+  unsigned fire_only_capture_listeners_at_target_ : 1;
+  unsigned fire_only_non_capture_listeners_at_target_ : 1;
 
   PassiveMode handling_passive_;
   unsigned short event_phase_;

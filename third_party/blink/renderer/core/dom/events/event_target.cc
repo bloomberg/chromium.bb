@@ -816,11 +816,7 @@ bool EventTarget::FireEventListeners(Event& event,
     // EventTarget::removeEventListener.
     ++i;
 
-    if (event.eventPhase() == Event::kCapturingPhase &&
-        !registered_listener.Capture())
-      continue;
-    if (event.eventPhase() == Event::kBubblingPhase &&
-        registered_listener.Capture())
+    if (!registered_listener.ShouldFire(event))
       continue;
 
     EventListener* listener = registered_listener.Callback();

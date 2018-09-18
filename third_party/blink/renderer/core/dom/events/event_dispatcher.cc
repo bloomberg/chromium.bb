@@ -226,9 +226,18 @@ inline EventDispatchContinuation EventDispatcher::DispatchEventAtCapturing() {
 
   for (size_t i = event_->GetEventPath().size() - 1; i > 0; --i) {
     const NodeEventContext& event_context = event_->GetEventPath()[i];
-    if (event_context.CurrentTargetSameAsTarget())
-      continue;
-    event_context.HandleLocalEvents(*event_);
+    if (event_context.CurrentTargetSameAsTarget()) {
+      if (!RuntimeEnabledFeatures::
+              CallCaptureListenersAtCapturePhaseAtShadowHostsEnabled())
+        continue;
+      event_->SetEventPhase(Event::kAtTarget);
+      event_->SetFireOnlyCaptureListenersAtTarget(true);
+      event_context.HandleLocalEvents(*event_);
+      event_->SetFireOnlyCaptureListenersAtTarget(false);
+    } else {
+      event_->SetEventPhase(Event::kCapturingPhase);
+      event_context.HandleLocalEvents(*event_);
+    }
     if (event_->PropagationStopped())
       return kDoneDispatching;
   }
@@ -249,13 +258,22 @@ inline void EventDispatcher::DispatchEventAtBubbling() {
   for (size_t i = 1; i < size; ++i) {
     const NodeEventContext& event_context = event_->GetEventPath()[i];
     if (event_context.CurrentTargetSameAsTarget()) {
+      // TODO(hayato): Need to check cancelBubble() also here?
       event_->SetEventPhase(Event::kAtTarget);
+      if (RuntimeEnabledFeatures::
+              CallCaptureListenersAtCapturePhaseAtShadowHostsEnabled()) {
+        event_->SetFireOnlyNonCaptureListenersAtTarget(true);
+        event_context.HandleLocalEvents(*event_);
+        event_->SetFireOnlyNonCaptureListenersAtTarget(false);
+      } else {
+        event_context.HandleLocalEvents(*event_);
+      }
     } else if (event_->bubbles() && !event_->cancelBubble()) {
       event_->SetEventPhase(Event::kBubblingPhase);
+      event_context.HandleLocalEvents(*event_);
     } else {
       continue;
     }
-    event_context.HandleLocalEvents(*event_);
     if (event_->PropagationStopped())
       return;
   }

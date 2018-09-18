@@ -32,6 +32,7 @@
 namespace blink {
 
 class AddEventListenerOptionsResolved;
+class Event;
 class EventListener;
 class EventListenerOptions;
 
@@ -78,6 +79,8 @@ class RegisteredEventListener final {
 
   bool Matches(const EventListener* listener,
                const EventListenerOptions& options) const;
+
+  bool ShouldFire(const Event&) const;
 
   bool operator==(const RegisteredEventListener& other) const;
 
