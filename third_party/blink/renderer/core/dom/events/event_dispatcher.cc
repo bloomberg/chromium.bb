@@ -165,8 +165,8 @@ DispatchEventResult EventDispatcher::Dispatch() {
 
   // A part of step 9 loop.
   if (is_activation_event && !activation_target && event_->bubbles()) {
-    size_t size = event_->GetEventPath().size();
-    for (size_t i = 1; i < size; ++i) {
+    wtf_size_t size = event_->GetEventPath().size();
+    for (wtf_size_t i = 1; i < size; ++i) {
       Node* target = event_->GetEventPath()[i].GetNode();
       if (target->HasActivationBehavior()) {
         activation_target = target;
@@ -224,7 +224,7 @@ inline EventDispatchContinuation EventDispatcher::DispatchEventAtCapturing() {
       event_->PropagationStopped())
     return kDoneDispatching;
 
-  for (size_t i = event_->GetEventPath().size() - 1; i > 0; --i) {
+  for (wtf_size_t i = event_->GetEventPath().size() - 1; i > 0; --i) {
     const NodeEventContext& event_context = event_->GetEventPath()[i];
     if (event_context.CurrentTargetSameAsTarget()) {
       if (!RuntimeEnabledFeatures::
@@ -254,8 +254,8 @@ inline EventDispatchContinuation EventDispatcher::DispatchEventAtTarget() {
 inline void EventDispatcher::DispatchEventAtBubbling() {
   // Trigger bubbling event handlers, starting at the bottom and working our way
   // up.
-  size_t size = event_->GetEventPath().size();
-  for (size_t i = 1; i < size; ++i) {
+  wtf_size_t size = event_->GetEventPath().size();
+  for (wtf_size_t i = 1; i < size; ++i) {
     const NodeEventContext& event_context = event_->GetEventPath()[i];
     if (event_context.CurrentTargetSameAsTarget()) {
       // TODO(hayato): Need to check cancelBubble() also here?
@@ -348,8 +348,8 @@ inline void EventDispatcher::DispatchEventPostProcess(
     // For bubbling events, call default event handlers on the same targets in
     // the same order as the bubbling phase.
     if (!event_->DefaultHandled() && event_->bubbles()) {
-      size_t size = event_->GetEventPath().size();
-      for (size_t i = 1; i < size; ++i) {
+      wtf_size_t size = event_->GetEventPath().size();
+      for (wtf_size_t i = 1; i < size; ++i) {
         event_->GetEventPath()[i].GetNode()->WillCallDefaultEventHandler(
             *event_);
         event_->GetEventPath()[i].GetNode()->DefaultEventHandler(*event_);

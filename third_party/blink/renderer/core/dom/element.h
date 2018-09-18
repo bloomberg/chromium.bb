@@ -353,7 +353,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void removeAttributeNS(const AtomicString& namespace_uri,
                          const AtomicString& local_name);
 
-  Attr* DetachAttribute(size_t index);
+  Attr* DetachAttribute(wtf_size_t index);
 
   Attr* getAttributeNode(const AtomicString& name);
   Attr* getAttributeNodeNS(const AtomicString& namespace_uri,
@@ -1074,14 +1074,15 @@ class CORE_EXPORT Element : public ContainerNode {
   NodeType getNodeType() const final;
   bool ChildTypeAllowed(NodeType) const final;
 
-  void SetAttributeInternal(size_t index,
+  void SetAttributeInternal(wtf_size_t index,
                             const QualifiedName&,
                             const AtomicString& value,
                             SynchronizationOfLazyAttribute);
   void AppendAttributeInternal(const QualifiedName&,
                                const AtomicString& value,
                                SynchronizationOfLazyAttribute);
-  void RemoveAttributeInternal(size_t index, SynchronizationOfLazyAttribute);
+  void RemoveAttributeInternal(wtf_size_t index,
+                               SynchronizationOfLazyAttribute);
 
   void CancelFocusAppearanceUpdate();
 
@@ -1121,7 +1122,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void RemoveAttrNodeList();
   void DetachAllAttrNodesFromElement();
   void DetachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
-  void DetachAttrNodeAtIndex(Attr*, size_t index);
+  void DetachAttrNodeAtIndex(Attr*, wtf_size_t index);
 
   Member<ElementData> element_data_;
 };

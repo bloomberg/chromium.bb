@@ -45,9 +45,9 @@ class DistributedNodes final {
 
   Node* First() const { return nodes_.front(); }
   Node* Last() const { return nodes_.back(); }
-  Node* at(size_t index) const { return nodes_.at(index); }
+  Node* at(wtf_size_t index) const { return nodes_.at(index); }
 
-  size_t size() const { return nodes_.size(); }
+  wtf_size_t size() const { return nodes_.size(); }
   bool IsEmpty() const { return nodes_.IsEmpty(); }
 
   void Append(Node*);
@@ -58,7 +58,7 @@ class DistributedNodes final {
   void ShrinkToFit() { nodes_.ShrinkToFit(); }
 
   bool Contains(const Node* node) const { return indices_.Contains(node); }
-  size_t Find(const Node*) const;
+  wtf_size_t Find(const Node*) const;
   Node* NextTo(const Node*) const;
   Node* PreviousTo(const Node*) const;
 
@@ -68,7 +68,7 @@ class DistributedNodes final {
 
  private:
   HeapVector<Member<Node>> nodes_;
-  HeapHashMap<Member<const Node>, size_t> indices_;
+  HeapHashMap<Member<const Node>, wtf_size_t> indices_;
 };
 
 }  // namespace blink

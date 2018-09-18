@@ -29,7 +29,7 @@ FrameRequestCallbackCollection::RegisterCallback(FrameCallback* callback) {
 }
 
 void FrameRequestCallbackCollection::CancelCallback(CallbackId id) {
-  for (size_t i = 0; i < callbacks_.size(); ++i) {
+  for (wtf_size_t i = 0; i < callbacks_.size(); ++i) {
     if (callbacks_[i]->Id() == id) {
       probe::AsyncTaskCanceledBreakable(context_, "cancelAnimationFrame",
                                         callbacks_[i]);

@@ -86,11 +86,11 @@ bool SpaceSplitString::Data::ContainsAll(Data& other) {
   if (this == &other)
     return true;
 
-  size_t this_size = vector_.size();
-  size_t other_size = other.vector_.size();
-  for (size_t i = 0; i < other_size; ++i) {
+  wtf_size_t this_size = vector_.size();
+  wtf_size_t other_size = other.vector_.size();
+  for (wtf_size_t i = 0; i < other_size; ++i) {
     const AtomicString& name = other.vector_[i];
-    size_t j;
+    wtf_size_t j;
     for (j = 0; j < this_size; ++j) {
       if (vector_[j] == name)
         break;
@@ -140,27 +140,27 @@ bool SpaceSplitString::Remove(const AtomicString& string) {
   return changed;
 }
 
-void SpaceSplitString::Remove(size_t index) {
+void SpaceSplitString::Remove(wtf_size_t index) {
   DCHECK_LT(index, size());
   EnsureUnique();
   data_->Remove(index);
 }
 
-void SpaceSplitString::ReplaceAt(size_t index, const AtomicString& token) {
+void SpaceSplitString::ReplaceAt(wtf_size_t index, const AtomicString& token) {
   DCHECK_LT(index, data_->size());
   EnsureUnique();
   (*data_)[index] = token;
 }
 
 AtomicString SpaceSplitString::SerializeToString() const {
-  size_t size = this->size();
+  wtf_size_t size = this->size();
   if (size == 0)
     return g_empty_atom;
   if (size == 1)
     return (*data_)[0];
   StringBuilder builder;
   builder.Append((*data_)[0]);
-  for (size_t i = 1; i < size; ++i) {
+  for (wtf_size_t i = 1; i < size; ++i) {
     builder.Append(' ');
     builder.Append((*data_)[i]);
   }

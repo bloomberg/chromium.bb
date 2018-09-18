@@ -51,8 +51,8 @@ class CORE_EXPORT SpaceSplitString {
   }
   void Add(const AtomicString&);
   bool Remove(const AtomicString&);
-  void Remove(size_t index);
-  void ReplaceAt(size_t index, const AtomicString&);
+  void Remove(wtf_size_t index);
+  void ReplaceAt(wtf_size_t index, const AtomicString&);
 
   // https://dom.spec.whatwg.org/#concept-ordered-set-serializer
   // The ordered set serializer takes a set and returns the concatenation of the
@@ -60,9 +60,9 @@ class CORE_EXPORT SpaceSplitString {
   // and the empty string otherwise.
   AtomicString SerializeToString() const;
 
-  size_t size() const { return data_ ? data_->size() : 0; }
+  wtf_size_t size() const { return data_ ? data_->size() : 0; }
   bool IsNull() const { return !data_; }
-  const AtomicString& operator[](size_t i) const { return (*data_)[i]; }
+  const AtomicString& operator[](wtf_size_t i) const { return (*data_)[i]; }
 
  private:
   class Data : public RefCounted<Data> {
@@ -86,9 +86,9 @@ class CORE_EXPORT SpaceSplitString {
     void Remove(unsigned index);
 
     bool IsUnique() const { return key_string_.IsNull(); }
-    size_t size() const { return vector_.size(); }
-    const AtomicString& operator[](size_t i) const { return vector_[i]; }
-    AtomicString& operator[](size_t i) { return vector_[i]; }
+    wtf_size_t size() const { return vector_.size(); }
+    const AtomicString& operator[](wtf_size_t i) const { return vector_[i]; }
+    AtomicString& operator[](wtf_size_t i) { return vector_[i]; }
 
    private:
     explicit Data(const AtomicString&);

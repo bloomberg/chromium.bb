@@ -6694,7 +6694,7 @@ void Document::AddToTopLayer(Element* element, const Element* before) {
   DCHECK(!top_layer_elements_.Contains(element));
   DCHECK(!before || top_layer_elements_.Contains(before));
   if (before) {
-    size_t before_position = top_layer_elements_.Find(before);
+    wtf_size_t before_position = top_layer_elements_.Find(before);
     top_layer_elements_.insert(before_position, element);
   } else {
     top_layer_elements_.push_back(element);
@@ -6705,7 +6705,7 @@ void Document::AddToTopLayer(Element* element, const Element* before) {
 void Document::RemoveFromTopLayer(Element* element) {
   if (!element->IsInTopLayer())
     return;
-  size_t position = top_layer_elements_.Find(element);
+  wtf_size_t position = top_layer_elements_.Find(element);
   DCHECK_NE(position, kNotFound);
   top_layer_elements_.EraseAt(position);
   element->SetIsInTopLayer(false);
@@ -6875,7 +6875,7 @@ void Document::AdjustFloatQuadsForScrollAndAbsoluteZoom(
   if (!View())
     return;
 
-  for (size_t i = 0; i < quads.size(); ++i) {
+  for (wtf_size_t i = 0; i < quads.size(); ++i) {
     AdjustForAbsoluteZoom::AdjustFloatQuad(quads[i], layout_object);
   }
 }

@@ -306,7 +306,7 @@ bool ShouldStopEventPath(EventTarget& adjusted_target,
 
 void EventPath::ShrinkForRelatedTarget(const Node& event_target_node,
                                        const Node& event_related_target_node) {
-  for (size_t i = 0; i < size(); ++i) {
+  for (wtf_size_t i = 0; i < size(); ++i) {
     if (ShouldStopEventPath(*at(i).Target(), *at(i).RelatedTarget(),
                             event_target_node, event_related_target_node)) {
       Shrink(i);
@@ -358,7 +358,7 @@ void EventPath::AdjustTouchList(
     const HeapVector<Member<TreeScope>>& tree_scopes) {
   if (!touch_list)
     return;
-  for (size_t i = 0; i < touch_list->length(); ++i) {
+  for (wtf_size_t i = 0; i < touch_list->length(); ++i) {
     const Touch& touch = *touch_list->item(i);
     if (!touch.target())
       continue;
@@ -369,7 +369,7 @@ void EventPath::AdjustTouchList(
 
     RelatedTargetMap related_node_map;
     BuildRelatedNodeMap(*target_node, related_node_map);
-    for (size_t j = 0; j < tree_scopes.size(); ++j) {
+    for (wtf_size_t j = 0; j < tree_scopes.size(); ++j) {
       adjusted_touch_list[j]->Append(touch.CloneWithNewTarget(
           FindRelatedNode(*tree_scopes[j], related_node_map)));
     }
@@ -409,7 +409,7 @@ void EventPath::EnsureWindowEventContext() {
 #if DCHECK_IS_ON()
 void EventPath::CheckReachability(TreeScope& tree_scope,
                                   TouchList& touch_list) {
-  for (size_t i = 0; i < touch_list.length(); ++i)
+  for (wtf_size_t i = 0; i < touch_list.length(); ++i)
     DCHECK(touch_list.item(i)
                ->target()
                ->ToNode()

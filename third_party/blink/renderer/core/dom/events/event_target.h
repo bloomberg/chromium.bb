@@ -65,13 +65,13 @@ class ServiceWorker;
 struct FiringEventIterator {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   FiringEventIterator(const AtomicString& event_type,
-                      size_t& iterator,
-                      size_t& end)
+                      wtf_size_t& iterator,
+                      wtf_size_t& end)
       : event_type(event_type), iterator(iterator), end(end) {}
 
   const AtomicString& event_type;
-  size_t& iterator;
-  size_t& end;
+  wtf_size_t& iterator;
+  wtf_size_t& end;
 };
 using FiringEventIteratorVector = Vector<FiringEventIterator, 1>;
 

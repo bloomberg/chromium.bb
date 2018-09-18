@@ -65,7 +65,7 @@ class CORE_EXPORT EventListenerMap final {
   bool Remove(const AtomicString& event_type,
               const EventListener*,
               const EventListenerOptions&,
-              size_t* index_of_removed_listener,
+              wtf_size_t* index_of_removed_listener,
               RegisteredEventListener* registered_listener);
   EventListenerVector* Find(const AtomicString& event_type);
   Vector<AtomicString> EventTypes() const;

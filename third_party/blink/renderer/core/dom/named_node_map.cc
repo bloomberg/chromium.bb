@@ -46,7 +46,7 @@ Attr* NamedNodeMap::getNamedItemNS(const AtomicString& namespace_uri,
 
 Attr* NamedNodeMap::removeNamedItem(const AtomicString& name,
                                     ExceptionState& exception_state) {
-  size_t index =
+  wtf_size_t index =
       element_->Attributes().FindIndex(element_->LowercaseIfNecessary(name));
   if (index == kNotFound) {
     exception_state.ThrowDOMException(
@@ -60,7 +60,7 @@ Attr* NamedNodeMap::removeNamedItem(const AtomicString& name,
 Attr* NamedNodeMap::removeNamedItemNS(const AtomicString& namespace_uri,
                                       const AtomicString& local_name,
                                       ExceptionState& exception_state) {
-  size_t index = element_->Attributes().FindIndex(
+  wtf_size_t index = element_->Attributes().FindIndex(
       QualifiedName(g_null_atom, local_name, namespace_uri));
   if (index == kNotFound) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,

@@ -1718,7 +1718,7 @@ String Node::DebugName() const {
 
     if (this_element.HasClass()) {
       name.Append(" class=\'");
-      for (size_t i = 0; i < this_element.ClassNames().size(); ++i) {
+      for (wtf_size_t i = 0; i < this_element.ClassNames().size(); ++i) {
         if (i > 0)
           name.Append(' ');
         AppendUnsafe(name, this_element.ClassNames()[i]);
