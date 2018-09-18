@@ -110,14 +110,16 @@ bool DisplayLinkMac::GetVSyncParameters(
     return false;
   }
 
+  // The vsync parameters skew over time (astonishingly quickly -- 0.1 msec per
+  // second). If too much time has elapsed since the last time the vsync
+  // parameters were calculated, re-calculate them (but still return the old
+  // parameters -- the update will be asynchronous).
+  if (base::TimeTicks::Now() >= recalculate_time_)
+    StartOrContinueDisplayLink();
+
   *timebase = timebase_;
   *interval = interval_;
   return true;
-}
-
-void DisplayLinkMac::NotifyCurrentTime(const base::TimeTicks& now) {
-  if (now >= recalculate_time_)
-    StartOrContinueDisplayLink();
 }
 
 // static

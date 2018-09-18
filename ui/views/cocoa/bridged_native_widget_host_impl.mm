@@ -614,12 +614,21 @@ void BridgedNativeWidgetHostImpl::OnWindowDisplayChanged(
     const display::Display& new_display) {
   bool scale_factor_changed =
       display_.device_scale_factor() != new_display.device_scale_factor();
+  bool display_id_changed = display_.id() != new_display.id();
   display_ = new_display;
   if (scale_factor_changed && compositor_ && has_received_window_geometry_) {
     compositor_->UpdateSurface(
         ConvertSizeToPixel(display_.device_scale_factor(),
                            content_bounds_in_screen_.size()),
         display_.device_scale_factor());
+  }
+  if (display_id_changed) {
+    display_link_ = ui::DisplayLinkMac::GetForDisplay(display_.id());
+    if (!display_link_) {
+      // Note that on some headless systems, the display link will fail to be
+      // created, so this should not be a fatal error.
+      LOG(ERROR) << "Failed to create display link.";
+    }
   }
 }
 
@@ -899,6 +908,14 @@ void BridgedNativeWidgetHostImpl::AcceleratedWidgetCALayerParamsUpdated() {
       compositor_->widget()->GetCALayerParams();
   if (ca_layer_params)
     bridge()->SetCALayerParams(*ca_layer_params);
+
+  // Take this opportunity to update the VSync parameters, if needed.
+  if (display_link_) {
+    base::TimeTicks timebase;
+    base::TimeDelta interval;
+    if (display_link_->GetVSyncParameters(&timebase, &interval))
+      compositor_->compositor()->SetDisplayVSyncParameters(timebase, interval);
+  }
 }
 
 }  // namespace views

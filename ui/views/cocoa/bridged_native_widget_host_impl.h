@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/views/cocoa/bridged_native_widget_host.h"
@@ -287,6 +288,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // The display that the window is currently on.
   display::Display display_;
+
+  // Display link for getting vsync info for |display_|.
+  scoped_refptr<ui::DisplayLinkMac> display_link_;
 
   // The geometry of the window and its contents view, in screen coordinates.
   bool has_received_window_geometry_ = false;
