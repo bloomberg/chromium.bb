@@ -33,6 +33,7 @@ class DownloadCommands {
 
   // |download_item| must outlive DownloadCommands.
   explicit DownloadCommands(download::DownloadItem* download_item);
+  DownloadCommands(const DownloadCommands& other);
   virtual ~DownloadCommands();
 
   gfx::Image GetCommandIcon(Command command);

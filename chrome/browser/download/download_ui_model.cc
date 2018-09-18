@@ -128,3 +128,46 @@ download::DownloadItem* DownloadUIModel::download() {
 base::string16 DownloadUIModel::GetProgressSizesString() const {
   return base::string16();
 }
+
+base::FilePath DownloadUIModel::GetFileNameToReportUser() const {
+  return base::FilePath();
+}
+
+base::FilePath DownloadUIModel::GetTargetFilePath() const {
+  return base::FilePath();
+}
+
+void DownloadUIModel::OpenDownload() {}
+
+download::DownloadItem::DownloadState DownloadUIModel::GetState() const {
+  return download::DownloadItem::IN_PROGRESS;
+}
+
+bool DownloadUIModel::IsPaused() const {
+  return false;
+}
+
+download::DownloadDangerType DownloadUIModel::GetDangerType() const {
+  return download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
+}
+
+bool DownloadUIModel::GetOpenWhenComplete() const {
+  return false;
+}
+
+bool DownloadUIModel::TimeRemaining(base::TimeDelta* remaining) const {
+  return false;
+}
+
+bool DownloadUIModel::GetOpened() const {
+  return false;
+}
+
+void DownloadUIModel::SetOpened(bool opened) {}
+
+#if !defined(OS_ANDROID)
+DownloadCommands DownloadUIModel::GetDownloadCommands() const {
+  NOTREACHED();
+  return DownloadCommands(nullptr);
+}
+#endif

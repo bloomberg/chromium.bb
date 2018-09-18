@@ -729,6 +729,52 @@ base::string16 DownloadItemModel::GetProgressSizesString() const {
   return size_ratio;
 }
 
+base::FilePath DownloadItemModel::GetFileNameToReportUser() const {
+  return download_->GetFileNameToReportUser();
+}
+
+base::FilePath DownloadItemModel::GetTargetFilePath() const {
+  return download_->GetTargetFilePath();
+}
+
+void DownloadItemModel::OpenDownload() {
+  download_->OpenDownload();
+}
+
+download::DownloadItem::DownloadState DownloadItemModel::GetState() const {
+  return download_->GetState();
+}
+
+bool DownloadItemModel::IsPaused() const {
+  return download_->IsPaused();
+}
+
+download::DownloadDangerType DownloadItemModel::GetDangerType() const {
+  return download_->GetDangerType();
+}
+
+bool DownloadItemModel::GetOpenWhenComplete() const {
+  return download_->GetOpenWhenComplete();
+}
+
+bool DownloadItemModel::TimeRemaining(base::TimeDelta* remaining) const {
+  return download_->TimeRemaining(remaining);
+}
+
+bool DownloadItemModel::GetOpened() const {
+  return download_->GetOpened();
+}
+
+void DownloadItemModel::SetOpened(bool opened) {
+  download_->SetOpened(opened);
+}
+
+#if !defined(OS_ANDROID)
+DownloadCommands DownloadItemModel::GetDownloadCommands() const {
+  return DownloadCommands(download_);
+}
+#endif
+
 void DownloadItemModel::OnDownloadUpdated(DownloadItem* download) {
   for (auto& obs : observers_)
     obs.OnDownloadUpdated();

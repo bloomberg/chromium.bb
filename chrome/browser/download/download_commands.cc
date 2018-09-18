@@ -159,6 +159,8 @@ DownloadCommands::DownloadCommands(download::DownloadItem* download_item)
   DCHECK(download_item);
 }
 
+DownloadCommands::DownloadCommands(const DownloadCommands& other) = default;
+
 DownloadCommands::~DownloadCommands() = default;
 
 int DownloadCommands::GetCommandIconId(Command command) const {

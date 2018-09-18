@@ -67,6 +67,20 @@ class DownloadItemModel : public DownloadUIModel,
   download::DownloadItem* download() override;
   base::string16 GetProgressSizesString() const override;
 
+  base::FilePath GetFileNameToReportUser() const override;
+  base::FilePath GetTargetFilePath() const override;
+  void OpenDownload() override;
+  download::DownloadItem::DownloadState GetState() const override;
+  bool IsPaused() const override;
+  download::DownloadDangerType GetDangerType() const override;
+  bool GetOpenWhenComplete() const override;
+  bool TimeRemaining(base::TimeDelta* remaining) const override;
+  bool GetOpened() const override;
+  void SetOpened(bool opened) override;
+#if !defined(OS_ANDROID)
+  DownloadCommands GetDownloadCommands() const override;
+#endif
+
   // download::DownloadItem::Observer implementation.
   void OnDownloadUpdated(download::DownloadItem* download) override;
   void OnDownloadOpened(download::DownloadItem* download) override;
