@@ -2698,4 +2698,35 @@ TEST_F(PasswordManagerTest, SubmittedGaiaFormWithoutVisiblePasswordField) {
   manager()->OnPasswordFormSubmittedNoChecks(&driver_, form);
 }
 
+// Tests that PasswordFormManager and NewPasswordFormManager for the same form
+// have the same metrics recorder.
+TEST_F(PasswordManagerTest, CheckMetricsRecorder) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  PasswordForm form(MakeSimpleForm());
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  std::vector<PasswordForm> observed;
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+
+  const std::vector<std::unique_ptr<PasswordFormManager>>&
+      password_form_managers = manager()->pending_login_managers();
+
+  const std::vector<std::unique_ptr<NewPasswordFormManager>>&
+      new_password_form_managers = manager()->form_managers();
+
+  ASSERT_EQ(1u, password_form_managers.size());
+  ASSERT_EQ(1u, new_password_form_managers.size());
+
+  EXPECT_TRUE(password_form_managers[0]->GetMetricsRecorder());
+  EXPECT_EQ(password_form_managers[0]->GetMetricsRecorder(),
+            new_password_form_managers[0]->GetMetricsRecorder());
+}
+
 }  // namespace password_manager

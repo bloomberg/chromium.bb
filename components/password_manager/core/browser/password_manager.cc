@@ -713,7 +713,8 @@ void PasswordManager::CreatePendingLoginManagers(
         (driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>()),
         form, std::make_unique<FormSaverImpl>(client_->GetPasswordStore()),
         nullptr);
-    manager->Init(nullptr);
+    manager->Init(
+        GetMetricRecorderFromNewPasswordFormManager(form.form_data, driver));
     pending_login_managers_.push_back(std::move(manager));
   }
 
@@ -1201,6 +1202,18 @@ void PasswordManager::RecordProvisionalSaveFailure(
     client_->GetMetricsRecorder()->RecordProvisionalSaveFailure(
         failure, main_frame_url_, form_origin, logger);
   }
+}
+
+scoped_refptr<PasswordFormMetricsRecorder>
+PasswordManager::GetMetricRecorderFromNewPasswordFormManager(
+    const autofill::FormData& form,
+    const PasswordManagerDriver* driver) {
+  for (auto& form_manager : form_managers_) {
+    if (form_manager->DoesManage(form, driver))
+      return form_manager->metrics_recorder();
+  }
+
+  return nullptr;
 }
 
 }  // namespace password_manager

@@ -269,6 +269,11 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
       const GURL& form_origin,
       BrowserSavePasswordProgressLogger* logger);
 
+  scoped_refptr<PasswordFormMetricsRecorder>
+  GetMetricRecorderFromNewPasswordFormManager(
+      const autofill::FormData& form,
+      const PasswordManagerDriver* driver);
+
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
   //
