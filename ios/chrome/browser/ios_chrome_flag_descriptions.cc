@@ -241,6 +241,10 @@ const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
 
+const char kSSOWithWKWebViewName[] = "SSO with WKWebView";
+const char kSSOWithWKWebViewDescription[] =
+    "Using WKWebView instead of UIWebView in SSO";
+
 const char kTabSwitcherPresentsBVCName[] = "TabSwitcher Presents BVC";
 const char kTabSwitcherPresentsBVCDescription[] =
     "When enabled, the tab switcher will present the BVC, so that when the "

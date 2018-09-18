@@ -47,6 +47,7 @@
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
 #include "ios/chrome/browser/mailto/features.h"
+#include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
@@ -383,6 +384,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"toolbar-container", flag_descriptions::kToolbarContainerName,
      flag_descriptions::kToolbarContainerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerEnabled)},
+    {"sso-with-wkwebview", flag_descriptions::kSSOWithWKWebViewName,
+     flag_descriptions::kSSOWithWKWebViewDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSSOWithWKWebView)},
 };
 
 // Add all switches from experimental flags to |command_line|.

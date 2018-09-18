@@ -198,6 +198,10 @@ extern const char kWebErrorPagesDescription[];
 extern const char kShowAutofillTypePredictionsName[];
 extern const char kShowAutofillTypePredictionsDescription[];
 
+// Title and description for the flag to enable WKWebView in SSO.
+extern const char kSSOWithWKWebViewName[];
+extern const char kSSOWithWKWebViewDescription[];
+
 // Title and description for the flag to enable the TabSwitcher to present the
 // BVC.
 extern const char kTabSwitcherPresentsBVCName[];
