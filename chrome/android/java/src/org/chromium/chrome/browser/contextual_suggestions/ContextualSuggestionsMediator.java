@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.Fullscreen
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -59,6 +60,7 @@ class ContextualSuggestionsMediator
         implements EnabledStateMonitor.Observer, FetchHelper.Delegate, ListMenuButton.Delegate {
     private static final float INVALID_PERCENTAGE = -1f;
     private static final int IPH_AUTO_DISMISS_TIMEOUT_MS = 6000;
+    private static final int IPH_AUTO_DISMISS_ACCESSIBILITY_TIMEOUT_MS = 10000;
     private static boolean sOverrideBrowserControlsHiddenForTesting;
 
     private final Profile mProfile;
@@ -218,11 +220,6 @@ class ContextualSuggestionsMediator
             mCurrentWebContents = null;
         }
         mEnabledStateMonitor.removeObserver(this);
-    }
-
-    /** Called when accessibility mode changes. */
-    void onAccessibilityModeChanged() {
-        mEnabledStateMonitor.onAccessibilityModeChanged();
     }
 
     /**
@@ -502,7 +499,9 @@ class ContextualSuggestionsMediator
             mModel.setToolbarTranslationPercent(1.f);
         }
         mModel.setMenuButtonDelegate(this);
-        mModel.setDefaultToolbarClickListener(view -> mCoordinator.expandBottomSheet());
+        if (!mToolbarButtonEnabled) {
+            mModel.setDefaultToolbarClickListener(view -> mCoordinator.expandBottomSheet());
+        }
         mModel.setTitle(!TextUtils.isEmpty(title)
                         ? title
                         : ContextUtils.getApplicationContext().getResources().getString(
@@ -631,8 +630,8 @@ class ContextualSuggestionsMediator
         if (mModel.isSlimPeekEnabled() || mToolbarButtonEnabled) {
             mHelpBubble = new ImageTextBubble(mIphParentView.getContext(), mIphParentView,
                     R.string.contextual_suggestions_in_product_help,
-                    R.string.contextual_suggestions_in_product_help, true, rectProvider,
-                    R.drawable.ic_logo_googleg_24dp);
+                    R.string.contextual_suggestions_in_product_help_accessibility, true,
+                    rectProvider, R.drawable.ic_logo_googleg_24dp);
             if (!mToolbarButtonEnabled) {
                 mModel.setToolbarArrowTintResourceId(R.color.default_icon_color_blue);
             }
@@ -643,7 +642,9 @@ class ContextualSuggestionsMediator
         }
 
         mHelpBubble.setDismissOnTouchInteraction(false);
-        mHelpBubble.setAutoDismissTimeout(IPH_AUTO_DISMISS_TIMEOUT_MS);
+        mHelpBubble.setAutoDismissTimeout(AccessibilityUtil.isAccessibilityEnabled()
+                        ? IPH_AUTO_DISMISS_ACCESSIBILITY_TIMEOUT_MS
+                        : IPH_AUTO_DISMISS_TIMEOUT_MS);
         mHelpBubble.addOnDismissListener(() -> {
             tracker.dismissed(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE);
             mHelpBubble = null;

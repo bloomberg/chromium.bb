@@ -65,11 +65,6 @@ public class EnabledStateMonitorImpl implements EnabledStateMonitor, SyncStateCh
     }
 
     @Override
-    public void onAccessibilityModeChanged() {
-        updateEnabledState();
-    }
-
-    @Override
     public void syncStateChanged() {
         updateEnabledState();
     }

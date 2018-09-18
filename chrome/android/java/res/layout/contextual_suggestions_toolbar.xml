@@ -48,7 +48,9 @@
              android:layout_weight="1"
              android:singleLine="true"
              android:ellipsize="end"
-             android:textAppearance="@style/BlackTitle1" />
+             android:textAppearance="@style/BlackTitle1"
+             android:focusable="true"
+             android:focusableInTouchMode="true" />
 
         <org.chromium.chrome.browser.widget.ListMenuButton
             android:id="@+id/more"
@@ -66,7 +68,7 @@
             android:background="?attr/selectableItemBackground"
             android:src="@drawable/btn_close"
             android:scaleType="center"
-            android:contentDescription="@string/close"
+            android:contentDescription="@string/contextual_suggestions_close_button_description"
             app:chrometint="@color/dark_mode_tint" />
    </LinearLayout>
 

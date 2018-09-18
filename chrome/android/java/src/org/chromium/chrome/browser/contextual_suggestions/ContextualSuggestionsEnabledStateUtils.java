@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.signin.ChromeSigninController;
 
 /** Utility functions related to enabled state of Contextual Suggestions. */
@@ -21,18 +20,16 @@ public class ContextualSuggestionsEnabledStateUtils {
 
     /** @return Whether the user settings for contextual suggestions should be shown. */
     public static boolean shouldShowSettings() {
-        return isDSEConditionMet() && !AccessibilityUtil.isAccessibilityEnabled()
+        return isDSEConditionMet()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_OPT_OUT);
     }
 
     /** @return Whether the settings state is currently enabled. */
     static boolean getSettingsEnabled() {
-        boolean isAccessibilityEnabled = AccessibilityUtil.isAccessibilityEnabled();
-        return isDSEConditionMet() && !isAccessibilityEnabled
-                && !ContextualSuggestionsBridge.isDisabledByEnterprisePolicy()
+        return isDSEConditionMet() && !ContextualSuggestionsBridge.isDisabledByEnterprisePolicy()
                 && ChromeSigninController.get().isSignedIn()
                 && (ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(false)
-                || ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(true));
+                           || ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(true));
     }
 
     /** @return Whether the state is currently enabled. */

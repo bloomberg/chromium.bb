@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.view.View;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
@@ -67,5 +68,25 @@ public class ContextualSuggestionsBottomSheetContent implements BottomSheetConte
     @Override
     public boolean useSlimPeek() {
         return mUseSlimPeek;
+    }
+
+    @Override
+    public int getSheetContentDescriptionStringId() {
+        return R.string.contextual_suggestions_button_description;
+    }
+
+    @Override
+    public int getSheetHalfHeightAccessibilityStringId() {
+        return R.string.contextual_suggestions_sheet_opened_half;
+    }
+
+    @Override
+    public int getSheetFullHeightAccessibilityStringId() {
+        return R.string.contextual_suggestions_sheet_opened_full;
+    }
+
+    @Override
+    public int getSheetClosedAccessibilityStringId() {
+        return R.string.contextual_suggestions_sheet_closed;
     }
 }

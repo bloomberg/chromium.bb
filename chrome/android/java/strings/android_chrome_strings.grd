@@ -2827,11 +2827,26 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Contextual suggestions strings -->
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time. The bubble points to a swipeable panel containing suggestions related to the webpage the user is currently viewing.">
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time. The bubble points to a toolbar button that shows suggestions related to the webpage the user is currently viewing when pressed.">
         See more like this from Google
+      </message>
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP_ACCESSIBILITY" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time and accessibility mode is enabled. The bubble points to a toolbar button that shows suggestions related to the webpage the user is currently viewing when pressed.">
+        See more like this from Google using the More Like This button
       </message>
       <message name="IDS_CONTEXTUAL_SUGGESTIONS_BUTTON_DESCRIPTION" desc="The content description for a toolbar button that shows contextual suggestions related to the current web page when tapped. 'More like this' should be the same as in the contextual_suggestions_in_product_help string.">
         More like this
+      </message>
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_CLOSE_BUTTON_DESCRIPTION" desc="The content description for the contextual suggestions close button. Tapping the button closing the UI. 'More like this' should be the same as in the contextual_suggestions_in_product_help string.">
+         Close more like this
+      </message>
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_OPENED_HALF" desc="Accessibility string read when the 'more like this' sheet is opened at half height. The sheet will occupy the bottom half the screen. 'More like this' should be the same as in the contextual_suggestions_in_product_help string">
+         More like this opened at half height
+      </message>
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_OPENED_FULL" desc="Accessibility string read when the 'more like this' sheet is opened at full height. The sheet will occupy the entire screen. 'More like this' should be the same as in the contextual_suggestions_in_product_help string">
+         More like this opened at full height
+      </message>
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_SHEET_CLOSED" desc="Accessibility string read when the'more like this' sheet is closed. 'More like this' should be the same as in the contextual_suggestions_in_product_help string">
+         More like this closed
       </message>
 
       <!-- Toolbar button strings -->
@@ -3723,18 +3738,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         Remove and recreate this shortcut
       </message>
 
-      <!-- Chrome Home -->
-     <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_DESCRIPTION" desc="Accessibility string read when the navigation panel is focused informing the user that the panel can be closed by swiping down.">
-        Navigation panel. Swipe down to close.
-      </message>
-      <message name="IDS_BOTTOM_SHEET_OPENED_HALF" desc="Accessibility string read when the bottom navigation panel is opened at half height. The navigation panel will occupy the bottom half the screen.">
-        Navigation panel opened at half height
-      </message>
-      <message name="IDS_BOTTOM_SHEET_OPENED_FULL" desc="Accessibility string read when the bottom navigation panel is opened at full height. The navigation panel will occupy the entire screen.">
-        Navigation panel opened at full height
-      </message>
-      <message name="IDS_BOTTOM_SHEET_CLOSED" desc="Accessibility string read when the bottom navigation panel is closed.">
-        Navigation panel closed
+      <!-- BottomSheet -->
+      <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_DESCRIPTION" desc="Accessibility string read when the bottom sheet is focused informing the user that the sheet can be closed by swiping down.">
+        Swipe down to close.
       </message>
 
       <!-- Chrome Duet -->

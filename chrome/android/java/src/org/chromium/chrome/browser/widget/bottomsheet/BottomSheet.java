@@ -315,6 +315,31 @@ public class BottomSheet extends FrameLayout
          * @return Whether a slimmer peek UI should be used for this content.
          */
         boolean useSlimPeek();
+
+        /**
+         * @return The resource id of the content description for the bottom sheet. This is
+         *         generally the name of the feature/content that is showing. 'Swipe down to close.'
+         *         will be automatically appended after the content description.
+         */
+        int getSheetContentDescriptionStringId();
+
+        /**
+         * @return The resource id of the string announced when the sheet is opened at half height.
+         *         This is typically the name of your feature followed by 'opened at half height'.
+         */
+        int getSheetHalfHeightAccessibilityStringId();
+
+        /**
+         * @return The resource id of the string announced when the sheet is opened at full height.
+         *         This is typically the name of your feature followed by 'opened at full height'.
+         */
+        int getSheetFullHeightAccessibilityStringId();
+
+        /**
+         * @return The resource id of the string announced when the sheet is closed. This is
+         *         typically the name of your feature followed by 'closed'.
+         */
+        int getSheetClosedAccessibilityStringId();
     }
 
     /**
@@ -997,7 +1022,8 @@ public class BottomSheet extends FrameLayout
                 mPersistentControlsToken);
 
         for (BottomSheetObserver o : mObservers) o.onSheetClosed(reason);
-        announceForAccessibility(getResources().getString(R.string.bottom_sheet_closed));
+        announceForAccessibility(getResources().getString(
+                getCurrentSheetContent().getSheetClosedAccessibilityStringId()));
         clearFocus();
         mActivity.removeViewObscuringAllTabs(this);
 
@@ -1322,16 +1348,21 @@ public class BottomSheet extends FrameLayout
         mCurrentState = state;
 
         if (mCurrentState == SheetState.HALF || mCurrentState == SheetState.FULL) {
-            announceForAccessibility(mCurrentState == SheetState.FULL
-                            ? getResources().getString(R.string.bottom_sheet_opened_full)
-                            : getResources().getString(R.string.bottom_sheet_opened_half));
+            int resId = mCurrentState == SheetState.FULL
+                    ? getCurrentSheetContent().getSheetFullHeightAccessibilityStringId()
+                    : getCurrentSheetContent().getSheetHalfHeightAccessibilityStringId();
+            announceForAccessibility(getResources().getString(resId));
 
             // TalkBack will announce the content description if it has changed, so wait to set the
             // content description until after announcing full/half height.
             setFocusable(true);
             setFocusableInTouchMode(true);
+            String swipeToClose = ". "
+                    + getResources().getString(R.string.bottom_sheet_accessibility_description);
             setContentDescription(
-                    getResources().getString(R.string.bottom_sheet_accessibility_description));
+                    getResources().getString(
+                            getCurrentSheetContent().getSheetContentDescriptionStringId())
+                    + swipeToClose);
             if (getFocusedChild() == null) requestFocus();
         }
 
