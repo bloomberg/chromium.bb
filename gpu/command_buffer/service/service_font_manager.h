@@ -7,7 +7,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/synchronization/lock.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/gpu_gles2_export.h"
 #include "third_party/skia/src/core/SkRemoteGlyphCache.h"
@@ -15,7 +15,8 @@
 namespace gpu {
 class Buffer;
 
-class GPU_GLES2_EXPORT ServiceFontManager {
+class GPU_GLES2_EXPORT ServiceFontManager
+    : public base::RefCountedThreadSafe<ServiceFontManager> {
  public:
   class GPU_GLES2_EXPORT Client {
    public:
@@ -24,7 +25,7 @@ class GPU_GLES2_EXPORT ServiceFontManager {
   };
 
   ServiceFontManager(Client* client);
-  ~ServiceFontManager();
+  void Destroy();
 
   bool Deserialize(const volatile char* memory,
                    size_t memory_size,
@@ -33,18 +34,22 @@ class GPU_GLES2_EXPORT ServiceFontManager {
   SkStrikeClient* strike_client() { return strike_client_.get(); }
 
  private:
+  friend class base::RefCountedThreadSafe<ServiceFontManager>;
   class SkiaDiscardableManager;
+
+  ~ServiceFontManager();
 
   bool AddHandle(SkDiscardableHandleId handle_id,
                  ServiceDiscardableHandle handle);
   bool DeleteHandle(SkDiscardableHandleId handle_id);
 
+  base::Lock lock_;
+
   Client* client_;
   std::unique_ptr<SkStrikeClient> strike_client_;
   base::flat_map<SkDiscardableHandleId, ServiceDiscardableHandle>
       discardable_handle_map_;
-  THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<ServiceFontManager> weak_factory_;
+  bool destroyed_ = false;
 };
 
 }  // namespace gpu
