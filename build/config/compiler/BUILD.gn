@@ -1744,8 +1744,7 @@ config("no_exceptions") {
 # destructors, which will slow down closing the program.
 # TODO(thakis): Make this a blacklist instead, http://crbug.com/101600
 config("wexit_time_destructors") {
-  # TODO: Enable on Windows too, http://crbug.com/404525
-  if (is_clang && !is_win) {
+  if (is_clang) {
     cflags = [ "-Wexit-time-destructors" ]
   }
 }
