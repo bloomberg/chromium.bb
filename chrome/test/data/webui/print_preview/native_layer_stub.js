@@ -184,7 +184,7 @@ cr.define('print_preview', function() {
     /**
      * @param {!print_preview.CapabilitiesResponse} response The
      *     response to send for the destination whose ID is in the response.
-     * @param {boolean?} opt_reject Whether to reject the callback for this
+     * @param {?boolean} opt_reject Whether to reject the callback for this
      *     destination. Defaults to false (will resolve callback) if not
      *     provided.
      */
@@ -195,12 +195,13 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {boolean} reject Whether printSetup requests should be rejected.
      * @param {!print_preview.PrinterSetupResponse} The response to send when
      *     |setupPrinter| is called.
+     * @param {?boolean} opt_reject Whether printSetup requests should be
+     *     rejected. Defaults to false (will resolve callback) if not provided.
      */
-    setSetupPrinterResponse(reject, response) {
-      this.shouldRejectPrinterSetup_ = reject;
+    setSetupPrinterResponse(response, opt_reject) {
+      this.shouldRejectPrinterSetup_ = opt_reject || false;
       this.setupPrinterResponse_ = response;
     }
 
