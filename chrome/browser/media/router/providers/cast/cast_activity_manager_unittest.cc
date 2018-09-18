@@ -63,7 +63,6 @@ class CastActivityManagerTest : public testing::Test {
             service_manager::TestConnectorFactory::CreateForUniqueService(
                 std::make_unique<data_decoder::DataDecoderService>())),
         connector_(connector_factory_->CreateConnector()),
-        data_decoder_(connector_.get()),
         socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
             {content::BrowserThread::UI})),
         message_handler_(&socket_service_) {
@@ -79,7 +78,7 @@ class CastActivityManagerTest : public testing::Test {
 
     manager_ = std::make_unique<CastActivityManager>(
         &media_sink_service_, &message_handler_, router_ptr_.get(),
-        &data_decoder_, "hash-token");
+        std::make_unique<DataDecoder>(connector_.get()), "hash-token");
 
     // Make sure we get route updates.
     manager_->AddRouteQuery(MediaSource::Id());
@@ -260,7 +259,6 @@ class CastActivityManagerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
-  DataDecoder data_decoder_;
 
   MockMojoMediaRouter mock_router_;
   mojom::MediaRouterPtr router_ptr_;

@@ -22,6 +22,8 @@ class Origin;
 
 namespace media_router {
 
+class CastActivityManager;
+
 // MediaRouteProvider for Cast sinks. This class may be created on any sequence.
 // All other methods, however, must be called on the task runner provided
 // during construction.
@@ -33,6 +35,8 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
       MediaSinkServiceBase* media_sink_service,
       CastAppDiscoveryService* app_discovery_service,
       cast_channel::CastMessageHandler* message_handler,
+      service_manager::Connector* connector,
+      const std::string& hash_token,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~CastMediaRouteProvider() override;
 
@@ -90,7 +94,9 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
 
  private:
   void Init(mojom::MediaRouteProviderRequest request,
-            mojom::MediaRouterPtrInfo media_router);
+            mojom::MediaRouterPtrInfo media_router,
+            std::unique_ptr<DataDecoder> data_decoder,
+            const std::string& hash_token);
 
   // Notifies |media_router_| that results for a sink query has been updated.
   void OnSinkQueryUpdated(const MediaSource::Id& source_id,
@@ -118,6 +124,8 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   // Registered sink queries.
   base::flat_map<MediaSource::Id, CastAppDiscoveryService::Subscription>
       sink_queries_;
+
+  std::unique_ptr<CastActivityManager> activity_manager_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(CastMediaRouteProvider);
