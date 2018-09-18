@@ -27,33 +27,33 @@
         --feature-item-border-top-style: none;
       }
 
-      #status-text-container[enabled] {
-        color: var(--google-green-500);
-      }
-
-      #feature-items-container,
-      #forget-device-container {
+      #feature-items-container {
         @apply(--settings-list-frame-padding);
       }
 
       #forget-device-container {
         border-top: var(--settings-separator-line);
       }
-
-      #forget-device {
-        padding: 0;
-      }
     </style>
     <div class="settings-box first">
       <div id="status-text-container"
           class="start"
-          enabled$="[[isSuiteOn(pageContentData)]]">
-        [[getStatusText_(pageContentData)]]
+          enabled$="[[isSuiteOn(pageContentData)]]"
+          inner-h-t-m-l="[[getStatusInnerHtml_(pageContentData)]]">
       </div>
-        <settings-multidevice-feature-toggle
-            feature="[[MultiDeviceFeature.BETTER_TOGETHER_SUITE]]"
-            page-content-data="[[pageContentData]]">
-        </settings-multidevice-feature-toggle>
+        <template is="dom-if" if="[[shouldShowVerifyButton_(pageContentData)]]"
+            restamp>
+          <paper-button on-click="handleVerifyButtonClick_">
+            $i18n{multideviceVerifyButton}
+          </paper-button>
+        </template>
+        <template is="dom-if" if="[[shouldShowSuiteToggle_(pageContentData)]]"
+            restamp>
+          <settings-multidevice-feature-toggle
+              feature="[[MultiDeviceFeature.BETTER_TOGETHER_SUITE]]"
+              page-content-data="[[pageContentData]]">
+          </settings-multidevice-feature-toggle>
+        </template>
     </div>
     <template is="dom-if"
         if="[[shouldShowIndividualFeatures_(pageContentData)]]"
