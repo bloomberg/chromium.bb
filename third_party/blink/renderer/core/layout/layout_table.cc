@@ -254,16 +254,21 @@ void LayoutTable::InvalidateCachedColumns() {
   column_layout_objects_.resize(0);
 }
 
-void LayoutTable::AddColumn(const LayoutTableCol*) {
+void LayoutTable::ColumnStructureChanged() {
+  column_structure_changed_ = true;
   InvalidateCachedColumns();
+  // We don't really need to recompute our sections, but we do need to update
+  // our column count, whether we have a column, and possibly the logical width
+  // distribution too.
+  SetNeedsSectionRecalc();
+}
+
+void LayoutTable::AddColumn(const LayoutTableCol*) {
+  ColumnStructureChanged();
 }
 
 void LayoutTable::RemoveColumn(const LayoutTableCol*) {
-  InvalidateCachedColumns();
-  // We don't really need to recompute our sections, but we need to update our
-  // column count and whether we have a column. Currently, we only have one
-  // size-fit-all flag but we may have to consider splitting it.
-  SetNeedsSectionRecalc();
+  ColumnStructureChanged();
 }
 
 bool LayoutTable::IsLogicalWidthAuto() const {
@@ -1250,11 +1255,16 @@ void LayoutTable::RecalcSections() const {
        child = child->NextSibling()) {
     if (child->IsTableSection()) {
       LayoutTableSection* section = ToLayoutTableSection(child);
+      if (column_structure_changed_) {
+        section->MarkAllCellsWidthsDirtyAndOrNeedsLayout(
+            LayoutTable::kMarkDirtyAndNeedsLayout);
+      }
       unsigned section_cols = section->NumEffectiveColumns();
       if (section_cols > max_cols)
         max_cols = section_cols;
     }
   }
+  column_structure_changed_ = false;
 
   effective_columns_.resize(max_cols);
   effective_column_positions_.resize(max_cols + 1);
