@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "components/cryptauth/remote_device_ref.h"
@@ -38,6 +40,10 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
 
     test_clock_.SetNow(base::Time::UnixEpoch());
     metrics_logger_->SetClockForTesting(&test_clock_);
+  }
+
+  void SetMultiDeviceApiEnabled() {
+    scoped_feature_list_.InitAndEnableFeature(features::kMultiDeviceApi);
   }
 
   void VerifyProvisioningFailure(
@@ -88,8 +94,12 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
   void VerifyConnectToHostDuration(bool is_background_advertisement) {
     std::string device_id = test_devices_[0].GetDeviceId();
 
-    SetActiveHostToConnectingAndReceiveAdvertisement(
-        device_id, is_background_advertisement);
+    if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+      SetActiveHostToConnecting(device_id);
+    } else {
+      SetActiveHostToConnectingAndReceiveAdvertisement(
+          device_id, is_background_advertisement);
+    }
 
     test_clock_.Advance(kConnectToHostTime);
 
@@ -116,6 +126,10 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
     fake_active_host_->SetActiveHostConnecting(device_id, kTetherNetworkGuid);
   }
 
+  void SetActiveHostToConnecting(const std::string& device_id) {
+    fake_active_host_->SetActiveHostConnecting(device_id, kTetherNetworkGuid);
+  }
+
   const cryptauth::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
@@ -124,6 +138,8 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
 
   base::HistogramTester histogram_tester_;
   base::SimpleTestClock test_clock_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostConnectionMetricsLoggerTest);
@@ -181,6 +197,25 @@ TEST_F(HostConnectionMetricsLoggerTest,
 }
 
 TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultSuccess_MultiDeviceApiEnabled) {
+  SetMultiDeviceApiEnabled();
+
+  SetActiveHostToConnecting(test_devices_[0].GetDeviceId());
+
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_SUCCESS,
+      test_devices_[0].GetDeviceId());
+
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::SUCCESS,
+                true /* is_background_advertisement */);
+  VerifyProvisioningFailure(
+      HostConnectionMetricsLogger::
+          ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultSuccess_Background_DifferentDevice) {
   SetActiveHostToConnectingAndReceiveAdvertisement(
       test_devices_[0].GetDeviceId(), true /* is_background_advertisement */);
@@ -222,6 +257,28 @@ TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultFailure_Background) {
   SetActiveHostToConnectingAndReceiveAdvertisement(
       test_devices_[0].GetDeviceId(), true /* is_background_advertisement */);
+
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR,
+      test_devices_[0].GetDeviceId());
+
+  VerifyFailure(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_FailureEventType::UNKNOWN_ERROR);
+
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                true /* is_background_advertisement */);
+  VerifyProvisioningFailure(
+      HostConnectionMetricsLogger::
+          ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultFailure_MultiDeviceApiEnabled) {
+  SetMultiDeviceApiEnabled();
+
+  SetActiveHostToConnecting(test_devices_[0].GetDeviceId());
 
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
@@ -461,6 +518,11 @@ TEST_F(HostConnectionMetricsLoggerTest, RecordConnectToHostDuration) {
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectToHostDuration_Background) {
+  VerifyConnectToHostDuration(true /* is_background_advertisement */);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectToHostDuration_MultiDeviceApiEnabled) {
   VerifyConnectToHostDuration(true /* is_background_advertisement */);
 }
 

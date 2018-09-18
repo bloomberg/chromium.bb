@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
+#include "chromeos/chromeos_features.h"
 
 namespace chromeos {
 
@@ -17,12 +18,14 @@ HostConnectionMetricsLogger::HostConnectionMetricsLogger(
     : connection_manager_(connection_manager),
       active_host_(active_host),
       clock_(base::DefaultClock::GetInstance()) {
-  connection_manager_->AddMetricsObserver(this);
+  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+    connection_manager_->AddMetricsObserver(this);
   active_host_->AddObserver(this);
 }
 
 HostConnectionMetricsLogger::~HostConnectionMetricsLogger() {
-  connection_manager_->RemoveMetricsObserver(this);
+  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+    connection_manager_->RemoveMetricsObserver(this);
   active_host_->RemoveObserver(this);
 }
 
@@ -112,6 +115,8 @@ void HostConnectionMetricsLogger::RecordConnectionToHostResult(
 void HostConnectionMetricsLogger::OnAdvertisementReceived(
     const std::string& device_id,
     bool is_background_advertisement) {
+  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+
   device_id_to_received_background_advertisement_[device_id] =
       is_background_advertisement;
 }
@@ -143,7 +148,8 @@ void HostConnectionMetricsLogger::RecordConnectionResultSuccess(
       device_id_to_received_background_advertisement_[active_host_device_id_];
   active_host_device_id_.clear();
 
-  if (is_background_advertisement) {
+  if (is_background_advertisement ||
+      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     UMA_HISTOGRAM_ENUMERATION(
         "InstantTethering.ConnectionToHostResult.SuccessRate.Background",
         event_type, ConnectionToHostResult_SuccessEventType::SUCCESS_MAX);
@@ -202,7 +208,8 @@ void HostConnectionMetricsLogger::RecordConnectToHostDuration(
       clock_->Now() - connect_to_host_start_time_;
   connect_to_host_start_time_ = base::Time();
 
-  if (is_background_advertisement) {
+  if (is_background_advertisement ||
+      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "InstantTethering.Performance.ConnectToHostDuration.Background",
         connect_to_host_duration);
