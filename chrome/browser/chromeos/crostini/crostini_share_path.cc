@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/seneschal_client.h"
+#include "components/prefs/pref_service.h"
 
 namespace crostini {
 
@@ -28,6 +30,7 @@ void CrostiniSharePath::SharePath(
     std::string vm_name,
     std::string path,
     base::OnceCallback<void(bool, std::string)> callback) {
+  // TODO(joelhockey): Save new path into prefs once management UI is ready.
   base::Optional<vm_tools::concierge::VmInfo> vm_info =
       crostini::CrostiniManager::GetForProfile(profile)->GetVmInfo(
           std::move(vm_name));
@@ -59,6 +62,16 @@ void CrostiniSharePath::OnSharePathResponse(
   }
   std::move(callback).Run(response.value().success(),
                           response.value().failure_reason());
+}
+
+std::vector<std::string> CrostiniSharePath::GetSharedPaths(Profile* profile) {
+  std::vector<std::string> result;
+  const base::ListValue* shared_paths =
+      profile->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+  for (const auto& path : *shared_paths) {
+    result.emplace_back(path.GetString());
+  }
+  return result;
 }
 
 }  // namespace crostini

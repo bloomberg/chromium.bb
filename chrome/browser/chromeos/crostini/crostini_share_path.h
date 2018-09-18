@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_SHARE_PATH_H_
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_SHARE_PATH_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +22,7 @@ class CrostiniSharePath {
   // Returns the singleton instance of CrostiniSharePath.
   static CrostiniSharePath* GetInstance();
 
+  // Share specified path with vm.
   void SharePath(Profile* profile,
                  std::string vm_name,
                  std::string path,
@@ -28,6 +31,9 @@ class CrostiniSharePath {
       std::string path,
       base::OnceCallback<void(bool, std::string)> callback,
       base::Optional<vm_tools::seneschal::SharePathResponse> response) const;
+
+  // Get list of all shared paths for the default crostini container.
+  std::vector<std::string> GetSharedPaths(Profile* profile);
 
  private:
   friend struct base::DefaultSingletonTraits<CrostiniSharePath>;

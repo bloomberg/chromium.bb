@@ -1229,7 +1229,19 @@ FileManager.prototype = /** @struct */ {
                   str('LINUX_FILES_ROOT_LABEL'),
                   VolumeManagerCommon.RootType.CROSTINI, true)) :
           null;
+      // Redraw the tree even if not enabled.  This is required for testing.
       this.directoryTree.redraw(false);
+
+      if (!enabled)
+        return;
+
+      // Load any existing shared paths.
+      chrome.fileManagerPrivate.getCrostiniSharedPaths((entries) => {
+        for (let i = 0; i < entries.length; i++) {
+          Crostini.registerSharedPath(entries[i], assert(this.volumeManager_));
+        }
+      });
+
     });
   };
 

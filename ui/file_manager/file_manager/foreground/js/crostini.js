@@ -13,18 +13,35 @@ const Crostini = {};
 Crostini.SHARED_PATHS_ = {};
 
 /**
- * Add entry as a shared path.
+ * Registers an entry as a shared path.
  * @param {!Entry} entry
  * @param {!VolumeManager} volumeManager
  */
-Crostini.addSharedPath = function(entry, volumeManager) {
-  const root = volumeManager.getLocationInfo(entry).rootType;
-  let paths = Crostini.SHARED_PATHS_[root];
+Crostini.registerSharedPath = function(entry, volumeManager) {
+  const info = volumeManager.getLocationInfo(entry);
+  if (!info)
+    return;
+  let paths = Crostini.SHARED_PATHS_[info.rootType];
   if (!paths) {
     paths = {};
-    Crostini.SHARED_PATHS_[root] = paths;
+    Crostini.SHARED_PATHS_[info.rootType] = paths;
   }
   paths[entry.fullPath] = true;
+};
+
+/**
+ * Unregisters entry as a shared path.
+ * @param {!Entry} entry
+ * @param {!VolumeManager} volumeManager
+ */
+Crostini.unregisterSharedPath = function(entry, volumeManager) {
+  const info = volumeManager.getLocationInfo(entry);
+  if (!info)
+    return;
+  const paths = Crostini.SHARED_PATHS_[info.rootType];
+  if (paths) {
+    delete paths[entry.fullPath];
+  }
 };
 
 /**

@@ -736,6 +736,10 @@ callback GetDirectorySizeCallback = void(double size);
 // |entries| Recently modified entries.
 callback GetRecentFilesCallback = void([instanceOf=Entry] object[] entries);
 
+// |entries| Entries shared with crostini container.
+callback GetCrostiniSharedPathsCallback =
+    void([instanceOf = Entry] object[] entries);
+
 // |status| Result of starting the install
 // |failure_reason| Reason for failure for a 'failed' status
 callback InstallLinuxPackageCallback = void(
@@ -1114,6 +1118,10 @@ interface Functions {
   [nocompile]
   static void sharePathWithCrostini(
       [instanceof=DirectoryEntry] object entry, SimpleCallback callback);
+
+  // Returns list of paths shared with crostini container.
+  [nocompile]
+  static void getCrostiniSharedPaths(GetCrostiniSharedPathsCallback callback);
 
   // Starts installation of a Linux package.
   [nocompile]

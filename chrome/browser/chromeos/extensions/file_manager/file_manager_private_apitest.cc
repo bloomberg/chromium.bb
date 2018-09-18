@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -559,6 +560,17 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
           file_manager::util::GetDownloadsMountPointName(browser()->profile()),
           &downloads));
   ASSERT_TRUE(base::CreateDirectory(downloads.AppendASCII("share_dir")));
+
+  // Setup prefs crostini.shared_paths.
+  base::FilePath shared1 = downloads.AppendASCII("shared1");
+  base::FilePath shared2 = downloads.AppendASCII("shared2");
+  ASSERT_TRUE(base::CreateDirectory(shared1));
+  ASSERT_TRUE(base::CreateDirectory(shared2));
+  base::ListValue shared_paths;
+  shared_paths.AppendString(shared1.value());
+  shared_paths.AppendString(shared2.value());
+  browser()->profile()->GetPrefs()->Set(crostini::prefs::kCrostiniSharedPaths,
+                                        shared_paths);
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/crostini_test"));
 }

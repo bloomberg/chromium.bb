@@ -720,6 +720,45 @@ void FileManagerPrivateInternalSharePathWithCrostiniFunction::SharePathCallback(
 }
 
 ExtensionFunction::ResponseAction
+FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  file_manager::util::FileDefinitionList file_definition_list;
+  auto shared_paths =
+      crostini::CrostiniSharePath::GetInstance()->GetSharedPaths(profile);
+  for (const std::string& path : shared_paths) {
+    file_manager::util::FileDefinition file_definition;
+    // All shared paths should be directories.  Even if this is not true, it
+    // is fine for foreground/js/crostini.js class to think so.
+    // We verify that the paths are in fact valid directories before calling
+    // seneschal/9p.
+    file_definition.is_directory = true;
+    if (file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+            profile, extension_id(), base::FilePath(path),
+            &file_definition.virtual_path)) {
+      file_definition_list.emplace_back(std::move(file_definition));
+    }
+  }
+
+  file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
+      profile, extension_id(),
+      file_definition_list,  // Safe, since copied internally.
+      base::Bind(&FileManagerPrivateInternalGetCrostiniSharedPathsFunction::
+                     OnConvertFileDefinitionListToEntryDefinitionList,
+                 this));
+  return RespondLater();
+}
+
+void FileManagerPrivateInternalGetCrostiniSharedPathsFunction::
+    OnConvertFileDefinitionListToEntryDefinitionList(
+        std::unique_ptr<file_manager::util::EntryDefinitionList>
+            entry_definition_list) {
+  DCHECK(entry_definition_list);
+
+  Respond(OneArgument(file_manager::util::ConvertEntryDefinitionListToListValue(
+      *entry_definition_list)));
+}
+
+ExtensionFunction::ResponseAction
 FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
   using extensions::api::file_manager_private_internal::InstallLinuxPackage::
       Params;
@@ -909,16 +948,13 @@ void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
       continue;
 
     file_manager::util::FileDefinition file_definition;
-    const bool result =
-        file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-            chrome_details_.GetProfile(), extension_id(), file.url().path(),
-            &file_definition.virtual_path);
-    if (!result)
-      continue;
-
     // Recent file system only lists regular files, not directories.
     file_definition.is_directory = false;
-    file_definition_list.emplace_back(std::move(file_definition));
+    if (file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+            chrome_details_.GetProfile(), extension_id(), file.url().path(),
+            &file_definition.virtual_path)) {
+      file_definition_list.emplace_back(std::move(file_definition));
+    }
   }
 
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(

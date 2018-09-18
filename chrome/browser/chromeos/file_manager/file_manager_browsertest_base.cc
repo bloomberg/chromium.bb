@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
@@ -40,6 +41,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
 #include "chromeos/components/drivefs/fake_drivefs.h"
+#include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "components/drive/chromeos/file_system_interface.h"
@@ -977,6 +979,7 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   if (!IsGuestModeTest()) {
     enabled_features.emplace_back(features::kCrostini);
     enabled_features.emplace_back(features::kExperimentalCrostiniUI);
+    command_line->AppendSwitch(chromeos::switches::kCrostiniFiles);
   }
   if (IsDriveFsTest()) {
     enabled_features.emplace_back(chromeos::features::kDriveFs);
@@ -1347,7 +1350,13 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
   if (source_url.scheme() != "sshfs") {
     return {};
   }
+  // Mount crostini volume, and set VM now running for CrostiniManager.
   CHECK(crostini_volume_->Mount(profile()));
+  crostini::CrostiniManager* crostini_manager =
+      crostini::CrostiniManager::GetForProfile(profile()->GetOriginalProfile());
+  vm_tools::concierge::VmInfo vm_info;
+  crostini_manager->AddRunningVmForTesting(kCrostiniDefaultVmName,
+                                           std::move(vm_info));
   return crostini_volume_->mount_path();
 }
 

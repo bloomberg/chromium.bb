@@ -224,6 +224,16 @@ binding.registerCustomHook(function(bindingsAPI) {
             url, callback);
       });
 
+  apiFunctions.setHandleRequest(
+      'getCrostiniSharedPaths', function(callback) {
+        fileManagerPrivateInternal.getCrostiniSharedPaths(
+            function(entryDescriptions) {
+              callback(entryDescriptions.map(function(description) {
+                return GetExternalFileEntry(description);
+              }));
+            });
+      });
+
   apiFunctions.setHandleRequest('installLinuxPackage', function(
         entry, callback) {
     var url = fileManagerPrivateNatives.GetEntryURL(entry);
