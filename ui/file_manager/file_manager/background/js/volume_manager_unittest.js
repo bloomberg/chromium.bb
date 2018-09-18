@@ -314,32 +314,34 @@ function testGetLocationInfo(callback) {
       callback);
 }
 
-function testVolumeInfoListWhenReady(callback) {
-  var list = new VolumeInfoListImpl();
-  var promiseBeforeAdd = list.whenVolumeInfoReady('volumeId');
-  var volumeInfo = new VolumeInfoImpl(
-      /* volumeType */ null,
-      'volumeId',
-      /* fileSystem */ null,
-      /* error */ null,
-      /* deviceType */ null,
-      /* devicePath */ null,
-      /* isReadOnly */ false,
-      /* isReadOnlyRemovableDevice */ false,
-      /* profile */ {},
-      /* label */ null,
-      /* extensionid */ null,
-      /* hasMedia */ false,
-      /* configurable */ false,
-      /* watchable */ true,
-      /* source */ VolumeManagerCommon.Source.FILE);
-  list.add(volumeInfo);
-  var promiseAfterAdd = list.whenVolumeInfoReady('volumeId');
-  reportPromise(Promise.all([promiseBeforeAdd, promiseAfterAdd]).then(
-      function(volumes) {
-        assertEquals(volumeInfo, volumes[0]);
-        assertEquals(volumeInfo, volumes[1]);
-      }), callback);
+function testWhenReady(callback) {
+  volumeManagerFactory.getInstance().then((volumeManager) => {
+    const promiseBeforeAdd = volumeManager.whenVolumeInfoReady('volumeId');
+    const volumeInfo = new VolumeInfoImpl(
+        /* volumeType */ null,
+        /* volumeId */ 'volumeId',
+        /* fileSystem */ null,
+        /* error */ null,
+        /* deviceType */ null,
+        /* devicePath */ null,
+        /* isReadOnly */ false,
+        /* isReadOnlyRemovableDevice */ false,
+        /* profile */ {},
+        /* label */ null,
+        /* extensionid */ null,
+        /* hasMedia */ false,
+        /* configurable */ false,
+        /* watchable */ true,
+        /* source */ VolumeManagerCommon.Source.FILE);
+    volumeManager.volumeInfoList.add(volumeInfo);
+    const promiseAfterAdd = volumeManager.whenVolumeInfoReady('volumeId');
+    reportPromise(
+        Promise.all([promiseBeforeAdd, promiseAfterAdd]).then((volumes) => {
+          assertEquals(volumeInfo, volumes[0]);
+          assertEquals(volumeInfo, volumes[1]);
+        }),
+        callback);
+  });
 }
 
 function testDriveMountedDuringInitialization(callback) {

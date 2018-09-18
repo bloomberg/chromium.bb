@@ -56,23 +56,9 @@ MockVolumeManager.prototype.createVolumeInfo =
   return volumeInfo;
 };
 
-/**
- * Returns the corresponding VolumeInfo.
- *
- * @param {!Entry|!FilesAppEntry} entry FileEntry pointing anywhere
- *     on a volume.
- * @return {VolumeInfo} Corresponding VolumeInfo.
- */
-MockVolumeManager.prototype.getVolumeInfo = function(entry) {
-  for (var i = 0; i < this.volumeInfoList.length; i++) {
-    var volumeInfo = this.volumeInfoList.item(i);
-    if (volumeInfo.fileSystem &&
-        util.isSameFileSystem(volumeInfo.fileSystem, entry.filesystem)) {
-      return volumeInfo;
-    }
-  }
-  return null;
-};
+/** @override */
+MockVolumeManager.prototype.getVolumeInfo =
+    VolumeManagerImpl.prototype.getVolumeInfo;
 
 /**
  * Obtains location information from an entry.
@@ -110,6 +96,14 @@ MockVolumeManager.prototype.getLocationInfo = function(entry) {
   isRootEntry = util.isSameEntry(entry, volumeInfo.fileSystem.root);
   return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, false);
 };
+
+/** @override */
+MockVolumeManager.prototype.findByDevicePath =
+    VolumeManagerImpl.prototype.findByDevicePath;
+
+/** @override */
+MockVolumeManager.prototype.whenVolumeInfoReady =
+    VolumeManagerImpl.prototype.whenVolumeInfoReady;
 
 /**
  * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.

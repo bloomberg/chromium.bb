@@ -167,8 +167,7 @@ FileBrowserBackgroundImpl.prototype.handleViewEventInternal_ = function(event) {
            */
           function(volumeManager) {
             if (event.devicePath) {
-              var volume = volumeManager.volumeInfoList.findByDevicePath(
-                  event.devicePath);
+              let volume = volumeManager.findByDevicePath(event.devicePath);
               if (volume) {
                 this.navigateToVolumeRoot_(volume, event.filePath);
               } else {
@@ -198,14 +197,13 @@ FileBrowserBackgroundImpl.prototype.retrieveVolumeInfo_ = function(volumeId) {
       (/**
         * @param {!VolumeManager} volumeManager
         */
-       function(volumeManager) {
-         return volumeManager.volumeInfoList.whenVolumeInfoReady(volumeId)
-             .catch(function(e) {
-               console.error(
-                   'Unable to find volume for id: ' + volumeId +
-                   '. Error: ' + e.message);
-             });
-       }).bind(this));
+       (volumeManager) => {
+         return volumeManager.whenVolumeInfoReady(volumeId).catch((e) => {
+           console.error(
+               'Unable to find volume for id: ' + volumeId +
+               '. Error: ' + e.message);
+         });
+       }));
 };
 
 /**
