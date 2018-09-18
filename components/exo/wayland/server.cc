@@ -14,6 +14,7 @@
 #include <keyboard-configuration-unstable-v1-server-protocol.h>
 #include <keyboard-extension-unstable-v1-server-protocol.h>
 #include <linux/input.h>
+#include <notification-shell-unstable-v1-server-protocol.h>
 #include <pointer-gestures-unstable-v1-server-protocol.h>
 #include <presentation-time-server-protocol.h>
 #include <remote-shell-unstable-v1-server-protocol.h>
@@ -45,8 +46,10 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_resizer.h"
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
@@ -106,6 +109,8 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -151,6 +156,14 @@ const base::FilePath::CharType kSocketName[] = FILE_PATH_LITERAL("wayland-0");
 
 // Group used for wayland socket.
 const char kWaylandSocketGroup[] = "wayland";
+
+// Notification id and notifier id used for NotificationShell.
+constexpr char kNotificationShellNotificationIdFormat[] =
+    "exo-notification-shell.%d.%s";
+constexpr char kNotificationShellNotifierId[] = "exo-notification-shell";
+
+// Incremental id for notification shell instance.
+base::AtomicSequenceNumber g_next_notification_shell_id;
 
 template <class T>
 T* GetUserDataAs(wl_resource* resource) {
@@ -5640,6 +5653,83 @@ void bind_text_input_manager(wl_client* client,
                                  data, nullptr);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// zcr_notification_shell_v1 interface:
+
+// Implements notification shell interface.
+class WaylandNotificationShell {
+ public:
+  WaylandNotificationShell() : id_(g_next_notification_shell_id.GetNext()) {}
+
+  ~WaylandNotificationShell() = default;
+
+  // Creates a notification on message center from textual information.
+  void CreateNotification(const std::string& title,
+                          const std::string& message,
+                          const std::string& display_source,
+                          const std::string& notification_key) {
+    auto notification_id = base::StringPrintf(
+        kNotificationShellNotificationIdFormat, id_, notification_key.c_str());
+
+    auto notifier_id = message_center::NotifierId(
+        message_center::NotifierId::APPLICATION, kNotificationShellNotifierId);
+    notifier_id.profile_id = ash::Shell::Get()
+                                 ->session_controller()
+                                 ->GetPrimaryUserSession()
+                                 ->user_info->account_id.GetUserEmail();
+
+    auto notification = std::make_unique<message_center::Notification>(
+        message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+        base::UTF8ToUTF16(title), base::UTF8ToUTF16(message), gfx::Image(),
+        base::UTF8ToUTF16(display_source), GURL(), notifier_id,
+        message_center::RichNotificationData(), nullptr /* delegate */);
+
+    message_center::MessageCenter::Get()->AddNotification(
+        std::move(notification));
+  }
+
+ private:
+  // Id for this notification shell instance.
+  const uint32_t id_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandNotificationShell);
+};
+
+void notification_shell_create_notification(wl_client* client,
+                                            wl_resource* resource,
+                                            const char* title,
+                                            const char* message,
+                                            const char* display_source,
+                                            const char* notification_key) {
+  GetUserDataAs<WaylandNotificationShell>(resource)->CreateNotification(
+      title, message, display_source, notification_key);
+}
+
+void notification_shell_get_notification_surface(wl_client* client,
+                                                 wl_resource* resource,
+                                                 uint32_t id,
+                                                 wl_resource* surface,
+                                                 const char* notification_key) {
+  NOTIMPLEMENTED();
+}
+
+const struct zcr_notification_shell_v1_interface
+    zcr_notification_shell_v1_implementation = {
+        notification_shell_create_notification,
+        notification_shell_get_notification_surface,
+};
+
+void bind_notification_shell(wl_client* client,
+                             void* data,
+                             uint32_t version,
+                             uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zcr_notification_shell_v1_interface, 1, id);
+
+  SetImplementation(resource, &zcr_notification_shell_v1_implementation,
+                    std::make_unique<WaylandNotificationShell>());
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5712,6 +5802,8 @@ Server::Server(Display* display)
                    bind_input_timestamps_manager);
   wl_global_create(wl_display_.get(), &zwp_text_input_manager_v1_interface, 1,
                    display_, bind_text_input_manager);
+  wl_global_create(wl_display_.get(), &zcr_notification_shell_v1_interface, 1,
+                   display_, bind_notification_shell);
 }
 
 Server::~Server() {
