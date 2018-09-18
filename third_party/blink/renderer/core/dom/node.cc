@@ -2311,8 +2311,6 @@ void Node::CreateAndDispatchPointerEvent(const AtomicString& mouse_event_name,
     pointer_event_name = EventTypeNames::pointerdown;
   else if (mouse_event_name == EventTypeNames::mouseup)
     pointer_event_name = EventTypeNames::pointerup;
-  else if (mouse_event_name == EventTypeNames::pointerrawmove)
-    pointer_event_name = EventTypeNames::pointerrawmove;  // Keep the same type
   else
     return;
 
@@ -2357,10 +2355,6 @@ void Node::DispatchMouseEvent(const WebMouseEvent& event,
                               Node* related_target) {
   CreateAndDispatchPointerEvent(mouse_event_type, event,
                                 GetDocument().domWindow());
-
-  // There is not going to be a mouserawmove. Only a pointerevent for that.
-  if (mouse_event_type == EventTypeNames::pointerrawmove)
-    return;
 
   bool is_mouse_enter_or_leave =
       mouse_event_type == EventTypeNames::mouseenter ||

@@ -2330,6 +2330,7 @@ crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_mov
 # Since there is no compositor thread when running tests then there is no main thread event queue. Hence the
 # logic for this test will be skipped when running Layout tests.
 crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_pointerrawmove-manual.html [ Skip ]
+crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_pointerrawmove_in_pointerlock-manual.html [ Skip ]
 
 # Chrome touch-action computation ignores div transforms.
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
