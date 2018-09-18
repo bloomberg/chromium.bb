@@ -52,9 +52,6 @@ VerifyStatus GetVerifyStatus(const uint8_t* buffer,
 
 // RulesetIndexer --------------------------------------------------------------
 
-// static
-// Keep this in sync with the version number in
-// tools/perf/core/default_local_state.json.
 const int RulesetIndexer::kIndexedFormatVersion = 23;
 
 // This static assert is meant to catch cases where

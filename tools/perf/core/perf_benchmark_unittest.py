@@ -17,9 +17,33 @@ from core import perf_benchmark
 class PerfBenchmarkTest(unittest.TestCase):
   def setUp(self):
     self._output_dir = tempfile.mkdtemp()
+    self._chrome_root = tempfile.mkdtemp()
 
   def tearDown(self):
     shutil.rmtree(self._output_dir, ignore_errors=True)
+    shutil.rmtree(self._chrome_root, ignore_errors=True)
+
+  def _PopulateGenFiles(self, output_dir=None):
+    root = output_dir if output_dir is not None else self._output_dir
+    gen_path = os.path.join(root, 'gen', 'components', 'subresource_filter',
+                            'tools')
+    os.makedirs(gen_path)
+
+    # Just make an empty ruleset file.
+    open(os.path.join(gen_path, 'GeneratedRulesetData'), 'w').close()
+
+    placeholder_json = {
+        'subresource_filter' : {
+            'ruleset_version' : {
+                'content': '1000',
+                'format': 100,
+                'checksum': 0
+            }
+        }
+    }
+    with open(os.path.join(gen_path, 'default_local_state.json'), 'w') as f:
+      json.dump(placeholder_json, f)
+
 
   def _ExpectAdTaggingProfileFiles(self, browser_options, expect_present):
     files_to_copy = browser_options.profile_files_to_copy
@@ -111,9 +135,7 @@ class PerfBenchmarkTest(unittest.TestCase):
     self._ExpectAdTaggingProfileFiles(options.browser_options, False)
 
   def testAdTaggingRulesetReference(self):
-    os.makedirs(os.path.join(
-        self._output_dir, 'gen', 'components', 'subresource_filter',
-        'tools','GeneratedRulesetData'))
+    self._PopulateGenFiles()
 
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
@@ -128,9 +150,7 @@ class PerfBenchmarkTest(unittest.TestCase):
     self._ExpectAdTaggingProfileFiles(options.browser_options, False)
 
   def testAdTaggingRuleset(self):
-    os.makedirs(os.path.join(
-        self._output_dir, 'gen', 'components', 'subresource_filter',
-        'tools','GeneratedRulesetData'))
+    self._PopulateGenFiles()
 
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
@@ -144,30 +164,22 @@ class PerfBenchmarkTest(unittest.TestCase):
     self._ExpectAdTaggingProfileFiles(options.browser_options, True)
 
   def testAdTaggingRulesetNoExplicitOutDir(self):
-    # Make sure _output_dir points to Chrome's root and not the traditional
-    # output directory.
-    os.makedirs(os.path.join(
-        self._output_dir, 'out','Release','gen', 'components',
-        'subresource_filter', 'tools','GeneratedRulesetData'))
+    self._PopulateGenFiles(os.path.join(self._chrome_root, 'out', 'Release'))
 
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
-    options.chrome_root = self._output_dir
+    options.chrome_root = self._chrome_root
     options.browser_options.browser_type = "release"
 
     benchmark.CustomizeBrowserOptions(options.browser_options)
     self._ExpectAdTaggingProfileFiles(options.browser_options, True)
 
   def testAdTaggingRulesetNoExplicitOutDirAndroidChromium(self):
-    # Make sure _output_dir points to Chrome's root and not the traditional
-    # output directory.
-    os.makedirs(os.path.join(
-        self._output_dir, 'out','Default','gen', 'components',
-        'subresource_filter', 'tools','GeneratedRulesetData'))
+    self._PopulateGenFiles(os.path.join(self._chrome_root, 'out', 'Default'))
 
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
-    options.chrome_root = self._output_dir
+    options.chrome_root = self._chrome_root
 
     # android-chromium is special cased to search for anything.
     options.browser_options.browser_type = "android-chromium"
@@ -179,13 +191,11 @@ class PerfBenchmarkTest(unittest.TestCase):
     # Same as the above test but use Debug instead of Release. This should
     # cause the benchmark to fail to find the ruleset because we only check
     # directories matching the browser_type.
-    os.makedirs(os.path.join(
-        self._output_dir, 'out','Debug','gen', 'components',
-        'subresource_filter', 'tools','GeneratedRulesetData'))
+    self._PopulateGenFiles(os.path.join(self._chrome_root, 'out', 'Debug'))
 
     benchmark = perf_benchmark.PerfBenchmark()
     options = options_for_unittests.GetCopy()
-    options.chrome_root = self._output_dir
+    options.chrome_root = self._chrome_root
     options.browser_options.browser_type = "release"
 
     benchmark.CustomizeBrowserOptions(options.browser_options)
