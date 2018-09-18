@@ -64,11 +64,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  bool OnCryptoFrame(const QuicCryptoFrame& frame) override {
-    // TODO(nharper): Implement this.
-    return false;
-  }
-
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override {
     QuicAckFrame ack_frame;
@@ -78,13 +73,13 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
+  bool OnAckRange(QuicPacketNumber start,
+                  QuicPacketNumber end,
+                  bool /*last_range*/) override {
     DCHECK(!ack_frames_.empty());
     ack_frames_[ack_frames_.size() - 1].packets.AddRange(start, end);
     return true;
   }
-
-  bool OnAckFrameEnd(QuicPacketNumber /*start*/) override { return true; }
 
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
     stop_waiting_frames_.push_back(frame);

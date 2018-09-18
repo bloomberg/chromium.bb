@@ -88,7 +88,6 @@ void QuicTraceVisitor::OnPacketSent(const SerializedPacket& serialized_packet,
       case PATH_CHALLENGE_FRAME:
       case STOP_SENDING_FRAME:
       case MESSAGE_FRAME:
-      case CRYPTO_FRAME:
         break;
 
       // Ignore gQUIC-specific frames.
@@ -214,7 +213,6 @@ void QuicTraceVisitor::PopulateFrameInfo(const QuicFrame& frame,
     case PATH_CHALLENGE_FRAME:
     case STOP_SENDING_FRAME:
     case MESSAGE_FRAME:
-    case CRYPTO_FRAME:
       break;
 
     case NUM_FRAME_TYPES:

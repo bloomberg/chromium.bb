@@ -472,7 +472,6 @@ size_t QuicFramer::GetRetransmittableControlFrameSize(
     case MTU_DISCOVERY_FRAME:
     case PADDING_FRAME:
     case MESSAGE_FRAME:
-    case CRYPTO_FRAME:
     case NUM_FRAME_TYPES:
       DCHECK(false);
       return 0;
@@ -733,10 +732,6 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
           return 0;
         }
         break;
-      case CRYPTO_FRAME:
-        set_detailed_error(
-            "Attempt to append CRYPTO frame and not in version 99.");
-        return RaiseError(QUIC_INTERNAL_ERROR);
 
       default:
         RaiseError(QUIC_INVALID_FRAME_DATA);
@@ -885,12 +880,6 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
         if (!AppendMessageFrameAndTypeByte(*frame.message_frame,
                                            last_frame_in_packet, &writer)) {
           QUIC_BUG << "AppendMessageFrame failed";
-          return 0;
-        }
-        break;
-      case CRYPTO_FRAME:
-        if (!AppendCryptoFrame(*frame.crypto_frame, &writer)) {
-          QUIC_BUG << "AppendCryptoFrame failed";
           return 0;
         }
         break;
@@ -2326,18 +2315,6 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
           }
           break;
         }
-        case IETF_CRYPTO: {
-          QuicCryptoFrame frame;
-          if (!ProcessCryptoFrame(reader, &frame)) {
-            return RaiseError(QUIC_INVALID_FRAME_DATA);
-          }
-          if (!visitor_->OnCryptoFrame(frame)) {
-            QUIC_DVLOG(1) << "Visitor asked to stop further processing.";
-            // Returning true since there was no parsing error.
-            return true;
-          }
-          break;
-        }
 
         default:
           set_detailed_error("Illegal frame type.");
@@ -2493,30 +2470,6 @@ bool QuicFramer::ProcessIetfStreamFrame(QuicDataReader* reader,
   return true;
 }
 
-bool QuicFramer::ProcessCryptoFrame(QuicDataReader* reader,
-                                    QuicCryptoFrame* frame) {
-  if (!reader->ReadVarInt62(&frame->offset)) {
-    set_detailed_error("Unable to read crypto data offset.");
-    return false;
-  }
-  uint64_t len;
-  if (!reader->ReadVarInt62(&len) ||
-      len > std::numeric_limits<QuicPacketLength>::max()) {
-    set_detailed_error("Invalid data length.");
-    return false;
-  }
-  frame->data_length = len;
-
-  // TODO(ianswett): Don't use QuicStringPiece as an intermediary.
-  QuicStringPiece data;
-  if (!reader->ReadStringPiece(&data, frame->data_length)) {
-    set_detailed_error("Unable to read frame data.");
-    return false;
-  }
-  frame->data_buffer = data.data();
-  return true;
-}
-
 bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
   const bool has_ack_blocks =
       ExtractBit(frame_type, kQuicHasMultipleAckBlocksOffset);
@@ -2591,7 +2544,8 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
   }
 
   QuicPacketNumber first_received = largest_acked + 1 - first_block_length;
-  if (!visitor_->OnAckRange(first_received, largest_acked + 1)) {
+  if (!visitor_->OnAckRange(first_received, largest_acked + 1,
+                            /*last_range=*/!has_ack_blocks)) {
     // The visitor suppresses further processing of the packet. Although
     // this is not a parsing error, returns false as this is in middle
     // of processing an ack frame,
@@ -2620,9 +2574,11 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
       }
 
       first_received -= (gap + current_block_length);
-      if (current_block_length > 0) {
+      const bool last_range = i + 1 == num_ack_blocks;
+      if (current_block_length > 0 || last_range) {
         if (!visitor_->OnAckRange(first_received,
-                                  first_received + current_block_length)) {
+                                  first_received + current_block_length,
+                                  last_range)) {
           // The visitor suppresses further processing of the packet. Although
           // this is not a parsing error, returns false as this is in middle
           // of processing an ack frame,
@@ -2643,8 +2599,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
     return false;
   }
 
-  // Done processing the ACK frame.
-  return visitor_->OnAckFrameEnd(first_received);
+  return true;
 }
 
 bool QuicFramer::ProcessTimestampsInAckFrame(uint8_t num_received_packets,
@@ -2746,7 +2701,8 @@ bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
     return false;
   }
 
-  if (!visitor_->OnAckRange(block_low, block_high)) {
+  if (!visitor_->OnAckRange(block_low, block_high,
+                            /* last_range= */ (ack_block_count == 0))) {
     // The visitor suppresses further processing of the packet. Although
     // this is not a parsing error, returns false as this is in middle
     // of processing an ACK frame.
@@ -2799,7 +2755,8 @@ bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
     // Calculate the low end of the new nth ack block. The +1 is
     // because the encoded value is the blocksize-1.
     block_low = block_high - 1 - ack_block_value;
-    if (!visitor_->OnAckRange(block_low, block_high)) {
+    if (!visitor_->OnAckRange(block_low, block_high,
+                              /*last_range=*/(ack_block_count == 1))) {
       // The visitor suppresses further processing of the packet. Although
       // this is not a parsing error, returns false as this is in middle
       // of processing an ACK frame.
@@ -2810,8 +2767,7 @@ bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
     // Another one done.
     ack_block_count--;
   }
-
-  return visitor_->OnAckFrameEnd(block_low);
+  return true;
 }
 
 bool QuicFramer::ProcessStopWaitingFrame(QuicDataReader* reader,
@@ -3280,7 +3236,6 @@ size_t QuicFramer::ComputeFrameLength(
                  frame.stream_frame.offset, last_frame_in_packet,
                  frame.stream_frame.data_length) +
              frame.stream_frame.data_length;
-    // TODO(nharper): Add a case for CRYPTO_FRAME here?
     case ACK_FRAME: {
       return GetAckFrameSize(*frame.ack_frame, packet_number_length);
     }
@@ -3436,9 +3391,6 @@ bool QuicFramer::AppendIetfTypeByte(const QuicFrame& frame,
       break;
     case MESSAGE_FRAME:
       return true;
-    case CRYPTO_FRAME:
-      type_byte = IETF_CRYPTO;
-      break;
     default:
       QUIC_BUG << "Attempt to generate a frame type for an unsupported value: "
                << frame.type;
@@ -3609,20 +3561,6 @@ bool QuicFramer::AppendIetfStreamFrame(const QuicStreamFrame& frame,
     }
   }
   return true;
-}
-
-bool QuicFramer::AppendCryptoFrame(const QuicCryptoFrame& frame,
-                                   QuicDataWriter* writer) {
-  if (!writer->WriteVarInt62(static_cast<uint64_t>(frame.offset))) {
-    set_detailed_error("Writing data offset failed.");
-    return false;
-  }
-  if (!writer->WriteVarInt62(static_cast<uint64_t>(frame.data_length))) {
-    set_detailed_error("Writing data length failed.");
-    return false;
-  }
-  // TODO(nharper): Append stream frame contents.
-  return false;
 }
 
 void QuicFramer::set_version(const ParsedQuicVersion version) {

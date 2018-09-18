@@ -105,24 +105,16 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
               << " }\n";
     return true;
   }
-  bool OnCryptoFrame(const QuicCryptoFrame& frame) override {
-    std::cerr << "OnCryptoFrame: " << frame;
-    std::cerr << "         data: { "
-              << QuicTextUtils::HexEncode(frame.data_buffer, frame.data_length)
-              << " }\n";
-    return true;
-  }
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta /*ack_delay_time*/) override {
     std::cerr << "OnAckFrameStart, largest_acked: " << largest_acked;
     return true;
   }
-  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
-    std::cerr << "OnAckRange: [" << start << ", " << end << ")";
-    return true;
-  }
-  bool OnAckFrameEnd(QuicPacketNumber start) override {
-    std::cerr << "OnAckFrameEnd, start: " << start;
+  bool OnAckRange(QuicPacketNumber start,
+                  QuicPacketNumber end,
+                  bool last_range) override {
+    std::cerr << "OnAckRange: [" << start << ", " << end
+              << "),  last_range: " << last_range;
     return true;
   }
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
