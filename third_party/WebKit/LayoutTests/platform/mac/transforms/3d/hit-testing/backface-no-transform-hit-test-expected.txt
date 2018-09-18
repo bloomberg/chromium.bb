@@ -18,11 +18,11 @@ layer at (8,42) size 402x202
     LayoutText {#text} at (197,34) size 4x18
       text run at (197,34) width 4: " "
     LayoutText {#text} at (0,0) size 0x0
-layer at (27,61) size 160x160
+layer at (231,61) size 160x160
   LayoutBlockFlow (relative positioned) {DIV} at (19,19) size 160x160 [bgcolor=#808080]
     LayoutText {#text} at (48,0) size 64x37
       text run at (48,0) width 64: "box1"
-layer at (227,61) size 160x160
+layer at (31,61) size 160x160
   LayoutBlockFlow (relative positioned) {DIV} at (219,19) size 160x160 [bgcolor=#808080]
     LayoutText {#text} at (48,0) size 64x37
       text run at (48,0) width 64: "box2"

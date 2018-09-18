@@ -275,69 +275,36 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
     ClipRect& background_rect,
     ClipRect& foreground_rect,
     const LayoutPoint* offset_from_root) const {
+  layer_bounds.SetSize(LayoutSize(layer_.PixelSnappedSize()));
   if (offset_from_root) {
     layer_bounds.SetLocation(*offset_from_root);
   } else {
-    layer_bounds.SetX(context.sub_pixel_accumulation.Width());
-    layer_bounds.SetY(context.sub_pixel_accumulation.Height());
-    // This takes into account not just PaintLayer offset, but
-    // conversion of flow thread to visual coordinates for intervening
-    // fragmentation.
-    if (layer_.ShouldFragmentCompositedBounds(context.root_layer)) {
-      PaintLayer* enclosing_pagination_layer =
-          layer_.EnclosingPaginationLayer();
-      LayoutPoint location(layer_bounds.Location());
-      layer_.ConvertToLayerCoords(enclosing_pagination_layer, location);
-      location.MoveBy(fragment_data.PaginationOffset());
-      location.MoveBy(enclosing_pagination_layer->VisualOffsetFromAncestor(
-          context.root_layer));
-      layer_bounds.SetLocation(location);
-    } else {
-      const auto* current_transform =
-          fragment_data.PreEffectProperties().Transform();
-      const auto* root_transform =
-          context.root_fragment->LocalBorderBoxProperties().Transform();
-      if (&layer_ == context.root_layer ||
-          current_transform == root_transform) {
-        layer_bounds.MoveBy(fragment_data.PaintOffset());
-        layer_bounds.MoveBy(-context.root_fragment->PaintOffset());
-      } else {
-        const TransformationMatrix* transform;
+    layer_bounds.SetLocation(LayoutPoint(context.sub_pixel_accumulation));
+    layer_bounds.MoveBy(fragment_data.PaintOffset());
 
-        if (current_transform->RequiresCompositingForRootScroller()) {
-          // This is a fast-path for computing the SourceToDestinationProjection
-          // when the current transform is the root scroller's scroll
-          // translation.
-          transform = &current_transform->Matrix();
+    const auto* current_transform = fragment_data.PreTransform();
+    const auto* root_transform =
+        context.root_fragment->LocalBorderBoxProperties().Transform();
+    if (current_transform != root_transform) {
+      if (current_transform->RequiresCompositingForRootScroller()) {
+        // This is a fast-path for computing the SourceToDestinationProjection
+        // when the current transform is the root scroller's scroll translation.
+        const auto& transform = current_transform->Matrix();
 #if DCHECK_IS_ON()
-          DCHECK(current_transform->Matrix().IsIdentityOr2DTranslation());
-          DCHECK(transform->ApproximatelyEquals(
-              GeometryMapper::SourceToDestinationProjection(current_transform,
-                                                            root_transform)));
+        DCHECK(transform.IsIdentityOr2DTranslation());
+        DCHECK(transform.ApproximatelyEquals(
+            GeometryMapper::SourceToDestinationProjection(current_transform,
+                                                          root_transform)));
 #endif
-        } else {
-          transform = &GeometryMapper::SourceToDestinationProjection(
-              current_transform, root_transform);
-        }
-        if (transform->IsIdentityOr2DTranslation()) {
-          layer_bounds.MoveBy(fragment_data.PaintOffset());
-          // The transform should be an integer translation, up to floating
-          // point error.
-          layer_bounds.Move(
-              LayoutSize((float)transform->E(), (float)transform->F()));
-          layer_bounds.MoveBy(-context.root_fragment->PaintOffset());
-        } else {
-          // This branch can happen due to perspective transforms.
-          // TODO(chrishtr): investigate whether the paint code is broken
-          // in this case.
-          LayoutPoint location(layer_bounds.Location());
-          layer_.ConvertToLayerCoords(context.root_layer, location);
-          layer_bounds.SetLocation(location);
-        }
+        layer_bounds.Move(
+            LayoutSize(LayoutUnit(transform.E()), LayoutUnit(transform.F())));
+      } else {
+        GeometryMapper::SourceToDestinationRect(current_transform,
+                                                root_transform, layer_bounds);
       }
     }
+    layer_bounds.MoveBy(-context.root_fragment->PaintOffset());
   }
-  layer_bounds.SetSize(LayoutSize(layer_.PixelSnappedSize()));
 
   CalculateBackgroundClipRectWithGeometryMapper(
       context, fragment_data, kRespectOverflowClip, background_rect);

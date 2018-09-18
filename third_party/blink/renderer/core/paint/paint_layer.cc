@@ -1685,6 +1685,7 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
                       dirty_rect, fragment.layer_bounds,
                       fragment.background_rect, fragment.foreground_rect,
                       offset_from_root);
+  fragment.root_fragment_data = &root_layer->GetLayoutObject().FirstFragment();
   fragment.fragment_data = &GetLayoutObject().FirstFragment();
   fragments.push_back(fragment);
 }
@@ -1716,51 +1717,71 @@ void PaintLayer::CollectFragments(
     const LayoutPoint* offset_from_root,
     const LayoutSize& sub_pixel_accumulation) const {
   PaintLayerFragment fragment;
+  const auto& first_fragment_data = GetLayoutObject().FirstFragment();
+  const auto& first_root_fragment_data =
+      root_layer->GetLayoutObject().FirstFragment();
 
-  // If |root_layer| is inside the same pagination container as |this|, and
-  // there is no compositing boundary inside pagination (this is what
-  // ShouldFragmentCompositedBounds() checks), then try to match
-  // fragments from |root_layer| to |this|, so that any
-  // fragment clip for |root_layer|'s fragment matches |this|'s.
-  bool should_match_fragments = root_layer->EnclosingPaginationLayer() &&
-      root_layer->EnclosingPaginationLayer() == EnclosingPaginationLayer() &&
-      ShouldFragmentCompositedBounds();
+  // If both |this| and |root_layer| are fragmented and are inside the same
+  // pagination container, then try to match fragments from |root_layer| to
+  // |this|, so that any fragment clip for |root_layer|'s fragment matches
+  // |this|'s. Note we check both ShouldFragmentCompositedBounds() and next
+  // fragment here because the former may return false even if |this| is
+  // fragmented, e.g. for fixed-position objects in paged media, and the next
+  // fragment can be null even if the first fragment is actually in a fragmented
+  // context when the current layer appears in only one of the multiple
+  // fragments of the pagination container.
+  bool is_fragmented =
+      ShouldFragmentCompositedBounds() || first_fragment_data.NextFragment();
+  bool should_match_fragments =
+      is_fragmented &&
+      root_layer->EnclosingPaginationLayer() == EnclosingPaginationLayer();
 
   // The inherited offset_from_root does not include any pagination offsets.
-  // In the presence of fragmentation, we cannot use it. Note that we may also
-  // create fragments when ShouldFragmentCompositedBounds() is false, e.g. for
-  // fixed-position objects in paged media.
-  bool offset_from_root_can_be_used =
-      offset_from_root && !ShouldFragmentCompositedBounds(root_layer) &&
-      !GetLayoutObject().FirstFragment().NextFragment();
-  for (auto* fragment_data = &GetLayoutObject().FirstFragment(); fragment_data;
+  // In the presence of fragmentation, we cannot use it.
+  bool offset_from_root_can_be_used = offset_from_root && !is_fragmented;
+  for (auto* fragment_data = &first_fragment_data; fragment_data;
        fragment_data = fragment_data->NextFragment()) {
-    const FragmentData* root_fragment =
-        &root_layer->GetLayoutObject().FirstFragment();
-    if (should_match_fragments) {
-      for (root_fragment = &root_layer->GetLayoutObject().FirstFragment();
-           root_fragment; root_fragment = root_fragment->NextFragment()) {
-        if (root_fragment->LogicalTopInFlowThread() ==
+    const FragmentData* root_fragment_data;
+    if (root_layer == this) {
+      root_fragment_data = fragment_data;
+    } else if (should_match_fragments) {
+      for (root_fragment_data = &first_root_fragment_data; root_fragment_data;
+           root_fragment_data = root_fragment_data->NextFragment()) {
+        if (root_fragment_data->LogicalTopInFlowThread() ==
             fragment_data->LogicalTopInFlowThread())
           break;
       }
+    } else {
+      root_fragment_data = &first_root_fragment_data;
     }
 
-    bool cant_find_fragment = !root_fragment;
+    bool cant_find_fragment = !root_fragment_data;
     if (cant_find_fragment) {
+      DCHECK(should_match_fragments);
       // Fall back to the first fragment, in order to have
       // PaintLayerClipper at least compute |fragment.layer_bounds|.
-      root_fragment = &root_layer->GetLayoutObject().FirstFragment();
+      root_fragment_data = &first_root_fragment_data;
     }
 
     ClipRectsContext clip_rects_context(
-        root_layer, root_fragment, kUncachedClipRects,
+        root_layer, root_fragment_data, kUncachedClipRects,
         overlay_scrollbar_clip_behavior, respect_overflow_clip,
         sub_pixel_accumulation);
 
+    base::Optional<LayoutRect> fragment_dirty_rect;
+    if (dirty_rect) {
+      // |dirty_rect| is in the coordinate space of |root_layer| (i.e. the
+      // space of |root_layer|'s first fragment). Map the rect to the space of
+      // the current root fragment.
+      fragment_dirty_rect = *dirty_rect;
+      first_root_fragment_data.MapRectToFragment(*root_fragment_data,
+                                                 *fragment_dirty_rect);
+    }
+
     Clipper(kUseGeometryMapper)
         .CalculateRects(
-            clip_rects_context, fragment_data, dirty_rect,
+            clip_rects_context, fragment_data,
+            fragment_dirty_rect ? &*fragment_dirty_rect : nullptr,
             fragment.layer_bounds, fragment.background_rect,
             fragment.foreground_rect,
             offset_from_root_can_be_used ? offset_from_root : nullptr);
@@ -1772,8 +1793,8 @@ void PaintLayer::CollectFragments(
       fragment.foreground_rect.Reset();
     }
 
+    fragment.root_fragment_data = root_fragment_data;
     fragment.fragment_data = fragment_data;
-    fragment.pagination_offset = fragment_data->PaginationOffset();
 
     fragments.push_back(fragment);
   }
@@ -2256,7 +2277,7 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
 
     PaintLayer* hit_layer = HitTestLayerByApplyingTransform(
         root_layer, container_layer, result, recursion_data, transform_state,
-        z_offset, fragment.pagination_offset);
+        z_offset, fragment.fragment_data->PaginationOffset());
     if (hit_layer)
       return hit_layer;
   }

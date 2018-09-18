@@ -51,11 +51,22 @@ class PLATFORM_EXPORT GeometryMapper {
 
   // Same as SourceToDestinationProjection() except that it maps the rect
   // rather than returning the matrix.
-  // |mapping_rect| is both input and output.
+  // |mapping_rect| is both input and output. Its type can be FloatRect,
+  // LayoutRect and IntRect.
+  template <typename Rect>
   static void SourceToDestinationRect(
       const TransformPaintPropertyNode* source_transform_node,
       const TransformPaintPropertyNode* destination_transform_node,
-      FloatRect& mapping_rect);
+      Rect& mapping_rect) {
+    if (source_transform_node == destination_transform_node)
+      return;
+    bool success = false;
+    const TransformationMatrix& source_to_destination =
+        SourceToDestinationProjectionInternal(
+            source_transform_node, destination_transform_node, success);
+    mapping_rect =
+        success ? source_to_destination.MapRect(mapping_rect) : Rect();
+  }
 
   // Returns the clip rect between |local_state| and |ancestor_state|. The clip
   // rect is the total clip rect that should be applied when painting contents

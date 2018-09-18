@@ -13,7 +13,7 @@ layer at (39,47) size 250x220
   LayoutBlockFlow (relative positioned) {DIV} at (21,39) size 250x220 [bgcolor=#0000FF]
 layer at (49,57) size 200x200
   LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 200x200 [bgcolor=#FFFF00]
-layer at (149,57) size 250x100
+layer at (149,70) size 267x212
   LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 250x100 [bgcolor=#008000]
     LayoutText {#text} at (0,0) size 185x18
       text run at (0,0) width 185: "Box should have perspective"

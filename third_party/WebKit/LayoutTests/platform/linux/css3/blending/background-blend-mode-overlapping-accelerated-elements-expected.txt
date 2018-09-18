@@ -8,7 +8,7 @@ layer at (8,8) size 160x160
     LayoutBlockFlow (anonymous) at (0,0) size 160x20
       LayoutText {#text} at (0,0) size 44x19
         text run at (0,0) width 44: "sample"
-layer at (8,28) size 120x120
+layer at (4,36) size 134x104
   LayoutBlockFlow {DIV} at (0,20) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
     LayoutText {#text} at (0,0) size 44x19
       text run at (0,0) width 44: "sample"
@@ -20,16 +20,16 @@ layer at (8,168) size 160x160
     LayoutBlockFlow (anonymous) at (0,140) size 160x20
       LayoutText {#text} at (0,0) size 44x19
         text run at (0,0) width 44: "sample"
-layer at (8,188) size 120x120
+layer at (4,196) size 134x104
   LayoutBlockFlow {DIV} at (0,20) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
     LayoutText {#text} at (0,0) size 44x19
       text run at (0,0) width 44: "sample"
-layer at (8,238) size 120x120
+layer at (-9,239) size 134x104 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {DIV} at (0,70) size 120x120 [color=#FFFFFF] [bgcolor=#646438]
     LayoutText {#text} at (0,0) size 44x19
       text run at (0,0) width 44: "sample"
 layer at (8,328) size 160x160 layerType: background only
-layer at (8,378) size 120x120
+layer at (-4,382) size 134x104 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) zI: -1 {DIV} at (0,50) size 120x120 [color=#FFFFFF] [bgcolor=#646438]
     LayoutText zI: -1 {#text} at (0,0) size 92x119
       text run at (0,0) width 92: "sample sample"
@@ -43,7 +43,7 @@ layer at (8,328) size 160x160 layerType: foreground only
     LayoutBlockFlow (anonymous) at (0,0) size 160x20
       LayoutText {#text} at (0,0) size 44x19
         text run at (0,0) width 44: "sample"
-layer at (8,348) size 120x120
+layer at (4,356) size 134x104
   LayoutBlockFlow {DIV} at (0,20) size 120x120 [color=#FFFF00] [bgcolor=#C8C89C]
     LayoutText {#text} at (0,0) size 44x19
       text run at (0,0) width 44: "sample"
