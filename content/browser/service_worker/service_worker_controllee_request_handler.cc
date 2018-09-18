@@ -71,8 +71,10 @@ bool ShouldFallbackToLoadOfflinePage(
     return false;
   }
   offline_pages::OfflinePageHeader offline_header(offline_header_value);
-  return offline_header.reason ==
-         offline_pages::OfflinePageHeader::Reason::DOWNLOAD;
+  return offline_header.reason !=
+             offline_pages::OfflinePageHeader::Reason::NONE &&
+         offline_header.reason !=
+             offline_pages::OfflinePageHeader::Reason::RELOAD;
 }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
