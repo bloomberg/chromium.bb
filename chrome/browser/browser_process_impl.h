@@ -89,17 +89,20 @@ class BrowserProcessImpl : public BrowserProcess,
   void Init();
 
 #if !defined(OS_ANDROID)
-  // Called by ChromeBrowserMainParts to provide a closure that will quit the
-  // browser main message-loop.
+  // Sets a closure to be run to break out of a run loop on browser shutdown
+  // (when the KeepAlive count reaches zero).
+  // TODO(https://crbug.com/845966): This is also used on macOS for the Cocoa
+  // first run dialog so that shutdown can be initiated via a signal while the
+  // first run dialog is showing.
   void SetQuitClosure(base::OnceClosure quit_closure);
 #endif
 
 #if defined(OS_MACOSX)
-  // TODO(https://crbug.com/845966): Replaces the current |quit_closure_| and
-  // returns it. Used by the Cocoa first-run dialog to swap-out the RunLoop set
-  // by ChromeBrowserMainParts' for one that will cause the first-run dialog's
-  // modal RunLoop to exit.
-  base::OnceClosure SwapQuitClosure(base::OnceClosure quit_closure);
+  // Clears the quit closure. Shutdown will not be initiated should the
+  // KeepAlive count reach zero. This function may be called more than once.
+  // TODO(https://crbug.com/845966): Remove this once the Cocoa first run
+  // dialog no longer needs it.
+  void ClearQuitClosure();
 #endif
 
   // Called before the browser threads are created.
