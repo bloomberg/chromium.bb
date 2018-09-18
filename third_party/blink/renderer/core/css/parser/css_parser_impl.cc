@@ -242,10 +242,11 @@ StyleRuleBase* CSSParserImpl::ParseRule(const String& string,
   return rule;
 }
 
-void CSSParserImpl::ParseStyleSheet(const String& string,
-                                    const CSSParserContext* context,
-                                    StyleSheetContents* style_sheet,
-                                    bool defer_property_parsing) {
+void CSSParserImpl::ParseStyleSheet(
+    const String& string,
+    const CSSParserContext* context,
+    StyleSheetContents* style_sheet,
+    CSSDeferPropertyParsing defer_property_parsing) {
   TRACE_EVENT_BEGIN2("blink,blink_style", "CSSParserImpl::parseStyleSheet",
                      "baseUrl", context->BaseURL().GetString().Utf8(), "mode",
                      context->Mode());
@@ -255,7 +256,7 @@ void CSSParserImpl::ParseStyleSheet(const String& string,
   CSSTokenizer tokenizer(string);
   CSSParserTokenStream stream(tokenizer);
   CSSParserImpl parser(context, style_sheet);
-  if (defer_property_parsing) {
+  if (defer_property_parsing == CSSDeferPropertyParsing::kYes) {
     parser.lazy_state_ =
         new CSSLazyParsingState(context, string, parser.style_sheet_);
   }

@@ -259,9 +259,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::EnableSlimmingPaintV2(true);
 
-  if (base::FeatureList::IsEnabled(features::kLazyParseCSS))
-    WebRuntimeFeatures::EnableLazyParseCSS(true);
-
   WebRuntimeFeatures::EnablePassiveDocumentEventListeners(
       base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners));
 

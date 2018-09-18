@@ -108,7 +108,7 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
         static_cast<StyleRuleNamespace*>(o.namespace_rules_[i]->Copy());
   }
 
-  // LazyParseCSS: Copying child rules is a strict point for lazy parsing, so
+  // Copying child rules is a strict point for deferred property parsing, so
   // there is no need to copy lazy parsing state here.
   for (unsigned i = 0; i < child_rules_.size(); ++i)
     child_rules_[i] = o.child_rules_[i]->Copy();
@@ -369,7 +369,7 @@ void StyleSheetContents::ParseAuthorStyleSheet(
   const CSSParserContext* context =
       CSSParserContext::CreateWithStyleSheetContents(ParserContext(), this);
   CSSParser::ParseSheet(context, this, sheet_text,
-                        RuntimeEnabledFeatures::LazyParseCSSEnabled());
+                        CSSDeferPropertyParsing::kYes);
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, parse_histogram,
                       ("Style.AuthorStyleSheet.ParseTime", 0, 10000000, 50));

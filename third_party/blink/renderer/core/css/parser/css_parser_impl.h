@@ -95,10 +95,11 @@ class CSSParserImpl {
                                   const CSSParserContext*,
                                   StyleSheetContents*,
                                   AllowedRulesType);
-  static void ParseStyleSheet(const String&,
-                              const CSSParserContext*,
-                              StyleSheetContents*,
-                              bool defer_property_parsing = false);
+  static void ParseStyleSheet(
+      const String&,
+      const CSSParserContext*,
+      StyleSheetContents*,
+      CSSDeferPropertyParsing = CSSDeferPropertyParsing::kNo);
   static CSSSelectorList ParsePageSelector(CSSParserTokenRange,
                                            StyleSheetContents*);
 
