@@ -164,6 +164,7 @@ void ChooserBubbleUiViewDelegate::OnSelectionChanged() {
 void ChooserBubbleUiViewDelegate::UpdateAnchor(Browser* browser) {
   AnchorConfiguration configuration = GetChooserAnchorConfiguration(browser);
   SetAnchorView(configuration.anchor_view);
+  SetHighlightedButton(configuration.highlighted_button);
   if (!configuration.anchor_view)
     SetAnchorRect(GetChooserAnchorRect(browser));
   SetArrow(configuration.bubble_arrow);
@@ -199,6 +200,7 @@ ChooserBubbleUi::~ChooserBubbleUi() {
 
 void ChooserBubbleUi::Show(BubbleReference bubble_reference) {
   chooser_bubble_ui_view_delegate_->set_bubble_reference(bubble_reference);
+  chooser_bubble_ui_view_delegate_->UpdateAnchor(browser_);
   CreateAndShow(chooser_bubble_ui_view_delegate_);
   chooser_bubble_ui_view_delegate_->GetWidget()->AddObserver(this);
   chooser_bubble_ui_view_delegate_->UpdateTableView();

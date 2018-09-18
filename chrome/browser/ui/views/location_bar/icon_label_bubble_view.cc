@@ -183,10 +183,6 @@ void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
 }
 
-void IconLabelBubbleView::OnBubbleCreated(views::Widget* bubble_widget) {
-  bubble_widget->AddObserver(this);
-}
-
 bool IconLabelBubbleView::ShouldShowSeparator() const {
   return ShouldShowLabel();
 }
@@ -298,14 +294,6 @@ void IconLabelBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     GetTooltipText(gfx::Point(), &tooltip_text);
     node_data->SetName(tooltip_text);
   }
-}
-
-void IconLabelBubbleView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (!IsMouseHovered()) {
-    GetInkDrop()->AnimateToState(views::InkDropState::HIDDEN);
-    GetInkDrop()->SetHovered(false);
-  }
-  Button::OnBoundsChanged(previous_bounds);
 }
 
 void IconLabelBubbleView::OnNativeThemeChanged(
@@ -431,17 +419,6 @@ void IconLabelBubbleView::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 
-void IconLabelBubbleView::OnWidgetDestroying(views::Widget* widget) {
-  widget->RemoveObserver(this);
-}
-
-void IconLabelBubbleView::OnWidgetVisibilityChanged(views::Widget* widget,
-                                                    bool visible) {
-  // |widget| is a bubble that has just got shown / hidden.
-  if (!visible)
-    AnimateInkDrop(views::InkDropState::HIDDEN, nullptr /* event */);
-}
-
 SkColor IconLabelBubbleView::GetParentBackgroundColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultBackground);
@@ -521,13 +498,7 @@ int IconLabelBubbleView::GetEndPaddingWithSeparator() const {
 }
 
 bool IconLabelBubbleView::OnActivate(const ui::Event& event) {
-  if (ShowBubble(event)) {
-    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
-    return true;
-  }
-
-  AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
-  return false;
+  return ShowBubble(event);
 }
 
 const char* IconLabelBubbleView::GetClassName() const {

@@ -79,7 +79,7 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
       new BookmarkBubbleSignInDelegate(browser));
 
   BookmarkBubbleView::ShowBubble(
-      nullptr, gfx::Rect(anchor_point, gfx::Size()), parent, observer,
+      nullptr, nullptr, gfx::Rect(anchor_point, gfx::Size()), parent, observer,
       std::move(delegate), browser->profile(), virtual_url, already_bookmarked);
 
   views::BubbleDialogDelegateView* bubble =

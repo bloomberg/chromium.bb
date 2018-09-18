@@ -199,10 +199,6 @@ class LocationBarView : public LocationBar,
     return selected_keyword_view_;
   }
 
-  // The anchor view for security-related bubbles. That is, those anchored to
-  // the leading edge of the Omnibox, under the padlock.
-  views::View* GetSecurityBubbleAnchorView();
-
   // Show a page info dialog for |web_contents|.
   // Returns true if a dialog was shown, false otherwise.
   bool ShowPageInfoDialog(content::WebContents* web_contents);

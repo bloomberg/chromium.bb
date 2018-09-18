@@ -98,6 +98,7 @@ TranslateBubbleView::~TranslateBubbleView() {
 // static
 views::Widget* TranslateBubbleView::ShowBubble(
     views::View* anchor_view,
+    views::Button* highlighted_button,
     const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     translate::TranslateStep step,
@@ -154,6 +155,9 @@ views::Widget* TranslateBubbleView::ShowBubble(
     DCHECK(anchor_view);
   }
 #endif
+
+  if (highlighted_button)
+    view->SetHighlightedButton(highlighted_button);
 
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(view);

@@ -362,10 +362,6 @@ void LocationBarView::SelectAll() {
   omnibox_view_->SelectAll(true);
 }
 
-views::View* LocationBarView::GetSecurityBubbleAnchorView() {
-  return this;
-}
-
 bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {
   DCHECK(contents);
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
@@ -381,10 +377,9 @@ bool LocationBarView::ShowPageInfoDialog(WebContents* contents) {
   DCHECK(GetWidget());
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
-          GetSecurityBubbleAnchorView(), gfx::Rect(),
-          GetWidget()->GetNativeWindow(), profile(), contents,
-          entry->GetVirtualURL(), security_info);
-  location_icon_view()->OnBubbleCreated(bubble->GetWidget());
+          this, gfx::Rect(), GetWidget()->GetNativeWindow(), profile(),
+          contents, entry->GetVirtualURL(), security_info);
+  bubble->SetHighlightedButton(location_icon_view());
   bubble->GetWidget()->Show();
   return true;
 }
@@ -471,7 +466,6 @@ void LocationBarView::Layout() {
     return;
 
   selected_keyword_view_->SetVisible(false);
-  location_icon_view_->SetVisible(false);
   keyword_hint_view_->SetVisible(false);
 
   const int edge_padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
@@ -531,6 +525,7 @@ void LocationBarView::Layout() {
 
   location_icon_view_->SetLabel(base::string16());
   if (ShouldShowKeywordBubble()) {
+    location_icon_view_->SetVisible(false);
     leading_decorations.AddDecoration(
         vertical_padding, location_height, false, kLeadingDecorationMaxFraction,
         edge_padding, internal_padding, selected_keyword_view_);

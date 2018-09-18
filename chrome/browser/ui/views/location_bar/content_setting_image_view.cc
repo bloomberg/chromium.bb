@@ -66,7 +66,6 @@ void ContentSettingImageView::Update() {
   // the user.  If this becomes a problem, we could design some sort of queueing
   // mechanism to show one after the other, but it doesn't seem important now.
   int string_id = content_setting_image_model_->explanatory_string_id();
-  AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
   if (string_id)
     AnimateIn(string_id);
 
@@ -96,6 +95,21 @@ bool ContentSettingImageView::GetTooltipText(const gfx::Point& p,
   return !tooltip->empty();
 }
 
+bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
+  // Pause animation so that the icon does not shrink and deselect while the
+  // user is attempting to press it.
+  PauseAnimation();
+  return IconLabelBubbleView::OnMousePressed(event);
+}
+
+bool ContentSettingImageView::OnKeyPressed(const ui::KeyEvent& event) {
+  // Pause animation so that the icon does not shrink and deselect while the
+  // user is attempting to press it using key commands.
+  if (GetKeyClickActionForEvent(event) == KeyClickAction::CLICK_ON_KEY_RELEASE)
+    PauseAnimation();
+  return Button::OnKeyPressed(event);
+}
+
 void ContentSettingImageView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
   UpdateImage();
@@ -122,18 +136,10 @@ bool ContentSettingImageView::ShowBubble(const ui::Event& event) {
             delegate_->GetContentSettingBubbleModelDelegate(), web_contents,
             Profile::FromBrowserContext(web_contents->GetBrowserContext())),
         web_contents, anchor, views::BubbleBorder::TOP_RIGHT);
+    bubble_view_->SetHighlightedButton(this);
     views::Widget* bubble_widget =
         views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
     bubble_widget->AddObserver(this);
-    // This is triggered by an input event. If the user clicks the icon while
-    // it's not animating, the icon will be placed in an active state, so the
-    // bubble doesn't need an arrow. If the user clicks during an animation,
-    // the animation simply pauses and no other visible state change occurs, so
-    // show the arrow in this case.
-    if (!is_animation_paused()) {
-      AnimateInkDrop(views::InkDropState::ACTIVATED,
-                     ui::LocatedEvent::FromIfValid(&event));
-    }
     bubble_widget->Show();
     delegate_->OnContentSettingImageBubbleShown(
         content_setting_image_model_->image_type());
@@ -162,13 +168,6 @@ void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
   widget->RemoveObserver(this);
   bubble_view_ = nullptr;
   UnpauseAnimation();
-}
-
-void ContentSettingImageView::OnWidgetVisibilityChanged(views::Widget* widget,
-                                                        bool visible) {
-  // |widget| is a bubble that has just got shown / hidden.
-  if (!visible)
-    AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr /* event */);
 }
 
 void ContentSettingImageView::UpdateImage() {

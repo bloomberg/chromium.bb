@@ -23,6 +23,7 @@
 
 constexpr float kToolbarInkDropVisibleOpacity = 0.06f;
 constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;
+constexpr SkAlpha kToolbarButtonBackgroundAlpha = 32;
 
 // The below utility functions are templated since we have two different types
 // of buttons on the toolbar (ToolbarButton and AppMenuButton) which don't share

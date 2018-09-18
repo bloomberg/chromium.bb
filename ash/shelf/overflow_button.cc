@@ -64,12 +64,10 @@ void OverflowButton::OnShelfAlignmentChanged() {
 }
 
 void OverflowButton::OnOverflowBubbleShown() {
-  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   UpdateChevronImage();
 }
 
 void OverflowButton::OnOverflowBubbleHidden() {
-  AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   UpdateChevronImage();
 }
 

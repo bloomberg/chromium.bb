@@ -33,8 +33,7 @@ class InkDropContainerView;
 // base for the classes that handle the location icon (including the EV bubble),
 // tab-to-search UI, and content settings.
 class IconLabelBubbleView : public views::InkDropObserver,
-                            public views::Button,
-                            public views::WidgetObserver {
+                            public views::Button {
  public:
   static constexpr int kTrailingPaddingPreMd = 2;
 
@@ -85,8 +84,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
     next_element_interior_padding_ = padding;
   }
 
-  void OnBubbleCreated(views::Widget* bubble_widget);
-
  protected:
   static constexpr int kOpenTimeMS = 150;
 
@@ -130,7 +127,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
@@ -150,10 +146,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
-
-  // views::WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override;
-  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   const gfx::FontList& font_list() const { return label_->font_list(); }
 
