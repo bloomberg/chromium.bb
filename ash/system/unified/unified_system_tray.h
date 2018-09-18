@@ -17,6 +17,7 @@ class TimeTrayItemView;
 }  // namespace tray
 
 class ImeModeView;
+class ManagedDeviceView;
 class NotificationCounterView;
 class QuietModeView;
 class UnifiedSliderBubbleController;
@@ -122,6 +123,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
       slider_bubble_controller_;
 
   ImeModeView* const ime_mode_view_;
+  ManagedDeviceView* const managed_device_view_;
   NotificationCounterView* const notification_counter_item_;
   QuietModeView* const quiet_mode_view_;
   tray::TimeTrayItemView* const time_view_;
