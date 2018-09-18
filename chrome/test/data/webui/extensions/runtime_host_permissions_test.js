@@ -90,13 +90,82 @@ suite('RuntimeHostPermissions', function() {
     }
 
     // Check that selecting different values correctly notifies the delegate.
-    return expectDelegateCallOnAccessChange(HostAccess.ON_SPECIFIC_SITES)
-        .then(() => {
-          return expectDelegateCallOnAccessChange(HostAccess.ON_ALL_SITES);
-        })
+    return expectDelegateCallOnAccessChange(HostAccess.ON_ALL_SITES)
         .then(() => {
           return expectDelegateCallOnAccessChange(HostAccess.ON_CLICK);
         });
+  });
+
+  test('on select sites cancel', function() {
+    const permissions = {
+      simplePermissions: ['permission 1', 'permission 2'],
+      hostAccess: HostAccess.ON_CLICK,
+      runtimeHostPermissions: [],
+    };
+
+    element.permissions = permissions;
+    Polymer.dom.flush();
+
+    const selectHostAccess = element.$$('#host-access');
+    assertTrue(!!selectHostAccess);
+
+    selectHostAccess.value = HostAccess.ON_SPECIFIC_SITES;
+    selectHostAccess.dispatchEvent(new CustomEvent('change'));
+
+    Polymer.dom.flush();
+    const dialog = element.$$('extensions-runtime-hosts-dialog');
+    assertTrue(!!dialog);
+
+    expectTrue(dialog.updateHostAccess);
+
+    // Canceling the dialog should reset the selectHostAccess value to ON_CLICK,
+    // since no host was added.
+    assertTrue(dialog.isOpen());
+    let whenClosed = test_util.eventToPromise('close', dialog);
+    dialog.$$('.cancel-button').click();
+    return whenClosed.then(() => {
+      Polymer.dom.flush();
+      expectEquals(HostAccess.ON_CLICK, selectHostAccess.value);
+    });
+  });
+
+  test('on select sites accept', function() {
+    const permissions = {
+      simplePermissions: ['permission 1', 'permission 2'],
+      hostAccess: HostAccess.ON_CLICK,
+      runtimeHostPermissions: [],
+    };
+
+    element.set('permissions', permissions);
+    Polymer.dom.flush();
+
+    const selectHostAccess = element.$$('#host-access');
+    assertTrue(!!selectHostAccess);
+
+    selectHostAccess.value = HostAccess.ON_SPECIFIC_SITES;
+    selectHostAccess.dispatchEvent(
+        new CustomEvent('change', {target: selectHostAccess}));
+
+    Polymer.dom.flush();
+    const dialog = element.$$('extensions-runtime-hosts-dialog');
+    assertTrue(!!dialog);
+
+    expectTrue(dialog.updateHostAccess);
+
+    // Make the add button clickable by entering valid input.
+    const input = dialog.$$('cr-input');
+    input.value = 'https://example.com';
+    input.fire('input');
+
+    // Closing the dialog (as opposed to canceling) should keep the
+    // selectHostAccess value at ON_SPECIFIC_SITES.
+    assertTrue(dialog.isOpen());
+    let whenClosed = test_util.eventToPromise('close', dialog);
+    dialog.$$('.action-button').click();
+    return whenClosed.then(() => {
+      Polymer.dom.flush();
+      expectEquals(HostAccess.ON_SPECIFIC_SITES, selectHostAccess.value);
+    });
   });
 
   test('clicking add host triggers dialog', function() {
@@ -119,6 +188,7 @@ suite('RuntimeHostPermissions', function() {
     assertTrue(!!dialog);
     expectTrue(dialog.$.dialog.open);
     expectEquals(null, dialog.currentSite);
+    expectFalse(dialog.updateHostAccess);
   });
 
   test('removing runtime host permissions', function() {
@@ -169,6 +239,7 @@ suite('RuntimeHostPermissions', function() {
     const dialog = element.$$('extensions-runtime-hosts-dialog');
     assertTrue(!!dialog);
     expectTrue(dialog.$.dialog.open);
+    expectFalse(dialog.updateHostAccess);
     expectEquals('https://example.com', dialog.currentSite);
   });
 });

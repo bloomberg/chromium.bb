@@ -59,6 +59,15 @@ cr.define('extensions', function() {
       },
 
       /**
+       * Whether the dialog should update the host access to be "on specific
+       * sites" before adding a new host permission.
+       */
+      updateHostAccess: {
+        type: Boolean,
+        value: false,
+      },
+
+      /**
        * The site to add an exception for.
        * @private
        */
@@ -81,6 +90,11 @@ cr.define('extensions', function() {
         this.validate_();
       }
       this.$.dialog.showModal();
+    },
+
+    /** @return {boolean} */
+    isOpen: function() {
+      return this.$.dialog.open;
     },
 
     /**
@@ -138,22 +152,50 @@ cr.define('extensions', function() {
      * @private
      */
     onSubmitTap_: function() {
-      if (this.currentSite !== null) {
-        // No change in values, so no need to update the delegate.
-        if (this.currentSite == this.site_) {
-          this.$.dialog.close();
-          return;
-        }
+      if (this.currentSite !== null)
+        this.handleEdit_();
+      else
+        this.handleAdd_();
+    },
 
-        // Changing the entry is done through a remove followed by an add.
-        this.delegate.removeRuntimeHostPermission(this.itemId, this.currentSite)
-            .then(() => {
-              this.addPermission_();
-            });
-        return;
+    /**
+     * Handles adding a new site entry.
+     * @private
+     */
+    handleAdd_: function() {
+      assert(!this.currentSite);
+
+      if (this.updateHostAccess) {
+        this.delegate.setItemHostAccess(
+            this.itemId, chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES);
       }
 
       this.addPermission_();
+    },
+
+    /**
+     * Handles editing an existing site entry.
+     * @private
+     */
+    handleEdit_: function() {
+      assert(this.currentSite);
+      assert(
+          !this.updateHostAccess,
+          'Editing host permissions should only be possible if the host ' +
+              'access is already set to specific sites.');
+
+      if (this.currentSite == this.site_) {
+        // No change in values, so no need to update anything.
+        this.$.dialog.close();
+        return;
+      }
+
+      // Editing an existing entry is done by removing the current site entry,
+      // and then adding the new one.
+      this.delegate.removeRuntimeHostPermission(this.itemId, this.currentSite)
+          .then(() => {
+            this.addPermission_();
+          });
     },
 
     /**
