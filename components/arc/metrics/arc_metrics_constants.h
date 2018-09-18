@@ -63,6 +63,10 @@ enum class UserInteractionType {
   // User started an app by left-clicking on links in the browser.
   APP_STARTED_FROM_LINK = 15,
 
+  // User started an app from context menu by right-clicking on links in the
+  // browser.
+  APP_STARTED_FROM_LINK_CONTEXT_MENU = 16,
+
   // The size of this enum; keep last.
   SIZE,
 };
