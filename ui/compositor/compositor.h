@@ -490,6 +490,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // The manager of vsync parameters for this compositor.
   scoped_refptr<CompositorVSyncManager> vsync_manager_;
 
+  // Snapshot of last set vsync parameters, to avoid redundant IPCs.
+  base::TimeTicks vsync_timebase_;
+  base::TimeDelta vsync_interval_;
+
   bool external_begin_frames_enabled_;
   ExternalBeginFrameClient* external_begin_frame_client_ = nullptr;
   bool needs_external_begin_frames_ = false;

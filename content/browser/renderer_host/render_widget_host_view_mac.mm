@@ -134,8 +134,13 @@ void RenderWidgetHostViewMac::AcceleratedWidgetCALayerParamsUpdated() {
   if (ca_layer_params)
     ns_view_bridge_->SetCALayerParams(*ca_layer_params);
 
-  if (display_link_)
-    display_link_->NotifyCurrentTime(base::TimeTicks::Now());
+  // Take this opportunity to update the VSync parameters, if needed.
+  if (display_link_) {
+    base::TimeTicks timebase;
+    base::TimeDelta interval;
+    if (display_link_->GetVSyncParameters(&timebase, &interval))
+      browser_compositor_->UpdateVSyncParameters(timebase, interval);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -315,19 +320,6 @@ void RenderWidgetHostViewMac::InitAsFullscreen(
   NOTREACHED();
 }
 
-void RenderWidgetHostViewMac::UpdateDisplayVSyncParameters() {
-  if (!host() || !display_link_.get())
-    return;
-
-  if (!display_link_->GetVSyncParameters(&vsync_timebase_, &vsync_interval_)) {
-    vsync_timebase_ = base::TimeTicks();
-    vsync_interval_ = base::TimeDelta();
-    return;
-  }
-
-  browser_compositor_->UpdateVSyncParameters(vsync_timebase_, vsync_interval_);
-}
-
 RenderWidgetHostViewBase*
     RenderWidgetHostViewMac::GetFocusedViewForTextSelection() {
   // We obtain the TextSelection from focused RWH which is obtained from the
@@ -360,16 +352,11 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetWidgetForIme() {
 }
 
 void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
-  static bool is_frame_rate_limit_disabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableFrameRateLimit);
-  if (!is_frame_rate_limit_disabled) {
-    display_link_ = ui::DisplayLinkMac::GetForDisplay(display_.id());
-    if (!display_link_.get()) {
-      // Note that on some headless systems, the display link will fail to be
-      // created, so this should not be a fatal error.
-      LOG(ERROR) << "Failed to create display link.";
-    }
+  display_link_ = ui::DisplayLinkMac::GetForDisplay(display_.id());
+  if (!display_link_) {
+    // Note that on some headless systems, the display link will fail to be
+    // created, so this should not be a fatal error.
+    LOG(ERROR) << "Failed to create display link.";
   }
 
   if (features::IsViewsBrowserCocoa())
@@ -1060,8 +1047,6 @@ void RenderWidgetHostViewMac::SubmitCompositorFrame(
 
   browser_compositor_->GetDelegatedFrameHost()->SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list));
-
-  UpdateDisplayVSyncParameters();
 }
 
 void RenderWidgetHostViewMac::OnDidNotProduceFrame(

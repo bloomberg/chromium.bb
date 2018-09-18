@@ -544,11 +544,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Display link for getting vsync info.
   scoped_refptr<ui::DisplayLinkMac> display_link_;
 
-  // The current VSync timebase and interval. This is zero until the first call
-  // to SendVSyncParametersToRenderer(), and refreshed regularly thereafter.
-  base::TimeTicks vsync_timebase_;
-  base::TimeDelta vsync_interval_;
-
   // Whether a request for begin frames has been issued.
   bool needs_begin_frames_;
 

@@ -27,17 +27,11 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac
   static scoped_refptr<DisplayLinkMac> GetForDisplay(
       CGDirectDisplayID display_id);
 
-  // Get vsync scheduling parameters.
+  // Get vsync scheduling parameters. Returns false if the populated parameters
+  // are invalid.
   bool GetVSyncParameters(
       base::TimeTicks* timebase,
       base::TimeDelta* interval);
-
-  // The vsync parameters are cached, because re-computing them is expensive.
-  // The parameters also skew over time (astonishingly quickly -- 0.1 msec per
-  // second), so, use this method to tell the display link the current time.
-  // If too much time has elapsed since the last time the vsync parameters were
-  // calculated, re-calculate them.
-  void NotifyCurrentTime(const base::TimeTicks& now);
 
  private:
   friend class base::RefCountedThreadSafe<DisplayLinkMac>;
