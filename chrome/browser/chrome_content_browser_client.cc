@@ -393,6 +393,10 @@
 #include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
 #endif
 
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
+#endif
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/debug/leak_annotations.h"
 #include "components/crash/content/app/breakpad_linux.h"

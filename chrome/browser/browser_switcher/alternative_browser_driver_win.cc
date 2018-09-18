@@ -91,6 +91,28 @@ std::wstring GetBrowserLocation(const wchar_t* regkey_name) {
   return location;
 }
 
+bool ExpandUrlVarName(std::wstring* arg, const std::wstring& url_spec) {
+  size_t url_index = arg->find(kUrlVarName);
+  if (url_index == std::wstring::npos)
+    return false;
+  arg->replace(url_index, wcslen(kUrlVarName), url_spec);
+  return true;
+}
+
+void ExpandEnvironmentVariables(std::wstring* arg) {
+  DWORD expanded_size = 0;
+  expanded_size = ::ExpandEnvironmentStrings(arg->c_str(), NULL, expanded_size);
+  if (expanded_size == 0)
+    return;
+
+  // The expected buffer length as defined in MSDN is chars + null + 1.
+  std::unique_ptr<wchar_t[]> out(new wchar_t[expanded_size + 2]);
+  expanded_size =
+      ::ExpandEnvironmentStrings(arg->c_str(), out.get(), expanded_size);
+  if (expanded_size != 0)
+    *arg = out.get();
+}
+
 }  // namespace
 
 AlternativeBrowserDriver::~AlternativeBrowserDriver() {}
@@ -200,7 +222,9 @@ bool AlternativeBrowserDriverImpl::TryLaunchWithExec(const GURL& url) {
   const int max_num_args = browser_params_.size() + 2;
   std::vector<std::wstring> argv;
   argv.reserve(max_num_args);
-  argv.push_back(browser_path_);
+  std::wstring path = browser_path_;
+  ExpandEnvironmentVariables(&path);
+  argv.push_back(path);
   AppendCommandLineArguments(&argv, browser_params_, url);
 
   base::CommandLine cmd_line = base::CommandLine(argv);
@@ -222,15 +246,11 @@ void AlternativeBrowserDriverImpl::AppendCommandLineArguments(
   std::vector<std::wstring> command_line;
   bool contains_url = false;
   for (const auto& arg : raw_args) {
-    size_t url_index = arg.find(kUrlVarName);
-    if (url_index != std::string::npos) {
-      std::wstring expanded_arg = arg;
-      expanded_arg.replace(url_index, wcslen(kUrlVarName), url_spec);
-      argv->push_back(expanded_arg);
+    std::wstring expanded_arg = arg;
+    ExpandEnvironmentVariables(&expanded_arg);
+    if (ExpandUrlVarName(&expanded_arg, url_spec))
       contains_url = true;
-    } else {
-      argv->push_back(arg);
-    }
+    argv->push_back(expanded_arg);
   }
   if (!contains_url)
     argv->push_back(url_spec);
