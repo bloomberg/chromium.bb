@@ -1512,7 +1512,8 @@ void StyleEngine::ChildrenRemoved(ContainerNode& parent) {
   }
   style_invalidation_root_.ChildrenRemoved(parent);
   style_recalc_root_.ChildrenRemoved(parent);
-  style_invalidation_root_.ChildrenRemoved(parent);
+  DCHECK(!layout_tree_rebuild_root_.GetRootNode());
+  layout_tree_rebuild_root_.ChildrenRemoved(parent);
 }
 
 void StyleEngine::CollectMatchingUserRules(
