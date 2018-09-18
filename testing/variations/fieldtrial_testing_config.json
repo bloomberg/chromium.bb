@@ -2415,6 +2415,12 @@
                     "enable_features": [
                         "ContentSuggestionsFaviconsFromNewServer"
                     ]
+                },
+                {
+                    "name": "Enabled_50",
+                    "enable_features": [
+                        "ContentSuggestionsFaviconsFromNewServer"
+                    ]
                 }
             ]
         }
