@@ -103,7 +103,7 @@ cr.define('destination_search_test', function() {
         success: true,
       };
       if (cr.isChromeOS) {
-        nativeLayer.setSetupPrinterResponse(false, response);
+        nativeLayer.setSetupPrinterResponse(response);
       } else {
         nativeLayer.setLocalDestinationCapabilities(
             print_preview_test_utils.getCddTemplate(destId));
@@ -133,7 +133,7 @@ cr.define('destination_search_test', function() {
       const destId = '001122DEADBEEF';
       const originalDestination = destinationStore.selectedDestination;
       nativeLayer.setSetupPrinterResponse(
-          true, {printerId: destId, success: false});
+          {printerId: destId, success: false}, true);
       requestSetup(destId);
       return nativeLayer.whenCalled('setupPrinter').then(function(actualId) {
         assertEquals(destId, actualId);
@@ -154,7 +154,7 @@ cr.define('destination_search_test', function() {
             print_preview_test_utils.getCddTemplate(destId).capabilities,
         success: false,
       };
-      nativeLayer.setSetupPrinterResponse(false, response);
+      nativeLayer.setSetupPrinterResponse(response);
       requestSetup(destId);
       return nativeLayer.whenCalled('setupPrinter')
           .then(function(actualDestId) {
@@ -215,7 +215,7 @@ cr.define('destination_search_test', function() {
         policies: {allowedColorModes: print_preview.ColorMode.GRAY},
         success: true,
       };
-      nativeLayer.setSetupPrinterResponse(false, response);
+      nativeLayer.setSetupPrinterResponse(response);
       requestSetup(destId);
       return nativeLayer.whenCalled('setupPrinter').then(function(actualId) {
         assertEquals(destId, actualId);

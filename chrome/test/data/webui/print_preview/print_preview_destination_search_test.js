@@ -131,10 +131,12 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
     test('ResolutionFails', function() {
       const destId = '001122DEADBEEF';
       if (cr.isChromeOS) {
-        nativeLayer_.setSetupPrinterResponse(true, {
-          printerId: destId,
-          success: false,
-        });
+        nativeLayer_.setSetupPrinterResponse(
+            {
+              printerId: destId,
+              success: false,
+            },
+            true);
       } else {
         nativeLayer_.setLocalDestinationCapabilities(
             {
@@ -161,7 +163,7 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
         success: true,
       };
       if (cr.isChromeOS)
-        nativeLayer_.setSetupPrinterResponse(false, response);
+        nativeLayer_.setSetupPrinterResponse(response);
       else
         nativeLayer_.setLocalDestinationCapabilities({
           printer: {
@@ -196,7 +198,7 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
           capabilities: getCaps(),
           success: false,
         };
-        nativeLayer_.setSetupPrinterResponse(false, response);
+        nativeLayer_.setSetupPrinterResponse(response);
         requestSetup(destId, destinationSearch_);
         return nativeLayer_.whenCalled('setupPrinter')
             .then(function(actualDestId) {
