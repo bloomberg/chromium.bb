@@ -115,6 +115,7 @@ js_library("request") {
     "../file_manager/common/js:metrics",
     "../file_manager/common/js:metrics_events",
   ]
+  externs_list = [ "../externs/platform.js" ]
 }
 
 js_library("scheduler") {

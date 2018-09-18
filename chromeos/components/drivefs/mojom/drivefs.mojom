@@ -36,6 +36,13 @@ interface DriveFs {
 
   // Reset DriveFS cache.
   ResetCache() => (FileError error);
+
+  // Returns a PNG containing a thumbnail for |path|. If |crop_to_square|, a
+  // 360x360 thumbnail, cropped to fit a square is returned; otherwise a
+  // thumbnail up to 500x500, maintaining aspect ration, is returned. If |path|
+  // does not exist or does not have a thumbnail, |thumbnail| will be null.
+  GetThumbnail(mojo_base.mojom.FilePath path, bool crop_to_square) => (
+      array<uint8>? thumbnail);
 };
 
 // Implemented by Chrome, used from DriveFS.

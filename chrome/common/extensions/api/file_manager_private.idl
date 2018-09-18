@@ -741,6 +741,10 @@ callback GetRecentFilesCallback = void([instanceOf=Entry] object[] entries);
 callback InstallLinuxPackageCallback = void(
     InstallLinuxPackageResponse response, DOMString failure_reason);
 
+// |thumbnailDataUrl| A data URL for the thumbnail as a PNG; |thumbnailDataUrl|
+// is empty if no thumbnail was available.
+callback GetThumbnailCallback = void(DOMString thumbnailDataUrl);
+
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
   // the Google account.
@@ -1115,6 +1119,14 @@ interface Functions {
   [nocompile]
   static void installLinuxPackage([instanceof=Entry] object entry,
                                   InstallLinuxPackageCallback callback);
+
+  // For a file in DriveFS, retrieves its thumbnail. If |cropToSquare| is true,
+  // returns a thumbnail appropriate for file list or grid views; otherwise,
+  // returns a thumbnail appropriate for quickview.
+  [nocompile]
+  static void getThumbnail([instanceOf=FileEntry] object entry,
+                           boolean cropToSquare,
+                           GetThumbnailCallback callback);
 };
 
 interface Events {

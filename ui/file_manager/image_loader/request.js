@@ -251,6 +251,26 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
     this.contentType_ = dataUrlMatches[1];
     return;
   }
+  var drivefsUrlMatches = this.request_.url.match(/^drivefs:(.*)/);
+  if (drivefsUrlMatches) {
+    window.webkitResolveLocalFileSystemURL(
+        drivefsUrlMatches[1],
+        entry => {
+          chrome.fileManagerPrivate.getThumbnail(
+              entry, !!this.request_.crop, thumbnail => {
+                if (!thumbnail) {
+                  onFailure();
+                  return;
+                }
+                this.image_.src = thumbnail;
+                this.contentType_ = 'image/png';
+              });
+        },
+        error => {
+          onFailure();
+        });
+    return;
+  }
 
   var fileType = FileType.getTypeForName(this.request_.url);
 
@@ -551,10 +571,10 @@ ImageRequest.prototype.sendImageData_ = function(data, width, height) {
 ImageRequest.prototype.onImageLoad_ = function() {
   // Perform processing if the url is not a data url, or if there are some
   // operations requested.
-  if (!this.request_.url.match(/^data/) ||
-      ImageLoaderUtil.shouldProcess(this.image_.width,
-                                    this.image_.height,
-                                    this.request_)) {
+  if (!(this.request_.url.match(/^data/) ||
+        this.request_.url.match(/^drivefs:/)) ||
+      ImageLoaderUtil.shouldProcess(
+          this.image_.width, this.image_.height, this.request_)) {
     ImageLoaderUtil.resizeAndCrop(this.image_, this.canvas_, this.request_);
     ImageLoaderUtil.convertColorSpace(
         this.canvas_, this.request_.colorSpace || ColorSpace.SRGB);

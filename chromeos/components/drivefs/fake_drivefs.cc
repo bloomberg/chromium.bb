@@ -194,4 +194,10 @@ void FakeDriveFs::ResetCache(ResetCacheCallback callback) {
   std::move(callback).Run(drive::FILE_ERROR_OK);
 }
 
+void FakeDriveFs::GetThumbnail(const base::FilePath& path,
+                               bool crop_to_square,
+                               GetThumbnailCallback callback) {
+  std::move(callback).Run(base::nullopt);
+}
+
 }  // namespace drivefs

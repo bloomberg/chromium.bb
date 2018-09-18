@@ -16756,6 +16756,7 @@ Called by update_net_error_codes.py.-->
   <int value="1275" label="TABCAPTURE_GETMEDIASTREAMID"/>
   <int value="1276" label="WEBVIEWINTERNAL_SETSPATIALNAVIGATIONENABLED"/>
   <int value="1277" label="WEBVIEWINTERNAL_ISSPATIALNAVIGATIONENABLED"/>
+  <int value="1278" label="FILEMANAGERPRIVATEINTERNAL_GETTHUMBNAIL"/>
 </enum>
 
 <enum name="ExtensionIconState">

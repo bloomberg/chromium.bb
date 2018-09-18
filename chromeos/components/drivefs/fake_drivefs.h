@@ -58,6 +58,10 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
 
   void ResetCache(ResetCacheCallback callback) override;
 
+  void GetThumbnail(const base::FilePath& path,
+                    bool crop_to_square,
+                    GetThumbnailCallback callback) override;
+
   const base::FilePath mount_path_;
 
   std::map<base::FilePath, FileMetadata> metadata_;
