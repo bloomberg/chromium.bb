@@ -1696,8 +1696,11 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
   resource_request.SetUpgradeIfInsecure(true);
 
   KURL url = resource_request.Url();
-  if (!url.ProtocolIs("http"))
+
+  if (!url.ProtocolIs("http") ||
+      SecurityOrigin::Create(url)->IsPotentiallyTrustworthy()) {
     return;
+  }
 
   if (resource_request.GetFrameType() ==
           network::mojom::RequestContextFrameType::kNone ||

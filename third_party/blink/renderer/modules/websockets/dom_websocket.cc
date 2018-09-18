@@ -293,7 +293,8 @@ void DOMWebSocket::Connect(const String& url,
 
   if (GetExecutionContext()->GetSecurityContext().GetInsecureRequestPolicy() &
           kUpgradeInsecureRequests &&
-      url_.Protocol() == "ws") {
+      url_.Protocol() == "ws" &&
+      !SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy()) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
     url_.SetProtocol("wss");
