@@ -327,7 +327,7 @@ class ChromePrintContext : public PrintContext {
     ComputePageRects(page_size_in_pixels);
 
     const float page_width = page_size_in_pixels.Width();
-    size_t num_pages = PageRects().size();
+    wtf_size_t num_pages = PageRects().size();
     int total_height = num_pages * (page_size_in_pixels.Height() + 1) - 1;
     FloatRect all_pages_rect(0, 0, page_width, total_height);
 
@@ -340,7 +340,7 @@ class ChromePrintContext : public PrintContext {
     context.FillRect(all_pages_rect, Color::kWhite);
 
     int current_height = 0;
-    for (size_t page_index = 0; page_index < num_pages; page_index++) {
+    for (wtf_size_t page_index = 0; page_index < num_pages; page_index++) {
       // Draw a line for a page boundary if this isn't the first page.
       if (page_index > 0) {
         context.Save();
@@ -1202,7 +1202,7 @@ void WebLocalFrameImpl::RemoveSpellingMarkers() {
 void WebLocalFrameImpl::RemoveSpellingMarkersUnderWords(
     const WebVector<WebString>& words) {
   Vector<String> converted_words;
-  converted_words.Append(words.Data(), words.size());
+  converted_words.Append(words.Data(), SafeCast<wtf_size_t>(words.size()));
   GetFrame()->RemoveSpellingMarkersUnderWords(converted_words);
 }
 

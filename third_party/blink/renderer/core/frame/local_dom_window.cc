@@ -488,7 +488,7 @@ void LocalDOMWindow::SendOrientationChangeEvent() {
   // potentially interfering with others.
   HeapVector<Member<LocalFrame>> frames;
   frames.push_back(GetFrame());
-  for (size_t i = 0; i < frames.size(); i++) {
+  for (wtf_size_t i = 0; i < frames.size(); i++) {
     for (Frame* child = frames[i]->Tree().FirstChild(); child;
          child = child->Tree().NextSibling()) {
       if (child->IsLocalFrame())
@@ -845,9 +845,11 @@ int LocalDOMWindow::outerHeight() const {
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
-  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk())
-    return lroundf(chrome_client.RootWindowRect().Height() *
-                   chrome_client.GetScreenInfo().device_scale_factor);
+  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return static_cast<int>(
+        lroundf(chrome_client.RootWindowRect().Height() *
+                chrome_client.GetScreenInfo().device_scale_factor));
+  }
   return chrome_client.RootWindowRect().Height();
 }
 
@@ -860,10 +862,11 @@ int LocalDOMWindow::outerWidth() const {
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
-  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk())
-    return lroundf(chrome_client.RootWindowRect().Width() *
-                   chrome_client.GetScreenInfo().device_scale_factor);
-
+  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return static_cast<int>(
+        lroundf(chrome_client.RootWindowRect().Width() *
+                chrome_client.GetScreenInfo().device_scale_factor));
+  }
   return chrome_client.RootWindowRect().Width();
 }
 
@@ -920,9 +923,11 @@ int LocalDOMWindow::screenX() const {
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
-  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk())
-    return lroundf(chrome_client.RootWindowRect().X() *
-                   chrome_client.GetScreenInfo().device_scale_factor);
+  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return static_cast<int>(
+        lroundf(chrome_client.RootWindowRect().X() *
+                chrome_client.GetScreenInfo().device_scale_factor));
+  }
   return chrome_client.RootWindowRect().X();
 }
 
@@ -935,9 +940,11 @@ int LocalDOMWindow::screenY() const {
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
-  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk())
-    return lroundf(chrome_client.RootWindowRect().Y() *
-                   chrome_client.GetScreenInfo().device_scale_factor);
+  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return static_cast<int>(
+        lroundf(chrome_client.RootWindowRect().Y() *
+                chrome_client.GetScreenInfo().device_scale_factor));
+  }
   return chrome_client.RootWindowRect().Y();
 }
 

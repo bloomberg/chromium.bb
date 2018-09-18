@@ -265,8 +265,8 @@ void WebLocalFrameImpl::SetTickmarks(const WebVector<WebRect>& tickmarks) {
 
 void FindInPage::SetTickmarks(const WebVector<WebRect>& tickmarks) {
   if (LayoutView* layout_view = frame_->GetFrame()->ContentLayoutObject()) {
-    Vector<IntRect> tickmarks_converted(tickmarks.size());
-    for (size_t i = 0; i < tickmarks.size(); ++i)
+    Vector<IntRect> tickmarks_converted(SafeCast<wtf_size_t>(tickmarks.size()));
+    for (wtf_size_t i = 0; i < tickmarks.size(); ++i)
       tickmarks_converted[i] = tickmarks[i];
     layout_view->OverrideTickmarks(tickmarks_converted);
   }

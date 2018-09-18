@@ -355,27 +355,25 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     // in each bucket to avoid potential spikes in the distribution.
     UMA_HISTOGRAM_COUNTS_100(
         "PageSerialization.ProblemDetection.TotalImageCount",
-        static_cast<int64_t>(total_image_count_));
+        total_image_count_);
     if (total_image_count_ > 0) {
       DCHECK_LE(loaded_image_count_, total_image_count_);
       DEFINE_STATIC_LOCAL(
           LinearHistogram, image_histogram,
           ("PageSerialization.ProblemDetection.LoadedImagePercentage", 1, 100,
            21));
-      image_histogram.Count(
-          static_cast<int64_t>(loaded_image_count_ * 100 / total_image_count_));
+      image_histogram.Count(loaded_image_count_ * 100 / total_image_count_);
     }
 
     UMA_HISTOGRAM_COUNTS_100("PageSerialization.ProblemDetection.TotalCSSCount",
-                             static_cast<int64_t>(total_css_count_));
+                             total_css_count_);
     if (total_css_count_ > 0) {
       DCHECK_LE(loaded_css_count_, total_css_count_);
       DEFINE_STATIC_LOCAL(
           LinearHistogram, css_histogram,
           ("PageSerialization.ProblemDetection.LoadedCSSPercentage", 1, 100,
            21));
-      css_histogram.Count(
-          static_cast<int64_t>(loaded_css_count_ * 100 / total_css_count_));
+      css_histogram.Count(loaded_css_count_ * 100 / total_css_count_);
     }
     should_collect_problem_metric_ = false;
   }

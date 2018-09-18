@@ -52,7 +52,7 @@ void LinkHighlights::SetTapHighlights(
   // don't get a new target to highlight.
   RemoveAllHighlights();
 
-  for (size_t i = 0; i < highlight_nodes.size(); ++i) {
+  for (wtf_size_t i = 0; i < highlight_nodes.size(); ++i) {
     Node* node = highlight_nodes[i];
 
     if (!node || !node->GetLayoutObject())
