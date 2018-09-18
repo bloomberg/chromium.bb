@@ -268,9 +268,14 @@ const base::Feature kAutofillVoteUsingInvalidProfileData{
     "AutofillVoteUsingInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether password generation is offered automatically on fields
-// percieved as eligible for generation.
+// perceived as eligible for generation.
+#if defined(OS_ANDROID)
+const base::Feature kAutomaticPasswordGeneration = {
+    "AutomaticPasswordGeneration", base::FEATURE_DISABLED_BY_DEFAULT};
+#else
 const base::Feature kAutomaticPasswordGeneration = {
     "AutomaticPasswordGeneration", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 // Controls whether or not the autofill UI triggers on a single click.
 const base::Feature kSingleClickAutofill{"SingleClickAutofill",
