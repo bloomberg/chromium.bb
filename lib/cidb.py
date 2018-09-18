@@ -961,7 +961,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     return self._InsertMany('buildRequestTable', values)
 
-  @minimum_schema(56)
+  @minimum_schema(65)
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.
 
@@ -984,7 +984,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'build_type': d.get('build_type'),
                          'important': d.get('important'),
                          'unibuild': d.get('unibuild', False),
-                         'suite_scheduling': d.get('suite_scheduling', False)})
+                         'suite_scheduling': d.get('suite_scheduling', False),
+                         'branch': d.get('branch')})
 
   @minimum_schema(2)
   def GetMetadata(self, build_id):
