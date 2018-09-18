@@ -1529,7 +1529,6 @@ test("browser_tests") {
       ]
       if (!is_chromeos) {
         sources += [
-          "../browser/ui/views/frame/opaque_browser_frame_view_browsertest.cc",
           "../browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view_browsertest.cc",
           "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_browsertest.cc",
         ]
