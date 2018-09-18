@@ -66,7 +66,9 @@
 #
 #   configs (optional)
 #       List of additional configs to be applied to the generated target.
+#
 #   deps  (optional)
+#   testonly (optional)
 #   visibility  (optional)
 #       Normal meaning.
 #
@@ -321,6 +323,8 @@ template("grit") {
 
   grit_custom_target = target_name + "_grit"
   action(grit_custom_target) {
+    testonly = defined(invoker.testonly) && invoker.testonly
+
     script = "//tools/grit/grit.py"
 
     inputs = [
@@ -429,6 +433,8 @@ template("grit") {
   # This is the thing that people actually link with, it must be named the
   # same as the argument the template was invoked with.
   source_set(target_name) {
+    testonly = defined(invoker.testonly) && invoker.testonly
+
     # Since we generate a file, we need to be run before the targets that
     # depend on us.
     sources = grit_outputs
