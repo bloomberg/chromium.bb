@@ -40,6 +40,54 @@ using base::android::ToJavaArrayOfByteArray;
 using base::android::ToJavaArrayOfStrings;
 using base::android::JavaByteArrayToByteVector;
 
+namespace {
+
+void OnLoadContentDone(ScopedJavaGlobalRef<jobject> success_callback,
+                       ScopedJavaGlobalRef<jobject> failure_callback,
+                       bool success,
+                       std::vector<FeedContentDatabase::KeyAndData> pairs) {
+  std::vector<std::string> keys;
+  std::vector<std::string> data;
+  for (auto pair : pairs) {
+    keys.push_back(std::move(pair.first));
+    data.push_back(std::move(pair.second));
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> j_keys = ToJavaArrayOfStrings(env, keys);
+  ScopedJavaLocalRef<jobjectArray> j_data = ToJavaArrayOfByteArray(env, data);
+
+  // Create Java Map by JNI call.
+  ScopedJavaLocalRef<jobject> j_pairs =
+      Java_FeedContentBridge_createKeyAndDataMap(env, j_keys, j_data);
+
+  if (!success) {
+    RunObjectCallbackAndroid(failure_callback, nullptr);
+    return;
+  }
+  RunObjectCallbackAndroid(success_callback, j_pairs);
+}
+
+void OnLoadAllContentKeysDone(ScopedJavaGlobalRef<jobject> success_callback,
+                              ScopedJavaGlobalRef<jobject> failure_callback,
+                              bool success,
+                              std::vector<std::string> keys) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> j_keys = ToJavaArrayOfStrings(env, keys);
+
+  if (!success) {
+    RunObjectCallbackAndroid(failure_callback, nullptr);
+    return;
+  }
+  RunObjectCallbackAndroid(success_callback, j_keys);
+}
+
+void OnStorageCommitDone(ScopedJavaGlobalRef<jobject> callback, bool success) {
+  RunBooleanCallbackAndroid(callback, success);
+}
+
+}  // namespace
+
 static jlong JNI_FeedContentBridge_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_this,
@@ -77,9 +125,8 @@ void FeedContentBridge::LoadContent(
   ScopedJavaGlobalRef<jobject> failure_callback(j_failure_callback);
 
   feed_content_database_->LoadContent(
-      keys, base::BindOnce(&FeedContentBridge::OnLoadContentDone,
-                           weak_ptr_factory_.GetWeakPtr(), success_callback,
-                           failure_callback));
+      keys,
+      base::BindOnce(&OnLoadContentDone, success_callback, failure_callback));
 }
 
 void FeedContentBridge::LoadContentByPrefix(
@@ -93,9 +140,8 @@ void FeedContentBridge::LoadContentByPrefix(
   ScopedJavaGlobalRef<jobject> failure_callback(j_failure_callback);
 
   feed_content_database_->LoadContentByPrefix(
-      prefix, base::BindOnce(&FeedContentBridge::OnLoadContentDone,
-                             weak_ptr_factory_.GetWeakPtr(), success_callback,
-                             failure_callback));
+      prefix,
+      base::BindOnce(&OnLoadContentDone, success_callback, failure_callback));
 }
 
 void FeedContentBridge::LoadAllContentKeys(
@@ -107,8 +153,7 @@ void FeedContentBridge::LoadAllContentKeys(
   ScopedJavaGlobalRef<jobject> failure_callback(j_failure_callback);
 
   feed_content_database_->LoadAllContentKeys(base::BindOnce(
-      &FeedContentBridge::OnLoadAllContentKeysDone,
-      weak_ptr_factory_.GetWeakPtr(), success_callback, failure_callback));
+      &OnLoadAllContentKeysDone, success_callback, failure_callback));
 }
 
 void FeedContentBridge::CommitContentMutation(
@@ -120,8 +165,7 @@ void FeedContentBridge::CommitContentMutation(
 
   feed_content_database_->CommitContentMutation(
       std::move(content_mutation_),
-      base::BindOnce(&FeedContentBridge::OnStorageCommitDone,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&OnStorageCommitDone, callback));
 }
 
 void FeedContentBridge::CreateContentMutation(JNIEnv* j_env,
@@ -175,54 +219,6 @@ void FeedContentBridge::AppendDeleteAllOperation(
   DCHECK(content_mutation_);
 
   content_mutation_->AppendDeleteAllOperation();
-}
-
-void FeedContentBridge::OnLoadContentDone(
-    ScopedJavaGlobalRef<jobject> success_callback,
-    ScopedJavaGlobalRef<jobject> failure_callback,
-    bool success,
-    std::vector<FeedContentDatabase::KeyAndData> pairs) {
-  std::vector<std::string> keys;
-  std::vector<std::string> data;
-  for (auto pair : pairs) {
-    keys.push_back(std::move(pair.first));
-    data.push_back(std::move(pair.second));
-  }
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobjectArray> j_keys = ToJavaArrayOfStrings(env, keys);
-  ScopedJavaLocalRef<jobjectArray> j_data = ToJavaArrayOfByteArray(env, data);
-
-  // Create Java Map by JNI call.
-  ScopedJavaLocalRef<jobject> j_pairs =
-      Java_FeedContentBridge_createKeyAndDataMap(env, j_keys, j_data);
-
-  if (!success) {
-    RunObjectCallbackAndroid(failure_callback, j_pairs);
-    return;
-  }
-  RunObjectCallbackAndroid(success_callback, j_pairs);
-}
-
-void FeedContentBridge::OnLoadAllContentKeysDone(
-    ScopedJavaGlobalRef<jobject> success_callback,
-    ScopedJavaGlobalRef<jobject> failure_callback,
-    bool success,
-    std::vector<std::string> keys) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobjectArray> j_keys = ToJavaArrayOfStrings(env, keys);
-
-  if (!success) {
-    RunObjectCallbackAndroid(failure_callback, j_keys);
-    return;
-  }
-  RunObjectCallbackAndroid(success_callback, j_keys);
-}
-
-void FeedContentBridge::OnStorageCommitDone(
-    ScopedJavaGlobalRef<jobject> callback,
-    bool success) {
-  RunBooleanCallbackAndroid(callback, success);
 }
 
 }  // namespace feed

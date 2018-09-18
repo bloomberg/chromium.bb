@@ -35,11 +35,14 @@ class FeedJournalDatabase {
   // Returns the journal data as a vector of strings when calling loading data
   // or keys.
   using JournalLoadCallback =
-      base::OnceCallback<void(std::vector<std::string>)>;
+      base::OnceCallback<void(bool, std::vector<std::string>)>;
+
+  // Return whether the entry exists when calling for checking
+  // the entry's existence.
+  using CheckExistingCallback = base::OnceCallback<void(bool, bool)>;
 
   // Returns whether the commit operation succeeded when calling for database
-  // operations, or return whether the entry exists when calling for checking
-  // the entry's existence.
+  // operations.
   using ConfirmationCallback = base::OnceCallback<void(bool)>;
 
   using JournalMap = base::flat_map<std::string, JournalStorageProto>;
@@ -66,7 +69,7 @@ class FeedJournalDatabase {
 
   // Checks if the journal for the |key| exists, and return the result to
   // |callback|.
-  void DoesJournalExist(const std::string& key, ConfirmationCallback callback);
+  void DoesJournalExist(const std::string& key, CheckExistingCallback callback);
 
   // Commits the operations in the |journal_mutation|. |callback| will be called
   // when all the operations are committed. Or if any operation failed, database
@@ -99,7 +102,7 @@ class FeedJournalDatabase {
                                 bool success,
                                 std::unique_ptr<JournalStorageProto> journal);
   void OnGetEntryForDoesJournalExist(
-      ConfirmationCallback callback,
+      CheckExistingCallback callback,
       bool success,
       std::unique_ptr<JournalStorageProto> journal);
   void OnGetEntryForCommitJournalMutation(

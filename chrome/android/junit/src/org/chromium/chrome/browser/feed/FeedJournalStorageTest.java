@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.feed;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,6 +34,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.profiles.Profile;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -73,50 +74,62 @@ public class FeedJournalStorageTest {
     @Captor
     private ArgumentCaptor<String> mStringArgument;
     @Captor
-    private ArgumentCaptor<Callback<Boolean>> mBooleanCallbackArgument;
+    private ArgumentCaptor<Callback<Boolean>> mBooleanSuccessCallbackArgument;
     @Captor
-            private ArgumentCaptor < Callback < List<String>>> mListOfStringCallbackArgument;
+            private ArgumentCaptor < Callback < List<String>>> mListOfStringSuccessCallbackArgument;
     @Captor
-    private ArgumentCaptor<Callback<String[]>> mStringArrayCallbackArgument;
+    private ArgumentCaptor<Callback<String[]>> mStringArraySuccessCallbackArgument;
+    @Captor
+    private ArgumentCaptor<Callback<Void>> mFailureCallbackArgument;
     @Captor
     private ArgumentCaptor<JournalMutation> mJournalMutationArgument;
 
     private FeedJournalStorage mJournalStorage;
 
-    private Answer<Void> createStringArrayAnswer(String[] stringArray) {
+    private Answer<Void> createStringArraySuccessAnswer(String[] stringArray) {
         return new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) {
-                mStringArrayCallbackArgument.getValue().onResult(stringArray);
+                mStringArraySuccessCallbackArgument.getValue().onResult(stringArray);
                 return null;
             }
         };
     }
 
-    private Answer<Void> createStringListAnswer(List<String> stringList) {
+    private Answer<Void> createFailureAnswer() {
         return new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) {
-                mListOfStringCallbackArgument.getValue().onResult(stringList);
+                mFailureCallbackArgument.getValue().onResult(null);
                 return null;
             }
         };
     }
 
-    private Answer<Void> createBooleanAnswer(Boolean bool) {
+    private Answer<Void> createStringListSuccessAnswer(List<String> stringList) {
         return new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) {
-                mBooleanCallbackArgument.getValue().onResult(bool);
+                mListOfStringSuccessCallbackArgument.getValue().onResult(stringList);
+                return null;
+            }
+        };
+    }
+
+    private Answer<Void> createBooleanSuccessAnswer(Boolean bool) {
+        return new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                mBooleanSuccessCallbackArgument.getValue().onResult(bool);
                 return null;
             }
         };
     }
 
     private void verifyListOfBytesResult(
-            List<String> expectedList, boolean expectedBoolean, Result<List<byte[]>> actualResult) {
-        assertEquals(expectedBoolean, actualResult.isSuccessful());
-        if (!expectedBoolean) return;
+            List<String> expectedList, boolean expectedSuccess, Result<List<byte[]>> actualResult) {
+        assertEquals(expectedSuccess, actualResult.isSuccessful());
+        if (!expectedSuccess) return;
 
         List<byte[]> actualList = actualResult.getValue();
         assertEquals(expectedList.size(), actualList.size());
@@ -126,15 +139,15 @@ public class FeedJournalStorageTest {
     }
 
     private void verifyListOfBytesResult(
-            String[] expectedString, boolean expectedBoolean, Result<List<byte[]>> actualResult) {
+            String[] expectedString, boolean expectedSuccess, Result<List<byte[]>> actualResult) {
         List<String> expectedList = Arrays.asList(expectedString);
-        verifyListOfBytesResult(expectedList, expectedBoolean, actualResult);
+        verifyListOfBytesResult(expectedList, expectedSuccess, actualResult);
     }
 
     private void verifyListOfStringResult(
-            List<String> expectedList, boolean expectedBoolean, Result<List<String>> actualResult) {
-        assertEquals(expectedBoolean, actualResult.isSuccessful());
-        if (!expectedBoolean) return;
+            List<String> expectedList, boolean expectedSuccess, Result<List<String>> actualResult) {
+        assertEquals(expectedSuccess, actualResult.isSuccessful());
+        if (!expectedSuccess) return;
 
         List<String> actualList = actualResult.getValue();
         assertEquals(expectedList.size(), actualList.size());
@@ -146,8 +159,6 @@ public class FeedJournalStorageTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        doNothing().when(mBridge).init(eq(mProfile));
-        mBridge.init(mProfile);
         mJournalStorage = new FeedJournalStorage(mBridge);
     }
 
@@ -155,52 +166,104 @@ public class FeedJournalStorageTest {
     @SmallTest
     public void readTest() {
         String[] answerStrings = {JOURNAL_DATA1, JOURNAL_DATA2, JOURNAL_DATA3};
-        Answer<Void> answer = createStringArrayAnswer(answerStrings);
-        doAnswer(answer).when(mBridge).loadJournal(
-                mStringArgument.capture(), mStringArrayCallbackArgument.capture());
+        Answer<Void> answer = createStringArraySuccessAnswer(answerStrings);
+        doAnswer(answer).when(mBridge).loadJournal(mStringArgument.capture(),
+                mStringArraySuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
 
         mJournalStorage.read(JOURNAL_KEY1, mListOfByteArrayConsumer);
         verify(mBridge, times(1))
-                .loadJournal(eq(JOURNAL_KEY1), mStringArrayCallbackArgument.capture());
+                .loadJournal(eq(JOURNAL_KEY1), mStringArraySuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
         verify(mListOfByteArrayConsumer, times(1)).accept(mListOfByteArrayCaptor.capture());
         verifyListOfBytesResult(answerStrings, true, mListOfByteArrayCaptor.getValue());
     }
 
     @Test
     @SmallTest
+    public void readFailureTest() {
+        String[] answerStrings = {};
+        Answer<Void> answer = createFailureAnswer();
+        doAnswer(answer).when(mBridge).loadJournal(mStringArgument.capture(),
+                mStringArraySuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
+
+        mJournalStorage.read(JOURNAL_KEY1, mListOfByteArrayConsumer);
+        verify(mBridge, times(1))
+                .loadJournal(eq(JOURNAL_KEY1), mStringArraySuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
+        verify(mListOfByteArrayConsumer, times(1)).accept(mListOfByteArrayCaptor.capture());
+        verifyListOfBytesResult(answerStrings, false, mListOfByteArrayCaptor.getValue());
+    }
+
+    @Test
+    @SmallTest
     public void existsTest() {
-        Answer<Void> answer = createBooleanAnswer(true);
-        doAnswer(answer).when(mBridge).doesJournalExist(
-                mStringArgument.capture(), mBooleanCallbackArgument.capture());
+        Answer<Void> answer = createBooleanSuccessAnswer(true);
+        doAnswer(answer).when(mBridge).doesJournalExist(mStringArgument.capture(),
+                mBooleanSuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
 
         mJournalStorage.exists(JOURNAL_KEY1, mBooleanConsumer);
         verify(mBridge, times(1))
-                .doesJournalExist(eq(JOURNAL_KEY1), mBooleanCallbackArgument.capture());
+                .doesJournalExist(eq(JOURNAL_KEY1), mBooleanSuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
         verify(mBooleanConsumer, times(1)).accept(mBooleanCaptor.capture());
         assertTrue(mBooleanCaptor.getValue().getValue());
     }
 
     @Test
     @SmallTest
+    public void existsFailureTest() {
+        Answer<Void> answer = createFailureAnswer();
+        doAnswer(answer).when(mBridge).doesJournalExist(mStringArgument.capture(),
+                mBooleanSuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
+
+        mJournalStorage.exists(JOURNAL_KEY1, mBooleanConsumer);
+        verify(mBridge, times(1))
+                .doesJournalExist(eq(JOURNAL_KEY1), mBooleanSuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
+        verify(mBooleanConsumer, times(1)).accept(mBooleanCaptor.capture());
+        assertFalse(mBooleanCaptor.getValue().isSuccessful());
+    }
+
+    @Test
+    @SmallTest
     public void getAllJournalsTest() {
         List<String> answerStrings = Arrays.asList(JOURNAL_KEY1, JOURNAL_KEY2, JOURNAL_KEY3);
-        Answer<Void> answer = createStringListAnswer(answerStrings);
-        doAnswer(answer).when(mBridge).loadAllJournalKeys(mListOfStringCallbackArgument.capture());
+        Answer<Void> answer = createStringListSuccessAnswer(answerStrings);
+        doAnswer(answer).when(mBridge).loadAllJournalKeys(
+                mListOfStringSuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
 
         mJournalStorage.getAllJournals(mListOfStringConsumer);
-        verify(mBridge, times(1)).loadAllJournalKeys(mListOfStringCallbackArgument.capture());
+        verify(mBridge, times(1))
+                .loadAllJournalKeys(mListOfStringSuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
         verify(mListOfStringConsumer, times(1)).accept(mListOfStringCaptor.capture());
         verifyListOfStringResult(answerStrings, true, mListOfStringCaptor.getValue());
     }
 
     @Test
     @SmallTest
+    public void getAllJournalsFailureTest() {
+        List<String> answerStrings = new ArrayList<String>();
+        Answer<Void> answer = createFailureAnswer();
+        doAnswer(answer).when(mBridge).loadAllJournalKeys(
+                mListOfStringSuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
+
+        mJournalStorage.getAllJournals(mListOfStringConsumer);
+        verify(mBridge, times(1))
+                .loadAllJournalKeys(mListOfStringSuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
+        verify(mListOfStringConsumer, times(1)).accept(mListOfStringCaptor.capture());
+        assertFalse(mListOfStringCaptor.getValue().isSuccessful());
+    }
+
+    @Test
+    @SmallTest
     public void deleteAllTest() {
-        Answer<Void> answer = createBooleanAnswer(true);
-        doAnswer(answer).when(mBridge).deleteAllJournals(mBooleanCallbackArgument.capture());
+        Answer<Void> answer = createBooleanSuccessAnswer(true);
+        doAnswer(answer).when(mBridge).deleteAllJournals(mBooleanSuccessCallbackArgument.capture());
 
         mJournalStorage.deleteAll(mCommitResultConsumer);
-        verify(mBridge, times(1)).deleteAllJournals(mBooleanCallbackArgument.capture());
+        verify(mBridge, times(1)).deleteAllJournals(mBooleanSuccessCallbackArgument.capture());
         verify(mCommitResultConsumer, times(1)).accept(mCommitResultCaptor.capture());
         CommitResult commitResult = mCommitResultCaptor.getValue();
         assertEquals(CommitResult.SUCCESS, commitResult);
@@ -209,11 +272,11 @@ public class FeedJournalStorageTest {
     @Test
     @SmallTest
     public void commitTest() {
-        Answer<Void> answerCommitJournal = createBooleanAnswer(true);
+        Answer<Void> answerCommitJournal = createBooleanSuccessAnswer(true);
         doAnswer(answerCommitJournal)
                 .when(mBridge)
-                .commitJournalMutation(
-                        mJournalMutationArgument.capture(), mBooleanCallbackArgument.capture());
+                .commitJournalMutation(mJournalMutationArgument.capture(),
+                        mBooleanSuccessCallbackArgument.capture());
 
         mJournalStorage.commit(new JournalMutation.Builder(JOURNAL_KEY1)
                                        .append(JOURNAL_DATA1.getBytes())
@@ -222,8 +285,8 @@ public class FeedJournalStorageTest {
                                        .build(),
                 mCommitResultConsumer);
         verify(mBridge, times(1))
-                .commitJournalMutation(
-                        mJournalMutationArgument.capture(), mBooleanCallbackArgument.capture());
+                .commitJournalMutation(mJournalMutationArgument.capture(),
+                        mBooleanSuccessCallbackArgument.capture());
 
         verify(mCommitResultConsumer, times(1)).accept(mCommitResultCaptor.capture());
         CommitResult commitResult = mCommitResultCaptor.getValue();
