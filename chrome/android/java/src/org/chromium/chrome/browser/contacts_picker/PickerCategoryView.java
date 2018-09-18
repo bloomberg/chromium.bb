@@ -249,7 +249,8 @@ public class PickerCategoryView extends RelativeLayout
         } else if (id == R.id.action) {
             if (mSelectAllMode) {
                 mPreviousSelection = mSelectionDelegate.getSelectedItems();
-                mSelectionDelegate.setSelectedItems(mPickerAdapter.getAllContacts());
+                mSelectionDelegate.setSelectedItems(
+                        new HashSet<ContactDetails>(mPickerAdapter.getAllContacts()));
                 mActionButton.setImageResource(R.drawable.ic_undo);
                 mActionButton.setContentDescription(mLabelUndo);
             } else {
