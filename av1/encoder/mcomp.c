@@ -1897,7 +1897,7 @@ static int full_pixel_exhaustive(const AV1_COMP *const cpi, MACROBLOCK *x,
   int baseline_interval_divisor;
 
   // Keep track of number of exhaustive calls (this frame in this thread).
-  ++(*x->ex_search_count_ptr);
+  if (x->ex_search_count_ptr != NULL) ++(*x->ex_search_count_ptr);
 
   // Trap illegal values for interval and range for this function.
   if ((range < MIN_RANGE) || (range > MAX_RANGE) || (interval < MIN_INTERVAL) ||
@@ -2117,13 +2117,16 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
 #define MIN_EX_SEARCH_LIMIT 128
 static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x) {
   const SPEED_FEATURES *const sf = &cpi->sf;
-  const int max_ex =
-      AOMMAX(MIN_EX_SEARCH_LIMIT,
-             (*x->m_search_count_ptr * sf->max_exaustive_pct) / 100);
-
-  return sf->allow_exhaustive_searches &&
-         (sf->exhaustive_searches_thresh < INT_MAX) &&
-         (*x->ex_search_count_ptr <= max_ex) && !cpi->rc.is_src_frame_alt_ref;
+  int is_allowed = sf->allow_exhaustive_searches &&
+                   (sf->exhaustive_searches_thresh < INT_MAX) &&
+                   !cpi->rc.is_src_frame_alt_ref;
+  if (x->m_search_count_ptr != NULL && x->ex_search_count_ptr != NULL) {
+    const int max_ex =
+        AOMMAX(MIN_EX_SEARCH_LIMIT,
+               (*x->m_search_count_ptr * sf->max_exaustive_pct) / 100);
+    is_allowed = *x->ex_search_count_ptr <= max_ex && is_allowed;
+  }
+  return is_allowed;
 }
 
 int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
@@ -2144,7 +2147,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   }
 
   // Keep track of number of searches (this frame in this thread).
-  ++(*x->m_search_count_ptr);
+  if (x->m_search_count_ptr != NULL) ++(*x->m_search_count_ptr);
 
   switch (method) {
     case FAST_DIAMOND:

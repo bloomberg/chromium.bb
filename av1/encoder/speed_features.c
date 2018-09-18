@@ -566,4 +566,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 
   if (cpi->oxcf.using_dist_8x8) x->min_partition_size = BLOCK_8X8;
 #endif  // CONFIG_DIST_8X8
+  if (cpi->row_mt == 1) {
+    sf->adaptive_rd_thresh = 0;
+    sf->inter_mode_rd_model_estimation = 0;
+  }
 }
