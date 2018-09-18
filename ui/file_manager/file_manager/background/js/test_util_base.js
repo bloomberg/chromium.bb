@@ -584,6 +584,22 @@ test.util.async.getFilesUnderVolume = function(volumeType, names, callback) {
 };
 
 /**
+ * Unmounts the specified volume.
+ *
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @param {function(boolean)} callback Function receives true on success.
+ */
+test.util.async.unmount = function(volumeType, callback) {
+  volumeManagerFactory.getInstance().then((volumeManager) => {
+    const volumeInfo = volumeManager.getCurrentProfileVolumeInfo(volumeType);
+    if (volumeInfo) {
+      volumeManager.unmount(
+          volumeInfo, callback.bind(null, true), callback.bind(null, false));
+    }
+  });
+};
+
+/**
  * Registers message listener, which runs test utility functions.
  */
 test.util.registerRemoteTestUtils = function() {

@@ -206,7 +206,7 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
         var volumeInfo = volumeInfoIndex !== -1 ?
             this.volumeInfoList.item(volumeInfoIndex) : null;
         if (event.status === 'success' && !requested && volumeInfo) {
-          console.warn('Mounted volume without a request: ' + volumeId);
+          console.warn('Unmounted volume without a request: ' + volumeId);
           var e = new Event('externally-unmounted');
           e.volumeInfo = volumeInfo;
           this.dispatchEvent(e);
