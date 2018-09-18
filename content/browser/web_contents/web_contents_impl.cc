@@ -5051,12 +5051,6 @@ void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
   if (showing_context_menu_)
     return;
 
-  // If the WebContents is not visible, don't show the context menu. This can
-  // happen if the renderer takes a while to return the right-click event back
-  // to the browser process and in the meantime the user switches tabs.
-  if (GetVisibility() != Visibility::VISIBLE)
-    return;
-
   ContextMenuParams context_menu_params(params);
   // Allow WebContentsDelegates to handle the context menu operation first.
   if (delegate_ && delegate_->HandleContextMenu(context_menu_params))
