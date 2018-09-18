@@ -38,7 +38,6 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
                                        PageActionIconView::Delegate* delegate,
                                        const gfx::FontList& font_list)
     : IconLabelBubbleView(font_list),
-      widget_observer_(this),
       icon_size_(GetLayoutConstant(LOCATION_BAR_ICON_SIZE)),
       command_updater_(command_updater),
       delegate_(delegate),
@@ -72,19 +71,6 @@ bool PageActionIconView::SetCommandEnabled(bool enabled) const {
   DCHECK(command_updater_);
   command_updater_->UpdateCommandEnabled(command_id_, enabled);
   return command_updater_->IsCommandEnabled(command_id_);
-}
-
-void PageActionIconView::SetHighlighted(bool bubble_visible) {
-  AnimateInkDrop(bubble_visible ? views::InkDropState::ACTIVATED
-                                : views::InkDropState::DEACTIVATED,
-                 nullptr);
-}
-
-void PageActionIconView::OnBubbleWidgetCreated(views::Widget* bubble_widget) {
-  widget_observer_.SetWidget(bubble_widget);
-
-  if (bubble_widget->IsVisible())
-    SetHighlighted(true);
 }
 
 bool PageActionIconView::Update() {
@@ -271,26 +257,4 @@ void PageActionIconView::SetActiveInternal(bool active) {
 
 content::WebContents* PageActionIconView::GetWebContents() const {
   return delegate_->GetWebContentsForPageActionIconView();
-}
-
-PageActionIconView::WidgetObserver::WidgetObserver(PageActionIconView* parent)
-    : parent_(parent), scoped_observer_(this) {}
-
-PageActionIconView::WidgetObserver::~WidgetObserver() = default;
-
-void PageActionIconView::WidgetObserver::SetWidget(views::Widget* widget) {
-  scoped_observer_.RemoveAll();
-  scoped_observer_.Add(widget);
-}
-
-void PageActionIconView::WidgetObserver::OnWidgetDestroying(
-    views::Widget* widget) {
-  scoped_observer_.Remove(widget);
-}
-
-void PageActionIconView::WidgetObserver::OnWidgetVisibilityChanged(
-    views::Widget* widget,
-    bool visible) {
-  // |widget| is a bubble that has just got shown / hidden.
-  parent_->SetHighlighted(visible);
 }

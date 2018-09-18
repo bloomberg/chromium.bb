@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/views/bubble/bubble_border.h"
+#include "ui/views/view_tracker.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -27,7 +28,7 @@ class Rect;
 namespace views {
 
 class BubbleFrameView;
-class ViewTracker;
+class Button;
 
 // BubbleDialogDelegateView is a special DialogDelegateView for bubbles.
 class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
@@ -67,6 +68,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   View* GetAnchorView() const;
   Widget* anchor_widget() const { return anchor_widget_; }
+
+  void SetHighlightedButton(Button* highlighted_button);
 
   // The anchor rect is used in the absence of an assigned anchor view.
   const gfx::Rect& anchor_rect() const { return anchor_rect_; }
@@ -182,6 +185,10 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // When a bubble is visible, the anchor widget should always render as active.
   void UpdateAnchorWidgetRenderState(bool visible);
 
+  // Update the button highlight, which may be the anchor view or an explicit
+  // view set in |highlighted_button_tracker_|.
+  void UpdateHighlightedButton(bool highlighted);
+
   // A flag controlling bubble closure on deactivation.
   bool close_on_deactivate_;
 
@@ -190,6 +197,11 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // it from there. It will make sure that the view is still valid.
   std::unique_ptr<ViewTracker> anchor_view_tracker_;
   Widget* anchor_widget_;
+
+  // If provided, this button should be highlighted while the bubble is visible.
+  // If not provided, the anchor_view will attempt to be highlighted. A
+  // ViewTracker is used because the view can be deleted.
+  ViewTracker highlighted_button_tracker_;
 
   // The anchor rect used in the absence of an anchor view.
   mutable gfx::Rect anchor_rect_;

@@ -33,7 +33,8 @@ class BubbleDialogDelegateView;
 // The ContentSettingImageView displays an icon and optional text label for
 // various content settings affordances in the location bar (i.e. plugin
 // blocking, geolocation).
-class ContentSettingImageView : public IconLabelBubbleView {
+class ContentSettingImageView : public IconLabelBubbleView,
+                                public views::WidgetObserver {
  public:
   class Delegate {
    public:
@@ -71,6 +72,8 @@ class ContentSettingImageView : public IconLabelBubbleView {
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   SkColor GetInkDropBaseColor() const override;
   SkColor GetTextColor() const override;
@@ -83,7 +86,6 @@ class ContentSettingImageView : public IconLabelBubbleView {
  private:
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
-  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   // Updates the image and tooltip to match the current model state.
   void UpdateImage();

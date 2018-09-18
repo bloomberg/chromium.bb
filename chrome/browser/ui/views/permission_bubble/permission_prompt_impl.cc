@@ -258,6 +258,7 @@ void PermissionsBubbleDialogDelegateView::UpdateAnchor() {
   AnchorConfiguration configuration =
       GetPermissionAnchorConfiguration(owner_->browser());
   SetAnchorView(configuration.anchor_view);
+  SetHighlightedButton(configuration.highlighted_button);
   if (!configuration.anchor_view)
     SetAnchorRect(GetPermissionAnchorRect(owner_->browser()));
   SetArrow(configuration.bubble_arrow);

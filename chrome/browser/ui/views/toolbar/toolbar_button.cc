@@ -84,7 +84,8 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
     // ToolbarButtons are always the height the location bar.
     const gfx::Insets bg_insets(
         (height() - GetLayoutConstant(LOCATION_BAR_HEIGHT)) / 2);
-    const SkColor bg_color = SkColorSetA(*highlight_color_, 32);
+    const SkColor bg_color =
+        SkColorSetA(*highlight_color_, kToolbarButtonBackgroundAlpha);
     SetBackground(views::CreateBackgroundFromPainter(
         views::Painter::CreateSolidRoundRectPainter(
             bg_color, ink_drop_large_corner_radius(), bg_insets)));

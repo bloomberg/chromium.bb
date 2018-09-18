@@ -39,8 +39,6 @@ void StarView::SetToggled(bool on) {
 void StarView::ShowPromo() {
   BookmarkPromoBubbleView* bookmark_promo_bubble =
       BookmarkPromoBubbleView::CreateOwned(this);
-
-  OnBubbleWidgetCreated(bookmark_promo_bubble->GetWidget());
   if (!bookmark_promo_observer_.IsObserving(
           bookmark_promo_bubble->GetWidget())) {
     bookmark_promo_observer_.Add(bookmark_promo_bubble->GetWidget());

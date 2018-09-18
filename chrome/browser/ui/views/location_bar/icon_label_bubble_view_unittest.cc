@@ -75,7 +75,7 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
   }
 
   void HideBubble() {
-    OnWidgetVisibilityChanged(nullptr, false);
+    AnimateInkDrop(views::InkDropState::HIDDEN, nullptr /* event */);
     is_bubble_showing_ = false;
   }
 
@@ -112,6 +112,7 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
   bool IsShrinking() const override { return state() == SHRINKING; }
 
   bool ShowBubble(const ui::Event& event) override {
+    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr /* event */);
     is_bubble_showing_ = true;
     return true;
   }

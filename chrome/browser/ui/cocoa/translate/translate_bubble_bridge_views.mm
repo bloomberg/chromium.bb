@@ -24,8 +24,8 @@ void ShowTranslateBubbleViews(NSWindow* parent_window,
   TranslateBubbleView::DisplayReason reason =
       is_user_gesture ? TranslateBubbleView::USER_GESTURE
                       : TranslateBubbleView::AUTOMATIC;
-  TranslateBubbleView::ShowBubble(nullptr, anchor_point, web_contents, step,
-                                  error_type, reason);
+  TranslateBubbleView::ShowBubble(nullptr, nullptr, anchor_point, web_contents,
+                                  step, error_type, reason);
   if (TranslateBubbleView::GetCurrentBubble()) {
     KeepBubbleAnchored(TranslateBubbleView::GetCurrentBubble(),
                        location_bar->translate_decoration());

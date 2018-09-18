@@ -16,7 +16,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/widget/widget_observer.h"
 
 class CommandUpdater;
 
@@ -48,10 +47,6 @@ class PageActionIconView : public IconLabelBubbleView {
   void SetIconColor(SkColor icon_color);
 
   void set_icon_size(int size) { icon_size_ = size; }
-
-  // Invoked when a bubble for this icon is created. The PageActionIconView
-  // changes highlights based on this widget's visibility.
-  void OnBubbleWidgetCreated(views::Widget* bubble_widget);
 
   // Returns the bubble instance for the icon.
   virtual views::BubbleDialogDelegateView* GetBubble() const = 0;
@@ -141,30 +136,6 @@ class PageActionIconView : public IconLabelBubbleView {
   bool active() const { return active_; }
 
  private:
-  class WidgetObserver : public views::WidgetObserver {
-   public:
-    explicit WidgetObserver(PageActionIconView* parent);
-    ~WidgetObserver() override;
-
-    void SetWidget(views::Widget* widget);
-
-   private:
-    // views::WidgetObserver:
-    void OnWidgetDestroying(views::Widget* widget) override;
-    void OnWidgetVisibilityChanged(views::Widget* widget,
-                                   bool visible) override;
-
-    PageActionIconView* const parent_;
-    ScopedObserver<views::Widget, views::WidgetObserver> scoped_observer_;
-    DISALLOW_COPY_AND_ASSIGN(WidgetObserver);
-  };
-
-  // Highlights the ink drop for the icon, used when the corresponding widget
-  // is visible.
-  void SetHighlighted(bool bubble_visible);
-
-  WidgetObserver widget_observer_;
-
   // The size of the icon image (excluding the ink drop).
   int icon_size_;
 

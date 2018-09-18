@@ -54,6 +54,7 @@ BookmarkBubbleView* BookmarkBubbleView::bookmark_bubble_ = nullptr;
 // static
 views::Widget* BookmarkBubbleView::ShowBubble(
     views::View* anchor_view,
+    views::Button* highlighted_button,
     const gfx::Rect& anchor_rect,
     gfx::NativeView parent_window,
     bookmarks::BookmarkBubbleObserver* observer,
@@ -75,6 +76,8 @@ views::Widget* BookmarkBubbleView::ShowBubble(
     bookmark_bubble_->SetAnchorRect(anchor_rect);
     bookmark_bubble_->set_parent_window(parent_window);
   }
+  if (highlighted_button)
+    bookmark_bubble_->SetHighlightedButton(highlighted_button);
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(bookmark_bubble_);
   bubble_widget->Show();

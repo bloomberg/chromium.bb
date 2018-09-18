@@ -1349,11 +1349,11 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
 
   DCHECK(bubble);
 
-  views::Widget* bubble_widget =
-      views::BubbleDialogDelegateView::CreateBubble(bubble);
-
   if (card_view)
-    card_view->OnBubbleWidgetCreated(bubble_widget);
+    bubble->SetHighlightedButton(card_view);
+
+  views::BubbleDialogDelegateView::CreateBubble(bubble);
+
   bubble->Show(user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
                             : autofill::SaveCardBubbleViews::AUTOMATIC);
   return bubble;
@@ -1366,14 +1366,13 @@ autofill::LocalCardMigrationBubble* BrowserView::ShowLocalCardMigrationBubble(
   LocationBarView* location_bar = GetLocationBarView();
   PageActionIconView* card_view =
       location_bar->local_card_migration_icon_view();
-
   autofill::LocalCardMigrationBubbleViews* bubble =
       new autofill::LocalCardMigrationBubbleViews(location_bar, gfx::Point(),
                                                   web_contents, controller);
-  views::Widget* bubble_widget =
-      views::BubbleDialogDelegateView::CreateBubble(bubble);
   if (card_view)
-    card_view->OnBubbleWidgetCreated(bubble_widget);
+    bubble->SetHighlightedButton(card_view);
+
+  views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show(user_gesture
                    ? autofill::LocalCardMigrationBubbleViews::USER_GESTURE
                    : autofill::LocalCardMigrationBubbleViews::AUTOMATIC);

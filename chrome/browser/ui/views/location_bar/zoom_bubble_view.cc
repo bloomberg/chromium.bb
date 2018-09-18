@@ -163,19 +163,19 @@ void ParentToViewsBrowser(Browser* browser,
                           ZoomBubbleView* zoom_bubble,
                           views::View* anchor_view,
                           content::WebContents* web_contents) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  // If we do not have an anchor view, parent the bubble to the content area.
-  if (!anchor_view)
+  // If the anchor view exists the zoom icon should be highlighed.
+  if (anchor_view) {
+    zoom_bubble->SetHighlightedButton(
+        BrowserView::GetBrowserViewForBrowser(browser)
+            ->toolbar_button_provider()
+            ->GetPageActionIconContainerView()
+            ->GetPageActionIconView(PageActionIconType::kZoom));
+  } else {
+    // If we do not have an anchor view, parent the bubble to the content area.
     zoom_bubble->set_parent_window(web_contents->GetNativeView());
-
-  views::Widget* zoom_bubble_widget =
-      views::BubbleDialogDelegateView::CreateBubble(zoom_bubble);
-  if (zoom_bubble_widget && anchor_view) {
-    browser_view->toolbar_button_provider()
-        ->GetPageActionIconContainerView()
-        ->GetPageActionIconView(PageActionIconType::kZoom)
-        ->OnBubbleWidgetCreated(zoom_bubble_widget);
   }
+
+  views::BubbleDialogDelegateView::CreateBubble(zoom_bubble);
 }
 #endif
 

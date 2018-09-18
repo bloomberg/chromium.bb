@@ -17,7 +17,6 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_properties.h"
-#include "ui/views/view_tracker.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -220,6 +219,18 @@ View* BubbleDialogDelegateView::GetAnchorView() const {
   return anchor_view_tracker_->view();
 }
 
+void BubbleDialogDelegateView::SetHighlightedButton(
+    Button* highlighted_button) {
+  bool visible = GetWidget() && GetWidget()->IsVisible();
+  // If the Widget is visible, ensure the old highlight (if any) is removed
+  // when the highlighted view changes.
+  if (visible)
+    UpdateHighlightedButton(false);
+  highlighted_button_tracker_.SetView(highlighted_button);
+  if (visible)
+    UpdateHighlightedButton(true);
+}
+
 void BubbleDialogDelegateView::SetArrow(BubbleBorder::Arrow arrow) {
   if (arrow_ == arrow)
     return;
@@ -339,8 +350,10 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
   // change as well.
   if (!anchor_view || anchor_widget() != anchor_view->GetWidget()) {
     if (anchor_widget()) {
-      if (GetWidget() && GetWidget()->IsVisible())
+      if (GetWidget() && GetWidget()->IsVisible()) {
         UpdateAnchorWidgetRenderState(false);
+        UpdateHighlightedButton(false);
+      }
       anchor_widget_->RemoveObserver(this);
       anchor_widget_ = NULL;
     }
@@ -348,7 +361,9 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
       anchor_widget_ = anchor_view->GetWidget();
       if (anchor_widget_) {
         anchor_widget_->AddObserver(this);
-        UpdateAnchorWidgetRenderState(GetWidget() && GetWidget()->IsVisible());
+        const bool visible = GetWidget() && GetWidget()->IsVisible();
+        UpdateAnchorWidgetRenderState(visible);
+        UpdateHighlightedButton(visible);
       }
     }
   }
@@ -409,8 +424,10 @@ void BubbleDialogDelegateView::UpdateColorsFromTheme(
 
 void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
                                                        bool visible) {
-  if (widget == GetWidget())
+  if (widget == GetWidget()) {
     UpdateAnchorWidgetRenderState(visible);
+    UpdateHighlightedButton(visible);
+  }
 
   // Fire ax::mojom::Event::kAlert for bubbles marked as
   // ax::mojom::Role::kAlertDialog; this instructs accessibility tools to read
@@ -435,6 +452,13 @@ void BubbleDialogDelegateView::UpdateAnchorWidgetRenderState(bool visible) {
     return;
 
   anchor_widget()->GetTopLevelWidget()->SetAlwaysRenderAsActive(visible);
+}
+
+void BubbleDialogDelegateView::UpdateHighlightedButton(bool highlighted) {
+  Button* button = Button::AsButton(highlighted_button_tracker_.view());
+  button = button ? button : Button::AsButton(anchor_view_tracker_->view());
+  if (button)
+    button->SetHighlighted(highlighted);
 }
 
 }  // namespace views

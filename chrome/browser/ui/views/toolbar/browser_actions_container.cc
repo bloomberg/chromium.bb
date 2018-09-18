@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/grit/generated_resources.h"
@@ -424,11 +425,22 @@ void BrowserActionsContainer::Layout() {
       bounds.set_x(bounds.x() + GetResizeAreaWidth());
       view->SetBoundsRect(bounds);
       view->SetVisible(true);
-      if (!ShownInsideMenu()) {
-        view->AnimateInkDrop(toolbar_actions_bar()->is_highlighting()
-                                 ? views::InkDropState::ACTIVATED
-                                 : views::InkDropState::HIDDEN,
-                             nullptr);
+      // TODO(corising): Move setting background to
+      // ToolbarActionsBar::OnToolbarHighlightModeChanged when the files merge.
+      if (!ShownInsideMenu() && (toolbar_actions_bar()->is_highlighting() !=
+                                 (view->background() != nullptr))) {
+        // Sets background to reflect whether the item is being highlighted.
+        const gfx::Insets bg_insets(
+            (height() - GetLayoutConstant(LOCATION_BAR_HEIGHT)) / 2);
+        const int corner_radius = height() / 2;
+        const SkColor bg_color = SkColorSetA(view->GetInkDropBaseColor(),
+                                             kToolbarButtonBackgroundAlpha);
+        view->SetBackground(
+            toolbar_actions_bar()->is_highlighting()
+                ? views::CreateBackgroundFromPainter(
+                      views::Painter::CreateSolidRoundRectPainter(
+                          bg_color, corner_radius, bg_insets))
+                : nullptr);
       }
     }
   }

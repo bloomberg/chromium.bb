@@ -303,11 +303,9 @@ void ToolbarView::ShowIntentPickerBubble(
       location_bar()->Layout();
     }
 
-    views::Widget* bubble_widget = IntentPickerBubbleView::ShowBubble(
+    IntentPickerBubbleView::ShowBubble(
         intent_picker_view, GetWebContents(), std::move(app_info),
         disable_stay_in_chrome, std::move(callback));
-    if (bubble_widget && intent_picker_view)
-      intent_picker_view->OnBubbleWidgetCreated(bubble_widget);
   }
 }
 #endif  // defined(OS_CHROMEOS)
@@ -321,11 +319,9 @@ void ToolbarView::ShowBookmarkBubble(
 
   std::unique_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_));
-  views::Widget* bubble_widget = BookmarkBubbleView::ShowBubble(
-      anchor_view, gfx::Rect(), nullptr, observer, std::move(delegate),
-      browser_->profile(), url, already_bookmarked);
-  if (bubble_widget && star_view)
-    star_view->OnBubbleWidgetCreated(bubble_widget);
+  BookmarkBubbleView::ShowBubble(anchor_view, star_view, gfx::Rect(), nullptr,
+                                 observer, std::move(delegate),
+                                 browser_->profile(), url, already_bookmarked);
 }
 
 void ToolbarView::ShowTranslateBubble(
@@ -337,12 +333,11 @@ void ToolbarView::ShowTranslateBubble(
   PageActionIconView* translate_icon_view =
       location_bar()->translate_icon_view();
 
-  views::Widget* bubble_widget = TranslateBubbleView::ShowBubble(
-      anchor_view, gfx::Point(), web_contents, step, error_type,
-      is_user_gesture ? TranslateBubbleView::USER_GESTURE
-                      : TranslateBubbleView::AUTOMATIC);
-  if (bubble_widget && translate_icon_view)
-    translate_icon_view->OnBubbleWidgetCreated(bubble_widget);
+  TranslateBubbleView::ShowBubble(anchor_view, translate_icon_view,
+                                  gfx::Point(), web_contents, step, error_type,
+                                  is_user_gesture
+                                      ? TranslateBubbleView::USER_GESTURE
+                                      : TranslateBubbleView::AUTOMATIC);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
