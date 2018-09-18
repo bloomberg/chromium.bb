@@ -158,6 +158,9 @@
       status: "experimental",
     },
     {
+      name: "CallCaptureListenersAtCapturePhaseAtShadowHosts",
+    },
+    {
       name: "Canvas2dContextLostRestored",
       status: "experimental",
     },

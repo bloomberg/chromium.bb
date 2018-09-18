@@ -1947,6 +1947,7 @@ crbug.com/404597 fast/forms/long-text-in-input.html [ Skip ]
 # Web Components related tests (Shadow DOM, Custom Elements) failures.
 crbug.com/392771 external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
 crbug.com/869308 shadow-dom/imperative-api.html [ Failure ]
+crbug.com/883650 external/wpt/shadow-dom/event-dispatch-order.tentative.html [ Failure ]
 
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
