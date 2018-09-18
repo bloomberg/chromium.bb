@@ -116,6 +116,82 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest, ClickBodyHidesKeyboard) {
   ASSERT_TRUE(WaitUntilHidden());
 }
 
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       ChangeInputTypeToTextDoesNotHideKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ASSERT_TRUE(
+      content::EvalJs(web_contents,
+                      "document.getElementById('username').type = 'password'")
+          .error.empty());
+
+  EXPECT_FALSE(IsKeyboardHiding());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       ChangeInputTypeToNonTextHidesKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ASSERT_TRUE(
+      content::EvalJs(web_contents,
+                      "document.getElementById('username').type = 'submit'")
+          .error.empty());
+
+  ASSERT_TRUE(WaitUntilHidden());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       ChangeInputToReadOnlyHidesKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ASSERT_TRUE(
+      content::EvalJs(web_contents,
+                      "document.getElementById('username').readOnly = true")
+          .error.empty());
+
+  ASSERT_TRUE(WaitUntilHidden());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       ChangeInputModeToNumericDoesNotHideKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ASSERT_TRUE(content::EvalJs(web_contents,
+                              "document.getElementById('username')."
+                              "setAttribute('inputmode', 'numeric')")
+                  .error.empty());
+
+  EXPECT_FALSE(IsKeyboardHiding());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
+                       ChangeInputModeToNoneHidesKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ASSERT_TRUE(content::EvalJs(web_contents,
+                              "document.getElementById('username')."
+                              "setAttribute('inputmode', 'none')")
+                  .error.empty());
+
+  ASSERT_TRUE(WaitUntilHidden());
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest, DeleteInputHidesKeyboard) {
+  ClickElementWithId(web_contents, "username");
+  ASSERT_TRUE(WaitUntilShown());
+
+  ASSERT_TRUE(content::EvalJs(web_contents,
+                              "document.getElementById('username').remove()")
+                  .error.empty());
+
+  ASSERT_TRUE(WaitUntilHidden());
+}
+
 class KeyboardEndToEndFocusTest : public KeyboardEndToEndTest {
  public:
   KeyboardEndToEndFocusTest()
