@@ -318,7 +318,8 @@ void ExtensionFrameHelper::ScheduleAtDocumentIdle(
 }
 
 void ExtensionFrameHelper::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader) {
+    blink::WebDocumentLoader* document_loader,
+    bool is_content_initiated) {
   // New window created by chrome.app.window.create() must not start parsing the
   // document immediately. The chrome.app.window.create() callback (if any)
   // needs to be called prior to the new window's 'load' event. The parser will

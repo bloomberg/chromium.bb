@@ -4100,8 +4100,10 @@ void RenderFrameImpl::DidStartProvisionalLoad(
     navigation_state->set_transition_type(ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   }
 
-  for (auto& observer : observers_)
-    observer.DidStartProvisionalLoad(document_loader);
+  for (auto& observer : observers_) {
+    observer.DidStartProvisionalLoad(document_loader,
+                                     navigation_state->IsContentInitiated());
+  }
 }
 
 void RenderFrameImpl::DidFailProvisionalLoad(
@@ -5606,12 +5608,14 @@ bool RenderFrameImpl::UpdateNavigationHistory(
   return is_new_navigation;
 }
 
-void RenderFrameImpl::NotifyObserversOfNavigationCommit(bool is_new_navigation,
-                                                        bool is_same_document) {
+void RenderFrameImpl::NotifyObserversOfNavigationCommit(
+    bool is_new_navigation,
+    bool is_same_document,
+    ui::PageTransition transition) {
   for (auto& observer : render_view_->observers_)
     observer.DidCommitProvisionalLoad(frame_, is_new_navigation);
   for (auto& observer : observers_)
-    observer.DidCommitProvisionalLoad(is_new_navigation, is_same_document);
+    observer.DidCommitProvisionalLoad(is_same_document, transition);
 }
 
 void RenderFrameImpl::UpdateStateForCommit(
@@ -5630,7 +5634,8 @@ void RenderFrameImpl::UpdateStateForCommit(
 
   bool is_new_navigation = UpdateNavigationHistory(item, commit_type);
   NotifyObserversOfNavigationCommit(is_new_navigation,
-                                    navigation_state->WasWithinSameDocument());
+                                    navigation_state->WasWithinSameDocument(),
+                                    navigation_state->GetTransitionType());
 
   if (internal_data->must_reset_scroll_and_scale_state()) {
     render_view_->webview()->ResetScrollAndScaleState();

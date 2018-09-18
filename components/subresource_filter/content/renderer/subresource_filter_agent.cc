@@ -198,8 +198,8 @@ void SubresourceFilterAgent::DidCreateNewDocument() {
 }
 
 void SubresourceFilterAgent::DidCommitProvisionalLoad(
-    bool is_new_navigation,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
   if (is_same_document_navigation)
     return;
 

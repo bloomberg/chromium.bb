@@ -8,26 +8,14 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "ui/base/page_transition_types.h"
 
 namespace content {
 
-// NavigationState is the portion of DocumentState that is affected by
-// in-document navigation.
-// TODO(simonjam): Move this to HistoryItem's ExtraData.
+// TODO(dgozman): Remove this class, once public DocumentState
+// does not reference it.
 class CONTENT_EXPORT NavigationState {
  public:
   virtual ~NavigationState();
-
-  // Contains the transition type that the browser specified when it
-  // initiated the load.
-  virtual ui::PageTransition GetTransitionType() = 0;
-
-  // True iff the frame's navigation was within the same document.
-  virtual bool WasWithinSameDocument() = 0;
-
-  // True if this navigation was not initiated via WebFrame::LoadRequest.
-  virtual bool IsContentInitiated() = 0;
 };
 
 }  // namespace content

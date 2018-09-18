@@ -701,7 +701,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void FireDidCommitProvisionalLoad() {
     FormTracker* tracker = autofill_agent_->form_tracker_for_testing();
     static_cast<content::RenderFrameObserver*>(tracker)
-        ->DidCommitProvisionalLoad(false, true);
+        ->DidCommitProvisionalLoad(true, ui::PAGE_TRANSITION_LINK);
   }
 
   FakeMojoPasswordManagerDriver fake_driver_;

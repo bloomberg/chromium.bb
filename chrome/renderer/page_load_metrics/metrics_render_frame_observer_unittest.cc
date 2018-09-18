@@ -81,8 +81,8 @@ TEST_F(MetricsRenderFrameObserverTest, SingleMetric) {
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
-  observer.DidStartProvisionalLoad(nullptr);
-  observer.DidCommitProvisionalLoad(true, false);
+  observer.DidStartProvisionalLoad(nullptr, true);
+  observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
   timing.document_timing->first_layout = first_layout;
@@ -104,8 +104,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
-  observer.DidStartProvisionalLoad(nullptr);
-  observer.DidCommitProvisionalLoad(true, false);
+  observer.DidStartProvisionalLoad(nullptr, true);
+  observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
   timing.document_timing->first_layout = first_layout;
@@ -151,8 +151,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
   observer.ExpectPageLoadTiming(timing);
-  observer.DidStartProvisionalLoad(nullptr);
-  observer.DidCommitProvisionalLoad(true, false);
+  observer.DidStartProvisionalLoad(nullptr, true);
+  observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
   timing.document_timing->first_layout = first_layout;
@@ -178,8 +178,8 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   observer.SetMockTimer(nullptr);
 
   observer.ExpectPageLoadTiming(timing_2);
-  observer.DidStartProvisionalLoad(nullptr);
-  observer.DidCommitProvisionalLoad(true, false);
+  observer.DidStartProvisionalLoad(nullptr, true);
+  observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
   timing_2.document_timing->first_layout = first_layout_2;

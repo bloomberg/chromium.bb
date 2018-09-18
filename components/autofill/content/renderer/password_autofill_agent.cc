@@ -1279,8 +1279,8 @@ void PasswordAutofillAgent::WillCommitProvisionalLoad() {
 }
 
 void PasswordAutofillAgent::DidCommitProvisionalLoad(
-    bool is_new_navigation,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
   if (!is_same_document_navigation) {
     checked_safe_browsing_reputation_ = false;
   }
@@ -1392,7 +1392,8 @@ void PasswordAutofillAgent::OnDestruct() {
 }
 
 void PasswordAutofillAgent::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader) {
+    blink::WebDocumentLoader* document_loader,
+    bool is_content_initiated) {
   std::unique_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(

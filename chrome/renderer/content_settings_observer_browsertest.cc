@@ -98,8 +98,8 @@ class CommitTimeConditionChecker : public content::RenderFrameObserver {
  protected:
   // RenderFrameObserver:
   void OnDestruct() override {}
-  void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_document_navigation) override {
+  void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                ui::PageTransition transition) override {
     EXPECT_EQ(expectation_, predicate_.Run());
   }
 

@@ -154,7 +154,8 @@ void MetricsRenderFrameObserver::FrameDetached() {
 }
 
 void MetricsRenderFrameObserver::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader) {
+    blink::WebDocumentLoader* document_loader,
+    bool is_content_initiated) {
   // Create a new data use tracker for the new provisional load.
   provisional_frame_resource_data_use_ =
       std::make_unique<PageResourceDataUse>();
@@ -168,8 +169,8 @@ void MetricsRenderFrameObserver::DidFailProvisionalLoad(
 }
 
 void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
-    bool is_new_navigation,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
   // Same-document navigations (e.g. a navigation from a fragment link) aren't
   // full page loads, since they don't go to network to load the main HTML
   // resource. DidStartProvisionalLoad doesn't get invoked for same document

@@ -28,10 +28,15 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
 
   static NavigationStateImpl* CreateContentInitiated();
 
-  // NavigationState implementation.
-  ui::PageTransition GetTransitionType() override;
-  bool WasWithinSameDocument() override;
-  bool IsContentInitiated() override;
+  // Contains the transition type that the browser specified when it
+  // initiated the load.
+  ui::PageTransition GetTransitionType();
+
+  // True iff the frame's navigation was within the same document.
+  bool WasWithinSameDocument();
+
+  // True if this navigation was not initiated via WebFrame::LoadRequest.
+  bool IsContentInitiated();
 
   const CommonNavigationParams& common_params() const { return common_params_; }
   const RequestNavigationParams& request_params() const {

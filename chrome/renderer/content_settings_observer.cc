@@ -206,8 +206,8 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ContentSettingsObserver::DidCommitProvisionalLoad(
-    bool is_new_navigation,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (frame->Parent())
     return;  // Not a top-level navigation.

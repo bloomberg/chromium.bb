@@ -135,15 +135,15 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   }
 
   void StartLoadWithoutSettingActivationState() {
-    agent_as_rfo()->DidStartProvisionalLoad(nullptr);
+    agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
     agent_as_rfo()->DidCommitProvisionalLoad(
-        true /* is_new_navigation */, false /* is_same_document_navigation */);
+        false /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
   }
 
   void PerformSameDocumentNavigationWithoutSettingActivationLevel() {
-    agent_as_rfo()->DidStartProvisionalLoad(nullptr);
+    agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
     agent_as_rfo()->DidCommitProvisionalLoad(
-        true /* is_new_navigation */, true /* is_same_document_navigation */);
+        true /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
     // No DidFinishLoad is called in this case.
   }
 
@@ -156,12 +156,12 @@ class SubresourceFilterAgentTest : public ::testing::Test {
 
   void StartLoadAndSetActivationState(mojom::ActivationState state,
                                       bool is_ad_subframe = false) {
-    agent_as_rfo()->DidStartProvisionalLoad(nullptr);
+    agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
     EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
         SubresourceFilterMsg_ActivateForNextCommittedLoad(0, state,
                                                           is_ad_subframe)));
     agent_as_rfo()->DidCommitProvisionalLoad(
-        true /* is_new_navigation */, false /* is_same_document_navigation */);
+        false /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
   }
 
   void FinishLoad() { agent_as_rfo()->DidFinishLoad(); }
@@ -461,7 +461,7 @@ TEST_F(SubresourceFilterAgentTest,
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestBothURLsPathSuffix));
   ExpectNoSubresourceFilterGetsInjected();
-  agent_as_rfo()->DidStartProvisionalLoad(nullptr);
+  agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
   mojom::ActivationState state;
   state.activation_level = mojom::ActivationLevel::kEnabled;
   state.measure_performance = true;
@@ -470,9 +470,9 @@ TEST_F(SubresourceFilterAgentTest,
           0, state, false /* is_ad_subframe */)));
   agent_as_rfo()->DidFailProvisionalLoad(
       blink::WebURLError(net::ERR_FAILED, blink::WebURL()));
-  agent_as_rfo()->DidStartProvisionalLoad(nullptr);
+  agent_as_rfo()->DidStartProvisionalLoad(nullptr, true);
   agent_as_rfo()->DidCommitProvisionalLoad(
-      true /* is_new_navigation */, false /* is_same_document_navigation */);
+      false /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
   FinishLoad();
 }
 
