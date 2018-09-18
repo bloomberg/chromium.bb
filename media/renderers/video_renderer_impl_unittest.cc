@@ -878,6 +878,9 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
   // calls must all have occurred before playback starts.
   EXPECT_EQ(0u, last_pipeline_statistics.video_frames_dropped);
   EXPECT_EQ(1u, last_pipeline_statistics.video_frames_decoded);
+
+  // Note: This is not the total, but just the increase in the last call since
+  // the previous call, the total should be 4 * 115200.
   EXPECT_EQ(115200, last_pipeline_statistics.video_memory_usage);
 
   // Consider the case that rendering is faster than we setup the test event.
@@ -898,10 +901,21 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
   AdvanceTimeInMs(91);
   EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(90)));
   WaitForPendingDecode();
+
+  EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_))
+      .WillOnce(SaveArg<0>(&last_pipeline_statistics));
   SatisfyPendingDecodeWithEndOfStream();
 
   AdvanceTimeInMs(30);
   WaitForEnded();
+
+  EXPECT_EQ(0u, last_pipeline_statistics.video_frames_dropped);
+  EXPECT_EQ(0u, last_pipeline_statistics.video_frames_decoded);
+
+  // Memory usage is relative, so the prior lines increased memory usage to
+  // 4 * 115200, so this last one should show we only have 1 frame left.
+  EXPECT_EQ(-3 * 115200, last_pipeline_statistics.video_memory_usage);
+
   Destroy();
 }
 

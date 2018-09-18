@@ -124,8 +124,9 @@ class MEDIA_EXPORT VideoRendererImpl
   void TransitionToHaveNothing_Locked();
 
   // Runs |statistics_cb_| with |frames_decoded_| and |frames_dropped_|, resets
-  // them to 0.
-  void UpdateStats_Locked();
+  // them to 0. If |force_update| is true, sends an update even if no frames
+  // have been decoded since the last update.
+  void UpdateStats_Locked(bool force_update = false);
 
   // Returns true if there is no more room for additional buffered frames.
   bool HaveReachedBufferingCap() const;
