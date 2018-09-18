@@ -30,7 +30,8 @@ const base::Feature kInfiniteSessionRestore{"InfiniteSessionRestore",
 
 // Enables proactive tab freezing and discarding.
 const base::Feature kProactiveTabFreezeAndDiscard{
-    "ProactiveTabFreezeAndDiscard", base::FEATURE_DISABLED_BY_DEFAULT};
+    resource_coordinator::kProactiveTabFreezeAndDiscardFeatureName,
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the site characteristics database.
 const base::Feature kSiteCharacteristicsDatabase{
@@ -77,6 +78,11 @@ int GetModerateThresholdTabCountBasedOnSystemMemory(
 }
 
 }  // namespace
+
+const char kProactiveTabFreezeAndDiscardFeatureName[] =
+    "ProactiveTabFreezeAndDiscard";
+const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[] =
+    "ShouldProactivelyDiscard";
 
 // Instantiate the feature parameters for proactive tab discarding.
 constexpr base::FeatureParam<bool>
