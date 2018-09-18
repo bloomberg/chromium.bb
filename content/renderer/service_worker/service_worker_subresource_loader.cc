@@ -471,6 +471,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     DCHECK(response->blob->blob.is_valid());
 
     body_as_blob_.Bind(std::move(response->blob->blob));
+    body_as_blob_size_ = response->blob->size;
 
     // If parallel reading is enabled, then start reading the body blob
     // immediately.  This will allow the body to start buffering in the
