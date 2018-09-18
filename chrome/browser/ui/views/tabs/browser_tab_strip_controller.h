@@ -75,6 +75,7 @@ class BrowserTabStripController : public TabStripController,
   bool ShouldDrawStrokes() const override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
+  bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
   SkColor GetFrameColor() const override;

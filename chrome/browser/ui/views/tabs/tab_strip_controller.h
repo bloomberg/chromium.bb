@@ -115,6 +115,11 @@ class TabStripController {
   // from this tabstrip but the user is still dragging the tabs.
   virtual void OnStoppedDraggingTabs() = 0;
 
+  // Determines whether the top frame is condensed vertically, as when the
+  // window is maximized. If true, the top frame is just the height of a tab,
+  // rather than having extra vertical space above the tabs.
+  virtual bool IsFrameCondensed() const = 0;
+
   // Returns whether the shapes of background tabs are visible against the
   // frame.
   virtual bool HasVisibleBackgroundTabShapes() const = 0;

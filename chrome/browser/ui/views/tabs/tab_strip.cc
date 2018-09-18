@@ -347,7 +347,7 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
       (height() - Tab::GetTabSeparatorHeight()) / 2 - 1;
 
   // Disable drag handle extension when tab shapes are visible.
-  bool extend_drag_handle = !SizeTabButtonToTopOfTabStrip() &&
+  bool extend_drag_handle = !controller_->IsFrameCondensed() &&
                             !controller_->EverHasVisibleBackgroundTabShapes();
 
   // A hit on the tab is not in the caption unless it is in the thin strip
@@ -425,13 +425,6 @@ void TabStrip::SetStackedLayout(bool stacked_layout) {
 
   for (int i = 0; i < tab_count(); ++i)
     tab_at(i)->Layout();
-}
-
-bool TabStrip::SizeTabButtonToTopOfTabStrip() {
-  // Extend the button to the screen edge in maximized and immersive fullscreen.
-  views::Widget* widget = GetWidget();
-  return browser_defaults::kSizeTabButtonToTopOfTabStrip ||
-         (widget && (widget->IsMaximized() || widget->IsFullscreen()));
 }
 
 void TabStrip::StartHighlight(int model_index) {

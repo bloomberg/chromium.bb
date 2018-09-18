@@ -290,7 +290,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     gfx::Rect sysmenu_rect(IconBounds());
     // In maximized mode we extend the rect to the screen corner to take
     // advantage of Fitts' Law.
-    if (layout_->IsTitleBarCondensed())
+    if (IsFrameCondensed())
       sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
     sysmenu_rect = GetMirroredRect(sysmenu_rect);
     if (sysmenu_rect.Contains(point))
@@ -343,7 +343,7 @@ void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
                                            gfx::Path* window_mask) {
   DCHECK(window_mask);
 
-  if (layout_->IsTitleBarCondensed() || frame()->IsFullscreen())
+  if (IsFrameCondensed())
     return;
 
   views::GetDefaultWindowMask(
@@ -504,10 +504,6 @@ bool OpaqueBrowserFrameView::IsMinimized() const {
   return frame()->IsMinimized();
 }
 
-bool OpaqueBrowserFrameView::IsFullscreen() const {
-  return frame()->IsFullscreen();
-}
-
 bool OpaqueBrowserFrameView::IsTabStripVisible() const {
   return browser_view()->IsTabStripVisible();
 }
@@ -546,6 +542,11 @@ bool OpaqueBrowserFrameView::UseCustomFrame() const {
   return frame()->UseCustomFrame();
 }
 
+bool OpaqueBrowserFrameView::IsFrameCondensed() const {
+  return BrowserNonClientFrameView::IsFrameCondensed() ||
+         !ShouldShowCaptionButtons();
+}
+
 bool OpaqueBrowserFrameView::EverHasVisibleBackgroundTabShapes() const {
   return BrowserNonClientFrameView::EverHasVisibleBackgroundTabShapes();
 }
@@ -574,7 +575,7 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
   frame_background_->set_top_area_height(GetTopAreaHeight());
 
-  if (layout_->IsTitleBarCondensed())
+  if (IsFrameCondensed())
     PaintMaximizedFrameBorder(canvas);
   else
     PaintRestoredFrameBorder(canvas);
@@ -777,7 +778,7 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   }
 
   // In maximized mode, the only edge to draw is the top one, so we're done.
-  if (layout_->IsTitleBarCondensed())
+  if (IsFrameCondensed())
     return;
 
   const ui::ThemeProvider* tp = GetThemeProvider();

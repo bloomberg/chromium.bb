@@ -36,7 +36,6 @@ const bool kShowHelpMenuItemIcon = false;
 #endif
 
 const bool kDownloadPageHasShowInFolder = true;
-const bool kSizeTabButtonToTopOfTabStrip = false;
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 const bool kSyncAutoStarts = true;
