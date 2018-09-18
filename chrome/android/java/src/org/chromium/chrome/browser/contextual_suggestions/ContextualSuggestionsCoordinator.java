@@ -79,14 +79,6 @@ public class ContextualSuggestionsCoordinator {
     }
 
     /**
-     * Called when accessibility mode changes.
-     * @param enabled Whether accessibility mode is enabled.
-     */
-    public void onAccessibilityModeChanged(boolean enabled) {
-        mMediator.onAccessibilityModeChanged();
-    }
-
-    /**
      * Show the contextual suggestions content in the {@link BottomSheet}.
      * Only the views needed for peeking the bottom sheet will be constructed. Another
      * call to {@link #displaySuggestions()} is needed to finish inflating views for the

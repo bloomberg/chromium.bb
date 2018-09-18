@@ -1488,9 +1488,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mContextualSearchManager != null) {
             mContextualSearchManager.onAccessibilityModeChanged(enabled);
         }
-        if (mContextualSuggestionsCoordinator != null) {
-            mContextualSuggestionsCoordinator.onAccessibilityModeChanged(enabled);
-        }
     }
 
     @Override

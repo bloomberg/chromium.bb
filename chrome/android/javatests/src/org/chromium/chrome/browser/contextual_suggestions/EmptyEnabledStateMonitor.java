@@ -21,7 +21,4 @@ public class EmptyEnabledStateMonitor implements EnabledStateMonitor {
     public boolean getEnabledState() {
         return false;
     }
-
-    @Override
-    public void onAccessibilityModeChanged() {}
 }

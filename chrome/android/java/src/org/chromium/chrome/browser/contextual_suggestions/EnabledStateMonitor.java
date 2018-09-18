@@ -26,7 +26,4 @@ public interface EnabledStateMonitor {
 
     /** @return Whether the state is currently enabled. */
     boolean getEnabledState();
-
-    /** Called when accessibility mode changes. */
-    void onAccessibilityModeChanged();
 }
