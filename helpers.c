@@ -481,6 +481,16 @@ void drv_decrement_reference_count(struct driver *drv, struct bo *bo, size_t pla
 		drmHashInsert(drv->buffer_table, bo->handles[plane].u32, (void *)(num - 1));
 }
 
+void drv_add_combination(struct driver *drv, const uint32_t format,
+			 struct format_metadata *metadata, uint64_t use_flags)
+{
+	struct combination combo = { .format = format,
+				     .metadata = *metadata,
+				     .use_flags = use_flags };
+
+	drv_array_append(drv->combos, &combo);
+}
+
 void drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats,
 			  struct format_metadata *metadata, uint64_t use_flags)
 {

@@ -185,9 +185,8 @@ static int i915_add_combinations(struct driver *drv)
 			     texture_use_flags);
 
 	/* Support y-tiled NV12 for libva */
-	const uint32_t nv12_format = DRM_FORMAT_NV12;
-	drv_add_combinations(drv, &nv12_format, 1, &metadata,
-			     BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER);
+	drv_add_combination(drv, DRM_FORMAT_NV12, &metadata,
+			    BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER);
 
 	kms_items = drv_query_kms(drv);
 	if (!kms_items)
