@@ -62,25 +62,3 @@ source_set("unit_tests") {
     "//third_party/ocmock",
   ]
 }
-
-source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "side_swipe_egtest.mm",
-  ]
-
-  deps = [
-    ":side_swipe",
-    "//base",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/ui:ui_util",
-    "//ios/chrome/browser/ui/toolbar/adaptive:adaptive_ui",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web/public/test/http_server",
-  ]
-  libs = [ "XCTest.framework" ]
-}

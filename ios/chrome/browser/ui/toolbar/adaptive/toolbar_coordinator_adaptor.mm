@@ -64,9 +64,7 @@
     // swipes from the right side.
     CGRect toolbarFrame =
         CGRectInset([coordinator viewController].view.frame, -1, -1);
-    CGRect frameInWindowCoordinates =
-        [[coordinator viewController].view convertRect:toolbarFrame toView:nil];
-    if (CGRectContainsPoint(frameInWindowCoordinates, point))
+    if (CGRectContainsPoint(toolbarFrame, point))
       return YES;
   }
   return NO;
