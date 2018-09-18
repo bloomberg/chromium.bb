@@ -88,6 +88,15 @@ void WaitControllerStateChangesTo(KeyboardControllerState state) {
   waiter.Wait();
 }
 
+bool IsKeyboardShowing() {
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  DCHECK(keyboard_controller->enabled());
+
+  // KeyboardController sets its state to SHOWN when it is about to show.
+  return keyboard_controller->GetStateForTest() ==
+         KeyboardControllerState::SHOWN;
+}
+
 gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
                                        int keyboard_height) {
   return gfx::Rect(root_bounds.x(), root_bounds.bottom() - keyboard_height,

@@ -217,7 +217,8 @@
 # Virtual keyboard not supported.
 -AccessibilityManagerLoginTest.ResumeSavedPref
 -DefaultKeyboardExtensionBrowserTest.*
--KeyboardEndToEndTest.*
+-KeyboardEndToEndFocusTest.*
+-KeyboardEndToEndFormTest.*
 -KioskVirtualKeyboardTest.*
 -VirtualKeyboardAppWindowTest.*
 -VirtualKeyboardStateTest.*

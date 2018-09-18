@@ -13,7 +13,8 @@
 
 # Virtual keyboard not supported.
 -DefaultKeyboardExtensionBrowserTest.*
--KeyboardEndToEndTest.*
+-KeyboardEndToEndFocusTest.*
+-KeyboardEndToEndFormTest.*
 -KioskVirtualKeyboardTest.*
 -VirtualKeyboardAppWindowTest.*
 -VirtualKeyboardStateTest.*
