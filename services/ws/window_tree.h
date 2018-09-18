@@ -519,8 +519,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
       base::flat_map<base::UnguessableToken, ClientSpecificId>;
   ScheduledEmbedsForExistingClient scheduled_embeds_for_existing_client_;
 
-  // Used to track events sent to the client.
-  std::queue<std::unique_ptr<InFlightEvent>> in_flight_events_;
+  // Used to track events sent to the client. Key events are tracked separately,
+  // as their acks may be delayed when the client uses async IME handling.
+  std::queue<std::unique_ptr<InFlightEvent>> in_flight_key_events_;
+  std::queue<std::unique_ptr<InFlightEvent>> in_flight_other_events_;
 
   // Set while a window move loop is in progress.
   aura::Window* window_moving_ = nullptr;

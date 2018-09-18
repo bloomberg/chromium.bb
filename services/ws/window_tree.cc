@@ -164,19 +164,22 @@ void WindowTree::SendEventToClient(aura::Window* window,
   DCHECK(!event.IsGestureEvent());
 
   const uint32_t event_id = GenerateEventAckId();
-  std::unique_ptr<InFlightEvent> in_flight_event =
-      std::make_unique<InFlightEvent>();
-  in_flight_event->id = event_id;
-  if (event.type() == ui::ET_KEY_PRESSED ||
-      event.type() == ui::ET_KEY_RELEASED) {
-    in_flight_event->event = ui::Event::Clone(event);
-  }
-  in_flight_events_.push(std::move(in_flight_event));
-  if (in_flight_events_.size() == kMaxQueuedEvents) {
+  auto* in_flight_event_queue =
+      event.IsKeyEvent() ? &in_flight_key_events_ : &in_flight_other_events_;
+  if (in_flight_event_queue->size() < kMaxQueuedEvents) {
+    std::unique_ptr<InFlightEvent> in_flight_event =
+        std::make_unique<InFlightEvent>();
+    in_flight_event->id = event_id;
+    if (event.type() == ui::ET_KEY_PRESSED ||
+        event.type() == ui::ET_KEY_RELEASED) {
+      in_flight_event->event = ui::Event::Clone(event);
+    }
+    in_flight_event_queue->push(std::move(in_flight_event));
+  } else {
     DVLOG(1) << "client not responding to events in a timely manner, "
              << "dropping event";
-    in_flight_events_.pop();
   }
+
   // Events should only come to windows connected to displays.
   DCHECK(window->GetHost());
   const int64_t display_id = window->GetHost()->GetDisplayId();
@@ -1738,7 +1741,16 @@ void WindowTree::SetEventTargetingPolicy(Id transport_window_id,
 
 void WindowTree::OnWindowInputEventAck(uint32_t event_id,
                                        mojom::EventResult result) {
-  if (in_flight_events_.empty() || in_flight_events_.front()->id != event_id) {
+  std::unique_ptr<ui::Event> key_event;
+  if (!in_flight_key_events_.empty() &&
+      in_flight_key_events_.front()->id == event_id) {
+    key_event = std::move(in_flight_key_events_.front()->event);
+    in_flight_key_events_.pop();
+  } else if (!in_flight_other_events_.empty() &&
+             in_flight_other_events_.front()->id == event_id) {
+    DVLOG_IF(1, in_flight_other_events_.front()->event) << "Unexpected event";
+    in_flight_other_events_.pop();
+  } else {
     DVLOG(1) << "client acked unknown event";
     return;
   }
@@ -1746,12 +1758,9 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
   for (WindowServiceObserver& observer : window_service_->observers())
     observer.OnClientAckedEvent(client_id_, event_id);
 
-  std::unique_ptr<InFlightEvent> in_flight_event =
-      std::move(in_flight_events_.front());
-  in_flight_events_.pop();
-  if (in_flight_event->event && result == mojom::EventResult::UNHANDLED) {
+  if (key_event && result == mojom::EventResult::UNHANDLED) {
     window_service_->delegate()->OnUnhandledKeyEvent(
-        *(in_flight_event->event->AsKeyEvent()));
+        *(key_event->AsKeyEvent()));
   }
 }
 

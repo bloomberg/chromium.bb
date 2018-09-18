@@ -403,6 +403,81 @@ TEST(WindowTreeTest, SetWindowPointerPropertyWithInvalidValues) {
   EXPECT_FALSE(top_level->GetProperty(kTestPropertyKey));
 }
 
+TEST(WindowTreeTest, OnWindowInputEventAck) {
+  WindowServiceTestSetup setup;
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  WindowTreeTestHelper* tree = setup.window_tree_test_helper();
+  aura::Window* top_level = tree->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+
+  top_level->Show();
+  top_level->Focus();
+  top_level->SetBounds(gfx::Rect(100, 100));
+
+  // Send a key event and a mouse event to the client.
+  ui::test::EventGenerator event_generator(setup.root());
+  event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  event_generator.MoveMouseTo(10, 10);
+  ASSERT_EQ(2u, window_tree_client->input_events().size());
+  TestWindowTreeClient::InputEvent event1 = window_tree_client->PopInputEvent();
+  ASSERT_TRUE(event1.event->IsKeyEvent());
+  TestWindowTreeClient::InputEvent event2 = window_tree_client->PopInputEvent();
+  ASSERT_TRUE(event2.event->IsLocatedEvent());
+
+  // Acking the events in the order they were received works fine.
+  EXPECT_EQ(1u, tree->in_flight_key_events().size());
+  tree->OnWindowInputEventAck(event1.event_id, ws::mojom::EventResult::HANDLED);
+  EXPECT_EQ(0u, tree->in_flight_key_events().size());
+  EXPECT_EQ(1u, tree->in_flight_other_events().size());
+  tree->OnWindowInputEventAck(event2.event_id, ws::mojom::EventResult::HANDLED);
+  EXPECT_EQ(0u, tree->in_flight_other_events().size());
+
+  // Send another key event and a mouse event.
+  event_generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  event_generator.MoveMouseTo(11, 11);
+  ASSERT_EQ(2u, window_tree_client->input_events().size());
+  TestWindowTreeClient::InputEvent event3 = window_tree_client->PopInputEvent();
+  ASSERT_TRUE(event3.event->IsKeyEvent());
+  TestWindowTreeClient::InputEvent event4 = window_tree_client->PopInputEvent();
+  ASSERT_TRUE(event4.event->IsLocatedEvent());
+
+  // Acking the mouse and key events out of order from one another is okay.
+  EXPECT_EQ(1u, tree->in_flight_other_events().size());
+  tree->OnWindowInputEventAck(event4.event_id, ws::mojom::EventResult::HANDLED);
+  EXPECT_EQ(0u, tree->in_flight_other_events().size());
+  EXPECT_EQ(1u, tree->in_flight_key_events().size());
+  tree->OnWindowInputEventAck(event3.event_id, ws::mojom::EventResult::HANDLED);
+  EXPECT_EQ(0u, tree->in_flight_key_events().size());
+
+  // Send two more mouse events.
+  event_generator.MoveMouseTo(12, 12);
+  event_generator.MoveMouseTo(13, 13);
+  ASSERT_EQ(2u, window_tree_client->input_events().size());
+  TestWindowTreeClient::InputEvent event5 = window_tree_client->PopInputEvent();
+  ASSERT_TRUE(event5.event->IsLocatedEvent());
+  TestWindowTreeClient::InputEvent event6 = window_tree_client->PopInputEvent();
+  ASSERT_TRUE(event6.event->IsLocatedEvent());
+
+  // The client cannot ack the second mouse event before the first.
+  EXPECT_EQ(2u, tree->in_flight_other_events().size());
+  tree->OnWindowInputEventAck(event6.event_id, ws::mojom::EventResult::HANDLED);
+  EXPECT_EQ(2u, tree->in_flight_other_events().size());
+
+  // Send two more key events.
+  event_generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  event_generator.ReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  ASSERT_EQ(2u, window_tree_client->input_events().size());
+  TestWindowTreeClient::InputEvent event7 = window_tree_client->PopInputEvent();
+  ASSERT_TRUE(event7.event->IsKeyEvent());
+  TestWindowTreeClient::InputEvent event8 = window_tree_client->PopInputEvent();
+  ASSERT_TRUE(event8.event->IsKeyEvent());
+
+  // The client cannot ack the second key event before the first.
+  EXPECT_EQ(2u, tree->in_flight_key_events().size());
+  tree->OnWindowInputEventAck(event8.event_id, ws::mojom::EventResult::HANDLED);
+  EXPECT_EQ(2u, tree->in_flight_key_events().size());
+}
+
 TEST(WindowTreeTest, EventLocation) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
