@@ -24,13 +24,13 @@ struct CORE_EXPORT PaintInvalidatorContext {
    public:
     ParentContextAccessor() = default;
     ParentContextAccessor(PrePaintTreeWalk* tree_walk,
-                          size_t parent_context_index)
+                          wtf_size_t parent_context_index)
         : tree_walk_(tree_walk), parent_context_index_(parent_context_index) {}
     const PaintInvalidatorContext* ParentContext() const;
 
    private:
     PrePaintTreeWalk* tree_walk_ = nullptr;
-    size_t parent_context_index_ = 0u;
+    wtf_size_t parent_context_index_ = 0u;
   };
 
   PaintInvalidatorContext() = default;

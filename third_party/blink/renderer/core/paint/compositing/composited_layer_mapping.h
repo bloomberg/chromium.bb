@@ -188,14 +188,14 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // Returns true if the assignment actually changed the assigned squashing
   // layer.
   bool UpdateSquashingLayerAssignment(PaintLayer* squashed_layer,
-                                      size_t next_squashed_layer_index);
+                                      wtf_size_t next_squashed_layer_index);
   void RemoveLayerFromSquashingGraphicsLayer(const PaintLayer*);
 #if DCHECK_IS_ON()
   bool VerifyLayerInSquashingVector(const PaintLayer*);
 #endif
 
   void FinishAccumulatingSquashingLayers(
-      size_t next_squashed_layer_index,
+      wtf_size_t next_squashed_layer_index,
       Vector<PaintLayer*>& layers_needing_paint_invalidation);
   void UpdateRenderingContext();
   void UpdateShouldFlattenTransform();
@@ -512,7 +512,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   // Clear the groupedMapping entry on the layer at the given index, only if
   // that layer does not appear earlier in the set of layers for this object.
-  bool InvalidateLayerIfNoPrecedingEntry(size_t);
+  bool InvalidateLayerIfNoPrecedingEntry(wtf_size_t);
 
   // Main GraphicsLayer of the CLM for the iframe's content document.
   GraphicsLayer* FrameContentsGraphicsLayer() const;

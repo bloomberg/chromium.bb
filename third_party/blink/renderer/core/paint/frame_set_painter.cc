@@ -76,7 +76,7 @@ void FrameSetPainter::PaintRowBorder(const PaintInfo& paint_info,
 }
 
 static bool ShouldPaintBorderAfter(const LayoutFrameSet::GridAxis& axis,
-                                   size_t index) {
+                                   wtf_size_t index) {
   // Should not paint a border after the last frame along the axis.
   return index + 1 < axis.sizes_.size() && axis.allow_border_[index + 1];
 }
@@ -95,12 +95,12 @@ void FrameSetPainter::PaintBorders(const PaintInfo& paint_info,
     return;
 
   LayoutObject* child = layout_frame_set_.FirstChild();
-  size_t rows = layout_frame_set_.Rows().sizes_.size();
-  size_t cols = layout_frame_set_.Columns().sizes_.size();
+  wtf_size_t rows = layout_frame_set_.Rows().sizes_.size();
+  wtf_size_t cols = layout_frame_set_.Columns().sizes_.size();
   LayoutUnit y_pos;
-  for (size_t r = 0; r < rows; r++) {
+  for (wtf_size_t r = 0; r < rows; r++) {
     LayoutUnit x_pos;
-    for (size_t c = 0; c < cols; c++) {
+    for (wtf_size_t c = 0; c < cols; c++) {
       x_pos += layout_frame_set_.Columns().sizes_[c];
       if (ShouldPaintBorderAfter(layout_frame_set_.Columns(), c)) {
         PaintColumnBorder(

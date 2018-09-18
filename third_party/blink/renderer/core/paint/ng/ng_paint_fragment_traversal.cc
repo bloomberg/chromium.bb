@@ -150,7 +150,7 @@ unsigned IndexOfChild(const NGPaintFragment& parent,
       children.begin(), children.end(),
       [&fragment](const auto& child) { return &fragment == child.get(); });
   DCHECK(it != children.end());
-  return std::distance(children.begin(), it);
+  return static_cast<unsigned>(std::distance(children.begin(), it));
 }
 
 }  // namespace

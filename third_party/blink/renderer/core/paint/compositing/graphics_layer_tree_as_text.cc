@@ -330,7 +330,7 @@ std::unique_ptr<JSONObject> GraphicsLayerTreeAsJSON(
 
   if (layer->Children().size()) {
     std::unique_ptr<JSONArray> children_json = JSONArray::Create();
-    for (size_t i = 0; i < layer->Children().size(); i++) {
+    for (wtf_size_t i = 0; i < layer->Children().size(); i++) {
       children_json->PushObject(GraphicsLayerTreeAsJSON(
           layer->Children()[i], flags, rendering_context_map));
     }

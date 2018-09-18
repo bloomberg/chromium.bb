@@ -78,7 +78,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
   // We need to be careful not to have a reference to the parent context, since
   // this reference will be to the context_storage_ memory which may be
   // reallocated during this function call.
-  size_t parent_context_index = context_storage_.size() - 1;
+  wtf_size_t parent_context_index = context_storage_.size() - 1;
   auto parent_context = [this,
                          parent_context_index]() -> PrePaintTreeWalkContext& {
     return context_storage_[parent_context_index];
@@ -383,7 +383,7 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
   // We need to be careful not to have a reference to the parent context, since
   // this reference will be to the context_storage_ memory which may be
   // reallocated during this function call.
-  size_t parent_context_index = context_storage_.size() - 1;
+  wtf_size_t parent_context_index = context_storage_.size() - 1;
   auto parent_context = [this,
                          parent_context_index]() -> PrePaintTreeWalkContext& {
     return context_storage_[parent_context_index];

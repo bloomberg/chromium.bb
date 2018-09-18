@@ -55,7 +55,7 @@ void GraphicsLayerTreeBuilder::Rebuild(PaintLayer& layer,
   RebuildRecursive(layer, child_layers, ignored);
 }
 
-using PendingPair = std::pair<const PaintLayer*, size_t>;
+using PendingPair = std::pair<const PaintLayer*, wtf_size_t>;
 
 void GraphicsLayerTreeBuilder::RebuildRecursive(
     PaintLayer& layer,
@@ -128,7 +128,7 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     // them by index. Then insert them one-by-one into the array,
     // incrementing |offset| by one each time to account for previous
     // insertions.
-    size_t offset = 0;
+    wtf_size_t offset = 0;
     Vector<PendingPair> pending;
     for (auto& item : *pending_reparents_for_children)
       pending.push_back(std::make_pair(item.key, item.value));

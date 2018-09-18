@@ -2279,7 +2279,7 @@ void PaintPropertyTreeBuilder::
 
   auto fragment_offset_in_flow_thread =
       original_offset_in_flow_thread - original_offset_in_fragment;
-  for (size_t i = 0; i < context_.fragments.size(); ++i) {
+  for (wtf_size_t i = 0; i < context_.fragments.size(); ++i) {
     auto& fragment_context = context_.fragments[i];
     fragment_context.repeating_paint_offset_adjustment = LayoutSize();
     // Adjust paint offsets of repeatings (not including the original).

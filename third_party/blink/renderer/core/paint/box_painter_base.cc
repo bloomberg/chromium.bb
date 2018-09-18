@@ -70,7 +70,7 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
   GraphicsContextStateSaver state_saver(context, false);
 
   const ShadowList* shadow_list = style.BoxShadow();
-  for (size_t i = shadow_list->Shadows().size(); i--;) {
+  for (wtf_size_t i = shadow_list->Shadows().size(); i--;) {
     const ShadowData& shadow = shadow_list->Shadows()[i];
     if (shadow.Style() != kNormal)
       continue;
@@ -194,7 +194,7 @@ void BoxPainterBase::PaintInsetBoxShadow(const PaintInfo& info,
   GraphicsContextStateSaver state_saver(context, false);
 
   const ShadowList* shadow_list = style.BoxShadow();
-  for (size_t i = shadow_list->Shadows().size(); i--;) {
+  for (wtf_size_t i = shadow_list->Shadows().size(); i--;) {
     const ShadowData& shadow = shadow_list->Shadows()[i];
     if (shadow.Style() != kInset)
       continue;
