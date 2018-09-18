@@ -176,6 +176,8 @@ class LocalSiteCharacteristicsDataImpl
   FRIEND_TEST_ALL_PREFIXES(
       resource_coordinator::LocalSiteCharacteristicsDataReaderTest,
       FreeingReaderDoesntCauseWriteOperation);
+  FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
+                           FlushingStateToProtoDoesntAffectData);
 
   // Add |extra_observation_duration| to the observation window of a given
   // feature if it hasn't been used yet, do nothing otherwise.
@@ -210,6 +212,10 @@ class LocalSiteCharacteristicsDataImpl
 
   // Flush any state that's maintained in member variables to the proto.
   const SiteCharacteristicsProto& FlushStateToProto();
+
+  // Updates the proto with the current total observation duration and updates
+  // |background_session_begin_| to NowTicks().
+  void FlushFeaturesObservationDurationToProto();
 
   // This site's characteristics, contains the features and other values are
   // measured.

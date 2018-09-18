@@ -380,20 +380,13 @@ void LocalSiteCharacteristicsDataImpl::DecrementNumLoadedBackgroundTabs() {
   loaded_tabs_in_background_count_--;
   // Only update the observation durations if there's no more backgounded
   // instance of this origin.
-  if (loaded_tabs_in_background_count_ > 0U)
-    return;
-
-  DCHECK(!background_session_begin_.is_null());
-  base::TimeDelta extra_observation_duration =
-      NowTicks() - background_session_begin_;
-
-  // Update the observation duration fields.
-  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
-    IncrementFeatureObservationDuration(iter, extra_observation_duration);
+  if (loaded_tabs_in_background_count_ == 0U)
+    FlushFeaturesObservationDurationToProto();
 }
 
 const SiteCharacteristicsProto&
 LocalSiteCharacteristicsDataImpl::FlushStateToProto() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Update the proto with the most current performance measurement averages.
   if (cpu_usage_estimate_.num_datums() ||
       private_footprint_kb_estimate_.num_datums()) {
@@ -407,7 +400,25 @@ LocalSiteCharacteristicsDataImpl::FlushStateToProto() {
     }
   }
 
+  if (loaded_tabs_in_background_count_ > 0U)
+    FlushFeaturesObservationDurationToProto();
+
   return site_characteristics_;
+}
+
+void LocalSiteCharacteristicsDataImpl::
+    FlushFeaturesObservationDurationToProto() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!background_session_begin_.is_null());
+
+  base::TimeTicks now = NowTicks();
+
+  base::TimeDelta extra_observation_duration = now - background_session_begin_;
+  background_session_begin_ = now;
+
+  // Update the observation duration fields.
+  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
+    IncrementFeatureObservationDuration(iter, extra_observation_duration);
 }
 
 }  // namespace internal

@@ -136,6 +136,7 @@ class LocalSiteCharacteristicsDataImplTest : public ::testing::Test {
   }
 
   const url::Origin kDummyOrigin = url::Origin::Create(GURL("foo.com"));
+  const url::Origin kDummyOrigin2 = url::Origin::Create(GURL("bar.com"));
 
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
@@ -651,6 +652,48 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   local_site_data->NotifySiteUnloaded(TabVisibility::kBackground);
   local_site_data = nullptr;
   ::testing::Mock::VerifyAndClear(&mock_db);
+}
+
+TEST_F(LocalSiteCharacteristicsDataImplTest,
+       FlushingStateToProtoDoesntAffectData) {
+  // Create 2 DataImpl object and do the same operations on them, ensures that
+  // calling FlushStateToProto doesn't affect the data that gets recorded.
+
+  auto local_site_data =
+      GetDataImpl(kDummyOrigin, &destroy_delegate_, &database_);
+  auto local_site_data_ref =
+      GetDataImpl(kDummyOrigin2, &destroy_delegate_, &database_);
+
+  local_site_data->NotifySiteLoaded();
+  local_site_data->NotifyLoadedSiteBackgrounded();
+  local_site_data_ref->NotifySiteLoaded();
+  local_site_data_ref->NotifyLoadedSiteBackgrounded();
+
+  test_clock_.Advance(base::TimeDelta::FromSeconds(15));
+  local_site_data->FlushStateToProto();
+  test_clock_.Advance(base::TimeDelta::FromSeconds(15));
+
+  local_site_data->NotifyUsesAudioInBackground();
+  local_site_data_ref->NotifyUsesAudioInBackground();
+
+  local_site_data->FlushStateToProto();
+
+  EXPECT_EQ(local_site_data->FeatureObservationTimestamp(
+                local_site_data->site_characteristics_for_testing()
+                    .uses_audio_in_background()),
+            local_site_data_ref->FeatureObservationTimestamp(
+                local_site_data_ref->site_characteristics_for_testing()
+                    .uses_audio_in_background()));
+
+  EXPECT_EQ(local_site_data->FeatureObservationDuration(
+                local_site_data->site_characteristics_for_testing()
+                    .updates_title_in_background()),
+            local_site_data_ref->FeatureObservationDuration(
+                local_site_data_ref->site_characteristics_for_testing()
+                    .updates_title_in_background()));
+
+  local_site_data->NotifySiteUnloaded(TabVisibility::kBackground);
+  local_site_data_ref->NotifySiteUnloaded(TabVisibility::kBackground);
 }
 
 }  // namespace internal
