@@ -217,7 +217,7 @@ TEST_F(BrowserDMTokenStorageLinuxCleanupTest, TokenDirNotEmpty) {
   ASSERT_TRUE(base::DirectoryExists(token_dir_path_));
 
   base::FilePath tmp_file;
-  CreateTemporaryFileInDir(token_dir_path_, &tmp_file);
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(token_dir_path_, &tmp_file));
 
   storage_.DeletePolicyDirectory();
 
@@ -268,7 +268,7 @@ TEST_F(BrowserDMTokenStorageLinuxCleanupTest, PolicyDirIsNotEmpty) {
   ASSERT_TRUE(base::DirectoryExists(token_dir_path_));
 
   base::FilePath tmp_file;
-  CreateTemporaryFileInDir(policy_dir_path_, &tmp_file);
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(policy_dir_path_, &tmp_file));
 
   storage_.DeletePolicyDirectory();
 
