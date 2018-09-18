@@ -147,6 +147,11 @@ const char kStabilityExtensionRendererLaunchCount[] =
 const char kStabilityGmsCoreVersion[] =
     "user_experience_metrics.stability.gms_core_version";
 
+// Number of times a gpu process crashed since the last report. Currently only
+// recorded on Android.
+const char kStabilityGpuCrashCount[] =
+    "user_experience_metrics.stability.gpu_crash_count";
+
 // Number of times the session end did not complete.
 const char kStabilityIncompleteSessionEndCount[] =
     "user_experience_metrics.stability.incomplete_session_end_count";

@@ -97,6 +97,7 @@ const char* const kPersistentPrefNames[] = {
     metrics::prefs::kStabilityExtensionRendererFailedLaunchCount,
     metrics::prefs::kStabilityExtensionRendererLaunchCount,
     metrics::prefs::kStabilityGmsCoreVersion,
+    metrics::prefs::kStabilityGpuCrashCount,
     metrics::prefs::kStabilityIncompleteSessionEndCount,
     metrics::prefs::kStabilityLaunchCount,
     metrics::prefs::kStabilityPageLoadCount,

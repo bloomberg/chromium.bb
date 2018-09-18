@@ -168,6 +168,10 @@ void ChromeStabilityMetricsProvider::OnCrashDumpProcessed(
               kRendererForegroundVisibleSubframeCrash)) {
     helper_.IncreaseRendererCrashCount();
   }
+  if (reported_counts.count(crash_reporter::CrashMetricsReporter::
+                                ProcessedCrashCounts::kGpuCrashAll)) {
+    helper_.IncreaseGpuCrashCount();
+  }
 }
 
 #endif  // defined(OS_ANDROID)

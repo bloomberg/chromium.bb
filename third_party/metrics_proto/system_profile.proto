@@ -381,7 +381,7 @@ message SystemProfileProto {
         // for example "Dummynet".
         optional string device_name = 3;
 
-        // The list of vendor-specific OUIs (Organziationally Unqiue
+        // The list of vendor-specific OUIs (Organizationally Unique
         // Identifiers). These are provided by the vendor through WPS
         // (Wireless Provisioning Service) information elements, which
         // identifies the content of the element.
@@ -500,7 +500,7 @@ message SystemProfileProto {
   // Figures that can be used to generate application stability metrics.
   // All values are counts of events since the last time that these
   // values were reported.
-  // Next tag: 31
+  // Next tag: 32
   message Stability {
     // Total amount of time that the program was running, in seconds,
     // since the last time a log was recorded, as measured using a client-side
@@ -534,6 +534,9 @@ message SystemProfileProto {
 
     // Number of non-renderer child process crashes.
     optional int32 child_process_crash_count = 6;
+    // Number of gpu crashes that generate a crash dump. Currently only used by
+    // Android Chrome starting with M71.
+    optional int32 gpu_crash_count = 31;
 
     // Number of times the browser has crashed while logged in as the "other
     // user" (guest) account.
