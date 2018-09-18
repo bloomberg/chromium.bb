@@ -277,7 +277,7 @@ void ReattachLegacyLayoutObjectList::AddForceLegacyAtBFCAncestor(
       blocks_.begin(), blocks_.end(), [bfc](const LayoutObject* object) {
         return object->GetNode()->IsDescendantOf(bfc->GetNode());
       });
-  blocks_.resize(std::distance(blocks_.begin(), itr));
+  blocks_.resize(static_cast<wtf_size_t>(std::distance(blocks_.begin(), itr)));
   // Mark BFC root is added into the list.
   bfc->MutableStyle()->SetForceLegacyLayout(true);
   blocks_.push_back(bfc);

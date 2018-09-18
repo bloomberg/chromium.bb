@@ -298,7 +298,7 @@ Element* Element::CloneWithoutAttributesAndChildren(Document& factory) const {
                                IsValue());
 }
 
-Attr* Element::DetachAttribute(size_t index) {
+Attr* Element::DetachAttribute(wtf_size_t index) {
   DCHECK(GetElementData());
   const Attribute& attribute = GetElementData()->Attributes().at(index);
   Attr* attr_node = AttrIfExists(attribute.GetName());
@@ -312,7 +312,7 @@ Attr* Element::DetachAttribute(size_t index) {
   return attr_node;
 }
 
-void Element::DetachAttrNodeAtIndex(Attr* attr, size_t index) {
+void Element::DetachAttrNodeAtIndex(Attr* attr, wtf_size_t index) {
   DCHECK(attr);
   DCHECK(GetElementData());
 
@@ -326,7 +326,7 @@ void Element::removeAttribute(const QualifiedName& name) {
   if (!GetElementData())
     return;
 
-  size_t index = GetElementData()->Attributes().FindIndex(name);
+  wtf_size_t index = GetElementData()->Attributes().FindIndex(name);
   if (index == kNotFound)
     return;
 
@@ -1279,7 +1279,7 @@ IntRect Element::BoundsInViewport() const {
     return IntRect();
 
   IntRect result = quads[0].EnclosingBoundingBox();
-  for (size_t i = 1; i < quads.size(); ++i)
+  for (wtf_size_t i = 1; i < quads.size(); ++i)
     result.Unite(quads[i].EnclosingBoundingBox());
 
   return view->FrameToViewport(result);
@@ -1370,7 +1370,7 @@ DOMRect* Element::getBoundingClientRect() {
     return DOMRect::Create();
 
   FloatRect result = quads[0].BoundingBox();
-  for (size_t i = 1; i < quads.size(); ++i)
+  for (wtf_size_t i = 1; i < quads.size(); ++i)
     result.Unite(quads[i].BoundingBox());
 
   LayoutObject* element_layout_object = GetLayoutObject();
@@ -1599,7 +1599,7 @@ void Element::setAttribute(const AtomicString& local_name,
   }
 
   AttributeCollection attributes = GetElementData()->Attributes();
-  size_t index = attributes.FindIndex(case_adjusted_local_name);
+  wtf_size_t index = attributes.FindIndex(case_adjusted_local_name);
   const QualifiedName& q_name =
       index != kNotFound
           ? attributes[index].GetName()
@@ -1616,18 +1616,18 @@ void Element::setAttribute(const AtomicString& name,
 void Element::setAttribute(const QualifiedName& name,
                            const AtomicString& value) {
   SynchronizeAttribute(name);
-  size_t index = GetElementData()
-                     ? GetElementData()->Attributes().FindIndex(name)
-                     : kNotFound;
+  wtf_size_t index = GetElementData()
+                         ? GetElementData()->Attributes().FindIndex(name)
+                         : kNotFound;
   SetAttributeInternal(index, name, value,
                        kNotInSynchronizationOfLazyAttribute);
 }
 
 void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
                                            const AtomicString& value) {
-  size_t index = GetElementData()
-                     ? GetElementData()->Attributes().FindIndex(name)
-                     : kNotFound;
+  wtf_size_t index = GetElementData()
+                         ? GetElementData()->Attributes().FindIndex(name)
+                         : kNotFound;
   SetAttributeInternal(index, name, value, kInSynchronizationOfLazyAttribute);
 }
 
@@ -1694,7 +1694,7 @@ void Element::setAttribute(const QualifiedName& name,
 }
 
 ALWAYS_INLINE void Element::SetAttributeInternal(
-    size_t index,
+    wtf_size_t index,
     const QualifiedName& name,
     const AtomicString& new_value,
     SynchronizationOfLazyAttribute in_synchronization_of_lazy_attribute) {
@@ -1941,8 +1941,8 @@ bool Element::IsScriptingAttribute(const Attribute& attribute) const {
 
 void Element::StripScriptingAttributes(
     Vector<Attribute>& attribute_vector) const {
-  size_t destination = 0;
-  for (size_t source = 0; source < attribute_vector.size(); ++source) {
+  wtf_size_t destination = 0;
+  for (wtf_size_t source = 0; source < attribute_vector.size(); ++source) {
     if (IsScriptingAttribute(attribute_vector[source]))
       continue;
 
@@ -3084,7 +3084,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   const UniqueElementData& element_data = EnsureUniqueElementData();
 
   AttributeCollection attributes = element_data.Attributes();
-  size_t index = attributes.FindIndex(attr_node->GetQualifiedName());
+  wtf_size_t index = attributes.FindIndex(attr_node->GetQualifiedName());
   AtomicString local_name;
   if (index != kNotFound) {
     const Attribute& attr = attributes[index];
@@ -3135,7 +3135,7 @@ Attr* Element::removeAttributeNode(Attr* attr,
 
   SynchronizeAttribute(attr->GetQualifiedName());
 
-  size_t index =
+  wtf_size_t index =
       GetElementData()->Attributes().FindIndex(attr->GetQualifiedName());
   if (index == kNotFound) {
     exception_state.ThrowDOMException(
@@ -3204,7 +3204,7 @@ void Element::setAttributeNS(
 }
 
 void Element::RemoveAttributeInternal(
-    size_t index,
+    wtf_size_t index,
     SynchronizationOfLazyAttribute in_synchronization_of_lazy_attribute) {
   MutableAttributeCollection attributes =
       EnsureUniqueElementData().Attributes();
@@ -3248,7 +3248,7 @@ void Element::removeAttribute(const AtomicString& name) {
     return;
 
   AtomicString local_name = LowercaseIfNecessary(name);
-  size_t index = GetElementData()->Attributes().FindIndex(local_name);
+  wtf_size_t index = GetElementData()->Attributes().FindIndex(local_name);
   if (index == kNotFound) {
     if (UNLIKELY(local_name == styleAttr) &&
         GetElementData()->style_attribute_is_dirty_ && IsStyledElement())
@@ -4751,7 +4751,7 @@ void Element::DetachAttrNodeFromElementWithValue(Attr* attr_node,
   attr_node->DetachFromElementWithValue(value);
 
   AttrNodeList* list = GetAttrNodeList();
-  size_t index = list->Find(attr_node);
+  wtf_size_t index = list->Find(attr_node);
   DCHECK_NE(index, kNotFound);
   list->EraseAt(index);
   if (list->IsEmpty())

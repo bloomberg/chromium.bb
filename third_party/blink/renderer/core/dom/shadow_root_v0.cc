@@ -70,7 +70,7 @@ inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {
 
     if (IsActiveV0InsertionPoint(*child)) {
       V0InsertionPoint* insertion_point = ToV0InsertionPoint(child);
-      for (size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i)
+      for (wtf_size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i)
         nodes_.push_back(insertion_point->DistributedNodeAt(i));
     } else {
       nodes_.push_back(child);
@@ -84,7 +84,7 @@ void DistributionPool::DistributeTo(V0InsertionPoint* insertion_point,
                                     ShadowRoot* shadow_root) {
   DistributedNodes distributed_nodes;
 
-  for (size_t i = 0; i < nodes_.size(); ++i) {
+  for (wtf_size_t i = 0; i < nodes_.size(); ++i) {
     if (distributed_[i])
       continue;
 
@@ -115,7 +115,7 @@ inline DistributionPool::~DistributionPool() {
 }
 
 inline void DistributionPool::DetachNonDistributedNodes() {
-  for (size_t i = 0; i < nodes_.size(); ++i) {
+  for (wtf_size_t i = 0; i < nodes_.size(); ++i) {
     if (distributed_[i])
       continue;
     if (nodes_[i]->GetLayoutObject())

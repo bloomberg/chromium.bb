@@ -481,7 +481,7 @@ bool EventTarget::RemoveEventListenerInternal(
   if (!d)
     return false;
 
-  size_t index_of_removed_listener;
+  wtf_size_t index_of_removed_listener;
   RegisteredEventListener registered_listener;
 
   if (!d->event_listener_map.Remove(event_type, listener, options,
@@ -790,8 +790,8 @@ bool EventTarget::FireEventListeners(Event& event,
   if (!context)
     return false;
 
-  size_t i = 0;
-  size_t size = entry.size();
+  wtf_size_t i = 0;
+  wtf_size_t size = entry.size();
   if (!d->firing_event_iterators)
     d->firing_event_iterators = std::make_unique<FiringEventIteratorVector>();
   d->firing_event_iterators->push_back(

@@ -59,7 +59,7 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
   void RebuildDistributedChildrenLayoutTrees(WhitespaceAttacher&);
 
   size_t DistributedNodesSize() const { return distributed_nodes_.size(); }
-  Node* DistributedNodeAt(size_t index) const {
+  Node* DistributedNodeAt(wtf_size_t index) const {
     return distributed_nodes_.at(index);
   }
   Node* FirstDistributedNode() const {

@@ -57,8 +57,8 @@ void V0InsertionPoint::SetDistributedNodes(
   // Attempt not to reattach nodes that would be distributed to the exact same
   // location by comparing the old and new distributions.
 
-  size_t i = 0;
-  size_t j = 0;
+  wtf_size_t i = 0;
+  wtf_size_t j = 0;
 
   for (; i < distributed_nodes_.size() && j < distributed_nodes.size();
        ++i, ++j) {
@@ -110,7 +110,7 @@ void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
   // distributed nodes benefit from the n^2 protection.
   AttachContext children_context(context);
 
-  for (size_t i = 0; i < distributed_nodes_.size(); ++i) {
+  for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i) {
     Node* child = distributed_nodes_.at(i);
     if (child->NeedsAttach())
       child->AttachLayoutTree(children_context);
@@ -122,7 +122,7 @@ void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
 }
 
 void V0InsertionPoint::DetachLayoutTree(const AttachContext& context) {
-  for (size_t i = 0; i < distributed_nodes_.size(); ++i)
+  for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i)
     distributed_nodes_.at(i)->LazyReattachIfAttached();
 
   HTMLElement::DetachLayoutTree(context);
@@ -132,7 +132,7 @@ void V0InsertionPoint::RebuildDistributedChildrenLayoutTrees(
     WhitespaceAttacher& whitespace_attacher) {
   // This loop traverses the nodes from right to left for the same reason as the
   // one described in ContainerNode::RebuildChildrenLayoutTrees().
-  for (size_t i = distributed_nodes_.size(); i > 0; --i) {
+  for (wtf_size_t i = distributed_nodes_.size(); i > 0; --i) {
     RebuildLayoutTreeForChild(distributed_nodes_.at(i - 1),
                               whitespace_attacher);
   }
@@ -149,7 +149,7 @@ void V0InsertionPoint::DidRecalcStyle(StyleRecalcChange change) {
   StyleChangeType style_change_type =
       change == kForce ? kSubtreeStyleChange : kLocalStyleChange;
 
-  for (size_t i = 0; i < distributed_nodes_.size(); ++i) {
+  for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i) {
     Node* node = distributed_nodes_.at(i);
     if (change == kReattach && node->IsElementNode()) {
       if (node->ShouldCallRecalcStyle(kReattach))
@@ -199,7 +199,7 @@ StaticNodeList* V0InsertionPoint::getDistributedNodes() {
 
   HeapVector<Member<Node>> nodes;
   nodes.ReserveInitialCapacity(distributed_nodes_.size());
-  for (size_t i = 0; i < distributed_nodes_.size(); ++i)
+  for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i)
     nodes.UncheckedAppend(distributed_nodes_.at(i));
 
   return StaticNodeList::Adopt(nodes);
@@ -310,7 +310,7 @@ void CollectDestinationInsertionPoints(
         shadow_root->V0().DestinationInsertionPointsFor(&node);
     if (!insertion_points)
       return;
-    for (size_t i = 0; i < insertion_points->size(); ++i)
+    for (wtf_size_t i = 0; i < insertion_points->size(); ++i)
       results.push_back(insertion_points->at(i).Get());
     DCHECK_NE(current, insertion_points->back().Get());
     current = insertion_points->back().Get();
