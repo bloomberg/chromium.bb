@@ -431,10 +431,10 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
     // Note that this doesn't show the message when a frame is stopped (vs.
     // this DOES when throttled).
     context_->AddInfoConsoleMessage(
-        "Active resource loading counts reached to a per-frame limit while the "
-        "tab is in background. Network requests will be delayed until a "
-        "previous loading finishes, or the tab is foregrounded. See "
-        "https://www.chromestatus.com/feature/5527160148197376 for more "
+        "Active resource loading counts reached a per-frame limit while the "
+        "tab was in background. Network requests will be delayed until a "
+        "previous loading finishes, or the tab is brought to the foreground. "
+        "See https://www.chromestatus.com/feature/5527160148197376 for more "
         "details",
         FetchContext::kOtherSource);
     omit_console_log_ = true;
