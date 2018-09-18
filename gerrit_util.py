@@ -200,11 +200,13 @@ class CookiesAuthenticator(Authenticator):
             continue
           domain, xpath, key, value = fields[0], fields[2], fields[5], fields[6]
           if xpath == '/' and key == 'o':
-            login, secret_token = value.split('=', 1)
-            gitcookies[domain] = (login, secret_token)
+            if value.startswith('git-'):
+              login, secret_token = value.split('=', 1)
+              gitcookies[domain] = (login, secret_token)
+            else:
+              gitcookies[domain] = ('', value)
         except (IndexError, ValueError, TypeError) as exc:
           LOGGER.warning(exc)
-
     return gitcookies
 
   def _get_auth_for_host(self, host):
@@ -216,7 +218,10 @@ class CookiesAuthenticator(Authenticator):
   def get_auth_header(self, host):
     a = self._get_auth_for_host(host)
     if a:
-      return 'Basic %s' % (base64.b64encode('%s:%s' % (a[0], a[2])))
+      if a[0]:
+        return 'Basic %s' % (base64.b64encode('%s:%s' % (a[0], a[2])))
+      else:
+        return 'Bearer %s' % a[2]
     return None
 
   def get_auth_email(self, host):
