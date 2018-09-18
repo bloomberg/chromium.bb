@@ -43,7 +43,7 @@ class CupsPrintJob {
   ~CupsPrintJob();
 
   // Create a unique id for a print job using the |printer_id| and |job_id|.
-  static std::string GetUniqueId(const std::string& printer_id, int job_id);
+  static std::string CreateUniqueId(const std::string& printer_id, int job_id);
 
   // Returns a unique id for the print job.
   std::string GetUniqueId() const;
@@ -68,17 +68,17 @@ class CupsPrintJob {
   void set_error_code(ErrorCode error_code) { error_code_ = error_code; }
 
   // Returns true if |state_| represents a terminal state.
-  bool IsJobFinished();
+  bool IsJobFinished() const;
 
   // Returns true if cups pipeline failed.
-  bool PipelineDead();
+  bool PipelineDead() const;
 
  private:
-  Printer printer_;
-  int job_id_;
+  const Printer printer_;
+  const int job_id_;
 
   std::string document_title_;
-  int total_page_number_ = 0;
+  const int total_page_number_;
   int printed_page_number_ = 0;
 
   State state_ = State::STATE_NONE;
