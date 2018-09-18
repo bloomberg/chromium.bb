@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -177,6 +178,7 @@ class ToolbarActionsBarBridge : public ToolbarActionsBarDelegate {
   void StopAnimating() override;
   void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+  void CloseOverflowMenuIfOpen() override;
 
   // The owning BrowserActionsController; weak.
   BrowserActionsController* controller_;
@@ -241,6 +243,13 @@ void ToolbarActionsBarBridge::StopAnimating() {
 void ToolbarActionsBarBridge::ShowToolbarActionBubble(
     std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
   [controller_ createMessageBubble:std::move(bubble)];
+}
+
+void ToolbarActionsBarBridge::CloseOverflowMenuIfOpen() {
+  AppMenuController* appMenuController =
+      [[controller_ toolbarController] appMenuController];
+  if ([appMenuController isMenuOpen])
+    [appMenuController cancel];
 }
 
 }  // namespace
