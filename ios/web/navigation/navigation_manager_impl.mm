@@ -399,9 +399,8 @@ void NavigationManagerImpl::LoadIfNecessary() {
 }
 
 void NavigationManagerImpl::WillRestore(size_t item_count) {
-  // UMA_HISTOGRAM_EXACT_LINEAR recommends to limit max size to 100. It should
-  // be uncommon for the user to have more than 100 items in their session,
-  // so bucketing 100+ logs together is fine.
+  // It should be uncommon for the user to have more than 100 items in their
+  // session, so bucketing 100+ logs together is fine.
   UMA_HISTOGRAM_COUNTS_100(kRestoreNavigationItemCount, item_count);
 }
 
