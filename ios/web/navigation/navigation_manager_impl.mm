@@ -18,7 +18,7 @@
 
 namespace web {
 
-const char kRestoreNavigationItemCount[] = "IOSRestoreNavigationItemCount";
+const char kRestoreNavigationItemCount[] = "IOS.RestoreNavigationItemCount";
 
 NavigationManager::WebLoadParams::WebLoadParams(const GURL& url)
     : url(url),
