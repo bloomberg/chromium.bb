@@ -18,7 +18,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -47,7 +46,6 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -209,78 +207,6 @@ class WrappedCertVerifierForProfileIODataTesting : public net::CertVerifier {
     return g_cert_verifier_for_profile_io_data_testing->SetConfig(config);
   }
 };
-
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
-  std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
-  bundled_path_prefix = "/" + bundled_path_prefix + "/";
-
-  if (!url.SchemeIs(content::kChromeDevToolsScheme) ||
-      url.host_piece() != chrome::kChromeUIDevToolsHost ||
-      !base::StartsWith(url.path_piece(), bundled_path_prefix,
-                        base::CompareCase::INSENSITIVE_ASCII)) {
-    return false;
-  }
-
-  if (!url.is_valid()) {
-    NOTREACHED();
-    return false;
-  }
-
-  // Remove Query and Ref from URL.
-  GURL stripped_url;
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  stripped_url = url.ReplaceComponents(replacements);
-
-  std::string relative_path;
-  const std::string& spec = stripped_url.possibly_invalid_spec();
-  const url::Parsed& parsed = stripped_url.parsed_for_possibly_invalid_spec();
-  int offset = parsed.CountCharactersBefore(url::Parsed::PATH, false);
-  if (offset < static_cast<int>(spec.size()))
-    relative_path.assign(spec.substr(offset + bundled_path_prefix.length()));
-
-  // Check that |relative_path| is not an absolute path (otherwise
-  // AppendASCII() will DCHECK).  The awkward use of StringType is because on
-  // some systems FilePath expects a std::string, but on others a std::wstring.
-  base::FilePath p(
-      base::FilePath::StringType(relative_path.begin(), relative_path.end()));
-  if (p.IsAbsolute())
-    return false;
-
-  base::FilePath inspector_debug_dir;
-  if (!base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG,
-                              &inspector_debug_dir))
-    return false;
-
-  DCHECK(!inspector_debug_dir.empty());
-
-  *path = inspector_debug_dir.AppendASCII(relative_path);
-  return true;
-}
-
-class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
- public:
-  // net::URLRequestInterceptor implementation.
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    base::FilePath path;
-    if (IsSupportedDevToolsURL(request->url(), &path)) {
-      net::URLRequestFileJob* job = new net::URLRequestFileJob(
-          request, network_delegate, path,
-          base::CreateTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-      job->ShouldServeMimeTypeAsContentTypeHeader();
-      return job;
-    }
-
-    return NULL;
-  }
-};
-#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
 
 #if defined(OS_CHROMEOS)
 // The following four functions are responsible for initializing NSS for each
@@ -1257,10 +1183,6 @@ ProfileIOData::SetUpJobFactoryDefaults(
       url::kFtpScheme, net::FtpProtocolHandler::Create(host_resolver));
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-  request_interceptors.push_back(std::make_unique<DebugDevToolsInterceptor>());
-#endif
-
   // Set up interceptors in the reverse order.
   std::unique_ptr<net::URLRequestJobFactory> top_job_factory =
       std::move(job_factory);
@@ -1313,10 +1235,6 @@ void ProfileIOData::SetUpJobFactoryDefaultsForBuilder(
   builder->SetProtocolHandler(
       url::kAboutScheme,
       std::make_unique<about_handler::AboutProtocolHandler>());
-
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-  request_interceptors.push_back(std::make_unique<DebugDevToolsInterceptor>());
-#endif
 
   builder->SetInterceptors(std::move(request_interceptors));
 
