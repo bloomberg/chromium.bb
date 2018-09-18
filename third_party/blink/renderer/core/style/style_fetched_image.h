@@ -63,6 +63,7 @@ class StyleFetchedImage final : public StyleImage,
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
   void ImageNotifyFinished(ImageResourceContent*) override;
+  bool GetImageAnimationPolicy(ImageAnimationPolicy&) override;
   String DebugName() const override { return "StyleFetchedImage"; }
   scoped_refptr<Image> GetImage(const ImageResourceObserver&,
                                 const Document&,
