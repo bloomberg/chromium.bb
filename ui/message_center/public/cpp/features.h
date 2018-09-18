@@ -14,10 +14,6 @@ namespace message_center {
 // should be used.
 MESSAGE_CENTER_PUBLIC_EXPORT extern const base::Feature kNewStyleNotifications;
 
-// Whether the swipe control on notifications should be enabled.
-MESSAGE_CENTER_PUBLIC_EXPORT extern const base::Feature
-    kNotificationSwipeControl;
-
 }  // namespace message_center
 
 #endif  // UI_MESSAGE_CENTER_PUBLIC_CPP_FEATURES_H_

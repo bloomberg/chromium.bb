@@ -23,16 +23,13 @@ SlidableMessageView::SlidableMessageView(MessageView* message_view)
   // Draw on its own layer to allow bound animation.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  if (base::FeatureList::IsEnabled(message_center::kNotificationSwipeControl))
-    SetBackground(views::CreateSolidBackground(kSwipeControlBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kSwipeControlBackgroundColor));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  if (base::FeatureList::IsEnabled(message_center::kNotificationSwipeControl)) {
-    control_view_ = std::make_unique<NotificationSwipeControlView>();
-    AddChildView(control_view_.get());
-    control_view_->AddObserver(this);
-  }
+  control_view_ = std::make_unique<NotificationSwipeControlView>();
+  AddChildView(control_view_.get());
+  control_view_->AddObserver(this);
 
   message_view_->AddSlideObserver(this);
   AddChildView(message_view);
@@ -41,8 +38,6 @@ SlidableMessageView::SlidableMessageView(MessageView* message_view)
 SlidableMessageView::~SlidableMessageView() = default;
 
 void SlidableMessageView::OnSlideChanged(const std::string& notification_id) {
-  if (!base::FeatureList::IsEnabled(message_center::kNotificationSwipeControl))
-    return;
   float gesture_amount = message_view_->GetSlideAmount();
   if (gesture_amount == 0) {
     control_view_->HideButtons();
@@ -99,9 +94,6 @@ int SlidableMessageView::GetHeightForWidth(int width) const {
 
 void SlidableMessageView::UpdateCornerRadius(int top_radius,
                                              int bottom_radius) {
-  // No need to update because the background is transparent when disabled.
-  if (!base::FeatureList::IsEnabled(message_center::kNotificationSwipeControl))
-    return;
   SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<NotificationBackgroundPainter>(
           top_radius, bottom_radius, kSwipeControlBackgroundColor)));

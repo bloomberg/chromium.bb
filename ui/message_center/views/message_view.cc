@@ -96,8 +96,6 @@ void MessageView::SetIsNested() {
   SetBorder(views::CreateRoundedRectBorder(
       kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
 
-  if (!base::FeatureList::IsEnabled(message_center::kNotificationSwipeControl))
-    return;
   auto* control_buttons_view = GetControlButtonsView();
   if (control_buttons_view) {
     int control_button_count =
