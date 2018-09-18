@@ -33,11 +33,6 @@ AudioServiceAudioProcessorProxy::AudioServiceAudioProcessorProxy(
       aec_dump_message_filter_(AecDumpMessageFilter::Get()),
       weak_ptr_factory_(this) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
-  // In unit tests not creating a message filter, |aec_dump_message_filter_|
-  // will be null. We can just ignore that. Other unit tests and browser tests
-  // ensure that we do get the filter when we should.
-  if (aec_dump_message_filter_)
-    aec_dump_message_filter_->AddDelegate(this);
 }
 
 AudioServiceAudioProcessorProxy::~AudioServiceAudioProcessorProxy() {
@@ -91,18 +86,20 @@ void AudioServiceAudioProcessorProxy::OnIpcClosing() {
 void AudioServiceAudioProcessorProxy::SetControls(
     media::AudioProcessorControls* controls) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
-  if (processor_controls_ && processor_controls_ != controls) {
-    processor_controls_->StopEchoCancellationDump();
-  }
+  DCHECK(!processor_controls_);
+  DCHECK(controls);
   processor_controls_ = controls;
 
-  if (processor_controls_) {
-    // Initialize the stats interval request timer with the current time ticks,
-    // so it makes any sort of sense.
-    last_stats_request_time_ = base::TimeTicks::Now();
-    stats_update_timer_.SetTaskRunner(main_thread_runner_);
-    RescheduleStatsUpdateTimer(target_stats_interval_);
-  }
+  // Initialize the stats interval request timer with the current time ticks,
+  // so it makes any sort of sense.
+  last_stats_request_time_ = base::TimeTicks::Now();
+  stats_update_timer_.SetTaskRunner(main_thread_runner_);
+  RescheduleStatsUpdateTimer(target_stats_interval_);
+  // In unit tests not creating a message filter, |aec_dump_message_filter_|
+  // will be null. We can just ignore that. Other unit tests and browser tests
+  // ensure that we do get the filter when we should.
+  if (aec_dump_message_filter_)
+    aec_dump_message_filter_->AddDelegate(this);
 }
 
 void AudioServiceAudioProcessorProxy::GetStats(AudioProcessorStats* out) {
