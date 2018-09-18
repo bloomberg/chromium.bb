@@ -811,27 +811,29 @@ void RenderViewHostImpl::ShutdownAndDestroy() {
   delete this;
 }
 
-void RenderViewHostImpl::CreateNewWidget(int32_t route_id,
+void RenderViewHostImpl::CreateNewWidget(int32_t widget_route_id,
                                          mojom::WidgetPtr widget) {
-  delegate_->CreateNewWidget(GetProcess()->GetID(), route_id,
+  delegate_->CreateNewWidget(GetProcess()->GetID(), widget_route_id,
                              std::move(widget));
 }
 
-void RenderViewHostImpl::CreateNewFullscreenWidget(int32_t route_id,
+void RenderViewHostImpl::CreateNewFullscreenWidget(int32_t widget_route_id,
                                                    mojom::WidgetPtr widget) {
-  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id,
+  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), widget_route_id,
                                        std::move(widget));
 }
 
-void RenderViewHostImpl::OnShowWidget(int route_id,
+void RenderViewHostImpl::OnShowWidget(int widget_route_id,
                                       const gfx::Rect& initial_rect) {
-  delegate_->ShowCreatedWidget(GetProcess()->GetID(), route_id, initial_rect);
-  Send(new ViewMsg_SetBounds_ACK(route_id));
+  delegate_->ShowCreatedWidget(GetProcess()->GetID(), widget_route_id,
+                               initial_rect);
+  Send(new ViewMsg_SetBounds_ACK(widget_route_id));
 }
 
-void RenderViewHostImpl::OnShowFullscreenWidget(int route_id) {
-  delegate_->ShowCreatedFullscreenWidget(GetProcess()->GetID(), route_id);
-  Send(new ViewMsg_SetBounds_ACK(route_id));
+void RenderViewHostImpl::OnShowFullscreenWidget(int widget_route_id) {
+  delegate_->ShowCreatedFullscreenWidget(GetProcess()->GetID(),
+                                         widget_route_id);
+  Send(new ViewMsg_SetBounds_ACK(widget_route_id));
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {

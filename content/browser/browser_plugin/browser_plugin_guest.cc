@@ -1130,10 +1130,11 @@ void BrowserPluginGuest::OnShowPopup(
 }
 #endif
 
-void BrowserPluginGuest::OnShowWidget(int route_id,
+void BrowserPluginGuest::OnShowWidget(int widget_route_id,
                                       const gfx::Rect& initial_rect) {
   int process_id = GetWebContents()->GetMainFrame()->GetProcess()->GetID();
-  GetWebContents()->ShowCreatedWidget(process_id, route_id, initial_rect);
+  GetWebContents()->ShowCreatedWidget(process_id, widget_route_id,
+                                      initial_rect);
 }
 
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {
