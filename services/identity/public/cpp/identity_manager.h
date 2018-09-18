@@ -43,9 +43,6 @@ namespace identity {
 // Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
 class IdentityManager : public SigninManagerBase::Observer,
-#if !defined(OS_CHROMEOS)
-                        public SigninManager::DiagnosticsClient,
-#endif
                         public ProfileOAuth2TokenService::DiagnosticsClient,
                         public OAuth2TokenService::DiagnosticsObserver,
                         public OAuth2TokenService::Observer,
@@ -253,16 +250,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;
 
-#if !defined(OS_CHROMEOS)
-  // SigninManager::DiagnosticsClient:
-  // Override these to update |primary_account_info_| before any observers of
-  // SigninManager are notified of the signin state change, ensuring that any
-  // such observer flows that eventually interact with IdentityManager observe
-  // its state as being consistent with that of SigninManager.
-  void WillFireGoogleSigninSucceeded(const AccountInfo& account_info) override;
-  void WillFireGoogleSignedOut(const AccountInfo& account_info) override;
-#endif
-
   // GaiaCookieManagerService::Observer:
   void OnGaiaAccountsInCookieUpdated(
       const std::vector<gaia::ListedAccount>& accounts,
@@ -283,16 +270,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;
   GaiaCookieManagerService* gaia_cookie_manager_service_;
-
-  // The latest (cached) value of the primary account.
-#if defined(OS_CHROMEOS)
-  // On ChromeOS the primary account's email address needs to be modified from
-  // within  GetPrimaryAccountInfo(). TODO(842670): Remove this field being
-  // mutable if possible as part of solving the larger issue.
-  mutable AccountInfo primary_account_info_;
-#else
-  AccountInfo primary_account_info_;
-#endif
 
   // The latest (cached) value of the accounts with refresh tokens.
   using AccountIDToAccountInfoMap = std::map<std::string, AccountInfo>;
