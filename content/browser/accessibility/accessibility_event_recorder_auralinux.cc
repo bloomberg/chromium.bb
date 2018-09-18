@@ -6,9 +6,13 @@
 
 #include <atk/atk.h>
 #include <atk/atkutil.h>
+#include <atspi/atspi.h>
 
 #include "base/process/process_handle.h"
+#include "base/stl_util.h"
+#include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_utils_auralinux.h"
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
@@ -18,82 +22,114 @@
 
 namespace content {
 
+// This class has two distinct event recording code paths. When we are
+// recording events in-process (typically this is used for
+// DumpAccessibilityEvents tests), we use ATK's global event handlers. Since
+// ATK doesn't support intercepting events from other processes, if we have a
+// non-zero PID or an accessibility application name pattern, we use AT-SPI2
+// directly to intercept events. Since AT-SPI2 should be capable of
+// intercepting events in-process as well, eventually it would be nice to
+// remove the ATK code path entirely.
 class AccessibilityEventRecorderAuraLinux : public AccessibilityEventRecorder {
  public:
   explicit AccessibilityEventRecorderAuraLinux(
       BrowserAccessibilityManager* manager,
-      base::ProcessId pid);
+      base::ProcessId pid,
+      const base::StringPiece& application_name_match_pattern);
   ~AccessibilityEventRecorderAuraLinux() override;
 
-  void ProcessEvent(const char* event,
-                    unsigned int n_params,
-                    const GValue* params);
+  void ProcessATKEvent(const char* event,
+                       unsigned int n_params,
+                       const GValue* params);
+  void ProcessATSPIEvent(const AtspiEvent* event);
 
  private:
-  void AddGlobalListener(const char* event_name);
-  void AddGlobalListeners();
-  void RemoveGlobalListeners();
+  bool ShouldUseATSPI();
+
+  void AddATKEventListener(const char* event_name);
+  void AddATKEventListeners();
+  void RemoveATKEventListeners();
   bool IncludeState(AtkStateType state_type);
 
-  std::vector<unsigned int> listener_ids_;
+  void AddATSPIEventListeners();
+  void RemoveATSPIEventListeners();
+
+  AtspiEventListener* atspi_event_listener_ = nullptr;
+  base::ProcessId pid_;
+  base::StringPiece application_name_match_pattern_;
+  std::vector<unsigned int> atk_listener_ids_;
 };
 
 // static
-gboolean OnEventReceived(GSignalInvocationHint* hint,
-                         unsigned int n_params,
-                         const GValue* params,
-                         gpointer data) {
+gboolean OnATKEventReceived(GSignalInvocationHint* hint,
+                            unsigned int n_params,
+                            const GValue* params,
+                            gpointer data) {
   GSignalQuery query;
   g_signal_query(hint->signal_id, &query);
 
   static_cast<AccessibilityEventRecorderAuraLinux&>(
       AccessibilityEventRecorder::GetInstance())
-      .ProcessEvent(query.signal_name, n_params, params);
+      .ProcessATKEvent(query.signal_name, n_params, params);
   return true;
 }
 
 // static
 AccessibilityEventRecorder& AccessibilityEventRecorder::GetInstance(
     BrowserAccessibilityManager* manager,
-    base::ProcessId pid) {
+    base::ProcessId pid,
+    const base::StringPiece& application_name_match_pattern) {
   static base::NoDestructor<AccessibilityEventRecorderAuraLinux> instance(
-      manager, pid);
+      manager, pid, application_name_match_pattern);
   return *instance;
+}
+
+bool AccessibilityEventRecorderAuraLinux::ShouldUseATSPI() {
+  return pid_ != base::GetCurrentProcId() ||
+         !application_name_match_pattern_.empty();
 }
 
 AccessibilityEventRecorderAuraLinux::AccessibilityEventRecorderAuraLinux(
     BrowserAccessibilityManager* manager,
-    base::ProcessId pid)
-    : AccessibilityEventRecorder(manager, pid) {
-  AddGlobalListeners();
+    base::ProcessId pid,
+    const base::StringPiece& application_name_match_pattern)
+    : AccessibilityEventRecorder(manager),
+      pid_(pid),
+      application_name_match_pattern_(application_name_match_pattern) {
+  if (ShouldUseATSPI())
+    AddATSPIEventListeners();
+  else
+    AddATKEventListeners();
 }
 
-AccessibilityEventRecorderAuraLinux::~AccessibilityEventRecorderAuraLinux() {}
+AccessibilityEventRecorderAuraLinux::~AccessibilityEventRecorderAuraLinux() {
+  RemoveATSPIEventListeners();
+}
 
-void AccessibilityEventRecorderAuraLinux::AddGlobalListener(
+void AccessibilityEventRecorderAuraLinux::AddATKEventListener(
     const char* event_name) {
-  unsigned id = atk_add_global_event_listener(OnEventReceived, event_name);
+  unsigned id = atk_add_global_event_listener(OnATKEventReceived, event_name);
   if (!id)
     LOG(FATAL) << "atk_add_global_event_listener failed for " << event_name;
 
-  listener_ids_.push_back(id);
+  atk_listener_ids_.push_back(id);
 }
 
-void AccessibilityEventRecorderAuraLinux::AddGlobalListeners() {
+void AccessibilityEventRecorderAuraLinux::AddATKEventListeners() {
   GObject* gobject = G_OBJECT(g_object_new(G_TYPE_OBJECT, nullptr, nullptr));
   g_object_unref(atk_no_op_object_new(gobject));
   g_object_unref(gobject);
 
-  AddGlobalListener("ATK:AtkObject:state-change");
-  AddGlobalListener("ATK:AtkObject:focus-event");
-  AddGlobalListener("ATK:AtkObject:property-change");
+  AddATKEventListener("ATK:AtkObject:state-change");
+  AddATKEventListener("ATK:AtkObject:focus-event");
+  AddATKEventListener("ATK:AtkObject:property-change");
 }
 
-void AccessibilityEventRecorderAuraLinux::RemoveGlobalListeners() {
-  for (const auto& id : listener_ids_)
+void AccessibilityEventRecorderAuraLinux::RemoveATKEventListeners() {
+  for (const auto& id : atk_listener_ids_)
     atk_remove_global_event_listener(id);
 
-  listener_ids_.clear();
+  atk_listener_ids_.clear();
 }
 
 // Pruning states which are not supported on older bots makes it possible to
@@ -114,12 +150,13 @@ bool AccessibilityEventRecorderAuraLinux::IncludeState(
   }
 }
 
-void AccessibilityEventRecorderAuraLinux::ProcessEvent(const char* event,
-                                                       unsigned int n_params,
-                                                       const GValue* params) {
+void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
+    const char* event,
+    unsigned int n_params,
+    const GValue* params) {
   // If we don't have a root object, it means the tree is being destroyed.
   if (!manager_->GetRoot()) {
-    RemoveGlobalListeners();
+    RemoveATKEventListeners();
     return;
   }
 
@@ -163,6 +200,182 @@ void AccessibilityEventRecorderAuraLinux::ProcessEvent(const char* event,
   log += base::StringPrintf(" %s", states.c_str());
 
   OnEvent(log);
+}
+
+// This list is composed of the sorted event names taken from the list provided
+// in the libatspi documentation at:
+// https://developer.gnome.org/libatspi/stable/AtspiEventListener.html#atspi-event-listener-register
+const char* const kEventNames[] = {
+    "object:active-descendant-changed",
+    "object:children-changed",
+    "object:column-deleted",
+    "object:column-inserted",
+    "object:column-reordered",
+    "object:model-changed",
+    "object:property-change",
+    "object:property-change:accessible-description",
+    "object:property-change:accessible-name",
+    "object:property-change:accessible-parent",
+    "object:property-change:accessible-role",
+    "object:property-change:accessible-table-caption",
+    "object:property-change:accessible-table-column-description",
+    "object:property-change:accessible-table-column-header",
+    "object:property-change:accessible-table-row-description",
+    "object:property-change:accessible-table-row-header",
+    "object:property-change:accessible-table-summary",
+    "object:property-change:accessible-value",
+    "object:row-deleted",
+    "object:row-inserted",
+    "object:row-reordered",
+    "object:selection-changed",
+    "object:state-changed",
+    "object:text-caret-moved",
+    "object:text-changed",
+    "object:text-selection-changed",
+    "object:visible-data-changed",
+    "window:activate",
+    "window:close",
+    "window:create",
+    "window:deactivate",
+    "window:desktop-create",
+    "window:desktop-destroy",
+    "window:lower",
+    "window:maximize",
+    "window:minimize",
+    "window:move",
+    "window:raise",
+    "window:reparent",
+    "window:resize",
+    "window:restore",
+    "window:restyle",
+    "window:shade",
+    "window:unshade",
+};
+
+static void OnATSPIEventReceived(AtspiEvent* event, void* data) {
+  static_cast<AccessibilityEventRecorderAuraLinux*>(data)->ProcessATSPIEvent(
+      event);
+  g_boxed_free(ATSPI_TYPE_EVENT, static_cast<void*>(event));
+}
+
+void AccessibilityEventRecorderAuraLinux::AddATSPIEventListeners() {
+  atspi_init();
+  atspi_event_listener_ =
+      atspi_event_listener_new(OnATSPIEventReceived, this, nullptr);
+
+  GError* error = nullptr;
+  for (size_t i = 0; i < base::size(kEventNames); i++) {
+    atspi_event_listener_register(atspi_event_listener_, kEventNames[i],
+                                  &error);
+    if (error) {
+      LOG(ERROR) << "Could not register event listener for " << kEventNames[i];
+      g_clear_error(&error);
+    }
+  }
+}
+
+void AccessibilityEventRecorderAuraLinux::RemoveATSPIEventListeners() {
+  if (!atspi_event_listener_)
+    return;
+
+  GError* error = nullptr;
+  for (size_t i = 0; i < base::size(kEventNames); i++) {
+    atspi_event_listener_deregister(atspi_event_listener_, kEventNames[i],
+                                    nullptr);
+    if (error) {
+      LOG(ERROR) << "Could not deregister event listener for "
+                 << kEventNames[i];
+      g_clear_error(&error);
+    }
+  }
+
+  g_object_unref(atspi_event_listener_);
+  atspi_event_listener_ = nullptr;
+}
+
+void AccessibilityEventRecorderAuraLinux::ProcessATSPIEvent(
+    const AtspiEvent* event) {
+  GError* error = nullptr;
+
+  if (!application_name_match_pattern_.empty()) {
+    AtspiAccessible* application =
+        atspi_accessible_get_application(event->source, &error);
+    if (error || !application)
+      return;
+
+    char* application_name = atspi_accessible_get_name(application, &error);
+    g_object_unref(application);
+    if (error || !application_name) {
+      g_clear_error(&error);
+      return;
+    }
+
+    if (!base::MatchPattern(application_name,
+                            application_name_match_pattern_)) {
+      return;
+    }
+    free(application_name);
+  }
+
+  if (pid_) {
+    int pid = atspi_accessible_get_process_id(event->source, &error);
+    if (!error && pid != pid_)
+      return;
+    g_clear_error(&error);
+  }
+
+  std::stringstream output;
+  output << event->type << " ";
+
+  GHashTable* attributes =
+      atspi_accessible_get_attributes(event->source, &error);
+  std::string html_tag, html_class, html_id;
+  if (!error && attributes) {
+    if (char* tag = static_cast<char*>(g_hash_table_lookup(attributes, "tag")))
+      html_tag = tag;
+    if (char* id = static_cast<char*>(g_hash_table_lookup(attributes, "id")))
+      html_id = id;
+    if (char* class_chars =
+            static_cast<char*>(g_hash_table_lookup(attributes, "class")))
+      html_class = std::string(".") + class_chars;
+    g_hash_table_unref(attributes);
+  }
+  g_clear_error(&error);
+
+  if (!html_tag.empty())
+    output << "<" << html_tag << html_id << html_class << ">";
+
+  AtspiRole role = atspi_accessible_get_role(event->source, &error);
+  output << "role=";
+  if (!error)
+    output << ATSPIRoleToString(role);
+  else
+    output << "#error";
+  g_clear_error(&error);
+
+  char* name = atspi_accessible_get_name(event->source, &error);
+  output << " name=";
+  if (!error && name)
+    output << name;
+  else
+    output << "#error";
+  g_clear_error(&error);
+  free(name);
+
+  AtspiStateSet* atspi_states = atspi_accessible_get_state_set(event->source);
+  GArray* state_array = atspi_state_set_get_states(atspi_states);
+  std::vector<std::string> states;
+  for (unsigned i = 0; i < state_array->len; i++) {
+    AtspiStateType state_type = g_array_index(state_array, AtspiStateType, i);
+    states.push_back(ATSPIStateToString(state_type));
+  }
+  g_array_free(state_array, TRUE);
+  g_object_unref(atspi_states);
+  output << " ";
+  std::copy(states.begin(), states.end(),
+            std::ostream_iterator<std::string>(output, ", "));
+
+  OnEvent(output.str());
 }
 
 }  // namespace content

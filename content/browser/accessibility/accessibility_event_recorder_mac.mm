@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/stringprintf.h"
@@ -63,7 +64,14 @@ static void EventReceivedThunk(
 // static
 AccessibilityEventRecorder& AccessibilityEventRecorder::GetInstance(
     BrowserAccessibilityManager* manager,
-    base::ProcessId pid) {
+    base::ProcessId pid,
+    const base::StringPiece& application_name_match_pattern) {
+  if (!application_name_match_pattern.empty()) {
+    LOG(ERROR) << "Recording accessibility events from an application name "
+                  "match pattern not supported on this platform yet.";
+    NOTREACHED();
+  }
+
   static base::NoDestructor<AccessibilityEventRecorderMac> instance(manager,
                                                                     pid);
   return *instance;
@@ -72,8 +80,7 @@ AccessibilityEventRecorder& AccessibilityEventRecorder::GetInstance(
 AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid)
-    : AccessibilityEventRecorder(manager, pid),
-      observer_run_loop_source_(NULL) {
+    : AccessibilityEventRecorder(manager), observer_run_loop_source_(NULL) {
   if (kAXErrorSuccess != AXObserverCreate(pid, EventReceivedThunk,
                                           observer_ref_.InitializeInto())) {
     LOG(FATAL) << "Failed to create AXObserverRef";

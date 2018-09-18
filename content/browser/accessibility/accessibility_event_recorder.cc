@@ -11,8 +11,7 @@
 namespace content {
 
 AccessibilityEventRecorder::AccessibilityEventRecorder(
-    BrowserAccessibilityManager* manager,
-    base::ProcessId pid)
+    BrowserAccessibilityManager* manager)
     : manager_(manager) {}
 
 AccessibilityEventRecorder::~AccessibilityEventRecorder() = default;
@@ -21,8 +20,9 @@ AccessibilityEventRecorder::~AccessibilityEventRecorder() = default;
 // static
 AccessibilityEventRecorder& AccessibilityEventRecorder::GetInstance(
     BrowserAccessibilityManager* manager,
-    base::ProcessId pid) {
-  static base::NoDestructor<AccessibilityEventRecorder> instance(manager, pid);
+    base::ProcessId pid,
+    const base::StringPiece& application_name_match_pattern) {
+  static base::NoDestructor<AccessibilityEventRecorder> instance(manager);
   return *instance;
 }
 #endif

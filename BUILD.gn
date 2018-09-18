@@ -744,7 +744,10 @@ group("gn_all") {
   }
 
   if (use_atk) {
-    deps += [ "//tools/accessibility/inspect:ax_dump_tree" ]
+    deps += [
+      "//tools/accessibility/inspect:ax_dump_events",
+      "//tools/accessibility/inspect:ax_dump_tree",
+    ]
   }
 }
 
