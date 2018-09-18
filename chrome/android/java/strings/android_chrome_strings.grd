@@ -2612,7 +2612,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Your passwords, history &amp; more on all devices
       </message>
       <message name="IDS_SIGNIN_PERSONALIZATION_DESCRIPTION" desc="Description of personalization features for the screen that asks users to sign-in and turn on Sync and personalization.">
-        Personalized Google services like Google Pay
+        More personal Google services, like better page suggestions
       </message>
       <message name="IDS_SIGNIN_PERSONALIZATION_DESCRIPTION_CHILD_ACCOUNT" desc="Description of personalization features for the screen that asks users to sign-in and turn on Sync and personalization. This version of the description is used with child accounts.">
         Personalized Google services
