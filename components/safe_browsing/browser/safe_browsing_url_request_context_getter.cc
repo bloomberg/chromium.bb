@@ -11,6 +11,7 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/cookies/cookie_store.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
+#include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/ssl/channel_id_service.h"
@@ -47,7 +48,7 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
         system_context_getter_->GetURLRequestContext());
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+            {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
     // Set up the ChannelIDService
     scoped_refptr<net::SQLiteChannelIDStore> channel_id_db =
