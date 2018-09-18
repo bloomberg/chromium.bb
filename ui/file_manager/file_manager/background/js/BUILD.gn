@@ -232,6 +232,7 @@ js_library("mock_volume_manager") {
     ":volume_info_impl",
     ":volume_info_list_impl",
     ":volume_manager_factory",
+    ":volume_manager_impl",
     "../../common/js:mock_entry",
   ]
 }

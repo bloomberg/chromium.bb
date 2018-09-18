@@ -482,12 +482,11 @@ DeviceHandler.prototype.onMount_ = function(event) {
            * @param {!VolumeManager} volumeManager
            * @return {!Promise<!VolumeInfo>}
            */
-          function(volumeManager) {
+          (volumeManager) => {
             if (!metadata.volumeId) {
               return Promise.reject('No volume id associated with event.');
             }
-            return volumeManager.volumeInfoList.whenVolumeInfoReady(
-                metadata.volumeId);
+            return volumeManager.whenVolumeInfoReady(metadata.volumeId);
           })
       .then(
           /**
@@ -514,15 +513,13 @@ DeviceHandler.prototype.onMount_ = function(event) {
           function(root) {
             return importer.getMediaDirectory(root);
           })
-      .then(
-          (/**
-           * @param {!DirectoryEntry} directory
-           * @this {DeviceHandler}
-           */
-          function(directory) {
-            return importer.isPhotosAppImportEnabled()
-                .then(
-                    (/**
+      .then((/**
+              * @param {!DirectoryEntry} directory
+              * @this {DeviceHandler}
+              */
+             function(directory) {
+               return importer.isPhotosAppImportEnabled().then(
+                   (/**
                      * @param {boolean} appEnabled
                      * @this {DeviceHandler}
                      */
@@ -535,20 +532,18 @@ DeviceHandler.prototype.onMount_ = function(event) {
                             metadata.volumeId, null, directory.fullPath);
                       }
                     }).bind(this));
-          }).bind(this))
-      .catch(
-        function(error) {
-          if (metadata.deviceType && metadata.devicePath) {
-            if (metadata.isReadOnly &&
-                !metadata.isReadOnlyRemovableDevice) {
-              DeviceHandler.Notification.DEVICE_NAVIGATION_READONLY_POLICY.show(
-                  /** @type {string} */ (metadata.devicePath));
-            } else {
-              DeviceHandler.Notification.DEVICE_NAVIGATION.show(
-                  /** @type {string} */ (metadata.devicePath));
-            }
+             }).bind(this))
+      .catch(function(error) {
+        if (metadata.deviceType && metadata.devicePath) {
+          if (metadata.isReadOnly && !metadata.isReadOnlyRemovableDevice) {
+            DeviceHandler.Notification.DEVICE_NAVIGATION_READONLY_POLICY.show(
+                /** @type {string} */ (metadata.devicePath));
+          } else {
+            DeviceHandler.Notification.DEVICE_NAVIGATION.show(
+                /** @type {string} */ (metadata.devicePath));
           }
-        });
+        }
+      });
 };
 
 DeviceHandler.prototype.onUnmount_ = function(event) {

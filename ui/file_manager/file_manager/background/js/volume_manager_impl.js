@@ -270,15 +270,15 @@ VolumeManagerImpl.prototype.configure = function(volumeInfo) {
 
 /** @override */
 VolumeManagerImpl.prototype.getVolumeInfo = function(entry) {
-  for (var i = 0; i < this.volumeInfoList.length; i++) {
-    var volumeInfo = this.volumeInfoList.item(i);
+  for (let i = 0; i < this.volumeInfoList.length; i++) {
+    const volumeInfo = this.volumeInfoList.item(i);
     if (volumeInfo.fileSystem &&
         util.isSameFileSystem(volumeInfo.fileSystem, entry.filesystem)) {
       return volumeInfo;
     }
     // Additionally, check fake entries.
-    for (var key in volumeInfo.fakeEntries_) {
-      var fakeEntry = volumeInfo.fakeEntries_[key];
+    for (let key in volumeInfo.fakeEntries_) {
+      const fakeEntry = volumeInfo.fakeEntries_[key];
       if (util.isSameEntry(fakeEntry, entry))
         return volumeInfo;
     }
@@ -367,6 +367,31 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
   }
 
   return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, isReadOnly);
+};
+
+/** @override */
+VolumeManagerImpl.prototype.findByDevicePath = function(devicePath) {
+  for (let i = 0; i < this.volumeInfoList.length; i++) {
+    const volumeInfo = this.volumeInfoList.item(i);
+    if (volumeInfo.devicePath && volumeInfo.devicePath === devicePath)
+      return volumeInfo;
+  }
+  return null;
+};
+
+/** @override */
+VolumeManagerImpl.prototype.whenVolumeInfoReady = function(volumeId) {
+  return new Promise((fulfill) => {
+    const handler = () => {
+      const index = this.volumeInfoList.findIndex(volumeId);
+      if (index !== -1) {
+        fulfill(this.volumeInfoList.item(index));
+        this.volumeInfoList.removeEventListener('splice', handler);
+      }
+    };
+    this.volumeInfoList.addEventListener('splice', handler);
+    handler();
+  });
 };
 
 /**

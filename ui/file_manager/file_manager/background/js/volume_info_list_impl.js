@@ -48,55 +48,19 @@ VolumeInfoListImpl.prototype.remove = function(volumeId) {
 };
 
 /** @override */
+VolumeInfoListImpl.prototype.item = function(index) {
+  return /** @type {!VolumeInfo} */ (this.model_.item(index));
+};
+
+/**
+ * Obtains an index from the volume ID.
+ * @param {string} volumeId Volume ID.
+ * @return {number} Index of the volume.
+ */
 VolumeInfoListImpl.prototype.findIndex = function(volumeId) {
   for (var i = 0; i < this.model_.length; i++) {
     if (this.model_.item(i).volumeId === volumeId)
       return i;
   }
   return -1;
-};
-
-/** @override */
-VolumeInfoListImpl.prototype.findByDevicePath = function(devicePath) {
-  for (var i = 0; i < this.length; i++) {
-    var volumeInfo = this.item(i);
-    if (volumeInfo.devicePath &&
-        volumeInfo.devicePath == devicePath) {
-      return volumeInfo;
-    }
-  }
-  return null;
-};
-
-/**
- * Returns a VolumInfo for the volume ID, or null if not found.
- *
- * @param {string} volumeId
- * @return {VolumeInfo} The volume's information, or null if not found.
- */
-VolumeInfoListImpl.prototype.findByVolumeId = function(volumeId) {
-  var index = this.findIndex(volumeId);
-  return (index !== -1) ?
-      /** @type {VolumeInfo} */ (this.model_.item(index)) :
-      null;
-};
-
-/** @override */
-VolumeInfoListImpl.prototype.whenVolumeInfoReady = function(volumeId) {
-  return new Promise(function(fulfill) {
-    var handler = function() {
-      var info = this.findByVolumeId(volumeId);
-      if (info) {
-        fulfill(info);
-        this.model_.removeEventListener('splice', handler);
-      }
-    }.bind(this);
-    this.model_.addEventListener('splice', handler);
-    handler();
-  }.bind(this));
-};
-
-/** @override */
-VolumeInfoListImpl.prototype.item = function(index) {
-  return /** @type {!VolumeInfo} */ (this.model_.item(index));
 };

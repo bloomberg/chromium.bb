@@ -239,9 +239,15 @@ chrome.mediaGalleries = {
  */
 chrome.fileSystem = {
   requestFileSystem: (options, callback) => {
-    var volume =
-        mockVolumeManager.volumeInfoList.findByVolumeId(options.volumeId);
-    setTimeout(callback, 0, volume ? volume.fileSystem : null);
+    let fs = null;
+    for (let i = 0; i < mockVolumeManager.volumeInfoList.length; i++) {
+      const volume = mockVolumeManager.volumeInfoList.item(i);
+      if (volume.volumeId === options.volumeId) {
+        fs = volume.fileSystem;
+        break;
+      }
+    }
+    setTimeout(callback, 0, fs);
   },
 };
 

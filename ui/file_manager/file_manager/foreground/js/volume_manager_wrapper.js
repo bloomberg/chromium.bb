@@ -33,28 +33,11 @@ class VolumeInfoListWrapper {
   }
   /** @override */
   add(volumeInfo) {
-    throw new Error('VolumeInfoListWrapper.add not implemented');
+    throw new Error('VolumeInfoListWrapper.add not allowed in foreground');
   }
   /** @override */
   remove(volumeInfo) {
-    throw new Error('VolumeInfoListWrapper.remove not implemented');
-  }
-  /** @override */
-  findIndex(volumeId) {
-    throw new Error('VolumeInfoListWrapper.findIndex not implemented');
-  }
-  /** @override */
-  findByDevicePath(devicePath) {
-    throw new Error('VolumeInfoListWrapper.findByDevicePath not implemented');
-  }
-  /** @override */
-  findByVolumeId(volumeId) {
-    throw new Error('VolumeInfoListWrapper.findByVolumeId not implemented');
-  }
-  /** @override */
-  whenVolumeInfoReady(volumeId) {
-    throw new Error(
-        'VolumeInfoListWrapper.whenVolumeInfoReady not implemented');
+    throw new Error('VolumeInfoListWrapper.remove not allowed in foreground');
   }
   /** @override */
   item(index) {
@@ -375,6 +358,34 @@ VolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
       !this.filterDisallowedVolume_(locationInfo.volumeInfo))
     return null;
   return locationInfo;
+};
+
+/** @override */
+VolumeManagerWrapper.prototype.findByDevicePath = function(devicePath) {
+  for (var i = 0; i < this.volumeInfoList.length; i++) {
+    const volumeInfo = this.volumeInfoList.item(i);
+    if (volumeInfo.devicePath && volumeInfo.devicePath === devicePath)
+      return this.filterDisallowedVolume_(volumeInfo);
+  }
+  return null;
+};
+
+/**
+ * Returns a promise that will be resolved when volume info, identified
+ * by {@code volumeId} is created.
+ *
+ * @param {string} volumeId
+ * @return {!Promise<!VolumeInfo>} The VolumeInfo. Will not resolve
+ *     if the volume is never mounted.
+ */
+VolumeManagerWrapper.prototype.whenVolumeInfoReady = function(volumeId) {
+  return new Promise(resolve => {
+    this.volumeManager_.whenVolumeInfoReady(volumeId).then((volumeInfo) => {
+      volumeInfo = this.filterDisallowedVolume_(volumeInfo);
+      if (volumeInfo)
+        resolve(volumeInfo);
+    });
+  });
 };
 
 /**

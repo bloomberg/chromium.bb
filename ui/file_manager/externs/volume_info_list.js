@@ -39,38 +39,6 @@ VolumeInfoList.prototype.add = function(volumeInfo) {};
 VolumeInfoList.prototype.remove = function(volumeId) {};
 
 /**
- * Obtains an index from the volume ID.
- * @param {string} volumeId Volume ID.
- * @return {number} Index of the volume.
- */
-VolumeInfoList.prototype.findIndex = function(volumeId) {};
-
-/**
- * Searches the information of the volume that exists on the given device path.
- * @param {string} devicePath Path of the device to search.
- * @return {VolumeInfo} The volume's information, or null if not found.
- */
-VolumeInfoList.prototype.findByDevicePath = function(devicePath) {};
-
-/**
- * Returns a VolumInfo for the volume ID, or null if not found.
- *
- * @param {string} volumeId
- * @return {VolumeInfo} The volume's information, or null if not found.
- */
-VolumeInfoList.prototype.findByVolumeId = function(volumeId) {};
-
-/**
- * Returns a promise that will be resolved when volume info, identified
- * by {@code volumeId} is created.
- *
- * @param {string} volumeId
- * @return {!Promise<!VolumeInfo>} The VolumeInfo. Will not resolve
- *     if the volume is never mounted.
- */
-VolumeInfoList.prototype.whenVolumeInfoReady = function(volumeId) {};
-
-/**
  * @param {number} index The index of the volume in the list.
  * @return {!VolumeInfo} The VolumeInfo instance.
  */
