@@ -440,14 +440,13 @@ class InputRouterImplTest : public testing::Test {
     EXPECT_EQ(input_router_->num_of_active_touches_for_test(), 0);
   }
 
-  void OnTouchEventAckWithResultNonBlocking() {
+  void OnTouchEventAckWithAckState(InputEventAckState ack_state) {
     input_router_->OnHasTouchEventHandlers(true);
     EXPECT_FALSE(input_router_->AllowedTouchAction().has_value());
     PressTouchPoint(1, 1);
     input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
     input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
-                                   InputEventAckSource::BROWSER,
-                                   INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+                                   InputEventAckSource::BROWSER, ack_state);
     EXPECT_EQ(input_router_->AllowedTouchAction().value(),
               cc::kTouchActionAuto);
   }
@@ -649,8 +648,33 @@ TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchActionNoConsumer) {
                                INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 }
 
-TEST_F(InputRouterImplTest, TouchActionAutoWithAckResultNonBlocking) {
-  OnTouchEventAckWithResultNonBlocking();
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumed) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_CONSUMED);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNotConsumed) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumedShouldBubble) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNoConsumerExists) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateIgnored) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_IGNORED);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNonBlocking) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNonBlockingDueToFling) {
+  OnTouchEventAckWithAckState(
+      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING);
 }
 
 // Tests that touch-events are sent properly.
