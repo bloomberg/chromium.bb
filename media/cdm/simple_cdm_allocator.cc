@@ -32,11 +32,13 @@ class SimpleCdmVideoFrame : public VideoFrameImpl {
     scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::WrapExternalYuvData(
             PIXEL_FORMAT_I420, frame_size, gfx::Rect(frame_size), natural_size,
-            Stride(kYPlane), Stride(kUPlane), Stride(kVPlane),
-            buffer->Data() + PlaneOffset(kYPlane),
-            buffer->Data() + PlaneOffset(kUPlane),
-            buffer->Data() + PlaneOffset(kVPlane),
+            Stride(cdm::kYPlane), Stride(cdm::kUPlane), Stride(cdm::kVPlane),
+            buffer->Data() + PlaneOffset(cdm::kYPlane),
+            buffer->Data() + PlaneOffset(cdm::kUPlane),
+            buffer->Data() + PlaneOffset(cdm::kVPlane),
             base::TimeDelta::FromMicroseconds(Timestamp()));
+
+    frame->set_color_space(MediaColorSpace().ToGfxColorSpace());
 
     // The FrameBuffer needs to remain around until |frame| is destroyed.
     frame->AddDestructionObserver(

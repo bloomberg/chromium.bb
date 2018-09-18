@@ -55,18 +55,26 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
       const cdm::InputBuffer_1& encrypted_buffer,
       cdm::AudioFrames* audio_frames) override;
 
-  // cdm::ContentDecryptionModule_10/11 implementation.
+  // cdm::ContentDecryptionModule_10 implementation.
+  cdm::Status InitializeVideoDecoder(
+      const cdm::VideoDecoderConfig_2& video_decoder_config) override;
+  cdm::Status DecryptAndDecodeFrame(const cdm::InputBuffer_2& encrypted_buffer,
+                                    cdm::VideoFrame* video_frame) override;
+
+  // cdm::ContentDecryptionModule_11 implementation.
+  cdm::Status InitializeVideoDecoder(
+      const cdm::VideoDecoderConfig_3& video_decoder_config) override;
+  cdm::Status DecryptAndDecodeFrame(const cdm::InputBuffer_2& encrypted_buffer,
+                                    cdm::VideoFrame_2* video_frame) override;
+
+  // Common cdm::ContentDecryptionModule_10/11 implementation.
   void Initialize(bool allow_distinctive_identifier,
                   bool allow_persistent_state,
                   bool use_hw_secure_codecs) override;
   cdm::Status InitializeAudioDecoder(
       const cdm::AudioDecoderConfig_2& audio_decoder_config) override;
-  cdm::Status InitializeVideoDecoder(
-      const cdm::VideoDecoderConfig_2& video_decoder_config) override;
   cdm::Status Decrypt(const cdm::InputBuffer_2& encrypted_buffer,
                       cdm::DecryptedBlock* decrypted_block) override;
-  cdm::Status DecryptAndDecodeFrame(const cdm::InputBuffer_2& encrypted_buffer,
-                                    cdm::VideoFrame* video_frame) override;
   cdm::Status DecryptAndDecodeSamples(
       const cdm::InputBuffer_2& encrypted_buffer,
       cdm::AudioFrames* audio_frames) override;

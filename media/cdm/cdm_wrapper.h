@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "media/base/media_switches.h"
 #include "media/cdm/api/content_decryption_module.h"
+#include "media/cdm/cdm_helpers.h"
 #include "media/cdm/supported_cdm_versions.h"
 
 namespace media {
@@ -39,9 +40,20 @@ cdm::AudioDecoderConfig_1 ToAudioDecoderConfig_1(
 }
 
 cdm::VideoDecoderConfig_1 ToVideoDecoderConfig_1(
-    const cdm::VideoDecoderConfig_2& config) {
+    const cdm::VideoDecoderConfig_3& config) {
   return {config.codec,      config.profile,    config.format,
           config.coded_size, config.extra_data, config.extra_data_size};
+}
+
+cdm::VideoDecoderConfig_2 ToVideoDecoderConfig_2(
+    const cdm::VideoDecoderConfig_3& config) {
+  return {config.codec,
+          config.profile,
+          config.format,
+          config.coded_size,
+          config.extra_data,
+          config.extra_data_size,
+          config.encryption_scheme};
 }
 
 cdm::InputBuffer_1 ToInputBuffer_1(const cdm::InputBuffer_2& buffer) {
@@ -141,12 +153,12 @@ class CdmWrapper {
   virtual cdm::Status InitializeAudioDecoder(
       const cdm::AudioDecoderConfig_2& audio_decoder_config) = 0;
   virtual cdm::Status InitializeVideoDecoder(
-      const cdm::VideoDecoderConfig_2& video_decoder_config) = 0;
+      const cdm::VideoDecoderConfig_3& video_decoder_config) = 0;
   virtual void DeinitializeDecoder(cdm::StreamType decoder_type) = 0;
   virtual void ResetDecoder(cdm::StreamType decoder_type) = 0;
   virtual cdm::Status DecryptAndDecodeFrame(
       const cdm::InputBuffer_2& encrypted_buffer,
-      cdm::VideoFrame* video_frame) = 0;
+      media::VideoFrameImpl* video_frame) = 0;
   virtual cdm::Status DecryptAndDecodeSamples(
       const cdm::InputBuffer_2& encrypted_buffer,
       cdm::AudioFrames* audio_frames) = 0;
@@ -268,7 +280,7 @@ class CdmWrapperImpl : public CdmWrapper {
   }
 
   cdm::Status InitializeVideoDecoder(
-      const cdm::VideoDecoderConfig_2& video_decoder_config) override {
+      const cdm::VideoDecoderConfig_3& video_decoder_config) override {
     return cdm_->InitializeVideoDecoder(video_decoder_config);
   }
 
@@ -280,8 +292,9 @@ class CdmWrapperImpl : public CdmWrapper {
     cdm_->ResetDecoder(decoder_type);
   }
 
-  cdm::Status DecryptAndDecodeFrame(const cdm::InputBuffer_2& encrypted_buffer,
-                                    cdm::VideoFrame* video_frame) override {
+  cdm::Status DecryptAndDecodeFrame(
+      const cdm::InputBuffer_2& encrypted_buffer,
+      media::VideoFrameImpl* video_frame) override {
     return cdm_->DecryptAndDecodeFrame(encrypted_buffer, video_frame);
   }
 
@@ -341,7 +354,7 @@ cdm::Status CdmWrapperImpl<9>::InitializeAudioDecoder(
 
 template <>
 cdm::Status CdmWrapperImpl<9>::InitializeVideoDecoder(
-    const cdm::VideoDecoderConfig_2& video_decoder_config) {
+    const cdm::VideoDecoderConfig_3& video_decoder_config) {
   if (!IsEncryptionSchemeSupportedByLegacyCdms(
           video_decoder_config.encryption_scheme))
     return cdm::kInitializationError;
@@ -364,7 +377,7 @@ cdm::Status CdmWrapperImpl<9>::Decrypt(
 template <>
 cdm::Status CdmWrapperImpl<9>::DecryptAndDecodeFrame(
     const cdm::InputBuffer_2& encrypted_buffer,
-    cdm::VideoFrame* video_frame) {
+    media::VideoFrameImpl* video_frame) {
   if (!IsEncryptionSchemeSupportedByLegacyCdms(
           encrypted_buffer.encryption_scheme))
     return cdm::kDecryptError;
@@ -383,6 +396,15 @@ cdm::Status CdmWrapperImpl<9>::DecryptAndDecodeSamples(
 
   return cdm_->DecryptAndDecodeSamples(ToInputBuffer_1(encrypted_buffer),
                                        audio_frames);
+}
+
+// Specialization for cdm::ContentDecryptionModule_10 methods.
+
+template <>
+cdm::Status CdmWrapperImpl<10>::InitializeVideoDecoder(
+    const cdm::VideoDecoderConfig_3& video_decoder_config) {
+  return cdm_->InitializeVideoDecoder(
+      ToVideoDecoderConfig_2(video_decoder_config));
 }
 
 // static
