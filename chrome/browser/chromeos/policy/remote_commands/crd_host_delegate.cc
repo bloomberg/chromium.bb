@@ -148,7 +148,6 @@ bool CRDHostDelegate::AreServicesReady() const {
 
 bool CRDHostDelegate::IsRunningKiosk() const {
   auto* user_manager = user_manager::UserManager::Get();
-  // TODO(antrim): find out if Arc Kiosk is also eligible.
   if (!user_manager->IsLoggedInAsKioskApp() &&
       !user_manager->IsLoggedInAsArcKioskApp()) {
     return false;
@@ -164,10 +163,8 @@ bool CRDHostDelegate::IsRunningKiosk() const {
     CHECK(manager->GetApp(manager->GetAutoLaunchApp(), &app));
     return app.was_auto_launched_with_zero_delay;
   } else {  // ARC Kiosk
-    chromeos::ArcKioskAppManager* manager = chromeos::ArcKioskAppManager::Get();
-    if (!manager->GetAutoLaunchAccountId().is_valid())
-      return false;
-    return manager->current_app_was_auto_launched_with_zero_delay();
+    return chromeos::ArcKioskAppManager::Get()
+        ->current_app_was_auto_launched_with_zero_delay();
   }
 }
 
