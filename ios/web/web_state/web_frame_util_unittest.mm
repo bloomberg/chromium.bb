@@ -104,4 +104,12 @@ TEST_F(WebFrameUtilTest, GetWebFrameWithId) {
   EXPECT_EQ(nullptr, GetWebFrameWithId(&test_web_state, "main_frame"));
   EXPECT_EQ(nullptr, GetWebFrameWithId(&test_web_state, "unused"));
 }
+
+// Tests the GetWebFrameId GetWebFrameId function.
+TEST_F(WebFrameUtilTest, GetWebFrameId) {
+  EXPECT_EQ(std::string(), GetWebFrameId(nullptr));
+  FakeWebFrame frame("frame", true, GURL::EmptyGURL());
+  EXPECT_EQ("frame", GetWebFrameId(&frame));
+}
+
 }  // namespace web

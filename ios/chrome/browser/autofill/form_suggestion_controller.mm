@@ -36,6 +36,7 @@ struct AutofillSuggestionState {
   AutofillSuggestionState(const std::string& form_name,
                           const std::string& field_name,
                           const std::string& field_identifier,
+                          const std::string& frame_identifier,
                           const std::string& typed_value);
   // The name of the form for autofill.
   std::string form_name;
@@ -43,6 +44,8 @@ struct AutofillSuggestionState {
   std::string field_name;
   // The identifier of the field for autofill.
   std::string field_identifier;
+  // The identifier of the frame for autofill.
+  std::string frame_identifier;
   // The user-typed value in the field.
   std::string typed_value;
   // The suggestions for the form field. An array of |FormSuggestion|.
@@ -53,10 +56,12 @@ AutofillSuggestionState::AutofillSuggestionState(
     const std::string& form_name,
     const std::string& field_name,
     const std::string& field_identifier,
+    const std::string& frame_identifier,
     const std::string& typed_value)
     : form_name(form_name),
       field_name(field_name),
       field_identifier(field_identifier),
+      frame_identifier(frame_identifier),
       typed_value(typed_value) {}
 
 }  // namespace
@@ -188,6 +193,7 @@ AutofillSuggestionState::AutofillSuggestionState(
   NSString* strongFieldName = base::SysUTF8ToNSString(params.field_name);
   NSString* strongFieldIdentifier =
       base::SysUTF8ToNSString(params.field_identifier);
+  NSString* strongFrameId = base::SysUTF8ToNSString(params.frame_id);
   NSString* strongFieldType = base::SysUTF8ToNSString(params.field_type);
   NSString* strongType = base::SysUTF8ToNSString(params.type);
   NSString* strongValue =
@@ -217,6 +223,7 @@ AutofillSuggestionState::AutofillSuggestionState(
                                              fieldType:strongFieldType
                                                   type:strongType
                                             typedValue:strongValue
+                                               frameID:strongFrameId
                                            isMainFrame:is_main_frame
                                         hasUserGesture:has_user_gesture
                                               webState:webState
@@ -249,6 +256,7 @@ AutofillSuggestionState::AutofillSuggestionState(
                                fieldType:strongFieldType
                                     type:strongType
                               typedValue:strongValue
+                                 frameID:strongFrameId
                                 webState:webState
                        completionHandler:readyCompletion];
   };
@@ -342,6 +350,8 @@ AutofillSuggestionState::AutofillSuggestionState(
           fieldIdentifier:base::SysUTF8ToNSString(
                               _suggestionState->field_identifier)
                      form:base::SysUTF8ToNSString(_suggestionState->form_name)
+                  frameID:base::SysUTF8ToNSString(
+                              _suggestionState->frame_identifier)
         completionHandler:^{
           [[weakSelf accessoryViewDelegate] closeKeyboardWithoutButtonPress];
         }];
@@ -366,9 +376,9 @@ AutofillSuggestionState::AutofillSuggestionState(
             accessoryViewUpdateBlock:
                 (AccessoryViewReadyCompletion)accessoryViewUpdateBlock {
   [self processPage:webState];
-  _suggestionState.reset(
-      new AutofillSuggestionState(params.form_name, params.field_name,
-                                  params.field_identifier, params.value));
+  _suggestionState.reset(new AutofillSuggestionState(
+      params.form_name, params.field_name, params.field_identifier,
+      params.frame_id, params.value));
   accessoryViewUpdateBlock_ = [accessoryViewUpdateBlock copy];
   [self retrieveSuggestionsForForm:params webState:webState];
 }

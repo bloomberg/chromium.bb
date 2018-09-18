@@ -78,7 +78,7 @@
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
-#import "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame.h"
 #include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"

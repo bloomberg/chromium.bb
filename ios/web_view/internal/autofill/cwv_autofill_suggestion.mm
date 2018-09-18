@@ -20,17 +20,20 @@
 @synthesize formName = _formName;
 @synthesize fieldName = _fieldName;
 @synthesize fieldIdentifier = _fieldIdentifier;
+@synthesize frameID = _frameID;
 
 - (instancetype)initWithFormSuggestion:(FormSuggestion*)formSuggestion
                               formName:(NSString*)formName
                              fieldName:(NSString*)fieldName
-                       fieldIdentifier:(NSString*)fieldIdentifier {
+                       fieldIdentifier:(NSString*)fieldIdentifier
+                               frameID:(NSString*)frameID {
   self = [super init];
   if (self) {
     _formSuggestion = formSuggestion;
     _formName = [formName copy];
     _fieldName = [fieldName copy];
     _fieldIdentifier = [fieldIdentifier copy];
+    _frameID = [frameID copy];
   }
   return self;
 }

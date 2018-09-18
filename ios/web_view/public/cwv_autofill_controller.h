@@ -41,9 +41,11 @@ CWV_EXPORT
 // |fieldIdentifier| identifies the field that had focus. It is passed to
 // CWVAutofillControllerDelegate and forwarded to this method.
 // |completionHandler| will only be called on success.
+// |frameID| is the ID of the web frame containing the form.
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
                               fieldName:(NSString*)fieldName
                         fieldIdentifier:(NSString*)fieldIdentifier
+                                frameID:(NSString*)frameID
                       completionHandler:
                           (void (^)(NSArray<CWVAutofillSuggestion*>*))
                               completionHandler;

@@ -32,6 +32,7 @@ typedef void (^SuggestionHandledCompletion)(void);
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
+                                   frameID:(NSString*)frameID
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
@@ -47,6 +48,7 @@ typedef void (^SuggestionHandledCompletion)(void);
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
+                           frameID:(NSString*)frameID
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion;
 
@@ -56,6 +58,7 @@ typedef void (^SuggestionHandledCompletion)(void);
                   fieldName:(NSString*)fieldName
             fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
+                    frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion;
 
 @end

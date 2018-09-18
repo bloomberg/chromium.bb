@@ -49,6 +49,9 @@ CWV_EXPORT
 // be used as identifier. Otherwise, an identifier will be generated.
 @property(nonatomic, copy, readonly) NSString* fieldIdentifier;
 
+// The identifier of the WebFrame containing the field.
+@property(nonatomic, copy, readonly) NSString* frameID;
+
 // The string that will replace the field with |fieldName|'s value attribute.
 @property(nonatomic, copy, readonly) NSString* value;
 

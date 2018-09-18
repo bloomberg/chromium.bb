@@ -14,6 +14,7 @@
 #include "ios/web/public/web_state/web_state_user_data.h"
 
 namespace web {
+class WebFrame;
 class WebState;
 }
 
@@ -23,17 +24,20 @@ namespace autofill {
 
 // Class that drives autofill flow on iOS. There is one instance per
 // WebContents.
-class AutofillDriverIOS : public AutofillDriver,
-                          public web::WebStateUserData<AutofillDriverIOS> {
+class AutofillDriverIOS : public AutofillDriver {
  public:
   ~AutofillDriverIOS() override;
 
-  static void CreateForWebStateAndDelegate(
+  static void CreateForWebStateWebFrameAndDelegate(
       web::WebState* web_state,
+      web::WebFrame* web_frame,
       AutofillClient* client,
       id<AutofillDriverIOSBridge> bridge,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
+
+  static AutofillDriverIOS* FromWebStateAndWebFrame(web::WebState* web_state,
+                                                    web::WebFrame* web_frame);
 
   // AutofillDriver:
   bool IsIncognito() const override;
@@ -62,7 +66,7 @@ class AutofillDriverIOS : public AutofillDriver,
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
 
- private:
+ protected:
   AutofillDriverIOS(
       web::WebState* web_state,
       AutofillClient* client,
@@ -70,6 +74,7 @@ class AutofillDriverIOS : public AutofillDriver,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
 
+ private:
   // The WebState with which this object is associated.
   web::WebState* web_state_;
 

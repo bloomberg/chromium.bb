@@ -44,6 +44,7 @@
     didFocusOnFieldWithName:(NSString*)fieldName
             fieldIdentifier:(NSString*)fieldIdentifier
                    formName:(NSString*)formName
+                    frameID:(NSString*)frameID
                       value:(NSString*)value {
   _autofillController = autofillController;
 
@@ -79,6 +80,7 @@
   [autofillController fetchSuggestionsForFormWithName:formName
                                             fieldName:fieldName
                                       fieldIdentifier:fieldIdentifier
+                                              frameID:frameID
                                     completionHandler:completionHandler];
 }
 

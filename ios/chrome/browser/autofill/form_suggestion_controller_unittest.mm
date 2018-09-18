@@ -38,6 +38,7 @@
 @property(weak, nonatomic, readonly) FormSuggestion* suggestion;
 @property(weak, nonatomic, readonly) NSString* formName;
 @property(weak, nonatomic, readonly) NSString* fieldName;
+@property(weak, nonatomic, readonly) NSString* frameID;
 @property(nonatomic, assign) BOOL selected;
 @property(nonatomic, assign) BOOL askedIfSuggestionsAvailable;
 @property(nonatomic, assign) BOOL askedForSuggestions;
@@ -51,6 +52,7 @@
   NSString* _formName;
   NSString* _fieldName;
   NSString* _fieldIdentifier;
+  NSString* _frameID;
   FormSuggestion* _suggestion;
 }
 
@@ -73,6 +75,10 @@
   return _fieldName;
 }
 
+- (NSString*)frameID {
+  return _frameID;
+}
+
 - (FormSuggestion*)suggestion {
   return _suggestion;
 }
@@ -83,6 +89,7 @@
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
+                                   frameID:(NSString*)frameID
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
@@ -98,6 +105,7 @@
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
+                           frameID:(NSString*)frameID
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   self.askedForSuggestions = YES;
@@ -108,11 +116,13 @@
                   fieldName:(NSString*)fieldName
             fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
+                    frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   self.selected = YES;
   _suggestion = suggestion;
   _formName = [formName copy];
   _fieldName = [fieldName copy];
+  _frameID = [frameID copy];
   _fieldIdentifier = [fieldIdentifier copy];
   completion();
 }
@@ -428,6 +438,7 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   params.field_type = "text";
   params.type = "type";
   params.value = "value";
+  params.frame_id = "frame_id";
   params.input_missing = false;
   test_form_activity_tab_helper_.FormActivityRegistered(
       /*sender_frame*/ nullptr, params);
@@ -437,6 +448,7 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   EXPECT_TRUE([provider selected]);
   EXPECT_NSEQ(@"form", [provider formName]);
   EXPECT_NSEQ(@"field", [provider fieldName]);
+  EXPECT_NSEQ(@"frame_id", [provider frameID]);
   EXPECT_NSEQ(suggestions[0], [provider suggestion]);
 }
 

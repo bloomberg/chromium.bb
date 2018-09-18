@@ -21,6 +21,8 @@
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/js_test_util.h"
+#include "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -256,8 +258,11 @@ static const char PROFILE_HOME_ZIP[] = "94043";
 // Loads the predefined autofill profile into the personal data manager, so that
 // autofill actions will be suggested when tapping on an autofillable form.
 - (void)prepareAutofillProfileWithWebState:(web::WebState*)web_state {
+  web::WebFrame* main_frame = web::GetMainWebFrame(web_state);
   autofill::AutofillManager* autofill_manager =
-      autofill::AutofillDriverIOS::FromWebState(web_state)->autofill_manager();
+      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state,
+                                                           main_frame)
+          ->autofill_manager();
   autofill::PersonalDataManager* personal_data_manager =
       autofill_manager->client()->GetPersonalDataManager();
   autofill::AutofillProfile profile(base::GenerateGUID(),

@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_WEB_STATE_WEB_FRAMES_MANAGER_IMPL_H_
 #define IOS_WEB_WEB_STATE_WEB_FRAMES_MANAGER_IMPL_H_
 
-#include "ios/web/public/web_state/web_frames_manager.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 
 namespace web {
 

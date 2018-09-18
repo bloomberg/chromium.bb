@@ -33,4 +33,9 @@ WebFrame* GetWebFrameWithId(WebState* web_state, const std::string& frame_id) {
   DCHECK(manager);
   return manager->GetFrameWithId(frame_id);
 }
+
+std::string GetWebFrameId(WebFrame* frame) {
+  return frame ? frame->GetFrameId() : std::string();
+}
+
 }  // namespace web
