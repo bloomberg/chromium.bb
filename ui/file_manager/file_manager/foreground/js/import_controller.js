@@ -467,7 +467,7 @@ importer.ImportController.prototype.isCurrentDirectoryScannable_ =
     function() {
   var directory = this.environment_.getCurrentDirectory();
   return !!directory &&
-      importer.isMediaDirectory(directory, this.environment_);
+      importer.isMediaDirectory(directory, this.environment_.volumeManager);
 };
 
 /**
@@ -481,8 +481,8 @@ importer.ImportController.prototype.isCurrentDirectoryScannable_ =
 importer.ImportController.prototype.tryScan_ = function(mode) {
   var entries = this.environment_.getSelection();
   if (entries.length) {
-    if (entries.every(
-        importer.isEligibleEntry.bind(null, this.environment_))) {
+    if (entries.every(importer.isEligibleEntry.bind(
+            null, this.environment_.volumeManager))) {
       return this.scanManager_.getSelectionScan(entries, mode);
     }
   } else if (this.isCurrentDirectoryScannable_()) {
@@ -1059,9 +1059,11 @@ importer.ScanManager.prototype.getDirectoryScan = function(mode) {
  * ImportController.
  *
  * @interface
- * @extends {VolumeManagerCommon.VolumeInfoProvider}
  */
 importer.ControllerEnvironment = function() {};
+
+/** @type {!VolumeManager} */
+importer.ControllerEnvironment.prototype.volumeManager;
 
 /**
  * Returns the current file selection, if any. May be empty.
@@ -1079,6 +1081,14 @@ importer.ControllerEnvironment.prototype.getCurrentDirectory;
  * @param {!DirectoryEntry} entry
  */
 importer.ControllerEnvironment.prototype.setCurrentDirectory;
+
+/**
+ * Obtains a volume info containing the passed entry.
+ * @param {!Entry|!FilesAppEntry} entry Entry on the volume to be
+ *     returned. Can be fake.
+ * @return {VolumeInfo} The VolumeInfo instance or null if not found.
+ */
+importer.ControllerEnvironment.prototype.getVolumeInfo;
 
 /**
  * Returns true if the Drive mount is present.
@@ -1168,6 +1178,8 @@ importer.ControllerEnvironment.prototype.showImportDestination;
  */
 importer.RuntimeControllerEnvironment = function(
     fileManager, selectionHandler) {
+  this.volumeManager = fileManager.volumeManager;
+
   /** @private {!CommandHandlerDeps} */
   this.fileManager_ = fileManager;
 

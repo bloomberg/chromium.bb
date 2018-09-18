@@ -53,6 +53,10 @@ js_library("importer_common") {
     ":file_type",
     ":volume_manager_common",
   ]
+  externs_list = [
+    "../../../externs/volume_info_list.js",
+    "../../../externs/volume_manager.js",
+  ]
 }
 
 js_library("lru_cache") {

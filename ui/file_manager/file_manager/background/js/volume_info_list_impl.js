@@ -57,24 +57,6 @@ VolumeInfoListImpl.prototype.findIndex = function(volumeId) {
 };
 
 /** @override */
-VolumeInfoListImpl.prototype.findByEntry = function(entry) {
-  for (var i = 0; i < this.length; i++) {
-    var volumeInfo = this.item(i);
-    if (volumeInfo.fileSystem &&
-        util.isSameFileSystem(volumeInfo.fileSystem, entry.filesystem)) {
-      return volumeInfo;
-    }
-    // Additionally, check fake entries.
-    for (var key in volumeInfo.fakeEntries_) {
-      var fakeEntry = volumeInfo.fakeEntries_[key];
-      if (util.isSameEntry(fakeEntry, entry))
-        return volumeInfo;
-    }
-  }
-  return null;
-};
-
-/** @override */
 VolumeInfoListImpl.prototype.findByDevicePath = function(devicePath) {
   for (var i = 0; i < this.length; i++) {
     var volumeInfo = this.item(i);

@@ -28,7 +28,7 @@ function MetadataModel(rawProvider) {
 }
 
 /**
- * @param {!VolumeManagerCommon.VolumeInfoProvider} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @return {!MetadataModel}
  */
 MetadataModel.create = function(volumeManager) {
