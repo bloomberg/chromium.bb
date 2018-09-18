@@ -48,8 +48,6 @@ class AlsReaderImpl : public AlsReader {
   // reads ambient light file path.
   void Init();
 
-  base::WeakPtr<AlsReaderImpl> AsWeakPtr();
-
   // Sets the task runner for testing purpose.
   void SetTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> task_runner);

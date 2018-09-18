@@ -29,8 +29,6 @@ class FakeAlsReader : public AlsReader {
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
-  base::WeakPtr<FakeAlsReader> AsWeakPtr();
-
  private:
   AlsInitStatus status_ = AlsInitStatus::kInProgress;
   base::ObserverList<Observer> observers_;
