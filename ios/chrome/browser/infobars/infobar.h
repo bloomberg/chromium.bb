@@ -39,6 +39,7 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
 
   // InfoBarControllerDelegate overrides:
   void SetInfoBarTargetHeight(int height) override;
+  bool IsOwned() override;
   void RemoveInfoBar() override;
 
   InfoBarController* controller_;

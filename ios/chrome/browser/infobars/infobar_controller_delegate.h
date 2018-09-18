@@ -13,6 +13,9 @@ class InfoBarControllerDelegate {
   // Notifies that the target size has been changed (e.g. after rotation).
   virtual void SetInfoBarTargetHeight(int height) = 0;
 
+  // Returns whether the infobar is owned.
+  virtual bool IsOwned() = 0;
+
   // Notifies that the infobar must be removed.
   virtual void RemoveInfoBar() = 0;
 
