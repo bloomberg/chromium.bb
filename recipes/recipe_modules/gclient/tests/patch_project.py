@@ -8,6 +8,7 @@ from recipe_engine import recipe_api
 
 DEPS = [
   'gclient',
+  'recipe_engine/buildbucket',
   'recipe_engine/properties',
 ]
 
@@ -26,6 +27,7 @@ def RunSteps(api, patch_project, patch_repository_url):
   src_cfg.patch_projects['v8'] = ('src/v8', 'HEAD')
   src_cfg.patch_projects['v8/v8'] = ('src/v8', 'HEAD')
   src_cfg.repo_path_map.update({
+      'https://chromium.googlesource.com/src': ('src', 'HEAD'),
       'https://chromium.googlesource.com/v8/v8': ('src/v8', 'HEAD'),
       # non-canonical URL
       'https://webrtc.googlesource.com/src.git': (
@@ -48,6 +50,8 @@ def RunSteps(api, patch_project, patch_repository_url):
       gclient_config=src_cfg) is None
 
   api.gclient.c = src_cfg
+  patch_root = api.gclient.get_gerrit_patch_root(gclient_config=src_cfg)
+  assert patch_root == api.properties['expected_patch_root'], patch_root
 
   api.gclient.calculate_patch_root(
       patch_project, None, patch_repository_url)
@@ -57,20 +61,49 @@ def RunSteps(api, patch_project, patch_repository_url):
 
 def GenTests(api):
   yield (
-      api.test('chromium') +
-      api.properties(patch_project='chromium') +
-      api.post_process(post_process.DropExpectation)
-  )
-
-  yield (
-      api.test('v8') +
-      api.properties(patch_project='v8') +
-      api.post_process(post_process.DropExpectation)
-  )
-
-  yield (
-      api.test('webrtc') +
+      api.test('chromium_ci') +
+      api.buildbucket.ci_build(
+          project='chromium',
+          builder='linux',
+          git_repo='https://chromium.googlesource.com/src') +
       api.properties(
-          patch_repository_url='https://webrtc.googlesource.com/src') +
+          expected_patch_root=None,
+          patch_project='chromium') +
+      api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+      api.test('chromium_try') +
+      api.buildbucket.try_build(
+          project='chromium',
+          builder='linux',
+          git_repo='https://chromium.googlesource.com/src') +
+      api.properties(
+          expected_patch_root='src',
+          patch_project='chromium') +
+      api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+      api.test('v8_try') +
+      api.buildbucket.try_build(
+          project='chromium',
+          builder='linux',
+          git_repo='https://chromium.googlesource.com/v8/v8') +
+      api.properties(
+          expected_patch_root='src/v8',
+          patch_project='v8') +
+      api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+      api.test('webrtc_try') +
+      api.buildbucket.try_build(
+          project='chromium',
+          builder='linux',
+          git_repo='https://webrtc.googlesource.com/src') +
+      api.properties(
+          expected_patch_root='src/third_party/webrtc',
+          patch_project='webrtc') +
       api.post_process(post_process.DropExpectation)
   )

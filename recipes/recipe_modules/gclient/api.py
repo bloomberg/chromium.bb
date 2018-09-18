@@ -302,6 +302,29 @@ class GclientApi(recipe_api.RecipeApi):
       infra_step=True,
     )
 
+  def get_gerrit_patch_root(self, gclient_config=None):
+    """Returns local path to the repo where gerrit patch will be applied.
+
+    If there is no patch, returns None.
+    If patch is specified, but such repo is not found among configured solutions
+    or repo_path_map, returns name of the first solution. This is done solely
+    for backward compatibility with existing tests.
+    Please do not rely on this logic in new code.
+    Instead, properly map a repository to a local path using repo_path_map.
+    TODO(nodir): remove this. Update all recipe tests to specify a git_repo
+    matching the recipe.
+    """
+    cfg = gclient_config or self.c
+    repo_url = self.m.tryserver.gerrit_change_repo_url
+    if not repo_url:
+      return None
+    root =  self.get_repo_path(repo_url, gclient_config=cfg)
+
+    # This is wrong, but that's what a ton of recipe tests expect today
+    root = root or cfg.solutions[0]
+
+    return root
+
   def _canonicalize_repo_url(self, repo_url):
     """Attempts to make repo_url canonical. Supports Gitiles URL."""
     return self.m.gitiles.canonicalize_repo_url(repo_url)
@@ -337,7 +360,7 @@ class GclientApi(recipe_api.RecipeApi):
     return None
 
   def calculate_patch_root(self, patch_project, gclient_config=None,
-                           patch_repo=None):
+                           patch_repo=None):  # pragma: no cover
     """Returns path where a patch should be applied to based patch_project.
 
     TODO(nodir): delete this function in favor of get_repo_path.

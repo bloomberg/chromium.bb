@@ -52,7 +52,7 @@ Recipe module to ensure a checkout is consistent on a bot.
 
 Wrapper for easy calling of bot_update.
 
-&mdash; **def [deapply\_patch](/recipes/recipe_modules/bot_update/api.py#423)(self, bot_update_step):**
+&mdash; **def [deapply\_patch](/recipes/recipe_modules/bot_update/api.py#418)(self, bot_update_step):**
 
 Deapplies a patch, taking care of DEPS and solution revisions properly.
     
@@ -68,7 +68,7 @@ Args:
   manifest_name: The name of the manifest to upload to LogDog.  This must
     be unique for the whole build.
 
-&mdash; **def [get\_project\_revision\_properties](/recipes/recipe_modules/bot_update/api.py#400)(self, project_name, gclient_config=None):**
+&mdash; **def [get\_project\_revision\_properties](/recipes/recipe_modules/bot_update/api.py#395)(self, project_name, gclient_config=None):**
 
 Returns all property names used for storing the checked-out revision of
 a given project.
@@ -248,7 +248,7 @@ Wrapper for easy calling of gclient steps.
 Remove all index.lock files. If a previous run of git crashed, bot was
 reset, etc... we might end up with leftover index.lock files.
 
-&mdash; **def [calculate\_patch\_root](/recipes/recipe_modules/gclient/api.py#339)(self, patch_project, gclient_config=None, patch_repo=None):**
+&mdash; **def [calculate\_patch\_root](/recipes/recipe_modules/gclient/api.py#360)(self, patch_project, gclient_config=None, patch_repo=None):**
 
 Returns path where a patch should be applied to based patch_project.
 
@@ -277,7 +277,18 @@ Return a step generator function for gclient checkouts.
 
 &mdash; **def [get\_config\_defaults](/recipes/recipe_modules/gclient/api.py#114)(self):**
 
-&mdash; **def [get\_repo\_path](/recipes/recipe_modules/gclient/api.py#309)(self, repo_url, gclient_config=None):**
+&mdash; **def [get\_gerrit\_patch\_root](/recipes/recipe_modules/gclient/api.py#305)(self, gclient_config=None):**
+
+Returns local path to the repo where gerrit patch will be applied.
+
+If there is no patch, returns None.
+If patch is specified, but such repo is not found among configured solutions
+or repo_path_map, returns name of the first solution. This is done solely
+for backward compatibility with existing tests.
+Please do not rely on this logic in new code.
+Instead, properly map a repository to a local path using repo_path_map.
+
+&mdash; **def [get\_repo\_path](/recipes/recipe_modules/gclient/api.py#330)(self, repo_url, gclient_config=None):**
 
 Returns local path to the repo checkout given its url.
 
@@ -316,7 +327,7 @@ Chromium config. This may happen for one of two reasons:
 
 &mdash; **def [runhooks](/recipes/recipe_modules/gclient/api.py#264)(self, args=None, name='runhooks', \*\*kwargs):**
 
-&mdash; **def [set\_patch\_project\_revision](/recipes/recipe_modules/gclient/api.py#376)(self, patch_project, gclient_config=None):**
+&mdash; **def [set\_patch\_project\_revision](/recipes/recipe_modules/gclient/api.py#397)(self, patch_project, gclient_config=None):**
 
 Updates config revision corresponding to patch_project.
 
@@ -933,9 +944,9 @@ Raises:
 &mdash; **def [RunSteps](/recipes/recipe_modules/gclient/examples/full.py#50)(api):**
 ### *recipes* / [gclient:tests/patch\_project](/recipes/recipe_modules/gclient/tests/patch_project.py)
 
-[DEPS](/recipes/recipe_modules/gclient/tests/patch_project.py#9): [gclient](#recipe_modules-gclient), [recipe\_engine/properties][recipe_engine/recipe_modules/properties]
+[DEPS](/recipes/recipe_modules/gclient/tests/patch_project.py#9): [gclient](#recipe_modules-gclient), [recipe\_engine/buildbucket][recipe_engine/recipe_modules/buildbucket], [recipe\_engine/properties][recipe_engine/recipe_modules/properties]
 
-&mdash; **def [RunSteps](/recipes/recipe_modules/gclient/tests/patch_project.py#21)(api, patch_project, patch_repository_url):**
+&mdash; **def [RunSteps](/recipes/recipe_modules/gclient/tests/patch_project.py#22)(api, patch_project, patch_repository_url):**
 ### *recipes* / [gerrit:examples/full](/recipes/recipe_modules/gerrit/examples/full.py)
 
 [DEPS](/recipes/recipe_modules/gerrit/examples/full.py#5): [gerrit](#recipe_modules-gerrit), [recipe\_engine/step][recipe_engine/recipe_modules/step]
