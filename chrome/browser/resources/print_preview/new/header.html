@@ -43,6 +43,14 @@
         justify-content: flex-end;
         padding-top: 16px;
       }
+
+      #button-strip paper-button:first-child {
+        margin-inline-end: 8px;
+      }
+
+      #button-strip paper-button:last-child {
+        margin-inline-end: 0;
+      }
     </style>
     <h1 class="title">$i18n{title}</h1>
     <span class="summary" aria-label$="[[summaryLabel_]]"

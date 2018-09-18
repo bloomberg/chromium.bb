@@ -35,7 +35,8 @@
         font-weight: inherit;
       }
 
-      paper-button:focus {
+      paper-button:not(.action-button):focus,
+      paper-button:not(.action-button):active {
         box-shadow: none;
         outline: none;
       }
