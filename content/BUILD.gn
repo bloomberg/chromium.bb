@@ -9,11 +9,10 @@ import("//ppapi/buildflags/buildflags.gni")
 # Applied by targets internal to content.
 config("content_implementation") {
   defines = [ "CONTENT_IMPLEMENTATION" ]
-  configs = [ "//build/config/compiler:noshadowing" ]
-  if (!is_win) {
-    # TODO(thakis): Enable on Windows too, http://crbug.com/404525
-    configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  }
+  configs = [
+    "//build/config/compiler:noshadowing",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
 }
 
 # When targets depend on, e.g. //content/public/browser, what happens? To
