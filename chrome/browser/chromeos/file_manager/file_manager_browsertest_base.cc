@@ -535,10 +535,6 @@ class CrostiniTestVolume : public LocalTestVolume {
 
   const base::FilePath& mount_path() const { return root_path(); }
 
-  void Unmount(Profile* profile) {
-    VolumeManager::Get(profile)->RemoveSshfsCrostiniVolume(root_path());
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(CrostiniTestVolume);
 };
@@ -1287,11 +1283,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       ASSERT_TRUE(mtp_volume_->PrepareTestEntries(profile()));
 
     ASSERT_TRUE(mtp_volume_->Mount(profile()));
-    return;
-  }
-
-  if (name == "unmountCrostini") {
-    crostini_volume_->Unmount(profile());
     return;
   }
 
