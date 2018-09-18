@@ -151,7 +151,10 @@ class UwpTextScaleFactorImpl : public UwpTextScaleFactor {
       if (FAILED(hr)) {
         VLOG(2) << "IUISettings2::TextScaleFactor failed: "
                 << logging::SystemErrorCodeToString(hr);
-        DCHECK_EQ(1.0, result) << "Expect text scale factor of 1.0 on failure.";
+        // COM calls overwrite their out-params, typically by zeroing them out.
+        // Since we can't rely on this being a valid value on failure, we'll
+        // reset it.
+        result = 1.0;
       }
     }
 
