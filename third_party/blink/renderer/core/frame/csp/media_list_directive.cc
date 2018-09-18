@@ -48,7 +48,8 @@ void MediaListDirective::Parse(const UChar* begin, const UChar* end) {
     begin = position;
     if (!SkipExactly<UChar, IsMediaTypeCharacter>(position, end)) {
       SkipWhile<UChar, IsNotASCIISpace>(position, end);
-      Policy()->ReportInvalidPluginTypes(String(begin, position - begin));
+      Policy()->ReportInvalidPluginTypes(
+          String(begin, static_cast<wtf_size_t>(position - begin)));
       continue;
     }
     SkipWhile<UChar, IsMediaTypeCharacter>(position, end);
@@ -57,7 +58,8 @@ void MediaListDirective::Parse(const UChar* begin, const UChar* end) {
     //      ^
     if (!SkipExactly<UChar>(position, end, '/')) {
       SkipWhile<UChar, IsNotASCIISpace>(position, end);
-      Policy()->ReportInvalidPluginTypes(String(begin, position - begin));
+      Policy()->ReportInvalidPluginTypes(
+          String(begin, static_cast<wtf_size_t>(position - begin)));
       continue;
     }
 
@@ -65,7 +67,8 @@ void MediaListDirective::Parse(const UChar* begin, const UChar* end) {
     //       ^
     if (!SkipExactly<UChar, IsMediaTypeCharacter>(position, end)) {
       SkipWhile<UChar, IsNotASCIISpace>(position, end);
-      Policy()->ReportInvalidPluginTypes(String(begin, position - begin));
+      Policy()->ReportInvalidPluginTypes(
+          String(begin, static_cast<wtf_size_t>(position - begin)));
       continue;
     }
     SkipWhile<UChar, IsMediaTypeCharacter>(position, end);
@@ -74,10 +77,12 @@ void MediaListDirective::Parse(const UChar* begin, const UChar* end) {
     //            ^                          ^               ^
     if (position < end && IsNotASCIISpace(*position)) {
       SkipWhile<UChar, IsNotASCIISpace>(position, end);
-      Policy()->ReportInvalidPluginTypes(String(begin, position - begin));
+      Policy()->ReportInvalidPluginTypes(
+          String(begin, static_cast<wtf_size_t>(position - begin)));
       continue;
     }
-    plugin_types_.insert(String(begin, position - begin));
+    plugin_types_.insert(
+        String(begin, static_cast<wtf_size_t>(position - begin)));
 
     DCHECK(position == end || IsASCIISpace(*position));
   }
@@ -90,7 +95,7 @@ bool MediaListDirective::Subsumes(
 
   // Find the effective set of plugins allowed by `other`.
   HashSet<String> normalized_b = other[0]->plugin_types_;
-  for (size_t i = 1; i < other.size(); i++)
+  for (wtf_size_t i = 1; i < other.size(); i++)
     normalized_b = other[i]->GetIntersect(normalized_b);
 
   // Empty list of plugins is equivalent to no plugins being allowed.

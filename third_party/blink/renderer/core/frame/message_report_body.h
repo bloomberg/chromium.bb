@@ -22,12 +22,12 @@ class MessageReportBody : public ReportBody {
 
   String sourceFile() const { return location_->Url(); }
 
-  long lineNumber(bool& is_null) const {
+  uint32_t lineNumber(bool& is_null) const {
     is_null = location_->IsUnknown();
     return location_->LineNumber();
   }
 
-  long columnNumber(bool& is_null) const {
+  uint32_t columnNumber(bool& is_null) const {
     is_null = location_->IsUnknown();
     return location_->ColumnNumber();
   }

@@ -50,7 +50,9 @@ static bool IsSourceListNone(const UChar* begin, const UChar* end) {
 
   const UChar* position = begin;
   SkipWhile<UChar, IsSourceCharacter>(position, end);
-  if (!EqualIgnoringASCIICase("'none'", StringView(begin, position - begin)))
+  if (!EqualIgnoringASCIICase(
+          "'none'",
+          StringView(begin, static_cast<wtf_size_t>(position - begin))))
     return false;
 
   SkipWhile<UChar, IsASCIISpace>(position, end);
@@ -167,7 +169,8 @@ void SourceListDirective::Parse(const UChar* begin, const UChar* end) {
                                     host_wildcard, port_wildcard));
     } else {
       policy_->ReportInvalidSourceExpression(
-          directive_name_, String(begin_source, position - begin_source));
+          directive_name_, String(begin_source, static_cast<wtf_size_t>(
+                                                    position - begin_source)));
     }
 
     DCHECK(position == end || IsASCIISpace(*position));
@@ -189,7 +192,7 @@ bool SourceListDirective::ParseSource(
   if (begin == end)
     return false;
 
-  StringView token(begin, end - begin);
+  StringView token(begin, static_cast<wtf_size_t>(end - begin));
 
   if (EqualIgnoringASCIICase("'none'", token))
     return false;
@@ -372,7 +375,7 @@ bool SourceListDirective::ParseNonce(const UChar* begin,
   if (position + 1 != end || *position != '\'' || position == nonce_begin)
     return false;
 
-  *nonce = String(nonce_begin, position - nonce_begin);
+  *nonce = String(nonce_begin, static_cast<wtf_size_t>(position - nonce_begin));
   return true;
 }
 
@@ -461,7 +464,8 @@ bool SourceListDirective::ParseHash(
 
   Vector<char> hash_vector;
   // We accept base64url-encoded data here by normalizing it to base64.
-  Base64Decode(NormalizeToBase64(String(hash_begin, position - hash_begin)),
+  Base64Decode(NormalizeToBase64(String(
+                   hash_begin, static_cast<wtf_size_t>(position - hash_begin))),
                hash_vector);
   if (hash_vector.size() > kMaxDigestSize)
     return false;
@@ -492,7 +496,7 @@ bool SourceListDirective::ParseScheme(const UChar* begin,
   if (position != end)
     return false;
 
-  *scheme = String(begin, end - begin);
+  *scheme = String(begin, static_cast<wtf_size_t>(end - begin));
   return true;
 }
 
@@ -543,7 +547,7 @@ bool SourceListDirective::ParseHost(
     SkipWhile<UChar, IsHostCharacter>(position, end);
   }
 
-  *host = String(host_begin, end - host_begin);
+  *host = String(host_begin, static_cast<wtf_size_t>(end - host_begin));
   return true;
 }
 
@@ -558,11 +562,13 @@ bool SourceListDirective::ParsePath(const UChar* begin,
   // path/to/file.js?query=string || path/to/file.js#anchor
   //                ^                               ^
   if (position < end) {
-    policy_->ReportInvalidPathCharacter(directive_name_,
-                                        String(begin, end - begin), *position);
+    policy_->ReportInvalidPathCharacter(
+        directive_name_, String(begin, static_cast<wtf_size_t>(end - begin)),
+        *position);
   }
 
-  *path = DecodeURLEscapeSequences(String(begin, position - begin));
+  *path = DecodeURLEscapeSequences(
+      String(begin, static_cast<wtf_size_t>(position - begin)));
 
   DCHECK(position <= end);
   DCHECK(position == end || (*position == '#' || *position == '?'));
@@ -664,7 +670,7 @@ void SourceListDirective::AddSourceToMap(
 bool SourceListDirective::HasSourceMatchInList(
     const KURL& url,
     ResourceRequest::RedirectStatus redirect_status) const {
-  for (size_t i = 0; i < list_.size(); ++i) {
+  for (wtf_size_t i = 0; i < list_.size(); ++i) {
     if (list_[i]->Matches(url, redirect_status))
       return true;
   }
@@ -726,7 +732,7 @@ bool SourceListDirective::Subsumes(
 
   HeapVector<Member<CSPSource>> normalized_b =
       other[0]->GetSources(other[0]->policy_->GetSelfSource());
-  for (size_t i = 1; i < other.size(); i++) {
+  for (wtf_size_t i = 1; i < other.size(); i++) {
     allow_inline_other = allow_inline_other && other[i]->allow_inline_;
     allow_eval_other = allow_eval_other && other[i]->allow_eval_;
     allow_wasm_eval_other = allow_wasm_eval_other && other[i]->allow_wasm_eval_;
@@ -786,7 +792,7 @@ SourceListDirective::ExposeForNavigationalChecks() const {
   source_list.allow_star = allow_star_;
   source_list.allow_redirects = allow_redirects_;
   WebVector<WebContentSecurityPolicySourceExpression> list(list_.size());
-  for (size_t i = 0; i < list_.size(); ++i)
+  for (wtf_size_t i = 0; i < list_.size(); ++i)
     list[i] = list_[i]->ExposeForNavigationalChecks();
   source_list.sources.Swap(list);
   return source_list;

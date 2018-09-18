@@ -1351,12 +1351,13 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
   if (!mute_count_) {
     // If any feature was recorded prior to navigation commits, flush to the
     // browser side.
-    for (size_t feature_id = 0; feature_id < features_recorded_.size();
+    for (wtf_size_t feature_id = 0; feature_id < features_recorded_.size();
          ++feature_id) {
       if (features_recorded_.QuickGet(feature_id))
         ReportAndTraceMeasurementByFeatureId(feature_id, *frame);
     }
-    for (size_t sample_id = 0; sample_id < css_recorded_.size(); ++sample_id) {
+    for (wtf_size_t sample_id = 0; sample_id < css_recorded_.size();
+         ++sample_id) {
       if (css_recorded_.QuickGet(sample_id))
         ReportAndTraceMeasurementByCSSSampleId(sample_id, frame, false);
       if (animated_css_recorded_.QuickGet(sample_id))

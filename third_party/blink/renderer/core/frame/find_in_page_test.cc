@@ -66,7 +66,7 @@ class FindInPageCallbackReceiver {
     EXPECT_EQ(expected_version, actual_version);
     EXPECT_EQ(expected_rects.size(), actual_rects.size());
     EXPECT_EQ(expected_active_match_rect, actual_active_match_rect);
-    for (size_t i = 0; i < expected_rects.size(); ++i) {
+    for (wtf_size_t i = 0; i < actual_rects.size(); ++i) {
       EXPECT_EQ(expected_rects[i], actual_rects[i]);
     }
   }

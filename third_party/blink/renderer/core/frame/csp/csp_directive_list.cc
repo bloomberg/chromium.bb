@@ -115,8 +115,10 @@ CSPDirectiveList* CSPDirectiveList::Create(
 
   if (directives->IsReportOnly() &&
       source != kContentSecurityPolicyHeaderSourceMeta &&
-      directives->ReportEndpoints().IsEmpty())
-    policy->ReportMissingReportURI(String(begin, end - begin));
+      directives->ReportEndpoints().IsEmpty()) {
+    policy->ReportMissingReportURI(
+        String(begin, static_cast<wtf_size_t>(end - begin)));
+  }
 
   return directives;
 }
@@ -1071,7 +1073,8 @@ bool CSPDirectiveList::ShouldSendCSPHeader(ResourceType type) const {
 void CSPDirectiveList::Parse(const UChar* begin,
                              const UChar* end,
                              bool should_parse_wasm_eval) {
-  header_ = String(begin, end - begin).StripWhiteSpace();
+  header_ =
+      String(begin, static_cast<wtf_size_t>(end - begin)).StripWhiteSpace();
 
   if (begin == end)
     return;
@@ -1117,11 +1120,11 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
   if (name_begin == position) {
     SkipWhile<UChar, IsNotASCIISpace>(position, end);
     policy_->ReportUnsupportedDirective(
-        String(name_begin, position - name_begin));
+        String(name_begin, static_cast<wtf_size_t>(position - name_begin)));
     return false;
   }
 
-  *name = String(name_begin, position - name_begin);
+  *name = String(name_begin, static_cast<wtf_size_t>(position - name_begin));
 
   if (position == end)
     return true;
@@ -1129,7 +1132,7 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
   if (!SkipExactly<UChar, IsASCIISpace>(position, end)) {
     SkipWhile<UChar, IsNotASCIISpace>(position, end);
     policy_->ReportUnsupportedDirective(
-        String(name_begin, position - name_begin));
+        String(name_begin, static_cast<wtf_size_t>(position - name_begin)));
     return false;
   }
 
@@ -1140,7 +1143,7 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
 
   if (position != end) {
     policy_->ReportInvalidDirectiveValueCharacter(
-        *name, String(value_begin, end - value_begin));
+        *name, String(value_begin, static_cast<wtf_size_t>(end - value_begin)));
     return false;
   }
 
@@ -1148,7 +1151,7 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
   if (value_begin == position)
     return true;
 
-  *value = String(value_begin, position - value_begin);
+  *value = String(value_begin, static_cast<wtf_size_t>(position - value_begin));
   return true;
 }
 
@@ -1173,7 +1176,8 @@ void CSPDirectiveList::ParseRequireSRIFor(const String& name,
     SkipWhile<UChar, IsNotASCIISpace>(position, end);
 
     if (token_begin < position) {
-      String token = String(token_begin, position - token_begin);
+      String token =
+          String(token_begin, static_cast<wtf_size_t>(position - token_begin));
       if (EqualIgnoringASCIICase(token, "script")) {
         require_sri_for_ |= RequireSRIForToken::kScript;
       } else if (EqualIgnoringASCIICase(token, "style")) {
@@ -1254,7 +1258,8 @@ void CSPDirectiveList::ParseAndAppendReportEndpoints(const String& value) {
     SkipWhile<UChar, IsNotASCIISpace>(position, end);
 
     if (endpoint_begin < position) {
-      String endpoint = String(endpoint_begin, position - endpoint_begin);
+      String endpoint = String(
+          endpoint_begin, static_cast<wtf_size_t>(position - endpoint_begin));
       report_endpoints_.push_back(endpoint);
     }
   }

@@ -381,7 +381,7 @@ void ContentSecurityPolicy::ReportAccumulatedHeaders(
   // addAndReportPolicyFromHeaderValue for more details and context.
   DCHECK(client);
   WebVector<WebContentSecurityPolicy> policies(policies_.size());
-  for (size_t i = 0; i < policies_.size(); ++i)
+  for (wtf_size_t i = 0; i < policies_.size(); ++i)
     policies[i] = policies_[i]->ExposeForNavigationalChecks();
   client->DidAddContentSecurityPolicies(policies);
 }
@@ -390,7 +390,7 @@ void ContentSecurityPolicy::AddAndReportPolicyFromHeaderValue(
     const String& header,
     ContentSecurityPolicyHeaderType type,
     ContentSecurityPolicyHeaderSource source) {
-  size_t previous_policy_count = policies_.size();
+  wtf_size_t previous_policy_count = policies_.size();
   AddPolicyFromHeaderValue(header, type, source);
   // Notify about the new header, so that it can be reported back to the
   // browser process.  This is needed in order to:
@@ -403,7 +403,7 @@ void ContentSecurityPolicy::AddAndReportPolicyFromHeaderValue(
   // finished.
   WebVector<WebContentSecurityPolicy> policies(policies_.size() -
                                                previous_policy_count);
-  for (size_t i = previous_policy_count; i < policies_.size(); ++i) {
+  for (wtf_size_t i = previous_policy_count; i < policies_.size(); ++i) {
     policies[i - previous_policy_count] =
         policies_[i]->ExposeForNavigationalChecks();
   }

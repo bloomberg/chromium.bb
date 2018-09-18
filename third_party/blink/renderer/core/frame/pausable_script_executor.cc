@@ -107,8 +107,9 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
   Vector<v8::Local<v8::Value>> results;
   v8::Local<v8::Value> single_result;
   Vector<v8::Local<v8::Value>> args;
-  args.ReserveCapacity(args_.Size());
-  for (size_t i = 0; i < args_.Size(); ++i)
+  wtf_size_t args_size = SafeCast<wtf_size_t>(args_.Size());
+  args.ReserveCapacity(args_size);
+  for (wtf_size_t i = 0; i < args_size; ++i)
     args.push_back(args_.Get(i));
   {
     std::unique_ptr<UserGestureIndicator> gesture_indicator;
