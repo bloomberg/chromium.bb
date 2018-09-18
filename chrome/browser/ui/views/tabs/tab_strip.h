@@ -238,7 +238,6 @@ class TabStrip : public views::View,
   bool IsFirstVisibleTab(const Tab* tab) const override;
   bool IsLastVisibleTab(const Tab* tab) const override;
   bool SingleTabMode() const override;
-  bool IsIncognito() const override;
   void MaybeStartDrag(
       Tab* tab,
       const ui::LocatedEvent& event,

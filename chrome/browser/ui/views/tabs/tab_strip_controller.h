@@ -98,11 +98,6 @@ class TabStripController {
   // search-result page for |location|.
   virtual void CreateNewTabWithLocation(const base::string16& location) = 0;
 
-  // Returns true if the tab strip is in an incognito window.  This is used to
-  // determining which theme may have applied to it, so this determination
-  // should match the one in ThemeService::GetThemeProviderForProfile().
-  virtual bool IsIncognito() = 0;
-
   // Invoked if the stacked layout (on or off) might have changed.
   virtual void StackedLayoutMaybeChanged() = 0;
 

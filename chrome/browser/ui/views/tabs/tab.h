@@ -211,15 +211,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the height of the separator between tabs.
   static int GetTabSeparatorHeight();
 
-  // Returns the inverse of the slope of the diagonal portion of the tab outer
-  // border.  (This is a positive value, so it's specifically for the slope of
-  // the leading edge.)
-  //
-  // This returns the inverse (dx/dy instead of dy/dx) because we use exact
-  // values for the vertical distances between points and then compute the
-  // horizontal deltas from those.
-  static float GetInverseDiagonalSlope();
-
   // Returns the radius of the outer corners of the tab shape.
   static int GetCornerRadius();
 

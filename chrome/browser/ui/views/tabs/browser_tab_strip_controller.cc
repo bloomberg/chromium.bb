@@ -16,7 +16,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_utils.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -344,11 +343,6 @@ void BrowserTabStripController::CreateNewTabWithLocation(
                  &match, NULL);
   if (match.destination_url.is_valid())
     model_->delegate()->AddTabAt(match.destination_url, -1, true);
-}
-
-bool BrowserTabStripController::IsIncognito() {
-  return browser_view_->browser()->profile()->GetProfileType() ==
-      Profile::INCOGNITO_PROFILE;
 }
 
 void BrowserTabStripController::StackedLayoutMaybeChanged() {

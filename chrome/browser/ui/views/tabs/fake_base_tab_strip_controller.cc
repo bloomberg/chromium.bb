@@ -129,10 +129,6 @@ void FakeBaseTabStripController::CreateNewTabWithLocation(
     const base::string16& location) {
 }
 
-bool FakeBaseTabStripController::IsIncognito() {
-  return false;
-}
-
 void FakeBaseTabStripController::StackedLayoutMaybeChanged() {
 }
 

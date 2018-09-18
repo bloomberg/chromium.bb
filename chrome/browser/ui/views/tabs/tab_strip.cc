@@ -979,11 +979,6 @@ bool TabStrip::SingleTabMode() const {
          !tab_at(0)->data().pinned;
 }
 
-bool TabStrip::IsIncognito() const {
-  // There may be no controller in tests.
-  return controller_ && controller_->IsIncognito();
-}
-
 void TabStrip::MaybeStartDrag(
     Tab* tab,
     const ui::LocatedEvent& event,

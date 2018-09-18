@@ -93,9 +93,6 @@ class TabController {
   // a subset of the cases where ther is exactly one tab.
   virtual bool SingleTabMode() const = 0;
 
-  // Returns true if the tab is a part of an incognito profile.
-  virtual bool IsIncognito() const = 0;
-
   // Potentially starts a drag for the specified Tab.
   virtual void MaybeStartDrag(
       Tab* tab,
