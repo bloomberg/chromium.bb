@@ -24,10 +24,6 @@ namespace content {
 class NavigationData;
 }
 
-namespace extensions {
-class UserScriptListener;
-}
-
 namespace net {
 class URLRequest;
 }
@@ -114,7 +110,6 @@ class ChromeResourceDispatcherHostDelegate
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  scoped_refptr<extensions::UserScriptListener> user_script_listener_;
   std::map<net::URLRequest*, StreamTargetInfo> stream_target_info_;
 #endif
 
