@@ -709,11 +709,6 @@ bool QuicDispatcher::OnStreamFrame(const QuicStreamFrame& /*frame*/) {
   return false;
 }
 
-bool QuicDispatcher::OnCryptoFrame(const QuicCryptoFrame& /*frame*/) {
-  DCHECK(false);
-  return false;
-}
-
 bool QuicDispatcher::OnAckFrameStart(QuicPacketNumber /*largest_acked*/,
                                      QuicTime::Delta /*ack_delay_time*/) {
   DCHECK(false);
@@ -721,12 +716,8 @@ bool QuicDispatcher::OnAckFrameStart(QuicPacketNumber /*largest_acked*/,
 }
 
 bool QuicDispatcher::OnAckRange(QuicPacketNumber /*start*/,
-                                QuicPacketNumber /*end*/) {
-  DCHECK(false);
-  return false;
-}
-
-bool QuicDispatcher::OnAckFrameEnd(QuicPacketNumber start) {
+                                QuicPacketNumber /*end*/,
+                                bool /*last_range*/) {
   DCHECK(false);
   return false;
 }

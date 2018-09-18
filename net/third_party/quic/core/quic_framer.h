@@ -114,19 +114,14 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // Called when a StreamFrame has been parsed.
   virtual bool OnStreamFrame(const QuicStreamFrame& frame) = 0;
 
-  // Called when a CRYPTO frame has been parsed.
-  virtual bool OnCryptoFrame(const QuicCryptoFrame& frame) = 0;
-
   // Called when largest acked of an AckFrame has been parsed.
   virtual bool OnAckFrameStart(QuicPacketNumber largest_acked,
                                QuicTime::Delta ack_delay_time) = 0;
 
   // Called when ack range [start, end) of an AckFrame has been parsed.
-  virtual bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) = 0;
-
-  // Called after the last ack range in an AckFrame has been parsed.
-  // |start| is the starting value of the last ack range.
-  virtual bool OnAckFrameEnd(QuicPacketNumber start) = 0;
+  virtual bool OnAckRange(QuicPacketNumber start,
+                          QuicPacketNumber end,
+                          bool last_range) = 0;
 
   // Called when a StopWaitingFrame has been parsed.
   virtual bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) = 0;
@@ -386,7 +381,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool AppendStreamFrame(const QuicStreamFrame& frame,
                          bool last_frame_in_packet,
                          QuicDataWriter* writer);
-  bool AppendCryptoFrame(const QuicCryptoFrame& frame, QuicDataWriter* writer);
 
   // SetDecrypter sets the primary decrypter, replacing any that already exists.
   // If an alternative decrypter is in place then the function DCHECKs. This is
@@ -681,7 +675,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                    QuicRstStreamFrame* frame);
   bool ProcessStopSendingFrame(QuicDataReader* reader,
                                QuicStopSendingFrame* stop_sending_frame);
-  bool ProcessCryptoFrame(QuicDataReader* reader, QuicCryptoFrame* frame);
 
   // IETF frame appending methods.  All methods append the type byte as well.
   bool AppendIetfStreamFrame(const QuicStreamFrame& frame,

@@ -58,20 +58,6 @@ bool QuicFramerPeer::AppendIetfStreamFrame(QuicFramer* framer,
 }
 
 // static
-bool QuicFramerPeer::ProcessCryptoFrame(QuicFramer* framer,
-                                        QuicDataReader* reader,
-                                        QuicCryptoFrame* frame) {
-  return framer->ProcessCryptoFrame(reader, frame);
-}
-
-// static
-bool QuicFramerPeer::AppendCryptoFrame(QuicFramer* framer,
-                                       const QuicCryptoFrame& frame,
-                                       QuicDataWriter* writer) {
-  return framer->AppendCryptoFrame(frame, writer);
-}
-
-// static
 bool QuicFramerPeer::ProcessIetfAckFrame(QuicFramer* framer,
                                          QuicDataReader* reader,
                                          QuicAckFrame* ack_frame) {

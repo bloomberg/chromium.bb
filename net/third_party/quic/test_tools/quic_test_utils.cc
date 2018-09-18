@@ -139,8 +139,6 @@ MockFramerVisitor::MockFramerVisitor() {
 
   ON_CALL(*this, OnStreamFrame(_)).WillByDefault(testing::Return(true));
 
-  ON_CALL(*this, OnCryptoFrame(_)).WillByDefault(testing::Return(true));
-
   ON_CALL(*this, OnStopWaitingFrame(_)).WillByDefault(testing::Return(true));
 
   ON_CALL(*this, OnPaddingFrame(_)).WillByDefault(testing::Return(true));
@@ -191,21 +189,14 @@ bool NoOpFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
   return true;
 }
 
-bool NoOpFramerVisitor::OnCryptoFrame(const QuicCryptoFrame& frame) {
-  return true;
-}
-
 bool NoOpFramerVisitor::OnAckFrameStart(QuicPacketNumber largest_acked,
                                         QuicTime::Delta ack_delay_time) {
   return true;
 }
 
 bool NoOpFramerVisitor::OnAckRange(QuicPacketNumber start,
-                                   QuicPacketNumber end) {
-  return true;
-}
-
-bool NoOpFramerVisitor::OnAckFrameEnd(QuicPacketNumber start) {
+                                   QuicPacketNumber end,
+                                   bool last_range) {
   return true;
 }
 

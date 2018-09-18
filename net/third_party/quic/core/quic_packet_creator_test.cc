@@ -290,13 +290,13 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
       if (client_framer_.transport_version() != QUIC_VERSION_99) {
         // pre-version 99; ensure that the error is gracefully
         // handled.
-        EXPECT_CALL(framer_visitor_, OnAckRange(1, 1)).WillOnce(Return(true));
-        EXPECT_CALL(framer_visitor_, OnAckFrameEnd(1)).WillOnce(Return(true));
+        EXPECT_CALL(framer_visitor_, OnAckRange(1, 1, true))
+            .WillOnce(Return(true));
       } else {
         // version 99; ensure that the correct packet is signalled
         // properly.
-        EXPECT_CALL(framer_visitor_, OnAckRange(0, 1)).WillOnce(Return(true));
-        EXPECT_CALL(framer_visitor_, OnAckFrameEnd(0)).WillOnce(Return(true));
+        EXPECT_CALL(framer_visitor_, OnAckRange(0, 1, true))
+            .WillOnce(Return(true));
       }
       EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
       EXPECT_CALL(framer_visitor_, OnStreamFrame(_));

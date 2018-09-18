@@ -12,7 +12,6 @@
 #include "net/third_party/quic/core/frames/quic_application_close_frame.h"
 #include "net/third_party/quic/core/frames/quic_blocked_frame.h"
 #include "net/third_party/quic/core/frames/quic_connection_close_frame.h"
-#include "net/third_party/quic/core/frames/quic_crypto_frame.h"
 #include "net/third_party/quic/core/frames/quic_goaway_frame.h"
 #include "net/third_party/quic/core/frames/quic_max_stream_id_frame.h"
 #include "net/third_party/quic/core/frames/quic_message_frame.h"
@@ -57,7 +56,6 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicPathChallengeFrame* frame);
   explicit QuicFrame(QuicStopSendingFrame* frame);
   explicit QuicFrame(QuicMessageFrame* message_frame);
-  explicit QuicFrame(QuicCryptoFrame* crypto_frame);
 
   QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& os,
                                                       const QuicFrame& frame);
@@ -96,7 +94,6 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
         QuicPathChallengeFrame* path_challenge_frame;
         QuicStopSendingFrame* stop_sending_frame;
         QuicMessageFrame* message_frame;
-        QuicCryptoFrame* crypto_frame;
       };
     };
   };

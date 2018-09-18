@@ -855,11 +855,6 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
   return connected_;
 }
 
-bool QuicConnection::OnCryptoFrame(const QuicCryptoFrame& frame) {
-  // TODO(nharper): Implement.
-  return false;
-}
-
 bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
                                      QuicTime::Delta ack_delay_time) {
   DCHECK(connected_);
@@ -914,9 +909,12 @@ bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
   return true;
 }
 
-bool QuicConnection::OnAckRange(QuicPacketNumber start, QuicPacketNumber end) {
+bool QuicConnection::OnAckRange(QuicPacketNumber start,
+                                QuicPacketNumber end,
+                                bool last_range) {
   DCHECK(connected_);
-  QUIC_DVLOG(1) << ENDPOINT << "OnAckRange: [" << start << ", " << end << ")";
+  QUIC_DVLOG(1) << ENDPOINT << "OnAckRange: [" << start << ", " << end
+                << "), last_range: " << last_range;
 
   if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
     QUIC_DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
@@ -924,15 +922,7 @@ bool QuicConnection::OnAckRange(QuicPacketNumber start, QuicPacketNumber end) {
   }
 
   sent_packet_manager_.OnAckRange(start, end);
-  return true;
-}
-
-bool QuicConnection::OnAckFrameEnd(QuicPacketNumber start) {
-  DCHECK(connected_);
-  QUIC_DVLOG(1) << ENDPOINT << "OnAckFrameEnd, start: " << start;
-
-  if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
-    QUIC_DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
+  if (!last_range) {
     return true;
   }
   bool acked_new_packet =
@@ -3171,8 +3161,6 @@ void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting,
     SetPathDegradingAlarm();
   }
 
-  // TODO(ianswett): Only increment stop_waiting_count_ if StopWaiting frames
-  // are sent.
   if (send_stop_waiting) {
     ++stop_waiting_count_;
   } else {
