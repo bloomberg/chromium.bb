@@ -354,20 +354,24 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIDiscardsHost));
 
-  source->AddResourcePath("discards.css", IDR_ABOUT_DISCARDS_CSS);
-  source->AddResourcePath("discards.js", IDR_ABOUT_DISCARDS_JS);
-  source->AddResourcePath("discards_tab.html",
-                          IDR_ABOUT_DISCARDS_DISCARDS_TAB_HTML);
-  source->AddResourcePath("database_tab.html",
-                          IDR_ABOUT_DISCARDS_DATABASE_TAB_HTML);
+  source->AddResourcePath("discards.js", IDR_DISCARDS_JS);
+
+  source->AddResourcePath("discards_main.html",
+                          IDR_DISCARDS_DISCARDS_MAIN_HTML);
+  source->AddResourcePath("discards_main.js", IDR_DISCARDS_DISCARDS_MAIN_JS);
+
+  source->AddResourcePath("discards_tab.js", IDR_DISCARDS_DISCARDS_TAB_JS);
+  source->AddResourcePath("discards_tab.html", IDR_DISCARDS_DISCARDS_TAB_HTML);
+  source->AddResourcePath("database_tab.js", IDR_DISCARDS_DATABASE_TAB_JS);
+  source->AddResourcePath("database_tab.html", IDR_DISCARDS_DATABASE_TAB_HTML);
   // Full paths (relative to src) are important for Mojom generated files.
   source->AddResourcePath("chrome/browser/ui/webui/discards/discards.mojom.js",
-                          IDR_ABOUT_DISCARDS_MOJO_JS);
+                          IDR_DISCARDS_MOJO_JS);
   source->AddResourcePath(
       "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.js",
-      IDR_ABOUT_DISCARDS_LIFECYCLE_UNIT_STATE_MOJO_JS);
+      IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJO_JS);
 
-  source->SetDefaultResource(IDR_ABOUT_DISCARDS_HTML);
+  source->SetDefaultResource(IDR_DISCARDS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, source.release());
