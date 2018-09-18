@@ -247,10 +247,10 @@ Status ParseExtensions(const base::Value& option, Capabilities* capabilities) {
 Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
   const base::DictionaryValue* proxy_dict;
   if (!option.GetAsDictionary(&proxy_dict))
-    return Status(kUnknownError, "must be a dictionary");
+    return Status(kInvalidArgument, "must be a dictionary");
   std::string proxy_type;
   if (!proxy_dict->GetString("proxyType", &proxy_type))
-    return Status(kUnknownError, "'proxyType' must be a string");
+    return Status(kInvalidArgument, "'proxyType' must be a string");
   proxy_type = base::ToLowerASCII(proxy_type);
   if (proxy_type == "direct") {
     capabilities->switches.SetSwitch("no-proxy-server");
@@ -259,13 +259,15 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
   } else if (proxy_type == "pac") {
     base::CommandLine::StringType proxy_pac_url;
     if (!proxy_dict->GetString("proxyAutoconfigUrl", &proxy_pac_url))
-      return Status(kUnknownError, "'proxyAutoconfigUrl' must be a string");
+      return Status(kInvalidArgument, "'proxyAutoconfigUrl' must be a string");
     capabilities->switches.SetSwitch("proxy-pac-url", proxy_pac_url);
   } else if (proxy_type == "autodetect") {
     capabilities->switches.SetSwitch("proxy-auto-detect");
   } else if (proxy_type == "manual") {
     const char* const proxy_servers_options[][2] = {
-        {"ftpProxy", "ftp"}, {"httpProxy", "http"}, {"sslProxy", "https"}};
+        {"ftpProxy", "ftp"}, {"httpProxy", "http"}, {"sslProxy", "https"},
+        {"socksProxy", "socks"}};
+    const std::string kSocksProxy = "socksProxy";
     const base::Value* option_value = NULL;
     std::string proxy_servers;
     for (size_t i = 0; i < arraysize(proxy_servers_options); ++i) {
@@ -276,9 +278,21 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
       std::string value;
       if (!option_value->GetAsString(&value)) {
         return Status(
-            kUnknownError,
+            kInvalidArgument,
             base::StringPrintf("'%s' must be a string",
                                proxy_servers_options[i][0]));
+      }
+      if (proxy_servers_options[i][0] == kSocksProxy) {
+        int socksVersion;
+        if (!proxy_dict->GetInteger("socksVersion", &socksVersion))
+          return Status(
+              kInvalidArgument,
+              "Specifying 'socksProxy' requires an integer for 'socksVersion'");
+        if (socksVersion < 0 || socksVersion > 255)
+          return Status(
+              kInvalidArgument,
+              "'socksVersion' must be between 0 and 255");
+        value = base::StringPrintf("socks%d://%s", socksVersion, value.c_str());
       }
       // Converts into Chrome proxy scheme.
       // Example: "http=localhost:9000;ftp=localhost:8000".
@@ -290,15 +304,29 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
 
     std::string proxy_bypass_list;
     if (proxy_dict->Get("noProxy", &option_value) && !option_value->is_none()) {
-      if (!option_value->GetAsString(&proxy_bypass_list))
-        return Status(kUnknownError, "'noProxy' must be a string");
+      // W3C requires noProxy to be a list of strings, while legacy protocol
+      // requires noProxy to be a string of comma-separated items.
+      // In practice, library implementations are not always consistent,
+      // so we accept both formats regardless of the W3C mode setting.
+      if (option_value->is_list()) {
+        const base::Value::ListStorage& list = option_value->GetList();
+        for (const base::Value& item : list) {
+          if (!item.is_string())
+            return Status(kInvalidArgument,
+                          "'noProxy' must be a list of strings");
+          if (!proxy_bypass_list.empty())
+            proxy_bypass_list += ",";
+          proxy_bypass_list += item.GetString();
+        }
+      } else if (option_value->is_string()) {
+        proxy_bypass_list = option_value->GetString();
+      } else {
+        return Status(kInvalidArgument, "'noProxy' must be a list or a string");
+      }
     }
 
-    if (proxy_servers.empty() && proxy_bypass_list.empty()) {
-      return Status(kUnknownError,
-                    "proxyType is 'manual' but no manual "
-                    "proxy capabilities were found");
-    }
+    // W3C doesn't require specifying any proxy servers even when proxyType is
+    // manual, even though such a setting would be useless.
     if (!proxy_servers.empty())
       capabilities->switches.SetSwitch("proxy-server", proxy_servers);
     if (!proxy_bypass_list.empty()) {
@@ -306,7 +334,7 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
                                        proxy_bypass_list);
     }
   } else {
-    return Status(kUnknownError, "unrecognized proxy type:" + proxy_type);
+    return Status(kInvalidArgument, "unrecognized proxy type: " + proxy_type);
   }
   return Status(kOk);
 }
