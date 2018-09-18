@@ -912,8 +912,10 @@ void ContentMainRunnerImpl::Shutdown() {
     delegate_->ProcessExiting(process_type);
   }
 
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   // The message loop needs to be destroyed before |exit_manager_|.
   main_message_loop_.reset();
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 #if defined(OS_WIN)
 #ifdef _CRTDBG_MAP_ALLOC
