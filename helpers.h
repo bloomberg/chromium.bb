@@ -25,7 +25,6 @@ int drv_get_prot(uint32_t map_flags);
 uintptr_t drv_get_reference_count(struct driver *drv, struct bo *bo, size_t plane);
 void drv_increment_reference_count(struct driver *drv, struct bo *bo, size_t plane);
 void drv_decrement_reference_count(struct driver *drv, struct bo *bo, size_t plane);
-uint32_t drv_log_base2(uint32_t value);
 int drv_add_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
 			uint64_t usage);
 void drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats,
