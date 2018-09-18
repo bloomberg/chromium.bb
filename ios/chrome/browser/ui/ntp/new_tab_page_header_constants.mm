@@ -15,7 +15,6 @@ namespace ntp_header {
 
 const CGFloat kMinHeaderHeight = 62;
 const CGFloat kAnimationDistance = 42;
-const CGFloat kToolbarHeightLegacy = 56;
 const CGFloat kToolbarHeight = 48;
 const CGFloat kScrolledToTopOmniboxBottomMargin = 4;
 const CGFloat kHintLabelSidePadding = 37;
@@ -24,10 +23,7 @@ const CGFloat kMaxHorizontalMarginDiff = 5;
 const CGFloat kMaxTopMarginDiff = 4;
 
 CGFloat ToolbarHeight() {
-  if (IsUIRefreshPhase1Enabled()) {
-    return kToolbarHeight;
-  }
-  return kToolbarHeightLegacy;
+  return kToolbarHeight;
 }
 
 }  // ntp_header

@@ -224,10 +224,6 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 
 #pragma mark - NewTabPageControllerDelegate
 
-- (void)setToolbarBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
-  // No-op, not needed in UI refresh.
-}
-
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
   // No-op, should be handled by the primary toolbar.
 }

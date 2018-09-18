@@ -10,8 +10,6 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/native_content_controller.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
@@ -24,7 +22,6 @@ class ChromeBrowserState;
 @protocol CRWSwipeRecognizerProvider;
 @class GoogleLandingViewController;
 @protocol NewTabPageControllerDelegate;
-@protocol NewTabPagePanelProtocol;
 @protocol OmniboxFocuser;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
@@ -35,22 +32,15 @@ class ChromeBrowserState;
 // each with its own controller. The panels are created lazily.
 //
 // The strongly retained instance variables |*Controller_| are instances of
-// subclasses of NewTabPagePanelProtocol that are created lazily.
+// subclasses of CRWNativeContent that are created lazily.
 // Each Panel is its own controller with the accessible views are added to the
 // |ntpView_|.
 //
-// newTabPageView_ is a horizontally scrollable view that contains the
-// *PanelController instances available to the user at the moment. A tab-page
-// bar inside |ntpView| provides direct access to the *PanelControllers on the
-// scrollable view.
-//
-// The currently visible *PanelController is accessible through
+// The currently visible CRWNativeContent is accessible through
 // |currentController_|.
 //
 @interface NewTabPageController
     : NativeContentController<LogoAnimationControllerOwnerOwner,
-                              NewTabPageBarDelegate,
-                              NewTabPagePanelControllerDelegate,
                               ToolbarOwner,
                               UIGestureRecognizerDelegate,
                               UIScrollViewDelegate>
@@ -79,10 +69,6 @@ class ChromeBrowserState;
                              UrlLoader>)dispatcher
            safeAreaInset:(UIEdgeInsets)safeAreaInset;
 
-// Returns |YES| if the current visible controller allows showing the location
-// bar hint text.
-- (BOOL)wantsLocationBarHintText;
-
 // Animates the NTP fakebox to the focused position and focuses the real
 // omnibox.
 - (void)focusFakebox;
@@ -94,8 +80,8 @@ class ChromeBrowserState;
 @class NewTabPageView;
 
 @interface NewTabPageController (TestSupport)
-- (id<NewTabPagePanelProtocol>)currentController;
-- (id<NewTabPagePanelProtocol>)incognitoController;
+- (id<CRWNativeContent>)currentController;
+- (id<CRWNativeContent>)incognitoController;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_CONTROLLER_H_
