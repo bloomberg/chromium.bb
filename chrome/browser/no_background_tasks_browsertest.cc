@@ -58,12 +58,12 @@ class NoBackgroundTasksTest : public InProcessBrowserTest {
 // Verify that it is possible to get the first non-empty paint without running
 // background tasks.
 //
-// TODO(fdoray): Enable on ChromeOS once all dependencies on background tasks to
-// produce the first non-empty paint have been removed. https://crbug.com/831835
-// This test is flaky on Mac: https://crbug.com/833989
-// TODO(http://crbug.com/876184 Command line is too long for win-asan.
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || \
-    (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
+// TODO(fdoray) https://crbug.com/833989:
+// - Flaky timeout on Mac
+// - Flaky timeout on ChromeOS ASAN
+// - Consistent timeout on Win ASAN
+#if defined(OS_MACOSX) || \
+    (defined(ADDRESS_SANITIZER) && (defined(OS_CHROMEOS) || defined(OS_WIN)))
 #define MAYBE_FirstNonEmptyPaintWithoutBackgroundTasks \
   DISABLED_FirstNonEmptyPaintWithoutBackgroundTasks
 #else

@@ -189,7 +189,9 @@
 # Function under test uses ash::Shell for window list.
 -SortWindowsByZIndexBrowserTest.*
 
-# Timeout.
+# Timeout because first non-empty paint isn't triggered.
+# https://crbug.com/885318
+-NoBackgroundTasksTest.FirstNonEmptyPaintWithoutBackgroundTasks
 -StartupMetricsTest.*
 
 # ash::Shell access in test for StatusAreaWidget.

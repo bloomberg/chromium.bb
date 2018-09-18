@@ -86,7 +86,9 @@
 # http://crbug.com/831826
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus*
 
-# Timeout.
+# Timeout because first non-empty paint isn't triggered.
+# https://crbug.com/885318
+-NoBackgroundTasksTest.FirstNonEmptyPaintWithoutBackgroundTasks
 -StartupMetricsTest.*
 
 # Timeouts in content::WaitForChildFrameSurfaceReady()
