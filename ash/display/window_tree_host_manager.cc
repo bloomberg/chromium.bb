@@ -77,14 +77,6 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
       CreateRootWindowTransformerForDisplay(host->window(), display));
   ash_host->SetRootWindowTransformer(std::move(transformer));
 
-  display::ManagedDisplayMode mode;
-  if (GetDisplayManager()->GetActiveModeForDisplayId(display.id(), &mode) &&
-      mode.refresh_rate() > 0.0f) {
-    host->compositor()->SetAuthoritativeVSyncInterval(
-        base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
-                                          mode.refresh_rate()));
-  }
-
   // Just moving the display requires the full redraw.
   // chrome-os-partner:33558.
   host->compositor()->ScheduleFullRedraw();

@@ -90,7 +90,8 @@ bool TestLayerTreeFrameSink::BindToClient(
       begin_frame_source_ = std::make_unique<DelayBasedBeginFrameSource>(
           std::make_unique<DelayBasedTimeSource>(compositor_task_runner_.get()),
           BeginFrameSource::kNotRestartableId);
-      begin_frame_source_->SetAuthoritativeVSyncInterval(
+      begin_frame_source_->OnUpdateVSyncParameters(
+          base::TimeTicks::Now(),
           base::TimeDelta::FromMilliseconds(1000.f / refresh_rate_));
       display_begin_frame_source_ = begin_frame_source_.get();
     }

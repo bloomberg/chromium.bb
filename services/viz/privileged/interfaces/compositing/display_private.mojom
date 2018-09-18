@@ -33,11 +33,6 @@ interface DisplayPrivate {
                        gfx.mojom.ColorSpace device_color_space);
   SetOutputIsSecure(bool secure);
 
-  // Locks the vsync interval used to generate BeginFrames for this display to
-  // |interval|. Changes to vsync interval from other sources will be ignored.
-  // This will do nothing if the display is using an external BeginFrame source.
-  SetAuthoritativeVSyncInterval(mojo_base.mojom.TimeDelta interval);
-
   // Updates vsync parameters used to generate BeginFrames for this display.
   // This will do nothing if the display is using an external BeginFrame source.
   SetDisplayVSyncParameters(

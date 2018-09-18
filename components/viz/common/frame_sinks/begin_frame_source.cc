@@ -187,21 +187,13 @@ DelayBasedBeginFrameSource::~DelayBasedBeginFrameSource() = default;
 void DelayBasedBeginFrameSource::OnUpdateVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  if (!authoritative_interval_.is_zero()) {
-    interval = authoritative_interval_;
-  } else if (interval.is_zero()) {
+  if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = BeginFrameArgs::DefaultInterval();
   }
 
   last_timebase_ = timebase;
   time_source_->SetTimebaseAndInterval(timebase, interval);
-}
-
-void DelayBasedBeginFrameSource::SetAuthoritativeVSyncInterval(
-    base::TimeDelta interval) {
-  authoritative_interval_ = interval;
-  OnUpdateVSyncParameters(last_timebase_, interval);
 }
 
 BeginFrameArgs DelayBasedBeginFrameSource::CreateBeginFrameArgs(

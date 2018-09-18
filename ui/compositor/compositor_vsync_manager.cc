@@ -6,23 +6,12 @@
 
 namespace ui {
 
-CompositorVSyncManager::CompositorVSyncManager()
-    : authoritative_vsync_interval_(base::TimeDelta::FromSeconds(0)) {
-}
+CompositorVSyncManager::CompositorVSyncManager() = default;
 
 CompositorVSyncManager::~CompositorVSyncManager() {}
 
-void CompositorVSyncManager::SetAuthoritativeVSyncInterval(
-    base::TimeDelta interval) {
-  authoritative_vsync_interval_ = interval;
-  last_interval_ = interval;
-  NotifyObservers(last_timebase_, last_interval_);
-}
-
 void CompositorVSyncManager::UpdateVSyncParameters(base::TimeTicks timebase,
                                                    base::TimeDelta interval) {
-  if (authoritative_vsync_interval_ != base::TimeDelta::FromSeconds(0))
-    interval = authoritative_vsync_interval_;
   last_timebase_ = timebase;
   last_interval_ = interval;
   NotifyObservers(timebase, interval);

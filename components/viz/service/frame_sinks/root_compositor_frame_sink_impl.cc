@@ -135,12 +135,6 @@ void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {
   display_->SetOutputIsSecure(secure);
 }
 
-void RootCompositorFrameSinkImpl::SetAuthoritativeVSyncInterval(
-    base::TimeDelta interval) {
-  if (synthetic_begin_frame_source_)
-    synthetic_begin_frame_source_->SetAuthoritativeVSyncInterval(interval);
-}
-
 void RootCompositorFrameSinkImpl::SetDisplayVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {

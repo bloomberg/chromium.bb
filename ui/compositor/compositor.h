@@ -151,8 +151,6 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
       const gfx::ColorSpace& blending_color_space,
       const gfx::ColorSpace& output_color_space) = 0;
 
-  virtual void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
-                                             base::TimeDelta interval) = 0;
   // Mac path for transporting vsync parameters to the display.  Other platforms
   // update it via the BrowserCompositorLayerTreeFrameSink directly.
   virtual void SetDisplayVSyncParameters(ui::Compositor* compositor,
@@ -308,14 +306,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   bool GetScrollOffsetForLayer(cc::ElementId element_id,
                                gfx::ScrollOffset* offset) const;
   bool ScrollLayerTo(cc::ElementId element_id, const gfx::ScrollOffset& offset);
-
-  // The "authoritative" vsync interval, if provided, will override interval
-  // reported from 3D context. This is typically the value reported by a more
-  // reliable source, e.g, the platform display configuration.
-  // In the particular case of ChromeOS -- this is the value queried through
-  // XRandR, which is more reliable than the value queried through the 3D
-  // context.
-  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
 
   // Most platforms set their vsync info via
   // BrowerCompositorLayerTreeFrameSink::OnUpdateVSyncParametersFromGpu(), but

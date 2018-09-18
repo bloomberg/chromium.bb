@@ -59,8 +59,6 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
   void SetDisplayColorSpace(Compositor* compositor,
                             const gfx::ColorSpace& blending_color_space,
                             const gfx::ColorSpace& output_color_space) override;
-  void SetAuthoritativeVSyncInterval(Compositor* compositor,
-                                     base::TimeDelta interval) override;
   void SetDisplayVSyncParameters(Compositor* compositor,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override;

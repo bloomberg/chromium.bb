@@ -445,16 +445,6 @@ bool Compositor::GetScrollOffsetForLayer(cc::ElementId element_id,
          input_handler->GetScrollOffsetForLayer(element_id, offset);
 }
 
-void Compositor::SetAuthoritativeVSyncInterval(
-    const base::TimeDelta& interval) {
-  DCHECK_GT(interval.InMillisecondsF(), 0);
-  refresh_rate_ =
-      base::Time::kMillisecondsPerSecond / interval.InMillisecondsF();
-  if (context_factory_private_)
-    context_factory_private_->SetAuthoritativeVSyncInterval(this, interval);
-  vsync_manager_->SetAuthoritativeVSyncInterval(interval);
-}
-
 void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
                                            base::TimeDelta interval) {
   static bool is_frame_rate_limit_disabled =
