@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, Offset) {
                                        range:gfx::Range(1, 7)
                                       offset:kOffset];
   if (@available(macOS 10.12.2, *))
-    EXPECT_EQ(kOffsetRange, [touch_bar_controller_ selectionRange]);
+    EXPECT_EQ(gfx::Range(0, 6), [touch_bar_controller_ selectionRange]);
   else
     EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
 }

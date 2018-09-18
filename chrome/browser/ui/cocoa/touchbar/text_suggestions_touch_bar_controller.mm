@@ -221,16 +221,8 @@ class WebContentsTextObserver : public content::WebContentsObserver {
     // end of a word so the editing word range is [word start, word end].
     if (iter.IsWord()) {
       location = iter.prev();
-      length = iter.pos() - iter.prev();
+      length = cursor - iter.prev();
     }
-
-    // The suggestion text returned by AppKit has the necessary trailing
-    // whitespace which should replace the existing trailing whitespace.
-    // If the BreakIterator just iterated over whitespace or iterates over
-    // whitespace when it advances, modify the length of the editing word
-    // range to include the whitespace.
-    if ((iter.pos() && !iter.IsWord()) || (iter.Advance() && !iter.IsWord()))
-      length = iter.pos() - location;
   }
 
   return NSMakeRange(location, length);

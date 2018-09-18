@@ -56,20 +56,20 @@ TEST_F(TextSuggestionsTouchBarControllerTest, EmptyTextEditingWordRange) {
 // moves through a word without breaks.
 TEST_F(TextSuggestionsTouchBarControllerTest, WordEditingWordRange) {
   EXPECT_EQ(gfx::Range(0, 0), GetEditingWordRange(kWord, 0));
-  EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWord, 1));
-  EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWord, 2));
-  EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWord, 3));
-  EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWord, 4));
+  EXPECT_EQ(gfx::Range(0, 1), GetEditingWordRange(kWord, 1));
+  EXPECT_EQ(gfx::Range(0, 2), GetEditingWordRange(kWord, 2));
+  EXPECT_EQ(gfx::Range(0, 3), GetEditingWordRange(kWord, 3));
+  EXPECT_EQ(gfx::Range(0, 4), GetEditingWordRange(kWord, 4));
 }
 
 // Tests that the editing word range is properly calculated as the cursor moves
 // through non-word characters.
 TEST_F(TextSuggestionsTouchBarControllerTest, WhitespaceEditingWordRange) {
-  EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kWhitespace, 0));
-  EXPECT_EQ(gfx::Range(1, 5), GetEditingWordRange(kWhitespace, 1));
-  EXPECT_EQ(gfx::Range(2, 5), GetEditingWordRange(kWhitespace, 2));
-  EXPECT_EQ(gfx::Range(3, 5), GetEditingWordRange(kWhitespace, 3));
-  EXPECT_EQ(gfx::Range(4, 5), GetEditingWordRange(kWhitespace, 4));
+  EXPECT_EQ(gfx::Range(0, 0), GetEditingWordRange(kWhitespace, 0));
+  EXPECT_EQ(gfx::Range(1, 1), GetEditingWordRange(kWhitespace, 1));
+  EXPECT_EQ(gfx::Range(2, 2), GetEditingWordRange(kWhitespace, 2));
+  EXPECT_EQ(gfx::Range(3, 3), GetEditingWordRange(kWhitespace, 3));
+  EXPECT_EQ(gfx::Range(4, 4), GetEditingWordRange(kWhitespace, 4));
   EXPECT_EQ(gfx::Range(5, 5), GetEditingWordRange(kWhitespace, 5));
 }
 
@@ -79,15 +79,15 @@ TEST_F(TextSuggestionsTouchBarControllerTest,
        TrailingWhitespaceEditingWordRange) {
   EXPECT_EQ(gfx::Range(0, 0),
             GetEditingWordRange(kWordWithTrailingWhitespace, 0));
-  EXPECT_EQ(gfx::Range(0, 6),
+  EXPECT_EQ(gfx::Range(0, 1),
             GetEditingWordRange(kWordWithTrailingWhitespace, 1));
-  EXPECT_EQ(gfx::Range(0, 6),
+  EXPECT_EQ(gfx::Range(0, 2),
             GetEditingWordRange(kWordWithTrailingWhitespace, 2));
-  EXPECT_EQ(gfx::Range(0, 6),
+  EXPECT_EQ(gfx::Range(0, 3),
             GetEditingWordRange(kWordWithTrailingWhitespace, 3));
-  EXPECT_EQ(gfx::Range(0, 6),
+  EXPECT_EQ(gfx::Range(0, 4),
             GetEditingWordRange(kWordWithTrailingWhitespace, 4));
-  EXPECT_EQ(gfx::Range(0, 6),
+  EXPECT_EQ(gfx::Range(0, 5),
             GetEditingWordRange(kWordWithTrailingWhitespace, 5));
   EXPECT_EQ(gfx::Range(6, 6),
             GetEditingWordRange(kWordWithTrailingWhitespace, 6));
@@ -97,17 +97,17 @@ TEST_F(TextSuggestionsTouchBarControllerTest,
 // from non-word to word characters.
 TEST_F(TextSuggestionsTouchBarControllerTest,
        LeadingWhitespaceEditingWordRange) {
-  EXPECT_EQ(gfx::Range(0, 1),
+  EXPECT_EQ(gfx::Range(0, 0),
             GetEditingWordRange(kWordWithLeadingWhitespace, 0));
   EXPECT_EQ(gfx::Range(1, 1),
             GetEditingWordRange(kWordWithLeadingWhitespace, 1));
-  EXPECT_EQ(gfx::Range(1, 6),
+  EXPECT_EQ(gfx::Range(1, 2),
             GetEditingWordRange(kWordWithLeadingWhitespace, 2));
-  EXPECT_EQ(gfx::Range(1, 6),
+  EXPECT_EQ(gfx::Range(1, 3),
             GetEditingWordRange(kWordWithLeadingWhitespace, 3));
-  EXPECT_EQ(gfx::Range(1, 6),
+  EXPECT_EQ(gfx::Range(1, 4),
             GetEditingWordRange(kWordWithLeadingWhitespace, 4));
-  EXPECT_EQ(gfx::Range(1, 6),
+  EXPECT_EQ(gfx::Range(1, 5),
             GetEditingWordRange(kWordWithLeadingWhitespace, 5));
   EXPECT_EQ(gfx::Range(1, 6),
             GetEditingWordRange(kWordWithLeadingWhitespace, 6));
@@ -117,16 +117,16 @@ TEST_F(TextSuggestionsTouchBarControllerTest,
 // from word to non-word and back to word characters.
 TEST_F(TextSuggestionsTouchBarControllerTest, MultipleWordsEditingWordRange) {
   EXPECT_EQ(gfx::Range(0, 0), GetEditingWordRange(kMultipleWords, 0));
-  EXPECT_EQ(gfx::Range(0, 6), GetEditingWordRange(kMultipleWords, 1));
-  EXPECT_EQ(gfx::Range(0, 6), GetEditingWordRange(kMultipleWords, 2));
-  EXPECT_EQ(gfx::Range(0, 6), GetEditingWordRange(kMultipleWords, 3));
-  EXPECT_EQ(gfx::Range(0, 6), GetEditingWordRange(kMultipleWords, 4));
-  EXPECT_EQ(gfx::Range(0, 6), GetEditingWordRange(kMultipleWords, 5));
+  EXPECT_EQ(gfx::Range(0, 1), GetEditingWordRange(kMultipleWords, 1));
+  EXPECT_EQ(gfx::Range(0, 2), GetEditingWordRange(kMultipleWords, 2));
+  EXPECT_EQ(gfx::Range(0, 3), GetEditingWordRange(kMultipleWords, 3));
+  EXPECT_EQ(gfx::Range(0, 4), GetEditingWordRange(kMultipleWords, 4));
+  EXPECT_EQ(gfx::Range(0, 5), GetEditingWordRange(kMultipleWords, 5));
   EXPECT_EQ(gfx::Range(6, 6), GetEditingWordRange(kMultipleWords, 6));
-  EXPECT_EQ(gfx::Range(6, 11), GetEditingWordRange(kMultipleWords, 7));
-  EXPECT_EQ(gfx::Range(6, 11), GetEditingWordRange(kMultipleWords, 8));
-  EXPECT_EQ(gfx::Range(6, 11), GetEditingWordRange(kMultipleWords, 9));
-  EXPECT_EQ(gfx::Range(6, 11), GetEditingWordRange(kMultipleWords, 10));
+  EXPECT_EQ(gfx::Range(6, 7), GetEditingWordRange(kMultipleWords, 7));
+  EXPECT_EQ(gfx::Range(6, 8), GetEditingWordRange(kMultipleWords, 8));
+  EXPECT_EQ(gfx::Range(6, 9), GetEditingWordRange(kMultipleWords, 9));
+  EXPECT_EQ(gfx::Range(6, 10), GetEditingWordRange(kMultipleWords, 10));
   EXPECT_EQ(gfx::Range(6, 11), GetEditingWordRange(kMultipleWords, 11));
 }
 
