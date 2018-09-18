@@ -726,7 +726,8 @@ void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
   // Pressing enter when the password field is empty and tap-to-unlock is
   // enabled should attempt unlock.
   if (HasAuthMethod(AUTH_TAP) && password.empty()) {
-    OnUserViewTap();
+    Shell::Get()->login_screen_controller()->AttemptUnlock(
+        current_user()->basic_user_info->account_id);
     return;
   }
 
@@ -754,42 +755,8 @@ void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
   on_auth_.Run(auth_success.value());
 }
 
-void LoginAuthUserView::AnimateEllipses(const base::string16& placeholder,
-                                        int step) {
-  const int kEllipsesCount = 3;
-  const int kAnimationDelayMs = 750;
-  const base::char16 kPeriod = '.';
-
-  // There are four total steps, so increment just past kEllipsesCount.
-  if (step > kEllipsesCount) {
-    // Start the animation over.
-    step = 0;
-  }
-
-  base::string16 ellipses;
-  for (int i = 0; i < step; i++)
-    ellipses += kPeriod;
-
-  password_view_->SetPlaceholderText(placeholder + ellipses);
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&LoginAuthUserView::AnimateEllipses,
-                     weak_factory_.GetWeakPtr(), placeholder, ++step),
-      base::TimeDelta::FromMilliseconds(kAnimationDelayMs));
-}
-
 void LoginAuthUserView::OnUserViewTap() {
   if (HasAuthMethod(AUTH_TAP)) {
-    password_view_->SetReadOnly(true);
-
-    base::string16 placeholder = l10n_util::GetStringUTF16(
-        IDS_ASH_LOGIN_POD_PASSWORD_SIGNING_IN_PLACEHOLDER);
-    password_view_->SetPlaceholderText(placeholder);
-
-    const int kInitialStep = 0;
-    AnimateEllipses(placeholder, kInitialStep);
-
     Shell::Get()->login_screen_controller()->AttemptUnlock(
         current_user()->basic_user_info->account_id);
   } else if (HasAuthMethod(AUTH_ONLINE_SIGN_IN)) {
