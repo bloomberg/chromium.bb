@@ -42,7 +42,6 @@ class ContextTestBase : public testing::Test {
         gpu::kNullSurfaceHandle, /* window */
         attributes, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_.get(),
         nullptr, /* image_factory */
-        nullptr /* gpu_channel_manager_delegate */,
         base::ThreadTaskRunnerHandle::Get());
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     return context;

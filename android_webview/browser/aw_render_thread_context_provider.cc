@@ -68,7 +68,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   context_ = std::make_unique<gpu::GLInProcessContext>();
   context_->Initialize(std::move(task_executor), surface,
                        surface->IsOffscreen(), gpu::kNullSurfaceHandle,
-                       attributes, limits, nullptr, nullptr, nullptr, nullptr);
+                       attributes, limits, nullptr, nullptr, nullptr);
 
   context_->GetImplementation()->SetLostContextCallback(base::BindOnce(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));

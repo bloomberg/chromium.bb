@@ -9,9 +9,7 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/observer_list.h"
-#include "base/synchronization/lock.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/service/viz_service_export.h"
@@ -22,10 +20,14 @@
 class GrContext;
 
 namespace gpu {
-class GLInProcessContext;
+namespace gles2 {
+class GLES2CmdHelper;
+class GLES2Implementation;
+}  // namespace gles2
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferManager;
 class ImageFactory;
+class TransferBuffer;
 struct SharedMemoryLimits;
 }  // namespace gpu
 
@@ -69,20 +71,29 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
       const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
           callback);
 
- protected:
+ private:
   friend class base::RefCountedThreadSafe<VizProcessContextProvider>;
   ~VizProcessContextProvider() override;
 
- private:
+  void InitializeContext(
+      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+      gpu::SurfaceHandle surface_handle,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      gpu::ImageFactory* image_factory,
+      gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
+      const gpu::SharedMemoryLimits& mem_limits);
   void OnContextLost();
 
   const gpu::ContextCreationAttribs attributes_;
 
-  base::Lock context_lock_;
-  std::unique_ptr<gpu::GLInProcessContext> context_;
-  gpu::ContextResult context_result_;
-  std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
+  std::unique_ptr<gpu::InProcessCommandBuffer> command_buffer_;
+  std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
+  std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
+  std::unique_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
   std::unique_ptr<ContextCacheController> cache_controller_;
+  gpu::ContextResult context_result_;
+
+  std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
 
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
 };
