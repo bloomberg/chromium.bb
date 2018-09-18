@@ -394,7 +394,7 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
 
   int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
   const int buffer_id = buffer_pool_->ReserveForProducer(
-      frame_size, pixel_format, frame_feedback_id, &buffer_id_to_drop);
+      frame_size, pixel_format, nullptr, frame_feedback_id, &buffer_id_to_drop);
   if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId) {
     // |buffer_pool_| has decided to release a buffer. Notify receiver in case
     // the buffer has already been shared with it.

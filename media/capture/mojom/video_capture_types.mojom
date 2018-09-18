@@ -239,6 +239,16 @@ struct VideoCaptureParams {
   PowerLineFrequency power_line_frequency;
 };
 
+// Contains one stride value per image plane. Stride means the number of bytes
+// per row. If the image format uses fewer than kMaxPlanes planes, the values
+// for higher plane indices are ignored. For example, for a YUV format, plane
+// index 0 corresponds to the Y plane, index 1 to the U plane, and index 2 to
+// the V plane.
+struct PlaneStrides {
+  // Size must be kept in sync with media::VideoFrame::kMaxPlanes.
+  array<uint32, 4> stride_by_plane;
+};
+
 struct VideoFrameInfo{
   mojo_base.mojom.TimeDelta timestamp;
   mojo_base.mojom.DictionaryValue metadata;
@@ -246,6 +256,9 @@ struct VideoFrameInfo{
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
   gfx.mojom.ColorSpace color_space;
+  // Optionally, stride information can be provided.
+  // If not provided, it is assumed that frame data is tightly packed.
+  PlaneStrides? strides;
 };
 
 struct VideoCaptureDeviceDescriptorCameraCalibration {

@@ -181,7 +181,8 @@ class DevToolsVideoConsumerTest : public testing::Test {
 
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New(
         base::TimeDelta(), base::Value(base::Value::Type::DICTIONARY), kFormat,
-        kResolution, gfx::Rect(kResolution), gfx::ColorSpace::CreateREC709());
+        kResolution, gfx::Rect(kResolution), gfx::ColorSpace::CreateREC709(),
+        nullptr);
 
     consumer_->OnFrameCaptured(std::move(data), std::move(info),
                                gfx::Rect(kResolution), gfx::Rect(kResolution),

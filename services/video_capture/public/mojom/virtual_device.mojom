@@ -35,7 +35,8 @@ interface SharedMemoryVirtualDevice {
   // |Producer.OnNewBufferHandle| and/or |Producer.OnBufferRetired|
   // will be invoked.
   RequestFrameBuffer(gfx.mojom.Size dimension,
-                 media.mojom.VideoCapturePixelFormat pixel_format)
+                     media.mojom.VideoCapturePixelFormat pixel_format,
+                     media.mojom.PlaneStrides? strides)
       => (int32 buffer_id);
 
   // Called to indicate that a video frame is ready in the given buffer
@@ -54,6 +55,9 @@ interface TextureVirtualDevice {
       int32 buffer_id, media.mojom.MailboxBufferHandleSet mailbox_handles);
   // The invoker must guarantee that the textures with |buffer_id| stay valid
   // until |access_permission| is released by the invocation target.
+  // In |frame_info|, |visible_rect| must be equivalent to the full |coded_size|
+  // of the frame, i.e. using |visible_rect| to crop to subregions of the frame
+  // is not supported.
   OnFrameReadyInBuffer(int32 buffer_id,
                        ScopedAccessPermission access_permission,
                        media.mojom.VideoFrameInfo frame_info);

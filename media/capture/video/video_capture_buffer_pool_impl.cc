@@ -93,13 +93,15 @@ VideoCaptureBufferPoolImpl::GetHandleForInProcessAccess(int buffer_id) {
   return tracker->GetMemoryMappedAccess();
 }
 
-int VideoCaptureBufferPoolImpl::ReserveForProducer(const gfx::Size& dimensions,
-                                                   VideoPixelFormat format,
-                                                   int frame_feedback_id,
-                                                   int* buffer_id_to_drop) {
+int VideoCaptureBufferPoolImpl::ReserveForProducer(
+    const gfx::Size& dimensions,
+    VideoPixelFormat format,
+    const mojom::PlaneStridesPtr& strides,
+    int frame_feedback_id,
+    int* buffer_id_to_drop) {
   base::AutoLock lock(lock_);
-  return ReserveForProducerInternal(dimensions, format, frame_feedback_id,
-                                    buffer_id_to_drop);
+  return ReserveForProducerInternal(dimensions, format, strides,
+                                    frame_feedback_id, buffer_id_to_drop);
 }
 
 void VideoCaptureBufferPoolImpl::RelinquishProducerReservation(int buffer_id) {
@@ -158,29 +160,27 @@ double VideoCaptureBufferPoolImpl::GetBufferPoolUtilization() const {
 int VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
     const gfx::Size& dimensions,
     VideoPixelFormat pixel_format,
+    const mojom::PlaneStridesPtr& strides,
     int frame_feedback_id,
     int* buffer_id_to_drop) {
   lock_.AssertAcquired();
 
-  const size_t size_in_pixels = dimensions.GetArea();
   // Look for a tracker that's allocated, big enough, and not in use. Track the
   // largest one that's not big enough, in case we have to reallocate a tracker.
   *buffer_id_to_drop = kInvalidId;
-  size_t largest_size_in_pixels = 0;
+  uint32_t largest_memory_size_in_bytes = 0;
   auto tracker_to_drop = trackers_.end();
   for (auto it = trackers_.begin(); it != trackers_.end(); ++it) {
     VideoCaptureBufferTracker* const tracker = it->second.get();
     if (!tracker->consumer_hold_count() && !tracker->held_by_producer()) {
-      if (tracker->max_pixel_count() >= size_in_pixels &&
-          (tracker->pixel_format() == pixel_format)) {
-        // Existing tracker is big enough and has correct format. Reuse it.
-        tracker->set_dimensions(dimensions);
+      if (tracker->IsReusableForFormat(dimensions, pixel_format, strides)) {
+        // Reuse this buffer
         tracker->set_held_by_producer(true);
         tracker->set_frame_feedback_id(frame_feedback_id);
         return it->first;
       }
-      if (tracker->max_pixel_count() > largest_size_in_pixels) {
-        largest_size_in_pixels = tracker->max_pixel_count();
+      if (tracker->GetMemorySizeInBytes() > largest_memory_size_in_bytes) {
+        largest_memory_size_in_bytes = tracker->GetMemorySizeInBytes();
         tracker_to_drop = it;
       }
     }
@@ -202,7 +202,7 @@ int VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
 
   std::unique_ptr<VideoCaptureBufferTracker> tracker =
       buffer_tracker_factory_->CreateTracker();
-  if (!tracker->Init(dimensions, pixel_format)) {
+  if (!tracker->Init(dimensions, pixel_format, strides)) {
     DLOG(ERROR) << "Error initializing VideoCaptureBufferTracker";
     return kInvalidId;
   }

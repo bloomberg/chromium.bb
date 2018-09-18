@@ -21,9 +21,14 @@ class SharedMemoryBufferTracker final : public VideoCaptureBufferTracker {
   SharedMemoryBufferTracker();
   ~SharedMemoryBufferTracker() override;
 
-  bool Init(const gfx::Size& dimensions, VideoPixelFormat format) override;
-
   // Implementation of VideoCaptureBufferTracker:
+  bool Init(const gfx::Size& dimensions,
+            VideoPixelFormat format,
+            const mojom::PlaneStridesPtr& strides) override;
+  bool IsReusableForFormat(const gfx::Size& dimensions,
+                           VideoPixelFormat format,
+                           const mojom::PlaneStridesPtr& strides) override;
+
   std::unique_ptr<VideoCaptureBufferHandle> GetMemoryMappedAccess() override;
   mojo::ScopedSharedBufferHandle GetHandleForTransit(bool read_only) override;
   base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC() override;
