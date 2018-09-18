@@ -22,6 +22,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
+#include "base/supports_user_data.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,6 +34,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader/shared_cors_origin_access_list_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
@@ -105,11 +107,12 @@ class ContentServiceDelegateHolder : public base::SupportsUserData::Data {
 // Key names on BrowserContext.
 const char kBrowsingDataRemoverKey[] = "browsing-data-remover";
 const char kContentServiceDelegateKey[] = "content-service-delegate";
-const char kPermissionControllerKey[] = "permission-controller";
 const char kDownloadManagerKeyName[] = "download_manager";
 const char kMojoWasInitialized[] = "mojo-was-initialized";
+const char kPermissionControllerKey[] = "permission-controller";
 const char kServiceManagerConnection[] = "service-manager-connection";
 const char kServiceUserId[] = "service-user-id";
+const char kSharedCorsOriginAccessListKey[] = "shared-cors-origin-access-list";
 const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
 const char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
 
@@ -626,8 +629,19 @@ ServiceManagerConnection* BrowserContext::GetServiceManagerConnectionFor(
                            : nullptr;
 }
 
+// static
+SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList(
+    BrowserContext* browser_context) {
+  return UserDataAdapter<SharedCorsOriginAccessList>::Get(
+      browser_context, kSharedCorsOriginAccessListKey);
+}
+
 BrowserContext::BrowserContext()
-    : unique_id_(base::UnguessableToken::Create().ToString()) {}
+    : unique_id_(base::UnguessableToken::Create().ToString()) {
+  SetUserData(kSharedCorsOriginAccessListKey,
+              std::make_unique<UserDataAdapter<SharedCorsOriginAccessList>>(
+                  new SharedCorsOriginAccessListImpl()));
+}
 
 BrowserContext::~BrowserContext() {
   CHECK(GetUserData(kMojoWasInitialized))

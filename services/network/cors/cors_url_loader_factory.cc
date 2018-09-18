@@ -47,7 +47,9 @@ CORSURLLoaderFactory::CORSURLLoaderFactory(
     : disable_web_security_(disable_web_security),
       network_loader_factory_(std::move(network_loader_factory)),
       preflight_finalizer_(preflight_finalizer),
-      origin_access_list_(origin_access_list) {}
+      origin_access_list_(origin_access_list) {
+  DCHECK(origin_access_list_);
+}
 
 CORSURLLoaderFactory::~CORSURLLoaderFactory() = default;
 

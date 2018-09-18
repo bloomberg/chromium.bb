@@ -118,8 +118,7 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
 // This is used to create a filter matching a specified child id.
 class TestFilterSpecifyingChild : public ResourceMessageFilter {
  public:
-  explicit TestFilterSpecifyingChild(ResourceContext* resource_context,
-                                     int process_id)
+  TestFilterSpecifyingChild(BrowserContext* browser_context, int process_id)
       : ResourceMessageFilter(
             process_id,
             nullptr,
@@ -127,10 +126,11 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
             nullptr,
             nullptr,
             nullptr,
+            BrowserContext::GetSharedCorsOriginAccessList(browser_context),
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
                        base::Unretained(this)),
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
-        resource_context_(resource_context) {
+        resource_context_(browser_context->GetResourceContext()) {
     InitializeForTest();
     set_peer_process_for_testing(base::Process::Current());
   }
@@ -161,9 +161,9 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
 
 class TestFilter : public TestFilterSpecifyingChild {
  public:
-  explicit TestFilter(ResourceContext* resource_context)
+  explicit TestFilter(BrowserContext* browser_context)
       : TestFilterSpecifyingChild(
-            resource_context,
+            browser_context,
             ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(child_id());
   }
@@ -676,7 +676,7 @@ class ResourceDispatcherHostTest : public testing::Test {
     web_contents_ =
         WebContents::Create(WebContents::CreateParams(browser_context_.get()));
     web_contents_filter_ = new TestFilterSpecifyingChild(
-        browser_context_->GetResourceContext(),
+        browser_context_.get(),
         web_contents_->GetMainFrame()->GetProcess()->GetID());
     child_ids_.insert(web_contents_->GetMainFrame()->GetProcess()->GetID());
     request_context_getter_ = new net::TestURLRequestContextGetter(
@@ -712,8 +712,7 @@ class ResourceDispatcherHostTest : public testing::Test {
   // Creates a new TestFilter and registers it with |child_ids_| so as not
   // to leak per-child state on test shutdown.
   scoped_refptr<TestFilter> MakeTestFilter() {
-    auto filter = base::MakeRefCounted<TestFilter>(
-        browser_context_->GetResourceContext());
+    auto filter = base::MakeRefCounted<TestFilter>(browser_context_.get());
     child_ids_.insert(filter->child_id());
     return filter;
   }

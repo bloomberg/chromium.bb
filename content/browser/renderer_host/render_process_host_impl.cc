@@ -1992,6 +1992,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetFileSystemContext(),
       storage_partition_impl_->GetServiceWorkerContext(),
       storage_partition_impl_->GetPrefetchURLLoaderService(),
+      BrowserContext::GetSharedCorsOriginAccessList(browser_context),
       std::move(get_contexts_callback),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
