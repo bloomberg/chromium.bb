@@ -87,13 +87,15 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
     const DataTypeActivationRequest& request,
     StartCallback start_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
   // TODO(crbug.com/876490): Here and elsewhere in this file, CHECKs have been
   // introduced to investigate some crashes in the wild. Let's downgrade all
   // CHECKs to DCHECKs as soon as the investigation is completed.
-  CHECK(!IsConnected());
+  CHECK(this);
   CHECK(request.error_handler);
   CHECK(start_callback);
-  DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
+  CHECK(!start_callback_);
+  CHECK(!IsConnected());
 
   start_callback_ = std::move(start_callback);
   activation_request_ = request;
@@ -218,6 +220,7 @@ void ClientTagBasedModelTypeProcessor::OnSyncStopping(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Disabling sync for a type never happens before the model is ready to sync.
   CHECK(model_ready_to_sync_);
+  CHECK(!start_callback_);
 
   switch (metadata_fate) {
     case KEEP_METADATA: {
