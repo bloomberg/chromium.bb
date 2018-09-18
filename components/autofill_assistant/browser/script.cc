@@ -10,7 +10,7 @@ ScriptHandle::ScriptHandle() = default;
 
 ScriptHandle::~ScriptHandle() = default;
 
-Script::Script() = default;
+Script::Script() : priority(0) {}
 
 Script::~Script() = default;
 

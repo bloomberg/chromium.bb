@@ -32,7 +32,7 @@ class ScriptTracker {
     virtual ~Listener() = default;
 
     // Called when the set of runnable scripts have changed. |runnable_scripts|
-    // are the new runnable scripts.
+    // are the new runnable scripts. Runnable scripts are ordered by priority.
     virtual void OnRunnableScriptsChanged(
         const std::vector<ScriptHandle>& runnable_scripts) = 0;
   };

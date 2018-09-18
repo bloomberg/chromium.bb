@@ -55,6 +55,7 @@ bool ProtocolUtils::ParseScripts(
     script->handle.name = presentation.name();
     script->precondition =
         ScriptPrecondition::FromProto(presentation.precondition());
+    script->priority = presentation.priority();
 
     if (script->handle.name.empty() || script->handle.path.empty() ||
         !script->precondition) {
