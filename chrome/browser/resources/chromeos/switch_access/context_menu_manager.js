@@ -43,8 +43,9 @@ function ContextMenuManager(automationManager, desktop) {
 
   /**
    * Keeps track of when we're in the context menu.
+   * @private {boolean}
    */
-  this.inContextMenu = false;
+  this.inContextMenu_ = false;
 
   this.init_();
 }
@@ -80,7 +81,7 @@ ContextMenuManager.prototype = {
    * @param {!Array<!ContextMenuManager.Action>} actions
    */
   enter: function(actions) {
-    this.inContextMenu = true;
+    this.inContextMenu_ = true;
     if (actions !== this.actions_) {
       this.actions_ = actions;
       MessageHandler.sendMessage(
@@ -96,7 +97,7 @@ ContextMenuManager.prototype = {
    */
   exit: function() {
     this.clearFocusRing_();
-    this.inContextMenu = false;
+    this.inContextMenu_ = false;
     if (this.node_)
       this.node_ = null;
   },
@@ -104,10 +105,11 @@ ContextMenuManager.prototype = {
   /**
    * Move to the next available action in the menu. If this is no next action,
    * select the whole context menu to loop again.
+   * @return {boolean} Whether this function had any effect.
    */
   moveForward: function() {
-    if (!this.node_)
-      return;
+    if (!this.node_ || !this.inContextMenu_)
+      return false;
 
     this.clearFocusRing_();
     let treeWalker = new AutomationTreeWalker(
@@ -119,15 +121,17 @@ ContextMenuManager.prototype = {
     else
       this.node_ = node;
     this.updateFocusRing_();
+    return true;
   },
 
   /**
    * Move to the previous available action in the context menu. If we're at the
    * beginning of the list, start again at the end.
+   * @return {boolean} Whether this function had any effect.
    */
   moveBackward: function() {
-    if (!this.node_)
-      return;
+    if (!this.node_ || !this.inContextMenu_)
+      return false;
 
     this.clearFocusRing_();
     let treeWalker = new AutomationTreeWalker(
@@ -148,20 +152,23 @@ ContextMenuManager.prototype = {
 
     this.node_ = node;
     this.updateFocusRing_();
+    return true;
   },
 
   /**
    * Perform the action indicated by the current button (or no action if the
    * entire menu is selected). Then exit the context menu and return to
    * traditional navigation.
+   * @return {boolean} Whether this function had any effect.
    */
   selectCurrentNode: function() {
-    if (!this.node_)
-      return;
+    if (!this.node_ || !this.inContextMenu_)
+      return false;
 
     this.clearFocusRing_();
     this.node_.doDefault();
     this.exit();
+    return true;
   },
 
   /**
