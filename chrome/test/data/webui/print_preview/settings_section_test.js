@@ -395,13 +395,21 @@ cr.define('settings_sections_tests', function() {
       assertTrue(scalingElement.hidden);
     });
 
+    /**
+     * @param {!CrCheckboxElement} checkbox The checkbox to check
+     * @return {boolean} Whether the checkbox's parent section is hidden.
+     */
+    function isSectionHidden(checkbox) {
+      return checkbox.parentNode.parentNode.hidden;
+    }
+
     test(assert(TestNames.Other), function() {
       const optionsElement = page.$$('print-preview-other-options-settings');
-      const headerFooter = optionsElement.$.headerFooter;
-      const duplex = optionsElement.$.duplex;
-      const cssBackground = optionsElement.$.cssBackground;
-      const rasterize = optionsElement.$.rasterize;
-      const selectionOnly = optionsElement.$.selectionOnly;
+      const headerFooter = optionsElement.$$('#headerFooter');
+      const duplex = optionsElement.$$('#duplex');
+      const cssBackground = optionsElement.$$('#cssBackground');
+      const rasterize = optionsElement.$$('#rasterize');
+      const selectionOnly = optionsElement.$$('#selectionOnly');
 
       // Start with HTML + duplex capability.
       initDocumentInfo(false, false);
@@ -411,16 +419,16 @@ cr.define('settings_sections_tests', function() {
 
       // Expanding more settings will show the section.
       toggleMoreSettings();
-      assertFalse(headerFooter.hidden);
-      assertFalse(duplex.hidden);
-      assertFalse(cssBackground.hidden);
-      assertTrue(rasterize.hidden);
-      assertTrue(selectionOnly.hidden);
+      assertFalse(isSectionHidden(headerFooter));
+      assertFalse(isSectionHidden(duplex));
+      assertFalse(isSectionHidden(cssBackground));
+      assertTrue(isSectionHidden(rasterize));
+      assertTrue(isSectionHidden(selectionOnly));
 
       // Add a selection - should show selection only.
       initDocumentInfo(false, true);
       assertFalse(optionsElement.hidden);
-      assertFalse(selectionOnly.hidden);
+      assertFalse(isSectionHidden(selectionOnly));
 
       // Remove duplex capability.
       capabilities =
@@ -429,7 +437,7 @@ cr.define('settings_sections_tests', function() {
       page.set('destination_.capabilities', capabilities);
       Polymer.dom.flush();
       assertFalse(optionsElement.hidden);
-      assertTrue(duplex.hidden);
+      assertTrue(isSectionHidden(duplex));
 
       // PDF
       initDocumentInfo(true, false);
@@ -439,17 +447,17 @@ cr.define('settings_sections_tests', function() {
         assertTrue(optionsElement.hidden);
       } else {
         // All sections hidden except rasterize
-        assertTrue(headerFooter.hidden);
-        assertTrue(duplex.hidden);
-        assertTrue(cssBackground.hidden);
-        assertEquals(cr.isWindows || cr.isMac, rasterize.hidden);
-        assertTrue(selectionOnly.hidden);
+        assertTrue(isSectionHidden(headerFooter));
+        assertTrue(isSectionHidden(duplex));
+        assertTrue(isSectionHidden(cssBackground));
+        assertEquals(cr.isWindows || cr.isMac, isSectionHidden(rasterize));
+        assertTrue(isSectionHidden(selectionOnly));
       }
 
       // Add a selection - should do nothing for PDFs.
       initDocumentInfo(true, true);
       assertEquals(cr.isWindows || cr.isMac, optionsElement.hidden);
-      assertTrue(selectionOnly.hidden);
+      assertTrue(isSectionHidden(selectionOnly));
 
       // Add duplex.
       capabilities =
@@ -457,12 +465,12 @@ cr.define('settings_sections_tests', function() {
       page.set('destination_.capabilities', capabilities);
       Polymer.dom.flush();
       assertFalse(optionsElement.hidden);
-      assertFalse(duplex.hidden);
+      assertFalse(isSectionHidden(duplex));
     });
 
     test(assert(TestNames.HeaderFooter), function() {
       const optionsElement = page.$$('print-preview-other-options-settings');
-      const headerFooter = optionsElement.$.headerFooter;
+      const headerFooter = optionsElement.$$('#headerFooter');
 
       // HTML page to show Header/Footer option.
       initDocumentInfo(false, false);
@@ -472,13 +480,13 @@ cr.define('settings_sections_tests', function() {
 
       toggleMoreSettings();
       assertFalse(optionsElement.hidden);
-      assertFalse(headerFooter.hidden);
+      assertFalse(isSectionHidden(headerFooter));
 
       // Set margins to NONE
       page.set(
           'settings.margins.value',
           print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
-      assertTrue(headerFooter.hidden);
+      assertTrue(isSectionHidden(headerFooter));
 
       // Custom margins of 0.
       page.set(
@@ -487,25 +495,25 @@ cr.define('settings_sections_tests', function() {
       page.set(
           'settings.customMargins.vaue',
           {marginTop: 0, marginLeft: 0, marginRight: 0, marginBottom: 0});
-      assertTrue(headerFooter.hidden);
+      assertTrue(isSectionHidden(headerFooter));
 
       // Custom margins of 36 -> header/footer available
       page.set(
           'settings.customMargins.value',
           {marginTop: 36, marginLeft: 36, marginRight: 36, marginBottom: 36});
-      assertFalse(headerFooter.hidden);
+      assertFalse(isSectionHidden(headerFooter));
 
       // Zero top and bottom -> header/footer unavailable
       page.set(
           'settings.customMargins.value',
           {marginTop: 0, marginLeft: 36, marginRight: 36, marginBottom: 0});
-      assertTrue(headerFooter.hidden);
+      assertTrue(isSectionHidden(headerFooter));
 
       // Zero top and nonzero bottom -> header/footer available
       page.set(
           'settings.customMargins.value',
           {marginTop: 0, marginLeft: 36, marginRight: 36, marginBottom: 36});
-      assertFalse(headerFooter.hidden);
+      assertFalse(isSectionHidden(headerFooter));
 
       // Small paper sizes
       capabilities =
@@ -532,14 +540,14 @@ cr.define('settings_sections_tests', function() {
           print_preview.ticket_items.MarginsTypeValue.DEFAULT);
 
       // Header/footer should be available for default big label
-      assertFalse(headerFooter.hidden);
+      assertFalse(isSectionHidden(headerFooter));
 
       page.set(
           'settings.mediaSize.value',
           capabilities.printer.media_size.option[0]);
 
       // Header/footer should not be available for small label
-      assertTrue(headerFooter.hidden);
+      assertTrue(isSectionHidden(headerFooter));
     });
 
     test(assert(TestNames.SetPages), function() {
@@ -934,7 +942,7 @@ cr.define('settings_sections_tests', function() {
       const testOptionCheckbox = (settingName, defaultValue) => {
         const element = optionsElement.$$('#' + settingName);
         const optionSetting = page.settings[settingName];
-        assertFalse(element.hidden);
+        assertFalse(isSectionHidden(element));
         assertEquals(defaultValue, element.checked);
         assertEquals(defaultValue, optionSetting.value);
         element.checked = !defaultValue;
