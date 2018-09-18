@@ -19,6 +19,7 @@
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/query_in_omnibox.h"
 #include "components/toolbar/toolbar_model.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -119,6 +120,15 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
   return gfx::ImageSkia();
 #else   // !defined(OS_IOS)
   if (!IsEditingOrEmpty()) {
+    // Query in Omnibox.
+    if (model_ &&
+        model_->GetQueryInOmniboxSearchTerms(nullptr /* search_terms */)) {
+      gfx::Image icon = model_->client()->GetFaviconForDefaultSearchProvider(
+          std::move(on_icon_fetched));
+      if (!icon.IsEmpty())
+        return model_->client()->GetSizedIcon(icon).AsImageSkia();
+    }
+
     return gfx::CreateVectorIcon(
         controller_->GetToolbarModel()->GetVectorIcon(), dip_size, color);
   }

@@ -232,14 +232,9 @@ bool OmniboxEditModel::ResetDisplayTexts() {
   ToolbarModel* toolbar_model = controller()->GetToolbarModel();
   url_for_editing_ = toolbar_model->GetFormattedFullURL();
 
-  QueryInOmnibox* query_in_omnibox = client()->GetQueryInOmnibox();
-  base::string16 search_query;
-  if (query_in_omnibox &&
-      query_in_omnibox->GetDisplaySearchTerms(
-          toolbar_model->GetSecurityLevel(false /* ignore_editing */),
-          toolbar_model->GetURL(), &search_query)) {
-    DCHECK(!search_query.empty());
-    display_text_ = search_query;
+  if (GetQueryInOmniboxSearchTerms(&display_text_)) {
+    // The search query has been inserted into |display_text_|.
+    DCHECK(!display_text_.empty());
   } else if (OmniboxFieldTrial::
                  IsHideSteadyStateUrlSchemeAndSubdomainsEnabled()) {
     display_text_ = toolbar_model->GetURLForDisplay();
@@ -1307,6 +1302,18 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   // its value across the entire call.
   const base::string16 inline_autocompletion(match.inline_autocompletion);
   OnPopupDataChanged(inline_autocompletion, nullptr, keyword, is_keyword_hint);
+}
+
+bool OmniboxEditModel::GetQueryInOmniboxSearchTerms(
+    base::string16* search_terms) {
+  QueryInOmnibox* query_in_omnibox = client()->GetQueryInOmnibox();
+  if (!query_in_omnibox)
+    return false;
+
+  ToolbarModel* toolbar_model = controller()->GetToolbarModel();
+  return query_in_omnibox->GetDisplaySearchTerms(
+      toolbar_model->GetSecurityLevel(false /* ignore_editing */),
+      toolbar_model->GetURL(), search_terms);
 }
 
 // static

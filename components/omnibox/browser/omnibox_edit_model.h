@@ -361,6 +361,10 @@ class OmniboxEditModel {
   // Called when the current match has changed in the OmniboxController.
   void OnCurrentMatchChanged();
 
+  // Convenience method for QueryInOmnibox::GetDisplaySearchTerms.
+  // Returns true if Query in Omnibox is active. |search_terms| may be nullptr.
+  bool GetQueryInOmniboxSearchTerms(base::string16* search_terms);
+
   // Used for testing purposes only.
   base::string16 GetUserTextForTesting() const { return user_text_; }
 

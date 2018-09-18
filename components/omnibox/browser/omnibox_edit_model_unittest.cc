@@ -249,6 +249,10 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
     model()->ResetDisplayTexts();
     EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
               model()->GetPermanentDisplayText());
+
+    base::string16 search_terms;
+    EXPECT_FALSE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
+    EXPECT_TRUE(search_terms.empty());
   }
 
 // TODO(tommycli): For now, it's not possible to enable Steady State Elisions
@@ -266,6 +270,10 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
     model()->ResetDisplayTexts();
     EXPECT_EQ(base::ASCIIToUTF16("example.com"),
               model()->GetPermanentDisplayText());
+
+    base::string16 search_terms;
+    EXPECT_FALSE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
+    EXPECT_TRUE(search_terms.empty());
   }
 #endif  // !defined(OS_IOS)
 
@@ -275,6 +283,11 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   client->SetFakeSearchTermsForQueryInOmnibox(base::ASCIIToUTF16("foobar"));
   model()->ResetDisplayTexts();
   EXPECT_EQ(base::ASCIIToUTF16("foobar"), model()->GetPermanentDisplayText());
+
+  base::string16 search_terms;
+  EXPECT_TRUE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
+  EXPECT_FALSE(search_terms.empty());
+  EXPECT_EQ(base::ASCIIToUTF16("foobar"), search_terms);
 }
 
 TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {
