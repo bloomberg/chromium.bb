@@ -71,13 +71,6 @@ void HostContextFactoryPrivate::ConfigureCompositor(
       compositor_data.display_client->GetBoundPtr(resize_task_runner_)
           .PassInterface();
 
-#if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
-  gpu::SurfaceHandle surface_handle = compositor->widget();
-#else
-  // TODO(kylechar): Fix this when we support macOS.
-  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
-#endif
-
   // Initialize ExternalBeginFrameController client if enabled.
   compositor_data.external_begin_frame_controller_client.reset();
   if (compositor->external_begin_frames_enabled()) {
@@ -92,7 +85,9 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   }
 
   root_params->frame_sink_id = compositor->frame_sink_id();
-  root_params->widget = surface_handle;
+#if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+  root_params->widget = compositor->widget();
+#endif
   root_params->gpu_compositing = gpu_compositing;
   root_params->renderer_settings = renderer_settings_;
 
@@ -128,8 +123,6 @@ void HostContextFactoryPrivate::ConfigureCompositor(
 
 void HostContextFactoryPrivate::UnconfigureCompositor(Compositor* compositor) {
 #if defined(OS_WIN)
-  // TODO(crbug.com/791660): Make sure that GpuProcessHost::SetChildSurface()
-  // doesn't crash the GPU process after parent is unregistered.
   gfx::RenderingWindowManager::GetInstance()->UnregisterParent(
       compositor->widget());
 #endif
