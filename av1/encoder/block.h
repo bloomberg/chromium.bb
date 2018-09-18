@@ -415,6 +415,36 @@ static INLINE int tx_size_to_depth(TX_SIZE tx_size, BLOCK_SIZE bsize) {
   return depth;
 }
 
+static INLINE void set_blk_skip(MACROBLOCK *x, int plane, int blk_idx,
+                                int skip) {
+  if (skip)
+    x->blk_skip[blk_idx] |= 1UL << plane;
+  else
+    x->blk_skip[blk_idx] &= ~(1UL << plane);
+#ifndef NDEBUG
+  // Set chroma planes to uninitialized states when luma is set to check if
+  // it will be set later
+  if (plane == 0) {
+    x->blk_skip[blk_idx] |= 1UL << (1 + 4);
+    x->blk_skip[blk_idx] |= 1UL << (2 + 4);
+  }
+
+  // Clear the initialization checking bit
+  x->blk_skip[blk_idx] &= ~(1UL << (plane + 4));
+#endif
+}
+
+static INLINE int is_blk_skip(MACROBLOCK *x, int plane, int blk_idx) {
+#ifndef NDEBUG
+  // Check if this is initialized
+  assert(!(x->blk_skip[blk_idx] & (1UL << (plane + 4))));
+
+  // The magic number is 0x77, this is to test if there is garbage data
+  assert((x->blk_skip[blk_idx] & 0x88) == 0);
+#endif
+  return (x->blk_skip[blk_idx] >> plane) & 1;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

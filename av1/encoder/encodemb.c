@@ -222,11 +222,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
   a = &args->ta[blk_col];
   l = &args->tl[blk_row];
-  // Assert not magic number (uninitialized).
-  assert(plane != 0 || x->blk_skip[blk_row * bw + blk_col] != 234);
 
-  if ((plane != 0 || x->blk_skip[blk_row * bw + blk_col] == 0) &&
-      !mbmi->skip_mode) {
+  if (!is_blk_skip(x, plane, blk_row * bw + blk_col) && !mbmi->skip_mode) {
     TX_TYPE tx_type = av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col,
                                       tx_size, cm->reduced_tx_set_used);
     if (args->enable_optimize_b) {
@@ -573,9 +570,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   av1_predict_intra_block_facade(cm, xd, plane, blk_col, blk_row, tx_size);
 
   const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-  // Assert not magic number (uninitialized).
-  assert(plane != 0 || x->blk_skip[blk_row * bw + blk_col] != 234);
-  if (plane == 0 && x->blk_skip[blk_row * bw + blk_col]) {
+  if (plane == 0 && is_blk_skip(x, plane, blk_row * bw + blk_col)) {
     *eob = 0;
     p->txb_entropy_ctx[block] = 0;
   } else {
