@@ -591,6 +591,10 @@ SocketDescriptor TCPSocketPosix::ReleaseSocketDescriptorForTesting() {
   return socket_descriptor;
 }
 
+SocketDescriptor TCPSocketPosix::SocketDescriptorForTesting() const {
+  return socket_->socket_fd();
+}
+
 void TCPSocketPosix::ApplySocketTag(const SocketTag& tag) {
   if (IsValid() && tag != tag_) {
     tag.Apply(socket_->socket_fd());

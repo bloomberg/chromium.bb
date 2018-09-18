@@ -8,6 +8,11 @@
 
 namespace net {
 
+void StreamSocket::SetBeforeConnectCallback(
+    const BeforeConnectCallback& before_connect_callback) {
+  NOTREACHED();
+}
+
 void StreamSocket::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) const {
   NOTREACHED();
