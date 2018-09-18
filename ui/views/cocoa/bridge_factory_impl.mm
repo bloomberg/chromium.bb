@@ -58,6 +58,10 @@ BridgeFactoryImpl* BridgeFactoryImpl::Get() {
   return factory.get();
 }
 
+void BridgeFactoryImpl::BindRequest(mojom::BridgeFactoryRequest request) {
+  binding_.Bind(std::move(request));
+}
+
 void BridgeFactoryImpl::CreateBridge(
     uint64_t bridge_id,
     mojom::BridgedNativeWidgetRequest bridge_request,
@@ -69,5 +73,9 @@ void BridgeFactoryImpl::CreateBridge(
 void BridgeFactoryImpl::DestroyBridge(uint64_t bridge_id) {
   GetBridgeMap().erase(bridge_id);
 }
+
+BridgeFactoryImpl::BridgeFactoryImpl() : binding_(this) {}
+
+BridgeFactoryImpl::~BridgeFactoryImpl() {}
 
 }  // namespace views_bridge_mac

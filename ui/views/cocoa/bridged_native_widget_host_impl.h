@@ -14,12 +14,12 @@
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
+#include "ui/views/cocoa/bridge_factory_host.h"
 #include "ui/views/cocoa/bridged_native_widget_host.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_observer.h"
-#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
@@ -40,6 +40,7 @@ class NativeWidgetMac;
 // APIs, and which may live in an app shim process.
 class VIEWS_EXPORT BridgedNativeWidgetHostImpl
     : public BridgedNativeWidgetHostHelper,
+      public BridgeFactoryHost::Observer,
       public views_bridge_mac::mojom::BridgedNativeWidgetHost,
       public DialogObserver,
       public FocusChangeListener,
@@ -71,8 +72,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // The bridge factory that was used to create the true NSWindow for this
   // widget. This is nullptr for in-process windows.
-  views_bridge_mac::mojom::BridgeFactory* bridge_factory() const {
-    return bridge_factory_;
+  BridgeFactoryHost* bridge_factory_host() const {
+    return bridge_factory_host_;
   }
 
   // A NSWindow that is guaranteed to exist in this process. If the bridge
@@ -97,7 +98,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
 
   // Create and set the bridge object to be potentially in another process.
   void CreateRemoteBridge(
-      views_bridge_mac::mojom::BridgeFactory* bridge_factory,
+      BridgeFactoryHost* bridge_factory_host,
       views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params,
       uint64_t parent_bridge_id);
 
@@ -188,6 +189,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                  gfx::DecoratedText* decorated_word,
                  gfx::Point* baseline_point) override;
   double SheetPositionY() override;
+
+  // BridgeFactoryHost::Observer:
+  void OnBridgeFactoryHostDestroying(BridgeFactoryHost* host) override;
 
   // views_bridge_mac::mojom::BridgedNativeWidgetHost:
   void OnVisibilityChanged(bool visible) override;
@@ -283,10 +287,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   views::NativeWidgetMac* const native_widget_mac_;  // Weak. Owns |this_|.
 
   // The factory that was used to create |bridge_ptr_|.
-  // TODO(ccameron): The lifetime of this pointer is not correctly managed yet,
-  // and has no way to be set to nullptr when the bridge is deleted (this
-  // pointer is never non-nullptr in production).
-  views_bridge_mac::mojom::BridgeFactory* bridge_factory_ = nullptr;
+  BridgeFactoryHost* bridge_factory_host_ = nullptr;
 
   Widget::InitParams::Type widget_type_ = Widget::InitParams::TYPE_WINDOW;
 

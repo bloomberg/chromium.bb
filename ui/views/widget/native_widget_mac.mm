@@ -116,10 +116,10 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   // unreachable.
   BridgedNativeWidgetHostImpl* parent_host =
       BridgedNativeWidgetHostImpl::GetFromNativeWindow([params.parent window]);
-  views_bridge_mac::mojom::BridgeFactory* bridge_factory = nullptr;
+  BridgeFactoryHost* bridge_factory_host = nullptr;
   if (parent_host)
-    bridge_factory = parent_host->bridge_factory();
-  if (bridge_factory) {
+    bridge_factory_host = parent_host->bridge_factory_host();
+  if (bridge_factory_host) {
     // Compute the parameters to describe the NSWindow.
     // TODO(ccameron): This is not yet adequate to capture all NSWindow
     // sub-classes that may be used. Make the parameter structure more
@@ -129,7 +129,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
     create_window_params->style_mask = StyleMaskForParams(params);
 
     bridge_host_->CreateRemoteBridge(
-        bridge_factory, std::move(create_window_params),
+        bridge_factory_host, std::move(create_window_params),
         parent_host ? parent_host->bridged_native_widget_id() : 0);
   } else {
     base::scoped_nsobject<NativeWidgetMacNSWindow> window(
