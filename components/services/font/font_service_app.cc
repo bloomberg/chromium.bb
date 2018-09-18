@@ -210,9 +210,12 @@ void FontServiceApp::MatchFontByPostscriptNameOrFullFontName(
   base::Optional<FontConfigLocalMatching::FontConfigMatchResult> match_result =
       FontConfigLocalMatching::FindFontByPostscriptNameOrFullFontName(family);
   if (match_result) {
-    mojom::FontIdentityPtr font_identity = mojom::FontIdentityPtr(
-        mojom::FontIdentity::New(0, match_result->ttc_index,
-                                 match_result->file_path.AsUTF8Unsafe()));
+    uint32_t fontconfig_interface_id =
+        FindOrAddPath(SkString(match_result->file_path.value().c_str()));
+    mojom::FontIdentityPtr font_identity =
+        mojom::FontIdentityPtr(mojom::FontIdentity::New(
+            fontconfig_interface_id, match_result->ttc_index,
+            match_result->file_path.value()));
     std::move(callback).Run(std::move(font_identity));
     return;
   }

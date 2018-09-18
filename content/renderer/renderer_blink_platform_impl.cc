@@ -223,6 +223,9 @@ class RendererBlinkPlatformImpl::SandboxSupport
       blink::WebUChar32 character,
       const char* preferred_locale,
       blink::OutOfProcessFont* fallbackFont) override;
+  void MatchFontByPostscriptNameOrFullFontName(
+      const char* font_unique_name,
+      blink::OutOfProcessFont* fallback_font) override;
   void GetWebFontRenderStyleForStrike(const char* family,
                                       int size,
                                       bool is_bold,
@@ -625,6 +628,14 @@ void RendererBlinkPlatformImpl::SandboxSupport::GetFallbackFontForCharacter(
   content::GetFallbackFontForCharacter(font_loader_, character,
                                        preferred_locale, fallbackFont);
   unicode_font_families_.insert(std::make_pair(character, *fallbackFont));
+}
+
+void RendererBlinkPlatformImpl::SandboxSupport::
+    MatchFontByPostscriptNameOrFullFontName(
+        const char* font_unique_name,
+        blink::OutOfProcessFont* fallback_font) {
+  content::MatchFontByPostscriptNameOrFullFontName(
+      font_loader_, font_unique_name, fallback_font);
 }
 
 void RendererBlinkPlatformImpl::SandboxSupport::GetWebFontRenderStyleForStrike(
