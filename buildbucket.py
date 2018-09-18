@@ -134,6 +134,10 @@ def main(argv):
   if args.verbose:
     print content
 
+  build_url = content.get('build', {}).get('url')
+  if build_url:
+    print 'Build triggered on: %s' % build_url
+
   return response.status != 200
 
 
