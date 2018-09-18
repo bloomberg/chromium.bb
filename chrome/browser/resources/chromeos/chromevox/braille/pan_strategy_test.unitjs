@@ -268,3 +268,27 @@ TEST_F('CvoxPanStrategyUnitTest', 'getCurrentTextViewportContents', function() {
   panner.next();
   assertEquals('789', panner.getCurrentTextViewportContents());
 });
+
+TEST_F('CvoxPanStrategyUnitTest', 'WrappedUnwrappedCursors', function() {
+  var panner = new cvox.PanStrategy();
+  panner.setPanStrategy(true);
+
+  // 30 cells with blank cells at positions 8, 22 and 26.
+  var content = createArrayBuffer('11234567 9112345678911 345 789');
+
+  panner.setCursor(1, 3);
+  panner.setContent('a', content, [], 0);
+  panner.setDisplaySize(2, 10);
+  assertEqualsJSON({start: 1, end: 3}, panner.getCursor());
+  assertEqualsJSON({start: 1, end: 3}, panner.wrappedCursor_);
+
+  panner.setCursor(5, 10);
+  panner.setContent('a', content, [], 0);
+  assertEqualsJSON({start: 5, end: 10}, panner.getCursor());
+  assertEqualsJSON({start: 5, end: 11}, panner.wrappedCursor_);
+
+  panner.setCursor(9, 9);
+  panner.setContent('a', content, [], 0);
+  assertEqualsJSON({start: 9, end: 9}, panner.getCursor());
+  assertEqualsJSON({start: 10, end: 11}, panner.wrappedCursor_);
+});
