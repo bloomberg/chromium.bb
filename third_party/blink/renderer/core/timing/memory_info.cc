@@ -81,7 +81,8 @@ class HeapSizeCache {
     TimeDelta delta_allowed = precision == MemoryInfo::Precision::Bucketized
                                   ? kTwentyMinutes
                                   : kFiftyMs;
-    if (now - last_update_time_ >= delta_allowed) {
+    if (!last_update_time_.has_value() ||
+        now - last_update_time_.value() >= delta_allowed) {
       Update(precision);
       last_update_time_ = now;
     }
@@ -97,7 +98,7 @@ class HeapSizeCache {
     info_.js_heap_size_limit = QuantizeMemorySize(info_.js_heap_size_limit);
   }
 
-  TimeTicks last_update_time_;
+  base::Optional<TimeTicks> last_update_time_;
 
   HeapInfo info_;
   DISALLOW_COPY_AND_ASSIGN(HeapSizeCache);
@@ -164,6 +165,9 @@ MemoryInfo::MemoryInfo(Precision precision) {
     GetHeapSize(info_);
   else
     HeapSizeCache::ForCurrentThread().GetCachedHeapSize(info_, precision);
+  // The values must have been computed, so totalJSHeapSize must be greater than
+  // 0.
+  DCHECK_GT(totalJSHeapSize(), 0u);
 }
 
 }  // namespace blink
