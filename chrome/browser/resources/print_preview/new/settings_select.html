@@ -9,6 +9,9 @@
 <dom-module id="print-preview-settings-select">
   <template>
     <style include="print-preview-shared md-select">
+      select.md-select {
+        --md-select-width: calc(100% - 4px);
+      }
     </style>
     <select class="md-select" disabled$="[[disabled]]"
         value="{{selectedValue::change}}">
