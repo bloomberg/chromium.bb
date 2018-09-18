@@ -1291,8 +1291,10 @@ void LayoutGrid::PrepareChildForPositionedLayout(LayoutBox& child) {
   child.ContainingBlock()->InsertPositionedObject(&child);
 
   PaintLayer* child_layer = child.Layer();
-  child_layer->SetStaticInlinePosition(LayoutUnit(BorderStart()));
-  child_layer->SetStaticBlockPosition(LayoutUnit(BorderBefore()));
+  // Static position of a positioned child should use the content-box
+  // (https://drafts.csswg.org/css-grid/#static-position).
+  child_layer->SetStaticInlinePosition(BorderAndPaddingStart());
+  child_layer->SetStaticBlockPosition(BorderAndPaddingBefore());
 }
 
 bool LayoutGrid::HasStaticPositionForChild(
