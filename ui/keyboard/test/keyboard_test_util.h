@@ -28,6 +28,9 @@ bool WaitUntilHidden();
 // Waits until the keyboard state is changed to the given state.
 void WaitControllerStateChangesTo(const KeyboardControllerState state);
 
+// Returns true if the keyboard is about to show or already shown.
+bool IsKeyboardShowing();
+
 // Gets the calculated keyboard bounds from |root_bounds|. The keyboard height
 // is specified by |keyboard_height|.
 gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
