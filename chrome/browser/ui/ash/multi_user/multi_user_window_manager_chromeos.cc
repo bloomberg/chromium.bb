@@ -574,11 +574,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
     aura::Window* window,
     bool visible,
     int animation_time_in_ms) {
-  // For a panel window, it's possible that this panel window is in the middle
-  // of relayout animation because of hiding/reshowing shelf during profile
-  // switch. Thus the window's visibility might not be its real visibility. See
-  // crbug.com/564725 for more info.
-  if (window->TargetVisibility() == visible)
+  if (window->IsVisible() == visible)
     return;
 
   // Hiding a system modal dialog should not be allowed. Instead we switch to
@@ -727,6 +723,11 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
       ash::Shell::Get()->tablet_mode_controller()->AddWindow(window);
     }
   }
+
+  // Under mash we apply visibility changes to the root so both the window frame
+  // and contents hide together.
+  if (features::IsUsingWindowService())
+    window = window->GetRootWindow();
 
   AnimationSetter animation_setter(
       window, GetAdjustedAnimationTimeInMS(animation_time_in_ms));
