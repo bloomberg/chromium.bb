@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html>
+<title>Parsing/serializing the '(-webkit-)mask property</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <style>
 * { font-size: 16px; }
 div { font-size: 8px; }
 </style>
 <body>
-<script src="../../resources/js-test.js"></script>
 <script>
-description('Test that clip-path shapes accept different length units');
-
 function computedStyle(property, value) {
     var div = document.createElement("div");
     document.body.appendChild(div);
@@ -18,21 +17,22 @@ function computedStyle(property, value) {
     return computedValue;
 }
 
-function innerStyle(property, value) {
+function specifiedStyle(property, value) {
     var div = document.createElement("div");
     div.style.setProperty(property, value);
     return div.style.getPropertyValue(property);
 }
 
 function testComputed(property, value, expected) {
-    shouldBeEqualToString('computedStyle("' + property + '", "' + value + '")', expected);
+    test(function() {
+        assert_equals(computedStyle(property, value), expected);
+    }, document.title + ', ' + property + ': ' + value + ' (computed)');
 }
 
 function testInner(property, value, expected) {
-    if (expected === null)
-        shouldBeNull('innerStyle("' + property + '", "' + value + '")');
-    else
-        shouldBeEqualToString('innerStyle("' + property + '", "' + value + '")', expected);
+    test(function() {
+        assert_equals(specifiedStyle(property, value), expected);
+    }, document.title + ', ' + property + ': ' + value + ' (specified)');
 }
 
 function negativeTest(property, value) {
@@ -60,7 +60,6 @@ testInner("-webkit-mask", "none bottom", "none center bottom");
 testInner("-webkit-mask", "none right", "none right center");
 testInner("-webkit-mask", "none top right", "none right top");
 testInner("-webkit-mask", "none bottom left", "none left bottom");
-testInner("-webkit-mask", "none right", "none right center");
 testInner("-webkit-mask", "none left", "none left center");
 testInner("-webkit-mask", "center 50%", "center 50%");
 testInner("-webkit-mask", "50px 50%", "50px 50%");
@@ -131,8 +130,6 @@ testInner("-webkit-mask", "none left 20px top / contain", "none left 20px top / 
 
 // combinations
 testInner("-webkit-mask", "none padding-box content-box", "none padding-box content-box");
-testInner("-webkit-mask", "none padding-box", "none padding-box padding-box");
-testInner("-webkit-mask", "none top", "none center top");
 testInner("-webkit-mask", "none center right 20px", "none right 20px center");
 testInner("-webkit-mask", "none border-box left top", "none left top border-box border-box");
 testInner("-webkit-mask", "none border-box left top 20px", "none left top 20px border-box border-box");
@@ -181,7 +178,5 @@ negativeTest("mask-source-type", "rubbish");
 negativeTest("mask-source-type", "");
 negativeTest("mask-source-type", "center");
 negativeTest("mask-source-type", "repeat");
-
 </script>
 </body>
-</html>
