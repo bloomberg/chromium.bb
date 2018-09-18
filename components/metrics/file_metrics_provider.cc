@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -31,6 +32,9 @@
 namespace metrics {
 
 namespace {
+
+const base::Feature kCacheFileMetricData = {"CacheFileMetricData",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // These structures provide values used to define how files are opened and
 // accessed. It obviates the need for multiple code-paths within several of
@@ -490,7 +494,7 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
   }
 
   // Map the file and validate it.
-  std::unique_ptr<base::PersistentMemoryAllocator> memory_allocator =
+  std::unique_ptr<base::FilePersistentMemoryAllocator> memory_allocator =
       std::make_unique<base::FilePersistentMemoryAllocator>(
           std::move(mapped), 0, 0, base::StringPiece(), read_only);
   if (memory_allocator->GetMemoryState() ==
@@ -499,6 +503,11 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
   }
   if (memory_allocator->IsCorrupt())
     return ACCESS_RESULT_DATA_CORRUPTION;
+
+  // Cache the file data while running in a background thread so that there
+  // shouldn't be any I/O when the data is accessed from the main thread.
+  if (base::FeatureList::IsEnabled(kCacheFileMetricData))
+    memory_allocator->Cache();
 
   // Create an allocator for the mapped file. Ownership passes to the allocator.
   source->allocator = std::make_unique<base::PersistentHistogramAllocator>(
