@@ -69,14 +69,12 @@ bool chrome_logging_failed_ = false;
 // Assertion handler for logging errors that occur when dialogs are
 // silenced.  To record a new error, pass the log string associated
 // with that error in the str parameter.
-MSVC_DISABLE_OPTIMIZE();
-void SilentRuntimeAssertHandler(const char* file,
-                                int line,
-                                const base::StringPiece message,
-                                const base::StringPiece stack_trace) {
+NOINLINE void SilentRuntimeAssertHandler(const char* file,
+                                         int line,
+                                         const base::StringPiece message,
+                                         const base::StringPiece stack_trace) {
   base::debug::BreakDebugger();
 }
-MSVC_ENABLE_OPTIMIZE();
 
 // Suppresses error/assertion dialogs and enables the logging of
 // those errors into silenced_errors_.
