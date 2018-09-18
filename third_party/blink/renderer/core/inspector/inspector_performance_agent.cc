@@ -82,6 +82,10 @@ void AppendMetric(protocol::Array<protocol::Performance::Metric>* container,
                          .setValue(value)
                          .build());
 }
+
+TimeTicks GetTimeTicksNow() {
+  return base::subtle::TimeTicksNowIgnoringOverride();
+}
 }  // namespace
 
 Response InspectorPerformanceAgent::getMetrics(
@@ -106,17 +110,19 @@ Response InspectorPerformanceAgent::getMetrics(
   }
 
   // Page performance metrics.
-  TimeTicks now = base::subtle::TimeTicksNowIgnoringOverride();
+  TimeTicks now = GetTimeTicksNow();
   AppendMetric(result.get(), "LayoutCount", static_cast<double>(layout_count_));
   AppendMetric(result.get(), "RecalcStyleCount",
                static_cast<double>(recalc_style_count_));
   AppendMetric(result.get(), "LayoutDuration", layout_duration_.InSecondsF());
   AppendMetric(result.get(), "RecalcStyleDuration",
                recalc_style_duration_.InSecondsF());
+
   TimeDelta script_duration = script_duration_;
   if (!script_start_ticks_.is_null())
     script_duration += now - script_start_ticks_;
   AppendMetric(result.get(), "ScriptDuration", script_duration.InSecondsF());
+
   TimeDelta task_duration = task_duration_;
   if (!task_start_ticks_.is_null())
     task_duration += now - task_start_ticks_;
@@ -157,14 +163,13 @@ void InspectorPerformanceAgent::ConsoleTimeStamp(const String& title) {
 
 void InspectorPerformanceAgent::ScriptStarts() {
   if (!script_call_depth_++)
-    script_start_ticks_ = base::subtle::TimeTicksNowIgnoringOverride();
+    script_start_ticks_ = GetTimeTicksNow();
 }
 
 void InspectorPerformanceAgent::ScriptEnds() {
   if (--script_call_depth_)
     return;
-  script_duration_ +=
-      base::subtle::TimeTicksNowIgnoringOverride() - script_start_ticks_;
+  script_duration_ += GetTimeTicksNow() - script_start_ticks_;
   script_start_ticks_ = TimeTicks();
 }
 
@@ -185,36 +190,36 @@ void InspectorPerformanceAgent::Did(const probe::ExecuteScript& probe) {
 }
 
 void InspectorPerformanceAgent::Will(const probe::RecalculateStyle& probe) {
-  recalc_style_start_ticks_ = base::subtle::TimeTicksNowIgnoringOverride();
+  recalc_style_start_ticks_ = GetTimeTicksNow();
 }
 
 void InspectorPerformanceAgent::Did(const probe::RecalculateStyle& probe) {
-  recalc_style_duration_ +=
-      base::subtle::TimeTicksNowIgnoringOverride() - recalc_style_start_ticks_;
+  recalc_style_duration_ += GetTimeTicksNow() - recalc_style_start_ticks_;
   recalc_style_count_++;
 }
 
 void InspectorPerformanceAgent::Will(const probe::UpdateLayout& probe) {
   if (!layout_depth_++)
-    layout_start_ticks_ = base::subtle::TimeTicksNowIgnoringOverride();
+    layout_start_ticks_ = GetTimeTicksNow();
 }
 
 void InspectorPerformanceAgent::Did(const probe::UpdateLayout& probe) {
   if (--layout_depth_)
     return;
-  layout_duration_ +=
-      base::subtle::TimeTicksNowIgnoringOverride() - layout_start_ticks_;
+  layout_duration_ += GetTimeTicksNow() - layout_start_ticks_;
   layout_count_++;
 }
 
+// Will/DidProcessTask() ignore caller provided times to ensure time domain
+// consistency with other metrics collected in this module.
 void InspectorPerformanceAgent::WillProcessTask(base::TimeTicks start_time) {
-  task_start_ticks_ = start_time;
+  task_start_ticks_ = GetTimeTicksNow();
 }
 
 void InspectorPerformanceAgent::DidProcessTask(base::TimeTicks start_time,
                                                base::TimeTicks end_time) {
-  if (task_start_ticks_ == start_time)
-    task_duration_ += end_time - start_time;
+  if (!task_start_ticks_.is_null())
+    task_duration_ += GetTimeTicksNow() - task_start_ticks_;
   task_start_ticks_ = TimeTicks();
 }
 
