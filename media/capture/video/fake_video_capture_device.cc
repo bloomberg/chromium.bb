@@ -460,6 +460,7 @@ void FakePhotoDevice::GetPhotoState(
   photo_state->current_focus_mode = mojom::MeteringMode::NONE;
 
   photo_state->exposure_compensation = mojom::Range::New();
+  photo_state->exposure_time = mojom::Range::New();
   photo_state->color_temperature = mojom::Range::New();
   photo_state->iso = mojom::Range::New();
   photo_state->iso->current = 100.0;

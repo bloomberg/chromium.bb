@@ -40,6 +40,10 @@ class PhotoCapabilities {
     public final double minExposureCompensation;
     public final double currentExposureCompensation;
     public final double stepExposureCompensation;
+    public final double maxExposureTime;
+    public final double minExposureTime;
+    public final double currentExposureTime;
+    public final double stepExposureTime;
     public final int whiteBalanceMode;
     public final int[] whiteBalanceModes;
     public final int[] fillLightModes;
@@ -58,10 +62,11 @@ class PhotoCapabilities {
             double minFocusDistance, double stepFocusDistance, int focusMode, int[] focusModes,
             int exposureMode, int[] exposureModes, double maxExposureCompensation,
             double minExposureCompensation, double currentExposureCompensation,
-            double stepExposureCompensation, int whiteBalanceMode, int[] whiteBalanceModes,
-            int[] fillLightModes, boolean supportsTorch, boolean torch, boolean redEyeReduction,
-            int maxColorTemperature, int minColorTemperature, int currentColorTemperature,
-            int stepColorTemperature) {
+            double stepExposureCompensation, double maxExposureTime, double minExposureTime,
+            double currentExposureTime, double stepExposureTime, int whiteBalanceMode,
+            int[] whiteBalanceModes, int[] fillLightModes, boolean supportsTorch, boolean torch,
+            boolean redEyeReduction, int maxColorTemperature, int minColorTemperature,
+            int currentColorTemperature, int stepColorTemperature) {
         this.maxIso = maxIso;
         this.minIso = minIso;
         this.currentIso = currentIso;
@@ -90,6 +95,10 @@ class PhotoCapabilities {
         this.minExposureCompensation = minExposureCompensation;
         this.currentExposureCompensation = currentExposureCompensation;
         this.stepExposureCompensation = stepExposureCompensation;
+        this.maxExposureTime = maxExposureTime;
+        this.minExposureTime = minExposureTime;
+        this.currentExposureTime = currentExposureTime;
+        this.stepExposureTime = stepExposureTime;
         this.whiteBalanceMode = whiteBalanceMode;
         this.whiteBalanceModes = whiteBalanceModes;
         this.fillLightModes = fillLightModes;
@@ -241,6 +250,25 @@ class PhotoCapabilities {
     public double getStepExposureCompensation() {
         return stepExposureCompensation;
     }
+    @CalledByNative
+    public double getMinExposureTime() {
+        return minExposureTime;
+    }
+
+    @CalledByNative
+    public double getMaxExposureTime() {
+        return maxExposureTime;
+    }
+
+    @CalledByNative
+    public double getCurrentExposureTime() {
+        return currentExposureTime;
+    }
+
+    @CalledByNative
+    public double getStepExposureTime() {
+        return stepExposureTime;
+    }
 
     @CalledByNative
     public int getWhiteBalanceMode() {
@@ -321,6 +349,10 @@ class PhotoCapabilities {
         public double minExposureCompensation;
         public double currentExposureCompensation;
         public double stepExposureCompensation;
+        public double maxExposureTime;
+        public double minExposureTime;
+        public double currentExposureTime;
+        public double stepExposureTime;
         public int whiteBalanceMode;
         public int[] whiteBalanceModes;
         public int[] fillLightModes;
@@ -474,6 +506,26 @@ class PhotoCapabilities {
             return this;
         }
 
+        public Builder setMaxExposureTime(double maxExposureTime) {
+            this.maxExposureTime = maxExposureTime;
+            return this;
+        }
+
+        public Builder setMinExposureTime(double minExposureTime) {
+            this.minExposureTime = minExposureTime;
+            return this;
+        }
+
+        public Builder setCurrentExposureTime(double currentExposureTime) {
+            this.currentExposureTime = currentExposureTime;
+            return this;
+        }
+
+        public Builder setStepExposureTime(double stepExposureTime) {
+            this.stepExposureTime = stepExposureTime;
+            return this;
+        }
+
         public Builder setWhiteBalanceMode(int whiteBalanceMode) {
             this.whiteBalanceMode = whiteBalanceMode;
             return this;
@@ -530,7 +582,8 @@ class PhotoCapabilities {
                     minZoom, currentZoom, stepZoom, currentFocusDistance, maxFocusDistance,
                     minFocusDistance, stepFocusDistance, focusMode, focusModes, exposureMode,
                     exposureModes, maxExposureCompensation, minExposureCompensation,
-                    currentExposureCompensation, stepExposureCompensation, whiteBalanceMode,
+                    currentExposureCompensation, stepExposureCompensation, maxExposureTime,
+                    minExposureTime, currentExposureTime, stepExposureTime, whiteBalanceMode,
                     whiteBalanceModes, fillLightModes, supportsTorch, torch, redEyeReduction,
                     maxColorTemperature, minColorTemperature, currentColorTemperature,
                     stepColorTemperature);

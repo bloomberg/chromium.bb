@@ -71,6 +71,7 @@ bool ConstraintSetHasImageCapture(
          constraint_set.hasExposureMode() || constraint_set.hasFocusMode() ||
          constraint_set.hasPointsOfInterest() ||
          constraint_set.hasExposureCompensation() ||
+         constraint_set.hasExposureTime() ||
          constraint_set.hasColorTemperature() || constraint_set.hasIso() ||
          constraint_set.hasBrightness() || constraint_set.hasContrast() ||
          constraint_set.hasSaturation() || constraint_set.hasSharpness() ||
@@ -406,6 +407,7 @@ void MediaStreamTrack::getConstraints(MediaTrackConstraints& constraints) {
       image_capture_constraints.hasExposureMode() ||
       image_capture_constraints.hasFocusMode() ||
       image_capture_constraints.hasExposureCompensation() ||
+      image_capture_constraints.hasExposureTime() ||
       image_capture_constraints.hasColorTemperature() ||
       image_capture_constraints.hasIso() ||
       image_capture_constraints.hasBrightness() ||

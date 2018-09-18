@@ -199,6 +199,30 @@ double PhotoCapabilities::getStepExposureCompensation() const {
       AttachCurrentThread(), object_);
 }
 
+double PhotoCapabilities::getMinExposureTime() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMinExposureTime(AttachCurrentThread(),
+                                                   object_);
+}
+
+double PhotoCapabilities::getMaxExposureTime() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMaxExposureTime(AttachCurrentThread(),
+                                                   object_);
+}
+
+double PhotoCapabilities::getCurrentExposureTime() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getCurrentExposureTime(AttachCurrentThread(),
+                                                       object_);
+}
+
+double PhotoCapabilities::getStepExposureTime() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getStepExposureTime(AttachCurrentThread(),
+                                                    object_);
+}
+
 PhotoCapabilities::AndroidMeteringMode PhotoCapabilities::getWhiteBalanceMode()
     const {
   DCHECK(!object_.is_null());

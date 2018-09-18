@@ -366,8 +366,9 @@ void FileVideoCaptureDevice::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
   if (settings->has_red_eye_reduction && settings->red_eye_reduction)
     return;
 
-  if (settings->has_exposure_compensation || settings->has_color_temperature ||
-      settings->has_iso || settings->has_brightness || settings->has_contrast ||
+  if (settings->has_exposure_compensation || settings->has_exposure_time ||
+      settings->has_color_temperature || settings->has_iso ||
+      settings->has_brightness || settings->has_contrast ||
       settings->has_saturation || settings->has_sharpness ||
       settings->has_focus_distance || settings->has_zoom ||
       settings->has_fill_light_mode) {

@@ -345,6 +345,7 @@ void ImageCapture::SetMediaTrackConstraints(
       (constraints.hasFocusMode() && !capabilities_.hasFocusMode()) ||
       (constraints.hasExposureCompensation() &&
        !capabilities_.hasExposureCompensation()) ||
+      (constraints.hasExposureTime() && !capabilities_.hasExposureTime()) ||
       (constraints.hasColorTemperature() &&
        !capabilities_.hasColorTemperature()) ||
       (constraints.hasIso() && !capabilities_.hasIso()) ||
@@ -436,6 +437,20 @@ void ImageCapture::SetMediaTrackConstraints(
     temp_constraints.setExposureCompensation(
         constraints.exposureCompensation());
     settings->exposure_compensation = exposure_compensation;
+  }
+  settings->has_exposure_time =
+      constraints.hasExposureTime() && constraints.exposureTime().IsDouble();
+  if (settings->has_exposure_time) {
+    const auto exposure_time = constraints.exposureTime().GetAsDouble();
+    if (exposure_time < capabilities_.exposureTime()->min() ||
+        exposure_time > capabilities_.exposureTime()->max()) {
+      resolver->Reject(
+          DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                               "exposureTime setting out of range"));
+      return;
+    }
+    temp_constraints.setExposureTime(constraints.exposureTime());
+    settings->exposure_time = exposure_time;
   }
   settings->has_color_temperature = constraints.hasColorTemperature() &&
                                     constraints.colorTemperature().IsDouble();
@@ -601,6 +616,8 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings& settings) const {
 
   if (settings_.hasExposureCompensation())
     settings.setExposureCompensation(settings_.exposureCompensation());
+  if (settings_.hasExposureTime())
+    settings.setExposureTime(settings_.exposureTime());
   if (settings_.hasColorTemperature())
     settings.setColorTemperature(settings_.colorTemperature());
   if (settings_.hasIso())
@@ -789,6 +806,11 @@ void ImageCapture::UpdateMediaTrackCapabilities(
         MediaSettingsRange::Create(*photo_state->exposure_compensation));
     settings_.setExposureCompensation(
         photo_state->exposure_compensation->current);
+  }
+  if (photo_state->exposure_time->max != photo_state->exposure_time->min) {
+    capabilities_.setExposureTime(
+        MediaSettingsRange::Create(*photo_state->exposure_time));
+    settings_.setExposureTime(photo_state->exposure_time->current);
   }
   if (photo_state->color_temperature->max !=
       photo_state->color_temperature->min) {

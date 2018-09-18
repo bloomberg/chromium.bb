@@ -89,6 +89,7 @@ public abstract class VideoCapture {
      * x coordinate first followed by the y coordinate.
      * @param hasExposureCompensation Indicates if |exposureCompensation| is set.
      * @param exposureCompensation Adjustment to auto exposure. 0 means not adjusted.
+     * @param exposureTime Duration each pixel is exposed to light (in nanoseconds).
      * @param whiteBalanceMode White Balance mode following AndroidMeteringMode enum.
      * @param iso Sensitivity to light. 0, which would be invalid, means ignore.
      * @param hasRedEyeReduction Indicates if |redEyeReduction| is set.
@@ -101,9 +102,9 @@ public abstract class VideoCapture {
     @CalledByNative
     public abstract void setPhotoOptions(double zoom, int focusMode, double focusDistance,
             int exposureMode, double width, double height, float[] pointsOfInterest2D,
-            boolean hasExposureCompensation, double exposureCompensation, int whiteBalanceMode,
-            double iso, boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
-            boolean hasTorch, boolean torch, double colorTemperature);
+            boolean hasExposureCompensation, double exposureCompensation, double exposureTime,
+            int whiteBalanceMode, double iso, boolean hasRedEyeReduction, boolean redEyeReduction,
+            int fillLightMode, boolean hasTorch, boolean torch, double colorTemperature);
 
     // Replies by calling nativeOnPhotoTaken().
     @CalledByNative

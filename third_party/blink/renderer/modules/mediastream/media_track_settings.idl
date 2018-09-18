@@ -40,6 +40,7 @@ dictionary MediaTrackSettings {
     DOMString         focusMode;
     sequence<Point2D> pointsOfInterest;
     double            exposureCompensation;
+    double            exposureTime;
     double            colorTemperature;
     double            iso;
     double            brightness;
