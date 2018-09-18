@@ -470,7 +470,10 @@ class ContextualSuggestionsMediator
         }
         mModel.setMenuButtonDelegate(this);
         mModel.setDefaultToolbarClickListener(view -> mCoordinator.expandBottomSheet());
-        mModel.setTitle(title);
+        mModel.setTitle(!TextUtils.isEmpty(title)
+                        ? title
+                        : ContextUtils.getApplicationContext().getResources().getString(
+                                  R.string.contextual_suggestions_button_description));
 
         mModelPreparedForCurrentTab = true;
     }
