@@ -60,9 +60,7 @@ bool CallbackTester::WasCalledExactlyOnce() {
 
 class ChromeSigninClientTest : public testing::Test {
  public:
-  ChromeSigninClientTest() {}
-
-  void SetUp() override {
+  ChromeSigninClientTest() {
     // Create a signed-in profile.
     TestingProfile::Builder builder;
     profile_ = builder.Build();
