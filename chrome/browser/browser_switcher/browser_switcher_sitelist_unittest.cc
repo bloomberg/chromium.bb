@@ -95,13 +95,6 @@ TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectPrefix) {
   EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://google.com/")));
 }
 
-TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectPrefixNotLowerCase) {
-  // The scheme and host are case-insensitive, but the rest is case-sensitive.
-  Initialize({"HTTP://EXAMPLE.COM/SUBROUTE"}, {});
-  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/SUBROUTE")));
-  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://example.com/subroute")));
-}
-
 TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectInvertedMatch) {
   // The most specific (i.e., longest string) rule should have priority.
   Initialize({"!subdomain.example.com", "example.com"}, {});
@@ -120,6 +113,25 @@ TEST_F(BrowserSwitcherSitelistTest, ShouldRedirectGreylistWildcard) {
   Initialize({"*"}, {"*"});
   // If both are wildcards, prefer the greylist.
   EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://example.com/")));
+}
+
+TEST_F(BrowserSwitcherSitelistTest, ShouldMatchAnySchema) {
+  // URLs formatted like these don't include a schema, so should match both HTTP
+  // and HTTPS.
+  Initialize({"//example.com", "reddit.com/r/funny"}, {});
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/something")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("https://example.com/something")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("file://example.com/foobar/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("https://foo.example.com/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("mailto://example.com")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://bad.com/example.com/")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://bad.com//example.com/")));
+  EXPECT_FALSE(
+      sitelist()->ShouldSwitch(GURL("http://bad.com/hackme.html?example.com")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://reddit.com/r/funny")));
+  EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("https://reddit.com/r/funny")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://reddit.com/r/pics")));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("https://reddit.com/r/pics")));
 }
 
 }  // namespace browser_switcher
