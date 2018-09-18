@@ -49,7 +49,7 @@ The actual software components delivered with Weston are:
 	This implementation keeps all window management inside the module,
 	while IVI-systems may use another module that exposes all window
 	management via Wayland or other protocol for an external process
-	to control
+	to control.
 
 - ivi-hmi-controller.xml:
 	Wayland protocol extension for IVI display control; the private
