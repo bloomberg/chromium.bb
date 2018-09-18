@@ -32,10 +32,10 @@ void PaintTracker::NotifyObjectPrePaint(const LayoutObject& object,
 }
 
 void PaintTracker::NotifyNodeRemoved(const LayoutObject& object) {
-  if (object.GetNode()) {
-    text_paint_timing_detector_->NotifyNodeRemoved(
-        DOMNodeIds::IdForNode(object.GetNode()));
-  }
+  if (!object.GetNode())
+    return;
+  text_paint_timing_detector_->NotifyNodeRemoved(
+      DOMNodeIds::IdForNode(object.GetNode()));
 }
 
 void PaintTracker::Dispose() {
