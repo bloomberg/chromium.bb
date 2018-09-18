@@ -744,6 +744,14 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_NoDuplicateHash) {
   histograms.ExpectUniqueSample(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
       /*sample=*/false, /*count=*/1);
+
+  // Make sure all the updates arrived, in order.
+  ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
+  UpdateResponseDataList result = processor()->GetNthUpdateResponse(0);
+  ASSERT_EQ(3u, result.size());
+  EXPECT_EQ(GenerateTagHash(kTag1), result[0].entity->client_tag_hash);
+  EXPECT_EQ(GenerateTagHash(kTag2), result[1].entity->client_tag_hash);
+  EXPECT_EQ(GenerateTagHash(kTag3), result[2].entity->client_tag_hash);
 }
 
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashWithinPartialUpdate) {
@@ -764,6 +772,13 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashWithinPartialUpdate) {
   histograms.ExpectUniqueSample(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
       /*sample=*/true, /*count=*/1);
+
+  // Make sure the duplicate entry got de-duped, and the last one won.
+  ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
+  UpdateResponseDataList result = processor()->GetNthUpdateResponse(0);
+  ASSERT_EQ(1u, result.size());
+  EXPECT_EQ(GenerateTagHash(kTag1), result[0].entity->client_tag_hash);
+  EXPECT_EQ(kValue2, result[0].entity->specifics.preference().value());
 }
 
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashAcrossPartialUpdates) {
@@ -786,6 +801,13 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_DuplicateHashAcrossPartialUpdates) {
   histograms.ExpectUniqueSample(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
       /*sample=*/true, /*count=*/1);
+
+  // Make sure the duplicate entry got de-duped, and the last one won.
+  ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
+  UpdateResponseDataList result = processor()->GetNthUpdateResponse(0);
+  ASSERT_EQ(1u, result.size());
+  EXPECT_EQ(GenerateTagHash(kTag1), result[0].entity->client_tag_hash);
+  EXPECT_EQ(kValue2, result[0].entity->specifics.preference().value());
 }
 
 TEST_F(ModelTypeWorkerTest, ReceiveUpdates_EmptyHashNotConsideredDuplicate) {
@@ -807,6 +829,51 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates_EmptyHashNotConsideredDuplicate) {
   histograms.ExpectUniqueSample(
       "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
       /*sample=*/false, /*count=*/1);
+
+  // Make sure the empty client tag hashes did *not* get de-duped.
+  ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
+  UpdateResponseDataList result = processor()->GetNthUpdateResponse(0);
+  ASSERT_EQ(3u, result.size());
+  EXPECT_EQ(kValue1, result[0].entity->specifics.preference().value());
+  EXPECT_EQ(kValue2, result[1].entity->specifics.preference().value());
+  EXPECT_EQ(kValue3, result[2].entity->specifics.preference().value());
+}
+
+TEST_F(ModelTypeWorkerTest, ReceiveUpdates_MultipleDuplicateHashes) {
+  NormalInitialize();
+
+  base::HistogramTester histograms;
+
+  TriggerPartialUpdateFromServer(10, kTag1, kValue3);
+  TriggerPartialUpdateFromServer(10, kTag2, kValue3);
+  TriggerPartialUpdateFromServer(10, kTag3, kValue3);
+
+  TriggerPartialUpdateFromServer(10, kTag1, kValue2);
+  TriggerPartialUpdateFromServer(10, kTag2, kValue2);
+
+  TriggerPartialUpdateFromServer(10, kTag1, kValue1);
+
+  // None of the partial updates contained duplicates.
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInGetUpdatesResponse.PREFERENCE",
+      /*sample=*/false, /*count=*/6);
+
+  ApplyUpdates();
+
+  histograms.ExpectUniqueSample(
+      "Sync.DuplicateClientTagHashInApplyPendingUpdates.PREFERENCE",
+      /*sample=*/true, /*count=*/1);
+
+  // Make sure the duplicate entries got de-duped, and the last one won.
+  ASSERT_EQ(1u, processor()->GetNumUpdateResponses());
+  UpdateResponseDataList result = processor()->GetNthUpdateResponse(0);
+  ASSERT_EQ(3u, result.size());
+  EXPECT_EQ(GenerateTagHash(kTag1), result[0].entity->client_tag_hash);
+  EXPECT_EQ(GenerateTagHash(kTag2), result[1].entity->client_tag_hash);
+  EXPECT_EQ(GenerateTagHash(kTag3), result[2].entity->client_tag_hash);
+  EXPECT_EQ(kValue1, result[0].entity->specifics.preference().value());
+  EXPECT_EQ(kValue2, result[1].entity->specifics.preference().value());
+  EXPECT_EQ(kValue3, result[2].entity->specifics.preference().value());
 }
 
 // Test that an update download coming in multiple parts gets accumulated into
