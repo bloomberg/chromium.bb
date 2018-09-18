@@ -83,7 +83,7 @@ class CanvasCaptureHandlerTest
   static sk_sp<SkImage> GenerateTestImage(bool opaque, int width, int height) {
     SkBitmap testBitmap;
     testBitmap.allocN32Pixels(width, height, opaque);
-    testBitmap.eraseARGB(kTestAlphaValue, 30, 60, 200);
+    testBitmap.eraseARGB(opaque ? 255 : kTestAlphaValue, 30, 60, 200);
     return SkImage::MakeFromBitmap(testBitmap);
   }
 
