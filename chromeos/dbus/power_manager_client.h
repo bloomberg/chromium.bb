@@ -151,6 +151,10 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual bool HasObserver(const Observer* observer) const = 0;
 
+  // Runs the callback as soon as the service becomes available.
+  virtual void WaitForServiceToBeAvailable(
+      WaitForServiceToBeAvailableCallback callback) = 0;
+
   // Interface for managing the power consumption of renderer processes.
   class RenderProcessManagerDelegate {
    public:

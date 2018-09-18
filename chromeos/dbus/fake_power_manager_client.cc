@@ -68,6 +68,12 @@ bool FakePowerManagerClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
+void FakePowerManagerClient::WaitForServiceToBeAvailable(
+    WaitForServiceToBeAvailableCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 void FakePowerManagerClient::SetRenderProcessManagerDelegate(
     base::WeakPtr<RenderProcessManagerDelegate> delegate) {
   render_process_manager_delegate_ = delegate;
