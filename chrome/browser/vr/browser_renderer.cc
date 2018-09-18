@@ -64,6 +64,8 @@ void BrowserRenderer::Draw(FrameType frame_type,
   ui_->SetContentUsesQuadLayer(use_quad_layer);
 
   graphics_delegate_->InitializeBuffers();
+  graphics_delegate_->SetFrameDumpFilepathBase(
+      frame_buffer_dump_filepath_base_);
   if (frame_type == kWebXrFrame) {
     DCHECK(!use_quad_layer);
     DrawWebXr();
@@ -80,6 +82,7 @@ void BrowserRenderer::Draw(FrameType frame_type,
                  "controller",
                  ui_controller_update_time_.GetAverage().InMicroseconds());
 
+  ReportFrameBufferDumpForTesting();
   scheduler_delegate_->SubmitDrawnFrame(frame_type, head_pose);
 }
 
@@ -249,6 +252,11 @@ void BrowserRenderer::SetUiExpectingActivityForTesting(
       base::TimeDelta::FromMilliseconds(ui_expectation.quiescence_timeout_ms);
 }
 
+void BrowserRenderer::SaveNextFrameBufferToDiskForTesting(
+    std::string filepath_base) {
+  frame_buffer_dump_filepath_base_ = filepath_base;
+}
+
 void BrowserRenderer::AcceptDoffPromptForTesting() {
   ui_->AcceptDoffPromptForTesting();
 }
@@ -332,8 +340,7 @@ base::TimeDelta BrowserRenderer::ProcessControllerInput(
 void BrowserRenderer::PerformControllerActionForTesting(
     ControllerTestInput controller_input) {
   DCHECK(input_delegate_);
-  if (controller_input.action ==
-      VrControllerTestAction::kRevertToRealController) {
+  if (controller_input.action == VrControllerTestAction::kRevertToRealInput) {
     if (using_input_delegate_for_testing_) {
       DCHECK(static_cast<InputDelegateForTesting*>(input_delegate_.get())
                  ->IsQueueEmpty())
@@ -351,8 +358,7 @@ void BrowserRenderer::PerformControllerActionForTesting(
           std::make_unique<InputDelegateForTesting>(ui_.get());
     input_delegate_for_testing_.swap(input_delegate_);
   }
-  if (controller_input.action !=
-      VrControllerTestAction::kEnableMockedController) {
+  if (controller_input.action != VrControllerTestAction::kEnableMockedInput) {
     static_cast<InputDelegateForTesting*>(input_delegate_.get())
         ->QueueControllerActionForTesting(controller_input);
   }
@@ -390,7 +396,18 @@ base::WeakPtr<BrowserRenderer> BrowserRenderer::GetWeakPtr() {
 void BrowserRenderer::ReportUiActivityResultForTesting(
     VrUiTestActivityResult result) {
   ui_test_state_ = nullptr;
-  browser_->ReportUiActivityResultForTesting(result);
+  browser_->ReportUiOperationResultForTesting(
+      UiTestOperationType::kUiActivityResult, result);
+}
+
+void BrowserRenderer::ReportFrameBufferDumpForTesting() {
+  if (frame_buffer_dump_filepath_base_.empty())
+    return;
+
+  frame_buffer_dump_filepath_base_.clear();
+  browser_->ReportUiOperationResultForTesting(
+      UiTestOperationType::kFrameBufferDumped,
+      VrUiTestActivityResult::kQuiescent /* unused */);
 }
 
 }  // namespace vr

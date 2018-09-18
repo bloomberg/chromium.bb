@@ -50,6 +50,8 @@ class GlRenderer : public BaseGraphicsDelegate {
                                 float* border_y) override;
   int GetContentBufferWidth() override;
 
+  void SetFrameDumpFilepathBase(std::string& filepath_base) override;
+
   void RenderFrame();
   void PostRenderFrameTask();
   void set_vr_context(VrTestContext* vr_context) { vr_context_ = vr_context; }

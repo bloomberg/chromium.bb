@@ -139,6 +139,7 @@ class MockGraphicsDelegate : public GraphicsDelegate {
     std::move(callback).Run();
     return true;
   }
+  void SetFrameDumpFilepathBase(std::string& filepath_base) override {}
 
  private:
   void UseBuffer() {

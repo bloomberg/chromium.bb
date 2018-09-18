@@ -67,6 +67,8 @@ import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.VirtualDisplayAndroid;
 import org.chromium.ui.widget.UiWidgetFactory;
 
+import java.util.ArrayList;
+
 /**
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
@@ -132,8 +134,8 @@ public class VrShell extends GvrLayout
 
     private VrInputMethodManagerWrapper mInputMethodManagerWrapper;
 
-    private int mUiActivityResult;
-    private Runnable mUiActivityResultCallback;
+    private ArrayList<Integer> mUiOperationResults;
+    private ArrayList<Runnable> mUiOperationResultCallbacks;
 
     public VrShell(
             ChromeActivity activity, VrShellDelegate delegate, TabModelSelector tabModelSelector) {
@@ -1248,21 +1250,46 @@ public class VrShell extends GvrLayout
                 mNativeVrShell, elementName, actionType, position.x, position.y);
     }
 
-    public void setUiExpectingActivityForTesting(int quiescenceTimeoutMs, Runnable resultCallback) {
-        mUiActivityResult = VrUiTestActivityResult.UNREPORTED;
-        mUiActivityResultCallback = resultCallback;
-        nativeSetUiExpectingActivityForTesting(mNativeVrShell, quiescenceTimeoutMs);
+    public void registerUiOperationCallbackForTesting(
+            int actionType, Runnable resultCallback, int quiescenceTimeoutMs) {
+        assert actionType < UiTestOperationType.NUM_UI_TEST_OPERATION_TYPES;
+        // Fill the ArrayLists if this is the first time the method has been called.
+        if (mUiOperationResults == null) {
+            mUiOperationResults =
+                    new ArrayList<Integer>(UiTestOperationType.NUM_UI_TEST_OPERATION_TYPES);
+            mUiOperationResultCallbacks =
+                    new ArrayList<Runnable>(UiTestOperationType.NUM_UI_TEST_OPERATION_TYPES);
+            for (int i = 0; i < UiTestOperationType.NUM_UI_TEST_OPERATION_TYPES; i++) {
+                mUiOperationResults.add(null);
+                mUiOperationResultCallbacks.add(null);
+            }
+        }
+        // We currently have two callback types, and only one of them actually cares about the
+        // value given to the callback, so we can blindly set the default here. If more are added,
+        // their defaults will have to be properly set here.
+        mUiOperationResults.set(actionType, VrUiTestActivityResult.UNREPORTED);
+        mUiOperationResultCallbacks.set(actionType, resultCallback);
+
+        // In the case of the UI activity quiescence callback type, we need to let the native UI
+        // know how long to wait before timing out.
+        if (actionType == UiTestOperationType.UI_ACTIVITY_RESULT) {
+            nativeSetUiExpectingActivityForTesting(mNativeVrShell, quiescenceTimeoutMs);
+        }
     }
 
-    public int getLastUiActivityResultForTesting() {
-        return mUiActivityResult;
+    public void saveNextFrameBufferToDiskForTesting(String filepathBase) {
+        nativeSaveNextFrameBufferToDiskForTesting(mNativeVrShell, filepathBase);
+    }
+
+    public int getLastUiOperationResultForTesting(int actionType) {
+        return mUiOperationResults.get(actionType).intValue();
     }
 
     @CalledByNative
-    public void reportUiActivityResultForTesting(int result) {
-        mUiActivityResult = result;
-        mUiActivityResultCallback.run();
-        mUiActivityResultCallback = null;
+    public void reportUiOperationResultForTesting(int actionType, int result) {
+        mUiOperationResults.set(actionType, result);
+        mUiOperationResultCallbacks.get(actionType).run();
+        mUiOperationResultCallbacks.set(actionType, null);
     }
 
     private native long nativeInit(VrShellDelegate delegate, boolean forWebVR,
@@ -1314,6 +1341,8 @@ public class VrShell extends GvrLayout
             long nativeVrShell, int elementName, int actionType, float x, float y);
     private native void nativeSetUiExpectingActivityForTesting(
             long nativeVrShell, int quiescenceTimeoutMs);
+    private native void nativeSaveNextFrameBufferToDiskForTesting(
+            long nativeVrShell, String filepathBase);
     private native void nativeResumeContentRendering(long nativeVrShell);
     private native void nativeOnOverlayTextureEmptyChanged(long nativeVrShell, boolean empty);
 }

@@ -77,6 +77,7 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
   void PerformControllerActionForTesting(ControllerTestInput controller_input);
   void SetUiExpectingActivityForTesting(
       UiTestActivityExpectation ui_expectation);
+  void SaveNextFrameBufferToDiskForTesting(std::string filepath_base);
   void AcceptDoffPromptForTesting();
   void ConnectPresentingService(
       device::mojom::VRDisplayInfoPtr display_info,
@@ -108,6 +109,7 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
   void ReportUiStatusForTesting(const base::TimeTicks& current_time,
                                 bool ui_updated);
   void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
+  void ReportFrameBufferDumpForTesting();
 
   std::unique_ptr<UiInterface> ui_;
   std::unique_ptr<SchedulerDelegate> scheduler_delegate_;
@@ -115,6 +117,7 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
   std::unique_ptr<InputDelegate> input_delegate_;
   std::unique_ptr<InputDelegate> input_delegate_for_testing_;
   bool using_input_delegate_for_testing_ = false;
+  std::string frame_buffer_dump_filepath_base_;
 
   std::unique_ptr<PlatformUiInputDelegate> vr_dialog_input_delegate_;
 

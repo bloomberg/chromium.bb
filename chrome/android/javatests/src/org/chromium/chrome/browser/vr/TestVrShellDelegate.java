@@ -94,12 +94,18 @@ public class TestVrShellDelegate extends VrShellDelegate {
         getVrShell().performControllerActionForTesting(elementName, actionType, position);
     }
 
-    public void setUiExpectingActivityForTesting(int quiescenceTimeoutMs, Runnable resultCallback) {
-        getVrShell().setUiExpectingActivityForTesting(quiescenceTimeoutMs, resultCallback);
+    public void registerUiOperationCallbackForTesting(
+            int actionType, Runnable resultCallback, int quiescenceTimeoutMs) {
+        getVrShell().registerUiOperationCallbackForTesting(
+                actionType, resultCallback, quiescenceTimeoutMs);
     }
 
-    public int getLastUiActivityResultForTesting() {
-        return getVrShell().getLastUiActivityResultForTesting();
+    public void saveNextFrameBufferToDiskForTesting(String filepathBase) {
+        getVrShell().saveNextFrameBufferToDiskForTesting(filepathBase);
+    }
+
+    public int getLastUiOperationResultForTesting(int actionType) {
+        return getVrShell().getLastUiOperationResultForTesting(actionType);
     }
 
     @Override

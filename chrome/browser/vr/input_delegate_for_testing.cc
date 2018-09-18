@@ -52,7 +52,7 @@ void InputDelegateForTesting::OnTriggerEvent(bool pressed) {
 void InputDelegateForTesting::QueueControllerActionForTesting(
     ControllerTestInput controller_input) {
   DCHECK_NE(controller_input.action,
-            VrControllerTestAction::kRevertToRealController);
+            VrControllerTestAction::kRevertToRealInput);
   ControllerModel controller_model;
   auto target_point = ui_->GetTargetPointForTesting(
       controller_input.element_name, controller_input.position);

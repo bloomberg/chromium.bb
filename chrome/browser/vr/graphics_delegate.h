@@ -62,6 +62,8 @@ class VR_EXPORT GraphicsDelegate {
   // These methods return true when succeeded.
   virtual bool Initialize(const scoped_refptr<gl::GLSurface>& surface) = 0;
   virtual bool RunInSkiaContext(base::OnceClosure callback) = 0;
+
+  virtual void SetFrameDumpFilepathBase(std::string& filepath_base) = 0;
 };
 
 }  // namespace vr

@@ -76,6 +76,7 @@ void GlRenderer::GetContentQuadDrawParams(Transform* uv_transform,
 int GlRenderer::GetContentBufferWidth() {
   return 0;
 }
+void GlRenderer::SetFrameDumpFilepathBase(std::string& filepath_base) {}
 
 void GlRenderer::RenderFrame() {
   // Checking and clearing GL errors can be expensive, but we can afford to do
