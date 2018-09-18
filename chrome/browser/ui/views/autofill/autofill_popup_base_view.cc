@@ -203,6 +203,7 @@ void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   popup_bounds.Inset(-GetWidget()->GetRootView()->border()->GetInsets());
   GetWidget()->SetBounds(popup_bounds);
 
+  Layout();
   SetClipPath();
   SchedulePaint();
 }
