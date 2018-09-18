@@ -26,18 +26,21 @@ const char kPreferredLibraryPath[] = "/system/chrome/lib/processors";
 const char kPreferredOemLibraryPath[] = "/oem_cast_shlibs/processors";
 
 base::FilePath FindLibrary(const std::string& library_name) {
-  base::FilePath path(kPreferredLibraryPath + library_name);
-  if (base::PathExists(path)) {
-    return path;
+  base::FilePath relative_path(library_name);
+  base::FilePath full_path(kPreferredLibraryPath);
+  full_path = full_path.Append(relative_path);
+  if (base::PathExists(full_path)) {
+    return full_path;
   }
-  path = base::FilePath(kPreferredOemLibraryPath + library_name);
-  if (base::PathExists(path)) {
-    return path;
+  full_path = base::FilePath(kPreferredOemLibraryPath);
+  full_path = full_path.Append(relative_path);
+  if (base::PathExists(full_path)) {
+    return full_path;
   }
   LOG(WARNING) << library_name << " not found in " << kPreferredLibraryPath
                << " or " << kPreferredOemLibraryPath
                << ". Prefer storing post processors in these directories.";
-  return base::FilePath(library_name);
+  return relative_path;
 }
 
 }  // namespace
@@ -58,7 +61,7 @@ std::unique_ptr<AudioPostProcessor2> PostProcessorFactory::CreatePostProcessor(
   base::FilePath path = FindLibrary(library_name);
   libraries_.push_back(std::make_unique<base::ScopedNativeLibrary>(path));
   CHECK(libraries_.back()->is_valid())
-      << "Could not open post processing library " << library_name;
+      << "Could not open post processing library " << path;
 
   auto v2_create = reinterpret_cast<CreatePostProcessor2Function>(
       libraries_.back()->GetFunctionPointer(kV2SoCreateFunction));
@@ -104,6 +107,11 @@ bool PostProcessorFactory::IsPostProcessorLibrary(
 // static
 base::FilePath const PostProcessorFactory::GetPostProcessorDirectory() {
   return base::FilePath(kPreferredLibraryPath);
+}
+
+// static
+base::FilePath const PostProcessorFactory::GetOemPostProcessorDirectory() {
+  return base::FilePath(kPreferredOemLibraryPath);
 }
 
 }  // namespace media
