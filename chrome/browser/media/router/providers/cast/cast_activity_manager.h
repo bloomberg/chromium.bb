@@ -182,7 +182,7 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer {
   CastActivityManager(MediaSinkServiceBase* media_sink_service,
                       cast_channel::CastMessageHandler* message_handler,
                       mojom::MediaRouter* media_router,
-                      DataDecoder* data_decoder,
+                      std::unique_ptr<DataDecoder> data_decoder,
                       const std::string& hash_token);
   ~CastActivityManager() override;
 
@@ -250,8 +250,8 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer {
   MediaSinkServiceBase* const media_sink_service_;
   cast_channel::CastMessageHandler* const message_handler_;
   mojom::MediaRouter* const media_router_;
-  DataDecoder* const data_decoder_;
 
+  const std::unique_ptr<DataDecoder> data_decoder_;
   const std::string hash_token_;
 
   SEQUENCE_CHECKER(sequence_checker_);

@@ -194,12 +194,12 @@ CastActivityManager::CastActivityManager(
     MediaSinkServiceBase* media_sink_service,
     cast_channel::CastMessageHandler* message_handler,
     mojom::MediaRouter* media_router,
-    DataDecoder* data_decoder,
+    std::unique_ptr<DataDecoder> data_decoder,
     const std::string& hash_token)
     : media_sink_service_(media_sink_service),
       message_handler_(message_handler),
       media_router_(media_router),
-      data_decoder_(data_decoder),
+      data_decoder_(std::move(data_decoder)),
       hash_token_(hash_token),
       weak_ptr_factory_(this) {
   DCHECK(media_sink_service_);
@@ -236,8 +236,8 @@ void CastActivityManager::LaunchSession(
     mojom::MediaRouteProvider::CreateRouteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(imcheng): If the sink is already associated with a route, then the
-  // MRP needs to terminate the route before proceeding.
+  // If the sink is already associated with a route, then it will be removed
+  // when the receiver sends an updated RECEIVER_STATUS message.
   MediaSource source(cast_source.source_id());
   const MediaSink::Id& sink_id = sink.sink().id();
   MediaRoute::Id route_id =
@@ -253,7 +253,7 @@ void CastActivityManager::LaunchSession(
   route.set_incognito(incognito);
 
   auto activity = std::make_unique<CastActivityRecord>(
-      route, media_sink_service_, message_handler_, data_decoder_);
+      route, media_sink_service_, message_handler_, data_decoder_.get());
   CastActivityRecord* activity_ptr = activity.get();
   activities_.emplace(route_id, std::move(activity));
   NotifyAllOnRoutesUpdated();

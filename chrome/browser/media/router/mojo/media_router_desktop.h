@@ -136,6 +136,9 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   void OnFirewallCheckComplete(bool firewall_can_use_local_ports);
 #endif
 
+  // Gets the per-profile Cast SDK hash token used by Cast and DIAL MRPs.
+  std::string GetHashToken();
+
   // MediaRouteProvider proxy that forwards calls to the MRPM in the component
   // extension.
   std::unique_ptr<ExtensionMediaRouteProviderProxy> extension_provider_proxy_;

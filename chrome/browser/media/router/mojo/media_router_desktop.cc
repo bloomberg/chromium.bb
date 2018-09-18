@@ -28,6 +28,17 @@
 
 namespace media_router {
 
+namespace {
+
+// Returns the Connector object for the current process. It is the caller's
+// responsibility to clone the returned object to be used in another thread.
+service_manager::Connector* GetConnector() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return content::ServiceManagerConnection::GetForProcess()->GetConnector();
+}
+
+}  // namespace
+
 MediaRouterDesktop::~MediaRouterDesktop() = default;
 
 // static
@@ -253,6 +264,11 @@ void MediaRouterDesktop::InitializeWiredDisplayMediaRouteProvider() {
                              base::DoNothing());
 }
 
+std::string MediaRouterDesktop::GetHashToken() {
+  return GetReceiverIdHashToken(
+      Profile::FromBrowserContext(context())->GetPrefs());
+}
+
 void MediaRouterDesktop::InitializeCastMediaRouteProvider() {
   auto task_runner =
       cast_channel::CastSocketService::GetInstance()->task_runner();
@@ -266,7 +282,8 @@ void MediaRouterDesktop::InitializeCastMediaRouteProvider() {
               media_router_ptr.PassInterface(),
               media_sink_service_->GetCastMediaSinkServiceImpl(),
               media_sink_service_->cast_app_discovery_service(),
-              GetCastMessageHandler(), task_runner),
+              GetCastMessageHandler(), GetConnector(), GetHashToken(),
+              task_runner),
           base::OnTaskRunnerDeleter(task_runner));
   RegisterMediaRouteProvider(MediaRouteProviderId::CAST,
                              std::move(cast_provider_ptr), base::DoNothing());
@@ -279,18 +296,14 @@ void MediaRouterDesktop::InitializeDialMediaRouteProvider() {
 
   auto* dial_media_sink_service =
       media_sink_service_->GetDialMediaSinkServiceImpl();
-  std::string receiver_id_hash_token = GetReceiverIdHashToken(
-      Profile::FromBrowserContext(context())->GetPrefs());
   auto task_runner = dial_media_sink_service->task_runner();
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
   dial_provider_ =
       std::unique_ptr<DialMediaRouteProvider, base::OnTaskRunnerDeleter>(
           new DialMediaRouteProvider(mojo::MakeRequest(&dial_provider_ptr),
                                      media_router_ptr.PassInterface(),
-                                     dial_media_sink_service, connector,
-                                     receiver_id_hash_token, task_runner),
+                                     dial_media_sink_service, GetConnector(),
+                                     GetHashToken(), task_runner),
           base::OnTaskRunnerDeleter(task_runner));
   RegisterMediaRouteProvider(MediaRouteProviderId::DIAL,
                              std::move(dial_provider_ptr), base::DoNothing());
