@@ -435,6 +435,31 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
   return path;
 }
 
+// Returns the inverse of the slope of the diagonal portion of the tab outer
+// border.  (This is a positive value, so it's specifically for the slope of the
+// leading edge.)
+//
+// This returns the inverse (dx/dy instead of dy/dx) because we use exact values
+// for the vertical distances between points and then compute the horizontal
+// deltas from those.
+float GetInverseDiagonalSlope() {
+  // In refresh, tab sides do not have slopes, so no one should call this.
+  DCHECK(!MD::IsRefreshUi());
+
+  // This is computed from the border path as follows:
+  // * The endcap width is enough for the whole stroke outer curve, i.e. the
+  //   side diagonal plus the curves on both its ends.
+  // * The bottom and top curve together are 4 DIP wide, so the diagonal is
+  //   (endcap width - 4) DIP wide.
+  // * The bottom and top curve are each 1.5 px high.  Additionally, there is an
+  //   extra 1 px below the bottom curve and (scale - 1) px above the top curve,
+  //   so the diagonal is ((height - 1.5 - 1.5) * scale - 1 - (scale - 1)) px
+  //   high.  Simplifying this gives (height - 4) * scale px, or (height - 4)
+  //   DIP.
+  return (GetTabEndcapWidthForPainting() - 4) /
+         (GetLayoutConstant(TAB_HEIGHT) - 4);
+}
+
 // Returns a path corresponding to the tab's outer border for a given tab
 // |scale| and |bounds|.  If |unscale_at_end| is true, this path will be
 // normalized to a 1x scale by scaling by 1/scale before returning.  If
@@ -466,7 +491,7 @@ gfx::Path GetBorderPath(float scale,
       // Create the vertical extension by extending the side diagonals until
       // they reach the top of the bounds.
       const float dy = 2.5 * scale - stroke_thickness;
-      const float dx = Tab::GetInverseDiagonalSlope() * dy;
+      const float dx = GetInverseDiagonalSlope() * dy;
       path.rLineTo(dx, -dy);
       path.lineTo(right - (endcap_width - 2) * scale - dx, 0);
       path.rLineTo(dx, dy);
@@ -1214,25 +1239,6 @@ int Tab::GetStandardWidth() {
 int Tab::GetPinnedWidth() {
   constexpr int kTabPinnedContentWidth = 23;
   return kTabPinnedContentWidth + GetContentsHorizontalInsets().width();
-}
-
-// static
-float Tab::GetInverseDiagonalSlope() {
-  // In refresh, tab sides do not have slopes, so no one should call this.
-  DCHECK(!MD::IsRefreshUi());
-
-  // This is computed from the border path as follows:
-  // * The endcap width is enough for the whole stroke outer curve, i.e. the
-  //   side diagonal plus the curves on both its ends.
-  // * The bottom and top curve together are 4 DIP wide, so the diagonal is
-  //   (endcap width - 4) DIP wide.
-  // * The bottom and top curve are each 1.5 px high.  Additionally, there is an
-  //   extra 1 px below the bottom curve and (scale - 1) px above the top curve,
-  //   so the diagonal is ((height - 1.5 - 1.5) * scale - 1 - (scale - 1)) px
-  //   high.  Simplifying this gives (height - 4) * scale px, or (height - 4)
-  //   DIP.
-  return (GetTabEndcapWidthForPainting() - 4) /
-         (GetLayoutConstant(TAB_HEIGHT) - 4);
 }
 
 // static

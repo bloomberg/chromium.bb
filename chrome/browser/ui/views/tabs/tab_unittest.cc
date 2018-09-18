@@ -62,7 +62,6 @@ class FakeTabController : public TabController {
   bool IsFirstVisibleTab(const Tab* tab) const override { return false; }
   bool IsLastVisibleTab(const Tab* tab) const override { return false; }
   bool SingleTabMode() const override { return false; }
-  bool IsIncognito() const override { return false; }
   void MaybeStartDrag(
       Tab* tab,
       const ui::LocatedEvent& event,
@@ -83,9 +82,7 @@ class FakeTabController : public TabController {
       gfx::Path* clip) override {
     return true;
   }
-  int GetStrokeThickness() const override {
-    return ui::MaterialDesignController::IsRefreshUi() ? 0 : 1;
-  }
+  int GetStrokeThickness() const override { return 0; }
   bool CanPaintThrobberToLayer() const override {
     return paint_throbber_to_layer_;
   }
@@ -689,11 +686,6 @@ TEST_F(TabTest, ExtraLeftPaddingShownOnSiteWithoutFavicon) {
 }
 
 TEST_F(TabTest, ExtraAlertPaddingNotShownOnSmallActiveTab) {
-  if (!ui::MaterialDesignController::IsRefreshUi()) {
-    // Extra alert padding not shown pre-Refresh.
-    return;
-  }
-
   Widget widget;
   InitWidget(&widget);
 

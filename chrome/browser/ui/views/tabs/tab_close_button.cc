@@ -30,8 +30,6 @@
 #include "ui/aura/env.h"
 #endif
 
-using MD = ui::MaterialDesignController;
-
 namespace {
 constexpr int kGlyphWidth = 16;
 constexpr int kTouchGlyphWidth = 24;
@@ -55,7 +53,9 @@ TabCloseButton::~TabCloseButton() {}
 
 // static
 int TabCloseButton::GetWidth() {
-  return MD::IsTouchOptimizedUiEnabled() ? kTouchGlyphWidth : kGlyphWidth;
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+             ? kTouchGlyphWidth
+             : kGlyphWidth;
 }
 
 void TabCloseButton::SetIconColors(SkColor icon_color,

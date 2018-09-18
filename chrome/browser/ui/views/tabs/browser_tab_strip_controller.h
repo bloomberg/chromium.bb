@@ -70,7 +70,6 @@ class BrowserTabStripController : public TabStripController,
   NewTabButtonPosition GetNewTabButtonPosition() const override;
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
-  bool IsIncognito() override;
   void StackedLayoutMaybeChanged() override;
   bool IsSingleTabModeAvailable() override;
   bool ShouldDrawStrokes() const override;
