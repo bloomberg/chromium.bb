@@ -28,7 +28,13 @@ enum class DownloadMimeTypeResult {
   PkPass = 1,
   // application/x-apple-aspen-config MIME type.
   iOSMobileConfig = 2,
-  kMaxValue = iOSMobileConfig,
+  // application/zip MIME type.
+  ZipArchive = 3,
+  // application/x-msdownload MIME type (.exe file).
+  MicrosoftApplication = 4,
+  // application/vnd.android.package-archive MIME type (.apk file).
+  AndroidPackageArchive = 5,
+  kMaxValue = AndroidPackageArchive,
 };
 
 // Keyed Service which acts as web::DownloadController delegate and routes

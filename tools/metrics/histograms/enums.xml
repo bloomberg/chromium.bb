@@ -11997,6 +11997,13 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="iOS mobile config">
     application/x-apple-aspen-config MIME type.
   </int>
+  <int value="3" label="Zip Archive">application/zip MIME type.</int>
+  <int value="4" label="Microsoft Application (.exe file)">
+    application/x-msdownload MIME type.
+  </int>
+  <int value="5" label="Android Package Archive (.apk file)">
+    application/vnd.android.package-archive MIME type.
+  </int>
 </enum>
 
 <enum name="DownloadNotificationForegroundLifecycle">
