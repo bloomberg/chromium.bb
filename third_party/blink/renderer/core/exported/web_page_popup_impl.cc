@@ -266,22 +266,13 @@ WebPagePopupImpl::~WebPagePopupImpl() {
   DCHECK(!page_);
 }
 
-bool WebPagePopupImpl::Initialize(WebViewImpl* web_view,
+void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
                                   PagePopupClient* popup_client) {
   DCHECK(web_view);
   DCHECK(popup_client);
   web_view_ = web_view;
   popup_client_ = popup_client;
 
-  if (!widget_client_ || !InitializePage())
-    return false;
-  widget_client_->Show(WebNavigationPolicy());
-  SetFocus(true);
-
-  return true;
-}
-
-bool WebPagePopupImpl::InitializePage() {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
   chrome_client_ = PagePopupChromeClient::Create(this);
@@ -327,8 +318,10 @@ bool WebPagePopupImpl::InitializePage() {
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   popup_client_->WriteDocument(data.get());
   frame->SetPageZoomFactor(popup_client_->ZoomFactor());
-  frame->ForceSynchronousDocumentInstall("text/html", data);
-  return true;
+  frame->ForceSynchronousDocumentInstall("text/html", std::move(data));
+
+  widget_client_->Show(WebNavigationPolicy());
+  SetFocus(true);
 }
 
 void WebPagePopupImpl::PostMessageToPopup(const String& message) {
@@ -379,16 +372,12 @@ void WebPagePopupImpl::SetRootLayer(cc::Layer* layer) {
 }
 
 void WebPagePopupImpl::InitializeLayerTreeView() {
-  TRACE_EVENT0("blink", "WebPagePopupImpl::initializeLayerTreeView");
+  TRACE_EVENT0("blink", "WebPagePopupImpl::InitializeLayerTreeView");
   layer_tree_view_ = widget_client_->InitializeLayerTreeView();
-  if (layer_tree_view_) {
-    layer_tree_view_->SetVisible(true);
-    animation_host_ = std::make_unique<CompositorAnimationHost>(
-        layer_tree_view_->CompositorAnimationHost());
-    page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
-  } else {
-    animation_host_ = nullptr;
-  }
+  layer_tree_view_->SetVisible(true);
+  animation_host_ = std::make_unique<CompositorAnimationHost>(
+      layer_tree_view_->CompositorAnimationHost());
+  page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
 }
 
 void WebPagePopupImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(

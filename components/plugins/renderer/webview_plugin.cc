@@ -313,6 +313,11 @@ bool WebViewPlugin::WebViewHelper::AllowsBrokenNullLayerTreeView() const {
   return true;
 }
 
+blink::WebLayerTreeView*
+WebViewPlugin::WebViewHelper::InitializeLayerTreeView() {
+  return nullptr;
+}
+
 void WebViewPlugin::WebViewHelper::DidInvalidateRect(const WebRect& rect) {
   if (plugin_->container_)
     plugin_->container_->InvalidateRect(rect);

@@ -594,16 +594,29 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
 
   RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
 
+  blink::scheduler::WebThreadScheduler* main_thread_scheduler = nullptr;
+  if (render_thread_impl)
+    main_thread_scheduler = render_thread_impl->GetWebMainThreadScheduler();
   blink::scheduler::WebThreadScheduler* compositor_thread_scheduler =
       blink::scheduler::WebThreadScheduler::CompositorThreadScheduler();
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_input_task_runner;
+  // The |compositor_thread_scheduler| can be null in tests without a compositor
+  // thread.
+  if (compositor_thread_scheduler) {
+    // When the RenderWidget is for a frame (ie for a local root) then it uses
+    // the compositor thread task runner. When it is for a popup, it does not.
+    // When |owner_delegate_| is true, the RenderWidget is attached to the main
+    // Frame (which makes it a local root). Otherwise, if it is |for_oopif_|
+    // then it is a local root (a local Frame) sitting below a remote Frame.
+    if (owner_delegate_ || for_oopif_) {
+      compositor_input_task_runner =
+          compositor_thread_scheduler->InputTaskRunner();
+    }
+  }
 
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
-      weak_ptr_factory_.GetWeakPtr(),
-      compositor_thread_scheduler && layer_tree_view_
-          ? compositor_thread_scheduler->InputTaskRunner()
-          : nullptr,
-      render_thread_impl ? render_thread_impl->GetWebMainThreadScheduler()
-                         : nullptr);
+      weak_ptr_factory_.GetWeakPtr(), std::move(compositor_input_task_runner),
+      main_thread_scheduler);
 
   show_callback_ = std::move(show_callback);
 

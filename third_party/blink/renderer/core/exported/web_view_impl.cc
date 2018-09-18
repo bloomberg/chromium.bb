@@ -343,7 +343,21 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   CoreInitializer::GetInstance().ProvideModulesToPage(*page_, client_);
   SetVisibilityState(visibility_state, true);
 
-  InitializeLayerTreeView();
+  // TODO(dcheng): All WebViewImpls should have an associated LayerTreeView,
+  // but for various reasons, that's not the case... WebView plugin, printing,
+  // workers, and tests don't use a compositor in their WebViews. Sometimes
+  // they avoid the compositor by using a null client, and sometimes by having
+  // the client return a null compositor. We should make things more consistent
+  // and clear.
+  if (WidgetClient()) {
+    if (WidgetClient()->AllowsBrokenNullLayerTreeView()) {
+      // For some reason this was not set when WidgetClient() is not provided,
+      // even though there will be no LayerTreeView in that case either.
+      page_->GetSettings().SetAcceleratedCompositingEnabled(false);
+    } else {
+      InitializeLayerTreeView();
+    }
+  }
 
   dev_tools_emulator_ = DevToolsEmulator::Create(this);
 
@@ -1248,10 +1262,7 @@ PagePopup* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
   if (!popup_widget)
     return nullptr;
   page_popup_ = ToWebPagePopupImpl(popup_widget);
-  if (!page_popup_->Initialize(this, client)) {
-    page_popup_->ClosePopup();
-    page_popup_ = nullptr;
-  }
+  page_popup_->Initialize(this, client);
   EnablePopupMouseWheelEventListener(frame);
   return page_popup_.get();
 }
@@ -3251,30 +3262,17 @@ void WebViewImpl::ScheduleAnimationForWidget() {
 }
 
 void WebViewImpl::InitializeLayerTreeView() {
-  if (WidgetClient()) {
-    layer_tree_view_ = WidgetClient()->InitializeLayerTreeView();
-    // TODO(dcheng): All WebViewImpls should have an associated LayerTreeView,
-    // but for various reasons, that's not the case...
-    page_->GetSettings().SetAcceleratedCompositingEnabled(layer_tree_view_);
-    if (layer_tree_view_) {
-      if (Platform::Current()->IsThreadedAnimationEnabled()) {
-        animation_host_ = std::make_unique<CompositorAnimationHost>(
-            layer_tree_view_->CompositorAnimationHost());
-      }
-
-      page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
-      // We don't yet have a page loaded at this point of the initialization of
-      // WebViewImpl, so don't allow cc to commit any frames Blink might
-      // try to create in the meantime.
-      scoped_defer_commits_ = layer_tree_view_->DeferCommits();
-    }
+  layer_tree_view_ = WidgetClient()->InitializeLayerTreeView();
+  if (Platform::Current()->IsThreadedAnimationEnabled()) {
+    animation_host_ = std::make_unique<CompositorAnimationHost>(
+        layer_tree_view_->CompositorAnimationHost());
   }
 
-  // FIXME: only unittests, click to play, Android printing, and printing (for
-  // headers and footers) make this assert necessary. We should make them not
-  // hit this code and then delete allowsBrokenNullLayerTreeView.
-  DCHECK(layer_tree_view_ || !client_ ||
-         client_->WidgetClient()->AllowsBrokenNullLayerTreeView());
+  page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
+  // We don't yet have a page loaded at this point of the initialization of
+  // WebViewImpl, so don't allow cc to commit any frames Blink might
+  // try to create in the meantime.
+  scoped_defer_commits_ = layer_tree_view_->DeferCommits();
 }
 
 void WebViewImpl::ApplyViewportDeltas(
