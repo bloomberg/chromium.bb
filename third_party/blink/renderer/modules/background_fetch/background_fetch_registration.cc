@@ -178,6 +178,24 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  // TODO(crbug.com/875201): Update this check once we support access to active
+  // fetches.
+  if (result_ == mojom::BackgroundFetchResult::UNSET) {
+    resolver->Reject(DOMException::Create(
+        DOMExceptionCode::kInvalidStateError,
+        "Access to records for in-progress background fetches is not yet "
+        "implemented. Please see crbug.com/875201 for more details."));
+    return promise;
+  }
+
+  if (!records_available_) {
+    resolver->Reject(DOMException::Create(
+        DOMExceptionCode::kInvalidStateError,
+        "The records associated with this background fetch are no longer "
+        "available."));
+    return promise;
+  }
+
   // Convert |request| to WebServiceWorkerRequest.
   base::Optional<WebServiceWorkerRequest> request_to_match;
   if (request.has_value()) {
