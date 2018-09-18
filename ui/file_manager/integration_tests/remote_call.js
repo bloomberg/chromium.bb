@@ -437,6 +437,104 @@ RemoteCallFilesApp.prototype.waitUntilCurrentDirectoryIsChanged = function(
 };
 
 /**
+ * Expands tree item.
+ */
+RemoteCallFilesApp.prototype.expandTreeItemInDirectoryTree = function(
+    windowId, query) {
+  return this.waitForElement(windowId, query)
+      .then(() => {
+        return this.callRemoteTestUtil(
+            'queryAllElements', windowId, [`${query}[expanded]`]);
+      })
+      .then(elements => {
+        // If it's already expanded, do nothing.
+        if (elements.length > 0)
+          return;
+
+        // Focus to directory tree.
+        return this.callRemoteTestUtil('focus', windowId, ['#directory-tree'])
+            .then(() => {
+              // Expand directory volume.
+              return this.callRemoteTestUtil(
+                  'fakeMouseClick', windowId, [`${query} .expand-icon`]);
+            });
+      });
+};
+
+/**
+ * Expands directory tree for specified path.
+ */
+RemoteCallFilesApp.prototype.expandDirectoryTreeFor = function(
+    windowId, path, volumeType = 'downloads') {
+  return this.expandDirectoryTreeForInternal_(
+      windowId, path.split('/'), 0, volumeType);
+};
+
+/**
+ * Internal function for expanding directory tree for specified path.
+ */
+RemoteCallFilesApp.prototype.expandDirectoryTreeForInternal_ = function(
+    windowId, components, index, volumeType) {
+  if (index >= components.length - 1)
+    return Promise.resolve();
+
+  if (index === 0) {
+    return this.expandVolumeInDirectoryTree(windowId, volumeType).then(() => {
+      return this.expandDirectoryTreeForInternal_(
+          windowId, components, index + 1, volumeType);
+    });
+  }
+  const path = `/${components.slice(1, index + 1).join('/')}`;
+  return this
+      .expandTreeItemInDirectoryTree(
+          windowId, `[full-path-for-testing="${path}"]`)
+      .then(() => {
+        return this.expandDirectoryTreeForInternal_(
+            windowId, components, index + 1, volumeType);
+      });
+};
+
+/**
+ * Expands download volume in directory tree.
+ */
+RemoteCallFilesApp.prototype.expandDownloadVolumeInDirectoryTree = function(
+    windowId) {
+  return this.expandVolumeInDirectoryTree(windowId, 'downloads');
+};
+
+/**
+ * Expands download volume in directory tree.
+ */
+RemoteCallFilesApp.prototype.expandVolumeInDirectoryTree = function(
+    windowId, volumeType) {
+  return this.expandTreeItemInDirectoryTree(
+      windowId, `[volume-type-for-testing="${volumeType}"]`);
+};
+
+/**
+ * Navigates to specified directory on the specified volume by using directory
+ * tree.
+ */
+RemoteCallFilesApp.prototype.navigateWithDirectoryTree = function(
+    windowId, path, rootLabel, volumeType = 'downloads') {
+  return this.expandDirectoryTreeFor(windowId, path, volumeType)
+      .then(() => {
+        // Select target path.
+        return this.callRemoteTestUtil(
+            'fakeMouseClick', windowId, [`[full-path-for-testing="${path}"]`]);
+      })
+      .then(() => {
+        if (rootLabel === 'My Drive') {
+          path = path.replace(/^\/root\//, '/');
+        }
+
+        // Wait until the Files app is navigated to the path.
+        return this.waitUntilCurrentDirectoryIsChanged(
+            windowId, `/${rootLabel}${path}`);
+      });
+};
+
+/**
  * Class to manipulate the window in the remote extension.
  *
  * @param {string} extensionId ID of extension to be manipulated.

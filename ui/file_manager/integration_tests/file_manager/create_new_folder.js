@@ -199,20 +199,26 @@ testcase.createFolderDownloads = function() {
 testcase.createFolderNestedDownloads = function() {
   let appId;
 
-  const promise = new Promise(function(resolve) {
-    setupAndWaitUntilReady(
-        null, RootPath.DOWNLOADS, resolve, BASIC_LOCAL_ENTRY_SET, []);
-  }).then(function(results) {
-    appId = results.windowId;
-    return expandRoot(appId, TREEITEM_DOWNLOADS);
-  }).then(function() {
-    return navigateWithDirectoryTree(appId, '/photos', 'Downloads');
-  }).then(function() {
-    return remoteCall.waitForFiles(
-        appId, [], {ignoreLastModifiedTime: true});
-  }).then(function() {
-    return createNewFolder(appId, [], TREEITEM_DOWNLOADS);
-  });
+  const promise =
+      new Promise(function(resolve) {
+        setupAndWaitUntilReady(
+            null, RootPath.DOWNLOADS, resolve, BASIC_LOCAL_ENTRY_SET, []);
+      })
+          .then(function(results) {
+            appId = results.windowId;
+            return expandRoot(appId, TREEITEM_DOWNLOADS);
+          })
+          .then(function() {
+            return remoteCall.navigateWithDirectoryTree(
+                appId, '/photos', 'Downloads');
+          })
+          .then(function() {
+            return remoteCall.waitForFiles(
+                appId, [], {ignoreLastModifiedTime: true});
+          })
+          .then(function() {
+            return createNewFolder(appId, [], TREEITEM_DOWNLOADS);
+          });
 
   testPromise(promise);
 };
