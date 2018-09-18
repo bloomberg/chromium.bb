@@ -113,9 +113,6 @@ GFX_EXPORT bool IsDark(SkColor color);
 // white or black that will be alpha-blended into |color|.
 GFX_EXPORT SkColor BlendTowardOppositeLuma(SkColor color, SkAlpha alpha);
 
-// This is a copy of |getThemedAssetColor()| in ColorUtils.java.
-GFX_EXPORT SkColor GetThemedAssetColor(SkColor theme_color);
-
 // Given a foreground and background color, try to return a foreground color
 // that is "readable" over the background color by luma-inverting the foreground
 // color and then using PickContrastingColor() to pick the one with greater
