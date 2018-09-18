@@ -13,6 +13,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/chrome_extension_browser_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/pref_names.h"
@@ -30,8 +31,8 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -307,6 +308,12 @@ content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
               GURL(extension_urls::GetWebstoreExtensionsCategoryURL()),
               g_browser_process->GetApplicationLocale())
               .spec()));
+  source->AddString(
+      "hostPermissionsLearnMoreLink",
+      l10n_util::GetStringFUTF16(
+          IDS_MD_EXTENSIONS_HOST_PERMISSIONS_LEARN_MORE,
+          base::ASCIIToUTF16(
+              chrome_extension_constants::kRuntimeHostPermissionsHelpURL)));
 
   source->AddBoolean(kInDevModeKey, in_dev_mode);
   source->AddString(kLoadTimeClassesKey, GetLoadTimeClasses(in_dev_mode));
