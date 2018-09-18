@@ -321,7 +321,7 @@ class GclientApi(recipe_api.RecipeApi):
     root =  self.get_repo_path(repo_url, gclient_config=cfg)
 
     # This is wrong, but that's what a ton of recipe tests expect today
-    root = root or cfg.solutions[0]
+    root = root or cfg.solutions[0].name
 
     return root
 
