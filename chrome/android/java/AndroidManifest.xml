@@ -810,12 +810,6 @@ by a child template that "extends" this file.
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <provider android:name="org.chromium.chrome.browser.superviseduser.SupervisedUserContentProvider"
-            android:authorities="{{ manifest_package }}.SupervisedUserProvider"
-            android:permission="android.permission.INTERNET"
-            android:exported="true">
-        </provider>
-
         <!-- Sync adapter for browser invalidation. -->
         <service android:name="org.chromium.chrome.browser.invalidation.ChromeBrowserSyncAdapterService"
             android:exported="false">
