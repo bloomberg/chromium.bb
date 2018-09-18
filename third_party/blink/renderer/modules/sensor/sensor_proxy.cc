@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_reading_remapper.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

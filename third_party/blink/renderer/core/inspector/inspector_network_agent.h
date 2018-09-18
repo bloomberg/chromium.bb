@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Network.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace network {
@@ -51,6 +52,7 @@ class WebSocketHandshakeRequest;
 
 namespace blink {
 
+class BlobDataHandle;
 class Document;
 class DocumentLoader;
 class ExecutionContext;
@@ -66,6 +68,7 @@ class ThreadableLoaderClient;
 class XHRReplayData;
 class XMLHttpRequest;
 class WorkerGlobalScope;
+enum class ResourceRequestBlockedReason;
 enum class ResourceType : uint8_t;
 
 class CORE_EXPORT InspectorNetworkAgent final

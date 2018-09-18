@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_watch_options.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace {
 const char kJsonMimePostfix[] = "+json";
