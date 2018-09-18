@@ -66,16 +66,16 @@ gfx::Size DemoWindow::GetSize() {
 }
 
 void DemoWindow::Start() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DemoWindow::StartOnGpu, weak_ptr_factory_.GetWeakPtr()));
+  StartRendererIfNecessary();
 }
 
 void DemoWindow::Quit() {
   window_manager_->Quit();
 }
 
-void DemoWindow::OnBoundsChanged(const gfx::Rect& new_bounds) {}
+void DemoWindow::OnBoundsChanged(const gfx::Rect& new_bounds) {
+  StartRendererIfNecessary();
+}
 
 void DemoWindow::OnDamageRect(const gfx::Rect& damaged_region) {}
 
@@ -105,7 +105,9 @@ void DemoWindow::OnAcceleratedWidgetDestroyed() {
 
 void DemoWindow::OnActivationChanged(bool active) {}
 
-void DemoWindow::StartOnGpu() {
+void DemoWindow::StartRendererIfNecessary() {
+  if (renderer_ || GetSize().IsEmpty())
+    return;
   renderer_ =
       renderer_factory_->CreateRenderer(GetAcceleratedWidget(), GetSize());
   if (!renderer_->Initialize())
