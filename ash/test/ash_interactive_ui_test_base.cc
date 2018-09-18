@@ -4,11 +4,13 @@
 
 #include "ash/test/ash_interactive_ui_test_base.h"
 
+#include "ash/test/ui_controls_factory_ash.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "mojo/core/embedder/embedder.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/test/ui_controls_aura.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -49,6 +51,7 @@ void AshInteractiveUITestBase::SetUp() {
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_NONE);
   env_ = aura::Env::CreateInstance();
+  ui_controls::InstallUIControlsAura(test::CreateAshUIControls());
 
   AshTestBase::SetUp();
 }

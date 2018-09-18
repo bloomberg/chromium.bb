@@ -11,7 +11,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/event_injector.mojom.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/aura_test_utils.h"
@@ -19,6 +18,8 @@
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls_aura.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/events_test_utils.h"
 
@@ -122,15 +123,17 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   bool SendMouseMoveNotifyWhenDone(long screen_x,
                                    long screen_y,
                                    base::OnceClosure closure) override {
-    gfx::Point root_location(screen_x, screen_y);
-    aura::client::ScreenPositionClient* screen_position_client =
-        aura::client::GetScreenPositionClient(host_->window());
-    if (screen_position_client) {
-      screen_position_client->ConvertPointFromScreen(host_->window(),
-                                                     &root_location);
+    // The location needs to be in display's coordinate.
+    gfx::Point display_location(screen_x, screen_y);
+    display::Display display;
+    if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(
+            host_->GetDisplayId(), &display)) {
+      LOG(ERROR) << "Failed to see the display for " << host_->GetDisplayId();
+      return false;
     }
+    display_location -= display.bounds().OffsetFromOrigin();
 
-    gfx::Point host_location = root_location;
+    gfx::Point host_location = display_location;
     host_->ConvertDIPToPixels(&host_location);
 
     ui::EventType event_type;
@@ -155,15 +158,17 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                                      int button_state,
                                      base::OnceClosure closure,
                                      int accelerator_state) override {
-    gfx::Point root_location = host_->window()->env()->last_mouse_location();
-    aura::client::ScreenPositionClient* screen_position_client =
-        aura::client::GetScreenPositionClient(host_->window());
-    if (screen_position_client) {
-      screen_position_client->ConvertPointFromScreen(host_->window(),
-                                                     &root_location);
+    // The location needs to be in display's coordinate.
+    gfx::Point display_location = host_->window()->env()->last_mouse_location();
+    display::Display display;
+    if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(
+            host_->GetDisplayId(), &display)) {
+      LOG(ERROR) << "Failed to see the display for " << host_->GetDisplayId();
+      return false;
     }
+    display_location -= display.bounds().OffsetFromOrigin();
 
-    gfx::Point host_location = root_location;
+    gfx::Point host_location = display_location;
     host_->ConvertDIPToPixels(&host_location);
 
     int changed_button_flag = 0;
