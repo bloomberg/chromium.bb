@@ -34,6 +34,10 @@ bool DisableUpdateService() {
 bool ForceUIRefreshPhase1() {
   return false;
 }
+// TODO(crbug.com/885003) : Remove this hook.
+bool ForceWKWebViewSnapshots() {
+  return false;
+}
 void SetUpTestsIfPresent() {}
 void RunTestsIfPresent() {}
 

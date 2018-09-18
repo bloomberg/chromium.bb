@@ -246,6 +246,10 @@ extern const char kWebPaymentsNativeAppsDescription[];
 extern const char kWKHTTPSystemCookieStoreName[];
 extern const char kWKHTTPSystemCookieStoreDescription[];
 
+// Title and description for the flag to use the WKWebView snapshotting API.
+extern const char kWKWebViewSnapshotsName[];
+extern const char kWKWebViewSnapshotsDescription[];
+
 // Please insert your name/description above in alphabetical order.
 
 }  // namespace flag_descriptions

@@ -387,6 +387,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"sso-with-wkwebview", flag_descriptions::kSSOWithWKWebViewName,
      flag_descriptions::kSSOWithWKWebViewDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSSOWithWKWebView)},
+    {"wk-web-view-snapshots", flag_descriptions::kWKWebViewSnapshotsName,
+     flag_descriptions::kWKWebViewSnapshotsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kWKWebViewSnapshots)},
 };
 
 // Add all switches from experimental flags to |command_line|.

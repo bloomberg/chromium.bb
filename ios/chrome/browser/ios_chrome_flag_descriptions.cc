@@ -295,6 +295,10 @@ const char kWKHTTPSystemCookieStoreName[] = "Use WKHTTPSystemCookieStore.";
 const char kWKHTTPSystemCookieStoreDescription[] =
     "Use WKHTTPCookieStore backed store for main context URL requests.";
 
+const char kWKWebViewSnapshotsName[] = "WKWebView Snapshots";
+const char kWKWebViewSnapshotsDescription[] =
+    "When enabled, the WKWebView snapshotting API is used for iOS 11+.";
+
 // Please insert your name/description above in alphabetical order.
 
 }  // namespace flag_descriptions
