@@ -945,6 +945,12 @@ chrome.fileManagerPrivate.sharePathWithCrostini = function(
     entry, callback) {};
 
 /**
+ * Returns list of paths shared with the crostini container.
+ * @param {function(!Array<!Entry>)} callback
+ */
+chrome.fileManagerPrivate.getCrostiniSharedPaths = function(callback) {};
+
+/**
  * Begin installation of a Linux package.
  * @param {!Entry} entry
  * @param {function(!chrome.fileManagerPrivate.InstallLinuxPackageResponse,

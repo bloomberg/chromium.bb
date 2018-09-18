@@ -89,6 +89,10 @@ chrome.fileManagerPrivate = {
     }
     setTimeout(callback, 0, results);
   },
+  getCrostiniSharedPaths: (callback) => {
+    // Returns Entry[].
+    setTimeout(callback, 0, []);
+  },
   getPreferences: (callback) => {
     setTimeout(callback, 0, chrome.fileManagerPrivate.preferences_);
   },

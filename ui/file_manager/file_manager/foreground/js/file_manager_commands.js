@@ -1664,7 +1664,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
                   'Error sharing with linux: ' +
                   chrome.runtime.lastError.message);
             } else {
-              Crostini.addSharedPath(dir, assert(fileManager.volumeManager));
+              Crostini.registerSharedPath(dir, fileManager.volumeManager);
             }
           });
     }

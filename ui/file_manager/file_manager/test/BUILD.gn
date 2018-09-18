@@ -74,6 +74,7 @@ js_library("check_select") {
 
 js_library("crostini") {
   deps = [
+    "../foreground/js:crostini",
     "js:test_util",
     "//ui/webui/resources/js:webui_resource_test",
   ]

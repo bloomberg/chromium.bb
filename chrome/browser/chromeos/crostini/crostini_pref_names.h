@@ -11,8 +11,9 @@ namespace crostini {
 namespace prefs {
 
 extern const char kCrostiniEnabled[];
-extern const char kCrostiniRegistry[];
 extern const char kCrostiniMimeTypes[];
+extern const char kCrostiniRegistry[];
+extern const char kCrostiniSharedPaths[];
 extern const char kUserCrostiniAllowedByPolicy[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);

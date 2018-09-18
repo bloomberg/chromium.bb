@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+// This api testing extension's ID.  Files referenced as Entry will
+// have this as part of their URL.
+const TEST_EXTENSION_ID = 'pkplfbidichfdicaijlchgnapepdginl';
+
 /**
  * Get specified entry.
  * @param {string} volumeType volume type for entry.
@@ -47,4 +52,18 @@ chrome.test.runTests([
               'Share with Linux only allowed for directories within Downloads.'));
     });
   },
+  function testGetCrostiniSharedPaths() {
+    const urlPrefix = 'filesystem:chrome-extension://' + TEST_EXTENSION_ID +
+        '/external/Downloads-user';
+    chrome.fileManagerPrivate.getCrostiniSharedPaths(
+        chrome.test.callbackPass((entries) => {
+          chrome.test.assertEq(2, entries.length);
+          chrome.test.assertEq(urlPrefix + '/shared1', entries[0].toURL());
+          chrome.test.assertTrue(entries[0].isDirectory);
+          chrome.test.assertEq('/shared1', entries[0].fullPath);
+          chrome.test.assertEq(urlPrefix + '/shared2', entries[1].toURL());
+          chrome.test.assertTrue(entries[1].isDirectory);
+          chrome.test.assertEq('/shared2', entries[1].fullPath);
+        }));
+  }
 ]);

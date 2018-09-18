@@ -18,12 +18,15 @@ function testIsPathShared() {
 
   assertFalse(Crostini.isPathShared(foo1, volumeManager));
 
-  Crostini.addSharedPath(foo1, volumeManager);
+  Crostini.registerSharedPath(foo1, volumeManager);
   assertFalse(Crostini.isPathShared(root, volumeManager));
   assertTrue(Crostini.isPathShared(foo1, volumeManager));
   assertTrue(Crostini.isPathShared(foobar1, volumeManager));
 
-  Crostini.addSharedPath(foobar2, volumeManager);
+  Crostini.registerSharedPath(foobar2, volumeManager);
   assertFalse(Crostini.isPathShared(foo2, volumeManager));
   assertTrue(Crostini.isPathShared(foobar2, volumeManager));
+
+  Crostini.unregisterSharedPath(foobar2, volumeManager);
+  assertFalse(Crostini.isPathShared(foobar2, volumeManager));
 }

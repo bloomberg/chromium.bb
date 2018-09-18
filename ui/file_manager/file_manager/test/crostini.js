@@ -255,16 +255,15 @@ crostini.testSharePathCrostiniSuccess = (done) => {
       .then(() => {
         // Right-click 'photos' directory.
         // Check 'Share with Linux' is shown in menu.
-        test.selectFile('photos');
         assertTrue(
-            test.fakeMouseRightClick('#file-list li[selected]'),
+            test.fakeMouseRightClick('#file-list [file-name="photos"]'),
             'right-click photos');
         return test.waitForElement(
             '#file-context-menu:not([hidden]) ' +
             '[command="#share-with-linux"]:not([hidden]):not([disabled])');
       })
       .then(() => {
-        // Click on 'Start with Linux'.
+        // Click on 'Share with Linux'.
         assertTrue(
             test.fakeMouseClick(
                 '#file-context-menu [command="#share-with-linux"]'),
@@ -280,8 +279,9 @@ crostini.testSharePathCrostiniSuccess = (done) => {
 
 // Verify right-click menu with 'Share with Linux' is not shown for:
 // * Files (not directory)
+// * Any folder already shared
 // * Root Downloads folder
-// * Any folder outside of downloads (e.g. crostini or drive)
+// * Any folder outside of downloads (e.g. crostini or orive)
 crostini.testSharePathNotShown = (done) => {
   const myFiles = '#directory-tree .tree-item [root-type-icon="my_files"]';
   const downloads = '#file-list li [file-type-icon="downloads"]';
@@ -289,14 +289,27 @@ crostini.testSharePathNotShown = (done) => {
   const googleDrive = '#directory-tree .tree-item [volume-type-icon="drive"]';
   const menuNoShareWithLinux = '#file-context-menu:not([hidden]) ' +
       '[command="#share-with-linux"][hidden][disabled="disabled"]';
+  let alreadySharedPhotosDir;
 
   test.setupAndWaitUntilReady()
       .then(() => {
         // Right-click 'hello.txt' file.
         // Check 'Share with Linux' is not shown in menu.
-        test.selectFile('hello.txt');
         assertTrue(
-            test.fakeMouseRightClick('#file-list li[selected]'),
+            test.fakeMouseRightClick('#file-list [file-name="hello.txt"]'),
+            'right-click hello.txt');
+        return test.waitForElement(menuNoShareWithLinux);
+      })
+      .then(() => {
+        // Set a folder as already shared.
+        alreadySharedPhotosDir =
+            mockVolumeManager
+                .getCurrentProfileVolumeInfo(
+                    VolumeManagerCommon.VolumeType.DOWNLOADS)
+                .fileSystem.entries['/photos'];
+        Crostini.registerSharedPath(alreadySharedPhotosDir, mockVolumeManager);
+        assertTrue(
+            test.fakeMouseRightClick('#file-list [file-name="photos"]'),
             'right-click hello.txt');
         return test.waitForElement(menuNoShareWithLinux);
       })
@@ -323,9 +336,8 @@ crostini.testSharePathNotShown = (done) => {
       })
       .then(() => {
         // Check 'Share with Linux' is not shown in menu.
-        test.selectFile('A');
         assertTrue(
-            test.fakeMouseRightClick('#file-list li[selected]'),
+            test.fakeMouseRightClick('#file-list [file-name="A"]'),
             'right-click directory A');
         return test.waitForElement(menuNoShareWithLinux);
       })
@@ -340,9 +352,8 @@ crostini.testSharePathNotShown = (done) => {
       })
       .then(() => {
         // Check 'Share with Linux' is not shown in menu.
-        test.selectFile('photos');
         assertTrue(
-            test.fakeMouseRightClick('#file-list li[selected]'),
+            test.fakeMouseRightClick('#file-list [file-name="photos"]'),
             'right-click photos');
         return test.waitForElement(menuNoShareWithLinux);
       })
@@ -353,6 +364,9 @@ crostini.testSharePathNotShown = (done) => {
             '#directory-tree .tree-item [root-type-icon="crostini"]');
       })
       .then(() => {
+        // Clear Crostini shared folders.
+        Crostini.unregisterSharedPath(
+            alreadySharedPhotosDir, mockVolumeManager);
         done();
       });
 };
