@@ -49,6 +49,9 @@ class ExceptionState;
 // So holding a ScriptPromise as a member variable in DOM object causes
 // memory leaks since it has a reference from C++ to V8.
 //
+// There are cases where promises cannot work (e.g., where the thread is being
+// terminated). In such cases operations will silently fail, so you should not
+// use promises for critical use such as releasing a resource.
 class CORE_EXPORT ScriptPromise final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
