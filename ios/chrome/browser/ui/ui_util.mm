@@ -74,6 +74,13 @@ bool IsUIRefreshPhase1Enabled() {
   return true;
 }
 
+// TODO(crbug.com/885003) : Remove this flag.
+bool IsWKWebViewSnapshotsEnabled() {
+  if (tests_hook::ForceWKWebViewSnapshots())
+    return true;
+  return base::FeatureList::IsEnabled(kWKWebViewSnapshots);
+}
+
 CGFloat StatusBarHeight() {
   // This is a temporary solution until usage of StatusBarHeight has been
   // replaced with topLayoutGuide.

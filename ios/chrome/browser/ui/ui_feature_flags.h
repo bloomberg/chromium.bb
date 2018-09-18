@@ -15,4 +15,7 @@ extern const base::Feature kFirstResponderKeyWindow;
 // Feature to copy image to system pasteboard via context menu.
 extern const base::Feature kCopyImage;
 
+// Used to enable using the WKWebView snapshotting API for iOS 11+.
+extern const base::Feature kWKWebViewSnapshots;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_
