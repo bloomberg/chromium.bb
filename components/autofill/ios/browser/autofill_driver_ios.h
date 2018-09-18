@@ -11,7 +11,6 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
 
 namespace web {
 class WebFrame;
@@ -28,9 +27,8 @@ class AutofillDriverIOS : public AutofillDriver {
  public:
   ~AutofillDriverIOS() override;
 
-  static void CreateForWebStateWebFrameAndDelegate(
+  static void PrepareForWebStateWebFrameAndDelegate(
       web::WebState* web_state,
-      web::WebFrame* web_frame,
       AutofillClient* client,
       id<AutofillDriverIOSBridge> bridge,
       const std::string& app_locale,
@@ -69,6 +67,7 @@ class AutofillDriverIOS : public AutofillDriver {
  protected:
   AutofillDriverIOS(
       web::WebState* web_state,
+      web::WebFrame* web_frame,
       AutofillClient* client,
       id<AutofillDriverIOSBridge> bridge,
       const std::string& app_locale,
@@ -76,7 +75,11 @@ class AutofillDriverIOS : public AutofillDriver {
 
  private:
   // The WebState with which this object is associated.
-  web::WebState* web_state_;
+  web::WebState* web_state_ = nullptr;
+
+  // The WebState with which this object is associated.
+  // nullptr if frame messaging is disabled.
+  web::WebFrame* web_frame_ = nullptr;
 
   // AutofillDriverIOSBridge instance that is passed in.
   __unsafe_unretained id<AutofillDriverIOSBridge> bridge_;

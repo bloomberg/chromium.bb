@@ -13,6 +13,8 @@ source_set("browser") {
     "autofill_driver_ios.h",
     "autofill_driver_ios.mm",
     "autofill_driver_ios_bridge.h",
+    "autofill_driver_ios_webframe.h",
+    "autofill_driver_ios_webframe.mm",
     "autofill_driver_ios_webstate.h",
     "autofill_driver_ios_webstate.mm",
     "autofill_switches.cc",

@@ -28,13 +28,6 @@ void AutofillDriverIOSWebState::CreateForWebStateAndDelegate(
           web_state, client, bridge, app_locale, enable_download_manager)));
 }
 
-AutofillClient* AutofillDriverIOSWebState::ClientForWebState(
-    web::WebState* web_state) {
-  return AutofillDriverIOSWebState::FromWebState(web_state)
-      ->autofill_manager()
-      ->client();
-}
-
 AutofillDriverIOSWebState::AutofillDriverIOSWebState(
     web::WebState* web_state,
     AutofillClient* client,
@@ -42,6 +35,7 @@ AutofillDriverIOSWebState::AutofillDriverIOSWebState(
     const std::string& app_locale,
     AutofillManager::AutofillDownloadManagerState enable_download_manager)
     : AutofillDriverIOS(web_state,
+                        /*web_frame=*/nullptr,
                         client,
                         bridge,
                         app_locale,
