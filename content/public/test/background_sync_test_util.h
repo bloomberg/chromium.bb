@@ -11,9 +11,9 @@ class WebContents;
 // Utility namespace for background sync tests.
 namespace background_sync_test_util {
 
-// Enables or disables notifications coming from the NetworkChangeNotifier.
+// Enables or disables notifications coming from the NetworkConnectionTracker.
 // (For preventing flakes in tests)
-void SetIgnoreNetworkChangeNotifier(bool ignore);
+void SetIgnoreNetworkChanges(bool ignore);
 
 // Puts background sync manager into online or offline mode for tests.
 //

@@ -15,9 +15,9 @@
 namespace content {
 
 // BackgroundSyncNetworkObserverAndroid is a specialized
-// BackgroundSyncNetworkObserver which is backed by a NetworkChangeNotifier
+// BackgroundSyncNetworkObserver which is backed by a NetworkConnectionTracker
 // that listens for network events even when the browser is paused, unlike the
-// standard NetworkChangeNotifier. This ensures that sync events can be fired
+// standard NetworkConnectionTracker. This ensures that sync events can be fired
 // even when the browser is backgrounded, and other network observers are
 // disabled.
 class BackgroundSyncNetworkObserverAndroid
@@ -38,8 +38,7 @@ class BackgroundSyncNetworkObserverAndroid
                        content::BrowserThread::DeleteOnUIThread> {
    public:
     static scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer> Create(
-        base::Callback<void(net::NetworkChangeNotifier::ConnectionType)>
-            callback);
+        base::Callback<void(network::mojom::ConnectionType)> callback);
 
     // Called from BackgroundSyncNetworkObserver.java over JNI whenever the
     // connection type changes. This updates the current connection type seen by
@@ -55,20 +54,22 @@ class BackgroundSyncNetworkObserverAndroid
     friend class base::DeleteHelper<
         BackgroundSyncNetworkObserverAndroid::Observer>;
 
-    Observer(base::Callback<void(net::NetworkChangeNotifier::ConnectionType)>
-                 callback);
+    Observer(base::Callback<void(network::mojom::ConnectionType)> callback);
     void Init();
     ~Observer();
 
     // This callback is to be run on the IO thread whenever the connection type
     // changes.
-    base::Callback<void(net::NetworkChangeNotifier::ConnectionType)> callback_;
+    base::Callback<void(network::mojom::ConnectionType)> callback_;
     base::android::ScopedJavaGlobalRef<jobject> j_observer_;
 
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
  private:
+  void RegisterWithNetworkConnectionTracker(
+      network::NetworkConnectionTracker* network_connection_tracker) override;
+
   // Accessed on UI Thread
   scoped_refptr<Observer> observer_;
 

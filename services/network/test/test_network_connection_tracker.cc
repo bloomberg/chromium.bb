@@ -25,13 +25,16 @@ TestNetworkConnectionTracker* TestNetworkConnectionTracker::GetInstance() {
 }
 
 TestNetworkConnectionTracker::TestNetworkConnectionTracker() {
-  DCHECK(!g_test_network_connection_tracker_instance);
+  if (g_test_network_connection_tracker_instance) {
+    LOG(WARNING) << "Creating more than one TestNetworkConnectionTracker";
+    return;
+  }
   g_test_network_connection_tracker_instance = this;
 }
 
 TestNetworkConnectionTracker::~TestNetworkConnectionTracker() {
-  DCHECK_EQ(g_test_network_connection_tracker_instance, this);
-  g_test_network_connection_tracker_instance = nullptr;
+  if (g_test_network_connection_tracker_instance == this)
+    g_test_network_connection_tracker_instance = nullptr;
 }
 
 bool TestNetworkConnectionTracker::GetConnectionType(

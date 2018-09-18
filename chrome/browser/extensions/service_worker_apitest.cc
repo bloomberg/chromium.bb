@@ -421,7 +421,7 @@ class ServiceWorkerBackgroundSyncTest : public ServiceWorkerTest {
   }
 
   void SetUp() override {
-    content::background_sync_test_util::SetIgnoreNetworkChangeNotifier(true);
+    content::background_sync_test_util::SetIgnoreNetworkChanges(true);
     ServiceWorkerTest::SetUp();
   }
 

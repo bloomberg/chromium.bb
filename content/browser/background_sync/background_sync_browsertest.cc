@@ -131,13 +131,15 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   ~BackgroundSyncBrowserTest() override {}
 
   void SetUp() override {
-    background_sync_test_util::SetIgnoreNetworkChangeNotifier(true);
+    background_sync_test_util::SetIgnoreNetworkChanges(true);
 
     ContentBrowserTest::SetUp();
   }
 
   void SetIncognitoMode(bool incognito) {
     shell_ = incognito ? CreateOffTheRecordBrowser() : shell();
+    // Let any async shell creation logic finish.
+    base::RunLoop().RunUntilIdle();
   }
 
   StoragePartitionImpl* GetStorage() {

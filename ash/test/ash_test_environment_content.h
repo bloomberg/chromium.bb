@@ -13,8 +13,11 @@ namespace content {
 class TestBrowserThreadBundle;
 }
 
-namespace ash {
+namespace network {
+class TestNetworkConnectionTracker;
+}
 
+namespace ash {
 
 // AshTestEnvironment implementation for tests that use content.
 class AshTestEnvironmentContent : public AshTestEnvironment {
@@ -28,6 +31,8 @@ class AshTestEnvironmentContent : public AshTestEnvironment {
   std::unique_ptr<AshTestViewsDelegate> CreateViewsDelegate() override;
 
  private:
+  std::unique_ptr<network::TestNetworkConnectionTracker>
+      network_connection_tracker_;
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   std::unique_ptr<views::WebView::ScopedWebContentsCreatorForTesting>
       scoped_web_contents_creator_;
