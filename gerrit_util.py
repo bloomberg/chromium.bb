@@ -361,6 +361,8 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     if body:
       LOGGER.debug(body)
   conn = GetConnectionObject()
+  # HACK: httplib.Http has no such attribute; we store req_host here for later
+  # use in ReadHttpResponse.
   conn.req_host = host
   conn.req_params = {
       'uri': urlparse.urljoin('%s://%s' % (GERRIT_PROTOCOL, host), url),
