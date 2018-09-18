@@ -136,6 +136,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // workers are shut down. Please be careful when using this function, because
   // after the synchronous termination any V8 APIs may suddenly start to return
   // empty handles and it may cause crashes.
+  // WARNING: This is not safe if a nested worker is running.
   static void TerminateAllWorkersForTesting();
 
   // WebThread::TaskObserver.
@@ -182,9 +183,19 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Number of active worker threads.
   static unsigned WorkerThreadCount();
 
-  // Returns a set of all worker threads. This must be called only on the main
-  // thread and the returned set must not be stored for future use.
-  static HashSet<WorkerThread*>& WorkerThreads();
+  // Runs |function| with |parameters| on each worker thread, and
+  // adds the current WorkerThread* as the first parameter |function|.
+  template <typename FunctionType, typename... Parameters>
+  static void CallOnAllWorkerThreads(FunctionType function,
+                                     Parameters&&... parameters) {
+    MutexLocker lock(ThreadSetMutex());
+    for (WorkerThread* thread : WorkerThreads()) {
+      PostCrossThreadTask(
+          *thread->GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
+          CrossThreadBind(function, WTF::CrossThreadUnretained(thread),
+                          parameters...));
+    }
+  }
 
   int GetWorkerThreadId() const { return worker_thread_id_; }
 
@@ -239,6 +250,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
       Terminate_WhileDebuggerTaskIsRunningOnInitialization);
   FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest,
                            Terminate_WhileDebuggerTaskIsRunning);
+
+  static HashSet<WorkerThread*>& WorkerThreads();
+  static Mutex& ThreadSetMutex();
 
   // Represents the state of this worker thread.
   enum class ThreadState {
