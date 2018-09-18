@@ -10,7 +10,10 @@ static_library("child") {
     "v8_breakpad_support_win.h",
   ]
 
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  # TODO(thakis): Enable on Windows too, http://crbug.com/404525
+  if (!is_win) {
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  }
 
   deps = [
     "//base",

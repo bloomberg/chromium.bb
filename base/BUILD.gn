@@ -79,7 +79,6 @@ config("base_flags") {
       # requirement.
       # https://groups.google.com/a/chromium.org/d/topic/chromium-dev/B9Q5KTD7iCo/discussion
       "-Wglobal-constructors",
-      "-Wexit-time-destructors",
     ]
   }
 }
