@@ -140,6 +140,7 @@
 <translation id="1387596372902085462">Czy włączyć zaufanie w starszej infrastrukturze klucza publicznego Symantec Corporation</translation>
 <translation id="1393485621820363363">Włączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
+<translation id="142346659686073702">Zezwalaj użytkownikom z innych domen na używanie Crostini</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres IP lub URL serwera proxy</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
@@ -383,6 +384,12 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 
       Pozostawienie tej zasady nieustawionej jest równoznaczne z jej włączeniem – patrz opis powyżej.</translation>
 <translation id="2113068765175018713">Ogranicz czas działania urządzenia przez automatyczne ponowne uruchamianie</translation>
+<translation id="2116790137063002724">Ta zasada określa, czy mają być zgłaszane informacje, na podstawie których można zidentyfikować użytkowników, takie jak login użytkownika systemu operacyjnego, login profilu <ph name="PRODUCT_NAME" />, nazwa profilu <ph name="PRODUCT_NAME" />, ścieżka profilu <ph name="PRODUCT_NAME" /> i ścieżka pliku wykonywalnego <ph name="PRODUCT_NAME" />.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje, na podstawie których można zidentyfikować użytkowników, są zbierane.
+      Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować użytkowników, nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Zezwalaj na powiadomienia w tych witrynach.</translation>
 <translation id="2131902621292742709">Opóźnienie przyciemnienia ekranu przy zasilaniu z baterii</translation>
 <translation id="2132732175597591362">Określa białą listę wzorców adresów URL, w przypadku których zawsze będzie działać autoodtwarzanie.
@@ -864,6 +871,22 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, cz
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultCookiesSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.
 
           Zobacz również zasady „CookiesBlockedForUrls” i „CookiesSessionOnlyForUrls”. Uwaga: żadne wzorce URL używane w tych trzech zasadach nie mogą pozostawać w konflikcie – nie jest określona zasada, która będzie mieć pierwszeństwo.</translation>
+<translation id="3373364525435227558">Ustawia jeden lub więcej zalecanych języków na potrzeby sesji zarządzanej, spośród których użytkownicy mogą łatwo wybrać jeden język.
+
+      Użytkownik może wybrać język i układ klawiatury przed rozpoczęciem sesji zarządzanej. Domyślnie wszystkie języki obsługiwane w <ph name="PRODUCT_OS_NAME" /> są wymienione w kolejności alfabetycznej. Za pomocą tej zasady możesz przenieść zalecane języki na początek listy.
+
+      Jeśli ta zasada jest nieskonfigurowana, wstępnie wybrany będzie bieżący język interfejsu.
+
+      Jeśli ta zasada jest skonfigurowana, zalecane języki zostaną przeniesione na początek listy i będą się wyróżniać na tle pozostałych. Kolejność zalecanych języków będzie taka jak w wartości zasady. Wstępnie wybrany będzie pierwszy zalecany język z listy.
+
+      Jeśli ustawionych jest wiele zalecanych języków, zakłada się, że użytkownicy będą wybierać spośród nich. W takim wypadku przy rozpoczynaniu sesji zarządzanej wyraźnie wyeksponowany będzie wybór języka i układu klawiatury. Jeśli ustawiony jest jeden język, zakłada się, że większość użytkowników chce używać tego wstępnie wybranego języka. Możliwość wyboru języka i klawiatury przy rozpoczynaniu sesji zarządzanej nie będzie tak bardzo wyeksponowana.
+
+      Gdy po skonfigurowaniu tej zasady zostanie włączone automatyczne logowanie (patrz zasady |DeviceLocalAccountAutoLoginId| oraz |DeviceLocalAccountAutoLoginDelay|), w automatycznie rozpoczynanych sesjach zarządzanych będzie używany pierwszy zalecany język i najpopularniejszy układ klawiatury, który do niego pasuje.
+
+      Wstępnie wybranym układem klawiatury jest zawsze najpopularniejszy układ dla wstępnie wybranego języka.
+
+      Tę zasadę możesz ustawić tylko jako zalecaną. Za jej pomocą możesz przenieść zalecane języki na początek, ale użytkownicy zawsze mogą wybrać dla swojej sesji dowolny język obsługiwany w <ph name="PRODUCT_OS_NAME" />.
+      </translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
 <translation id="3414260318408232239">Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> korzysta z domyślnej najniższej wersji TLS, czyli 1.0.
 
@@ -1089,6 +1112,11 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Jeśli nie skonfigurujesz tej zasady lub ustawisz dla niej wartość prawda, użytkownicy będą mogli wykorzystywać oferty przy rejestracji systemu operacyjnego Chrome.
 
       Jeśli ustawisz tu wartość fałsz, użytkownicy nie będą mogli wykorzystywać ofert.</translation>
+<translation id="4008507541867797979">Gdy ta zasada ma wartość prawda lub jest nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie wyświetlać istniejących użytkowników na ekranie logowania i umożliwiać wybranie jednego z nich.
+
+      Gdy zasada ma wartość fałsz, <ph name="PRODUCT_OS_NAME" /> nie będzie wyświetlać istniejących użytkowników na ekranie logowania. Wyświetlony zostanie normalny ekran logowania (umożliwiający wpisanie adresu e-mail i hasła lub numeru telefonu użytkownika) lub ekran SAML (jeśli jest włączony przy użyciu zasady <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), chyba że skonfigurowana jest sesja zarządzania – w takim przypadku wyświetlane będą tylko konta z sesją zarządzaną i będzie można wybrać jedno z nich.
+
+      Pamiętaj, że ta zasada nie ma żadnego wpływu na to, czy urządzenie zachowuje lub usuwa lokalne dane użytkowników.</translation>
 <translation id="4010738624545340900">Zezwolenie na wywoływanie okien dialogowych wyboru plików</translation>
 <translation id="4012737788880122133">Włączenie tego ustawienia wyłącza automatyczne aktualizacje.
 
@@ -1485,6 +1513,15 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Jeśli zasada ma ustawienie prawda lub jest nieskonfigurowana, to cykle życia kart są włączone.</translation>
 <translation id="5208240613060747912">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="5219844027738217407">W przypadku aplikacji na Androida ta zasada wpływa tylko na mikrofon. Gdy jest ona włączona, mikrofon jest wyłączony dla wszystkich aplikacji na Androida bez żadnych wyjątków.</translation>
+<translation id="5228316810085661003">Opóźnienie automatycznego logowania na lokalne konto na urządzeniu.
+
+      Jeśli zasada |DeviceLocalAccountAutoLoginId| jest nieskonfigurowana, ta zasada nie ma żadnych skutków. W przeciwnym razie:
+
+      Gdy ta zasada jest skonfigurowana, określa, po jakim czasie bez aktywności użytkownika nastąpi automatyczne zalogowanie na lokalne konto na urządzeniu wskazane w zasadzie |DeviceLocalAccountAutoLoginId|.
+
+      Gdy ta zasada jest nieskonfigurowana, czas bez aktywności użytkownika wynosi 0 milisekund.
+
+      Wartość tej zasady podaje się w milisekundach.</translation>
 <translation id="523505283826916779">Ustawienia ułatwień dostępu</translation>
 <translation id="5247006254130721952">Blokuj pobieranie niebezpiecznych plików</translation>
 <translation id="5248863213023520115">Ustawia typy szyfrowania dozwolone podczas żądania biletów Kerberos z serwera <ph name="MS_AD_NAME" />.
@@ -1505,6 +1542,12 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5272684451155669299">Jeśli ustawiono wartość „prawda”, użytkownik może używać modułu sprzętowego w urządzeniach z Chrome do zdalnego poświadczania tożsamości przez wywołanie funkcji <ph name="CHALLENGE_USER_KEY_FUNCTION" /> interfejsu <ph name="ENTERPRISE_PLATFORM_KEYS_API" />.
 
           Jeśli ustawiono wartość „fałsz” lub nie jest ona określona, wywołania kierowane do interfejsu API zakończą się błędem.</translation>
+<translation id="5277806246014825877">Zezwolenie temu użytkownikowi na uruchamianie Crostini.
+
+      Gdy zasada ma wartość fałsz, użytkownik nie może uruchamiać Crostini.
+      Gdy zasada ma wartość prawda lub jest nieskonfigurowana, użytkownik może uruchamiać Crostini, o ile pozwalają na to inne ustawienia.
+      Aby można było uruchamiać Crostini, wartość prawda muszą mieć wszystkie te trzy zasady: VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed.
+      Gdy wartość zasady zostanie zmieniona na fałsz, będzie dotyczyć uruchamiania nowych kontenerów Crostini, ale kontenery uruchomione wcześniej nie zostaną wyłączone.</translation>
 <translation id="5283457834853986457">Wyłącz znajdowanie wtyczek (wycofane)</translation>
 <translation id="5288772341821359899">Jeśli ta zasada jest ustawiona, zakres portów UDP używany przez WebRTC jest ograniczony do określonego zakresu portów (wraz z punktami końcowymi).
 
@@ -1541,6 +1584,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5370279767682621504">Włącz obsługę HTTP/0.9 w portach innych niż domyślne</translation>
 <translation id="5378985487213287085">Umożliwia określenie, czy witryny mogą wyświetlać powiadomienia na pulpicie. Wyświetlanie powiadomień na pulpicie może być domyślnie dozwolone lub zabronione bądź użytkownikowi może być wyświetlany monit za każdym razem, gdy witryna chce wyświetlić takie powiadomienie. W przypadku nieskonfigurowania tej zasady będzie używana zasada „AskNotifications”, a użytkownik będzie mógł zmienić to ustawienie.</translation>
 <translation id="538108065117008131">Zezwalaj wtyczce <ph name="PRODUCT_FRAME_NAME" /> na obsługę następujących typów treści</translation>
+<translation id="5391388690191341203">Lokalne konto na urządzeniu do automatycznego logowania</translation>
 <translation id="5392172595902933844">Informacje o stanie Androida są wysyłane z powrotem na serwer.
 
       Jeśli zasada jest wyłączona lub nieskonfigurowana, nie są wysyłane żadne informacje o stanie.
@@ -1564,6 +1608,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5457924070961220141">Umożliwia skonfigurowanie domyślnego mechanizmu renderowania HTML po zainstalowaniu wtyczki <ph name="PRODUCT_FRAME_NAME" />. Ustawieniem domyślnym, stosowanym w przypadku nieskonfigurowania tej zasady, jest zezwolenie przeglądarce hosta na wykonywanie renderowania, jednak możesz opcjonalnie zastąpić to ustawienie, tak aby strony HTML były domyślnie renderowane przez wtyczkę <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="5464816904705580310">Konfiguruj ustawienia dla zarządzanych użytkowników.</translation>
 <translation id="546726650689747237">Opóźnienie przyciemnienia ekranu przy zasilaniu sieciowym</translation>
+<translation id="5469143988693423708">Użytkownik może uruchamiać Crostini</translation>
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
 <translation id="5475361623548884387">Włącz drukowanie</translation>
 <translation id="547601067149622666">Blokuj reklamy na stronach zawierających uciążliwe reklamy</translation>
@@ -1615,6 +1660,9 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       Nie jest to zalecane, bo może spowodować pominięcie rozszerzenia nameConstraints, które ogranicza nazwy hostów, na których dany certyfikat może być autoryzowany.
 
       Jeśli ta zasada nie jest skonfigurowana lub jest wyłączona, certyfikaty serwera, które nie mają rozszerzenia subjectAlternativeName zawierającego nazwę DNS lub adres IP, nie będą uważane za zaufane.</translation>
+<translation id="5581292529942108810">Konfigurowanie zasad związanych z Rozszerzeniem zgłaszającym informacje o Chrome.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Kontroluj usługi lokalizacyjne Google na Androidzie</translation>
 <translation id="5586942249556966598">Nic nie rób</translation>
 <translation id="5630352020869108293">Przywróć ostatnią sesję</translation>
@@ -1850,6 +1898,11 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6310223829319187614">Włącz autouzupełnianie nazw domen w czasie logowania użytkownika</translation>
 <translation id="6315673513957120120">Chrome wyświetla stronę z ostrzeżeniem, gdy użytkownicy otworzą witrynę, w której występują błędy SSL. Domyślnie lub wtedy, gdy ta zasada jest włączona, użytkownicy mogą zignorować i zamknąć stronę z ostrzeżeniem.
       Po wyłączeniu tej zasady użytkownicy nie będą mogli zamknąć strony z ostrzeżeniem.</translation>
+<translation id="6352543686437322588">Lokalne konto na urządzeniu do automatycznego logowania po określonym czasie.
+
+      Gdy ta zasada jest skonfigurowana, po upływie określonego czasu bez aktywności użytkownika na ekranie logowania nastąpi automatyczne zalogowanie wskazanej sesji. Lokalne konto na urządzeniu musi zostać skonfigurowane wcześniej (patrz |DeviceLocalAccounts|).
+
+      Gdy zasada jest nieskonfigurowana, automatyczne logowanie nie jest wykonywane.</translation>
 <translation id="6353901068939575220">Określa parametry używane przy wyszukiwaniu URL-a z użyciem POST. Składa się z rozdzielonych przecinkami par nazwy i wartości. Jeśli wartość jest parametrem szablonu, tak jak w przykładzie powyżej {searchTerms}, zostanie ona zastąpiona rzeczywistymi danymi wyszukiwanych słów.
 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, żądania wyszukiwań są wysyłane przy użyciu metody GET.
@@ -2192,6 +2245,11 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Jeśli ta zasada nie jest ustawiona, użytkownik może zmienić to ustawienie ręcznie.</translation>
 <translation id="723103540848640830">Określ minimalną długość kodu PIN blokady ekranu</translation>
+<translation id="7232816984286843471">Gdy zasada ma wartość fałsz, użytkownicy z innych domen nie mogą używać Crostini.
+
+      Gdy zasada jest nieskonfigurowana lub ma wartość prawda, wszyscy użytkownicy mogą używać Crostini, o ile pozwalają na to inne ustawienia.
+      Aby można było uruchamiać Crostini, wartość prawda muszą mieć wszystkie te trzy zasady: VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed.
+      Gdy wartość zasady zostanie zmieniona na fałsz, będzie dotyczyć uruchamiania nowych kontenerów Crostini, ale kontenery uruchomione wcześniej nie zostaną wyłączone.</translation>
 <translation id="7234280155140786597">Nazwy zabronionych hostów wiadomości natywnych (lub * dla wszystkich)</translation>
 <translation id="7236775576470542603">Ustawia domyślny typ lupy włączony na ekranie logowania.
 
@@ -2242,6 +2300,12 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7311458740754205918">Jeśli ta zasada ma wartość prawda lub nie jest skonfigurowana, na stronie Nowa karta mogą pojawiać się polecane treści wybrane na podstawie historii przeglądania, zainteresowań lub lokalizacji użytkownika.
 
       Jeśli ta zasada ma wartość fałsz, automatycznie wybierane polecane treści nie będą wyświetlać się na stronie Nowa karta.</translation>
+<translation id="7313793931637495417">Ta zasada określa, czy mają być zgłaszane informacje o wersji, takie jak wersja, platforma i architektura systemu operacyjnego, wersja <ph name="PRODUCT_NAME" /> i kanał <ph name="PRODUCT_NAME" />.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje o wersji są zbierane.
+      Gdy ta zasada ma wartość fałsz, informacje o wersji nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Dodatkowe parametry wiersza poleceń dla <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Ta opcja jest podobna do zasady Wipe (wartość 2), ale próbuje zachować tokeny logowania, by użytkownik nie musiał ponownie się logować.</translation>
 <translation id="7329842439428490522">Określa, po jakim czasie nieaktywności użytkownika wyłączany jest ekran przy zasilaniu z baterii.
@@ -2272,6 +2336,12 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 <translation id="7349338075015720646">Określa listę witryn internetowych instalowanych dyskretnie, bez interakcji z użytkownikiem, których użytkownik nie może odinstalować ani wyłączyć.
 
       Każda pozycja na liście jest obiektem o dwóch składowych: „url” i „launch_container”. „url” to URL aplikacji internetowej do zainstalowania, a „launch_container” może mieć wartość „window” (okno) lub „tab” (karta) wskazującą sposób otwierania zainstalowanej aplikacji. Jeśli element „launch_container” zostanie pominięty, aplikacja będzie otwierana w oknie, o ile Chrome uzna ją za progresywną aplikację internetową, a w przeciwnym razie na karcie.</translation>
+<translation id="735902178936442460">Ta zasada określa, czy mają być zgłaszane informacje umożliwiające identyfikację urządzeń, takie jak nazwa urządzenia i adresy sieciowe.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje, na podstawie których można zidentyfikować urządzenia, są zbierane.
+      Gdy zasada ma wartość fałsz, informacje, na podstawie których można zidentyfikować urządzenia, nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Funkcja Bezpieczne przeglądanie wyświetla ostrzeżenie, gdy użytkownik chce wejść na stronę oznaczoną jako potencjalnie szkodliwa. Jeśli włączysz to ustawienie, użytkownicy nie będą mogli przechodzić ze strony ostrzeżenia na strony szkodliwe.
 
       Jeśli nie skonfigurujesz tego ustawienia lub je wyłączysz, użytkownicy będą mogli wybrać, czy chcą przejść ze strony ostrzeżenia na stronę oznaczoną jako szkodliwa.
@@ -2516,6 +2586,14 @@ optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym c
 <translation id="7976157349247117979">Nazwa miejsca docelowego <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Brak ograniczeń specjalnych</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Określa, czy w Chrome OS mogą działać maszyny wirtualne.
+
+      Gdy zasada ma wartość prawda, na urządzeniu można uruchamiać maszyny wirtualne.
+      Gdy zasada ma wartość fałsz, na urządzeniu nie można uruchamiać maszyn wirtualnych.
+      Aby można uruchamiać Crostini, wartość prawda muszą mieć wszystkie te trzy zasady: VirtualMachinesAllowed, CrostiniAllowed i DeviceUnaffiliatedCrostiniAllowed.
+      Gdy wartość zasady zostanie zmieniona na fałsz, będzie dotyczyć uruchamiania nowych maszyn wirtualnych, ale maszyny wirtualne uruchomione wcześniej nie zostaną wyłączone.
+      Gdy zasada jest nieskonfigurowana na urządzeniu zarządzanym, nie można na nim uruchamiać maszyn wirtualnych.
+      Na urządzeniach niezarządzanych można uruchamiać maszyny wirtualne.</translation>
 <translation id="802147957407376460">Obróć ekran o 0 stopni</translation>
 <translation id="8033913082323846868">Ta zasada została wycofana w M70. Zamiast niej należy używać zasad AutofillAddressEnabled i AutofillCreditCardEnabled.
 
@@ -2560,10 +2638,17 @@ optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym c
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach. Wartości nie mogą być wyższe od opóźnienia bezczynności.</translation>
+<translation id="8138009212169037227">Ta zasada określa, czy będą zgłaszane informacje o zasadach i czas pobrania zasad.
+
+      Gdy ta zasada jest nieskonfigurowana lub ma wartość prawda, informacje o zasadach i czas pobrania zasad są zbierane.
+      Gdy zasada ma wartość fałsz, informacje o zasadach i czas pobrania zasad nie są zbierane.
+
+      Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Zgłasza serwerowi listę interfejsów sieciowych wraz z ich typami i adresami sprzętowymi.
 
       Jeśli ta zasada ma wartość Fałsz, lista interfejsów nie zostanie zgłoszona.</translation>
 <translation id="8141795997560411818">Ta zasada nie uniemożliwia użytkownikom korzystania z aplikacji Dysk Google na Androida. Aby zablokować dostęp do Dysku Google, należy wyłączyć możliwość instalowania tej aplikacji.</translation>
+<translation id="8142894094385450823">Ustaw zalecane języki dla sesji zarządzanej</translation>
 <translation id="8146727383888924340">Zezwalaj użytkownikom na wykorzystanie ofert w procesie rejestracji systemu operacyjnego Chrome</translation>
 <translation id="8148785525797916822">Ukrywanie ostrzeżenia pojawiającego się, gdy <ph name="PRODUCT_NAME" /> działa na komputerze lub w systemie operacyjnym, który nie jest obsługiwany.</translation>
 <translation id="8148901634826284024">Włącza funkcję ułatwień dostępu w postaci trybu wysokiego kontrastu.
@@ -2611,6 +2696,29 @@ Zasady te są przeznaczone do konfigurowania <ph name="PRODUCT_NAME" /> tylko na
 Nie musisz konfigurować tych ustawień ręcznie. Możesz pobrać łatwe w użyciu szablony dla systemów Windows, Mac OS i Linux ze strony <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad grupy (GPO), mimo że obsługa zasady przez rejestr jest nadal możliwa w systemach Windows połączonych z domeną <ph name="MS_AD_NAME" />.</translation>
+<translation id="8264653492961233132">Określa listę aplikacji i rozszerzeń, które zostaną zainstalowane dyskretnie, bez interakcji
+          z użytkownikiem, a użytkownik nie będzie mógł ich odinstalować
+          ani wyłączyć. Aplikacje/rozszerzenia bez interakcji z użytkownikiem
+          otrzymają wszystkie uprawnienia, o które proszą, w tym wszelkie
+          dodatkowe uprawnienia, o które będą prosić przyszłe ich wersje.
+          Otrzymają też uprawnienia do interfejsów API dla rozszerzeń
+          enterprise.deviceAttributes i enterprise.platformKeys. (Te dwa
+          interfejsy API nie są dostępne dla aplikacji/rozszerzeń, których
+          instalacja nie jest wymuszana).
+
+          Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt zasadą <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jeśli z tej listy zostaną usunięte aplikacja lub rozszerzenie, których instalacja została wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
+
+          W przypadku systemów Windows niepodłączonych do domeny <ph name="MS_AD_NAME" /> wymuszona instalacja jest ograniczona do aplikacji i rozszerzeń dostępnych w Chrome Web Store.
+
+          Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą Narzędzi dla programistów (potencjalnie zakłócając jego działanie). Jeśli jest to problemem, ustaw zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i opcjonalnie URL „aktualizacji” oddzielone średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem w dokumencie <ph name="LINK_TO_EXTENSION_DOC1" />. Domyślnie używany jest URL aktualizacji Chrome Web Store (obecnie to „https://clients2.google.com/service/update2/crx”). Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu. Pamiętaj też, że podanie adresu URL „aktualizacji” było obowiązkowe w <ph name="PRODUCT_NAME" /> do wersji 67 włącznie.
+
+          Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jeśli ta zasada nie jest ustawiona, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.
+
+          Uwaga: ta zasada nie jest stosowana do trybu incognito.</translation>
 <translation id="8274603902181597201">Wyczyść katalog główny użytkownika zabezpieczony szyfrowaniem ecryptfs i zacznij korzystać z nowego katalogu głównego zaszyfrowanego przy użyciu ext4.</translation>
 <translation id="8285435910062771358">Lupa pełnoekranowa włączona</translation>
 <translation id="8288199156259560552">Włącz usługę lokalizacyjną Google na Androida</translation>
@@ -2892,6 +3000,7 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Ta zasada nie jest dostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9077227880520270584">Opóźnienie automatycznego logowania na lokalne konto na urządzeniu</translation>
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>
 <translation id="9088433379343318874">Włącz dostawcę treści dla nadzorowanego użytkownika</translation>
 <translation id="9088444059179765143">Konfigurowanie metody automatycznego wykrywania strefy czasowej</translation>

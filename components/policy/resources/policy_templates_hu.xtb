@@ -142,6 +142,7 @@
 <translation id="1387596372902085462">A Symantec Corporation régi PKI-infrastruktúrájának megbízhatóként való elfogadása</translation>
 <translation id="1393485621820363363">Eszközökhöz kötött engedélyezett vállalati nyomtatók</translation>
 <translation id="1397855852561539316">Alapértelmezett keresési szolgáltató javasolt URL-je</translation>
+<translation id="142346659686073702">Crostini használatának engedélyezése nem társult felhasználók számára</translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1427655258943162134">Proxyszerver címe vagy URL-je</translation>
 <translation id="1435659902881071157">Eszközszintű hálózatbeállítás</translation>
@@ -384,6 +385,12 @@
 
       Ha nem határozza meg ezt a beállítást, az ugyanolyan, mintha aktiválná (lásd feljebb).</translation>
 <translation id="2113068765175018713">Eszköz működési idejének korlátozása automatikus újraindítással</translation>
+<translation id="2116790137063002724">Ez a házirend szabályozza, hogy készüljön-e jelentés olyan adatokról, amelyek alkalmasak a felhasználók azonosítására (pl. operációs rendszeren használt felhasználónév, <ph name="PRODUCT_NAME" />-profil felhasználóneve, <ph name="PRODUCT_NAME" />-profilnév, <ph name="PRODUCT_NAME" />-profil útvonala, <ph name="PRODUCT_NAME" /> futtatható fájljainak útvonala).
+
+      Ha a házirend nincs beállítva, vagy az értéke igaz, akkor megtörténik a felhasználók azonosítására alkalmas adatok begyűjtése.
+      Ha a házirend értéke hamis, akkor nem történik meg a felhasználók azonosítására alkalmas adatok begyűjtése.
+
+      A házirend csak bekapcsolt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> mellett és <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényesül.</translation>
 <translation id="2127599828444728326">Értesítések engedélyezése ezeken a webhelyeken</translation>
 <translation id="2131902621292742709">Képernyő elsötétítésének késleltetése akkumulátorról való működés során</translation>
 <translation id="2132732175597591362">Azon URL-minták engedélyezőlistáját szabályozza, amelyeken mindig engedélyezve van az automatikus lejátszás.
@@ -863,6 +870,22 @@
           Ha a házirend konfigurálatlanul marad, a rendszer a globális alapértelmezés szerinti értéket használja az összes webhely esetén a „DefaultCookiesSetting” házirendből (ha az be van állítva), vagy pedig a felhasználó személyes konfigurációjából.
 
           Lásd még a „CookiesBlockedForUrls” és a „CookiesSessionOnlyForUrls” házirendeket. Fontos megjegyezni, hogy nem lehetnek ütköző URL-minták a három házirend között – nincs meghatározva, hogy melyik házirend élvez elsőbbséget.</translation>
+<translation id="3373364525435227558">Egy vagy több ajánlott területi beállítást rendel a felügyelt munkamenethez, hogy a felhasználók könnyedén kiválaszthassák a nekik megfelelőt.
+
+      A felhasználók a felügyelt munkamenet elindítása előtt választhatnak területi beállítást és billentyűzetkiosztást. Alapértelmezés szerint a <ph name="PRODUCT_OS_NAME" /> által támogatott összes területi beállítás megjelenik betűrendben. A házirend segítségével ajánlott beállításokat adhat meg, amelyeket a lista elején jelennek meg.
+
+      Ha a házirend nincs beállítva, akkor a jelenlegi területi beállítást választja ki előre a rendszer.
+
+      Ha a házirend be van állítva, az ajánlott területi beállítások a lista elejére kerülnek, és vizuálisan elkülönülnek a többi lehetőségtől. Az ajánlott beállítások a házirendben megadott sorrendben jelennek meg. A rendszer az első ajánlott beállítást választja ki előre.
+
+      Ha egynél több ajánlott területi beállítás van, a rendszer azt feltételezi, hogy a felhasználók általában választanának közülük. A terület és a billentyűzet beállításának lehetősége jól láthatóan megjelenik a kezelt munkamenet indításakor. Ellenkező esetben a rendszer azt feltételezi, hogy a legtöbb felhasználó az előre kijelölt beállítást választja. A terület és a billentyűzet beállításának lehetősége kevésbé láthatóan jelenik meg a felügyelt munkamenet indításakor.
+
+      Ha a házirend be van állítva, és az automatikus bejelentkezés is aktív (részletek: |DeviceLocalAccountAutoLoginId| és |DeviceLocalAccountAutoLoginDelay| házirendek), akkor az automatikusan induló felügyelt munkamenet az első ajánlott területi beállítást és a vonatkozó legnépszerűbb billentyűzetkiosztást választja.
+
+      Az előre kijelölt billentyűzetkiosztás mindig az előre kijelölt területi beállításhoz tartozó legnépszerűbb kiosztás.
+
+      A házirend értéke csak ajánlott lehet. A házirend segítségével bizonyos területi beállításokat a lista elejére helyezhet, de a felhasználók mindig választhatnak a <ph name="PRODUCT_OS_NAME" /> által támogatott beállítások közül.
+      </translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
 <translation id="3414260318408232239">Ha a házirend nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> az alapértelmezés szerinti legkisebb verziót használja majd, amely a TLS 1.0.
 
@@ -1088,6 +1111,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke igaz, vagy ha nincs beállítva, a felhasználók beválthatnak ajánlatokat Chrome OS-regisztráció útján.
 
       Ha a házirend értéke hamis, a felhasználók nem válthatnak be ajánlatokat.</translation>
+<translation id="4008507541867797979">Ha házirend nincs beállítva, vagy értéke igaz, akkor a <ph name="PRODUCT_OS_NAME" /> megjeleníti a meglévő felhasználókat a bejelentkezési képernyőn, és lehetővé teszi a választást közülük.
+
+      Ha a házirend értéke hamis, akkor a <ph name="PRODUCT_OS_NAME" /> nem jeleníti meg a meglévő felhasználókat a bejelentkezési képernyőn. A szokványos bejelentkezési képernyő (e-mail-cím és jelszó, vagy telefonszám) vagy a SAML közbeiktatott képernyő (ha engedélyezve van: <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" /> házirend) jelenik meg, kivéve felügyelt munkamenet esetén. Felügyelt munkamenet beállításakor csak a felügyelt munkamenethez tartozó fiókok jelennek meg választási lehetőségekként.
+
+      Fontos, hogy ez a házirend nem befolyásolja a helyi felhasználói adatok megtartását/elvetését.</translation>
 <translation id="4010738624545340900">Fájlkiválasztási párbeszédablakok hívásának engedélyezése</translation>
 <translation id="4012737788880122133">Ha igaz értékre van állítva, letiltja az automatikus frissítéseket.
 
@@ -1478,6 +1506,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke igaz, vagy nincs megadva, akkor engedélyezve van a lapéletciklus funkció.</translation>
 <translation id="5208240613060747912">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem jeleníthetnek meg értesítéseket. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultNotificationsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="5219844027738217407">Az Android-alkalmazások esetében ez a házirend csak a mikrofonra vonatkozik. Ha a házirend beállítása igaz, a rendszer kivétel nélkül valamennyi Android-alkalmazásra vonatkozóan némítja a mikrofont.</translation>
+<translation id="5228316810085661003">Az eszköz helyi fiókjaira vonatkozó bejelentkezési késleltetés.
+
+      Ha a |DeviceLocalAccountAutoLoginId| házirend nincs beállítva, ennek a házirendnek nincs hatása. Egyébként:
+
+      Ha ez a házirend be van állítva, akkor azt a tétlen időtartamot határozza meg, amely után az eszköz automatikusan bejelentkezik a |DeviceLocalAccountAutoLoginId| házirend által meghatározott helyi fiókba.
+
+      Ha a házirend nincs beállítva, akkor 0 ezredmásodperc a várakozási idő.
+
+      A házirend értéke ezredmásodpercben értendő.</translation>
 <translation id="523505283826916779">Kisegítő beállítások</translation>
 <translation id="5247006254130721952">Veszélyes letöltések letiltása</translation>
 <translation id="5248863213023520115">Meghatározza az engedélyezett titkosítási típusokat, amikor <ph name="MS_AD_NAME" />-szerverről kér le Kerberos-jegyeket.
@@ -1498,6 +1535,12 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5272684451155669299">Ha igaz, a felhasználó a Chrome-eszközök hardverei segítségével távolról tanúsíthatja azonosságát az adatvédelmi CA-nál a(z) <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> segítségével és a(z) <ph name="CHALLENGE_USER_KEY_FUNCTION" /> használatával.
 
           Ha hamis, illetve nincs beállítva, akkor az API hívásai sikertelenek lesznek, és hibakódot adnak vissza.</translation>
+<translation id="5277806246014825877">A Crostini futtatásának engedélyezése a felhasználó számára.
+
+      Ha a házirend beállítása hamis, akkor a Crostini nincs engedélyezve a felhasználó számára.
+      Ha igaz, vagy nincs beállítva, akkor a Crostini engedélyezve van a felhasználó számára, amennyiben a többi beállítás megengedi.
+      A VirtualMachinesAllowed, a CrostiniAllowed és a DeviceUnaffiliatedCrostiniAllowed házirend értékének is igaznak kell lennie a Crostini futtatásához.
+      A hamis értékre módosított házirend csak az új Crostini-tárolókra érvényesül – a már futó tárolókat nem állítja le.</translation>
 <translation id="5283457834853986457">Beépülőmodul-kereső letiltása (megszüntetve)</translation>
 <translation id="5288772341821359899">Az irányelvet beállítva a WebRTC által használt UDP-porttartomány a megadott portintervallumra korlátozódik (a végpontokkal együtt).
 
@@ -1534,6 +1577,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5370279767682621504">A HTTP/0.9 támogatás engedélyezése a nem alapértelmezett portokon</translation>
 <translation id="5378985487213287085">Meghatározhatja, hogy a weboldalak megjeleníthessenek-e asztali értesítéseket. Az asztali értesítések megjelenítése lehet alapértelmezés szerint engedélyezett, alapértelmezés szerint tiltott, vagy megkérdezheti a felhasználót minden alkalommal, amikor egy webhely asztali értesítéseket kíván megjeleníteni. Ha a házirend konfigurálatlanul marad, a rendszer az "AskNotifications" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="538108065117008131">A következő tartalomtípusok kezelésének engedélyezése a <ph name="PRODUCT_FRAME_NAME" /> számára.</translation>
+<translation id="5391388690191341203">Az automatikus bejelentkezés helyi fiókja</translation>
 <translation id="5392172595902933844">Információk küldése az Android állapotáról a
       szervernek.
 
@@ -1558,6 +1602,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5457924070961220141">Lehetővé teszi az alapértelmezett HTML-megjelenítő konfigurálását, ha a(z) <ph name="PRODUCT_FRAME_NAME" /> telepítve van. Ha a házirend beállítatlanul marad, akkor az alapértelmezett beállítás az, hogy a gazdagép böngészője végzi a megjelenítést, de a felhasználó ezt opcionálisan felülbírálhatja, és megjelenítheti a HTML oldalakat alapértelmezés szerint a(z) <ph name="PRODUCT_FRAME_NAME" /> segítségével.</translation>
 <translation id="5464816904705580310">Felügyelt felhasználók beállításainak konfigurálása.</translation>
 <translation id="546726650689747237">Képernyő elsötétítésének késleltetése hálózati áramról való működés során</translation>
+<translation id="5469143988693423708">A felhasználó számára engedélyezett a Crostini futtatása</translation>
 <translation id="5469825884154817306">Képek letiltása ezeken az webhelyeken</translation>
 <translation id="5475361623548884387">Nyomtatás engedélyezése</translation>
 <translation id="547601067149622666">Hirdetések tiltása a tolakodó hirdetéseket tartalmazó webhelyeken</translation>
@@ -1609,6 +1654,9 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Felhívjuk figyelmét, hogy nem javasoljuk ennek a módszernek a használatát, ugyanis lehetővé teheti a nameConstraints bővítmény megkerülését. Ez a bővítmény szolgál annak korlátozására, hogy az adott tanúsítvány mely gazdagépnevekhez kaphat jogosultságot.
 
       Ha a házirend nincs beállítva, vagy ha az értéke hamis, akkor a DNS-nevet vagy IP-címet tartalmazó subjectAlternativeName bővítménnyel nem rendelkező szervertanúsítványokat a böngésző nem fogja megbízhatónak tekinteni.</translation>
+<translation id="5581292529942108810">A Chrome Reporting Extension házirendjeinek konfigurálása.
+
+      A házirend csak bekapcsolt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> mellett és <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényesül.</translation>
 <translation id="5584132346604748282">Az androidos Google-helyszolgáltatásokat vezérli</translation>
 <translation id="5586942249556966598">Ne tegyen semmit</translation>
 <translation id="5630352020869108293">Utolsó munkamenet visszaállítása</translation>
@@ -1845,6 +1893,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6310223829319187614">A domainnév felhasználói bejelentkezés közbeni automatikus kiegészítésének engedélyezése</translation>
 <translation id="6315673513957120120">A Chrome figyelmeztető oldalt jelenít meg, amikor a felhasználó SSL-hibával rendelkező webhelyre navigál. Alapértelmezés szerint, illetve a házirend igaz értékre állításakor a felhasználók továbbléphetnek az ilyen figyelmeztető oldalakról.
       Ha a házirend értéke hamis, akkor a felhasználók nem juthatnak tovább a figyelmeztető oldalon.</translation>
+<translation id="6352543686437322588">Az eszköz helyi fiókja, amelybe a rendszer adott várakozás után automatikusan bejelentkezik.
+
+      Ha a házirend be van állítva, a megadott munkamenet automatikusan elindul, amennyiben a bejelentkezési képernyőn adott idő eltelik felhasználói tevékenység nélkül. Az eszköz helyi fiókját előre konfigurálni kell (részletek: |DeviceLocalAccounts|).
+
+      Ha a házirend nincs beállítva, az eszköz nem indít automatikus bejelentkezést.</translation>
 <translation id="6353901068939575220">Megadja az URL-ek POST metódussal történő keresésekor használt paramétereket. Vesszővel elválasztott név–érték párokat tartalmaz. Ha az egyik érték egy sablonparaméter, ami a fenti példában a {searchTerms}, valódi keresési kifejezések kerülnek a helyére.
 
           Ez egy opcionális házirend. Ha nincs beállítva, a keresési kérelmet a rendszer a GET metódus segítségével továbbítja.
@@ -2197,6 +2250,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ha nem állítja be a házirendet, a felhasználó manuálisan tudja módosítani ezt a beállítást.</translation>
 <translation id="723103540848640830">A lezárási képernyőhöz tartozó PIN-kód minimális hosszának beállítása</translation>
+<translation id="7232816984286843471">Ha a házirend értéke hamis, a nem társított felhasználók nem használhatják a Crostinit.
+
+      Ha a házirend nincs beállítva, vagy értéke igaz, minden felhasználó használhatja a Crostinit, amennyiben a többi beállítás megengedi.
+      A VirtualMachinesAllowed, a CrostiniAllowed és a DeviceUnaffiliatedCrostiniAllowed házirend értékének is igaznak kell lennie a Crostini futtatásához.
+      A hamis értékre módosított házirend csak az új Crostini-tárolókra érvényesül – a már futó tárolókat nem állítja le</translation>
 <translation id="7234280155140786597">A letiltott natív üzenetkezelő gazdagépek nevei (vagy * az összes esetén)</translation>
 <translation id="7236775576470542603">A bejelentkezési képernyőn engedélyezett nagyító alapértelmezett típusának beállítása.
 
@@ -2244,6 +2302,12 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7311458740754205918">Ha igazra van állítva, vagy ha nincs beállítva, az Új lap oldalon megjelenhetnek javaslatok a felhasználó böngészési előzményei, érdeklődési körei vagy tartózkodási helye alapján.
 
       Ha a beállítás hamis, akkor nem jelennek meg automatikusan generált tartalomjavaslatok az Új lap oldalon.</translation>
+<translation id="7313793931637495417">Ez a házirend szabályozza, hogy készüljön-e jelentés verzióadatokról (pl. operációs rendszer verziója, platformja, architektúrája, <ph name="PRODUCT_NAME" />-verzió, <ph name="PRODUCT_NAME" />-csatorna).
+
+      Ha a házirend nincs beállítva, vagy értéke igaz, akkor megtörténik a verzióadatok begyűjtése.
+      Ha a házirend értéke hamis, akkor nem történik meg a verzióadatok begyűjtése.
+
+      A házirend csak bekapcsolt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> mellett és <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényesül.</translation>
 <translation id="7323896582714668701">A(z) <ph name="PRODUCT_NAME" /> további parancssori paraméterei</translation>
 <translation id="7326394567531622570">Hasonló a Wipe-hoz (2. érték), azonban igyekszik megőrizni a bejelentkezési tokeneket, hogy a felhasználónak ne kelljen újra bejelentkeznie.</translation>
 <translation id="7329842439428490522">Megadja azt a felhasználói bevitel nélküli időtartamot, amely után a rendszer kikapcsolja a képernyőt, ha akkumulátorról működik.
@@ -2274,6 +2338,12 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7349338075015720646">Megadja a „csendesen”, felhasználói beavatkozás nélkül telepített webhelyek listáját. Ezeket a webhelyeket a felhasználó nem távolíthatja el és nem tilthatja le.
 
       A házirend listáján szereplő összes elemnek két tagja van: „url” és „launch_container”. Az „url" a telepítendő internetes alkalmazás URL-je, míg a „launch_container” értéke vagy „window” (ablak), vagy „tab” (lap), amely jelzi, hogy a böngésző hogyan nyitja meg az internetes alkalmazást a telepítés után. Ha a „launch_container” nincs megadva, akkor az alkalmazás ablakban nyílik meg, ha a Chrome progresszív webes alkalmazásnak tekinti, és lapon, ha nem.</translation>
+<translation id="735902178936442460">Ez a házirend szabályozza, hogy készüljön-e jelentés az olyan adatokról, amelyek alkalmasak az eszközök azonosítására (pl. eszköz neve, hálózati cím).
+
+      Ha a házirend nincs beállítva, vagy értéke igaz, akkor megtörténik az eszközök azonosítására alkalmas adatok begyűjtése.
+      Ha a házirend értéke hamis, akkor nem történik meg az eszközök azonosítására alkalmas adatok begyűjtése.
+
+      A házirend csak bekapcsolt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> mellett és <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényes.</translation>
 <translation id="7367028210010532881">A Biztonságos Böngészés szolgáltatás figyelmeztető oldalt jelenít meg, ha a felhasználó esetlegesen rosszindulatúként megjelölt oldalra lép. A beállítás engedélyezése megakadályozza, hogy a felhasználó a figyelmeztető oldalról továbblépjen a rosszindulatú webhelyre.
 
       Ha a beállítás le van tiltva vagy nincs megadva, akkor a felhasználók dönthetik el, hogy a figyelmeztetés megtekintése után továbblépnek-e a megjelölt webhelyre.
@@ -2517,6 +2587,14 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7976157349247117979">A(z) <ph name="PRODUCT_NAME" /> céljának neve</translation>
 <translation id="7980227303582973781">Speciális korlátozás nélkül</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Ez a házirend szabályozza, hogy futhatnak-e virtuális gépek a Chrome OS rendszeren.
+
+      Ha a házirend értéke igaz, az eszközön futhatnak virtuális gépek.
+      Ha a házirend értéke hamis, az eszközön nem futhatnak virtuális gépek.
+      A VirtualMachinesAllowed, a CrostiniAllowed és a DeviceUnaffiliatedCrostiniAllowed házirend értékének is igaznak kell lennie a Crostini futtatásához.
+      A hamis értékre módosított házirend csak az új virtuális gépekre érvényesül – a már futó virtuális gépeket nem állítja le.
+      Ha a házirend nincs beállítva felügyelt eszközön, akkor az eszközön nem futtathatók virtuális gépek.
+      A nem felügyelt eszközökön engedélyezett a virtuális gépek futtatása.</translation>
 <translation id="802147957407376460">Képernyő elforgatása 0 fokkal</translation>
 <translation id="8033913082323846868">Ez a házirend megszűnt az M70-es kiadásban. Használja helyette az AutofillAddressEnabled és az AutofillCreditCardEnabled házirendeket.
 
@@ -2561,10 +2639,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha a házirend nincs beállítva, a rendszer egy alapértelmezett időtartamot használ.
 
           A házirend értékét ezredmásodpercben kell megadni. Az értéknek kisebbnek kell lennie a tétlenségi késleltetésnél.</translation>
+<translation id="8138009212169037227">Ez a házirend szabályozza, hogy készüljön-e jelentés a házirendadatokról és a házirend lekérésének idejéről.
+
+      Ha a házirend nincs beállítva, vagy értéke igaz, akkor megtörténik a házirendadatok, illetve a lekérésük idejére vonatkozó dátum- és időadatok begyűjtése.
+      Ha a házirend értéke hamis, akkor nem történik meg a házirendadatok, illetve a lekérésük idejére vonatkozó dátum- és időadatok begyűjtése.
+
+      A házirend csak bekapcsolt <ph name="CHROME_REPORTING_EXTENSION_NAME" /> mellett és <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> nevű tokent felhasználva érvényes.</translation>
 <translation id="8140204717286305802">A hálózati interfészek típusokat és hardvercímeket tartalmazó listájának jelentése a szerver felé.
 
       Ha az irányelv értéke hamis, az interfészek listáját a rendszer nem jelenti.</translation>
 <translation id="8141795997560411818">A házirend nem akadályozza meg, hogy a felhasználó használhassa az androidos Google Drive alkalmazást. Ha szeretné megakadályozni a Google Drive-hoz való hozzáférést, akkor az androidos Google Drive alkalmazás telepítését is le kell tiltania.</translation>
+<translation id="8142894094385450823">Felügyelt munkamenet ajánlott területi beállításainak meghatározása</translation>
 <translation id="8146727383888924340">Ajánlatok beváltásának engedélyezése a felhasználók számára Chrome OS-regisztráció útján</translation>
 <translation id="8148785525797916822">Elveti a figyelmeztetést, amely akkor jelenik meg, ha a <ph name="PRODUCT_NAME" /> a továbbiakban már nem támogatott számítógépen vagy operációs rendszeren fut.</translation>
 <translation id="8148901634826284024">A nagy kontrasztú mód kisegítő lehetőség engedélyezése.
@@ -2612,6 +2697,29 @@ Ezek a házirendek kizárólag a <ph name="PRODUCT_NAME" /> vállalaton belüli 
 Nincs szükség a beállítások manuális konfigurációjára. A Windows, Mac és Linux rendszeren egyszerűen használható sablonok letölthetők innen: <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha a házirendek regisztrációs adatbázison keresztül történő létrehozása támogatott egyes Windows-példányoknál, amelyek csatlakoztak a <ph name="MS_AD_NAME" /> domainhez.</translation>
+<translation id="8264653492961233132">Azon alkalmazások és bővítmények listája, melyek telepítése a háttérben,
+          felhasználói beavatkozás nélkül történik, és melyeket a felhasználó
+          nem távolíthat el és tilthat le. A rendszer implicit módon, felhasználói
+          beavatkozás nélkül megadja az alkalmazások/bővítmények által kért
+          összes engedélyt, beleértve az alkalmazás/bővítmény jövőbeli verziói
+          által kért további engedélyeket is. Ezenkívül megkapják az engedélyeket
+          az enterprise.deviceAttributes és az enterprise.platformKeys bővítmény-
+          API-k is. (Ez a két API nem áll rendelkezésre a nem kényszerítve
+          telepített alkalmazások és bővítmények esetében.)
+
+          Ez a házirend elsőbbséget élvez az esetlegesen ütköző <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> házirenddel szemben. Ha egy korábban kényszerítve telepített alkalmazást vagy bővítményt töröl erről a listáról, a <ph name="PRODUCT_NAME" /> automatikusan eltávolítja.
+
+          Azon Windows-példányokon, amelyek nem csatlakoztak valamely <ph name="MS_AD_NAME" />-domainhez, a kényszerített telepítés csak a Chrome Internetes áruházban megtalálható alkalmazások és bővítmények esetében alkalmazható.
+
+          Felhívjuk figyelmét, hogy a felhasználók bármelyik bővítmény forráskódját módosíthatják a fejlesztői eszközök segítségével (és esetleg működésképtelenné tehetik a bővítményt). Ha ez problémát jelent, állítsa be a <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> házirendet.
+
+          A házirend listájában lévő összes elem olyan karakterlánc, amely egy bővítményazonosítót és tetszőlegesen egy pontosvesszővel (<ph name="SEMICOLON" />) elválasztott „frissítési” URL-t tartalmaz. A bővítményazonosító az a 32 betűből álló karakterlánc, amelyet például itt tekinthet meg fejlesztői módban: <ph name="CHROME_EXTENSIONS_LINK" />. Ha megadja a „frissítési” URL-t, annak egy frissítési manifest XML-dokumentumra kell mutatnia, melynek leírását itt találja: <ph name="LINK_TO_EXTENSION_DOC1" />. A böngésző alapértelmezés szerint a Chrome Internetes áruház frissítési URL-jét használja (jelenleg: „https://clients2.google.com/service/update2/crx”). Felhívjuk figyelmét, hogy a jelen házirendben megadott „frissítési” URL csak az első telepítéshez használatos; a bővítmény további frissítései a bővítmény manifest fájljában feltüntetett URL-en keresztül történnek. A „frissítési” URL kifejezett megadása a <ph name="PRODUCT_NAME" /> 67-es verziójáig bezárólag volt kötelező.
+
+          Például a(z) <ph name="EXTENSION_POLICY_EXAMPLE" /> karakterlánc a(z) <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> alkalmazást telepíti a Chrome Internetes áruház általános „frissítési” URL-jéről. A bővítmények tárolásával kapcsolatban itt talál további információt: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Ha a házirend nincs beállítva, akkor a rendszer egyetlen alkalmazást vagy bővítményt sem telepít automatikusan, a felhasználó pedig törölheti a <ph name="PRODUCT_NAME" /> bármely telepített alkalmazását és bővítményét.
+
+          Fontos, hogy ez a házirend nem vonatkozóik az inkognitómódra.</translation>
 <translation id="8274603902181597201">A felhasználó ecryptfs kezdőkönyvtárának törlése és tiszta lappal, ext4 titkosítású kezdőkönyvtárral való kezdés.</translation>
 <translation id="8285435910062771358">Teljes képernyős nagyító bekapcsolása</translation>
 <translation id="8288199156259560552">Engedélyezi az androidos Google Helyszolgáltatásokat</translation>
@@ -2890,6 +2998,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, amelyek nem csatlakoznak <ph name="MS_AD_NAME" />-domainhez.</translation>
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
 <translation id="9042911395677044526">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását <ph name="PRODUCT_OS_NAME" /> eszközre. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9077227880520270584">A helyi fiókos automatikus bejelentkezés időzítője</translation>
 <translation id="9084985621503260744">Megadja, hogy a videotevékenység hatással van-e az energiagazdálkodásra</translation>
 <translation id="9088433379343318874">Felügyelt felhasználó tartalomszolgáltatójának engedélyezése</translation>
 <translation id="9088444059179765143">Az automatikus időzóna-érzékelés módszerének konfigurálása</translation>

@@ -8,6 +8,7 @@
 <translation id="1008186147501209563">Exportar favoritos</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Página sem resposta}one{Páginas sem resposta}other{Páginas sem resposta}}</translation>
 <translation id="1012794136286421601">Seus arquivos do Google Docs, Planilhas, Apresentações e Desenhos estão sendo sincronizados. Abra o aplicativo Google Drive para acessá-los on-line ou off-line.</translation>
+<translation id="1012876632442809908">Dispositivo USB-C (porta frontal)</translation>
 <translation id="1013707859758800957">Foi permitida a execução de um plug-in sem sandbox nesta página.</translation>
 <translation id="1015318665228971643">Editar nome da pasta</translation>
 <translation id="1016437870506746108">{COUNT,plural, =0{Abrir tudo em &amp;nova janela}=1{Abrir em &amp;nova janela}one{Abrir tudo (#) em &amp;nova janela}other{Abrir tudo (#) em &amp;nova janela}}</translation>
@@ -136,6 +137,7 @@
 <translation id="1189418886587279221">Ative recursos de acessibilidade para facilitar o uso do seu dispositivo.</translation>
 <translation id="1190144681599273207">A busca deste arquivo usará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Acessar um arquivo armazenado no seu computador}one{Acessar # arquivos armazenados no seu computador.}other{Acessar # arquivos armazenados no seu computador}}</translation>
+<translation id="1193273168751563528">Entrar na sessão gerenciada</translation>
 <translation id="1195076408729068893">Para iniciar o Smart Lock, digite sua senha. Na próxima vez, você poderá usar seu smartphone para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1195447618553298278">Erro desconhecido.</translation>
 <translation id="119738088725604856">Janela de captura de tela</translation>
@@ -203,6 +205,7 @@
 <translation id="1288037062697528143">O Modo noturno será ativado automaticamente ao anoitecer</translation>
 <translation id="1288300545283011870">Propriedades da fala</translation>
 <translation id="1293177648337752319">Parar de ignorar site</translation>
+<translation id="1293264513303784526">Dispositivo USB-C (porta da esquerda)</translation>
 <translation id="1293556467332435079">Arquivos</translation>
 <translation id="1295794900245526845">Selecionar sua conta salva com o <ph name="PASSWORD_MANAGER_BRAND" /> para fazer login</translation>
 <translation id="1296497012903089238">Tipo de certificado</translation>
@@ -518,7 +521,6 @@
 <translation id="1744060673522309905">Não é possível vincular o dispositivo ao domínio. Verifique se você não excedeu o número de dispositivos que podem ser adicionados.</translation>
 <translation id="1744108098763830590">página de plano de fundo</translation>
 <translation id="1745520510852184940">Sempre fazer isso</translation>
-<translation id="1746417874336251387">Oferecer novos recursos que usam a conexão do seu smartphone ao Chromebook</translation>
 <translation id="174937106936716857">Contagem total de arquivos</translation>
 <translation id="175196451752279553">R&amp;eabrir guia fechada</translation>
 <translation id="1753905327828125965">Mais visitados</translation>
@@ -601,6 +603,7 @@
 <translation id="1861262398884155592">Esta pasta está vazia</translation>
 <translation id="1864111464094315414">Login</translation>
 <translation id="1864400682872660285">Mais frias</translation>
+<translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
 <translation id="1864676585353837027">Alterar a forma como esses arquivos são compartilhados</translation>
 <translation id="1864756863218646478">O arquivo não foi encontrado.</translation>
 <translation id="1865678028973512614">Excluir arquivos</translation>
@@ -1236,6 +1239,7 @@
 <translation id="2838379631617906747">Instalando</translation>
 <translation id="2841837950101800123">Provedor</translation>
 <translation id="2843806747483486897">Alterar padrão...</translation>
+<translation id="2844169650293029770">Dispositivo USB-C (porta frontal da esquerda)</translation>
 <translation id="2845382757467349449">Sempre mostrar a barra de favoritos</translation>
 <translation id="2847759467426165163">Transmitir para</translation>
 <translation id="284805635805850872">Remover software perigoso?</translation>
@@ -1313,6 +1317,7 @@
 <translation id="29488703364906173">Um navegador da Web rápido, simples e seguro, desenvolvido para a Web moderna.</translation>
 <translation id="2951247061394563839">Centralizar janela</translation>
 <translation id="2958721676848865875">Aviso de extensão de pacote</translation>
+<translation id="296026337010986570">Pronto! Software perigoso removido. Para reativar as extensões, visite &lt;a href="chrome://extensions"&gt;Extensões&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensão fornecida)</translation>
 <translation id="2961695502793809356">Clique para avançar, mantenha pressionado para ver o histórico</translation>
 <translation id="2963151496262057773">Este plug-in não responde: <ph name="PLUGIN_NAME" />. Quer interrompê-lo?</translation>
@@ -1330,6 +1335,7 @@
 <translation id="2986010903908656993">O controle total de dispositivos MIDI foi bloqueado nesta página.</translation>
 <translation id="2989474696604907455">não conectado</translation>
 <translation id="2989786307324390836">binário codificado por DER, certificado único</translation>
+<translation id="2992931425024192067">Mostrar todo o conteúdo de notificações</translation>
 <translation id="2993517869960930405">Informações sobre o aplicativo</translation>
 <translation id="2994669386200004489">Não foi possível fazer backup do arquivo <ph name="FILE_NAME" /></translation>
 <translation id="299483336428448530">Instalada pelo seu pai/mãe.</translation>
@@ -1573,6 +1579,7 @@
 <translation id="3367047597842238025">Configure o <ph name="DEVICE_TYPE" /> como você quiser e descubra todos os recursos incríveis ao seu alcance.</translation>
 <translation id="3368922792935385530">Conectado</translation>
 <translation id="3369624026883419694">Resolvendo host...</translation>
+<translation id="3371140690572404006">Dispositivo USB-C (porta frontal da direita)</translation>
 <translation id="337286756654493126">Permissão de leitura em pastas que você abre no aplicativo</translation>
 <translation id="3378503599595235699">Manter os dados locais só até você sair do navegador</translation>
 <translation id="3378572629723696641">Esta extensão pode ter sido corrompida.</translation>
@@ -1621,7 +1628,7 @@
 <translation id="3440663250074896476">Mais ações para <ph name="BOOKMARK_NAME" /></translation>
 <translation id="3440761377721825626">Perguntar quando um site quiser usar um plug-in para acessar seu computador</translation>
 <translation id="3441653493275994384">Tela</translation>
-<translation id="344339666025504323"><ph name="FOOTNOTE_TARGET" />Os recursos variam de acordo com o dispositivo</translation>
+<translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="344630545793878684">Leia seus dados em uma série de websites</translation>
 <translation id="3449839693241009168">Pressione <ph name="SEARCH_KEY" /> para enviar comandos para <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Porcentagem de ocupação em estado de inatividade</translation>
@@ -1635,7 +1642,6 @@
 <translation id="3462413494201477527">Cancelar a configuração da conta?</translation>
 <translation id="346431825526753">Esta é uma conta para as crianças gerenciada por <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3465566417615315331">Clique na sua foto</translation>
-<translation id="3465800511193611451">Aguardando verificação. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" />.</translation>
 <translation id="3466147780910026086">Verificando seu dispositivo de mídia...</translation>
 <translation id="3467267818798281173">Solicite sugestões ao Google</translation>
 <translation id="3468275649641751422">Fazer streaming de um arquivo de vídeo ou áudio</translation>
@@ -1675,6 +1681,7 @@
 <translation id="351152300840026870">Fonte de largura pré-determinada</translation>
 <translation id="3511528412952710609">Pequeno</translation>
 <translation id="3514373592552233661">Se mais de uma rede estiver disponível, as preferenciais terão precedência sobre outras redes conhecidas</translation>
+<translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="3523642406908660543">Perguntar quando um site quiser usar um plug-in para acessar seu computador (recomendado)</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3527276236624876118">Foi criado o usuário supervisionado <ph name="USER_DISPLAY_NAME" />.</translation>
@@ -1717,6 +1724,7 @@
 <translation id="358796204584394954">Digite este código no "<ph name="DEVICE_NAME" />" para o pareamento:</translation>
 <translation id="3589766037099229847">Conteúdo inseguro bloqueado</translation>
 <translation id="3590194807845837023">Desbloquear perfil e reiniciar</translation>
+<translation id="3590295622232282437">Entrando em uma sessão gerenciada.</translation>
 <translation id="3592260987370335752">&amp;Saiba mais</translation>
 <translation id="359283478042092570">Entrar</translation>
 <translation id="3593965109698325041">Restrições de nome do certificado</translation>
@@ -2016,6 +2024,7 @@
 <translation id="399179161741278232">Importado</translation>
 <translation id="3994374631886003300">Desbloqueie seu smartphone e aproxime-o para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
 <translation id="3994878504415702912">&amp;Zoom</translation>
+<translation id="3995138139523574647">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="40027638859996362">Deslocar palavras</translation>
 <translation id="4005817994523282006">Método de detecção de fuso horário</translation>
@@ -2316,7 +2325,6 @@
 <translation id="4538417792467843292">Excluir palavra</translation>
 <translation id="4538684596480161368">Sempre bloquear plug-ins sem sandbox em <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Instalada pela política empresarial.</translation>
-<translation id="4539754285405390318">"Better Together" pode:</translation>
 <translation id="4542520061254486227">Leia seus dados em <ph name="WEBSITE_1" /> e <ph name="WEBSITE_2" /></translation>
 <translation id="4543733025292526486">esc</translation>
 <translation id="4543778593405494224">Gerenciador de certificados</translation>
@@ -2564,6 +2572,7 @@
 <translation id="4890773143211625964">Mostrar opções avançadas de impressora</translation>
 <translation id="4891089016822695758">Fórum do Beta</translation>
 <translation id="4893336867552636863">Isso excluirá permanentemente os dados de navegação deste dispositivo.</translation>
+<translation id="4893522937062257019">Na tela de bloqueio</translation>
 <translation id="4898011734382862273">O certificado "<ph name="CERTIFICATE_NAME" />" representa uma Autoridade de certificação</translation>
 <translation id="489985760463306091">Para terminar de remover o software nocivo, reinicie o computador</translation>
 <translation id="4900392736118574277">Sua página de inicialização foi alterada para <ph name="URL" />.</translation>
@@ -2660,6 +2669,7 @@
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5045550434625856497">Senha incorreta</translation>
+<translation id="504561833207953641">Abrindo em uma sessão de navegador existente.</translation>
 <translation id="5047421709274785093">Impedir que sites usem sensores de luz e movimento</translation>
 <translation id="5050042263972837708">Nome do grupo</translation>
 <translation id="5052499409147950210">Editar site</translation>
@@ -2855,6 +2865,7 @@
 <translation id="5330512191124428349">Ver informações</translation>
 <translation id="5331069282670671859">Você não tem certificados nesta categoria</translation>
 <translation id="5331425616433531170">"<ph name="CHROME_EXTENSION_NAME" />" deseja parear com</translation>
+<translation id="5331975486040154427">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="5332624210073556029">Fuso horário:</translation>
 <translation id="5334142896108694079">Cache de script</translation>
 <translation id="5334844597069022743">Exibir código fonte</translation>
@@ -2868,6 +2879,7 @@
 <translation id="5341980496415249280">Aguarde, empacotando...</translation>
 <translation id="5342091991439452114">O PIN deve ter no mínimo <ph name="MINIMUM" /> dígitos</translation>
 <translation id="5352033265844765294">Carimbo de data/hora</translation>
+<translation id="5352285283572729470">Esta configuração é gerenciada</translation>
 <translation id="5353252989841766347">Exportar senhas do Chrome</translation>
 <translation id="5355097969896547230">Localizar novamente</translation>
 <translation id="5355926466126177564">A extensão "<ph name="EXTENSION_NAME" />" alterou a página que é exibida quando você pesquisa na Omnibox.</translation>
@@ -3180,6 +3192,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5800020978570554460">O arquivo de destino foi truncado ou removido desde o último download.</translation>
 <translation id="5801568494490449797">Preferências</translation>
 <translation id="5804241973901381774">Permissões</translation>
+<translation id="5805697420284793859">Gerenciador de janelas</translation>
 <translation id="580571955903695899">Reordenar por título</translation>
 <translation id="5807290661599647102">Definir um bloqueio de tela</translation>
 <translation id="5811750797187914944">Tudo pronto</translation>
@@ -3252,6 +3265,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5906732635754427568">Os dados associados a este app serão removidos deste dispositivo.</translation>
 <translation id="5908769186679515905">Impedir que sites executem Flash</translation>
 <translation id="5910363049092958439">Sal&amp;var imagem como...</translation>
+<translation id="5911533659001334206">Visualizador de atalhos</translation>
 <translation id="5911737117543891828">Arquivos off-line temporários do Google Drive serão excluídos. Os arquivos que você definiu como disponíveis off-line não serão excluídos deste dispositivo.</translation>
 <translation id="5911887972742538906">Ocorreu um erro durante a instalação do aplicativo Linux.</translation>
 <translation id="5912378097832178659">&amp;Editar mecanismos de pesquisa...</translation>
@@ -3416,7 +3430,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6144938890088808325">Ajudar a melhorar os Chromebooks</translation>
 <translation id="6146563240635539929">Vídeos</translation>
 <translation id="6147020289383635445">A visualização de impressão falhou.</translation>
-<translation id="6148052338549899048">Nenhum dispositivo qualificado. <ph name="LINK_BEGIN" />Saiba mais.<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">Tente:</translation>
 <translation id="6150853954427645995">Para salvar este arquivo para uso off-line, fique on-line novamente, clique com o botão direito no arquivo e selecione a opção <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">Pressione <ph name="SEARCH_KEY" /> para pesquisar <ph name="SITE_NAME" /></translation>
@@ -3648,6 +3661,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="648637985389593741">Ative os recursos de sincronização e personalização</translation>
 <translation id="6488384360522318064">Selecionar idioma</translation>
 <translation id="648927581764831596">Nenhum disponível</translation>
+<translation id="6490471652906364588">Dispositivo USB-C (porta da direita)</translation>
 <translation id="6491376743066338510">Falha na autorização</translation>
 <translation id="6492313032770352219">Tamanho no disco:</translation>
 <translation id="6494445798847293442">Não é uma Autoridade de certificação</translation>
@@ -3768,7 +3782,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6664237456442406323">Infelizmente, seu computador está configurado com um ID de hardware mal formado. Isso impede que o Chrome OS seja atualizado com as correções de segurança mais recentes e, por isso, seu computador <ph name="BEGIN_BOLD" />pode ficar vulnerável a ataques maliciosos<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Ocorreu um erro ao abrir seu perfil. Saia da conta e faça login novamente.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
-<translation id="6674412557034343536">parar timer</translation>
 <translation id="667517062706956822">Quer que o Google traduza esta página de <ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo apontador conectado</translation>
 <translation id="6678717876183468697">URL de consulta</translation>
@@ -3777,6 +3790,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6680650203439190394">Velocidade</translation>
 <translation id="6681668084120808868">Tirar foto</translation>
 <translation id="6681964764822470072">O app "<ph name="APP_NAME" />" será desinstalado.</translation>
+<translation id="6685083257944113180">Parar, <ph name="SINK_NAME" />, <ph name="SINK_STATUS" /></translation>
 <translation id="668599234725812620">Abrir o Google Play</translation>
 <translation id="6686490380836145850">Fechar guias à direita</translation>
 <translation id="6686817083349815241">Salvar sua senha</translation>
@@ -3798,13 +3812,13 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6718273304615422081">Compactando...</translation>
 <translation id="671928215901716392">Bloquear tela</translation>
-<translation id="6720847671508630642">Compartilhe o melhor do Android com seu Chromebook automaticamente. Conecte seu smartphone para enviar mensagens de texto do computador, compartilhar a conexão do smartphone com a Internet e desbloquear a tela do Chromebook.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="6721678857435001674">Veja a marca e o modelo da sua chave de segurança</translation>
 <translation id="6721972322305477112">&amp;Arquivo</translation>
 <translation id="672213144943476270">Desbloqueie seu perfil antes de navegar como convidado.</translation>
 <translation id="6723354935081862304">Imprima no Google Docs e outros destinos de nuvem. <ph name="BEGIN_LINK" />Faça login<ph name="END_LINK" /> para imprimir no Google Cloud Print.</translation>
 <translation id="6723661294526996303">Importar favoritos e configurações...</translation>
 <translation id="6723839937902243910">Energia</translation>
+<translation id="6725073593266469338">Serviço de IU</translation>
 <translation id="6725206449694821596">Protocolo de impressão via Internet (IPP)</translation>
 <translation id="6727005317916125192">Painel anterior</translation>
 <translation id="6732801395666424405">Certificados não carregados</translation>
@@ -4040,6 +4054,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Trocar dados com os dispositivos chamados: <ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">Alternar para lupa de tela cheia</translation>
+<translation id="7098389117866926363">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="7098447629416471489">Outros mecanismos de pesquisa salvos serão exibidos aqui</translation>
 <translation id="7099337801055912064">Não é possível carregar um PPD grande. O tamanho máximo é 250 KB.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> itens selecionados</translation>
@@ -4220,7 +4235,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7366909168761621528">Dados de navegação</translation>
 <translation id="7371006317849674875">Horário de início</translation>
 <translation id="737439367876257440">Ajude a aprimorar o Chrome e a segurança do app enviando informações de uso e do sistema para o Google</translation>
-<translation id="7374989181012106167">O Chromebook funciona ainda melhor com seu smartphone. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" />.</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Destacar o cursor do mouse quando ele estiver se movendo</translation>
 <translation id="7377169924702866686">O Caps Lock está ativado.</translation>
@@ -4257,6 +4271,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7433692219247014412">{COUNT,plural, =0{Abrir tudo em &amp;Nova janela}=1{Abrir em &amp;Nova janela}one{Abrir tudo (#) em &amp;Nova janela}other{Abrir tudo (#) em &amp;Nova janela}}</translation>
 <translation id="7434509671034404296">Desenvolvedor</translation>
 <translation id="7436921188514130341">Ah, não! Ocorreu um erro durante a renomeação.</translation>
+<translation id="7441736921018636843">Para mudar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /> e remova sua senha longa de sincronização</translation>
 <translation id="7441830548568730290">Outros usuários</translation>
 <translation id="7442465037756169001">Seu hardware Hangouts Meet está pronto para ser configurado.</translation>
 <translation id="744341768939279100">Criar um novo perfil</translation>
@@ -4271,7 +4286,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7464490149090366184">Falha na compactação, o item existe: "$1"</translation>
 <translation id="7465778193084373987">URL da revogação do certificado do Netscape</translation>
 <translation id="7469406957790636836">Para ativar essa configuração, primeiro ative a verificação ortográfica em <ph name="BEGIN_LINK" />Idiomas e entrada<ph name="END_LINK" /></translation>
-<translation id="7469518857922439236">Enviar notificações para você e lembrar por padrão deste computador para o app Mensagens</translation>
 <translation id="7469894403370665791">Conectar-se automaticamente a esta rede</translation>
 <translation id="747114903913869239">Erro: Não foi possível decodificar a extensão</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
@@ -4383,6 +4397,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="763632859238619983">Não permitir que nenhum site instale gerenciadores de pagamento</translation>
 <translation id="7639178625568735185">Entendi.</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> conecta você automaticamente a sites qualificados com as senhas que você salvou.</translation>
+<translation id="7642778300616172920">Ocultar conteúdo sensível</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>
 <translation id="7648992873808071793">Armazenar arquivos neste dispositivo</translation>
 <translation id="7649070708921625228">Ajuda</translation>
@@ -4914,6 +4929,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8427292751741042100">incorporado em qualquer host</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="84297032718407999">Você será desconectado em <ph name="LOGOUT_TIME_LEFT" /></translation>
+<translation id="8431190899827883166">Mostrar toques</translation>
 <translation id="8431909052837336408">Alterar PIN do chip</translation>
 <translation id="8434480141477525001">Porta de depuração de Cliente nativo</translation>
 <translation id="8435395510592618362">Verificar sua identidade com <ph name="APP_NAME" /></translation>
@@ -5015,6 +5031,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8584280235376696778">&amp;Abrir vídeo em uma nova guia</translation>
 <translation id="8588866096426746242">Mostrar estatísticas do perfil</translation>
 <translation id="8590375307970699841">Configurar atualizações automáticas</translation>
+<translation id="8592141010104017453">Não mostrar notificações</translation>
 <translation id="8594908476761052472">Capturar vídeo</translation>
 <translation id="8596540852772265699">Arquivos personalizados</translation>
 <translation id="8597845839771543242">Formato da propriedade:</translation>
@@ -5030,7 +5047,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8620765578342452535">Configurar conexões de rede</translation>
 <translation id="8624205858755890468">Permite que o Assistente mostre informações, ações e apps relacionados para você.</translation>
 <translation id="862542460444371744">&amp;Extensões</translation>
-<translation id="8626219642120025691">Timer finalizado</translation>
 <translation id="8627151598708688654">Selecionar fonte</translation>
 <translation id="862727964348362408">Em suspensão</translation>
 <translation id="862750493060684461">Cache CSS</translation>
@@ -5247,6 +5263,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8931394284949551895">Novos dispositivos</translation>
 <translation id="8933960630081805351">&amp;Mostrar no Finder</translation>
 <translation id="8934732568177537184">Continuar</translation>
+<translation id="8938800817013097409">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="8940081510938872932">Seu computador está fazendo muitas coisas no momento. Tente novamente mais tarde.</translation>
 <translation id="8941173171815156065">Revogar a permissão "<ph name="PERMISSION" />"</translation>
 <translation id="8941882480823041320">Palavra anterior</translation>
@@ -5278,6 +5295,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="897939795688207351">Em <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Falhou</translation>
 <translation id="8983677657449185470">Ajude a melhorar a Navegação segura</translation>
+<translation id="8984179138335769204">Início rápido</translation>
 <translation id="8984654317541110628">URL de compartilhamento de arquivos</translation>
 <translation id="8986362086234534611">Esquecer</translation>
 <translation id="8986494364107987395">Envia estatísticas de uso e relatórios de erros ao Google automaticamente</translation>

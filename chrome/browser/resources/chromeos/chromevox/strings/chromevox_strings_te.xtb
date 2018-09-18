@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">కీని కనుగొని, టైప్ చేయడానికి ఎత్తండి</translation>
 <translation id="1012173283529841972">జాబితా అంశం</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">రెండు వేళ్లతో కుడివైపునకు స్వైప్ చేయండి</translation>
 <translation id="1022586497894531524">మీరు ChromeVox ప్రసంగ రూప అభిప్రాయాన్ని మొదటిసారిగా ఉపయోగిస్తున్నారా? ఈ శీఘ్ర ట్యుటోరియల్ ChromeVoxను ప్రారంభించడం కోసం అవసరమైన ముఖ్యమైన వాటి గురించి వివరిస్తుంది.</translation>
 <translation id="1023866615269196768">వ్యాపించింది.</translation>
 <translation id="1025074108959230262">స్టిక్కీ మోడ్ నిలిపివేయబడింది</translation>
@@ -21,6 +22,7 @@
 <translation id="1106741348836243114">ధ్వని అభిప్రాయాన్ని (శబ్ద హెచ్చరికలు) ప్రారంభించండి లేదా ఆపివేయండి.</translation>
 <translation id="1108651818222110612">ఉపశీర్షిక</translation>
 <translation id="1120743664840974483">{"a": "ఆల్ఫా", "b": "బ్రావో", "c": "చార్లీ", "d": "డెల్టా", "e": "ఎకో", "f": "ఫాక్స్‌ట్రాట్", "g": "గోల్ఫ్", "h": "హోటల్", "i": "ఇండియా", "j": "జూలియట్","k": "కిలో", "l": "లీమా", "m": "మైక్", "n": "నవంబర్", "o": "ఆస్కార్","p": "పాపా", "q": "క్యూబెక్", "r": "రోమియో", "s": "సియెర్రా", "t": "ట్యాంగో", "u": "యూనిఫారమ్", "v": "విక్టర్", "w": "విస్కీ","x": "ఎక్స్‌రే", "y": "యాంకీ", "z": "జూలూ"}</translation>
+<translation id="1120938014254001895">రెండు వేళ్లతో పైకి స్వైప్ చేయండి</translation>
 <translation id="1124771028211010580">ప్రస్తుత ప్రదర్శన శైలి ప్రక్కప్రక్కనకు ఉంది.</translation>
 <translation id="113582498867142724"><ph name="NUM" /> అంశాలు గల <ph name="TAG" /> సేకరణ</translation>
 <translation id="1155043339247954670">తదుపరి జాబితా అంశం లేదు.</translation>
@@ -91,6 +93,7 @@
 <translation id="1722567105086139392">లింక్</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">తదుపరి గ్రాఫిక్</translation>
+<translation id="1765245556747822181">ఒక వేలితో పైకి స్వైప్ చేయండి</translation>
 <translation id="1781173782405573156">పాస్ థ్రూ కీ</translation>
 <translation id="1787176709638001873">పాస్‌వర్డ్ సవరణ వచనం</translation>
 <translation id="1802710350767629429">నవీకరణ గమనికలను చూపు</translation>
@@ -137,6 +140,7 @@
 <translation id="2223693656926968778">ప్రస్తుత అంశంపై చర్య తీసుకోండి</translation>
 <translation id="225732394367814946">ప్రసంగ రేటు పెంచండి</translation>
 <translation id="2267945578749931355">తదుపరి అక్షరం</translation>
+<translation id="2278490101488436824">మూడు వేళ్లతో ఎడమవైపునకు స్వైప్ చేయండి</translation>
 <translation id="2281234842553884450">మునుపటి స్లయిడర్</translation>
 <translation id="2294136146931447363">ఇటాలిక్ ప్రారంభం</translation>
 <translation id="2311237334957139798">వివరాల స్థాయి వద్ద మునుపటి దానికి తరలించండి</translation>
@@ -209,17 +213,20 @@
 <translation id="2864481629947106776">మునుపటి లింక్</translation>
 <translation id="2867808975387772810">వివరణపట్టి</translation>
 <translation id="2873259058405069099">పట్టిక ప్రారంభానికి వెళ్లండి</translation>
+<translation id="2879867157561757640">మూడు వేళ్లతో కిందికి స్వైప్ చేయండి</translation>
 <translation id="288178314850623291">నిర్దిష్ట రకాల మూలకాలకు దాటవేయడానికి దాటవేసే ఆదేశాలను ఉపయోగించండి. ముఖ్య శీర్షికల మధ్య ముందుకు మారడానికి, శోధన + H నొక్కండి లేదా వెనుకకు వెళ్లడానికి, శోధన + Shift + H నొక్కండి.</translation>
 <translation id="2894654529758326923">సమాచారం</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{ఎడమ ధనుర్బంధ గుర్తు}other{# ఎడమ ధనుర్బంధ గుర్తులు}}</translation>
 <translation id="2909478709401302630">సూపర్‌స్క్రిప్ట్ ప్రారంభం</translation>
 <translation id="2911433807131383493">ChromeVox ట్యుటోరియల్‌ను తెరవండి</translation>
+<translation id="2912405967290226587">మూడు వేళ్లతో కుడివైపునకు స్వైప్ చేయండి</translation>
 <translation id="2932083475399492303">ఆకృతీకరణ లేదా లేఅవుట్ మధ్య పంక్తి రకాన్ని టోగుల్ చేయండి</translation>
 <translation id="2944762337049891859">పేజీ పూర్తిగా లోడ్ అయిన తర్వాత స్వయంచాలకంగా చదువుతుంది.</translation>
 <translation id="2964026537669811554">శీర్షిక సమూహం</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{ట్యాబ్}other{# ట్యాబ్‌లు}}</translation>
 <translation id="2972078295414139404">మునుపు సందర్శించిన లింక్ లేదు.</translation>
 <translation id="2972205263822847197">సాధన చిట్కా</translation>
+<translation id="297825089465017871">రెండు వేళ్లతో ఎడమవైపునకు స్వైప్ చేయండి</translation>
 <translation id="2998131015536248178">మునుపటి అక్షరం</translation>
 <translation id="2999559350546931576">స్వర స్థాయి తగ్గించండి</translation>
 <translation id="2999945368667127852">తదుపరి మీడియా విడ్జెట్ లేదు.</translation>
@@ -231,6 +238,7 @@
 <translation id="3046838483509668188">ChromeVox ఎంపికలు</translation>
 <translation id="3047143736589213134">ప్రయోగాత్మక కీమ్యాప్</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> మెను తెరవబడింది</translation>
+<translation id="3070245424257836917">మూడు వేళ్లతో పైకి స్వైప్ చేయండి</translation>
 <translation id="3078345202707391975">తదుపరి స్థాయి 2 శీర్షిక</translation>
 <translation id="3078740164268491126">పట్టిక</translation>
 <translation id="3082249673510793544">వెనుకకు స్క్రోల్ చేస్తుంది</translation>
@@ -343,6 +351,7 @@
 <translation id="3599054940393788245">లోపల గణితం కాదు</translation>
 <translation id="360241989769010433">గుర్తింపులు</translation>
 <translation id="3616113530831147358">ఆడియో</translation>
+<translation id="3622350485154495700">ఒక వేలితో రెండుసార్లు నొక్కండి</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{బ్యాక్‌టిక్ గుర్తు}other{# బ్యాక్‌టిక్ గుర్తులు}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{డాలర్ గుర్తు}other{# డాలర్ గుర్తులు}}</translation>
@@ -462,6 +471,7 @@
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">మునుపటి మైలురాయి</translation>
 <translation id="4696413482802371445">తదుపరి స్థాయి 5 శీర్షిక లేదు.</translation>
+<translation id="4710166929009737753">ఒక వేలితో కుడివైపునకి స్వైప్ చేయండి</translation>
 <translation id="4729095194763193578">మునుపటి పట్టిక అడ్డు వరుస</translation>
 <translation id="4736221692378411923">ఆగస్టు</translation>
 <translation id="4740661827607246557">సహాయ ఆదేశాలు</translation>
@@ -474,6 +484,7 @@
 <translation id="4826415162591436065">ముందుకు నావిగేట్ చేయండి</translation>
 <translation id="4826604887384865800">తదుపరి జంప్</translation>
 <translation id="4827410568042294688">ఎంపిక తీసివేయబడింది</translation>
+<translation id="4838490795649708173">నాలుగు వేళ్లతో నొక్కండి</translation>
 <translation id="4839925464551908214">మునుపటి అడ్డు వరుసకు వెళ్లండి</translation>
 <translation id="4842108708071771135">తదుపరి బ్లాక్‌కోట్ లేదు.</translation>
 <translation id="4844625982113518938">దీని పేరు తెలుసుకోవడానికి ఏదైనా కీని నొక్కండి. Ctrl+W నొక్కడం వలన తెలుసుకునే మోడ్ మూసివేయబడుతుంది.</translation>
@@ -610,6 +621,7 @@
 <translation id="5750633686117194034">మాడిఫైయర్‌ను నొక్కలేదు; దయచేసి ఒకటి లేదా అంతకంటే ఎక్కువ మాడిఫైయర్‌లను నొక్కి ఉంచి; పూర్తయిన తర్వాత మీ వేళ్లను తీసివేయండి మరియు మీరు కీల సెట్‌ను వింటారు. నిష్క్రమించడానికి ట్యాబ్ నొక్కండి.</translation>
 <translation id="5760594853119905566">అనుబంధం</translation>
 <translation id="5788275253279308023">అజ్ఞాత విండో <ph name="TITLE" /> ట్యాబ్</translation>
+<translation id="5805940204952508776">రెండు వేళ్లతో నొక్కండి</translation>
 <translation id="5806206155699461681">నిర్దిష్ట సైట్‌లను (Google శోధన వంటివి) మెరుగుపరచండి.</translation>
 <translation id="5819072574982403430">ట్రీ అంశం</translation>
 <translation id="5826479389509458994"><ph name="ROW" />వ అడ్డు వరుస <ph name="COL" />వ నిలువు వరుస</translation>
@@ -714,8 +726,10 @@
 <translation id="6786800275320335305">కథనం</translation>
 <translation id="6787839852456839824">కీబోర్డ్ సత్వరమార్గాలు</translation>
 <translation id="6793101435925451627">lstbx</translation>
+<translation id="6826226459053491773">రెండు వేళ్లతో కిందికి స్వైప్ చేయండి</translation>
 <translation id="6833103209700200188">ఫుటర్</translation>
 <translation id="6858047746862060282">ప్రారంభం</translation>
+<translation id="6859876496651143278">ఒక వేలితో ఎడమవైపునకి స్వైప్ చేయండి</translation>
 <translation id="6871161210040114857">కేస్‌ను విస్మరిస్తోంది.</translation>
 <translation id="6877435256196695200">తదుపరి గ్రాఫిక్ లేదు.</translation>
 <translation id="6897341342232909480">ఎడమవైపు తరలించండి</translation>
@@ -965,6 +979,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="923331726185079994">ChromeVox నవీకరించబడింది</translation>
 <translation id="930275611743429116">ఎంపికను ప్రారంభించండి లేదా ముగించండి.</translation>
 <translation id="948171205378458592">ప్రసంగ రేటుని తగ్గించండి</translation>
+<translation id="958854023026327378">ఒక వేలితో కిందకి స్వైప్ చేయండి</translation>
 <translation id="962913030769097253">తదుపరి స్థాయి 1 శీర్షిక</translation>
 <translation id="973955474346881951">స్టిక్కీ మోడ్‌ను ప్రారంభించండి/ఆపివేయండి</translation>
 <translation id="976849232629612000">అంశాలు లేవు.</translation>

@@ -238,6 +238,7 @@
 <translation id="2762000892062317888">только что</translation>
 <translation id="2777555524387840389">Осталось <ph name="SECONDS" /> сек.</translation>
 <translation id="2781151931089541271">Осталась 1 сек.</translation>
+<translation id="2803478378562657435">На экране показаны сохраненные пароли и настройки паролей</translation>
 <translation id="2810645512293415242">Страница была открыта в упрощенном виде, чтобы уменьшить объем трафика и время загрузки.</translation>
 <translation id="281504910091592009">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />Аккаунт Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Чтобы получить доступ к закладкам на всех устройствах, войдите в аккаунт и включите синхронизацию.</translation>
@@ -711,6 +712,7 @@
 <translation id="6573431926118603307">Здесь появятся вкладки, открытые в Chrome на других устройствах.</translation>
 <translation id="6575643671698722332">Ошибка сброса. Подключитесь к Интернету и повторите попытку.</translation>
 <translation id="6583199322650523874">Добавить страницу в закладки</translation>
+<translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Полная версия</translation>
 <translation id="6600954340915313787">Скопировано в Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
@@ -827,6 +829,7 @@
 <translation id="748127970106343339">Подтвердите удаление учетных данных устройства</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (последнее обновление: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494879913343971937">Показать пароли</translation>
 <translation id="7494974237137038751">сэкономлено</translation>
 <translation id="7498271377022651285">Подождите…</translation>
 <translation id="7514365320538308">Скачать</translation>
@@ -894,6 +897,7 @@
 <translation id="802154636333426148">Ошибка скачивания</translation>
 <translation id="8026334261755873520">Очистить историю</translation>
 <translation id="8035133914807600019">Создать папку…</translation>
+<translation id="8037411810184515274">VR</translation>
 <translation id="8037686209485537503">Показать похожие страницы</translation>
 <translation id="8037750541064988519">Осталось <ph name="DAYS" /> дн.</translation>
 <translation id="804335162455518893">SD-карта не найдена</translation>
@@ -950,6 +954,7 @@
 <translation id="8503559462189395349">Пароли Chrome</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>
 <translation id="8504988642345501642">URL посещенных вами страниц отправляются в Google, поэтому при прокручивании вы можете увидеть ссылки на похожие страницы.</translation>
+<translation id="8507520749471379845">Доступные варианты паролей</translation>
 <translation id="8514477925623180633">Экспорт паролей, сохраненных в Chrome</translation>
 <translation id="8514577642972634246">Включить режим инкогнито</translation>
 <translation id="851751545965956758">Не разрешать сайтам подключаться к устройствам</translation>

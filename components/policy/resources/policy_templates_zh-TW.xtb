@@ -2638,7 +2638,7 @@
 <translation id="841977920223099909">密碼保護警告觸發條件</translation>
 <translation id="8424255554404582727">設定畫面旋轉預設值 (每次重新啟動皆重新套用)</translation>
 <translation id="8426231401662877819">將畫面以順時針方向旋轉 90 度</translation>
-<translation id="8433423491036718210">設定透過密碼保護服務擷取指紋而非密碼的企業登入網址清單。</translation>
+<translation id="8433423491036718210">設定企業登入網址清單，以便密碼保護服務從這些網址擷取密碼指紋。</translation>
 <translation id="8451988835943702790">將新分頁設為首頁</translation>
 <translation id="8459216513698220096">指定是否要處理電腦 GPO 中的使用者政策和處理方式。
 

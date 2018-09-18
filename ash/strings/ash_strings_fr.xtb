@@ -25,13 +25,13 @@
 <translation id="1293264513303784526">Appareil USB de type C (port situé sur la gauche de l'appareil)</translation>
 <translation id="1294929383540927798">Modifier les paramètres de notification sur l'écran de verrouillage</translation>
 <translation id="1302880136325416935">Afficher les paramètres Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1316069254387866896">Toujours afficher l'étagère</translation>
 <translation id="1346748346194534595">Vers la droite</translation>
 <translation id="1351937230027495976">Réduire le menu</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1419738280318246476">Déverrouiller l'appareil pour effectuer l'action de notification</translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1510238584712386396">Lanceur d'applications</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Afficher les paramètres de notification. Les notifications sont désactivées pour une application}one{Afficher les paramètres de notification. Les notifications sont désactivées pour # application}other{Afficher les paramètres de notification. Les notifications sont désactivées pour # applications}}</translation>
 <translation id="1525508553941733066">IGNORER</translation>
 <translation id="1537254971476575106">Loupe plein écran</translation>
@@ -45,7 +45,6 @@
 <translation id="1658406695958299976">Impossible de valider le mot de passe. Remarque : si vous l'avez modifié dernièrement, votre nouveau mot de passe ne sera appliqué qu'une fois que vous vous serez déconnecté. Veuillez donc utiliser votre ancien mot de passe.</translation>
 <translation id="1677472565718498478">Temps restant : <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresse IPv6 : <ph name="ADDRESS" /></translation>
-<translation id="1734367976349034509">Cet appareil est géré par une entreprise</translation>
 <translation id="1743570585616704562">Non reconnu</translation>
 <translation id="1746730358044914197">Les modes de saisie sont configurés par votre administrateur.</translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
@@ -69,7 +68,6 @@
 <translation id="1995660704900986789">Éteindre</translation>
 <translation id="2012624427112548395">Ctrl+Recherche+H</translation>
 <translation id="2016340657076538683">Saisissez un message</translation>
-<translation id="2049639323467105390">Cet appareil est géré par <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Luminosité du clavier</translation>
 <translation id="2081529251031312395">$1 pourra toujours se connecter plus tard.</translation>
@@ -83,7 +81,6 @@
 <translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
 <translation id="2292698582925480719">Échelle d'affichage</translation>
 <translation id="2303600792989757991">Activer/Désactiver la vue d'ensemble des fenêtres</translation>
-<translation id="2338501278241028356">Activer le Bluetooth pour découvrir les appareils à proximité</translation>
 <translation id="2339073806695260576">Appuyez sur le bouton du stylet situé sur l'étagère pour prendre des notes, effectuer des captures d'écran, et utiliser le pointeur laser ou la loupe.</translation>
 <translation id="2341729377289034582">Verrouillée en position verticale</translation>
 <translation id="2352467521400612932">Paramètres du stylet</translation>
@@ -93,6 +90,7 @@
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Activer/Désactiver le mode "Ne pas déranger"</translation>
 <translation id="2412593942846481727">Mise à jour disponible</translation>
+<translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> est une session gérée par <ph name="DOMAIN" /></translation>
 <translation id="2416346634399901812">Connecté à <ph name="NETWORK_NAME" /></translation>
 <translation id="2429753432712299108">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Avant d'accepter, veuillez confirmer que le code d'authentification suivant s'affiche sur l'appareil : <ph name="PASSKEY" />.</translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -112,7 +110,6 @@
 <translation id="277257480934873581">Reconnexion à <ph name="NAME" />…</translation>
 <translation id="2790844815106384441">Choisir si les sites Web peuvent utiliser les services de localisation ou le micro, la caméra ou d'autres fonctionnalités de l'appareil</translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
-<translation id="2805756323405976993">Applications</translation>
 <translation id="2808012452536866044">Better Together sur un nouveau téléphone</translation>
 <translation id="2819276065543622893">Vous allez être déconnecté maintenant.</translation>
 <translation id="2825619548187458965">Étagère</translation>
@@ -127,7 +124,6 @@
 <translation id="2946119680249604491">Ajouter une connexion</translation>
 <translation id="2961963223658824723">Une erreur s'est produite. Veuillez réessayer dans quelques secondes.</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2992931425024192067">Afficher tout le contenu des notifications</translation>
 <translation id="2995447421581609334">Afficher les appareils Cast.</translation>
 <translation id="2996462380875591307">Le mode Loupe ancrée est activé. Appuyez de nouveau sur Ctrl+Recherche+D pour le désactiver.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
@@ -138,7 +134,6 @@
 <translation id="3087734570205094154">Bas</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Redémarrer pour mettre à jour</translation>
-<translation id="3147142846278915599">Lanceur d'applications (synchronisation des applications en cours…)</translation>
 <translation id="315116470104423982">Données mobiles</translation>
 <translation id="3151786313568798007">Orientation</translation>
 <translation id="3153444934357957346">Vous ne pouvez vous connecter qu'à <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes au maximum dans le cadre de la connexion multicompte.</translation>
@@ -214,7 +209,6 @@
 <translation id="4527045527269911712">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> avant charge complète</translation>
 <translation id="4544944664594876241">Le raccourci permettant de verrouiller l'écran a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
-<translation id="4564869809620998694">Service de gestion des polices</translation>
 <translation id="4570957409596482333">Bouton "Sélectionner pour prononcer"</translation>
 <translation id="4585337515783392668">Arrêter la diffusion vers un destinataire inconnu</translation>
 <translation id="4628757576491864469">Appareils</translation>
@@ -228,7 +222,6 @@
 <translation id="4849058404725798627">Mettre l'objet sélectionné au clavier en surbrillance</translation>
 <translation id="4872237917498892622">Alt + Recherche ou Maj</translation>
 <translation id="4890187583552566966">L'administrateur a désactivé l'Assistant Google.</translation>
-<translation id="4893522937062257019">Sur l'écran de verrouillage</translation>
 <translation id="4895488851634969361">La batterie est pleine.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">Le raccourci permettant d'activer ou de désactiver le mode Contraste élevé a été modifié. Veuillez utiliser "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
@@ -249,8 +242,6 @@
 <translation id="5430931332414098647">Partage de connexion instantané</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Tous les utilisateurs disponibles ont déjà été ajoutés à cette session.</translation>
-<translation id="5457599981699367932">Naviguer en tant qu'invité</translation>
-<translation id="54609108002486618">Géré</translation>
 <translation id="5496819745535887422">Votre administrateur rétablit votre appareil. Toutes les données seront supprimées lors du redémarrage de l'appareil.</translation>
 <translation id="553675580533261935">Fermeture de la session</translation>
 <translation id="5537725057119320332">Caster</translation>
@@ -268,14 +259,11 @@
 <translation id="5750765938512549687">Bluetooth désactivé</translation>
 <translation id="5777841717266010279">Arrêter le partage d'écran ?</translation>
 <translation id="57838592816432529">Couper le son</translation>
-<translation id="5805697420284793859">Gestionnaire de fenêtres</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
-<translation id="5832805196449965646">Ajouter une personne</translation>
 <translation id="5837036133683224804">Arrêter <ph name="ROUTE_TITLE" /> vers <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5901316534475909376">Maj+Échap</translation>
-<translation id="5911533659001334206">Visionneuse de raccourcis</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Activé</translation>
 <translation id="592343074608792716">Ce Chromebook et votre téléphone seront associés automatiquement</translation>
@@ -335,7 +323,6 @@
 <translation id="6715542151869432661">Aucun appareil mobile détecté.</translation>
 <translation id="671928215901716392">Verrouillage d'écran</translation>
 <translation id="6723839937902243910">Alimentation</translation>
-<translation id="6725073593266469338">Service de gestion de l'interface utilisateur</translation>
 <translation id="6751826523481687655">Le suivi des performances est activé</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
@@ -380,12 +367,10 @@
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
 <translation id="7604942372593434070">Accède à votre activité de navigation</translation>
-<translation id="7642778300616172920">Masquer le contenu sensible</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>
 <translation id="7647488630410863958">Déverrouiller l'appareil pour consulter vos notifications</translation>
 <translation id="7649070708921625228">Aide</translation>
 <translation id="7654687942625752712">Appuyez pendant cinq secondes sur les deux touches de volume pour désactiver les commentaires audio.</translation>
-<translation id="7658239707568436148">Annuler</translation>
 <translation id="7692480393933218409">Charge des appareils USB de type C connectés</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">Cliquer pour afficher les informations relatives à la mise à jour</translation>
@@ -428,7 +413,6 @@
 <translation id="8425213833346101688">Modifier</translation>
 <translation id="8427213022735114808">La fonctionnalité de dictée transmet votre voix à Google et permet d'utiliser ainsi la saisie vocale dans n'importe quelle zone de texte.</translation>
 <translation id="8428213095426709021">Paramètres</translation>
-<translation id="8431190899827883166">Afficher les éléments sélectionnés</translation>
 <translation id="8433186206711564395">Paramètres réseau</translation>
 <translation id="8433977262951327081">Le raccourci pour afficher l'info-bulle du menu des options de saisie dans l'étagère a changé. Veuillez utiliser <ph name="NEW_SHORTCUT" /> au lieu de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">Carte SIM manquante</translation>
@@ -438,7 +422,6 @@
 <translation id="8484916590211895857"><ph name="NAME" /> : reconnexion…</translation>
 <translation id="8513108775083588393">Rotation automatique</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
-<translation id="8592141010104017453">N'afficher aucune notification</translation>
 <translation id="8627191004499078455">Connecté à <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restant(s)</translation>
 <translation id="8649101189709089199">Sélectionner pour prononcer</translation>
@@ -465,7 +448,6 @@
 <translation id="8921624153894383499">L'Assistant Google ne parle pas cette langue.</translation>
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
-<translation id="8984179138335769204">Lancement rapide</translation>
 <translation id="899350903320462459">Déverrouiller l'appareil en tant que <ph name="LOGIN_ID" /> pour effectuer l'action de notification</translation>
 <translation id="8995603266996330174">Géré par <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Mise à jour Adobe Flash Player disponible</translation>
@@ -476,7 +458,6 @@
 <translation id="9080206825613744995">Le micro est en cours d'utilisation.</translation>
 <translation id="9089416786594320554">Modes de saisie</translation>
 <translation id="9091626656156419976">Suppression de l'écran <ph name="DISPLAY_NAME" /></translation>
-<translation id="9111102763498581341">Déverrouiller</translation>
 <translation id="9151726767154816831">Redémarrer, puis lancer la réinitialisation Powerwash pour mettre à jour le système</translation>
 <translation id="9179259655489829027">Cette fonctionnalité vous permet d'accéder rapidement à tout compte connecté sans avoir à indiquer le mot de passe. N'utilisez cette fonctionnalité que pour les comptes auxquels vous pouvez faire confiance.</translation>
 <translation id="9193626018745640770">Destinataire de la diffusion inconnu</translation>

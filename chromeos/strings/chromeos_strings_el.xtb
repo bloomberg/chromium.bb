@@ -1,8 +1,22 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="1510238584712386396">Λειτουργία εκκίνησης</translation>
+<translation id="1734367976349034509">Αυτή η συσκευή βρίσκεται υπό τη διαχείριση επιχείρησης</translation>
+<translation id="2049639323467105390">Η διαχείριση της συσκευής γίνεται από τον τομέα <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Δεν βρέθηκε τίποτα στην οθόνη</translation>
+<translation id="2338501278241028356">Ενεργοποιήστε το Bluetooth, για να εντοπίσετε κοντινές συσκευές</translation>
+<translation id="2805756323405976993">Εφαρμογές </translation>
+<translation id="2872961005593481000">Τερματισμός λειτουργίας</translation>
+<translation id="3147142846278915599">Εφαρμογή εκκίνησης (συγχρονισμός εφαρμογών…)</translation>
 <translation id="5212543919916444558">Δεν βρέθηκε κάτι με το οποίο να μπορώ να σας βοηθήσω στην οθόνη σας.
 Πατήστε στο μικρόφωνο για να ρωτήσετε οτιδήποτε θέλετε.</translation>
+<translation id="5222676887888702881">Έξοδος</translation>
+<translation id="5457599981699367932">Περιήγηση ως επισκέπτης</translation>
+<translation id="54609108002486618">Διαχειριζόμενη</translation>
+<translation id="5832805196449965646">Προσθήκη ατόμου</translation>
+<translation id="5895138241574237353">Επανεκκίνηση</translation>
+<translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="8898978413391960553">00:00 δευτ.</translation>
+<translation id="9111102763498581341">Ξεκλείδωμα</translation>
 </translationbundle>

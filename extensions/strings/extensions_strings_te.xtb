@@ -56,6 +56,7 @@
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> నుండి తెలియని ఉత్పత్తి <ph name="PRODUCT_ID" /></translation>
 <translation id="7068383018033524534">మానిఫెస్ట్ ఫైల్ చెల్లదు</translation>
 <translation id="7217838517480956708">ఈ మెషీన్ యొక్క నిర్వాహకుడికి <ph name="EXTENSION_NAME" /> ఇన్‌స్టాల్ చేయబడి ఉండటం అవసరం. దీన్ని తీసివేయడం లేదా సవరించడం సాధ్యపడదు.</translation>
+<translation id="7612608473764576263">ప్రైవేట్ కీ కోసం ఇన్‌పుట్ విలువ తప్పనిసరిగా చెల్లుబాటు అయ్యే ఫార్మాట్‌లో ఉండాలి. (PKCS#8-format PEM-encoded RSA కీ)</translation>
 <translation id="7939686037314084444">ఎక్స్‌టెన్షన్ సరిగా లోడ్ అవ్వడంలో విఫలం అయ్యింది. కనుక ఇది నెట్‌వర్క్ అభ్యర్థనలను అడ్డగించలేకపోవచ్చు.</translation>
 <translation id="7972881773422714442">ఎంపికలు: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">వినియోగదారు వైపుగా</translation>

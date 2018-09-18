@@ -1,8 +1,22 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="1510238584712386396">啟動器</translation>
+<translation id="1734367976349034509">這個裝置受到企業管理</translation>
+<translation id="2049639323467105390">這個裝置由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2083960536266308407">在畫面上找不到任何相符內容</translation>
+<translation id="2338501278241028356">開啟藍牙即可偵測附近的裝置</translation>
+<translation id="2805756323405976993">應用程式</translation>
+<translation id="2872961005593481000">關閉</translation>
+<translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
 <translation id="5212543919916444558">系統在你的畫面上找不到任何能提供協助的內容。
 請輕觸麥克風圖示，直接說出你的問題。</translation>
+<translation id="5222676887888702881">登出</translation>
+<translation id="5457599981699367932">以訪客身分瀏覽</translation>
+<translation id="54609108002486618">管理</translation>
+<translation id="5832805196449965646">新增使用者</translation>
+<translation id="5895138241574237353">重新啟動</translation>
+<translation id="7658239707568436148">取消</translation>
 <translation id="8898978413391960553">00:00 秒</translation>
+<translation id="9111102763498581341">解除鎖定</translation>
 </translationbundle>

@@ -1,8 +1,22 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="1510238584712386396">Appvelger</translation>
+<translation id="1734367976349034509">Denne enheten er administrert av en bedrift</translation>
+<translation id="2049639323467105390">Denne enheten administreres av <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Fant ingenting på skjermen</translation>
+<translation id="2338501278241028356">Slå på Bluetooth for å finne enheter i nærheten</translation>
+<translation id="2805756323405976993">Apper</translation>
+<translation id="2872961005593481000">Slå av</translation>
+<translation id="3147142846278915599">Appoversikt (synkroniserer apper ...)</translation>
 <translation id="5212543919916444558">Jeg finner ikke noe på skjermen jeg kan hjelpe deg med. 
 Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
+<translation id="5222676887888702881">Logg av</translation>
+<translation id="5457599981699367932">Surf som gjest</translation>
+<translation id="54609108002486618">Administrert</translation>
+<translation id="5832805196449965646">Legg til person</translation>
+<translation id="5895138241574237353">Start på nytt</translation>
+<translation id="7658239707568436148">Avbryt</translation>
 <translation id="8898978413391960553">00:00 s</translation>
+<translation id="9111102763498581341">Lås opp</translation>
 </translationbundle>

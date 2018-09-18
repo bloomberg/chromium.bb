@@ -140,6 +140,7 @@
 <translation id="1387596372902085462">Om Symantec Corporations äldre PKI-infrastruktur ska vara betrodd eller inte</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
+<translation id="142346659686073702">Tillåt oanknutna användare att använda Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
@@ -392,6 +393,12 @@
 
       Om principen inte ges något värde innebär det att den är aktiverad (se beskrivningen ovan).</translation>
 <translation id="2113068765175018713">Begränsa enhetens upptid genom att starta om automatiskt</translation>
+<translation id="2116790137063002724">Den här principen styr om information som kan användas för att identifiera användarna ska rapporteras. Det kan till exempel vara inloggning på operativsystemet, profilinloggning i <ph name="PRODUCT_NAME" />, namn på profil i <ph name="PRODUCT_NAME" />, sökväg till profil i <ph name="PRODUCT_NAME" /> och sökväg till den körbara filen för <ph name="PRODUCT_NAME" />.
+
+      När principen har lämnats utan inställning eller är inställd på sant samlas information som kan användas för att identifiera användarna in.
+      När principen är inställd på falskt samlas information som kan användas för att identifiera användarna inte in.
+
+      Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
 <translation id="2132732175597591362">Styr vitlista över webbadressmallar som automatisk uppspelning alltid är aktiverad för.
@@ -893,6 +900,22 @@
           Om principen lämnas utan inställning används det globala standardvärdet för alla webbplatser. Värdet hämtas från principen DefaultCookiesSetting om den har ställts in och användarens egna inställningar i annat fall.
 
           Se även principerna CookiesBlockedForUrls och CookiesSessionOnlyForUrls. Observera att webbadressmönstren i de här tre principerna inte får överlappa varandra – det är inte definierat vilken av principerna som har företräde i så fall.</translation>
+<translation id="3373364525435227558">Anger en eller flera rekommenderade språkkoder för en hanterad session så att användarna enkelt kan välja någon av dessa språkkoder.
+
+      Användaren kan välja en språkkod och en tangentbordslayout innan en hanterad session startas. Som standard anges alla språkkoder som stöds av <ph name="PRODUCT_OS_NAME" /> i alfabetisk ordning. Du kan använda den här principen för att flytta en grupp rekommenderade språkkoder högst upp i listan.
+
+      Om principen lämnas utan inställning kommer den aktuella språkkoden för gränssnittet att vara förvald.
+
+      Om principen har angetts flyttas de rekommenderade språkkoderna högst upp i listan och separeras visuellt från alla andra språkkoder. De rekommenderade språkkoderna anges i den ordning de visas i principen. Den första rekommenderade språkkoden är förvald.
+
+      Om det finns mer än en rekommenderad språkkod antas användarna kunna välja mellan dessa. Valet av språkkod och tangentbordslayout erbjuds när en hanterad session startas. I annat fall antas att de flesta användare använder den förvalda språkkoden. Valet av språkkod och tangentbordslayout erbjuds då inte på ett lika framträdande sätt när en hanterad session startas.
+
+      När den här principen är inställd och automatisk inloggning aktiverad (mer information finns i principerna |DeviceLocalAccountAutoLoginId| och |DeviceLocalAccountAutoLoginDelay|) används den första rekommenderade språkkoden och den populäraste tangentbordslayouten som matchar språkkoden i den hanterade sessionen som startade automatiskt.
+
+      Den förvalda tangentbordslayouten är alltid den populäraste layouten som överensstämmer med den förvalda språkkoden.
+
+      Den här principen kan endast ställas in som rekommenderad. Du kan använda principen för att flytta flera rekommenderade språkkoder högst upp, men användare kan alltid välja en språkkod som stöds av <ph name="PRODUCT_OS_NAME" /> för sessionen.
+      </translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
 <translation id="3414260318408232239">Om denna princip inte konfigureras används den lägsta standardversionen (TLS 1.0.) av <ph name="PRODUCT_NAME" />.
 
@@ -1131,6 +1154,11 @@
       Om policyn är inställd på sant eller inte är inställd kan användarna utnyttja erbjudanden via registrering i Chrome OS.
 
       Om policyn är inställd på falskt kan användarna inte utnyttja erbjudanden.</translation>
+<translation id="4008507541867797979">Om den här principen är inställd på sant eller har lämnats utan inställning visas befintliga användare på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" /> och det går att välja en.
+
+      Om principen är inställd på falskt visas befintliga användare inte på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />. Den vanliga inloggningsskärmen (där användaren uppmanas att ange e-postadress och lösenord eller telefonnummer) eller mellansidan för SAML (om detta har aktiverats via principen <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) visas, såvida inte en hanterad session har konfigurerats. Om en hanterad session har konfigurerats visas bara kontona för den hanterade sessionen och användaren kan välja ett av dem.
+
+      Observera att principen inte påverkar om lokal användardata sparas på enheten eller tas bort.</translation>
 <translation id="4010738624545340900">Tillåt anrop till dialogrutor för filval</translation>
 <translation id="4012737788880122133">Inaktiverar automatiska uppdateringar när principen är inställd på sant.
 
@@ -1549,6 +1577,15 @@
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
 <translation id="5219844027738217407">För Android-appar påverkar den här principen endast mikrofonen. När principen är inställd på sant är mikrofonen avstängd i alla Android-appar utan undantag.</translation>
+<translation id="5228316810085661003">Fördröjning för automatisk inloggning av det lokala kontot på enheten.
+
+      Om principen |DeviceLocalAccountAutoLoginId| har lämnats utan inställning har den här principen ingen funktion. I annat fall gäller följande:
+
+      Om principen har ställts in styr den hur lång tid som ska gå utan användaraktivitet innan det lokala enhetskontot som angetts i principen |DeviceLocalAccountAutoLoginId| loggas in automatiskt.
+
+      Om principen har lämnats utan inställning används 0 millisekunder som tidsgräns.
+
+      Principens värde anges i millisekunder.</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
 <translation id="5247006254130721952">Blockera farliga nedladdningar</translation>
 <translation id="5248863213023520115">Anger krypteringstyper som tillåts vid Kerberos-begäranden från en <ph name="MS_AD_NAME" />-server.
@@ -1569,6 +1606,12 @@
 <translation id="5272684451155669299">Om den är inställd på sant kan användaren använda maskinvaran i Chrome-enheten för att fjärrattestera sin identitet i sekretessinställningarna CA via <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> med hjälp av <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Om den är inställd på falskt, eller om den saknar inställning, fungerar inte anslutningen till API:et och en felkod visas.</translation>
+<translation id="5277806246014825877">Gör det möjligt för användaren att köra Crostini.
+
+      När principen är inställd på falskt är Crostini inte tillgängligt för användaren.
+      När principen är inställd på sant eller har lämnats utan inställning är Crostini tillgängligt för användaren förutsatt att andra inställningar tillåter det.
+      Crostini får bara köras om alla tre principerna VirtualMachinesAllowed, CrostiniAllowed och DeviceUnaffiliatedCrostiniAllowed är inställda på sant när de är tillämpliga.
+      Om principen ändras till falskt gäller detta för nya Crostini-behållare som ska startas, men behållare som redan körs avslutas inte.</translation>
 <translation id="5283457834853986457">Inaktivera plugin-sökaren (utfasad)</translation>
 <translation id="5288772341821359899">Om den här principen har angetts används bara UDP-portarna inom det angivna intervallet (ändvärdena inräknade) för WebRTC.
 
@@ -1607,6 +1650,7 @@
 
           Om policyn inte anges används AskNotifications och användaren kan ändra inställningen.</translation>
 <translation id="538108065117008131">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar följande innehållstyper.</translation>
+<translation id="5391388690191341203">Lokalt enhetskonto för automatisk inloggning</translation>
 <translation id="5392172595902933844">Android-statusrapporter skickas till servern.
 
       Om principen har ställts in på falskt eller lämnats utan värde skickas ingen statusinformation.
@@ -1635,6 +1679,7 @@
           Standardinställningen som används om policyn inte ställs in är att tillåta att värdwebbläsaren utför renderingen, men du kan åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME" /> rendera HTML-sidor som standard.</translation>
 <translation id="5464816904705580310">Konfigurera inställningar för hanterade användare.</translation>
 <translation id="546726650689747237">Skärmdämpningstid när enheten är ansluten till elnätet</translation>
+<translation id="5469143988693423708">Crostini har aktiverats för användaren</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
 <translation id="5475361623548884387">Aktivera utskrift</translation>
 <translation id="547601067149622666">Tillåt inte annonser på webbplatser med påträngande annonser</translation>
@@ -1686,6 +1731,9 @@
       Observera att detta inte rekommenderas eftersom det kan användas för att förbigå tillägget nameConstraints som begränsar värdnamnen som ett visst certifikat kan auktoriseras för.
 
       Om den här principen inte har ställts in eller har ställts in på falskt betraktas servercertifikat som saknar tillägget subjectAlternativeName och innehåller antingen ett DNS-namn eller en IP-adress som otillförlitliga.</translation>
+<translation id="5581292529942108810">Konfigurera principer som gäller tillägget Chrome Reporting Extension.
+
+      Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Styr Googles platstjänster för Android</translation>
 <translation id="5586942249556966598">Gör ingenting</translation>
 <translation id="5630352020869108293">Återställ den senaste sessionen</translation>
@@ -1934,6 +1982,11 @@
 <translation id="6310223829319187614">Aktivera autoslutför av domännamn vid användarinloggning</translation>
 <translation id="6315673513957120120">Chrome visar en varningssida när användare besöker webbplatser med SSL-fel. Som standardinställning eller om den här principen är inställd på sant ges användare möjligheten att klicka sig förbi dessa varningssidor.
       Om principen är inställd på falskt hindras användare från att klicka sig förbi varningssidor.</translation>
+<translation id="6352543686437322588">Ett lokalt konto på enheten som ska loggas in automatiskt efter en fördröjning.
+
+      Om principen har ställts in loggas den angivna sessionen in automatiskt när inloggningsskärmen har varit öppen utan användaraktivitet under en viss tid. Det lokala kontot på enheten måste vara konfigurerat sedan tidigare (se |DeviceLocalAccounts|).
+
+      Om principen lämnas utan inställning görs ingen automatisk inloggning.</translation>
 <translation id="6353901068939575220">Anger parametrarna som används vid sökning efter en webbadress med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {searchTerms} i ovanstående exempel, ersätts det av riktiga söktermer.
 
           Policyn är valfri. Om den inte anges skickas sökförfrågningar via GET-metoden.
@@ -2300,6 +2353,11 @@
 
           Om denna princip inte anges kan användaren ändra denna inställning manuellt.</translation>
 <translation id="723103540848640830">Ange minimilängd för pinkod till låsskärm</translation>
+<translation id="7232816984286843471">Om principen är inställd på falskt får oanknutna användare inte använda Crostini.
+
+      Om principen lämnas utan inställning eller ställs in på sant får alla användare använda Crostini förutsatt att övriga inställningar tillåter det.
+      Crostini får bara köras om alla tre principerna VirtualMachinesAllowed, CrostiniAllowed och DeviceUnaffiliatedCrostiniAllowed är inställda på sant när de är tillämpliga.
+      Om principen ändras till falskt gäller detta för nya Crostini-behållare som ska startas, men behållare som redan körs avslutas inte.</translation>
 <translation id="7234280155140786597">Namn på de värdar för Native Messaging som ska vara förbjudna (* betyder alla)</translation>
 <translation id="7236775576470542603">Konfigurera standardtypen av skärmförstorare som är aktiverad på inloggningsskärmen.
           Om den här principen har angetts bestämmer den vilken typ av skärmförstorare som aktiveras när inloggningsskärmen visas. Om principen har värdet Ingen är skärmförstoraren inaktiv.
@@ -2346,6 +2404,12 @@
 <translation id="7311458740754205918">Om policyn är inställd på sant eller inte inställd alls kan förslag på innehåll utifrån användarens webbhistorik, intressen eller plats visas på sidan Ny flik.
 
       Om policyn är inställd på falskt visas inte förslag på innehåll som genererats automatiskt på sidan Ny flik.</translation>
+<translation id="7313793931637495417">Den här principen styr om versionsinformation ska rapporteras. Det kan till exempel vara version av operativsystemet, plattform för operativsystemet, operativsystemets arkitektur, version av <ph name="PRODUCT_NAME" /> och kanal för <ph name="PRODUCT_NAME" />.
+
+      När principen har lämnats utan inställning eller är inställd på sant samlas versionsinformation in.
+      När principen är inställd på falskt samlas versionsinformation inte in.
+
+      Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Ytterligare kommandoradsparametrar för <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Som Wipe (värde 2), med skillnaden att inloggningstoken om möjligt sparas så att användaren inte behöver logga in på nytt.</translation>
 <translation id="7329842439428490522">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska stängas av när enheten drivs av batteriet.
@@ -2378,6 +2442,12 @@
 <translation id="7349338075015720646">Anger en lista över webbplatser som installeras obemärkt utan att användaren gör något och som användaren inte kan avinstallera eller inaktivera.
 
       Varje post i principens listan är ett objekt med två medlemmar: "url" och "launch_container". "url" bör vara webbadressen till webbappen som ska installeras och "launch_container" ska anges antingen som "window" eller "tab" för att visa hur webbappen ska öppnas när den har installerats. Om "launch_container" utelämnas öppnas appen i ett fönster om den anses vara en progressiv webbapp i Chrome och på en flik i annat fall.</translation>
+<translation id="735902178936442460">Den här principen styr om information som kan användas för att identifiera enheter ska rapporteras. Det kan till exempel vara enhetens namn och nätverksadress.
+
+      När principen har lämnats utan inställning eller är inställd på sant samlas information som kan användas för att identifiera enheter in.
+      När principen är inställd på falskt samlas information som kan användas för att identifiera enheter inte in.
+
+      Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Med tjänsten Säker webbsökning visas en varningssida när användare navigerar till webbplatser som flaggats som skadliga. Om du aktiverar inställningen kan användare inte fortsätta från varningssidan till den skadliga webbplatsen.
 
       Om inställningen inaktiveras eller inte konfigureras kan användare välja att fortsätta från den flaggade webbplatsen efter att varningen har visats.
@@ -2631,6 +2701,14 @@
 <translation id="7976157349247117979">Namn på <ph name="PRODUCT_NAME" />-mål</translation>
 <translation id="7980227303582973781">Inga särskilda begränsningar</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Styr om virtuella maskiner får köras eller inte i Chrome OS.
+
+      Om principen är inställd på sant får virtuella maskiner köras på enheten.
+      Om principen är inställd på falskt får virtuella maskiner inte köras på enheten.
+      Crostini får bara köras om alla tre principerna VirtualMachinesAllowed, CrostiniAllowed och DeviceUnaffiliatedCrostiniAllowed är inställda på sant när de är tillämpliga.
+      När principen ändras till falskt tillämpas den på nya virtuella maskiner, men virtuella maskiner som redan körs avslutas inte.
+      Om principen lämnas utan inställning på en hanterad enhet får virtuella maskiner inte köras på den.
+      Virtuella maskiner får köras på enheter som inte hanteras.</translation>
 <translation id="802147957407376460">Rotera skärmen 0 grader</translation>
 <translation id="8033913082323846868">Den här principen fasas ut i M70. Använd AutofillAddressEnabled och AutofillCreditCardEnabled i stället.
 
@@ -2675,10 +2753,17 @@
           Om policyn inte ställs in används en standardtid.
 
           Policyns värde anges i millisekunder. Värdet måste vara mindre än inaktivitetstiden.</translation>
+<translation id="8138009212169037227">Den här principen styr om principdata och tidpunkten då principen hämtades ska rapporteras.
+
+      När principen har lämnats utan inställning eller är inställd på sant samlas principdata och tiden då principen hämtades in.
+      När principen är inställd på falskt görs ingen insamling av principdata eller tiden då principen hämtades.
+
+      Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Rapportera en lista över nätverksgränssnitt med typ och maskinvaruadress till servern.
 
       Om principen anges som False skickas inte gränssnittslistan.</translation>
 <translation id="8141795997560411818">Den här principen förhindrar inte användning av appen Google Drive för Android. Om du vill att användarna inte ska ha tillgång till Google Drive bör du blockera möjligheten att installera appen Google Drive för Android.</translation>
+<translation id="8142894094385450823">Anger rekommenderade språkkoder för en hanterad session</translation>
 <translation id="8146727383888924340">Tillåt att användare utnyttjar erbjudanden via registrering i Chrome OS</translation>
 <translation id="8148785525797916822">Ignorerar varningar som visas när <ph name="PRODUCT_NAME" /> körs på en dator eller i ett operativsystem som inte längre stöds.</translation>
 <translation id="8148901634826284024">Aktivera hjälpmedelsfunktionerna i högkontrastläge.
@@ -2726,6 +2811,28 @@ De här principerna ska endast användas för att konfigurera instanser av <ph n
 Du behöver inte konfigurera de här inställningarna manuellt. Lättanvända mallar för Windows, Mac och Linux kan laddas ned från <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
 Det rekommenderade sättet att konfigurera principer på när du använder Windows är via grupprincipobjekt, men att göra det via registret stöds för Windows-instanser som har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
+<translation id="8264653492961233132">Anger en lista med appar och tillägg som installeras tyst, utan att
+          användaren gör något, och som användaren inte kan avinstallera
+          eller inaktivera. Alla behörigheter som apparna eller tilläggen behöver
+          beviljas implicit utan att användaren blir tillfrågad. Det gäller även nya
+          behörigheter som tillkommer i framtida versioner av appen eller tillägget.
+          Dessutom beviljas behörighet för tilläggs-API:erna
+          enterprise.deviceAttributes och enterprise.platformKeys. (Dessa API:er
+          är inte tillgängliga för appar eller tillägg som inte tvångsinstallerats.)
+
+          Den här principen har företräde framför <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> vid en eventuell konflikt. Om en app eller ett tillägg som tidigare har tvångsinstallerats tas bort från den här listan avinstalleras den/det automatiskt i <ph name="PRODUCT_NAME" />.
+
+          På Windows-domäner som inte har anslutits till en <ph name="MS_AD_NAME" />-domän kan bara appar och tillägg som finns på Chrome Web Store tvångsinstalleras.
+
+          Observera att användarna kan ändra i källkoden till vilket tillägg som helst med hjälp av verktygen för utvecklare (vilket kan leda till att tillägget slutar fungera). Om detta är ett problem bör principen <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> ställas in.
+
+          Varje listpost i principen är en sträng med ett tilläggs-id och eventuellt en ”uppdateringsadress” med semikolon (<ph name="SEMICOLON" />) som avgränsare. Tilläggs-id:t är den sträng med 32 tecken som visas exempelvis på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläget. Om en ”uppdateringsadress” anges ska den peka på ett uppdateringsmanifest i XML-format enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />. Som standard används uppdateringsadressen på Chrome Web Store (som för närvarande är https://clients2.google.com/service/update2/crx). Observera att den ”uppdateringsadress” som anges i den här principen bara används vid den första installationen. För senare uppdateringar av tillägget används uppdateringsadressen i tilläggets manifestfil. Observera även att det var obligatoriskt att ange ”uppdateringsadressen” explicit i version 67 och äldre versioner av <ph name="PRODUCT_NAME" />.
+
+          Med <ph name="EXTENSION_POLICY_EXAMPLE" /> installeras t.ex. appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> från den vanliga ”uppdateringsadressen” på Chrome Web Store. Mer information om att stå värd för tillägg finns här: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Om den här principen lämnas utan inställning installeras inga appar eller tillägg automatiskt och användaren får avinstallera alla appar och tillägg i <ph name="PRODUCT_NAME" />.
+
+         Observera att principen inte gäller i inkognitoläge.</translation>
 <translation id="8274603902181597201">Rensa bort användarens ecryptfs-krypterade hemkatalog och börja om med en ny ext4-krypterad hemkatalog.</translation>
 <translation id="8285435910062771358">Helskärmsförstoraren är aktiverad</translation>
 <translation id="8288199156259560552">Aktivera Googles platstjänst för Android</translation>
@@ -3013,6 +3120,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Principen är inte tillgänglig på Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
+<translation id="9077227880520270584">Timer för automatisk inloggning av lokalt konto på enheten</translation>
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
 <translation id="9088433379343318874">Aktiverar den kontrollerade användarens innehållsleverantör</translation>
 <translation id="9088444059179765143">Konfigurera metod för automatisk tidszonsangivelse</translation>

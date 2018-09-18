@@ -1,8 +1,22 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1510238584712386396">Lansator</translation>
+<translation id="1734367976349034509">Acest dispozitiv este gestionat de companie</translation>
+<translation id="2049639323467105390">Acest dispozitiv este gestionat de <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Nu s-a găsit nimic pe ecran</translation>
+<translation id="2338501278241028356">Pentru a descoperi dispozitivele din apropiere, activează Bluetooth</translation>
+<translation id="2805756323405976993">Aplicații</translation>
+<translation id="2872961005593481000">Închide</translation>
+<translation id="3147142846278915599">Lansator (se sincronizează aplicațiile...)</translation>
 <translation id="5212543919916444558">Nu găsesc conținut pe ecran în privința căruia te-aș putea ajuta.
 Atinge microfonul și întreabă orice dorești.</translation>
+<translation id="5222676887888702881">Deconectează-te</translation>
+<translation id="5457599981699367932">Navighează ca invitat</translation>
+<translation id="54609108002486618">Gestionat</translation>
+<translation id="5832805196449965646">Adăugați un utilizator</translation>
+<translation id="5895138241574237353">Reîncepe</translation>
+<translation id="7658239707568436148">Anulează</translation>
 <translation id="8898978413391960553">00:00 s</translation>
+<translation id="9111102763498581341">Deblochează</translation>
 </translationbundle>

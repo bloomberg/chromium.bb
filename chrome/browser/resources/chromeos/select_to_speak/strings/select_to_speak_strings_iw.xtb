@@ -9,6 +9,7 @@
 <translation id="2089387485033699258">en</translation>
 <translation id="2714180132046334502">רקע כהה</translation>
 <translation id="27349076983469322">רקע בהיר</translation>
+<translation id="3283583562490372694">לא מסומנת</translation>
 <translation id="335581015389089642">דיבור</translation>
 <translation id="4004802134384979325">מסומנת</translation>
 <translation id="4827410568042294688">בחירה בוטלה</translation>
@@ -17,9 +18,11 @@
 <translation id="6475604559827479857">הצבע של הדגשת המילים:</translation>
 <translation id="6837853484260746864">בחר קול:</translation>
 <translation id="7261612856573623172">קול ברירת המחדל של המרת טקסט לדיבור</translation>
+<translation id="7317017974771324508">נבחר באופן חלקי</translation>
 <translation id="7768784765476638775">הקראה</translation>
 <translation id="7914870167134465181">הדגשה</translation>
 <translation id="8033827949643255796">מסומן</translation>
 <translation id="8324974933005349667">התאמת ההגדרות של המרת טקסט לדיבור</translation>
+<translation id="8944511129464116546">מסומנת באופן חלקי</translation>
 <translation id="992256792861109788">ורוד</translation>
 </translationbundle>
