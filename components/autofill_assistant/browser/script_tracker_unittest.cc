@@ -20,6 +20,7 @@
 namespace autofill_assistant {
 using ::testing::_;
 using ::testing::ElementsAre;
+using ::testing::UnorderedElementsAre;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::ReturnRef;
@@ -86,6 +87,14 @@ class ScriptTrackerTest : public testing::Test,
     return runnable_scripts_;
   }
 
+  const std::vector<std::string> runnable_script_paths() {
+    std::vector<std::string> paths;
+    for (const auto& handle : runnable_scripts_) {
+      paths.emplace_back(handle.path);
+    }
+    return paths;
+  }
+
   GURL url_;
   NiceMock<MockService> mock_service_;
   NiceMock<MockWebController> mock_web_controller_;
@@ -115,6 +124,28 @@ TEST_F(ScriptTrackerTest, SomeRunnableScripts) {
   ASSERT_THAT(runnable_scripts(), SizeIs(1));
   EXPECT_EQ("runnable name", runnable_scripts()[0].name);
   EXPECT_EQ("runnable path", runnable_scripts()[0].path);
+}
+
+TEST_F(ScriptTrackerTest, OrderScriptsByPriority) {
+  SupportsScriptResponseProto scripts;
+
+  SupportedScriptProto* a = scripts.add_scripts();
+  a->set_path("a");
+  a->mutable_presentation()->set_name("a");
+  a->mutable_presentation()->set_priority(2);
+
+  SupportedScriptProto* b = scripts.add_scripts();
+  b->set_path("b");
+  b->mutable_presentation()->set_name("b");
+  b->mutable_presentation()->set_priority(3);
+
+  SupportedScriptProto* c = scripts.add_scripts();
+  c->set_path("c");
+  c->mutable_presentation()->set_name("c");
+  c->mutable_presentation()->set_priority(1);
+  SetAndCheckScripts(scripts);
+
+  ASSERT_THAT(runnable_script_paths(), ElementsAre("c", "a", "b"));
 }
 
 TEST_F(ScriptTrackerTest, NewScriptChangesNothing) {
@@ -172,7 +203,8 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
 
   // Both scripts are runnable
   EXPECT_EQ(1, runnable_scripts_changed_);
-  EXPECT_THAT(runnable_scripts(), SizeIs(2));
+  EXPECT_THAT(runnable_script_paths(),
+              UnorderedElementsAre("script1", "script2"));
 
   // run 'script 1'
   base::MockCallback<base::OnceCallback<void(bool)>> execute_callback;
@@ -184,8 +216,7 @@ TEST_F(ScriptTrackerTest, CheckScriptsAgainAfterScriptEnd) {
   // The 2nd time the scripts are checked, automatically after the script runs,
   // 'script1' isn't runnable anymore, because it's already been run.
   EXPECT_EQ(2, runnable_scripts_changed_);
-  ASSERT_THAT(runnable_scripts(), SizeIs(1));
-  ASSERT_EQ("script2", runnable_scripts()[0].path);
+  EXPECT_THAT(runnable_script_paths(), ElementsAre("script2"));
 }
 
 TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
@@ -207,8 +238,7 @@ TEST_F(ScriptTrackerTest, CheckScriptsAfterDOMChange) {
   tracker_.CheckScripts();
 
   // The script can now run
-  ASSERT_THAT(runnable_scripts(), SizeIs(1));
-  EXPECT_EQ("script path", runnable_scripts()[0].path);
+  ASSERT_THAT(runnable_script_paths(), ElementsAre("script path"));
 }
 
 }  // namespace autofill_assistant

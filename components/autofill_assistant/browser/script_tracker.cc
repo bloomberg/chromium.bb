@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/script_tracker.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -92,10 +93,19 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
   bool runnables_changed = RunnablesHaveChanged();
   if (runnables_changed) {
     runnable_scripts_.clear();
+    std::sort(pending_runnable_scripts_.begin(),
+              pending_runnable_scripts_.end(),
+              [](const Script* a, const Script* b) {
+                // Runnable scripts with lowest priority value are displayed
+                // first. The display order of scripts with the same priority is
+                // arbitrary. Fallback to ordering by name, arbitrarily, for the
+                // behavior to be consistent.
+                return std::tie(a->priority, a->handle.name) <
+                       std::tie(b->priority, b->handle.name);
+              });
     for (Script* script : pending_runnable_scripts_) {
       runnable_scripts_.push_back(script->handle);
     }
-    // TODO(crbug.com/806868): Sort runnable scripts by priority.
   }
   pending_runnable_scripts_.clear();
 

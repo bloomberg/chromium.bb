@@ -37,6 +37,11 @@ message SupportedScriptProto {
     // Precondition contains a set of conditions that must hold for a script to
     // be executed. No precondition means that a script can run in any case.
     optional ScriptPreconditionProto precondition = 2;
+
+    // Display priority of the script. Lowest number has highest priority, which
+    // means a script with priority 0 should be displayed before a script with
+    // priority 1.
+    optional int32 priority = 5;
   }
   optional PresentationProto presentation = 2;
 }

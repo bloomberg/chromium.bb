@@ -27,6 +27,12 @@ struct Script {
   ~Script();
 
   ScriptHandle handle;
+
+  // Display priority of the script. Lowest number has highest priority, which
+  // means a script with priority 0 should be displayed before a script with
+  // priority 1.
+  int priority;
+
   std::unique_ptr<ScriptPrecondition> precondition;
 };
 
