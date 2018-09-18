@@ -16,7 +16,6 @@
 #include "ui/gl/gl_surface.h"
 
 namespace gpu {
-class SharedImageInterface;
 class TransferBuffer;
 struct GpuFeatureInfo;
 struct SharedMemoryLimits;
@@ -41,7 +40,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // service must run on the same thread as this client because GLSurface is
   // not thread safe. If |surface| is null, then the other parameters are used
   // to correctly create a surface.
-  // |gpu_channel_manager| should be non-null when used in the GPU process.
   ContextResult Initialize(
       scoped_refptr<CommandBufferTaskExecutor> task_executor,
       scoped_refptr<gl::GLSurface> surface,
@@ -51,7 +49,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       const SharedMemoryLimits& memory_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
-      GpuChannelManagerDelegate* gpu_channel_manager_delegate,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   const Capabilities& GetCapabilities() const;
@@ -60,13 +57,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // Allows direct access to the GLES2 implementation so a GLInProcessContext
   // can be used without making it current.
   gles2::GLES2Implementation* GetImplementation();
-
-  CommandBuffer* GetCommandBuffer();
-
-  SharedImageInterface* GetSharedImageInterface();
-
-  void SetUpdateVSyncParametersCallback(
-      const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback);
 
  private:
   // The destruction order is important, don't reorder these member variables.
