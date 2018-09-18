@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -170,7 +171,10 @@ class PromiseAllHandler final
 
 ScriptPromise::InternalResolver::InternalResolver(ScriptState* script_state)
     : resolver_(script_state,
-                v8::Promise::Resolver::New(script_state->GetContext())) {}
+                v8::Promise::Resolver::New(script_state->GetContext())) {
+  // |resolver| can be empty when the thread is being terminated. We ignore such
+  // errors.
+}
 
 v8::Local<v8::Promise> ScriptPromise::InternalResolver::V8Promise() const {
   if (resolver_.IsEmpty())
@@ -187,20 +191,26 @@ ScriptPromise ScriptPromise::InternalResolver::Promise() const {
 void ScriptPromise::InternalResolver::Resolve(v8::Local<v8::Value> value) {
   if (resolver_.IsEmpty())
     return;
-  resolver_.V8Value()
-      .As<v8::Promise::Resolver>()
-      ->Resolve(resolver_.GetContext(), value)
-      .ToChecked();
+  v8::Maybe<bool> result =
+      resolver_.V8Value().As<v8::Promise::Resolver>()->Resolve(
+          resolver_.GetContext(), value);
+  // |result| can be empty when the thread is being terminated. We ignore such
+  // errors.
+  ALLOW_UNUSED_LOCAL(result);
+
   Clear();
 }
 
 void ScriptPromise::InternalResolver::Reject(v8::Local<v8::Value> value) {
   if (resolver_.IsEmpty())
     return;
-  resolver_.V8Value()
-      .As<v8::Promise::Resolver>()
-      ->Reject(resolver_.GetContext(), value)
-      .ToChecked();
+  v8::Maybe<bool> result =
+      resolver_.V8Value().As<v8::Promise::Resolver>()->Reject(
+          resolver_.GetContext(), value);
+  // |result| can be empty when the thread is being terminated. We ignore such
+  // errors.
+  ALLOW_UNUSED_LOCAL(result);
+
   Clear();
 }
 
