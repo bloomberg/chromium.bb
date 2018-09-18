@@ -67,6 +67,7 @@ class AdTracker;
 class AssociatedInterfaceProvider;
 class Color;
 class ComputedAccessibleNode;
+class ContentSecurityPolicy;
 class ContentSettingsClient;
 class Document;
 class Editor;
