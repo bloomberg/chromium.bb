@@ -80,7 +80,7 @@ void FeedJournalDatabase::LoadJournal(const std::string& key,
 }
 
 void FeedJournalDatabase::DoesJournalExist(const std::string& key,
-                                           ConfirmationCallback callback) {
+                                           CheckExistingCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   storage_database_->GetEntry(
@@ -213,28 +213,25 @@ void FeedJournalDatabase::OnGetEntryForLoadJournal(
     JournalLoadCallback callback,
     bool success,
     std::unique_ptr<JournalStorageProto> journal) {
+  DVLOG_IF(1, !success) << "FeedJournalDatabase load journal failed.";
+
   std::vector<std::string> results;
-
-  if (!success || !journal) {
-    DVLOG_IF(1, !success) << "FeedJournalDatabase load journal failed.";
-    std::move(callback).Run(std::move(results));
-    return;
+  if (journal) {
+    for (int i = 0; i < journal->journal_data_size(); ++i) {
+      results.emplace_back(journal->journal_data(i));
+    }
   }
 
-  for (int i = 0; i < journal->journal_data_size(); ++i) {
-    results.emplace_back(journal->journal_data(i));
-  }
-
-  std::move(callback).Run(std::move(results));
+  std::move(callback).Run(success, std::move(results));
 }
 
 void FeedJournalDatabase::OnGetEntryForDoesJournalExist(
-    ConfirmationCallback callback,
+    CheckExistingCallback callback,
     bool success,
     std::unique_ptr<JournalStorageProto> journal) {
   DVLOG_IF(1, !success) << "FeedJournalDatabase load journal failed.";
 
-  std::move(callback).Run(journal ? true : false);
+  std::move(callback).Run(success, journal ? true : false);
 }
 
 void FeedJournalDatabase::OnLoadKeysForLoadAllJournalKeys(
@@ -247,7 +244,7 @@ void FeedJournalDatabase::OnLoadKeysForLoadAllJournalKeys(
   if (keys) {
     results = std::move(*keys);
   }
-  std::move(callback).Run(std::move(results));
+  std::move(callback).Run(success, std::move(results));
 }
 
 void FeedJournalDatabase::OnGetEntryForCommitJournalMutation(

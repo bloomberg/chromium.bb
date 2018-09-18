@@ -29,8 +29,7 @@ public class FeedContentStorage implements ContentStorage {
      * @param profile {@link Profile} of the user we are rendering the Feed for.
      */
     public FeedContentStorage(Profile profile) {
-        mFeedContentBridge = new FeedContentBridge();
-        mFeedContentBridge.init(profile);
+        mFeedContentBridge = new FeedContentBridge(profile);
     }
 
     /**
@@ -55,8 +54,8 @@ public class FeedContentStorage implements ContentStorage {
         assert mFeedContentBridge != null;
         mFeedContentBridge.loadContent(keys,
                 (Map<String, byte[]> data)
-                        -> { consumer.accept(Result.success(data)); },
-                (Map<String, byte[]> data) -> { consumer.accept(Result.failure()); });
+                        -> consumer.accept(Result.success(data)),
+                (Void ignored) -> consumer.accept(Result.failure()));
     }
 
     @Override
@@ -64,16 +63,16 @@ public class FeedContentStorage implements ContentStorage {
         assert mFeedContentBridge != null;
         mFeedContentBridge.loadContentByPrefix(prefix,
                 (Map<String, byte[]> data)
-                        -> { consumer.accept(Result.success(data)); },
-                (Map<String, byte[]> data) -> { consumer.accept(Result.failure()); });
+                        -> consumer.accept(Result.success(data)),
+                (Void ignored) -> consumer.accept(Result.failure()));
     }
 
     @Override
     public void commit(ContentMutation mutation, Consumer<CommitResult> consumer) {
         assert mFeedContentBridge != null;
-        mFeedContentBridge.commitContentMutation(mutation, (Boolean result) -> {
-            consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE);
-        });
+        mFeedContentBridge.commitContentMutation(mutation,
+                (Boolean result)
+                        -> consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE));
     }
 
     @Override
@@ -81,7 +80,7 @@ public class FeedContentStorage implements ContentStorage {
         assert mFeedContentBridge != null;
         mFeedContentBridge.loadAllContentKeys(
                 (String[] keys)
-                        -> { consumer.accept(Result.success(Arrays.asList(keys))); },
-                (String[] keys) -> { consumer.accept(Result.failure()); });
+                        -> consumer.accept(Result.success(Arrays.asList(keys))),
+                (Void ignored) -> consumer.accept(Result.failure()));
     }
 }

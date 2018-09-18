@@ -34,17 +34,22 @@ class FeedJournalBridge {
   void LoadJournal(JNIEnv* j_env,
                    const base::android::JavaRef<jobject>& j_this,
                    const base::android::JavaRef<jstring>& j_journal_name,
-                   const base::android::JavaRef<jobject>& j_callback);
+                   const base::android::JavaRef<jobject>& j_success_callback,
+                   const base::android::JavaRef<jobject>& j_failure_callback);
   void CommitJournalMutation(JNIEnv* j_env,
                              const base::android::JavaRef<jobject>& j_this,
                              const base::android::JavaRef<jobject>& j_callback);
-  void DoesJournalExist(JNIEnv* j_env,
-                        const base::android::JavaRef<jobject>& j_this,
-                        const base::android::JavaRef<jstring>& j_journal_name,
-                        const base::android::JavaRef<jobject>& j_callback);
-  void LoadAllJournalKeys(JNIEnv* j_env,
-                          const base::android::JavaRef<jobject>& j_this,
-                          const base::android::JavaRef<jobject>& j_callback);
+  void DoesJournalExist(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const base::android::JavaRef<jstring>& j_journal_name,
+      const base::android::JavaRef<jobject>& j_success_callback,
+      const base::android::JavaRef<jobject>& j_failure_callback);
+  void LoadAllJournalKeys(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const base::android::JavaRef<jobject>& j_success_callback,
+      const base::android::JavaRef<jobject>& j_failure_callback);
   void DeleteAllJournals(JNIEnv* j_env,
                          const base::android::JavaRef<jobject>& j_this,
                          const base::android::JavaRef<jobject>& j_callback);

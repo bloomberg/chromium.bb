@@ -69,19 +69,6 @@ class FeedContentBridge {
                                 const base::android::JavaRef<jobject>& j_this);
 
  private:
-  void OnLoadContentDone(
-      base::android::ScopedJavaGlobalRef<jobject> success_callback,
-      base::android::ScopedJavaGlobalRef<jobject> failure_callback,
-      bool success,
-      std::vector<FeedContentDatabase::KeyAndData> pairs);
-  void OnLoadAllContentKeysDone(
-      base::android::ScopedJavaGlobalRef<jobject> success_callback,
-      base::android::ScopedJavaGlobalRef<jobject> failure_callback,
-      bool success,
-      std::vector<std::string> keys);
-  void OnStorageCommitDone(base::android::ScopedJavaGlobalRef<jobject> callback,
-                           bool success);
-
   // This unique_ptr will hold a list of ContentOperations which are not
   // committed yet. After commit to database, this unique_ptr will be reset.
   std::unique_ptr<ContentMutation> content_mutation_;

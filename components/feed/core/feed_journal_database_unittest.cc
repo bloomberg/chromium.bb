@@ -74,9 +74,9 @@ class FeedJournalDatabaseTest : public testing::Test {
 
   FeedJournalDatabase* db() { return feed_db_.get(); }
 
-  MOCK_METHOD1(OnJournalEntryReceived, void(std::vector<std::string>));
+  MOCK_METHOD2(OnJournalEntryReceived, void(bool, std::vector<std::string>));
   MOCK_METHOD1(OnStorageCommitted, void(bool));
-  MOCK_METHOD1(OnCheckJournalExistReceived, void(bool));
+  MOCK_METHOD2(OnCheckJournalExistReceived, void(bool, bool));
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -111,8 +111,9 @@ TEST_F(FeedJournalDatabaseTest, LoadJournalEntry) {
   InjectJournalStorageProto(kJournalKey2, {kJournalData4});
 
   // Try to Load |kJournalKey1|.
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 3U);
         EXPECT_EQ(results[0], kJournalData1);
         EXPECT_EQ(results[1], kJournalData2);
@@ -130,8 +131,9 @@ TEST_F(FeedJournalDatabaseTest, LoadNonExistingJournalEntry) {
   EXPECT_TRUE(db()->IsInitialized());
 
   // Try to Load |kJournalKey1|.
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 0U);
       });
   db()->LoadJournal(
@@ -157,8 +159,9 @@ TEST_F(FeedJournalDatabaseTest, AppendJournal) {
   storage_db()->UpdateCallback(true);
 
   // Make sure they're there.
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 2U);
         EXPECT_EQ(results[0], kJournalData1);
         EXPECT_EQ(results[1], kJournalData2);
@@ -185,8 +188,9 @@ TEST_F(FeedJournalDatabaseTest, AppendJournal) {
   storage_db()->UpdateCallback(true);
 
   // Check new instances are there.
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 5U);
         EXPECT_EQ(results[0], kJournalData1);
         EXPECT_EQ(results[1], kJournalData2);
@@ -222,8 +226,9 @@ TEST_F(FeedJournalDatabaseTest, CopyJournal) {
   storage_db()->UpdateCallback(true);
 
   // Check new journal is there.
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 2U);
         EXPECT_EQ(results[0], kJournalData1);
         EXPECT_EQ(results[1], kJournalData2);
@@ -237,8 +242,9 @@ TEST_F(FeedJournalDatabaseTest, CopyJournal) {
   Mock::VerifyAndClearExpectations(this);
 
   // Check new journal is there.
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 4U);
         EXPECT_EQ(results[0], kJournalData1);
         EXPECT_EQ(results[1], kJournalData2);
@@ -254,8 +260,9 @@ TEST_F(FeedJournalDatabaseTest, CopyJournal) {
   Mock::VerifyAndClearExpectations(this);
 
   // Check first journal is still there.
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 4U);
         EXPECT_EQ(results[0], kJournalData1);
         EXPECT_EQ(results[1], kJournalData2);
@@ -289,8 +296,9 @@ TEST_F(FeedJournalDatabaseTest, DeleteJournal) {
   storage_db()->UpdateCallback(true);
 
   // Make sure |kJournalKey2| got deleted.
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 0U);
       });
   db()->LoadJournal(
@@ -302,8 +310,9 @@ TEST_F(FeedJournalDatabaseTest, DeleteJournal) {
   Mock::VerifyAndClearExpectations(this);
 
   // Make sure |kJournalKey1| is still there.
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 3U);
         EXPECT_EQ(results[0], kJournalData1);
         EXPECT_EQ(results[1], kJournalData2);
@@ -326,7 +335,7 @@ TEST_F(FeedJournalDatabaseTest, ChecExistingJournal) {
   InjectJournalStorageProto(kJournalKey2, {kJournalData4});
 
   // Check |kJournalKey1|.
-  EXPECT_CALL(*this, OnCheckJournalExistReceived(true));
+  EXPECT_CALL(*this, OnCheckJournalExistReceived(true, true));
 
   db()->DoesJournalExist(
       kJournalKey1,
@@ -340,7 +349,7 @@ TEST_F(FeedJournalDatabaseTest, CheckNonExistingJournal) {
   EXPECT_TRUE(db()->IsInitialized());
 
   // Check |kJournalKey1|.
-  EXPECT_CALL(*this, OnCheckJournalExistReceived(false));
+  EXPECT_CALL(*this, OnCheckJournalExistReceived(true, false));
   db()->DoesJournalExist(
       kJournalKey1,
       base::BindOnce(&FeedJournalDatabaseTest::OnCheckJournalExistReceived,
@@ -357,8 +366,9 @@ TEST_F(FeedJournalDatabaseTest, LoadAllJournalKeys) {
   InjectJournalStorageProto(kJournalKey2, {kJournalData4, kJournalData5});
   InjectJournalStorageProto(kJournalKey3, {kJournalData6});
 
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 3U);
         EXPECT_EQ(results[0], kJournalKey1);
         EXPECT_EQ(results[1], kJournalKey2);
@@ -387,14 +397,103 @@ TEST_F(FeedJournalDatabaseTest, DeleteAllJournals) {
   storage_db()->UpdateCallback(true);
 
   // Make sure all journals got deleted.
-  EXPECT_CALL(*this, OnJournalEntryReceived(_))
-      .WillOnce([](std::vector<std::string> results) {
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_TRUE(success);
         ASSERT_EQ(results.size(), 0U);
       });
   db()->LoadAllJournalKeys(
       base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
                      base::Unretained(this)));
   storage_db()->LoadKeysCallback(true);
+}
+
+TEST_F(FeedJournalDatabaseTest, LoadJournalEntryFail) {
+  CreateDatabase(/*init_database=*/true);
+  EXPECT_TRUE(db()->IsInitialized());
+
+  // Store |kJournalKey1| and |kJournalKey2|.
+  InjectJournalStorageProto(kJournalKey1,
+                            {kJournalData1, kJournalData2, kJournalData3});
+  InjectJournalStorageProto(kJournalKey2, {kJournalData4});
+
+  // Try to Load |kJournalKey1|.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_FALSE(success);
+      });
+  db()->LoadJournal(
+      kJournalKey1,
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(false);
+}
+
+TEST_F(FeedJournalDatabaseTest, LoadNonExistingJournalEntryFail) {
+  CreateDatabase(/*init_database=*/true);
+  EXPECT_TRUE(db()->IsInitialized());
+
+  // Try to Load |kJournalKey1|.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_FALSE(success);
+      });
+  db()->LoadJournal(
+      kJournalKey1,
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(false);
+}
+
+TEST_F(FeedJournalDatabaseTest, LoadAllJournalKeysFail) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Store |kJournalKey1|, |kJournalKey2| and |kJournalKey3|.
+  InjectJournalStorageProto(kJournalKey1,
+                            {kJournalData1, kJournalData2, kJournalData3});
+  InjectJournalStorageProto(kJournalKey2, {kJournalData4, kJournalData5});
+  InjectJournalStorageProto(kJournalKey3, {kJournalData6});
+
+  EXPECT_CALL(*this, OnJournalEntryReceived(_, _))
+      .WillOnce([](bool success, std::vector<std::string> results) {
+        EXPECT_FALSE(success);
+      });
+  db()->LoadAllJournalKeys(
+      base::BindOnce(&FeedJournalDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->LoadKeysCallback(false);
+}
+
+TEST_F(FeedJournalDatabaseTest, ChecExistingJournalFail) {
+  CreateDatabase(/*init_database=*/true);
+  EXPECT_TRUE(db()->IsInitialized());
+
+  // Store |kJournalKey1| and |kJournalKey2|.
+  InjectJournalStorageProto(kJournalKey1,
+                            {kJournalData1, kJournalData2, kJournalData3});
+  InjectJournalStorageProto(kJournalKey2, {kJournalData4});
+
+  // Check |kJournalKey1|.
+  EXPECT_CALL(*this, OnCheckJournalExistReceived(false, true));
+
+  db()->DoesJournalExist(
+      kJournalKey1,
+      base::BindOnce(&FeedJournalDatabaseTest::OnCheckJournalExistReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(false);
+}
+
+TEST_F(FeedJournalDatabaseTest, CheckNonExistingJournalFail) {
+  CreateDatabase(/*init_database=*/true);
+  EXPECT_TRUE(db()->IsInitialized());
+
+  // Check |kJournalKey1|.
+  EXPECT_CALL(*this, OnCheckJournalExistReceived(false, false));
+  db()->DoesJournalExist(
+      kJournalKey1,
+      base::BindOnce(&FeedJournalDatabaseTest::OnCheckJournalExistReceived,
+                     base::Unretained(this)));
+  storage_db()->GetCallback(false);
 }
 
 }  // namespace feed

@@ -11,6 +11,7 @@ import com.google.android.libraries.feed.host.storage.JournalOperation.Copy;
 import com.google.android.libraries.feed.host.storage.JournalOperation.Type;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -26,17 +27,19 @@ public class FeedJournalBridge {
     /**
      * Creates a {@link FeedJournalBridge} for accessing native journal storage
      * implementation for the current user, and initial native side bridge.
-     */
-    public FeedJournalBridge() {}
-
-    /**
-     * Initializes the native side of this bridge.
      *
      * @param profile {@link Profile} of the user we are rendering the Feed for.
      */
-    public void init(Profile profile) {
+
+    public FeedJournalBridge(Profile profile) {
         mNativeFeedJournalBridge = nativeInit(profile);
     }
+
+    /**
+     * Creates a {@link FeedJournalBridge} for testing.
+     */
+    @VisibleForTesting
+    public FeedJournalBridge() {}
 
     /** Cleans up native half of this bridge. */
     public void destroy() {
@@ -46,9 +49,10 @@ public class FeedJournalBridge {
     }
 
     /** Loads the journal and asynchronously returns the contents. */
-    public void loadJournal(String journalName, Callback<String[]> callback) {
+    public void loadJournal(String journalName, Callback<String[]> successCallback,
+            Callback<Void> failureCallback) {
         assert mNativeFeedJournalBridge != 0;
-        nativeLoadJournal(mNativeFeedJournalBridge, journalName, callback);
+        nativeLoadJournal(mNativeFeedJournalBridge, journalName, successCallback, failureCallback);
     }
 
     /**
@@ -87,15 +91,18 @@ public class FeedJournalBridge {
     }
 
     /** Determines whether a journal exists and asynchronously responds. */
-    public void doesJournalExist(String journalName, Callback<Boolean> callback) {
+    public void doesJournalExist(
+            String journalName, Callback<Boolean> successCallback, Callback<Void> failureCallback) {
         assert mNativeFeedJournalBridge != 0;
-        nativeDoesJournalExist(mNativeFeedJournalBridge, journalName, callback);
+        nativeDoesJournalExist(
+                mNativeFeedJournalBridge, journalName, successCallback, failureCallback);
     }
 
     /** Asynchronously retrieve a list of all current journals' name. */
-    public void loadAllJournalKeys(Callback<List<String>> callback) {
+    public void loadAllJournalKeys(
+            Callback<List<String>> successCallback, Callback<Void> failureCallback) {
         assert mNativeFeedJournalBridge != 0;
-        nativeLoadAllJournalKeys(mNativeFeedJournalBridge, callback);
+        nativeLoadAllJournalKeys(mNativeFeedJournalBridge, successCallback, failureCallback);
     }
 
     /** Delete all journals. Reports success or failure. */
@@ -106,8 +113,8 @@ public class FeedJournalBridge {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedJournalBridge);
-    private native void nativeLoadJournal(
-            long nativeFeedJournalBridge, String journalName, Callback<String[]> callback);
+    private native void nativeLoadJournal(long nativeFeedJournalBridge, String journalName,
+            Callback<String[]> successCallback, Callback<Void> failureCallback);
     private native void nativeCommitJournalMutation(
             long nativeFeedJournalBridge, Callback<Boolean> callback);
     private native void nativeStartJournalMutation(
@@ -116,10 +123,10 @@ public class FeedJournalBridge {
     private native void nativeAddAppendOperation(long nativeFeedJournalBridge, String value);
     private native void nativeAddCopyOperation(long nativeFeedJournalBridge, String toJournalName);
     private native void nativeAddDeleteOperation(long nativeFeedJournalBridge);
-    private native void nativeDoesJournalExist(
-            long nativeFeedJournalBridge, String journalName, Callback<Boolean> callback);
-    private native void nativeLoadAllJournalKeys(
-            long nativeFeedJournalBridge, Callback<List<String>> callback);
+    private native void nativeDoesJournalExist(long nativeFeedJournalBridge, String journalName,
+            Callback<Boolean> successCallback, Callback<Void> failureCallback);
+    private native void nativeLoadAllJournalKeys(long nativeFeedJournalBridge,
+            Callback<List<String>> successCallback, Callback<Void> failureCallback);
     private native void nativeDeleteAllJournals(
             long nativeFeedJournalBridge, Callback<Boolean> callback);
 }
