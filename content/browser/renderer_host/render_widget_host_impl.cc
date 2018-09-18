@@ -2229,22 +2229,25 @@ void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
 
 void RenderWidgetHostImpl::OnAutoscrollStart(const gfx::PointF& position) {
   GetView()->OnAutoscrollStart();
-  WebGestureEvent scroll_begin = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollBegin,
-      blink::kWebGestureDeviceSyntheticAutoscroll);
-  scroll_begin.SetPositionInWidget(position);
-
-  ForwardGestureEventWithLatencyInfo(
-      scroll_begin, ui::LatencyInfo(ui::SourceEventType::OTHER));
-
-  // Send a GFS event with zero velocity to make sure that the scroll sequence
-  // will end with the GFC generated in |OnAutoscrollEnd()|; Otherwise if the
-  // user cancels the autoscroll without moving the mouse, the GFC will get
-  // filtered since no GFS is sent in the sequence. https://crbug.com/829794
-  OnAutoscrollFling(gfx::Vector2dF());
+  sent_autoscroll_scroll_begin_ = false;
+  autoscroll_start_position_ = position;
 }
 
 void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
+  if (!sent_autoscroll_scroll_begin_ && velocity != gfx::Vector2dF()) {
+    // Send a GSB event with valid delta hints.
+    WebGestureEvent scroll_begin = SyntheticWebGestureEventBuilder::Build(
+        WebInputEvent::kGestureScrollBegin,
+        blink::kWebGestureDeviceSyntheticAutoscroll);
+    scroll_begin.SetPositionInWidget(autoscroll_start_position_);
+    scroll_begin.data.scroll_begin.delta_x_hint = velocity.x();
+    scroll_begin.data.scroll_begin.delta_y_hint = velocity.y();
+
+    ForwardGestureEventWithLatencyInfo(
+        scroll_begin, ui::LatencyInfo(ui::SourceEventType::OTHER));
+    sent_autoscroll_scroll_begin_ = true;
+  }
+
   WebGestureEvent event = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureFlingStart,
       blink::kWebGestureDeviceSyntheticAutoscroll);
@@ -2256,6 +2259,11 @@ void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
 }
 
 void RenderWidgetHostImpl::OnAutoscrollEnd() {
+  // Don't send a GFC if no GSB is sent.
+  if (!sent_autoscroll_scroll_begin_)
+    return;
+
+  sent_autoscroll_scroll_begin_ = false;
   WebGestureEvent cancel_event = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::kGestureFlingCancel,
       blink::kWebGestureDeviceSyntheticAutoscroll);
