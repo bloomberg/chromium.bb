@@ -1488,7 +1488,6 @@ void TraceLog::UpdateTraceEventDurationExplicit(
     TraceEventETWExport::AddCompleteEndEvent(name);
 #endif  // OS_WIN
 
-  std::string console_message;
   if (category_group_enabled_local & TraceCategory::ENABLED_FOR_RECORDING) {
     AddTraceEventOverrideCallback trace_event_override =
         reinterpret_cast<AddTraceEventOverrideCallback>(
@@ -1507,25 +1506,22 @@ void TraceLog::UpdateTraceEventDurationExplicit(
           trace_event_internal::kNoId /* bind_id */, 0, nullptr, nullptr,
           nullptr, nullptr, TRACE_EVENT_FLAG_NONE);
       trace_event_override(new_trace_event);
+
+#if defined(OS_ANDROID)
+      new_trace_event.SendToATrace();
+#endif
+
       return;
     }
+  }
 
+  std::string console_message;
+  if (category_group_enabled_local & TraceCategory::ENABLED_FOR_RECORDING) {
     OptionalAutoLock lock(&lock_);
 
     TraceEvent* trace_event = GetEventByHandleInternal(handle, &lock);
     if (trace_event) {
       DCHECK(trace_event->phase() == TRACE_EVENT_PHASE_COMPLETE);
-      // TEMP(oysteine) to debug crbug.com/638744
-      if (trace_event->duration().ToInternalValue() != -1) {
-        DVLOG(1) << "TraceHandle: chunk_seq " << handle.chunk_seq
-                 << ", chunk_index " << handle.chunk_index << ", event_index "
-                 << handle.event_index;
-
-        std::string serialized_event;
-        trace_event->AppendAsJSON(&serialized_event, ArgumentFilterPredicate());
-        DVLOG(1) << "TraceEvent: " << serialized_event;
-        lock_.AssertAcquired();
-      }
 
       trace_event->UpdateDuration(now, thread_now);
 #if defined(OS_ANDROID)
