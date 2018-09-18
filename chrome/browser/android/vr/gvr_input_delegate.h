@@ -26,6 +26,7 @@ class GvrInputDelegate : public InputDelegate {
   ~GvrInputDelegate() override;
 
   // InputDelegate implementation.
+  void OnTriggerEvent(bool pressed) override;
   gfx::Transform GetHeadPose() override;
   void UpdateController(const gfx::Transform& head_pose,
                         base::TimeTicks current_time,

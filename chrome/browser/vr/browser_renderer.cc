@@ -149,7 +149,7 @@ void BrowserRenderer::OnExitPresent() {
 }
 
 void BrowserRenderer::OnTriggerEvent(bool pressed) {
-  scheduler_delegate_->OnTriggerEvent(pressed);
+  input_delegate_->OnTriggerEvent(pressed);
 }
 
 void BrowserRenderer::SetWebXrMode(bool enabled) {

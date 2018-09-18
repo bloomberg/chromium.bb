@@ -21,6 +21,8 @@ static_library("vr_android") {
     "autocomplete_controller.h",
     "browser_renderer_factory.cc",
     "browser_renderer_factory.h",
+    "cardboard_input_delegate.cc",
+    "cardboard_input_delegate.h",
     "gl_browser_interface.h",
     "gvr_graphics_delegate.cc",
     "gvr_graphics_delegate.h",

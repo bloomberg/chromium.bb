@@ -67,7 +67,6 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   void AddInputSourceState(device::mojom::XRInputSourceStatePtr state) override;
   void OnPause() override;
   void OnResume() override;
-  void OnTriggerEvent(bool pressed) override;
   void SetWebXrMode(bool enabled) override;
   void SetShowingVrDialog(bool showing) override;
   void SubmitDrawnFrame(FrameType frame_type,
@@ -120,8 +119,6 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   bool WebVrHasOverstuffedBuffers();
 
   base::TimeDelta GetPredictedFrameTime();
-
-  device::mojom::XRInputSourceStatePtr GetGazeInputSourceState();
 
   device::mojom::XRPresentationTransportOptionsPtr
   GetWebXrFrameTransportOptions(
@@ -179,9 +176,6 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   WebXrPresentationState webxr_;
   bool showing_vr_dialog_ = false;
   bool cardboard_gamepad_ = false;
-  // TODO(acondor): Move trigger data to controller delegate.
-  bool cardboard_trigger_pressed_ = false;
-  bool cardboard_trigger_clicked_ = false;
 
   // WebXR currently supports multiple render path choices, with runtime
   // selection based on underlying support being available and feature flags.
@@ -212,11 +206,11 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   // get_frame_data_callback_. The callback is executed by SendVSync once
   // WebVrCanAnimateFrame returns true.
   //
-  // pending_vsync_ is set to true in OnVSync and false in SendVSync. It
+  // webxr_vsync_pending_ is set to true in OnVSync and false in SendVSync. It
   // throttles animation to no faster than the VSync rate. The pending_time_ is
   // updated in OnVSync and used as the rAF animation timer in SendVSync.
   base::TimeTicks pending_time_;
-  bool pending_vsync_ = false;
+  bool webxr_vsync_pending_ = false;
   device::mojom::XRFrameDataProvider::GetFrameDataCallback
       get_frame_data_callback_;
 

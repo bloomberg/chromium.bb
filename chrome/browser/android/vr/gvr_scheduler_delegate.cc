@@ -118,14 +118,6 @@ void GvrSchedulerDelegate::OnResume() {
     ScheduleOrCancelWebVrFrameTimeout();
 }
 
-void GvrSchedulerDelegate::OnTriggerEvent(bool pressed) {
-  if (pressed) {
-    cardboard_trigger_pressed_ = true;
-  } else if (cardboard_trigger_pressed_) {
-    cardboard_trigger_pressed_ = false;
-    cardboard_trigger_clicked_ = true;
-  }
-}
 
 void GvrSchedulerDelegate::SetWebXrMode(bool enabled) {
   BaseSchedulerDelegate::SetWebXrMode(enabled);
@@ -398,14 +390,14 @@ void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
 
   vsync_helper_.RequestVSync();
 
-  pending_vsync_ = true;
-  pending_time_ = frame_time;
-  WebXrTryStartAnimatingFrame(true);
-
   if (ShouldDrawWebVr())
     browser_renderer_->ProcessControllerInputForWebXr(frame_time);
   else
     DrawFrame(-1, frame_time);
+
+  webxr_vsync_pending_ = true;
+  pending_time_ = frame_time;
+  WebXrTryStartAnimatingFrame(true);
 }
 
 void GvrSchedulerDelegate::DrawFrame(int16_t frame_index,
@@ -717,7 +709,7 @@ bool GvrSchedulerDelegate::WebVrCanAnimateFrame(bool is_from_onvsync) {
     return false;
   }
 
-  if (!pending_vsync_) {
+  if (!webxr_vsync_pending_) {
     DVLOG(2) << __func__ << ": waiting for pending_vsync (too fast)";
     return false;
   }
@@ -870,10 +862,10 @@ bool GvrSchedulerDelegate::WebVrHasOverstuffedBuffers() {
 
 void GvrSchedulerDelegate::SendVSync() {
   DCHECK(!get_frame_data_callback_.is_null());
-  DCHECK(pending_vsync_);
+  DCHECK(webxr_vsync_pending_);
 
   // Mark the VSync as consumed.
-  pending_vsync_ = false;
+  webxr_vsync_pending_ = false;
 
   device::mojom::XRFrameDataPtr frame_data = device::mojom::XRFrameData::New();
 
@@ -909,13 +901,7 @@ void GvrSchedulerDelegate::SendVSync() {
   }
 
   TRACE_EVENT0("gpu", "GvrSchedulerDelegate::XRInput");
-  if (cardboard_gamepad_) {
-    std::vector<device::mojom::XRInputSourceStatePtr> input_states;
-    input_states.push_back(GetGazeInputSourceState());
-    pose->input_state = std::move(input_states);
-  } else {
-    pose->input_state = std::move(input_states_);
-  }
+  pose->input_state = std::move(input_states_);
 
   frame_data->pose = std::move(pose);
 
@@ -1037,34 +1023,6 @@ base::TimeDelta GvrSchedulerDelegate::GetPredictedFrameTime() {
   TRACE_COUNTER1("gpu", "WebVR pose prediction (ms)",
                  expected_frame_time.InMilliseconds());
   return expected_frame_time;
-}
-
-device::mojom::XRInputSourceStatePtr
-GvrSchedulerDelegate::GetGazeInputSourceState() {
-  device::mojom::XRInputSourceStatePtr state =
-      device::mojom::XRInputSourceState::New();
-
-  // Only one gaze input source to worry about, so it can have a static id.
-  state->source_id = 1;
-
-  // Report any trigger state changes made since the last call and reset the
-  // state here.
-  state->primary_input_pressed = cardboard_trigger_pressed_;
-  state->primary_input_clicked = cardboard_trigger_clicked_;
-  cardboard_trigger_clicked_ = false;
-
-  state->description = device::mojom::XRInputSourceDescription::New();
-
-  // It's a gaze-cursor-based device.
-  state->description->target_ray_mode = device::mojom::XRTargetRayMode::GAZING;
-  state->description->emulated_position = true;
-
-  // No implicit handedness
-  state->description->handedness = device::mojom::XRHandedness::NONE;
-
-  // Pointer and grip transforms are omitted since this is a gaze-based source.
-
-  return state;
 }
 
 void GvrSchedulerDelegate::ClosePresentationBindings() {

@@ -45,6 +45,10 @@ gfx::Transform InputDelegateForTesting::GetHeadPose() {
   return gfx::Transform();
 }
 
+void InputDelegateForTesting::OnTriggerEvent(bool pressed) {
+  NOTREACHED();
+}
+
 void InputDelegateForTesting::QueueControllerActionForTesting(
     ControllerTestInput controller_input) {
   DCHECK_NE(controller_input.action,
