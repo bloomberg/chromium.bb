@@ -1095,34 +1095,13 @@ TEST_F(MediaControlsImplTestWithMockScheduler, AccessibleFocusShowsControls) {
   EXPECT_TRUE(IsElementVisible(*panel));
 
   platform()->RunForPeriodSeconds(2);
-  EXPECT_FALSE(IsElementVisible(*panel));
-
-  MediaControls().OnAccessibleFocus();
-  platform()->RunForPeriodSeconds(2);
-  EXPECT_TRUE(IsElementVisible(*panel));
-}
-
-TEST_F(MediaControlsImplTestWithMockScheduler,
-       AccessibleFocusKeepsControlsHiddenButDisplayed) {
-  EnsureSizing();
-
-  Element* panel = MediaControls().PanelElement();
-
-  MediaControls().MediaElement().SetSrc("http://example.com");
-  MediaControls().MediaElement().Play();
-
-  platform()->RunForPeriodSeconds(2);
+  SimulateHideMediaControlsTimerFired();
   EXPECT_TRUE(IsElementVisible(*panel));
 
-  MediaControls().OnAccessibleFocus();
+  MediaControls().OnAccessibleBlur();
   platform()->RunForPeriodSeconds(4);
+  SimulateHideMediaControlsTimerFired();
   EXPECT_FALSE(IsElementVisible(*panel));
-
-  // Display is none but can't be checked via InlineStyle. Adding checks of this
-  // to make sure that any one changing this assumption will have to update this
-  // test.
-  EXPECT_FALSE(panel->InlineStyle());
-  EXPECT_NE(EDisplay::kNone, panel->EnsureComputedStyle()->Display());
 }
 
 TEST_F(MediaControlsImplTest,

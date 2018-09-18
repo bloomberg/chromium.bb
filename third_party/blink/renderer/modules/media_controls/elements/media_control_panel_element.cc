@@ -135,6 +135,10 @@ void MediaControlPanelElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_listener_);
 }
 
+bool MediaControlPanelElement::KeepDisplayedForAccessibility() {
+  return keep_displayed_for_accessibility_;
+}
+
 void MediaControlPanelElement::SetKeepDisplayedForAccessibility(bool value) {
   keep_displayed_for_accessibility_ = value;
 }

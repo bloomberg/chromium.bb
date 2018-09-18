@@ -109,21 +109,14 @@ MediaControlElementType AccessibilityMediaControl::ControlType() const {
       GetLayoutObject()->GetNode());
 }
 
-bool AccessibilityMediaControl::OnNativeScrollToGlobalPointAction(
-    const IntPoint& point) const {
+bool AccessibilityMediaControl::InternalSetAccessibilityFocusAction() {
   MediaControlElementsHelper::NotifyMediaControlAccessibleFocus(GetElement());
-  return AXLayoutObject::OnNativeScrollToGlobalPointAction(point);
+  return AXLayoutObject::InternalSetAccessibilityFocusAction();
 }
 
-bool AccessibilityMediaControl::OnNativeScrollToMakeVisibleAction() const {
-  MediaControlElementsHelper::NotifyMediaControlAccessibleFocus(GetElement());
-  return AXLayoutObject::OnNativeScrollToMakeVisibleAction();
-}
-
-bool AccessibilityMediaControl::OnNativeScrollToMakeVisibleWithSubFocusAction(
-    const IntRect& rect) const {
-  MediaControlElementsHelper::NotifyMediaControlAccessibleFocus(GetElement());
-  return AXLayoutObject::OnNativeScrollToMakeVisibleWithSubFocusAction(rect);
+bool AccessibilityMediaControl::InternalClearAccessibilityFocusAction() {
+  MediaControlElementsHelper::NotifyMediaControlAccessibleBlur(GetElement());
+  return AXLayoutObject::InternalClearAccessibilityFocusAction();
 }
 
 String AccessibilityMediaControl::TextAlternative(

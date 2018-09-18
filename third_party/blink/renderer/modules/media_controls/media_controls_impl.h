@@ -190,6 +190,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // accessibility tool. This is meant to be replaced by AOM when the event will
   // be exposed to the platform.
   void OnAccessibleFocus();
+  void OnAccessibleBlur();
 
   // TODO(884770): This should only be here until the double-tap-to-jump logic
   // is moved to the controls from the overlay play button.

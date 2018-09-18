@@ -2904,12 +2904,10 @@ bool AXObject::RequestShowContextMenuAction() {
 }
 
 bool AXObject::InternalClearAccessibilityFocusAction() {
-  // TODO(mlamouri): implement
   return false;
 }
 
 bool AXObject::InternalSetAccessibilityFocusAction() {
-  // TODO(mlamouri): implement
   return false;
 }
 
