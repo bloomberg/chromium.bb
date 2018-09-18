@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -139,6 +140,8 @@ class ManualFillingMediator
     void initialize(KeyboardAccessoryCoordinator keyboardAccessory,
             AccessorySheetCoordinator accessorySheet, WindowAndroid windowAndroid) {
         assert windowAndroid.getActivity().get() != null;
+        // Abort initialization for PWAs: https://crbug.com/881536.
+        if (windowAndroid.getActivity().get() instanceof WebappActivity) return;
         mWindowAndroid = windowAndroid;
         mKeyboardAccessory = keyboardAccessory;
         mAccessorySheet = accessorySheet;
