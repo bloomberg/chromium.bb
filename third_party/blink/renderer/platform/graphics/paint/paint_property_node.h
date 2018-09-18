@@ -130,6 +130,8 @@ class PaintPropertyNode : public RefCounted<NodeType> {
 
  private:
   friend class PaintPropertyNodeTest;
+  // Object paint properties can set the parent directly for an alias update.
+  friend class ObjectPaintProperties;
 
   scoped_refptr<const NodeType> parent_;
   // Indicates whether this node is an alias for its parent. Parent aliases are

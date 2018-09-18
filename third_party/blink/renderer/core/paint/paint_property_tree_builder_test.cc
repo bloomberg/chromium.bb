@@ -3264,48 +3264,89 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState) {
   const ObjectPaintProperties* clip_properties =
       clipper->FirstFragment().PaintProperties();
   LayoutObject* child = GetLayoutObjectByElementId("child");
+  const auto& clip_local_properties =
+      clipper->FirstFragment().LocalBorderBoxProperties();
+
+  // Verify that we created isolation nodes.
+  EXPECT_TRUE(clip_properties->TransformIsolationNode());
+  EXPECT_TRUE(clip_properties->EffectIsolationNode());
+  EXPECT_TRUE(clip_properties->ClipIsolationNode());
+
+  // Verify parenting:
+
+  // Transform isolation node should be parented to the local border box
+  // properties transform, which should be the paint offset translation.
+  EXPECT_EQ(clip_properties->TransformIsolationNode()->Parent(),
+            clip_local_properties.Transform());
+  EXPECT_EQ(clip_properties->TransformIsolationNode()->Parent(),
+            clip_properties->PaintOffsetTranslation());
+  // Similarly, effect isolation node is parented to the local border box
+  // properties effect.
+  EXPECT_EQ(clip_properties->EffectIsolationNode()->Parent(),
+            clip_local_properties.Effect());
+  // Clip isolation node, however, is parented to the overflow clip, which is in
+  // turn parented to the local border box properties clip.
+  EXPECT_EQ(clip_properties->ClipIsolationNode()->Parent(),
+            clip_properties->OverflowClip());
+  EXPECT_EQ(clip_properties->OverflowClip()->Parent(),
+            clip_local_properties.Clip());
+
+  // Verify transform:
+
+  // Isolation transform node should be identity.
+  EXPECT_EQ(clip_properties->TransformIsolationNode()->Matrix(),
+            TransformationMatrix());
 
   // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
   // scrolling.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_FALSE(DocScrollTranslation());
     EXPECT_TRUE(DocPreTranslation());
-    EXPECT_EQ(DocPreTranslation(),
-              clipper->FirstFragment().LocalBorderBoxProperties().Transform());
+    // Isolation induces paint offset translation, so the node should be
+    // different from the doc node, but its parent is the same as the doc node.
+    EXPECT_EQ(DocPreTranslation(), clipper->FirstFragment()
+                                       .LocalBorderBoxProperties()
+                                       .Transform()
+                                       ->Parent());
   } else {
     // Always create scroll translation for layout view even the document does
     // not scroll (not enough content).
     EXPECT_TRUE(DocScrollTranslation());
-    EXPECT_EQ(DocScrollTranslation(),
-              clipper->FirstFragment().LocalBorderBoxProperties().Transform());
+    // Isolation induces paint offset translation, so the node should be
+    // different from the doc node, but its parent is the same as the doc node.
+    EXPECT_EQ(DocScrollTranslation(), clipper->FirstFragment()
+                                          .LocalBorderBoxProperties()
+                                          .Transform()
+                                          ->Parent());
   }
+
+  // Verify clip:
+
   EXPECT_EQ(DocContentClip(),
             clipper->FirstFragment().LocalBorderBoxProperties().Clip());
+  // Clip isolation node should be big enough to encompass all other clips,
+  // including DocContentClip.
+  EXPECT_TRUE(clip_properties->ClipIsolationNode()->ClipRect().Rect().Contains(
+      DocContentClip()->ClipRect().Rect()));
+
+  // Verify contents properties and child properties:
 
   auto contents_properties = clipper->FirstFragment().ContentsProperties();
-  EXPECT_EQ(LayoutPoint(30, 20), clipper->FirstFragment().PaintOffset());
-  // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
-  // scrolling.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_EQ(DocPreTranslation(), contents_properties.Transform());
-  } else {
-    EXPECT_EQ(DocScrollTranslation(), contents_properties.Transform());
-  }
-  EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
+  // Since the clipper is isolated, its paint offset should be 0, 0.
+  EXPECT_EQ(LayoutPoint(0, 0), clipper->FirstFragment().PaintOffset());
+  // Ensure that the contents properties match isolation nodes.
+  EXPECT_EQ(clip_properties->TransformIsolationNode(),
+            contents_properties.Transform());
+  EXPECT_EQ(clip_properties->ClipIsolationNode(), contents_properties.Clip());
+  EXPECT_EQ(clip_properties->EffectIsolationNode(),
+            contents_properties.Effect());
 
-  // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
-  // scrolling.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_EQ(DocPreTranslation(),
-              child->FirstFragment().LocalBorderBoxProperties().Transform());
-  } else {
-    EXPECT_EQ(DocScrollTranslation(),
-              child->FirstFragment().LocalBorderBoxProperties().Transform());
-  }
-  EXPECT_EQ(clip_properties->OverflowClip(),
+  // Child should be using isolation nodes as its local border box properties.
+  EXPECT_EQ(contents_properties.Transform(),
+            child->FirstFragment().LocalBorderBoxProperties().Transform());
+  EXPECT_EQ(contents_properties.Clip(),
             child->FirstFragment().LocalBorderBoxProperties().Clip());
-
-  EXPECT_NE(nullptr,
+  EXPECT_EQ(contents_properties.Effect(),
             child->FirstFragment().LocalBorderBoxProperties().Effect());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 500), child, clipper);
 }

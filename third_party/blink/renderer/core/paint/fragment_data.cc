@@ -54,6 +54,8 @@ const TransformPaintPropertyNode* FragmentData::PreTransform() const {
 
 const TransformPaintPropertyNode* FragmentData::PostScrollTranslation() const {
   if (const auto* properties = PaintProperties()) {
+    if (properties->TransformIsolationNode())
+      return properties->TransformIsolationNode();
     if (properties->ScrollTranslation())
       return properties->ScrollTranslation();
     if (properties->ReplacedContentTransform())
@@ -83,6 +85,8 @@ const ClipPaintPropertyNode* FragmentData::PreClip() const {
 
 const ClipPaintPropertyNode* FragmentData::PostOverflowClip() const {
   if (const auto* properties = PaintProperties()) {
+    if (properties->ClipIsolationNode())
+      return properties->ClipIsolationNode();
     if (properties->OverflowClip())
       return properties->OverflowClip();
     if (properties->InnerBorderRadiusClip())
@@ -105,6 +109,14 @@ const EffectPaintPropertyNode* FragmentData::PreFilter() const {
   if (const auto* properties = PaintProperties()) {
     if (properties->Filter())
       return properties->Filter()->Parent();
+  }
+  return LocalBorderBoxProperties().Effect();
+}
+
+const EffectPaintPropertyNode* FragmentData::PostIsolationEffect() const {
+  if (const auto* properties = PaintProperties()) {
+    if (properties->EffectIsolationNode())
+      return properties->EffectIsolationNode();
   }
   return LocalBorderBoxProperties().Effect();
 }

@@ -70,8 +70,11 @@ class CORE_EXPORT ObjectPaintProperties {
 #define ADD_NODE(type, function, variable)                                   \
   const type##PaintPropertyNode* function() const { return variable.get(); } \
   UpdateResult Update##function(const type##PaintPropertyNode& parent,       \
-                                type##PaintPropertyNode::State&& state) {    \
-    auto result = Update(variable, parent, std::move(state));                \
+                                type##PaintPropertyNode::State&& state,      \
+                                bool is_parent_alias = false) {              \
+    auto result = is_parent_alias                                            \
+                      ? UpdateAlias(variable, parent)                        \
+                      : Update(variable, parent, std::move(state));          \
     DCHECK(!is_immutable_ || result.Unchanged())                             \
         << "Value changed while immutable. New state:\n"                     \
         << *variable;                                                        \
@@ -120,6 +123,13 @@ class CORE_EXPORT ObjectPaintProperties {
   //         To use any content offset based on ScrollOrigin() (e.g. LayoutBox
   //         or InlineBox's PhysicalLocation()) in this space, we should add
   //         ScrollOrigin() to the offset.
+  //
+  // ... +-[ TransformIsolationNode ]     This serves as a parent to subtree
+  //                                      transforms on an element with paint
+  //                                      containment. It induces a
+  //                                      paintOffsetTranslationNode and is the
+  //                                      deepest child of any transform tree on
+  //                                      the contain: paint element.
   ADD_TRANSFORM(PaintOffsetTranslation, paint_offset_translation_);
   ADD_TRANSFORM(StickyTranslation, sticky_translation_);
   ADD_TRANSFORM(Transform, transform_);
@@ -127,6 +137,7 @@ class CORE_EXPORT ObjectPaintProperties {
   ADD_TRANSFORM(ReplacedContentTransform, replaced_content_transform_);
   ADD_TRANSFORM(ScrollTranslation, scroll_translation_);
   ADD_NODE(Scroll, Scroll, scroll_);
+  ADD_TRANSFORM(TransformIsolationNode, transform_isolation_node_);
 
   // The hierarchy of the effect subtree created by a LayoutObject is as
   // follows:
@@ -149,6 +160,11 @@ class CORE_EXPORT ObjectPaintProperties {
   // +-[ link highlight effect ]
   //       The link highlight effect is only used for link highlight animations
   //       and should never have descendants.
+  //
+  // ... +-[ effectIsolationNode ]
+  //       This serves as a parent to subtree effects on an element with paint
+  //       containment, It is the deepest child of any effect tree on the
+  //       contain: paint element.
   ADD_EFFECT(Effect, effect_);
   ADD_EFFECT(Filter, filter_);
   ADD_EFFECT(VerticalScrollbarEffect, vertical_scrollbar_effect_);
@@ -156,6 +172,7 @@ class CORE_EXPORT ObjectPaintProperties {
   ADD_EFFECT(Mask, mask_);
   ADD_EFFECT(ClipPath, clip_path_);
   ADD_EFFECT(LinkHighlightEffect, link_highlight_effect_);
+  ADD_EFFECT(EffectIsolationNode, effect_isolation_node_);
 
   // The hierarchy of the clip subtree created by a LayoutObject is as follows:
   // [ fragment clip ]
@@ -190,6 +207,11 @@ class CORE_EXPORT ObjectPaintProperties {
   //   [ css clip fixed position ]
   //       Clip created by CSS clip. Only exists if the current clip includes
   //       some clip that doesn't apply to our fixed position descendants.
+  //
+  //  ... +-[ clipIsolationNode ]
+  //       This serves as a parent to subtree clips on an element with paint
+  //       containment. It is the deepest child of any clip tree on the contain:
+  //       paint element.
   ADD_CLIP(FragmentClip, fragment_clip_);
   ADD_CLIP(ClipPathClip, clip_path_clip_);
   ADD_CLIP(MaskClip, mask_clip_);
@@ -198,6 +220,7 @@ class CORE_EXPORT ObjectPaintProperties {
   ADD_CLIP(OverflowControlsClip, overflow_controls_clip_);
   ADD_CLIP(InnerBorderRadiusClip, inner_border_radius_clip_);
   ADD_CLIP(OverflowClip, overflow_clip_);
+  ADD_CLIP(ClipIsolationNode, clip_isolation_node_);
 
 #if DCHECK_IS_ON()
   // Used by FindPropertiesNeedingUpdate.h for verifying state doesn't change.
@@ -242,6 +265,17 @@ class CORE_EXPORT ObjectPaintProperties {
                  : UpdateResult::kUnchanged;
     }
     field = PaintPropertyNode::Create(parent, std::move(state));
+    return UpdateResult::kNewNodeCreated;
+  }
+  template <typename PaintPropertyNode>
+  UpdateResult UpdateAlias(scoped_refptr<PaintPropertyNode>& field,
+                           const PaintPropertyNode& parent) {
+    if (field) {
+      DCHECK(field->IsParentAlias());
+      return field->SetParent(&parent) ? UpdateResult::kValueChanged
+                                       : UpdateResult::kUnchanged;
+    }
+    field = PaintPropertyNode::CreateAlias(parent);
     return UpdateResult::kNewNodeCreated;
   }
 

@@ -79,6 +79,12 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return base::AdoptRef(
         new ScrollPaintPropertyNode(&parent, std::move(state)));
   }
+  static scoped_refptr<ScrollPaintPropertyNode> CreateAlias(
+      const ScrollPaintPropertyNode&) {
+    // ScrollPaintPropertyNodes cannot be aliases.
+    NOTREACHED();
+    return nullptr;
+  }
 
   bool Update(const ScrollPaintPropertyNode& parent, State&& state) {
     bool parent_changed = SetParent(&parent);
