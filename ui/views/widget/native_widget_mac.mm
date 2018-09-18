@@ -109,9 +109,33 @@ int NativeWidgetMac::SheetPositionY() {
 void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   name_ = params.name;
-  base::scoped_nsobject<NativeWidgetMacNSWindow> window(
-      [CreateNSWindow(params) retain]);
-  bridge_host_->CreateLocalBridge(std::move(window), params.parent);
+
+  // Determine the factory through which to create the bridge.
+  // TODO(ccameron): Make widgets inherit their bridge factory from their
+  // parent, or, from the hosting process. At the moment, this path is
+  // unreachable.
+  BridgedNativeWidgetHostImpl* parent_host =
+      BridgedNativeWidgetHostImpl::GetFromNativeWindow([params.parent window]);
+  views_bridge_mac::mojom::BridgeFactory* bridge_factory = nullptr;
+  if (parent_host)
+    bridge_factory = parent_host->bridge_factory();
+  if (bridge_factory) {
+    // Compute the parameters to describe the NSWindow.
+    // TODO(ccameron): This is not yet adequate to capture all NSWindow
+    // sub-classes that may be used. Make the parameter structure more
+    // expressive.
+    auto create_window_params =
+        views_bridge_mac::mojom::CreateWindowParams::New();
+    create_window_params->style_mask = StyleMaskForParams(params);
+
+    bridge_host_->CreateRemoteBridge(
+        bridge_factory, std::move(create_window_params),
+        parent_host ? parent_host->bridged_native_widget_id() : 0);
+  } else {
+    base::scoped_nsobject<NativeWidgetMacNSWindow> window(
+        [CreateNSWindow(params) retain]);
+    bridge_host_->CreateLocalBridge(std::move(window), params.parent);
+  }
   bridge_host_->InitWindow(params);
 
   // Only set always-on-top here if it is true since setting it may affect how

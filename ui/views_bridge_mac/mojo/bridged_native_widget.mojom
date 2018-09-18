@@ -9,6 +9,13 @@ import "ui/base/mojo/ui_base_types.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";
 
+// Parameters used to described creation of an NSWindow.
+// TODO(ccameron): Add additional members to support all window sub-classes.
+struct CreateWindowParams {
+  // The NSWindowStyleMask for the window.
+  uint64 style_mask;
+};
+
 // Ways of changing the visibility of the bridged NSWindow.
 enum WindowVisibilityState {
   // Hides with -[NSWindow orderOut:].
@@ -38,6 +45,10 @@ struct BridgedNativeWidgetInitParams {
 // The interface through which a NativeWidgetMac may interact with an NSWindow
 // in another process.
 interface BridgedNativeWidget {
+  // Create and set the NSWindow for the bridge, and assign it the parent
+  // NSWindow specified by |parent_id|.
+  CreateWindow(CreateWindowParams params, uint64 parent_id);
+
   // Initialize the window's style.
   InitWindow(BridgedNativeWidgetInitParams params);
 

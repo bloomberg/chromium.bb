@@ -1,0 +1,18 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module views_bridge_mac.mojom;
+
+import "ui/views_bridge_mac/mojo/bridged_native_widget.mojom";
+import "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom";
+
+// The interface through which a bridge is created and connected to its host.
+interface BridgeFactory {
+  CreateBridge(
+      uint64 bridge_id,
+      BridgedNativeWidget& bridge_request,
+      BridgedNativeWidgetHost host);
+  DestroyBridge(uint64 bridge_id);
+};
+

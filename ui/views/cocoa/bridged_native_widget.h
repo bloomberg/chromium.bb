@@ -13,6 +13,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/base/ime/text_input_client.h"
@@ -70,11 +71,16 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // Retrieve a BridgedNativeWidgetImpl* from its id.
   static BridgedNativeWidgetImpl* GetFromId(uint64_t bridged_native_widget_id);
 
+  // Create an NSWindow for the specified parameters.
+  static base::scoped_nsobject<NativeWidgetMacNSWindow> CreateNSWindow(
+      views_bridge_mac::mojom::CreateWindowParams* params);
+
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
   BridgedNativeWidgetImpl(uint64_t bridged_native_widget_id,
                           BridgedNativeWidgetHost* host,
                           BridgedNativeWidgetHostHelper* host_helper);
   ~BridgedNativeWidgetImpl() override;
+  void BindRequest(views_bridge_mac::mojom::BridgedNativeWidgetRequest request);
 
   // Initialize the NSWindow by taking ownership of the specified object.
   // TODO(ccameron): When a BridgedNativeWidgetImpl is allocated across a
@@ -204,6 +210,8 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   base::TimeDelta PreCommitTimeout() override;
 
   // views_bridge_mac::mojom::BridgedNativeWidget:
+  void CreateWindow(views_bridge_mac::mojom::CreateWindowParamsPtr params,
+                    uint64_t parent_id) override;
   void InitWindow(views_bridge_mac::mojom::BridgedNativeWidgetInitParamsPtr
                       params) override;
   void InitCompositorView() override;
@@ -343,6 +351,8 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   // shadow needs to be invalidated when a frame is received for the new shape.
   bool invalidate_shadow_on_frame_swap_ = false;
 
+  mojo::Binding<views_bridge_mac::mojom::BridgedNativeWidget>
+      bridge_mojo_binding_;
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetImpl);
 };
 

@@ -2,6 +2,7 @@ include_rules = [
   "+cc/paint",
   "+components/crash/core/common/crash_key.h",
   "+components/vector_icons",
+  "+mojo/public/cpp/bindings",
   "+services/ws/public/mojom",
   "+skia/ext",
   "+third_party/iaccessible2",
