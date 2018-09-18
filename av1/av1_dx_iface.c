@@ -527,12 +527,11 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
                                       const uint8_t *data, size_t data_sz,
                                       void *user_priv) {
-  const uint8_t *data_start = data;
-  const uint8_t *data_end = data + data_sz;
   aom_codec_err_t res = AOM_CODEC_OK;
 
-  // Release any pending output frames from the previous decoder call.
-  // We need to do this even if the decoder is being flushed
+  // Release any pending output frames from the previous decoder_decode call.
+  // We need to do this even if the decoder is being flushed or the input
+  // arguments are invalid.
   if (ctx->frame_workers) {
     BufferPool *const pool = ctx->buffer_pool;
     RefCntBuffer *const frame_bufs = pool->frame_bufs;
@@ -550,10 +549,13 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
     unlock_buffer_pool(ctx->buffer_pool);
   }
 
+  /* Sanity checks */
+  /* NULL data ptr allowed if data_sz is 0 too */
   if (data == NULL && data_sz == 0) {
     ctx->flushed = 1;
     return AOM_CODEC_OK;
   }
+  if (data == NULL || data_sz == 0) return AOM_CODEC_INVALID_PARAM;
 
   // Reset flushed when receiving a valid frame.
   ctx->flushed = 0;
@@ -563,6 +565,9 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
     res = init_decoder(ctx);
     if (res != AOM_CODEC_OK) return res;
   }
+
+  const uint8_t *data_start = data;
+  const uint8_t *data_end = data + data_sz;
 
   if (ctx->is_annexb) {
     // read the size of this temporal unit
