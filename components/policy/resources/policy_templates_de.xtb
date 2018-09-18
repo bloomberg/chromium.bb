@@ -2301,7 +2301,8 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Wenn für diese Richtlinie "false" festgelegt wird, werden auf der "Neuer Tab"-Seite keine automatisch generierten Inhaltsvorschläge angezeigt.</translation>
 <translation id="7313793931637495417">Mit dieser Richtlinie wird festgelegt, ob Versionsinformationen wie die Betriebssystemversion, das Betriebssystem, die Architektur des Betriebssystems, die <ph name="PRODUCT_NAME" />-Version und der <ph name="PRODUCT_NAME" />-Kanal erfasst werden.
 
-Wenn die Richtlinie auf "true" gesetzt oder gar nicht festgelegt ist, werden Versionsinformationen erfasst. Wenn die Richtlinie auf "false" gesetzt ist, werden keine Versionsinformationen erfasst.
+Wenn die Richtlinie auf "true" gesetzt oder gar nicht festgelegt ist, werden Versionsinformationen erfasst.
+Wenn die Richtlinie auf "false" gesetzt ist, werden keine Versionsinformationen erfasst.
 
 Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="7323896582714668701">Zusätzliche Befehlszeilenparameter für <ph name="PRODUCT_NAME" /></translation>

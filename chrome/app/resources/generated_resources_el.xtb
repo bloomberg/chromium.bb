@@ -4258,6 +4258,7 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{Άνοιγμα όλων σε &amp;νέο παράθυρο}=1{Άνοιγμα σε &amp;νέο παράθυρο}other{Άνοιγμα όλων (#) σε &amp;νέο παράθυρο}}</translation>
 <translation id="7434509671034404296">Για Προγραμματιστές</translation>
 <translation id="7436921188514130341">Δυστυχώς, παρουσιάστηκε σφάλμα κατά τη μετονομασία.</translation>
+<translation id="7441736921018636843">Για να αλλάξετε αυτήν τη ρύθμιση, <ph name="BEGIN_LINK" />κάντε επαναφορά στον συγχρονισμό<ph name="END_LINK" />, έτσι ώστε να καταργηθεί η φράση πρόσβασης συγχρονισμού</translation>
 <translation id="7441830548568730290">Άλλοι χρήστες</translation>
 <translation id="7442465037756169001">Το Hangouts Meet hardware είναι έτοιμο για ρύθμιση.</translation>
 <translation id="744341768939279100">Δημιουργήστε ένα νέο προφίλ</translation>

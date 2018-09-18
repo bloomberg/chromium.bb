@@ -130,6 +130,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="1387596372902085462">Angir om Symantec Corporations eldre PKI-infrastruktur skal klareres eller ikke</translation>
 <translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
 <translation id="1397855852561539316">Foreslått nettadresse for standard søkeleverandør</translation>
+<translation id="142346659686073702">Tillat at brukere uten tilknytning bruker Crostini</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxy-tjener</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
@@ -380,6 +381,12 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Hvis regelen ikke spesifiseres, har det samme effekt som å slå den på. Se beskrivelsen ovenfor.</translation>
 <translation id="2113068765175018713">Begrens enhetens driftstid ved å bruke automatisk omstart</translation>
+<translation id="2116790137063002724">Denne regelen kontrollerer om det skal rapporteres om informasjon som kan brukes til å identifisere brukere, for eksempel påloggingsinformasjon for OS, påloggingsinformasjon for <ph name="PRODUCT_NAME" />-profilen, <ph name="PRODUCT_NAME" />-profilnavn, <ph name="PRODUCT_NAME" />-profilbane og den kjørbare banen for <ph name="PRODUCT_NAME" />.
+
+      Hvis denne regelen ikke er konfigurert eller er angitt som «true» (sant), innhentes informasjon som kan brukes til å identifisere brukere.
+      Hvis denne regelen er angitt som «false» (usant), innhentes ikke informasjon som kan brukes til å identifisere brukere.
+
+      Denne regelen gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
 <translation id="2132732175597591362">Kontrollerer godkjenningslisten for nettadresser hvor autoavspilling alltid er aktivert.
@@ -1561,6 +1568,12 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="5272684451155669299">Hvis denne er angitt som «true» (sann), kan brukerne bruke maskinvaren på Chrome-enheter til å attestere enhetenes identitet eksternt til sertifiseringsinstansen for personvern via <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> ved bruk av <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Hvis den er angitt som «false» (usann), eller hvis den ikke er angitt, kan ikke API-et kalles opp – i stedet vises en feilkode.</translation>
+<translation id="5277806246014825877">Gi denne brukeren tillatelse til å kjøre Crostini.
+
+      Hvis denne regelen er angitt som «false» (usant), kan ikke brukeren kjøre Crostini.
+      Hvis denne regelen ikke er konfigurert eller er angitt som «true» (sant), kan brukeren kjøre Crostini så lenge andre innstillinger også tillater dette.
+      Alle tre reglene, VirtualMachinesAllowed, CrostiniAllowed og DeviceUnaffiliatedCrostiniAllowed, må være angitt som sant når de gjelder for hvorvidt Crostini kan kjøres eller ikke.
+      Hvis denne regelen endres til usant, gjelder den for oppstart av nye Crostini-beholdere, men eksisterende beholdere som allerede kjøres, blir ikke avsluttet.</translation>
 <translation id="5283457834853986457">Deaktiver programtilleggssøk (avviklet)</translation>
 <translation id="5288772341821359899">Hvis regelen er konfigurert, blir UDP-portområdet som brukes av WebRTC, begrenset til det spesifiserte portintervallet (inkludert endepunktene).
 
@@ -1628,6 +1641,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
           Standardinnstillingen som brukes når denne retningslinjen er angitt, er for å tillate vertstjeneren å foreta gjengivelsen, men du kan velge å overstyre dette sånn at <ph name="PRODUCT_FRAME_NAME" /> som standard gjengir HTML-sider.</translation>
 <translation id="5464816904705580310">Konfigurer innstillinger for administrerte brukere.</translation>
 <translation id="546726650689747237">Forsinkelse for lysdemping på skjermen når enheten kjører på vekselstrøm</translation>
+<translation id="5469143988693423708">Brukeren har tillatelse til å kjøre Crostini</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
 <translation id="5475361623548884387">Aktiver utskrift</translation>
 <translation id="547601067149622666">Ikke tillat annonser på nettsteder med forstyrrende annonser</translation>
@@ -1684,6 +1698,9 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Vær oppmerksom på at dette ikke anbefales, ettersom det gjør det mulig å omgå nameConstraints-utvidelsen som begrenser vertsnavnene et gitt sertifikat kan autoriseres for
 
       Hvis denne innstillingen ikke angis, eller hvis den angis som «false» (usann), klareres ikke tjenersertifikater som mangler en subjectAlternativeName-utvidelse og har enten et DNS-navn eller en IP-adresse.</translation>
+<translation id="5581292529942108810">Konfigurer regler knyttet til Chrome Reporting Extension.
+
+      Disse reglene gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Kontrollér Googles posisjonstjenester for Android</translation>
 <translation id="5586942249556966598">Gjør ingenting</translation>
 <translation id="5630352020869108293">Gjenopprett den siste økten</translation>
@@ -2293,6 +2310,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis denne regelen ikke er angitt, kan brukeren endre denne innstillingen manuelt.</translation>
 <translation id="723103540848640830">Angi minimumslengden for PIN-koden for låseskjermen</translation>
+<translation id="7232816984286843471">Hvis denne regelen er angitt som «false» (usant), kan ikke brukerne kjøre Crostini.
+
+      Hvis denne regelen ikke er konfigurert eller er angitt som «true» (sant), kan alle brukere kjøre Crostini så lenge andre innstillinger også tillater dette.
+      Alle tre reglene, VirtualMachinesAllowed, CrostiniAllowed og DeviceUnaffiliatedCrostiniAllowed, må være angitt som sant når de gjelder for hvorvidt Crostini kan kjøres eller ikke. 
+      Hvis denne regelen endres til usant, gjelder den for oppstart av nye Crostini-beholdere, men eksisterende beholdere som allerede kjøres, blir ikke avsluttet.</translation>
 <translation id="7234280155140786597">Navnene på de forbudte innebygde meldingsvertene (eller * for alle)</translation>
 <translation id="7236775576470542603">Angi standard type lupe som slås på fra påloggingssiden.
 
@@ -2340,6 +2362,12 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7311458740754205918">Hvis denne regelen er angitt som «true» (sann) eller ikke er angitt, kan nye faner vise innholdsforslag som er basert på brukerens nettleserlogg, interesser eller steder.
 
       Hvis den er angitt som «false» (usann), vises ikke automatisk genererte innholdsforslag på nye faner.</translation>
+<translation id="7313793931637495417">Denne regelen kontrollerer om det skal rapporteres om versjonsinformasjon, for eksempel OS-versjon, OS-plattform, OS-arkitektur, <ph name="PRODUCT_NAME" />-versjon og <ph name="PRODUCT_NAME" />-kanal.
+
+      Hvis denne regelen ikke er konfigurert eller er angitt som «true» (sant), innhentes versjonsinformasjonen.
+      Hvis denne regelen er angitt som «false» (usant), innhentes ikke versjonsinformasjon.
+
+      Denne regelen gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Ytterligere kommandolinjeparametere for <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Ligner på Visk ut (verdi 2), men forsøker å beholde påloggingstoken, slik at brukeren ikke må logge på igjen.</translation>
 <translation id="7329842439428490522">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på batteristrøm.
@@ -2372,6 +2400,12 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7349338075015720646">Spesifiserer en liste over nettsteder som er installert gjennom bakgrunnsinstallasjon (uten brukerinteraksjon), og som brukere ikke kan avinstallere eller slå av.
 
       Hvert element på regellisten er et objekt med to medlemmer: «url» og «launch_container». «url» bør være nettadressen for nettprogrammet som skal installeres, og «launch_container» bør være enten «window» (vindu) eller «tab» (fane) for å avgjøre hvordan nettprogrammet skal åpnes når det er installert. Hvis «launch_container» ikke er oppført, åpnes programmet i et vindu hvis Chrome anser det som et progressivt nettprogram. Hvis ikke åpnes det i en fane.</translation>
+<translation id="735902178936442460">Denne regelen kontrollerer om det skal rapporteres om informasjon som kan brukes til å identifisere maskiner, for eksempel maskinnavn og nettverksadresser.
+
+      Hvis denne regelen ikke er konfigurert eller er angitt som «true» (sant), innhentes informasjon som kan brukes til å identifisere maskiner.
+      Hvis denne regelen er angitt som «false» (usant), innhentes ikke informasjon som kan brukes til å identifisere maskiner. 
+
+      Denne regelen gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Safe Browsing-tjenesten viser en advarselsside når brukere navigerer til nettsteder som er merket som potensielt skadelige. Hvis du slår på denne innstillingen, kan ikke brukerne ignorere advarselssiden og gå videre til det skadelige nettstedet.
 
       Hvis denne innstillingen er slått av eller ikke er konfigurert, kan brukerne velge å gå videre til det rapporterte nettstedet etter å ha sett advarselen.
@@ -2642,6 +2676,14 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 <translation id="7976157349247117979">Navnet på <ph name="PRODUCT_NAME" />-destinasjonen</translation>
 <translation id="7980227303582973781">Ingen spesielle begrensninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Lar deg styre om virtuelle maskiner kan kjøre i Chrome OS.
+
+      Hvis regelen er angitt som «true» (sant), kan enheten kjøre virtuelle maskiner.
+      Hvis regelen er angitt som «false» (usant), kan ikke enheten kjøre virtuelle maskiner.
+      Alle tre reglene, VirtualMachinesAllowed, CrostiniAllowed og DeviceUnaffiliatedCrostiniAllowed, må være angitt som sant når de gjelder for hvorvidt Crostini kan kjøres eller ikke.
+      Hvis denne regelen endres til usant, gjelder den for oppstart av nye virtuelle maskiner, men eksisterende virtuelle maskiner som allerede kjøres, blir ikke avsluttet.
+      Når denne regelen ikke er angitt på en administrert enhet, kan ikke enheten kjøre virtuelle maskiner.
+      Ikke-administrerte enheter kan kjøre virtuelle maskiner.</translation>
 <translation id="802147957407376460">Rotér skjermen 0 grader</translation>
 <translation id="8033913082323846868">Denne regelen er avviklet i M70. Bruk AutofillAddressEnabled og AutofillCreditCardEnabled i stedet.
 
@@ -2686,6 +2728,12 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
           Hvis denne innstillingen ikke er konfigurert, brukes en standardtid.
 
           Innstillingsverdien må angis i millisekunder. Verdiene er låst til å være lavere enn inaktivitetsforsinkelsen.</translation>
+<translation id="8138009212169037227">Denne regelen kontrollerer om det skal rapporteres om regeldata og tidspunkt for innhenting av regler.
+
+      Hvis denne regelen ikke er konfigurert eller er angitt som «true» (sant), innhentes regeldata og tidspunkt for innhenting av regler.
+      Hvis denne regelen er angitt som «false» (usant), innhentes ikke regeldata eller tidspunkt for innhenting av regler.
+
+      Denne regelen gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Rapportér en liste over nettverksgrensesnitt med typene og maskinvareadressene til tjeneren.
 
       Hvis innstillingen angis som «false», rapporteres ikke grensesnittlisten.</translation>

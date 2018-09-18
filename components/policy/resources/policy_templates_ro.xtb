@@ -129,6 +129,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1387596372902085462">Dacă se acordă încredere infrastructurii PKI vechi a Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantele activate asociate dispozitivelor companiei</translation>
 <translation id="1397855852561539316">Adresă URL de sugerare a furnizorului de căutare prestabilit</translation>
+<translation id="142346659686073702">Permite utilizatorilor neafiliați să folosească Crostini</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa IP sau adresa URL a serverului proxy</translation>
 <translation id="1435659902881071157">Configurare de rețea la nivel de dispozitiv</translation>
@@ -374,6 +375,12 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă politica nu este configurată, va fi considerată ca fiind activată. Vezi descrierea de mai sus.</translation>
 <translation id="2113068765175018713">Limitează durata de funcționare a dispozitivului prin repornirea automată a acestuia</translation>
+<translation id="2116790137063002724">Această politică stabilește dacă se raportează informațiile care se pot folosi pentru a identifica utilizatorii, precum datele de conectare la sistemul de operare, datele de conectare la profilul <ph name="PRODUCT_NAME" />, numele profilului <ph name="PRODUCT_NAME" />, calea profilului <ph name="PRODUCT_NAME" /> și calea executabilă <ph name="PRODUCT_NAME" />.
+
+      Când politica nu este setată sau este activată, se colectează informații care se pot folosi pentru a identifica utilizatorii.
+      Când politica este dezactivată, nu se colectează informații care se pot folosi pentru a identifica utilizatorii.
+
+      Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Permiteți notificări pentru aceste site-uri</translation>
 <translation id="2131902621292742709">Interval până la reducerea luminozității ecranului la funcționarea pe baterie</translation>
 <translation id="2132732175597591362">Controlează lista albă cu șabloane de adrese URL pentru care redarea automată va fi întotdeauna activată.
@@ -1536,6 +1543,12 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5272684451155669299">Dacă este activată, utilizatorul poate folosi hardware-ul de pe dispozitivele Chrome pentru a-și atesta la distanță identitatea către autoritatea de certificare pentru confidențialitate prin <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> folosind <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Dacă este dezactivată sau dacă nu este configurată, apelurile către API nu vor reuși și vor genera un cod de eroare.</translation>
+<translation id="5277806246014825877">Permite acestui utilizator să ruleze Crostini.
+
+      Dacă politica este dezactivată, Crostini nu este activat pentru acest utilizator.
+      Dacă este activată sau nu este setată, Crostini este activat pentru utilizator atât timp cât și celelalte setări permit acest lucru.
+      Toate cele trei politici, VirtualMachinesAllowed, CrostiniAllowed și DeviceUnaffiliatedCrostiniAllowed, trebuie să fie activate atunci când se aplică pentru a permite rularea Crostini.
+      Atunci când se dezactivează politica, se aplică noilor containere Crostini care pornesc, dar nu le închide pe cele care rulează deja.</translation>
 <translation id="5283457834853986457">Dezactivează instrumentul de găsire de pluginuri (învechit)</translation>
 <translation id="5288772341821359899">Dacă politica este configurată, intervalul de porturi UDP folosit de WebRTC este limitat la intervalul de porturi specificat (porturile limită ale intervalului sunt incluse).
 
@@ -1596,6 +1609,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5457924070961220141">Vă permite să configurați motorul de redare HTML prestabilit atunci când <ph name="PRODUCT_FRAME_NAME" /> este instalat. Setarea prestabilită este să permiteți browserului gazdă să efectueze redarea, dar opțional o puteți anula, pentru ca <ph name="PRODUCT_FRAME_NAME" /> să redea paginile HTML în mod prestabilit.</translation>
 <translation id="5464816904705580310">Configurați setările pentru utilizatorii gestionați.</translation>
 <translation id="546726650689747237">Interval până la reducerea luminozității ecranului la funcționarea pe c.a.</translation>
+<translation id="5469143988693423708">Utilizatorul are permisiunea de a rula Crostini</translation>
 <translation id="5469825884154817306">Blochează imagini de pe aceste site-uri</translation>
 <translation id="5475361623548884387">Activează printarea</translation>
 <translation id="547601067149622666">Nu permite anunțurile pe site-urile cu anunțuri deranjante</translation>
@@ -1652,6 +1666,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Reține că acest lucru nu este recomandat, deoarece astfel se poate permite evitarea extensiei nameConstraints care limitează numele de gazdă pentru care poate fi autorizat un anumit certificat.
 
       Dacă politica nu este configurată sau dacă este dezactivată, certificatele de server din care lipsește extensia subjectAlternativeName cu un nume DNS sau o adresă IP nu vor fi considerate de încredere.</translation>
+<translation id="5581292529942108810">Configurează politicile privind Chrome Reporting Extension.
+
+      Această politică se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Gestionează serviciile de localizare Google Android</translation>
 <translation id="5586942249556966598">Nicio acțiune</translation>
 <translation id="5630352020869108293">Restabiliți ultima sesiune</translation>
@@ -2238,6 +2255,11 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă politica nu este setată, utilizatorul va putea modifica această setare manual.</translation>
 <translation id="723103540848640830">Stabilește lungimea minimă a codului PIN pentru ecranul de blocare</translation>
+<translation id="7232816984286843471">Dacă politica este dezactivată, utilizatorii neafiliați nu vor avea permisiunea de a folosi Crostini.
+
+      Dacă politica este activată sau nu este setată, toți utilizatorii au permisiunea de a folosi Crostini atât timp cât și celelalte setări permit acest lucru.
+      Toate cele trei politici, VirtualMachinesAllowed, CrostiniAllowed și DeviceUnaffiliatedCrostiniAllowed, trebuie să fie activate atunci când se aplică pentru a permite rularea Crostini.
+      Atunci când se dezactivează politica, se aplică noilor containere Crostini care pornesc, dar nu le închide pe cele care rulează deja.</translation>
 <translation id="7234280155140786597">Numele gazdelor de mesagerie nativă interzise (sau * pentru toate)</translation>
 <translation id="7236775576470542603">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare.
 
@@ -2284,6 +2306,12 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7311458740754205918">Dacă politica este activată sau nu este configurată, este posibil ca pagina Filă nouă să afișeze sugestii privind conținutul pe baza istoricului de navigare, a intereselor și a locației utilizatorului.
 
       Dacă politica este dezactivată, sugestiile generate automat privind conținutul nu sunt afișate pe pagina Filă nouă.</translation>
+<translation id="7313793931637495417">Această politică stabilește dacă se raportează informațiile privind versiunea, precum versiunea, platforma și arhitectura sistemului de operare, versiunea <ph name="PRODUCT_NAME" /> și canalul <ph name="PRODUCT_NAME" />.
+
+      Când politica nu este setată sau este activată, se colectează informații privind versiunea.
+      Când politica este dezactivată, nu se colectează informații privind versiunea.
+
+      Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Parametri de linie de comandă suplimentari pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Similar cu Golirea (valoarea 2), însă încearcă să păstreze indicativele de conectare, astfel încât utilizatorul să nu trebuiască să se conecteze din nou.</translation>
 <translation id="7329842439428490522">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este oprit atunci când dispozitivul funcționează pe baterie.
@@ -2314,6 +2342,12 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7349338075015720646">Specifică o listă cu site-uri care sunt instalate silențios, fără intervenția utilizatorului și care nu pot fi dezinstalate sau dezactivate de utilizator.
 
       Fiecare element din lista politicii este un obiect cu două componente: „url” și „launch_container”. „url” trebuie să fie adresa URL a aplicației web de instalat, iar „launch_container” trebuie să fie „window” sau „tab” pentru a indica modul în care va fi deschisă aplicația web după instalare. Dacă se omite „launch_container”, aplicația se va lansa într-o fereastră dacă Chrome o consideră a fi o aplicație web progresivă și într-o filă în caz contrar.</translation>
+<translation id="735902178936442460">Această politică stabilește dacă se raportează informațiile care se pot folosi pentru a identifica dispozitivele, cum ar fi numele și adresele de rețea ale acestora.
+
+      Când politica nu este setată sau este activată, se colectează informații care se pot folosi pentru a identifica dispozitivele.
+      Când politica este dezactivată, nu se colectează informații care se pot folosi pentru a identifica dispozitivele.
+
+      Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7367028210010532881">Serviciul Navigare sigură afișează o pagină de avertisment când utilizatorii navighează pe site-uri semnalate ca fiind potențial dăunătoare. Dacă activezi această setare, utilizatorii nu vor putea să navigheze mai departe de pe pagina de avertisment pe site-ul dăunător.
 
       Dacă setarea este dezactivată sau nu este configurată, utilizatorii pot alege să acceseze site-ul semnalat după ce li se afișează avertismentul.
@@ -2572,6 +2606,14 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7976157349247117979">Numele destinației pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Fără restricții speciale</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Îți permite să stabilești dacă mașinile virtuale au permisiunea de a rula pe sistemul de operare Chrome.
+
+      Dacă politica este activată, dispozitivul poate rula mașini virtuale.
+      Dacă politica este dezactivată, dispozitivul nu va avea permisiunea de a rula mașini virtuale.
+      Toate cele trei politici, VirtualMachinesAllowed, CrostiniAllowed și DeviceUnaffiliatedCrostiniAllowed, trebuie să fie activate atunci când se aplică pentru a permite rularea Crostini.
+      Atunci când se dezactivează politica, ea se aplică mașinilor virtuale noi care pornesc, dar nu le închide pe cele care rulează deja.
+      Atunci când politica nu este setată pe un dispozitiv gestionat, acesta nu are permisiunea de a rula mașini virtuale.
+      Dispozitivele care nu sunt gestionate au permisiunea de a rula mașini virtuale.</translation>
 <translation id="802147957407376460">Rotește ecranul la 0 grade</translation>
 <translation id="8033913082323846868">În M70 s-a renunțat la dezvoltarea acestei politici; folosește AutofillAddressEnabled și AutofillCreditCardEnabled.
 
@@ -2616,6 +2658,12 @@ nu poate fi stabilit de utilizator din setările browserului.
           Dacă politica nu este setată, se utilizează o perioadă de timp prestabilită.
 
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici sau egale cu intervalul de inactivitate.</translation>
+<translation id="8138009212169037227">Această politică stabilește dacă se raportează date privind politica și ora la care s-a preluat aceasta.
+
+      Când politica nu este setată sau este activată, se colectează date privind politica și ora la care s-a preluat aceasta.
+      Când politica este dezactivată, nu se colectează date privind politica și ora la care s-a preluat aceasta.
+
+      Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Raportează către server lista cu interfețe de rețea, care cuprinde tipurile acestora și adresele hardware.
 
       Dacă politica este dezactivată, lista cu interfețe nu va fi raportată.</translation>

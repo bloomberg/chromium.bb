@@ -4254,6 +4254,7 @@
 <translation id="7433692219247014412">{COUNT,plural, =0{在新視窗中開啟所有書籤(&amp;N)}=1{在新視窗中開啟(&amp;N)}other{在新視窗中開啟全部 # 個書籤(&amp;N)}}</translation>
 <translation id="7434509671034404296">開發人員選項</translation>
 <translation id="7436921188514130341">糟糕！重新命名過程中發生錯誤。</translation>
+<translation id="7441736921018636843">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步處理功能<ph name="END_LINK" />以移除同步處理通關密語</translation>
 <translation id="7441830548568730290">其他使用者</translation>
 <translation id="7442465037756169001">現在可以開始設定你的 Hangouts Meet 設備了。</translation>
 <translation id="744341768939279100">建立新的設定檔</translation>

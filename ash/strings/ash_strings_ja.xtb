@@ -102,11 +102,11 @@
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
 <translation id="2575685495496069081">マルチログインは無効にされています</translation>
 <translation id="2582112259361606227">再起動して更新</translation>
-<translation id="2597972630681408282">読書灯: <ph name="NIGHT_LIGHT_STATUS" /></translation>
+<translation id="2597972630681408282">夜間モード: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
 <translation id="2653659639078652383">送信</translation>
 <translation id="2700493154570097719">キーボードを設定</translation>
-<translation id="2718395828230677721">読書灯</translation>
+<translation id="2718395828230677721">夜間モード</translation>
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="2761704814324807722">ステータス トレイ、時刻 <ph name="TIME" />、<ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> に再接続しています</translation>
@@ -355,7 +355,7 @@
 <translation id="7067196344162293536">自動回転</translation>
 <translation id="7068360136237591149">ファイルを開いて</translation>
 <translation id="7076293881109082629">ログイン中</translation>
-<translation id="7092922358121866860">読書灯の設定を表示</translation>
+<translation id="7092922358121866860">夜間モードの設定を表示</translation>
 <translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
 <translation id="7131634465328662194">制限時間になると自動的にログアウトします。</translation>
 <translation id="7143207342074048698">接続中</translation>

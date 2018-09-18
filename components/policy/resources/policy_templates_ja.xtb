@@ -140,6 +140,7 @@
 <translation id="1387596372902085462">Symantec Corporation の古い PKI インフラストラクチャを信頼するかどうか</translation>
 <translation id="1393485621820363363">有効な企業デバイス プリンタ</translation>
 <translation id="1397855852561539316">デフォルト検索プロバイダ サジェスト URL</translation>
+<translation id="142346659686073702">外部のユーザーに Crostini の使用を許可する</translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="1427655258943162134">プロキシ サーバーのアドレスまたは URL</translation>
 <translation id="1435659902881071157">デバイス レベルのネットワーク設定</translation>
@@ -386,6 +387,12 @@
 
       このポリシーが未設定の場合は、有効にした場合と同じ結果になります（上の説明をご覧ください）。</translation>
 <translation id="2113068765175018713">自動再起動を行ってデバイスの稼働時間を制限する</translation>
+<translation id="2116790137063002724">このポリシーでは、ユーザーを識別できる情報（OS のログイン、<ph name="PRODUCT_NAME" /> プロフィールのログイン、<ph name="PRODUCT_NAME" /> プロフィール名、<ph name="PRODUCT_NAME" /> プロフィールのパス、<ph name="PRODUCT_NAME" /> 実行ファイルのパスなど）について、レポートを作成するかどうかを管理します。
+
+      このポリシーが未設定または True に設定されている場合、ユーザーを識別できる情報が収集されます。
+      このポリシーが False に設定されている場合、ユーザーを識別できる情報は収集されません。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="2127599828444728326">これらのサイトの通知を許可する</translation>
 <translation id="2131902621292742709">画面が暗くなるまでの時間（バッテリー電源での実行時）</translation>
 <translation id="2132732175597591362">自動再生を常に有効にする URL パターンのホワイトリストを指定します。
@@ -1530,6 +1537,12 @@
 <translation id="5272684451155669299">このポリシーを true に設定した場合、ユーザーは Chrome デバイスのハードウェアから <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> の <ph name="CHALLENGE_USER_KEY_FUNCTION" /> を使用して、プライバシー CA に自身をリモート認証できます。
 
           このポリシーを false に設定するか未設定のままにした場合、API 呼び出しは失敗し、エラーコードが返されます。</translation>
+<translation id="5277806246014825877">このユーザーが Crostini を実行できるようにします。
+
+      このポリシーが false に設定されている場合、Crostini はユーザーに対して有効にはなりません。
+      このポリシーが true に設定されているか未設定の場合、Crostini はユーザーに対して有効になります（ただし、他の設定でも許可されている場合）。
+      Crostini の実行許可を適用するためには、VirtualMachinesAllowed、CrostiniAllowed、DeviceUnaffiliatedCrostiniAllowed の 3 つのポリシーがすべて true に設定されている必要があります。
+      このポリシーが false に変更された場合、変更内容は以降の新しい Crostini コンテナの起動に対して適用されます。すでに実行中のコンテナが終了されることはありません。</translation>
 <translation id="5283457834853986457">プラグイン ファインダーを無効にする（サポート終了）</translation>
 <translation id="5288772341821359899">ポリシーが設定されている場合、WebRTC が使用する UDP ポートの範囲は指定されたポートの間隔（エンドポイントも含む）に制限されます。
 
@@ -1590,6 +1603,7 @@
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" /> がインストールされている場合、デフォルトの HTML レンダラを設定できます。このポリシーが未設定の場合はデフォルトの設定が使用されホスト ブラウザがレンダリングを実行しますが、この設定をオーバーライドしてデフォルトで <ph name="PRODUCT_FRAME_NAME" /> に HTML ページのレンダリングを実行させることもできます。</translation>
 <translation id="5464816904705580310">管理対象ユーザーの設定を行います。</translation>
 <translation id="546726650689747237">画面が暗くなるまでの時間（AC 電源での実行時）</translation>
+<translation id="5469143988693423708">ユーザーは Crostini を実行できます</translation>
 <translation id="5469825884154817306">これらのサイトの画像をブロックする</translation>
 <translation id="5475361623548884387">印刷を有効にする</translation>
 <translation id="547601067149622666">煩わしい広告を含むサイトで広告の表示を許可しない</translation>
@@ -1646,6 +1660,9 @@
       この場合、nameConstraints 拡張による制限（証明書を受け入れるホスト名の制限）が適用されなくなる可能性があるため、有効化はおすすめしません。
 
       このポリシーが未設定のままか false に設定されている場合、subjectAlternativeName 拡張がなく DNS 名または IP アドレスのいずれかを含むサーバー証明書は信頼されません。</translation>
+<translation id="5581292529942108810">Chrome レポート拡張機能に関するポリシーを設定します。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="5584132346604748282">Android の Google 位置情報サービスを制御する</translation>
 <translation id="5586942249556966598">何もしない</translation>
 <translation id="5630352020869108293">最後のセッションを復元する</translation>
@@ -2233,6 +2250,11 @@
 
           このポリシーを設定しない場合、ユーザーはこの設定を手動で変更できます。</translation>
 <translation id="723103540848640830">ロック画面の PIN の最小桁数を設定する</translation>
+<translation id="7232816984286843471">このポリシーが false に設定されている場合、外部のユーザーは Crostini を使用できません。
+
+      このポリシーが未設定または true に設定されている場合、すべてのユーザーが Crostini を使用できます（ただし、他の設定でも許可されている場合）。
+      Crostini の実行許可を適用するためには、VirtualMachinesAllowed、CrostiniAllowed、DeviceUnaffiliatedCrostiniAllowed の 3 つのポリシーがすべて true に設定されている必要があります。
+      このポリシーが false に変更された場合、変更内容は以降の新しい Crostini コンテナの起動に対して適用されます。すでに実行中のコンテナが終了されることはありません。</translation>
 <translation id="7234280155140786597">禁止するネイティブ メッセージング ホストの名前（または、「*」ですべてを禁止）</translation>
 <translation id="7236775576470542603">ログイン画面で有効にする画面拡大鏡機能のデフォルトのタイプを設定します。
 
@@ -2280,6 +2302,12 @@
 <translation id="7311458740754205918">このオプションが true に設定されているか、未設定の場合、[新しいタブ] ページには、ユーザーの閲覧履歴、興味・関心、場所に応じておすすめのコンテンツが表示されます。
 
       このオプションが false に設定されている場合、自動生成のおすすめのコンテンツは [新しいタブ] ページに表示されません。</translation>
+<translation id="7313793931637495417">このポリシーでは、バージョン情報（OS バージョン、OS プラットフォーム、OS アーキテクチャ、<ph name="PRODUCT_NAME" /> のバージョン、<ph name="PRODUCT_NAME" /> のチャンネルなど）について、レポートを作成するかどうかを管理します。
+
+      このポリシーが未設定または True に設定されている場合、バージョン情報が収集されます。
+      このポリシーが False に設定されている場合、バージョン情報は収集されません。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> の追加コマンド ライン パラメータ</translation>
 <translation id="7326394567531622570">このオプションは Wipe（値 2）と似ていますが、ログイン トークンを保持するように動作します（この場合、ユーザーの再ログインが不要になります）。</translation>
 <translation id="7329842439428490522">バッテリー電源での実行時に、ユーザー入力が行われなくなってから画面がオフになるまでの時間を指定します。
@@ -2310,6 +2338,12 @@
 <translation id="7349338075015720646">ユーザーに操作を求めずに自動インストールするウェブサイトのリストを指定します。ユーザーはここで指定されたウェブサイトをアンインストールすることも無効化することもできません。
 
       このポリシーで指定するリストの個々の項目は、「url」と「launch_container」の 2 つで構成されるオブジェクトとなります。「url」には、インストールするウェブアプリの URL を指定します。「launch_container」には、インストール後にウェブアプリを開く方法として「window」または「tab」を指定します。「launch_container」を省略した場合、Chrome でプログレッシブ ウェブアプリと判定されたアプリはウィンドウで開かれ、それ以外のアプリはタブで開かれます。</translation>
+<translation id="735902178936442460">このポリシーでは、マシンを識別できる情報（マシン名、ネットワーク アドレスなど）について、レポートを作成するかどうかを管理します。
+
+      このポリシーが未設定または True に設定されている場合、マシンを識別できる情報が収集されます。
+      このポリシーが False に設定されている場合、マシンを識別できる情報は収集されません。
+
+      のポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="7367028210010532881">不正なサイトの可能性があると報告されているサイトにユーザーが移動しようとすると、セーフ ブラウジング サービスにより警告ページが表示されます。この設定を有効にした場合、ユーザーはその警告ページから不正なサイトに進むことができなくなります。
 
       この設定を無効にするか未設定のままにした場合、ユーザーは警告が表示された後にそのサイトに進むかどうかを選択できます。
@@ -2570,6 +2604,14 @@
 <translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> のレシーバー名</translation>
 <translation id="7980227303582973781">特別な制限なし</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
+<translation id="7992136759457836904">Chrome OS で仮想マシンを実行できるかどうかを制御します。
+
+      このポリシーが True に設定されている場合、端末では仮想マシンを実行できます。
+      このポリシーが False に設定されている場合、端末では仮想マシンを実行できません。
+      Crostini の実行許可を適用するためには、VirtualMachinesAllowed、CrostiniAllowed、DeviceUnaffiliatedCrostiniAllowed の 3 つのポリシーがすべて true に設定されている必要があります。
+      このポリシーが False に変更された場合、変更内容は以降の新しい仮想マシンの起動に対して適用されます。すでに実行中の仮想マシンが終了されることはありません。
+      このポリシーが未設定の場合、管理対象の端末では仮想マシンを実行できません。
+      管理対象外の端末では仮想マシンを実行できます。</translation>
 <translation id="802147957407376460">画面を 0 度回転（回転なし）</translation>
 <translation id="8033913082323846868">このポリシーは M70 でサポート終了となりました。代わりに AutofillAddressEnabled と AutofillCreditCardEnabled を使用してください。
 
@@ -2614,6 +2656,12 @@
           このポリシーを設定しないと、デフォルトの時間が使用されます。
 
           ポリシーの値はミリ秒単位で指定してください。アイドル時間より長い値は指定できません。</translation>
+<translation id="8138009212169037227">このポリシーでは、ポリシーデータとポリシーの取得日時について、レポートを作成するかどうかを管理します。
+
+      このポリシーが未設定または True に設定されている場合、ポリシーデータとポリシーの取得日時が収集されます。
+      このポリシーが False に設定されている場合、ポリシーデータとポリシーの取得日時は収集されません。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="8140204717286305802">ネットワーク インターフェース（とそのタイプ）とハードウェア アドレスのリストをサーバーに報告します。
 
       このポリシーが False に設定されている場合、インターフェースのリストは報告されません。</translation>
