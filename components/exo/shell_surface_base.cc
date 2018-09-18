@@ -525,6 +525,12 @@ void ShellSurfaceBase::SetGeometry(const gfx::Rect& geometry) {
   pending_geometry_ = geometry;
 }
 
+void ShellSurfaceBase::SetDisplay(int64_t display_id) {
+  TRACE_EVENT1("exo", "ShellSurfaceBase::SetDisplay", "display_id", display_id);
+
+  pending_display_id_ = display_id;
+}
+
 void ShellSurfaceBase::SetOrigin(const gfx::Point& origin) {
   TRACE_EVENT1("exo", "ShellSurfaceBase::SetOrigin", "origin",
                origin.ToString());
@@ -1046,12 +1052,9 @@ void ShellSurfaceBase::UpdateWidgetBounds() {
       return;
   }
 
-  base::Optional<gfx::Rect> new_widget_bounds = GetWidgetBounds();
-  if (!new_widget_bounds)
-    return;
-
-  if (*new_widget_bounds != widget_->GetWindowBoundsInScreen())
-    SetWidgetBounds(*new_widget_bounds);
+  base::Optional<gfx::Rect> bounds = GetWidgetBounds();
+  if (bounds)
+    SetWidgetBounds(*bounds);
 }
 
 void ShellSurfaceBase::UpdateSurfaceBounds() {
@@ -1100,11 +1103,19 @@ void ShellSurfaceBase::UpdateShadow() {
 
 gfx::Rect ShellSurfaceBase::GetVisibleBounds() const {
   // Use |geometry_| if set, otherwise use the visual bounds of the surface.
-  if (!geometry_.IsEmpty())
+  if (geometry_.IsEmpty()) {
+    return root_surface() ? gfx::Rect(root_surface()->content_size())
+                          : gfx::Rect();
+  }
+
+  const auto* screen = display::Screen::GetScreen();
+  display::Display display;
+
+  if (!screen->GetDisplayWithDisplayId(display_id_, &display))
     return geometry_;
 
-  return root_surface() ? gfx::Rect(root_surface()->content_size())
-                        : gfx::Rect();
+  // Convert from display to screen coordinates.
+  return geometry_ + display.bounds().OffsetFromOrigin();
 }
 
 gfx::Point ShellSurfaceBase::GetMouseLocation() const {
@@ -1171,6 +1182,7 @@ void ShellSurfaceBase::StartCapture() {
 void ShellSurfaceBase::CommitWidget() {
   // Apply new window geometry.
   geometry_ = pending_geometry_;
+  display_id_ = pending_display_id_;
 
   // Apply new minimum/maximium size.
   bool size_constraint_changed = minimum_size_ != pending_minimum_size_ ||

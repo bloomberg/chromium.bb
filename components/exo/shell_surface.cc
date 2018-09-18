@@ -456,6 +456,9 @@ void ShellSurface::OnPostWindowStateTypeChange(
 // ShellSurfaceBase overrides:
 
 void ShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
+  if (bounds == widget_->GetWindowBoundsInScreen())
+    return;
+
   // Set |ignore_window_bounds_changes_| as this change to window bounds
   // should not result in a configure request.
   DCHECK(!ignore_window_bounds_changes_);
