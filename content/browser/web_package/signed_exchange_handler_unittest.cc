@@ -237,6 +237,7 @@ class SignedExchangeHandlerTest
   }
 
   bool read_header() const { return read_header_; }
+  SignedExchangeLoadResult result() const { return result_; }
   net::Error error() const { return error_; }
   const GURL& inner_url() const { return inner_url_; }
   const network::ResourceResponseHead& resource_response() const {
@@ -287,12 +288,14 @@ class SignedExchangeHandlerTest
   std::unique_ptr<SignedExchangeHandler> handler_;
 
  private:
-  void OnHeaderFound(net::Error error,
+  void OnHeaderFound(SignedExchangeLoadResult result,
+                     net::Error error,
                      const GURL& url,
                      const std::string&,
                      const network::ResourceResponseHead& resource_response,
                      std::unique_ptr<net::SourceStream> payload_stream) {
     read_header_ = true;
+    result_ = result;
     error_ = error;
     inner_url_ = url;
     resource_response_ = resource_response;
@@ -309,6 +312,7 @@ class SignedExchangeHandlerTest
   std::unique_ptr<MockSignedExchangeCertFetcherFactory> cert_fetcher_factory_;
 
   bool read_header_ = false;
+  SignedExchangeLoadResult result_;
   net::Error error_;
   GURL inner_url_;
   network::ResourceResponseHead resource_response_;
@@ -322,6 +326,7 @@ TEST_P(SignedExchangeHandlerTest, Empty) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kFallbackURLParseError, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_TRUE(inner_url().is_empty());
 }
@@ -353,6 +358,7 @@ TEST_P(SignedExchangeHandlerTest, Simple) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
   EXPECT_EQ(net::OK, error());
   EXPECT_EQ(kTestSxgInnerURL, inner_url());
   EXPECT_EQ(200, resource_response().headers->response_code());
@@ -400,6 +406,7 @@ TEST_P(SignedExchangeHandlerTest, MimeType) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
   EXPECT_EQ(net::OK, error());
   EXPECT_EQ(200, resource_response().headers->response_code());
   EXPECT_EQ("text/plain", resource_response().mime_type);
@@ -423,13 +430,14 @@ TEST_P(SignedExchangeHandlerTest, HeaderParseError) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kFallbackURLParseError, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_TRUE(inner_url().is_empty());
 }
 
-TEST_P(SignedExchangeHandlerTest, TruncatedInHeader) {
+TEST_P(SignedExchangeHandlerTest, TruncatedAfterFallbackUrl) {
   std::string contents = GetTestFileContents("test.example.org_test.sxg");
-  contents.resize(30);
+  contents.resize(50);
   source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -437,8 +445,9 @@ TEST_P(SignedExchangeHandlerTest, TruncatedInHeader) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kHeaderParseError, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
-  EXPECT_TRUE(inner_url().is_empty());
+  EXPECT_TRUE(inner_url().is_valid());
 }
 
 TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionShouldBeRejected) {
@@ -468,6 +477,7 @@ TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionShouldBeRejected) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kCertRequirementsNotMet, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_EQ(kTestSxgInnerURL, inner_url());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
@@ -505,6 +515,7 @@ TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionAllowedByFeatureFlag) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
   EXPECT_EQ(net::OK, error());
   std::string payload;
   int rv = ReadPayloadStream(&payload);
@@ -536,6 +547,7 @@ TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSignatureVerificationError, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_EQ(kTestSxgInnerURL, inner_url());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
@@ -571,6 +583,7 @@ TEST_P(SignedExchangeHandlerTest, VerifyCertFailure) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kCertVerificationError, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_EQ("https://test.example.com/test/", inner_url());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
@@ -603,6 +616,7 @@ TEST_P(SignedExchangeHandlerTest, OCSPNotChecked) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kOCSPError, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_EQ(kTestSxgInnerURL, inner_url());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
@@ -635,6 +649,7 @@ TEST_P(SignedExchangeHandlerTest, OCSPNotProvided) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kOCSPError, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_EQ(kTestSxgInnerURL, inner_url());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
@@ -668,6 +683,7 @@ TEST_P(SignedExchangeHandlerTest, OCSPInvalid) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kOCSPError, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_EQ(kTestSxgInnerURL, inner_url());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
@@ -702,6 +718,7 @@ TEST_P(SignedExchangeHandlerTest, OCSPRevoked) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kOCSPError, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_EQ(kTestSxgInnerURL, inner_url());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
@@ -747,6 +764,7 @@ TEST_P(SignedExchangeHandlerTest, CertVerifierParams) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
   EXPECT_EQ(net::OK, error());
   std::string payload;
   int rv = ReadPayloadStream(&payload);
@@ -788,6 +806,7 @@ TEST_P(SignedExchangeHandlerTest, NotEnoughSCTsFromPubliclyTrustedCert) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kCTVerificationError, result());
   EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   EXPECT_EQ(kTestSxgInnerURL, inner_url());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
@@ -825,6 +844,7 @@ TEST_P(SignedExchangeHandlerTest, CTRequirementsMetForPubliclyTrustedCert) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
   EXPECT_EQ(net::OK, error());
   // EV status should be preserved.
   EXPECT_TRUE(resource_response().ssl_info->cert_status &
@@ -876,6 +896,7 @@ TEST_P(SignedExchangeHandlerTest, CTNotRequiredForLocalAnchors) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
   EXPECT_EQ(net::OK, error());
   // EV status should be removed.
   EXPECT_FALSE(resource_response().ssl_info->cert_status &
@@ -950,6 +971,7 @@ TEST_P(SignedExchangeHandlerTest, CTVerifierParams) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
   EXPECT_EQ(net::OK, error());
   std::string payload;
   int rv = ReadPayloadStream(&payload);
