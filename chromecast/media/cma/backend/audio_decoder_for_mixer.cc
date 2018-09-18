@@ -305,9 +305,9 @@ AudioDecoderForMixer::BufferStatus AudioDecoderForMixer::PushBuffer(
 
   DCHECK(decoder_);
   // Decode the buffer.
-  decoder_->Decode(buffer_base,
-                   base::Bind(&AudioDecoderForMixer::OnBufferDecoded,
-                              weak_factory_.GetWeakPtr(), input_bytes));
+  decoder_->Decode(std::move(buffer_base),
+                   base::BindOnce(&AudioDecoderForMixer::OnBufferDecoded,
+                                  base::Unretained(this), input_bytes));
   return MediaPipelineBackend::kBufferPending;
 }
 
@@ -339,16 +339,7 @@ bool AudioDecoderForMixer::SetConfig(const AudioConfig& config) {
   }
 
   if (mixer_input_ && changed_sample_rate) {
-    // Destroy the old input first to ensure that the mixer output sample rate
-    // is updated.
-    mixer_input_.reset();
-    mixer_input_.reset(new BufferingMixerSource(
-        this, config.samples_per_second, backend_->Primary(),
-        backend_->DeviceId(), backend_->ContentType(),
-        ToPlayoutChannel(backend_->AudioChannel()), playback_start_pts_,
-        start_playback_asap_));
-    mixer_input_->SetVolumeMultiplier(volume_multiplier_);
-    pending_output_frames_ = kNoPendingOutput;
+    ResetMixerInputForNewSampleRate(config.samples_per_second);
   }
 
   config_ = config;
@@ -360,6 +351,19 @@ bool AudioDecoderForMixer::SetConfig(const AudioConfig& config) {
     delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferSuccess);
   }
   return true;
+}
+
+void AudioDecoderForMixer::ResetMixerInputForNewSampleRate(int sample_rate) {
+  // Destroy the old input first to ensure that the mixer output sample rate
+  // is updated.
+  mixer_input_.reset();
+  mixer_input_.reset(new BufferingMixerSource(
+      this, sample_rate, backend_->Primary(), backend_->DeviceId(),
+      backend_->ContentType(), ToPlayoutChannel(backend_->AudioChannel()),
+      playback_start_pts_, start_playback_asap_));
+  mixer_input_->SetVolumeMultiplier(volume_multiplier_);
+  pending_output_frames_ = kNoPendingOutput;
+  last_mixer_delay_ = AudioDecoderForMixer::RenderingDelay();
 }
 
 void AudioDecoderForMixer::CreateDecoder() {
@@ -376,8 +380,8 @@ void AudioDecoderForMixer::CreateDecoder() {
   decoder_ = CastAudioDecoder::Create(
       task_runner_, config_, kDecoderSampleFormat,
       ::media::CHANNEL_LAYOUT_STEREO,
-      base::Bind(&AudioDecoderForMixer::OnDecoderInitialized,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&AudioDecoderForMixer::OnDecoderInitialized,
+                     base::Unretained(this)));
 }
 
 void AudioDecoderForMixer::CreateRateShifter(int samples_per_second) {
@@ -437,7 +441,7 @@ void AudioDecoderForMixer::OnBufferDecoded(
     uint64_t input_bytes,
     CastAudioDecoder::Status status,
     const AudioConfig& config,
-    const scoped_refptr<DecoderBufferBase>& decoded) {
+    scoped_refptr<DecoderBufferBase> decoded) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!got_eos_);
@@ -461,6 +465,16 @@ void AudioDecoderForMixer::OnBufferDecoded(
   Statistics delta;
   delta.decoded_bytes = input_bytes;
   UpdateStatistics(delta);
+
+  if (config.samples_per_second != config_.samples_per_second) {
+    // Sample rate from actual stream doesn't match supposed sample rate from
+    // the container. Update the mixer and rate shifter. Note that for now we
+    // assume that this can only happen at start of stream (ie, on the first
+    // decoded buffer).
+    config_.samples_per_second = config.samples_per_second;
+    CreateRateShifter(config.samples_per_second);
+    ResetMixerInputForNewSampleRate(config.samples_per_second);
+  }
 
   pending_buffer_complete_ = true;
   if (decoded->end_of_stream()) {
@@ -514,7 +528,7 @@ void AudioDecoderForMixer::OnBufferDecoded(
         DCHECK(!pushed_eos_);
         pushed_eos_ = true;
       }
-      mixer_input_->WritePcm(decoded);
+      mixer_input_->WritePcm(std::move(decoded));
       return;
     }
 

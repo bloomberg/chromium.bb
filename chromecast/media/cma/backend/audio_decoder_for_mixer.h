@@ -83,13 +83,15 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   void OnAudioReadyForPlayback() override;
 
   void CleanUpPcm();
+  void ResetMixerInputForNewSampleRate(int sample_rate);
   void CreateDecoder();
   void CreateRateShifter(int samples_per_second);
+
   void OnDecoderInitialized(bool success);
   void OnBufferDecoded(uint64_t input_bytes,
                        CastAudioDecoder::Status status,
                        const AudioConfig& config,
-                       const scoped_refptr<DecoderBufferBase>& decoded);
+                       scoped_refptr<DecoderBufferBase> decoded);
   void CheckBufferComplete();
   void PushRateShifted();
   void PushMorePcm();
