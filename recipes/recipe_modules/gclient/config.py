@@ -11,8 +11,7 @@ from . import api as gclient_api
 
 
 def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
-               PATCH_PROJECT=None, BUILDSPEC_VERSION=None,
-               **_kwargs):
+               BUILDSPEC_VERSION=None, **_kwargs):
   cache_dir = str(CACHE_DIR) if CACHE_DIR else None
   return ConfigGroup(
     solutions = ConfigList(
@@ -105,9 +104,6 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     disable_syntax_validation = Single(bool, empty_val=False, required=False),
 
     USE_MIRROR = Static(bool(USE_MIRROR)),
-    # TODO(tandrii): remove PATCH_PROJECT field.
-    # DON'T USE THIS. WILL BE REMOVED.
-    PATCH_PROJECT = Static(str(PATCH_PROJECT), hidden=True),
     BUILDSPEC_VERSION= Static(BUILDSPEC_VERSION, hidden=True),
   )
 
