@@ -206,6 +206,7 @@ class ManualFillingMediator
 
     void registerActionProvider(KeyboardAccessoryData.PropertyProvider<Action> actionProvider) {
         if (!isInitialized()) return;
+        if (mActiveBrowserTab == null) return;
         ActionProviderCacheAdapter adapter =
                 new ActionProviderCacheAdapter(mActiveBrowserTab, actionProvider, new Action[0]);
         mModel.get(mActiveBrowserTab).mActionsProvider = adapter;
