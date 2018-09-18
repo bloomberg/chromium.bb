@@ -4,6 +4,8 @@
 
 #include "components/viz/common/gpu/context_cache_controller.h"
 
+#include <chrono>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -14,6 +16,7 @@
 namespace viz {
 namespace {
 static const int kIdleCleanupDelaySeconds = 1;
+static const int kOldResourceCleanupDelaySeconds = 30;
 }  // namespace
 
 ContextCacheController::ScopedToken::ScopedToken() = default;
@@ -108,6 +111,13 @@ void ContextCacheController::ClientBecameNotBusy(
 
   DCHECK_GT(num_clients_busy_, 0u);
   --num_clients_busy_;
+
+  // Here we ask GrContext to free any resources that haven't been used in
+  // a long while even if it is under budget.
+  if (gr_context_) {
+    gr_context_->performDeferredCleanup(
+        std::chrono::seconds(kOldResourceCleanupDelaySeconds));
+  }
 
   // If we have become idle and we are visible, queue a task to drop resources
   // after a delay. If are not visible, we have already dropped resources.
