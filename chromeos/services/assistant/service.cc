@@ -59,6 +59,7 @@ Service::Service()
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       power_manager_observer_(this),
       voice_interaction_observer_binding_(this),
+      assistant_interaction_subscriber_binding_(this),
       weak_ptr_factory_(this) {
   registry_.AddInterface<mojom::AssistantPlatform>(base::BindRepeating(
       &Service::BindAssistantPlatformConnection, base::Unretained(this)));
@@ -165,6 +166,15 @@ void Service::OnVoiceInteractionHotwordEnabled(bool enabled) {
   assistant_manager_service_->Stop();
   client_->OnAssistantStatusChanged(false /* running */);
   RequestAccessToken();
+}
+
+void Service::OnInteractionFinished(
+    mojom::AssistantInteractionResolution resolution) {
+  if (resolution == mojom::AssistantInteractionResolution::kError) {
+    // When communicateion error happens, it could be caused by auth errors.
+    // Retry with a new auth token to attempt recovery.
+    RequestAccessToken();
+  }
 }
 
 void Service::BindAssistantSettingsManager(
@@ -299,6 +309,14 @@ void Service::CreateAssistantManagerService(bool enable_hotword) {
       assistant_manager_service_.get()->GetAssistantSettingsManager();
   registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
       &Service::BindAssistantSettingsManager, base::Unretained(this)));
+
+  // Subscribe to Assistant interaction events.
+  chromeos::assistant::mojom::AssistantInteractionSubscriberPtr
+      interaction_subscriber_ptr;
+  assistant_interaction_subscriber_binding_.Bind(
+      mojo::MakeRequest(&interaction_subscriber_ptr));
+  assistant_manager_service_->AddAssistantInteractionSubscriber(
+      std::move(interaction_subscriber_ptr));
 #endif
 }
 
