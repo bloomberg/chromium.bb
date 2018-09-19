@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_types.h"
+#include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
 
@@ -420,7 +421,7 @@ void V4L2CaptureDelegate::GetPhotoState(
   if (!device_fd_.is_valid() || !is_capturing_)
     return;
 
-  mojom::PhotoStatePtr photo_capabilities = mojom::PhotoState::New();
+  mojom::PhotoStatePtr photo_capabilities = mojo::CreateEmptyPhotoState();
 
   photo_capabilities->zoom = RetrieveUserControlRange(V4L2_CID_ZOOM_ABSOLUTE);
 

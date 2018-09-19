@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/video_frame.h"
+#include "media/capture/mojom/image_capture_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -453,7 +454,7 @@ void FakePhotoDevice::GetPhotoState(
   if (config_.should_fail_get_photo_capabilities)
     return;
 
-  mojom::PhotoStatePtr photo_state = mojom::PhotoState::New();
+  mojom::PhotoStatePtr photo_state = mojo::CreateEmptyPhotoState();
 
   photo_state->current_white_balance_mode = mojom::MeteringMode::NONE;
   photo_state->current_exposure_mode = mojom::MeteringMode::NONE;
