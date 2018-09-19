@@ -18,10 +18,10 @@ enum class AssistantSource {
   kDeepLink,
   kHotkey,
   kHotword,
+  kLauncherSearchBox,
   kLongPressLauncher,
   kSetup,
   kStylus,
-  kLauncherSearchBox,
 };
 
 // Enumeration of Assistant UI modes.
