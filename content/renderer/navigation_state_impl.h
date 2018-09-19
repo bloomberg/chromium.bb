@@ -28,10 +28,6 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
 
   static NavigationStateImpl* CreateContentInitiated();
 
-  // Contains the transition type that the browser specified when it
-  // initiated the load.
-  ui::PageTransition GetTransitionType();
-
   // True iff the frame's navigation was within the same document.
   bool WasWithinSameDocument();
 

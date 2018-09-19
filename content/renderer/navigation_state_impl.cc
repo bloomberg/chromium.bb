@@ -26,10 +26,6 @@ NavigationStateImpl* NavigationStateImpl::CreateContentInitiated() {
       true, content::mojom::FrameNavigationControl::CommitNavigationCallback());
 }
 
-ui::PageTransition NavigationStateImpl::GetTransitionType() {
-  return common_params_.transition;
-}
-
 bool NavigationStateImpl::WasWithinSameDocument() {
   return was_within_same_document_;
 }
