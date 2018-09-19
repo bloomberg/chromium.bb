@@ -96,7 +96,7 @@ bool FastUnloadController::RunUnloadEventsHelper(
     // them. Once they have fired, we'll get a message back saying whether
     // to proceed closing the page or not, which sends us back to this method
     // with the NeedToFireBeforeUnload bit cleared.
-    contents->DispatchBeforeUnload();
+    contents->DispatchBeforeUnload(false /* auto_cancel */);
     return true;
   }
   return false;
@@ -420,7 +420,7 @@ void FastUnloadController::ProcessPendingTabs(bool skip_beforeunload) {
         // and then call beforeunload handlers for |contents|.
         // See DevToolsWindow::InterceptPageBeforeUnload for details.
         if (!DevToolsWindow::InterceptPageBeforeUnload(contents))
-          contents->DispatchBeforeUnload();
+          contents->DispatchBeforeUnload(false /* auto_cancel */);
       } else {
         ProcessPendingTabs(skip_beforeunload);
       }

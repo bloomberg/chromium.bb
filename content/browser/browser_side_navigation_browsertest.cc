@@ -374,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
   GURL url("chrome://resources/css/tabs.css");
   NavigationHandleObserver handle_observer(shell()->web_contents(), url);
   shell()->LoadURL(url);
-  shell()->web_contents()->DispatchBeforeUnload();
+  shell()->web_contents()->DispatchBeforeUnload(false /* auto_cancel */);
   close_observer.Wait();
   EXPECT_EQ(net::ERR_ABORTED, handle_observer.net_error_code());
 }

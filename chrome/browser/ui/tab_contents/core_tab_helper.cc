@@ -273,7 +273,8 @@ void CoreTabHelper::WebContentsDestroyed() {
   }
 }
 
-void CoreTabHelper::BeforeUnloadFired(const base::TimeTicks& proceed_time) {
+void CoreTabHelper::BeforeUnloadFired(bool proceed,
+                                      const base::TimeTicks& proceed_time) {
   before_unload_end_time_ = proceed_time;
 }
 
