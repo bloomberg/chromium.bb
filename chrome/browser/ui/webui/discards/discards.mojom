@@ -27,6 +27,9 @@ struct SiteCharacteristicsPerformanceMeasurement {
   float avg_cpu_usage_us;
   // A decaying average of the process footprint measurements. Units: kilobytes.
   float avg_footprint_kb;
+  // A decaying average of the wall-clock load time duration of the tab.
+  // Units: microseconds.
+  float avg_load_duration_us;
 };
 
 // The data stored for a given origin, this should mirror the
