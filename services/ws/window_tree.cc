@@ -200,13 +200,13 @@ void WindowTree::SendEventToClient(aura::Window* window,
   std::unique_ptr<ui::Event> event_to_send =
       PointerWatcher::CreateEventForClient(event);
   if (event.IsLocatedEvent()) {
-    aura::Window* client_root_window = GetClientRootWindowFor(window);
-    // The client_root_ may have been removed on shutdown.
-    if (client_root_window) {
+    ClientRoot* client_root = FindClientRootContaining(window);
+    // The |client_root| may have been removed on shutdown.
+    if (client_root) {
       gfx::PointF root_location =
           event_to_send->AsLocatedEvent()->root_location_f();
       aura::Window::ConvertPointToTarget(window->GetRootWindow(),
-                                         client_root_window, &root_location);
+                                         client_root->window(), &root_location);
       event_to_send->AsLocatedEvent()->set_root_location_f(root_location);
     }
   }
@@ -424,13 +424,13 @@ bool WindowTree::IsClientRootWindow(aura::Window* window) {
   return window && FindClientRootWithRoot(window) != client_roots_.end();
 }
 
-aura::Window* WindowTree::GetClientRootWindowFor(aura::Window* window) {
+ClientRoot* WindowTree::FindClientRootContaining(aura::Window* window) {
   if (!window)
     return nullptr;
   auto iter = FindClientRootWithRoot(window);
   if (iter != client_roots_.end())
-    return iter->get()->window();
-  return GetClientRootWindowFor(window->parent());
+    return iter->get();
+  return FindClientRootContaining(window->parent());
 }
 
 WindowTree::ClientRoots::iterator WindowTree::FindClientRootWithRoot(
