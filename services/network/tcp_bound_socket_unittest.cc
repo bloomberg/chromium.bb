@@ -40,7 +40,7 @@ class TCPBoundSocketTest : public testing::Test {
   SocketFactory* factory() { return &factory_; }
 
   int BindSocket(const net::IPEndPoint& ip_endpoint_in,
-                 network::mojom::TCPBoundSocketPtr* bound_socket,
+                 mojom::TCPBoundSocketPtr* bound_socket,
                  net::IPEndPoint* ip_endpoint_out) {
     base::RunLoop run_loop;
     int bind_result = net::ERR_IO_PENDING;
@@ -70,8 +70,8 @@ class TCPBoundSocketTest : public testing::Test {
     return bind_result;
   }
 
-  int Listen(network::mojom::TCPBoundSocketPtr bound_socket,
-             network::mojom::TCPServerSocketPtr* server_socket) {
+  int Listen(mojom::TCPBoundSocketPtr bound_socket,
+             mojom::TCPServerSocketPtr* server_socket) {
     base::RunLoop bound_socket_destroyed_run_loop;
     bound_socket.set_connection_error_handler(
         bound_socket_destroyed_run_loop.QuitClosure());
@@ -99,11 +99,11 @@ class TCPBoundSocketTest : public testing::Test {
     return listen_result;
   }
 
-  int Connect(network::mojom::TCPBoundSocketPtr bound_socket,
+  int Connect(mojom::TCPBoundSocketPtr bound_socket,
               const net::IPEndPoint& expected_local_addr,
               const net::IPEndPoint& connect_to_addr,
-              network::mojom::TCPConnectedSocketPtr* connected_socket,
-              network::mojom::SocketObserverPtr socket_observer,
+              mojom::TCPConnectedSocketPtr* connected_socket,
+              mojom::SocketObserverPtr socket_observer,
               mojo::ScopedDataPipeConsumerHandle* client_socket_receive_handle,
               mojo::ScopedDataPipeProducerHandle* client_socket_send_handle) {
     base::RunLoop bound_socket_destroyed_run_loop;
@@ -193,20 +193,23 @@ class TCPBoundSocketTest : public testing::Test {
 
 // Try to bind a socket to an address already being listened on, which should
 // fail.
-TEST_F(TCPBoundSocketTest, DISABLED_BindError) {
+TEST_F(TCPBoundSocketTest, BindError) {
   // Set up a listening socket.
-  network::mojom::TCPBoundSocketPtr bound_socket1;
+  mojom::TCPBoundSocketPtr bound_socket1;
   net::IPEndPoint bound_address1;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &bound_address1));
-  network::mojom::TCPServerSocketPtr server_socket;
+  mojom::TCPServerSocketPtr server_socket;
   ASSERT_EQ(net::OK, Listen(std::move(bound_socket1), &server_socket));
 
   // Try to bind another socket to the listening socket's address.
-  network::mojom::TCPBoundSocketPtr bound_socket2;
+  mojom::TCPBoundSocketPtr bound_socket2;
   net::IPEndPoint bound_address2;
-  EXPECT_EQ(net::ERR_ADDRESS_IN_USE,
-            BindSocket(bound_address1, &bound_socket2, &bound_address2));
+  int result = BindSocket(bound_address1, &bound_socket2, &bound_address2);
+  // Depending on platform, can get different errors. Some platforms can return
+  // either error.
+  EXPECT_TRUE(result == net::ERR_ADDRESS_IN_USE ||
+              result == net::ERR_INVALID_ARGUMENT);
 }
 
 // Test the case of a connect error. To cause a connect error, bind a socket,
@@ -217,23 +220,23 @@ TEST_F(TCPBoundSocketTest, DISABLED_BindError) {
 // on OSX (after 25+ seconds) instead of connection refused.
 #if !defined(OS_MACOSX) && !defined(OS_IOS)
 TEST_F(TCPBoundSocketTest, ConnectError) {
-  network::mojom::TCPBoundSocketPtr bound_socket1;
+  mojom::TCPBoundSocketPtr bound_socket1;
   net::IPEndPoint bound_address1;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &bound_address1));
 
   // Trying to bind to an address currently being used for listening should
   // fail.
-  network::mojom::TCPBoundSocketPtr bound_socket2;
+  mojom::TCPBoundSocketPtr bound_socket2;
   net::IPEndPoint bound_address2;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket2,
                                 &bound_address2));
-  network::mojom::TCPConnectedSocketPtr connected_socket;
+  mojom::TCPConnectedSocketPtr connected_socket;
   mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
   EXPECT_EQ(net::ERR_CONNECTION_REFUSED,
             Connect(std::move(bound_socket2), bound_address2, bound_address1,
-                    &connected_socket, network::mojom::SocketObserverPtr(),
+                    &connected_socket, mojom::SocketObserverPtr(),
                     &client_socket_receive_handle, &client_socket_send_handle));
 }
 #endif  // !defined(OS_MACOSX) && !defined(OS_IOS)
@@ -247,47 +250,50 @@ TEST_F(TCPBoundSocketTest, ConnectError) {
 // Apple platforms don't allow binding multiple TCP sockets to the same port
 // even with SO_REUSEADDR enabled.
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_IOS)
-TEST_F(TCPBoundSocketTest, DISABLED_ListenError) {
+TEST_F(TCPBoundSocketTest, ListenError) {
   // Bind a socket.
-  network::mojom::TCPBoundSocketPtr bound_socket1;
+  mojom::TCPBoundSocketPtr bound_socket1;
   net::IPEndPoint bound_address1;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &bound_address1));
 
   // Bind another socket to the same address, which should succeed, due to
   // SO_REUSEADDR.
-  network::mojom::TCPBoundSocketPtr bound_socket2;
+  mojom::TCPBoundSocketPtr bound_socket2;
   net::IPEndPoint bound_address2;
   ASSERT_EQ(net::OK,
             BindSocket(bound_address1, &bound_socket2, &bound_address2));
 
   // Listen on the first socket, which should also succeed.
-  network::mojom::TCPServerSocketPtr server_socket1;
+  mojom::TCPServerSocketPtr server_socket1;
   ASSERT_EQ(net::OK, Listen(std::move(bound_socket1), &server_socket1));
 
   // Listen on the second socket should fail.
-  network::mojom::TCPServerSocketPtr server_socket2;
-  ASSERT_EQ(net::ERR_ADDRESS_IN_USE,
-            Listen(std::move(bound_socket2), &server_socket2));
+  mojom::TCPServerSocketPtr server_socket2;
+  int result = Listen(std::move(bound_socket2), &server_socket2);
+  // Depending on platform, can get different errors. Some platforms can return
+  // either error.
+  EXPECT_TRUE(result == net::ERR_ADDRESS_IN_USE ||
+              result == net::ERR_INVALID_ARGUMENT);
 }
 #endif  // !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_IOS)
 
 // Test the case bind succeeds, and transfer some data.
 TEST_F(TCPBoundSocketTest, ReadWrite) {
   // Set up a listening socket.
-  network::mojom::TCPBoundSocketPtr bound_socket1;
+  mojom::TCPBoundSocketPtr bound_socket1;
   net::IPEndPoint server_address;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket1,
                                 &server_address));
-  network::mojom::TCPServerSocketPtr server_socket;
+  mojom::TCPServerSocketPtr server_socket;
   ASSERT_EQ(net::OK, Listen(std::move(bound_socket1), &server_socket));
 
   // Connect to the socket with another socket.
-  network::mojom::TCPBoundSocketPtr bound_socket2;
+  mojom::TCPBoundSocketPtr bound_socket2;
   net::IPEndPoint client_address;
   ASSERT_EQ(net::OK, BindSocket(LocalHostWithAnyPort(), &bound_socket2,
                                 &client_address));
-  network::mojom::TCPConnectedSocketPtr client_socket;
+  mojom::TCPConnectedSocketPtr client_socket;
   TestSocketObserver socket_observer;
   mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
@@ -297,14 +303,14 @@ TEST_F(TCPBoundSocketTest, ReadWrite) {
                     &client_socket_receive_handle, &client_socket_send_handle));
 
   base::RunLoop run_loop;
-  network::mojom::TCPConnectedSocketPtr accept_socket;
+  mojom::TCPConnectedSocketPtr accept_socket;
   mojo::ScopedDataPipeConsumerHandle accept_socket_receive_handle;
   mojo::ScopedDataPipeProducerHandle accept_socket_send_handle;
   server_socket->Accept(
       nullptr /* ovserver */,
       base::BindLambdaForTesting(
           [&](int net_error, const base::Optional<net::IPEndPoint>& remote_addr,
-              network::mojom::TCPConnectedSocketPtr connected_socket,
+              mojom::TCPConnectedSocketPtr connected_socket,
               mojo::ScopedDataPipeConsumerHandle receive_stream,
               mojo::ScopedDataPipeProducerHandle send_stream) {
             EXPECT_EQ(net_error, net::OK);
