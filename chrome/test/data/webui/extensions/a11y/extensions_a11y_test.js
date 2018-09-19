@@ -99,7 +99,7 @@ AccessibilityTest.define('CrExtensionsA11yTest', {
   /** @override */
   tests: {
     'Accessible with No Extensions': function() {
-      let list = document.querySelector('* /deep/ #items-list');
+      let list = document.querySelector('extensions-manager').$$('#items-list');
       assertEquals(list.extensions.length, 0);
       assertEquals(list.apps.length, 0);
     }
@@ -129,7 +129,7 @@ AccessibilityTest.define('CrExtensionsA11yTestWithMultipleExensions', {
   /** @override */
   tests: {
     'Accessible with Extensions and Apps': function() {
-      let list = document.querySelector('* /deep/ #items-list');
+      let list = document.querySelector('extensions-manager').$$('#items-list');
       assertEquals(list.extensions.length, 1);
       assertEquals(list.apps.length, 3);
     },
@@ -157,8 +157,8 @@ AccessibilityTest.define('CrExtensionsShortcutA11yTestWithNoExtensions', {
   /** @override */
   tests: {
     'Accessible with No Extensions or Apps': function() {
-      let list =
-          document.querySelector('* /deep/ extensions-keyboard-shortcuts');
+      let list = document.querySelector('extensions-manager')
+                     .$$('extensions-keyboard-shortcuts');
       assertEquals(list.items.length, 0);
     },
   },
@@ -185,8 +185,8 @@ AccessibilityTest.define('CrExtensionsShortcutA11yTestWithExtensions', {
   /** @override */
   tests: {
     'Accessible with Extensions': function() {
-      let list =
-          document.querySelector('* /deep/ extensions-keyboard-shortcuts');
+      let list = document.querySelector('extensions-manager')
+                     .$$('extensions-keyboard-shortcuts');
       assertEquals(list.items.length, 1);
     },
   },
@@ -225,7 +225,9 @@ AccessibilityTest.define('CrExtensionsErrorConsoleA11yTest', {
   /** @override */
   tests: {
     'Accessible Error Console': function() {
-      assertTrue(!!document.querySelector('* /deep/ #errorsList'));
+      assertTrue(!!document.querySelector('extensions-manager')
+                       .$$('extensions-error-page')
+                       .$$('#errorsList'));
     },
   },
 });

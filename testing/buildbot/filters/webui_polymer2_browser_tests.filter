@@ -35,11 +35,6 @@
 
 # Most of the a11y tests are failing because they use /deep/. Should be
 # addressed as part of crbug.com/860069
--CrExtensionsA11yTest.*
--CrExtensionsA11yTestWithMultipleExensions.*
--CrExtensionsErrorConsoleA11yTest.*
--CrExtensionsShortcutA11yTestWithExtensions.*
--CrExtensionsShortcutA11yTestWithNoExtensions.*
 -SettingsA11yManagePasswords.*
 -SettingsA11ySignOut.*
 -SettingsAccessibilityTest.*
@@ -135,8 +130,11 @@ CrElementsSliderTest.*
 CrElementsToastTest.*
 CrElementsToggleTest.*
 CrElementsToolbarSearchFieldTest.*
+CrExtensionsA11yTest.*
+CrExtensionsA11yTestWithMultipleExensions.*
 CrExtensionsCodeSectionTest.*
 CrExtensionsDetailViewTest.*
+CrExtensionsErrorConsoleA11yTest.*
 CrExtensionsErrorConsoleTest.*
 CrExtensionsErrorPageTest.*
 CrExtensionsItemListTest.*
@@ -149,6 +147,8 @@ CrExtensionsOptionsDialogTest.*
 CrExtensionsPackDialogTest.*
 CrExtensionsRuntimeHostPermissionsTest.*
 CrExtensionsRuntimeHostsDialogTest.*
+CrExtensionsShortcutA11yTestWithExtensions.*
+CrExtensionsShortcutA11yTestWithNoExtensions.*
 CrExtensionsShortcutInputTest.*
 CrExtensionsShortcutTest.*
 CrExtensionsSidebarTest.*
