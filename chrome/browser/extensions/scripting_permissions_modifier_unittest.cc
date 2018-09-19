@@ -20,10 +20,12 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
+#include "extensions/common/user_script.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -114,6 +116,13 @@ class RuntimeHostPermissionsEnabledScope {
 
   DISALLOW_COPY_AND_ASSIGN(RuntimeHostPermissionsEnabledScope);
 };
+
+void InitializeExtensionPermissions(Profile* profile,
+                                    const Extension& extension) {
+  PermissionsUpdater updater(profile);
+  updater.InitializePermissions(&extension);
+  updater.GrantActivePermissions(&extension);
+}
 
 using ScriptingPermissionsModifierUnitTest = ExtensionServiceTestBase;
 
@@ -563,6 +572,243 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   EXPECT_THAT(GetPatternsAsStrings(
                   modifier.GetRevokablePermissions()->effective_hosts()),
               testing::IsEmpty());
+}
+
+TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_AllHostsExtension) {
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension").AddPermission("<all_urls>").Build();
+  InitializeExtensionPermissions(profile(), *extension);
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+
+  const GURL example_com("https://www.example.com");
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(example_com);
+    EXPECT_TRUE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
+    EXPECT_TRUE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+
+  modifier.SetWithholdHostPermissions(true);
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(example_com);
+    EXPECT_FALSE(site_access.has_site_access);
+    EXPECT_TRUE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+    EXPECT_TRUE(site_access.withheld_all_sites_access);
+  }
+
+  modifier.GrantHostPermission(example_com);
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(example_com);
+    EXPECT_TRUE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+    EXPECT_TRUE(site_access.withheld_all_sites_access);
+  }
+
+  const GURL google_com("https://google.com");
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(google_com);
+    EXPECT_TRUE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_site_access);
+    EXPECT_TRUE(site_access.withheld_all_sites_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+  }
+}
+
+TEST_F(ScriptingPermissionsModifierUnitTest,
+       GetSiteAccess_AllHostsLikeExtension) {
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension").AddPermission("*://*.com/*").Build();
+  InitializeExtensionPermissions(profile(), *extension);
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+
+  const GURL example_com("https://www.example.com");
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(example_com);
+    EXPECT_TRUE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
+    EXPECT_TRUE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+
+  const GURL google_org("https://google.org");
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(google_org);
+    EXPECT_FALSE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
+    EXPECT_TRUE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+
+  modifier.SetWithholdHostPermissions(true);
+
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(example_com);
+    EXPECT_FALSE(site_access.has_site_access);
+    EXPECT_TRUE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+    EXPECT_TRUE(site_access.withheld_all_sites_access);
+  }
+}
+
+TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_SpecificSites) {
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddPermission("*://*.example.com/*")
+          .Build();
+  InitializeExtensionPermissions(profile(), *extension);
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+
+  const GURL example_com("https://www.example.com");
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(example_com);
+    EXPECT_TRUE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+
+  const GURL google_com("https://google.com");
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(google_com);
+    EXPECT_FALSE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+
+  modifier.SetWithholdHostPermissions(true);
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(example_com);
+    EXPECT_FALSE(site_access.has_site_access);
+    EXPECT_TRUE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+}
+
+TEST_F(ScriptingPermissionsModifierUnitTest,
+       GetSiteAccess_GrantedButNotRequested) {
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddPermission("*://*.example.com/*")
+          .Build();
+  InitializeExtensionPermissions(profile(), *extension);
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+  modifier.SetWithholdHostPermissions(true);
+
+  const URLPatternSet google_com_pattern({URLPattern(
+      Extension::kValidHostPermissionSchemes, "https://google.com/*")});
+  ExtensionPrefs::Get(profile())->AddRuntimeGrantedPermissions(
+      extension->id(),
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                    google_com_pattern, google_com_pattern));
+
+  const GURL google_com("https://google.com");
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(google_com);
+    // The has_access and withheld_access bits should be set appropriately, even
+    // if the extension has access to a site it didn't request.
+    EXPECT_TRUE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+}
+
+// Tests that for the purposes of displaying an extension's site access to the
+// user (or granting/revoking permissions), we ignore paths in the URL.
+TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_IgnorePaths) {
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
+      URLPatternSet({URLPattern(UserScript::ValidUserScriptSchemes(),
+                                "https://www.example.com/foo")}),
+      URLPatternSet(), Manifest::INTERNAL, "extension");
+  InitializeExtensionPermissions(profile(), *extension);
+
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+
+  const GURL example_com("https://www.example.com/bar");
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(example_com);
+    // Even though the path doesn't exactly match one in the content scripts,
+    // the domain is requested, and thus we treat it as if the site was
+    // requested.
+    EXPECT_TRUE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+
+  modifier.SetWithholdHostPermissions(true);
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(example_com);
+    EXPECT_FALSE(site_access.has_site_access);
+    EXPECT_TRUE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+}
+
+// Tests that removing access for a host removes all patterns that grant access
+// to that host.
+TEST_F(ScriptingPermissionsModifierUnitTest,
+       RemoveHostAccess_RemovesOverlappingPatterns) {
+  RuntimeHostPermissionsEnabledScope enabled_scope;
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension").AddPermission("*://*/*").Build();
+  InitializeExtensionPermissions(profile(), *extension);
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+  modifier.SetWithholdHostPermissions(true);
+
+  const URLPattern all_com_pattern(Extension::kValidHostPermissionSchemes,
+                                   "https://*.com/*");
+  PermissionsUpdater(profile()).GrantRuntimePermissions(
+      *extension,
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                    URLPatternSet({all_com_pattern}), URLPatternSet()));
+
+  // Removing example.com access should result in *.com access being revoked,
+  // since that is the pattern that grants access to example.com.
+  const GURL example_com("https://www.example.com");
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(example_com));
+  modifier.RemoveGrantedHostPermission(example_com);
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(example_com));
+  EXPECT_TRUE(ExtensionPrefs::Get(profile())
+                  ->GetRuntimeGrantedPermissions(extension->id())
+                  ->explicit_hosts()
+                  .is_empty());
 }
 
 }  // namespace extensions

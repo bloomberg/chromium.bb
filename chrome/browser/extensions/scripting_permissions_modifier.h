@@ -27,6 +27,24 @@ class PermissionSet;
 // extension has been affected by the click-to-script project.
 class ScriptingPermissionsModifier {
  public:
+  struct SiteAccess {
+    // The extension has access to the current domain.
+    bool has_site_access = false;
+    // The extension requested access to the current domain, but it was
+    // withheld.
+    bool withheld_site_access = false;
+    // The extension has access to all sites (or a pattern sufficiently broad
+    // as to be functionally similar, such as https://*.com/*). Note that since
+    // this includes "broad" patterns, this may be true even if
+    // |has_site_access| is false.
+    bool has_all_sites_access = false;
+    // The extension wants access to all sites (or a pattern sufficiently broad
+    // as to be functionally similar, such as https://*.com/*). Note that since
+    // this includes "broad" patterns, this may be true even if
+    // |withheld_site_access| is false.
+    bool withheld_all_sites_access = false;
+  };
+
   ScriptingPermissionsModifier(content::BrowserContext* browser_context,
                                const scoped_refptr<const Extension>& extension);
   ~ScriptingPermissionsModifier();
@@ -46,21 +64,30 @@ class ScriptingPermissionsModifier {
   // features::kRuntimeHostPermissions.
   bool CanAffectExtension() const;
 
+  // Returns the current access level for the extension on the specified |url|.
+  SiteAccess GetSiteAccess(const GURL& url) const;
+
   // Grants the extension permission to run on the origin of |url|.
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   void GrantHostPermission(const GURL& url);
 
   // Returns true if the extension has been explicitly granted permission to run
-  // on the origin of |url|. Note: This checks any runtime-granted permissions,
+  // on the origin of |url|. This will return true if any permission includes
+  // access to the origin of |url|, even if the permission includes others
+  // (such as *://*.com/*) or is restricted to a path (that is, an extension
+  // with permission for https://google.com/maps will return true for
+  // https://google.com). Note: This checks any runtime-granted permissions,
   // which includes both granted optional permissions and permissions granted
   // through the runtime host permissions feature.
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   bool HasGrantedHostPermission(const GURL& url) const;
 
-  // Revokes permission to run on the origin of |url|. DCHECKs if |url| has not
-  // been granted.
+  // Revokes permission to run on the origin of |url|, including any permissions
+  // that match or overlap with the origin. For instance, removing access to
+  // https://google.com will remove access to *://*.com/* as well.
+  // DCHECKs if |url| has not been granted.
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   void RemoveGrantedHostPermission(const GURL& url);

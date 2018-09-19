@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -188,6 +189,64 @@ bool ScriptingPermissionsModifier::CanAffectExtension() const {
               .is_empty();
 }
 
+ScriptingPermissionsModifier::SiteAccess
+ScriptingPermissionsModifier::GetSiteAccess(const GURL& url) const {
+  SiteAccess access;
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
+
+  // Awkward holder object because permission sets are immutable, and when
+  // return from prefs, ownership is passed.
+  std::unique_ptr<const PermissionSet> permission_holder;
+
+  const PermissionSet* granted_permissions = nullptr;
+  if (!HasWithheldHostPermissions()) {
+    // If the extension doesn't have any withheld permissions, we look at the
+    // current active permissions.
+    // TODO(devlin): This is clunky. It would be nice to have runtime-granted
+    // permissions be correctly populated in all cases, rather than looking at
+    // two different sets.
+    // TODO(devlin): This won't account for granted permissions that aren't
+    // currently active, even though the extension may re-request them (and be
+    // silently granted them) at any time.
+    granted_permissions = &extension_->permissions_data()->active_permissions();
+  } else {
+    permission_holder = prefs->GetRuntimeGrantedPermissions(extension_->id());
+    granted_permissions = permission_holder.get();
+  }
+
+  DCHECK(granted_permissions);
+
+  // For indicating whether an extension has access to a site, we look at the
+  // granted permissions, which could include patterns that weren't explicitly
+  // requested. However, we should still indicate they are granted, so that the
+  // user can revoke them (and because if the extension does request them and
+  // they are already granted, they are silently added).
+  if (granted_permissions->effective_hosts().MatchesSecurityOrigin(url))
+    access.has_site_access = true;
+
+  const PermissionSet& withheld_permissions =
+      extension_->permissions_data()->withheld_permissions();
+
+  // Be sure to check |access.has_site_access| in addition to withheld
+  // permissions, so that we don't indicate we've withheld permission if an
+  // extension is granted https://a.com/*, but has *://*/* withheld.
+  if (withheld_permissions.effective_hosts().MatchesSecurityOrigin(url) &&
+      !access.has_site_access) {
+    access.withheld_site_access = true;
+  }
+
+  constexpr bool include_api_permissions = false;
+  if (granted_permissions->ShouldWarnAllHosts(include_api_permissions))
+    access.has_all_sites_access = true;
+
+  if (withheld_permissions.ShouldWarnAllHosts(include_api_permissions) &&
+      !access.has_all_sites_access) {
+    access.withheld_all_sites_access = true;
+  }
+
+  return access;
+}
+
 void ScriptingPermissionsModifier::GrantHostPermission(const GURL& url) {
   DCHECK(CanAffectExtension());
 
@@ -207,10 +266,9 @@ bool ScriptingPermissionsModifier::HasGrantedHostPermission(
     const GURL& url) const {
   DCHECK(CanAffectExtension());
 
-  GURL origin = url.GetOrigin();
   return extension_prefs_->GetRuntimeGrantedPermissions(extension_->id())
       ->effective_hosts()
-      .MatchesURL(origin);
+      .MatchesSecurityOrigin(url);
 }
 
 void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
@@ -218,10 +276,20 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
   DCHECK(CanAffectExtension());
   DCHECK(HasGrantedHostPermission(url));
 
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
+  std::unique_ptr<const PermissionSet> runtime_permissions =
+      prefs->GetRuntimeGrantedPermissions(extension_->id());
+
   URLPatternSet explicit_hosts;
-  explicit_hosts.AddOrigin(Extension::kValidHostPermissionSchemes, url);
+  for (const auto& pattern : runtime_permissions->explicit_hosts()) {
+    if (pattern.MatchesSecurityOrigin(url))
+      explicit_hosts.AddPattern(pattern);
+  }
   URLPatternSet scriptable_hosts;
-  scriptable_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(), url);
+  for (const auto& pattern : runtime_permissions->scriptable_hosts()) {
+    if (pattern.MatchesSecurityOrigin(url))
+      scriptable_hosts.AddPattern(pattern);
+  }
 
   PermissionsUpdater(browser_context_)
       .RevokeRuntimePermissions(
