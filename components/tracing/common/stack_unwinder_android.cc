@@ -12,6 +12,7 @@
 #include "link.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/debug/proc_maps_linux.h"
 #include "base/logging.h"
@@ -114,7 +115,7 @@ bool GetCFIForPC(CFIBacktraceAndroid* cfi_unwinder,
       pc - CFIBacktraceAndroid::executable_start_addr(), cfi);
 }
 
-constexpr size_t kMaxStackBytesCopied = 4096;
+constexpr size_t kMaxStackBytesCopied = 1024 * 1024;
 
 // Struct to store the arguments to the signal handler.
 struct HandlerParams {
@@ -130,7 +131,7 @@ struct HandlerParams {
   // The value of Stack pointer of the thread.
   uintptr_t* sp;
   // The address where the full stack is copied to.
-  char* copy;
+  char* stack_copy_buffer;
 };
 
 // Argument passed to the ThreadSignalHandler() from the sampling thread to the
@@ -161,11 +162,9 @@ static void ThreadSignalHandler(int n, siginfo_t* siginfo, void* sigcontext) {
 
   uintptr_t stack_base_addr = params->unwinder->GetEndAddressOfRegion(sp);
   size_t size = stack_base_addr - sp;
-  // TODO(ssid): If stack_base_addr is 0 here, then we need to reload the
-  // memory mapped regions.
   if (stack_base_addr == 0 || size > kMaxStackBytesCopied)
     return;
-  memcpy(params->copy, reinterpret_cast<void*>(sp), size);
+  memcpy(params->stack_copy_buffer, reinterpret_cast<void*>(sp), size);
   *params->success = true;
 }
 
@@ -254,11 +253,12 @@ size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
   // stack frames from the copied stack.
   DCHECK(is_initialized_);
   AsyncSafeWaitableEvent wait_event;
-  char copy[kMaxStackBytesCopied];
+  std::unique_ptr<char[]> stack_copy_buffer(new char[kMaxStackBytesCopied]);
   bool copied = false;
   unw_context_t context;
   uintptr_t sp = 0;
-  HandlerParams params = {this, &wait_event, &copied, &context, &sp, copy};
+  HandlerParams params = {this,     &wait_event, &copied,
+                          &context, &sp,         stack_copy_buffer.get()};
   base::subtle::Release_Store(&g_handler_params,
                               reinterpret_cast<uintptr_t>(&params));
 
@@ -295,7 +295,7 @@ size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
   for (size_t i = 0; i < 17; ++i) {
     uintptr_t* data = reinterpret_cast<uintptr_t*>(&context) + i;
     if (*data == sp) {
-      *data = reinterpret_cast<uintptr_t>(copy);
+      *data = reinterpret_cast<uintptr_t>(stack_copy_buffer.get());
       replaced_sp = true;
       break;
     }
@@ -308,7 +308,7 @@ size_t StackUnwinderAndroid::TraceStack(base::PlatformThreadId tid,
     return 0;
   uintptr_t ip = 0;
   unw_get_reg(&cursor, UNW_REG_SP, &sp);
-  DCHECK_EQ(sp, reinterpret_cast<uintptr_t>(copy));
+  DCHECK_EQ(sp, reinterpret_cast<uintptr_t>(stack_copy_buffer.get()));
   unw_get_reg(&cursor, UNW_REG_IP, &ip);
 
   // Unwind handler function (ThreadSignalHandler()) since libunwind cannot
