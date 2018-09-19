@@ -115,7 +115,8 @@ void LaunchContainerApplication(
     const std::string& app_id,
     crostini::CrostiniRegistryService::Registration registration,
     int64_t display_id,
-    const std::vector<std::string>& files) {
+    const std::vector<std::string>& files,
+    bool display_scaled) {
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
   DCHECK_NE(chrome_launcher_controller, nullptr);
@@ -125,7 +126,7 @@ void LaunchContainerApplication(
   observer->OnAppLaunchRequested(app_id, display_id);
   crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerApplication(
       registration.VmName(), registration.ContainerName(),
-      registration.DesktopFileId(), files,
+      registration.DesktopFileId(), files, display_scaled,
       base::BindOnce(OnContainerApplicationLaunched, app_id));
 }
 
@@ -324,9 +325,9 @@ void LaunchCrostiniApp(Profile* profile,
         base::BindOnce(&ShowTerminal, launch_params, vsh_in_crosh_url, browser);
   } else {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
-    launch_closure =
-        base::BindOnce(&LaunchContainerApplication, profile, app_id,
-                       std::move(*registration), display_id, std::move(files));
+    launch_closure = base::BindOnce(
+        &LaunchContainerApplication, profile, app_id, std::move(*registration),
+        display_id, std::move(files), registration->IsScaled());
   }
 
   // Update the last launched time.
