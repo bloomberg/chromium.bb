@@ -20,10 +20,13 @@
 // The fullscreen model, used to get the information about the state of
 // fullscreen.
 @property(nonatomic, assign) FullscreenModel* model;
+// Whether the content offset should be matching the frame changes.
+@property(nonatomic, assign) BOOL compensateFrameChangeByOffset;
 @end
 
 @implementation FullscreenWebViewResizer
 
+@synthesize compensateFrameChangeByOffset = _compensateFrameChangeByOffset;
 @synthesize model = _model;
 @synthesize webState = _webState;
 
@@ -35,6 +38,7 @@
   self = [super init];
   if (self) {
     _model = model;
+    _compensateFrameChangeByOffset = YES;
   }
   return self;
 }
@@ -57,7 +61,9 @@
 
   if (webState) {
     [self observeWebStateViewFrame:webState];
+    self.compensateFrameChangeByOffset = NO;
     [self updateForCurrentState];
+    self.compensateFrameChangeByOffset = YES;
   }
 }
 
@@ -119,7 +125,9 @@
   CGFloat currentTopInset = webView.frame.origin.y;
   CGPoint newContentOffset = scrollViewProxy.contentOffset;
   newContentOffset.y += insets.top - currentTopInset;
-  scrollViewProxy.contentOffset = newContentOffset;
+  if (self.compensateFrameChangeByOffset) {
+    scrollViewProxy.contentOffset = newContentOffset;
+  }
 
   webView.frame = newFrame;
 
@@ -127,7 +135,8 @@
   // back to the initial value if necessary.
   // TODO(crbug.com/645857): Remove this workaround once WebKit bug is
   // fixed.
-  if ([scrollViewProxy contentOffset].y != newContentOffset.y) {
+  if (self.compensateFrameChangeByOffset &&
+      [scrollViewProxy contentOffset].y != newContentOffset.y) {
     [scrollViewProxy setContentOffset:newContentOffset];
   }
 }
