@@ -3294,6 +3294,14 @@
     ]
   },
 
+  "EnterpriseHardwarePlatformAPIEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "EnterpriseHardwarePlatformAPIEnabled": false },
+    "pref_mappings": [
+      { "pref": "enterprise_hardware_platform_api.enabled" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

@@ -893,6 +893,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kCoalesceH2ConnectionsWithClientCertificatesForHosts,
     prefs::kH2ClientCertCoalescingHosts,
     base::Value::Type::LIST },
+  { key::kEnterpriseHardwarePlatformAPIEnabled,
+    prefs::kEnterpriseHardwarePlatformAPIEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

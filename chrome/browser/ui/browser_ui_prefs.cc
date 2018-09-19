@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/browser_ui_prefs.h"
 
+#include <memory>
+
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -122,4 +124,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
 #else
   registry->RegisterBooleanPref(prefs::kFullscreenAllowed, true);
 #endif
+
+  registry->RegisterBooleanPref(prefs::kEnterpriseHardwarePlatformAPIEnabled,
+                                false);
 }

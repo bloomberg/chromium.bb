@@ -14488,6 +14488,7 @@ Called by update_net_error_codes.py.-->
   <int value="480" label="PrintHeaderFooter"/>
   <int value="481" label="CrostiniAllowed"/>
   <int value="482" label="DeviceUnaffiliatedCrostiniAllowed"/>
+  <int value="483" label="EnterpriseHardwarePlatformAPIEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
