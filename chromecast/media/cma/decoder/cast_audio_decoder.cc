@@ -60,12 +60,16 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
 
     input_channel_count_ = config.channel_number;
     output_channel_layout_ = output_channel_layout;
-    config_ = config;
-    if (config.is_encrypted()) {
+
+    media::AudioConfig input_config = config;
+    if (input_config.is_encrypted()) {
       LOG(ERROR) << "Cannot decode encrypted audio";
-      OnInitialized(false);
-      return;
+      // TODO(kmackay) Should call OnInitialized(false) here, but that generally
+      // causes the browsertests to crash since it happens during the render
+      // pipeline initialization.
+      input_config.encryption_scheme = Unencrypted();
     }
+    config_ = input_config;
 
     // Remix to desired channel layout; update config_ to match what this class
     // outputs.
@@ -76,7 +80,8 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     decoder_ = std::make_unique<::media::FFmpegAudioDecoder>(task_runner_,
                                                              &media_log_);
     decoder_->Initialize(
-        media::DecoderConfigAdapter::ToMediaAudioDecoderConfig(config), nullptr,
+        media::DecoderConfigAdapter::ToMediaAudioDecoderConfig(input_config),
+        nullptr,
         base::BindRepeating(&CastAudioDecoderImpl::OnInitialized, weak_this_),
         base::BindRepeating(&CastAudioDecoderImpl::OnDecoderOutput, weak_this_),
         ::media::AudioDecoder::WaitingForDecryptionKeyCB());
