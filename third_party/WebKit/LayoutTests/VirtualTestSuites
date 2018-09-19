@@ -89,16 +89,6 @@
   },
   {
     "prefix": "threaded",
-    "base": "fast/events/touch",
-    "args": ["--enable-threaded-compositing"]
-  },
-  {
-    "prefix": "threaded",
-    "base": "fast/events/wheel",
-    "args": ["--enable-threaded-compositing"]
-  },
-  {
-    "prefix": "threaded",
     "base": "fast/events/pointerevents/pinch",
     "args": ["--enable-threaded-compositing"]
   },
