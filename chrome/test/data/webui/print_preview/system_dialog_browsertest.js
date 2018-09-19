@@ -96,13 +96,13 @@ cr.define('system_dialog_browsertest', function() {
 
       return test_util.eventToPromise('input-change', pageSettings)
           .then(function() {
-            // Expect disabled print button and Pdf in preview link
+            // Expect disabled print button
             const header = page.$$('print-preview-header');
             const printButton = header.$$('.action-button');
             assertTrue(printButton.disabled);
             assertTrue(linkContainer.disabled);
             assertFalse(link.hidden);
-            assertTrue(link.disabled);
+            assertTrue(link.querySelector('button').disabled);
           });
     });
   });

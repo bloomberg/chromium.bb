@@ -1,8 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/html/action_link.html">
-<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="print_preview_shared_css.html">
@@ -10,53 +8,60 @@
 
 <dom-module id="print-preview-link-container">
   <template>
-    <style include="print-preview-shared throbber action-link cr-hidden-style">
+    <style include="print-preview-shared throbber cr-hidden-style">
       .throbber {
         margin: 8px;
         min-height: 16px;
         min-width: 16px;
       }
 
-      a[is='action-link'] {
+      .link {
         align-items: center;
-        color: inherit !important;
         display: flex;
-        margin: 1px;
         min-height: 46px;
         padding: 0 19px;
-        text-decoration: none;
       }
 
       #systemDialogLink {
         border-top: var(--print-preview-settings-border);
+        padding-top: 0.5em;
       }
 
       .label {
         flex: 1;
       }
+
+      :host([disabled]) .label {
+        color: var(--paper-grey-600);
+        opacity: .65;
+      }
     </style>
-    <a is="action-link" id="systemDialogLink" disabled="[[disabled]]"
+    <div class="link" id="systemDialogLink"
          hidden$="[[!shouldShowSystemDialogLink_]]"
          on-click="onSystemDialogClick_">
       <div class="label">$i18n{systemDialogOption}</div>
       <paper-icon-button-light actionable class="icon-external"
           hidden$="[[openingSystemDialog_]]">
-        <button aria-label="$i18n{systemDialogOption}"></button>
+        <button disabled="[[disabled]]"
+            aria-label="$i18n{systemDialogOption}">
+        </button>
       </paper-icon-button-light>
       <div id="systemDialogThrobber" hidden$="[[!openingSystemDialog_]]"
           class="throbber"></div>
-    </a>
+    </div>
 <if expr="is_macosx">
-    <a is="action-link" id="openPdfInPreviewLink" disabled="[[disabled]]"
+    <div class="link" id="openPdfInPreviewLink"
         on-click="onOpenInPreviewClick_">
       <div class="label">$i18n{openPdfInPreviewOption}</div>
       <paper-icon-button-light actionable class="icon-external"
           hidden$="[[openingInPreview_]]">
-        <button aria-label="$i18n{openPdfInPreviewOption}"></button>
+        <button disabled="[[disabled]]"
+            aria-label="$i18n{openPdfInPreviewOption}">
+        </button>
       </paper-icon-button-light>
       <div id="openPdfInPreviewThrobber" hidden$="[[!openingInPreview_]]"
           class="throbber"></div>
-    </a>
+    </div>
 </if>
   </template>
   <script src="link_container.js"></script>

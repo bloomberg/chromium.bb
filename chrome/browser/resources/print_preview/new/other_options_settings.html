@@ -13,14 +13,21 @@
       print-preview-settings-section {
         margin-bottom: 0;
       }
+
+      print-preview-settings-section.last-visible {
+        margin-bottom: 8px;
+      }
+
+      print-preview-settings-section:not(.first-visible) .title {
+        display: none;
+      }
     </style>
     <template is="dom-repeat" items="[[options_]]">
       <print-preview-settings-section managed="[[item.managed]]"
-          hidden$="[[!item.available]]" class="checkbox">
+          hidden$="[[!item.available]]"
+          class$="[[getClass_(index, firstIndex_, lastIndex_)]]">
         <div slot="title">
-          <span hidden$="[[isTitleHidden_(index, titleIndex_)]]">
-            $i18n{optionsLabel}
-          </span>
+          <span class="title">$i18n{optionsLabel}</span>
         </div>
         <div slot="controls" class="checkbox">
           <cr-checkbox slot="controls" id$="[[item.name]]"

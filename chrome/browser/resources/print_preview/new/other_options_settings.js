@@ -34,7 +34,16 @@ Polymer({
      * The index of the checkbox that should display the "Options" title.
      * @private {number}
      */
-    titleIndex_: {
+    firstIndex_: {
+      type: Number,
+      value: 0,
+    },
+
+    /**
+     * The index of the last visible checkbox.
+     * @private {number}
+     */
+    lastIndex_: {
       type: Number,
       value: 0,
     },
@@ -84,7 +93,14 @@ Polymer({
     this.set(`options_.${index}.available`, setting.available);
     this.set(`options_.${index}.value`, setting.value);
     this.set(`options_.${index}.managed`, setting.setByPolicy);
-    this.titleIndex_ = this.options_.findIndex(option => !!option.available);
+
+    // Update last/first
+    const availableOptions = this.options_.filter(option => !!option.available);
+    if (availableOptions.length > 0) {
+      this.firstIndex_ = this.options_.indexOf(availableOptions[0]);
+      this.lastIndex_ =
+          this.options_.indexOf(availableOptions[availableOptions.length - 1]);
+    }
   },
 
   /**
@@ -133,10 +149,16 @@ Polymer({
 
   /**
    * @param {number} index The index of the settings section.
-   * @return {boolean} Whether the title should be displayed on the section.
+   * @return {string} Class string containing 'first-visible' and/or
+   *     'last-visible' if the settings section is the first or last visible.
    * @private
    */
-  isTitleHidden_: function(index) {
-    return index !== this.titleIndex_;
+  getClass_: function(index) {
+    let classString = '';
+    if (index === this.firstIndex_)
+      classString += 'first-visible';
+    if (index === this.lastIndex_)
+      classString += ' last-visible';
+    return classString;
   },
 });
