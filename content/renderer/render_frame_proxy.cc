@@ -838,10 +838,6 @@ void RenderFrameProxy::SetInheritedEffectiveTouchAction(
                                                          touch_action));
 }
 
-void RenderFrameProxy::PointerEventsChanged() {
-  compositing_helper_->SetHasPointerEventsNone(HasPointerEventsNone());
-}
-
 void RenderFrameProxy::UpdateRenderThrottlingStatus(bool is_throttled,
                                                     bool subtree_throttled) {
   Send(new FrameHostMsg_UpdateRenderThrottlingStatus(routing_id_, is_throttled,
@@ -900,18 +896,17 @@ cc::Layer* RenderFrameProxy::GetLayer() {
 }
 
 void RenderFrameProxy::SetLayer(scoped_refptr<cc::Layer> layer,
-                                bool prevent_contents_opaque_changes) {
-  if (web_frame())
-    web_frame()->SetCcLayer(layer.get(), prevent_contents_opaque_changes);
+                                bool prevent_contents_opaque_changes,
+                                bool is_surface_layer) {
+  if (web_frame()) {
+    web_frame()->SetCcLayer(layer.get(), prevent_contents_opaque_changes,
+                            is_surface_layer);
+  }
   embedded_layer_ = std::move(layer);
 }
 
 SkBitmap* RenderFrameProxy::GetSadPageBitmap() {
   return GetContentClient()->renderer()->GetSadWebViewBitmap();
-}
-
-bool RenderFrameProxy::HasPointerEventsNone() {
-  return web_frame()->OOPIFHasPointerEventsNone();
 }
 
 uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,

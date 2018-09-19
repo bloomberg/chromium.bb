@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 
+#include "cc/layers/surface_layer.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -103,7 +104,7 @@ void RemoteFrame::DetachImpl(FrameDetachType type) {
   // of all these objects. Break the cycle by notifying of detachment.
   ToRemoteDOMWindow(dom_window_)->FrameDetached();
   if (cc_layer_)
-    SetCcLayer(nullptr, false);
+    SetCcLayer(nullptr, false, false);
 }
 
 bool RemoteFrame::PrepareForCommit() {
@@ -183,21 +184,38 @@ RemoteFrameClient* RemoteFrame::Client() const {
   return static_cast<RemoteFrameClient*>(Frame::Client());
 }
 
+void RemoteFrame::PointerEventsChanged() {
+  if (!cc_layer_ || !is_surface_layer_)
+    return;
+
+  static_cast<cc::SurfaceLayer*>(cc_layer_)->SetHasPointerEventsNone(
+      IsIgnoredForHitTest());
+}
+
+bool RemoteFrame::IsIgnoredForHitTest() const {
+  HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
+  if (!owner || !owner->GetLayoutObject())
+    return false;
+  return owner->GetLayoutObject()->Style()->PointerEvents() ==
+         EPointerEvents::kNone;
+}
+
 void RemoteFrame::SetCcLayer(cc::Layer* cc_layer,
-                             bool prevent_contents_opaque_changes) {
+                             bool prevent_contents_opaque_changes,
+                             bool is_surface_layer) {
+  DCHECK(Owner());
+
   if (cc_layer_)
     GraphicsLayer::UnregisterContentsLayer(cc_layer_);
   cc_layer_ = cc_layer;
   prevent_contents_opaque_changes_ = prevent_contents_opaque_changes;
-  if (cc_layer_)
+  is_surface_layer_ = is_surface_layer;
+  if (cc_layer_) {
     GraphicsLayer::RegisterContentsLayer(cc_layer_);
+    PointerEventsChanged();
+  }
 
-  DCHECK(Owner());
   ToHTMLFrameOwnerElement(Owner())->SetNeedsCompositingUpdate();
-}
-
-void RemoteFrame::PointerEventsChanged() {
-  Client()->PointerEventsChanged();
 }
 
 void RemoteFrame::AdvanceFocus(WebFocusType type, LocalFrame* source) {

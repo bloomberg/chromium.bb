@@ -185,11 +185,10 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
 }
 
 void WebRemoteFrameImpl::SetCcLayer(cc::Layer* layer,
-                                    bool prevent_contents_opaque_changes) {
-  if (!GetFrame())
-    return;
-
-  GetFrame()->SetCcLayer(layer, prevent_contents_opaque_changes);
+                                    bool prevent_contents_opaque_changes,
+                                    bool is_surface_layer) {
+  GetFrame()->SetCcLayer(layer, prevent_contents_opaque_changes,
+                         is_surface_layer);
 }
 
 void WebRemoteFrameImpl::SetCoreFrame(RemoteFrame* frame) {
@@ -314,11 +313,7 @@ void WebRemoteFrameImpl::DidStopLoading() {
 }
 
 bool WebRemoteFrameImpl::IsIgnoredForHitTest() const {
-  HTMLFrameOwnerElement* owner = GetFrame()->DeprecatedLocalOwner();
-  if (!owner || !owner->GetLayoutObject())
-    return false;
-  return owner->GetLayoutObject()->Style()->PointerEvents() ==
-         EPointerEvents::kNone;
+  return GetFrame()->IsIgnoredForHitTest();
 }
 
 void WebRemoteFrameImpl::WillEnterFullscreen() {
@@ -444,11 +439,6 @@ v8::Local<v8::Object> WebRemoteFrameImpl::GlobalProxy() const {
 
 WebRect WebRemoteFrameImpl::GetCompositingRect() {
   return GetFrame()->View()->GetCompositingRect();
-}
-
-bool WebRemoteFrameImpl::OOPIFHasPointerEventsNone() const {
-  DCHECK(GetFrame()->DeprecatedLocalOwner());
-  return GetFrame()->DeprecatedLocalOwner()->HasPointerEventsNone();
 }
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,

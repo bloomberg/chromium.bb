@@ -226,10 +226,9 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   // ChildFrameCompositor:
   cc::Layer* GetLayer() override;
   void SetLayer(scoped_refptr<cc::Layer> layer,
-                bool prevent_contents_opaque_changes) override;
+                bool prevent_contents_opaque_changes,
+                bool is_surface_layer) override;
   SkBitmap* GetSadPageBitmap() override;
-
-  bool HasPointerEventsNone() override;
 
   // This indicates whether this BrowserPlugin has been attached to a
   // WebContents and is ready to receive IPCs.

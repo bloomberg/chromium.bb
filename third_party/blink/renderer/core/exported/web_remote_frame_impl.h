@@ -60,7 +60,9 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                     const ParsedFeaturePolicy&,
                                     WebRemoteFrameClient*,
                                     WebFrame* opener) override;
-  void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes) override;
+  void SetCcLayer(cc::Layer*,
+                  bool prevent_contents_opaque_changes,
+                  bool is_surface_layer) override;
   void SetReplicatedOrigin(
       const WebSecurityOrigin&,
       bool is_potentially_trustworthy_opaque_origin) override;
@@ -91,7 +93,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
   v8::Local<v8::Object> GlobalProxy() const override;
   WebRect GetCompositingRect() override;
-  bool OOPIFHasPointerEventsNone() const override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
   RemoteFrame* GetFrame() const { return frame_.Get(); }
