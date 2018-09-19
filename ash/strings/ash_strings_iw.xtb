@@ -110,7 +110,7 @@
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
 <translation id="2761704814324807722">מגש מערכת, שעה <ph name="TIME" />‏, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">מתחבר מחדש אל <ph name="NAME" /></translation>
-<translation id="2790844815106384441">יש לקבוע אם אתרים יכולים להשתמש בשירותי מיקום או במיקרופון, במצלמה או בתכונות אחרות של המכשיר</translation>
+<translation id="2790844815106384441">יש לקבוע אם אתרים יכולים להשתמש בשירותי מיקום, או במיקרופון, במצלמה ובתכונות נוספות של המכשיר</translation>
 <translation id="2792498699870441125">‏Alt + חיפוש</translation>
 <translation id="2805756323405976993">אפליקציות</translation>
 <translation id="2808012452536866044">‏Better Together הועבר אל טלפון חדש</translation>
@@ -223,7 +223,7 @@
 <translation id="4734965478015604180">אופקי</translation>
 <translation id="476166673298332917">למנהל המכשיר הזה יש גישה אל כל הפעילות, כולל סיסמאות ותקשורת.</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="4778095205580009397">‏Google Assistant אינו זמין בסשן הדמיה.</translation>
+<translation id="4778095205580009397">‏Google Assistant אינו זמין בסשן הדגמה.</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">נתק</translation>
 <translation id="4849058404725798627">הדגשה של האובייקט במיקוד המקלדת</translation>

@@ -3133,7 +3133,6 @@
 <translation id="5723508132121499792">ምንም የጀርባ መተግበሪያዎች እያሄዱ አይደሉም</translation>
 <translation id="5727728807527375859">ቅጥያዎች፣ መተግበሪያዎች እና ገፅታዎች ኮምፒውተርዎን ሊጎዱ ይችላሉ። እርግጠኛ ነዎት መቀጠል ይፈልጋሉ?</translation>
 <translation id="5729712731028706266">&amp;እይታ</translation>
-<translation id="5731185123186077399">እንደ Google Pay ያሉ ግላዊነት የተላበሱ የGoogle አገልግሎቶች</translation>
 <translation id="5731247495086897348">ለ&amp;ጥፍና እና ሂድ</translation>
 <translation id="5731409020711461763">1 አዲስ ፎቶ</translation>
 <translation id="5734362860645681824">ተግባቦት</translation>
@@ -3304,9 +3303,11 @@
 <translation id="5979469435153841984">ገጾችን በዕልባት ለማስቀመጥ በአድራሻ አሞሌው ውስጥ ያለውን ኮከብ ጠቅ ያድርጉ</translation>
 <translation id="5982621672636444458">የድርደራ አማራጮች</translation>
 <translation id="5984222099446776634">በቅርብ ጊዜ የተጎበኙ</translation>
+<translation id="5990142338020175451">እንደ የተሻሉ የገጽ ጥቆማዎች ያሉ ይበልጥ የግል Google አገልግሎቶች</translation>
 <translation id="5990386583461751448">የተተረጎመ</translation>
 <translation id="5991049340509704927">አጉላ</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{ድሩን ማሰስ መቀጠል መቻልዎን ለማረጋገጥ አስተዳዳሪዎ ይህን መተግበሪያ እንዲያስወግዱ ይጠይቋቸው።}one{ድሩን ማሰስ መቀጠል መቻልዎን ለማረጋገጥ አስተዳዳሪዎ እነዚህን መተግበሪያዎች እንዲያስወግዱ ይጠይቋቸው።}other{ድሩን ማሰስ መቀጠል መቻልዎን ለማረጋገጥ አስተዳዳሪዎ እነዚህን መተግበሪያዎች እንዲያስወግዱ ይጠይቋቸው።}}</translation>
+<translation id="5997337190805127100">ስለጣቢያ መዳረሻ ተጨማሪ ይወቁ</translation>
 <translation id="6002458620803359783">የሚመረጡ ድምጾች</translation>
 <translation id="6005695835120147974">ሚዲያ ራውተር</translation>
 <translation id="6006484371116297560">የታወቀ ገጽታ</translation>
@@ -4002,6 +4003,7 @@
 <translation id="7040230719604914234">ከዋኝ</translation>
 <translation id="7042418530779813870">ለ&amp;ጥፍ እና ፈልግ</translation>
 <translation id="7043108582968290193">ተከናውኗል! ምንም ተኳኋኝ ያልሆኑ መተግበሪያዎች አልተገኙም።</translation>
+<translation id="7044124535091449260">ስለጣቢያ መዳረሻ ተጨማሪ ይወቁ</translation>
 <translation id="7049293980323620022">ፋይል ይቀመጥ?</translation>
 <translation id="7051943809462976355">መዳፊትን በመፈለግ ላይ...</translation>
 <translation id="7052237160939977163">አፈጻጸም መከታተያ ውሂብ ይላኩ</translation>

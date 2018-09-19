@@ -3134,7 +3134,6 @@
 <translation id="5723508132121499792">No background apps running</translation>
 <translation id="5727728807527375859">Extensions, apps and themes can harm your computer. Are you sure that you want to continue?</translation>
 <translation id="5729712731028706266">&amp;View</translation>
-<translation id="5731185123186077399">Personalised Google services such as Google Pay</translation>
 <translation id="5731247495086897348">Pa&amp;ste and Go</translation>
 <translation id="5731409020711461763">One new photo</translation>
 <translation id="5734362860645681824">Communications</translation>
@@ -3306,9 +3305,11 @@
 <translation id="5979469435153841984">To bookmark pages, click the star in the address bar</translation>
 <translation id="5982621672636444458">Sort options</translation>
 <translation id="5984222099446776634">Recently Visited</translation>
+<translation id="5990142338020175451">More personal Google services, such as better page suggestions</translation>
 <translation id="5990386583461751448">Translated</translation>
 <translation id="5991049340509704927">Magnify</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{To ensure that you can keep browsing the web, ask your administrator to remove this application.}other{To ensure that you can keep browsing the web, ask your administrator to remove these applications.}}</translation>
+<translation id="5997337190805127100">Learn more about site access</translation>
 <translation id="6002458620803359783">Preferred Voices</translation>
 <translation id="6005695835120147974">Media Router</translation>
 <translation id="6006484371116297560">Classic</translation>
@@ -4004,6 +4005,7 @@
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7042418530779813870">Pa&amp;ste and search</translation>
 <translation id="7043108582968290193">Finished! No incompatible applications found.</translation>
+<translation id="7044124535091449260">Learn more about site access</translation>
 <translation id="7049293980323620022">Keep file?</translation>
 <translation id="7051943809462976355">Searching for mouse...</translation>
 <translation id="7052237160939977163">Send performance trace data</translation>

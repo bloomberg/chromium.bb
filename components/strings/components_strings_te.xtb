@@ -741,7 +741,7 @@
 <translation id="6015796118275082299">సంవత్సరం</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{పేజీ 1}other{పేజీ #}}</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />లోని హ్యాకర్‌లు మోసపూరిత యాప్‌లను ఇన్‌స్టాల్ చేయవచ్చు, ఇవి వేరే వాటిలా కనిపించవచ్చు లేదా మిమ్మల్ని ట్రాక్ చేయడానికి ఉపయోగించబడే డేటాని సేకరించవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="6022659036123304283">Chromeని మీకు నచ్చినట్లు తయారుగా చేసుకోండి</translation>
+<translation id="6022659036123304283">Chromeని మీకు నచ్చినట్లు తయారు చేసుకోండి</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (సమకాలీకరించబడ్డాయి)</translation>
 <translation id="6027201098523975773">పేరుని నమోదు చేయండి</translation>
 <translation id="6039846035001940113">సమస్య కొనసాగుతుంటే, సైట్ యజమానిని సంప్రదించండి.</translation>

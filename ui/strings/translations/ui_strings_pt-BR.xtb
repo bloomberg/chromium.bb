@@ -149,7 +149,7 @@
 <translation id="7814458197256864873">Co&amp;piar</translation>
 <translation id="7879499977785298635">Não bloquear</translation>
 <translation id="7907591526440419938">Abrir arquivo</translation>
-<translation id="7969046989155602842">Comando</translation>
+<translation id="7969046989155602842">Command</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Uma hora atrás}one{# horas atrás}other{# horas atrás}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 segundo restante}one{# segundos restantes}other{# segundos restantes}}</translation>

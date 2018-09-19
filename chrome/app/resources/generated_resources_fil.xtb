@@ -3135,7 +3135,6 @@
 <translation id="5723508132121499792">Walang tumatakbong apps sa background</translation>
 <translation id="5727728807527375859">Maaaring mapinsala ng mga extension, apps, at mga tema ang iyong computer. Sigurado ka bang gusto mong magpatuloy?</translation>
 <translation id="5729712731028706266">&amp;Tingnan</translation>
-<translation id="5731185123186077399">Mga naka-personalize na serbisyo ng Google tulad ng Google Pay</translation>
 <translation id="5731247495086897348">I-pa&amp;ste at Umalis</translation>
 <translation id="5731409020711461763">1 bagong larawan</translation>
 <translation id="5734362860645681824">Komunikasyon</translation>
@@ -3307,9 +3306,11 @@
 <translation id="5979469435153841984">Upang mag-bookmark ng mga page, i-click ang star sa address bar</translation>
 <translation id="5982621672636444458">Mga opsyon sa pag-uuri</translation>
 <translation id="5984222099446776634">Kamakailang Binisita</translation>
+<translation id="5990142338020175451">Higit pang personal na serbisyo ng Google, tulad ng mas mahuhusay na suhestyon sa page</translation>
 <translation id="5990386583461751448">Naisalin</translation>
 <translation id="5991049340509704927">I-magnify</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para matiyak na makakapag-browse ka pa rin sa web, hilingin sa iyong administrator na alisin ang application na ito.}one{Para matiyak na makakapag-browse ka pa rin sa web, hilingin sa iyong administrator na alisin ang mga application na ito.}other{Para matiyak na makakapag-browse ka pa rin sa web, hilingin sa iyong administrator na alisin ang mga application na ito.}}</translation>
+<translation id="5997337190805127100">Matuto pa Tungkol sa Access ng Site</translation>
 <translation id="6002458620803359783">Mga Gustong Boses</translation>
 <translation id="6005695835120147974">Router para sa Media</translation>
 <translation id="6006484371116297560">Classic</translation>
@@ -4005,6 +4006,7 @@
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7042418530779813870">Pa&amp;ste at paghahanap</translation>
 <translation id="7043108582968290193">Tapos na! Walang nakitang hindi compatible na application.</translation>
+<translation id="7044124535091449260">Matuto pa tungkol sa access ng site</translation>
 <translation id="7049293980323620022">Gusto mo bang panatilihin ang file?</translation>
 <translation id="7051943809462976355">Naghahanap ng mouse...</translation>
 <translation id="7052237160939977163">Ipadala ang data ng pagte-trace sa pagganap</translation>

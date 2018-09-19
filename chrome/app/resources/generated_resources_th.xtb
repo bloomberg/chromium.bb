@@ -3135,7 +3135,6 @@
 <translation id="5723508132121499792">ไม่มีแอปพลิเคชันทำงานในพื้นหลัง</translation>
 <translation id="5727728807527375859">ส่วนขยาย แอปพลิเคชัน และธีมอาจเป็นอันตรายต่อคอมพิวเตอร์ของคุณได้ คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ</translation>
 <translation id="5729712731028706266">&amp;มุมมอง</translation>
-<translation id="5731185123186077399">บริการของ Google อย่างเช่น Google Pay ที่ปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="5731247495086897348">&amp;วางแล้วไป</translation>
 <translation id="5731409020711461763">รูปภาพใหม่ 1 รูป</translation>
 <translation id="5734362860645681824">การสื่อสาร</translation>
@@ -3307,9 +3306,11 @@
 <translation id="5979469435153841984">หากต้องการบุ๊กมาร์กหน้าต่างๆ ให้คลิกรูปดาวในแถบที่อยู่เว็บ</translation>
 <translation id="5982621672636444458">ตัวเลือกการจัดเรียง</translation>
 <translation id="5984222099446776634">เข้าชมล่าสุด</translation>
+<translation id="5990142338020175451">บริการของ Google ที่ตรงกับตัวคุณมากขึ้น เช่น คำแนะนำหน้าเว็บที่ดียิ่งขึ้น</translation>
 <translation id="5990386583461751448">แปลแล้ว</translation>
 <translation id="5991049340509704927">ขยาย</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{โปรดขอให้ผู้ดูแลระบบนำแอปพลิเคชันนี้ออกเพื่อให้คุณท่องเว็บได้ต่อไป}other{โปรดขอให้ผู้ดูแลระบบนำแอปพลิเคชันนี้ออกเพื่อให้คุณท่องเว็บได้ต่อไป}}</translation>
+<translation id="5997337190805127100">ดูข้อมูลเพิ่มเติมเกี่ยวกับการเข้าถึงเว็บไซต์</translation>
 <translation id="6002458620803359783">เสียงที่ต้องการ</translation>
 <translation id="6005695835120147974">เราเตอร์สื่อ</translation>
 <translation id="6006484371116297560">คลาสสิก</translation>
@@ -4005,6 +4006,7 @@
 <translation id="7040230719604914234">โอเปอเรเตอร์</translation>
 <translation id="7042418530779813870">&amp;วางและค้นหา</translation>
 <translation id="7043108582968290193">เรียบร้อย ไม่พบแอปพลิเคชันที่ใช้ร่วมกันไม่ได้</translation>
+<translation id="7044124535091449260">ดูข้อมูลเพิ่มเติมเกี่ยวกับการเข้าถึงเว็บไซต์</translation>
 <translation id="7049293980323620022">เก็บไฟล์ไว้ไหม</translation>
 <translation id="7051943809462976355">กำลังค้นหาเมาส์...</translation>
 <translation id="7052237160939977163">ส่งข้อมูลการติดตามผลการปฏิบัติงาน</translation>

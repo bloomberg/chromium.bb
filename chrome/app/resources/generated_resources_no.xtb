@@ -3127,7 +3127,6 @@
 <translation id="5723508132121499792">Ingen bakgrunnsprogrammer kjører</translation>
 <translation id="5727728807527375859">Utvidelser, programtillegg og temaer kan skade datamaskinen. Er du sikker på at du vil fortsette?</translation>
 <translation id="5729712731028706266">&amp;Vis</translation>
-<translation id="5731185123186077399">Google-tjenester med et personlig preg, som for eksempel Google Pay</translation>
 <translation id="5731247495086897348">&amp;Lim inn og gå til</translation>
 <translation id="5731409020711461763">1 nytt bilde</translation>
 <translation id="5734362860645681824">Kommunikasjon</translation>
@@ -3299,9 +3298,11 @@
 <translation id="5979469435153841984">For å sette sider som bokmerker, klikk på stjernen i adressefeltet</translation>
 <translation id="5982621672636444458">Sorteringsalternativer</translation>
 <translation id="5984222099446776634">Nylig besøkte</translation>
+<translation id="5990142338020175451">Google-tjenester med et mer personlig preg, som for eksempel bedre sideforslag</translation>
 <translation id="5990386583461751448">Oversatt</translation>
 <translation id="5991049340509704927">Forstørr</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{For å sikre at du fortsatt kan surfe på nettet, be administratoren din om å fjerne dette programmet.}other{For å sikre at du fortsatt kan surfe på nettet, be administratoren din om å fjerne disse programmene.}}</translation>
+<translation id="5997337190805127100">Finn ut mer om nettstedstilgang</translation>
 <translation id="6002458620803359783">Foretrukne stemmer</translation>
 <translation id="6005695835120147974">Medieruter</translation>
 <translation id="6006484371116297560">Klassisk</translation>
@@ -3996,6 +3997,7 @@
 <translation id="7040230719604914234">Operatør</translation>
 <translation id="7042418530779813870">Lim inn og &amp;søk</translation>
 <translation id="7043108582968290193">Ferdig! Fant ingen inkomptatible programmer.</translation>
+<translation id="7044124535091449260">Finn ut mer om nettstedstilgang</translation>
 <translation id="7049293980323620022">Vil du beholde filen?</translation>
 <translation id="7051943809462976355">Søker etter musen …</translation>
 <translation id="7052237160939977163">Send ytelsessporingsdata</translation>

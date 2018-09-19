@@ -3131,7 +3131,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5723508132121499792">Es werden keine Apps im Hintergrund ausgeführt.</translation>
 <translation id="5727728807527375859">Erweiterungen, Apps und Designs können Ihren Computer beschädigen. Möchten Sie den Vorgang wirklich fortsetzen?</translation>
 <translation id="5729712731028706266">&amp;Ansicht</translation>
-<translation id="5731185123186077399">Personalisierte Google-Dienste wie Google Pay</translation>
 <translation id="5731247495086897348">Einfügen und &amp;fortfahren</translation>
 <translation id="5731409020711461763">1 neues Foto</translation>
 <translation id="5734362860645681824">Kommunikation</translation>
@@ -4571,7 +4570,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7893153962594818789">Bluetooth ist auf diesem <ph name="DEVICE_TYPE" /> deaktiviert. Geben Sie Ihr Passwort ein und aktivieren Sie Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Standard)</translation>
 <translation id="78957024357676568">Links</translation>
-<translation id="7897900149154324287">Bitte achten Sie in Zukunft darauf, Ihr externes Gerät über die App "Dateien" auszuwerfen, bevor Sie die Verbindung trennen. Andernfalls kann es möglicherweise zu einem Datenverlust kommen.</translation>
+<translation id="7897900149154324287">Werfen Sie Ihr externes Gerät in Zukunft über die Dateien-App aus, bevor Sie die Verbindung trennen. Andernfalls könnte es zu einem Datenverlust kommen.</translation>
 <translation id="7898627924844766532">In Symbolleiste behalten</translation>
 <translation id="7898725031477653577">Immer übersetzen</translation>
 <translation id="790040513076446191">Datenschutzeinstellungen bearbeiten</translation>

@@ -3133,7 +3133,6 @@
 <translation id="5723508132121499792">אין יישומים פועלים ברקע</translation>
 <translation id="5727728807527375859">‏תוספים, Google Apps ועיצובים עלולים לפגוע במחשב שלך. האם אתה בטוח שברצונך להמשיך?</translation>
 <translation id="5729712731028706266">&amp;הצג</translation>
-<translation id="5731185123186077399">‏שירותים מותאמים אישית של Google, כמו Google Pay</translation>
 <translation id="5731247495086897348">הד&amp;בק ועבור אל</translation>
 <translation id="5731409020711461763">תמונה חדשה אחת</translation>
 <translation id="5734362860645681824">תקשורת</translation>
@@ -3244,7 +3243,7 @@
 <translation id="5882919346125742463">רשתות מוכרות</translation>
 <translation id="5884474295213649357">‏הכרטיסייה הזו מחוברת להתקן USB.</translation>
 <translation id="5885324376209859881">נהל הגדרות מדיה...</translation>
-<translation id="5886009770935151472">אצבע 1</translation>
+<translation id="5886009770935151472">אצבע ראשונה</translation>
 <translation id="5889282057229379085">המספר המרבי של רשויות אישורים ברמת ביניים: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5895187275912066135">הונפק בתאריך</translation>
@@ -3416,7 +3415,7 @@
 <translation id="6144938890088808325">‏עזור לנו לשפר את מחשבי Chromebook</translation>
 <translation id="6146563240635539929">סרטונים</translation>
 <translation id="6147020289383635445">התצוגה המקדימה של ההדפסה נכשלה.</translation>
-<translation id="6148052338549899048">אין מכשירים כשירים. <ph name="LINK_BEGIN" />מידע נוסף.<ph name="LINK_END" /></translation>
+<translation id="6148052338549899048">אין מכשירים שיכולים להתחבר. <ph name="LINK_BEGIN" />מידע נוסף.<ph name="LINK_END" /></translation>
 <translation id="614940544461990577">נסה:</translation>
 <translation id="6150853954427645995">כדי לשמור קובץ זה לשימוש לא מקוון, חזור למצב מקוון, לחץ לחיצה ימנית על הקובץ ובחר את האפשרות <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="6151323131516309312">לחץ על <ph name="SEARCH_KEY" /> כדי לחפש ב-<ph name="SITE_NAME" /></translation>
@@ -3935,7 +3934,7 @@
 <translation id="694592694773692225">הפניה לכתובת אתר אחרת נחסמה בדף הזה.</translation>
 <translation id="6949306908218145636">הוספת דפים פתוחים לסימניות...</translation>
 <translation id="6950627417367801484">שחזור אפליקציות</translation>
-<translation id="6950943362443484797">נתקין את האפליקציה עבורך</translation>
+<translation id="6950943362443484797">התקנת האפליקציה תבוצע</translation>
 <translation id="6951153907720526401">‏מעבדי handler לתשלומים</translation>
 <translation id="6955446738988643816">בדוק חלון מוקפץ</translation>
 <translation id="6957231940976260713">שם שירות</translation>
@@ -4769,7 +4768,7 @@
 <translation id="8184318863960255706">מידע נוסף</translation>
 <translation id="8185331656081929126">הצג הודעות כאשר מזוהות מדפסות חדשות ברשת</translation>
 <translation id="8186609076106987817">השרת לא הצליח למצוא את הקובץ.</translation>
-<translation id="8186639008852027301">השמעת חיווי קולי בעת ההפעלה</translation>
+<translation id="8186639008852027301">השמעת צליל בהפעלה</translation>
 <translation id="8188120771410500975">בדוק את האיות של &amp;שדות הטקסט</translation>
 <translation id="8188389033983459049">יש לבדוק את הגדרות המכשיר ולהפעיל אותו כדי להמשיך</translation>
 <translation id="8190193592390505034">מתחבר אל <ph name="PROVIDER_NAME" /></translation>
@@ -4777,7 +4776,7 @@
 <translation id="8191453843330043793">V8 Proxy Resolver</translation>
 <translation id="8193175696669055101">דגם מכשיר</translation>
 <translation id="8195027750202970175">גודל בדיסק</translation>
-<translation id="8198323535106903877">נתקין את <ph name="NUMBER_OF_APPS" /> האפליקציות האלה עבורך</translation>
+<translation id="8198323535106903877"><ph name="NUMBER_OF_APPS" /> האפליקציות יותקנו</translation>
 <translation id="8199300056570174101">מאפייני רשת (שירות) ומכשיר</translation>
 <translation id="8200772114523450471">חדש</translation>
 <translation id="8202160505685531999">הזן שוב את הסיסמה כדי לעדכן את פרופיל <ph name="DEVICE_TYPE" />.</translation>
@@ -5110,7 +5109,7 @@
 <translation id="8719653885894320876">הורדת <ph name="PLUGIN_NAME" /> נכשלה</translation>
 <translation id="8723829621484579639">תת-מסגרות במצב גלישה בסתר של: <ph name="PARENT_SITE" /></translation>
 <translation id="8724405322205516354">כשיוצג לך הסמל הזה, משמעות הדבר היא שאפשר להשתמש בטביעת אצבע לצורכי זיהוי או לאישור רכישה.</translation>
-<translation id="8724409975248965964">טביעת האצבע שלך נקלטה</translation>
+<translation id="8724409975248965964">טביעת האצבע נקלטה</translation>
 <translation id="8724859055372736596">&amp;הצג בתיקייה</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8725178340343806893">מועדפים/סימניות</translation>
