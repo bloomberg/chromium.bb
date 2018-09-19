@@ -49,16 +49,8 @@ typedef void(highbd_inv_txfm_add)(const tran_low_t *input, uint8_t *dest,
 
 highbd_inv_txfm_add av1_highbd_inv_txfm_add_4x8;
 highbd_inv_txfm_add av1_highbd_inv_txfm_add_8x4;
-highbd_inv_txfm_add av1_highbd_inv_txfm_add_16x32;
-highbd_inv_txfm_add av1_highbd_inv_txfm_add_32x16;
-highbd_inv_txfm_add av1_highbd_inv_txfm_add_32x64;
-highbd_inv_txfm_add av1_highbd_inv_txfm_add_64x32;
-highbd_inv_txfm_add av1_highbd_inv_txfm_add_16x64;
-highbd_inv_txfm_add av1_highbd_inv_txfm_add_64x16;
 highbd_inv_txfm_add av1_highbd_inv_txfm_add_16x4;
 highbd_inv_txfm_add av1_highbd_inv_txfm_add_4x16;
-highbd_inv_txfm_add av1_highbd_inv_txfm_add_8x32;
-highbd_inv_txfm_add av1_highbd_inv_txfm_add_32x8;
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -1311,16 +1311,10 @@ void av1_highbd_inv_txfm_add_avx2(const tran_low_t *input, uint8_t *dest,
       av1_highbd_inv_txfm_add_16x8_sse4_1(input, dest, stride, txfm_param);
       break;
     case TX_16X32:
-      av1_highbd_inv_txfm_add_16x32(input, dest, stride, txfm_param);
+      av1_highbd_inv_txfm_add_16x32_sse4_1(input, dest, stride, txfm_param);
       break;
     case TX_32X16:
-      av1_highbd_inv_txfm_add_32x16(input, dest, stride, txfm_param);
-      break;
-    case TX_32X64:
-      av1_highbd_inv_txfm_add_32x64(input, dest, stride, txfm_param);
-      break;
-    case TX_64X32:
-      av1_highbd_inv_txfm_add_64x32(input, dest, stride, txfm_param);
+      av1_highbd_inv_txfm_add_32x16_sse4_1(input, dest, stride, txfm_param);
       break;
     case TX_4X4:
       av1_highbd_inv_txfm_add_4x4_sse4_1(input, dest, stride, txfm_param);
@@ -1332,12 +1326,14 @@ void av1_highbd_inv_txfm_add_avx2(const tran_low_t *input, uint8_t *dest,
       av1_highbd_inv_txfm_add_4x16(input, dest, stride, txfm_param);
       break;
     case TX_8X32:
-      av1_highbd_inv_txfm_add_8x32(input, dest, stride, txfm_param);
+      av1_highbd_inv_txfm_add_8x32_sse4_1(input, dest, stride, txfm_param);
       break;
     case TX_32X8:
-      av1_highbd_inv_txfm_add_32x8(input, dest, stride, txfm_param);
+      av1_highbd_inv_txfm_add_32x8_sse4_1(input, dest, stride, txfm_param);
       break;
     case TX_64X64:
+    case TX_32X64:
+    case TX_64X32:
     case TX_16X64:
     case TX_64X16:
       av1_highbd_inv_txfm2d_add_universe_sse4_1(
