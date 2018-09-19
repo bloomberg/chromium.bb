@@ -33,6 +33,7 @@ class WidgetElement : public views::WidgetRemovalsObserver,
   // views::WidgetObserver:
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
+  void OnWidgetDestroyed(views::Widget* widget) override;
 
   // UIElement:
   std::vector<std::pair<std::string, std::string>> GetCustomProperties()

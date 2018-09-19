@@ -167,10 +167,10 @@ Response CSSAgent::setStyleTexts(
     if (!response.isSuccess())
       return response;
 
-    updated_styles->addItem(BuildCSSStyle(ui_element));
-
     if (!SetPropertiesForUIElement(ui_element, updated_bounds, visible))
       return NodeNotFoundError(node_id);
+
+    updated_styles->addItem(BuildCSSStyle(ui_element));
   }
   *result = std::move(updated_styles);
   return Response::OK();
