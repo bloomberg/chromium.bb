@@ -55,6 +55,7 @@ static void Install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {{install_constants() | trim | indent(2)}}
 }
 
+// static
 v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
       isolate,
@@ -66,6 +67,19 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplate(v8::Isolate* isolate, 
 
 const char* {{v8_class}}::NameInHeapSnapshot() const {
   return "{{v8_class}}";
+}
+
+// static
+{{v8_class}}* {{v8_class}}::CreateOrNull(v8::Local<v8::Object> callback_object) {
+  v8::Local<v8::Context> creation_context = callback_object->CreationContext();
+  // When |callback_object| is an object in RemoteContext (i.e. RemoteInstance),
+  // the object has no creation context, and no way to proceed.
+  // TODO(crbug.com/886588): Make CreateOrNull into Create removing the early
+  // return with nullptr.
+  if (creation_context.IsEmpty())
+    return nullptr;
+
+  return new {{v8_class}}(callback_object, creation_context);
 }
 
 {% for method in methods %}

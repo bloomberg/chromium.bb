@@ -21,7 +21,8 @@ V8EventListenerImpl::V8EventListenerImpl(
     ScriptState* script_state,
     const V8PrivateProperty::Symbol& property)
     : EventListener(kJSEventListenerType),
-      event_listener_(V8EventListener::Create(listener)) {
+      event_listener_(V8EventListener::CreateOrNull(listener)) {
+  DCHECK(event_listener_);
   Attach(script_state, listener, property, this);
   if (IsMainThread()) {
     InstanceCounters::IncrementCounter(

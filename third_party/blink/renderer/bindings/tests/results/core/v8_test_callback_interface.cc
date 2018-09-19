@@ -25,6 +25,19 @@ const char* V8TestCallbackInterface::NameInHeapSnapshot() const {
   return "V8TestCallbackInterface";
 }
 
+// static
+V8TestCallbackInterface* V8TestCallbackInterface::CreateOrNull(v8::Local<v8::Object> callback_object) {
+  v8::Local<v8::Context> creation_context = callback_object->CreationContext();
+  // When |callback_object| is an object in RemoteContext (i.e. RemoteInstance),
+  // the object has no creation context, and no way to proceed.
+  // TODO(crbug.com/886588): Make CreateOrNull into Create removing the early
+  // return with nullptr.
+  if (creation_context.IsEmpty())
+    return nullptr;
+
+  return new V8TestCallbackInterface(callback_object, creation_context);
+}
+
 v8::Maybe<void> V8TestCallbackInterface::voidMethod(ScriptWrappable* callback_this_value) {
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
