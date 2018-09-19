@@ -78,6 +78,7 @@ using ::testing::_;
 namespace media {
 
 constexpr char kAudioOnlyTestFile[] = "sfx-opus-441.webm";
+constexpr char kVideoOnlyTestFile[] = "bear-320x240-video-only.webm";
 
 // Specify different values for testing.
 constexpr base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideo =
@@ -761,6 +762,39 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   EXPECT_EQ(reported_memory_ - data_source_size, 0);
 }
 
+// Verify that lazy load for preload=metadata works properly.
+TEST_F(WebMediaPlayerImplTest, LazyLoadPreloadMetadataSuspend) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kPreloadMetadataLazyLoad);
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
+
+  // Don't set poster, but ensure we still reach suspended state.
+
+  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
+    EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
+        .WillOnce(ReturnRef(surface_id_));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, false, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
+  }
+
+  LoadAndWaitForMetadata(kVideoOnlyTestFile);
+  testing::Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
+  CycleThreads();
+  EXPECT_TRUE(IsSuspended());
+  EXPECT_TRUE(wmpi_->DidLazyLoad());
+
+  // The data source contains the entire file, so subtract it from the memory
+  // usage to ensure there's no other memory usage.
+  const int64_t data_source_size = GetDataSourceMemoryUsage();
+  EXPECT_GT(data_source_size, 0);
+  EXPECT_EQ(reported_memory_ - data_source_size, 0);
+}
+
 // Verify that preload=metadata suspend video w/ poster uses zero video memory.
 TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
   InitializeWebMediaPlayerImpl();
@@ -777,7 +811,7 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
-  LoadAndWaitForMetadata("bear-320x240-video-only.webm");
+  LoadAndWaitForMetadata(kVideoOnlyTestFile);
   testing::Mock::VerifyAndClearExpectations(&client_);
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   CycleThreads();
@@ -1066,6 +1100,26 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_StaysSuspended) {
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
   EXPECT_TRUE(state.is_idle);
   EXPECT_TRUE(state.is_suspended);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+}
+
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_ResumeForNeedFirstFrame) {
+  InitializeWebMediaPlayerImpl();
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
+
+  // Should stay suspended even though not stale or backgrounded.
+  WebMediaPlayerImpl::PlayState state = ComputePlayState_Suspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  EXPECT_TRUE(state.is_idle);
+  EXPECT_TRUE(state.is_suspended);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+
+  wmpi_->OnBecameVisible();
+  state = ComputePlayState_Suspended();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
+  EXPECT_TRUE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
 }
 

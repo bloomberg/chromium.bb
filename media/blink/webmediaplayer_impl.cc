@@ -1439,6 +1439,10 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   // has been told about the ReadyState change.
   if (attempting_suspended_start_ &&
       pipeline_controller_.IsPipelineSuspended()) {
+    did_lazy_load_ = !has_poster_ && HasVideo();
+    if (did_lazy_load_)
+      DCHECK(base::FeatureList::IsEnabled(kPreloadMetadataLazyLoad));
+
     skip_metrics_due_to_startup_suspend_ = true;
     OnBufferingStateChangeInternal(BUFFERING_HAVE_ENOUGH, true);
 
@@ -2479,12 +2483,12 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   // If possible attempt to avoid decoder spool up until playback starts.
   Pipeline::StartType start_type = Pipeline::StartType::kNormal;
-  if (base::FeatureList::IsEnabled(kPreloadMetadataSuspend) &&
-      !chunk_demuxer_ && preload_ == MultibufferDataSource::METADATA &&
+  if (!chunk_demuxer_ && preload_ == MultibufferDataSource::METADATA &&
       !client_->CouldPlayIfEnoughData()) {
-    start_type = has_poster_
-                     ? Pipeline::StartType::kSuspendAfterMetadata
-                     : Pipeline::StartType::kSuspendAfterMetadataForAudioOnly;
+    start_type =
+        (has_poster_ || base::FeatureList::IsEnabled(kPreloadMetadataLazyLoad))
+            ? Pipeline::StartType::kSuspendAfterMetadata
+            : Pipeline::StartType::kSuspendAfterMetadataForAudioOnly;
     attempting_suspended_start_ = true;
   }
 
@@ -2698,14 +2702,14 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   //
   // TODO(sandersd): Make the delegate suspend idle players immediately when
   // hidden.
-  bool idle_suspended =
-      can_auto_suspend && is_stale && paused_ && !seeking_ && !overlay_enabled_;
+  bool idle_suspended = can_auto_suspend && is_stale && paused_ && !seeking_ &&
+                        !overlay_enabled_ && !needs_first_frame_;
 
   // If we're already suspended, see if we can wait for user interaction. Prior
   // to HaveFutureData, we require |is_stale| to remain suspended. |is_stale|
   // will be cleared when we receive data which may take us to HaveFutureData.
-  bool can_stay_suspended =
-      (is_stale || have_future_data) && is_suspended && paused_ && !seeking_;
+  bool can_stay_suspended = (is_stale || have_future_data) && is_suspended &&
+                            paused_ && !seeking_ && !needs_first_frame_;
 
   // Combined suspend state.
   result.is_suspended = is_remote || must_suspend || idle_suspended ||
@@ -2974,6 +2978,15 @@ bool WebMediaPlayerImpl::IsSuspendedForTesting() {
   return pipeline_controller_.IsPipelineSuspended();
 }
 
+bool WebMediaPlayerImpl::DidLazyLoad() const {
+  return did_lazy_load_;
+}
+
+void WebMediaPlayerImpl::OnBecameVisible() {
+  needs_first_frame_ = !has_first_frame_;
+  UpdatePlayState();
+}
+
 bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
   // If suspending background video, pause any video that's not remoted or
   // not unlocked to play in the background.
@@ -3233,6 +3246,7 @@ void WebMediaPlayerImpl::OnFirstFrame(base::TimeTicks frame_time) {
   DCHECK(!load_start_time_.is_null());
   DCHECK(!skip_metrics_due_to_startup_suspend_);
   has_first_frame_ = true;
+  needs_first_frame_ = false;
   const base::TimeDelta elapsed = frame_time - load_start_time_;
   media_metrics_provider_->SetTimeToFirstFrame(elapsed);
   RecordTimingUMA("Media.TimeToFirstFrame", elapsed);
