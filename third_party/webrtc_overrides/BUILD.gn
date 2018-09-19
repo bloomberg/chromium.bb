@@ -76,10 +76,10 @@ static_library("webrtc") {
     # Otherwise, we just add the field_trial which redirects to base and
     # runtime_enabled_features which redirects to content/public/common.
     sources = [
-      "field_trial.cc",
       "runtime_enabled_features.cc",
     ]
     deps += [
+      ":field_trial",
       "//base",
       "//third_party/webrtc/system_wrappers:runtime_enabled_features_api",
     ]
@@ -121,8 +121,21 @@ static_library("init_webrtc") {
 }
 
 static_library("metrics") {
-  sources = [ "metrics.cc" ]
-  deps = [ "//base" ]
+  sources = [
+    "metrics.cc",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+static_library("field_trial") {
+  sources = [
+    "field_trial.cc",
+  ]
+  deps = [
+    "//base",
+  ]
 }
 
 source_set("libjingle_webrtc_common") {
