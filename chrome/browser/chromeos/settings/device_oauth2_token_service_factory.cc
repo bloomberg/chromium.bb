@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
@@ -29,19 +28,15 @@ DeviceOAuth2TokenService* DeviceOAuth2TokenServiceFactory::Get() {
   return g_device_oauth2_token_service_;
 }
 
-void DeviceOAuth2TokenServiceFactory::Initialize() {
-  Initialize(g_browser_process->system_network_context_manager()
-                 ->GetSharedURLLoaderFactory());
-}
-
 // static
 void DeviceOAuth2TokenServiceFactory::Initialize(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* local_state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_device_oauth2_token_service_);
   g_device_oauth2_token_service_ = new DeviceOAuth2TokenService(
-      std::make_unique<DeviceOAuth2TokenServiceDelegate>(
-          url_loader_factory, g_browser_process->local_state()));
+      std::make_unique<DeviceOAuth2TokenServiceDelegate>(url_loader_factory,
+                                                         local_state));
 }
 
 // static

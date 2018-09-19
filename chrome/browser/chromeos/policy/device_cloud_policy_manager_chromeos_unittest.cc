@@ -162,16 +162,16 @@ class DeviceCloudPolicyManagerChromeOSTest
     RegisterLocalState(local_state_.registry());
     manager_->Init(&schema_registry_);
 
-    // DeviceOAuth2TokenService uses the system url loader factory fetch
-    // OAuth tokens, then writes the token to local state, encrypting it
-    // first with methods in CryptohomeTokenEncryptor.
+    // SharedURLLoaderFactory and LocalState singletons have to be set since
+    // they are accessed by EnrollmentHandlerChromeOS and StartupUtils.
     TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
         test_shared_loader_factory_);
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
+
     // SystemSaltGetter is used in DeviceOAuth2TokenService.
     chromeos::SystemSaltGetter::Initialize();
     chromeos::DeviceOAuth2TokenServiceFactory::Initialize(
-        test_shared_loader_factory_);
+        test_shared_loader_factory_, &local_state_);
 
     url_fetcher_response_code_ = net::HTTP_OK;
     url_fetcher_response_string_ = "{\"access_token\":\"accessToken4Test\","

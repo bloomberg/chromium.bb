@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -281,8 +280,8 @@ void DeviceOAuth2TokenServiceDelegate::StartValidation() {
 
   state_ = STATE_VALIDATION_STARTED;
 
-  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
-      g_browser_process->shared_url_loader_factory()));
+  gaia_oauth_client_ =
+      std::make_unique<gaia::GaiaOAuthClient>(url_loader_factory_);
 
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   gaia::OAuthClientInfo client_info;
