@@ -287,12 +287,11 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
 }
 
 const String& GetNameForFeature(mojom::FeaturePolicyFeature feature) {
-  const static String empty_string;
   for (const auto& entry : GetDefaultFeatureNameMap()) {
     if (entry.value == feature)
       return entry.key;
   }
-  return empty_string;
+  return g_empty_string;
 }
 
 }  // namespace blink
