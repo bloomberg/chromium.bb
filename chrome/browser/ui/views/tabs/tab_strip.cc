@@ -80,43 +80,17 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-using base::UserMetricsAction;
-using ui::DropTargetEvent;
-using MD = ui::MaterialDesignController;
-
 namespace {
 
-const int kTabStripAnimationVSlop = 40;
-
-// Inverse ratio of the width of a tab edge to the width of the tab. When
-// hovering over the left or right edge of a tab, the drop indicator will
-// point between tabs.
-const int kTabEdgeRatioInverse = 4;
-
-// Size of the drop indicator.
-int drop_indicator_width;
-int drop_indicator_height;
-
 // Max number of stacked tabs.
-const int kMaxStackedCount = 4;
+constexpr int kMaxStackedCount = 4;
 
 // Padding between stacked tabs.
-const int kStackedPadding = 6;
+constexpr int kStackedPadding = 6;
 
-// See UpdateLayoutTypeFromMouseEvent() for a description of these.
-#if !defined(OS_CHROMEOS)
-const int kMouseMoveTimeMS = 200;
-const int kMouseMoveCountBeforeConsiderReal = 3;
-#endif
-
-// Amount of time we delay before resizing after a close from a touch.
-const int kTouchResizeLayoutTimeMS = 2000;
-
-#if defined(OS_MACOSX)
-const int kPinnedToNonPinnedOffset = 2;
-#else
-const int kPinnedToNonPinnedOffset = 3;
-#endif
+// Size of the drop indicator.
+int g_drop_indicator_width = 0;
+int g_drop_indicator_height = 0;
 
 TabSizeInfo* g_tab_size_info = nullptr;
 
@@ -222,13 +196,13 @@ const TabSizeInfo& GetTabSizeInfo() {
   g_tab_size_info->standard_size =
       gfx::Size(Tab::GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
   g_tab_size_info->tab_overlap = Tab::GetOverlap();
-  g_tab_size_info->pinned_to_normal_offset =
-      TabStrip::GetPinnedToNonPinnedOffset();
   return *g_tab_size_info;
 }
 
 int GetStackableTabWidth() {
-  return Tab::GetOverlap() + (MD::IsTouchOptimizedUiEnabled() ? 136 : 102);
+  return Tab::GetOverlap() +
+         (ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 136
+                                                                    : 102);
 }
 
 }  // namespace
@@ -302,11 +276,6 @@ TabStrip::~TabStrip() {
   RemoveAllChildViews(true);
 }
 
-// static
-int TabStrip::GetPinnedToNonPinnedOffset() {
-  return MD::IsRefreshUi() ? 0 : kPinnedToNonPinnedOffset;
-}
-
 void TabStrip::AddObserver(TabStripObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -340,9 +309,10 @@ bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
   if (v == this)
     return true;
 
-  // Under refresh, a thin strip at the top of inactive tabs and the new tab
-  // button is treated as part of the window drag handle, to increase
-  // draggability.  This region starts 1 DIP above the top of the separator.
+  // When the window has a top drag handle, a thin strip at the top of inactive
+  // tabs and the new tab button is treated as part of the window drag handle,
+  // to increase draggability.  This region starts 1 DIP above the top of the
+  // separator.
   const int drag_handle_extension =
       (height() - Tab::GetTabSeparatorHeight()) / 2 - 1;
 
@@ -555,13 +525,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
 
     available_width_for_tabs_ = ideal_bounds(model_count).right() -
                                 TabStartX() - size_delta + Tab::GetOverlap();
-    if (model_index == 0 && tab_being_removed->data().pinned &&
-        !tab_at(1)->data().pinned) {
-      available_width_for_tabs_ -= GetPinnedToNonPinnedOffset();
-    }
   }
-
-  const bool first_unpinned_tab = model_index == GetPinnedTabCount();
 
   if (!touch_layout_)
     PrepareForAnimation();
@@ -590,11 +554,8 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
   // edge should stay joined to the right edge of the previous tab, if any.
   gfx::Rect tab_bounds = tab->bounds();
   int desired_x = TabStartX();
-  if (model_index > 0) {
+  if (model_index > 0)
     desired_x = ideal_bounds(model_index - 1).right() - Tab::GetOverlap();
-    if (first_unpinned_tab)
-      desired_x += GetPinnedToNonPinnedOffset();
-  }
   tab_bounds.set_x(desired_x);
 
   // The tab should animate to the width of the overlap in order to close at the
@@ -864,7 +825,7 @@ bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
 }
 
 bool TabStrip::ShouldShowCloseButtonOnHover() {
-  return !touch_layout_ && MD::IsRefreshUi();
+  return !touch_layout_;
 }
 
 bool TabStrip::MaySetClip() {
@@ -1213,7 +1174,6 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // The view order doesn't match the paint order (tabs_ contains the tab
   // ordering). Additionally we need to paint the tabs that are closing in
   // |tabs_closing_map_|.
-  const bool is_refresh = MD::IsRefreshUi();
   bool is_dragging = false;
   Tab* active_tab = nullptr;
   Tabs tabs_dragging;
@@ -1223,23 +1183,20 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     // Using transparency here normally disables LCD AA on title text in favor
     // of greyscale AA.  In most cases, the tabs will be rendered opaquely on an
     // opaque background before compositing, so it's safe to pass false for
-    // |lcd_text_requires_opaque_layer| to allow LCD AA.  The GTK theme avoids
-    // drawing backgrounds, however, and thus must fall back to greyscale AA.
-    // The check for SHOULD_FILL_BACKGROUND_TAB_COLOR distinguishes these cases.
+    // |lcd_text_requires_opaque_layer| to allow LCD AA.  If the theme does not
+    // fill a background color, however, it must fall back to greyscale AA.
     bool has_background_color = GetThemeProvider()->GetDisplayProperty(
         ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR);
     ui::CompositingRecorder opacity_recorder(
         paint_info.context(), GetInactiveAlpha(false), !has_background_color);
 
-    // Under refresh, the different tab shape can lead to odd painting artifacts
-    // of hovered background tabs due to the painting order. This manifests as
-    // the lower left curve the tab being visibly overwritten. This code detects
-    // the hovered cases and defers painting of the given tab to below.
-    const auto paint_or_add_to_tabs = [&paint_info, &selected_and_hovered_tabs,
-                                       is_refresh](Tab* tab) {
+    // When background tab shapes are visible, as for hovered or selected tabs,
+    // the paint order must be handled carefully to avoid Z-order errors, so
+    // this code defers drawing such tabs until later.
+    const auto paint_or_add_to_tabs = [&paint_info,
+                                       &selected_and_hovered_tabs](Tab* tab) {
       if (tab->IsSelected() ||
-          (is_refresh &&
-           (tab->mouse_hovered() || tab->hover_controller()->ShouldDraw()))) {
+          (tab->mouse_hovered() || tab->hover_controller()->ShouldDraw())) {
         selected_and_hovered_tabs.push_back(tab);
       } else {
         tab->Paint(paint_info);
@@ -1289,8 +1246,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     }
   }
 
-  // Under refresh, this will sort the inactive tabs so that they paint in the
-  // following order:
+  // This will sort the inactive tabs so that they paint in the following order:
   //
   // o Unselected and hover-animating tabs in ascending animation value order.
   // o The single unselected mouse hovered tab, if present.
@@ -1317,15 +1273,11 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     return sort_value;
   };
 
-  // Only sort the list under refresh. Under pre-fresh, the list only contains
-  // the selected tabs already in the proper trailing-to-leading order.
-  if (is_refresh) {
-    std::stable_sort(selected_and_hovered_tabs.begin(),
-                     selected_and_hovered_tabs.end(),
-                     [&tab_sort_value](Tab* tab1, Tab* tab2) -> bool {
-                       return tab_sort_value(tab1) < tab_sort_value(tab2);
-                     });
-  }
+  std::stable_sort(selected_and_hovered_tabs.begin(),
+                   selected_and_hovered_tabs.end(),
+                   [&tab_sort_value](Tab* tab1, Tab* tab2) {
+                     return tab_sort_value(tab1) < tab_sort_value(tab2);
+                   });
   for (Tab* tab : selected_and_hovered_tabs)
     tab->Paint(paint_info);
 
@@ -1375,8 +1327,8 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
 void TabStrip::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
-  // In refresh, paint a separator before a trailing new tab button.
-  if (MD::IsRefreshUi() && GetNewTabButtonPosition() == TRAILING) {
+  // Paint a separator before a trailing new tab button.
+  if (GetNewTabButtonPosition() == TRAILING) {
     const int width = Tab::kSeparatorThickness;
     const float separator_height = Tab::GetTabSeparatorHeight();
     gfx::RectF separator_bounds(
@@ -1409,7 +1361,7 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
     const int min_selected_width = Tab::GetMinimumActiveWidth();
     const int min_unselected_width = Tab::GetMinimumInactiveWidth();
     if (remaining_tab_count > 0) {
-      needed_tab_width += GetPinnedToNonPinnedOffset() + min_selected_width +
+      needed_tab_width += min_selected_width +
                           ((remaining_tab_count - 1) * min_unselected_width);
     }
 
@@ -1464,14 +1416,11 @@ views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
 void TabStrip::OnThemeChanged() {
   // Adding or removing a frame image will change whether single tab mode is
   // available.
-  if (MD::IsRefreshUi())
-    SingleTabModeChanged();
-  else
-    FrameColorsChanged();
+  SingleTabModeChanged();
 }
 
 BrowserRootView::DropIndex TabStrip::GetDropIndex(
-    const DropTargetEvent& event) {
+    const ui::DropTargetEvent& event) {
   // Force animations to stop, otherwise it makes the index calculation tricky.
   StopAnimating(true);
 
@@ -1482,7 +1431,11 @@ BrowserRootView::DropIndex TabStrip::GetDropIndex(
   for (int i = 0; i < tab_count(); ++i) {
     Tab* tab = tab_at(i);
     const int tab_max_x = tab->x() + tab->width();
-    const int hot_width = tab->width() / kTabEdgeRatioInverse;
+
+    // When hovering over the left or right quarter of a tab, the drop indicator
+    // will point between tabs.
+    const int hot_width = tab->width() / 4;
+
     if (x < tab_max_x) {
       if (x >= (tab_max_x - hot_width))
         return {i + 1, true};
@@ -1528,11 +1481,11 @@ void TabStrip::Init() {
 
   new_tab_button_bounds_.set_size(new_tab_button_->GetPreferredSize());
 
-  if (drop_indicator_width == 0) {
+  if (g_drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.
     gfx::ImageSkia* drop_image = GetDropArrowImage(true);
-    drop_indicator_width = drop_image->width();
-    drop_indicator_height = drop_image->height();
+    g_drop_indicator_width = drop_image->width();
+    g_drop_indicator_height = drop_image->height();
   }
 
   UpdateContrastRatioValues();
@@ -1550,13 +1503,8 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
   // Insert the tab just after the current right edge of the previous tab, if
   // any.
   gfx::Rect bounds = ideal_bounds(model_index);
-  if (model_index > 0) {
-    int desired_x =
-        tab_at(model_index - 1)->bounds().right() - Tab::GetOverlap();
-    if (model_index == GetPinnedTabCount())
-      desired_x += GetPinnedToNonPinnedOffset();
-    bounds.set_x(desired_x);
-  }
+  if (model_index > 0)
+    bounds.set_x(tab_at(model_index - 1)->bounds().right() - Tab::GetOverlap());
 
   // Start at the width of the overlap in order to animate at the same speed the
   // surrounding tabs are moving, since at this width the subsequent tab is
@@ -1617,16 +1565,9 @@ int TabStrip::TabToFollowingNewTabButtonSpacing() const {
   if (controller_->GetNewTabButtonPosition() != AFTER_TABS)
     return 0;
 
-  // In refresh, the new tab button contains built-in padding, and should be
-  // placed flush against the trailing separator.
-  if (MD::IsRefreshUi())
-    return -Tab::GetCornerRadius();
-
-  // Pre-refresh, there are a variety of hardcoded values.
-  const int mode = MD::GetMode();
-  DCHECK_LE(mode, 2);
-  constexpr int kNewTabButtonSpacing[] = {-5, -6, 6};
-  return kNewTabButtonSpacing[mode];
+  // The new tab button contains built-in padding, and should be placed flush
+  // against the trailing separator.
+  return -Tab::GetCornerRadius();
 }
 
 bool TabStrip::MayHideNewTabButtonWhileDragging() const {
@@ -1634,13 +1575,8 @@ bool TabStrip::MayHideNewTabButtonWhileDragging() const {
 }
 
 int TabStrip::GetFrameGrabWidth() const {
-  // Only Refresh has a grab area.
-  if (!MD::IsRefreshUi())
-    return 0;
-
   // The apparent width of the grab area.
-  constexpr int kGrabWidth = 50;
-  int width = kGrabWidth;
+  int width = 50;
 
   const NewTabButtonPosition position = controller_->GetNewTabButtonPosition();
   if (position == AFTER_TABS) {
@@ -1777,10 +1713,7 @@ std::vector<gfx::Rect> TabStrip::CalculateBoundsForDraggedTabs(
   std::vector<gfx::Rect> bounds;
   const int overlap = Tab::GetOverlap();
   int x = 0;
-  for (size_t i = 0; i < tabs.size(); ++i) {
-    const Tab* tab = tabs[i];
-    if (i > 0 && tab->data().pinned != tabs[i - 1]->data().pinned)
-      x += GetPinnedToNonPinnedOffset();
+  for (const Tab* tab : tabs) {
     const int width = tab->width();
     bounds.push_back(gfx::Rect(x, 0, width, tab->height()));
     x += width - overlap;
@@ -1793,10 +1726,9 @@ int TabStrip::TabStartX() const {
   if (controller_->GetNewTabButtonPosition() != LEADING)
     return 0;
 
-  // In refresh, the new tab button contains built-in padding, and should be
-  // placed flush against the leading separator.
-  const int overlap = MD::IsRefreshUi() ? Tab::GetCornerRadius() : 0;
-  return new_tab_button_bounds_.width() - overlap;
+  // The new tab button contains built-in padding, and should be placed flush
+  // against the leading separator.
+  return new_tab_button_bounds_.width() - Tab::GetCornerRadius();
 }
 
 int TabStrip::TabDragAreaEndX() const {
@@ -1823,12 +1755,8 @@ int TabStrip::NewTabButtonIdealX() const {
 
 int TabStrip::GetSizeNeededForTabs(const Tabs& tabs) {
   int width = 0;
-  for (size_t i = 0; i < tabs.size(); ++i) {
-    Tab* tab = tabs[i];
+  for (const Tab* tab : tabs)
     width += tab->width();
-    if (i > 0 && tab->data().pinned != tabs[i - 1]->data().pinned)
-      width += GetPinnedToNonPinnedOffset();
-  }
   if (!tabs.empty())
     width -= Tab::GetOverlap() * (tabs.size() - 1);
   return width;
@@ -2015,17 +1943,21 @@ void TabStrip::UpdateStackedLayoutFromMouseEvent(views::View* source,
   if (!adjust_layout_)
     return;
 
-  // The following code attempts to switch to shrink (not stacked) layout when
-  // the mouse exits the tabstrip (or the mouse is pressed on a stacked tab) and
-  // to stacked layout when a touch device is used. This is made problematic by
-  // windows generating mouse move events that do not clearly indicate the move
-  // is the result of a touch device. This assumes a real mouse is used if
-  // |kMouseMoveCountBeforeConsiderReal| mouse move events are received within
-  // the time window |kMouseMoveTimeMS|.  At the time we get a mouse press we
-  // know whether its from a touch device or not, but we don't layout then else
-  // everything shifts. Instead we wait for the release.
-  //
-  // TODO(sky): revisit this when touch events are really plumbed through.
+// The following code attempts to switch to shrink (not stacked) layout when
+// the mouse exits the tabstrip (or the mouse is pressed on a stacked tab) and
+// to stacked layout when a touch device is used. This is made problematic by
+// windows generating mouse move events that do not clearly indicate the move
+// is the result of a touch device. This assumes a real mouse is used if
+// |kMouseMoveCountBeforeConsiderReal| mouse move events are received within
+// the time window |kMouseMoveTime|.  At the time we get a mouse press we know
+// whether its from a touch device or not, but we don't layout then else
+// everything shifts. Instead we wait for the release.
+//
+// TODO(sky): revisit this when touch events are really plumbed through.
+#if !defined(OS_CHROMEOS)
+  constexpr auto kMouseMoveTime = base::TimeDelta::FromMilliseconds(200);
+  constexpr int kMouseMoveCountBeforeConsiderReal = 3;
+#endif
 
   switch (event.type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -2053,18 +1985,17 @@ void TabStrip::UpdateStackedLayoutFromMouseEvent(views::View* source,
       if (location == last_mouse_move_location_)
         return;  // Ignore spurious moves.
       last_mouse_move_location_ = location;
-      if ((event.flags() & ui::EF_FROM_TOUCH) == 0 &&
-          (event.flags() & ui::EF_IS_SYNTHESIZED) == 0) {
-        if ((base::TimeTicks::Now() - last_mouse_move_time_).InMilliseconds() <
-            kMouseMoveTimeMS) {
-          if (mouse_move_count_++ == kMouseMoveCountBeforeConsiderReal)
-            SetResetToShrinkOnExit(true);
-        } else {
-          mouse_move_count_ = 1;
-          last_mouse_move_time_ = base::TimeTicks::Now();
-        }
-      } else {
+      if ((event.flags() & ui::EF_FROM_TOUCH) ||
+          (event.flags() & ui::EF_IS_SYNTHESIZED)) {
         last_mouse_move_time_ = base::TimeTicks();
+      } else if ((base::TimeTicks::Now() - last_mouse_move_time_) >=
+                 kMouseMoveTime) {
+        mouse_move_count_ = 1;
+        last_mouse_move_time_ = base::TimeTicks::Now();
+      } else if (mouse_move_count_ < kMouseMoveCountBeforeConsiderReal) {
+        ++mouse_move_count_;
+      } else {
+        SetResetToShrinkOnExit(true);
       }
 #endif
       break;
@@ -2098,8 +2029,7 @@ void TabStrip::UpdateContrastRatioValues() {
   const SkColor inactive_tab_bg_color = GetTabBackgroundColor(TAB_INACTIVE);
 
   // The contrast ratio for the hover effect on standard-width tabs.
-  // In the default Refresh color scheme, this corresponds to a hover
-  // opacity of 0.4.
+  // In the default color scheme, this corresponds to a hover opacity of 0.4.
   constexpr float kDesiredContrastHoveredStandardWidthTab = 1.11f;
   const SkAlpha hover_base_alpha_wide =
       color_utils::GetBlendValueWithMinimumContrast(
@@ -2108,8 +2038,7 @@ void TabStrip::UpdateContrastRatioValues() {
   hover_opacity_min_ = hover_base_alpha_wide / 255.0f;
 
   // The contrast ratio for the hover effect on min-width tabs.
-  // In the default Refresh color scheme, this corresponds to a hover
-  // opacity of 0.65.
+  // In the default color scheme, this corresponds to a hover opacity of 0.65.
   constexpr float kDesiredContrastHoveredMinWidthTab = 1.19f;
   const SkAlpha hover_base_alpha_narrow =
       color_utils::GetBlendValueWithMinimumContrast(
@@ -2118,8 +2047,7 @@ void TabStrip::UpdateContrastRatioValues() {
   hover_opacity_max_ = hover_base_alpha_narrow / 255.0f;
 
   // The contrast ratio for the radial gradient effect on hovered tabs.
-  // In the default Refresh color scheme, this corresponds to a hover
-  // opacity of 0.45.
+  // In the default color scheme, this corresponds to a hover opacity of 0.45.
   constexpr float kDesiredContrastRadialGradient = 1.13728f;
   const SkAlpha radial_highlight_alpha =
       color_utils::GetBlendValueWithMinimumContrast(
@@ -2128,8 +2056,8 @@ void TabStrip::UpdateContrastRatioValues() {
   radial_highlight_opacity_ = radial_highlight_alpha / 255.0f;
 
   // The contrast ratio for the separator between inactive tabs.
-  // In the default Refresh color scheme, this corresponds to a tab text opacity
-  // of 0.46.
+  // In the default color scheme, this corresponds to a separator opacity of
+  // 0.46.
   const SkColor text_color = GetTabForegroundColor(TAB_INACTIVE);
   constexpr float kTabSeparatorRatio = 1.84f;
   const SkAlpha separator_alpha = color_utils::GetBlendValueWithMinimumContrast(
@@ -2174,10 +2102,12 @@ void TabStrip::ResizeLayoutTabsFromTouch() {
 }
 
 void TabStrip::StartResizeLayoutTabsFromTouchTimer() {
+  // Amount of time we delay before resizing after a close from a touch.
+  constexpr auto kTouchResizeLayoutTime = base::TimeDelta::FromSeconds(2);
+
   resize_layout_timer_.Stop();
-  resize_layout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kTouchResizeLayoutTimeMS),
-      this, &TabStrip::ResizeLayoutTabsFromTouch);
+  resize_layout_timer_.Start(FROM_HERE, kTouchResizeLayoutTime, this,
+                             &TabStrip::ResizeLayoutTabsFromTouch);
 }
 
 void TabStrip::SetTabBoundsForDrag(const std::vector<gfx::Rect>& tab_bounds) {
@@ -2191,7 +2121,8 @@ void TabStrip::SetTabBoundsForDrag(const std::vector<gfx::Rect>& tab_bounds) {
 }
 
 void TabStrip::AddMessageLoopObserver() {
-  if (!mouse_watcher_.get()) {
+  if (!mouse_watcher_) {
+    constexpr int kTabStripAnimationVSlop = 40;
     mouse_watcher_ = std::make_unique<views::MouseWatcher>(
         std::make_unique<views::MouseWatcherViewHost>(
             this, gfx::Insets(0, 0, kTabStripAnimationVSlop, 0)),
@@ -2222,11 +2153,11 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
   center_x = GetMirroredXInView(center_x);
 
   // Determine the screen bounds.
-  gfx::Point drop_loc(center_x - drop_indicator_width / 2,
-                      -drop_indicator_height);
+  gfx::Point drop_loc(center_x - g_drop_indicator_width / 2,
+                      -g_drop_indicator_height);
   ConvertPointToScreen(this, &drop_loc);
-  gfx::Rect drop_bounds(drop_loc.x(), drop_loc.y(), drop_indicator_width,
-                        drop_indicator_height);
+  gfx::Rect drop_bounds(drop_loc.x(), drop_loc.y(), g_drop_indicator_width,
+                        g_drop_indicator_height);
 
   // If the rect doesn't fit on the monitor, push the arrow to the bottom.
   display::Screen* screen = display::Screen::GetScreen();
@@ -2294,7 +2225,7 @@ TabStrip::DropArrow::DropArrow(const BrowserRootView::DropIndex& index,
   params.keep_on_top = true;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
-  params.bounds = gfx::Rect(drop_indicator_width, drop_indicator_height);
+  params.bounds = gfx::Rect(g_drop_indicator_width, g_drop_indicator_height);
   params.context = context->GetNativeWindow();
   arrow_window->Init(params);
   arrow_window->SetContentsView(arrow_view);
@@ -2472,7 +2403,8 @@ void TabStrip::SwapLayoutIfNecessary() {
                                       GetPinnedTabCount());
     touch_layout_->SetActiveIndex(controller_->GetActiveIndex());
 
-    base::RecordAction(UserMetricsAction("StackedTab_EnteredStackedLayout"));
+    base::RecordAction(
+        base::UserMetricsAction("StackedTab_EnteredStackedLayout"));
   } else {
     touch_layout_.reset();
   }
@@ -2495,9 +2427,9 @@ bool TabStrip::NeedsTouchLayout() const {
                            Tab::GetOverlap() * (normal_count - 1);
   const int available_width = GetTabAreaWidth();
   const int pinned_width =
-      pinned_tab_count ? (pinned_tab_count * Tab::GetPinnedWidth() -
-                          Tab::GetOverlap() + GetPinnedToNonPinnedOffset())
-                       : 0;
+      pinned_tab_count
+          ? (pinned_tab_count * Tab::GetPinnedWidth() - Tab::GetOverlap())
+          : 0;
   return normal_width > (available_width - pinned_width - TabStartX());
 }
 
@@ -2530,7 +2462,7 @@ void TabStrip::SingleTabModeChanged() {
 
 void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == new_tab_button_) {
-    base::RecordAction(UserMetricsAction("NewTab_Button"));
+    base::RecordAction(base::UserMetricsAction("NewTab_Button"));
     UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
                               TabStripModel::NEW_TAB_ENUM_COUNT);
     if (event.IsMouseEvent()) {

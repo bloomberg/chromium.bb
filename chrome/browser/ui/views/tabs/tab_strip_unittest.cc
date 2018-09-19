@@ -150,7 +150,8 @@ class TabStripTest : public ChromeViewsTestBase,
   void SetUp() override {
     if (GetParam()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized);
+          switches::kTopChromeMD,
+          switches::kTopChromeMDMaterialRefreshTouchOptimized);
     }
 
     ChromeViewsTestBase::SetUp();
@@ -379,12 +380,6 @@ TEST_P(TabStripTest, VisibilityInOverflow) {
 // across the strip at the top, middle, and bottom, events will target each tab
 // in order.
 TEST_P(TabStripTest, TabForEventWhenStacked) {
-  if (GetParam()) {
-    // TODO(malaykeshav): Fix test failure in touch-optimized UI mode.
-    // https://crbug.com/814847.
-    return;
-  }
-
   tab_strip_->SetBounds(0, 0, 250, GetLayoutConstant(TAB_HEIGHT));
 
   controller_->AddTab(0, false);
@@ -416,13 +411,8 @@ TEST_P(TabStripTest, TabForEventWhenStacked) {
 // Tests that the tab close buttons of non-active tabs are hidden when
 // the tabstrip is in stacked tab mode.
 TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
-  if (GetParam()) {
-    // TODO(malaykeshav): Fix test failure in touch-optimized UI mode.
-    // https://crbug.com/814847.
-    return;
-  }
-
-  tab_strip_->SetBounds(0, 0, 360, 20);
+  // Touch-optimized UI requires a larger width for tabs to show close buttons.
+  tab_strip_->SetBounds(0, 0, GetParam() ? 442 : 346, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
   controller_->AddTab(2, false);
@@ -490,15 +480,10 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
 // the tabstrip is not in stacked tab mode and the tab sizes are shrunk
 // into small sizes.
 TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
-  if (GetParam()) {
-    // TODO(malaykeshav): Fix test failure in touch-optimized UI mode.
-    // https://crbug.com/814847.
-    return;
-  }
-
   // Set the tab strip width to be wide enough for three tabs to show all
   // three icons, but not enough for five tabs to show all three icons.
-  tab_strip_->SetBounds(0, 0, 360, 20);
+  // Touch-optimized UI requires a larger width for tabs to show close buttons.
+  tab_strip_->SetBounds(0, 0, GetParam() ? 442 : 346, 20);
   controller_->AddTab(0, false);
   controller_->AddTab(1, true);
   controller_->AddTab(2, false);

@@ -30,9 +30,6 @@ struct TabSizeInfo {
   // previous tab's width minus the |tab_overlap|, e.g.
   // next_tab_x = previous_tab.bounds().right() - tab_overlap.
   int tab_overlap;
-
-  // Additional offset between the last pinned tab and the first normal tab.
-  int pinned_to_normal_offset;
 };
 
 // Calculates the bounds of the pinned tabs. This assumes |tabs_bounds| is the

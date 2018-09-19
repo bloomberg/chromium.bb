@@ -59,8 +59,6 @@ int CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
                                   tab_height);
     next_x += tab_size_info.pinned_tab_width - tab_size_info.tab_overlap;
   }
-  if (num_pinned_tabs)
-    next_x += tab_size_info.pinned_to_normal_offset;
   return next_x;
 }
 
