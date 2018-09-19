@@ -555,10 +555,6 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
     case BubbleType::INACTIVE:
       NOTREACHED();
   }
-
-  if (observer_for_testing_) {
-    observer_for_testing_->OnBubbleShown();
-  }
 }
 
 void SaveCardBubbleControllerImpl::UpdateIcon() {
