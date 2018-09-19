@@ -815,10 +815,11 @@ def CreateArgumentParser():
       '--use-goma', action='store_true', help='Enable GOMA.', default=False)
   parser.add_argument('--adb-path', help='Path to the adb binary.')
 
-  parser.add_argument('--system-health-orderfile', action='store_true',
-                      help=('Create an orderfile based on system health '
-                            'benchmarks.'),
-                      default=False)
+  parser.add_argument('--no-system-health-orderfile', action='store_false',
+                      dest='system_health_orderfile', default=True,
+                      help=('Create an orderfile based on an about:blank '
+                            'startup benchmark instead of system health '
+                            'benchmarks.'))
   parser.add_argument('--monochrome', action='store_true',
                       help=('Compile and instrument monochrome (for post-N '
                             'devices).'))
