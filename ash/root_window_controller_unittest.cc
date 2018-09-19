@@ -696,6 +696,11 @@ class VirtualKeyboardRootWindowControllerTest
     AshTestBase::TearDown();
   }
 
+  void EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds) {
+    keyboard::KeyboardController::Get()->EnsureCaretInWorkAreaForTest(
+        occluded_bounds);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardRootWindowControllerTest);
 };
@@ -774,8 +779,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // KeyboardController.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        DeleteOldContainerOnVirtualKeyboardInit) {
-  auto* controller = keyboard::KeyboardController::Get();
-  aura::Window* keyboard_window = controller->GetKeyboardWindow();
+  aura::Window* keyboard_window =
+      keyboard::KeyboardController::Get()->GetKeyboardWindow();
   // Track the keyboard contents window.
   aura::WindowTracker tracker;
   tracker.Add(keyboard_window);
@@ -857,22 +862,21 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
 // region occluded by the on-screen keyboard.
 TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  keyboard::KeyboardUI* ui = keyboard_controller->ui();
 
   MockTextInputClient text_input_client;
-  ui::InputMethod* input_method = ui->GetInputMethod();
+  ui::InputMethod* input_method = keyboard_controller->GetInputMethodForTest();
   ASSERT_TRUE(input_method);
   input_method->SetFocusedTextInputClient(&text_input_client);
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
   const int keyboard_height = 100;
-  aura::Window* contents_window = ui->GetKeyboardWindow();
+  aura::Window* contents_window = keyboard_controller->GetKeyboardWindow();
   contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       root_window->bounds(), keyboard_height));
   contents_window->Show();
 
-  ui->EnsureCaretInWorkArea(contents_window->GetBoundsInScreen());
+  EnsureCaretInWorkArea(contents_window->GetBoundsInScreen());
   ASSERT_EQ(root_window->bounds().width(),
             text_input_client.caret_exclude_rect().width());
   ASSERT_EQ(keyboard_height, text_input_client.caret_exclude_rect().height());
@@ -894,22 +898,21 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   aura::Window* secondary_root_window = root_windows[1];
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  keyboard::KeyboardUI* ui = keyboard_controller->ui();
 
   MockTextInputClient text_input_client;
-  ui::InputMethod* input_method = ui->GetInputMethod();
+  ui::InputMethod* input_method = keyboard_controller->GetInputMethodForTest();
   ASSERT_TRUE(input_method);
   input_method->SetFocusedTextInputClient(&text_input_client);
 
   const int keyboard_height = 100;
   // Check that the keyboard on the primary screen doesn't cover the window on
   // the secondary screen.
-  aura::Window* contents_window = ui->GetKeyboardWindow();
+  aura::Window* contents_window = keyboard_controller->GetKeyboardWindow();
   contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       primary_root_window->bounds(), keyboard_height));
   contents_window->Show();
 
-  ui->EnsureCaretInWorkArea(contents_window->GetBoundsInScreen());
+  EnsureCaretInWorkArea(contents_window->GetBoundsInScreen());
   EXPECT_TRUE(primary_root_window->GetBoundsInScreen().Contains(
       text_input_client.caret_exclude_rect()));
   EXPECT_EQ(primary_root_window->GetBoundsInScreen().width(),
@@ -923,7 +926,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       secondary_root_window->bounds(), keyboard_height));
 
-  ui->EnsureCaretInWorkArea(contents_window->GetBoundsInScreen());
+  EnsureCaretInWorkArea(contents_window->GetBoundsInScreen());
   EXPECT_FALSE(primary_root_window->GetBoundsInScreen().Contains(
       text_input_client.caret_exclude_rect()));
   EXPECT_TRUE(secondary_root_window->GetBoundsInScreen().Contains(

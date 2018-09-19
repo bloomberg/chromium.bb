@@ -157,8 +157,6 @@ class KEYBOARD_EXPORT KeyboardController
   bool HasObserver(KeyboardControllerObserver* observer) const;
   void RemoveObserver(KeyboardControllerObserver* observer);
 
-  KeyboardUI* ui() { return ui_.get(); }
-
   // Gets the currently focused text input client.
   ui::TextInputClient* GetTextInputClient();
 
@@ -243,8 +241,6 @@ class KEYBOARD_EXPORT KeyboardController
   // Does not do anything if there is no keyboard window.
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds);
 
-  KeyboardControllerState GetStateForTest() const { return state_; }
-
   ContainerType GetActiveContainerType() const {
     return container_behavior_->GetType();
   }
@@ -281,6 +277,10 @@ class KEYBOARD_EXPORT KeyboardController
   void RemoveObserver(
       ui::InputMethodKeyboardControllerObserver* observer) override;
   bool IsKeyboardVisible() override;
+
+  KeyboardControllerState GetStateForTest() const { return state_; }
+  ui::InputMethod* GetInputMethodForTest();
+  void EnsureCaretInWorkAreaForTest(const gfx::Rect& occluded_bounds);
 
  private:
   // For access to Observer methods for simulation.
@@ -373,6 +373,10 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Ensures that the current IME is observed if it is changed.
   void UpdateInputMethodObserver();
+
+  // Ensures caret in current work area (not occluded by virtual keyboard
+  // window).
+  void EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds);
 
   std::unique_ptr<KeyboardUI> ui_;
   KeyboardLayoutDelegate* layout_delegate_ = nullptr;
