@@ -891,8 +891,7 @@ TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
 TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
   // This test relies on the click-to-script feature.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // For laziness.
@@ -1106,8 +1105,7 @@ TEST_F(ExtensionContextMenuModelTest,
        TestTogglingAccessWithSpecificSitesWithUnrequestedUrl) {
   // This test relies on the click-to-script feature.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // For laziness.
@@ -1203,8 +1201,7 @@ TEST_F(ExtensionContextMenuModelTest,
        TestTogglingAccessWithSpecificSitesWithRequestedSites) {
   // This test relies on the click-to-script feature.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // For laziness.

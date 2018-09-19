@@ -1629,8 +1629,7 @@ TEST_F(DeveloperPrivateApiUnitTest,
 TEST_F(DeveloperPrivateApiUnitTest,
        UpdateHostAccess_UnrequestedHostsDispatchUpdateEvents) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
+  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
 
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("test").AddPermission("http://google.com/*").Build();
