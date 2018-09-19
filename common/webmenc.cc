@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "common/av1_config.h"
 #include "third_party/libwebm/mkvmuxer/mkvmuxer.h"
 #include "third_party/libwebm/mkvmuxer/mkvmuxerutil.h"
 #include "third_party/libwebm/mkvmuxer/mkvwriter.h"
@@ -23,6 +24,7 @@ const int kVideoTrackNumber = 1;
 }  // namespace
 
 void write_webm_file_header(struct WebmOutputContext *webm_ctx,
+                            aom_codec_ctx_t *encoder_ctx,
                             const aom_codec_enc_cfg_t *cfg,
                             stereo_format_t stereo_fmt, unsigned int fourcc,
                             const struct AvxRational *par) {
@@ -46,6 +48,26 @@ void write_webm_file_header(struct WebmOutputContext *webm_ctx,
                              static_cast<int>(cfg->g_h), kVideoTrackNumber);
   mkvmuxer::VideoTrack *const video_track = static_cast<mkvmuxer::VideoTrack *>(
       segment->GetTrackByNumber(video_track_id));
+
+  aom_fixed_buf_t *obu_sequence_header =
+      aom_codec_get_global_headers(encoder_ctx);
+  if (obu_sequence_header != NULL) {
+    Av1Config av1_config;
+    if (get_av1config_from_obu(
+            reinterpret_cast<const uint8_t *>(obu_sequence_header->buf),
+            obu_sequence_header->sz, false, &av1_config) == 0) {
+      uint8_t av1_config_buffer[4] = { 0 };
+      size_t bytes_written = 0;
+      if (write_av1config(&av1_config, sizeof(av1_config_buffer),
+                          &bytes_written, av1_config_buffer) == 0) {
+        video_track->SetCodecPrivate(av1_config_buffer,
+                                     sizeof(av1_config_buffer));
+      }
+    }
+    free(obu_sequence_header->buf);
+    free(obu_sequence_header);
+  }
+
   video_track->SetStereoMode(stereo_fmt);
   const char *codec_id;
   switch (fourcc) {
