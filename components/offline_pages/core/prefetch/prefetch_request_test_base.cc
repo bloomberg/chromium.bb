@@ -88,12 +88,7 @@ void PrefetchRequestTestBase::RespondWithData(const std::string& data) {
 
 network::TestURLLoaderFactory::PendingRequest*
 PrefetchRequestTestBase::GetPendingRequest(size_t index) {
-  if (index >= test_url_loader_factory_.pending_requests()->size())
-    return nullptr;
-  network::TestURLLoaderFactory::PendingRequest* request =
-      &(*test_url_loader_factory_.pending_requests())[index];
-  DCHECK(request);
-  return request;
+  return test_url_loader_factory_.GetPendingRequest(index);
 }
 
 std::string PrefetchRequestTestBase::GetExperiementHeaderValue(
