@@ -307,7 +307,14 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 
   if (IsHTMLLegendElement(element) && style.Display() != EDisplay::kContents) {
-    style.SetDisplay(EDisplay::kBlock);
+    // Allow any blockified display value for legends. Note that according to
+    // the spec, this shouldn't affect computed style (like we do here).
+    // Instead, the display override should be determined during box creation,
+    // and even then only be applied to the rendered legend inside a
+    // fieldset. However, Blink determines the rendered legend during layout
+    // instead of during layout object creation, and also generally makes
+    // assumptions that the computed display value is the one to use.
+    style.SetDisplay(EquivalentBlockDisplay(style.Display()));
     return;
   }
 
