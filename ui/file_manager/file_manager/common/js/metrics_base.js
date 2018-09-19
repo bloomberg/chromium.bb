@@ -62,7 +62,8 @@ metricsBase.call_ = function(methodName, args) {
   } catch (e) {
     console.error(e.stack);
   }
-  if (metrics.log)
+  // Support writing metrics.log in manual testing to log method calls.
+  if (/** @type{{ log: (boolean|undefined) }} */ (metrics).log)
     console.log('chrome.metricsPrivate.' + methodName, args);
 };
 
@@ -141,7 +142,7 @@ metricsBase.recordEnum = function(name, value, opt_validValues) {
   var validValues = opt_validValues;
   if (metrics.validEnumValues_ && name in metrics.validEnumValues_) {
     console.assert(validValues === undefined);
-    validValues = metrics.validEnumValues_[name]
+    validValues = metrics.validEnumValues_[name];
   }
   console.assert(validValues !== undefined);
 

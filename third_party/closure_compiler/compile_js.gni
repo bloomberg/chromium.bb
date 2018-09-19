@@ -233,7 +233,11 @@ template("js_type_check") {
     js_binary(target_name) {
       sources = []
       checks_only = true
-      forward_variables_from(invoker, [ "deps" ])
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "closure_flags",
+                             ])
     }
   } else {
     not_needed(invoker, "*")

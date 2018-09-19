@@ -5,11 +5,24 @@
 /**
  * Namespace object for file type utility functions.
  */
-var FileType = {};
+function FileType() {}
+
+/**
+ * @typedef {{
+ *   name: !string,
+ *   type: !string,
+ *   icon: !string,
+ *   subtype: !string,
+ *   pattern: (RegExp|undefined),
+ *   mimePattern: (RegExp|undefined)
+ * }}
+ */
+FileType.Descriptor;
 
 /**
  * Description of known file types.
  * Pair type-subtype defines order when sorted by file type.
+ * @type {Array<!FileType.Descriptor>}
  */
 FileType.types = [
   // Images
@@ -264,13 +277,32 @@ FileType.types = [
 
 /**
  * A special type for directory.
+ * @type{!FileType.Descriptor}
+ * @const
  */
-FileType.DIRECTORY = {name: 'FOLDER', type: '.folder', icon: 'folder'};
+FileType.DIRECTORY = {
+  name: 'FOLDER',
+  type: '.folder',
+  icon: 'folder',
+  subtype: ''
+};
+
+/**
+ * A special placeholder for unknown types with no extension.
+ * @type{!FileType.Descriptor}
+ * @const
+ */
+FileType.PLACEHOLDER = {
+  name: 'NO_EXTENSION_FILE_TYPE',
+  type: 'UNKNOWN',
+  icon: '',
+  subtype: ''
+};
 
 /**
  * Returns the file path extension for a given file.
  *
- * @param {Entry} entry Reference to the file.
+ * @param {Entry|FilesAppEntry} entry Reference to the file.
  * @return {string} The extension including a leading '.', or empty string if
  *     not found.
  */
@@ -293,7 +325,7 @@ FileType.getExtension = function(entry) {
  * if possible, since this method can't recognize directories.
  *
  * @param {string} name Name of the file.
- * @return {!Object} The matching file type object or an empty object.
+ * @return {!FileType.Descriptor} The matching descriptor or a placeholder.
  */
 FileType.getTypeForName = function(name) {
   var types = FileType.types;
@@ -305,9 +337,9 @@ FileType.getTypeForName = function(name) {
   // Unknown file type.
   var match = /\.[^\/\.]+$/.exec(name);
   var extension = match ? match[0] : '';
-  if (extension === '') {
-    return { name: 'NO_EXTENSION_FILE_TYPE', type: 'UNKNOWN', icon: '' };
-  }
+  if (extension === '')
+    return FileType.PLACEHOLDER;
+
   // subtype is the extension excluding the first dot.
   return {
     name: 'GENERIC_FILE_TYPE', type: 'UNKNOWN',
@@ -319,9 +351,9 @@ FileType.getTypeForName = function(name) {
  * Gets the file type object for a given entry. If mime type is provided, then
  * uses it with higher priority than the extension.
  *
- * @param {Entry} entry Reference to the entry.
+ * @param {(Entry|FilesAppEntry)} entry Reference to the entry.
  * @param {string=} opt_mimeType Optional mime type for the entry.
- * @return {!Object} The matching file type object or an empty object.
+ * @return {!FileType.Descriptor} The matching descriptor or a placeholder.
  */
 FileType.getType = function(entry, opt_mimeType) {
   if (entry.isDirectory)
@@ -343,9 +375,9 @@ FileType.getType = function(entry, opt_mimeType) {
 
   // Unknown file type.
   var extension = FileType.getExtension(entry);
-  if (extension === '') {
-    return { name: 'NO_EXTENSION_FILE_TYPE', type: 'UNKNOWN', icon: '' };
-  }
+  if (extension === '')
+    return FileType.PLACEHOLDER;
+
   // subtype is the extension excluding the first dot.
   return {
     name: 'GENERIC_FILE_TYPE', type: 'UNKNOWN',
@@ -425,7 +457,7 @@ FileType.isHosted = function(entry, opt_mimeType) {
 };
 
 /**
- * @param {Entry} entry Reference to the file.
+ * @param {Entry|VolumeEntry} entry Reference to the file.
  * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {string} Returns string that represents the file icon.
  *     It refers to a file 'images/filetype_' + icon + '.png'.

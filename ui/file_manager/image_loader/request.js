@@ -325,7 +325,8 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
  * @private
  */
 ImageRequest.prototype.createVideoThumbnailUrl_ = function(url) {
-  const video = document.createElement('video');
+  const video =
+      assertInstanceof(document.createElement('video'), HTMLVideoElement);
   return Promise
       .race([
         new Promise((resolve, reject) => {
@@ -347,10 +348,12 @@ ImageRequest.prototype.createVideoThumbnailUrl_ = function(url) {
         })
       ])
       .then(() => {
-        const canvas = document.createElement('canvas');
+        const canvas = assertInstanceof(
+            document.createElement('canvas'), HTMLCanvasElement);
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
+        assertInstanceof(canvas.getContext('2d'), CanvasRenderingContext2D)
+            .drawImage(video, 0, 0);
         return canvas.toDataURL();
       });
 };
@@ -481,7 +484,7 @@ AuthorizedXHR.prototype.extractExtension_ = function(url) {
  * @private
  */
 AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
-  var xhr = new XMLHttpRequest();
+  let xhr = new XMLHttpRequest();
   xhr.responseType = 'blob';
 
   xhr.onreadystatechange = function() {
@@ -491,9 +494,9 @@ AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
       onFailure(xhr.status);
       return;
     }
-    var contentType = xhr.getResponseHeader('Content-Type') ||
-      xhr.response.type;
-    onSuccess(contentType, /** @type {Blob} */ (xhr.response));
+    let response = /** @type {Blob} */ (xhr.response);
+    let contentType = xhr.getResponseHeader('Content-Type') || response.type;
+    onSuccess(contentType, response);
   }.bind(this);
 
   // Perform a xhr request.
@@ -621,7 +624,6 @@ ImageRequest.prototype.cleanup_ = function() {
   this.image_.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAA' +
       'ABAAEAAAICTAEAOw==';
 
-  this.xhr_.onload = function() {};
   this.xhr_.abort();
 
   // Dispose memory allocated by Canvas.
