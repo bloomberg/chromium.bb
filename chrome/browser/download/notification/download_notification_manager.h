@@ -5,60 +5,37 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_NOTIFICATION_MANAGER_H_
 #define CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_NOTIFICATION_MANAGER_H_
 
+#include <map>
 #include <memory>
-#include <set>
 
 #include "chrome/browser/download/download_ui_controller.h"
+#include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/download/notification/download_item_notification.h"
-#include "chrome/browser/profiles/profile.h"
-#include "components/download/public/common/download_item.h"
+#include "components/offline_items_collection/core/offline_item.h"
 
-class DownloadNotificationManagerForProfile;
+class Profile;
 
-class DownloadNotificationManager : public DownloadUIController::Delegate {
+using offline_items_collection::ContentId;
+
+class DownloadNotificationManager : public DownloadUIController::Delegate,
+                                    public DownloadItemNotification::Observer {
  public:
   explicit DownloadNotificationManager(Profile* profile);
   ~DownloadNotificationManager() override;
 
-  void OnAllDownloadsRemoving(Profile* profile);
-  // DownloadUIController::Delegate:
+  // DownloadUIController::Delegate overrides.
   void OnNewDownloadReady(download::DownloadItem* item) override;
 
-  DownloadNotificationManagerForProfile* GetForProfile(Profile* profile) const;
+  // DownloadItemNotification::Observer overrides.
+  void OnDownloadDestroyed(const ContentId& contentId) override;
 
  private:
   friend class test::DownloadItemNotificationTest;
 
-  Profile* main_profile_ = nullptr;
-  std::map<Profile*, std::unique_ptr<DownloadNotificationManagerForProfile>>
-      manager_for_profile_;
-};
+  Profile* profile_;
+  std::map<ContentId, std::unique_ptr<DownloadItemNotification>> items_;
 
-class DownloadNotificationManagerForProfile
-    : public download::DownloadItem::Observer {
- public:
-  DownloadNotificationManagerForProfile(
-      Profile* profile, DownloadNotificationManager* parent_manager);
-  ~DownloadNotificationManagerForProfile() override;
-
-  // DownloadItem::Observer overrides:
-  void OnDownloadUpdated(download::DownloadItem* download) override;
-  void OnDownloadOpened(download::DownloadItem* download) override;
-  void OnDownloadRemoved(download::DownloadItem* download) override;
-  void OnDownloadDestroyed(download::DownloadItem* download) override;
-
-  void OnNewDownloadReady(download::DownloadItem* item);
-
-  DownloadItemNotification* GetNotificationItemByGuid(const std::string& guid);
-
- private:
-  friend class test::DownloadItemNotificationTest;
-
-  Profile* profile_ = nullptr;
-  DownloadNotificationManager* parent_manager_;  // weak
-  std::set<download::DownloadItem*> downloading_items_;
-  std::map<download::DownloadItem*, std::unique_ptr<DownloadItemNotification>>
-      items_;
+  DISALLOW_COPY_AND_ASSIGN(DownloadNotificationManager);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_NOTIFICATION_MANAGER_H_

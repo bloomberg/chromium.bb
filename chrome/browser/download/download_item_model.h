@@ -33,6 +33,7 @@ class DownloadItemModel : public DownloadUIModel,
   // DownloadUIModel implementation.
   void AddObserver(DownloadUIModel::Observer* observer) override;
   void RemoveObserver(DownloadUIModel::Observer* observer) override;
+  ContentId GetContentId() const override;
   base::string16 GetInterruptReasonText() const override;
   base::string16 GetStatusText() const override;
   base::string16 GetTabProgressStatusText() const override;
@@ -77,6 +78,16 @@ class DownloadItemModel : public DownloadUIModel,
   bool TimeRemaining(base::TimeDelta* remaining) const override;
   bool GetOpened() const override;
   void SetOpened(bool opened) override;
+  bool IsDone() const override;
+  void Cancel(bool user_cancel) override;
+  void SetOpenWhenComplete(bool open) override;
+  download::DownloadInterruptReason GetLastReason() const override;
+  base::FilePath GetFullPath() const override;
+  bool CanResume() const override;
+  bool AllDataSaved() const override;
+  bool GetFileExternallyRemoved() const override;
+  GURL GetURL() const override;
+
 #if !defined(OS_ANDROID)
   DownloadCommands GetDownloadCommands() const override;
 #endif

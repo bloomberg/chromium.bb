@@ -19,6 +19,7 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_stats.h"
+#include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
@@ -305,6 +306,13 @@ DownloadItemModel::DownloadItemModel(DownloadItem* download)
     : download_(download) {}
 
 DownloadItemModel::~DownloadItemModel() {}
+
+ContentId DownloadItemModel::GetContentId() const {
+  bool off_the_record = content::DownloadItemUtils::GetBrowserContext(download_)
+                            ->IsOffTheRecord();
+  return ContentId(OfflineItemUtils::GetDownloadNamespace(off_the_record),
+                   download_->GetGuid());
+}
 
 void DownloadItemModel::AddObserver(DownloadUIModel::Observer* observer) {
   DownloadUIModel::AddObserver(observer);
@@ -767,6 +775,42 @@ bool DownloadItemModel::GetOpened() const {
 
 void DownloadItemModel::SetOpened(bool opened) {
   download_->SetOpened(opened);
+}
+
+bool DownloadItemModel::IsDone() const {
+  return download_->IsDone();
+}
+
+void DownloadItemModel::Cancel(bool user_cancel) {
+  download_->Cancel(user_cancel);
+}
+
+void DownloadItemModel::SetOpenWhenComplete(bool open) {
+  download_->SetOpenWhenComplete(open);
+}
+
+download::DownloadInterruptReason DownloadItemModel::GetLastReason() const {
+  return download_->GetLastReason();
+}
+
+base::FilePath DownloadItemModel::GetFullPath() const {
+  return download_->GetFullPath();
+}
+
+bool DownloadItemModel::CanResume() const {
+  return download_->CanResume();
+}
+
+bool DownloadItemModel::AllDataSaved() const {
+  return download_->AllDataSaved();
+}
+
+bool DownloadItemModel::GetFileExternallyRemoved() const {
+  return download_->GetFileExternallyRemoved();
+}
+
+GURL DownloadItemModel::GetURL() const {
+  return download_->GetURL();
 }
 
 #if !defined(OS_ANDROID)
