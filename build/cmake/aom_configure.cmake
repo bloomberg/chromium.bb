@@ -70,8 +70,12 @@ if(NOT AOM_TARGET_CPU)
 endif()
 
 if(CMAKE_TOOLCHAIN_FILE) # Add toolchain file to config string.
-  file(RELATIVE_PATH toolchain_path "${AOM_CONFIG_DIR}"
-                     "${CMAKE_TOOLCHAIN_FILE}")
+  if("${CMAKE_TOOLCHAIN_FILE}" MATCHES "^\\.")
+    set(toolchain_path "${CMAKE_TOOLCHAIN_FILE}")
+  else()
+    file(RELATIVE_PATH toolchain_path "${AOM_CONFIG_DIR}"
+                       "${CMAKE_TOOLCHAIN_FILE}")
+  endif()
   set(toolchain_string "-DCMAKE_TOOLCHAIN_FILE=\\\"${toolchain_path}\\\"")
   set(AOM_CMAKE_CONFIG "${toolchain_string} ${AOM_CMAKE_CONFIG}")
 else()
