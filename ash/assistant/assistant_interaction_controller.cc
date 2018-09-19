@@ -17,11 +17,27 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
+
+namespace {
+
+// Helpers ---------------------------------------------------------------------
+
+// Returns true if device is in tablet mode, false otherwise.
+bool IsTabletMode() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
+}
+
+}  // namespace
+
+// AssistantInteractionController ----------------------------------------------
 
 AssistantInteractionController::AssistantInteractionController(
     AssistantController* assistant_controller)
@@ -146,7 +162,10 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       model_.SetInputModality(InputModality::kKeyboard);
       break;
     case AssistantVisibility::kVisible:
-      if (source == AssistantSource::kLongPressLauncher) {
+      if (source == AssistantSource::kLauncherSearchBox) {
+        if (IsTabletMode())
+          StartVoiceInteraction();
+      } else if (source == AssistantSource::kLongPressLauncher) {
         StartVoiceInteraction();
       } else if (source == AssistantSource::kStylus) {
         model_.SetInputModality(InputModality::kStylus);
