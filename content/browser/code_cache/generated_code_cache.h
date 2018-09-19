@@ -44,7 +44,8 @@ class CONTENT_EXPORT GeneratedCodeCache {
     kUpdate,
     kCreate,
     kError,
-    kMaxValue = kError
+    kIncompleteEntry,
+    kMaxValue = kIncompleteEntry
   };
 
   // Creates a GeneratedCodeCache with the specified path and the maximum size.
