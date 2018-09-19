@@ -81,7 +81,7 @@ struct TestScenario {
   OriginHeader cors_request;
 
   // Attributes of the HTTP response.
-  const char* response_mime_type;
+  const char* response_content_type;
   MimeType canonical_mime_type;
   bool include_no_sniff_header;
   bool simulate_range_response;
@@ -153,24 +153,24 @@ struct TestScenario {
   }
   packets += "}";
 
-  return os << "\n  description         = " << scenario.description
-            << "\n  target_url          = " << scenario.target_url
-            << "\n  resource_type       = " << scenario.resource_type
-            << "\n  initiator_origin    = " << scenario.initiator_origin
-            << "\n  cors_request        = "
+  return os << "\n  description           = " << scenario.description
+            << "\n  target_url            = " << scenario.target_url
+            << "\n  resource_type         = " << scenario.resource_type
+            << "\n  initiator_origin      = " << scenario.initiator_origin
+            << "\n  cors_request          = "
             << (scenario.cors_request == OriginHeader::kOmit
                     ? "OriginHeader::kOmit"
                     : "OriginHeader::kInclude")
-            << "\n  response_mime_type  = " << scenario.response_mime_type
-            << "\n  canonical_mime_type = " << scenario.canonical_mime_type
-            << "\n  include_no_sniff    = "
+            << "\n  response_content_type = " << scenario.response_content_type
+            << "\n  canonical_mime_type   = " << scenario.canonical_mime_type
+            << "\n  include_no_sniff      = "
             << (scenario.include_no_sniff_header ? "true" : "false")
-            << "\n  range_response      = "
+            << "\n  range_response        = "
             << (scenario.simulate_range_response ? "true" : "false")
-            << "\n  cors_response       = " << cors_response
-            << "\n  packets             = " << packets
-            << "\n  verdict             = " << verdict
-            << "\n  verdict_packet      = " << scenario.verdict_packet;
+            << "\n  cors_response         = " << cors_response
+            << "\n  packets               = " << packets
+            << "\n  verdict               = " << verdict
+            << "\n  verdict_packet        = " << scenario.verdict_packet;
 }
 
 // An HTML response with an HTML comment that's longer than the sniffing
@@ -207,7 +207,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kInvalidMimeType,                 // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -223,7 +223,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/html",                            // response_mime_type
+        "text/html",                            // response_content_type
         MimeType::kInvalidMimeType,             // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -239,7 +239,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/json",                            // response_mime_type
+        "text/json",                            // response_content_type
         MimeType::kInvalidMimeType,             // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -255,7 +255,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,                   // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "application/javascript",               // response_mime_type
+        "application/javascript",               // response_content_type
         MimeType::kOthers,                      // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -271,7 +271,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                 // resource_type
         "http://www.a.com/",               // initiator_origin
         OriginHeader::kInclude,            // cors_request
-        "text/html",                       // response_mime_type
+        "text/html",                       // response_content_type
         MimeType::kInvalidMimeType,        // canonical_mime_type
         false,                             // include_no_sniff_header
         false,                             // simulate_range_response
@@ -287,7 +287,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kInclude,                     // cors_request
-        "application/rss+xml",                      // response_mime_type
+        "application/rss+xml",                      // response_content_type
         MimeType::kInvalidMimeType,                 // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -303,7 +303,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                           // resource_type
         "http://www.a.com/",                         // initiator_origin
         OriginHeader::kInclude,                      // cors_request
-        "text/json",                                 // response_mime_type
+        "text/json",                                 // response_content_type
         MimeType::kInvalidMimeType,                  // canonical_mime_type
         false,                                       // include_no_sniff_header
         false,                                       // simulate_range_response
@@ -319,7 +319,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kInvalidMimeType,                 // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -335,7 +335,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kInvalidMimeType,                 // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -357,7 +357,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_PLUGIN_RESOURCE,              // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kHtml,                            // canonical_mime_type
         true,                                       // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -373,7 +373,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_PLUGIN_RESOURCE,   // resource_type
         "http://www.a.com/",             // initiator_origin
         OriginHeader::kInclude,          // cors_request
-        "text/html",                     // response_mime_type
+        "text/html",                     // response_content_type
         MimeType::kInvalidMimeType,      // canonical_mime_type
         true,                            // include_no_sniff_header
         false,                           // simulate_range_response
@@ -389,7 +389,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,                       // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kInclude,                     // cors_request
-        "application/javascript",                   // response_mime_type
+        "application/javascript",                   // response_content_type
         MimeType::kInvalidMimeType,                 // canonical_mime_type
         true,                                       // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -405,7 +405,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,                   // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "application/javascript",               // response_mime_type
+        "application/javascript",               // response_content_type
         MimeType::kOthers,                      // canonical_mime_type
         true,                                   // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -421,7 +421,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "image/png",                            // response_mime_type
+        "image/png",                            // response_content_type
         MimeType::kOthers,                      // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -437,7 +437,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "image/png",                            // response_mime_type
+        "image/png",                            // response_content_type
         MimeType::kOthers,                      // canonical_mime_type
         true,                                   // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -455,7 +455,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,                   // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/html",                            // response_mime_type
+        "text/html",                            // response_content_type
         MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -471,7 +471,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,                   // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/plain",                           // response_mime_type
+        "text/plain",                           // response_content_type
         MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -487,7 +487,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,                   // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/plain",                           // response_mime_type
+        "text/plain",                           // response_content_type
         MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -504,7 +504,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,                   // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/json",                            // response_mime_type
+        "text/json",                            // response_content_type
         MimeType::kJson,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -520,7 +520,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,                   // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/plain",                           // response_mime_type
+        "text/plain",                           // response_content_type
         MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -536,7 +536,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,                   // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/plain",                           // response_mime_type
+        "text/plain",                           // response_content_type
         MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -553,7 +553,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "application/xml",                      // response_mime_type
+        "application/xml",                      // response_content_type
         MimeType::kXml,                         // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -569,7 +569,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/json",                            // response_mime_type
+        "text/json",                            // response_content_type
         MimeType::kJson,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -585,7 +585,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/html",                            // response_mime_type
+        "text/html",                            // response_content_type
         MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -601,7 +601,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/html",                            // response_mime_type
+        "text/html",                            // response_content_type
         MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -617,7 +617,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/html",                            // response_mime_type
+        "text/html",                            // response_content_type
         MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -633,7 +633,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kInvalidMimeType,                 // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -649,7 +649,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kInvalidMimeType,                 // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -667,7 +667,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kHtml,                            // canonical_mime_type
         true,                                       // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -683,7 +683,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html; charset=utf-8",                 // response_mime_type
+        "text/html; charset=utf-8",                 // response_content_type
         MimeType::kHtml,                            // canonical_mime_type
         true,                                       // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -699,7 +699,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/html",                            // response_mime_type
+        "text/html",                            // response_content_type
         MimeType::kHtml,                        // canonical_mime_type
         true,                                   // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -715,7 +715,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "https://bar.site.com/",                    // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kHtml,                            // canonical_mime_type
         true,                                       // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -733,7 +733,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                 // resource_type
         "http://foo.example.com/",         // initiator_origin
         OriginHeader::kInclude,            // cors_request
-        "text/html",                       // response_mime_type
+        "text/html",                       // response_content_type
         MimeType::kHtml,                   // canonical_mime_type
         false,                             // include_no_sniff_header
         false,                             // simulate_range_response
@@ -753,7 +753,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kInclude,                 // cors_request
-        "text/html",                            // response_mime_type
+        "text/html",                            // response_content_type
         MimeType::kHtml,                        // canonical_mime_type
         true,                                   // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -771,7 +771,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -787,7 +787,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "application/xml",                      // response_mime_type
+        "application/xml",                      // response_content_type
         MimeType::kXml,                         // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -803,7 +803,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "application/json",                     // response_mime_type
+        "application/json",                     // response_content_type
         MimeType::kJson,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -819,7 +819,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                            // resource_type
         "http://www.a.com/",                          // initiator_origin
         OriginHeader::kOmit,                          // cors_request
-        "text/plain",                                 // response_mime_type
+        "text/plain",                                 // response_content_type
         MimeType::kPlain,                             // canonical_mime_type
         false,                                        // include_no_sniff_header
         false,                                        // simulate_range_response
@@ -835,7 +835,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/plain",                           // response_mime_type
+        "text/plain",                           // response_content_type
         MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -851,7 +851,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/plain",                           // response_mime_type
+        "text/plain",                           // response_content_type
         MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -868,7 +868,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/plain",                           // response_mime_type
+        "text/plain",                           // response_content_type
         MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -884,7 +884,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/plain",                               // response_mime_type
+        "text/plain",                               // response_content_type
         MimeType::kPlain,                           // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -900,7 +900,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,                   // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/html",                            // response_mime_type
+        "text/html",                            // response_content_type
         MimeType::kHtml,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -918,7 +918,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                 // resource_type
         "http://www.a.com/",               // initiator_origin
         OriginHeader::kInclude,            // cors_request
-        "text/html",                       // response_mime_type
+        "text/html",                       // response_content_type
         MimeType::kHtml,                   // canonical_mime_type
         false,                             // include_no_sniff_header
         false,                             // simulate_range_response
@@ -934,7 +934,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_PLUGIN_RESOURCE,              // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kInclude,                     // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -950,7 +950,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/json",                            // response_mime_type
+        "text/json",                            // response_content_type
         MimeType::kJson,                        // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -966,7 +966,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "audio/x-wav",                          // response_mime_type
+        "audio/x-wav",                          // response_content_type
         MimeType::kOthers,                      // canonical_mime_type
         true,                                   // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -982,7 +982,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "application/javascript",               // response_mime_type
+        "application/javascript",               // response_content_type
         MimeType::kOthers,                      // canonical_mime_type
         false,                                  // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -998,7 +998,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                      // resource_type
         "http://c.com/",                        // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/html",                            // response_mime_type
+        "text/html",                            // response_content_type
         MimeType::kHtml,                        // canonical_mime_type
         true,                                   // include_no_sniff_header
         false,                                  // simulate_range_response
@@ -1015,7 +1015,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_SCRIPT,              // resource_type
         "http://www.a.com/",               // initiator_origin
         OriginHeader::kInclude,            // cors_request
-        "application/javascript",          // response_mime_type
+        "application/javascript",          // response_content_type
         MimeType::kOthers,                 // canonical_mime_type
         true,                              // include_no_sniff_header
         false,                             // simulate_range_response
@@ -1031,7 +1031,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -1047,7 +1047,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_XHR,                          // resource_type
         "http://www.a.com/",                        // initiator_origin
         OriginHeader::kOmit,                        // cors_request
-        "text/html",                                // response_mime_type
+        "text/html",                                // response_content_type
         MimeType::kHtml,                            // canonical_mime_type
         false,                                      // include_no_sniff_header
         false,                                      // simulate_range_response
@@ -1063,7 +1063,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_MEDIA,                    // resource_type
         "http://www.a.com/",                    // initiator_origin
         OriginHeader::kOmit,                    // cors_request
-        "text/plain",                           // response_mime_type
+        "text/plain",                           // response_content_type
         MimeType::kPlain,                       // canonical_mime_type
         false,                                  // include_no_sniff_header
         true,                                   // simulate_range_response
@@ -1079,7 +1079,7 @@ const TestScenario kScenarios[] = {
         RESOURCE_TYPE_MEDIA,                     // resource_type
         "http://www.a.com/",                     // initiator_origin
         OriginHeader::kOmit,                     // cors_request
-        "text/html",                             // response_mime_type
+        "text/html",                             // response_content_type
         MimeType::kHtml,                         // canonical_mime_type
         false,                                   // include_no_sniff_header
         true,                                    // simulate_range_response
@@ -1195,7 +1195,7 @@ class CrossSiteDocumentResourceHandlerTest
 
   // Returns a ResourceResponse that matches the TestScenario's parameters.
   scoped_refptr<network::ResourceResponse> CreateResponse(
-      const char* response_mime_type,
+      const char* response_content_type,
       bool include_no_sniff_header,
       bool simulate_range_response,
       AccessControlAllowOriginHeader cors_response,
@@ -1209,13 +1209,13 @@ class CrossSiteDocumentResourceHandlerTest
     // Content-Type header.
     std::string charset;
     bool had_charset = false;
-    std::string boundary;
     response_headers->AddHeader(std::string("Content-Type: ") +
-                                response_mime_type);
-    response->head.mime_type = response_mime_type;
-    net::HttpUtil::ParseContentType(response_mime_type,
+                                response_content_type);
+    net::HttpUtil::ParseContentType(response_content_type,
                                     &response->head.mime_type, &charset,
-                                    &had_charset, &boundary);
+                                    &had_charset, nullptr);
+    EXPECT_FALSE(response->head.mime_type.empty())
+        << "Invalid MIME type defined in kScenarios.";
 
     // No sniff header.
     if (include_no_sniff_header)
@@ -1330,7 +1330,7 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
 
   // Set up response based on scenario.
   scoped_refptr<network::ResourceResponse> response = CreateResponse(
-      scenario.response_mime_type, scenario.include_no_sniff_header,
+      scenario.response_content_type, scenario.include_no_sniff_header,
       scenario.simulate_range_response, scenario.cors_response,
       scenario.initiator_origin);
 
@@ -1621,7 +1621,7 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, OnWillReadDefer) {
 
   // Set up response based on scenario.
   scoped_refptr<network::ResourceResponse> response = CreateResponse(
-      scenario.response_mime_type, scenario.include_no_sniff_header,
+      scenario.response_content_type, scenario.include_no_sniff_header,
       scenario.simulate_range_response, scenario.cors_response,
       scenario.initiator_origin);
 
@@ -1763,7 +1763,7 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, MimeSnifferInterop) {
 
   // Set up response based on scenario.
   scoped_refptr<network::ResourceResponse> response = CreateResponse(
-      scenario.response_mime_type, scenario.include_no_sniff_header,
+      scenario.response_content_type, scenario.include_no_sniff_header,
       scenario.simulate_range_response, scenario.cors_response,
       scenario.initiator_origin);
 
