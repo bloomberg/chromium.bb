@@ -68,9 +68,6 @@ class TabStrip : public views::View,
   explicit TabStrip(std::unique_ptr<TabStripController> controller);
   ~TabStrip() override;
 
-  // Returns the gap size between the pinned tabs and the non-pinned tabs.
-  static int GetPinnedToNonPinnedOffset();
-
   // Add and remove observers to changes within this TabStrip.
   void AddObserver(TabStripObserver* observer);
   void RemoveObserver(TabStripObserver* observer);

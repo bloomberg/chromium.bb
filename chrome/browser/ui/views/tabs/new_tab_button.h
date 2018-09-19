@@ -49,8 +49,8 @@ class NewTabButton : public views::ImageButton,
   void CloseBubble();
 
   // Called when the tab strip transitions to/from single tab mode, the frame
-  // state changes or the accent color changes. Under Refresh this function will
-  // update the glyph colors for the best contrast on the background.
+  // state changes or the accent color changes.  Updates the glyph colors for
+  // the best contrast on the background.
   void FrameColorsChanged();
 
   void AnimateInkDropToStateForTesting(views::InkDropState state);
@@ -82,7 +82,7 @@ class NewTabButton : public views::ImageButton,
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  // Returns the radius to use for the button corners (in newer material UI).
+  // Returns the radius to use for the button corners.
   int GetCornerRadius() const;
 
   // Paints the fill region of the button into |canvas|.
