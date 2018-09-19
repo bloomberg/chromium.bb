@@ -135,17 +135,10 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     }
   }
 
-  DEFINE_STATIC_LOCAL(SparseHistogram, property_histogram,
-                      ("WebCore.Animation.CSSProperties"));
   for (const CSSProperty* property : specified_properties_for_use_counter) {
     DCHECK(isValidCSSPropertyID(property->PropertyID()));
     UseCounter::CountAnimatedCSS(element_for_scoping->GetDocument(),
                                  property->PropertyID());
-
-    // TODO(crbug.com/458925): Remove legacy histogram and counts
-    property_histogram.Sample(
-        UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
-            property->PropertyID()));
   }
 
   // Merge duplicate keyframes.
@@ -613,13 +606,6 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     DCHECK(isValidCSSPropertyID(property.GetCSSProperty().PropertyID()));
     UseCounter::CountAnimatedCSS(element->GetDocument(),
                                  property.GetCSSProperty().PropertyID());
-
-    // TODO(crbug.com/458925): Remove legacy histogram and counts
-    DEFINE_STATIC_LOCAL(SparseHistogram, property_histogram,
-                        ("WebCore.Animation.CSSProperties"));
-    property_histogram.Sample(
-        UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
-            property.GetCSSProperty().PropertyID()));
   }
   ClearPendingUpdate();
 }
