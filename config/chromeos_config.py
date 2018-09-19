@@ -3204,6 +3204,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       ],
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
+      goma_client_type='candidate',
   )
 
   _chrome_perf_boards = frozenset([

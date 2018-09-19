@@ -1034,6 +1034,12 @@ def DefaultSettings():
       doc=None,
 
       # ==================================================================
+      # The goma related options.
+
+      # Which goma client to use.
+      goma_client_type=None,
+
+      # ==================================================================
       # Hints to Buildbot master UI
 
       # If set, tells buildbot what name to give to the corresponding builder

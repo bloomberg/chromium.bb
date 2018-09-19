@@ -168,6 +168,38 @@ job {
     result = gen_luci_scheduler.genSchedulerJob(build_config)
     self.assertEqual(result, expected)
 
+  def testGenSchedulerGomaClientType(self):
+    """Test the job creation helper."""
+    build_config = config_lib_unittest.MockBuildConfig().apply(
+        goma_client_type='client_type',
+        schedule='funky schedule',
+    )
+
+    expected = '''
+job {
+  id: "amd64-generic-paladin"
+  acl_sets: "default"
+  schedule: "funky schedule"
+  buildbucket: {
+    server: "cr-buildbucket.appspot.com"
+    bucket: "luci.chromeos.general"
+    builder: "Prod"
+    tags: "cbb_branch:master"
+    tags: "cbb_config:amd64-generic-paladin"
+    tags: "cbb_display_label:MockLabel"
+    tags: "cbb_goma_client_type:client_type"
+    properties: "cbb_branch:master"
+    properties: "cbb_config:amd64-generic-paladin"
+    properties: "cbb_display_label:MockLabel"
+    properties: "cbb_goma_client_type:client_type"
+    properties: "cbb_extra_args:[\\"--buildbot\\"]"
+  }
+}
+'''
+
+    result = gen_luci_scheduler.genSchedulerJob(build_config)
+    self.assertEqual(result, expected)
+
   def testGenLuciSchedulerConfig(self):
     """Test a full LUCI Scheduler config file."""
     site_config = config_lib.SiteConfig()
