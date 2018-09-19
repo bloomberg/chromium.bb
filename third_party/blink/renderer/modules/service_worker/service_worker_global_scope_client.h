@@ -64,6 +64,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
   using ClaimCallback = mojom::blink::ServiceWorkerHost::ClaimClientsCallback;
   using SkipWaitingCallback =
       mojom::blink::ServiceWorkerHost::SkipWaitingCallback;
+  using GetClientCallback = mojom::blink::ServiceWorkerHost::GetClientCallback;
   using GetClientsCallback =
       mojom::blink::ServiceWorkerHost::GetClientsCallback;
 
@@ -72,8 +73,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
   explicit ServiceWorkerGlobalScopeClient(WebServiceWorkerContextClient&);
 
   // Called from ServiceWorkerClients.
-  void GetClient(const String&,
-                 std::unique_ptr<WebServiceWorkerClientCallbacks>);
+  void GetClient(const String&, GetClientCallback);
   void GetClients(mojom::blink::ServiceWorkerClientQueryOptionsPtr,
                   GetClientsCallback);
   void OpenWindowForClients(const KURL&,

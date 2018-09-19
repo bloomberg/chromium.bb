@@ -21,25 +21,6 @@
 
 namespace blink {
 
-ServiceWorkerClient* ServiceWorkerClient::Take(
-    ScriptPromiseResolver*,
-    std::unique_ptr<WebServiceWorkerClientInfo> web_client) {
-  if (!web_client)
-    return nullptr;
-
-  switch (web_client->client_type) {
-    case mojom::ServiceWorkerClientType::kWindow:
-      return ServiceWorkerWindowClient::Create(*web_client);
-    case mojom::ServiceWorkerClientType::kSharedWorker:
-      return ServiceWorkerClient::Create(*web_client);
-    case mojom::ServiceWorkerClientType::kAll:
-      NOTREACHED();
-      return nullptr;
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
 ServiceWorkerClient* ServiceWorkerClient::Create(
     const WebServiceWorkerClientInfo& info) {
   return new ServiceWorkerClient(info);
