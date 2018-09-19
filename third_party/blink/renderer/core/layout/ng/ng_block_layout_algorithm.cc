@@ -364,7 +364,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
                                   ? NGBoxStrut()
                                   : border_padding_ + scrollbars;
   child_available_size_ =
-      CalculateContentBoxSize(border_box_size, border_scrollbar_padding_);
+      ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
 
   // When the content box is smaller than the scrollbar, clamp the scrollbar.
   if (UNLIKELY(!child_available_size_.inline_size && scrollbars.InlineSum() &&
@@ -375,7 +375,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     // Re-compute dependent values if scrollbar size was clamped.
     border_scrollbar_padding_ = border_padding_ + scrollbars;
     child_available_size_ =
-        CalculateContentBoxSize(border_box_size, border_scrollbar_padding_);
+        ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
   }
 
   child_percentage_size_ = CalculateChildPercentageSize(

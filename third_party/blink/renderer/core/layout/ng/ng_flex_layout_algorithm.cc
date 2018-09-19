@@ -28,7 +28,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
   NGLogicalSize flex_container_border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Node());
-  NGLogicalSize flex_container_content_box_size = CalculateContentBoxSize(
+  NGLogicalSize flex_container_content_box_size = ShrinkAvailableSize(
       flex_container_border_box_size,
       CalculateBorderScrollbarPadding(ConstraintSpace(), Node()));
   LayoutUnit flex_container_border_box_inline_size =

@@ -79,7 +79,7 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   NGLogicalSize border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Node());
   NGLogicalSize content_box_size =
-      CalculateContentBoxSize(border_box_size, border_scrollbar_padding);
+      ShrinkAvailableSize(border_box_size, border_scrollbar_padding);
   NGLogicalSize column_size = CalculateColumnSize(content_box_size);
 
   WritingMode writing_mode = ConstraintSpace().GetWritingMode();
