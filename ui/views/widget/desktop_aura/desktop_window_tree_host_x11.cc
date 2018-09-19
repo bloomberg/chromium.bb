@@ -519,7 +519,7 @@ void DesktopWindowTreeHostX11::Show(ui::WindowShowState show_state,
   if (compositor())
     SetVisible(true);
 
-  if (!IsVisible() || !window_mapped_in_server_)
+  if (!IsVisible())
     MapWindow(show_state);
 
   switch (show_state) {
@@ -801,7 +801,7 @@ bool DesktopWindowTreeHostX11::IsActive() const {
 }
 
 void DesktopWindowTreeHostX11::Maximize() {
-  if (ui::HasWMSpecProperty(window_properties_in_server_,
+  if (ui::HasWMSpecProperty(window_properties_,
                             gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"))) {
     // Unfullscreen the window if it is fullscreen.
     SetWMSpecState(false, gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"), x11::None);
@@ -833,6 +833,7 @@ void DesktopWindowTreeHostX11::Maximize() {
 void DesktopWindowTreeHostX11::Minimize() {
   ReleaseCapture();
   XIconifyWindow(xdisplay_, xwindow_, 0);
+  window_mapped_in_client_ = false;
 }
 
 void DesktopWindowTreeHostX11::Restore() {
@@ -844,14 +845,14 @@ void DesktopWindowTreeHostX11::Restore() {
 }
 
 bool DesktopWindowTreeHostX11::IsMaximized() const {
-  return (ui::HasWMSpecProperty(window_properties_in_server_,
+  return (ui::HasWMSpecProperty(window_properties_,
                                 gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT")) &&
-          ui::HasWMSpecProperty(window_properties_in_server_,
+          ui::HasWMSpecProperty(window_properties_,
                                 gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ")));
 }
 
 bool DesktopWindowTreeHostX11::IsMinimized() const {
-  return ui::HasWMSpecProperty(window_properties_in_server_,
+  return ui::HasWMSpecProperty(window_properties_,
                                gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
 }
 
@@ -1037,7 +1038,7 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   OnHostMovedInPixels(bounds_in_pixels_.origin());
   OnHostResizedInPixels(bounds_in_pixels_.size());
 
-  if (ui::HasWMSpecProperty(window_properties_in_server_,
+  if (ui::HasWMSpecProperty(window_properties_,
                             gfx::GetAtom("_NET_WM_STATE_FULLSCREEN")) ==
       fullscreen) {
     Relayout();
@@ -1412,7 +1413,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
   }
   swa.background_pixel = background_color;
 
-  ::Atom window_type;
+  XAtom window_type;
   switch (params.type) {
     case Widget::InitParams::TYPE_MENU:
       swa.override_redirect = x11::True;
@@ -1499,7 +1500,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
   // TODO(erg): We currently only request window deletion events. We also
   // should listen for activation events and anything else that GTK+ listens
   // for, and do something useful.
-  ::Atom protocols[2];
+  XAtom protocols[2];
   protocols[0] = gfx::GetAtom("WM_DELETE_WINDOW");
   protocols[1] = gfx::GetAtom("_NET_WM_PING");
   XSetWMProtocols(xdisplay_, xwindow_, protocols, 2);
@@ -1522,44 +1523,30 @@ void DesktopWindowTreeHostX11::InitX11Window(
                   XA_ATOM, 32, PropModeReplace,
                   reinterpret_cast<unsigned char*>(&window_type), 1);
 
-  // List of window state properties (_NET_WM_STATE) to set, if any.
-  std::vector<XAtom> state_atom_list;
+  // The changes to |window_properties_| here will be sent to the X server just
+  // before the window is mapped.
 
   // Remove popup windows from taskbar unless overridden.
   if ((params.type == Widget::InitParams::TYPE_POPUP ||
        params.type == Widget::InitParams::TYPE_BUBBLE) &&
       !params.force_show_in_taskbar) {
-    state_atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_SKIP_TASKBAR"));
+    window_properties_.insert(gfx::GetAtom("_NET_WM_STATE_SKIP_TASKBAR"));
   }
 
   // If the window should stay on top of other windows, add the
   // _NET_WM_STATE_ABOVE property.
   is_always_on_top_ = params.keep_on_top;
   if (is_always_on_top_)
-    state_atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_ABOVE"));
+    window_properties_.insert(gfx::GetAtom("_NET_WM_STATE_ABOVE"));
 
   workspace_ = base::nullopt;
   if (params.visible_on_all_workspaces) {
-    state_atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_STICKY"));
+    window_properties_.insert(gfx::GetAtom("_NET_WM_STATE_STICKY"));
     ui::SetIntProperty(xwindow_, "_NET_WM_DESKTOP", "CARDINAL", kAllDesktops);
   } else if (!params.workspace.empty()) {
     int workspace;
     if (base::StringToInt(params.workspace, &workspace))
       ui::SetIntProperty(xwindow_, "_NET_WM_DESKTOP", "CARDINAL", workspace);
-  }
-
-  // Setting _NET_WM_STATE by sending a message to the root_window (with
-  // SetWMSpecState) has no effect here since the window has not yet been
-  // mapped. So we manually change the state.
-  if (!state_atom_list.empty()) {
-    DCHECK(window_properties_in_client_.empty());
-    window_properties_in_client_.clear();
-    for (XAtom atom : state_atom_list)
-      window_properties_in_client_.insert(std::make_pair(atom, x11::None));
-    ui::SetAtomArrayProperty(xwindow_,
-                             "_NET_WM_STATE",
-                             "ATOM",
-                             state_atom_list);
   }
 
   if (!params.wm_class_name.empty() || !params.wm_class_class.empty()) {
@@ -1656,28 +1643,36 @@ gfx::Size DesktopWindowTreeHostX11::AdjustSize(
 void DesktopWindowTreeHostX11::SetWMSpecState(bool enabled,
                                               XAtom state1,
                                               XAtom state2) {
-  if (IsVisible())
+  if (IsVisible()) {
     ui::SetWMSpecState(xwindow_, enabled, state1, state2);
-  auto atoms = std::make_pair(state1, state2);
-  if (enabled)
-    window_properties_in_client_.insert(atoms);
-  else
-    window_properties_in_client_.erase(atoms);
+  } else {
+    // The updated state will be set when the window is (re)mapped.
+    for (XAtom atom : {state1, state2}) {
+      if (enabled)
+        window_properties_.insert(atom);
+      else
+        window_properties_.erase(atom);
+    }
+  }
 }
 
 void DesktopWindowTreeHostX11::OnWMStateUpdated() {
-  std::vector< ::Atom> atom_list;
-  // Ignore the return value of gfx::GetAtomArrayProperty(). Fluxbox removes the
-  // _NET_WM_STATE property when no _NET_WM_STATE atoms are set.
-  ui::GetAtomArrayProperty(xwindow_, "_NET_WM_STATE", &atom_list);
+  std::vector<XAtom> atom_list;
+  if (!ui::GetAtomArrayProperty(xwindow_, "_NET_WM_STATE", &atom_list) &&
+      !window_mapped_in_client_) {
+    // The EWMH spec requires window managers to remove the _NET_WM_STATE
+    // property when a window is unmapped.  However, Chromium code wants the
+    // state to persist across a Hide() and Show().  So if the window is
+    // currently unmapped, leave the state unchanged so it will be restored when
+    // the window is remapped.
+    return;
+  }
 
   bool was_minimized = IsMinimized();
   bool was_maximized = IsMaximized();
 
-  window_properties_in_server_.clear();
-  std::copy(atom_list.begin(), atom_list.end(),
-            inserter(window_properties_in_server_,
-                     window_properties_in_server_.begin()));
+  window_properties_ =
+      base::flat_set<XAtom>(atom_list.begin(), atom_list.end());
 
   bool is_minimized = IsMinimized();
   bool is_maximized = IsMaximized();
@@ -1726,7 +1721,7 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   // do preprocessing before the x window's fullscreen state is toggled.
 
   is_always_on_top_ = ui::HasWMSpecProperty(
-      window_properties_in_server_, gfx::GetAtom("_NET_WM_STATE_ABOVE"));
+      window_properties_, gfx::GetAtom("_NET_WM_STATE_ABOVE"));
 
   if (was_maximized != is_maximized)
     OnMaximizedStateChanged();
@@ -1984,11 +1979,16 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
 
   UpdateMinAndMaxSize();
 
+  if (window_properties_.empty()) {
+    XDeleteProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_STATE"));
+  } else {
+    ui::SetAtomArrayProperty(xwindow_, "_NET_WM_STATE", "ATOM",
+                             std::vector<XAtom>(std::begin(window_properties_),
+                                                std::end(window_properties_)));
+  }
+
   XMapWindow(xdisplay_, xwindow_);
   window_mapped_in_client_ = true;
-
-  for (const auto& atoms : window_properties_in_client_)
-    ui::SetWMSpecState(xwindow_, true, atoms.first, atoms.second);
 }
 
 void DesktopWindowTreeHostX11::SetWindowTransparency() {
@@ -2312,7 +2312,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case PropertyNotify: {
-      ::Atom changed_atom = xev->xproperty.atom;
+      XAtom changed_atom = xev->xproperty.atom;
       if (changed_atom == gfx::GetAtom("_NET_WM_STATE")) {
         OnWMStateUpdated();
       } else if (changed_atom == gfx::GetAtom("_NET_FRAME_EXTENTS")) {

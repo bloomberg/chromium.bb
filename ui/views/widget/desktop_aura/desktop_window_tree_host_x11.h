@@ -348,12 +348,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // _NET_WM_DESKTOP is unset.
   base::Optional<int> workspace_;
 
-  // The window manager state bits as indicated by the server.  May be
-  // out-of-sync.  May include bits set by non-Chrome apps.
-  base::flat_set<XAtom> window_properties_in_server_;
-
-  // The window manager state bits that Chrome has set.
-  base::flat_set<std::pair<XAtom, XAtom>> window_properties_in_client_;
+  // The window manager state bits.
+  base::flat_set<XAtom> window_properties_;
 
   // Whether |xwindow_| was requested to be fullscreen via SetFullscreen().
   bool is_fullscreen_;
