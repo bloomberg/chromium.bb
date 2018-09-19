@@ -11,6 +11,8 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/testing/embedded_test_server_handlers.h"
+#import "ios/web/public/crw_navigation_item_storage.h"
+#import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -1782,6 +1784,39 @@ TEST_P(WebStateObserverTest, IframeNavigation) {
     return web_state()->GetNavigationManager()->CanGoBack();
   }));
   EXPECT_FALSE(web_state()->GetNavigationManager()->CanGoForward());
+}
+
+// Verifies that WebState::CreateWithStorageSession does not call any
+// WebStateObserver callbacks.
+TEST_P(WebStateObserverTest, RestoreSession) {
+  // Create session storage.
+  CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
+  item.virtualURL = GURL("http://www.test.com");
+  NSArray<CRWNavigationItemStorage*>* item_storages = @[ item ];
+
+  // Create the session with storage and add observer.
+  WebState::CreateParams params(GetBrowserState());
+  CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+  session_storage.itemStorages = item_storages;
+  auto web_state = WebState::CreateWithStorageSession(params, session_storage);
+  StrictMock<WebStateObserverMock> observer;
+  ScopedObserver<WebState, WebStateObserver> scoped_observer(&observer);
+  scoped_observer.Add(web_state.get());
+
+  // TODO(crbug.com/877671): No WebStateObserver callbacks should be called.
+  EXPECT_CALL(observer, DidStartLoading(web_state.get()));
+
+  // Trigger the session restoration.
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  // TODO(crbug.com/873729): The session will not be restored until
+  // LoadIfNecessary call. Fix the bug and replace this call with
+  // SessionStorageBuilder::ExtractSessionState().
+  navigation_manager->LoadIfNecessary();
+
+  // Wait until the session is restored.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return navigation_manager->GetItemCount() == 1;
+  }));
 }
 
 INSTANTIATE_TEST_CASE_P(
