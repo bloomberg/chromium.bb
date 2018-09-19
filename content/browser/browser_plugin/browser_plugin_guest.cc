@@ -421,16 +421,6 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
       browser_plugin_instance_id(), allow));
 }
 
-void BrowserPluginGuest::FirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {
-  if (!features::IsUsingWindowService() &&
-      !features::IsSurfaceSynchronizationEnabled()) {
-    SendMessageToEmbedder(
-        std::make_unique<BrowserPluginMsg_FirstSurfaceActivation>(
-            browser_plugin_instance_id(), surface_info));
-  }
-}
-
 void BrowserPluginGuest::ResendEventToEmbedder(
     const blink::WebInputEvent& event) {
   if (!attached() || !owner_web_contents_)

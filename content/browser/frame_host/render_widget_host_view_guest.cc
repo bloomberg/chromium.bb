@@ -371,12 +371,6 @@ void RenderWidgetHostViewGuest::SetTooltipText(
     root_view->GetCursorManager()->SetTooltipTextForView(this, tooltip_text);
 }
 
-void RenderWidgetHostViewGuest::FirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {
-  if (guest_ && !guest_->is_in_destruction())
-    guest_->FirstSurfaceActivation(surface_info);
-}
-
 void RenderWidgetHostViewGuest::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
   if (guest_)

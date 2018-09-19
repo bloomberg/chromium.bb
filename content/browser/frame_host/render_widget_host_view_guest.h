@@ -166,8 +166,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
  private:
   friend class RenderWidgetHostView;
 
-  void FirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
-
   void OnDidUpdateVisualPropertiesComplete(
       const cc::RenderFrameMetadata& metadata);
 
