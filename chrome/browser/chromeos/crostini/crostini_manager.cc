@@ -857,12 +857,17 @@ void CrostiniManager::LaunchContainerApplication(
     std::string container_name,
     std::string desktop_file_id,
     const std::vector<std::string>& files,
+    bool display_scaled,
     LaunchContainerApplicationCallback callback) {
   vm_tools::cicerone::LaunchContainerApplicationRequest request;
   request.set_owner_id(owner_id_);
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
   request.set_desktop_file_id(std::move(desktop_file_id));
+  if (display_scaled) {
+    request.set_display_scaling(
+        vm_tools::cicerone::LaunchContainerApplicationRequest::SCALED);
+  }
   std::copy(
       files.begin(), files.end(),
       google::protobuf::RepeatedFieldBackInserter(request.mutable_files()));

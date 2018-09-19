@@ -264,6 +264,7 @@ class CrostiniManager : public KeyedService,
                                   std::string container_name,
                                   std::string desktop_file_id,
                                   const std::vector<std::string>& files,
+                                  bool display_scaled,
                                   LaunchContainerApplicationCallback callback);
 
   // Asynchronously gets app icons as specified by their desktop file ids.
