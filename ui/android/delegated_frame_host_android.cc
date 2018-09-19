@@ -186,7 +186,6 @@ bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
 void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
   if (!content_layer_)
     return;
-  content_layer_->SetFallbackSurfaceId(viz::SurfaceId());
   content_layer_->SetPrimarySurfaceId(viz::SurfaceId(),
                                       cc::DeadlinePolicy::UseDefaultDeadline());
   if (!enable_surface_synchronization_) {

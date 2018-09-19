@@ -367,11 +367,7 @@ void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
-  // Reset fallback and primary surfaces.
-  if (HasFallbackSurface()) {
-    client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
-        viz::SurfaceId());
-  }
+  // Reset primary surface.
   if (HasPrimarySurface()) {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
         viz::SurfaceId(), current_frame_size_in_dip_, GetGutterColor(),

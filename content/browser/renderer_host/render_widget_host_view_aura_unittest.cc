@@ -138,6 +138,18 @@ using blink::WebTouchPoint;
 using ui::WebInputEventTraits;
 using viz::FrameEvictionManager;
 
+#define EXPECT_EVICTED(view)                   \
+  {                                            \
+    EXPECT_FALSE((view)->HasPrimarySurface()); \
+    EXPECT_FALSE((view)->HasSavedFrame());     \
+  }
+
+#define EXPECT_HAS_FRAME(view)                \
+  {                                           \
+    EXPECT_TRUE((view)->HasPrimarySurface()); \
+    EXPECT_TRUE((view)->HasSavedFrame());     \
+  }
+
 namespace content {
 
 void InstallDelegatedFrameHostClient(
@@ -298,6 +310,10 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   bool HasFallbackSurface() const override {
     return GetDelegatedFrameHost()->HasFallbackSurface();
+  }
+
+  bool HasSavedFrame() const {
+    return GetDelegatedFrameHost()->HasSavedFrame();
   }
 
   void ReclaimResources(const std::vector<viz::ReturnedResource>& resources) {
@@ -3556,40 +3572,41 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
         parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
     views[i]->SetSize(view_rect.size());
     ASSERT_TRUE(views[i]->HasPrimarySurface());
+    ASSERT_FALSE(views[i]->HasSavedFrame());
   }
 
   // Make each renderer visible, and swap a frame on it, then make it invisible.
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Show();
     ASSERT_TRUE(views[i]->HasPrimarySurface());
-    ASSERT_FALSE(views[i]->HasFallbackSurface());
+    ASSERT_FALSE(views[i]->HasSavedFrame());
     viz::SurfaceId surface_id(views[i]->GetFrameSinkId(),
                               views[i]->GetLocalSurfaceId());
     views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
         viz::SurfaceInfo(surface_id, 1.f, frame_size));
-    ASSERT_TRUE(views[i]->HasPrimarySurface());
-    EXPECT_TRUE(views[i]->HasFallbackSurface());
+    EXPECT_HAS_FRAME(views[i]);
     views[i]->Hide();
   }
 
   // There should be max_renderer_frames with a frame in it, and one without it.
   // Since the logic is LRU eviction, the first one should be without.
-  EXPECT_FALSE(views[0]->HasFallbackSurface());
+  EXPECT_EVICTED(views[0]);
   for (size_t i = 1; i < renderer_count; ++i)
-    EXPECT_TRUE(views[i]->HasFallbackSurface());
+    EXPECT_HAS_FRAME(views[i]);
 
   // LRU renderer is [0], make it visible, it shouldn't evict anything yet.
   views[0]->Show();
-  EXPECT_FALSE(views[0]->HasFallbackSurface());
-  EXPECT_TRUE(views[1]->HasFallbackSurface());
+  EXPECT_TRUE(views[0]->HasPrimarySurface());
+  EXPECT_FALSE(views[0]->HasSavedFrame());
+  EXPECT_HAS_FRAME(views[1]);
 
   // Swap a frame on it, it should evict the next LRU [1].
   viz::SurfaceId surface_id0(views[0]->GetFrameSinkId(),
                              views[0]->GetLocalSurfaceId());
   views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
       viz::SurfaceInfo(surface_id0, 1.f, frame_size));
-  EXPECT_TRUE(views[0]->HasFallbackSurface());
-  EXPECT_FALSE(views[1]->HasFallbackSurface());
+  EXPECT_HAS_FRAME(views[0]);
+  EXPECT_EVICTED(views[1]);
   views[0]->Hide();
 
   // LRU renderer is [1], which is still hidden. Showing it and submitting a
@@ -3599,11 +3616,11 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
                              views[1]->GetLocalSurfaceId());
   views[1]->delegated_frame_host_->OnFirstSurfaceActivation(
       viz::SurfaceInfo(surface_id1, 1.f, frame_size));
-  EXPECT_TRUE(views[0]->HasFallbackSurface());
-  EXPECT_TRUE(views[1]->HasFallbackSurface());
-  EXPECT_FALSE(views[2]->HasFallbackSurface());
+  EXPECT_HAS_FRAME(views[0]);
+  EXPECT_HAS_FRAME(views[1]);
+  EXPECT_EVICTED(views[2]);
   for (size_t i = 3; i < renderer_count; ++i)
-    EXPECT_TRUE(views[i]->HasFallbackSurface());
+    EXPECT_HAS_FRAME(views[i]);
 
   // Make all renderers but [0] visible and swap a frame on them, keep [0]
   // hidden, it becomes the LRU.
@@ -3615,14 +3632,14 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
                               views[i]->GetLocalSurfaceId());
     views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
         viz::SurfaceInfo(surface_id, 1.f, frame_size));
-    EXPECT_TRUE(views[i]->HasFallbackSurface());
+    EXPECT_HAS_FRAME(views[i]);
   }
-  EXPECT_FALSE(views[0]->HasFallbackSurface());
+  EXPECT_EVICTED(views[0]);
 
   // Swap a frame on [0], it should be evicted immediately.
   views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
       viz::SurfaceInfo(surface_id0, 1.f, frame_size));
-  EXPECT_FALSE(views[0]->HasFallbackSurface());
+  EXPECT_EVICTED(views[0]);
 
   // Make [0] visible, and swap a frame on it. Nothing should be evicted
   // although we're above the limit.
@@ -3630,11 +3647,11 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
       viz::SurfaceInfo(surface_id0, 1.f, frame_size));
   for (size_t i = 0; i < renderer_count; ++i)
-    EXPECT_TRUE(views[i]->HasFallbackSurface()) << i;
+    EXPECT_HAS_FRAME(views[i]);
 
   // Make [0] hidden, it should evict its frame.
   views[0]->Hide();
-  EXPECT_FALSE(views[0]->HasFallbackSurface());
+  EXPECT_EVICTED(views[0]);
 
   // Make [0] visible, don't give it a frame, it should be waiting.
   views[0]->Show();
@@ -3702,12 +3719,12 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
                               views[i]->GetLocalSurfaceId());
     views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
         viz::SurfaceInfo(surface_id, 1.f, frame_size));
-    EXPECT_TRUE(views[i]->HasFallbackSurface());
+    EXPECT_HAS_FRAME(views[i]);
   }
 
   // If we hide [0], then [0] should be evicted.
   views[0]->Hide();
-  EXPECT_FALSE(views[0]->HasFallbackSurface());
+  EXPECT_EVICTED(views[0]);
 
   // If we lock [0] before hiding it, then [0] should not be evicted.
   views[0]->Show();
@@ -3715,14 +3732,14 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
                             views[0]->GetLocalSurfaceId());
   views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
       viz::SurfaceInfo(surface_id, 1.f, frame_size));
-  EXPECT_TRUE(views[0]->HasFallbackSurface());
+  EXPECT_HAS_FRAME(views[0]);
   views[0]->GetDelegatedFrameHost()->LockResources();
   views[0]->Hide();
-  EXPECT_TRUE(views[0]->HasFallbackSurface());
+  EXPECT_HAS_FRAME(views[0]);
 
   // If we unlock [0] now, then [0] should be evicted.
   views[0]->GetDelegatedFrameHost()->UnlockResources();
-  EXPECT_FALSE(views[0]->HasFallbackSurface());
+  EXPECT_EVICTED(views[0]);
 
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();
@@ -3781,27 +3798,27 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
                               kArbitraryLocalSurfaceId);
     views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
         viz::SurfaceInfo(surface_id, 1.f, frame_size));
-    EXPECT_TRUE(views[i]->HasFallbackSurface());
+    EXPECT_HAS_FRAME(views[i]);
   }
 
   // If we hide one, it should not get evicted.
   views[0]->Hide();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(views[0]->HasFallbackSurface());
+  EXPECT_HAS_FRAME(views[0]);
   // Using a lesser memory pressure event however, should evict.
   SimulateMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(views[0]->HasFallbackSurface());
+  EXPECT_EVICTED(views[0]);
 
   // Check the same for a higher pressure event.
   views[1]->Hide();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(views[1]->HasFallbackSurface());
+  EXPECT_HAS_FRAME(views[1]);
   SimulateMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(views[1]->HasFallbackSurface());
+  EXPECT_EVICTED(views[1]);
 
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();

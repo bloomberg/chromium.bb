@@ -187,16 +187,14 @@ std::unique_ptr<Layer> Layer::Clone() const {
 
   // cc::Layer state.
   if (surface_layer_) {
-    if (surface_layer_->primary_surface_id().is_valid()) {
-      clone->SetShowPrimarySurface(
-          surface_layer_->primary_surface_id(), frame_size_in_dip_,
-          surface_layer_->background_color(),
-          surface_layer_->deadline_in_frames()
-              ? cc::DeadlinePolicy::UseSpecifiedDeadline(
-                    *surface_layer_->deadline_in_frames())
-              : cc::DeadlinePolicy::UseDefaultDeadline(),
-          surface_layer_->stretch_content_to_fill_bounds());
-    }
+    clone->SetShowPrimarySurface(
+        surface_layer_->primary_surface_id(), frame_size_in_dip_,
+        surface_layer_->background_color(),
+        surface_layer_->deadline_in_frames()
+            ? cc::DeadlinePolicy::UseSpecifiedDeadline(
+                  *surface_layer_->deadline_in_frames())
+            : cc::DeadlinePolicy::UseDefaultDeadline(),
+        surface_layer_->stretch_content_to_fill_bounds());
     if (surface_layer_->fallback_surface_id())
       clone->SetFallbackSurfaceId(*surface_layer_->fallback_surface_id());
   } else if (type_ == LAYER_SOLID_COLOR) {
