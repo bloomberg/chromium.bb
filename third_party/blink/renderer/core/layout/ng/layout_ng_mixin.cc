@@ -231,7 +231,7 @@ void LayoutNGMixin<Base>::SetCachedLayoutResult(
   if (constraint_space.IsIntermediateLayout())
     return;
 
-  Base::cached_constraint_space_.emplace(constraint_space);
+  Base::cached_constraint_space_.reset(new NGConstraintSpace(constraint_space));
   cached_result_ = &layout_result;
 }
 
