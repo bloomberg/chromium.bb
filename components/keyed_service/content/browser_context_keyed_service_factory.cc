@@ -4,6 +4,7 @@
 
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -15,25 +16,34 @@
 void BrowserContextKeyedServiceFactory::SetTestingFactory(
     content::BrowserContext* context,
     TestingFactoryFunction testing_factory) {
-  KeyedServiceFactory::TestingFactoryFunction func;
+  KeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {
-    func = [=](base::SupportsUserData* context) {
-      return testing_factory(static_cast<content::BrowserContext*>(context));
-    };
+    wrapped_factory = base::BindRepeating(
+        [](TestingFactoryFunction testing_factory,
+           base::SupportsUserData* context) {
+          return testing_factory(
+              static_cast<content::BrowserContext*>(context));
+        },
+        testing_factory);
   }
-  KeyedServiceFactory::SetTestingFactory(context, func);
+  KeyedServiceFactory::SetTestingFactory(context, std::move(wrapped_factory));
 }
 
 KeyedService* BrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
     content::BrowserContext* context,
     TestingFactoryFunction testing_factory) {
-  KeyedServiceFactory::TestingFactoryFunction func;
+  KeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {
-    func = [=](base::SupportsUserData* context) {
-      return testing_factory(static_cast<content::BrowserContext*>(context));
-    };
+    wrapped_factory = base::BindRepeating(
+        [](TestingFactoryFunction testing_factory,
+           base::SupportsUserData* context) {
+          return testing_factory(
+              static_cast<content::BrowserContext*>(context));
+        },
+        testing_factory);
   }
-  return KeyedServiceFactory::SetTestingFactoryAndUse(context, func);
+  return KeyedServiceFactory::SetTestingFactoryAndUse(
+      context, std::move(wrapped_factory));
 }
 
 BrowserContextKeyedServiceFactory::BrowserContextKeyedServiceFactory(
