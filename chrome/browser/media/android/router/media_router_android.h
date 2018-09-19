@@ -82,12 +82,13 @@ class MediaRouterAndroid : public MediaRouterBase {
   // Notifies the media router that route creation or joining failed.
   void OnRouteRequestError(const std::string& error_text, int request_id);
 
-  // Notifies the media router when the route was closed.
-  void OnRouteClosed(const MediaRoute::Id& route_id);
+  // Notifies the media router when the route was terminated.
+  void OnRouteTerminated(const MediaRoute::Id& route_id);
 
-  // Notifies the media router when the route was closed with an error.
-  void OnRouteClosedWithError(const MediaRoute::Id& route_id,
-                              const std::string& message);
+  // Notifies the media router when the route was closed with an optional error.
+  // Null error indicates no error.
+  void OnRouteClosed(const MediaRoute::Id& route_id,
+                     const base::Optional<std::string>& error);
 
   // Notifies the media router about a message received from the media route.
   void OnMessage(const MediaRoute::Id& route_id, const std::string& message);

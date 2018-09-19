@@ -65,12 +65,12 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
         if (mSession == null) return;
 
         if (mClientRecords.isEmpty()) {
-            for (String routeId : mRoutes.keySet()) mManager.onRouteClosed(routeId);
+            for (String routeId : mRoutes.keySet()) mManager.onRouteTerminated(routeId);
             mRoutes.clear();
         } else {
             mLastRemovedRouteRecord = mClientRecords.values().iterator().next();
             for (ClientRecord client : mClientRecords.values()) {
-                mManager.onRouteClosed(client.routeId);
+                mManager.onRouteTerminated(client.routeId);
 
                 mRoutes.remove(client.routeId);
             }
@@ -182,7 +182,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
 
         if (mSession == null) {
             mRoutes.remove(routeId);
-            mManager.onRouteClosed(routeId);
+            mManager.onRouteTerminated(routeId);
             return;
         }
 
@@ -265,7 +265,7 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
         mRoutes.remove(client.routeId);
         removeClient(client);
 
-        mManager.onRouteClosed(client.routeId);
+        mManager.onRouteTerminated(client.routeId);
 
         return true;
     }

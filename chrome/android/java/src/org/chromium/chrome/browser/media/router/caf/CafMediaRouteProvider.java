@@ -177,12 +177,12 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
     }
 
     @Override
-    protected void removeRoute(String routeId, @Nullable String error) {
+    protected void removeRouteFromRecord(String routeId) {
         ClientRecord record = getClientRecordByRouteId(routeId);
         if (record != null) {
             mLastRemovedRouteRecord = mClientIdToRecords.remove(record.clientId);
         }
-        super.removeRoute(routeId, error);
+        super.removeRouteFromRecord(routeId);
     }
 
     @Nullable

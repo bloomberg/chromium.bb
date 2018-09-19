@@ -10,7 +10,6 @@ import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
-import com.google.android.gms.cast.CastStatusCodes;
 import com.google.android.gms.cast.framework.CastSession;
 import com.google.android.gms.cast.framework.SessionManagerListener;
 
@@ -211,7 +210,7 @@ public abstract class CafBaseMediaRouteProvider
 
     @Override
     public void onSessionStartFailed(CastSession session, int error) {
-        removeAllRoutesWithError("Launch error");
+        removeAllRoutes("Launch error");
         mPendingCreateRouteRequestInfo = null;
     }
 
@@ -244,14 +243,13 @@ public abstract class CafBaseMediaRouteProvider
 
     @Override
     public final void onSessionEnding(CastSession session) {
-        handleSessionEnd(/* error= */ null);
+        handleSessionEnd();
     }
 
     @Override
     public final void onSessionEnded(CastSession session, int error) {
-        handleSessionEnd((error == CastStatusCodes.SUCCESS)
-                        ? null
-                        : ("Session ended with error code " + error));
+        Log.d(TAG, "Session ended with error code " + error);
+        handleSessionEnd();
     }
 
     @Override
@@ -263,7 +261,7 @@ public abstract class CafBaseMediaRouteProvider
     // SessionManagerListener implementation end
     ///////////////////////////////////////////////////////
 
-    private void handleSessionEnd(String error) {
+    private void handleSessionEnd() {
         if (mPendingCreateRouteRequestInfo != null) {
             // The Cast SDK notifies about session ending when a route is unselected, even when
             // there's no current session. Because CastSessionController unselects the route to set
@@ -274,7 +272,7 @@ public abstract class CafBaseMediaRouteProvider
         sessionController().onSessionEnded();
         sessionController().detachFromCastSession();
         getAndroidMediaRouter().selectRoute(getAndroidMediaRouter().getDefaultRoute());
-        removeAllRoutesWithError(error);
+        terminateAllRoutes();
         CastUtils.getCastContext().getSessionManager().removeSessionManagerListener(
                 this, CastSession.class);
     }
@@ -301,22 +299,50 @@ public abstract class CafBaseMediaRouteProvider
                 sessionController().getRouteCreationInfo().nativeRequestId, this, wasLaunched);
     }
 
-    /** Removes a route for bookkeeping. A null {@code error} indicates no error. */
-    protected void removeRoute(String routeId, @Nullable String error) {
-        mRoutes.remove(routeId);
-        if (error == null) {
-            mManager.onRouteClosed(routeId);
-        } else {
-            mManager.onRouteClosedWithError(routeId, error);
-        }
+    /**
+     * Removes a route for bookkeeping and notify the reason. This should be called whenever a route
+     * is closed.
+     *
+     * @param error the reason for the route close, {@code null} indicates no error.
+     */
+    protected final void removeRoute(String routeId, @Nullable String error) {
+        removeRouteFromRecord(routeId);
+        mManager.onRouteClosed(routeId, error);
     }
 
-    /** Removes all routes for bookkeeping. A null {@code error} indicates no error. */
-    protected void removeAllRoutesWithError(@Nullable String error) {
+    /**
+     * Removes all routes for bookkeeping and notify the reason. This should be called whenever all
+     * routes should be closed.
+     *
+     * @param error the reason for the route close, {@code null} indicates no error.
+     */
+    protected final void removeAllRoutes(@Nullable String error) {
         Set<String> routeIds = new HashSet<>(mRoutes.keySet());
         for (String routeId : routeIds) {
             removeRoute(routeId, error);
         }
+    }
+
+    /**
+     * Removes all routes for bookkeeping. This should be called whenever the receiver app is
+     * terminated.
+     */
+    protected final void terminateAllRoutes() {
+        Set<String> routeIds = new HashSet<>(mRoutes.keySet());
+        for (String routeId : routeIds) {
+            removeRouteFromRecord(routeId);
+            mManager.onRouteTerminated(routeId);
+        }
+    }
+
+    /**
+     * Removes a route for bookkeeping. This method can only be called from {@link #removeRoute()},
+     * {@link #removeAllRoutes()} and {@link #terminateAllRoutes()}.
+     *
+     * Sub-classes can extend this method for additional cleanup.
+     */
+    protected void removeRouteFromRecord(String routeId) {
+        mRoutes.remove(routeId);
     }
 
     @Override

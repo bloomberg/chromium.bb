@@ -194,7 +194,7 @@ void MediaRouterAndroid::DetachRoute(const MediaRoute::Id& route_id) {
   RemoveRoute(route_id);
   NotifyPresentationConnectionClose(
       route_id, blink::mojom::PresentationConnectionCloseReason::CLOSED,
-      "Remove route");
+      "Route closed normally");
 }
 
 bool MediaRouterAndroid::RegisterMediaSinksObserver(
@@ -305,19 +305,28 @@ void MediaRouterAndroid::OnRouteRequestError(const std::string& error_text,
   route_requests_.Remove(route_request_id);
 }
 
-void MediaRouterAndroid::OnRouteClosed(const MediaRoute::Id& route_id) {
+void MediaRouterAndroid::OnRouteTerminated(const MediaRoute::Id& route_id) {
   RemoveRoute(route_id);
   NotifyPresentationConnectionStateChange(
       route_id, blink::mojom::PresentationConnectionState::TERMINATED);
 }
 
-void MediaRouterAndroid::OnRouteClosedWithError(const MediaRoute::Id& route_id,
-                                                const std::string& message) {
+void MediaRouterAndroid::OnRouteClosed(
+    const MediaRoute::Id& route_id,
+    const base::Optional<std::string>& error) {
   RemoveRoute(route_id);
-  NotifyPresentationConnectionClose(
-      route_id,
-      blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR,
-      message);
+  // TODO(crbug.com/882690): When the sending context is destroyed, tell MRP to
+  // clean up the connection.
+  if (error.has_value()) {
+    NotifyPresentationConnectionClose(
+        route_id,
+        blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR,
+        error.value());
+  } else {
+    NotifyPresentationConnectionClose(
+        route_id, blink::mojom::PresentationConnectionCloseReason::CLOSED,
+        "Remove route");
+  }
 }
 
 void MediaRouterAndroid::OnMessage(const MediaRoute::Id& route_id,

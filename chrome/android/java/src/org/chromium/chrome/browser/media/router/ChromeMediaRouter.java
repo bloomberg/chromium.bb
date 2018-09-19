@@ -188,17 +188,17 @@ public class ChromeMediaRouter implements MediaRouteManager {
     }
 
     @Override
-    public void onRouteClosed(String mediaRouteId) {
+    public void onRouteTerminated(String mediaRouteId) {
         if (mNativeMediaRouterAndroidBridge != 0) {
-            nativeOnRouteClosed(mNativeMediaRouterAndroidBridge, mediaRouteId);
+            nativeOnRouteTerminated(mNativeMediaRouterAndroidBridge, mediaRouteId);
         }
         mRouteIdsToProviders.remove(mediaRouteId);
     }
 
     @Override
-    public void onRouteClosedWithError(String mediaRouteId, String message) {
+    public void onRouteClosed(String mediaRouteId, String error) {
         if (mNativeMediaRouterAndroidBridge != 0) {
-            nativeOnRouteClosedWithError(mNativeMediaRouterAndroidBridge, mediaRouteId, message);
+            nativeOnRouteClosed(mNativeMediaRouterAndroidBridge, mediaRouteId, error);
         }
         mRouteIdsToProviders.remove(mediaRouteId);
     }
@@ -427,8 +427,8 @@ public class ChromeMediaRouter implements MediaRouteManager {
             String mediaSinkId, int createRouteRequestId, boolean wasLaunched);
     native void nativeOnRouteRequestError(
             long nativeMediaRouterAndroidBridge, String errorText, int createRouteRequestId);
-    native void nativeOnRouteClosed(long nativeMediaRouterAndroidBridge, String mediaRouteId);
-    native void nativeOnRouteClosedWithError(
+    native void nativeOnRouteTerminated(long nativeMediaRouterAndroidBridge, String mediaRouteId);
+    native void nativeOnRouteClosed(
             long nativeMediaRouterAndroidBridge, String mediaRouteId, String message);
     native void nativeOnMessage(
             long nativeMediaRouterAndroidBridge, String mediaRouteId, String message);
