@@ -922,8 +922,9 @@ void WizardController::OnOfflineDemoModeSetup() {
   if (is_official_build_) {
     if (!StartupUtils::IsEulaAccepted()) {
       ShowEulaScreen();
+    } else if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
+      ShowArcTermsOfServiceScreen();
     } else {
-      // TODO(crbug.com/857275): Show Play Store ToS when available offline.
       ShowDemoModeSetupScreen();
     }
   } else {
@@ -958,15 +959,11 @@ void WizardController::OnEulaAccepted() {
                  weak_factory_.GetWeakPtr()));
   PerformPostEulaActions();
 
-  // TODO(crbug.com/857275): Show Play Store ToS when available offline.
-  if (demo_setup_controller_ && demo_setup_controller_->IsOfflineEnrollment()) {
-    ShowDemoModeSetupScreen();
-    return;
-  }
-
   if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
     ShowArcTermsOfServiceScreen();
     return;
+  } else if (demo_setup_controller_) {
+    ShowDemoModeSetupScreen();
   }
 
   if (skip_update_enroll_after_eula_) {
@@ -1116,7 +1113,11 @@ void WizardController::OnArcTermsOfServiceSkipped() {
 
 void WizardController::OnArcTermsOfServiceAccepted() {
   if (demo_setup_controller_) {
-    InitiateOOBEUpdate();
+    if (demo_setup_controller_->IsOfflineEnrollment()) {
+      ShowDemoModeSetupScreen();
+    } else {
+      InitiateOOBEUpdate();
+    }
     return;
   }
 

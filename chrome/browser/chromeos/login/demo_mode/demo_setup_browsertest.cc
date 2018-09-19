@@ -713,6 +713,15 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowSuccess) {
   ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kSync);
 
+  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+
+  SetPlayStoreTermsForTesting();
+  ClickOobeButtonWithId(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+                        "#arc-tos-next-button", JSExecution::kSync);
+  ClickOobeButtonWithId(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+                        "#arc-tos-accept-button", JSExecution::kAsync);
+
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
   // TODO(agawronska): Progress dialog transition is async - extra work is
   // needed to be able to check it reliably.
@@ -756,6 +765,15 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OfflineSetupFlowError) {
 
   ClickScreenDialogButton(OobeScreen::SCREEN_OOBE_EULA, DemoSetupDialog::kEula,
                           OobeButton::kText, JSExecution::kSync);
+
+  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
+  EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+
+  SetPlayStoreTermsForTesting();
+  ClickOobeButtonWithId(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+                        "#arc-tos-next-button", JSExecution::kSync);
+  ClickOobeButtonWithId(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE,
+                        "#arc-tos-accept-button", JSExecution::kAsync);
 
   OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
   // TODO(agawronska): Progress dialog transition is async - extra work is

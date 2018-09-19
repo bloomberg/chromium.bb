@@ -76,8 +76,14 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include <map>
+
+#include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chromeos/system/statistics_provider.h"
+#include "components/language/core/common/locale_util.h"
 #endif
 
 using content::BrowserThread;
@@ -92,16 +98,80 @@ constexpr char kStringsJsPath[] = "strings.js";
 
 constexpr char kKeyboardUtilsPath[] = "keyboard_utils.js";
 
-// Loads bundled Eula contents. The online version of Eula is fetched in Eula
-// screen javascript. This is intentional because chrome://terms runs in a
-// privileged webui context and should never load from untrusted places.
+// APAC region name.
+constexpr char kApac[] = "apac";
+// EMEA region name.
+constexpr char kEmea[] = "emea";
+// EU region name.
+constexpr char kEu[] = "eu";
+
+// List of countries that belong to APAC.
+const char* const kApacCountries[] = {"au", "bd", "cn", "hk", "id", "in", "jp",
+                                      "kh", "la", "lk", "mm", "mn", "my", "nz",
+                                      "np", "ph", "sg", "th", "tw", "vn"};
+
+// List of countries that belong to EMEA.
+const char* const kEmeaCountries[] = {"na", "za", "am", "az", "ch", "eg", "ge",
+                                      "il", "is", "ke", "kg", "li", "mk", "no",
+                                      "rs", "ru", "tr", "tz", "ua", "ug", "za"};
+
+// List of countries that belong to EU.
+const char* const kEuCountries[] = {
+    "at", "be", "bg", "cz", "dk", "es", "fi", "fr", "gb", "gr", "hr", "hu",
+    "ie", "it", "lt", "lu", "lv", "nl", "pl", "pt", "ro", "se", "si", "sk"};
+
+// Maps country to one of 3 regions: APAC, EMEA, EU.
+typedef std::map<std::string, std::string> CountryRegionMap;
+
+// Returns country to region map with EU, EMEA and APAC countries.
+CountryRegionMap CreateCountryRegionMap() {
+  CountryRegionMap region_map;
+  for (size_t i = 0; i < base::size(kApacCountries); ++i) {
+    region_map.emplace(kApacCountries[i], kApac);
+  }
+
+  for (size_t i = 0; i < base::size(kEmeaCountries); ++i) {
+    region_map.emplace(kEmeaCountries[i], kEmea);
+  }
+
+  for (size_t i = 0; i < base::size(kEuCountries); ++i) {
+    region_map.emplace(kEuCountries[i], kEu);
+  }
+  return region_map;
+}
+
+// Reads device region from VPD. Returns "us" in case of read or parsing errors.
+std::string ReadDeviceRegionFromVpd() {
+  std::string region = "us";
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  bool region_found =
+      provider->GetMachineStatistic(chromeos::system::kRegionKey, &region);
+  if (region_found) {
+    // We only need the first part of the complex region codes like ca.ansi.
+    std::vector<std::string> region_pieces = base::SplitString(
+        region, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (!region_pieces.empty())
+      region = region_pieces[0];
+  } else {
+    LOG(WARNING) << "Device region for Play Store ToS not found in VPD - "
+                    "defaulting to US.";
+  }
+  return base::ToLowerASCII(region);
+}
+
+// Loads bundled terms of service contents (Eula, OEM Eula, Play Store Terms).
+// The online version of terms is fetched in OOBE screen javascript. This is
+// intentional because chrome://terms runs in a privileged webui context and
+// should never load from untrusted places.
 class ChromeOSTermsHandler
     : public base::RefCountedThreadSafe<ChromeOSTermsHandler> {
  public:
   static void Start(const std::string& path,
-                    const content::URLDataSource::GotDataCallback& callback) {
+                    const content::URLDataSource::GotDataCallback& callback,
+                    const base::FilePath& chromeos_assets_path) {
     scoped_refptr<ChromeOSTermsHandler> handler(
-        new ChromeOSTermsHandler(path, callback));
+        new ChromeOSTermsHandler(path, callback, chromeos_assets_path));
     handler->StartOnUIThread();
   }
 
@@ -109,12 +179,13 @@ class ChromeOSTermsHandler
   friend class base::RefCountedThreadSafe<ChromeOSTermsHandler>;
 
   ChromeOSTermsHandler(const std::string& path,
-                       const content::URLDataSource::GotDataCallback& callback)
-    : path_(path),
-      callback_(callback),
-      // Previously we were using "initial locale" http://crbug.com/145142
-      locale_(g_browser_process->GetApplicationLocale()) {
-  }
+                       const content::URLDataSource::GotDataCallback& callback,
+                       const base::FilePath& chromeos_assets_path)
+      : path_(path),
+        callback_(callback),
+        // Previously we were using "initial locale" http://crbug.com/145142
+        locale_(g_browser_process->GetApplicationLocale()),
+        chromeos_assets_path_(chromeos_assets_path) {}
 
   virtual ~ChromeOSTermsHandler() {}
 
@@ -125,6 +196,12 @@ class ChromeOSTermsHandler
       base::PostTaskWithTraitsAndReply(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ChromeOSTermsHandler::LoadOemEulaFileAsync, this),
+          base::BindOnce(&ChromeOSTermsHandler::ResponseOnUIThread, this));
+    } else if (path_ == chrome::kArcTermsURLPath) {
+      // Load ARC++ terms from the file.
+      base::PostTaskWithTraitsAndReply(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+          base::BindOnce(&ChromeOSTermsHandler::LoadArcTermsFileAsync, this),
           base::BindOnce(&ChromeOSTermsHandler::ResponseOnUIThread, this));
     } else {
       // Load local ChromeOS terms from the file.
@@ -170,11 +247,54 @@ class ChromeOSTermsHandler
     }
   }
 
+  void LoadArcTermsFileAsync() {
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+
+    const CountryRegionMap kCountryRegionMap = CreateCountryRegionMap();
+    const std::string kDeviceRegion = ReadDeviceRegionFromVpd();
+    // To determine version of Play Store ToS:
+    // * try to match language and device region combination
+    // * if not found check the mapping to default region (APAC, EMEA, EU)
+    // * if no default region mapping default to en-US
+    // Note: AMERICAS region defaults to en-US and to simplify it is not
+    // included in the country region map.
+    const std::string locale_region = base::StrCat(
+        {base::ToLowerASCII(language::ExtractBaseLanguage(locale_)), "-",
+         kDeviceRegion});
+    if (base::ReadFileToString(CreateArcTermsPath(locale_region), &contents_))
+      return;
+
+    const auto region = kCountryRegionMap.find(kDeviceRegion);
+    if (region != kCountryRegionMap.end()) {
+      LOG(WARNING) << "Could not find offline Play Store ToS for: "
+                   << locale_region << ". Trying by region: " << region->second;
+      if (base::ReadFileToString(CreateArcTermsPath(region->second.c_str()),
+                                 &contents_)) {
+        return;
+      }
+    }
+
+    LOG(WARNING) << "Could not find offline Play Store ToS by locale nor "
+                    "region for: "
+                 << locale_region << ". Loading: en-US";
+    if (base::ReadFileToString(CreateArcTermsPath("en-us"), &contents_))
+      return;
+
+    LOG(ERROR) << "Failed to load offline Play Store ToS";
+    contents_.clear();
+  }
+
+  base::FilePath CreateArcTermsPath(const std::string& locale) const {
+    return chromeos_assets_path_.Append(
+        base::StringPrintf(chrome::kArcTermsPathFormat, locale.c_str()));
+  }
+
   void ResponseOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // If we fail to load Chrome OS EULA from disk, load it from resources.
-    // Do nothing if OEM EULA load failed.
-    if (contents_.empty() && path_ != chrome::kOemEulaURLPath)
+    // Do nothing if OEM EULA or Play Store ToS load failed.
+    if (contents_.empty() && path_.empty())
       contents_ = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
     callback_.Run(base::RefCountedString::TakeString(&contents_));
   }
@@ -187,6 +307,9 @@ class ChromeOSTermsHandler
 
   // Locale of the EULA.
   const std::string locale_;
+
+  // Path to Chrome OS assets.
+  const base::FilePath chromeos_assets_path_;
 
   // EULA contents that was loaded from file.
   std::string contents_;
@@ -463,7 +586,10 @@ void AboutUIHTMLSource::StartDataRequest(
 #if !defined(OS_ANDROID)
   } else if (source_name_ == chrome::kChromeUITermsHost) {
 #if defined(OS_CHROMEOS)
-    ChromeOSTermsHandler::Start(path, callback);
+    std::string assets_dir = chromeos_assets_dir_for_tests_.empty()
+                                 ? chrome::kChromeOSAssetPath
+                                 : chromeos_assets_dir_for_tests_;
+    ChromeOSTermsHandler::Start(path, callback, base::FilePath(assets_dir));
     return;
 #else
     response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);

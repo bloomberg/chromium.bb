@@ -9,6 +9,15 @@ a:visited {
   text-decoration: none;
 }
 
+/* Disable links in offline ToS, because they cannot be loaded anyway. */
+.offline-terms a,
+.offline-terms a:link,
+.offline-terms a:visited {
+  color: rgba(0, 0, 0, 0.87);
+  pointer-events: none;
+  text-decoration: none;
+}
+
 body {
   margin: 0;
   padding: 8px 4px 8px 8px;

@@ -1,0 +1,320 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/webui/about_ui.h"
+
+#include <memory>
+#include <string>
+
+#include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
+#include "base/task/post_task.h"
+#include "base/test/scoped_task_environment.h"
+#include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/scoped_browser_locale.h"
+#include "chromeos/system/fake_statistics_provider.h"
+#include "chromeos/system/statistics_provider.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/resource_request_info.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+class TestDataReceiver {
+ public:
+  TestDataReceiver() = default;
+  virtual ~TestDataReceiver() = default;
+
+  bool data_received() const { return data_received_; }
+
+  std::string data() const { return data_; }
+
+  void OnDataReceived(scoped_refptr<base::RefCountedMemory> bytes) {
+    data_received_ = true;
+    data_ = base::StringPiece(reinterpret_cast<const char*>(bytes->front()),
+                              bytes->size())
+                .as_string();
+  }
+
+ private:
+  bool data_received_ = false;
+  std::string data_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDataReceiver);
+};
+
+}  // namespace
+
+class ChromeOSTermsTest : public testing::Test {
+ protected:
+  ChromeOSTermsTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  ~ChromeOSTermsTest() override = default;
+
+  void SetUp() override {
+    // Create root tmp directory for fake ARC ToS data.
+    base::FilePath root_path;
+    base::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &root_path);
+    ASSERT_TRUE(root_dir_.Set(root_path));
+    arc_tos_dir_ = root_dir_.GetPath().Append("arc_tos");
+    ASSERT_TRUE(base::CreateDirectory(arc_tos_dir_));
+
+    tested_html_source_ = std::make_unique<AboutUIHTMLSource>(
+        chrome::kChromeUITermsHost, nullptr);
+    tested_html_source_->SetChromeOSAssetsDirForTests(
+        root_dir_.GetPath().value());
+  }
+
+  // Creates directory for the given |locale| that contains terms.html. Writes
+  // the |locale| string to the created file.
+  bool CreateTermsForLocale(const std::string& locale) {
+    base::FilePath dir = arc_tos_dir_.Append(base::ToLowerASCII(locale));
+    if (!base::CreateDirectory(dir))
+      return false;
+
+    if (base::WriteFile(dir.AppendASCII("terms.html"), locale.c_str(),
+                        locale.length()) != static_cast<int>(locale.length())) {
+      return false;
+    }
+    return true;
+  }
+
+  // Sets device region in VPD.
+  void SetRegion(const std::string& region) {
+    statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
+                                             region);
+  }
+
+  // Starts data request.
+  void StartRequest(TestDataReceiver* data_receiver) {
+    content::ResourceRequestInfo::WebContentsGetter wc_getter;
+    tested_html_source_->StartDataRequest(
+        chrome::kArcTermsURLPath, std::move(wc_getter),
+        base::BindRepeating(&TestDataReceiver::OnDataReceived,
+                            base::Unretained(data_receiver)));
+    scoped_task_environment_.RunUntilIdle();
+  }
+
+ private:
+  base::ScopedTempDir root_dir_;
+  base::FilePath arc_tos_dir_;
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+
+  chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
+
+  std::unique_ptr<AboutUIHTMLSource> tested_html_source_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeOSTermsTest);
+};
+
+TEST_F(ChromeOSTermsTest, NoData) {
+  SetRegion("ca");
+  ScopedBrowserLocale browser_locale("en-CA");
+
+  TestDataReceiver data_receiver;
+  StartRequest(&data_receiver);
+
+  EXPECT_TRUE(data_receiver.data_received());
+  EXPECT_EQ("", data_receiver.data());
+}
+
+class DemoModeChromeOSTermsTest : public ChromeOSTermsTest {
+ protected:
+  DemoModeChromeOSTermsTest() = default;
+  ~DemoModeChromeOSTermsTest() override = default;
+
+  void SetUp() override {
+    ChromeOSTermsTest::SetUp();
+    AddDemoModeLocale();
+  }
+
+  // Adds locales supported by demo mode.
+  void AddDemoModeLocale() {
+    ASSERT_TRUE(CreateTermsForLocale("apac"));
+    ASSERT_TRUE(CreateTermsForLocale("da-DK"));
+    ASSERT_TRUE(CreateTermsForLocale("de-de"));
+    ASSERT_TRUE(CreateTermsForLocale("emea"));
+    ASSERT_TRUE(CreateTermsForLocale("en-CA"));
+    ASSERT_TRUE(CreateTermsForLocale("en-GB"));
+    ASSERT_TRUE(CreateTermsForLocale("en-IE"));
+    ASSERT_TRUE(CreateTermsForLocale("en-US"));
+    ASSERT_TRUE(CreateTermsForLocale("eu"));
+    ASSERT_TRUE(CreateTermsForLocale("fi-FI"));
+    ASSERT_TRUE(CreateTermsForLocale("fr-BE"));
+    ASSERT_TRUE(CreateTermsForLocale("fr-CA"));
+    ASSERT_TRUE(CreateTermsForLocale("fr-FR"));
+    ASSERT_TRUE(CreateTermsForLocale("ko-KR"));
+    ASSERT_TRUE(CreateTermsForLocale("nb-NO"));
+    ASSERT_TRUE(CreateTermsForLocale("nl-BE"));
+    ASSERT_TRUE(CreateTermsForLocale("nl-NL"));
+    ASSERT_TRUE(CreateTermsForLocale("sv-SE"));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DemoModeChromeOSTermsTest);
+};
+
+TEST_F(DemoModeChromeOSTermsTest, SimpleRegion) {
+  SetRegion("ca");
+  for (const char* locale : {"en-CA", "fr-CA"}) {
+    ScopedBrowserLocale browser_locale(locale);
+
+    TestDataReceiver data_receiver;
+    StartRequest(&data_receiver);
+
+    EXPECT_TRUE(data_receiver.data_received());
+    EXPECT_EQ(locale, data_receiver.data());
+  }
+}
+
+TEST_F(DemoModeChromeOSTermsTest, ComplexRegion) {
+  const std::string kLocale = "en-CA";
+  ScopedBrowserLocale browser_locale(kLocale);
+  for (const char* region :
+       {"ca.hybridansi", "ca.ansi", "ca.multix", "ca.fr"}) {
+    SetRegion(region);
+
+    TestDataReceiver data_receiver;
+    StartRequest(&data_receiver);
+
+    EXPECT_TRUE(data_receiver.data_received());
+    EXPECT_EQ(kLocale, data_receiver.data());
+  }
+}
+
+TEST_F(DemoModeChromeOSTermsTest, NotCaseSensitive) {
+  SetRegion("CA");
+  for (const char* locale : {"EN-CA", "en-CA", "EN-ca"}) {
+    ScopedBrowserLocale browser_locale(locale);
+
+    TestDataReceiver data_receiver;
+    StartRequest(&data_receiver);
+
+    EXPECT_TRUE(data_receiver.data_received());
+    EXPECT_EQ("en-CA", data_receiver.data());
+  }
+}
+
+TEST_F(DemoModeChromeOSTermsTest, DefaultToEuRegion) {
+  const std::string kLocale = "pl-PL";
+  ScopedBrowserLocale browser_locale(kLocale);
+  SetRegion("pl");
+
+  TestDataReceiver data_receiver;
+  StartRequest(&data_receiver);
+
+  EXPECT_TRUE(data_receiver.data_received());
+  EXPECT_EQ("eu", data_receiver.data());
+}
+
+TEST_F(DemoModeChromeOSTermsTest, DefaultToEmeaRegion) {
+  const std::string kLocale = "fr-CH";
+  ScopedBrowserLocale browser_locale(kLocale);
+  SetRegion("ch");
+
+  TestDataReceiver data_receiver;
+  StartRequest(&data_receiver);
+
+  EXPECT_TRUE(data_receiver.data_received());
+  EXPECT_EQ("emea", data_receiver.data());
+}
+
+TEST_F(DemoModeChromeOSTermsTest, DefaultToApacRegion) {
+  const std::string kLocale = "en-PH";
+  ScopedBrowserLocale browser_locale(kLocale);
+  SetRegion("ph");
+
+  TestDataReceiver data_receiver;
+  StartRequest(&data_receiver);
+
+  EXPECT_TRUE(data_receiver.data_received());
+  EXPECT_EQ("apac", data_receiver.data());
+}
+
+TEST_F(DemoModeChromeOSTermsTest, DefaultToAmericasRegion) {
+  const std::string kLocale = "en-MX";
+  ScopedBrowserLocale browser_locale(kLocale);
+  SetRegion("mx");
+
+  TestDataReceiver data_receiver;
+  StartRequest(&data_receiver);
+
+  EXPECT_TRUE(data_receiver.data_received());
+  EXPECT_EQ("en-US", data_receiver.data());
+}
+
+TEST_F(DemoModeChromeOSTermsTest, DefaultToEnUs) {
+  const std::string kLocale = "en-SA";
+  ScopedBrowserLocale browser_locale(kLocale);
+  SetRegion("sa");
+
+  TestDataReceiver data_receiver;
+  StartRequest(&data_receiver);
+
+  EXPECT_TRUE(data_receiver.data_received());
+  EXPECT_EQ("en-US", data_receiver.data());
+}
+
+TEST_F(DemoModeChromeOSTermsTest, NoLangCountryCombination) {
+  SetRegion("be");
+  {
+    const std::string kLocale = "nl-BE";
+    ScopedBrowserLocale browser_locale(kLocale);
+
+    TestDataReceiver data_receiver;
+    StartRequest(&data_receiver);
+
+    EXPECT_TRUE(data_receiver.data_received());
+    EXPECT_EQ(kLocale, data_receiver.data());
+  }
+  {
+    const std::string kLocale = "de-BE";
+    ScopedBrowserLocale browser_locale(kLocale);
+
+    TestDataReceiver data_receiver;
+    StartRequest(&data_receiver);
+
+    // No language - country combination - defaults to region.
+    EXPECT_TRUE(data_receiver.data_received());
+    EXPECT_EQ("eu", data_receiver.data());
+  }
+}
+
+TEST_F(DemoModeChromeOSTermsTest, InvalidRegion) {
+  const std::string kLocale = "da-DK";
+  ScopedBrowserLocale browser_locale(kLocale);
+  for (const char* region : {"", " ", ".", "..", "-", "xyz"}) {
+    SetRegion(region);
+    TestDataReceiver data_receiver;
+    StartRequest(&data_receiver);
+
+    EXPECT_TRUE(data_receiver.data_received());
+    EXPECT_EQ("en-US", data_receiver.data());
+  }
+}
+
+TEST_F(DemoModeChromeOSTermsTest, InvalidLocale) {
+  SetRegion("se");
+  for (const char* locale : {"", " ", ".", "-", "-sv"}) {
+    ScopedBrowserLocale browser_locale(locale);
+
+    TestDataReceiver data_receiver;
+    StartRequest(&data_receiver);
+
+    EXPECT_TRUE(data_receiver.data_received());
+    EXPECT_EQ("eu", data_receiver.data());
+  }
+}

@@ -21,6 +21,7 @@
 // <include src="oobe_screen_update.js">
 // <include src="oobe_screen_welcome.js">
 // <include src="multi_tap_detector.js">
+// <include src="web_view_helper.js">
 
 cr.define('cr.ui.Oobe', function() {
   return {
