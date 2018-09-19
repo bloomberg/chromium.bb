@@ -112,13 +112,14 @@ SmbMountResult TranslateErrorToMountResult(smbprovider::ErrorType error) {
       return SmbMountResult::MOUNT_EXISTS;
     case smbprovider::ERROR_NOT_FOUND:
     case smbprovider::ERROR_NOT_A_DIRECTORY:
-    case smbprovider::ERROR_INVALID_URL:
       return SmbMountResult::NOT_FOUND;
     case smbprovider::ERROR_ACCESS_DENIED:
     case smbprovider::ERROR_SECURITY:
       return SmbMountResult::AUTHENTICATION_FAILED;
     case smbprovider::ERROR_SMB1_UNSUPPORTED:
       return SmbMountResult::UNSUPPORTED_DEVICE;
+    case smbprovider::ERROR_INVALID_URL:
+      return SmbMountResult::INVALID_URL;
     case smbprovider::ERROR_FAILED:
     case smbprovider::ERROR_TOO_MANY_OPENED:
     case smbprovider::ERROR_NO_MEMORY:
