@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/task_scheduler/task_scheduler.h"
+#include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/backend_cleanup_tracker.h"
@@ -96,7 +97,7 @@ CacheCreator::CacheCreator(const base::FilePath& path,
 CacheCreator::~CacheCreator() = default;
 
 int CacheCreator::Run() {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   static const bool kSimpleBackendIsDefault = true;
 #else
   static const bool kSimpleBackendIsDefault = false;

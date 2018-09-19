@@ -61,8 +61,6 @@ class WebRunnerTestLauncherDelegate : public content::TestLauncherDelegate {
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      webrunner::kIncognitoSwitch);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kOzonePlatform, "headless");
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableGpu);
