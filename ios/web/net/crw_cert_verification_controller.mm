@@ -202,11 +202,10 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
         if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
           trustResult = kSecTrustResultInvalid;
         }
-        // Use GCD API, which is guaranteed to be called during shutdown.
-        // See https://crbug.com/853774 for details.
-        dispatch_async(dispatch_get_main_queue(), ^{
-          completionHandler(trustResult);
-        });
+        TaskTraits traits{WebThread::UI, TaskShutdownBehavior::BLOCK_SHUTDOWN};
+        base::PostTaskWithTraits(FROM_HERE, traits, base::BindOnce(^{
+                                   completionHandler(trustResult);
+                                 }));
       }));
 }
 

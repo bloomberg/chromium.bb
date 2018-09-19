@@ -126,6 +126,7 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
 
   // Wait until the page is loaded.
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
     return web_controller.loadPhase == PAGE_LOADED;
   }));
 
