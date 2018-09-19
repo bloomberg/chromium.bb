@@ -153,6 +153,12 @@ std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes() {
                            base::SPLIT_WANT_NONEMPTY);
 }
 
+int LitePageRedirectPreviewMaxServerBlacklistByteSize() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kLitePageServerPreviews, "max_blacklist_byte_size",
+      250 * 1024 /* 250KB */);
+}
+
 int PreviewServerLoadshedMaxSeconds() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kLitePageServerPreviews, "loadshed_max_seconds",

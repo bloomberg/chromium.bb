@@ -31,7 +31,11 @@ BloomFilter::BloomFilter(uint32_t num_hash_functions, uint32_t num_bits)
 
     : num_hash_functions_(num_hash_functions),
       num_bits_(num_bits),
-      bytes_(((num_bits + 7) / 8), 0) {}
+      bytes_(((num_bits + 7) / 8), 0) {
+  // May be created on one thread but used on another. The first call to
+  // CalledOnValidSequence() will re-bind it.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 BloomFilter::BloomFilter(uint32_t num_hash_functions,
                          uint32_t num_bits,
@@ -40,13 +44,19 @@ BloomFilter::BloomFilter(uint32_t num_hash_functions,
     : num_hash_functions_(num_hash_functions),
       num_bits_(num_bits),
       bytes_(filter_data.size()) {
+  // May be created on one thread but used on another. The first call to
+  // CalledOnValidSequence() will re-bind it.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
   CHECK_GE(filter_data.size() * 8, num_bits);
   memcpy(&bytes_[0], filter_data.data(), filter_data.size());
 }
 
-BloomFilter::~BloomFilter() {}
+BloomFilter::~BloomFilter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 bool BloomFilter::Contains(const std::string& str) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (size_t i = 0; i < num_hash_functions_; ++i) {
     uint64_t n = MurmurHash3(str, i) % num_bits_;
     uint32_t byte_index = (n / 8);
@@ -58,6 +68,7 @@ bool BloomFilter::Contains(const std::string& str) const {
 }
 
 void BloomFilter::Add(const std::string& str) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (size_t i = 0; i < num_hash_functions_; ++i) {
     uint64_t n = MurmurHash3(str, i) % num_bits_;
     uint32_t byte_index = (n / 8);

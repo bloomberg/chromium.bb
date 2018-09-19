@@ -40340,6 +40340,25 @@ Called by update_net_trust_anchors.py.-->
       label="Timestamp shown indicating the page was just updated on reload"/>
 </enum>
 
+<enum name="PreviewsOptimizationFilterStatus">
+  <int value="0" label="Found a server blacklist configuration">
+    Found configuration data for a server blacklist.
+  </int>
+  <int value="1" label="Created a server blacklist">
+    Successfully created a server blacklist.
+  </int>
+  <int value="2" label="Bad configuration details">
+    Failed to create a server blacklist per bad configuration.
+  </int>
+  <int value="3" label="Data size too large">
+    Failed to create a server blacklist because it would use too much RAM.
+  </int>
+  <int value="4" label="Found duplicate config">
+    Failed to create a server blacklist because it has more than one
+    configuration.
+  </int>
+</enum>
+
 <enum name="PreviewsProcessHintsResult">
   <int value="0" label="No hints found">
     Previews processed but no Previews hints found.
