@@ -4,7 +4,7 @@
 
 #include "device/bluetooth/bluetooth_init_win.h"
 
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 
 namespace {
 
@@ -28,7 +28,8 @@ bool HasBluetoothStack() {
   } has_bluetooth_stack = HBS_UNKNOWN;
 
   if (has_bluetooth_stack == HBS_UNKNOWN) {
-    base::AssertBlockingAllowed();
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
     HRESULT hr = E_FAIL;
     __try {
       hr = __HrLoadAllImportsForDll("bthprops.cpl");
