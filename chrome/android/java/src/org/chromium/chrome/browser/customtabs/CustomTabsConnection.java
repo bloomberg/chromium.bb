@@ -1103,9 +1103,10 @@ public class CustomTabsConnection {
      */
     public boolean notifyNavigationEvent(CustomTabsSessionToken session, int navigationEvent) {
         // Notify dynamic module
-        ActivityDelegate activityDelegate = mClientManager.getActivityDelegateForSession(session);
-        if (activityDelegate != null) {
-            activityDelegate.onNavigationEvent(navigationEvent,
+        ClientManager.DynamicModuleSessionParams params =
+                mClientManager.getDynamicModuleParamsForSession(session);
+        if (params != null && params.moduleVersion >= 4) {
+            params.activityDelegate.onNavigationEvent(navigationEvent,
                     getExtrasBundleForNavigationEventForSession(session));
         }
 
@@ -1496,7 +1497,7 @@ public class CustomTabsConnection {
     }
 
     public void setActivityDelegateForSession(CustomTabsSessionToken sessionToken,
-                                              ActivityDelegate activityDelegate) {
-        mClientManager.setActivityDelegateForSession(sessionToken, activityDelegate);
+            ActivityDelegate activityDelegate, int moduleVersion) {
+        mClientManager.setActivityDelegateForSession(sessionToken, activityDelegate, moduleVersion);
     }
 }

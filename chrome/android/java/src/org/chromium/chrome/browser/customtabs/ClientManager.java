@@ -268,8 +268,19 @@ class ClientManager {
     }
 
     private final Map<CustomTabsSessionToken, SessionParams> mSessionParams = new HashMap<>();
-    private final Map<CustomTabsSessionToken, ActivityDelegate> mActivityDelegates
-            = new HashMap<>();
+
+    static class DynamicModuleSessionParams {
+        public final ActivityDelegate activityDelegate;
+        public final int moduleVersion;
+
+        DynamicModuleSessionParams(ActivityDelegate activityDelegate, int moduleVersion) {
+            this.activityDelegate = activityDelegate;
+            this.moduleVersion = moduleVersion;
+        }
+    }
+
+    private final Map<CustomTabsSessionToken, DynamicModuleSessionParams>
+            mDynamicModuleSessionParams = new HashMap<>();
     private final SparseBooleanArray mUidHasCalledWarmup = new SparseBooleanArray();
     private boolean mWarmupHasBeenCalled;
 
@@ -786,7 +797,7 @@ class ClientManager {
         if (params.originVerifier != null) params.originVerifier.cleanUp();
         if (params.disconnectCallback != null) params.disconnectCallback.run(session);
         mUidHasCalledWarmup.delete(params.uid);
-        mActivityDelegates.remove(session);
+        mDynamicModuleSessionParams.remove(session);
     }
 
     /**
@@ -819,12 +830,14 @@ class ClientManager {
     }
 
     void setActivityDelegateForSession(CustomTabsSessionToken sessionToken,
-                                          ActivityDelegate activityDelegate) {
-        mActivityDelegates.put(sessionToken, activityDelegate);
+            ActivityDelegate activityDelegate, int moduleVersion) {
+        mDynamicModuleSessionParams.put(sessionToken,
+                new DynamicModuleSessionParams(activityDelegate, moduleVersion));
     }
 
     @Nullable
-    ActivityDelegate getActivityDelegateForSession(CustomTabsSessionToken sessionToken) {
-        return mActivityDelegates.get(sessionToken);
+    DynamicModuleSessionParams getDynamicModuleParamsForSession(
+            CustomTabsSessionToken sessionToken) {
+        return mDynamicModuleSessionParams.get(sessionToken);
     }
 }
