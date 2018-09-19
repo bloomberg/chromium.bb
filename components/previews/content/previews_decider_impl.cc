@@ -64,14 +64,14 @@ bool AllowedOnReload(PreviewsType type) {
   return false;
 }
 
-bool IsServerWhitelistedType(PreviewsType type) {
+bool ShouldCheckOptimizationHints(PreviewsType type) {
   switch (type) {
-    // These types check server whitelist, if available.
+    // These types may have server optimization hints.
     case PreviewsType::NOSCRIPT:
     case PreviewsType::RESOURCE_LOADING_HINTS:
-    // TODO(crbug.com/864640): Move to false when bug is fixed.
     case PreviewsType::LITE_PAGE_REDIRECT:
       return true;
+    // These types do not have server optimization hints.
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
     case PreviewsType::LOFI:
@@ -232,7 +232,9 @@ void PreviewsDeciderImpl::SetIgnorePreviewsBlacklistDecision(bool ignored) {
 
 bool PreviewsDeciderImpl::ShouldAllowPreview(const net::URLRequest& request,
                                              PreviewsType type) const {
-  DCHECK(type == PreviewsType::OFFLINE || type == PreviewsType::NOSCRIPT ||
+  DCHECK(type == PreviewsType::OFFLINE ||
+         type == PreviewsType::LITE_PAGE_REDIRECT ||
+         type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS);
   // Consumers that need to specify a blacklist or ignore flag should use
   // ShouldAllowPreviewAtECT directly.
@@ -245,7 +247,7 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
     const net::URLRequest& request,
     PreviewsType type,
     net::EffectiveConnectionType effective_connection_type_threshold,
-    const std::vector<std::string>& host_blacklist_from_server,
+    const std::vector<std::string>& host_blacklist_from_finch,
     bool ignore_long_term_black_list_rules) const {
   if (!previews::params::ArePreviewsAllowed()) {
     return false;
@@ -346,9 +348,9 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
   }
   passed_reasons.push_back(PreviewsEligibilityReason::RELOAD_DISALLOWED);
 
-  // Check provided blacklist, if any. This type of blacklist was added for
-  // Finch provided blacklist for Client LoFi.
-  if (base::ContainsValue(host_blacklist_from_server,
+  // Check Finch-provided blacklist, if any. This type of blacklist was added
+  // for Finch provided blacklist for Client LoFi.
+  if (base::ContainsValue(host_blacklist_from_finch,
                           request.url().host_piece())) {
     LogPreviewDecisionMade(
         PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER, request.url(),
@@ -358,10 +360,11 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
   passed_reasons.push_back(
       PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER);
 
-  // Check whitelist from the server, if provided.
-  if (IsServerWhitelistedType(type)) {
+  // Check server whitelist/blacklist, if provided.
+  if (ShouldCheckOptimizationHints(type)) {
     if (params::IsOptimizationHintsEnabled()) {
-      // Optimization hints are configured, so require whitelist match.
+      // Optimization hints are configured, so determine if those hints
+      // allow the optimization type (as of start-of-navigation time anyway).
       PreviewsEligibilityReason status = ShouldAllowPreviewPerOptimizationHints(
           request, type, &passed_reasons);
       if (status != PreviewsEligibilityReason::ALLOWED) {
@@ -378,7 +381,8 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
           page_id);
       return false;
     } else {
-      DCHECK_EQ(PreviewsType::NOSCRIPT, type);
+      DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
+             type == PreviewsType::NOSCRIPT);
       // Since server optimization guidance not configured, allow the preview
       // but with qualified eligibility reason.
       LogPreviewDecisionMade(
@@ -424,8 +428,8 @@ bool PreviewsDeciderImpl::IsURLAllowedForPreview(const net::URLRequest& request,
     }
   }
 
-  // Check whitelist from the server, if provided.
-  if (IsServerWhitelistedType(type)) {
+  // Re-check server optimization hints (if provided) on this commit-time URL.
+  if (ShouldCheckOptimizationHints(type)) {
     if (params::IsOptimizationHintsEnabled()) {
       std::vector<PreviewsEligibilityReason> passed_reasons;
       PreviewsEligibilityReason status =
@@ -447,7 +451,8 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
     const net::URLRequest& request,
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
-  DCHECK(type == PreviewsType::NOSCRIPT ||
+  DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
+         type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS);
 
   // Per-PreviewsType default if no optimization guide data.
@@ -457,6 +462,15 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
     } else {
       return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
     }
+  }
+
+  // For LitePageRedirect, ensure it is not blacklisted for this request.
+  if (type == PreviewsType::LITE_PAGE_REDIRECT) {
+    if (previews_opt_guide_->IsBlacklisted(request, type)) {
+      return PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER;
+    }
+    passed_reasons->push_back(
+        PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER);
   }
 
   // For NoScript, ensure it is whitelisted for this request.
@@ -479,7 +493,8 @@ PreviewsDeciderImpl::IsURLAllowedForPreviewByOptmizationHints(
     const net::URLRequest& request,
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
-  DCHECK(type == PreviewsType::NOSCRIPT ||
+  DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
+         type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS);
 
   // For NoScript, if optimization guide is not present, assume that all URLs

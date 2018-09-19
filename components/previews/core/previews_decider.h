@@ -30,7 +30,7 @@ class PreviewsDecider {
       const net::URLRequest& request,
       PreviewsType type,
       net::EffectiveConnectionType effective_connection_type_threshold,
-      const std::vector<std::string>& host_blacklist_from_server,
+      const std::vector<std::string>& host_blacklist_from_finch,
       bool ignore_long_term_black_list_rules) const = 0;
 
   // Same as ShouldAllowPreviewAtECT, but uses the previews default
