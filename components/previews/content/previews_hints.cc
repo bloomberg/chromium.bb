@@ -10,8 +10,10 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
 #include "components/previews/core/bloom_filter.h"
@@ -86,12 +88,25 @@ void DeleteSentinelFile(const base::FilePath& sentinel_path) {
 // Keep in sync with PreviewsProcessHintsResult in
 // tools/metrics/histograms/enums.xml.
 enum class PreviewsProcessHintsResult {
-  PROCESSED_NO_PREVIEWS_HINTS = 0,
-  PROCESSED_PREVIEWS_HINTS = 1,
-  FAILED_FINISH_PROCESSING = 2,
+  kProcessedNoPreviewsHints = 0,
+  kProcessedPreviewsHints = 1,
+  kFailedFinishProcessing = 2,
+  kMaxValue = kFailedFinishProcessing
+};
 
-  // Insert new values before this line.
-  MAX,
+// Enumerates status event of processing optimization filters (such as the
+// lite page redirect blacklist). Used in UMA histograms, so the order of
+// enumerators should not be changed.
+//
+// Keep in sync with PreviewsOptimizationFilterStatus in
+// tools/metrics/histograms/enums.xml.
+enum class PreviewsOptimizationFilterStatus {
+  kFoundServerBlacklistConfig = 0,
+  kCreatedServerBlacklist = 1,
+  kFailedServerBlacklistBadConfig = 2,
+  kFailedServerBlacklistTooBig = 3,
+  kFailedServerBlacklistDuplicateConfig = 4,
+  kMaxValue = kFailedServerBlacklistDuplicateConfig
 };
 
 // Returns base::nullopt if |optimization_type| can't be converted.
@@ -138,9 +153,15 @@ bool IsDisabledExperimentalOptimization(
 }
 
 void RecordProcessHintsResult(PreviewsProcessHintsResult result) {
-  UMA_HISTOGRAM_ENUMERATION("Previews.ProcessHintsResult",
-                            static_cast<int>(result),
-                            static_cast<int>(PreviewsProcessHintsResult::MAX));
+  base::UmaHistogramEnumeration("Previews.ProcessHintsResult", result);
+}
+
+void RecordOptimizationFilterStatus(PreviewsType previews_type,
+                                    PreviewsOptimizationFilterStatus status) {
+  std::string histogram_name =
+      base::StringPrintf("Previews.OptimizationFilterStatus.%s",
+                         GetStringNameForType(previews_type).c_str());
+  base::UmaHistogramEnumeration(histogram_name, status);
 }
 
 }  // namespace
@@ -162,7 +183,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
   if (!CreateSentinelFile(sentinel_path, info.hints_version)) {
     std::unique_ptr<PreviewsHints> no_hints;
     RecordProcessHintsResult(
-        PreviewsProcessHintsResult::FAILED_FINISH_PROCESSING);
+        PreviewsProcessHintsResult::kFailedFinishProcessing);
     return no_hints;
   }
 
@@ -266,33 +287,55 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
   DeleteSentinelFile(sentinel_path);
   RecordProcessHintsResult(
       all_conditions.empty()
-          ? PreviewsProcessHintsResult::PROCESSED_NO_PREVIEWS_HINTS
-          : PreviewsProcessHintsResult::PROCESSED_PREVIEWS_HINTS);
+          ? PreviewsProcessHintsResult::kProcessedNoPreviewsHints
+          : PreviewsProcessHintsResult::kProcessedPreviewsHints);
   return hints;
 }
 
 void PreviewsHints::ParseOptimizationFilters(
     const optimization_guide::proto::Configuration& config) {
   for (const auto blacklist : config.optimization_blacklists()) {
-    if (blacklist.optimization_type() ==
-            optimization_guide::proto::LITE_PAGE_REDIRECT &&
+    base::Optional<PreviewsType> previews_type =
+        ConvertProtoOptimizationTypeToPreviewsOptimizationType(
+            blacklist.optimization_type());
+    if (previews_type == PreviewsType::LITE_PAGE_REDIRECT &&
+        previews::params::IsLitePageServerPreviewsEnabled() &&
         blacklist.has_bloom_filter()) {
+      RecordOptimizationFilterStatus(
+          previews_type.value(),
+          PreviewsOptimizationFilterStatus::kFoundServerBlacklistConfig);
       if (lite_page_redirect_blacklist_) {
         DLOG(WARNING)
             << "Found multiple blacklist configs for LITE_PAGE_REDIRECT";
+        RecordOptimizationFilterStatus(
+            previews_type.value(), PreviewsOptimizationFilterStatus::
+                                       kFailedServerBlacklistDuplicateConfig);
         continue;
       }
       auto bloom_filter_proto = blacklist.bloom_filter();
       DCHECK_GT(bloom_filter_proto.num_hash_functions(), 0u);
       DCHECK_GT(bloom_filter_proto.num_bits(), 0u);
       DCHECK(bloom_filter_proto.has_data());
-      if (bloom_filter_proto.num_bits() <= 0) {
-        DLOG(ERROR) << "Bloom filter config does not specify number of bits";
+      if (!bloom_filter_proto.has_data() ||
+          bloom_filter_proto.num_bits() <= 0 ||
+          bloom_filter_proto.num_bits() >
+              bloom_filter_proto.data().size() * 8) {
+        DLOG(ERROR) << "Bloom filter config issue";
+        RecordOptimizationFilterStatus(
+            previews_type.value(),
+            PreviewsOptimizationFilterStatus::kFailedServerBlacklistBadConfig);
         continue;
       }
-      if (bloom_filter_proto.num_bits() >
-          bloom_filter_proto.data().size() * 8) {
-        DLOG(ERROR) << "Bloom filter config does not have enough data for bits";
+      if ((int)bloom_filter_proto.num_bits() >
+          previews::params::
+                  LitePageRedirectPreviewMaxServerBlacklistByteSize() /
+              8) {
+        DLOG(ERROR) << "Bloom filter data exceeds maximum size of "
+                    << previews::params::PreviewServerLoadshedMaxSeconds()
+                    << " bytes";
+        RecordOptimizationFilterStatus(
+            previews_type.value(),
+            PreviewsOptimizationFilterStatus::kFailedServerBlacklistTooBig);
         continue;
       }
       std::unique_ptr<BloomFilter> bloom_filter = std::make_unique<BloomFilter>(
@@ -300,6 +343,9 @@ void PreviewsHints::ParseOptimizationFilters(
           bloom_filter_proto.num_bits(), bloom_filter_proto.data());
       lite_page_redirect_blacklist_ =
           std::make_unique<HostFilter>(std::move(bloom_filter));
+      RecordOptimizationFilterStatus(
+          previews_type.value(),
+          PreviewsOptimizationFilterStatus::kCreatedServerBlacklist);
     }
   }
 }

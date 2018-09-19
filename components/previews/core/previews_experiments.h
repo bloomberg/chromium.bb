@@ -107,6 +107,11 @@ std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes();
 // as an experiment for automated and manual testing.
 bool LitePagePreviewsTriggerOnLocalhost();
 
+// The maximum data byte size for the server-provided blacklist. This is
+// a client-side safety limit for RAM use in case server sends too large of
+// a blacklist.
+int LitePageRedirectPreviewMaxServerBlacklistByteSize();
+
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 

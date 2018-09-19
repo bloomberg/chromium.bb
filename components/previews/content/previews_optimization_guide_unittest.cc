@@ -21,6 +21,7 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_user_data.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -129,6 +130,10 @@ class PreviewsOptimizationGuideTest : public testing::Test {
   void InitializeMultipleResourceLoadingHints(size_t key_count,
                                               size_t page_patterns_per_key);
 
+  // This is a helper function for initializing with a LITE_PAGE_REDIRECT
+  // server blacklist.
+  void InitializeWithLitePageRedirectBlacklist();
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
@@ -143,6 +148,109 @@ class PreviewsOptimizationGuideTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideTest);
 };
+
+void PreviewsOptimizationGuideTest::InitializeFixedCountResourceLoadingHints() {
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+  // Page hint for "/news/"
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("/news/");
+  optimization_guide::proto::Optimization* optimization1 =
+      page_hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint1 =
+      optimization1->add_resource_loading_hints();
+  resource_loading_hint1->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_loading_hint1->set_resource_pattern("news_cruft.js");
+
+  // Page hint for "football"
+  optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
+  page_hint2->set_page_pattern("football");
+  optimization_guide::proto::Optimization* optimization2 =
+      page_hint2->add_whitelisted_optimizations();
+  optimization2->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint2 =
+      optimization2->add_resource_loading_hints();
+  resource_loading_hint2->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_loading_hint2->set_resource_pattern("football_cruft.js");
+
+  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint3 =
+      optimization2->add_resource_loading_hints();
+  resource_loading_hint3->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_loading_hint3->set_resource_pattern("barball_cruft.js");
+  ProcessHints(config, "2.0.0");
+
+  RunUntilIdle();
+}
+
+void PreviewsOptimizationGuideTest::InitializeMultipleResourceLoadingHints(
+    size_t key_count,
+    size_t page_patterns_per_key) {
+  optimization_guide::proto::Configuration config;
+
+  for (size_t key_index = 0; key_index < key_count; ++key_index) {
+    optimization_guide::proto::Hint* hint = config.add_hints();
+    hint->set_key("somedomain" + base::NumberToString(key_index) + ".org");
+    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+    for (size_t page_pattern_index = 0;
+         page_pattern_index < page_patterns_per_key; ++page_pattern_index) {
+      // Page hint for "/news/"
+      optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+      page_hint->set_page_pattern("/news/" +
+                                  base::NumberToString(page_pattern_index));
+      optimization_guide::proto::Optimization* optimization1 =
+          page_hint->add_whitelisted_optimizations();
+      optimization1->set_optimization_type(
+          optimization_guide::proto::RESOURCE_LOADING);
+
+      optimization_guide::proto::ResourceLoadingHint* resource_loading_hint_1 =
+          optimization1->add_resource_loading_hints();
+      resource_loading_hint_1->set_loading_optimization_type(
+          optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+      resource_loading_hint_1->set_resource_pattern("news_cruft_1.js");
+
+      optimization_guide::proto::ResourceLoadingHint* resource_loading_hint_2 =
+          optimization1->add_resource_loading_hints();
+      resource_loading_hint_2->set_loading_optimization_type(
+          optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+      resource_loading_hint_2->set_resource_pattern("news_cruft_2.js");
+    }
+  }
+  ProcessHints(config, "2.0.0");
+
+  RunUntilIdle();
+}
+
+void PreviewsOptimizationGuideTest::InitializeWithLitePageRedirectBlacklist() {
+  previews::BloomFilter blacklist_bloom_filter(7, 511);
+  blacklist_bloom_filter.Add("blacklisteddomain.com");
+  blacklist_bloom_filter.Add("blacklistedsubdomain.maindomain.co.in");
+  std::string blacklist_data((char*)&blacklist_bloom_filter.bytes()[0],
+                             blacklist_bloom_filter.bytes().size());
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::OptimizationFilter* blacklist_proto =
+      config.add_optimization_blacklists();
+  blacklist_proto->set_optimization_type(
+      optimization_guide::proto::LITE_PAGE_REDIRECT);
+  std::unique_ptr<optimization_guide::proto::BloomFilter> bloom_filter_proto =
+      std::make_unique<optimization_guide::proto::BloomFilter>();
+  bloom_filter_proto->set_num_hash_functions(7);
+  bloom_filter_proto->set_num_bits(511);
+  bloom_filter_proto->set_data(blacklist_data);
+  blacklist_proto->set_allocated_bloom_filter(bloom_filter_proto.release());
+  ProcessHints(config, "2.0.0");
+
+  RunUntilIdle();
+}
 
 TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithoutHints) {
   std::unique_ptr<net::URLRequest> request =
@@ -608,87 +716,6 @@ TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithMultipleHintMatches) {
   EXPECT_FALSE(guide()->IsWhitelisted(*request5, PreviewsType::NOSCRIPT));
 }
 
-void PreviewsOptimizationGuideTest::InitializeFixedCountResourceLoadingHints() {
-  optimization_guide::proto::Configuration config;
-  optimization_guide::proto::Hint* hint1 = config.add_hints();
-  hint1->set_key("somedomain.org");
-  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-
-  // Page hint for "/news/"
-  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
-  page_hint1->set_page_pattern("/news/");
-  optimization_guide::proto::Optimization* optimization1 =
-      page_hint1->add_whitelisted_optimizations();
-  optimization1->set_optimization_type(
-      optimization_guide::proto::RESOURCE_LOADING);
-  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint1 =
-      optimization1->add_resource_loading_hints();
-  resource_loading_hint1->set_loading_optimization_type(
-      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-  resource_loading_hint1->set_resource_pattern("news_cruft.js");
-
-  // Page hint for "football"
-  optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
-  page_hint2->set_page_pattern("football");
-  optimization_guide::proto::Optimization* optimization2 =
-      page_hint2->add_whitelisted_optimizations();
-  optimization2->set_optimization_type(
-      optimization_guide::proto::RESOURCE_LOADING);
-  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint2 =
-      optimization2->add_resource_loading_hints();
-  resource_loading_hint2->set_loading_optimization_type(
-      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-  resource_loading_hint2->set_resource_pattern("football_cruft.js");
-
-  optimization_guide::proto::ResourceLoadingHint* resource_loading_hint3 =
-      optimization2->add_resource_loading_hints();
-  resource_loading_hint3->set_loading_optimization_type(
-      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-  resource_loading_hint3->set_resource_pattern("barball_cruft.js");
-  ProcessHints(config, "2.0.0");
-
-  RunUntilIdle();
-}
-
-void PreviewsOptimizationGuideTest::InitializeMultipleResourceLoadingHints(
-    size_t key_count,
-    size_t page_patterns_per_key) {
-  optimization_guide::proto::Configuration config;
-
-  for (size_t key_index = 0; key_index < key_count; ++key_index) {
-    optimization_guide::proto::Hint* hint = config.add_hints();
-    hint->set_key("somedomain" + base::NumberToString(key_index) + ".org");
-    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-
-    for (size_t page_pattern_index = 0;
-         page_pattern_index < page_patterns_per_key; ++page_pattern_index) {
-      // Page hint for "/news/"
-      optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
-      page_hint->set_page_pattern("/news/" +
-                                  base::NumberToString(page_pattern_index));
-      optimization_guide::proto::Optimization* optimization1 =
-          page_hint->add_whitelisted_optimizations();
-      optimization1->set_optimization_type(
-          optimization_guide::proto::RESOURCE_LOADING);
-
-      optimization_guide::proto::ResourceLoadingHint* resource_loading_hint_1 =
-          optimization1->add_resource_loading_hints();
-      resource_loading_hint_1->set_loading_optimization_type(
-          optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-      resource_loading_hint_1->set_resource_pattern("news_cruft_1.js");
-
-      optimization_guide::proto::ResourceLoadingHint* resource_loading_hint_2 =
-          optimization1->add_resource_loading_hints();
-      resource_loading_hint_2->set_loading_optimization_type(
-          optimization_guide::proto::LOADING_BLOCK_RESOURCE);
-      resource_loading_hint_2->set_resource_pattern("news_cruft_2.js");
-    }
-  }
-  ProcessHints(config, "2.0.0");
-
-  RunUntilIdle();
-}
-
 TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
@@ -881,6 +908,44 @@ TEST_F(PreviewsOptimizationGuideTest,
       *CreateRequestWithURL(
           GURL("https://www.somedomain.org/news/weather/raininginseattle")),
       PreviewsType::RESOURCE_LOADING_HINTS));
+}
+
+TEST_F(PreviewsOptimizationGuideTest, IsBlacklisted) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
+  std::unique_ptr<net::URLRequest> request =
+      CreateRequestWithURL(GURL("https://m.blacklisteddomain.com/path"));
+  EXPECT_FALSE(
+      guide()->IsBlacklisted(*request, PreviewsType::LITE_PAGE_REDIRECT));
+
+  InitializeWithLitePageRedirectBlacklist();
+
+  EXPECT_TRUE(
+      guide()->IsBlacklisted(*request, PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(guide()->IsBlacklisted(*request, PreviewsType::NOSCRIPT));
+
+  std::unique_ptr<net::URLRequest> request2 = CreateRequestWithURL(
+      GURL("https://blacklistedsubdomain.maindomain.co.in"));
+  EXPECT_TRUE(
+      guide()->IsBlacklisted(*request2, PreviewsType::LITE_PAGE_REDIRECT));
+
+  std::unique_ptr<net::URLRequest> request3 =
+      CreateRequestWithURL(GURL("https://maindomain.co.in"));
+  EXPECT_FALSE(
+      guide()->IsBlacklisted(*request3, PreviewsType::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       IsBlacklistedWithLitePageServerPreviewsDisabled) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndDisableFeature(features::kLitePageServerPreviews);
+  std::unique_ptr<net::URLRequest> request =
+      CreateRequestWithURL(GURL("https://m.blacklisteddomain.com/path"));
+
+  InitializeWithLitePageRedirectBlacklist();
+
+  EXPECT_FALSE(
+      guide()->IsBlacklisted(*request, PreviewsType::LITE_PAGE_REDIRECT));
 }
 
 TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {

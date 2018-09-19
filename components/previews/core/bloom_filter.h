@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 
 namespace previews {
 
@@ -52,6 +53,8 @@ class BloomFilter {
 
   // Byte data for the filter.
   ByteVector bytes_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(BloomFilter);
 };
