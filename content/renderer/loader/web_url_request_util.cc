@@ -27,7 +27,7 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
@@ -456,78 +456,79 @@ std::string GetFetchIntegrityForWebURLRequest(const WebURLRequest& request) {
   return request.GetFetchIntegrity().Utf8();
 }
 
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::UNSPECIFIED,
                    WebURLRequest::kRequestContextUnspecified);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_AUDIO,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::AUDIO,
                    WebURLRequest::kRequestContextAudio);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_BEACON,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::BEACON,
                    WebURLRequest::kRequestContextBeacon);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_CSP_REPORT,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::CSP_REPORT,
                    WebURLRequest::kRequestContextCSPReport);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_DOWNLOAD,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::DOWNLOAD,
                    WebURLRequest::kRequestContextDownload);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_EMBED,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::EMBED,
                    WebURLRequest::kRequestContextEmbed);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_EVENT_SOURCE,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::EVENT_SOURCE,
                    WebURLRequest::kRequestContextEventSource);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_FAVICON,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::FAVICON,
                    WebURLRequest::kRequestContextFavicon);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_FETCH,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::FETCH,
                    WebURLRequest::kRequestContextFetch);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_FONT,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::FONT,
                    WebURLRequest::kRequestContextFont);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_FORM,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::FORM,
                    WebURLRequest::kRequestContextForm);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_FRAME,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::FRAME,
                    WebURLRequest::kRequestContextFrame);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_HYPERLINK,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::HYPERLINK,
                    WebURLRequest::kRequestContextHyperlink);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_IFRAME,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::IFRAME,
                    WebURLRequest::kRequestContextIframe);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_IMAGE,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::IMAGE,
                    WebURLRequest::kRequestContextImage);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_IMAGE_SET,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::IMAGE_SET,
                    WebURLRequest::kRequestContextImageSet);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_IMPORT,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::IMPORT,
                    WebURLRequest::kRequestContextImport);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_INTERNAL,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::INTERNAL,
                    WebURLRequest::kRequestContextInternal);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_LOCATION,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::LOCATION,
                    WebURLRequest::kRequestContextLocation);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_MANIFEST,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::MANIFEST,
                    WebURLRequest::kRequestContextManifest);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_OBJECT,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::OBJECT,
                    WebURLRequest::kRequestContextObject);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_PING,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::PING,
                    WebURLRequest::kRequestContextPing);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_PLUGIN,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::PLUGIN,
                    WebURLRequest::kRequestContextPlugin);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_PREFETCH,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::PREFETCH,
                    WebURLRequest::kRequestContextPrefetch);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_SCRIPT,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::SCRIPT,
                    WebURLRequest::kRequestContextScript);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::SERVICE_WORKER,
                    WebURLRequest::kRequestContextServiceWorker);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_SHARED_WORKER,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::SHARED_WORKER,
                    WebURLRequest::kRequestContextSharedWorker);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_SUBRESOURCE,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::SUBRESOURCE,
                    WebURLRequest::kRequestContextSubresource);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_STYLE,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::STYLE,
                    WebURLRequest::kRequestContextStyle);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_TRACK,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::TRACK,
                    WebURLRequest::kRequestContextTrack);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_VIDEO,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::VIDEO,
                    WebURLRequest::kRequestContextVideo);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_WORKER,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::WORKER,
                    WebURLRequest::kRequestContextWorker);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_XML_HTTP_REQUEST,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::XML_HTTP_REQUEST,
                    WebURLRequest::kRequestContextXMLHttpRequest);
-STATIC_ASSERT_ENUM(REQUEST_CONTEXT_TYPE_XSLT,
+STATIC_ASSERT_ENUM(blink::mojom::RequestContextType::XSLT,
                    WebURLRequest::kRequestContextXSLT);
 
-RequestContextType GetRequestContextTypeForWebURLRequest(
+blink::mojom::RequestContextType GetRequestContextTypeForWebURLRequest(
     const WebURLRequest& request) {
-  return static_cast<RequestContextType>(request.GetRequestContext());
+  return static_cast<blink::mojom::RequestContextType>(
+      request.GetRequestContext());
 }
 
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(

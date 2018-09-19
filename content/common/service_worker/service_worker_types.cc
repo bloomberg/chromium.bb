@@ -67,7 +67,8 @@ std::string ServiceWorkerFetchRequest::Serialize() const {
   request_proto.set_is_reload(is_reload);
   request_proto.set_mode(static_cast<int>(mode));
   request_proto.set_is_main_resource_load(is_main_resource_load);
-  request_proto.set_request_context_type(request_context_type);
+  request_proto.set_request_context_type(
+      static_cast<int>(request_context_type));
   request_proto.set_credentials_mode(static_cast<int>(credentials_mode));
   request_proto.set_cache_mode(static_cast<int>(cache_mode));
   request_proto.set_redirect_mode(static_cast<int>(redirect_mode));
@@ -111,8 +112,8 @@ ServiceWorkerFetchRequest ServiceWorkerFetchRequest::ParseFromString(
   request.mode =
       static_cast<network::mojom::FetchRequestMode>(request_proto.mode());
   request.is_main_resource_load = request_proto.is_main_resource_load();
-  request.request_context_type =
-      static_cast<RequestContextType>(request_proto.request_context_type());
+  request.request_context_type = static_cast<blink::mojom::RequestContextType>(
+      request_proto.request_context_type());
   request.credentials_mode = static_cast<network::mojom::FetchCredentialsMode>(
       request_proto.credentials_mode());
   request.cache_mode =

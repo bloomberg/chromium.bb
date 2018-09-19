@@ -323,7 +323,8 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         network::mojom::FetchCredentialsMode::kOmit,
         network::mojom::FetchRedirectMode::kFollow,
         std::string() /* integrity */, false /* keepalive */,
-        RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+        RESOURCE_TYPE_SERVICE_WORKER,
+        blink::mojom::RequestContextType::SERVICE_WORKER,
         network::mojom::RequestContextFrameType::kNone,
         scoped_refptr<network::ResourceRequestBody>());
   }

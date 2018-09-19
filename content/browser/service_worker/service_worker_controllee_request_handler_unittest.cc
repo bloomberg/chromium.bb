@@ -23,7 +23,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -36,6 +35,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 namespace service_worker_controllee_request_handler_unittest {
@@ -70,7 +70,7 @@ class ServiceWorkerControlleeRequestHandlerTest
               std::string() /* integrity */,
               false /* keepalive */,
               type,
-              REQUEST_CONTEXT_TYPE_HYPERLINK,
+              blink::mojom::RequestContextType::HYPERLINK,
               network::mojom::RequestContextFrameType::kTopLevel,
               scoped_refptr<network::ResourceRequestBody>())),
           job_(nullptr) {}

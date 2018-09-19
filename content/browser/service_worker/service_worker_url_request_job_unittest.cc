@@ -35,7 +35,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
@@ -66,6 +65,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 namespace service_worker_url_request_job_unittest {
@@ -121,7 +121,7 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         network::mojom::FetchCredentialsMode::kOmit,
         network::mojom::FetchRedirectMode::kFollow,
         std::string() /* integrity */, false /* keepalive */, resource_type_,
-        REQUEST_CONTEXT_TYPE_HYPERLINK,
+        blink::mojom::RequestContextType::HYPERLINK,
         network::mojom::RequestContextFrameType::kTopLevel,
         scoped_refptr<network::ResourceRequestBody>(), delegate_);
     if (simulate_navigation_preload_) {

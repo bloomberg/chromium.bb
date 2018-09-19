@@ -13,15 +13,6 @@
 
 namespace mojo {
 
-template <>
-struct EnumTraits<blink::mojom::RequestContextType,
-                  content::RequestContextType> {
-  static blink::mojom::RequestContextType ToMojom(
-      content::RequestContextType input);
-
-  static bool FromMojom(blink::mojom::RequestContextType input,
-                        content::RequestContextType* out);
-};
 
 template <>
 struct StructTraits<blink::mojom::FetchAPIRequestDataView,
@@ -36,7 +27,7 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
     return request.is_main_resource_load;
   }
 
-  static content::RequestContextType request_context_type(
+  static blink::mojom::RequestContextType request_context_type(
       const content::ServiceWorkerFetchRequest& request) {
     return request.request_context_type;
   }

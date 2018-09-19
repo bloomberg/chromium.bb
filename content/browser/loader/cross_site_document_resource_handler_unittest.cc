@@ -1186,7 +1186,7 @@ class CrossSiteDocumentResourceHandlerTest
       first_handler_ = std::make_unique<MimeSniffingResourceHandler>(
           std::move(first_handler_), &dispatcher_host_, &plugin_service_,
           intercepting_handler_.get(), request_.get(),
-          REQUEST_CONTEXT_TYPE_SCRIPT);
+          blink::mojom::RequestContextType::SCRIPT);
     }
 
     // Create a mock loader to drive our chain of resource loaders.

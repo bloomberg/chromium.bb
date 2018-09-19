@@ -15,12 +15,12 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace net {
 class NetworkDelegate;
@@ -60,7 +60,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       storage::BlobStorageContext* blob_storage_context,
       bool skip_service_worker,
       ResourceType resource_type,
-      RequestContextType request_context_type,
+      blink::mojom::RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
       bool is_parent_frame_secure,
       scoped_refptr<network::ResourceRequestBody> body,
@@ -77,7 +77,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       storage::BlobStorageContext* blob_storage_context,
       bool skip_service_worker,
       ResourceType resource_type,
-      RequestContextType request_context_type,
+      blink::mojom::RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
       bool is_parent_frame_secure,
       scoped_refptr<network::ResourceRequestBody> body,
@@ -106,7 +106,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       const std::string& integrity,
       bool keepalive,
       ResourceType resource_type,
-      RequestContextType request_context_type,
+      blink::mojom::RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
       scoped_refptr<network::ResourceRequestBody> body);
 

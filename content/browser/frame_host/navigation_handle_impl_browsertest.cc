@@ -20,7 +20,6 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -36,6 +35,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/url_constants.h"
 
@@ -78,7 +78,9 @@ class TestNavigationThrottle : public NavigationThrottle {
 
   const char* GetNameForLogging() override { return "TestNavigationThrottle"; }
 
-  RequestContextType request_context_type() { return request_context_type_; }
+  blink::mojom::RequestContextType request_context_type() {
+    return request_context_type_;
+  }
 
   // Expose Resume and Cancel to the installer.
   void ResumeNavigation() { Resume(); }
@@ -92,7 +94,7 @@ class TestNavigationThrottle : public NavigationThrottle {
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
     NavigationHandleImpl* navigation_handle_impl =
         static_cast<NavigationHandleImpl*>(navigation_handle());
-    CHECK_NE(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
+    CHECK_NE(blink::mojom::RequestContextType::UNSPECIFIED,
              navigation_handle_impl->request_context_type());
     request_context_type_ = navigation_handle_impl->request_context_type();
 
@@ -140,7 +142,8 @@ class TestNavigationThrottle : public NavigationThrottle {
   base::Closure did_call_will_redirect_;
   base::Closure did_call_will_fail_;
   base::Closure did_call_will_process_;
-  RequestContextType request_context_type_ = REQUEST_CONTEXT_TYPE_UNSPECIFIED;
+  blink::mojom::RequestContextType request_context_type_ =
+      blink::mojom::RequestContextType::UNSPECIFIED;
 };
 
 // Installs a TestNavigationThrottle either on all following requests or on
@@ -1197,7 +1200,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_EQ(main_url, url_recorder.urls().back());
   EXPECT_EQ(1ul, url_recorder.urls().size());
   // Checks the main frame RequestContextType.
-  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             installer.navigation_throttle()->request_context_type());
 
   // Ditto for frame b navigation.
@@ -1206,7 +1209,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_EQ(2, installer.install_count());
   EXPECT_EQ(b_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
-  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             installer.navigation_throttle()->request_context_type());
 
   // Ditto for frame c navigation.
@@ -1215,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_EQ(3, installer.install_count());
   EXPECT_EQ(c_url, url_recorder.urls().back());
   EXPECT_EQ(3ul, url_recorder.urls().size());
-  EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
+  EXPECT_EQ(blink::mojom::RequestContextType::LOCATION,
             installer.navigation_throttle()->request_context_type());
 
   // Lets the final navigation finish so that we conclude running the
@@ -1253,7 +1256,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_TRUE(link_manager.WaitForRequestStart());
   EXPECT_EQ(link_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
-  EXPECT_EQ(REQUEST_CONTEXT_TYPE_HYPERLINK,
+  EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
             installer.navigation_throttle()->request_context_type());
 
   // Finishes the last navigation.
@@ -1287,7 +1290,7 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
   EXPECT_TRUE(post_manager.WaitForRequestStart());
   EXPECT_EQ(post_url, url_recorder.urls().back());
   EXPECT_EQ(2ul, url_recorder.urls().size());
-  EXPECT_EQ(REQUEST_CONTEXT_TYPE_FORM,
+  EXPECT_EQ(blink::mojom::RequestContextType::FORM,
             installer.navigation_throttle()->request_context_type());
 
   // Finishes the last navigation.

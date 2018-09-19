@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {

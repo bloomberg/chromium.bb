@@ -8,12 +8,12 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
@@ -68,7 +68,7 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebURLRequest(
 // type.
 std::string GetFetchIntegrityForWebURLRequest(
     const blink::WebURLRequest& request);
-RequestContextType GetRequestContextTypeForWebURLRequest(
+blink::mojom::RequestContextType GetRequestContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);

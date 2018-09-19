@@ -693,7 +693,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->fetch_integrity =
       GetFetchIntegrityForWebURLRequest(request);
   resource_request->fetch_request_context_type =
-      GetRequestContextTypeForWebURLRequest(request);
+      static_cast<int>(GetRequestContextTypeForWebURLRequest(request));
 
   resource_request->fetch_frame_type = request.GetFrameType();
   resource_request->request_body =

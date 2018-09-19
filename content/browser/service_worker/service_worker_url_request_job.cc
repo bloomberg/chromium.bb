@@ -321,7 +321,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     const std::string& integrity,
     bool keepalive,
     ResourceType resource_type,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body,
     Delegate* delegate)
@@ -569,7 +569,7 @@ ServiceWorkerURLRequestJob::CreateResourceRequest() {
   request->fetch_credentials_mode = credentials_mode_;
   request->load_flags = request_->load_flags();
   request->fetch_redirect_mode = redirect_mode_;
-  request->fetch_request_context_type = request_context_type_;
+  request->fetch_request_context_type = static_cast<int>(request_context_type_);
   request->fetch_frame_type = frame_type_;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info)
