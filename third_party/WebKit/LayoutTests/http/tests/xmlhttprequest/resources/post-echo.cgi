@@ -1,6 +1,7 @@
 #!/usr/bin/perl -wT
 
-print "Content-type: text/plain\n\n"; 
+print "Access-Control-Allow-Origin: *\n";
+print "Content-type: text/plain\n\n";
 
 if ($ENV{'REQUEST_METHOD'} eq "POST") {
     read(STDIN, $request, $ENV{'CONTENT_LENGTH'})
@@ -8,4 +9,4 @@ if ($ENV{'REQUEST_METHOD'} eq "POST") {
     print $request;
 } else {
     print "Wrong method: " . $ENV{'REQUEST_METHOD'} . "\n";
-} 
+}

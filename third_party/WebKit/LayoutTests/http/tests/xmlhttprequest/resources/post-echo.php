@@ -1,4 +1,5 @@
 <?php
+header('Access-Control-Allow-Origin: *');
 if (isset($_POST['type']))
     header("Content-Type: {$_POST['type']}");
 else
