@@ -15,6 +15,7 @@
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/hash_util.h"
+#include "components/sync/base/unique_position.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/cycle/non_blocking_type_debug_info_emitter.h"
@@ -1342,7 +1343,9 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   entity.set_id_string("SomeID");
   entity.set_parent_id_string("ParentID");
   entity.set_folder(false);
-  entity.mutable_unique_position()->set_custom_compressed_v1("POSITION");
+  entity.mutable_unique_position()->CopyFrom(
+      UniquePosition::InitialPosition(UniquePosition::RandomSuffix())
+          .ToProto());
   entity.set_version(1);
   entity.set_client_defined_unique_tag("CLIENT_TAG");
   entity.set_server_defined_unique_tag("SERVER_TAG");
@@ -1360,12 +1363,55 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   EXPECT_FALSE(data.id.empty());
   EXPECT_FALSE(data.parent_id.empty());
   EXPECT_FALSE(data.is_folder);
-  EXPECT_TRUE(data.unique_position.has_custom_compressed_v1());
+  EXPECT_TRUE(
+      syncer::UniquePosition::FromProto(data.unique_position).IsValid());
   EXPECT_EQ("CLIENT_TAG", data.client_tag_hash);
   EXPECT_EQ("SERVER_TAG", data.server_defined_unique_tag);
   EXPECT_FALSE(data.is_deleted());
   EXPECT_EQ(kTag1, data.specifics.preference().name());
   EXPECT_EQ(kValue1, data.specifics.preference().value());
+}
+
+TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
+  InitializeCommitOnly();
+  sync_pb::SyncEntity entity;
+
+  entity.set_position_in_parent(5);
+  entity.set_client_defined_unique_tag("CLIENT_TAG");
+  entity.set_server_defined_unique_tag("SERVER_TAG");
+  entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
+
+  UpdateResponseData response_data;
+  FakeEncryptor encryptor;
+  Cryptographer cryptographer(&encryptor);
+
+  EXPECT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
+                                                        &response_data));
+  const EntityData& data = response_data.entity.value();
+  EXPECT_TRUE(
+      syncer::UniquePosition::FromProto(data.unique_position).IsValid());
+}
+
+TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
+  InitializeCommitOnly();
+  sync_pb::SyncEntity entity;
+
+  entity.set_insert_after_item_id("ITEM_ID");
+  entity.set_client_defined_unique_tag("CLIENT_TAG");
+  entity.set_server_defined_unique_tag("SERVER_TAG");
+  entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
+
+  UpdateResponseData response_data;
+  FakeEncryptor encryptor;
+  Cryptographer cryptographer(&encryptor);
+
+  EXPECT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
+                                                        &response_data));
+  const EntityData& data = response_data.entity.value();
+  EXPECT_TRUE(
+      syncer::UniquePosition::FromProto(data.unique_position).IsValid());
 }
 
 class GetLocalChangesRequestTest : public testing::Test {
