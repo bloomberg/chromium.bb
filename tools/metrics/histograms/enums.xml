@@ -45293,6 +45293,10 @@ Called by update_net_trust_anchors.py.-->
     Errror in handling the request because either opening backend failed or URL
     should not be cached
   </int>
+  <int value="6" label="IncompleteEntry">
+    Entries that are read before a write to that entry has finished when read
+    and write request interleave.
+  </int>
 </enum>
 
 <enum name="SiteIsolationMimeType">

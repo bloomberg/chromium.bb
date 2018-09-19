@@ -451,13 +451,28 @@ void GeneratedCodeCache::ReadDataComplete(
   if (rv != buffer->size()) {
     CollectStatistics(CacheEntryStatus::kMiss);
     std::move(callback).Run(base::Time(), std::vector<uint8_t>());
+  } else if (buffer->size() < kResponseTimeSizeInBytes) {
+    // TODO(crbug.com/886892): Change the implementation, so serialize requests
+    // for the same key here. When we do that, this case should not arise.
+    // We might be reading an entry before the write was completed. This can
+    // happen if we have a write and read operation for the same key almost at
+    // the same time and they interleave as:
+    // W(Create) -> R(Open) -> R(Read) -> W(Write).
+    CollectStatistics(CacheEntryStatus::kIncompleteEntry);
+    std::move(callback).Run(base::Time(), std::vector<uint8_t>());
   } else {
+    // DiskCache ensures that the operations that are queued for an entry
+    // go in order. Hence, we would either read an empty data or read the full
+    // data. Please look at comment in else to see why we read empty data.
     CollectStatistics(CacheEntryStatus::kHit);
     int64_t raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
     base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
         base::TimeDelta::FromMicroseconds(raw_response_time));
-    std::vector<uint8_t> data(buffer->data() + kResponseTimeSizeInBytes,
-                              buffer->data() + buffer->size());
+    std::vector<uint8_t> data;
+    if (buffer->size() > kResponseTimeSizeInBytes) {
+      data = std::vector<uint8_t>(buffer->data() + kResponseTimeSizeInBytes,
+                                  buffer->data() + buffer->size());
+    }
     std::move(callback).Run(response_time, data);
   }
 }

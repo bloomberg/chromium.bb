@@ -167,6 +167,22 @@ TEST_F(GeneratedCodeCacheTest, DeleteEntry) {
   ASSERT_TRUE(received_null_);
 }
 
+TEST_F(GeneratedCodeCacheTest, WriteEntryWithEmptyData) {
+  GURL url(kInitialUrl);
+  url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
+
+  InitializeCache();
+  base::Time response_time = base::Time::Now();
+  WriteToCache(url, origin, std::string(), response_time);
+  scoped_task_environment_.RunUntilIdle();
+  FetchFromCache(url, origin);
+  scoped_task_environment_.RunUntilIdle();
+
+  ASSERT_TRUE(received_);
+  ASSERT_TRUE(received_null_);
+  EXPECT_EQ(response_time, received_response_time_);
+}
+
 TEST_F(GeneratedCodeCacheTest, FetchEntryPendingOp) {
   GURL url(kInitialUrl);
   url::Origin origin = url::Origin::Create(GURL(kInitialOrigin));
