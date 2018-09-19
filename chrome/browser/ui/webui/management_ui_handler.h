@@ -5,10 +5,19 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MANAGEMENT_UI_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_MANAGEMENT_UI_HANDLER_H_
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+
+// Constants defining the IDs for the localized strings sent to the page as
+// load time data.
+extern const char kManagementLogUploadEnabled[];
+extern const char kManagementReportActivityTimes[];
+extern const char kManagementReportHardwareStatus[];
+extern const char kManagementReportNetworkInterfaces[];
+extern const char kManagementReportUsers[];
 
 namespace base {
 class ListValue;
@@ -24,9 +33,9 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
  private:
-  void HandleInitialized(const base::ListValue* args);
+  void HandleGetDeviceManagementStatus(const base::ListValue* args);
 
-  void ShowDeviceManagementStatus();
+  void HandleGetReportingInfo(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(ManagementUIHandler);
 };

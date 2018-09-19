@@ -19,6 +19,18 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIManagementHost);
   source->AddLocalizedString("title", IDS_MANAGEMENT_TITLE);
+  source->AddLocalizedString("deviceConfiguration",
+                             IDS_MANAGEMENT_DEVICE_CONFIGURATION);
+  source->AddLocalizedString(kManagementLogUploadEnabled,
+                             IDS_MANAGEMENT_LOG_UPLOAD_ENABLED);
+  source->AddLocalizedString(kManagementReportActivityTimes,
+                             IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES);
+  source->AddLocalizedString(kManagementReportHardwareStatus,
+                             IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS);
+  source->AddLocalizedString(kManagementReportNetworkInterfaces,
+                             IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES);
+  source->AddLocalizedString(kManagementReportUsers,
+                             IDS_MANAGEMENT_REPORT_DEVICE_USERS);
   source->SetJsonPath("strings.js");
   // Add required resources.
   source->AddResourcePath("management.css", IDR_MANAGEMENT_CSS);

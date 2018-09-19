@@ -403,9 +403,9 @@
       <include name="IDR_POLICY_JS" file="resources\policy.js" type="BINDATA" compress="gzip" />
       <include name="IDR_POLICY_COMMON_CSS" file="resources\policy_common.css" type="BINDATA" compress="gzip" />
       <if expr="not is_android">
-        <include name="IDR_MANAGEMENT_HTML" file="resources\management.html" allowexternalscript="true" type="BINDATA" compress="gzip" />
-        <include name="IDR_MANAGEMENT_JS" file="resources\management.js" type="BINDATA" compress="gzip" />
-        <include name="IDR_MANAGEMENT_CSS" file="resources\management.css" type="BINDATA" compress="gzip" />
+        <include name="IDR_MANAGEMENT_HTML" file="resources\management\management.html" allowexternalscript="true" type="BINDATA" compress="gzip" />
+        <include name="IDR_MANAGEMENT_JS" file="resources\management\management.js" type="BINDATA" compress="gzip" />
+        <include name="IDR_MANAGEMENT_CSS" file="resources\management\management.css" type="BINDATA" compress="gzip" />
         <include name="IDR_POLICY_TOOL_HTML" file="resources\policy_tool.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
         <include name="IDR_POLICY_TOOL_CSS" file="resources\policy_tool.css" type="BINDATA" compress="gzip" />
         <include name="IDR_POLICY_TOOL_JS" file="resources\policy_tool.js" type="BINDATA" compress="gzip" />

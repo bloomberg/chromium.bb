@@ -16,6 +16,7 @@ if (closure_compile) {
     if (is_linux || is_win || is_mac) {
       deps += [
         "discards:closure_compile",
+        "management:closure_compile",
         "md_bookmarks:closure_compile",
         "md_downloads:closure_compile",
         "md_history:closure_compile",

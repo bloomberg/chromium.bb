@@ -12,4 +12,23 @@
   <message name="IDS_MANAGEMENT_DEVICE_MANAGED" desc="Message indicating that the device is enterprise enrolled to be managed by an administrator" translateable="false">
     Your device is managed by an administrator
   </message>
+
+  <message name="IDS_MANAGEMENT_DEVICE_CONFIGURATION" desc="Message telling users that their administrator has set some specific policies on their device" translateable="false">
+    Your device has been configured to:
+  </message>
+  <message name="IDS_MANAGEMENT_LOG_UPLOAD_ENABLED" desc="Message stating that administrators have access to system logs on user's device." translateable="false">
+    send system logs to the management server
+  </message>
+  <message name="IDS_MANAGEMENT_REPORT_DEVICE_ACTIVITY_TIMES" desc="Message stating that administrators see device activity times." translateable="false">
+    report time periods when a user is active on the device
+  </message>
+  <message name="IDS_MANAGEMENT_REPORT_DEVICE_HARDWARE_STATUS" desc="Message stating that administrators see device hardware status." translateable="false">
+    report hardware statistics such as CPU/RAM usage
+  </message>
+  <message name="IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES" desc="Message stating that administrators see device network interfaces." translateable="false">
+    report list of network interfaces with their types and hardware addresses
+  </message>
+  <message name="IDS_MANAGEMENT_REPORT_DEVICE_USERS" desc="Message stating that administrators see all users that have used the device recently." translateable="false">
+    report list of device users that have recently logged in
+  </message>
 </grit-part>
