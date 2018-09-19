@@ -127,8 +127,8 @@ class TestPreviewsBlackList : public PreviewsBlackList {
   PreviewsEligibilityReason status_;
 };
 
-// Stub class of PreviewsOptimizationGuide to control IsWhitelisted outcome
-// when testing PreviewsDeciderImpl.
+// Stub class of PreviewsOptimizationGuide to control IsWhitelisted and
+// IsBlacklisted outcomes when testing PreviewsDeciderImpl.
 class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
  public:
   TestPreviewsOptimizationGuide(
@@ -149,6 +149,16 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
     }
     if (type == PreviewsType::RESOURCE_LOADING_HINTS) {
       return request.url().host().compare("whitelisted.example.com") == 0;
+    }
+    return false;
+  }
+
+  // PreviewsOptimizationGuide:
+  bool IsBlacklisted(const net::URLRequest& request,
+                     PreviewsType type) const override {
+    EXPECT_TRUE(type == PreviewsType::LITE_PAGE_REDIRECT);
+    if (type == PreviewsType::LITE_PAGE_REDIRECT) {
+      return request.url().host().compare("blacklisted.example.com") == 0;
     }
     return false;
   }
@@ -383,6 +393,7 @@ class PreviewsDeciderImplTest : public testing::Test {
     allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
     allowed_types[static_cast<int>(PreviewsType::LOFI)] = 0;
     allowed_types[static_cast<int>(PreviewsType::LITE_PAGE)] = 0;
+    allowed_types[static_cast<int>(PreviewsType::LITE_PAGE_REDIRECT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::NOSCRIPT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::RESOURCE_LOADING_HINTS)] = 0;
     ui_service_.reset(new TestPreviewsUIService(
@@ -984,6 +995,69 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
     // Expect no eligibility logging.
     histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
   }
+}
+
+TEST_F(PreviewsDeciderImplTest,
+       LitePageRedirectAllowedWithoutOptimizationHints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kLitePageServerPreviews},
+      {features::kOptimizationHints});
+  InitializeUIService();
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      *CreateRequest(), PreviewsType::LITE_PAGE_REDIRECT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::LITE_PAGE_REDIRECT),
+      std::vector<std::string>(), false));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(
+          PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS),
+      1);
+}
+
+TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kLitePageServerPreviews,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+
+  // First verify preview allowed for non-whitelisted url.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      *CreateHttpsRequest(), PreviewsType::LITE_PAGE_REDIRECT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::LITE_PAGE_REDIRECT),
+      std::vector<std::string>(), false));
+
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+
+  // Now verify no preview for blacklisted url.
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
+      *CreateRequestWithURL(GURL("https://blacklisted.example.com")),
+      PreviewsType::LITE_PAGE_REDIRECT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::LITE_PAGE_REDIRECT),
+      std::vector<std::string>(), false));
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER),
+      1);
 }
 
 TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsDisallowedByDefault) {
