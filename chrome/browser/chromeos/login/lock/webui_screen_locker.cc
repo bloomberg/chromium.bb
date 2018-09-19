@@ -382,10 +382,6 @@ void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {
 ////////////////////////////////////////////////////////////////////////////////
 // display::DisplayObserver:
 
-void WebUIScreenLocker::OnDisplayAdded(const display::Display& new_display) {}
-
-void WebUIScreenLocker::OnDisplayRemoved(const display::Display& old_display) {}
-
 void WebUIScreenLocker::OnDisplayMetricsChanged(const display::Display& display,
                                                 uint32_t changed_metrics) {
   display::Display primary_display =

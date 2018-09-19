@@ -1513,12 +1513,6 @@ bool RenderWidgetHostViewAura::ShouldDoLearning() {
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, display::DisplayObserver implementation:
 
-void RenderWidgetHostViewAura::OnDisplayAdded(
-    const display::Display& new_display) {}
-
-void RenderWidgetHostViewAura::OnDisplayRemoved(
-    const display::Display& old_display) {}
-
 void RenderWidgetHostViewAura::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {

@@ -162,12 +162,6 @@ void AshPopupAlignmentDelegate::OnAutoHideStateChanged(
 ///////////////////////////////////////////////////////////////////////////////
 // display::DisplayObserver:
 
-void AshPopupAlignmentDelegate::OnDisplayAdded(
-    const display::Display& new_display) {}
-
-void AshPopupAlignmentDelegate::OnDisplayRemoved(
-    const display::Display& old_display) {}
-
 void AshPopupAlignmentDelegate::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {

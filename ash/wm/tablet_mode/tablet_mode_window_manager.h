@@ -77,8 +77,6 @@ class ASH_EXPORT TabletModeWindowManager
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& display) override;
   void OnDisplayRemoved(const display::Display& display) override;
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t metrics) override;
 
   // SplitViewController::Observer:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,

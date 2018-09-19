@@ -102,8 +102,6 @@ class TestObserver : public WindowTreeHostManager::Observer,
     if (metrics & DISPLAY_METRIC_PRIMARY)
       ++primary_changed_count_;
   }
-  void OnDisplayAdded(const display::Display& new_display) override {}
-  void OnDisplayRemoved(const display::Display& old_display) override {}
 
   // Overridden from aura::client::FocusChangeObserver
   void OnWindowFocused(aura::Window* gained_focus,

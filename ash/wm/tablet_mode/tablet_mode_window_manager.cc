@@ -206,11 +206,6 @@ void TabletModeWindowManager::OnDisplayRemoved(
   DisplayConfigurationChanged();
 }
 
-void TabletModeWindowManager::OnDisplayMetricsChanged(const display::Display&,
-                                                      uint32_t) {
-  // Nothing to do here.
-}
-
 void TabletModeWindowManager::OnSplitViewStateChanged(
     SplitViewController::State previous_state,
     SplitViewController::State state) {

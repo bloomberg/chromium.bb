@@ -654,10 +654,6 @@ void ChromeBrowserMainExtraPartsMetrics::OnDisplayRemoved(
   EmitDisplaysChangedMetric();
 }
 
-void ChromeBrowserMainExtraPartsMetrics::OnDisplayMetricsChanged(
-    const display::Display& display,
-    uint32_t changed_metrics) {}
-
 void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {
   int display_count = display::Screen::GetScreen()->GetNumDisplays();
   if (display_count != display_count_) {

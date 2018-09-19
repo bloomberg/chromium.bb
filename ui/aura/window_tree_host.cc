@@ -442,10 +442,6 @@ ui::EventSink* WindowTreeHost::GetEventSink() {
   return dispatcher_.get();
 }
 
-void WindowTreeHost::OnDisplayAdded(const display::Display& new_display) {}
-
-void WindowTreeHost::OnDisplayRemoved(const display::Display& old_display) {}
-
 void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t metrics) {
   if (metrics & DisplayObserver::DISPLAY_METRIC_COLOR_SPACE) {
