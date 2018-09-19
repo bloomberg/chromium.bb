@@ -1208,7 +1208,7 @@ class CrossSiteDocumentResourceHandlerTest
 
     // Content-Type header.
     std::string charset;
-    bool had_charset;
+    bool had_charset = false;
     std::string boundary;
     response_headers->AddHeader(std::string("Content-Type: ") +
                                 response_mime_type);
