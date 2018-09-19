@@ -538,7 +538,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual bool UpdateLogicalWidthAndColumnWidth();
 
   LayoutObjectChildList children_;
-  base::Optional<NGConstraintSpace> cached_constraint_space_;
+  std::unique_ptr<NGConstraintSpace> cached_constraint_space_;
 
   unsigned
       has_margin_before_quirk_ : 1;  // Note these quirk values can't be put

@@ -45,7 +45,7 @@ enum NGTableCellChildLayoutPhase {
 // The NGConstraintSpace represents a set of constraints and available space
 // which a layout algorithm may produce a NGFragment within.
 class CORE_EXPORT NGConstraintSpace final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  USING_FAST_MALLOC(NGConstraintSpace);
 
  public:
   enum ConstraintSpaceFlags {
