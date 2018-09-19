@@ -84,6 +84,7 @@
 #include "components/feature_engagement/buildflags.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
+#include "components/image_fetcher/core/storage/image_cache.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
 #include "components/language/content/browser/geo_language_provider.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -549,6 +550,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   DocumentProvider::RegisterProfilePrefs(registry);
   DownloadPrefs::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
+  image_fetcher::ImageCache::RegisterProfilePrefs(registry);
   ImportantSitesUtil::RegisterProfilePrefs(registry);
   IncognitoModePrefs::RegisterProfilePrefs(registry);
   MediaCaptureDevicesDispatcher::RegisterProfilePrefs(registry);
