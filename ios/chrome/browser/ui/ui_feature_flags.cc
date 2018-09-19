@@ -9,5 +9,7 @@ const base::Feature kFirstResponderKeyWindow{"FirstResponderKeyWindow",
 
 const base::Feature kCopyImage{"CopyImage", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kOmniboxPopupShortcuts{"OmniboxPopupShortcuts",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kWKWebViewSnapshots{"WKWebViewSnapshots",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

@@ -208,6 +208,11 @@ const char kNewPasswordFormParsingDescription[] =
     "currently under development. WARNING: when enabled Password Manager might "
     "stop working";
 
+const char kOmniboxPopupShortcutsName[] = "Show zero-state omnibox shortcuts";
+const char kOmniboxPopupShortcutsDescription[] =
+    "Instead of ZeroSuggest, show most visited sites and collection shortcuts "
+    "in the omnibox popup.";
+
 const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
     "Hide the path, query, and ref of omnibox suggestions";
 const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
