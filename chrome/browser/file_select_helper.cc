@@ -295,7 +295,7 @@ void FileSelectHelper::NotifyRenderFrameHostAndEnd(
             ->GetFileSystemContext();
     file_manager::util::ConvertSelectedFileInfoListToFileChooserFileInfoList(
         file_system_context, site_instance->GetSiteURL(), files,
-        base::Bind(
+        base::BindOnce(
             &FileSelectHelper::NotifyRenderFrameHostAndEndAfterConversion,
             this));
     return;

@@ -960,9 +960,9 @@ void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
       chrome_details_.GetProfile(), extension_id(),
       file_definition_list,  // Safe, since copied internally.
-      base::Bind(&FileManagerPrivateInternalGetRecentFilesFunction::
-                     OnConvertFileDefinitionListToEntryDefinitionList,
-                 this));
+      base::BindOnce(&FileManagerPrivateInternalGetRecentFilesFunction::
+                         OnConvertFileDefinitionListToEntryDefinitionList,
+                     this));
 }
 
 void FileManagerPrivateInternalGetRecentFilesFunction::

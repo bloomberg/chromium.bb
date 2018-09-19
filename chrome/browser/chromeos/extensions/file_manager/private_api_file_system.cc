@@ -841,10 +841,9 @@ bool FileManagerPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
   }
 
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-      GetProfile(),
-      extension_->id(),
+      GetProfile(), extension_->id(),
       file_definition_list,  // Safe, since copied internally.
-      base::Bind(
+      base::BindOnce(
           &FileManagerPrivateInternalResolveIsolatedEntriesFunction::
               RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList,
           this));

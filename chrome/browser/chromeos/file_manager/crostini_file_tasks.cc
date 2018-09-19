@@ -148,7 +148,7 @@ void ExecuteCrostiniTask(
     Profile* profile,
     const TaskDescriptor& task,
     const std::vector<storage::FileSystemURL>& file_system_urls,
-    const FileTaskFinishedCallback& done) {
+    FileTaskFinishedCallback done) {
   DCHECK(IsCrostiniUIAllowedForProfile(profile));
 
   std::vector<std::string> files;
