@@ -190,6 +190,7 @@ js_library("advanced_options_settings") {
 js_library("more_settings") {
   deps = [
     "..:metrics",
+    "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }
