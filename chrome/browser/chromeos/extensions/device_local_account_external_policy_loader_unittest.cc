@@ -163,13 +163,6 @@ class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
   void VerifyAndResetVisitorCallExpectations();
   void SetForceInstallListPolicy();
 
-  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
-      size_t index = 0) {
-    if (index >= test_url_loader_factory_.pending_requests()->size())
-      return nullptr;
-    return &test_url_loader_factory_.pending_requests()->at(index);
-  }
-
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   base::FilePath cache_dir_;
@@ -315,7 +308,7 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
   EXPECT_TRUE(base::ReadFileToString(test_dir_.Append(kExtensionUpdateManifest),
                                      &manifest));
 
-  auto* pending_request = GetPendingRequest();
+  auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.AddResponse(pending_request->request.url.spec(),
                                        manifest);
 
@@ -328,7 +321,7 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListSet) {
   EXPECT_EQ(1, test_url_loader_factory_.NumPending());
 
   // Trigger downloading of the temporary CRX file.
-  pending_request = GetPendingRequest();
+  pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.AddResponse(pending_request->request.url.spec(),
                                        "Content is irrelevant.");
 
