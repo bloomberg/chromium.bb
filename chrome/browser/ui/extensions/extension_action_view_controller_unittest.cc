@@ -84,9 +84,20 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
       extensions::features::kRuntimeHostPermissions);
 
   scoped_refptr<const extensions::Extension> browser_action_ext =
-      CreateAndAddExtension(
-          "browser action",
-          extensions::ExtensionBuilder::ActionType::BROWSER_ACTION);
+      extensions::ExtensionBuilder("browser action")
+          .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .AddPermission("https://www.google.com/*")
+          .Build();
+
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
+  service->GrantPermissions(browser_action_ext.get());
+  service->AddExtension(browser_action_ext.get());
+  extensions::ScriptingPermissionsModifier permissions_modifier_browser_ext(
+      profile(), browser_action_ext);
+  permissions_modifier_browser_ext.SetWithholdHostPermissions(true);
+
   ASSERT_EQ(1u, toolbar_actions_bar()->GetIconCount());
   AddTab(browser(), GURL("https://www.google.com/"));
 
@@ -117,7 +128,7 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
   EXPECT_FALSE(image_source->paint_page_action_decoration());
   EXPECT_TRUE(image_source->paint_blocked_actions_decoration());
 
-  action_runner->RunBlockedActions(browser_action_ext.get());
+  action_runner->RunForTesting(browser_action_ext.get());
   image_source =
       browser_action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_FALSE(image_source->grayscale());
@@ -125,8 +136,17 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
   EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 
   scoped_refptr<const extensions::Extension> page_action_ext =
-      CreateAndAddExtension(
-          "page action", extensions::ExtensionBuilder::ActionType::PAGE_ACTION);
+      extensions::ExtensionBuilder("page action")
+          .SetAction(extensions::ExtensionBuilder::ActionType::PAGE_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .AddPermission("https://www.google.com/*")
+          .Build();
+  service->GrantPermissions(page_action_ext.get());
+  service->AddExtension(page_action_ext.get());
+  extensions::ScriptingPermissionsModifier permissions_modifier_page_action(
+      profile(), page_action_ext);
+  permissions_modifier_page_action.SetWithholdHostPermissions(true);
+
   ASSERT_EQ(2u, toolbar_actions_bar()->GetIconCount());
   ExtensionActionViewController* page_action =
       static_cast<ExtensionActionViewController*>(
@@ -167,9 +187,9 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
                            web_contents, false);
   toolbar_model()->SetVisibleIconCount(2u);
 
-  action_runner->RunBlockedActions(page_action_ext.get());
+  action_runner->RunForTesting(page_action_ext.get());
   image_source = page_action->GetIconImageSourceForTesting(web_contents, size);
-  EXPECT_TRUE(image_source->grayscale());
+  EXPECT_FALSE(image_source->grayscale());
   EXPECT_FALSE(image_source->paint_page_action_decoration());
   EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 }

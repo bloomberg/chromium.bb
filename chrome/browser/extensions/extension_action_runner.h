@@ -43,6 +43,17 @@ class ExtensionRegistry;
 class ExtensionActionRunner : public content::WebContentsObserver,
                               public ExtensionRegistryObserver {
  public:
+  enum class PageAccess {
+    RUN_ON_CLICK,
+    RUN_ON_SITE,
+    RUN_ON_ALL_SITES,
+  };
+
+  class TestObserver {
+   public:
+    virtual void OnBlockedActionAdded() = 0;
+  };
+
   explicit ExtensionActionRunner(content::WebContents* web_contents);
   ~ExtensionActionRunner() override;
 
@@ -59,9 +70,11 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   ExtensionAction::ShowAction RunAction(const Extension* extension,
                                         bool grant_tab_permissions);
 
-  // Runs any actions that were blocked for the given |extension|. As a
-  // requirement, this will grant activeTab permission to the extension.
-  void RunBlockedActions(const Extension* extension);
+  // Notifies the ExtensionActionRunner that the page access for |extension| has
+  // changed.
+  void HandlePageAccessModified(const Extension* extension,
+                                PageAccess current_access,
+                                PageAccess new_access);
 
   // Notifies the ExtensionActionRunner that an extension has been granted
   // active tab permissions. This will run any pending injections for that
@@ -87,6 +100,9 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   void set_default_bubble_close_action_for_testing(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate::CloseAction> action) {
     default_bubble_close_action_for_testing_ = std::move(action);
+  }
+  void set_observer_for_testing(TestObserver* observer) {
+    test_observer_ = observer;
   }
 
 #if defined(UNIT_TEST)
@@ -156,13 +172,37 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   void LogUMA() const;
 
   // Shows the bubble to prompt the user to refresh the page to run the blocked
-  // actions for the given |extension|.
-  void ShowBlockedActionBubble(const Extension* extension);
+  // actions for the given |extension|. |callback| is invoked when the bubble is
+  // closed.
+  void ShowBlockedActionBubble(
+      const Extension* extension,
+      const base::Callback<void(ToolbarActionsBarBubbleDelegate::CloseAction)>&
+          callback);
 
-  // Called when the blocked actions bubble is closed.
-  void OnBlockedActionBubbleClosed(
+  // Called when the blocked actions bubble invoked to run the extension action
+  // is closed.
+  void OnBlockedActionBubbleForRunActionClosed(
       const std::string& extension_id,
       ToolbarActionsBarBubbleDelegate::CloseAction action);
+
+  // Called when the blocked actions bubble invoked for the page access grant is
+  // closed.
+  void OnBlockedActionBubbleForPageAccessGrantClosed(
+      const std::string& extension_id,
+      const GURL& page_url,
+      PageAccess current_access,
+      PageAccess new_access,
+      ToolbarActionsBarBubbleDelegate::CloseAction action);
+
+  // Handles permission changes necessary for page access modification of the
+  // |extension|.
+  void UpdatePageAccessSettings(const Extension* extension,
+                                PageAccess current_access,
+                                PageAccess new_access);
+
+  // Runs any actions that were blocked for the given |extension|. As a
+  // requirement, this will grant activeTab permission to the extension.
+  void RunBlockedActions(const Extension* extension);
 
   // content::WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message,
@@ -207,6 +247,8 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   // If non-null, the bubble action to simulate for testing.
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::CloseAction>
       default_bubble_close_action_for_testing_;
+
+  TestObserver* test_observer_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
