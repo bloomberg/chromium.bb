@@ -209,6 +209,29 @@ FOO_GTESTS_TEST_MIXIN_WATERFALL = """\
 ]
 """
 
+FOO_GTESTS_SORTING_MIXINS_WATERFALL = """\
+[
+  {
+    'swarming_mixins': ['a_mixin', 'b_mixin', 'c_mixin'],
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
 FOO_LINUX_GTESTS_WATERFALL = """\
 [
   {
@@ -1350,6 +1373,8 @@ consoles {
 }
 """
 
+# These mixins are invalid; if passed to check_input_file_consistency, they will
+# fail. These are used for output file consistency checks.
 SWARMING_MIXINS = """\
 {
   'dimension_mixin': {
@@ -1365,6 +1390,34 @@ SWARMING_MIXINS = """\
   },
   'test_mixin': {
     'value': 'test',
+  },
+}
+"""
+
+SWARMING_MIXINS_UNSORTED = """\
+{
+  'b_mixin': {
+    'b': 'b',
+  },
+  'a_mixin': {
+    'a': 'a',
+  },
+  'c_mixin': {
+    'c': 'c',
+  },
+}
+"""
+
+SWARMING_MIXINS_SORTED = """\
+{
+  'a_mixin': {
+    'a': 'a',
+  },
+  'b_mixin': {
+    'b': 'b',
+  },
+  'c_mixin': {
+    'c': 'c',
   },
 }
 """
@@ -1754,6 +1807,22 @@ class UnitTest(unittest.TestCase):
     fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_output_file_consistency(verbose=True)
+
+  def test_swarming_mixins_must_be_sorted(self):
+    fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
+                    FOO_TEST_SUITE,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS_UNSORTED,
+                    LUCI_MILO_CFG)
+    with self.assertRaises(generate_buildbot_json.BBGenErr):
+      fbb.check_input_file_consistency()
+
+    fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
+                    FOO_TEST_SUITE,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS_SORTED,
+                    LUCI_MILO_CFG)
+    fbb.check_input_file_consistency()
 
 
 if __name__ == '__main__':

@@ -841,7 +841,7 @@ class BBJSONGenerator(object):
       'win32-dbg',
     ]
 
-  def check_input_file_consistency(self):
+  def check_input_file_consistency(self, verbose=False):
     self.load_configuration_files()
     self.check_composition_test_suites()
 
@@ -939,6 +939,58 @@ class BBJSONGenerator(object):
       raise BBGenErr('The following mixins are unreferenced: %s. They must be'
                      ' referenced in a waterfall, machine, or test suite.' % (
                          str(missing_mixins)))
+
+    self.check_input_files_sorting(verbose)
+
+  def check_input_files_sorting(self, verbose=False):
+    bad_files = []
+    # FIXME: Expand to other files. It's unclear if every other file should be
+    # similarly sorted.
+    for filename in ('swarming_mixins.pyl',):
+      parsed = ast.parse(self.read_file(self.pyl_file_path(filename)))
+
+      def type_assert(itm, typ): # pragma: no cover
+        if not isinstance(itm, typ):
+          raise BBGenErr(
+              'Invalid .pyl file %s. %s expected to be %s, is %s' % (
+                  filename, itm, typ, type(itm)))
+
+      # Must be a module.
+      type_assert(parsed, ast.Module)
+      module = parsed.body
+
+      # Only one expression in the module.
+      type_assert(module, list)
+      if len(module) != 1: # pragma: no cover
+        raise BBGenErr('Invalid .pyl file %s' % filename)
+      expr = module[0]
+      type_assert(expr, ast.Expr)
+
+      # Value should be a dictionary.
+      value = expr.value
+      type_assert(value, ast.Dict)
+
+      keys = []
+      # The keys of this dict are ordered as ordered in the file; normal python
+      # dictionary keys are given an arbitrary order, but since we parsed the
+      # file itself, the order as given in the file is preserved.
+      for key in value.keys:
+        type_assert(key, ast.Str)
+        keys.append(key.s)
+
+      if sorted(keys) != keys:
+        bad_files.append(filename)
+        if verbose: # pragma: no cover
+          for line in difflib.unified_diff(
+              sorted(keys),
+              keys):
+            print line
+
+    if bad_files:
+      raise BBGenErr(
+          'The following files have unsorted top level keys: %s' % (
+              ', '.join(bad_files)))
+
 
   def check_output_file_consistency(self, verbose=False):
     self.load_configuration_files()
