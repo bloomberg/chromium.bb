@@ -400,7 +400,8 @@ void DemoSession::OnOfflineResourcesLoaded(
 
 void DemoSession::InstallDemoResources() {
   DCHECK(offline_resources_loaded_);
-  LoadAndLaunchHighlightsApp();
+  if (offline_enrolled_)
+    LoadAndLaunchHighlightsApp();
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&InstallDemoMedia, offline_resources_path_));
@@ -443,10 +444,12 @@ void DemoSession::InstallAppFromUpdateUrl(const std::string& id) {
 
 void DemoSession::OnSessionStateChanged() {
   if (session_manager::SessionManager::Get()->session_state() !=
-          session_manager::SessionState::ACTIVE ||
-      !IsDeviceInDemoMode()) {
+      session_manager::SessionState::ACTIVE) {
     return;
   }
+  if (!offline_enrolled_)
+    InstallAppFromUpdateUrl(GetHighlightsAppId());
+
   EnsureOfflineResourcesLoaded(base::BindOnce(
       &DemoSession::InstallDemoResources, weak_ptr_factory_.GetWeakPtr()));
 }
