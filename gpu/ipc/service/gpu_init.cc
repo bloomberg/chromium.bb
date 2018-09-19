@@ -183,20 +183,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #endif  // OS_WIN
   }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (gpu_preferences_.enable_vulkan) {
-    vulkan_implementation_ = gpu::CreateVulkanImplementation();
-    if (!vulkan_implementation_ ||
-        !vulkan_implementation_->InitializeVulkanInstance()) {
-      DLOG(WARNING) << "Failed to create and initialize Vulkan implementation.";
-      vulkan_implementation_ = nullptr;
-    }
-    gpu_preferences_.enable_vulkan = !!vulkan_implementation_;
-  }
-#else
-  gpu_preferences_.enable_vulkan = false;
-#endif
-
   sandbox_helper_->PreSandboxStartup();
 
   bool attempted_startsandbox = false;
@@ -220,6 +206,20 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   params.single_process = false;
   params.using_mojo = features::IsOzoneDrmMojo();
   ui::OzonePlatform::InitializeForGPU(params);
+#endif
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (gpu_preferences_.enable_vulkan) {
+    vulkan_implementation_ = gpu::CreateVulkanImplementation();
+    if (!vulkan_implementation_ ||
+        !vulkan_implementation_->InitializeVulkanInstance()) {
+      DLOG(WARNING) << "Failed to create and initialize Vulkan implementation.";
+      vulkan_implementation_ = nullptr;
+    }
+    gpu_preferences_.enable_vulkan = !!vulkan_implementation_;
+  }
+#else
+  gpu_preferences_.enable_vulkan = false;
 #endif
 
   if (!use_swiftshader) {
