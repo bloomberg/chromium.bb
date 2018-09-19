@@ -962,12 +962,16 @@ TEST_F('EditingTest', 'BackwardWordDelete', function() {
       mockFeedback.call(this.press(35 /* end */, {ctrl: true}))
           .call(this.press(8 /* backspace */, {ctrl: true}))
           .expectSpeech('test, deleted')
+          .expectBraille('a\u00a0', {startIndex: 2, endIndex: 2})
           .call(this.press(8 /* backspace */, {ctrl: true}))
           .expectSpeech('a , deleted')
+          .expectBraille('is\u00a0', {startIndex: 3, endIndex: 3})
           .call(this.press(8 /* backspace */, {ctrl: true}))
           .expectSpeech('is , deleted')
+          .expectBraille('this\u00a0mled', {startIndex: 5, endIndex: 5})
           .call(this.press(8 /* backspace */, {ctrl: true}))
           .expectSpeech('this , deleted')
+          .expectBraille(' ed mled', {startIndex: 0, endIndex: 0})
           .replay();
     });
     input.focus();
