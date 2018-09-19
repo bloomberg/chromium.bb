@@ -27,8 +27,7 @@ class ImageDataStore {
   virtual bool IsInitialized() = 0;
 
   // Adds or updates the image data for the |key|.
-  virtual void SaveImage(const std::string& key,
-                         const std::string& image_data) = 0;
+  virtual void SaveImage(const std::string& key, std::string image_data) = 0;
 
   // Loads the image data for the |key| and passes it to |callback|. If the
   // image isn't available, empty data will be returned.

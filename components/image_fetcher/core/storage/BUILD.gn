@@ -27,6 +27,7 @@ static_library("storage") {
 source_set("storage_unit_tests") {
   testonly = true
   sources = [
+    "image_data_store_disk_unittest.cc",
     "image_metadata_store_leveldb_unittest.cc",
   ]
   deps = [
