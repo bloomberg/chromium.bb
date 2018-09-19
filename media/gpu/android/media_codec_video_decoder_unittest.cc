@@ -120,6 +120,17 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
   void TearDown() override {
     // MCVD calls DeleteSoon() on itself, so we have to run a RunLoop.
     mcvd_.reset();
+    // For Vp8, MCVD might try to drain before destroying itself.  If needed,
+    // complete the drain.  Note that not every Vp8 codec will need this; it
+    // might already be drained, in which case the drain will be elided.
+    if (codec_ == kCodecVP8 && codec_allocator_->most_recent_codec &&
+        !codec_allocator_->most_recent_codec->IsDrained()) {
+      // MCVD should have queued an EOS.  Just provide one, and hope that MCVD
+      // won't notice if there should have been other outputs before it.
+      codec_allocator_->most_recent_codec->ProduceOneOutput(
+          MockMediaCodecBridge::kEos);
+      PumpCodec();
+    }
     base::RunLoop().RunUntilIdle();
   }
 
@@ -554,8 +565,7 @@ TEST_P(MediaCodecVideoDecoderTest, ResetAbortsPendingDecodes) {
   mcvd_->Reset(base::DoNothing());
 }
 
-// TODO(liberato): Why does this test only work for H264?
-TEST_P(MediaCodecVideoDecoderH264Test, ResetAbortsPendingEosDecode) {
+TEST_P(MediaCodecVideoDecoderTest, ResetAbortsPendingEosDecode) {
   // EOS is treated differently by MCVD. This verifies that it's also aborted.
   auto* codec =
       InitializeFully_OneDecodePending(TestVideoConfig::Large(codec_));
@@ -570,6 +580,8 @@ TEST_P(MediaCodecVideoDecoderH264Test, ResetAbortsPendingEosDecode) {
 
   EXPECT_CALL(eos_decode_cb, Run(DecodeStatus::ABORTED));
   mcvd_->Reset(base::DoNothing());
+  // Should be run before |mcvd_| is destroyed.
+  testing::Mock::VerifyAndClearExpectations(&eos_decode_cb);
 }
 
 TEST_P(MediaCodecVideoDecoderTest, ResetDoesNotFlushAnAlreadyFlushedCodec) {
@@ -617,12 +629,15 @@ TEST_P(MediaCodecVideoDecoderH264Test, ResetDoesNotDrainNonVp8Codecs) {
   PumpCodec();
 
   // The reset should complete immediately because the codec is not VP8 so
-  // it doesn't need draining.  Note that it will be deferred until the next
-  // decode, so we provide one.  We don't expect a flush since it will be
-  // defererd until the first decode after the reset.
+  // it doesn't need draining.  We don't expect a call to Flush on the codec
+  // since it will be deferred until the first decode after the reset.
   base::MockCallback<base::Closure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
+  // The reset should complete before destroying the codec, since TearDown will
+  // complete the drain for VP8.  It still might not call reset since a drain
+  // for destroy probably doesn't, but either way we expect it before the drain.
+  testing::Mock::VerifyAndClearExpectations(&reset_cb);
 }
 
 TEST_P(MediaCodecVideoDecoderVp8Test, TeardownCompletesPendingReset) {
@@ -712,6 +727,12 @@ TEST_P(MediaCodecVideoDecoderTest, TeardownDoesNotDrainFlushedCodecs) {
   InitializeFully_OneDecodePending(TestVideoConfig::Large(codec_));
   // Since we assert that MCVD is destructed by default, this test verifies that
   // MCVD is destructed without requiring the codec to output an EOS buffer.
+
+  // We assert this since, otherwise, we'll complete the drain for VP8 codecs in
+  // TearDown.  This guarantees that we won't, so any drain started by MCVD
+  // won't complete.  Otherwise, this tests nothing.  Note that 'Drained' here
+  // is a bit of a misnomer; the mock codec doesn't track flushed.
+  ASSERT_TRUE(codec_allocator_->most_recent_codec->IsDrained());
 }
 
 TEST_P(MediaCodecVideoDecoderH264Test, TeardownDoesNotDrainNonVp8Codecs) {
@@ -722,6 +743,7 @@ TEST_P(MediaCodecVideoDecoderH264Test, TeardownDoesNotDrainNonVp8Codecs) {
   PumpCodec();
   // Since we assert that MCVD is destructed by default, this test verifies that
   // MCVD is destructed without requiring the codec to output an EOS buffer.
+  // Remember that we do not complete the drain for non-VP8 codecs in TearDown.
 }
 
 TEST_P(MediaCodecVideoDecoderVp8Test,
@@ -783,12 +805,13 @@ TEST_P(MediaCodecVideoDecoderTest, CdmInitializationWorksForL1) {
   EXPECT_CALL(*cdm_, UnregisterPlayer(MockMediaCryptoContext::kRegistrationId));
 }
 
-// TODO(liberato): Why does this test only work for H264?
-TEST_P(MediaCodecVideoDecoderH264Test, CdmIsSetEvenForClearStream) {
+TEST_P(MediaCodecVideoDecoderTest, CdmIsSetEvenForClearStream) {
   // Make sure that MCVD uses the cdm, and sends it along to the codec.
   CreateCdm(true, false);
   EXPECT_CALL(*cdm_, RegisterPlayer(_, _));
-  InitializeWithOverlay_OneDecodePending(TestVideoConfig::Normal(codec_));
+  // We use the Large config, since VPx can be rejected if it's too small, in
+  // favor of software decode, since this is unencrypted.
+  InitializeWithOverlay_OneDecodePending(TestVideoConfig::Large(codec_));
   ASSERT_TRUE(!!cdm_->new_key_cb);
   ASSERT_TRUE(!!cdm_->cdm_unset_cb);
   ASSERT_TRUE(!!cdm_->media_crypto_ready_cb);
@@ -834,8 +857,7 @@ TEST_P(MediaCodecVideoDecoderTest, MissingCdmFailsInit) {
   ASSERT_FALSE(Initialize(TestVideoConfig::NormalEncrypted(codec_)));
 }
 
-// TODO(liberato): Why does this test only work for H264?
-TEST_P(MediaCodecVideoDecoderH264Test, VideoFramesArePowerEfficient) {
+TEST_P(MediaCodecVideoDecoderTest, VideoFramesArePowerEfficient) {
   // MCVD should mark video frames as POWER_EFFICIENT.
   auto* codec =
       InitializeFully_OneDecodePending(TestVideoConfig::Large(codec_));
