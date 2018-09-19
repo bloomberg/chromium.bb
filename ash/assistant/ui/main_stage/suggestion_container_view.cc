@@ -48,6 +48,10 @@ SuggestionContainerView::~SuggestionContainerView() {
   assistant_controller_->cache_controller()->RemoveModelObserver(this);
 }
 
+const char* SuggestionContainerView::GetClassName() const {
+  return "SuggestionContainerView";
+}
+
 gfx::Size SuggestionContainerView::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }

@@ -45,6 +45,10 @@ LogoView::~LogoView() {
   state_animator_.StopAnimator();
 }
 
+const char* LogoView::GetClassName() const {
+  return "LogoView";
+}
+
 void LogoView::SetState(BaseLogoView::State state, bool animate) {
   StateModel::State animator_state;
   switch (state) {

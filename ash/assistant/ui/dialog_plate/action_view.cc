@@ -37,6 +37,10 @@ ActionView::~ActionView() {
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
+const char* ActionView::GetClassName() const {
+  return "ActionView";
+}
+
 gfx::Size ActionView::CalculatePreferredSize() const {
   return gfx::Size(kPreferredSizeDip, GetHeightForWidth(kPreferredSizeDip));
 }

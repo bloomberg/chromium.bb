@@ -51,6 +51,10 @@ AssistantMiniView::~AssistantMiniView() {
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
+const char* AssistantMiniView::GetClassName() const {
+  return "AssistantMiniView";
+}
+
 gfx::Size AssistantMiniView::CalculatePreferredSize() const {
   const int preferred_width =
       std::min(views::View::CalculatePreferredSize().width(), kMaxWidthDip);

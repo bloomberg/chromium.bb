@@ -29,6 +29,7 @@ class AssistantHeaderView : public views::View,
   ~AssistantHeaderView() override;
 
   // views::View:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void ChildVisibilityChanged(views::View* child) override;
 

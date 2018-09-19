@@ -19,6 +19,9 @@ class AssistantTextElementView : public views::Label {
   explicit AssistantTextElementView(const AssistantTextElement* text_element);
   ~AssistantTextElementView() override;
 
+  // views::Label:
+  const char* GetClassName() const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantTextElementView);
 };

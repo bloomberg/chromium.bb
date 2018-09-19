@@ -92,6 +92,10 @@ void DialogPlate::RemoveObserver(DialogPlateObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+const char* DialogPlate::GetClassName() const {
+  return "DialogPlate";
+}
+
 gfx::Size DialogPlate::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }

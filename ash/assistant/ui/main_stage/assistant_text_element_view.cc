@@ -26,4 +26,8 @@ AssistantTextElementView::AssistantTextElementView(
 
 AssistantTextElementView::~AssistantTextElementView() = default;
 
+const char* AssistantTextElementView::GetClassName() const {
+  return "AssistantTextElementView";
+}
+
 }  // namespace ash

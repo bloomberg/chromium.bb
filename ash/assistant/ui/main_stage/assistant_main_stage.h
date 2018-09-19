@@ -42,6 +42,7 @@ class AssistantMainStage : public views::View,
   ~AssistantMainStage() override;
 
   // views::View:
+  const char* GetClassName() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
 

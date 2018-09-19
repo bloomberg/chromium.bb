@@ -70,6 +70,10 @@ AssistantMainView::~AssistantMainView() {
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
+const char* AssistantMainView::GetClassName() const {
+  return "AssistantMainView";
+}
+
 gfx::Size AssistantMainView::CalculatePreferredSize() const {
   return gfx::Size(kPreferredWidthDip, GetHeightForWidth(kPreferredWidthDip));
 }

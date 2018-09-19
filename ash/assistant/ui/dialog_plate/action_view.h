@@ -24,7 +24,8 @@ class ActionView : public AssistantButton,
              AssistantController* assistant_controller);
   ~ActionView() override;
 
-  // views::Button:
+  // AssistantButton:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
 

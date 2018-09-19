@@ -47,6 +47,10 @@ CaptionBar::CaptionBar() {
 
 CaptionBar::~CaptionBar() = default;
 
+const char* CaptionBar::GetClassName() const {
+  return "CaptionBar";
+}
+
 bool CaptionBar::AcceleratorPressed(const ui::Accelerator& accelerator) {
   switch (accelerator.key_code()) {
     case ui::VKEY_BROWSER_BACK:

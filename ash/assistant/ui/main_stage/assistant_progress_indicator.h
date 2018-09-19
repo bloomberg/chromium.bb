@@ -18,6 +18,7 @@ class AssistantProgressIndicator : public views::View {
   ~AssistantProgressIndicator() override;
 
   // views::View:
+  const char* GetClassName() const override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
   void OnLayerOpacityChanged(ui::PropertyChangeReason reason) override;

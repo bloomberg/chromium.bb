@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_FOOTER_VIEW_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
@@ -29,6 +30,7 @@ class AssistantFooterView : public views::View,
   ~AssistantFooterView() override;
 
   // views::View:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
 
