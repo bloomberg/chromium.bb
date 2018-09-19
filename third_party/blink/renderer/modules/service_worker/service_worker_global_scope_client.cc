@@ -74,18 +74,6 @@ void DidGetClient(
   callbacks->OnSuccess(std::move(web_client));
 }
 
-void DidGetClients(
-    std::unique_ptr<blink::WebServiceWorkerClientsCallbacks> callbacks,
-    Vector<mojom::blink::ServiceWorkerClientInfoPtr> clients) {
-  blink::WebServiceWorkerClientsInfo info;
-  blink::WebVector<blink::WebServiceWorkerClientInfo> web_clients(
-      clients.size());
-  for (size_t i = 0; i < clients.size(); ++i)
-    web_clients[i] = ToWebServiceWorkerClientInfo(std::move(clients[i]));
-  info.clients.Swap(web_clients);
-  callbacks->OnSuccess(info);
-}
-
 void DidOpenWindow(
     std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks,
     bool success,
@@ -158,10 +146,8 @@ void ServiceWorkerGlobalScopeClient::GetClient(
 
 void ServiceWorkerGlobalScopeClient::GetClients(
     mojom::blink::ServiceWorkerClientQueryOptionsPtr options,
-    std::unique_ptr<WebServiceWorkerClientsCallbacks> callbacks) {
-  DCHECK(callbacks);
-  service_worker_host_->GetClients(
-      std::move(options), WTF::Bind(&DidGetClients, std::move(callbacks)));
+    GetClientsCallback callback) {
+  service_worker_host_->GetClients(std::move(options), std::move(callback));
 }
 
 void ServiceWorkerGlobalScopeClient::OpenWindowForClients(

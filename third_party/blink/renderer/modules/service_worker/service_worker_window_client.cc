@@ -32,8 +32,19 @@ ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
   return new ServiceWorkerWindowClient(info);
 }
 
+ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
+    const mojom::blink::ServiceWorkerClientInfo& info) {
+  return new ServiceWorkerWindowClient(info);
+}
+
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(
     const WebServiceWorkerClientInfo& info)
+    : ServiceWorkerClient(info),
+      page_visibility_state_(info.page_visibility_state),
+      is_focused_(info.is_focused) {}
+
+ServiceWorkerWindowClient::ServiceWorkerWindowClient(
+    const mojom::blink::ServiceWorkerClientInfo& info)
     : ServiceWorkerClient(info),
       page_visibility_state_(info.page_visibility_state),
       is_focused_(info.is_focused) {}

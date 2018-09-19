@@ -64,6 +64,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
   using ClaimCallback = mojom::blink::ServiceWorkerHost::ClaimClientsCallback;
   using SkipWaitingCallback =
       mojom::blink::ServiceWorkerHost::SkipWaitingCallback;
+  using GetClientsCallback =
+      mojom::blink::ServiceWorkerHost::GetClientsCallback;
 
   static const char kSupplementName[];
 
@@ -73,7 +75,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
   void GetClient(const String&,
                  std::unique_ptr<WebServiceWorkerClientCallbacks>);
   void GetClients(mojom::blink::ServiceWorkerClientQueryOptionsPtr,
-                  std::unique_ptr<WebServiceWorkerClientsCallbacks>);
+                  GetClientsCallback);
   void OpenWindowForClients(const KURL&,
                             std::unique_ptr<WebServiceWorkerClientCallbacks>);
   void OpenWindowForPaymentHandler(

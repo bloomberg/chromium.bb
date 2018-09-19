@@ -11,7 +11,6 @@
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/platform/web_vector.h"
 
 #include <memory>
 
@@ -35,16 +34,8 @@ struct WebServiceWorkerClientInfo {
   mojom::ServiceWorkerClientType client_type;
 };
 
-struct WebServiceWorkerClientsInfo {
-  WebVector<WebServiceWorkerClientInfo> clients;
-};
-
-// Two WebCallbacks, one for one client, one for a WebVector of clients.
 using WebServiceWorkerClientCallbacks =
     WebCallbacks<std::unique_ptr<WebServiceWorkerClientInfo>,
-                 const WebServiceWorkerError&>;
-using WebServiceWorkerClientsCallbacks =
-    WebCallbacks<const WebServiceWorkerClientsInfo&,
                  const WebServiceWorkerError&>;
 
 }  // namespace blink
