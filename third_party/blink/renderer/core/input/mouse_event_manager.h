@@ -43,7 +43,7 @@ class CORE_EXPORT MouseEventManager final
   virtual ~MouseEventManager();
   void Trace(blink::Visitor*) override;
 
-  enum FakeMouseMoveReason { kDuringScroll, kPerFrame };
+  enum UpdateHoverReason { kScrollOffsetChanged, kLayoutOrStyleChanged };
 
   WebInputEventResult DispatchMouseEvent(EventTarget*,
                                          const AtomicString&,
@@ -89,8 +89,9 @@ class CORE_EXPORT MouseEventManager final
   void FakeMouseMoveEventTimerFired(TimerBase*);
 
   void CancelFakeMouseMoveEvent();
-  void DispatchFakeMouseMoveEventSoon(MouseEventManager::FakeMouseMoveReason);
-  void DispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
+  void MayUpdateHoverWhenContentUnderMouseChanged(
+      MouseEventManager::UpdateHoverReason);
+  void MayUpdateHoverAfterScroll(const FloatQuad&);
 
   void SetLastKnownMousePosition(const WebMouseEvent&);
   void SetLastMousePositionAsUnknown();

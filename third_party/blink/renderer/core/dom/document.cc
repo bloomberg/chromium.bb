@@ -2238,8 +2238,8 @@ void Document::UpdateStyleAndLayoutTree() {
   // style), schedule another mouseMove event to check if any other elements
   // ended up under the mouse pointer due to re-layout.
   if (HoverElement() && !HoverElement()->GetLayoutObject() && GetFrame()) {
-    GetFrame()->GetEventHandler().DispatchFakeMouseMoveEventSoon(
-        MouseEventManager::FakeMouseMoveReason::kPerFrame);
+    GetFrame()->GetEventHandler().MayUpdateHoverWhenContentUnderMouseChanged(
+        MouseEventManager::UpdateHoverReason::kLayoutOrStyleChanged);
   }
 
   if (focused_element_ && !focused_element_->IsFocusable())

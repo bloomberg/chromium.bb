@@ -462,7 +462,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   }
   UpdateCompositingLayersAfterScroll();
 
-  GetLayoutBox()->DispatchFakeMouseMoveEventSoon(frame->GetEventHandler());
+  GetLayoutBox()->MayUpdateHoverWhenContentUnderMouseChanged(
+      frame->GetEventHandler());
 
   if (scroll_type == kUserScroll || scroll_type == kCompositorScroll) {
     Page* page = frame->GetPage();

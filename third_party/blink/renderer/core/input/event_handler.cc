@@ -1999,13 +1999,15 @@ bool EventHandler::FakeMouseMovePending() const {
   return mouse_event_manager_->FakeMouseMovePending();
 }
 
-void EventHandler::DispatchFakeMouseMoveEventSoon(
-    MouseEventManager::FakeMouseMoveReason fake_mouse_move_reason) {
-  mouse_event_manager_->DispatchFakeMouseMoveEventSoon(fake_mouse_move_reason);
+void EventHandler::MayUpdateHoverWhenContentUnderMouseChanged(
+    MouseEventManager::UpdateHoverReason update_hover_reason) {
+  mouse_event_manager_->MayUpdateHoverWhenContentUnderMouseChanged(
+      update_hover_reason);
 }
 
-void EventHandler::DispatchFakeMouseMoveEventSoonInQuad(const FloatQuad& quad) {
-  mouse_event_manager_->DispatchFakeMouseMoveEventSoonInQuad(quad);
+void EventHandler::MayUpdateHoverAfterScroll(
+    const FloatQuad& scroller_rect_in_frame) {
+  mouse_event_manager_->MayUpdateHoverAfterScroll(scroller_rect_in_frame);
 }
 
 void EventHandler::SetResizingFrameSet(HTMLFrameSetElement* frame_set) {

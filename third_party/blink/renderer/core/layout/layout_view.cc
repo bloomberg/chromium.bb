@@ -735,9 +735,10 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
 #undef RETURN_SCROLLBAR_MODE
 }
 
-void LayoutView::DispatchFakeMouseMoveEventSoon(EventHandler& event_handler) {
-  event_handler.DispatchFakeMouseMoveEventSoon(
-      MouseEventManager::FakeMouseMoveReason::kDuringScroll);
+void LayoutView::MayUpdateHoverWhenContentUnderMouseChanged(
+    EventHandler& event_handler) {
+  event_handler.MayUpdateHoverWhenContentUnderMouseChanged(
+      MouseEventManager::UpdateHoverReason::kScrollOffsetChanged);
 }
 
 IntRect LayoutView::DocumentRect() const {

@@ -1122,12 +1122,14 @@ LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object) {
                                                  : nullptr;
 }
 
-void LayoutBox::DispatchFakeMouseMoveEventSoon(EventHandler& event_handler) {
+void LayoutBox::MayUpdateHoverWhenContentUnderMouseChanged(
+    EventHandler& event_handler) {
   const LayoutBoxModelObject& container = ContainerForPaintInvalidation();
-  FloatQuad quad =
+  FloatQuad scroller_rect_in_frame =
       FloatQuad(FloatRect(VisualRectIncludingCompositedScrolling(container)));
-  quad = container.LocalToAbsoluteQuad(quad);
-  event_handler.DispatchFakeMouseMoveEventSoonInQuad(quad);
+  scroller_rect_in_frame =
+      container.LocalToAbsoluteQuad(scroller_rect_in_frame);
+  event_handler.MayUpdateHoverAfterScroll(scroller_rect_in_frame);
 }
 
 void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
