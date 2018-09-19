@@ -336,7 +336,6 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
 }
 
 void CreateOrUpdateShortcuts(const base::FilePath& target,
-                             const Product& product,
                              const MasterPreferences& prefs,
                              InstallShortcutLevel install_level,
                              InstallShortcutOperation install_operation) {
@@ -429,7 +428,6 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
 }
 
 void RegisterChromeOnMachine(const InstallerState& installer_state,
-                             const Product& product,
                              bool make_chrome_default,
                              const base::Version& version) {
   // Try to add Chrome to Media Player shim inclusion list. We don't do any
@@ -505,7 +503,6 @@ InstallStatus InstallOrUpdateProduct(const InstallationState& original_state,
     installer_state.SetStage(CREATING_SHORTCUTS);
 
     // Creates shortcuts for Chrome.
-    const Product& chrome_product = installer_state.product();
     const base::FilePath chrome_exe(
         installer_state.target_path().Append(kChromeExe));
 
@@ -525,7 +522,7 @@ InstallStatus InstallOrUpdateProduct(const InstallationState& original_state,
       install_operation = INSTALL_SHORTCUT_CREATE_ALL;
     }
 
-    CreateOrUpdateShortcuts(chrome_exe, chrome_product, prefs, install_level,
+    CreateOrUpdateShortcuts(chrome_exe, prefs, install_level,
                             install_operation);
 
     // Register Chrome and, if requested, make Chrome the default browser.
@@ -546,8 +543,8 @@ InstallStatus InstallOrUpdateProduct(const InstallationState& original_state,
     }
 
     RegisterChromeOnMachine(
-        installer_state, chrome_product,
-        make_chrome_default || force_chrome_default_for_user, new_version);
+        installer_state, make_chrome_default || force_chrome_default_for_user,
+        new_version);
 
     if (!installer_state.system_install()) {
       UpdateDefaultBrowserBeaconForPath(
@@ -599,7 +596,6 @@ void LaunchDeleteOldVersionsProcess(const base::FilePath& setup_path,
 }
 
 void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
-                               const Product& chrome,
                                const base::Version& installed_version) {
   VLOG(1) << "Updating and registering shortcuts for --on-os-upgrade.";
 
@@ -613,11 +609,11 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
       installer_state.system_install() ? ALL_USERS : CURRENT_USER;
   const base::FilePath chrome_exe(
       installer_state.target_path().Append(kChromeExe));
-  CreateOrUpdateShortcuts(chrome_exe, chrome, prefs, level,
+  CreateOrUpdateShortcuts(chrome_exe, prefs, level,
                           INSTALL_SHORTCUT_REPLACE_EXISTING);
 
   // Adapt Chrome registrations to this new OS.
-  RegisterChromeOnMachine(installer_state, chrome, false, installed_version);
+  RegisterChromeOnMachine(installer_state, false, installed_version);
 
   // Active Setup registrations are sometimes lost across OS update, make sure
   // they're back in place. Note: when Active Setup registrations in HKLM are
@@ -628,7 +624,7 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
   // something between InstallOrUpdateProduct and AddActiveSetupWorkItems, but
   // this takes care of what is most required for now).
   std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
-  AddActiveSetupWorkItems(installer_state, installed_version, chrome,
+  AddActiveSetupWorkItems(installer_state, installed_version,
                           work_item_list.get());
   if (!work_item_list->Do()) {
     LOG(WARNING) << "Failed to reinstall Active Setup keys.";
@@ -664,8 +660,7 @@ void HandleActiveSetupForBrowser(const InstallerState& installer_state,
   cleanup_list->set_log_message("Cleanup deprecated per-user registrations");
   cleanup_list->set_rollback_enabled(false);
   cleanup_list->set_best_effort(true);
-  AddCleanupDeprecatedPerUserRegistrationsWorkItems(installer_state.product(),
-                                                    cleanup_list.get());
+  AddCleanupDeprecatedPerUserRegistrationsWorkItems(cleanup_list.get());
   cleanup_list->Do();
 
   // Only create shortcuts on Active Setup if the first run sentinel is not
@@ -685,8 +680,7 @@ void HandleActiveSetupForBrowser(const InstallerState& installer_state,
   const base::FilePath installation_root = installer_state.target_path();
   MasterPreferences prefs(installation_root.AppendASCII(kDefaultMasterPrefs));
   base::FilePath chrome_exe(installation_root.Append(kChromeExe));
-  CreateOrUpdateShortcuts(chrome_exe, installer_state.product(), prefs,
-                          CURRENT_USER, install_operation);
+  CreateOrUpdateShortcuts(chrome_exe, prefs, CURRENT_USER, install_operation);
 
   UpdateDefaultBrowserBeaconForPath(chrome_exe);
 

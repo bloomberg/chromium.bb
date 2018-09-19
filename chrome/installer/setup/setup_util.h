@@ -20,8 +20,6 @@
 #include "chrome/installer/util/lzma_util.h"
 #include "chrome/installer/util/util_constants.h"
 
-class AppRegistrationData;
-
 namespace base {
 class CommandLine;
 class FilePath;
@@ -117,9 +115,6 @@ void DeleteRegistryKeyPartial(
 // Returns true if downgrade is allowed by installer data.
 bool IsDowngradeAllowed(const MasterPreferences& prefs);
 
-// Returns true if Chrome has been run within the last 28 days.
-bool IsChromeActivelyUsed(const InstallerState& installer_state);
-
 // Returns the age (in days) of the installation based on the creation time of
 // its installation directory, or -1 in case of error.
 int GetInstallAge(const InstallerState& installer_state);
@@ -135,10 +130,6 @@ void RegisterEventLogProvider(const base::FilePath& install_directory,
 
 // De-register Chrome's EventLog message provider dll.
 void DeRegisterEventLogProvider();
-
-// Returns a registration data instance for the now-deprecated multi-install
-// binaries.
-std::unique_ptr<AppRegistrationData> MakeBinariesRegistrationData();
 
 // Returns true if the now-deprecated multi-install binaries are registered as
 // an installed product with Google Update.

@@ -3,7 +3,7 @@ include_rules = [
   "-chrome",
   "+chrome/installer/gcapi",
   "+chrome/installer/launcher_support",
-  # Take care not to allow any dependence on BrowserDistribution.
+  # Take care not to allow any dependence beyond constants.
   "+chrome/installer/util/google_update_constants.h",
   "+chrome/installer/util/util_constants.h",
 ]
