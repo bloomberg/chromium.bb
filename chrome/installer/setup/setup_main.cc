@@ -62,7 +62,6 @@
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/uninstall.h"
 #include "chrome/installer/setup/user_experiment.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/delete_old_versions.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
@@ -89,7 +88,6 @@
 using installer::InstallerState;
 using installer::InstallationState;
 using installer::MasterPreferences;
-using installer::Product;
 using installer::ProductState;
 
 namespace {
@@ -226,14 +224,12 @@ std::unique_ptr<installer::ArchivePatchHelper> CreateChromeArchiveHelper(
 //
 // This format is strange and its provenance is shrouded in mystery but it has
 // the data we need, so use it.
-base::string16 FindMsiProductId(const InstallerState& installer_state,
-                                const Product& product) {
+base::string16 FindMsiProductId(const InstallerState& installer_state) {
   HKEY reg_root = installer_state.root_key();
-  BrowserDistribution* dist = product.distribution();
-  DCHECK(dist);
 
   base::win::RegistryValueIterator value_iter(
-      reg_root, dist->GetStateKey().c_str(), KEY_WOW64_32KEY);
+      reg_root, install_static::GetClientStateKeyPath().c_str(),
+      KEY_WOW64_32KEY);
   for (; value_iter.Valid(); ++value_iter) {
     base::string16 value_name(value_iter.Name());
     if (base::StartsWith(value_name, kMsiProductIdPrefix,
@@ -488,9 +484,6 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
   if (!installer_state.system_install()) {
     // This is a user-level installation. Make sure that we are not installing
     // on top of an existing system-level installation.
-    const Product& product = installer_state.product();
-    BrowserDistribution* browser_dist = product.distribution();
-    DCHECK_EQ(BrowserDistribution::GetDistribution(), browser_dist);
 
     const ProductState* user_level_product_state =
         original_state.GetProductState(false);
@@ -567,8 +560,7 @@ installer::InstallStatus UninstallProduct(
     const base::FilePath& setup_exe,
     const base::CommandLine& cmd_line,
     bool remove_all,
-    bool force_uninstall,
-    const Product& product) {
+    bool force_uninstall) {
   const ProductState* product_state =
       original_state.GetProductState(installer_state.system_install());
   if (product_state != NULL) {
@@ -579,9 +571,8 @@ installer::InstallStatus UninstallProduct(
     return installer::CHROME_NOT_INSTALLED;
   }
 
-  return installer::UninstallProduct(
-      original_state, installer_state, setup_exe, product, remove_all,
-      force_uninstall, cmd_line);
+  return installer::UninstallProduct(original_state, installer_state, setup_exe,
+                                     remove_all, force_uninstall, cmd_line);
 }
 
 installer::InstallStatus UninstallProducts(
@@ -589,8 +580,6 @@ installer::InstallStatus UninstallProducts(
     const InstallerState& installer_state,
     const base::FilePath& setup_exe,
     const base::CommandLine& cmd_line) {
-  DCHECK_EQ(BrowserDistribution::GetDistribution(),
-            installer_state.product().distribution());
   // System-level Chrome will be launched via this command if its program gets
   // set below.
   base::CommandLine system_level_cmd(base::CommandLine::NO_PROGRAM);
@@ -607,9 +596,8 @@ installer::InstallStatus UninstallProducts(
   const bool remove_all = !cmd_line.HasSwitch(
       installer::switches::kDoNotRemoveSharedItems);
 
-  install_status =
-      UninstallProduct(original_state, installer_state, setup_exe, cmd_line,
-                       remove_all, force, installer_state.product());
+  install_status = UninstallProduct(original_state, installer_state, setup_exe,
+                                    cmd_line, remove_all, force);
 
   installer::CleanUpInstallationDirectoryAfterUninstall(
       original_state, installer_state, setup_exe, &install_status);
@@ -942,21 +930,17 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
           installer::switches::kRegisterChromeBrowserSuffix);
     }
     installer::InstallStatus tmp = installer::UNKNOWN_STATUS;
-    const Product& chrome_install = installer_state->product();
     installer::DeleteChromeRegistrationKeys(*installer_state,
-                                            chrome_install.distribution(),
                                             HKEY_LOCAL_MACHINE, suffix, &tmp);
     *exit_code = tmp;
   } else if (cmd_line.HasSwitch(installer::switches::kOnOsUpgrade)) {
-    const Product& chrome_install = installer_state->product();
     installer::InstallStatus status = installer::INVALID_STATE_FOR_OPTION;
     std::unique_ptr<FileVersionInfo> version_info(
         FileVersionInfo::CreateFileVersionInfo(setup_exe));
     const base::Version installed_version(
         base::UTF16ToUTF8(version_info->product_version()));
     if (installed_version.IsValid()) {
-      installer::HandleOsUpgradeForBrowser(*installer_state, chrome_install,
-                                           installed_version);
+      installer::HandleOsUpgradeForBrowser(*installer_state, installed_version);
       status = installer::INSTALL_REPAIRED;
     } else {
       LOG(DFATAL) << "Failed to extract product version from "
@@ -1210,9 +1194,8 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
           LaunchChromeBrowser(installer_state.target_path());
       } else if ((install_status == NEW_VERSION_UPDATED) ||
                  (install_status == IN_USE_UPDATED)) {
-        const Product& chrome = installer_state.product();
         DCHECK_NE(chrome_exe.value(), base::string16());
-        RemoveChromeLegacyRegistryKeys(chrome.distribution(), chrome_exe);
+        RemoveChromeLegacyRegistryKeys(chrome_exe);
       }
     }
   }
@@ -1239,9 +1222,8 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
       // Only when called by the MSI installer do we need to delay setting
       // the DisplayVersion.  In other runs, such as those done by the auto-
       // update action, we set the value immediately.
-      const Product& chrome = installer_state.product();
       // Get the app's MSI Product-ID from an entry in ClientState.
-      base::string16 app_guid = FindMsiProductId(installer_state, chrome);
+      base::string16 app_guid = FindMsiProductId(installer_state);
       if (!app_guid.empty()) {
         OverwriteDisplayVersions(
             app_guid, base::UTF8ToUTF16(installer_version->GetString()));

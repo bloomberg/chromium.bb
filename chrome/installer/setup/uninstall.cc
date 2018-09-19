@@ -42,7 +42,6 @@
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/user_hive_visitor.h"
 #include "chrome/installer/util/auto_launch_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/firewall_manager_win.h"
@@ -85,21 +84,19 @@ void DeleteInstallTempDir(const base::FilePath& target_path) {
 }
 
 // Processes uninstall WorkItems from install_worker in no-rollback-list.
-void ProcessChromeWorkItems(const InstallerState& installer_state,
-                            const Product& product) {
+void ProcessChromeWorkItems(const InstallerState& installer_state) {
   std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   work_item_list->set_log_message(
       "Cleanup OS upgrade command and deprecated per-user registrations");
   work_item_list->set_best_effort(true);
   work_item_list->set_rollback_enabled(false);
   AddOsUpgradeWorkItems(installer_state, base::FilePath(), base::Version(),
-                        product, work_item_list.get());
+                        work_item_list.get());
   // Perform a best-effort cleanup of per-user keys. On system-level installs
   // this will only cleanup keys for the user running the uninstall but it was
   // considered that this was good enough (better than triggering Active Setup
   // for all users solely for this cleanup).
-  AddCleanupDeprecatedPerUserRegistrationsWorkItems(product,
-                                                    work_item_list.get());
+  AddCleanupDeprecatedPerUserRegistrationsWorkItems(work_item_list.get());
   work_item_list->Do();
 }
 
@@ -154,7 +151,6 @@ void CloseAllChromeProcesses() {
 // heuristic to determine whether a shortcut is "user-generated". This routine
 // can only be called for user-level installs.
 void RetargetUserShortcutsWithArgs(const InstallerState& installer_state,
-                                   const Product& product,
                                    const base::FilePath& old_target_exe,
                                    const base::FilePath& new_target_exe) {
   if (installer_state.system_install()) {
@@ -181,7 +177,6 @@ void RetargetUserShortcutsWithArgs(const InstallerState& installer_state,
 // Quick Launch, taskbar, and secondary tiles on the Start Screen (Win8+).
 // Only shortcuts pointing to |target_exe| will be removed.
 void DeleteShortcuts(const InstallerState& installer_state,
-                     const Product& product,
                      const base::FilePath& target_exe) {
   // The per-user shortcut for this user, if present on a system-level install,
   // has already been deleted in chrome_browser_main_win.cc::DoUninstallTasks().
@@ -234,7 +229,7 @@ DeleteResult DeleteEmptyDir(const base::FilePath& path) {
 }
 
 // Get the user data directory.
-base::FilePath GetUserDataDir(const Product& product) {
+base::FilePath GetUserDataDir() {
   base::FilePath path;
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &path))
     return base::FilePath();
@@ -606,7 +601,6 @@ DeleteResult DeleteChromeDirectoriesIfEmpty(
 }
 
 bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
-                                  BrowserDistribution* dist,
                                   HKEY root,
                                   const base::string16& browser_entry_suffix,
                                   InstallStatus* exit_code) {
@@ -614,7 +608,6 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   base::FilePath chrome_exe(installer_state.target_path().Append(kChromeExe));
 
   // Delete Software\Classes\ChromeHTML.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   const base::string16 prog_id(install_static::GetProgIdPrefix() +
                                browser_entry_suffix);
   base::string16 reg_prog_id(ShellUtil::kRegClasses);
@@ -754,11 +747,10 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   return true;
 }
 
-void RemoveChromeLegacyRegistryKeys(BrowserDistribution* dist,
-                                    const base::FilePath& chrome_exe) {
-  // We used to register Chrome to handle crx files, but this turned out
-  // to be not worth the hassle. Remove these old registry entries if
-  // they exist. See: http://codereview.chromium.org/210007
+void RemoveChromeLegacyRegistryKeys(const base::FilePath& chrome_exe) {
+// We used to register Chrome to handle crx files, but this turned out
+// to be not worth the hassle. Remove these old registry entries if
+// they exist. See: http://codereview.chromium.org/210007
 
 #if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kChromeExtProgId[] = L"ChromeExt";
@@ -799,12 +791,10 @@ void UninstallFirewallRules(const base::FilePath& chrome_exe) {
 InstallStatus UninstallProduct(const InstallationState& original_state,
                                const InstallerState& installer_state,
                                const base::FilePath& setup_exe,
-                               const Product& product,
                                bool remove_all,
                                bool force_uninstall,
                                const base::CommandLine& cmd_line) {
   InstallStatus status = installer::UNINSTALL_CONFIRMED;
-  BrowserDistribution* browser_dist = product.distribution();
   const base::FilePath chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe));
 
@@ -866,14 +856,14 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
         GetChromeInstallPath(true).Append(installer::kChromeExe));
     VLOG(1) << "Retargeting user-generated Chrome shortcuts.";
     if (base::PathExists(system_chrome_path)) {
-      RetargetUserShortcutsWithArgs(installer_state, product, chrome_exe,
+      RetargetUserShortcutsWithArgs(installer_state, chrome_exe,
                                     system_chrome_path);
     } else {
       LOG(ERROR) << "Retarget failed: system-level Chrome not found.";
     }
   }
 
-  DeleteShortcuts(installer_state, product, chrome_exe);
+  DeleteShortcuts(installer_state, chrome_exe);
 
   // Delete the registry keys (Uninstall key and Version key).
   HKEY reg_root = installer_state.root_key();
@@ -883,9 +873,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   base::string16 distribution_data(GetDistributionData());
 
   // Remove Control Panel uninstall link.
-  // Assert that this is only called with the one relevant distribution.
-  // TODO(grt): Remove this when BrowserDistribution goes away.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), browser_dist);
   InstallUtil::DeleteRegistryKey(
       reg_root, install_static::GetUninstallRegistryPath(), KEY_WOW64_32KEY);
 
@@ -909,8 +896,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // Remove all Chrome registration keys.
   // Registration data is put in HKCU for both system level and user level
   // installs.
-  DeleteChromeRegistrationKeys(installer_state, browser_dist, HKEY_CURRENT_USER,
-                               suffix, &ret);
+  DeleteChromeRegistrationKeys(installer_state, HKEY_CURRENT_USER, suffix,
+                               &ret);
 
   // If the user's Chrome is registered with a suffix: it is possible that old
   // unsuffixed registrations were left in HKCU (e.g. if this install was
@@ -920,8 +907,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // default through the UI)).
   // Remove remaining HKCU entries with no suffix if any.
   if (!suffix.empty()) {
-    DeleteChromeRegistrationKeys(installer_state, browser_dist,
-                                 HKEY_CURRENT_USER, base::string16(), &ret);
+    DeleteChromeRegistrationKeys(installer_state, HKEY_CURRENT_USER,
+                                 base::string16(), &ret);
 
     // For similar reasons it is possible in very few installs (from
     // 21.0.1180.0 and fixed shortly after) to be installed with the new-style
@@ -929,8 +916,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     base::string16 old_style_suffix;
     if (ShellUtil::GetOldUserSpecificRegistrySuffix(&old_style_suffix) &&
         suffix != old_style_suffix) {
-      DeleteChromeRegistrationKeys(installer_state, browser_dist,
-                                   HKEY_CURRENT_USER, old_style_suffix, &ret);
+      DeleteChromeRegistrationKeys(installer_state, HKEY_CURRENT_USER,
+                                   old_style_suffix, &ret);
     }
   }
 
@@ -951,11 +938,11 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   if (installer_state.system_install() ||
       (remove_all &&
        ShellUtil::QuickIsChromeRegisteredInHKLM(chrome_exe, suffix))) {
-    DeleteChromeRegistrationKeys(installer_state, browser_dist,
-                                 HKEY_LOCAL_MACHINE, suffix, &ret);
+    DeleteChromeRegistrationKeys(installer_state, HKEY_LOCAL_MACHINE, suffix,
+                                 &ret);
   }
 
-  ProcessChromeWorkItems(installer_state, product);
+  ProcessChromeWorkItems(installer_state);
 
   UninstallActiveSetupEntries(installer_state);
 
@@ -993,7 +980,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   bool delete_profile = ShouldDeleteProfile(cmd_line, status);
   ret = installer::UNINSTALL_SUCCESSFUL;
 
-  base::FilePath user_data_dir(GetUserDataDir(product));
+  base::FilePath user_data_dir(GetUserDataDir());
   base::FilePath backup_state_file;
   if (!user_data_dir.empty()) {
     backup_state_file = BackupLocalStateFile(user_data_dir);

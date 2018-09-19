@@ -40,8 +40,6 @@
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
-#include "chrome/installer/util/app_registration_data.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/callback_work_item.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -51,11 +49,8 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/l10n_string_util.h"
-#include "chrome/installer/util/non_updating_app_registration_data.h"
-#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/shell_util.h"
-#include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
@@ -205,15 +200,11 @@ bool ProbeNotificationActivatorCallback(const CLSID& toast_activator_clsid,
 // Add/Remove programs dialog).
 void AddDeleteUninstallEntryForMSIWorkItems(
     const InstallerState& installer_state,
-    const Product& product,
     WorkItemList* work_item_list) {
   DCHECK(installer_state.is_msi())
       << "This must only be called for MSI installations!";
 
   HKEY reg_root = installer_state.root_key();
-  // Assert that this is only called with the one relevant distribution.
-  // TODO(grt): Remove this when BrowserDistribution goes away.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), product.distribution());
   base::string16 uninstall_reg = install_static::GetUninstallRegistryPath();
 
   WorkItem* delete_reg_key = work_item_list->AddDeleteRegKeyWorkItem(
@@ -418,16 +409,14 @@ void AddMigrateUsageStatsWorkItems(const InstallerState& installer_state,
         google_update::kRegUsageStatsField);
   }
 
-  BrowserDistribution* chrome_dist = installer_state.product().distribution();
-
   google_update::Tristate consent =
       GoogleUpdateSettings::GetCollectStatsConsentForBinaries();
   if (consent == google_update::TRISTATE_NONE) {
     VLOG(1) << "No consent value found to migrate to single-install.";
     // Delete any stale value in Chrome's ClientState key.
     install_list->AddDeleteRegValueWorkItem(
-        installer_state.root_key(), chrome_dist->GetStateKey(), KEY_WOW64_64KEY,
-        google_update::kRegUsageStatsField);
+        installer_state.root_key(), install_static::GetClientStateKeyPath(),
+        KEY_WOW64_64KEY, google_update::kRegUsageStatsField);
     return;
   }
 
@@ -435,8 +424,9 @@ void AddMigrateUsageStatsWorkItems(const InstallerState& installer_state,
 
   // Write consent to Chrome's ClientState key.
   install_list->AddSetRegValueWorkItem(
-      installer_state.root_key(), chrome_dist->GetStateKey(), KEY_WOW64_32KEY,
-      google_update::kRegUsageStatsField, static_cast<DWORD>(consent), true);
+      installer_state.root_key(), install_static::GetClientStateKeyPath(),
+      KEY_WOW64_32KEY, google_update::kRegUsageStatsField,
+      static_cast<DWORD>(consent), true);
 }
 
 }  // namespace
@@ -447,11 +437,8 @@ void AddMigrateUsageStatsWorkItems(const InstallerState& installer_state,
 void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                    const base::FilePath& setup_path,
                                    const base::Version& new_version,
-                                   const Product& product,
                                    WorkItemList* install_list) {
   HKEY reg_root = installer_state.root_key();
-  BrowserDistribution* browser_dist = product.distribution();
-  DCHECK(browser_dist);
 
   // When we are installed via an MSI, we need to store our uninstall strings
   // in the Google Update client state key. We do this even for non-MSI
@@ -467,10 +454,9 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
   installer_path = installer_path.Append(setup_path.BaseName());
 
   base::CommandLine uninstall_arguments(base::CommandLine::NO_PROGRAM);
-  AppendUninstallCommandLineFlags(installer_state, product,
-                                  &uninstall_arguments);
+  AppendUninstallCommandLineFlags(installer_state, &uninstall_arguments);
 
-  base::string16 update_state_key(browser_dist->GetStateKey());
+  base::string16 update_state_key(install_static::GetClientStateKeyPath());
   install_list->AddCreateRegKeyWorkItem(
       reg_root, update_state_key, KEY_WOW64_32KEY);
   install_list->AddSetRegValueWorkItem(reg_root,
@@ -494,9 +480,6 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
     DCHECK_EQ(quoted_uninstall_cmd.GetCommandLineString()[0], '"');
     quoted_uninstall_cmd.AppendArguments(uninstall_arguments, false);
 
-    // Assert that this is only called with the one relevant distribution.
-    // TODO(grt): Remove this when BrowserDistribution goes away.
-    DCHECK_EQ(BrowserDistribution::GetDistribution(), browser_dist);
     base::string16 uninstall_reg = install_static::GetUninstallRegistryPath();
     install_list->AddCreateRegKeyWorkItem(
         reg_root, uninstall_reg, KEY_WOW64_32KEY);
@@ -588,15 +571,15 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
 // Create Version key for a product (if not already present) and sets the new
 // product version as the last step.
 void AddVersionKeyWorkItems(HKEY root,
-                            const base::string16& clients_key,
-                            const base::string16& product_name,
                             const base::Version& new_version,
                             bool add_language_identifier,
                             WorkItemList* list) {
+  const base::string16 clients_key = install_static::GetClientsKeyPath();
   list->AddCreateRegKeyWorkItem(root, clients_key, KEY_WOW64_32KEY);
 
   list->AddSetRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
-                               google_update::kRegNameField, product_name,
+                               google_update::kRegNameField,
+                               InstallUtil::GetDisplayName(),
                                true);  // overwrite name also
   list->AddSetRegValueWorkItem(root, clients_key, KEY_WOW64_32KEY,
                                google_update::kRegOopcrashesField,
@@ -641,11 +624,9 @@ void AddUpdateBrandCodeWorkItem(const InstallerState& installer_state,
     return;
   }
 
-  BrowserDistribution* browser_dist = installer_state.product().distribution();
-  DCHECK(browser_dist);
   install_list->AddSetRegValueWorkItem(
-      installer_state.root_key(), browser_dist->GetStateKey(), KEY_WOW64_32KEY,
-      google_update::kRegRLZBrandField, new_brand, true);
+      installer_state.root_key(), install_static::GetClientStateKeyPath(),
+      KEY_WOW64_32KEY, google_update::kRegRLZBrandField, new_brand, true);
 }
 
 base::string16 GetUpdatedBrandCode(const base::string16& brand_code) {
@@ -751,14 +732,12 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
   // If we're told that we're an MSI install, make sure to set the marker
   // in the client state key so that future updates do the right thing.
   if (installer_state.is_msi()) {
-    const Product& product = installer_state.product();
-    AddSetMsiMarkerWorkItem(installer_state, product.distribution(), true,
-                            post_install_task_list);
+    AddSetMsiMarkerWorkItem(installer_state, true, post_install_task_list);
 
     // We want MSI installs to take over the Add/Remove Programs entry. Make a
     // best-effort attempt to delete any entry left over from previous non-MSI
     // installations for the same type of install (system or per user).
-    AddDeleteUninstallEntryForMSIWorkItems(installer_state, product,
+    AddDeleteUninstallEntryForMSIWorkItems(installer_state,
                                            post_install_task_list);
   }
 
@@ -847,23 +826,20 @@ void AddInstallWorkItems(const InstallationState& original_state,
   // language may not be related to a given user's runtime language.
   const bool add_language_identifier = !installer_state.system_install();
 
-  const Product& product = installer_state.product();
   AddUninstallShortcutWorkItems(installer_state, setup_path, new_version,
-                                product, install_list);
+                                install_list);
 
-  AddVersionKeyWorkItems(root, install_static::GetClientsKeyPath(),
-                         InstallUtil::GetDisplayName(), new_version,
-                         add_language_identifier, install_list);
+  AddVersionKeyWorkItems(root, new_version, add_language_identifier,
+                         install_list);
 
-  AddCleanupDeprecatedPerUserRegistrationsWorkItems(product, install_list);
+  AddCleanupDeprecatedPerUserRegistrationsWorkItems(install_list);
 
-  AddActiveSetupWorkItems(installer_state, new_version, product, install_list);
+  AddActiveSetupWorkItems(installer_state, new_version, install_list);
 
-  AddOsUpgradeWorkItems(installer_state, setup_path, new_version, product,
-                        install_list);
+  AddOsUpgradeWorkItems(installer_state, setup_path, new_version, install_list);
 #if defined(GOOGLE_CHROME_BUILD)
   AddEnterpriseEnrollmentWorkItems(installer_state, setup_path, new_version,
-                                   product, install_list);
+                                   install_list);
 #endif
   AddFirewallRulesWorkItems(installer_state, current_version == nullptr,
                             install_list);
@@ -940,27 +916,19 @@ void AddNativeNotificationWorkItems(
 }
 
 void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
-                             BrowserDistribution* dist,
                              bool set,
                              WorkItemList* work_item_list) {
   DCHECK(work_item_list);
   DWORD msi_value = set ? 1 : 0;
-  WorkItem* set_msi_work_item =
-      work_item_list->AddSetRegValueWorkItem(installer_state.root_key(),
-                                             dist->GetStateKey(),
-                                             KEY_WOW64_32KEY,
-                                             google_update::kRegMSIField,
-                                             msi_value,
-                                             true);
+  WorkItem* set_msi_work_item = work_item_list->AddSetRegValueWorkItem(
+      installer_state.root_key(), install_static::GetClientStateKeyPath(),
+      KEY_WOW64_32KEY, google_update::kRegMSIField, msi_value, true);
   DCHECK(set_msi_work_item);
   set_msi_work_item->set_best_effort(true);
   set_msi_work_item->set_log_message("Could not write MSI marker!");
 }
 
-void AddCleanupDeprecatedPerUserRegistrationsWorkItems(const Product& product,
-                                                       WorkItemList* list) {
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), product.distribution());
-
+void AddCleanupDeprecatedPerUserRegistrationsWorkItems(WorkItemList* list) {
   // This cleanup was added in M49. There are still enough active users on M48
   // and earlier today (M55 timeframe) to justify keeping this cleanup in-place.
   // Remove this when that population stops shrinking.
@@ -975,7 +943,6 @@ void AddCleanupDeprecatedPerUserRegistrationsWorkItems(const Product& product,
 
 void AddActiveSetupWorkItems(const InstallerState& installer_state,
                              const base::Version& new_version,
-                             const Product& product,
                              WorkItemList* list) {
   DCHECK(installer_state.operation() != InstallerState::UNINSTALL);
 
@@ -1026,7 +993,6 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
 }
 
 void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
-                                     const Product& product,
                                      base::CommandLine* uninstall_cmd) {
   DCHECK(uninstall_cmd);
 
@@ -1044,7 +1010,6 @@ void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
 void AddOsUpgradeWorkItems(const InstallerState& installer_state,
                            const base::FilePath& setup_path,
                            const base::Version& new_version,
-                           const Product& product,
                            WorkItemList* install_list) {
   const HKEY root_key = installer_state.root_key();
   const base::string16 cmd_key(GetCommandKey(kCmdOnOsUpgrade));
@@ -1076,7 +1041,6 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
 void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
                                       const base::FilePath& setup_path,
                                       const base::Version& new_version,
-                                      const Product& product,
                                       WorkItemList* install_list) {
   if (!installer_state.system_install())
     return;

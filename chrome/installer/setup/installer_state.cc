@@ -7,26 +7,35 @@
 #include <stddef.h>
 
 #include <string>
-#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/win/registry.h"
-#include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/setup_util.h"
-#include "chrome/installer/util/app_registration_data.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
-#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
 
 namespace installer {
+
+namespace {
+
+// Returns the boolean value of the distribution preference in |prefs| named
+// |pref_name|, or |default_value| if not set.
+bool GetMasterPreference(const MasterPreferences& prefs,
+                         const char* pref_name,
+                         bool default_value) {
+  bool value;
+  return prefs.GetBool(pref_name, &value) ? value : default_value;
+}
+
+}  // namespace
 
 InstallerState::InstallerState()
     : operation_(UNINITIALIZED),
@@ -57,24 +66,29 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
                                 const InstallationState& machine_state) {
   Clear();
 
-  bool pref_bool;
-  if (!prefs.GetBool(master_preferences::kSystemLevel, &pref_bool))
-    pref_bool = false;
-  set_level(pref_bool ? SYSTEM_LEVEL : USER_LEVEL);
+  set_level(GetMasterPreference(prefs, master_preferences::kSystemLevel, false)
+                ? SYSTEM_LEVEL
+                : USER_LEVEL);
 
-  if (!prefs.GetBool(master_preferences::kVerboseLogging, &verbose_logging_))
-    verbose_logging_ = false;
+  verbose_logging_ =
+      GetMasterPreference(prefs, master_preferences::kVerboseLogging, false);
 
-  if (!prefs.GetBool(master_preferences::kMsi, &msi_))
-    msi_ = false;
+  msi_ = GetMasterPreference(prefs, master_preferences::kMsi, false);
+  if (!msi_) {
+    const ProductState* product_state =
+        machine_state.GetProductState(system_install());
+    if (product_state != NULL)
+      msi_ = product_state->is_msi();
+  }
 
   const bool is_uninstall = command_line.HasSwitch(switches::kUninstall);
 
-  Product* p = AddProductFromPreferences(prefs, machine_state);
-  VLOG(1) << (is_uninstall ? "Uninstall Chrome" : "Install Chrome");
+  // TODO(grt): Infer target_path_ from an existing install in support of
+  // varying install locations; see https://crbug.com/380177.
+  target_path_ = GetChromeInstallPath(system_install());
+  state_key_ = install_static::GetClientStateKeyPath();
 
-  BrowserDistribution* dist = p->distribution();
-  state_key_ = dist->GetStateKey();
+  VLOG(1) << (is_uninstall ? "Uninstall Chrome" : "Install Chrome");
 
   if (is_uninstall) {
     operation_ = UNINSTALL;
@@ -94,100 +108,17 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
 void InstallerState::set_level(Level level) {
   level_ = level;
   switch (level) {
+    case UNKNOWN_LEVEL:
+      root_key_ = nullptr;
+      return;
     case USER_LEVEL:
       root_key_ = HKEY_CURRENT_USER;
-      break;
+      return;
     case SYSTEM_LEVEL:
       root_key_ = HKEY_LOCAL_MACHINE;
-      break;
-    default:
-      DCHECK(level == UNKNOWN_LEVEL);
-      level_ = UNKNOWN_LEVEL;
-      root_key_ = NULL;
-      break;
+      return;
   }
-}
-
-// Evaluates a product's eligibility for participation in this operation.
-// We never expect these checks to fail, hence they all terminate the process in
-// debug builds.  See the log messages for details.
-bool InstallerState::CanAddProduct(const base::FilePath* product_dir) const {
-  if (product_) {
-    LOG(DFATAL) << "Cannot process more than one product.";
-    return false;
-  }
-  return true;
-}
-
-// Adds |product|, installed in |product_dir| to this object's collection.  If
-// |product_dir| is NULL, the product's default install location is used.
-// Returns NULL if |product| is incompatible with this object.  Otherwise,
-// returns a pointer to the product (ownership is held by this object).
-Product* InstallerState::AddProductInDirectory(
-    const base::FilePath* product_dir,
-    std::unique_ptr<Product> product) {
-  DCHECK(product);
-  const Product& the_product = *product;
-
-  if (!CanAddProduct(product_dir))
-    return nullptr;
-
-  if (target_path_.empty()) {
-    DCHECK_EQ(BrowserDistribution::GetDistribution(),
-              the_product.distribution());
-    target_path_ =
-        product_dir ? *product_dir : GetChromeInstallPath(system_install());
-  }
-
-  if (state_key_.empty())
-    state_key_ = the_product.distribution()->GetStateKey();
-
-  product_ = std::move(product);
-  return product_.get();
-}
-
-Product* InstallerState::AddProduct(std::unique_ptr<Product> product) {
-  return AddProductInDirectory(nullptr, std::move(product));
-}
-
-// Adds a product constructed on the basis of |prefs|, setting this object's msi
-// flag if the product is represented in |machine_state| and is msi-installed.
-// Returns the product that was added, or NULL if |state| is incompatible with
-// this object.  Ownership is not passed to the caller.
-Product* InstallerState::AddProductFromPreferences(
-    const MasterPreferences& prefs,
-    const InstallationState& machine_state) {
-  std::unique_ptr<Product> product_ptr(
-      new Product(BrowserDistribution::GetDistribution()));
-
-  Product* product = AddProductInDirectory(nullptr, std::move(product_ptr));
-
-  if (product != NULL && !msi_) {
-    const ProductState* product_state =
-        machine_state.GetProductState(system_install());
-    if (product_state != NULL)
-      msi_ = product_state->is_msi();
-  }
-
-  return product;
-}
-
-Product* InstallerState::AddProductFromState(
-    const ProductState& state) {
-  std::unique_ptr<Product> product_ptr(
-      new Product(BrowserDistribution::GetDistribution()));
-
-  // Strip off <version>/Installer/setup.exe; see GetInstallerDirectory().
-  base::FilePath product_dir =
-      state.GetSetupPath().DirName().DirName().DirName();
-
-  Product* product =
-      AddProductInDirectory(&product_dir, std::move(product_ptr));
-
-  if (product != NULL)
-    msi_ |= state.is_msi();
-
-  return product;
+  NOTREACHED() << level;
 }
 
 bool InstallerState::system_install() const {
@@ -197,7 +128,6 @@ bool InstallerState::system_install() const {
 
 base::Version* InstallerState::GetCurrentVersion(
     const InstallationState& machine_state) const {
-  DCHECK(product_);
   std::unique_ptr<base::Version> current_version;
   const ProductState* product_state =
       machine_state.GetProductState(level_ == SYSTEM_LEVEL);
@@ -243,7 +173,6 @@ void InstallerState::Clear() {
   operation_ = UNINITIALIZED;
   target_path_.clear();
   state_key_.clear();
-  product_.reset();
   critical_update_version_ = base::Version();
   level_ = UNKNOWN_LEVEL;
   root_key_ = NULL;
@@ -303,7 +232,7 @@ void InstallerState::WriteInstallerResult(
   const bool system_install = this->system_install();
   // Write the value for the product upon which we're operating.
   InstallUtil::AddInstallerResultItems(
-      system_install, product_->distribution()->GetStateKey(), status,
+      system_install, install_static::GetClientStateKeyPath(), status,
       string_resource_id, launch_cmd, install_list.get());
   if (is_migrating_to_single() && InstallUtil::GetInstallReturnCode(status)) {
 #if defined(GOOGLE_CHROME_BUILD)
@@ -317,8 +246,8 @@ void InstallerState::WriteInstallerResult(
     // for success, the binaries have been uninstalled and therefore the result
     // will not be read by Google Update.
     InstallUtil::AddInstallerResultItems(
-        system_install, install_static::GetBinariesClientStateKeyPath(), status,
-        string_resource_id, launch_cmd, install_list.get());
+        system_install, install_static::GetClientStateKeyPathForBinaries(),
+        status, string_resource_id, launch_cmd, install_list.get());
 #endif
   }
   install_list->Do();
