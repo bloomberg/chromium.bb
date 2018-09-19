@@ -576,12 +576,10 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   DCHECK_EQ(window_mus_type(), WindowMusType::LOCAL);
   DCHECK(!local_layer_tree_frame_sink_);
 
-  std::unique_ptr<cc::LayerTreeFrameSink> frame_sink;
   auto client_layer_tree_frame_sink = RequestLayerTreeFrameSink(
       nullptr,
       aura::Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager());
   local_layer_tree_frame_sink_ = client_layer_tree_frame_sink->GetWeakPtr();
-  frame_sink = std::move(client_layer_tree_frame_sink);
   window_->SetEmbedFrameSinkId(GenerateFrameSinkIdFromServerId());
 
   gfx::Size size_in_pixel =
@@ -589,7 +587,7 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   // Make sure |local_surface_id_| and |last_surface_size_in_pixels_| are
   // correct for the new created |local_layer_tree_frame_sink_|.
   GetOrAllocateLocalSurfaceId(size_in_pixel);
-  return frame_sink;
+  return client_layer_tree_frame_sink;
 }
 
 void WindowPortMus::OnEventTargetingPolicyChanged() {

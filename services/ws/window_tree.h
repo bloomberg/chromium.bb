@@ -200,9 +200,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   bool IsClientCreatedWindow(aura::Window* window);
   bool IsClientRootWindow(aura::Window* window);
 
-  // Returns the window which is corresponded with the root window for the
-  // specified |window| in the client.
-  aura::Window* GetClientRootWindowFor(aura::Window* window);
+  // Returns the ClientRoot that |window| is parented to, null if |window| is
+  // not in a ClientRoot.
+  ClientRoot* FindClientRootContaining(aura::Window* window);
 
   ClientRoots::iterator FindClientRootWithRoot(aura::Window* window);
 

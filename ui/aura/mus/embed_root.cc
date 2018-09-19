@@ -123,6 +123,7 @@ void EmbedRoot::OnEmbed(std::unique_ptr<WindowTreeHost> window_tree_host) {
   focus_client_ =
       std::make_unique<EmbeddedFocusClient>(window_tree_host->window());
   window_tree_host_ = std::move(window_tree_host);
+  window_tree_host_->Show();
   delegate_->OnEmbed(window());
 }
 
