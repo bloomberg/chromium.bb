@@ -13,5 +13,7 @@
 ] interface ScrollTimeline : AnimationTimeline {
     readonly attribute Element? scrollSource;
     readonly attribute ScrollDirection orientation;
+    readonly attribute DOMString startScrollOffset;
+    readonly attribute DOMString endScrollOffset;
     readonly attribute (double or ScrollTimelineAutoKeyword) timeRange;
 };

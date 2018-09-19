@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -45,6 +46,8 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   // IDL API implementation.
   Element* scrollSource();
   String orientation();
+  String startScrollOffset();
+  String endScrollOffset();
   void timeRange(DoubleOrScrollTimelineAutoKeyword&);
 
   // Returns the Node that should actually have the ScrollableArea (if one
@@ -69,10 +72,16 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   static bool HasActiveScrollTimeline(Node* node);
 
  private:
-  ScrollTimeline(Element*, ScrollDirection, double);
+  ScrollTimeline(Element*,
+                 ScrollDirection,
+                 CSSPrimitiveValue*,
+                 CSSPrimitiveValue*,
+                 double);
 
   Member<Element> scroll_source_;
   ScrollDirection orientation_;
+  Member<CSSPrimitiveValue> start_scroll_offset_;
+  Member<CSSPrimitiveValue> end_scroll_offset_;
   double time_range_;
 };
 

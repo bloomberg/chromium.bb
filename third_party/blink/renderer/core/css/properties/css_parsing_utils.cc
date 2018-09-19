@@ -438,6 +438,17 @@ bool IsContentPositionOrLeftOrRightKeyword(CSSValueID id) {
   return IsContentPositionKeyword(id) || IsLeftOrRightKeyword(id);
 }
 
+CSSValue* ConsumeScrollOffset(CSSParserTokenRange& range) {
+  range.ConsumeWhitespace();
+  if (CSSPropertyParserHelpers::IdentMatches<CSSValueAuto>(range.Peek().Id()))
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  CSSValue* value = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      range, kHTMLStandardMode, kValueRangeNonNegative);
+  if (!range.AtEnd())
+    return nullptr;
+  return value;
+}
+
 CSSValue* ConsumeSelfPositionOverflowPosition(
     CSSParserTokenRange& range,
     IsPositionKeyword is_position_keyword) {

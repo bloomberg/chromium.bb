@@ -8,8 +8,8 @@ PASS ScrollTimeline interface: existence and properties of interface prototype o
 PASS ScrollTimeline interface: existence and properties of interface prototype object's @@unscopables property
 PASS ScrollTimeline interface: attribute scrollSource
 PASS ScrollTimeline interface: attribute orientation
-FAIL ScrollTimeline interface: attribute startScrollOffset assert_true: The prototype object must have a property "startScrollOffset" expected true got false
-FAIL ScrollTimeline interface: attribute endScrollOffset assert_true: The prototype object must have a property "endScrollOffset" expected true got false
+PASS ScrollTimeline interface: attribute startScrollOffset
+PASS ScrollTimeline interface: attribute endScrollOffset
 PASS ScrollTimeline interface: attribute timeRange
 FAIL ScrollTimeline interface: attribute fill assert_true: The prototype object must have a property "fill" expected true got false
 FAIL ScrollTimeline must be primary interface of new ScrollTimeline() assert_equals: Unexpected exception when evaluating object expected null but got object "NotSupportedError: Failed to construct 'ScrollTimeline': 'auto' value for timeRange not yet supported"
