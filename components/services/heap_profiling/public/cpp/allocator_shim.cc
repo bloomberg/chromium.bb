@@ -792,6 +792,11 @@ void SerializeFramesFromAllocationContext(FrameSerializer* serializer,
 }
 
 void SerializeFramesFromBacktrace(FrameSerializer* serializer) {
+  // Skip 3 top frames related to the profiler itself, e.g.:
+  //   base::debug::StackTrace::StackTrace
+  //   heap_profiling::RecordAndSendAlloc
+  //   heap_profiling::`anonymous namespace'::HookAlloc
+  size_t skip_frames = 3;
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
   const void* frames[kMaxStackEntries - 1];
@@ -801,8 +806,8 @@ void SerializeFramesFromBacktrace(FrameSerializer* serializer) {
 #elif BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
   const void* frames[kMaxStackEntries - 1];
   size_t frame_count = base::debug::TraceStackFramePointers(
-      frames, kMaxStackEntries - 1,
-      1);  // exclude this function from the trace.
+      frames, kMaxStackEntries - 1, skip_frames);
+  skip_frames = 0;
 #else
   // Fall-back to capturing the stack with base::debug::StackTrace,
   // which is likely slower, but more reliable.
@@ -811,7 +816,9 @@ void SerializeFramesFromBacktrace(FrameSerializer* serializer) {
   const void* const* frames = stack_trace.Addresses(&frame_count);
 #endif
 
-  serializer->AddAllInstructionPointers(frame_count, frames);
+  skip_frames = std::min(skip_frames, frame_count);
+  serializer->AddAllInstructionPointers(frame_count - skip_frames,
+                                        frames + skip_frames);
 
   if (g_include_thread_names) {
     const char* thread_name = GetOrSetThreadName();
