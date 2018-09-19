@@ -318,6 +318,9 @@ class CONTENT_EXPORT WebContentsDelegate {
                                   const GURL& target_url,
                                   WebContents* new_contents) {}
 
+  // Notifies the embedder that a Portal WebContents was created.
+  virtual void PortalWebContentsCreated(WebContents* portal_web_contents) {}
+
   // Notification that one of the frames in the WebContents is hung. |source| is
   // the WebContents that is hung, and |render_widget_host| is the
   // RenderWidgetHost that, while routing events to it, discovered the hang.

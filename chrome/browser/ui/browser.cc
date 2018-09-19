@@ -1717,6 +1717,10 @@ void Browser::WebContentsCreated(WebContents* source_contents,
   task_manager::WebContentsTags::CreateForTabContents(new_contents);
 }
 
+void Browser::PortalWebContentsCreated(WebContents* portal_web_contents) {
+  TabHelpers::AttachTabHelpers(portal_web_contents);
+}
+
 void Browser::RendererUnresponsive(
     WebContents* source,
     content::RenderWidgetHost* render_widget_host,
