@@ -94,8 +94,50 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
   CHECK(this);
   CHECK(request.error_handler);
   CHECK(start_callback);
-  CHECK(!start_callback_);
-  CHECK(!IsConnected());
+
+  // Switch used to distinguish which datatypes contribute to CHECK failures.
+  switch (type_) {
+    case DEVICE_INFO:
+      CHECK(!start_callback_);
+      CHECK(!IsConnected());
+      break;
+    case USER_CONSENTS:
+      CHECK(!start_callback_);
+      CHECK(!IsConnected());
+      break;
+    case USER_EVENTS:
+      CHECK(!start_callback_);
+      CHECK(!IsConnected());
+      break;
+    case SESSIONS:
+      CHECK(!start_callback_);
+      CHECK(!IsConnected());
+      break;
+    case AUTOFILL:
+      CHECK(!start_callback_);
+      CHECK(!IsConnected());
+      break;
+    case AUTOFILL_PROFILE:
+      CHECK(!start_callback_);
+      CHECK(!IsConnected());
+      break;
+    case AUTOFILL_WALLET_DATA:
+      CHECK(!start_callback_);
+      CHECK(!IsConnected());
+      break;
+    case AUTOFILL_WALLET_METADATA:
+      CHECK(!start_callback_);
+      CHECK(!IsConnected());
+      break;
+    case TYPED_URLS:
+      CHECK(!start_callback_);
+      CHECK(!IsConnected());
+      break;
+    default:
+      CHECK(!start_callback_);
+      CHECK(!IsConnected());
+      break;
+  }
 
   start_callback_ = std::move(start_callback);
   activation_request_ = request;
