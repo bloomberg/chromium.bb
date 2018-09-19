@@ -1826,6 +1826,12 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config, boards_dict, ge_build_config)
   hw_test_list = HWTestList(ge_build_config)
 
+  # The PreCQ Launcher doesn't limit eternal PreCQ builds to external
+  # CLs.  as a hack, use internal checkouts for external builds so
+  # they can apply (and ignore) internal CLs. crbug.com/882965
+  for b in  _arm_external_boards | _x86_external_boards:
+    board_configs[b].apply(site_config.templates.internal)
+
   site_config.AddTemplate(
       'pre_cq',
       site_config.templates.paladin,
