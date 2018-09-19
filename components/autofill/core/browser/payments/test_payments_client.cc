@@ -46,6 +46,7 @@ void TestPaymentsClient::UploadCard(
     const payments::PaymentsClient::UploadRequestDetails& request_details,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const std::string&)> callback) {
+  upload_card_addresses_ = request_details.profiles;
   active_experiments_ = request_details.active_experiments;
   std::move(callback).Run(AutofillClient::SUCCESS, server_id_);
 }

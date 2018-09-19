@@ -171,16 +171,19 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   }
 
   // If the relevant feature is enabled, only send the country of the
-  // recently-used addresses.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillSendOnlyCountryInGetUploadDetails)) {
-    for (size_t i = 0; i < upload_request_.profiles.size(); i++) {
+  // recently-used addresses. We make a copy here to avoid modifying
+  // |upload_request_.profiles|, which should always have full addresses even
+  // after this function goes out of scope.
+  bool send_only_country_in_addresses = base::FeatureList::IsEnabled(
+      features::kAutofillSendOnlyCountryInGetUploadDetails);
+  std::vector<AutofillProfile> country_only_profiles;
+  if (send_only_country_in_addresses) {
+    for (const AutofillProfile& address : upload_request_.profiles) {
       AutofillProfile country_only;
       country_only.SetInfo(ADDRESS_HOME_COUNTRY,
-                           upload_request_.profiles[i].GetInfo(
-                               ADDRESS_HOME_COUNTRY, app_locale_),
+                           address.GetInfo(ADDRESS_HOME_COUNTRY, app_locale_),
                            app_locale_);
-      upload_request_.profiles[i] = std::move(country_only);
+      country_only_profiles.emplace_back(std::move(country_only));
     }
   }
 
@@ -188,8 +191,10 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   if (observer_for_testing_)
     observer_for_testing_->OnDecideToRequestUploadSave();
   payments_client_->GetUploadDetails(
-      upload_request_.profiles, upload_request_.detected_values,
-      upload_request_.active_experiments, app_locale_,
+      send_only_country_in_addresses ? country_only_profiles
+                                     : upload_request_.profiles,
+      upload_request_.detected_values, upload_request_.active_experiments,
+      app_locale_,
       base::BindOnce(&CreditCardSaveManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr()),
       payments::kUploadCardBillableServiceNumber);
