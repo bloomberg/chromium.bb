@@ -71,4 +71,6 @@ message Entry {
 
   repeated string url_chain = 16;
   optional string response_headers = 17;
+  optional bool did_received_response = 18;
+  optional bool require_response_headers = 19;
 }

@@ -429,6 +429,7 @@ void ControllerImpl::OnDownloadCreated(const DriverEntry& download) {
 
   entry->url_chain = download.url_chain;
   entry->response_headers = download.response_headers;
+  entry->did_received_response = true;
   model_->Update(*entry);
 
   download::Client* client = clients_->GetClient(entry->client);
@@ -565,7 +566,7 @@ void ControllerImpl::OnItemUpdated(bool success,
   // DriverEntry.  If we restart we'll see a COMPLETE state and handle it
   // accordingly.
   if (entry->state == Entry::State::COMPLETE)
-    driver_->Remove(guid);
+    driver_->Remove(guid, false);
 
   // TODO(dtrainor): If failed, clean up any download state accordingly.
 
@@ -731,7 +732,7 @@ void ControllerImpl::CancelOrphanedRequests() {
   }
 
   for (const auto& guid : guids_to_remove) {
-    driver_->Remove(guid);
+    driver_->Remove(guid, false);
     model_->Remove(guid);
   }
 
@@ -794,6 +795,15 @@ void ControllerImpl::ResolveInitialRequestStates() {
           break;
         }
 
+        // We didn't persist the response headers in time, so just restart the
+        // the fetch. The driver entry and the temporary file will also be
+        // deleted.
+        if (state == Entry::State::ACTIVE && entry->require_response_headers &&
+            !entry->did_received_response) {
+          driver_->Remove(entry->guid, true /* remove_file */);
+          break;
+        }
+
         // If we have a real DriverEntry::State, we need to determine which of
         // those states makes sense for our Entry.  Our entry can either be in
         // two states now: It's effective 'active' state (ACTIVE or PAUSED) or
@@ -841,7 +851,7 @@ void ControllerImpl::ResolveInitialRequestStates() {
       case Entry::State::AVAILABLE:  // Intentional fallthrough.
         // We should not have a DriverEntry here.
         if (driver_entry.has_value())
-          driver_->Remove(entry->guid);
+          driver_->Remove(entry->guid, false);
         break;
       case Entry::State::ACTIVE:  // Intentional fallthrough.
       case Entry::State::PAUSED:
@@ -866,7 +876,7 @@ void ControllerImpl::ResolveInitialRequestStates() {
         } else {
           // We're staying in COMPLETE.  Make sure there is no DriverEntry here.
           if (driver_entry.has_value())
-            driver_->Remove(entry->guid);
+            driver_->Remove(entry->guid, false);
         }
         break;
       case Entry::State::COUNT:
@@ -1128,7 +1138,8 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
     entry->completion_time = driver_entry->completion_time;
     entry->bytes_downloaded = driver_entry->bytes_downloaded;
     CompletionInfo completion_info(driver_entry->current_file_path,
-                                   driver_entry->bytes_downloaded);
+                                   driver_entry->bytes_downloaded,
+                                   entry->url_chain, entry->response_headers);
     completion_info.blob_handle = driver_entry->blob_handle;
 
     entry->last_cleanup_check_time = driver_entry->completion_time;
@@ -1147,7 +1158,7 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
 
     // TODO(dtrainor): Handle the case where we crash before the model write
     // happens and we have no driver entry.
-    driver_->Remove(entry->guid);
+    driver_->Remove(entry->guid, false);
     model_->Remove(guid);
   }
 

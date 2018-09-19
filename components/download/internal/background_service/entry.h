@@ -114,6 +114,14 @@ struct Entry {
 
   // The response headers for the download request.
   scoped_refptr<const net::HttpResponseHeaders> response_headers;
+
+  // If the response is received. |response_headers| may be null in the response
+  // for certain protocol, or without network connection.
+  bool did_received_response;
+
+  // If the download requires response headers to be persisted. False for older
+  // proto version.
+  bool require_response_headers;
 };
 
 }  // namespace download

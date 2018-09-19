@@ -296,6 +296,8 @@ Entry ProtoConversions::EntryFromProto(const protodb::Entry& proto) {
         base::MakeRefCounted<const net::HttpResponseHeaders>(
             proto.response_headers());
   }
+  entry.did_received_response = proto.did_received_response();
+  entry.require_response_headers = proto.require_response_headers();
 
   return entry;
 }
@@ -324,6 +326,9 @@ protodb::Entry ProtoConversions::EntryToProto(const Entry& entry) {
     proto.add_url_chain(url.spec());
   if (entry.response_headers)
     proto.set_response_headers(entry.response_headers->raw_headers());
+  proto.set_did_received_response(entry.did_received_response);
+  proto.set_require_response_headers(entry.require_response_headers);
+
   return proto;
 }
 

@@ -40,7 +40,11 @@ struct CompletionInfo {
   // account changed values during retries/resumptions.
   scoped_refptr<const net::HttpResponseHeaders> response_headers;
 
-  CompletionInfo(const base::FilePath& path, uint64_t bytes_downloaded);
+  CompletionInfo(
+      const base::FilePath& path,
+      uint64_t bytes_downloaded,
+      const std::vector<GURL>& url_chain,
+      scoped_refptr<const net::HttpResponseHeaders> response_headers);
   CompletionInfo(const CompletionInfo& other);
   ~CompletionInfo();
   bool operator==(const CompletionInfo& other) const;
