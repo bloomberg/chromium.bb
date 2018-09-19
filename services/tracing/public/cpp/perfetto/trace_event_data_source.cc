@@ -105,6 +105,11 @@ class TraceEventDataSource::ThreadLocalEventSink {
       : trace_writer_(std::move(trace_writer)) {}
 
   ~ThreadLocalEventSink() {
+    // Finalize the current message before posting the |trace_writer_| for
+    // destruction, to avoid data races.
+    event_bundle_ = ChromeEventBundleHandle();
+    trace_packet_handle_ = perfetto::TraceWriter::TracePacketHandle();
+
     // Delete the TraceWriter on the sequence that Perfetto runs on, needed
     // as the ThreadLocalEventSink gets deleted on thread
     // shutdown and we can't safely call TaskRunnerHandle::Get() at that point
