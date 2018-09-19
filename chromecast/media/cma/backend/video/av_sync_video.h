@@ -104,6 +104,7 @@ class AvSyncVideo : public AvSync {
   int64_t last_repeated_frames_ = 0;
   int64_t last_dropped_frames_ = 0;
   int64_t last_vpts_value_recorded_ = 0;
+  int64_t last_apts_value_recorded_ = 0;
 
   // Those are initialized to INT64_MIN as not to be confused with 0 timestamp
   // and 0 pts.

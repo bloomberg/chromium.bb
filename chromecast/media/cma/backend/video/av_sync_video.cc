@@ -62,6 +62,11 @@ const int kAvSyncFpsThreshold = 10;
 // existing AV sync drift in this duration.
 const float kReSyncDurationUs =
     base::TimeDelta::FromSeconds(30).InMicroseconds();
+
+// We don't start AV syncing until this amount after the playback has started
+// or resumed.
+const int64_t kAvSyncStartGracePeriodUs =
+    base::TimeDelta::FromSeconds(5).InMicroseconds();
 }  // namespace
 
 std::unique_ptr<AvSync> AvSync::Create(
@@ -82,7 +87,7 @@ AvSyncVideo::AvSyncVideo(
 }
 
 void AvSyncVideo::UpkeepAvSync() {
-  if (backend_->MonotonicClockNow() - kAvSyncUpkeepInterval.InMicroseconds() <
+  if (backend_->MonotonicClockNow() - kAvSyncStartGracePeriodUs <
       playback_start_timestamp_us_) {
     return;
   }
@@ -118,7 +123,10 @@ void AvSyncVideo::UpkeepAvSync() {
     return;
   }
 
-  audio_pts_->AddSample(new_apts_timestamp, new_raw_apts, 1.0);
+  if (new_raw_apts != last_apts_value_recorded_) {
+    audio_pts_->AddSample(new_apts_timestamp, new_raw_apts, 1.0);
+    last_apts_value_recorded_ = new_raw_apts;
+  }
 
   if (video_pts_->num_samples() < 10 || audio_pts_->num_samples() < 20) {
     VLOG(4) << "Linear regression samples too little."
@@ -267,17 +275,17 @@ void AvSyncVideo::HardCorrection(int64_t now,
                                  int64_t new_raw_vpts,
                                  int64_t new_vpts_timestamp,
                                  int64_t linear_regression_difference) {
-  backend_->audio_decoder()->RestartPlaybackAt(new_vpts_timestamp,
-                                               new_raw_vpts);
-
-  audio_pts_.reset(
-      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
-
   LOG(INFO) << "Hard correction."
             << " linear_regression_difference=" << linear_regression_difference
             << " new_raw_vpts=" << new_raw_vpts
             << " current_av_sync_audio_playback_rate_="
             << current_av_sync_audio_playback_rate_;
+
+  backend_->audio_decoder()->RestartPlaybackAt(new_vpts_timestamp,
+                                               new_raw_vpts);
+
+  audio_pts_.reset(
+      new WeightedMovingLinearRegression(kLinearRegressionDataLifetimeUs));
 }
 
 // We calculate the desired audio playback rate, and set the rate to that if

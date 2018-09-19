@@ -23,7 +23,7 @@
 #endif  // defined(OS_FUCHSIA)
 
 namespace {
-int64_t kSyncedPlaybackStartDelayUs = 0;
+int64_t kSyncedPlaybackStartDelayUs = 50000;
 }  // namespace
 
 namespace chromecast {
