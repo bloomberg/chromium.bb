@@ -2,10 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 service("test_ws") {
+  testonly = true
+
+  sources = [
+    "test_ws.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//ui/base",
+  ]
+}
+
+source_set("lib") {
   testonly = true
 
   sources = [
@@ -15,12 +31,15 @@ service("test_ws") {
     "test_gpu_interface_provider.h",
     "test_window_service.cc",
     "test_window_service.h",
-    "test_ws.cc",
+    "test_window_service_factory.cc",
+    "test_window_service_factory.h",
   ]
 
   deps = [
+    ":mojom",
     "//base",
     "//components/discardable_memory/service",
+    "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/ws:lib",
@@ -41,4 +60,12 @@ service_manifest("manifest") {
   name = "test_ws"
   source = "manifest.json"
   packaged_services = [ "//services/ws:manifest" ]
+}
+
+mojom("mojom") {
+  testonly = true
+
+  sources = [
+    "test_ws.mojom",
+  ]
 }

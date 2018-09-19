@@ -113,6 +113,7 @@ jumbo_static_library("test_support") {
     "//services/ws/public/cpp",
     "//services/ws/public/cpp/input_devices",
     "//services/ws/public/mojom",
+    "//services/ws/test_ws:mojom",
     "//skia",
     "//ui/aura",
     "//ui/aura:test_support",

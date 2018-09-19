@@ -24,6 +24,13 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/test/echo/echo_service.h"
 
+#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/784179): Remove nogncheck.
+#include "services/ws/test_ws/test_window_service_factory.h"  // nogncheck
+#include "services/ws/test_ws/test_ws.mojom.h"                // nogncheck
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -123,6 +130,15 @@ void ShellContentUtilityClient::RegisterServices(StaticServiceMap* services) {
     info.factory = base::BindRepeating(&echo::CreateEchoService);
     services->insert(std::make_pair(echo::mojom::kServiceName, info));
   }
+
+#if defined(OS_CHROMEOS)
+  if (features::IsMultiProcessMash()) {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory =
+        base::BindRepeating(&ws::test::CreateOutOfProcessWindowService);
+    services->insert(std::make_pair(test_ws::mojom::kServiceName, info));
+  }
+#endif
 }
 
 void ShellContentUtilityClient::RegisterNetworkBinders(

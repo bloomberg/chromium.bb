@@ -7,10 +7,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "mojo/public/cpp/bindings/map.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/test_ws/test_gpu_interface_provider.h"
 #include "services/ws/window_service.h"
+#include "ui/aura/env.h"
+#include "ui/aura/mus/property_utils.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -20,26 +24,45 @@ namespace test {
 TestWindowService::TestWindowService() = default;
 
 TestWindowService::~TestWindowService() {
-  // WindowService depends upon Screen, which is owned by AuraTestHelper.
-  service_context_.reset();
+  Shutdown(base::NullCallback());
+}
 
-  // |aura_test_helper_| could be null when exiting before fully initialized.
-  if (aura_test_helper_) {
-    aura::client::SetScreenPositionClient(aura_test_helper_->root_window(),
-                                          nullptr);
-    // AuraTestHelper expects TearDown() to be called.
-    aura_test_helper_->TearDown();
-    aura_test_helper_.reset();
-  }
+void TestWindowService::InitForInProcess(
+    ui::ContextFactory* context_factory,
+    ui::ContextFactoryPrivate* context_factory_private,
+    std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider) {
+  is_in_process_ = true;
+  aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>(
+      aura::Env::CreateLocalInstanceForInProcess());
+  SetupAuraTestHelper(context_factory, context_factory_private);
 
-  ui::TerminateContextFactoryForTests();
+  gpu_interface_provider_ = std::move(gpu_interface_provider);
+}
+
+void TestWindowService::InitForOutOfProcess() {
+#if defined(OS_CHROMEOS)
+  // Use gpu service only for ChromeOS to run content_browsertests in mash.
+  //
+  // To use this code path for all platforms, we need to fix the following
+  // flaky failure on Win7 bot:
+  //   gl_surface_egl.cc:
+  //     EGL Driver message (Critical) eglInitialize: No available renderers
+  //   gl_initializer_win.cc:
+  //     GLSurfaceEGL::InitializeOneOff failed.
+  CreateGpuHost();
+#else
+  gl::GLSurfaceTestSupport::InitializeOneOff();
+  CreateAuraTestHelper();
+#endif  // defined(OS_CHROMEOS)
 }
 
 std::unique_ptr<aura::Window> TestWindowService::NewTopLevel(
     aura::PropertyConverter* property_converter,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
-  std::unique_ptr<aura::Window> top_level =
-      std::make_unique<aura::Window>(nullptr);
+  std::unique_ptr<aura::Window> top_level = std::make_unique<aura::Window>(
+      nullptr, aura::client::WINDOW_TYPE_UNKNOWN, aura_test_helper_->GetEnv());
+  aura::SetWindowType(top_level.get(), aura::GetWindowTypeFromProperties(
+                                           mojo::FlatMapToMap(properties)));
   top_level->Init(ui::LAYER_NOT_DRAWN);
   aura_test_helper_->root_window()->AddChild(top_level.get());
   for (auto property : properties) {
@@ -75,21 +98,13 @@ void TestWindowService::OnStart() {
 
   registry_.AddInterface(base::BindRepeating(
       &TestWindowService::BindServiceFactory, base::Unretained(this)));
+  registry_.AddInterface(base::BindRepeating(&TestWindowService::BindTestWs,
+                                             base::Unretained(this)));
 
-#if defined(OS_CHROMEOS)
-  // Use gpu service only for ChromeOS to run content_browsertests in mash.
-  //
-  // To use this code path for all platforms, we need to fix the following
-  // flaky failure on Win7 bot:
-  //   gl_surface_egl.cc:
-  //     EGL Driver message (Critical) eglInitialize: No available renderers
-  //   gl_initializer_win.cc:
-  //     GLSurfaceEGL::InitializeOneOff failed.
-  CreateGpuHost();
-#else
-  gl::GLSurfaceTestSupport::InitializeOneOff();
-  CreateAuraTestHelper();
-#endif  // defined(OS_CHROMEOS)
+  if (!is_in_process_) {
+    DCHECK(!aura_test_helper_);
+    InitForOutOfProcess();
+  }
 }
 
 void TestWindowService::OnBindInterface(
@@ -119,10 +134,9 @@ void TestWindowService::CreateService(
   ui_service_created_ = true;
 
   auto window_service = std::make_unique<WindowService>(
-      this,
-      std::make_unique<TestGpuInterfaceProvider>(
-          gpu_host_.get(), discardable_shared_memory_manager_.get()),
-      aura_test_helper_->focus_client());
+      this, std::move(gpu_interface_provider_),
+      aura_test_helper_->focus_client(), /*decrement_client_ids=*/false,
+      aura_test_helper_->GetEnv());
   service_context_ = std::make_unique<service_manager::ServiceContext>(
       std::move(window_service), std::move(request));
   pid_receiver->SetPID(base::GetCurrentProcId());
@@ -135,9 +149,33 @@ void TestWindowService::OnGpuServiceInitialized() {
     std::move(pending_create_service_).Run();
 }
 
+void TestWindowService::Shutdown(
+    test_ws::mojom::TestWs::ShutdownCallback callback) {
+  // WindowService depends upon Screen, which is owned by AuraTestHelper.
+  service_context_.reset();
+
+  // |aura_test_helper_| could be null when exiting before fully initialized.
+  if (aura_test_helper_) {
+    aura::client::SetScreenPositionClient(aura_test_helper_->root_window(),
+                                          nullptr);
+    // AuraTestHelper expects TearDown() to be called.
+    aura_test_helper_->TearDown();
+    aura_test_helper_.reset();
+  }
+
+  ui::TerminateContextFactoryForTests();
+
+  if (callback)
+    std::move(callback).Run();
+}
+
 void TestWindowService::BindServiceFactory(
     service_manager::mojom::ServiceFactoryRequest request) {
   service_factory_bindings_.AddBinding(this, std::move(request));
+}
+
+void TestWindowService::BindTestWs(test_ws::mojom::TestWsRequest request) {
+  test_ws_bindings_.AddBinding(this, std::move(request));
 }
 
 void TestWindowService::CreateGpuHost() {
@@ -146,6 +184,9 @@ void TestWindowService::CreateGpuHost() {
 
   gpu_host_ = std::make_unique<gpu_host::DefaultGpuHost>(
       this, context()->connector(), discardable_shared_memory_manager_.get());
+
+  gpu_interface_provider_ = std::make_unique<TestGpuInterfaceProvider>(
+      gpu_host_.get(), discardable_shared_memory_manager_.get());
 
   // |aura_test_helper_| is created later in OnGpuServiceInitialized.
 }
@@ -159,6 +200,12 @@ void TestWindowService::CreateAuraTestHelper() {
                                        &context_factory,
                                        &context_factory_private);
   aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
+  SetupAuraTestHelper(context_factory, context_factory_private);
+}
+
+void TestWindowService::SetupAuraTestHelper(
+    ui::ContextFactory* context_factory,
+    ui::ContextFactoryPrivate* context_factory_private) {
   aura_test_helper_->SetUp(context_factory, context_factory_private);
 
   aura::client::SetScreenPositionClient(aura_test_helper_->root_window(),
