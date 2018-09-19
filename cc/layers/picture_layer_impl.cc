@@ -1421,9 +1421,18 @@ gfx::Vector2dF PictureLayerImpl::CalculateRasterTranslation(
   if (!use_transformed_rasterization_)
     return gfx::Vector2dF();
 
-  DCHECK(!draw_properties().screen_space_transform_is_animating);
   gfx::Transform draw_transform = DrawTransform();
-  DCHECK(draw_transform.IsScaleOrTranslation());
+  // TODO(enne): for performance reasons, we should only have a raster
+  // translation when the screen space transform is not animating.  We try to
+  // avoid this elsewhere but it still happens: http://crbug.com/778440
+  // TODO(enne): Also, we shouldn't ever get here if the draw transform is not
+  // just a scale + translation, but we do sometimes: http://crbug.com/740113
+  if (draw_properties().screen_space_transform_is_animating ||
+      !draw_transform.IsScaleOrTranslation()) {
+    // For now, while these problems are not well understood, avoid changing
+    // the raster scale in these cases.
+    return gfx::Vector2dF();
+  }
 
   // It is only useful to align the content space to the target space if their
   // relative pixel ratio is some small rational number. Currently we only
