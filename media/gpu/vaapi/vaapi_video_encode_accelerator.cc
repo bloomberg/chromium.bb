@@ -54,8 +54,6 @@ constexpr size_t kMinNumFramesInFlight = 4;
 // Need 2 surfaces for each frame: one for input data and one for
 // reconstructed picture, which is later used for reference.
 constexpr size_t kNumSurfacesPerFrame = 2;
-// TODO(owenlin): Adjust the value after b/71367113 is fixed
-constexpr size_t kExtraOutputBufferSizeInBytes = 32768;
 
 constexpr int kDefaultFramerate = 30;
 
@@ -312,8 +310,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
   }
 
   coded_size_ = encoder_->GetCodedSize();
-  output_buffer_byte_size_ =
-      encoder_->GetBitstreamBufferSize() + kExtraOutputBufferSizeInBytes;
+  output_buffer_byte_size_ = encoder_->GetBitstreamBufferSize();
   const size_t max_ref_frames = encoder_->GetMaxNumOfRefFrames();
   // Use at least kMinNumFramesInFlight if encoder requested less for
   // pipeline depth.

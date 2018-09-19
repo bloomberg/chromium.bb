@@ -78,13 +78,6 @@ gfx::Size VP8Encoder::GetCodedSize() const {
   return coded_size_;
 }
 
-size_t VP8Encoder::GetBitstreamBufferSize() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!coded_size_.IsEmpty());
-
-  return coded_size_.GetArea();
-}
-
 size_t VP8Encoder::GetMaxNumOfRefFrames() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
