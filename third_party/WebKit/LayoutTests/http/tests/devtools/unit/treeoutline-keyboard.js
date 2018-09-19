@@ -40,6 +40,21 @@
   for (var i = 0; i < distance; i++)
     sendKey("ArrowLeft");
 
+  TestRunner.addResult("\nTesting nested treeoutlines.");
+  const innerTreeOutline = new UI.TreeOutlineInShadow();
+  const firstInnerChild = new UI.TreeElement('First inner child');
+  const firstInnerGrandChild = new UI.TreeElement('First inner grandchild');
+  innerTreeOutline.appendChild(firstInnerChild);
+  firstInnerChild.appendChild(firstInnerGrandChild);
+
+  const treeElementForNestedTree = new UI.TreeElement(innerTreeOutline.element);
+  treeOutline.appendChild(treeElementForNestedTree);
+
+  TestRunner.addResult("\nSelecting and expanding first child of inner tree");
+  innerTreeOutline.firstChild().select(false, true);
+  sendKey("ArrowRight");
+  TestRunner.addResult(`Inner child is expanded: ${innerTreeOutline.firstChild().expanded ? 'YES' : 'NO'}`);
+
   TestRunner.completeTest();
 
   function sendKey(key) {

@@ -35,3 +35,8 @@ Selected: 0 child
 Traveling left
 Selected: 0
 
+Testing nested treeoutlines.
+
+Selecting and expanding first child of inner tree
+Inner child is expanded: YES
+
