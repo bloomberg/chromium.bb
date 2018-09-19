@@ -76,11 +76,6 @@ class ASH_EXPORT TabletModeController
   TabletModeController();
   ~TabletModeController() override;
 
-  // True if it is possible to enter tablet mode in the current
-  // configuration. If this returns false, it should never be the case that
-  // tablet mode becomes enabled.
-  bool CanEnterTabletMode();
-
   // TODO(jonross): Merge this with AttemptEnterTabletMode. Currently these are
   // separate for several reasons: there is no internal display when running
   // unittests; the event blocker prevents keyboard input when running ChromeOS
@@ -106,15 +101,15 @@ class ASH_EXPORT TabletModeController
   // Checks if we should auto hide title bars for the |widget| in tablet mode.
   bool ShouldAutoHideTitlebars(views::Widget* widget);
 
+  // Whether the events from the internal mouse/keyboard are blocked.
+  bool AreInternalInputDeviceEventsBlocked() const;
+
   // Flushes the mojo message pipe to chrome.
   void FlushForTesting();
 
   // If |record_lid_angle_timer_| is running, invokes its task and returns true.
   // Otherwise, returns false.
   bool TriggerRecordLidAngleTimerForTesting() WARN_UNUSED_RESULT;
-
-  // Whether the events from the internal mouse/keyboard are blocked.
-  bool AreInternalInputDeviceEventsBlocked() const;
 
   // ShellObserver:
   void OnShellInitialized() override;
@@ -166,6 +161,11 @@ class ASH_EXPORT TabletModeController
   // a certain range of time before using unstable angle.
   bool CanUseUnstableLidAngle() const;
 
+  // True if it is possible to enter tablet mode in the current
+  // configuration. If this returns false, it should never be the case that
+  // tablet mode becomes enabled.
+  bool CanEnterTabletMode();
+
   // Attempts to enter tablet mode and locks the internal keyboard and touchpad.
   void AttemptEnterTabletMode();
 
@@ -191,10 +191,10 @@ class ASH_EXPORT TabletModeController
   // mojom::TabletModeController:
   void SetClient(mojom::TabletModeClientPtr client) override;
 
-  // Checks whether we want to allow entering and exiting tablet mode. This
-  // returns false if the user set a flag for the software to behave in a
-  // certain way regardless of configuration.
-  bool AllowEnterExitTabletMode() const;
+  // Checks whether we want to allow change the current ui mode to tablet mode
+  // or clamshell mode. This returns false if the user set a flag for the
+  // software to behave in a certain way regardless of configuration.
+  bool AllowUiModeChange() const;
 
   // Called when a mouse config is changed, or when a device list is
   // sent from device manager. This will exit tablet mode if needed.
