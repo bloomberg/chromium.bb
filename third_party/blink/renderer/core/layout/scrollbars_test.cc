@@ -60,6 +60,15 @@ class ScrollbarsTest : public SimTest {
     GetEventHandler().HandleMousePressEvent(event);
   }
 
+  void HandleContextMenuEvent(int x, int y) {
+    WebMouseEvent event(
+        WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
+        WebPointerProperties::Button::kNoButton, 0,
+        WebInputEvent::Modifiers::kNoModifiers, CurrentTimeTicks());
+    event.SetFrameScale(1);
+    GetEventHandler().SendContextMenuEvent(event);
+  }
+
   void HandleMouseReleaseEvent(int x, int y) {
     WebMouseEvent event(
         WebInputEvent::kMouseUp, WebFloatPoint(x, y), WebFloatPoint(x, y),
@@ -1045,6 +1054,58 @@ TEST_F(ScrollbarsTest, MouseReleaseUpdatesScrollbarHoveredPart) {
   HandleMouseReleaseEvent(1, 1);
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
   EXPECT_EQ(scrollbar->HoveredPart(), ScrollbarPart::kNoPart);
+}
+
+TEST_F(ScrollbarsTest, ContextMenuUpdatesScrollbarPressedPart) {
+  WebView().Resize(WebSize(200, 200));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body { margin: 0px }
+    #scroller { overflow-x: auto; width: 180px; height: 100px }
+    #spacer { height: 300px }
+    ::-webkit-scrollbar { width: 8px }
+    ::-webkit-scrollbar-thumb {
+      background-color: hsla(0, 0%, 56%, 0.6)
+    }
+    </style>
+    <div id='scroller'>
+      <div id='spacer'></div>
+    </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* scrollbar_div = document.getElementById("scroller");
+  EXPECT_TRUE(scrollbar_div);
+
+  ScrollableArea* scrollable_area =
+      ToLayoutBox(scrollbar_div->GetLayoutObject())->GetScrollableArea();
+
+  EXPECT_TRUE(scrollable_area->VerticalScrollbar());
+  Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
+
+  // Mouse moved over the scrollbar.
+  HandleMouseMoveEvent(175, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
+
+  // Press the scrollbar.
+  HandleMousePressEvent(175, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
+
+  // ContextMenu while still pressed.
+  HandleContextMenuEvent(175, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
+
+  // Mouse moved off the scrollbar.
+  HandleMousePressEvent(50, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
 }
 
 TEST_F(ScrollbarsTest,
