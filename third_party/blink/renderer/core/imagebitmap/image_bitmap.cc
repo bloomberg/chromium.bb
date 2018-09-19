@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/background_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
@@ -36,6 +35,7 @@ constexpr const char* kImageBitmapOptionPremultiply = "premultiply";
 constexpr const char* kImageBitmapOptionResizeQualityHigh = "high";
 constexpr const char* kImageBitmapOptionResizeQualityMedium = "medium";
 constexpr const char* kImageBitmapOptionResizeQualityPixelated = "pixelated";
+constexpr const char* kPreserveImageBitmapColorSpaceConversion = "preserve";
 constexpr const char* kSRGBImageBitmapColorSpaceConversion = "srgb";
 constexpr const char* kLinearRGBImageBitmapColorSpaceConversion = "linear-rgb";
 constexpr const char* kP3ImageBitmapColorSpaceConversion = "p3";
@@ -84,8 +84,13 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
 
   parsed_options.has_color_space_conversion =
       (options.colorSpaceConversion() != kImageBitmapOptionNone);
+  parsed_options.preserve_source_color_space =
+      (options.colorSpaceConversion() ==
+       kPreserveImageBitmapColorSpaceConversion);
   parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
   if (options.colorSpaceConversion() != kSRGBImageBitmapColorSpaceConversion &&
+      options.colorSpaceConversion() !=
+          kPreserveImageBitmapColorSpaceConversion &&
       options.colorSpaceConversion() != kImageBitmapOptionNone &&
       options.colorSpaceConversion() != kImageBitmapOptionDefault) {
     parsed_options.color_params.SetCanvasPixelFormat(kF16CanvasPixelFormat);
@@ -405,8 +410,19 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
 scoped_refptr<StaticBitmapImage> ApplyColorSpaceConversion(
     scoped_refptr<StaticBitmapImage>&& image,
     ImageBitmap::ParsedOptions& options) {
-  return image->ConvertToColorSpace(
-      options.color_params.GetSkColorSpaceForSkSurfaces());
+  sk_sp<SkColorSpace> color_space =
+      options.color_params.GetSkColorSpaceForSkSurfaces();
+  SkColorType color_type = kN32_SkColorType;
+  sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
+  // If we should preserve color precision, don't lose it in color space
+  // conversion.
+  if (options.pixel_format == kImageBitmapPixelFormat_Default &&
+      (sk_image->colorType() == kRGBA_F16_SkColorType ||
+       (sk_image->colorSpace() && sk_image->colorSpace()->gammaIsLinear()) ||
+       (color_space && color_space->gammaIsLinear()))) {
+    color_type = kRGBA_F16_SkColorType;
+  }
+  return image->ConvertToColorSpace(color_space, color_type);
 }
 
 scoped_refptr<StaticBitmapImage> MakeBlankImage(
@@ -518,7 +534,8 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   }
 
   // color convert if needed
-  if (parsed_options.has_color_space_conversion) {
+  if (parsed_options.has_color_space_conversion &&
+      !parsed_options.preserve_source_color_space) {
     result = ApplyColorSpaceConversion(std::move(result), parsed_options);
     if (!result)
       return nullptr;
