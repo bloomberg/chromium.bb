@@ -340,6 +340,37 @@ int64_t ExtractPostId(const WebHistoryItem& item) {
   return item.HttpBody().Identifier();
 }
 
+ui::PageTransition GetTransitionType(blink::WebDocumentLoader* document_loader,
+                                     blink::WebLocalFrame* frame,
+                                     bool loading) {
+  NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
+      DocumentState::FromDocumentLoader(document_loader)->navigation_state());
+  ui::PageTransition default_transition =
+      navigation_state->IsContentInitiated()
+          ? ui::PAGE_TRANSITION_LINK
+          : navigation_state->common_params().transition;
+  if (navigation_state->WasWithinSameDocument())
+    return default_transition;
+  if (loading || document_loader->GetResponse().IsNull()) {
+    if (document_loader->ReplacesCurrentHistoryItem() && frame->Parent()) {
+      // Subframe navigations that don't add session history items must be
+      // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
+      // handle loading of error pages.
+      return ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+    }
+    bool is_form_submit = document_loader->GetNavigationType() ==
+                              blink::kWebNavigationTypeFormSubmitted ||
+                          document_loader->GetNavigationType() ==
+                              blink::kWebNavigationTypeFormResubmitted;
+    if (ui::PageTransitionCoreTypeIs(default_transition,
+                                     ui::PAGE_TRANSITION_LINK) &&
+        is_form_submit) {
+      return ui::PAGE_TRANSITION_FORM_SUBMIT;
+    }
+  }
+  return default_transition;
+}
+
 WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
     const WebURLResponse& response) {
   return static_cast<WebURLResponseExtraDataImpl*>(response.GetExtraData());
@@ -4025,16 +4056,6 @@ void RenderFrameImpl::WillSendSubmitEvent(const blink::WebFormElement& form) {
 }
 
 void RenderFrameImpl::WillSubmitForm(const blink::WebFormElement& form) {
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(frame_->GetProvisionalDocumentLoader());
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
-
-  if (ui::PageTransitionCoreTypeIs(navigation_state->GetTransitionType(),
-                                   ui::PAGE_TRANSITION_LINK)) {
-    navigation_state->set_transition_type(ui::PAGE_TRANSITION_FORM_SUBMIT);
-  }
-
   for (auto& observer : observers_)
     observer.WillSubmitForm(form);
 }
@@ -4093,12 +4114,6 @@ void RenderFrameImpl::DidStartProvisionalLoad(
       DocumentState::FromDocumentLoader(document_loader);
   NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
       document_state->navigation_state());
-  if (frame_->Parent() && document_loader->ReplacesCurrentHistoryItem()) {
-    // Subframe navigations that don't add session history items must be
-    // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
-    // handle loading of error pages.
-    navigation_state->set_transition_type(ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  }
 
   for (auto& observer : observers_) {
     observer.DidStartProvisionalLoad(document_loader,
@@ -4256,8 +4271,11 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     media_permission_dispatcher_->OnNavigation();
 
   navigation_state->RunCommitNavigationCallback(blink::mojom::CommitResult::Ok);
+
+  ui::PageTransition transition = GetTransitionType(frame_->GetDocumentLoader(),
+                                                    frame_, true /* loading */);
   DidCommitNavigationInternal(item, commit_type,
-                              false /* was_within_same_document */,
+                              false /* was_within_same_document */, transition,
                               std::move(remote_interface_provider_request));
 
   // Record time between receiving the message to commit the navigation until it
@@ -4266,7 +4284,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   if (!navigation_state->time_commit_requested().is_null()) {
     RecordReadyToCommitUntilCommitHistogram(
         base::TimeTicks::Now() - navigation_state->time_commit_requested(),
-        navigation_state->GetTransitionType());
+        transition);
   }
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
@@ -4513,8 +4531,10 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(true);
 
+  ui::PageTransition transition = GetTransitionType(frame_->GetDocumentLoader(),
+                                                    frame_, true /* loading */);
   DidCommitNavigationInternal(item, commit_type,
-                              true /* was_within_same_document */,
+                              true /* was_within_same_document */, transition,
                               nullptr /* remote_interface_provider_request */);
 }
 
@@ -4751,7 +4771,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
       InternalDocumentStateData::FromDocumentState(document_state);
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
-  ui::PageTransition transition_type = navigation_state->GetTransitionType();
+  ui::PageTransition transition_type =
+      GetTransitionType(document_loader, frame_, false /* loading */);
   if (provisional_document_loader &&
       provisional_document_loader->IsClientRedirect()) {
     transition_type = ui::PageTransitionFromInt(
@@ -5368,7 +5389,8 @@ const RenderFrameImpl* RenderFrameImpl::GetLocalRoot() const {
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
 RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
-    blink::WebHistoryCommitType commit_type) {
+    blink::WebHistoryCommitType commit_type,
+    ui::PageTransition transition) {
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
   const WebURLRequest& request = document_loader->GetRequest();
   const WebURLResponse& response = document_loader->GetResponse();
@@ -5471,7 +5493,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
     params->contents_mime_type =
         document_loader->GetResponse().MimeType().Utf8();
 
-    params->transition = navigation_state->GetTransitionType();
+    params->transition = transition;
     DCHECK(ui::PageTransitionIsMainFrame(params->transition));
 
     // If the page contained a client redirect (meta refresh, document.loc...),
@@ -5620,7 +5642,8 @@ void RenderFrameImpl::NotifyObserversOfNavigationCommit(
 
 void RenderFrameImpl::UpdateStateForCommit(
     const blink::WebHistoryItem& item,
-    blink::WebHistoryCommitType commit_type) {
+    blink::WebHistoryCommitType commit_type,
+    ui::PageTransition transition) {
   DocumentState* document_state =
       DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
   NavigationStateImpl* navigation_state =
@@ -5633,9 +5656,8 @@ void RenderFrameImpl::UpdateStateForCommit(
   SendUpdateState();
 
   bool is_new_navigation = UpdateNavigationHistory(item, commit_type);
-  NotifyObserversOfNavigationCommit(is_new_navigation,
-                                    navigation_state->WasWithinSameDocument(),
-                                    navigation_state->GetTransitionType());
+  NotifyObserversOfNavigationCommit(
+      is_new_navigation, navigation_state->WasWithinSameDocument(), transition);
 
   if (internal_data->must_reset_scroll_and_scale_state()) {
     render_view_->webview()->ResetScrollAndScaleState();
@@ -5677,11 +5699,12 @@ void RenderFrameImpl::DidCommitNavigationInternal(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type,
     bool was_within_same_document,
+    ui::PageTransition transition,
     service_manager::mojom::InterfaceProviderRequest
         remote_interface_provider_request) {
   DCHECK(!(was_within_same_document &&
            remote_interface_provider_request.is_pending()));
-  UpdateStateForCommit(item, commit_type);
+  UpdateStateForCommit(item, commit_type, transition);
 
   // This invocation must precede any calls to allowScripts(), allowImages(), or
   // allowPlugins() for the new page. This ensures that when these functions
@@ -5689,10 +5712,10 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   // process has already been informed of the provisional load committing.
   if (was_within_same_document) {
     GetFrameHost()->DidCommitSameDocumentNavigation(
-        MakeDidCommitProvisionalLoadParams(commit_type));
+        MakeDidCommitProvisionalLoadParams(commit_type, transition));
   } else {
     GetFrameHost()->DidCommitProvisionalLoad(
-        MakeDidCommitProvisionalLoadParams(commit_type),
+        MakeDidCommitProvisionalLoadParams(commit_type, transition),
         std::move(remote_interface_provider_request));
   }
 }

@@ -1230,7 +1230,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Build DidCommitProvisionalLoad_Params based on the frame internal state.
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-  MakeDidCommitProvisionalLoadParams(blink::WebHistoryCommitType commit_type);
+  MakeDidCommitProvisionalLoadParams(blink::WebHistoryCommitType commit_type,
+                                     ui::PageTransition transition);
 
   // Updates the Zoom level of the render view to match current content.
   void UpdateZoomLevel();
@@ -1250,7 +1251,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Updates the internal state following a navigation commit. This should be
   // called before notifying the FrameHost of the commit.
   void UpdateStateForCommit(const blink::WebHistoryItem& item,
-                            blink::WebHistoryCommitType commit_type);
+                            blink::WebHistoryCommitType commit_type,
+                            ui::PageTransition transition);
 
   // Internal function used by same document navigation as well as cross
   // document navigation that updates the state of the RenderFrameImpl and sends
@@ -1259,6 +1261,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type,
       bool was_within_same_document,
+      ui::PageTransition transition,
       service_manager::mojom::InterfaceProviderRequest
           remote_interface_provider_request);
 
