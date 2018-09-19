@@ -21,12 +21,12 @@ namespace background_fetch {
 class StartNextPendingRequestTask : public DatabaseTask {
  public:
   using NextRequestCallback =
-      base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              scoped_refptr<BackgroundFetchRequestInfo>)>;
 
   StartNextPendingRequestTask(
       DatabaseTaskHost* host,
       const BackgroundFetchRegistrationId& registration_id,
-      const BackgroundFetchRegistration& registration,
       NextRequestCallback callback);
 
   ~StartNextPendingRequestTask() override;
@@ -43,11 +43,7 @@ class StartNextPendingRequestTask : public DatabaseTask {
   void DidFindActiveRequest(const std::vector<std::string>& data,
                             blink::ServiceWorkerStatusCode status);
 
-  void CreateAndStoreActiveRequest();
-
   void DidStoreActiveRequest(blink::ServiceWorkerStatusCode status);
-
-  void StartDownload();
 
   void DidDeletePendingRequest(blink::ServiceWorkerStatusCode status);
 
@@ -56,13 +52,14 @@ class StartNextPendingRequestTask : public DatabaseTask {
   std::string HistogramName() const override;
 
   BackgroundFetchRegistrationId registration_id_;
-  BackgroundFetchRegistration registration_;
   NextRequestCallback callback_;
 
   // protos don't support move semantics, so these class members will be used
   // to avoid unnecessary copying within callbacks.
   proto::BackgroundFetchPendingRequest pending_request_;
   proto::BackgroundFetchActiveRequest active_request_;
+
+  scoped_refptr<BackgroundFetchRequestInfo> next_request_;
 
   base::WeakPtrFactory<StartNextPendingRequestTask>
       weak_factory_;  // Keep as last.

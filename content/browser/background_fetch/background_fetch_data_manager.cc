@@ -133,41 +133,19 @@ void BackgroundFetchDataManager::PopNextRequest(
     NextRequestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto start_next_request = base::BindOnce(
-      &BackgroundFetchDataManager::AddStartNextPendingRequestTask,
-      weak_ptr_factory_.GetWeakPtr(), registration_id, std::move(callback));
-
-  // Get the associated metadata, and add a StartNextPendingRequestTask.
-  AddDatabaseTask(std::make_unique<background_fetch::GetRegistrationTask>(
-      this, registration_id.service_worker_registration_id(),
-      registration_id.origin(), registration_id.developer_id(),
-      std::move(start_next_request)));
-}
-
-void BackgroundFetchDataManager::AddStartNextPendingRequestTask(
-    const BackgroundFetchRegistrationId& registration_id,
-    NextRequestCallback callback,
-    blink::mojom::BackgroundFetchError error,
-    const BackgroundFetchRegistration& registration) {
-  if (error != blink::mojom::BackgroundFetchError::NONE) {
-    // Stop giving out requests as registration aborted (or otherwise finished).
-    std::move(callback).Run(nullptr /* request */);
-    return;
-  }
-
   AddDatabaseTask(
       std::make_unique<background_fetch::StartNextPendingRequestTask>(
-          this, registration_id, registration, std::move(callback)));
+          this, registration_id, std::move(callback)));
 }
 
 void BackgroundFetchDataManager::MarkRequestAsComplete(
     const BackgroundFetchRegistrationId& registration_id,
     scoped_refptr<BackgroundFetchRequestInfo> request_info,
-    base::OnceClosure closure) {
+    MarkRequestCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(std::make_unique<background_fetch::MarkRequestCompleteTask>(
-      this, registration_id, std::move(request_info), std::move(closure)));
+      this, registration_id, std::move(request_info), std::move(callback)));
 }
 
 void BackgroundFetchDataManager::GetSettledFetchesForRegistration(

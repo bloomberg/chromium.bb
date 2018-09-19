@@ -16,11 +16,9 @@ namespace background_fetch {
 StartNextPendingRequestTask::StartNextPendingRequestTask(
     DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
-    const BackgroundFetchRegistration& registration,
     NextRequestCallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
-      registration_(registration),
       callback_(std::move(callback)),
       weak_factory_(this) {
   DCHECK(!registration_id_.is_null());
@@ -35,7 +33,7 @@ void StartNextPendingRequestTask::Start() {
 void StartNextPendingRequestTask::GetPendingRequests() {
   service_worker_context()->GetRegistrationUserDataByKeyPrefix(
       registration_id_.service_worker_registration_id(),
-      PendingRequestKeyPrefix(registration_.unique_id),
+      PendingRequestKeyPrefix(registration_id_.unique_id()),
       base::BindOnce(&StartNextPendingRequestTask::DidGetPendingRequests,
                      weak_factory_.GetWeakPtr()));
 }
@@ -65,43 +63,7 @@ void StartNextPendingRequestTask::DidGetPendingRequests(
     return;
   }
 
-  // Make sure there isn't already an Active Request.
-  // This might happen if the browser is killed in-between writes.
-  service_worker_context()->GetRegistrationUserData(
-      registration_id_.service_worker_registration_id(),
-      {ActiveRequestKey(pending_request_.unique_id(),
-                        pending_request_.request_index())},
-      base::BindOnce(&StartNextPendingRequestTask::DidFindActiveRequest,
-                     weak_factory_.GetWeakPtr()));
-}
-
-void StartNextPendingRequestTask::DidFindActiveRequest(
-    const std::vector<std::string>& data,
-    blink::ServiceWorkerStatusCode status) {
-  switch (ToDatabaseStatus(status)) {
-    case DatabaseStatus::kFailed:
-      SetStorageErrorAndFinish(
-          BackgroundFetchStorageError::kServiceWorkerStorageError);
-      return;
-    case DatabaseStatus::kNotFound:
-      CreateAndStoreActiveRequest();
-      return;
-    case DatabaseStatus::kOk:
-      // We already stored the active request.
-      if (!active_request_.ParseFromString(data.front())) {
-        // Service worker database has been corrupted. Abandon fetches.
-        AbandonFetches(registration_id_.service_worker_registration_id());
-        SetStorageErrorAndFinish(
-            BackgroundFetchStorageError::kServiceWorkerStorageError);
-        return;
-      }
-      StartDownload();
-      return;
-  }
-  NOTREACHED();
-}
-
-void StartNextPendingRequestTask::CreateAndStoreActiveRequest() {
+  // Create an active request.
   proto::BackgroundFetchActiveRequest active_request;
 
   active_request_.set_download_guid(base::GenerateGUID());
@@ -132,19 +94,12 @@ void StartNextPendingRequestTask::DidStoreActiveRequest(
           BackgroundFetchStorageError::kServiceWorkerStorageError);
       return;
   }
-  StartDownload();
-}
 
-void StartNextPendingRequestTask::StartDownload() {
-  DCHECK(!active_request_.download_guid().empty());
-
-  auto next_request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
+  next_request_ = base::MakeRefCounted<BackgroundFetchRequestInfo>(
       active_request_.request_index(),
       ServiceWorkerFetchRequest::ParseFromString(
           active_request_.serialized_request()));
-  next_request->SetDownloadGuid(active_request_.download_guid());
-
-  std::move(callback_).Run(next_request);
+  next_request_->SetDownloadGuid(active_request_.download_guid());
 
   // Delete the pending request.
   service_worker_context()->ClearRegistrationUserData(
@@ -169,8 +124,7 @@ void StartNextPendingRequestTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
   ReportStorageError();
 
-  if (callback_)
-    std::move(callback_).Run(nullptr /* request */);
+  std::move(callback_).Run(error, std::move(next_request_));
 
   Finished();  // Destroys |this|.
 }

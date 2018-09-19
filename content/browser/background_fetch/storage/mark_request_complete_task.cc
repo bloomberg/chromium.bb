@@ -40,11 +40,11 @@ MarkRequestCompleteTask::MarkRequestCompleteTask(
     DatabaseTaskHost* host,
     BackgroundFetchRegistrationId registration_id,
     scoped_refptr<BackgroundFetchRequestInfo> request_info,
-    base::OnceClosure closure)
+    MarkRequestCompleteCallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
       request_info_(std::move(request_info)),
-      closure_(std::move(closure)),
+      callback_(std::move(callback)),
       weak_factory_(this) {}
 
 MarkRequestCompleteTask::~MarkRequestCompleteTask() = default;
@@ -67,6 +67,8 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
   response->response_type = network::mojom::FetchResponseType::kDefault;
   response->response_time = request_info_->GetResponseTime();
 
+  // TODO(crbug.com/884672): Move cross origin checks to when the response
+  // headers are available.
   BackgroundFetchCrossOriginFilter filter(registration_id_.origin(),
                                           *request_info_);
   if (filter.CanPopulateBody())
@@ -292,15 +294,18 @@ void MarkRequestCompleteTask::DidGetMetadata(
 void MarkRequestCompleteTask::DidStoreMetadata(
     base::OnceClosure done_closure,
     blink::ServiceWorkerStatusCode status) {
-  SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
+  if (ToDatabaseStatus(status) != DatabaseStatus::kOk)
+    SetStorageError(BackgroundFetchStorageError::kServiceWorkerStorageError);
   std::move(done_closure).Run();
 }
 
 void MarkRequestCompleteTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
+  if (HasStorageError())
+    error = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
   ReportStorageError();
 
-  std::move(closure_).Run();
+  std::move(callback_).Run(error);
   Finished();
 }
 

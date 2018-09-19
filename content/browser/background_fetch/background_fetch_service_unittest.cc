@@ -239,10 +239,11 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
     run_loop.Run();
 
+    // Allow all the DatabaseTasks resulting from Abort to complete.
+    thread_bundle_.RunUntilIdle();
+
     // We only delete the registration if we successfully abort.
     if (*out_error == blink::mojom::BackgroundFetchError::NONE) {
-      // TODO(crbug.com/850894): The Abort callback is being resolved early.
-      base::RunLoop().RunUntilIdle();
       // The error passed to the histogram counter is not related to this
       // |*out_error|, but the result of
       // BackgroundFetchDataManager::DeleteRegistration. For the purposes these
