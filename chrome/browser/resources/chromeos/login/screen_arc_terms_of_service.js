@@ -11,7 +11,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     EXTERNAL_API: [
       'setMetricsMode', 'setBackupAndRestoreMode', 'setLocationServicesMode',
       'loadPlayStoreToS', 'setArcManaged', 'hideSkipButton', 'setupForDemoMode',
-      'setTosForTesting'
+      'clearDemoMode', 'setTosForTesting'
     ],
 
     /** @override */
@@ -207,7 +207,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
 
       if (this.language_ && this.language_ == language && this.countryCode_ &&
           this.countryCode_ == countryCode &&
-          !this.classList.contains('error')) {
+          !this.classList.contains('error') && !this.usingOfflineTerms_) {
         this.enableButtons_(true);
         return;
       }
@@ -411,6 +411,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      */
     reloadPlayStoreToS: function() {
       this.termsError = false;
+      this.usingOfflineTerms_ = false;
       var termsView = this.getElement_('arc-tos-view');
       termsView.src = 'https://play.google.com/about/play-terms.html';
       this.removeClass_('arc-tos-loaded');
@@ -424,6 +425,13 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      */
     setupForDemoMode: function() {
       this.addClass_('arc-tos-for-demo-mode');
+    },
+
+    /**
+     * Sets up the variant of the screen dedicated for demo mode.
+     */
+    clearDemoMode: function() {
+      this.removeClass_('arc-tos-for-demo-mode');
     },
 
     /**
@@ -468,9 +476,22 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
         return;
       }
 
-      var getToSContent = {code: 'getToSContent();'};
       var termsView = this.getElement_('arc-tos-view');
-      termsView.executeScript(getToSContent, this.onGetToSContent_.bind(this));
+      if (this.usingOfflineTerms_) {
+        // Process offline ToS. Scripts added to web view by addContentScripts()
+        // are not executed when using data url.
+        this.tosContent_ = termsView.src;
+        var setParameters =
+            `document.body.classList.add('large-view', 'offline-terms');`;
+        termsView.executeScript({code: setParameters});
+        termsView.insertCSS({file: 'playstore.css'});
+        this.setTermsViewContentLoadedState_();
+      } else {
+        // Process online ToS.
+        var getToSContent = {code: 'getToSContent();'};
+        termsView.executeScript(
+            getToSContent, this.onGetToSContent_.bind(this));
+      }
     },
 
     /**
@@ -483,6 +504,15 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       }
 
       this.tosContent_ = results[0];
+      this.setTermsViewContentLoadedState_();
+    },
+
+    /**
+     * Sets the screen in the loaded state. Should be called after arc terms
+     * were loaded.
+     * @private
+     */
+    setTermsViewContentLoadedState_: function() {
       this.removeClass_('arc-tos-loading');
       this.removeClass_('error');
       this.addClass_('arc-tos-loaded');
@@ -522,6 +552,14 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Handles event when terms view cannot be loaded.
      */
     onTermsViewErrorOccurred: function(details) {
+      // If in demo mode fallback to offline Terms of Service copy.
+      if (this.isDemoModeSetup_()) {
+        this.usingOfflineTerms_ = true;
+        const TERMS_URL = 'chrome://terms/arc';
+        var webView = this.getElement_('arc-tos-view');
+        WebViewHelper.loadUrlToWebview(webView, TERMS_URL);
+        return;
+      }
       this.showError_();
     },
 
@@ -557,7 +595,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
 
       $('arc-tos-root').onBeforeShow();
 
-      isDemoModeSetup = this.hasClass_('arc-tos-for-demo-mode');
+      var isDemoModeSetup = this.isDemoModeSetup_();
       if (isDemoModeSetup) {
         this.hideSkipButton();
         this.setMetricsMode(
@@ -576,7 +614,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
 
     /** @override */
     onBeforeHide: function() {
-      this.removeClass_('arc-tos-for-demo-mode');
       this.reset_();
     },
 
@@ -678,6 +715,15 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
         event.stopPropagation();
         self.showLearnMoreOverlay(learnMorePaiServiceText);
       };
+    },
+
+    /**
+     * Returns whether arc terms are shown as a part of demo mode setup.
+     * @return {boolean}
+     * @private
+     */
+    isDemoModeSetup_: function() {
+      return this.hasClass_('arc-tos-for-demo-mode');
     }
   };
 });

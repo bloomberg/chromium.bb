@@ -269,6 +269,8 @@ const char kEasyUnlockLearnMoreUrl[] =
 
 const char kEULAPathFormat[] = "/usr/share/chromeos-assets/eula/%s/eula.html";
 
+const char kArcTermsPathFormat[] = "arc_tos/%s/terms.html";
+
 const char kEolNotificationURL[] = "https://www.google.com/chromebook/older/";
 
 const char kGoogleNameserversLearnMoreURL[] =
@@ -299,6 +301,8 @@ const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
 
 const char kOemEulaURLPath[] = "oem";
+
+const char kArcTermsURLPath[] = "arc";
 
 const char kOnlineEulaURLPath[] =
     "https://www.google.com/intl/%s/chrome/eula_text.html";

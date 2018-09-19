@@ -3821,6 +3821,7 @@ test("unit_tests") {
         "../browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_service_unittest_chromeos.cc",
         "../browser/extensions/api/file_system/consent_provider_unittest.cc",
+        "../browser/ui/webui/about_ui_unittest.cc",
       ]
     } else {
       sources += [

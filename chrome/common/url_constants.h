@@ -216,7 +216,12 @@ extern const char kCupsPrintLearnMoreURL[];
 // The URL for the "Learn more" link the the Easy Unlock settings.
 extern const char kEasyUnlockLearnMoreUrl[];
 
+// The path to the offline Chrome OS EULA.
 extern const char kEULAPathFormat[];
+
+// The path format to the localized offline ARC++ Terms of Service.
+// Relative to |kChromeOSAssetPath|.
+extern const char kArcTermsPathFormat[];
 
 // The URL for EOL notification
 extern const char kEolNotificationURL[];
@@ -248,7 +253,11 @@ extern const char kLinuxCreditsPath[];
 // The URL for the "Learn more" link for natural scrolling on ChromeOS.
 extern const char kNaturalScrollHelpURL[];
 
+// The URL path to offline OEM EULA.
 extern const char kOemEulaURLPath[];
+
+// THE URL path to offline ARC++ Terms of Service.
+extern const char kArcTermsURLPath[];
 
 extern const char kOnlineEulaURLPath[];
 
