@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
@@ -96,7 +97,9 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 }  // namespace
 
-@interface TabGridMediator ()<CRWWebStateObserver, WebStateListObserving>
+@interface TabGridMediator ()<CRWWebStateObserver,
+                              SnapshotCacheObserver,
+                              WebStateListObserving>
 // The list from the tab model.
 @property(nonatomic, assign) WebStateList* webStateList;
 // The UI consumer to which updates are made.
@@ -152,9 +155,11 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 #pragma mark - Public properties
 
 - (void)setTabModel:(TabModel*)tabModel {
+  [self.snapshotCache removeObserver:self];
   _scopedWebStateListObserver->RemoveAll();
   _scopedWebStateObserver->RemoveAll();
   _tabModel = tabModel;
+  [self.snapshotCache addObserver:self];
   _webStateList = tabModel.webStateList;
   if (_webStateList) {
     _scopedWebStateListObserver->Add(_webStateList);
@@ -230,6 +235,23 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
   NSString* itemID = tabHelper->tab_id();
   [self.consumer replaceItemID:itemID withItem:CreateItem(webState)];
+}
+
+#pragma mark - SnapshotCacheObserver
+
+- (void)snapshotCache:(SnapshotCache*)snapshotCache
+    didUpdateSnapshotForIdentifier:(NSString*)identifier {
+  if (!IsWKWebViewSnapshotsEnabled()) {
+    // This feature guard is here to compare against the existing baseline.
+    // Prior to enabling WKWebViewSnapshots, the mediator was not a
+    // SnapshotCache observer.
+    return;
+  }
+  [self.appearanceCache removeObjectForKey:identifier];
+  web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
+  if (webState) {
+    [self.consumer replaceItemID:identifier withItem:CreateItem(webState)];
+  }
 }
 
 #pragma mark - GridCommands
@@ -430,6 +452,13 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   for (const SessionID sessionID : identifiers) {
     self.tabRestoreService->RemoveTabEntryById(sessionID);
   }
+}
+
+// Returns a SnapshotCache for the current BrowserState.
+- (SnapshotCache*)snapshotCache {
+  if (!_tabModel.browserState)
+    return nil;
+  return SnapshotCacheFactory::GetForBrowserState(_tabModel.browserState);
 }
 
 @end

@@ -16,6 +16,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_internal.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,6 +29,18 @@
 
 static const NSUInteger kSessionCount = 10;
 static const NSUInteger kSnapshotPixelSize = 8;
+
+@interface FakeSnapshotCacheObserver : NSObject<SnapshotCacheObserver>
+@property(nonatomic, copy) NSString* lastUpdatedIdentifier;
+@end
+
+@implementation FakeSnapshotCacheObserver
+@synthesize lastUpdatedIdentifier = _lastUpdatedIdentifier;
+- (void)snapshotCache:(SnapshotCache*)snapshotCache
+    didUpdateSnapshotForIdentifier:(NSString*)identifier {
+  self.lastUpdatedIdentifier = identifier;
+}
+@end
 
 namespace {
 
@@ -614,4 +627,20 @@ TEST_F(SnapshotCacheTest, UnmarkedImageNotDeleted) {
   EXPECT_TRUE(base::PathExists(image_path));
 }
 
+// Tests that observers are notified when a snapshot is cached and removed.
+TEST_F(SnapshotCacheTest, ObserversNotifiedOnSetAndRemoveImage) {
+  SnapshotCache* cache = GetSnapshotCache();
+  FakeSnapshotCacheObserver* observer =
+      [[FakeSnapshotCacheObserver alloc] init];
+  [cache addObserver:observer];
+  EXPECT_NSEQ(nil, observer.lastUpdatedIdentifier);
+  UIImage* image = [testImages_ objectAtIndex:0];
+  NSString* sessionID = [testSessions_ objectAtIndex:0];
+  [cache setImage:image withSessionID:sessionID];
+  EXPECT_NSEQ(sessionID, observer.lastUpdatedIdentifier);
+  observer.lastUpdatedIdentifier = nil;
+  [cache removeImageWithSessionID:sessionID];
+  EXPECT_NSEQ(sessionID, observer.lastUpdatedIdentifier);
+  [cache removeObserver:observer];
+}
 }  // namespace
