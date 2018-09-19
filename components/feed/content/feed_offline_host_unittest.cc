@@ -102,6 +102,7 @@ class FeedOfflineHostTest : public ::testing::Test {
  public:
   TestOfflinePageModel* offline_page_model() { return &offline_page_model_; }
   FeedOfflineHost* host() { return host_.get(); }
+  StubPrefetchService* prefetch_service() { return &prefetch_service_; }
   int get_suggestion_consumed_count() { return suggestion_consumed_count_; }
   int get_suggestions_shown_count() { return suggestions_shown_count_; }
   int get_get_known_content_count() { return get_known_content_count_; }
@@ -111,16 +112,27 @@ class FeedOfflineHostTest : public ::testing::Test {
 
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
-  void ResetHost() {
-    EXPECT_CALL(*offline_page_model(), AddObserver(testing::_)).Times(1);
-    EXPECT_CALL(*offline_page_model(), RemoveObserver(testing::_)).Times(1);
+  void SetupHost() {
+    EXPECT_CALL(*offline_page_model(), AddObserver(testing::_))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*offline_page_model(), RemoveObserver(testing::_))
+        .Times(1)
+        .RetiresOnSaturation();
+    ResetHost();
+    InitHost();
+  }
 
+  void ResetHost() {
     host_ = std::make_unique<FeedOfflineHost>(
-        &offline_page_model_, &prefetch_service_,
+        offline_page_model(), prefetch_service(),
         base::BindRepeating(&FeedOfflineHostTest::OnSuggestionConsumed,
                             base::Unretained(this)),
         base::BindRepeating(&FeedOfflineHostTest::OnSuggestionsShown,
                             base::Unretained(this)));
+  }
+
+  void InitHost() {
     host()->Initialize(
         base::BindRepeating(&FeedOfflineHostTest::OnGetKnownContentRequested,
                             base::Unretained(this)),
@@ -129,7 +141,7 @@ class FeedOfflineHostTest : public ::testing::Test {
   }
 
  protected:
-  FeedOfflineHostTest() { ResetHost(); }
+  FeedOfflineHostTest() { SetupHost(); }
 
  private:
   void OnSuggestionConsumed() { ++suggestion_consumed_count_; }
@@ -352,6 +364,15 @@ TEST_F(FeedOfflineHostTest, OnNoListeners) {
   host()->OnNoListeners();
 
   EXPECT_FALSE(host()->GetOfflineId(kUrl1).has_value());
+}
+
+TEST_F(FeedOfflineHostTest, NoAddObserverWithoutInitialize) {
+  // Normally SetupHost() will set all observer expectations. Here we explicitly
+  // do not expect AddObserver and then reset the host.
+  EXPECT_CALL(*offline_page_model(), RemoveObserver(testing::_))
+      .Times(1)
+      .RetiresOnSaturation();
+  ResetHost();
 }
 
 }  // namespace feed
