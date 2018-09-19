@@ -305,6 +305,14 @@ bool ChromeExtensionsBrowserClient::IsInDemoMode() {
 #endif
 }
 
+bool ChromeExtensionsBrowserClient::IsScreensaverInDemoMode(
+    const std::string& app_id) {
+#if defined(OS_CHROMEOS)
+  return app_id == extension_misc::kScreensaverAppId && IsInDemoMode();
+#endif
+  return false;
+}
+
 bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return chrome::IsRunningInForcedAppMode();
 }

@@ -282,8 +282,11 @@ void AppWindow::Init(const GURL& url,
 
   // Windows cannot be always-on-top in fullscreen mode for security reasons.
   cached_always_on_top_ = new_params.always_on_top;
-  if (new_params.state == ui::SHOW_STATE_FULLSCREEN)
+  if (new_params.state == ui::SHOW_STATE_FULLSCREEN &&
+      !ExtensionsBrowserClient::Get()->IsScreensaverInDemoMode(
+          extension_id())) {
     new_params.always_on_top = false;
+  }
 
   requested_alpha_enabled_ = new_params.alpha_enabled;
   is_ime_window_ = params.is_ime_window;
@@ -731,8 +734,12 @@ void AppWindow::SetAlwaysOnTop(bool always_on_top) {
   // As a security measure, do not allow fullscreen windows or windows that
   // overlap the taskbar to be on top. The property will be applied when the
   // window exits fullscreen and moves away from the taskbar.
-  if (!IsFullscreen() && !IntersectsWithTaskbar())
+  if ((!IsFullscreen() ||
+       ExtensionsBrowserClient::Get()->IsScreensaverInDemoMode(
+           extension_id())) &&
+      !IntersectsWithTaskbar()) {
     native_app_window_->SetAlwaysOnTop(always_on_top);
+  }
 
   OnNativeWindowChanged();
 }

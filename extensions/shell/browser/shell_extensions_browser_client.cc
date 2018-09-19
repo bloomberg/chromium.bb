@@ -197,6 +197,11 @@ bool ShellExtensionsBrowserClient::IsInDemoMode() {
   return false;
 }
 
+bool ShellExtensionsBrowserClient::IsScreensaverInDemoMode(
+    const std::string& app_id) {
+  return false;
+}
+
 bool ShellExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return false;
 }

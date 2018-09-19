@@ -10,9 +10,9 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/extensions/install_limiter_factory.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
 
 namespace {
@@ -57,7 +57,7 @@ bool InstallLimiter::ShouldDeferInstall(int64_t app_size,
                                         const std::string& app_id) {
   constexpr int64_t kBigAppSizeThreshold = 1048576;  // 1MB in bytes
   return app_size > kBigAppSizeThreshold &&
-         !chromeos::DemoSession::IsScreensaverInDemoMode(app_id);
+         !ExtensionsBrowserClient::Get()->IsScreensaverInDemoMode(app_id);
 }
 
 InstallLimiter::InstallLimiter() : disabled_for_test_(false) {

@@ -84,6 +84,7 @@ class CastExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool DidVersionUpdate(content::BrowserContext* context) override;
   void PermitExternalProtocolHandler() override;
   bool IsInDemoMode() override;
+  bool IsScreensaverInDemoMode(const std::string& app_id) override;
   bool IsRunningInForcedAppMode() override;
   bool IsAppModeForcedForApp(const ExtensionId& id) override;
   bool IsLoggedInAsPublicAccount() override;
