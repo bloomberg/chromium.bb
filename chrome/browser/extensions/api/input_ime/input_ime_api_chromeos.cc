@@ -308,28 +308,28 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
   bool ConvertInputContextAutoCorrect(
       ui::IMEEngineHandlerInterface::InputContext input_context) override {
-    if (!keyboard::GetKeyboardConfig().auto_correct)
+    if (!keyboard::KeyboardController::Get()->keyboard_config().auto_correct)
       return false;
     return ImeObserver::ConvertInputContextAutoCorrect(input_context);
   }
 
   bool ConvertInputContextAutoComplete(
       ui::IMEEngineHandlerInterface::InputContext input_context) override {
-    if (!keyboard::GetKeyboardConfig().auto_complete)
+    if (!keyboard::KeyboardController::Get()->keyboard_config().auto_complete)
       return false;
     return ImeObserver::ConvertInputContextAutoComplete(input_context);
   }
 
   input_ime::AutoCapitalizeType ConvertInputContextAutoCapitalize(
       ui::IMEEngineHandlerInterface::InputContext input_context) override {
-    if (!keyboard::GetKeyboardConfig().auto_capitalize)
+    if (!keyboard::KeyboardController::Get()->keyboard_config().auto_capitalize)
       return input_ime::AUTO_CAPITALIZE_TYPE_NONE;
     return ImeObserver::ConvertInputContextAutoCapitalize(input_context);
   }
 
   bool ConvertInputContextSpellCheck(
       ui::IMEEngineHandlerInterface::InputContext input_context) override {
-    if (!keyboard::GetKeyboardConfig().spell_check)
+    if (!keyboard::KeyboardController::Get()->keyboard_config().spell_check)
       return false;
     return ImeObserver::ConvertInputContextSpellCheck(input_context);
   }

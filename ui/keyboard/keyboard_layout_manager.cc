@@ -8,7 +8,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 
 namespace keyboard {
 

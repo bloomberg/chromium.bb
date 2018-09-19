@@ -34,6 +34,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_resource_util.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace {
@@ -282,7 +283,7 @@ GURL ChromeKeyboardUI::GetVirtualKeyboardUrl() {
 bool ChromeKeyboardUI::ShouldEnableInsets(aura::Window* window) {
   aura::Window* contents_window = GetKeyboardWindow();
   return (contents_window->GetRootWindow() == window->GetRootWindow() &&
-          keyboard::IsKeyboardOverscrollEnabled() &&
+          keyboard::KeyboardController::Get()->IsKeyboardOverscrollEnabled() &&
           contents_window->IsVisible() &&
           keyboard_controller()->IsKeyboardVisible());
 }

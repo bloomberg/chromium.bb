@@ -106,7 +106,7 @@ bool ChromeVirtualKeyboardDelegate::HideKeyboard() {
 
 bool ChromeVirtualKeyboardDelegate::InsertText(const base::string16& text) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return keyboard::InsertText(text);
+  return keyboard::KeyboardController::Get()->InsertText(text);
 }
 
 bool ChromeVirtualKeyboardDelegate::OnKeyboardLoaded() {
@@ -282,7 +282,7 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(
       GenerateFeatureFlag("imeservice", keyboard::IsImeServiceEnabled()));
 
-  const keyboard::KeyboardConfig config = keyboard::GetKeyboardConfig();
+  auto config = keyboard::KeyboardController::Get()->keyboard_config();
   // TODO(oka): Change this to use config.voice_input.
   features->AppendString(GenerateFeatureFlag(
       "voiceinput", has_audio_input_devices && config.voice_input &&
@@ -325,7 +325,7 @@ ChromeVirtualKeyboardDelegate::RestrictFeatures(
   const api::virtual_keyboard::FeatureRestrictions& restrictions =
       params.restrictions;
   api::virtual_keyboard::FeatureRestrictions update;
-  keyboard::KeyboardConfig config = keyboard::GetKeyboardConfig();
+  auto config = keyboard::KeyboardController::Get()->keyboard_config();
   if (restrictions.spell_check_enabled &&
       config.spell_check != *restrictions.spell_check_enabled) {
     update.spell_check_enabled =
@@ -357,7 +357,7 @@ ChromeVirtualKeyboardDelegate::RestrictFeatures(
     config.handwriting = *restrictions.handwriting_enabled;
   }
 
-  if (keyboard::UpdateKeyboardConfig(config)) {
+  if (keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config)) {
     // This reloads virtual keyboard even if it exists. This ensures virtual
     // keyboard gets the correct state through
     // chrome.virtualKeyboardPrivate.getKeyboardConfig.

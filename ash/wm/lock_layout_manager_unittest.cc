@@ -232,12 +232,12 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
 
   // When virtual keyboard overscroll is enabled keyboard bounds should not
   // affect window bounds.
-  keyboard::SetKeyboardOverscrollOverride(
+  keyboard::KeyboardController* keyboard = keyboard::KeyboardController::Get();
+  keyboard->set_keyboard_overscroll_override(
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_ENABLED);
   ShowKeyboard(true);
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
-  gfx::Rect keyboard_bounds =
-      keyboard::KeyboardController::Get()->visual_bounds_in_screen();
+  gfx::Rect keyboard_bounds = keyboard->visual_bounds_in_screen();
   EXPECT_NE(keyboard_bounds, gfx::Rect());
   ShowKeyboard(false);
 
@@ -246,7 +246,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   // Repro steps for http://crbug.com/401667:
   // 1. Set up login screen defaults: VK override disabled
   // 2. Show/hide keyboard, make sure that no stale keyboard bounds are cached.
-  keyboard::SetKeyboardOverscrollOverride(
+  keyboard->set_keyboard_overscroll_override(
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
   ShowKeyboard(true);
   ShowKeyboard(false);
@@ -262,10 +262,10 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
 
   // When virtual keyboard overscroll is disabled keyboard bounds do
   // affect window bounds.
-  keyboard::SetKeyboardOverscrollOverride(
+  keyboard->set_keyboard_overscroll_override(
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
   ShowKeyboard(true);
-  keyboard::KeyboardController* keyboard = keyboard::KeyboardController::Get();
+
   primary_display = display::Screen::GetScreen()->GetPrimaryDisplay();
   screen_bounds = primary_display.bounds();
   gfx::Rect target_bounds(screen_bounds);
@@ -275,7 +275,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
   ShowKeyboard(false);
 
-  keyboard::SetKeyboardOverscrollOverride(
+  keyboard->set_keyboard_overscroll_override(
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
 
   keyboard->SetContainerType(keyboard::ContainerType::FLOATING,
