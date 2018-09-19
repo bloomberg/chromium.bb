@@ -270,8 +270,10 @@ Response InspectorOverlayAgent::enable() {
   if (!dom_agent_->Enabled())
     return Response::Error("DOM should be enabled first");
   enabled_.Set(true);
-  if (backend_node_id_to_inspect_)
-    GetFrontend()->inspectNodeRequested(backend_node_id_to_inspect_);
+  if (backend_node_id_to_inspect_) {
+    GetFrontend()->inspectNodeRequested(
+        static_cast<int>(backend_node_id_to_inspect_));
+  }
   backend_node_id_to_inspect_ = 0;
   return Response::OK();
 }
@@ -1119,13 +1121,13 @@ void InspectorOverlayAgent::Inspect(Node* inspected_node) {
   if (!node)
     return;
 
-  int backend_node_id = DOMNodeIds::IdForNode(node);
+  DOMNodeId backend_node_id = DOMNodeIds::IdForNode(node);
   if (!enabled_.Get()) {
     backend_node_id_to_inspect_ = backend_node_id;
     return;
   }
 
-  GetFrontend()->inspectNodeRequested(backend_node_id);
+  GetFrontend()->inspectNodeRequested(IdentifiersFactory::IntIdForNode(node));
 }
 
 void InspectorOverlayAgent::NodeHighlightRequested(Node* node) {

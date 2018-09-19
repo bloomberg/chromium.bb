@@ -101,12 +101,12 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
   // Nodes and their Listeners for the concerned event types (order is top to
   // bottom).
   Vector<AtomicString> event_types = target->EventTypes();
-  for (size_t j = 0; j < event_types.size(); ++j) {
+  for (wtf_size_t j = 0; j < event_types.size(); ++j) {
     AtomicString& type = event_types[j];
     EventListenerVector* listeners = target->GetEventListeners(type);
     if (!listeners)
       continue;
-    for (size_t k = 0; k < listeners->size(); ++k) {
+    for (wtf_size_t k = 0; k < listeners->size(); ++k) {
       EventListener* event_listener = listeners->at(k).Callback();
       if (event_listener->IsNativeBased())
         continue;
@@ -126,7 +126,7 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
       if (handler.IsEmpty())
         continue;
       bool use_capture = listeners->at(k).Capture();
-      int backend_node_id = 0;
+      DOMNodeId backend_node_id = 0;
       if (target_node) {
         backend_node_id = DOMNodeIds::IdForNode(target_node);
         target_wrapper = NodeV8Value(
@@ -151,7 +151,7 @@ void InspectorDOMDebuggerAgent::EventListenersInfoForTarget(
 
 static bool FilterNodesWithListeners(Node* node) {
   Vector<AtomicString> event_types = node->EventTypes();
-  for (size_t j = 0; j < event_types.size(); ++j) {
+  for (wtf_size_t j = 0; j < event_types.size(); ++j) {
     EventListenerVector* listeners = node->GetEventListeners(event_types[j]);
     if (listeners && listeners->size())
       return true;
@@ -475,7 +475,7 @@ InspectorDOMDebuggerAgent::BuildObjectForEventListener(
     value->setOriginalHandler(v8_session_->wrapObject(
         context, info.handler, object_group_id, false /* generatePreview */));
     if (info.backend_node_id)
-      value->setBackendNodeId(info.backend_node_id);
+      value->setBackendNodeId(static_cast<int>(info.backend_node_id));
   }
   return value;
 }

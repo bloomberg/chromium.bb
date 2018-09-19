@@ -124,7 +124,6 @@ class CORE_EXPORT InspectorLayerTreeAgent final
       std::unique_ptr<protocol::Array<protocol::LayerTree::Layer>>&,
       bool has_wheel_event_handlers,
       int scrolling_root_layer_id);
-  int IdForNode(Node*);
 
   Member<InspectedFrames> inspected_frames_;
   Client* client_;

@@ -131,7 +131,7 @@ struct InspectorDOMSnapshotAgent::VectorStringHashTraits
     : public WTF::GenericHashTraits<Vector<String>> {
   static unsigned GetHash(const Vector<String>& vec) {
     unsigned h = DefaultHash<size_t>::Hash::GetHash(vec.size());
-    for (size_t i = 0; i < vec.size(); i++) {
+    for (wtf_size_t i = 0; i < vec.size(); i++) {
       h = WTF::HashInts(h, DefaultHash<String>::Hash::GetHash(vec[i]));
     }
     return h;
@@ -140,7 +140,7 @@ struct InspectorDOMSnapshotAgent::VectorStringHashTraits
   static bool Equal(const Vector<String>& a, const Vector<String>& b) {
     if (a.size() != b.size())
       return false;
-    for (size_t i = 0; i < a.size(); i++) {
+    for (wtf_size_t i = 0; i < a.size(); i++) {
       if (a[i] != b[i])
         return false;
     }
@@ -261,7 +261,7 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
   css_property_whitelist_ = std::make_unique<CSSPropertyWhitelist>();
 
   // Look up the CSSPropertyIDs for each entry in |style_whitelist|.
-  for (size_t i = 0; i < style_whitelist->length(); i++) {
+  for (wtf_size_t i = 0; i < style_whitelist->length(); i++) {
     CSSPropertyID property_id = cssPropertyID(style_whitelist->get(i));
     if (property_id == CSSPropertyInvalid)
       continue;
@@ -357,7 +357,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
           .setNodeType(static_cast<int>(node->getNodeType()))
           .setNodeName(node->nodeName())
           .setNodeValue(node_value)
-          .setBackendNodeId(DOMNodeIds::IdForNode(node))
+          .setBackendNodeId(IdentifiersFactory::IntIdForNode(node))
           .build();
   if (origin_url_map_ &&
       origin_url_map_->Contains(owned_value->getBackendNodeId())) {
@@ -371,7 +371,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
     }
   }
   protocol::DOMSnapshot::DOMNode* value = owned_value.get();
-  int index = dom_nodes_->length();
+  int index = static_cast<int>(dom_nodes_->length());
   dom_nodes_->addItem(std::move(owned_value));
 
   int layoutNodeIndex =
@@ -493,7 +493,7 @@ int InspectorDOMSnapshotAgent::AddString(const String& string) {
   auto it = string_table_.find(string);
   int index;
   if (it == string_table_.end()) {
-    index = strings_->length();
+    index = static_cast<int>(strings_->length());
     strings_->addItem(string);
     string_table_.Set(string, index);
   } else {
@@ -604,8 +604,8 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
   }
 
   auto* nodes = document_->getNodes();
-  int index = nodes->getNodeName(nullptr)->length();
-  int backend_node_id = DOMNodeIds::IdForNode(node);
+  int index = static_cast<int>(nodes->getNodeName(nullptr)->length());
+  DOMNodeId backend_node_id = DOMNodeIds::IdForNode(node);
 
   // Create DOMNode object and add it to the result array before traversing
   // children, so that parents appear before their children in the array.
@@ -614,7 +614,8 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
   nodes->getNodeType(nullptr)->addItem(static_cast<int>(node->getNodeType()));
   nodes->getNodeName(nullptr)->addItem(AddString(node->nodeName()));
   nodes->getNodeValue(nullptr)->addItem(AddString(node_value));
-  nodes->getBackendNodeId(nullptr)->addItem(backend_node_id);
+  nodes->getBackendNodeId(nullptr)->addItem(
+      IdentifiersFactory::IntIdForNode(node));
   nodes->getAttributes(nullptr)->addItem(BuildArrayForElementAttributes2(node));
   BuildLayoutTreeNode(node->GetLayoutObject(), node, index);
 
@@ -883,7 +884,7 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
     }
   }
 
-  int index = layout_tree_nodes_->length();
+  int index = static_cast<int>(layout_tree_nodes_->length());
   layout_tree_nodes_->addItem(std::move(layout_tree_node));
   return index;
 }
@@ -896,7 +897,8 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
   auto* layout_tree_snapshot = document_->getLayout();
   auto* text_box_snapshot = document_->getTextBoxes();
 
-  int layout_index = layout_tree_snapshot->getNodeIndex()->length();
+  int layout_index =
+      static_cast<int>(layout_tree_snapshot->getNodeIndex()->length());
   layout_tree_snapshot->getNodeIndex()->addItem(node_index);
   layout_tree_snapshot->getStyles()->addItem(BuildStylesForNode(node));
   layout_tree_snapshot->getBounds()->addItem(
@@ -953,7 +955,7 @@ int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
   auto style_properties =
       protocol::Array<protocol::DOMSnapshot::NameValue>::create();
 
-  for (size_t i = 0; i < style.size(); i++) {
+  for (wtf_size_t i = 0; i < style.size(); i++) {
     if (style[i].IsEmpty())
       continue;
     style_properties->addItem(protocol::DOMSnapshot::NameValue::create()
@@ -962,7 +964,7 @@ int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
                                   .build());
   }
 
-  size_t index = computed_styles_->length();
+  wtf_size_t index = static_cast<wtf_size_t>(computed_styles_->length());
   computed_styles_->addItem(protocol::DOMSnapshot::ComputedStyle::create()
                                 .setProperties(std::move(style_properties))
                                 .build());

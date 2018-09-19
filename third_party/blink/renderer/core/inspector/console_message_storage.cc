@@ -79,11 +79,11 @@ void ConsoleMessageStorage::Clear() {
   expired_count_ = 0;
 }
 
-size_t ConsoleMessageStorage::size() const {
+wtf_size_t ConsoleMessageStorage::size() const {
   return messages_.size();
 }
 
-ConsoleMessage* ConsoleMessageStorage::at(size_t index) const {
+ConsoleMessage* ConsoleMessageStorage::at(wtf_size_t index) const {
   return messages_[index].Get();
 }
 

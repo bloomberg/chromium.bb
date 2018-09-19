@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
-#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -221,7 +220,8 @@ void SetNodeInfo(TracedValue* value,
                  Node* node,
                  const char* id_field_name,
                  const char* name_field_name = nullptr) {
-  value->SetIntegerWithCopiedName(id_field_name, DOMNodeIds::IdForNode(node));
+  value->SetIntegerWithCopiedName(id_field_name,
+                                  IdentifiersFactory::IntIdForNode(node));
   if (name_field_name)
     value->SetStringWithCopiedName(name_field_name, node->DebugName());
 }
@@ -868,7 +868,7 @@ std::unique_ptr<TracedValue> InspectorTimerInstallEvent::Data(
     TimeDelta timeout,
     bool single_shot) {
   std::unique_ptr<TracedValue> value = GenericTimerData(context, timer_id);
-  value->SetInteger("timeout", timeout.InMilliseconds());
+  value->SetDouble("timeout", timeout.InMillisecondsF());
   value->SetBoolean("singleShot", single_shot);
   SetCallStack(value.get());
   return value;
@@ -1049,8 +1049,8 @@ void FillCommonFrameData(TracedValue* frame_data, LocalFrame* frame) {
 
   FrameOwner* owner = frame->Owner();
   if (owner && owner->IsLocal()) {
-    frame_data->SetInteger(
-        "nodeId", DOMNodeIds::IdForNode(ToHTMLFrameOwnerElement(owner)));
+    frame_data->SetInteger("nodeId", IdentifiersFactory::IntIdForNode(
+                                         ToHTMLFrameOwnerElement(owner)));
   }
   Frame* parent = frame->Tree().Parent();
   if (parent && parent->IsLocalFrame())

@@ -176,7 +176,7 @@ void InspectorLogAgent::InnerEnable() {
     GetFrontend()->entryAdded(std::move(expired));
     GetFrontend()->flush();
   }
-  for (size_t i = 0; i < storage_->size(); ++i)
+  for (wtf_size_t i = 0; i < storage_->size(); ++i)
     ConsoleMessageAdded(storage_->at(i));
 }
 

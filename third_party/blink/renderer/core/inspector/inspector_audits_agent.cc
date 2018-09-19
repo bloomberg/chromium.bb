@@ -40,8 +40,9 @@ bool EncodeAsImage(char* body,
   SkImageInfo info =
       SkImageInfo::Make(bitmap.width(), bitmap.height(), kRGBA_8888_SkColorType,
                         kUnpremul_SkAlphaType);
-  size_t row_bytes = info.minRowBytes();
-  Vector<unsigned char> pixel_storage(info.computeByteSize(row_bytes));
+  uint32_t row_bytes = static_cast<uint32_t>(info.minRowBytes());
+  Vector<unsigned char> pixel_storage(
+      SafeCast<wtf_size_t>(info.computeByteSize(row_bytes)));
   SkPixmap pixmap(info, pixel_storage.data(), row_bytes);
   sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
 

@@ -66,7 +66,7 @@ void InspectorSession::Append(InspectorAgent* agent) {
 
 void InspectorSession::Restore() {
   DCHECK(!disposed_);
-  for (size_t i = 0; i < agents_.size(); i++)
+  for (wtf_size_t i = 0; i < agents_.size(); i++)
     agents_[i]->Restore();
 }
 
@@ -74,7 +74,7 @@ void InspectorSession::Dispose() {
   DCHECK(!disposed_);
   disposed_ = true;
   inspector_backend_dispatcher_.reset();
-  for (size_t i = agents_.size(); i > 0; i--)
+  for (wtf_size_t i = agents_.size(); i > 0; i--)
     agents_[i - 1]->Dispose();
   agents_.clear();
   v8_session_.reset();
@@ -113,7 +113,7 @@ void InspectorSession::DispatchProtocolMessage(const String& message) {
 }
 
 void InspectorSession::DidCommitLoadForLocalFrame(LocalFrame* frame) {
-  for (size_t i = 0; i < agents_.size(); i++)
+  for (wtf_size_t i = 0; i < agents_.size(); i++)
     agents_[i]->DidCommitLoadForLocalFrame(frame);
 }
 
@@ -206,12 +206,12 @@ void InspectorSession::sendNotification(
 void InspectorSession::flushProtocolNotifications() {
   if (disposed_)
     return;
-  for (size_t i = 0; i < agents_.size(); i++)
+  for (wtf_size_t i = 0; i < agents_.size(); i++)
     agents_[i]->FlushPendingProtocolNotifications();
   if (!notification_queue_.size())
     return;
   v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
-  for (size_t i = 0; i < notification_queue_.size(); ++i) {
+  for (wtf_size_t i = 0; i < notification_queue_.size(); ++i) {
     client_->SendProtocolNotification(session_id_,
                                       notification_queue_[i]->Serialize(),
                                       session_state_.TakeUpdates());

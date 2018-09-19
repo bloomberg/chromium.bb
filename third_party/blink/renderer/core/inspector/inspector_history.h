@@ -79,7 +79,7 @@ class InspectorHistory final : public GarbageCollected<InspectorHistory> {
 
  private:
   HeapVector<Member<Action>> history_;
-  size_t after_last_action_index_;
+  wtf_size_t after_last_action_index_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorHistory);
 };

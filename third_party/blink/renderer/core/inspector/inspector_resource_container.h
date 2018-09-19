@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -30,14 +31,15 @@ class CORE_EXPORT InspectorResourceContainer
   void StoreStyleSheetContent(const String& url, const String& content);
   bool LoadStyleSheetContent(const String& url, String* content);
 
-  void StoreStyleElementContent(int backend_node_id, const String& content);
-  bool LoadStyleElementContent(int backend_node_id, String* content);
-  void EraseStyleElementContent(int backend_node_id);
+  void StoreStyleElementContent(DOMNodeId backend_node_id,
+                                const String& content);
+  bool LoadStyleElementContent(DOMNodeId backend_node_id, String* content);
+  void EraseStyleElementContent(DOMNodeId backend_node_id);
 
  private:
   Member<InspectedFrames> inspected_frames_;
   HashMap<String, String> style_sheet_contents_;
-  HashMap<int, String> style_element_contents_;
+  HashMap<DOMNodeId, String> style_element_contents_;
   DISALLOW_COPY_AND_ASSIGN(InspectorResourceContainer);
 };
 

@@ -181,8 +181,8 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
   std::unique_ptr<protocol::CSS::SourceRange> RuleHeaderSourceRange(CSSRule*);
   std::unique_ptr<protocol::CSS::SourceRange> MediaQueryExpValueSourceRange(
       CSSRule*,
-      size_t media_query_index,
-      size_t media_query_exp_index);
+      wtf_size_t media_query_index,
+      wtf_size_t media_query_exp_index);
   bool IsInlineStyle() override { return false; }
   const CSSRuleVector& FlatRules();
   CSSRuleSourceData* SourceDataForRule(CSSRule*);

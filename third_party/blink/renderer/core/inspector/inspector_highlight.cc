@@ -208,8 +208,8 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   if (real_element->HasClass() && real_element->IsStyledElement()) {
     HashSet<AtomicString> used_class_names;
     const SpaceSplitString& class_names_string = real_element->ClassNames();
-    size_t class_name_count = class_names_string.size();
-    for (size_t i = 0; i < class_name_count; ++i) {
+    wtf_size_t class_name_count = class_names_string.size();
+    for (wtf_size_t i = 0; i < class_name_count; ++i) {
       const AtomicString& class_name = class_names_string[i];
       if (!used_class_names.insert(class_name).is_new_entry)
         continue;
@@ -428,7 +428,7 @@ void InspectorHighlight::AppendNodeHighlight(
 
   Vector<FloatQuad> svg_quads;
   if (BuildSVGQuads(node, svg_quads)) {
-    for (size_t i = 0; i < svg_quads.size(); ++i) {
+    for (wtf_size_t i = 0; i < svg_quads.size(); ++i) {
       AppendQuad(svg_quads[i], content_color, highlight_config.content_outline);
     }
     return;
