@@ -465,6 +465,91 @@ const char* AppListView::GetClassName() const {
   return "AppListView";
 }
 
+bool AppListView::CanProcessEventsWithinSubtree() const {
+  // Do not let this view or any of its descendants process events if we are
+  // currently showing the launcher via swiping up on shelf.
+  if (delegate_->IsSwipingUpOnShelf())
+    return false;
+
+  return views::View::CanProcessEventsWithinSubtree();
+}
+
+bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  switch (accelerator.key_code()) {
+    case ui::VKEY_ESCAPE:
+    case ui::VKEY_BROWSER_BACK:
+      // If the ContentsView does not handle the back action, then this is the
+      // top level, so we close the app list.
+      if (!app_list_main_view_->contents_view()->Back() &&
+          !IsHomeLauncherEnabledInTabletMode()) {
+        Dismiss();
+      }
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+
+  // Don't let DialogClientView handle the accelerator.
+  return true;
+}
+
+void AppListView::Layout() {
+  const gfx::Rect contents_bounds = GetContentsBounds();
+
+  // Make sure to layout |app_list_main_view_| at the center of the widget.
+  gfx::Rect centered_bounds = contents_bounds;
+  ContentsView* contents_view = app_list_main_view_->contents_view();
+  centered_bounds.ClampToCenteredSize(
+      gfx::Size(contents_view->GetMaximumContentsSize().width(),
+                contents_bounds.height()));
+
+  app_list_main_view_->SetBoundsRect(centered_bounds);
+
+  contents_view->Layout();
+
+  gfx::Rect app_list_background_shield_bounds = contents_bounds;
+  // Inset bottom by 2 * |kAppListBackgroundRadius| to account for the rounded
+  // corners on the top and bottom of the |app_list_background_shield_|.
+  // Only add the inset to the bottom to keep padding at the top of the AppList
+  // the same.
+  app_list_background_shield_bounds.Inset(0, 0, 0,
+                                          -kAppListBackgroundRadius * 2);
+  app_list_background_shield_->SetBoundsRect(app_list_background_shield_bounds);
+  app_list_background_shield_->UpdateCornerRadius(kAppListBackgroundRadius);
+  if (is_background_blur_enabled_ && app_list_background_shield_mask_ &&
+      !IsHomeLauncherEnabledInTabletMode() &&
+      app_list_background_shield_->layer()->size() !=
+          app_list_background_shield_mask_->layer()->size()) {
+    // Update the blur mask for the |app_list_background_shield_| with same
+    // shape and size if their bounds don't match.
+    app_list_background_shield_mask_->layer()->SetBounds(
+        app_list_background_shield_bounds);
+  }
+
+  float app_list_transition_progress = GetAppListTransitionProgress();
+  gfx::Transform transform;
+  if (app_list_transition_progress >= 1 && app_list_transition_progress <= 2) {
+    // Translate background shield so that it ends drag at y position
+    // -|kAppListBackgroundRadius| when dragging between peeking and fullscreen.
+    transform.Translate(
+        0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
+  }
+  app_list_background_shield_->SetTransform(transform);
+}
+
+void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(state_announcement_);
+  node_data->role = ax::mojom::Role::kAlert;
+}
+
+ax::mojom::Role AppListView::GetAccessibleWindowRole() const {
+  // Default role of root view is ax::mojom::Role::kWindow which traps ChromeVox
+  // focus within the root view. Assign ax::mojom::Role::kGroup here to allow
+  // the focus to move from elements in app list view to search box.
+  return ax::mojom::Role::kGroup;
+}
+
 class AppListView::FullscreenWidgetObserver : views::WidgetObserver {
  public:
   explicit FullscreenWidgetObserver(app_list::AppListView* view)
@@ -1103,82 +1188,6 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-}
-
-ax::mojom::Role AppListView::GetAccessibleWindowRole() const {
-  // Default role of root view is ax::mojom::Role::kWindow which traps ChromeVox
-  // focus within the root view. Assign ax::mojom::Role::kGroup here to allow
-  // the focus to move from elements in app list view to search box.
-  return ax::mojom::Role::kGroup;
-}
-
-bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  switch (accelerator.key_code()) {
-    case ui::VKEY_ESCAPE:
-    case ui::VKEY_BROWSER_BACK:
-      // If the ContentsView does not handle the back action, then this is the
-      // top level, so we close the app list.
-      if (!app_list_main_view_->contents_view()->Back() &&
-          !IsHomeLauncherEnabledInTabletMode()) {
-        Dismiss();
-      }
-      break;
-    default:
-      NOTREACHED();
-      return false;
-  }
-
-  // Don't let DialogClientView handle the accelerator.
-  return true;
-}
-
-void AppListView::Layout() {
-  const gfx::Rect contents_bounds = GetContentsBounds();
-
-  // Make sure to layout |app_list_main_view_| at the center of the widget.
-  gfx::Rect centered_bounds = contents_bounds;
-  ContentsView* contents_view = app_list_main_view_->contents_view();
-  centered_bounds.ClampToCenteredSize(
-      gfx::Size(contents_view->GetMaximumContentsSize().width(),
-                contents_bounds.height()));
-
-  app_list_main_view_->SetBoundsRect(centered_bounds);
-
-  contents_view->Layout();
-
-  gfx::Rect app_list_background_shield_bounds = contents_bounds;
-  // Inset bottom by 2 * |kAppListBackgroundRadius| to account for the rounded
-  // corners on the top and bottom of the |app_list_background_shield_|.
-  // Only add the inset to the bottom to keep padding at the top of the AppList
-  // the same.
-  app_list_background_shield_bounds.Inset(0, 0, 0,
-                                          -kAppListBackgroundRadius * 2);
-  app_list_background_shield_->SetBoundsRect(app_list_background_shield_bounds);
-  app_list_background_shield_->UpdateCornerRadius(kAppListBackgroundRadius);
-  if (is_background_blur_enabled_ && app_list_background_shield_mask_ &&
-      !IsHomeLauncherEnabledInTabletMode() &&
-      app_list_background_shield_->layer()->size() !=
-          app_list_background_shield_mask_->layer()->size()) {
-    // Update the blur mask for the |app_list_background_shield_| with same
-    // shape and size if their bounds don't match.
-    app_list_background_shield_mask_->layer()->SetBounds(
-        app_list_background_shield_bounds);
-  }
-
-  float app_list_transition_progress = GetAppListTransitionProgress();
-  gfx::Transform transform;
-  if (app_list_transition_progress >= 1 && app_list_transition_progress <= 2) {
-    // Translate background shield so that it ends drag at y position
-    // -|kAppListBackgroundRadius| when dragging between peeking and fullscreen.
-    transform.Translate(
-        0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
-  }
-  app_list_background_shield_->SetTransform(transform);
-}
-
-void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(state_announcement_);
-  node_data->role = ax::mojom::Role::kAlert;
 }
 
 void AppListView::OnKeyEvent(ui::KeyEvent* event) {

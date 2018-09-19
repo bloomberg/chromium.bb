@@ -47,6 +47,8 @@ class TransitionAnimationObserver;
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
+// TODO(newcomer|weidongg): Organize the cc file to match the order of
+// definitions in this header.
 class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
                                     public display::DisplayObserver {
  public:
@@ -130,21 +132,20 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // hiding the app list when a modal dialog is being shown).
   void SetAppListOverlayVisible(bool visible);
 
-  // Overridden from views::View:
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
-
-  // WidgetDelegate overrides:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
-
-  // Overridden from views::View:
+  bool CanProcessEventsWithinSubtree() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnKeyEvent(ui::KeyEvent* event) override;
 
-  // Overridden from ui::EventHandler:
+  // WidgetDelegate:
+  ax::mojom::Role GetAccessibleWindowRole() const override;
+
+  // ui::EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;

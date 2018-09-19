@@ -299,18 +299,16 @@ bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
     return false;
 
   last_event_location_ = base::make_optional(location);
-  const bool hide_window = IsLastEventInTopHalf(*last_event_location_);
-  UpdateWindows(hide_window ? 1.0 : 0.0, /*animate=*/true);
-
-  if (!hide_window && mode_ == Mode::kSwipeDownToHide) {
-    base::RecordAction(
-        base::UserMetricsAction("AppList_HomeLauncherToMRUWindow"));
-  } else if (hide_window && mode_ == Mode::kSwipeUpToShow) {
-    base::RecordAction(
-        base::UserMetricsAction("AppList_CurrentWindowToHomeLauncher"));
-  }
-
+  AnimateToFinalState();
   return true;
+}
+
+void HomeLauncherGestureHandler::Cancel() {
+  if (!last_event_location_)
+    return;
+
+  AnimateToFinalState();
+  return;
 }
 
 void HomeLauncherGestureHandler::OnWindowDestroying(aura::Window* window) {
@@ -410,6 +408,19 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   }
 
   RemoveObserversAndStopTracking();
+}
+
+void HomeLauncherGestureHandler::AnimateToFinalState() {
+  const bool hide_window = IsLastEventInTopHalf(*last_event_location_);
+  UpdateWindows(hide_window ? 1.0 : 0.0, /*animate=*/true);
+
+  if (!hide_window && mode_ == Mode::kSwipeDownToHide) {
+    base::RecordAction(
+        base::UserMetricsAction("AppList_HomeLauncherToMRUWindow"));
+  } else if (hide_window && mode_ == Mode::kSwipeUpToShow) {
+    base::RecordAction(
+        base::UserMetricsAction("AppList_CurrentWindowToHomeLauncher"));
+  }
 }
 
 void HomeLauncherGestureHandler::UpdateSettings(

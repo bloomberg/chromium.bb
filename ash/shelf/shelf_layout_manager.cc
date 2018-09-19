@@ -1331,7 +1331,12 @@ void ShelfLayoutManager::CompleteAppListDrag(
 
 void ShelfLayoutManager::CancelGestureDrag() {
   if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
-    Shell::Get()->app_list_controller()->DismissAppList();
+    HomeLauncherGestureHandler* home_launcher_handler =
+        Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+    if (home_launcher_handler && home_launcher_handler->IsDragInProgress())
+      home_launcher_handler->Cancel();
+    else
+      Shell::Get()->app_list_controller()->DismissAppList();
   } else {
     // Set |gesture_drag_status_| to GESTURE_DRAG_CANCEL_IN_PROGRESS to set the
     // auto hide state to |gesture_drag_auto_hide_state_|, which is the

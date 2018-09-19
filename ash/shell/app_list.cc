@@ -319,6 +319,11 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return false;
   }
 
+  bool IsSwipingUpOnShelf() override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   ws::WindowService* GetWindowService() override {
     NOTIMPLEMENTED();
     return nullptr;
