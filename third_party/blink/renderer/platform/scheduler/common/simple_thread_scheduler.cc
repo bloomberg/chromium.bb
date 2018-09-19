@@ -27,19 +27,11 @@ bool SimpleThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
 
 void SimpleThreadScheduler::PostIdleTask(const base::Location& location,
                                          WebThread::IdleTask task) {
-  base::TimeTicks deadline =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      location, WTF::Bind(std::move(task), deadline));
 }
 
 void SimpleThreadScheduler::PostNonNestableIdleTask(
     const base::Location& location,
     WebThread::IdleTask task) {
-  base::TimeTicks deadline =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1);
-  base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
-      location, WTF::Bind(std::move(task), deadline));
 }
 
 void SimpleThreadScheduler::AddRAILModeObserver(WebRAILModeObserver* observer) {

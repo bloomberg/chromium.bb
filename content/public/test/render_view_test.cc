@@ -276,7 +276,7 @@ void RenderViewTest::SetUp() {
   // because it uses blink internally.
   blink_platform_impl_.Initialize();
   blink::Initialize(blink_platform_impl_.Get(), &binder_registry_,
-                    blink_platform_impl_.Get()->CurrentThread());
+                    blink_platform_impl_.GetMainThreadScheduler());
 
   content_client_.reset(CreateContentClient());
   content_browser_client_.reset(CreateContentBrowserClient());

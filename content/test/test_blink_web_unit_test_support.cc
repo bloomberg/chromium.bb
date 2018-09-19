@@ -147,7 +147,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner;
   std::unique_ptr<base::ThreadTaskRunnerHandle> dummy_task_runner_handle;
   if (!base::ThreadTaskRunnerHandle::IsSet()) {
-    // Dummy task runner is initialized here because the blink::initialize
+    // Dummy task runner is initialized here because the blink::Initialize
     // creates IsolateHolder which needs the current task runner handle. There
     // should be no task posted to this task runner. The message loop is not
     // created before this initialization because some tests need specific kinds
@@ -160,7 +160,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   }
   main_thread_scheduler_ =
       blink::scheduler::CreateWebMainThreadSchedulerForTests();
-  web_thread_ = main_thread_scheduler_->CreateMainThread();
 
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
@@ -178,7 +177,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
                           weak_factory_.GetWeakPtr()));
 
   service_manager::BinderRegistry empty_registry;
-  blink::Initialize(this, &empty_registry, CurrentThread());
+  blink::Initialize(this, &empty_registry, main_thread_scheduler_.get());
   g_test_platform = this;
   blink::SetLayoutTestMode(true);
   blink::WebRuntimeFeatures::EnableDatabase(true);
@@ -303,8 +302,8 @@ TestBlinkWebUnitTestSupport::GetURLLoaderMockFactory() {
 }
 
 blink::WebThread* TestBlinkWebUnitTestSupport::CurrentThread() {
-  if (web_thread_ && web_thread_->IsCurrentThread())
-    return web_thread_.get();
+  if (main_thread_->IsCurrentThread())
+    return main_thread_;
   return BlinkPlatformImpl::CurrentThread();
 }
 

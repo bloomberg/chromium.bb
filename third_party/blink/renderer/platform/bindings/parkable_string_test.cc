@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -27,6 +28,8 @@ class ParkableStringTest : public ::testing::Test {
   void SetUp() override {
     ParkableStringManager::Instance().SetRendererBackgrounded(false);
   }
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(ParkableStringTest, Simple) {

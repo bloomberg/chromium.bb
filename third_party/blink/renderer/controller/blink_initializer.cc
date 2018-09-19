@@ -140,9 +140,9 @@ void InitializeCommon(Platform* platform,
 
 void Initialize(Platform* platform,
                 service_manager::BinderRegistry* registry,
-                WebThread* main_thread) {
+                scheduler::WebThreadScheduler* main_thread_scheduler) {
   DCHECK(registry);
-  Platform::Initialize(platform, main_thread);
+  Platform::Initialize(platform, main_thread_scheduler);
   InitializeCommon(platform, registry);
 }
 

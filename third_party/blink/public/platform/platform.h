@@ -133,6 +133,10 @@ class WebURLResponse;
 class WebURLResponse;
 struct WebSize;
 
+namespace scheduler {
+class WebThreadScheduler;
+}
+
 class BLINK_PLATFORM_EXPORT Platform {
  public:
 // HTML5 Database ------------------------------------------------------
@@ -144,8 +148,10 @@ class BLINK_PLATFORM_EXPORT Platform {
 #endif
 
   // Initialize platform and wtf. If you need to initialize the entire Blink,
-  // you should use blink::Initialize.
-  static void Initialize(Platform*, WebThread* main_thread);
+  // you should use blink::Initialize. WebThreadScheduler must be owned by
+  // the embedder.
+  static void Initialize(Platform*,
+                         scheduler::WebThreadScheduler* main_thread_scheduler);
   static Platform* Current();
 
   // This is another entry point for embedders that only require simple
@@ -155,19 +161,22 @@ class BLINK_PLATFORM_EXPORT Platform {
   // embedders do not need to override CurrentThread(), if your application
   // is single-threaded. If your application supports multi-thread, you
   // need to override CurrentThread() as well as CreateThread().
-  //
-  // When this function is used, the WebThread instance for the main thread
-  // is owned by Platform (unlike Initialize()).
-  //
-  // In the future, we would like to let Platform own the WebThread object for
-  // the main thread in all cases, as part of Blink Thread Initialization
-  // Cleanup project:
-  // https://docs.google.com/document/d/1ehd6Lp5czBzOCHWrDkL9x62gjdlrtbMtJqt_eRaauYo/edit?usp=sharing
   static void CreateMainThreadAndInitialize(Platform*);
 
   // Used to switch the current platform only for testing.
   // You should not pass in a Platform object that is not fully instantiated.
   static void SetCurrentPlatformForTesting(Platform*);
+
+  // These are dirty workaround for tests requiring the main thread task runner
+  // from a non-main thread. If your test needs base::ScopedTaskEnvironment
+  // and a non-main thread may call MainThread()->GetTaskRunner(), call
+  // SetMainThreadTaskRunnerForTesting() in your test fixture's SetUp(), and
+  // call UnsetMainThreadTaskRunnerForTesting() in TearDown().
+  //
+  // TODO(yutak): Ideally, these should be packed in a custom test fixture
+  // along with ScopedTaskEnvironment for reusability.
+  static void SetMainThreadTaskRunnerForTesting();
+  static void UnsetMainThreadTaskRunnerForTesting();
 
   Platform();
   virtual ~Platform();
@@ -427,12 +436,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // for any other purpose.
   virtual std::unique_ptr<WebThread> CreateWebAudioThread();
 
-  // Returns an interface to the current thread. This is usually owned by the
-  // embedder, except when CreateMainThreadAndInitialize() is used. See comments
-  // above for details.
+  // Returns an interface to the current thread.
   //
-  // The default implementation works only if CreateMainThreadAndInitialize() is
-  // used. Otherwise, the embedder *must* implement their own version.
+  // The default implementation only works on the main thread. If your
+  // application supports multi-thread, you *must* override this function
+  // as well as CreateThread().
   virtual WebThread* CurrentThread();
 
   // Returns a blame context for attributing top-level work which does not
@@ -745,12 +753,12 @@ class BLINK_PLATFORM_EXPORT Platform {
  private:
   static void InitializeCommon(Platform* platform);
 
-  // We eventually want to let Platform own the main thread WebThread, but
-  // currently the main thread is owned in a few selected cases. This variable
-  // is non-null when the main thread is owned by Platform. The pointer value
-  // is the same as main_thread_.
+  // Platform owns the main thread in most cases. The pointer value is the same
+  // as main_thread_ if this variable is non-null.
   //
-  // For details, see comments around CreateMainThreadAndInitialize() above.
+  // This variable is null if (and only if) ScopedTestingPlatformSupport<>
+  // overrides the old Platform. In this case, main_thread_ points to the old
+  // Platform's main thread. See testing_platform_support.h for this.
   std::unique_ptr<WebThread> owned_main_thread_;
 };
 
