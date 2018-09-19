@@ -98,8 +98,7 @@ public class FeedActionHandler implements ActionApi {
 
     @Override
     public boolean canDownloadUrl() {
-        // TODO(huayinz): Change to the desired behavior.
-        return false;
+        return true;
     }
 
     @Override
