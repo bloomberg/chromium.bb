@@ -5,7 +5,17 @@
 #ifndef CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_ENGINE_EXTENSION_API_H_
 #define CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_ENGINE_EXTENSION_API_H_
 
+#include <vector>
+
+#include "base/memory/singleton.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "extensions/browser/extension_function.h"
+
+class Utterance;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace tts_engine_events {
 extern const char kOnSpeak[];
@@ -13,6 +23,22 @@ extern const char kOnStop[];
 extern const char kOnPause[];
 extern const char kOnResume[];
 }
+
+// TtsEngineDelegate implementation used by TtsController.
+class TtsExtensionEngine : public TtsEngineDelegate {
+ public:
+  static TtsExtensionEngine* GetInstance();
+
+  // Overridden from TtsEngineDelegate:
+  void GetVoices(content::BrowserContext* browser_context,
+                 std::vector<VoiceData>* out_voices) override;
+  void Speak(Utterance* utterance, const VoiceData& voice) override;
+  void Stop(Utterance* utterance) override;
+  void Pause(Utterance* utterance) override;
+  void Resume(Utterance* utterance) override;
+  bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) override;
+};
 
 // Function that allows tts engines to update its list of supported voices at
 // runtime.

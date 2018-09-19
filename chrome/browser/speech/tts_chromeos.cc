@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "chrome/browser/speech/tts_engine_delegate.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -25,9 +24,9 @@ class TtsPlatformImplChromeOs : public TtsPlatformImpl {
   bool LoadBuiltInTtsExtension(
       content::BrowserContext* browser_context) override {
     TtsEngineDelegate* tts_engine_delegate =
-        TtsController::GetInstance()->GetTtsEngineDelegate(browser_context);
+        TtsController::GetInstance()->GetTtsEngineDelegate();
     if (tts_engine_delegate)
-      return tts_engine_delegate->LoadBuiltInTtsExtension();
+      return tts_engine_delegate->LoadBuiltInTtsExtension(browser_context);
     return false;
   }
 

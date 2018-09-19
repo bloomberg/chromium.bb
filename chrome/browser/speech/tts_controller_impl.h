@@ -46,9 +46,8 @@ class TtsControllerImpl : public TtsController {
   void AddVoicesChangedDelegate(VoicesChangedDelegate* delegate) override;
   void RemoveVoicesChangedDelegate(VoicesChangedDelegate* delegate) override;
   void RemoveUtteranceEventDelegate(UtteranceEventDelegate* delegate) override;
-  void SetTtsEngineDelegateFactory(TtsEngineDelegateFactory* factory) override;
-  TtsEngineDelegate* GetTtsEngineDelegate(
-      content::BrowserContext* browser_context) override;
+  void SetTtsEngineDelegate(TtsEngineDelegate* delegate) override;
+  TtsEngineDelegate* GetTtsEngineDelegate() override;
   void SetPlatformImpl(TtsPlatformImpl* platform_impl) override;
   int QueueSize() override;
 
@@ -89,10 +88,6 @@ class TtsControllerImpl : public TtsController {
   // pulled from user prefs, and may not be the same as other platforms.
   void UpdateUtteranceDefaults(Utterance* utterance);
 
-  // Helper; returns the TtsEngineDelegate for the given utterance or
-  // nullptr if there's no BrowserContext associated with this utterance.
-  TtsEngineDelegate* GetTtsEngineDelegate(Utterance* utterance);
-
   virtual const PrefService* GetPrefService(const Utterance* utterance);
 
   friend struct base::DefaultSingletonTraits<TtsControllerImpl>;
@@ -113,9 +108,8 @@ class TtsControllerImpl : public TtsController {
   // dependency injection.
   TtsPlatformImpl* platform_impl_;
 
-  // The factory that creates delegate that processes TTS requests
-  // with user-installed extensions.
-  TtsEngineDelegateFactory* tts_engine_delegate_factory_;
+  // The delegate that processes TTS requests with user-installed extensions.
+  TtsEngineDelegate* tts_engine_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerImpl);
 };

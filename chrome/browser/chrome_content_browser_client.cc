@@ -436,7 +436,6 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
-#include "chrome/browser/speech/extension_api/tts_engine_delegate_factory_impl.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
@@ -1014,8 +1013,8 @@ ChromeContentBrowserClient::ChromeContentBrowserClient(
 #endif
 
 #if !defined(OS_ANDROID)
-  TtsController::GetInstance()->SetTtsEngineDelegateFactory(
-      TtsEngineDelegateFactoryImpl::GetInstance());
+  TtsExtensionEngine* tts_extension_engine = TtsExtensionEngine::GetInstance();
+  TtsController::GetInstance()->SetTtsEngineDelegate(tts_extension_engine);
 #endif
 
 #if defined(OS_CHROMEOS)

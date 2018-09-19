@@ -94,14 +94,6 @@ const std::set<std::string> TtsEngineExtensionObserver::GetTtsExtensions() {
 }
 
 const std::vector<extensions::TtsVoice>*
-TtsEngineExtensionObserver::GetAllVoices(
-    const extensions::Extension* extension) {
-  const std::vector<extensions::TtsVoice>* voices =
-      GetRuntimeVoices(extension->id());
-  return voices ? voices : extensions::TtsVoices::GetTtsVoices(extension);
-}
-
-const std::vector<extensions::TtsVoice>*
 TtsEngineExtensionObserver::GetRuntimeVoices(const std::string extension_id) {
   auto it = extension_id_to_runtime_voices_.find(extension_id);
   if (it == extension_id_to_runtime_voices_.end())
