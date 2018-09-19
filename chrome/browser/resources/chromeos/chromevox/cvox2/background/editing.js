@@ -402,6 +402,9 @@ AutomationRichEditableText.prototype = {
           new cvox.TextChangeEvent(
               cur.startContainerValue_, cur.localContainerStartOffset_,
               cur.localContainerEndOffset_, true));
+
+      // Braille here simply displays the current line.
+      this.brailleCurrentRichLine_();
     } else if (cur.text == '') {
       // This line has no text content. Describe the DOM selection.
       new Output()
