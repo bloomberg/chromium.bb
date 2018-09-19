@@ -245,6 +245,25 @@ TEST_F(QuicCryptoStreamTest, RetransmitStreamData) {
   EXPECT_TRUE(stream_->RetransmitStreamData(0, 0, false));
 }
 
+// Regression test for b/115926584.
+TEST_F(QuicCryptoStreamTest, HasUnackedCryptoData) {
+  QuicString data(1350, 'a');
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
+      .WillOnce(testing::Return(QuicConsumedData(0, false)));
+  stream_->WriteOrBufferData(data, false, nullptr);
+  EXPECT_FALSE(stream_->IsWaitingForAcks());
+  // Although there is no outstanding data, verify session has pending crypto
+  // data.
+  EXPECT_EQ(GetQuicReloadableFlag(quic_fix_has_pending_crypto_data),
+            session_.HasUnackedCryptoData());
+
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
+  stream_->OnCanWrite();
+  EXPECT_TRUE(stream_->IsWaitingForAcks());
+  EXPECT_TRUE(session_.HasUnackedCryptoData());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

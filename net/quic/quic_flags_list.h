@@ -234,3 +234,10 @@ QUIC_FLAG(bool,
 
 // If true, enable version 45.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_45, false)
+
+// If true, QuicSession::HasPendingCryptoData checks whether the crypto stream's
+// send buffer is empty. This flag fixes a bug where the retransmission alarm
+// mode is wrong for the first CHLO packet.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_has_pending_crypto_data,
+          false)
