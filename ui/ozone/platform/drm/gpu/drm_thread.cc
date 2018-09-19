@@ -152,7 +152,7 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
                              std::unique_ptr<GbmBuffer>* buffer,
                              scoped_refptr<DrmFramebuffer>* framebuffer) {
   scoped_refptr<ui::DrmDevice> drm = device_manager_->GetDrmDevice(widget);
-  DCHECK(drm);
+  CHECK(drm) << "No devices available for buffer allocation.";
 
   DrmWindow* window = screen_manager_->GetWindow(widget);
   uint32_t flags = BufferUsageToGbmFlags(usage);
