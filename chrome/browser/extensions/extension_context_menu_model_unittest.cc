@@ -1275,8 +1275,7 @@ TEST_F(ExtensionContextMenuModelTest,
 TEST_F(ExtensionContextMenuModelTest, TestClickingPageAccessLearnMore) {
   // This test relies on the click-to-script feature.
   auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list->InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
+  scoped_feature_list->InitAndEnableFeature(features::kRuntimeHostPermissions);
   InitializeEmptyExtensionService();
 
   // Add an extension that wants access to a.com.
