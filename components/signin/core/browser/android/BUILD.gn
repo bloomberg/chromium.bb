@@ -42,7 +42,7 @@ android_library("java") {
 
 junit_binary("components_signin_junit_tests") {
   java_files = [
-    "junit/src/org/chromium/components/signin/test/AccountManagerFacadeTest.java",
+    "junit/src/org/chromium/components/signin/test/AccountManagerFacadeRobolectricTest.java",
     "junit/src/org/chromium/components/signin/test/PatternMatcherTest.java",
   ]
   deps = [
@@ -54,6 +54,22 @@ junit_binary("components_signin_junit_tests") {
     "//third_party/android_deps:android_support_annotations_java",
     "//third_party/junit",
   ]
+}
+
+android_library("signin_javatests") {
+  testonly = true
+  deps = [
+    ":java",
+    ":signin_java_test_support",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/junit",
+    "//third_party/mockito:mockito_java",
+  ]
+
+  java_files = [ "javatests/src/org/chromium/components/signin/test/AccountManagerFacadeTest.java" ]
 }
 
 android_library("signin_java_test_support") {
