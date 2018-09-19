@@ -48,6 +48,7 @@ constexpr char kAppCommentKey[] = "comment";
 constexpr char kAppMimeTypesKey[] = "mime_types";
 constexpr char kAppNameKey[] = "name";
 constexpr char kAppNoDisplayKey[] = "no_display";
+constexpr char kAppScaledKey[] = "scaled";
 constexpr char kAppStartupWMClassKey[] = "startup_wm_class";
 constexpr char kAppStartupNotifyKey[] = "startup_notify";
 constexpr char kAppInstallTimeKey[] = "install_time";
@@ -314,6 +315,16 @@ base::Time CrostiniRegistryService::Registration::InstallTime() const {
 
 base::Time CrostiniRegistryService::Registration::LastLaunchTime() const {
   return GetTime(pref_, kAppLastLaunchTimeKey);
+}
+
+bool CrostiniRegistryService::Registration::IsScaled() const {
+  if (pref_.is_none())
+    return false;
+  const base::Value* scaled =
+      pref_.FindKeyOfType(kAppScaledKey, base::Value::Type::BOOLEAN);
+  if (!scaled)
+    return false;
+  return scaled->GetBool();
 }
 
 // We store in prefs all the localized values for given fields (formatted with
@@ -754,6 +765,23 @@ void CrostiniRegistryService::SetCurrentTime(base::Value* dictionary,
   DCHECK(dictionary);
   int64_t time = clock_->Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
   dictionary->SetKey(key, base::Value(base::Int64ToString(time)));
+}
+
+void CrostiniRegistryService::SetAppScaled(const std::string& app_id,
+                                           bool scaled) {
+  DCHECK_NE(app_id, kCrostiniTerminalId);
+
+  DictionaryPrefUpdate update(prefs_, prefs::kCrostiniRegistry);
+  base::DictionaryValue* apps = update.Get();
+
+  base::Value* app = apps->FindKey(app_id);
+  if (!app) {
+    LOG(ERROR)
+        << "Tried to set display scaled property on the app with this app_id "
+        << app_id << " that doesn't exist in the registry.";
+    return;
+  }
+  app->SetKey(kAppScaledKey, base::Value(scaled));
 }
 
 void CrostiniRegistryService::RequestIcon(const std::string& app_id,
