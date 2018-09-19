@@ -124,10 +124,6 @@ void MimeHandlerViewContainer::OnMimeHandlerViewGuestOnLoadCompleted(
   DidCompleteLoad();
 }
 
-content::RenderFrame* MimeHandlerViewContainer::GetEmbedderRenderFrame() const {
-  return render_frame();
-}
-
 void MimeHandlerViewContainer::CreateMimeHandlerViewGuestIfNecessary() {
   if (!element_size_.has_value())
     return;

@@ -167,6 +167,7 @@ MimeHandlerViewContainerBase::MimeHandlerViewContainerBase(
     : plugin_path_(info.path.MaybeAsASCII()),
       mime_type_(mime_type),
       original_url_(original_url),
+      embedder_render_frame_routing_id_(embedder_render_frame->GetRoutingID()),
       before_unload_control_binding_(this),
       weak_factory_(this) {
   DCHECK(!mime_type_.empty());
@@ -253,7 +254,8 @@ void MimeHandlerViewContainerBase::PostMessageFromValue(
 
 content::RenderFrame* MimeHandlerViewContainerBase::GetEmbedderRenderFrame()
     const {
-  return nullptr;
+  DCHECK_NE(embedder_render_frame_routing_id_, MSG_ROUTING_NONE);
+  return content::RenderFrame::FromRoutingID(embedder_render_frame_routing_id_);
 }
 
 void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {

@@ -64,7 +64,6 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
 
  private:
   // MimeHandlerViewContainerBase override.
-  content::RenderFrame* GetEmbedderRenderFrame() const final;
   void CreateMimeHandlerViewGuestIfNecessary() final;
   blink::WebFrame* GetGuestProxyFrame() const final;
   int32_t GetInstanceId() const final;
