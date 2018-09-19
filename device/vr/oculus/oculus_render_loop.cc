@@ -106,6 +106,13 @@ bool OculusRenderLoop::StartRuntime() {
     return false;
   }
 
+  ovrHmdDesc hmd_desc = ovr_GetHmdDesc(session_);
+  auto render_desc = ovr_GetRenderDesc(session_, ovrEye_Left,
+                                       hmd_desc.DefaultEyeFov[ovrEye_Left]);
+  auto texture_size =
+      ovr_GetFovTextureSize(session_, ovrEye_Left, render_desc.Fov, 1.0f);
+  texture_helper_.SetDefaultSize(gfx::Size(texture_size.w, texture_size.h));
+
   return true;
 }
 
@@ -126,6 +133,14 @@ void OculusRenderLoop::StopRuntime() {
 void OculusRenderLoop::OnSessionStart() {}
 
 bool OculusRenderLoop::PreComposite() {
+  // If our current swap chain has a different size than the recommended size
+  // from texture helper (ie - either WebXR or Overlay size if only one is
+  // visible, or the Rift's default size if both are visible), then we destroy
+  // it and create a new one of the correct size.
+  if (swap_chain_size_ != texture_helper_.BackBufferSize()) {
+    DestroyOvrSwapChain();
+  }
+
   // Create swap chain on demand.
   if (!texture_swap_chain_) {
     CreateOvrSwapChain();
@@ -148,20 +163,25 @@ bool OculusRenderLoop::SubmitCompositedFrame() {
   layer.Header.Type = ovrLayerType_EyeFov;
   layer.Header.Flags = 0;
   layer.ColorTexture[0] = texture_swap_chain_;
-  DCHECK(source_size_.width() % 2 == 0);
+
+  gfx::RectF left_bounds = texture_helper_.BackBufferLeft();
+  gfx::RectF right_bounds = texture_helper_.BackBufferRight();
+  gfx::Size size = texture_helper_.BackBufferSize();
+
+  DCHECK(size.width() % 2 == 0);
   layer.Viewport[0] = {
       // Left viewport.
-      {static_cast<int>(source_size_.width() * left_bounds_.x()),
-       static_cast<int>(source_size_.height() * left_bounds_.y())},
-      {static_cast<int>(source_size_.width() * left_bounds_.width()),
-       static_cast<int>(source_size_.height() * left_bounds_.height())}};
+      {static_cast<int>(size.width() * left_bounds.x()),
+       static_cast<int>(size.height() * left_bounds.y())},
+      {static_cast<int>(size.width() * left_bounds.width()),
+       static_cast<int>(size.height() * left_bounds.height())}};
 
   layer.Viewport[1] = {
       // Right viewport.
-      {static_cast<int>(source_size_.width() * right_bounds_.x()),
-       static_cast<int>(source_size_.height() * right_bounds_.y())},
-      {static_cast<int>(source_size_.width() * right_bounds_.width()),
-       static_cast<int>(source_size_.height() * right_bounds_.height())}};
+      {static_cast<int>(size.width() * right_bounds.x()),
+       static_cast<int>(size.height() * right_bounds.y())},
+      {static_cast<int>(size.width() * right_bounds.width()),
+       static_cast<int>(size.height() * right_bounds.height())}};
   ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session_);
   layer.Fov[0] = hmdDesc.DefaultEyeFov[0];
   layer.Fov[1] = hmdDesc.DefaultEyeFov[1];
@@ -204,13 +224,21 @@ void OculusRenderLoop::CreateOvrSwapChain() {
   desc.Type = ovrTexture_2D;
   desc.ArraySize = 1;
   desc.Format = OVR_FORMAT_R8G8B8A8_UNORM_SRGB;
-  desc.Width = source_size_.width();
-  desc.Height = source_size_.height();
+
+  // Update our swap chain size to be the texture_helper_'s recommended size.
+  // This will be the WebXR or Overlay size if only one is visible, or
+  // the Rift's default framebuffer size if both are visible.
+  swap_chain_size_ = texture_helper_.BackBufferSize();
+  desc.Width = swap_chain_size_.width();
+  desc.Height = swap_chain_size_.height();
   desc.MipLevels = 1;
-  desc.SampleCount = 1;
+  desc.SampleCount = 1;  // No anti-aliasing since we are just copying textures.
   desc.StaticImage = ovrFalse;
   desc.MiscFlags = ovrTextureMisc_DX_Typeless;
   desc.BindFlags = ovrTextureBind_DX_RenderTarget;
+
+  // On failure, texture_swap_chain_ will be null and we'll handle that as an
+  // error later.
   ovr_CreateTextureSwapChainDX(session_, texture_helper_.GetDevice().Get(),
                                &desc, &texture_swap_chain_);
 }
@@ -223,7 +251,6 @@ void OculusRenderLoop::DestroyOvrSwapChain() {
 }
 
 void OculusRenderLoop::OnLayerBoundsChanged() {
-  DestroyOvrSwapChain();
 };
 
 std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
