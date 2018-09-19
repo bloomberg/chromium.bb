@@ -38,11 +38,14 @@ class CastPage(page.Page):
           'shadowRoot.getElementById("container-header").shadowRoot.' +
           'getElementById("close-button").click();')
     except (exceptions.DevtoolsTargetCrashException,
-            exceptions.EvaluateException):
+            exceptions.EvaluateException,
+            exceptions.TimeoutException):
       # Ignore the crash exception, this exception is caused by the js
       # code which closes the dialog, it is expected.
       # Ignore the evaluate exception, this exception maybe caused by the dialog
       # is closed/closing when the JS is executing.
+      # Ignore the timeout exception, this exception can be caused by finding
+      # the close-button on a dialog that is already closed.
       pass
 
 
