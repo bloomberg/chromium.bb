@@ -177,7 +177,6 @@ source_set("blink_headers") {
     "platform/modules/service_worker/web_service_worker_registration_proxy.h",
     "platform/modules/service_worker/web_service_worker_request.h",
     "platform/modules/service_worker/web_service_worker_response.h",
-    "platform/modules/service_worker/web_service_worker_skip_waiting_callbacks.h",
     "platform/modules/service_worker/web_service_worker_stream_handle.h",
     "platform/modules/webmidi/web_midi_accessor.h",
     "platform/modules/webmidi/web_midi_accessor_client.h",

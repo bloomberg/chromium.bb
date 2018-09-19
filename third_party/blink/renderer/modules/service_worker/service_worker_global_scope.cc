@@ -76,6 +76,20 @@
 
 namespace blink {
 
+namespace {
+
+void DidSkipWaiting(ScriptPromiseResolver* resolver, bool success) {
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed())
+    return;
+  // Per spec the promise returned by skipWaiting() can never reject.
+  if (!success)
+    return;
+  resolver->Resolve();
+}
+
+}  // namespace
+
 ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
     ServiceWorkerThread* thread,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
@@ -261,12 +275,9 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
     return ScriptPromise();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   ServiceWorkerGlobalScopeClient::From(execution_context)
-      ->SkipWaiting(
-          std::make_unique<CallbackPromiseAdapter<void, void>>(resolver));
-  return promise;
+      ->SkipWaiting(WTF::Bind(&DidSkipWaiting, WrapPersistent(resolver)));
+  return resolver->Promise();
 }
 
 void ServiceWorkerGlobalScope::BindServiceWorkerHost(
