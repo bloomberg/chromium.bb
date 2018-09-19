@@ -8,7 +8,7 @@
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "third_party/blink/common/messaging/cloneable_message_struct_traits.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
-#include "third_party/blink/public/mojom/messaging/message_port.mojom.h"
+#include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {

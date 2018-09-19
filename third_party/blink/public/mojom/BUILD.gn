@@ -128,7 +128,7 @@ mojom("speech_recognition_error_code") {
 # typemapped to a type in Source/core. This also means these interfaces are not
 # available from Source/platform.
 # Note that service_worker_object.mojom and service_worker.mojom depend
-# on message_port.mojom, and service_worker_registration.mojom depends
+# on transferable_message.mojom, and service_worker_registration.mojom depends
 # on service_worker_object.mojom, so we put these three service worker
 # mojom files here rather than mojom_platform target.
 # In future we may have a separate mojom target for the things that may have
@@ -136,7 +136,8 @@ mojom("speech_recognition_error_code") {
 # those high-level service worker mojom files there.
 mojom("mojom_core") {
   sources = [
-    "messaging/message_port.mojom",
+    "messaging/cloneable_message.mojom",
+    "messaging/transferable_message.mojom",
     "messaging/user_activation_snapshot.mojom",
     "portal/portal.mojom",
     "service_worker/service_worker.mojom",

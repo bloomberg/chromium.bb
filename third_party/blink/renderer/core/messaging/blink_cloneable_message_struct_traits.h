@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
-#include "third_party/blink/public/mojom/messaging/message_port.mojom-blink.h"
+#include "third_party/blink/public/mojom/messaging/cloneable_message.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/blink_cloneable_message.h"

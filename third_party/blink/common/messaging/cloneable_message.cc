@@ -5,7 +5,7 @@
 #include "third_party/blink/public/common/messaging/cloneable_message.h"
 
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
-#include "third_party/blink/public/mojom/messaging/message_port.mojom.h"
+#include "third_party/blink/public/mojom/messaging/cloneable_message.mojom.h"
 
 namespace blink {
 
