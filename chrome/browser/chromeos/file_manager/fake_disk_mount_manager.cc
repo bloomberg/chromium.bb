@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 
+#include <utility>
+
 #include "chromeos/disks/disk.h"
 
 namespace file_manager {

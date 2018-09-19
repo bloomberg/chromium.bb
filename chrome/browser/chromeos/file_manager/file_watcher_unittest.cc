@@ -26,7 +26,7 @@ class FileManagerFileWatcherTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
-  void FlushMessageLoopTasks() { thread_bundle_.RunUntilIdle(); };
+  void FlushMessageLoopTasks() { thread_bundle_.RunUntilIdle(); }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/logging.h"

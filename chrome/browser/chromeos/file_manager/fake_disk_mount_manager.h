@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FAKE_DISK_MOUNT_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FAKE_DISK_MOUNT_MANAGER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

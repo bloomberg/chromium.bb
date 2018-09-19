@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"

@@ -53,7 +53,7 @@ class FileManagerUITest : public InProcessBrowserTest {
       EXPECT_TRUE(message_queue.WaitForMessage(&message));
     } while (message == "\"PENDING\"");
 
-    EXPECT_TRUE(message == "\"SUCCESS\"");
+    EXPECT_EQ(message, "\"SUCCESS\"");
   }
 };
 

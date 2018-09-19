@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_manager/crostini_file_tasks.h"
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
