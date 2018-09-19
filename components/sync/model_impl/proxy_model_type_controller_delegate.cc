@@ -57,9 +57,10 @@ void RunModelTask(
     const ProxyModelTypeControllerDelegate::DelegateProvider& delegate_provider,
     base::OnceCallback<void(base::WeakPtr<ModelTypeControllerDelegate>)> task) {
   base::WeakPtr<ModelTypeControllerDelegate> delegate = delegate_provider.Run();
-  if (delegate) {
-    std::move(task).Run(delegate);
-  }
+  // TODO(crbug.com/876490): Remove/revisit this CHECK once investigations are
+  // finalized.
+  CHECK(delegate);
+  std::move(task).Run(delegate);
 }
 
 }  // namespace
