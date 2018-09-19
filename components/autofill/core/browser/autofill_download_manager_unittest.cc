@@ -137,15 +137,6 @@ class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
     ResponseData() : type_of_response(REQUEST_QUERY_FAILED), error(0) {}
   };
 
-  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
-      size_t index = 0) {
-    if (index >= test_url_loader_factory_.pending_requests()->size())
-      return nullptr;
-    auto* request = &(*test_url_loader_factory_.pending_requests())[index];
-    DCHECK(request);
-    return request;
-  }
-
   base::MessageLoop message_loop_;
   std::list<ResponseData> responses_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
@@ -278,14 +269,14 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   // Return them out of sequence.
 
   // Request 1: Successful upload.
-  auto* request = GetPendingRequest(1);
+  auto* request = test_url_loader_factory_.GetPendingRequest(1);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[1]);
   histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
                               net::HTTP_OK, 1);
 
   // Request 2: Unsuccessful upload.
-  request = GetPendingRequest(2);
+  request = test_url_loader_factory_.GetPendingRequest(2);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, network::CreateResourceResponseHead(net::HTTP_NOT_FOUND),
       responses[2], network::URLLoaderCompletionStatus(net::OK));
@@ -293,7 +284,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
                               net::HTTP_NOT_FOUND, 1);
 
   // Request 0: Successful query.
-  request = GetPendingRequest(0);
+  request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[0]);
   EXPECT_EQ(3U, responses_.size());
@@ -338,7 +329,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   // Request with id 4, not successful.
   EXPECT_TRUE(
       download_manager_.StartQueryRequest(ToRawPointerVector(form_structures)));
-  request = GetPendingRequest(4);
+  request = test_url_loader_factory_.GetPendingRequest(4);
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 2);
   histogram.ExpectUniqueSample("Autofill.Query.Method", METHOD_GET, 2);
@@ -363,7 +354,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
                               AutofillMetrics::QUERY_SENT, 3);
   histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_GET, 3);
-  request = GetPendingRequest(5);
+  request = test_url_loader_factory_.GetPendingRequest(5);
 
   network::URLLoaderCompletionStatus status(net::OK);
   status.exists_in_cache = true;
@@ -394,7 +385,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
                               AutofillMetrics::QUERY_SENT, 4);
   histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_POST, 1);
-  request = GetPendingRequest(6);
+  request = test_url_loader_factory_.GetPendingRequest(6);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[0]);
   histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 2);
@@ -433,7 +424,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 1);
 
-  auto* request = GetPendingRequest(0);
+  auto* request = test_url_loader_factory_.GetPendingRequest(0);
 
   // Request error incurs a retry after 1 second.
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
@@ -451,7 +442,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
   run_loop.Run();
 
   // Get the retried request.
-  request = GetPendingRequest(1);
+  request = test_url_loader_factory_.GetPendingRequest(1);
 
   // Next error incurs a retry after 2 seconds.
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
@@ -501,7 +492,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   EXPECT_TRUE(download_manager_.StartUploadRequest(
       *form_structure, true, ServerFieldTypeSet(), std::string(), true));
 
-  auto* request = GetPendingRequest(0);
+  auto* request = test_url_loader_factory_.GetPendingRequest(0);
 
   // Error incurs a retry after 1 second.
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
@@ -527,7 +518,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   responses_.pop_front();
 
   // Get the retried request, and make it successful.
-  request = GetPendingRequest(1);
+  request = test_url_loader_factory_.GetPendingRequest(1);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, "");
 
@@ -544,7 +535,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   base::HistogramTester histogram;
   EXPECT_TRUE(download_manager_.StartUploadRequest(
       *form_structure, true, ServerFieldTypeSet(), std::string(), true));
-  request = GetPendingRequest(2);
+  request = test_url_loader_factory_.GetPendingRequest(2);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request,
       network::CreateResourceResponseHead(net::HTTP_REQUEST_ENTITY_TOO_LARGE),
@@ -668,7 +659,7 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
   // No responses yet
   EXPECT_EQ(0U, responses_.size());
 
-  auto* request = GetPendingRequest(0);
+  auto* request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[0]);
   ASSERT_EQ(1U, responses_.size());
@@ -694,7 +685,7 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
   // No responses yet
   EXPECT_EQ(0U, responses_.size());
 
-  request = GetPendingRequest(1);
+  request = test_url_loader_factory_.GetPendingRequest(1);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[1]);
   ASSERT_EQ(1U, responses_.size());
@@ -708,7 +699,7 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 4);
 
-  request = GetPendingRequest(2);
+  request = test_url_loader_factory_.GetPendingRequest(2);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[2]);
   ASSERT_EQ(1U, responses_.size());
@@ -741,7 +732,7 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
   // No responses yet
   EXPECT_EQ(0U, responses_.size());
 
-  request = GetPendingRequest(3);
+  request = test_url_loader_factory_.GetPendingRequest(3);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[0]);
   ASSERT_EQ(1U, responses_.size());
