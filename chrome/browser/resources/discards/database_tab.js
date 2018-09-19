@@ -121,24 +121,15 @@ Polymer({
   },
 
   /**
-   * @param {?mojom.SiteCharacteristicsPerformanceMeasurement}
-   *    loadTimeEstimates The load time estimates to convert.
-   * @return {string} The average CPU usage string or 'N/A' if unavailable.
+   * @param {!Object} item The item to retrieve a load time estimate for.
+   * @param {string} propertyName Name of the load time estimate to retrieve.
+   * @return {string} The requested load time estimate or 'N/A' if unavailable.
    * @private
    */
-  getAvgCPU_: function(loadTimeEstimates) {
-    return loadTimeEstimates ? loadTimeEstimates.avgCpuUsageUs.toString() :
-                               'N/A';
-  },
+  getLoadTimeEstimate_: function(item, propertyName) {
+    if (!item.value || !item.value.loadTimeEstimates)
+      return 'N/A';
 
-  /**
-   * @param {?mojom.SiteCharacteristicsPerformanceMeasurement}
-   *    loadTimeEstimates The load time estimates to convert.
-   * @return {string} The average memory usage string or 'N/A' if unavailable.
-   * @private
-   */
-  getAvgMemory_: function(loadTimeEstimates) {
-    return loadTimeEstimates ? loadTimeEstimates.avgFootprintKb.toString() :
-                               'N/A';
+    return item.value.loadTimeEstimates[propertyName].toString();
   },
 });

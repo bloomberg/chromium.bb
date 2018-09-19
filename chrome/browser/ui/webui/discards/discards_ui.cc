@@ -132,11 +132,18 @@ mojom::SiteCharacteristicsDatabaseEntryPtr ConvertEntryFromProto(
 
     mojom::SiteCharacteristicsPerformanceMeasurementPtr load_time_estimates =
         mojom::SiteCharacteristicsPerformanceMeasurement::New();
-
-    load_time_estimates->avg_cpu_usage_us =
-        load_time_estimates_proto.avg_cpu_usage_us();
-    load_time_estimates->avg_footprint_kb =
-        load_time_estimates_proto.avg_footprint_kb();
+    if (load_time_estimates_proto.has_avg_cpu_usage_us()) {
+      load_time_estimates->avg_cpu_usage_us =
+          load_time_estimates_proto.avg_cpu_usage_us();
+    }
+    if (load_time_estimates_proto.has_avg_footprint_kb()) {
+      load_time_estimates->avg_footprint_kb =
+          load_time_estimates_proto.avg_footprint_kb();
+    }
+    if (load_time_estimates_proto.has_avg_load_duration_us()) {
+      load_time_estimates->avg_load_duration_us =
+          load_time_estimates_proto.avg_load_duration_us();
+    }
 
     value->load_time_estimates = std::move(load_time_estimates);
   }

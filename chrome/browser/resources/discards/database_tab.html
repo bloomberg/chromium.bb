@@ -30,23 +30,7 @@ general use and is not localized.
         white-space: nowrap;
       }
 
-      table th[data-sort-key] {
-        cursor: pointer;
-      }
-
       .header-cell-container {
-        align-items: center;
-        display: flex;
-        justify-content: flex-start;
-      }
-
-      .title-cell {
-        max-width: 200px;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-
-      .title-cell-container {
         align-items: center;
         display: flex;
         justify-content: flex-start;
@@ -118,6 +102,14 @@ general use and is not localized.
               </div>
             </div>
           </th>
+          <th>
+            <div class="header-cell-container">
+              <div>
+                <div>Average Load</div>
+                <div>Time (us)</div>
+              </div>
+            </div>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -132,8 +124,9 @@ general use and is not localized.
             <td>
                 [[featureToString_(item.value.usesNotificationsInBackground)]]
             </td>
-            <td>[[getAvgCPU_(item.value.loadTimeEstimates)]]</td>
-            <td>[[getAvgMemory_(item.value.loadTimeEstimates)]]</td>
+            <td>[[getLoadTimeEstimate_(item, "avgCpuUsageUs")]]</td>
+            <td>[[getLoadTimeEstimate_(item, "avgFootprintKb")]]</td>
+            <td>[[getLoadTimeEstimate_(item, "avgLoadDurationUs")]]</td>
           </tr>
         </template>
       </tbody>
