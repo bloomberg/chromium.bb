@@ -309,7 +309,8 @@ bool ChromeExtensionsBrowserClient::IsInDemoMode() {
 bool ChromeExtensionsBrowserClient::IsScreensaverInDemoMode(
     const std::string& app_id) {
 #if defined(OS_CHROMEOS)
-  return app_id == extension_misc::kScreensaverAppId && IsInDemoMode();
+  return app_id == chromeos::DemoSession::GetScreensaverAppId() &&
+         IsInDemoMode();
 #endif
   return false;
 }
