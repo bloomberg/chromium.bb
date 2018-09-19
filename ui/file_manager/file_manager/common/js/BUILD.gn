@@ -46,6 +46,10 @@ js_library("files_app_entry_types") {
 }
 
 js_library("file_type") {
+  deps = [
+    ":files_app_entry_types",
+    ":volume_manager_common",
+  ]
 }
 
 js_library("importer_common") {

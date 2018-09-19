@@ -58,7 +58,7 @@ function PiexLoaderResponse(data) {
  */
 function PiexLoader(opt_createModule, opt_destroyModule, opt_idleTimeout) {
   /**
-   * @private {function():!Element}
+   * @private {function():!HTMLEmbedElement}
    */
   this.createModule_ = opt_createModule || this.defaultCreateModule_.bind(this);
 
@@ -73,7 +73,7 @@ function PiexLoader(opt_createModule, opt_destroyModule, opt_idleTimeout) {
       PiexLoader.DEFAULT_IDLE_TIMEOUT_MS;
 
   /**
-   * @private {Element}
+   * @private {HTMLEmbedElement}
    */
   this.naclModule_ = null;
 
@@ -134,16 +134,17 @@ PiexLoader.DEFAULT_IDLE_TIMEOUT_MS = 3000;  // 3 seconds.
  * Do not call directly. Use this.loadModule_ instead to support
  * tests.
  *
- * @return {!Element}
+ * @return {!HTMLEmbedElement}
  * @private
  */
 PiexLoader.prototype.defaultCreateModule_ = function() {
-  var embed = document.createElement('embed');
+  var embed =
+      assertInstanceof(document.createElement('embed'), HTMLEmbedElement);
   embed.setAttribute('type', 'application/x-pnacl');
   // The extension nmf is not allowed to load. We uses .nmf.js instead.
   embed.setAttribute('src', '/piex/piex.nmf.txt');
-  embed.width = 0;
-  embed.height = 0;
+  embed.width = '0';
+  embed.height = '0';
   return embed;
 };
 
@@ -175,7 +176,8 @@ PiexLoader.prototype.loadNaclModule_ = function() {
       // instead of attaching the event listeners directly to the <EMBED>
       // element to ensure that the listeners are active before the NaCl module
       // 'load' event fires.
-      var listenerContainer = document.createElement('div');
+      var listenerContainer =
+          assertInstanceof(document.createElement('div'), HTMLDivElement);
       listenerContainer.appendChild(this.naclModule_);
       listenerContainer.addEventListener('load', this.onNaclLoadBound_, true);
       listenerContainer.addEventListener(
@@ -227,10 +229,11 @@ PiexLoader.prototype.onNaclLoad_ = function(event) {
 };
 
 /**
- * @param {Event} event
+ * @param {Event} listener_event
  * @private
  */
-PiexLoader.prototype.onNaclMessage_ = function(event) {
+PiexLoader.prototype.onNaclMessage_ = function(listener_event) {
+  let event = /** @type{MessageEvent} */ (listener_event);
   var id = event.data.id;
   if (!event.data.error) {
     var response = new PiexLoaderResponse(event.data);

@@ -6,6 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
 
 js_type_check("closure_compile_module") {
+  closure_flags = default_closure_args + [ "jscomp_error=strictCheckTypes" ]
   deps = [
     ":background",
     ":cache",
@@ -125,6 +126,8 @@ js_library("scheduler") {
 }
 
 js_unit_tests("unit_tests") {
+  # TODO(tapted): Uncomment the next line.
+  # closure_flags = default_closure_args + [ "jscomp_error=strictCheckTypes" ]
   deps = [
     ":cache_unittest",
     ":image_loader_client_unittest",

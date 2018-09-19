@@ -22,3 +22,4 @@ Local modifications:
 - Cache dependency subtrees in js_binary.py for a huge performance boost.
 - Add js_unit_tests.gni for generating .html files for running unit tests.
 - Forward target visibility in the js_library template.
+- Forward closure_flags in js_type_check and js_unit_tests templates.
