@@ -2196,8 +2196,8 @@ void Browser::OnExtensionUnloaded(content::BrowserContext* browser_context,
       // installed.
       if ((web_contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
            web_contents->GetURL().host_piece() == extension->id()) ||
-          (extensions::TabHelper::FromWebContents(web_contents)
-               ->extension_app() == extension)) {
+          (extensions::TabHelper::FromWebContents(web_contents)->GetAppId() ==
+           extension->id())) {
         tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
       } else {
         chrome::UnmuteIfMutedByExtension(web_contents, extension->id());

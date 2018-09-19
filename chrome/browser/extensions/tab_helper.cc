@@ -224,7 +224,7 @@ void TabHelper::SetExtensionApp(const Extension* extension) {
 
   if (extension_app_) {
     SessionTabHelper::FromWebContents(web_contents())
-        ->SetTabExtensionAppID(extension_app_->id());
+        ->SetTabExtensionAppID(GetAppId());
   }
 }
 
@@ -234,9 +234,13 @@ void TabHelper::SetExtensionAppById(const ExtensionId& extension_app_id) {
     SetExtensionApp(extension);
 }
 
+ExtensionId TabHelper::GetAppId() const {
+  return extension_app_ ? extension_app_->id() : ExtensionId();
+}
+
 SkBitmap* TabHelper::GetExtensionAppIcon() {
   if (extension_app_icon_.empty())
-    return NULL;
+    return nullptr;
 
   return &extension_app_icon_;
 }
@@ -328,7 +332,7 @@ void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
   CreateForWebContents(new_web_contents);
   TabHelper* new_helper = FromWebContents(new_web_contents);
 
-  new_helper->SetExtensionApp(extension_app());
+  new_helper->SetExtensionApp(extension_app_);
   new_helper->extension_app_icon_ = extension_app_icon_;
 }
 

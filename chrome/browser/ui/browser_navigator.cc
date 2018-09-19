@@ -210,7 +210,7 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
             extensions::TabHelper::FromWebContents(params.source_contents);
         if (extensions_tab_helper && extensions_tab_helper->is_app()) {
           app_name = web_app::GenerateApplicationNameFromAppId(
-              extensions_tab_helper->extension_app()->id());
+              extensions_tab_helper->GetAppId());
         }
       }
 #endif

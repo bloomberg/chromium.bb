@@ -75,11 +75,12 @@ class TabHelper : public content::WebContentsObserver,
   // specified id.
   void SetExtensionAppById(const ExtensionId& extension_app_id);
 
-  const Extension* extension_app() const { return extension_app_; }
-  bool is_app() const { return extension_app_ != NULL; }
-  const WebApplicationInfo& web_app_info() const {
-    return web_app_info_;
-  }
+  // Returns true if an app extension has been set.
+  bool is_app() const { return extension_app_ != nullptr; }
+
+  // Return ExtensionId for extension app.
+  // If an app extension has not been set, returns empty id.
+  ExtensionId GetAppId() const;
 
   // If an app extension has been explicitly set for this WebContents its icon
   // is returned.

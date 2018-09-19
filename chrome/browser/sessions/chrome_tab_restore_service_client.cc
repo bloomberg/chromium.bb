@@ -98,13 +98,9 @@ std::string ChromeTabRestoreServiceClient::GetExtensionAppIDForTab(
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(
           static_cast<sessions::ContentLiveTab*>(tab)->web_contents());
-  // extensions_tab_helper is NULL in some browser tests.
-  if (extensions_tab_helper) {
-    const extensions::Extension* extension =
-        extensions_tab_helper->extension_app();
-    if (extension)
-      extension_app_id = extension->id();
-  }
+  // extensions_tab_helper is nullptr in some browser tests.
+  if (extensions_tab_helper)
+    extension_app_id = extensions_tab_helper->GetAppId();
 #endif
 
   return extension_app_id;
