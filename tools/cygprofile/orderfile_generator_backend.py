@@ -239,10 +239,12 @@ class ClankCompiler(object):
     self._system_health_profiling = system_health_profiling
     if monochrome:
       self._apk = 'Monochrome.apk'
+      self._apk_target = 'monochrome_apk'
       self._libname = 'libmonochrome'
       self._libchrome_target = 'monochrome'
     else:
       self._apk = 'Chrome.apk'
+      self._apk_target = 'chrome_apk'
       self._libname = 'libchrome'
       self._libchrome_target = 'libchrome'
 
@@ -299,7 +301,7 @@ class ClankCompiler(object):
     """
     if force_relink:
       self._step_recorder.RunCommand(['rm', '-rf', self.lib_chrome_so])
-    self.Build(instrumented, 'chrome_apk')
+    self.Build(instrumented, self._apk_target)
 
   def CompileLibchrome(self, instrumented, force_relink=False):
     """Builds a libchrome.so either with or without order_profiling on.
