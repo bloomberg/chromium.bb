@@ -4,9 +4,6 @@
 
 #include "chrome/browser/notifications/win/mock_itoastnotifier.h"
 
-#include <wrl/client.h>
-
-#include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/notifications/win/notification_util.h"
 
@@ -19,36 +16,6 @@ void MockIToastNotifier::SetNotificationShownCallback(
     const base::RepeatingCallback<void(const NotificationLaunchId& launch_id)>&
         callback) {
   notification_shown_callback_ = callback;
-}
-
-HRESULT MockIToastNotifier::QueryInterface(REFIID riid, void** ppvObject) {
-  if (riid == ABI::Windows::UI::Notifications::IID_IToastNotifier) {
-    AddRef();
-    *ppvObject = static_cast<IToastNotifier*>(this);
-    return S_OK;
-  }
-
-  return E_NOINTERFACE;
-}
-
-ULONG MockIToastNotifier::AddRef() {
-  return ++refcount_;
-}
-
-ULONG MockIToastNotifier::Release() {
-  return --refcount_;
-}
-
-HRESULT MockIToastNotifier::GetIids(ULONG* iidCount, IID** iids) {
-  return E_NOTIMPL;
-}
-
-HRESULT MockIToastNotifier::GetRuntimeClassName(HSTRING* className) {
-  return E_NOTIMPL;
-}
-
-HRESULT MockIToastNotifier::GetTrustLevel(TrustLevel* trustLevel) {
-  return E_NOTIMPL;
 }
 
 HRESULT MockIToastNotifier::Show(
