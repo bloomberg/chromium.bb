@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_resizer.h"
 
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/web/public/features.h"
@@ -54,17 +55,38 @@
 
   _webState = webState;
 
-  if (webState)
+  if (webState) {
     [self observeWebStateViewFrame:webState];
+    [self updateForCurrentState];
+  }
 }
 
 #pragma mark - Public
 
+- (void)updateForCurrentState {
+  if (!self.webState)
+    return;
+
+  [self updateForFullscreenProgress:self.model->progress()];
+}
+
+- (void)forceToUpdateToProgress:(CGFloat)progress {
+  if (!self.webState)
+    return;
+
+  [self.webState->GetView() removeObserver:self forKeyPath:@"frame"];
+  [self updateForFullscreenProgress:progress];
+  [self observeWebStateViewFrame:self.webState];
+}
+
+#pragma mark - Private
+
+// Updates the WebView of the current webState to adjust it to the current
+// fullscreen |progress|. |progress| should be between 0 and 1, 0 meaning that
+// the application is in fullscreen, 1 that it is out of fullscreen.
 - (void)updateForFullscreenProgress:(CGFloat)progress {
   if (!self.webState || !self.webState->GetView().superview)
     return;
-
-  UIView* webView = self.webState->GetView();
 
   UIEdgeInsets newInsets =
       UIEdgeInsetsMake(self.model->GetCollapsedToolbarHeight() +
@@ -72,7 +94,15 @@
                                        self.model->GetCollapsedToolbarHeight()),
                        0, progress * self.model->GetBottomToolbarHeight(), 0);
 
-  CGRect newFrame = UIEdgeInsetsInsetRect(webView.superview.bounds, newInsets);
+  [self updateForInsets:newInsets];
+}
+
+// Updates the WebState view, resizing it such as |insets| is the insets between
+// the WebState view and its superview.
+- (void)updateForInsets:(UIEdgeInsets)insets {
+  UIView* webView = self.webState->GetView();
+
+  CGRect newFrame = UIEdgeInsetsInsetRect(webView.superview.bounds, insets);
 
   // Make sure the frame has changed to avoid a loop as the frame property is
   // actually monitored by this object.
@@ -85,8 +115,6 @@
   webView.frame = newFrame;
 }
 
-#pragma mark - Private
-
 // Observes the frame property of the view of the |webState| using KVO.
 - (void)observeWebStateViewFrame:(web::WebState*)webState {
   if (!webState->GetView())
@@ -94,7 +122,7 @@
 
   [webState->GetView() addObserver:self
                         forKeyPath:@"frame"
-                           options:NSKeyValueObservingOptionInitial
+                           options:0
                            context:nil];
 }
 
@@ -106,7 +134,7 @@
   if (![keyPath isEqualToString:@"frame"] || object != _webState->GetView())
     return;
 
-  [self updateForFullscreenProgress:self.model->progress()];
+  [self updateForCurrentState];
 }
 
 @end
