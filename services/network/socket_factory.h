@@ -53,6 +53,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   void CreateTCPConnectedSocket(
       const base::Optional<net::IPEndPoint>& local_addr,
       const net::AddressList& remote_addr_list,
+      mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TCPConnectedSocketRequest request,
       mojom::SocketObserverPtr observer,

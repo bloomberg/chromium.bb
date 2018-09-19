@@ -77,6 +77,7 @@ void ConnectOnUIThread(
     network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
   network_context_getter.Run()->CreateTCPConnectedSocket(
       base::nullopt /* local_addr */, remote_address_list,
+      nullptr /* tcp_connected_socket_options */,
       net::MutableNetworkTrafficAnnotationTag(
           CastSocketImpl::GetNetworkTrafficAnnotationTag()),
       std::move(request), nullptr /* observer */,

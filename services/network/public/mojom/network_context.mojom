@@ -509,6 +509,7 @@ interface NetworkContext {
   CreateTCPConnectedSocket(
       net.interfaces.IPEndPoint? local_addr,
       net.interfaces.AddressList remote_addr_list,
+      TCPConnectedSocketOptions? tcp_connected_socket_options,
       MutableNetworkTrafficAnnotationTag traffic_annotation,
       TCPConnectedSocket& socket,
       SocketObserver? observer)

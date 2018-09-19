@@ -225,6 +225,59 @@ class SocketDataProvider {
 
   virtual void OnEnableTCPFastOpenIfSupported();
 
+  // Returns the last set receive buffer size, or -1 if never set.
+  int receive_buffer_size() const { return receive_buffer_size_; }
+  void set_receive_buffer_size(int receive_buffer_size) {
+    receive_buffer_size_ = receive_buffer_size;
+  }
+
+  // Returns the last set send buffer size, or -1 if never set.
+  int send_buffer_size() const { return send_buffer_size_; }
+  void set_send_buffer_size(int send_buffer_size) {
+    send_buffer_size_ = send_buffer_size;
+  }
+
+  // Returns the last set value of TCP no delay, or false if never set.
+  bool no_delay() const { return no_delay_; }
+  void set_no_delay(bool no_delay) { no_delay_ = no_delay; }
+
+  // Returns whether TCP keepalives were enabled or not. Returns 0 by default,
+  // which may not match the default behavior on all platforms.
+  bool keep_alive_enabled() const { return keep_alive_enabled_; }
+  // Last set TCP keepalive delay.
+  int keep_alive_delay() const { return keep_alive_delay_; }
+  void set_keep_alive(bool enable, int delay) {
+    keep_alive_enabled_ = enable;
+    keep_alive_delay_ = delay;
+  }
+
+  // Setters / getters for the return values of the corresponding Set*()
+  // methods. By default, they all succeed, if the socket is connected.
+
+  void set_set_receive_buffer_size_result(int receive_buffer_size_result) {
+    set_receive_buffer_size_result_ = receive_buffer_size_result;
+  }
+  int set_receive_buffer_size_result() const {
+    return set_receive_buffer_size_result_;
+  }
+
+  void set_set_send_buffer_size_result(int set_send_buffer_size_result) {
+    set_send_buffer_size_result_ = set_send_buffer_size_result;
+  }
+  int set_send_buffer_size_result() const {
+    return set_send_buffer_size_result_;
+  }
+
+  void set_set_no_delay_result(bool set_no_delay_result) {
+    set_no_delay_result_ = set_no_delay_result;
+  }
+  bool set_no_delay_result() const { return set_no_delay_result_; }
+
+  void set_set_keep_alive_result(bool set_keep_alive_result) {
+    set_keep_alive_result_ = set_keep_alive_result;
+  }
+  bool set_keep_alive_result() const { return set_keep_alive_result_; }
+
   // Returns true if the request should be considered idle, for the purposes of
   // IsConnectedAndIdle.
   virtual bool IsIdle() const;
@@ -249,7 +302,20 @@ class SocketDataProvider {
   virtual void Reset() = 0;
 
   MockConnect connect_;
-  AsyncSocket* socket_;
+  AsyncSocket* socket_ = nullptr;
+
+  int receive_buffer_size_ = -1;
+  int send_buffer_size_ = -1;
+  // This reflects the default state of TCPClientSockets.
+  bool no_delay_ = true;
+  // Default varies by platform. Just pretend it's disabled.
+  bool keep_alive_enabled_ = false;
+  int keep_alive_delay_ = 0;
+
+  int set_receive_buffer_size_result_ = net::OK;
+  int set_send_buffer_size_result_ = net::OK;
+  bool set_no_delay_result_ = true;
+  bool set_keep_alive_result_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(SocketDataProvider);
 };
@@ -676,8 +742,16 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
             int buf_len,
             CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
+  int SetReceiveBufferSize(int32_t size) override;
+  int SetSendBufferSize(int32_t size) override;
+
+  // TransportClientSocket implementation.
+  bool SetNoDelay(bool no_delay) override;
+  bool SetKeepAlive(bool enable, int delay) override;
 
   // StreamSocket implementation.
+  void SetBeforeConnectCallback(
+      const BeforeConnectCallback& before_connect_callback) override;
   int Connect(CompletionOnceCallback callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
@@ -736,6 +810,8 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   // If true, ReadIfReady() is enabled; otherwise ReadIfReady() returns
   // ERR_READ_IF_READY_NOT_IMPLEMENTED.
   bool enable_read_if_ready_;
+
+  BeforeConnectCallback before_connect_callback_;
 
   ConnectionAttempts connection_attempts_;
 

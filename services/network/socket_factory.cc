@@ -70,6 +70,7 @@ void SocketFactory::CreateTCPServerSocket(
 void SocketFactory::CreateTCPConnectedSocket(
     const base::Optional<net::IPEndPoint>& local_addr,
     const net::AddressList& remote_addr_list,
+    mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TCPConnectedSocketRequest request,
     mojom::SocketObserverPtr observer,
@@ -80,7 +81,9 @@ void SocketFactory::CreateTCPConnectedSocket(
   TCPConnectedSocket* socket_raw = socket.get();
   tcp_connected_socket_bindings_.AddBinding(std::move(socket),
                                             std::move(request));
-  socket_raw->Connect(local_addr, remote_addr_list, std::move(callback));
+  socket_raw->Connect(local_addr, remote_addr_list,
+                      std::move(tcp_connected_socket_options),
+                      std::move(callback));
 }
 
 void SocketFactory::CreateTCPBoundSocket(

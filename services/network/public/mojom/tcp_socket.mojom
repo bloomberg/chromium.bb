@@ -11,6 +11,26 @@ import "services/network/public/mojom/tls_socket.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 
+struct TCPConnectedSocketOptions {
+  // Sets the OS send buffer size (in bytes) for the socket. This is the
+  // SO_SNDBUF socket option. If 0, the default size is used. The value will
+  // be clamped to a reasonable range.
+  int32 send_buffer_size = 0;
+
+  // Sets the OS receive buffer size (in bytes) for the socket. This is the
+  // SO_RCVBUF socket option. If 0, the default size is used. The value will
+  // be clamped to a reasonable range.
+  int32 receive_buffer_size = 0;
+
+  // This function enables/disables buffering in the kernel. By default, on
+  // Linux, TCP sockets will wait up to 200ms for more data to complete a packet
+  // before transmitting. The network service, however, overrides the default
+  // setting all socket, so the kernel will not wait unless this is set to
+  // false. See TCP_NODELAY in `man 7 tcp`. On Windows, the Nagle implementation
+  // is governed by RFC 896.
+  bool no_delay = true;
+};
+
 // Represents a bound TCP socket. Once a call succeeds, cannot be reused.
 interface TCPBoundSocket {
   // Starts listening on the socket. |net_error| is set to net::OK on success,
@@ -68,13 +88,21 @@ interface TCPConnectedSocket {
   // the platform. Consumers do not need to set these themselves unless they
   // want to change the default settings.
 
-  // This function enables/disables buffering in the kernel. By default, on
-  // Linux, TCP sockets will wait up to 200ms for more data to complete a packet
-  // before transmitting. After calling this function, the kernel will not wait.
-  // See TCP_NODELAY in `man 7 tcp`. On Windows, the Nagle implementation is
-  // governed by RFC 896. SetTCPNoDelay() sets the TCP_NODELAY option. Use
-  // |no_delay| to enable or disable it.
-  // Returns whether the operation is successful.
+  // These set the send / receive buffer sizes on the connected socket. See the
+  // corresponding values in TCPConnectedSocketOptions for descriptions,
+  // though note that passing in "0" here will set the size to the minimum
+  // value, instead of restoring the default. Consumers should prefer setting
+  // these values on creation, as some platforms may not respect changes to
+  // these values on a connected socket, even if the method succeeds. These are
+  // present mostly for legacy consumers that expose the behavior to
+  // non-Chrome code.
+  // A network error code is returned on completion.
+  SetSendBufferSize(int32 send_buffer_size) => (int32 net_error);
+  SetReceiveBufferSize(int32 receive_buffer_size) => (int32 net_error);
+
+  // Enables / disables TCP_NODELAY on the connected socket. See
+  // TCPConnectedSocketOptions::no_delay for more details.
+  // Returns whether the operation was successful.
   SetNoDelay(bool no_delay) => (bool success);
 
   // Enables or disables TCP Keep-Alive. This sets SO_KEEPALIVE on the socket.
@@ -110,6 +138,9 @@ interface TCPServerSocket {
   // |backlog| is a number that is specified when requesting TCPServerSocket. If
   // more than |backlog| number of Accept()s are outstanding,
   // net::ERR_INSUFFICIENT_RESOUCES will be returned.
+  //
+  // Accepted sockets may not be upgraded to TLS by invoking UpgradeToTLS, as
+  // UpgradeToTLS only supports the client part of the TLS handshake.
   Accept(SocketObserver? observer)
       => (int32 net_error,
           net.interfaces.IPEndPoint? remote_addr,

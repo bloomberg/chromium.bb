@@ -36,6 +36,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
       public SocketDataPump::Delegate,
       public TLSSocketFactory::Delegate {
  public:
+  // Max send/receive buffer size the consumer is allowed to set. Exposed for
+  // testing.
+  static const int kMaxBufferSize;
+
   TCPConnectedSocket(
       mojom::SocketObserverPtr observer,
       net::NetLog* net_log,
@@ -49,9 +53,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
       mojo::ScopedDataPipeConsumerHandle send_pipe_handle,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~TCPConnectedSocket() override;
+
   void Connect(
       const base::Optional<net::IPEndPoint>& local_addr,
       const net::AddressList& remote_addr_list,
+      mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       mojom::NetworkContext::CreateTCPConnectedSocketCallback callback);
 
   // mojom::TCPConnectedSocket implementation.
@@ -62,6 +68,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
       mojom::TLSClientSocketRequest request,
       mojom::SocketObserverPtr observer,
       mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) override;
+  void SetSendBufferSize(int send_buffer_size,
+                         SetSendBufferSizeCallback callback) override;
+  void SetReceiveBufferSize(int send_buffer_size,
+                            SetSendBufferSizeCallback callback) override;
   void SetNoDelay(bool no_delay, SetNoDelayCallback callback) override;
   void SetKeepAlive(bool enable,
                     int32_t delay_secs,
