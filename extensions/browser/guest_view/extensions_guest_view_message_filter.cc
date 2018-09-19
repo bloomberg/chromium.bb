@@ -300,26 +300,24 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
   auto uses_cross_process_frame =
       content::MimeHandlerViewMode::UsesCrossProcessFrame();
   if (uses_cross_process_frame) {
-    int32_t plugin_frame_tree_node_id =
-        content::RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
-            render_process_id_, plugin_frame_routing_id);
-    // These parameters are later used in finalizing the guest attaching to its
-    // embedder.
-    attach_params.SetInteger(mime_handler_view::kPluginFrameTreeNodeId,
-                             plugin_frame_tree_node_id);
-    attach_params.SetInteger(guest_view::kParameterInstanceId,
-                             element_instance_id);
+    auto* plugin_rfh = content::RenderFrameHost::FromID(
+        embedder_render_process_id, plugin_frame_routing_id);
+    if (!plugin_rfh) {
+      // TODO(ekaramad): This happens when the plugin element contains a remote
+      // frame. Introduce this edge case to content/ layer.
+      return;
+    }
+    AttachToEmbedderFrame(plugin_frame_routing_id, element_instance_id,
+                          guest_instance_id, attach_params,
+                          is_full_page_plugin);
+    return;
   }
   auto* manager = GuestViewManager::FromBrowserContext(browser_context_);
   CHECK(manager);
   manager->AttachGuest(embedder_render_process_id, element_instance_id,
                        guest_instance_id, attach_params);
-  if (uses_cross_process_frame) {
-    guest_view->AttachToEmbedder(is_full_page_plugin);
-  } else {
-    rfh->Send(new ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK(
-        element_instance_id));
-  }
+  rfh->Send(new ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK(
+      element_instance_id));
 }
 
 }  // namespace extensions

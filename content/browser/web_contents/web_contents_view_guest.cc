@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/drag_messages.h"
+#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
@@ -45,6 +46,7 @@ WebContentsViewGuest::WebContentsViewGuest(
       platform_view_(std::move(platform_view)),
       platform_view_delegate_view_(*delegate_view) {
   *delegate_view = this;
+  DCHECK(!GuestMode::IsCrossProcessFrameGuest(web_contents));
 }
 
 WebContentsViewGuest::~WebContentsViewGuest() {

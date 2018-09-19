@@ -66,6 +66,13 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   // Weak pointers produced by this factory are bound to the IO thread.
   base::WeakPtrFactory<GuestViewMessageFilter> weak_ptr_factory_;
 
+ protected:
+  void AttachToEmbedderFrame(int embedder_local_render_frame_id,
+                             int element_instance_id,
+                             int guest_instance_id,
+                             const base::DictionaryValue& params,
+                             bool is_full_page_plugin);
+
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<GuestViewMessageFilter>;

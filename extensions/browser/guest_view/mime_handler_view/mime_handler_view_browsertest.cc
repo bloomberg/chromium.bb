@@ -126,16 +126,48 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
   int basic_count_ = 0;
 };
 
+// The parametric version of the test class which runs the test both on
+// BrowserPlugin-based and cross-process-frame-based MimeHandlerView
+// implementation. All current browser tests should eventually be moved to this
+// and then eventually drop the BrowserPlugin dependency once
+// https://crbug.com/659750 is fixed.
+class MimeHandlerViewCrossProcessTest
+    : public MimeHandlerViewTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  MimeHandlerViewCrossProcessTest() : MimeHandlerViewTest() {}
+  ~MimeHandlerViewCrossProcessTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* cl) override {
+    MimeHandlerViewTest::SetUpCommandLine(cl);
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kMimeHandlerViewInCrossProcessFrame);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewCrossProcessTest);
+};
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        MimeHandlerViewCrossProcessTest,
+                        ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Embedded) {
+  RunTest("test_embedded.html");
+}
+
+// The following tests will eventually converted into a parametric version which
+// will run on both BrowserPlugin-based and cross-process-frame-based
+// MimeHandlerView (https://crbug.com/659750).
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, PostMessage) {
   RunTest("test_postmessage.html");
 }
 
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Basic) {
   RunTest("testBasic.csv");
-}
-
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Embedded) {
-  RunTest("test_embedded.html");
 }
 
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Iframe) {
