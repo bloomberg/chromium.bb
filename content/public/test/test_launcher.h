@@ -29,6 +29,9 @@ extern const char kSingleProcessTestsFlag[];
 // Flag that causes only the kEmptyTestName test to be run.
 extern const char kWarmupFlag[];
 
+// Flag used by WebUI test runners to wait for debugger to be attached.
+extern const char kWaitForDebuggerWebUI[];
+
 // See details in PreRunTest().
 class TestState {
  public:

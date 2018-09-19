@@ -572,6 +572,8 @@ const char kRunManualTestsFlag[] = "run-manual";
 
 const char kSingleProcessTestsFlag[]   = "single_process";
 
+const char kWaitForDebuggerWebUI[] = "wait-for-debugger-webui";
+
 std::unique_ptr<TestState> TestLauncherDelegate::PreRunTest(
     base::CommandLine* command_line,
     base::TestLauncher::LaunchOptions* test_launch_options) {

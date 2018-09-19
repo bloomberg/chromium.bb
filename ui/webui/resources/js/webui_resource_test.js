@@ -211,6 +211,17 @@ function runTests(opt_testScope) {
   } catch (err) {
     cleanTestRun = false;
   }
+  startTesting();
+}
+
+/**
+ * @suppress {missingProperties}
+ */
+function startTesting() {
+  if (window.waitUser) {
+    setTimeout(startTesting, 1000);
+    return;
+  }
   continueTesting();
 }
 
