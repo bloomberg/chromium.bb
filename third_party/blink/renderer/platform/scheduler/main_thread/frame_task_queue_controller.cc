@@ -53,6 +53,18 @@ FrameTaskQueueController::LoadingControlTaskQueue() {
 }
 
 scoped_refptr<MainThreadTaskQueue>
+FrameTaskQueueController::InspectorTaskQueue() {
+  if (!inspector_task_queue_) {
+    inspector_task_queue_ = main_thread_scheduler_impl_->NewTaskQueue(
+        MainThreadTaskQueue::QueueCreationParams(
+            MainThreadTaskQueue::QueueType::kDefault)
+            .SetFrameScheduler(frame_scheduler_impl_));
+    TaskQueueCreated(inspector_task_queue_);
+  }
+  return inspector_task_queue_;
+}
+
+scoped_refptr<MainThreadTaskQueue>
 FrameTaskQueueController::NonLoadingTaskQueue(
     MainThreadTaskQueue::QueueTraits queue_traits) {
   if (!non_loading_task_queues_.Contains(queue_traits.Key()))

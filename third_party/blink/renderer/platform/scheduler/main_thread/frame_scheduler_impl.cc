@@ -493,6 +493,8 @@ scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
       return frame_task_queue_controller_->LoadingTaskQueue();
     case TaskType::kNetworkingControl:
       return frame_task_queue_controller_->LoadingControlTaskQueue();
+    case TaskType::kInternalInspector:
+      return frame_task_queue_controller_->InspectorTaskQueue();
     default:
       // Non-loading task queue.
       DCHECK_LT(static_cast<size_t>(type),

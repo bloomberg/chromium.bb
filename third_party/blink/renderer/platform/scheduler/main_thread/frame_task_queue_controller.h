@@ -69,6 +69,9 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   // Return the loading control task queue and create it if it doesn't exist.
   scoped_refptr<MainThreadTaskQueue> LoadingControlTaskQueue();
 
+  // Return the inspector task queue and create it if it doesn't exist.
+  scoped_refptr<MainThreadTaskQueue> InspectorTaskQueue();
+
   // Return the non-loading task queue associated with the given queue traits,
   // and created it if it doesn't exist.
   scoped_refptr<MainThreadTaskQueue> NonLoadingTaskQueue(
@@ -121,6 +124,10 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   // from being able to the find right task queue by queue traits alone.
   scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
   scoped_refptr<MainThreadTaskQueue> loading_control_task_queue_;
+
+  // Keep the inspector queue separately. It needs to mimic the IPC task queue
+  // behavior as far as virtual time is concerned.
+  scoped_refptr<MainThreadTaskQueue> inspector_task_queue_;
 
   using NonLoadingTaskQueueMap =
       WTF::HashMap<MainThreadTaskQueue::QueueTraitsKeyType,
