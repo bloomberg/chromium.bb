@@ -80,41 +80,38 @@ void StaticBitmapImage::DrawHelper(cc::PaintCanvas* canvas,
 }
 
 scoped_refptr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
-    sk_sp<SkColorSpace> target) {
+    sk_sp<SkColorSpace> color_space,
+    SkColorType color_type) {
   sk_sp<SkImage> skia_image = PaintImageForCurrentFrame().GetSkImage();
   sk_sp<SkColorSpace> src_color_space = skia_image->refColorSpace();
   if (!src_color_space.get())
     src_color_space = SkColorSpace::MakeSRGB();
-  sk_sp<SkColorSpace> dst_color_space = target;
+  sk_sp<SkColorSpace> dst_color_space = color_space;
   if (!dst_color_space.get())
     dst_color_space = SkColorSpace::MakeSRGB();
-  if (SkColorSpace::Equals(src_color_space.get(), dst_color_space.get()))
+  if (SkColorSpace::Equals(src_color_space.get(), dst_color_space.get()) &&
+      skia_image->colorType() == color_type) {
     return this;
+  }
 
   // SkImage::makeColorSpace() converts all the color types to kN32_SkColorType.
-  // If the input color type is kRGBA_F16_SkColorType, we draw on a canvas to
-  // color convert the pixels. crbug.com/8847788: Fix this when skia:8382 is
-  // fixed.
-  sk_sp<SkImage> converted_skia_image = nullptr;
-  if (skia_image->colorType() != kRGBA_F16_SkColorType) {
-    converted_skia_image = skia_image->makeColorSpace(dst_color_space);
+  // If this bug (skia:8382) is ever fixed, we can replace the following code
+  // with this:
+  // sk_sp<SkImage> converted_skia_image =
+  //     skia_image->makeColorSpace(dst_color_space);
+  SkImageInfo info =
+      SkImageInfo::Make(skia_image->width(), skia_image->height(), color_type,
+                        skia_image->alphaType(), dst_color_space);
+  sk_sp<SkSurface> surface = nullptr;
+  if (skia_image->isTextureBacked()) {
+    GrContext* gr = ContextProviderWrapper()->ContextProvider()->GetGrContext();
+    surface = SkSurface::MakeRenderTarget(gr, SkBudgeted::kNo, info);
   } else {
-    // Draw on a canvas to color convert.
-    SkImageInfo info = SkImageInfo::Make(
-        skia_image->width(), skia_image->height(), kRGBA_F16_SkColorType,
-        skia_image->alphaType(), dst_color_space);
-    sk_sp<SkSurface> surface = nullptr;
-    if (skia_image->isTextureBacked()) {
-      GrContext* gr =
-          ContextProviderWrapper()->ContextProvider()->GetGrContext();
-      surface = SkSurface::MakeRenderTarget(gr, SkBudgeted::kNo, info);
-    } else {
       surface = SkSurface::MakeRaster(info);
-    }
-    SkPaint paint;
-    surface->getCanvas()->drawImage(skia_image, 0, 0, &paint);
-    converted_skia_image = surface->makeImageSnapshot();
   }
+  SkPaint paint;
+  surface->getCanvas()->drawImage(skia_image, 0, 0, &paint);
+  sk_sp<SkImage> converted_skia_image = surface->makeImageSnapshot();
 
   DCHECK(converted_skia_image.get());
   DCHECK(skia_image.get() != converted_skia_image.get());

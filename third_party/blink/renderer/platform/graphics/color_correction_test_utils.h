@@ -33,6 +33,8 @@ enum UnpremulRoundTripTolerance {
 
 class ColorCorrectionTestUtils {
  public:
+  static sk_sp<SkColorSpace> ColorSpinSkColorSpace();
+
   static void CompareColorCorrectedPixels(
       const void* actual_pixels,
       const void* expected_pixels,
