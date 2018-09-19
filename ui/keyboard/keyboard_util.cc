@@ -7,20 +7,10 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
-#include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string16.h"
-#include "chromeos/chromeos_features.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/ime/text_input_flags.h"
-#include "ui/base/ui_base_features.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -28,7 +18,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/keyboard/keyboard_switches.h"
-#include "ui/keyboard/keyboard_ui.h"
 
 namespace keyboard {
 
@@ -46,10 +35,6 @@ void SendProcessKeyEvent(ui::EventType type,
       host->event_sink()->OnEventFromSource(&event);
   CHECK(!details.dispatcher_destroyed);
 }
-
-bool g_keyboard_load_time_logged = false;
-base::LazyInstance<base::Time>::DestructorAtExit g_keyboard_load_time_start =
-    LAZY_INSTANCE_INITIALIZER;
 
 bool g_accessibility_keyboard_enabled = false;
 
@@ -140,43 +125,6 @@ void SetKeyboardShowOverride(KeyboardShowOverride show_override) {
   g_keyboard_show_override = show_override;
 }
 
-bool IsInputViewEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableInputView);
-}
-
-bool IsFloatingVirtualKeyboardEnabled() {
-  return base::FeatureList::IsEnabled(features::kEnableFloatingVirtualKeyboard);
-}
-
-bool IsFullscreenHandwritingVirtualKeyboardEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kEnableFullscreenHandwritingVirtualKeyboard);
-}
-
-bool IsStylusVirtualKeyboardEnabled() {
-  return base::FeatureList::IsEnabled(features::kEnableStylusVirtualKeyboard);
-}
-
-bool IsVirtualKeyboardMdUiEnabled() {
-  return base::FeatureList::IsEnabled(features::kEnableVirtualKeyboardMdUi);
-}
-
-bool IsGestureTypingEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableGestureTyping);
-}
-
-bool IsGestureEditingEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableGestureEditing);
-}
-
-bool IsImeServiceEnabled() {
-  return base::FeatureList::IsEnabled(
-      chromeos::features::kImeServiceConnectable);
-}
-
 bool SendKeyEvent(const std::string type,
                   int key_value,
                   int key_code,
@@ -241,26 +189,6 @@ bool SendKeyEvent(const std::string type,
     CHECK(!details.dispatcher_destroyed);
   }
   return true;
-}
-
-void MarkKeyboardLoadStarted() {
-  if (!g_keyboard_load_time_logged)
-    g_keyboard_load_time_start.Get() = base::Time::Now();
-}
-
-void MarkKeyboardLoadFinished() {
-  // Possible to get a load finished without a start if navigating directly to
-  // chrome://keyboard.
-  if (g_keyboard_load_time_start.Get().is_null())
-    return;
-
-  if (!g_keyboard_load_time_logged) {
-    // Log the delta only once.
-    UMA_HISTOGRAM_TIMES(
-        "VirtualKeyboard.InitLatency.FirstLoad",
-        base::Time::Now() - g_keyboard_load_time_start.Get());
-    g_keyboard_load_time_logged = true;
-  }
 }
 
 }  // namespace keyboard

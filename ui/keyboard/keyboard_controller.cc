@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -686,7 +687,7 @@ void KeyboardController::OnShowVirtualKeyboardIfEnabled() {
 }
 
 void KeyboardController::ShowKeyboardInternal(const display::Display& display) {
-  keyboard::MarkKeyboardLoadStarted();
+  MarkKeyboardLoadStarted();
   PopulateKeyboardContent(display, true);
   UpdateInputMethodObserver();
 }
@@ -1007,6 +1008,26 @@ void KeyboardController::EnsureCaretInWorkArea(
   } else if (ime->GetTextInputClient()) {
     ime->GetTextInputClient()->EnsureCaretNotInRect(occluded_bounds);
   }
+}
+
+void KeyboardController::MarkKeyboardLoadStarted() {
+  if (!keyboard_load_time_logged_)
+    keyboard_load_time_start_ = base::Time::Now();
+}
+
+void KeyboardController::MarkKeyboardLoadFinished() {
+  // Possible to get a load finished without a start if navigating directly to
+  // chrome://keyboard.
+  if (keyboard_load_time_start_.is_null())
+    return;
+
+  if (keyboard_load_time_logged_)
+    return;
+
+  // Log the delta only once.
+  UMA_HISTOGRAM_TIMES("VirtualKeyboard.InitLatency.FirstLoad",
+                      base::Time::Now() - keyboard_load_time_start_);
+  keyboard_load_time_logged_ = true;
 }
 
 }  // namespace keyboard
