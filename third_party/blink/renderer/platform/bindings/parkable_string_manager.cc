@@ -20,7 +20,7 @@ namespace blink {
 
 ParkableStringManager& ParkableStringManager::Instance() {
   DCHECK(IsMainThread());
-  static ParkableStringManager instance;
+  DEFINE_STATIC_LOCAL(ParkableStringManager, instance, ());
   return instance;
 }
 
