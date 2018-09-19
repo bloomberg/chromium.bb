@@ -45,7 +45,8 @@ StorageNamespace::~StorageNamespace() = default;
 std::unique_ptr<WebStorageArea> StorageNamespace::LocalStorageArea(
     const SecurityOrigin* origin) {
   DCHECK(IsMainThread());
-  static std::unique_ptr<WebStorageNamespace> local_storage_namespace = nullptr;
+  DEFINE_STATIC_LOCAL(std::unique_ptr<WebStorageNamespace>,
+                      local_storage_namespace, (nullptr));
   if (!local_storage_namespace)
     local_storage_namespace =
         Platform::Current()->CreateLocalStorageNamespace();
