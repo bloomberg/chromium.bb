@@ -24,7 +24,6 @@
 #include "content/browser/service_worker/service_worker_url_job_wrapper.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker.mojom.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_byte_range.h"
@@ -37,6 +36,7 @@
 #include "storage/common/blob_storage/blob_storage_constants.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -86,7 +86,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       const std::string& integrity,
       bool keepalive,
       ResourceType resource_type,
-      RequestContextType request_context_type,
+      blink::mojom::RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
       scoped_refptr<network::ResourceRequestBody> body,
       Delegate* delegate);
@@ -322,7 +322,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   std::string integrity_;
   const bool keepalive_;
   const ResourceType resource_type_;
-  RequestContextType request_context_type_;
+  blink::mojom::RequestContextType request_context_type_;
   network::mojom::RequestContextFrameType frame_type_;
   bool fall_back_required_;
   // ResourceRequestBody has a collection of BlobDataHandles attached to it

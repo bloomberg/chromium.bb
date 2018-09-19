@@ -253,7 +253,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       network::mojom::FetchCredentialsMode::kInclude;
   new_request->fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
   new_request->fetch_request_context_type =
-      request_info->begin_params->request_context_type;
+      static_cast<int>(request_info->begin_params->request_context_type);
   new_request->upgrade_if_insecure = request_info->upgrade_if_insecure;
   new_request->throttling_profile_id = request_info->devtools_frame_token;
   return new_request;

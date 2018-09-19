@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/common/request_context_type.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 
 namespace content {
@@ -71,7 +71,7 @@ class MixedContentNavigationThrottle : public NavigationThrottle {
   // Records basic mixed content "feature" usage when any kind of mixed content
   // is found.
   void ReportBasicMixedContentFeatures(
-      RequestContextType request_context_type,
+      blink::mojom::RequestContextType request_context_type,
       blink::WebMixedContentContextType mixed_content_context_type,
       const WebPreferences& prefs);
 

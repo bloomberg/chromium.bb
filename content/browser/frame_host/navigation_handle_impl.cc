@@ -162,7 +162,7 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
     base::TimeTicks input_start) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
@@ -194,7 +194,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
     base::TimeTicks input_start)
     : url_(url),

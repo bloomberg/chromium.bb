@@ -14,8 +14,8 @@
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/common/content_export.h"
-#include "content/public/common/request_context_type.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace net {
 class URLRequest;
@@ -43,12 +43,13 @@ struct WebPluginInfo;
 class CONTENT_EXPORT MimeSniffingResourceHandler
     : public LayeredResourceHandler {
  public:
-  MimeSniffingResourceHandler(std::unique_ptr<ResourceHandler> next_handler,
-                              ResourceDispatcherHostImpl* host,
-                              PluginService* plugin_service,
-                              InterceptingResourceHandler* intercepting_handler,
-                              net::URLRequest* request,
-                              RequestContextType request_context_type);
+  MimeSniffingResourceHandler(
+      std::unique_ptr<ResourceHandler> next_handler,
+      ResourceDispatcherHostImpl* host,
+      PluginService* plugin_service,
+      InterceptingResourceHandler* intercepting_handler,
+      net::URLRequest* request,
+      blink::mojom::RequestContextType request_context_type);
   ~MimeSniffingResourceHandler() override;
 
  private:
@@ -198,7 +199,7 @@ class CONTENT_EXPORT MimeSniffingResourceHandler
   // needed.
   InterceptingResourceHandler* intercepting_handler_;
 
-  RequestContextType request_context_type_;
+  blink::mojom::RequestContextType request_context_type_;
 
   // True if current in an AdvanceState loop. Used to prevent re-entrancy and
   // avoid an extra PostTask.

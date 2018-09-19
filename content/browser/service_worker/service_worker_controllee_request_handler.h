@@ -19,10 +19,10 @@
 #include "content/browser/service_worker/service_worker_url_job_wrapper.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -58,7 +58,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       const std::string& integrity,
       bool keepalive,
       ResourceType resource_type,
-      RequestContextType request_context_type,
+      blink::mojom::RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
       scoped_refptr<network::ResourceRequestBody> body);
   ~ServiceWorkerControlleeRequestHandler() override;
@@ -158,7 +158,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   network::mojom::FetchRedirectMode redirect_mode_;
   std::string integrity_;
   const bool keepalive_;
-  RequestContextType request_context_type_;
+  blink::mojom::RequestContextType request_context_type_;
   network::mojom::RequestContextFrameType frame_type_;
   scoped_refptr<network::ResourceRequestBody> body_;
   ResourceContext* resource_context_;

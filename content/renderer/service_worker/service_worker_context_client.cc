@@ -172,7 +172,7 @@ class StreamHandleListener
 };
 
 WebURLRequest::RequestContext GetBlinkRequestContext(
-    RequestContextType request_context_type) {
+    blink::mojom::RequestContextType request_context_type) {
   return static_cast<WebURLRequest::RequestContext>(request_context_type);
 }
 
@@ -285,8 +285,9 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
   web_request->SetCacheMode(
       ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(request.load_flags));
   web_request->SetRedirectMode(request.fetch_redirect_mode);
-  web_request->SetRequestContext(GetBlinkRequestContext(
-      static_cast<RequestContextType>(request.fetch_request_context_type)));
+  web_request->SetRequestContext(
+      GetBlinkRequestContext(static_cast<blink::mojom::RequestContextType>(
+          request.fetch_request_context_type)));
   web_request->SetFrameType(request.fetch_frame_type);
   web_request->SetClientId(blink::WebString::FromUTF8(client_id));
   web_request->SetIsReload(ui::PageTransitionCoreTypeIs(

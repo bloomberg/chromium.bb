@@ -1019,7 +1019,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       request_data.fetch_credentials_mode, request_data.fetch_redirect_mode,
       request_data.fetch_integrity, request_data.keepalive,
       static_cast<ResourceType>(request_data.resource_type),
-      static_cast<RequestContextType>(request_data.fetch_request_context_type),
+      static_cast<blink::mojom::RequestContextType>(
+          request_data.fetch_request_context_type),
       request_data.fetch_frame_type, request_data.request_body);
 
   // Have the appcache associate its extra info with the request.
@@ -1038,7 +1039,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     RecordFetchRequestMode(request_data.url, request_data.method,
                            request_data.fetch_request_mode);
     const bool is_initiated_by_fetch_api =
-        request_data.fetch_request_context_type == REQUEST_CONTEXT_TYPE_FETCH;
+        request_data.fetch_request_context_type ==
+        static_cast<int>(blink::mojom::RequestContextType::FETCH);
     BeginRequestInternal(std::move(new_request), std::move(handler),
                          is_initiated_by_fetch_api,
                          std::move(throttling_token));
@@ -1078,7 +1080,8 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
   return AddStandardHandlers(
       request, static_cast<ResourceType>(request_data.resource_type),
       resource_context, request_data.fetch_request_mode,
-      static_cast<RequestContextType>(request_data.fetch_request_context_type),
+      static_cast<blink::mojom::RequestContextType>(
+          request_data.fetch_request_context_type),
       url_loader_options, requester_info->appcache_service(), child_id,
       route_id, std::move(handler));
 }
@@ -1089,7 +1092,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     ResourceType resource_type,
     ResourceContext* resource_context,
     network::mojom::FetchRequestMode fetch_request_mode,
-    RequestContextType fetch_request_context_type,
+    blink::mojom::RequestContextType fetch_request_context_type,
     uint32_t url_loader_options,
     AppCacheService* appcache_service,
     int child_id,

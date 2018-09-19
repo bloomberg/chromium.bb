@@ -14,7 +14,6 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -26,6 +25,7 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 namespace service_worker_request_handler_unittest {
@@ -101,7 +101,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         network::mojom::FetchCredentialsMode::kOmit,
         network::mojom::FetchRedirectMode::kFollow,
         std::string() /* integrity */, false /* keepalive */, resource_type,
-        REQUEST_CONTEXT_TYPE_HYPERLINK,
+        blink::mojom::RequestContextType::HYPERLINK,
         network::mojom::RequestContextFrameType::kTopLevel, nullptr);
   }
 
@@ -155,7 +155,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     ServiceWorkerRequestHandler::InitializeForNavigation(
         request.get(), navigation_handle_core.get(), &blob_storage_context_,
         false /* skip_service_worker */, RESOURCE_TYPE_MAIN_FRAME,
-        REQUEST_CONTEXT_TYPE_HYPERLINK,
+        blink::mojom::RequestContextType::HYPERLINK,
         network::mojom::RequestContextFrameType::kTopLevel,
         true /* is_parent_frame_secure */, nullptr /* body */,
         base::RepeatingCallback<WebContents*(void)>());
@@ -172,7 +172,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
             GURL(url), nullptr /* resource_context */,
             navigation_handle_core.get(), &blob_storage_context_,
             false /* skip_service_worker */, RESOURCE_TYPE_MAIN_FRAME,
-            REQUEST_CONTEXT_TYPE_HYPERLINK,
+            blink::mojom::RequestContextType::HYPERLINK,
             network::mojom::RequestContextFrameType::kTopLevel,
             true /* is_parent_frame_secure */, nullptr /* body */,
             base::RepeatingCallback<WebContents*(void)>());

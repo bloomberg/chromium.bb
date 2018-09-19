@@ -28,7 +28,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/restore_type.h"
-#include "content/public/common/request_context_type.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "url/gurl.h"
 
@@ -75,8 +75,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool has_user_gesture = false,
       ui::PageTransition transition = ui::PAGE_TRANSITION_LINK,
       bool is_external_protocol = false,
-      RequestContextType request_context_type =
-          REQUEST_CONTEXT_TYPE_UNSPECIFIED,
+      blink::mojom::RequestContextType request_context_type =
+          blink::mojom::RequestContextType::UNSPECIFIED,
       blink::WebMixedContentContextType mixed_content_context_type =
           blink::WebMixedContentContextType::kBlockable,
       base::TimeTicks input_start = base::TimeTicks());
@@ -196,7 +196,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // expose the NavigationHandle when navigating to an InterstitialPage.
   NavigatorDelegate* GetDelegate() const;
 
-  RequestContextType request_context_type() const {
+  blink::mojom::RequestContextType request_context_type() const {
     DCHECK_GE(state_, WILL_SEND_REQUEST);
     return request_context_type_;
   }
@@ -399,7 +399,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool has_user_gesture,
       ui::PageTransition transition,
       bool is_external_protocol,
-      RequestContextType request_context_type,
+      blink::mojom::RequestContextType request_context_type,
       blink::WebMixedContentContextType mixed_content_context_type,
       base::TimeTicks input_start);
 
@@ -514,7 +514,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   int pending_nav_entry_id_;
 
   // The fetch request context type.
-  RequestContextType request_context_type_;
+  blink::mojom::RequestContextType request_context_type_;
 
   // The mixed content context type for potential mixed content checks.
   blink::WebMixedContentContextType mixed_content_context_type_;

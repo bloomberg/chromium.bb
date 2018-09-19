@@ -78,7 +78,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
     storage::BlobStorageContext* blob_storage_context,
     bool skip_service_worker,
     ResourceType resource_type,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     bool is_parent_frame_secure,
     scoped_refptr<network::ResourceRequestBody> body,
@@ -142,7 +142,7 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     storage::BlobStorageContext* blob_storage_context,
     bool skip_service_worker,
     ResourceType resource_type,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     bool is_parent_frame_secure,
     scoped_refptr<network::ResourceRequestBody> body,
@@ -203,7 +203,8 @@ ServiceWorkerRequestHandler::InitializeForSharedWorker(
           resource_request.fetch_credentials_mode,
           resource_request.fetch_redirect_mode,
           resource_request.fetch_integrity, resource_request.keepalive,
-          RESOURCE_TYPE_SHARED_WORKER, REQUEST_CONTEXT_TYPE_SHARED_WORKER,
+          RESOURCE_TYPE_SHARED_WORKER,
+          blink::mojom::RequestContextType::SHARED_WORKER,
           resource_request.fetch_frame_type,
           nullptr /* blob_storage_context: unused in S13n */,
           resource_request.request_body, resource_request.skip_service_worker));
@@ -225,7 +226,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     const std::string& integrity,
     bool keepalive,
     ResourceType resource_type,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body) {
   // S13nServiceWorker enabled, NetworkService disabled:

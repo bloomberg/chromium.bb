@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/request_context_type.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
@@ -101,7 +100,8 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   network::mojom::FetchRequestMode mode =
       network::mojom::FetchRequestMode::kNoCORS;
   bool is_main_resource_load = false;
-  RequestContextType request_context_type = REQUEST_CONTEXT_TYPE_UNSPECIFIED;
+  blink::mojom::RequestContextType request_context_type =
+      blink::mojom::RequestContextType::UNSPECIFIED;
   network::mojom::RequestContextFrameType frame_type =
       network::mojom::RequestContextFrameType::kNone;
   GURL url;

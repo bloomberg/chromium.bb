@@ -148,7 +148,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     const std::string& integrity,
     bool keepalive,
     ResourceType resource_type,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     network::mojom::RequestContextFrameType frame_type,
     scoped_refptr<network::ResourceRequestBody> body)
     : ServiceWorkerRequestHandler(std::move(context),

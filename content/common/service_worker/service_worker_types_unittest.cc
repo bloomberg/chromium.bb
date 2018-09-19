@@ -53,8 +53,7 @@ TEST(ServiceWorkerRequestTest, SerialiazeDeserializeRoundTrip) {
       true);
   request.mode = network::mojom::FetchRequestMode::kSameOrigin;
   request.is_main_resource_load = true;
-  request.request_context_type =
-      RequestContextType::REQUEST_CONTEXT_TYPE_IFRAME;
+  request.request_context_type = blink::mojom::RequestContextType::IFRAME;
   request.credentials_mode = network::mojom::FetchCredentialsMode::kSameOrigin;
   request.cache_mode = blink::mojom::FetchCacheMode::kForceCache;
   request.redirect_mode = network::mojom::FetchRedirectMode::kManual;

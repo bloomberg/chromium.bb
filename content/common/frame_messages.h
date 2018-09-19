@@ -47,7 +47,6 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/three_d_api_types.h"
@@ -61,6 +60,7 @@
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
@@ -727,7 +727,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_BEGIN(FrameMsg_MixedContentFound_Params)
   IPC_STRUCT_MEMBER(GURL, main_resource_url)
   IPC_STRUCT_MEMBER(GURL, mixed_content_url)
-  IPC_STRUCT_MEMBER(content::RequestContextType, request_context_type)
+  IPC_STRUCT_MEMBER(blink::mojom::RequestContextType, request_context_type)
   IPC_STRUCT_MEMBER(bool, was_allowed)
   IPC_STRUCT_MEMBER(bool, had_redirect)
   IPC_STRUCT_MEMBER(content::SourceLocation, source_location)

@@ -42,7 +42,7 @@ class MockServiceWorkerURLRequestJob : public ServiceWorkerURLRequestJob {
             std::string() /* integrity */,
             false /* keepalive */,
             RESOURCE_TYPE_MAIN_FRAME,
-            REQUEST_CONTEXT_TYPE_HYPERLINK,
+            blink::mojom::RequestContextType::HYPERLINK,
             network::mojom::RequestContextFrameType::kTopLevel,
             scoped_refptr<network::ResourceRequestBody>(),
             delegate),

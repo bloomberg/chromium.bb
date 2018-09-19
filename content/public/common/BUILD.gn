@@ -187,7 +187,6 @@ jumbo_source_set("common_sources") {
     "referrer.h",
     "renderer_preferences.cc",
     "renderer_preferences.h",
-    "request_context_type.h",
     "resource_request_body_android.cc",
     "resource_request_body_android.h",
     "resource_type.cc",

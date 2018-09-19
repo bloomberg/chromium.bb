@@ -37,13 +37,13 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_states.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -596,7 +596,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ResourceType resource_type,
       ResourceContext* resource_context,
       network::mojom::FetchRequestMode fetch_request_mode,
-      RequestContextType fetch_request_context_type,
+      blink::mojom::RequestContextType fetch_request_context_type,
       uint32_t url_loader_options,
       AppCacheService* appcache_service,
       int child_id,

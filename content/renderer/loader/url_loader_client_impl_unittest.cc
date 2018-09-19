@@ -7,7 +7,6 @@
 #include <vector>
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/public/common/request_context_type.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/test_request_peer.h"
@@ -18,6 +17,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
@@ -30,7 +30,8 @@ class URLLoaderClientImplTest : public ::testing::Test,
     // Set request context type to fetch so that ResourceDispatcher doesn't
     // install MimeSniffingThrottle, which makes URLLoaderThrottleLoader
     // defer the request.
-    request->fetch_request_context_type = REQUEST_CONTEXT_TYPE_FETCH;
+    request->fetch_request_context_type =
+        static_cast<int>(blink::mojom::RequestContextType::FETCH);
     request_id_ = dispatcher_->StartAsync(
         std::move(request), 0,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
