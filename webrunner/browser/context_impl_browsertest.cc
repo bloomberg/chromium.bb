@@ -5,6 +5,7 @@
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -15,6 +16,7 @@
 #include "url/url_constants.h"
 #include "webrunner/browser/frame_impl.h"
 #include "webrunner/browser/webrunner_browser_test.h"
+#include "webrunner/service/common.h"
 
 namespace webrunner {
 
@@ -571,6 +573,33 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, Stop) {
 
   EXPECT_FALSE(
       context_impl()->GetFrameImplForTest(&frame)->web_contents_->IsLoading());
+}
+
+class IncognitoContextImplTest : public ContextImplTest {
+ public:
+  IncognitoContextImplTest() = default;
+  ~IncognitoContextImplTest() override = default;
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(kIncognitoSwitch);
+    ContextImplTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IncognitoContextImplTest);
+};
+
+// Verify that the browser can be initialized without a persistent data
+// directory.
+IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, NavigateFrame) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, controller.get());
+
+  frame.Unbind();
 }
 
 }  // namespace webrunner

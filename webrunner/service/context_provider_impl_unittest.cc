@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base_paths_fuchsia.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -24,6 +25,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/test/multiprocess_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -107,12 +109,13 @@ class FakeContext : public chromium::web::Context {
 MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
   base::MessageLoopForIO message_loop;
 
-  base::FilePath data_dir =  GetWebContextDataDir();
+  base::FilePath data_dir;
+  CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
   if (!data_dir.empty()) {
-    EXPECT_TRUE(base::PathExists(data_dir.AppendASCII(kTestDataFileIn)));
-
-    auto out_file = data_dir.AppendASCII(kTestDataFileOut);
-    EXPECT_EQ(base::WriteFile(out_file, nullptr, 0), 0);
+    if (base::PathExists(data_dir.AppendASCII(kTestDataFileIn))) {
+      auto out_file = data_dir.AppendASCII(kTestDataFileOut);
+      EXPECT_EQ(base::WriteFile(out_file, nullptr, 0), 0);
+    }
   }
 
   zx::channel context_handle(zx_take_startup_handle(kContextRequestHandleId));
@@ -204,6 +207,19 @@ class ContextProviderImplTest : public base::MultiProcessTest {
     return output;
   }
 
+  // Checks that the Context channel was dropped.
+  void CheckContextUnresponsive(
+      fidl::InterfacePtr<chromium::web::Context>* context) {
+    base::RunLoop run_loop;
+    context->set_error_handler([&run_loop]() { run_loop.Quit(); });
+
+    chromium::web::FramePtr frame;
+    (*context)->CreateFrame(frame.NewRequest());
+
+    // The error handler should be called here.
+    run_loop.Run();
+  }
+
  protected:
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<ContextProviderImpl> provider_;
@@ -213,7 +229,7 @@ class ContextProviderImplTest : public base::MultiProcessTest {
   struct CapturingNavigationEventObserver
       : public chromium::web::NavigationEventObserver {
    public:
-    CapturingNavigationEventObserver(base::OnceClosure on_change_cb)
+    explicit CapturingNavigationEventObserver(base::OnceClosure on_change_cb)
         : on_change_cb_(std::move(on_change_cb)) {}
     ~CapturingNavigationEventObserver() override = default;
 
@@ -290,9 +306,28 @@ TEST_F(ContextProviderImplTest, WithProfileDir) {
 
   CheckContextResponsive(&context);
 
-  // Verify that the context process can write data to the out dir.
+  // Verify that the context process can write to the data dir.
   EXPECT_TRUE(base::PathExists(
       profile_temp_dir.GetPath().AppendASCII(kTestDataFileOut)));
+}
+
+TEST_F(ContextProviderImplTest, FailsDataDirectoryIsFile) {
+  base::FilePath temp_file_path;
+
+  // Connect to a new context process.
+  fidl::InterfacePtr<chromium::web::Context> context;
+  chromium::web::CreateContextParams create_params = BuildCreateContextParams();
+
+  // Pass in a handle to a file instead of a directory.
+  CHECK(base::CreateTemporaryFile(&temp_file_path));
+  base::File temp_file(temp_file_path,
+                       base::File::FLAG_OPEN | base::File::FLAG_READ);
+  create_params.data_directory.reset(
+      base::fuchsia::GetHandleFromFile(std::move(temp_file)).release());
+
+  provider_ptr_->Create(std::move(create_params), context.NewRequest());
+
+  CheckContextUnresponsive(&context);
 }
 
 }  // namespace webrunner
