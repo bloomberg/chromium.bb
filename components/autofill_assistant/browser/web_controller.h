@@ -122,6 +122,10 @@ class WebController {
       base::OnceCallback<void(std::string)> callback,
       std::unique_ptr<dom::PushNodesByBackendIdsToFrontendResult> result);
   void OnResult(bool result, base::OnceCallback<void(bool)> callback);
+  void OnFindElementForFocusElement(base::OnceCallback<void(bool)> callback,
+                                    std::string object_id);
+  void OnFocusElement(base::OnceCallback<void(bool)> callback,
+                      std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.

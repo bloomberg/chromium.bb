@@ -25,6 +25,12 @@ found in the LICENSE file.
         button.parentNode.removeChild(button);
       }
     </script>
+
+    <style>
+      #full_height_section {
+        height: 100vh;
+      }
+    </style>
   </head>
 
   <body onload="createShadowDom()">
@@ -58,5 +64,15 @@ found in the LICENSE file.
 
     <hr>
     <div id="shadowsection"></div>
+
+    <!--
+    Intentionally make this section has the full height of the window
+    to force scroll when operating on the elements below not in this
+    section.
+    -->
+    <div id="full_height_section">
+      <p>Blank Section
+    </div>
+    <div id="focus">Hidden Text</div>
   </body>
 </html>

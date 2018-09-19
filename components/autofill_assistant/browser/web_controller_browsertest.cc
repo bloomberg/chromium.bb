@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "components/autofill_assistant/browser/web_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -83,6 +84,20 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     }
   }
 
+  void FocusElement(const std::vector<std::string>& selectors) {
+    base::RunLoop run_loop;
+    web_controller_->FocusElement(
+        selectors,
+        base::BindOnce(&WebControllerBrowserTest::OnFocusElement,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  void OnFocusElement(base::Closure done_callback, bool result) {
+    ASSERT_TRUE(result);
+    std::move(done_callback).Run();
+  }
+
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   std::unique_ptr<autofill_assistant::WebController> web_controller_;
@@ -140,5 +155,53 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   selectors.emplace_back("#iframe");
   selectors.emplace_back("#button");
   WaitForElementRemove(selectors);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("#focus");
+
+  // The element is not visible initially.
+  const std::string checkNotVisibleScript = R"(
+      let iframe = document.querySelector("#iframe");
+      let div = iframe.contentDocument.querySelector("#focus");
+      let iframeRect = iframe.getBoundingClientRect();
+      let divRect = div.getBoundingClientRect();
+      iframeRect.y + divRect.y > window.innerHeight;
+  )";
+  EXPECT_EQ(true, content::EvalJs(shell(), checkNotVisibleScript));
+  FocusElement(selectors);
+
+  // Verify that the scroll moved the div in the iframe into view.
+  const std::string checkVisibleScript = R"(
+    const scrollTimeoutMs = 500;
+    var timer = null;
+
+    function check() {
+      let iframe = document.querySelector("#iframe");
+      let div = iframe.contentDocument.querySelector("#focus");
+      let iframeRect = iframe.getBoundingClientRect();
+      let divRect = div.getBoundingClientRect();
+      return iframeRect.y + divRect.y < window.innerHeight;
+    }
+    function onScrollDone() {
+      window.removeEventListener("scroll", onScroll);
+      domAutomationController.send(check());
+    }
+    function onScroll(e) {
+      if (timer != null) {
+        clearTimeout(timer);
+      }
+      timer = setTimeout(onScrollDone, scrollTimeoutMs);
+    }
+    if (check()) {
+      // Scrolling finished before this script started. Just return the result.
+      domAutomationController.send(true);
+    } else {
+      window.addEventListener("scroll", onScroll);
+    }
+  )";
+  EXPECT_EQ(true, content::EvalJsWithManualReply(shell(), checkVisibleScript));
 }
 }  // namespace

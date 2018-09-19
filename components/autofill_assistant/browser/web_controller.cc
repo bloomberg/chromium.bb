@@ -84,7 +84,7 @@ void WebController::OnScrollIntoView(
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   devtools_client_->GetRuntime()->Disable();
   if (!result || result->HasExceptionDetails()) {
-    DLOG(ERROR) << "Failed to scroll the element into view to click.";
+    DLOG(ERROR) << "Failed to scroll the element.";
     OnResult(false, std::move(callback));
     return;
   }
@@ -295,6 +295,42 @@ void WebController::OnResult(bool result,
   std::move(callback).Run(result);
 }
 
+void WebController::OnFindElementForFocusElement(
+    base::OnceCallback<void(bool)> callback,
+    std::string object_id) {
+  if (object_id.empty()) {
+    DLOG(ERROR) << "Failed to find the element to focus on.";
+    OnResult(false, std::move(callback));
+    return;
+  }
+
+  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
+  argument.emplace_back(
+      runtime::CallArgument::Builder().SetObjectId(object_id).Build());
+  devtools_client_->GetRuntime()->Enable();
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetArguments(std::move(argument))
+          .SetFunctionDeclaration(std::string(kScrollIntoViewScript))
+          .SetReturnByValue(true)
+          .Build(),
+      base::BindOnce(&WebController::OnFocusElement,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnFocusElement(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  devtools_client_->GetRuntime()->Disable();
+  if (!result || result->HasExceptionDetails()) {
+    DLOG(ERROR) << "Failed to focus on element.";
+    OnResult(false, std::move(callback));
+    return;
+  }
+  OnResult(true, std::move(callback));
+}
+
 void WebController::FillAddressForm(const std::string& guid,
                                     const std::vector<std::string>& selectors,
                                     base::OnceCallback<void(bool)> callback) {
@@ -318,8 +354,11 @@ void WebController::SelectOption(const std::vector<std::string>& selectors,
 
 void WebController::FocusElement(const std::vector<std::string>& selectors,
                                  base::OnceCallback<void(bool)> callback) {
-  // TODO(crbug.com/806868): Implement focus on element operation.
-  std::move(callback).Run(true);
+  DCHECK(!selectors.empty());
+  FindElement(
+      selectors,
+      base::BindOnce(&WebController::OnFindElementForFocusElement,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebController::GetFieldsValue(
