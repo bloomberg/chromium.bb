@@ -62,10 +62,8 @@ class BrowserPresentationConnectionProxy
   // support state change.
   void DidChangeState(
       blink::mojom::PresentationConnectionState state) override {}
-
-  // Underlying media route is always connected. Media route class does not
-  // support state change.
-  void RequestClose() override {}
+  void DidClose(
+      blink::mojom::PresentationConnectionCloseReason reason) override;
 
   // RouteMessageObserver implementation.
   void OnMessagesReceived(

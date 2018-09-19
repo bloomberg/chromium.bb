@@ -108,7 +108,7 @@ class MODULES_EXPORT RemotePlayback final
   // mojom::blink::PresentationConnection implementation.
   void OnMessage(mojom::blink::PresentationConnectionMessagePtr) override;
   void DidChangeState(mojom::blink::PresentationConnectionState) override;
-  void RequestClose() override;
+  void DidClose(mojom::blink::PresentationConnectionCloseReason) override;
 
   // WebRemotePlaybackClient implementation.
   void StateChanged(WebRemotePlaybackState) override;

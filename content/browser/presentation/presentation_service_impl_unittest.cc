@@ -177,7 +177,7 @@ class MockPresentationConnection : public PresentationConnection {
  public:
   MOCK_METHOD1(OnMessage, void(PresentationConnectionMessagePtr message));
   MOCK_METHOD1(DidChangeState, void(PresentationConnectionState state));
-  MOCK_METHOD0(RequestClose, void());
+  MOCK_METHOD1(DidClose, void(blink::mojom::PresentationConnectionCloseReason));
 };
 
 class MockPresentationController : public blink::mojom::PresentationController {

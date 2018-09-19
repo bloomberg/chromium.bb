@@ -100,7 +100,8 @@ class FakeControllerConnection final
                void(blink::mojom::PresentationConnectionMessagePtr message));
   void DidChangeState(
       blink::mojom::PresentationConnectionState state) override {}
-  void RequestClose() override {}
+  void DidClose(
+      blink::mojom::PresentationConnectionCloseReason reason) override {}
 
   blink::mojom::PresentationConnectionRequest MakeConnectionRequest() {
     return mojo::MakeRequest(&receiver_connection_);

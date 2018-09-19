@@ -117,7 +117,8 @@ class MediaRouterAndroid : public MediaRouterBase {
     void DidChangeState(
         blink::mojom::PresentationConnectionState state) override {}
     // Destroys |this| by removing it from MediaRouterAndroid's collection.
-    void RequestClose() override;
+    void DidClose(
+        blink::mojom::PresentationConnectionCloseReason reason) override;
 
     // Sends a text message back to router's peer for this connection (|peer_|).
     void SendMessage(const std::string& message);
