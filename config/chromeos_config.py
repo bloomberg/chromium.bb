@@ -1534,6 +1534,18 @@ def GeneralTemplates(site_config, ge_build_config):
   )
 
   # Tast is an alternate system for running integration tests.
+
+  # The expression specified here matches the union of the tast.mustpass-*
+  # Autotest server tests, which are used to run "important" Tast tests on
+  # real hardware in the lab.
+  site_config.AddTemplate(
+      'tast_vm_paladin_tests',
+      tast_vm_tests=[
+          config_lib.TastVMTestConfig('tast_vm_paladin',
+                                      ['(!disabled && !informational)'])],
+  )
+  # The expression specified here matches the union of tast.mustpass-* and
+  # tast.informational-*.
   site_config.AddTemplate(
       'tast_vm_canary_tests',
       tast_vm_tests=[
@@ -4044,8 +4056,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       # --- end from here ---
 
-      'betty-release':
-          site_config.templates.tast_vm_canary_tests,
+      'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
+      'betty-paladin': site_config.templates.tast_vm_paladin_tests,
+      'betty-release': site_config.templates.tast_vm_canary_tests,
 
       # Enable the new tcmalloc version on certain boards.
       'kip-release': {
