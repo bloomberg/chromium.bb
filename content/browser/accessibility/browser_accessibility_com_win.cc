@@ -95,7 +95,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_appName(BSTR* app_name) {
   std::vector<std::string> product_components =
       base::SplitString(GetContentClient()->GetProduct(), "/",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  DCHECK_EQ(2U, product_components.size());
+  // |GetProduct| will return an empty string if we are running the content
+  // shell instead of Chrome.
   if (product_components.size() != 2)
     return E_FAIL;
   *app_name = SysAllocString(base::UTF8ToUTF16(product_components[0]).c_str());
@@ -114,7 +115,8 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_appVersion(BSTR* app_version) {
   std::vector<std::string> product_components =
       base::SplitString(GetContentClient()->GetProduct(), "/",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  DCHECK_EQ(2U, product_components.size());
+  // |GetProduct| will return an empty string if we are running the content
+  // shell instead of Chrome.
   if (product_components.size() != 2)
     return E_FAIL;
   *app_version =
