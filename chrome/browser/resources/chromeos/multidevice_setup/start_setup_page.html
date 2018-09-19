@@ -1,8 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/md_select_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="icons.html">
 <link rel="import" href="multidevice_setup_shared_css.html">
@@ -11,13 +9,13 @@
 
 <dom-module id="start-setup-page">
   <template>
-    <style include="iron-flex multidevice-setup-shared md-select">
+    <style include="multidevice-setup-shared">
       #selector-and-details-container {
         @apply(--layout-horizontal);
-        color: rgb(33, 33, 36);
-        font-family: Roboto-Regular, Roboto, sans-serif;
-        font-size: 13px;
-        padding: 8px 8px 8px 0;
+      }
+
+      #deviceDropdown {
+        margin-top: 16px;
       }
 
       #page-icon-container {
@@ -29,7 +27,7 @@
         background-image: -webkit-image-set(url(start_setup_icon_1x.png) 1x,
                                             url(start_setup_icon_2x.png) 2x);
         height: 116px;
-        margin-top: 20px;
+        margin-top: 10px;
         width: 320px;
       }
 
