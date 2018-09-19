@@ -40,7 +40,7 @@ from py_utils import discover
 # ChromeDriver is archived together with Chrome for use in bisecting.
 # This can be used by Chrome test team, as well as by google3 teams for
 # bisecting Chrome builds with their web tests. For questions or to report
-# issues, please contact johnchen@chromium.org and stgao@chromium.org.
+# issues, please contact johnchen@chromium.org.
 BUILDER_ADDITIONAL_COMPILE_TARGETS = {
     'Android Compile Perf': ['microdump_stackwalk', 'angle_perftests'],
     'Android arm64 Compile Perf': ['microdump_stackwalk', 'angle_perftests'],
