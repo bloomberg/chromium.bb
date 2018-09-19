@@ -436,7 +436,7 @@ const base::Feature kOomIntervention{"OomIntervention",
 // TODO(https://crbug.com/862774): Remove this after the feature is fully
 // launched.
 const base::Feature kOobeRecommendAppsScreen{"OobeRecommendAppsScreen",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Adds the base language code to the Language-Accept headers if at least one
