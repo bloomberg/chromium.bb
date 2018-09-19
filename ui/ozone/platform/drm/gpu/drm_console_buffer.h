@@ -35,7 +35,7 @@ class DrmConsoleBuffer {
   bool Initialize();
 
  protected:
-  scoped_refptr<DrmDevice> drm_;
+  const scoped_refptr<DrmDevice> drm_;
 
   // Wrapper around the native pixel memory.
   sk_sp<SkSurface> surface_;

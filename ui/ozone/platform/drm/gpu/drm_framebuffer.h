@@ -80,17 +80,17 @@ class DrmFramebuffer : public base::RefCountedThreadSafe<DrmFramebuffer> {
  private:
   ~DrmFramebuffer();
 
-  scoped_refptr<DrmDevice> drm_device_;
+  const scoped_refptr<DrmDevice> drm_device_;
 
-  uint32_t framebuffer_id_ = 0;
-  uint32_t framebuffer_pixel_format_ = 0;
+  const uint32_t framebuffer_id_;
+  const uint32_t framebuffer_pixel_format_;
   // If |opaque_framebuffer_pixel_format_| differs from
   // |framebuffer_pixel_format_| the following member is set to a valid fb,
   // otherwise it is set to 0.
-  uint32_t opaque_framebuffer_id_ = 0;
-  uint32_t opaque_framebuffer_pixel_format_ = 0;
-  uint64_t format_modifier_ = 0;
-  gfx::Size size_;
+  const uint32_t opaque_framebuffer_id_;
+  const uint32_t opaque_framebuffer_pixel_format_;
+  const uint64_t format_modifier_;
+  const gfx::Size size_;
 
   friend class base::RefCountedThreadSafe<DrmFramebuffer>;
 };

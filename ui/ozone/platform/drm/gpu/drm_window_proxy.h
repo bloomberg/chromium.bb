@@ -34,9 +34,9 @@ class DrmWindowProxy {
   bool SupportsGpuFences() const;
 
  private:
-  gfx::AcceleratedWidget widget_;
+  const gfx::AcceleratedWidget widget_;
 
-  DrmThread* drm_thread_;
+  DrmThread* const drm_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmWindowProxy);
 };

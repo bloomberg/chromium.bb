@@ -854,11 +854,13 @@ void HardwareDisplayPlaneManagerPlanesReadyTest::RequestPlanesReady(
 }
 
 void HardwareDisplayPlaneManagerPlanesReadyTest::UseLegacyManager() {
-  plane_manager_ = std::make_unique<ui::HardwareDisplayPlaneManagerLegacy>();
+  plane_manager_ =
+      std::make_unique<ui::HardwareDisplayPlaneManagerLegacy>(fake_drm_.get());
 }
 
 void HardwareDisplayPlaneManagerPlanesReadyTest::UseAtomicManager() {
-  plane_manager_ = std::make_unique<ui::HardwareDisplayPlaneManagerAtomic>();
+  plane_manager_ =
+      std::make_unique<ui::HardwareDisplayPlaneManagerAtomic>(fake_drm_.get());
 }
 
 TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
@@ -936,11 +938,11 @@ class HardwareDisplayPlaneAtomicMock : public ui::HardwareDisplayPlaneAtomic {
 };
 
 TEST(HardwareDisplayPlaneManagerAtomic, EnableBlend) {
-  auto plane_manager =
-      std::make_unique<ui::HardwareDisplayPlaneManagerAtomic>();
   auto gbm_device = std::make_unique<ui::MockGbmDevice>();
   auto drm_device =
       base::MakeRefCounted<ui::MockDrmDevice>(std::move(gbm_device));
+  auto plane_manager =
+      std::make_unique<ui::HardwareDisplayPlaneManagerAtomic>(drm_device.get());
   ui::HardwareDisplayPlaneList plane_list;
   HardwareDisplayPlaneAtomicMock hw_plane;
   std::unique_ptr<ui::GbmBuffer> buffer =

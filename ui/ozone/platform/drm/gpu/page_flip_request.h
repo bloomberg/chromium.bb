@@ -45,8 +45,7 @@ class PageFlipRequest : public base::RefCounted<PageFlipRequest> {
 
   PresentationOnceCallback callback_;
   int page_flip_count_ = 0;
-  base::TimeDelta refresh_interval_;
-  gfx::SwapResult result_ = gfx::SwapResult::SWAP_ACK;
+  const base::TimeDelta refresh_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(PageFlipRequest);
 };

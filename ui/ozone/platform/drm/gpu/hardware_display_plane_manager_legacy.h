@@ -14,7 +14,7 @@ namespace ui {
 
 class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
  public:
-  HardwareDisplayPlaneManagerLegacy();
+  HardwareDisplayPlaneManagerLegacy(DrmDevice* device);
   ~HardwareDisplayPlaneManagerLegacy() override;
 
   // HardwareDisplayPlaneManager:
@@ -35,7 +35,7 @@ class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
       base::OnceCallback<void(DrmOverlayPlaneList)> callback) override;
 
  protected:
-  bool InitializePlanes(DrmDevice* drm) override;
+  bool InitializePlanes() override;
   bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                     HardwareDisplayPlane* hw_plane,
                     const DrmOverlayPlane& overlay,

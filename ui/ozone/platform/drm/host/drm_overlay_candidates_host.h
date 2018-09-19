@@ -40,8 +40,8 @@ class DrmOverlayCandidatesHost : public OverlayCandidatesOzone {
   void CheckOverlaySupport(OverlaySurfaceCandidateList* candidates) override;
 
  private:
-  DrmOverlayManager* overlay_manager_;  // Not owned.
-  gfx::AcceleratedWidget widget_;
+  DrmOverlayManager* const overlay_manager_;  // Not owned.
+  const gfx::AcceleratedWidget widget_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayCandidatesHost);
 };

@@ -56,12 +56,12 @@ struct HardwareDisplayPlaneList {
 
 class HardwareDisplayPlaneManager {
  public:
-  HardwareDisplayPlaneManager();
+  HardwareDisplayPlaneManager(DrmDevice* drm);
   virtual ~HardwareDisplayPlaneManager();
 
   // This parses information from the drm driver, adding any new planes
   // or crtcs found.
-  bool Initialize(DrmDevice* drm);
+  bool Initialize();
 
   // Clears old frame state out. Must be called before any AssignOverlayPlanes
   // calls.
@@ -159,9 +159,9 @@ class HardwareDisplayPlaneManager {
     DISALLOW_COPY_AND_ASSIGN(CrtcState);
   };
 
-  bool InitializeCrtcState(DrmDevice* drm);
+  bool InitializeCrtcState();
 
-  virtual bool InitializePlanes(DrmDevice* drm) = 0;
+  virtual bool InitializePlanes() = 0;
 
   virtual bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                             HardwareDisplayPlane* hw_plane,
@@ -199,7 +199,7 @@ class HardwareDisplayPlaneManager {
 
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it. Not owned.
-  DrmDevice* drm_;
+  DrmDevice* const drm_;
 
   bool has_universal_planes_ = false;
 

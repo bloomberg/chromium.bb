@@ -51,8 +51,9 @@ std::unique_ptr<gfx::GpuFence> CreateMergedGpuFenceFromFDs(
 
 }  // namespace
 
-HardwareDisplayPlaneManagerAtomic::HardwareDisplayPlaneManagerAtomic() {
-}
+HardwareDisplayPlaneManagerAtomic::HardwareDisplayPlaneManagerAtomic(
+    DrmDevice* drm)
+    : HardwareDisplayPlaneManager(drm) {}
 
 HardwareDisplayPlaneManagerAtomic::~HardwareDisplayPlaneManagerAtomic() {
 }
@@ -247,8 +248,8 @@ bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
   return true;
 }
 
-bool HardwareDisplayPlaneManagerAtomic::InitializePlanes(DrmDevice* drm) {
-  ScopedDrmPlaneResPtr plane_resources = drm->GetPlaneResources();
+bool HardwareDisplayPlaneManagerAtomic::InitializePlanes() {
+  ScopedDrmPlaneResPtr plane_resources = drm_->GetPlaneResources();
   if (!plane_resources) {
     PLOG(ERROR) << "Failed to get plane resources.";
     return false;
@@ -258,7 +259,7 @@ bool HardwareDisplayPlaneManagerAtomic::InitializePlanes(DrmDevice* drm) {
     std::unique_ptr<HardwareDisplayPlane> plane(
         CreatePlane(plane_resources->planes[i]));
 
-    if (plane->Initialize(drm))
+    if (plane->Initialize(drm_))
       planes_.push_back(std::move(plane));
   }
 

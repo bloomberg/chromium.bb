@@ -25,7 +25,7 @@ class DrmVSyncProvider : public gfx::VSyncProvider {
   bool IsHWClock() const override;
 
  private:
-  DrmWindowProxy* window_;
+  DrmWindowProxy* const window_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmVSyncProvider);
 };
