@@ -593,12 +593,46 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_AllHostsExtension) {
     EXPECT_FALSE(site_access.withheld_all_sites_access);
   }
 
+  // Chrome pages should be restricted, and the extension shouldn't have access
+  // to them granted or withheld.
+  const GURL chrome_extensions("chrome://extensions");
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(chrome_extensions);
+    EXPECT_FALSE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
+    EXPECT_TRUE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+
+  // Other restricted urls should also be protected, and the extension shouldn't
+  // have or want access.
+  const GURL webstore = ExtensionsClient::Get()->GetWebstoreBaseURL();
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(webstore);
+    EXPECT_FALSE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
+    EXPECT_TRUE(site_access.has_all_sites_access);
+    EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+
   modifier.SetWithholdHostPermissions(true);
   {
     const ScriptingPermissionsModifier::SiteAccess site_access =
         modifier.GetSiteAccess(example_com);
     EXPECT_FALSE(site_access.has_site_access);
     EXPECT_TRUE(site_access.withheld_site_access);
+    EXPECT_FALSE(site_access.has_all_sites_access);
+    EXPECT_TRUE(site_access.withheld_all_sites_access);
+  }
+
+  // Restricted sites should not be considered "withheld".
+  {
+    const ScriptingPermissionsModifier::SiteAccess site_access =
+        modifier.GetSiteAccess(chrome_extensions);
+    EXPECT_FALSE(site_access.has_site_access);
+    EXPECT_FALSE(site_access.withheld_site_access);
     EXPECT_FALSE(site_access.has_all_sites_access);
     EXPECT_TRUE(site_access.withheld_all_sites_access);
   }

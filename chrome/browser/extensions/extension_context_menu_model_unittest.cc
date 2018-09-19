@@ -1016,6 +1016,13 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
       // Even with an all-hosts like pattern, we shouldn't show controls if
       // the extension can't run on the origin.
       {"https://*.com/*", "https://*.com/*", GURL("https://chromium.org"), {}},
+      // No controls should ever show for restricted pages, like
+      // chrome:-scheme pages or the webstore.
+      {"<all_urls>", "<all_urls>", GURL("chrome://extensions"), {}},
+      {"<all_urls>",
+       "<all_urls>",
+       ExtensionsClient::Get()->GetWebstoreBaseURL(),
+       {}},
   };
 
   // Add a web contents to the browser.

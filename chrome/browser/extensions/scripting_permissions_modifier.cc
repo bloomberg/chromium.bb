@@ -216,13 +216,20 @@ ScriptingPermissionsModifier::GetSiteAccess(const GURL& url) const {
 
   DCHECK(granted_permissions);
 
+  const bool is_restricted_site =
+      extension_->permissions_data()->IsRestrictedUrl(url, /*error=*/nullptr);
+
   // For indicating whether an extension has access to a site, we look at the
   // granted permissions, which could include patterns that weren't explicitly
   // requested. However, we should still indicate they are granted, so that the
   // user can revoke them (and because if the extension does request them and
   // they are already granted, they are silently added).
-  if (granted_permissions->effective_hosts().MatchesSecurityOrigin(url))
+  // The extension should never have access to restricted sites (even if a
+  // pattern matches, as it may for e.g. the webstore).
+  if (!is_restricted_site &&
+      granted_permissions->effective_hosts().MatchesSecurityOrigin(url)) {
     access.has_site_access = true;
+  }
 
   const PermissionSet& withheld_permissions =
       extension_->permissions_data()->withheld_permissions();
@@ -230,8 +237,11 @@ ScriptingPermissionsModifier::GetSiteAccess(const GURL& url) const {
   // Be sure to check |access.has_site_access| in addition to withheld
   // permissions, so that we don't indicate we've withheld permission if an
   // extension is granted https://a.com/*, but has *://*/* withheld.
-  if (withheld_permissions.effective_hosts().MatchesSecurityOrigin(url) &&
-      !access.has_site_access) {
+  // We similarly don't show access as withheld for restricted sites, since
+  // withheld permissions should only include those that are conceivably
+  // grantable.
+  if (!is_restricted_site && !access.has_site_access &&
+      withheld_permissions.effective_hosts().MatchesSecurityOrigin(url)) {
     access.withheld_site_access = true;
   }
 
@@ -249,6 +259,10 @@ ScriptingPermissionsModifier::GetSiteAccess(const GURL& url) const {
 
 void ScriptingPermissionsModifier::GrantHostPermission(const GURL& url) {
   DCHECK(CanAffectExtension());
+  // Check that we don't grant host permission to a restricted URL.
+  DCHECK(
+      !extension_->permissions_data()->IsRestrictedUrl(url, /*error=*/nullptr))
+      << "Cannot grant access to a restricted URL.";
 
   URLPatternSet explicit_hosts;
   explicit_hosts.AddOrigin(Extension::kValidHostPermissionSchemes, url);
