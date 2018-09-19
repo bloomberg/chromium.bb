@@ -8,7 +8,6 @@
  */
 class AutomationManager {
   /**
-   * @constructor
    * @param {!chrome.automation.AutomationNode} desktop
    */
   constructor(desktop) {
