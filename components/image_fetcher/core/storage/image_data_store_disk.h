@@ -7,33 +7,49 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/image_fetcher/core/storage/image_data_store.h"
 #include "components/image_fetcher/core/storage/image_store_types.h"
 
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+
 namespace image_fetcher {
 
-// Stores image data on disk.
+// Saves/loads image data on disk. Performs i/o in a task runner.
 class ImageDataStoreDisk : public ImageDataStore {
  public:
-  // Stores the image data under the given |storage_path|.
-  explicit ImageDataStoreDisk(const std::string& storage_path);
+  // Stores the image data under the given |generic_storage_path|. The path will
+  // be postfixed with a special directory.
+  ImageDataStoreDisk(base::FilePath generic_storage_path,
+                     scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~ImageDataStoreDisk() override;
 
   // ImageDataStorage:
   void Initialize(base::OnceClosure callback) override;
   bool IsInitialized() override;
-  void SaveImage(const std::string& key, const std::string& data) override;
+  void SaveImage(const std::string& key, std::string data) override;
   void LoadImage(const std::string& key, ImageDataCallback callback) override;
   void DeleteImage(const std::string& key) override;
   void GetAllKeys(KeysCallback callback) override;
 
  private:
-  InitializationStatus initialzation_status_;
+  // Called after the store has been initialized in a task runner.
+  void OnInitializationComplete(base::OnceClosure callback,
+                                InitializationStatus initialization_status);
 
-  // Path to where the image data will be stored.
-  std::string storage_path_;
+  // Set to be INITIALIZED if a directory exists, or can be created under
+  // |storage_path|. If initialization fails, there's no need to retry.
+  InitializationStatus initialization_status_;
+
+  // The base path that's available to the store. A postfix will be appended
+  // to house the image data files themselves.
+  base::FilePath storage_path_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::WeakPtrFactory<ImageDataStoreDisk> weak_ptr_factory_;
 
