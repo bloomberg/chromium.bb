@@ -122,10 +122,10 @@ FeedOfflineHost::FeedOfflineHost(OfflinePageModel* offline_page_model,
   DCHECK(prefetch_service_);
   DCHECK(!on_suggestion_consumed_.is_null());
   DCHECK(!on_suggestions_shown_.is_null());
-  offline_page_model_->AddObserver(this);
 }
 
 FeedOfflineHost::~FeedOfflineHost() {
+  // Safe to call RemoveObserver() even if AddObserver() has not been called.
   offline_page_model_->RemoveObserver(this);
 }
 
@@ -133,9 +133,12 @@ void FeedOfflineHost::Initialize(
     const base::RepeatingClosure& trigger_get_known_content,
     const NotifyStatusChangeCallback& notify_status_change) {
   DCHECK(trigger_get_known_content_.is_null());
+  DCHECK(!trigger_get_known_content.is_null());
   DCHECK(notify_status_change_.is_null());
+  DCHECK(!notify_status_change.is_null());
   trigger_get_known_content_ = trigger_get_known_content;
   notify_status_change_ = notify_status_change;
+  offline_page_model_->AddObserver(this);
   // TODO(skym): Post task to call PrefetchService::SetSuggestionProvider().
 }
 
@@ -190,6 +193,7 @@ void FeedOfflineHost::OnGetKnownContentDone(
 
 void FeedOfflineHost::GetCurrentArticleSuggestions(
     SuggestionsProvider::SuggestionCallback suggestions_callback) {
+  DCHECK(!trigger_get_known_content_.is_null());
   pending_known_content_callbacks_.push_back(base::BindOnce(
       &RunSuggestionCallbackWithConversion, std::move(suggestions_callback)));
   // Trigger after push_back() in case triggering results in a synchronous
@@ -213,6 +217,7 @@ void FeedOfflineHost::OfflinePageModelLoaded(OfflinePageModel* model) {
 
 void FeedOfflineHost::OfflinePageAdded(OfflinePageModel* model,
                                        const OfflinePageItem& added_page) {
+  DCHECK(!notify_status_change_.is_null());
   const std::string& url = PreferOriginal(added_page).spec();
   CacheOfflinePageUrlAndId(url, added_page.offline_id);
   notify_status_change_.Run(url, true);
@@ -220,6 +225,7 @@ void FeedOfflineHost::OfflinePageAdded(OfflinePageModel* model,
 
 void FeedOfflineHost::OfflinePageDeleted(
     const OfflinePageModel::DeletedPageInfo& page_info) {
+  DCHECK(!notify_status_change_.is_null());
   const std::string& url = page_info.url.spec();
   EvictOfflinePageUrl(url);
   notify_status_change_.Run(url, false);
