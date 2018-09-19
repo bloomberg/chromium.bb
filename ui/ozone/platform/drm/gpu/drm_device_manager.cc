@@ -54,8 +54,10 @@ bool DrmDeviceManager::AddDrmDevice(const base::FilePath& path,
     return false;
   }
 
-  if (!primary_device_)
+  if (!primary_device_) {
+    VLOG(1) << "Primary DRM device added: " << path;
     primary_device_ = device;
+  }
 
   devices_.push_back(device);
   return true;
