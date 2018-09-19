@@ -195,20 +195,6 @@ void BrowserPluginGuest::WillDestroy() {
   owner_web_contents_ = nullptr;
 }
 
-void BrowserPluginGuest::BeginAttach(WebContents* embedder_web_contents,
-                                     int32_t instance_id,
-                                     bool is_full_page_plugin) {
-  // To get here means attaching is initiated by the browser and no real
-  // BrowserPlugin is created.
-  browser_plugin_instance_id_ = instance_id;
-  BrowserPluginHostMsg_Attach_Params params;
-  auto* contents = static_cast<WebContentsImpl*>(embedder_web_contents);
-  delegate_->WillAttach(
-      contents, browser_plugin_instance_id_, is_full_page_plugin,
-      base::BindOnce(&BrowserPluginGuest::OnWillAttachComplete,
-                     weak_ptr_factory_.GetWeakPtr(), contents, params));
-}
-
 RenderWidgetHostImpl* BrowserPluginGuest::GetOwnerRenderWidgetHost() const {
   return static_cast<RenderWidgetHostImpl*>(
       delegate_->GetOwnerRenderWidgetHost());
