@@ -54,8 +54,8 @@ class Tab : public gfx::AnimationDelegate,
   // The Tab's class name.
   static const char kViewClassName[];
 
-  // Under refresh, thickness in DIPs of the separator painted on the left and
-  // right edges of the tab.
+  // Thickness in DIPs of the separator painted on the left and right edges of
+  // the tab.
   static constexpr int kSeparatorThickness = 1;
 
   // When the content's width of the tab shrinks to below this size we should
@@ -123,9 +123,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the color used for the alert indicator icon.
   SkColor GetAlertIndicatorColor(TabAlertState state) const;
 
-  // Returns the color to be used for the tab close button.
-  SkColor GetCloseTabButtonColor(views::Button::ButtonState button_state) const;
-
   // Returns true if this tab is the active tab.
   bool IsActive() const;
 
@@ -177,11 +174,14 @@ class Tab : public gfx::AnimationDelegate,
 
   bool mouse_hovered() const { return mouse_hovered_; }
 
-  // Returns the thickness of the stroke drawn around the tab.  If
-  // |should_paint_as_active| is true, the tab is treated as an active tab
-  // regardless of its true current state; this affects Refresh, which never
-  // paints strokes on inactive tabs.
+  // Returns the thickness of the stroke drawn around the top and sides of the
+  // tab.  Only active tabs may have a stroke, and not in all cases.  If there
+  // is no stroke, returns 0.  If |should_paint_as_active| is true, the tab is
+  // treated as an active tab regardless of its true current state.
   float GetStrokeThickness(bool should_paint_as_active = false) const;
+
+  // Returns the thickness of the stroke drawn below the tab.
+  float GetBottomStrokeThickness(bool should_paint_as_active = false) const;
 
   // Returns the width of the largest part of the tab that is available for the
   // user to click to select/activate the tab.
@@ -274,8 +274,7 @@ class Tab : public gfx::AnimationDelegate,
                                 bool active,
                                 SkColor color);
 
-  // Paints the separator lines on the left and right edge of the tab if in
-  // material refresh mode.
+  // Paints the separator lines on the left and right edge of the tab.
   void PaintSeparators(gfx::Canvas* canvas);
 
   // Computes which icons are visible in the tab. Should be called everytime
@@ -298,11 +297,6 @@ class Tab : public gfx::AnimationDelegate,
   // background is drawn at GetThrobValue() * 100%. This is used for hover, mini
   // tab title change and pulsing.
   float GetThrobValue() const;
-
-  // Recalculates the correct |button_color_| and resets the title, alert
-  // indicator, and close button colors if necessary.  This should be called any
-  // time the theme or active state may have changed.
-  void OnButtonColorMaybeChanged();
 
   // Updates the blocked attention state of the |icon_|. This only updates
   // state; it is the responsibility of the caller to request a paint.
