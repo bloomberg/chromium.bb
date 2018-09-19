@@ -80,8 +80,7 @@ void LinkHandlerModel::OpenLinkWithHandler(uint32_t handler_id) {
 
   UMA_HISTOGRAM_ENUMERATION(
       "Arc.UserInteraction",
-      arc::UserInteractionType::APP_STARTED_FROM_LINK_CONTEXT_MENU,
-      arc::UserInteractionType::SIZE);
+      arc::UserInteractionType::APP_STARTED_FROM_LINK_CONTEXT_MENU);
 }
 
 LinkHandlerModel::LinkHandlerModel() = default;

@@ -36,8 +36,7 @@ enum class OptInActionType : int {
   // ARC was opted out by user from session.
   SESSION_OPTED_OUT = 9,
 
-  // The size of this enum; keep last.
-  SIZE,
+  kMaxValue = SESSION_OPTED_OUT,
 };
 
 enum class OptInCancelReason {
@@ -63,8 +62,7 @@ enum class OptInCancelReason {
   // Cannot start ARC because it is busy.
   SESSION_BUSY = 8,
 
-  // The size of this enum; keep last.
-  SIZE,
+  kMaxValue = SESSION_BUSY,
 };
 
 enum class OptInSilentAuthCode {
@@ -95,13 +93,12 @@ enum class OptInSilentAuthCode {
   // No Auth code in response.
   NO_AUTH_CODE_IN_RESPONSE = 8,
 
-  // The size of this enum, keep last.
-  SIZE,
+  kMaxValue = NO_AUTH_CODE_IN_RESPONSE,
 };
 
-// The values should be listed in ascending order for SIZE a last, for safety.
-// They are also persisted to logs, and their values should therefore never be
-// renumbered nor reused. For detailed meaning, please consult auth.mojom.
+// The values should be listed in ascending order. They are also persisted to
+// logs, and their values should therefore never be renumbered nor reused. For
+// detailed meaning, please consult auth.mojom.
 enum class ProvisioningResult : int {
   // Provisioning was successful. Note, SUCCESS_ALREADY_PROVISIONED is also
   // successful state.
@@ -159,8 +156,7 @@ enum class ProvisioningResult : int {
   // Device was already provisioned.
   SUCCESS_ALREADY_PROVISIONED = 21,
 
-  // The size of this enum; keep last.
-  SIZE,
+  kMaxValue = SUCCESS_ALREADY_PROVISIONED,
 };
 
 enum class OptInFlowResult : int {
@@ -179,8 +175,7 @@ enum class OptInFlowResult : int {
   // OptIn has been canceled after an error was reported.
   CANCELED_AFTER_ERROR = 4,
 
-  // The size of this enum; keep last.
-  SIZE,
+  kMaxValue = CANCELED_AFTER_ERROR,
 };
 
 enum class ArcEnabledState {
@@ -207,8 +202,7 @@ enum class ArcEnabledState {
   // ARC++ is disabled and ARC++ is not allowed for the device.
   DISABLED_NOT_ALLOWED = 6,
 
-  // The size of this enum; keep last.
-  SIZE,
+  kMaxValue = DISABLED_NOT_ALLOWED,
 };
 
 void UpdateOptInActionUMA(OptInActionType type);

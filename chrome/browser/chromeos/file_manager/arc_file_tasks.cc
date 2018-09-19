@@ -308,8 +308,7 @@ void ExecuteArcTaskAfterContentUrlsResolved(
 
     UMA_HISTOGRAM_ENUMERATION(
         "Arc.UserInteraction",
-        arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER,
-        arc::UserInteractionType::SIZE);
+        arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER);
 
     return;
   }
@@ -333,8 +332,7 @@ void ExecuteArcTaskAfterContentUrlsResolved(
 
     UMA_HISTOGRAM_ENUMERATION(
         "Arc.UserInteraction",
-        arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER,
-        arc::UserInteractionType::SIZE);
+        arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER);
 
     return;
   }

@@ -182,8 +182,7 @@ void ArcNotificationItemImpl::Click() {
   // keyboard. Mouse clicks and taps are handled separately in
   // ArcNotificationContentView.
   UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
-                            arc::UserInteractionType::NOTIFICATION_INTERACTION,
-                            arc::UserInteractionType::SIZE);
+                            arc::UserInteractionType::NOTIFICATION_INTERACTION);
 }
 
 void ArcNotificationItemImpl::OpenSettings() {
