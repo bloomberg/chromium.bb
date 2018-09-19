@@ -885,7 +885,7 @@ void GtkUi::LoadGtkValues() {
   UpdateDeviceScaleFactor();
   UpdateCursorTheme();
 
-  SkColor tab_color = GetBgColor("");
+  SkColor tab_color = SkColorSetA(GetBgColor(""), SK_AlphaOPAQUE);
   SkColor tab_text_color = GetFgColor("GtkLabel");
 
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] = tab_text_color;
@@ -932,10 +932,12 @@ void GtkUi::LoadGtkValues() {
                                             ? "#headerbar.header-bar.titlebar"
                                             : "GtkMenuBar#menubar";
     const std::string header_selector_inactive = header_selector + ":backdrop";
-    const SkColor frame_color = GetBgColor(header_selector);
+    const SkColor frame_color =
+        SkColorSetA(GetBgColor(header_selector), SK_AlphaOPAQUE);
     const SkColor frame_color_incognito =
         color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
-    const SkColor frame_color_inactive = GetBgColor(header_selector_inactive);
+    const SkColor frame_color_inactive =
+        SkColorSetA(GetBgColor(header_selector_inactive), SK_AlphaOPAQUE);
     const SkColor frame_color_incognito_inactive =
         color_utils::HSLShift(frame_color_inactive, kDefaultTintFrameIncognito);
 
