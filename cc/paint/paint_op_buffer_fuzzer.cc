@@ -114,11 +114,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     bytes_for_fonts = size / 2;
 
   FontSupport font_support;
-  gpu::ServiceFontManager font_manager(&font_support);
+  scoped_refptr<gpu::ServiceFontManager> font_manager(
+      new gpu::ServiceFontManager(&font_support));
   std::vector<SkDiscardableHandleId> locked_handles;
   if (bytes_for_fonts > 0u) {
-    font_manager.Deserialize(reinterpret_cast<const char*>(data),
-                             bytes_for_fonts, &locked_handles);
+    font_manager->Deserialize(reinterpret_cast<const char*>(data),
+                              bytes_for_fonts, &locked_handles);
     data += bytes_for_fonts;
     size -= bytes_for_fonts;
   }
@@ -126,16 +127,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto context_provider_no_support = viz::TestContextProvider::Create();
   context_provider_no_support->BindToCurrentThread();
   CHECK(!context_provider_no_support->GrContext()->supportsDistanceFieldText());
-  Raster(context_provider_no_support, font_manager.strike_client(), data, size);
+  Raster(context_provider_no_support, font_manager->strike_client(), data,
+         size);
 
   auto context_provider_with_support = viz::TestContextProvider::Create(
       std::string("GL_OES_standard_derivatives"));
   context_provider_with_support->BindToCurrentThread();
   CHECK(
       context_provider_with_support->GrContext()->supportsDistanceFieldText());
-  Raster(context_provider_with_support, font_manager.strike_client(), data,
+  Raster(context_provider_with_support, font_manager->strike_client(), data,
          size);
 
-  font_manager.Unlock(locked_handles);
+  font_manager->Unlock(locked_handles);
+  font_manager->Destroy();
   return 0;
 }
