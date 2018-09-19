@@ -9,6 +9,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/features.h"
@@ -53,6 +54,9 @@ void Portal::Init(
       WebContents::FromRenderFrameHost(owner_render_frame_host_)
           ->GetBrowserContext());
   portal_contents_ = WebContents::Create(params);
+  WebContents::FromRenderFrameHost(owner_render_frame_host_)
+      ->GetDelegate()
+      ->PortalWebContentsCreated(portal_contents_.get());
 }
 
 void Portal::Navigate(const GURL& url) {
