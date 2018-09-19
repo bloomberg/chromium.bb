@@ -6323,14 +6323,10 @@ class WebAppInstallForceListPolicyTest : public PolicyTest {
   DISALLOW_COPY_AND_ASSIGN(WebAppInstallForceListPolicyTest);
 };
 
+// TODO(crbug.com/880131): Re-enable when we're ready to launch the policy.
 // TODO(crbug.com/878797): Flaky on windows
-#if defined(OS_WIN)
-#define MAYBE_StartUpInstallation DISABLED_StartUpInstallation
-#else
-#define MAYBE_StartUpInstallation StartUpInstallation
-#endif
 IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest,
-                       MAYBE_StartUpInstallation) {
+                       DISABLED_StartUpInstallation) {
   extensions::TestExtensionRegistryObserver observer(
       extensions::ExtensionRegistry::Get(browser()->profile()));
   const extensions::Extension* installed_extension =

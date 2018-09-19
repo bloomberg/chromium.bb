@@ -13167,7 +13167,7 @@
           'required': ['url']
         }
       },
-      'supported_on': ['chrome.*:70-', 'chrome_os:70-'],
+      'supported_on': [],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,

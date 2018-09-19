@@ -3944,19 +3944,6 @@
   },
 
   "WebAppInstallForceList": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": {
-      "WebAppInstallForceList": [{
-        "url": "https://www.google.com",
-        "launch_container": "tab"
-      }, {
-        "url": "https://docs.google.com",
-        "launch_container": "window"
-      }]
-    },
-    "pref_mappings": [
-      { "pref": "profile.web_app.install.forcelist" }
-    ]
   },
 
   "----- Chrome Frame policies -------------------------------------------": {},
