@@ -4,6 +4,9 @@
 
 #include "gpu/ipc/service/shared_image_stub.h"
 
+#include <inttypes.h>
+
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
@@ -24,7 +27,10 @@ SharedImageStub::SharedImageStub(GpuChannel* channel, int32_t route_id)
               CommandBufferNamespace::GPU_IO,
               CommandBufferIdFromChannelAndRoute(channel->client_id(),
                                                  route_id),
-              sequence_)) {}
+              sequence_)) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "gpu::SharedImageStub", channel_->task_runner());
+}
 
 SharedImageStub::~SharedImageStub() {
   channel_->scheduler()->DestroySequence(sequence_);
@@ -33,6 +39,8 @@ SharedImageStub::~SharedImageStub() {
     bool have_context = MakeContextCurrentAndCreateFactory();
     factory_->DestroyAllSharedImages(have_context);
   }
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 bool SharedImageStub::OnMessageReceived(const IPC::Message& msg) {
@@ -86,7 +94,11 @@ bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
     }
     DCHECK(context_state_);
     DCHECK(!context_state_->context_lost);
-    DCHECK(context_state_->context->IsCurrent(nullptr));
+    if (!context_state_->context->MakeCurrent(context_state_->surface.get())) {
+      LOG(ERROR) << "SharedImageStub: MakeCurrent failed";
+      OnError();
+      return false;
+    }
     gpu::GpuMemoryBufferFactory* gmb_factory =
         channel_manager->gpu_memory_buffer_factory();
     factory_ = std::make_unique<SharedImageFactory>(
@@ -134,6 +146,28 @@ int SharedImageStub::ClientId() const {
 
 uint64_t SharedImageStub::ContextGroupTracingId() const {
   return sync_point_client_state_->command_buffer_id().GetUnsafeValue();
+}
+
+bool SharedImageStub::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  if (!factory_)
+    return true;
+
+  if (args.level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    std::string dump_name =
+        base::StringPrintf("gpu/gl/textures/client_0x%" PRIX32, ClientId());
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes, size_);
+
+    // Early out, no need for more detail in a BACKGROUND dump.
+    return true;
+  }
+
+  return factory_->OnMemoryDump(args, pmd, ClientId(), ClientTracingId());
 }
 
 }  // namespace gpu

@@ -48,6 +48,10 @@ gles2::GLES2Implementation* GLInProcessContext::GetImplementation() {
   return gles2_implementation_.get();
 }
 
+SharedImageInterface* GLInProcessContext::GetSharedImageInterface() {
+  return command_buffer_->GetSharedImageInterface();
+}
+
 ContextResult GLInProcessContext::Initialize(
     scoped_refptr<CommandBufferTaskExecutor> task_executor,
     scoped_refptr<gl::GLSurface> surface,

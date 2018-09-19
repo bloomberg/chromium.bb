@@ -40,7 +40,11 @@ GpuChannelHost::GpuChannelHost(int channel_id,
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
       listener_(new Listener(std::move(handle), io_thread_),
-                base::OnTaskRunnerDeleter(io_thread_)) {
+                base::OnTaskRunnerDeleter(io_thread_)),
+      shared_image_interface_(
+          this,
+          static_cast<int32_t>(
+              GpuChannelReservedRoutes::kSharedImageInterface)) {
   next_image_id_.GetNext();
   for (int32_t i = 0;
        i <= static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue); ++i)
