@@ -7,14 +7,14 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
 void RecordActiveHistogram(app_list::InternalAppName name) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Apps.AppListInternalApp.Activate", name);
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppListInternalApp.Activate", name);
 }
 
 }  // namespace
@@ -24,6 +24,7 @@ const char InternalAppItem::kItemType[] = "InternalAppItem";
 
 InternalAppItem::InternalAppItem(
     Profile* profile,
+    AppListModelUpdater* model_updater,
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const app_list::InternalApp& internal_app)
     : ChromeAppListItem(profile, internal_app.app_id) {
@@ -34,7 +35,7 @@ InternalAppItem::InternalAppItem(
   if (sync_item && sync_item->item_ordinal.IsValid())
     UpdateFromSync(sync_item);
   else
-    SetDefaultPositionIfApplicable();
+    SetDefaultPositionIfApplicable(model_updater);
 }
 
 InternalAppItem::~InternalAppItem() = default;

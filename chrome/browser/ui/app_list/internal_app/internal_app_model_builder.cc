@@ -19,6 +19,7 @@ void InternalAppModelBuilder::BuildModel() {
       continue;
 
     InsertApp(std::make_unique<InternalAppItem>(
-        profile(), GetSyncItem(internal_app.app_id), internal_app));
+        profile(), model_updater(), GetSyncItem(internal_app.app_id),
+        internal_app));
   }
 }

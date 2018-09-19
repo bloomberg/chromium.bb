@@ -112,8 +112,9 @@ class ChromeAppListItem {
 
   std::string ToDebugString() const;
 
-  // Set the default position if it exists.
-  void SetDefaultPositionIfApplicable();
+  // Set the default position if it exists. Otherwise set the first available
+  // position in the app list if |model_updater| is not null.
+  void SetDefaultPositionIfApplicable(AppListModelUpdater* model_updater);
 
  protected:
   ChromeAppListItem(Profile* profile, const std::string& app_id);

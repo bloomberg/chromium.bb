@@ -107,6 +107,16 @@ void FakeAppListModelUpdater::GetIdToAppListIndexMap(
   std::move(callback).Run(id_to_app_list_index);
 }
 
+syncer::StringOrdinal FakeAppListModelUpdater::GetFirstAvailablePosition()
+    const {
+  std::vector<ChromeAppListItem*> top_level_items;
+  for (auto& item : items_) {
+    if (item->folder_id().empty())
+      top_level_items.emplace_back(item.get());
+  }
+  return GetFirstAvailablePositionInternal(top_level_items);
+}
+
 void FakeAppListModelUpdater::GetContextMenuModel(
     const std::string& id,
     GetMenuModelCallback callback) {
