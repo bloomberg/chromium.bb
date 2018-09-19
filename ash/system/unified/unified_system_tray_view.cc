@@ -273,10 +273,6 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
 
-void UnifiedSystemTrayView::Init() {
-  message_center_view_->Init();
-}
-
 void UnifiedSystemTrayView::SetMaxHeight(int max_height) {
   message_center_view_->SetMaxHeight(max_height);
 }

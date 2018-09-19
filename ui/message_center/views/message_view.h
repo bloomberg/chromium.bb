@@ -19,6 +19,7 @@
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/views/slide_out_controller.h"
 #include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -38,7 +39,8 @@ class NotificationControlButtonsView;
 // An base class for a notification entry. Contains background and other
 // elements shared by derived notification views.
 class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
-                                          public SlideOutController::Delegate {
+                                          public SlideOutController::Delegate,
+                                          public views::FocusChangeListener {
  public:
   static const char kViewClassName[];
 
@@ -78,7 +80,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   void RequestFocusOnCloseButton();
 
   virtual NotificationControlButtonsView* GetControlButtonsView() const = 0;
-  virtual void UpdateControlButtonsVisibility() = 0;
 
   virtual void SetExpanded(bool expanded);
   virtual bool IsExpanded() const;
@@ -114,12 +115,18 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   void OnFocus() override;
   void OnBlur() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void RemovedFromWidget() override;
+  void AddedToWidget() override;
   const char* GetClassName() const final;
 
   // message_center::SlideOutController::Delegate
   ui::Layer* GetSlideOutLayer() override;
   void OnSlideChanged() override;
   void OnSlideOut() override;
+
+  // views::FocusChangeListener:
+  void OnWillChangeFocus(views::View* before, views::View* now) override;
+  void OnDidChangeFocus(views::View* before, views::View* now) override;
 
   void AddSlideObserver(SlideObserver* observer);
 
@@ -144,6 +151,8 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   // classes should call this after its view hierarchy is populated to ensure
   // it is on top of other views.
   void CreateOrUpdateCloseButtonView(const Notification& notification);
+
+  virtual void UpdateControlButtonsVisibility() = 0;
 
   // Changes the background color and schedules a paint.
   virtual void SetDrawBackgroundAsActive(bool active);
@@ -181,6 +190,8 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
 
   // True if the slide is disabled forcibly.
   bool disable_slide_ = false;
+
+  views::FocusManager* focus_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
