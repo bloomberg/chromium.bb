@@ -46,7 +46,9 @@ class CORE_EXPORT RemoteFrame final : public Frame {
                                          ScrollGranularity granularity,
                                          Frame* child) override;
 
-  void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes);
+  void SetCcLayer(cc::Layer*,
+                  bool prevent_contents_opaque_changes,
+                  bool is_surface_layer);
   cc::Layer* GetCcLayer() const { return cc_layer_; }
   bool WebLayerHasFixedContentsOpaque() const {
     return prevent_contents_opaque_changes_;
@@ -62,6 +64,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   RemoteFrameClient* Client() const;
 
   void PointerEventsChanged();
+  bool IsIgnoredForHitTest() const;
 
  private:
   RemoteFrame(RemoteFrameClient*, Page&, FrameOwner*);
@@ -80,6 +83,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   Member<RemoteSecurityContext> security_context_;
   cc::Layer* cc_layer_ = nullptr;
   bool prevent_contents_opaque_changes_ = false;
+  bool is_surface_layer_ = false;
 };
 
 inline RemoteFrameView* RemoteFrame::View() const {

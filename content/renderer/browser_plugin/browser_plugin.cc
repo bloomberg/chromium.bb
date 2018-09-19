@@ -871,7 +871,8 @@ cc::Layer* BrowserPlugin::GetLayer() {
 }
 
 void BrowserPlugin::SetLayer(scoped_refptr<cc::Layer> layer,
-                             bool prevent_contents_opaque_changes) {
+                             bool prevent_contents_opaque_changes,
+                             bool is_surface_layer) {
   if (container_)
     container_->SetCcLayer(layer.get(), prevent_contents_opaque_changes);
   embedded_layer_ = std::move(layer);
@@ -879,10 +880,6 @@ void BrowserPlugin::SetLayer(scoped_refptr<cc::Layer> layer,
 
 SkBitmap* BrowserPlugin::GetSadPageBitmap() {
   return GetContentClient()->renderer()->GetSadWebViewBitmap();
-}
-
-bool BrowserPlugin::HasPointerEventsNone() {
-  return false;
 }
 
 }  // namespace content

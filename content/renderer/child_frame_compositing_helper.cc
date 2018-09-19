@@ -67,7 +67,8 @@ void ChildFrameCompositingHelper::ChildFrameGone(
 
   bool prevent_contents_opaque_changes = false;
   child_frame_compositor_->SetLayer(std::move(crashed_layer),
-                                    prevent_contents_opaque_changes);
+                                    prevent_contents_opaque_changes,
+                                    false /* is_surface_layer */);
 }
 
 void ChildFrameCompositingHelper::SetPrimarySurfaceId(
@@ -82,8 +83,6 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
   surface_layer_ = cc::SurfaceLayer::Create();
   surface_layer_->SetMasksToBounds(true);
   surface_layer_->SetSurfaceHitTestable(true);
-  surface_layer_->SetHasPointerEventsNone(
-      child_frame_compositor_->HasPointerEventsNone());
   surface_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   surface_layer_->SetPrimarySurfaceId(surface_id, deadline);
@@ -93,7 +92,8 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
   // about the child surface's opacity. https://crbug.com/629851.
   bool prevent_contents_opaque_changes = true;
   child_frame_compositor_->SetLayer(surface_layer_,
-                                    prevent_contents_opaque_changes);
+                                    prevent_contents_opaque_changes,
+                                    true /* is_surface_layer */);
 
   UpdateVisibility(true);
 
@@ -118,16 +118,6 @@ void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {
   cc::Layer* layer = child_frame_compositor_->GetLayer();
   if (layer)
     layer->SetIsDrawable(visible);
-}
-
-void ChildFrameCompositingHelper::SetHasPointerEventsNone(
-    bool has_pointer_events_none) {
-  if (!primary_surface_id_.is_valid())
-    return;
-  cc::SurfaceLayer* layer =
-      static_cast<cc::SurfaceLayer*>(child_frame_compositor_->GetLayer());
-  if (layer)
-    layer->SetHasPointerEventsNone(has_pointer_events_none);
 }
 
 }  // namespace content

@@ -56,9 +56,6 @@ class WebRemoteFrameClient {
   // Set inherited effective touch action on the remote frame.
   virtual void SetInheritedEffectiveTouchAction(blink::WebTouchAction) {}
 
-  // Update pointer-events property on the remote frame.
-  virtual void PointerEventsChanged() {}
-
   // Toggles render throttling for the remote frame.
   virtual void UpdateRenderThrottlingStatus(bool is_throttled,
                                             bool subtree_throttled) {}

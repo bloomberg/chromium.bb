@@ -62,8 +62,6 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void SetInheritedEffectiveTouchAction(TouchAction) = 0;
 
-  virtual void PointerEventsChanged() = 0;
-
   virtual void UpdateRenderThrottlingStatus(bool isThrottled,
                                             bool subtreeThrottled) = 0;
 

@@ -442,12 +442,6 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   return true;
 }
 
-bool HTMLFrameOwnerElement::HasPointerEventsNone() const {
-  return GetComputedStyle()
-             ? GetComputedStyle()->PointerEvents() == EPointerEvents::kNone
-             : false;
-}
-
 void HTMLFrameOwnerElement::CancelPendingLazyLoad() {
   if (!lazy_load_frame_observer_)
     return;

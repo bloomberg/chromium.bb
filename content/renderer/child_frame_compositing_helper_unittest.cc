@@ -23,11 +23,10 @@ class MockChildFrameCompositor : public ChildFrameCompositor {
   cc::Layer* GetLayer() override { return layer_.get(); }
 
   void SetLayer(scoped_refptr<cc::Layer> layer,
-                bool prevent_contents_opaque_changes) override {
+                bool prevent_contents_opaque_changes,
+                bool is_surface_layer) override {
     layer_ = std::move(layer);
   }
-
-  bool HasPointerEventsNone() override { return false; }
 
   SkBitmap* GetSadPageBitmap() override { return &sad_page_bitmap_; }
 
