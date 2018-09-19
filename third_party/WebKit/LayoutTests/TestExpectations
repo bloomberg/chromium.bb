@@ -2333,8 +2333,6 @@ crbug.com/472330 fast/writing-mode/table-percent-width-quirk.html [ Failure ]
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
-crbug.com/662010 [ Win7 ] http/tests/csspaint/invalidation-background-image.html [ Skip ]
-
 crbug.com/807152 vr/VRDisplay_rAF_fires_with_window_rAF.html [ Pass Failure ]
 crbug.com/813697 vr/getFrameData_oneframeupdate.html [ Pass Failure ]
 
@@ -5175,4 +5173,10 @@ crbug.com/v8/8186 external/wpt/wasm/jsapi/module/customSections.any.worker.html 
 # Sheriff 2018-09-18
 crbug.com/884445 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
 crbug.com/884445 virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
+
+# Sheriff 2018-09-19
+crbug.com/662010 [ Win7 ] http/tests/csspaint/invalidation-background-image.html [ Skip ]
+crbug.com/886566 [ Linux Win10 Mac Android ] http/tests/csspaint/invalidation-background-image.html [ Pass Timeout ]
+crbug.com/886566 http/tests/csspaint/invalidation-border-image.html [ Pass Timeout ]
+crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Timeout ]
 
