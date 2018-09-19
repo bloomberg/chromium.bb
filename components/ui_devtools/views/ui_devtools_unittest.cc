@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/css_agent.h"
+#include "components/ui_devtools/ui_devtools_unittest_utils.h"
 #include "components/ui_devtools/ui_element.h"
 #include "components/ui_devtools/views/dom_agent_aura.h"
 #include "components/ui_devtools/views/overlay_agent_aura.h"
@@ -43,43 +44,6 @@ class TestView : public views::View {
   const char* name_;
 
   DISALLOW_COPY_AND_ASSIGN(TestView);
-};
-
-class FakeFrontendChannel : public FrontendChannel {
- public:
-  FakeFrontendChannel() {}
-  ~FakeFrontendChannel() override {}
-
-  int CountProtocolNotificationMessageStartsWith(const std::string& message) {
-    int count = 0;
-    for (const std::string& s : protocol_notification_messages_) {
-      if (base::StartsWith(s, message, base::CompareCase::SENSITIVE))
-        count++;
-    }
-    return count;
-  }
-
-  int CountProtocolNotificationMessage(const std::string& message) {
-    return std::count(protocol_notification_messages_.begin(),
-                      protocol_notification_messages_.end(), message);
-  }
-
-  // FrontendChannel:
-  void sendProtocolResponse(int callId,
-                            std::unique_ptr<Serializable> message) override {}
-  void flushProtocolNotifications() override {}
-  void fallThrough(int call_id,
-                   const std::string& method,
-                   const std::string& message) override {}
-  void sendProtocolNotification(
-      std::unique_ptr<Serializable> message) override {
-    protocol_notification_messages_.push_back(message->serialize());
-  }
-
- private:
-  std::vector<std::string> protocol_notification_messages_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeFrontendChannel);
 };
 
 std::string GetAttributeValue(const std::string& attribute, DOM::Node* node) {
@@ -131,31 +95,6 @@ DOM::Node* FindInRoot(aura::Window* window, DOM::Node* root) {
       return window_node;
   }
   return window_node;
-}
-
-int GetIntPropertyByName(const std::string& name,
-                         Array<CSS::CSSProperty>* properties) {
-  for (size_t i = 0; i < properties->length(); i++) {
-    CSS::CSSProperty* property = properties->get(i);
-    if (property->getName() == name) {
-      int value;
-      EXPECT_TRUE(base::StringToInt(property->getValue(), &value));
-      return value;
-    }
-  }
-  NOTREACHED();
-  return -1;
-}
-
-std::string GetStringPropertyByName(const std::string& name,
-                                    Array<CSS::CSSProperty>* properties) {
-  for (size_t i = 0; i < properties->length(); i++) {
-    CSS::CSSProperty* property = properties->get(i);
-    if (property->getName() == name)
-      return property->getValue();
-  }
-  NOTREACHED();
-  return nullptr;
 }
 
 ui::Layer* GetHighlightingLayer(aura::Window* root_window) {
@@ -275,13 +214,6 @@ class UIDevToolsTest : public views::ViewsTestBase {
                          parent_id, node_id)));
   }
 
-  int GetStyleSheetChangedCount(int node_id) {
-    return frontend_channel()->CountProtocolNotificationMessage(
-        base::StringPrintf("{\"method\":\"CSS.styleSheetChanged\",\"params\":{"
-                           "\"styleSheetId\":\"%d\"}}",
-                           node_id));
-  }
-
   int GetOverlayNodeHighlightRequestedCount(int node_id) {
     return frontend_channel()->CountProtocolNotificationMessage(
         base::StringPrintf(
@@ -296,49 +228,6 @@ class UIDevToolsTest : public views::ViewsTestBase {
             "{\"method\":\"Overlay.inspectNodeRequested\",\"params\":{"
             "\"backendNodeId\":%d}}",
             node_id));
-  }
-
-  void CompareNodeBounds(DOM::Node* node, const gfx::Rect& bounds) {
-    Maybe<CSS::CSSStyle> styles;
-    css_agent_->getMatchedStylesForNode(node->getNodeId(), &styles);
-    ASSERT_TRUE(styles.isJust());
-    Array<CSS::CSSProperty>* properties = styles.fromJust()->getCssProperties();
-    EXPECT_EQ(bounds.height(), GetIntPropertyByName("height", properties));
-    EXPECT_EQ(bounds.width(), GetIntPropertyByName("width", properties));
-    EXPECT_EQ(bounds.x(), GetIntPropertyByName("x", properties));
-    EXPECT_EQ(bounds.y(), GetIntPropertyByName("y", properties));
-  }
-
-  void CompareViewAtrributes(DOM::Node* node, views::View* view) {
-    Maybe<CSS::CSSStyle> styles;
-    css_agent_->getMatchedStylesForNode(node->getNodeId(), &styles);
-    ASSERT_TRUE(styles.isJust());
-    Array<CSS::CSSProperty>* properties = styles.fromJust()->getCssProperties();
-
-    base::string16 description;
-    if (view->GetTooltipText(gfx::Point(), &description)) {
-      EXPECT_EQ(base::UTF16ToUTF8(description),
-                GetStringPropertyByName("tooltip", properties));
-    }
-  }
-
-  void SetStyleTexts(DOM::Node* node,
-                     const std::string& style_text,
-                     bool success) {
-    auto edits = Array<CSS::StyleDeclarationEdit>::create();
-    auto edit = CSS::StyleDeclarationEdit::create()
-                    .setStyleSheetId(base::IntToString(node->getNodeId()))
-                    .setText(style_text)
-                    .build();
-    edits->addItem(std::move(edit));
-    std::unique_ptr<Array<CSS::CSSStyle>> output;
-    EXPECT_EQ(success,
-              css_agent_->setStyleTexts(std::move(edits), &output).isSuccess());
-
-    if (success)
-      ASSERT_TRUE(output);
-    else
-      ASSERT_FALSE(output);
   }
 
   void HighlightNode(int node_id) {
@@ -1181,135 +1070,5 @@ int GetNodeIdFromWindow(UIElement* ui_element, aura::Window* window) {
 
 // TODO(thanhph): Make test AshDevToolsTest.MultipleDisplayHighlight work with
 // multiple displays. https://crbug.com/726831.
-
-TEST_F(UIDevToolsTest, WindowWidgetViewGetMatchedStylesForNode) {
-  std::unique_ptr<views::Widget> widget(
-      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  aura::Window* parent_window = widget->GetNativeWindow();
-  std::unique_ptr<aura::Window> window(CreateChildWindow(parent_window));
-  gfx::Rect window_bounds(2, 2, 3, 3);
-  gfx::Rect widget_bounds(50, 50, 100, 75);
-  gfx::Rect view_bounds(4, 4, 3, 3);
-  window->SetBounds(window_bounds);
-  widget->SetBounds(widget_bounds);
-  widget->GetRootView()->SetBoundsRect(view_bounds);
-
-  std::unique_ptr<DOM::Node> root;
-  dom_agent()->getDocument(&root);
-
-  DOM::Node* parent_node = FindInRoot(parent_window, root.get());
-  ASSERT_TRUE(parent_node);
-  Array<DOM::Node>* parent_children = parent_node->getChildren(nullptr);
-  ASSERT_TRUE(parent_children);
-
-  CompareNodeBounds(parent_node, widget_bounds);
-  CompareNodeBounds(parent_children->get(1), window_bounds);
-  CompareNodeBounds(parent_children->get(0)->getChildren(nullptr)->get(0),
-                    view_bounds);
-  CompareViewAtrributes(parent_children->get(0)->getChildren(nullptr)->get(0),
-                        widget->GetRootView());
-}
-
-TEST_F(UIDevToolsTest, WindowWidgetViewStyleSheetChanged) {
-  std::unique_ptr<views::Widget> widget(
-      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
-  aura::Window* widget_window = widget->GetNativeWindow();
-  std::unique_ptr<aura::Window> child(CreateChildWindow(widget_window));
-
-  std::unique_ptr<DOM::Node> root;
-  dom_agent()->getDocument(&root);
-
-  gfx::Rect child_bounds(2, 2, 3, 3);
-  gfx::Rect widget_bounds(10, 10, 150, 160);
-  gfx::Rect view_bounds(4, 4, 3, 3);
-  child->SetBounds(child_bounds);
-  widget->SetBounds(widget_bounds);
-  widget->GetRootView()->SetBoundsRect(view_bounds);
-
-  DOM::Node* widget_node = FindInRoot(widget_window, root.get());
-  ASSERT_TRUE(widget_node);
-  Array<DOM::Node>* widget_node_children = widget_node->getChildren(nullptr);
-  ASSERT_TRUE(widget_node_children);
-
-  EXPECT_EQ(1, GetStyleSheetChangedCount(widget_node->getNodeId()));
-  EXPECT_EQ(
-      1, GetStyleSheetChangedCount(widget_node_children->get(1)->getNodeId()));
-  EXPECT_EQ(2, GetStyleSheetChangedCount(widget_node_children->get(0)
-                                             ->getChildren(nullptr)
-                                             ->get(0)
-                                             ->getNodeId()));
-}
-
-TEST_F(UIDevToolsTest, WindowWidgetViewSetStyleText) {
-  std::unique_ptr<views::Widget> widget(
-      CreateTestWidget(gfx::Rect(0, 0, 400, 400)));
-  aura::Window* parent_window = widget->GetNativeWindow();
-  std::unique_ptr<aura::Window> window(CreateChildWindow(parent_window));
-  views::View* root_view = widget->GetRootView();
-
-  std::unique_ptr<DOM::Node> root;
-  dom_agent()->getDocument(&root);
-
-  DOM::Node* parent_node = FindInRoot(parent_window, root.get());
-  ASSERT_TRUE(parent_node);
-  Array<DOM::Node>* parent_children = parent_node->getChildren(nullptr);
-  ASSERT_TRUE(parent_children);
-
-  // Test different combinations on window node
-  DOM::Node* window_node = parent_children->get(1);
-
-  SetStyleTexts(window_node,
-                "x: 25; y:35; width: 5; height: 20; visibility: 1;", true);
-  EXPECT_EQ(gfx::Rect(25, 35, 5, 20), window->bounds());
-  EXPECT_TRUE(window->IsVisible());
-
-  SetStyleTexts(window_node, "test_nothing_happens:1;", false);
-  EXPECT_EQ(gfx::Rect(25, 35, 5, 20), window->bounds());  // Not changed
-
-  SetStyleTexts(window_node, "\nheight: 10;\nvisibility: 0;\n", true);
-  EXPECT_EQ(gfx::Rect(25, 35, 5, 10), window->bounds());
-  EXPECT_FALSE(window->IsVisible());
-
-  SetStyleTexts(window_node, "\nx: 10; y: 23; width: 52;\n  ", true);
-  EXPECT_EQ(gfx::Rect(10, 23, 52, 10), window->bounds());
-
-  // Test different combinations on widget node
-  DOM::Node* widget_node = parent_children->get(0);
-
-  SetStyleTexts(widget_node,
-                "x: 25; y:35; width: 53; height: 64; visibility: 0;", true);
-  EXPECT_EQ(gfx::Rect(25, 35, 53, 64), widget->GetRestoredBounds());
-  EXPECT_FALSE(widget->IsVisible());
-
-  SetStyleTexts(widget_node, "test_nothing_happens:1;", false);
-  EXPECT_EQ(gfx::Rect(25, 35, 53, 64),
-            widget->GetRestoredBounds());  // Not changed
-
-  SetStyleTexts(widget_node, "\nheight: 123;\nvisibility: 1;\n", true);
-  EXPECT_EQ(gfx::Rect(25, 35, 53, 123), widget->GetRestoredBounds());
-  EXPECT_TRUE(widget->IsVisible());
-
-  SetStyleTexts(widget_node, "\nx: 10; y: 23; width: 98;\n  ", true);
-  EXPECT_EQ(gfx::Rect(10, 23, 98, 123), widget->GetRestoredBounds());
-
-  // Test different combinations on view node
-  DOM::Node* root_view_node = widget_node->getChildren(nullptr)->get(0);
-
-  SetStyleTexts(root_view_node,
-                "x: 25; y:35; width: 45; height: 20; visibility: 0;", true);
-  EXPECT_EQ(gfx::Rect(25, 35, 45, 20), root_view->bounds());
-  EXPECT_FALSE(root_view->visible());
-
-  SetStyleTexts(root_view_node, "test_nothing_happens:1;", false);
-  EXPECT_EQ(gfx::Rect(25, 35, 45, 20), root_view->bounds());  // Not changed
-
-  SetStyleTexts(root_view_node, "\nheight: 73;\n  ", true);
-  EXPECT_EQ(gfx::Rect(25, 35, 45, 73), root_view->bounds());
-
-  SetStyleTexts(root_view_node, "\nx: 10; y: 23; width: 52;\nvisibility: 1;\n",
-                true);
-  EXPECT_EQ(gfx::Rect(10, 23, 52, 73), root_view->bounds());
-  EXPECT_TRUE(root_view->visible());
-}
 
 }  // namespace ui_devtools

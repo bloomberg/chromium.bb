@@ -15,10 +15,14 @@ WidgetElement::WidgetElement(views::Widget* widget,
     : UIElement(UIElementType::WIDGET, ui_element_delegate, parent),
       widget_(widget) {
   widget_->AddRemovalsObserver(this);
+  widget_->AddObserver(this);
 }
 
 WidgetElement::~WidgetElement() {
-  widget_->RemoveRemovalsObserver(this);
+  if (widget_) {
+    widget_->RemoveRemovalsObserver(this);
+    widget_->RemoveObserver(this);
+  }
 }
 
 void WidgetElement::OnWillRemoveView(views::Widget* widget, views::View* view) {
@@ -34,6 +38,12 @@ void WidgetElement::OnWidgetBoundsChanged(views::Widget* widget,
                                           const gfx::Rect& new_bounds) {
   DCHECK_EQ(widget, widget_);
   delegate()->OnUIElementBoundsChanged(this);
+}
+
+void WidgetElement::OnWidgetDestroyed(views::Widget* widget) {
+  DCHECK_EQ(widget, widget_);
+  delegate()->OnUIElementRemoved(this);
+  widget_ = nullptr;
 }
 
 std::vector<std::pair<std::string, std::string>>
