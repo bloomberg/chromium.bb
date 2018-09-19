@@ -11,6 +11,7 @@
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/ui_controls_aura.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -50,7 +51,9 @@ void AshInteractiveUITestBase::SetUp() {
       resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_NONE);
-  env_ = aura::Env::CreateInstance();
+  env_ = aura::Env::CreateInstance(features::IsSingleProcessMash()
+                                       ? aura::Env::Mode::MUS
+                                       : aura::Env::Mode::LOCAL);
   ui_controls::InstallUIControlsAura(test::CreateAshUIControls());
 
   AshTestBase::SetUp();
