@@ -5432,6 +5432,9 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
                        yoffset, zoffset))
     return;
 
+  GLint adjusted_internalformat =
+      ConvertTexInternalFormat(internalformat, type);
+
   // For WebGL last-uploaded-frame-metadata API. https://crbug.com/639174
   WebMediaPlayer::VideoFrameUploadMetadata frame_metadata = {};
   int already_uploaded_id = -1;
@@ -5470,8 +5473,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     // SW path.
 
     if (video->CopyVideoTextureToPlatformTexture(
-            ContextGL(), target, texture->Object(), internalformat, format,
-            type, level, unpack_premultiply_alpha_, unpack_flip_y_,
+            ContextGL(), target, texture->Object(), adjusted_internalformat,
+            format, type, level, unpack_premultiply_alpha_, unpack_flip_y_,
             already_uploaded_id, frame_metadata_ptr)) {
       texture->UpdateLastUploadedFrame(frame_metadata);
       return;
@@ -5481,8 +5484,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     // (e.g. video camera frames): upload them to the GPU, do a GPU decode, and
     // then copy into the target texture.
     if (video->CopyVideoYUVDataToPlatformTexture(
-            ContextGL(), target, texture->Object(), internalformat, format,
-            type, level, unpack_premultiply_alpha_, unpack_flip_y_,
+            ContextGL(), target, texture->Object(), adjusted_internalformat,
+            format, type, level, unpack_premultiply_alpha_, unpack_flip_y_,
             already_uploaded_id, frame_metadata_ptr)) {
       texture->UpdateLastUploadedFrame(frame_metadata);
       return;
@@ -5497,8 +5500,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     if (video->TexImageImpl(
             static_cast<WebMediaPlayer::TexImageFunctionID>(function_id),
             target, ContextGL(), texture->Object(), level,
-            ConvertTexInternalFormat(internalformat, type), format, type,
-            xoffset, yoffset, zoffset, unpack_flip_y_,
+            adjusted_internalformat, format, type, xoffset, yoffset, zoffset,
+            unpack_flip_y_,
             unpack_premultiply_alpha_ &&
                 unpack_colorspace_conversion_ == GL_NONE)) {
       texture->ClearLastUploadedFrame();
@@ -5510,8 +5513,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
       VideoFrameToImage(video, already_uploaded_id, frame_metadata_ptr);
   if (!image)
     return;
-  TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
-               zoffset, format, type, image.get(),
+  TexImageImpl(function_id, target, level, adjusted_internalformat, xoffset,
+               yoffset, zoffset, format, type, image.get(),
                WebGLImageConversion::kHtmlDomVideo, unpack_flip_y_,
                unpack_premultiply_alpha_, source_image_rect, depth,
                unpack_image_height);
