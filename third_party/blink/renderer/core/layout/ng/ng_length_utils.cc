@@ -965,17 +965,13 @@ NGLogicalSize CalculateBorderBoxSize(
                                   block_content_size, border_padding));
 }
 
-NGLogicalSize CalculateContentBoxSize(
-    const NGLogicalSize border_box_size,
-    const NGBoxStrut& border_scrollbar_padding) {
-  NGLogicalSize size = border_box_size;
-  size.inline_size -= border_scrollbar_padding.InlineSum();
+NGLogicalSize ShrinkAvailableSize(NGLogicalSize size, const NGBoxStrut& inset) {
+  DCHECK_NE(size.inline_size, NGSizeIndefinite);
+  size.inline_size -= inset.InlineSum();
   size.inline_size = std::max(size.inline_size, LayoutUnit());
 
-  // Our calculated block-axis size may still be indefinite. If so, just leave
-  // the size as NGSizeIndefinite instead of subtracting borders and padding.
   if (size.block_size != NGSizeIndefinite) {
-    size.block_size -= border_scrollbar_padding.BlockSum();
+    size.block_size -= inset.BlockSum();
     size.block_size = std::max(size.block_size, LayoutUnit());
   }
 
@@ -1073,7 +1069,7 @@ NGLogicalSize CalculateReplacedChildPercentageSize(
   }
 
   NGLogicalSize child_percentage_size =
-      CalculateContentBoxSize(border_box_size, border_scrollbar_padding);
+      ShrinkAvailableSize(border_box_size, border_scrollbar_padding);
 
   return AdjustChildPercentageSizeForQuirksAndFlex(
       space, node, child_percentage_size,

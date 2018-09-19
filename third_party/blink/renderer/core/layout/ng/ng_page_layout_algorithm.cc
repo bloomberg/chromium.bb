@@ -29,7 +29,7 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   NGLogicalSize border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Node());
   NGLogicalSize content_box_size =
-      CalculateContentBoxSize(border_box_size, border_scrollbar_padding);
+      ShrinkAvailableSize(border_box_size, border_scrollbar_padding);
   NGLogicalSize page_size = content_box_size;
 
   NGConstraintSpace child_space = CreateConstraintSpaceForPages(page_size);

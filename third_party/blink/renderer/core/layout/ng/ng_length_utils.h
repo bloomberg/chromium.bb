@@ -253,9 +253,10 @@ NGLogicalSize CalculateBorderBoxSize(
     LayoutUnit block_content_size = NGSizeIndefinite,
     const base::Optional<NGBoxStrut>& border_padding = base::nullopt);
 
-NGLogicalSize CalculateContentBoxSize(
-    const NGLogicalSize border_box_size,
-    const NGBoxStrut& border_scrollbar_padding);
+// Shrink and return the available size by an inset. This may e.g. be used to
+// convert from border-box to content-box size. Indefinite block size is
+// allowed, in which case the inset will be ignored for block size.
+NGLogicalSize ShrinkAvailableSize(NGLogicalSize size, const NGBoxStrut& inset);
 
 // Calculates the percentage resolution size that children of the node should
 // use.
