@@ -36,7 +36,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -562,13 +561,11 @@ void BrowserWindowCocoa::ShowOneClickSigninConfirmation(
 #endif
 
 bool BrowserWindowCocoa::IsDownloadShelfVisible() const {
-  return [controller_ isDownloadShelfVisible] != NO;
+  return false;
 }
 
 DownloadShelf* BrowserWindowCocoa::GetDownloadShelf() {
-  [controller_ createAndAddDownloadShelf];
-  DownloadShelfController* shelfController = [controller_ downloadShelf];
-  return [shelfController bridge];
+  return nullptr;
 }
 
 // We allow closing the window here since the real quit decision on Mac is made

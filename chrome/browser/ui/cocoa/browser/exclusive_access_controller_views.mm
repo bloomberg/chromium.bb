@@ -134,11 +134,9 @@ content::WebContents* ExclusiveAccessController::GetActiveWebContents() {
 }
 
 void ExclusiveAccessController::UnhideDownloadShelf() {
-  GetBrowserWindow()->GetDownloadShelf()->Unhide();
 }
 
 void ExclusiveAccessController::HideDownloadShelf() {
-  GetBrowserWindow()->GetDownloadShelf()->Hide();
   StatusBubble* statusBubble = GetBrowserWindow()->GetStatusBubble();
   if (statusBubble)
     statusBubble->Hide();
