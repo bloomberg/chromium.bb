@@ -867,8 +867,11 @@ bool DevToolsWindow::InterceptPageBeforeUnload(WebContents* contents) {
   window->intercepted_page_beforeunload_ = true;
   // Handle case of devtools inspecting another devtools instance by passing
   // the call up to the inspecting devtools instance.
+  // TODO(chrisha): Make devtools handle |auto_cancel=false| unload handler
+  // dispatches; otherwise, discarding queries can cause unload dialogs to
+  // pop-up for tabs with an attached devtools.
   if (!DevToolsWindow::InterceptPageBeforeUnload(window->main_web_contents_)) {
-    window->main_web_contents_->DispatchBeforeUnload();
+    window->main_web_contents_->DispatchBeforeUnload(false /* auto_cancel */);
   }
   return true;
 }
@@ -1229,7 +1232,7 @@ void DevToolsWindow::BeforeUnloadFired(WebContents* tab,
     // Inspected page is attempting to close.
     WebContents* inspected_web_contents = GetInspectedWebContents();
     if (proceed) {
-      inspected_web_contents->DispatchBeforeUnload();
+      inspected_web_contents->DispatchBeforeUnload(false /* auto_cancel */);
     } else {
       bool should_proceed;
       inspected_web_contents->GetDelegate()->BeforeUnloadFired(
@@ -1299,7 +1302,7 @@ void DevToolsWindow::ActivateWindow() {
 void DevToolsWindow::CloseWindow() {
   DCHECK(is_docked_);
   life_stage_ = kClosing;
-  main_web_contents_->DispatchBeforeUnload();
+  main_web_contents_->DispatchBeforeUnload(false /* auto_cancel */);
 }
 
 void DevToolsWindow::Inspect(scoped_refptr<content::DevToolsAgentHost> host) {

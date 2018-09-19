@@ -356,7 +356,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void WasOccluded() override;
   Visibility GetVisibility() const override;
   bool NeedToFireBeforeUnload() override;
-  void DispatchBeforeUnload() override;
+  void DispatchBeforeUnload(bool auto_cancel) override;
   void AttachToOuterWebContentsFrame(
       WebContents* outer_web_contents,
       RenderFrameHost* outer_contents_frame) override;

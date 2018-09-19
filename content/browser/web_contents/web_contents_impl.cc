@@ -1733,9 +1733,11 @@ bool WebContentsImpl::NeedToFireBeforeUnload() {
       true /* check_subframes_only */);
 }
 
-void WebContentsImpl::DispatchBeforeUnload() {
-  GetMainFrame()->DispatchBeforeUnload(
-      RenderFrameHostImpl::BeforeUnloadType::TAB_CLOSE, false);
+void WebContentsImpl::DispatchBeforeUnload(bool auto_cancel) {
+  auto before_unload_type =
+      auto_cancel ? RenderFrameHostImpl::BeforeUnloadType::DISCARD
+                  : RenderFrameHostImpl::BeforeUnloadType::TAB_CLOSE;
+  GetMainFrame()->DispatchBeforeUnload(before_unload_type, false);
 }
 
 void WebContentsImpl::AttachToOuterWebContentsFrame(
@@ -5965,7 +5967,7 @@ void WebContentsImpl::BeforeUnloadFiredFromRenderManager(
     bool proceed, const base::TimeTicks& proceed_time,
     bool* proceed_to_fire_unload) {
   for (auto& observer : observers_)
-    observer.BeforeUnloadFired(proceed_time);
+    observer.BeforeUnloadFired(proceed, proceed_time);
   if (delegate_)
     delegate_->BeforeUnloadFired(this, proceed, proceed_to_fire_unload);
   // Note: |this| might be deleted at this point.

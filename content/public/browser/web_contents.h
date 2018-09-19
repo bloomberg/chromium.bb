@@ -520,7 +520,12 @@ class WebContents : public PageNavigator,
 
   // Runs the beforeunload handler for the main frame and all its subframes.
   // See also ClosePage in RenderViewHostImpl, which runs the unload handler.
-  virtual void DispatchBeforeUnload() = 0;
+  // If |auto_cancel| is true, and the beforeunload handler returns a non-empty
+  // string (indicating the page wants to present a confirmation dialog), then
+  // the beforeunload operation will automatically return with |proceed=false|
+  // and no dialog will be shown to the user. This is used to interrupt a
+  // potential discard without causing the dialog to appear.
+  virtual void DispatchBeforeUnload(bool auto_cancel) = 0;
 
   // Attaches this inner WebContents to its container frame
   // |outer_contents_frame| in |outer_web_contents|.

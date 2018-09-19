@@ -462,7 +462,7 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
     on_close_web_contents_deleters_.push_back(
         std::make_unique<OnCloseWebContentsDeleter>(
             this, std::move(old_web_contents)));
-    old_web_contents_ptr->DispatchBeforeUnload();
+    old_web_contents_ptr->DispatchBeforeUnload(false /* auto_cancel */);
   } else {
     // No unload handler to run, so delete asap.
     ScheduleDeleteOldWebContents(std::move(old_web_contents), nullptr);
