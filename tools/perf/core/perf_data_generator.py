@@ -630,7 +630,8 @@ NON_TELEMETRY_BENCHMARKS = {
         'xhwang@chromium.org, crouleau@chromium.org',
         'Internals>Media>Encrypted'),
     'media_perftests': BenchmarkMetadata('crouleau@chromium.org'),
-    'performance_browser_tests': BenchmarkMetadata('miu@chromium.org'),
+    'performance_browser_tests': BenchmarkMetadata(
+        'miu@chromium.org', 'Internals>Media>ScreenCapture'),
     'views_perftests': BenchmarkMetadata(
         'tapted@chromium.org', 'Internals>Views'),
     'components_perftests': BenchmarkMetadata('csharrison@chromium.org')
