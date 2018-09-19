@@ -27,7 +27,7 @@
 #include "components/offline_pages/core/background/offliner_stub.h"
 #include "components/offline_pages/core/background/request_coordinator_stub_taco.h"
 #include "components/offline_pages/core/background/request_queue.h"
-#include "components/offline_pages/core/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/background/scheduler.h"
 #include "components/offline_pages/core/background/scheduler_stub.h"
@@ -55,7 +55,6 @@ const bool kPowerRequired = true;
 const bool kUserRequested = true;
 const int kAttemptCount = 1;
 const std::string kRequestOrigin("abc.xyz");
-}  // namespace
 
 class ObserverStub : public RequestCoordinator::Observer {
  public:
@@ -125,6 +124,10 @@ class ObserverStub : public RequestCoordinator::Observer {
   PendingState pending_state_;
 };
 
+}  // namespace
+
+// This class is a friend of RequestCoordinator, and can't be in the anonymous
+// namespace.
 class RequestCoordinatorTest : public testing::Test {
  public:
   using RequestCoordinatorState = RequestCoordinator::RequestCoordinatorState;
@@ -133,7 +136,12 @@ class RequestCoordinatorTest : public testing::Test {
   ~RequestCoordinatorTest() override;
 
   void SetUp() override;
-
+  void TearDown() override {
+    PumpLoop();
+    coordinator_taco_.reset();
+    // Ensure cleanup tasks are complete, or we may leak memory.
+    task_runner_->FastForwardUntilNoTasksRemain();
+  }
   void PumpLoop();
 
   RequestCoordinator* coordinator() const {

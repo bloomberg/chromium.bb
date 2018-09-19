@@ -6,10 +6,11 @@
 
 #include "components/offline_pages/core/background/offliner_stub.h"
 #include "components/offline_pages/core/background/request_queue.h"
-#include "components/offline_pages/core/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/background/scheduler.h"
 #include "components/offline_pages/core/background/scheduler_stub.h"
+#include "components/offline_pages/core/background/test_request_queue_store.h"
 #include "components/offline_pages/core/offline_pages_ukm_reporter_stub.h"
 #include "services/network/test/test_network_quality_tracker.h"
 
@@ -17,8 +18,8 @@ namespace offline_pages {
 
 RequestCoordinatorStubTaco::RequestCoordinatorStubTaco() {
   policy_ = std::make_unique<OfflinerPolicy>();
-  queue_ = std::make_unique<RequestQueue>(
-      std::make_unique<RequestQueueInMemoryStore>());
+  queue_ =
+      std::make_unique<RequestQueue>(std::make_unique<TestRequestQueueStore>());
   offliner_ = std::make_unique<OfflinerStub>();
   scheduler_ = std::make_unique<SchedulerStub>();
   network_quality_tracker_ =
