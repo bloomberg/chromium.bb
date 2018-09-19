@@ -9,6 +9,7 @@
 
 #include "net/third_party/http2/hpack/huffman/hpack_huffman_decoder.h"
 #include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
+#include "net/third_party/quic/core/qpack/qpack_header_table.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
@@ -48,7 +49,11 @@ class QUIC_EXPORT_PRIVATE QpackDecoder {
   // Class to decode a single header block.
   class QUIC_EXPORT_PRIVATE ProgressiveDecoder {
    public:
-    explicit ProgressiveDecoder(HeadersHandlerInterface* handler);
+    ProgressiveDecoder() = delete;
+    ProgressiveDecoder(QpackHeaderTable* header_table,
+                       HeadersHandlerInterface* handler);
+    ProgressiveDecoder(const ProgressiveDecoder&) = delete;
+    ProgressiveDecoder& operator=(const ProgressiveDecoder&) = delete;
     ~ProgressiveDecoder() = default;
 
     // Provide a data fragment to decode.
@@ -60,24 +65,27 @@ class QUIC_EXPORT_PRIVATE QpackDecoder {
 
    private:
     enum class State {
-      kParseOpcode,
-      kNameLengthStart,
-      kNameLengthResume,
-      kNameLengthDone,
+      // Every instruction starts encoding an integer on the first octet:
+      // either an index or the length of the name string literal.
+      kStart,
+      kVarintResume,
+      kVarintDone,
+      // This might be followed by the name as a string literal.
       kNameString,
+      // This might be followed by the length of the value.
       kValueLengthStart,
       kValueLengthResume,
       kValueLengthDone,
+      // This might be followed by the value as a string literal.
       kValueString,
       kDone,
     };
 
     // One method for each state.  Some take input data and return the number of
     // octets processed.  Some only change internal state.
-    size_t DoParseOpcode(QuicStringPiece data);
-    size_t DoNameLengthStart(QuicStringPiece data);
-    size_t DoNameLengthResume(QuicStringPiece data);
-    void DoNameLengthDone();
+    size_t DoStart(QuicStringPiece data);
+    size_t DoVarintResume(QuicStringPiece data);
+    void DoVarintDone();
     size_t DoNameString(QuicStringPiece data);
     size_t DoValueLengthStart(QuicStringPiece data);
     size_t DoValueLengthResume(QuicStringPiece data);
@@ -87,6 +95,7 @@ class QUIC_EXPORT_PRIVATE QpackDecoder {
 
     void OnError(QuicStringPiece error_message);
 
+    const QpackHeaderTable* const header_table_;
     HeadersHandlerInterface* handler_;
     State state_;
     http2::HpackVarintDecoder varint_decoder_;
@@ -98,19 +107,28 @@ class QUIC_EXPORT_PRIVATE QpackDecoder {
     // True if a decoding error has been detected.
     bool error_detected_;
 
-    // Temporarily store decoded length for header name.
-    // Must be reset when header name is completely parsed.
+    // The following variables are used to carry information between states
+    // within a single header field.  That is, a value assigned while decoding
+    // one header field shall never be used for decoding subsequent header
+    // fields.
+
+    // True if the header field name is encoded as a string literal.
+    bool literal_name_;
+
+    // True if the header field value is encoded as a string literal.
+    bool literal_value_;
+
+    // Decoded length for header name.
     size_t name_length_;
 
-    // Temporarily store decoded length for header value.
-    // Must be reset when header value is completely parsed.
+    // Decoded length for header value.
     size_t value_length_;
 
-    // Temporarily store whether the currently parsed string (name or value) is
+    // Whether the currently parsed string (name or value) is
     // Huffman encoded.
     bool is_huffman_;
 
-    // Temporarily store decoded header name and value.
+    // Decoded header name and value.
     QuicString name_;
     QuicString value_;
   };
@@ -120,6 +138,9 @@ class QUIC_EXPORT_PRIVATE QpackDecoder {
   // is destroyed or the decoder calls |handler->OnHeaderBlockEnd()|.
   std::unique_ptr<ProgressiveDecoder> DecodeHeaderBlock(
       HeadersHandlerInterface* handler);
+
+ private:
+  QpackHeaderTable header_table_;
 };
 
 }  // namespace quic

@@ -19,7 +19,9 @@ namespace {
 // header block.
 class QpackProgressiveEncoder : public spdy::HpackEncoder::ProgressiveEncoder {
  public:
-  explicit QpackProgressiveEncoder(const spdy::SpdyHeaderBlock* header_list);
+  QpackProgressiveEncoder() = delete;
+  QpackProgressiveEncoder(QpackHeaderTable* header_table,
+                          const spdy::SpdyHeaderBlock* header_list);
   QpackProgressiveEncoder(const QpackProgressiveEncoder&) = delete;
   QpackProgressiveEncoder& operator=(const QpackProgressiveEncoder&) = delete;
   ~QpackProgressiveEncoder() = default;
@@ -32,26 +34,45 @@ class QpackProgressiveEncoder : public spdy::HpackEncoder::ProgressiveEncoder {
 
  private:
   enum class State {
-    kNameStart,
-    kNameLength,
+    // Every instruction starts encoding an integer on the first octet:
+    // either an index or the length of the name string literal.
+    kStart,
+    kVarintResume,
+    kVarintDone,
+    // This might be followed by the name as a string literal.
     kNameString,
+    // This might be followed by the length of the value.
     kValueStart,
     kValueLength,
+    // This might be followed by the value as a string literal.
     kValueString
   };
 
-  // One method for each state.  They each encode up to |max_encoded_bytes|
-  // octets, appending to |output|.
-  size_t DoNameStart(size_t max_encoded_bytes, QuicString* output);
-  size_t DoNameLength(size_t max_encoded_bytes, QuicString* output);
+  // One method for each state.  Some encode up to |max_encoded_bytes| octets,
+  // appending to |output|.  Some only change internal state.
+  size_t DoStart(size_t max_encoded_bytes, QuicString* output);
+  size_t DoVarintResume(size_t max_encoded_bytes, QuicString* output);
+  void DoVarintDone();
   size_t DoNameString(size_t max_encoded_bytes, QuicString* output);
   size_t DoValueStart(size_t max_encoded_bytes, QuicString* output);
   size_t DoValueLength(size_t max_encoded_bytes, QuicString* output);
   size_t DoValueString(size_t max_encoded_bytes, QuicString* output);
 
+  const QpackHeaderTable* const header_table_;
   const spdy::SpdyHeaderBlock* const header_list_;
   spdy::SpdyHeaderBlock::const_iterator header_list_iterator_;
   State state_;
+  http2::HpackVarintEncoder varint_encoder_;
+
+  // The following variables are used to carry information between states
+  // within a single header field.  That is, a value assigned while encoding one
+  // header field shall never be used for encoding subsequent header fields.
+
+  // True if the header field name is encoded as a string literal.
+  bool literal_name_;
+
+  // True if the header field value is encoded as a string literal.
+  bool literal_value_;
 
   // While encoding a string literal, |string_to_write_| points to the substring
   // that remains to be written.  This may be a substring of a string owned by
@@ -61,15 +82,17 @@ class QpackProgressiveEncoder : public spdy::HpackEncoder::ProgressiveEncoder {
   // Storage for the Huffman encoded string literal to be written if Huffman
   // encoding is used.
   QuicString huffman_encoded_string_;
-
-  http2::HpackVarintEncoder varint_encoder_;
 };
 
 QpackProgressiveEncoder::QpackProgressiveEncoder(
+    QpackHeaderTable* header_table,
     const spdy::SpdyHeaderBlock* header_list)
-    : header_list_(header_list),
+    : header_table_(header_table),
+      header_list_(header_list),
       header_list_iterator_(header_list_->begin()),
-      state_(State::kNameStart) {}
+      state_(State::kStart),
+      literal_name_(false),
+      literal_value_(false) {}
 
 bool QpackProgressiveEncoder::HasNext() const {
   return header_list_iterator_ != header_list_->end();
@@ -81,15 +104,17 @@ void QpackProgressiveEncoder::Next(size_t max_encoded_bytes,
   DCHECK_NE(0u, max_encoded_bytes);
 
   while (max_encoded_bytes > 0 && HasNext()) {
-    State old_state = state_;
     size_t encoded_bytes = 0;
 
     switch (state_) {
-      case State::kNameStart:
-        encoded_bytes = DoNameStart(max_encoded_bytes, output);
+      case State::kStart:
+        encoded_bytes = DoStart(max_encoded_bytes, output);
         break;
-      case State::kNameLength:
-        encoded_bytes = DoNameLength(max_encoded_bytes, output);
+      case State::kVarintResume:
+        encoded_bytes = DoVarintResume(max_encoded_bytes, output);
+        break;
+      case State::kVarintDone:
+        DoVarintDone();
         break;
       case State::kNameString:
         encoded_bytes = DoNameString(max_encoded_bytes, output);
@@ -106,65 +131,99 @@ void QpackProgressiveEncoder::Next(size_t max_encoded_bytes,
     }
 
     DCHECK_LE(encoded_bytes, max_encoded_bytes);
-
-    if (state_ == old_state) {
-      // Encoding stopped either because it has completed or the buffer is full.
-      DCHECK(encoded_bytes == max_encoded_bytes || !HasNext());
-
-      return;
-    }
-
     max_encoded_bytes -= encoded_bytes;
   }
 }
 
-size_t QpackProgressiveEncoder::DoNameStart(size_t max_encoded_bytes,
-                                            QuicString* output) {
-  string_to_write_ = header_list_iterator_->first;
-  http2::HuffmanEncode(string_to_write_, &huffman_encoded_string_);
+size_t QpackProgressiveEncoder::DoStart(size_t max_encoded_bytes,
+                                        QuicString* output) {
+  QuicStringPiece name = header_list_iterator_->first;
+  QuicStringPiece value = header_list_iterator_->second;
+  size_t index;
+  auto match_type = header_table_->FindHeaderField(name, value, &index);
 
-  // Use Huffman encoding if it cuts down on size.
-  if (huffman_encoded_string_.size() < string_to_write_.size()) {
-    string_to_write_ = huffman_encoded_string_;
-    output->push_back(varint_encoder_.StartEncoding(
-        kLiteralHeaderFieldOpcode | kLiteralNameHuffmanMask,
-        kLiteralHeaderFieldPrefixLength, string_to_write_.size()));
-  } else {
-    output->push_back(varint_encoder_.StartEncoding(
-        kLiteralHeaderFieldOpcode, kLiteralHeaderFieldPrefixLength,
-        string_to_write_.size()));
+  switch (match_type) {
+    case QpackHeaderTable::MatchType::kNameAndValue:
+      literal_name_ = false;
+      literal_value_ = false;
+
+      output->push_back(varint_encoder_.StartEncoding(
+          kIndexedHeaderFieldOpcode | kIndexedHeaderFieldStaticBit,
+          kIndexedHeaderFieldPrefixLength, index));
+
+      break;
+    case QpackHeaderTable::MatchType::kName:
+      literal_name_ = false;
+      literal_value_ = true;
+
+      output->push_back(varint_encoder_.StartEncoding(
+          kLiteralHeaderFieldNameReferenceOpcode |
+              kLiteralHeaderFieldNameReferenceStaticBit,
+          kLiteralHeaderFieldNameReferencePrefixLength, index));
+
+      break;
+    case QpackHeaderTable::MatchType::kNoMatch:
+      literal_name_ = true;
+      literal_value_ = true;
+
+      http2::HuffmanEncode(name, &huffman_encoded_string_);
+
+      // Use Huffman encoding if it cuts down on size.
+      if (huffman_encoded_string_.size() < name.size()) {
+        string_to_write_ = huffman_encoded_string_;
+        output->push_back(varint_encoder_.StartEncoding(
+            kLiteralHeaderFieldOpcode | kLiteralNameHuffmanMask,
+            kLiteralHeaderFieldPrefixLength, string_to_write_.size()));
+      } else {
+        string_to_write_ = name;
+        output->push_back(varint_encoder_.StartEncoding(
+            kLiteralHeaderFieldOpcode, kLiteralHeaderFieldPrefixLength,
+            string_to_write_.size()));
+      }
+      break;
   }
 
-  if (varint_encoder_.IsEncodingInProgress()) {
-    state_ = State::kNameLength;
-  } else if (string_to_write_.empty()) {
-    state_ = State::kValueStart;
-  } else {
-    state_ = State::kNameString;
-  }
-
+  state_ = varint_encoder_.IsEncodingInProgress() ? State::kVarintResume
+                                                  : State::kVarintDone;
   return 1;
 }
 
-size_t QpackProgressiveEncoder::DoNameLength(size_t max_encoded_bytes,
-                                             QuicString* output) {
+size_t QpackProgressiveEncoder::DoVarintResume(size_t max_encoded_bytes,
+                                               QuicString* output) {
   DCHECK(varint_encoder_.IsEncodingInProgress());
-  DCHECK(!string_to_write_.empty());
 
   const size_t encoded_bytes =
       varint_encoder_.ResumeEncoding(max_encoded_bytes, output);
   if (varint_encoder_.IsEncodingInProgress()) {
     DCHECK_EQ(encoded_bytes, max_encoded_bytes);
-  } else {
-    DCHECK_LE(encoded_bytes, max_encoded_bytes);
-    state_ = State::kNameString;
+    return encoded_bytes;
   }
 
+  DCHECK_LE(encoded_bytes, max_encoded_bytes);
+
+  state_ = State::kVarintDone;
   return encoded_bytes;
+}
+
+void QpackProgressiveEncoder::DoVarintDone() {
+  if (literal_name_) {
+    state_ = State::kNameString;
+    return;
+  }
+
+  if (literal_value_) {
+    state_ = State::kValueStart;
+    return;
+  }
+
+  ++header_list_iterator_;
+  state_ = State::kStart;
 }
 
 size_t QpackProgressiveEncoder::DoNameString(size_t max_encoded_bytes,
                                              QuicString* output) {
+  DCHECK(literal_name_);
+
   if (max_encoded_bytes < string_to_write_.size()) {
     const size_t encoded_bytes = max_encoded_bytes;
     QuicStrAppend(output, string_to_write_.substr(0, encoded_bytes));
@@ -180,6 +239,8 @@ size_t QpackProgressiveEncoder::DoNameString(size_t max_encoded_bytes,
 
 size_t QpackProgressiveEncoder::DoValueStart(size_t max_encoded_bytes,
                                              QuicString* output) {
+  DCHECK(literal_value_);
+
   string_to_write_ = header_list_iterator_->second;
   http2::HuffmanEncode(string_to_write_, &huffman_encoded_string_);
 
@@ -195,22 +256,15 @@ size_t QpackProgressiveEncoder::DoValueStart(size_t max_encoded_bytes,
         string_to_write_.size()));
   }
 
-  if (varint_encoder_.IsEncodingInProgress()) {
-    state_ = State::kValueLength;
-  } else if (string_to_write_.empty()) {
-    ++header_list_iterator_;
-    state_ = State::kNameStart;
-  } else {
-    state_ = State::kValueString;
-  }
-
+  state_ = varint_encoder_.IsEncodingInProgress() ? State::kValueLength
+                                                  : State::kValueString;
   return 1;
 }
 
 size_t QpackProgressiveEncoder::DoValueLength(size_t max_encoded_bytes,
                                               QuicString* output) {
+  DCHECK(literal_value_);
   DCHECK(varint_encoder_.IsEncodingInProgress());
-  DCHECK(!string_to_write_.empty());
 
   const size_t encoded_bytes =
       varint_encoder_.ResumeEncoding(max_encoded_bytes, output);
@@ -226,6 +280,8 @@ size_t QpackProgressiveEncoder::DoValueLength(size_t max_encoded_bytes,
 
 size_t QpackProgressiveEncoder::DoValueString(size_t max_encoded_bytes,
                                               QuicString* output) {
+  DCHECK(literal_value_);
+
   if (max_encoded_bytes < string_to_write_.size()) {
     const size_t encoded_bytes = max_encoded_bytes;
     QuicStrAppend(output, string_to_write_.substr(0, encoded_bytes));
@@ -235,7 +291,7 @@ size_t QpackProgressiveEncoder::DoValueString(size_t max_encoded_bytes,
 
   const size_t encoded_bytes = string_to_write_.size();
   QuicStrAppend(output, string_to_write_);
-  state_ = State::kNameStart;
+  state_ = State::kStart;
   ++header_list_iterator_;
   return encoded_bytes;
 }
@@ -244,7 +300,7 @@ size_t QpackProgressiveEncoder::DoValueString(size_t max_encoded_bytes,
 
 std::unique_ptr<spdy::HpackEncoder::ProgressiveEncoder>
 QpackEncoder::EncodeHeaderSet(const spdy::SpdyHeaderBlock* header_list) {
-  return std::make_unique<QpackProgressiveEncoder>(header_list);
+  return std::make_unique<QpackProgressiveEncoder>(&header_table_, header_list);
 }
 
 }  // namespace quic

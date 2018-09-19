@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "net/third_party/quic/core/qpack/qpack_header_table.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/spdy/core/hpack/hpack_encoder.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
@@ -26,6 +27,9 @@ class QUIC_EXPORT_PRIVATE QpackEncoder {
   // during the lifetime of the returned ProgressiveEncoder instance.
   std::unique_ptr<spdy::HpackEncoder::ProgressiveEncoder> EncodeHeaderSet(
       const spdy::SpdyHeaderBlock* header_list);
+
+ private:
+  QpackHeaderTable header_table_;
 };
 
 }  // namespace quic

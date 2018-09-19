@@ -15,6 +15,7 @@ namespace quic {
 // 5.4.2.1. Indexed Header Field
 const uint8_t kIndexedHeaderFieldOpcode = 0b10000000;
 const uint8_t kIndexedHeaderFieldOpcodeMask = 0b10000000;
+const uint8_t kIndexedHeaderFieldStaticBit = 0b01000000;
 const uint8_t kIndexedHeaderFieldPrefixLength = 6;
 
 // 5.4.2.2. Indexed Header Field With Post-Base Index
@@ -25,6 +26,7 @@ const uint8_t kIndexedHeaderFieldPostBasePrefixLength = 4;
 // 5.4.2.3. Literal Header Field With Name Reference
 const uint8_t kLiteralHeaderFieldNameReferenceOpcode = 0b01000000;
 const uint8_t kLiteralHeaderFieldNameReferenceOpcodeMask = 0b11000000;
+const uint8_t kLiteralHeaderFieldNameReferenceStaticBit = 0b00010000;
 const uint8_t kLiteralHeaderFieldNameReferencePrefixLength = 4;
 
 // 5.4.2.4. Literal Header Field With Post-Base Name Reference
