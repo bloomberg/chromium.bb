@@ -6,6 +6,7 @@
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -21,24 +21,6 @@
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
-
-namespace {
-
-const uint32_t kUsbHidKeyboardPage = 0x07;
-
-int KeyModifiersToFlags(int modifiers) {
-  int flags = 0;
-  if (modifiers & fuchsia::ui::input::kModifierShift)
-    flags |= EF_SHIFT_DOWN;
-  if (modifiers & fuchsia::ui::input::kModifierControl)
-    flags |= EF_CONTROL_DOWN;
-  if (modifiers & fuchsia::ui::input::kModifierAlt)
-    flags |= EF_ALT_DOWN;
-  // TODO(crbug.com/850697): Add AltGraph support.
-  return flags;
-}
-
-}  // namespace
 
 ScenicWindow::ScenicWindow(
     ScenicWindowManager* window_manager,
@@ -48,6 +30,7 @@ ScenicWindow::ScenicWindow(
     : manager_(window_manager),
       delegate_(delegate),
       window_id_(manager_->AddWindow(this)),
+      event_dispatcher_(this),
       view_listener_binding_(this),
       scenic_session_(manager_->GetScenic(), this),
       input_listener_binding_(this) {
@@ -68,7 +51,7 @@ ScenicWindow::ScenicWindow(
   scenic_session_.AddNodeChild(parent_node_id_, node_id_);
 
   // Subscribe to metrics events from the parent node. These events are used to
-  // get |device_pixel_ratio_| for the screen.
+  // get the device pixel ratio for the screen.
   scenic_session_.SetEventMask(parent_node_id_,
                                fuchsia::ui::gfx::kMetricsEventMask);
 
@@ -82,6 +65,8 @@ ScenicWindow::ScenicWindow(
       fit::bind_member(this, &ScenicWindow::OnViewError));
 
   // Setup input event listener.
+  // TODO(crbug.com/881591): Migrate off InputConnection and use IMEService
+  // for receiving keyboard input instead.
   fuchsia::sys::ServiceProviderPtr view_service_provider;
   view_->GetServiceProvider(view_service_provider.NewRequest());
   view_service_provider->ConnectToService(
@@ -274,32 +259,12 @@ void ScenicWindow::OnEvent(fuchsia::ui::input::InputEvent event,
                            OnEventCallback callback) {
   bool result = false;
 
-  switch (event.Which()) {
-    case fuchsia::ui::input::InputEvent::Tag::kPointer:
-      switch (event.pointer().type) {
-        case fuchsia::ui::input::PointerEventType::MOUSE:
-          result = OnMouseEvent(event.pointer());
-          break;
-        case fuchsia::ui::input::PointerEventType::TOUCH:
-          result = OnTouchEvent(event.pointer());
-          break;
-        case fuchsia::ui::input::PointerEventType::STYLUS:
-        case fuchsia::ui::input::PointerEventType::INVERTED_STYLUS:
-          NOTIMPLEMENTED() << "Stylus input is not yet supported.";
-          break;
-      }
-      break;
-
-    case fuchsia::ui::input::InputEvent::Tag::kKeyboard:
-      result = OnKeyboardEvent(event.keyboard());
-      break;
-
-    case fuchsia::ui::input::InputEvent::Tag::kFocus:
-      result = OnFocusEvent(event.focus());
-      break;
-
-    case fuchsia::ui::input::InputEvent::Tag::Invalid:
-      break;
+  if (event.is_focus()) {
+    LOG(ERROR) << "RECEIVED FOCUS EVENT!";
+    delegate_->OnActivationChanged(event.focus().focused);
+    result = true;
+  } else {
+    result = event_dispatcher_.ProcessEvent(event);
   }
 
   callback(result);
@@ -310,131 +275,14 @@ void ScenicWindow::OnViewError() {
   delegate_->OnClosed();
 }
 
-bool ScenicWindow::OnMouseEvent(const fuchsia::ui::input::PointerEvent& event) {
-  int flags = 0;
-  if (event.buttons & 1)
-    flags |= EF_LEFT_MOUSE_BUTTON;
-  if (event.buttons & 2)
-    flags |= EF_RIGHT_MOUSE_BUTTON;
-  if (event.buttons & 4)
-    flags |= EF_MIDDLE_MOUSE_BUTTON;
-
-  EventType event_type;
-
-  switch (event.phase) {
-    case fuchsia::ui::input::PointerEventPhase::DOWN:
-      event_type = ET_MOUSE_PRESSED;
-      break;
-    case fuchsia::ui::input::PointerEventPhase::MOVE:
-      event_type = flags ? ET_MOUSE_DRAGGED : ET_MOUSE_MOVED;
-      break;
-    case fuchsia::ui::input::PointerEventPhase::UP:
-      event_type = ET_MOUSE_RELEASED;
-      break;
-
-    // Following phases are not expected for mouse events.
-    case fuchsia::ui::input::PointerEventPhase::HOVER:
-    case fuchsia::ui::input::PointerEventPhase::CANCEL:
-    case fuchsia::ui::input::PointerEventPhase::ADD:
-    case fuchsia::ui::input::PointerEventPhase::REMOVE:
-      NOTREACHED() << "Unexpected mouse phase "
-                   << fidl::ToUnderlying(event.phase);
-      return false;
+void ScenicWindow::DispatchEvent(ui::Event* event) {
+  if (event->IsLocatedEvent()) {
+    ui::LocatedEvent* located_event = event->AsLocatedEvent();
+    gfx::PointF location = located_event->location_f();
+    location.Scale(device_pixel_ratio_);
+    located_event->set_location_f(location);
   }
-
-  gfx::Point location =
-      gfx::Point(event.x * device_pixel_ratio_, event.y * device_pixel_ratio_);
-  ui::MouseEvent mouse_event(event_type, location, location,
-                             base::TimeTicks::FromZxTime(event.event_time),
-                             flags, 0);
-  delegate_->DispatchEvent(&mouse_event);
-  return true;
-}
-
-bool ScenicWindow::OnTouchEvent(const fuchsia::ui::input::PointerEvent& event) {
-  EventType event_type;
-
-  switch (event.phase) {
-    case fuchsia::ui::input::PointerEventPhase::DOWN:
-      event_type = ET_TOUCH_PRESSED;
-      break;
-    case fuchsia::ui::input::PointerEventPhase::MOVE:
-      event_type = ET_TOUCH_MOVED;
-      break;
-    case fuchsia::ui::input::PointerEventPhase::CANCEL:
-      event_type = ET_TOUCH_CANCELLED;
-      break;
-    case fuchsia::ui::input::PointerEventPhase::UP:
-      event_type = ET_TOUCH_RELEASED;
-      break;
-    case fuchsia::ui::input::PointerEventPhase::ADD:
-    case fuchsia::ui::input::PointerEventPhase::REMOVE:
-    case fuchsia::ui::input::PointerEventPhase::HOVER:
-      return false;
-  }
-
-  // TODO(crbug.com/876933): Add more detailed fields such as
-  // force/orientation/tilt once they are added to PointerEvent.
-  ui::PointerDetails pointer_details(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                                     event.pointer_id);
-
-  gfx::Point location =
-      gfx::Point(event.x * device_pixel_ratio_, event.y * device_pixel_ratio_);
-  ui::TouchEvent touch_event(event_type, location,
-                             base::TimeTicks::FromZxTime(event.event_time),
-                             pointer_details);
-
-  delegate_->DispatchEvent(&touch_event);
-  return true;
-}
-
-bool ScenicWindow::OnKeyboardEvent(
-    const fuchsia::ui::input::KeyboardEvent& event) {
-  EventType event_type;
-
-  switch (event.phase) {
-    case fuchsia::ui::input::KeyboardEventPhase::PRESSED:
-    case fuchsia::ui::input::KeyboardEventPhase::REPEAT:
-      event_type = ET_KEY_PRESSED;
-      break;
-
-    case fuchsia::ui::input::KeyboardEventPhase::RELEASED:
-      event_type = ET_KEY_RELEASED;
-      break;
-
-    case fuchsia::ui::input::KeyboardEventPhase::CANCELLED:
-      NOTIMPLEMENTED() << "Key event cancellation is not supported.";
-      event_type = ET_KEY_RELEASED;
-      break;
-  }
-
-  // Currently KeyboardEvent doesn't specify HID Usage page. |hid_usage|
-  // field always contains values from the Keyboard page. See
-  // https://fuchsia.atlassian.net/browse/SCN-762 .
-  DomCode dom_code = KeycodeConverter::UsbKeycodeToDomCode(
-      (kUsbHidKeyboardPage << 16) | event.hid_usage);
-  DomKey dom_key;
-  KeyboardCode key_code;
-  if (!DomCodeToUsLayoutDomKey(dom_code, KeyModifiersToFlags(event.modifiers),
-                               &dom_key, &key_code)) {
-    LOG(ERROR) << "DomCodeToUsLayoutDomKey() failed for usb_key: "
-               << event.hid_usage;
-    key_code = VKEY_UNKNOWN;
-  }
-
-  if (event.code_point)
-    dom_key = DomKey::FromCharacter(event.code_point);
-
-  KeyEvent key_event(event_type, key_code, dom_code,
-                     KeyModifiersToFlags(event.modifiers), dom_key,
-                     base::TimeTicks::FromZxTime(event.event_time));
-  delegate_->DispatchEvent(&key_event);
-  return true;
-}
-
-bool ScenicWindow::OnFocusEvent(const fuchsia::ui::input::FocusEvent& event) {
-  delegate_->OnActivationChanged(event.focused);
-  return true;
+  delegate_->DispatchEvent(event);
 }
 
 }  // namespace ui

@@ -232,4 +232,19 @@ jumbo_component("ime") {
   if (is_mac) {
     libs = [ "AppKit.framework" ]
   }
+
+  if (is_fuchsia) {
+    sources += [
+      "fuchsia/input_method_keyboard_controller_fuchsia.cc",
+      "fuchsia/input_method_keyboard_controller_fuchsia.h",
+      "input_method_fuchsia.cc",
+      "input_method_fuchsia.h",
+    ]
+
+    deps += [
+      "//third_party/fuchsia-sdk:input",
+      "//ui/events",
+      "//ui/events:dom_keycode_converter",
+    ]
+  }
 }
