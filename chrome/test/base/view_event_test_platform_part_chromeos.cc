@@ -22,6 +22,7 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/wm/core/wm_state.h"
 
@@ -62,7 +63,9 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
 
-  env_ = aura::Env::CreateInstance();
+  env_ = aura::Env::CreateInstance(features::IsSingleProcessMash()
+                                       ? aura::Env::Mode::MUS
+                                       : aura::Env::Mode::LOCAL);
   ash::ShellInitParams init_params;
   init_params.delegate = std::make_unique<ash::TestShellDelegate>();
   init_params.context_factory = context_factory;
