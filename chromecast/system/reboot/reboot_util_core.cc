@@ -37,6 +37,8 @@ bool RebootUtil::IsValidRebootSource(RebootShlib::RebootSource reboot_source) {
     case RebootShlib::RebootSource::PROCESS_MANAGER:
     case RebootShlib::RebootSource::CRASH_UPLOADER:
     case RebootShlib::RebootSource::FDR:
+    case RebootShlib::RebootSource::HW_WATCHDOG:
+    case RebootShlib::RebootSource::SW_OTHER:
       return true;
     default:
       return false;
