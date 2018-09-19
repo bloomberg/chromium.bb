@@ -35,13 +35,7 @@ class TtsEngineExtensionObserver
   // Gets the currently loaded TTS extension ids.
   const std::set<std::string> GetTtsExtensions();
 
-  // Gets voices for |extension_id| either from TtsEngine.updateVoices,
-  // or falling back on the manifest voices otherwise.
-  const std::vector<extensions::TtsVoice>* GetAllVoices(
-      const extensions::Extension* extension);
-
-  // Gets only the voices for |extension_id| that were updated through
-  // TtsEngine.updateVoices.
+  // Gets voices for |extension_id| updated through TtsEngine.updateVoices.
   const std::vector<extensions::TtsVoice>* GetRuntimeVoices(
       const std::string extension_id);
 
