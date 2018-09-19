@@ -103,6 +103,10 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const;
 
+  // Returns true if |web_contents| is in fullscreen mode as a screen-captured
+  // tab. See 'FullscreenWithinTab Note'.
+  bool IsFullscreenWithinTab(const content::WebContents* web_contents) const;
+
   // True if fullscreen was entered because of tab fullscreen (was not
   // previously in user-initiated fullscreen).
   bool IsFullscreenCausedByTab() const;
@@ -173,9 +177,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   // See 'FullscreenWithinTab Note'.
   bool MaybeToggleFullscreenWithinTab(content::WebContents* web_contents,
                                       bool enter_fullscreen);
-  // Returns true if |web_contents| is in fullscreen mode as a screen-captured
-  // tab. See 'FullscreenWithinTab Note'.
-  bool IsFullscreenWithinTab(const content::WebContents* web_contents) const;
 
   // Helper methods that should be used in a TAB context.
   GURL GetRequestingOrigin() const;
