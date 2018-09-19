@@ -224,6 +224,10 @@ public final class OAuth2TokenService
      */
     @CalledByNative
     public static boolean hasOAuth2RefreshToken(String accountName) {
+        if (!AccountManagerFacade.get().isCachePopulated()) {
+            return false;
+        }
+
         // Temporarily allowing disk read while fixing. TODO: http://crbug.com/618096.
         // This function is called in RefreshTokenIsAvailable of OAuth2TokenService which is
         // expected to be called in the UI thread synchronously.

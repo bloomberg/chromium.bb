@@ -38,12 +38,12 @@ import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Test class for {@link AccountManagerFacade}.
+ * Robolectric tests for {@link AccountManagerFacade}. See also {@link AccountManagerFacadeTest}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, CustomShadowUserManager.class})
-public class AccountManagerFacadeTest {
+public class AccountManagerFacadeRobolectricTest {
     @Rule
     public UiThreadTestRule mRule = new UiThreadTestRule();
 

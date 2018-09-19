@@ -283,6 +283,16 @@ public class AccountManagerFacade {
     }
 
     /**
+     * Returns whether the account cache has already been populated. {@link #getGoogleAccounts()}
+     * and similar methods will return instantly if the cache has been populated, otherwise these
+     * methods may block waiting for the cache to be populated.
+     */
+    @AnyThread
+    public boolean isCachePopulated() {
+        return mFilteredAccounts.get() != null;
+    }
+
+    /**
      * Retrieves all Google accounts on the device.
      *
      * @throws AccountManagerDelegateException if Google Play Services are out of date,
