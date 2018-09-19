@@ -27,7 +27,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//services/device/bluetooth",
     "//services/device/fingerprint",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
@@ -52,7 +51,10 @@ source_set("lib") {
   }
 
   if (is_chromeos && use_dbus) {
-    deps += [ "//services/device/media_transfer_protocol" ]
+    deps += [
+      "//services/device/bluetooth:bluetooth_system",
+      "//services/device/media_transfer_protocol",
+    ]
   }
 
   if (is_serial_enabled_platform) {
@@ -110,7 +112,6 @@ source_set("tests") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",
-    "//services/device/bluetooth:tests",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
     "//services/device/geolocation:test_support",
@@ -142,6 +143,7 @@ source_set("tests") {
     deps += [
       "//chromeos",
       "//dbus",
+      "//services/device/bluetooth:bluetooth_system_tests",
       "//services/device/fingerprint",
       "//third_party/protobuf:protobuf_lite",
     ]
