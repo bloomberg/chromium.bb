@@ -18,7 +18,7 @@
 #include "net/base/ip_endpoint.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
-#include "third_party/blink/public/mojom/messaging/message_port.mojom.h"
+#include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/blink/web_input_event_traits.h"

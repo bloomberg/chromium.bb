@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "third_party/blink/public/mojom/messaging/message_port.mojom-blink.h"
+#include "third_party/blink/public/mojom/messaging/transferable_message.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"

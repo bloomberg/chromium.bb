@@ -26,12 +26,12 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   TransferableMessage& operator=(TransferableMessage&&);
   ~TransferableMessage();
 
-  // Any ports being transfered as part of this message.
+  // Any ports being transferred as part of this message.
   std::vector<MessagePortChannel> ports;
-  // The contents of any ArrayBuffers being transfered as part of this message.
+  // The contents of any ArrayBuffers being transferred as part of this message.
   std::vector<mojom::SerializedArrayBufferContentsPtr>
       array_buffer_contents_array;
-  // The contents of any ImageBitmaps being transfered as part of this message.
+  // The contents of any ImageBitmaps being transferred as part of this message.
   std::vector<SkBitmap> image_bitmap_contents_array;
 
   // Whether the recipient should have a user gesture when it processes this

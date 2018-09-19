@@ -6,7 +6,7 @@ module content.mojom;
 
 import "content/common/service_worker/controller_service_worker.mojom";
 import "mojo/public/mojom/base/string16.mojom";
-import "third_party/blink/public/mojom/messaging/message_port.mojom";
+import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_object.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
