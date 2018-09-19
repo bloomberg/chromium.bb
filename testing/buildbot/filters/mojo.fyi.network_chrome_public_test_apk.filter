@@ -7,7 +7,9 @@
 # Uncategorized timeouts or test failures.
 -org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromUserGestureInSubFrame
 
-# Fails because it expects to have no features enabled when run.
+# Fail because they expect to have no features enabled when run.
+-org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesAddToExistingFlags
+-org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesDoNotRemoveExistingFlags
 -org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesSetExistingFlags
 
 # http://crbug.com/882019
@@ -16,4 +18,8 @@
 -org.chromium.chrome.browser.UrlSchemeTest.testContentUrlImageFromContentUrl
 
 # https://crbug.com/721403
+-org.chromium.chrome.browser.TabsOpenedFromExternalAppTest.testLaunchWebLiteURL
+-org.chromium.chrome.browser.appmenu.DataSaverAppMenuTest.testMenuDataSaver
+-org.chromium.chrome.browser.appmenu.DataSaverAppMenuTest.testMenuDataSaverPersistent
+-org.chromium.chrome.browser.customtabs.CustomTabActivityTest.testLaunchWebLiteURL
 -org.chromium.chrome.browser.infobar.InfoBarTest.testDataReductionPromoInfoBar
