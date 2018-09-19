@@ -46,7 +46,31 @@
             android:layout_height="wrap_content"
             android:lineSpacingExtra="3dp"
             android:paddingTop="8dp"
-            android:textAppearance="@style/BlackBodyDefault" />
+            android:textAppearance="@style/BlackBodyDefault"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/page_info_separator"
+            android:layout_marginTop="16dp"
+            style="@style/HorizontalDivider"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/page_info_preview_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="14dp"
+            android:textAppearance="@style/BlackTitle1"
+            android:text="@string/page_info_preview_message"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/page_info_preview_load_original"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="12dp"
+            android:textAppearance="@style/BlackTitle1"
+            android:visibility="gone" />
     </LinearLayout>
 
     <org.chromium.ui.widget.ButtonCompat

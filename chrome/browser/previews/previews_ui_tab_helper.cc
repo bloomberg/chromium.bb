@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
-#include "build/build_config.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -56,6 +55,11 @@ void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
 
 PreviewsUITabHelper::~PreviewsUITabHelper() {}
 
+PreviewsUITabHelper::PreviewsUITabHelper(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+}
+
 void PreviewsUITabHelper::ShowUIElement(
     previews::PreviewsType previews_type,
     base::Time previews_freshness,
@@ -68,6 +72,8 @@ void PreviewsUITabHelper::ShowUIElement(
   previews::PreviewsUIService* previews_ui_service =
       previews_service ? previews_service->previews_ui_service() : nullptr;
 
+  on_dismiss_callback_ = std::move(on_dismiss_callback);
+
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(
           previews::features::kAndroidOmniboxPreviewsBadge)) {
@@ -76,14 +82,44 @@ void PreviewsUITabHelper::ShowUIElement(
   }
 #endif
 
-  PreviewsInfoBarDelegate::Create(
-      web_contents(), previews_type, previews_freshness, is_data_saver_user,
-      is_reload, std::move(on_dismiss_callback), previews_ui_service);
+  PreviewsInfoBarDelegate::Create(web_contents(), previews_type,
+                                  previews_freshness, is_data_saver_user,
+                                  is_reload, previews_ui_service);
 }
 
-PreviewsUITabHelper::PreviewsUITabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+void PreviewsUITabHelper::ReloadWithoutPreviews() {
+  DCHECK(previews_user_data_);
+  ReloadWithoutPreviews(previews_user_data_->committed_previews_type());
+}
+
+void PreviewsUITabHelper::ReloadWithoutPreviews(
+    previews::PreviewsType previews_type) {
+#if defined(OS_ANDROID)
+  should_display_android_omnibox_badge_ = false;
+#endif
+  if (on_dismiss_callback_)
+    std::move(on_dismiss_callback_).Run(true);
+  switch (previews_type) {
+    case previews::PreviewsType::LITE_PAGE:
+    case previews::PreviewsType::LITE_PAGE_REDIRECT:
+    case previews::PreviewsType::OFFLINE:
+    case previews::PreviewsType::NOSCRIPT:
+    case previews::PreviewsType::RESOURCE_LOADING_HINTS:
+      // Previews may cause a redirect, so we should use the original URL. The
+      // black list prevents showing the preview again.
+      web_contents()->GetController().Reload(
+          content::ReloadType::ORIGINAL_REQUEST_URL, true);
+      break;
+    case previews::PreviewsType::LOFI:
+      web_contents()->ReloadLoFiImages();
+      break;
+    case previews::PreviewsType::NONE:
+    case previews::PreviewsType::UNSPECIFIED:
+    case previews::PreviewsType::LAST:
+    case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
+      NOTREACHED();
+      break;
+  }
 }
 
 void PreviewsUITabHelper::DidFinishNavigation(
@@ -94,7 +130,9 @@ void PreviewsUITabHelper::DidFinishNavigation(
     return;
 
   previews_user_data_.reset();
+#if defined(OS_ANDROID)
   should_display_android_omnibox_badge_ = false;
+#endif
   // Store Previews information for this navigation.
   ChromeNavigationData* nav_data = static_cast<ChromeNavigationData*>(
       navigation_handle->GetNavigationData());
@@ -149,14 +187,14 @@ void PreviewsUITabHelper::DidFinishNavigation(
                                true,
                                data_use_measurement::DataUseUserData::OTHER, 0);
 
-    PreviewsUITabHelper::ShowUIElement(
-        previews::PreviewsType::OFFLINE, base::Time() /* previews_freshness */,
-        data_reduction_proxy_settings && data_saver_enabled,
-        false /* is_reload */,
-        base::BindOnce(&AddPreviewNavigationCallback,
-                       web_contents()->GetBrowserContext(),
-                       navigation_handle->GetRedirectChain()[0],
-                       previews::PreviewsType::OFFLINE, page_id));
+    ShowUIElement(previews::PreviewsType::OFFLINE,
+                  base::Time() /* previews_freshness */,
+                  data_reduction_proxy_settings && data_saver_enabled,
+                  false /* is_reload */,
+                  base::BindOnce(&AddPreviewNavigationCallback,
+                                 web_contents()->GetBrowserContext(),
+                                 navigation_handle->GetRedirectChain()[0],
+                                 previews::PreviewsType::OFFLINE, page_id));
 
     // Don't try to show other UIs if this is an offline preview.
     return;
@@ -177,13 +215,12 @@ void PreviewsUITabHelper::DidFinishNavigation(
           headers->GetDateValue(&previews_freshness);
       }
 
-      PreviewsUITabHelper::ShowUIElement(
-          main_frame_preview, previews_freshness, true /* is_data_saver_user */,
-          is_reload,
-          base::BindOnce(&AddPreviewNavigationCallback,
-                         web_contents()->GetBrowserContext(),
-                         navigation_handle->GetRedirectChain()[0],
-                         main_frame_preview, page_id));
+      ShowUIElement(main_frame_preview, previews_freshness,
+                    true /* is_data_saver_user */, is_reload,
+                    base::BindOnce(&AddPreviewNavigationCallback,
+                                   web_contents()->GetBrowserContext(),
+                                   navigation_handle->GetRedirectChain()[0],
+                                   main_frame_preview, page_id));
     }
   }
 }

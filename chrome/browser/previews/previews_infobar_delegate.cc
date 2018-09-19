@@ -62,32 +62,6 @@ void RecordStaleness(PreviewsInfoBarDelegate::PreviewsInfoBarTimestamp value) {
                             PreviewsInfoBarDelegate::TIMESTAMP_INDEX_BOUNDARY);
 }
 
-// Reloads the content of the page without previews.
-void ReloadWithoutPreviews(previews::PreviewsType previews_type,
-                           content::WebContents* web_contents) {
-  switch (previews_type) {
-    case previews::PreviewsType::LITE_PAGE:
-    case previews::PreviewsType::LITE_PAGE_REDIRECT:
-    case previews::PreviewsType::OFFLINE:
-    case previews::PreviewsType::NOSCRIPT:
-    case previews::PreviewsType::RESOURCE_LOADING_HINTS:
-      // Previews may cause a redirect, so we should use the original URL. The
-      // black list prevents showing the preview again.
-      web_contents->GetController().Reload(
-          content::ReloadType::ORIGINAL_REQUEST_URL, true);
-      break;
-    case previews::PreviewsType::LOFI:
-      web_contents->ReloadLoFiImages();
-      break;
-    case previews::PreviewsType::NONE:
-    case previews::PreviewsType::UNSPECIFIED:
-    case previews::PreviewsType::LAST:
-    case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
-      NOTREACHED();
-      break;
-  }
-}
-
 void InformPLMOfOptOut(content::WebContents* web_contents) {
   page_load_metrics::MetricsWebContentsObserver* metrics_web_contents_observer =
       page_load_metrics::MetricsWebContentsObserver::FromWebContents(
@@ -102,9 +76,6 @@ void InformPLMOfOptOut(content::WebContents* web_contents) {
 }  // namespace
 
 PreviewsInfoBarDelegate::~PreviewsInfoBarDelegate() {
-  if (!on_dismiss_callback_.is_null())
-    std::move(on_dismiss_callback_).Run(false);
-
   RecordPreviewsInfoBarAction(previews_type_, infobar_dismissed_action_);
 }
 
@@ -115,7 +86,6 @@ void PreviewsInfoBarDelegate::Create(
     base::Time previews_freshness,
     bool is_data_saver_user,
     bool is_reload,
-    OnDismissPreviewsUICallback on_dismiss_callback,
     previews::PreviewsUIService* previews_ui_service) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents);
@@ -131,7 +101,7 @@ void PreviewsInfoBarDelegate::Create(
 
   std::unique_ptr<PreviewsInfoBarDelegate> delegate(new PreviewsInfoBarDelegate(
       ui_tab_helper, previews_type, previews_freshness, is_data_saver_user,
-      is_reload, std::move(on_dismiss_callback)));
+      is_reload));
 
 #if defined(OS_ANDROID)
   std::unique_ptr<infobars::InfoBar> infobar_ptr(
@@ -166,8 +136,7 @@ PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
     previews::PreviewsType previews_type,
     base::Time previews_freshness,
     bool is_data_saver_user,
-    bool is_reload,
-    OnDismissPreviewsUICallback on_dismiss_callback)
+    bool is_reload)
     : ConfirmInfoBarDelegate(),
       ui_tab_helper_(ui_tab_helper),
       previews_type_(previews_type),
@@ -176,8 +145,7 @@ PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
       infobar_dismissed_action_(INFOBAR_DISMISSED_BY_TAB_CLOSURE),
       message_text_(l10n_util::GetStringUTF16(
           is_data_saver_user ? IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE
-                             : IDS_PREVIEWS_INFOBAR_FASTER_PAGE_TITLE)),
-      on_dismiss_callback_(std::move(on_dismiss_callback)) {
+                             : IDS_PREVIEWS_INFOBAR_FASTER_PAGE_TITLE)) {
   DCHECK(previews_type_ != previews::PreviewsType::NONE &&
          previews_type_ != previews::PreviewsType::UNSPECIFIED);
 }
@@ -234,15 +202,13 @@ base::string16 PreviewsInfoBarDelegate::GetLinkText() const {
 
 bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   infobar_dismissed_action_ = INFOBAR_LOAD_ORIGINAL_CLICKED;
-  if (!on_dismiss_callback_.is_null())
-    std::move(on_dismiss_callback_).Run(true);
 
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
 
   InformPLMOfOptOut(web_contents);
 
-  ReloadWithoutPreviews(previews_type_, web_contents);
+  ui_tab_helper_->ReloadWithoutPreviews(previews_type_);
 
   return true;
 }
