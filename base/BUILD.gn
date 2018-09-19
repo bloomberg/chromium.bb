@@ -3107,10 +3107,14 @@ if (is_android) {
     testonly = true
     java_files = [
       "android/junit/src/org/chromium/base/metrics/test/ShadowRecordHistogram.java",
+      "test/android/junit/src/org/chromium/base/task/test/BackgroundShadowAsyncTask.java",
+      "test/android/junit/src/org/chromium/base/task/test/CustomShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/test/BaseRobolectricTestRunner.java",
       "test/android/junit/src/org/chromium/base/test/asynctask/BackgroundShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/test/asynctask/CustomShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/test/util/TestRunnerTestRule.java",
+      "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTask.java",
+      "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/task/test/ShadowAsyncTaskBridge.java",
       "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/test/asynctask/ShadowAsyncTask.java",
       "//third_party/robolectric/custom_asynctask/java/src/org/chromium/base/test/asynctask/ShadowAsyncTaskBridge.java",
     ]
