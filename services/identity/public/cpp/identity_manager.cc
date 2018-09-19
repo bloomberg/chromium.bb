@@ -129,14 +129,26 @@ void IdentityManager::ClearPrimaryAccount(
 #endif  // defined(OS_CHROMEOS)
 
 std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() const {
-  // TODO(blundell): It seems wasteful to construct this vector every time this
-  // method is called, but it also seems bad to maintain the vector as an ivar
-  // along the map.
-  std::vector<AccountInfo> accounts;
-  accounts.reserve(accounts_with_refresh_tokens_.size());
+  std::vector<std::string> account_ids_with_tokens =
+      token_service_->GetAccounts();
 
-  for (const auto& pair : accounts_with_refresh_tokens_) {
-    accounts.push_back(pair.second);
+  std::vector<AccountInfo> accounts;
+  accounts.reserve(account_ids_with_tokens.size());
+
+  for (const std::string& account_id : account_ids_with_tokens) {
+    AccountInfo account_info =
+        account_tracker_service_->GetAccountInfo(account_id);
+
+    DCHECK(!account_info.IsEmpty() || account_id == kSupervisedUserPseudoEmail);
+    if (account_id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
+      // Populate the information manually to maintain the invariant that the
+      // account ID, gaia ID, and email are always set.
+      account_info.account_id = account_id;
+      account_info.email = kSupervisedUserPseudoEmail;
+      account_info.gaia = kSupervisedUserPseudoGaiaID;
+    }
+
+    accounts.push_back(account_info);
   }
 
   return accounts;
@@ -155,7 +167,7 @@ std::vector<AccountInfo> IdentityManager::GetAccountsInCookieJar(
 
 bool IdentityManager::HasAccountWithRefreshToken(
     const std::string& account_id) const {
-  return base::ContainsKey(accounts_with_refresh_tokens_, account_id);
+  return token_service_->RefreshTokenIsAvailable(account_id);
 }
 
 bool IdentityManager::HasPrimaryAccountWithRefreshToken() const {
