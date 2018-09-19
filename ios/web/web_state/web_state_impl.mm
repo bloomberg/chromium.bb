@@ -727,21 +727,11 @@ void WebStateImpl::SetHasOpener(bool has_opener) {
   created_with_opener_ = has_opener;
 }
 
-void WebStateImpl::TakeSnapshot(SnapshotCallback callback,
-                                CGSize target_size) const {
-  UIView* view = [web_controller_ view];
-  UIImage* snapshot = nil;
-  if (view && !CGRectIsEmpty(view.bounds)) {
-    CGFloat scaled_height =
-        view.bounds.size.height * target_size.width / view.bounds.size.width;
-    CGRect scaled_rect = CGRectMake(0, 0, target_size.width, scaled_height);
-    UIGraphicsBeginImageContextWithOptions(target_size, YES, 0);
-    [view drawViewHierarchyInRect:scaled_rect afterScreenUpdates:NO];
-    snapshot = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-  }
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), gfx::Image(snapshot)));
+void WebStateImpl::TakeSnapshot(SnapshotCallback callback) {
+  __block SnapshotCallback shared_callback = std::move(callback);
+  [web_controller_ takeSnapshotWithCompletion:^(UIImage* snapshot) {
+    std::move(shared_callback).Run(gfx::Image(snapshot));
+  }];
 }
 
 void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {

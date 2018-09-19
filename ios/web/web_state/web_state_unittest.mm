@@ -210,23 +210,26 @@ TEST_P(WebStateTest, Snapshot) {
   // The subview is added but not immediately painted, so a small delay is
   // necessary.
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
-  CGSize target_size = CGSizeMake(100.0f, 100.0f);
-  web_state()->TakeSnapshot(
-      base::BindOnce(^(gfx::Image snapshot) {
-        ASSERT_FALSE(snapshot.IsEmpty());
-        EXPECT_EQ(snapshot.Width(), target_size.width);
-        EXPECT_EQ(snapshot.Height(), target_size.height);
-        // Test a pixel on the left (red) side.
-        gfx::test::CheckColors(gfx::test::GetPlatformImageColor(
-                                   gfx::test::ToPlatformType(snapshot), 45, 50),
-                               SK_ColorRED);
-        // Test a pixel on the right (white) side.
-        gfx::test::CheckColors(gfx::test::GetPlatformImageColor(
-                                   gfx::test::ToPlatformType(snapshot), 55, 50),
-                               SK_ColorWHITE);
-        snapshot_complete = true;
-      }),
-      target_size);
+  web_state()->TakeSnapshot(base::BindOnce(^(gfx::Image snapshot) {
+    if (@available(iOS 11, *)) {
+      ASSERT_FALSE(snapshot.IsEmpty());
+      EXPECT_GT(snapshot.Width(), 0);
+      EXPECT_GT(snapshot.Height(), 0);
+      int red_pixel_x = (snapshot.Width() / 2) - 10;
+      int white_pixel_x = (snapshot.Width() / 2) + 10;
+      // Test a pixel on the left (red) side.
+      gfx::test::CheckColors(
+          gfx::test::GetPlatformImageColor(gfx::test::ToPlatformType(snapshot),
+                                           red_pixel_x, 50),
+          SK_ColorRED);
+      // Test a pixel on the right (white) side.
+      gfx::test::CheckColors(
+          gfx::test::GetPlatformImageColor(gfx::test::ToPlatformType(snapshot),
+                                           white_pixel_x, 50),
+          SK_ColorWHITE);
+    }
+    snapshot_complete = true;
+  }));
   WaitForCondition(^{
     return snapshot_complete;
   });

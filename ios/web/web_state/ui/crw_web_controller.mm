@@ -2282,6 +2282,25 @@ registerLoadRequestForURL:(const GURL&)requestURL
     self.navigationManagerImpl->DiscardNonCommittedItems();
 }
 
+- (void)takeSnapshotWithCompletion:(void (^)(UIImage*))completion {
+  if (@available(iOS 11, *)) {
+    if (_webView) {
+      [_webView
+          takeSnapshotWithConfiguration:nil
+                      completionHandler:^(UIImage* snapshot, NSError* error) {
+                        if (error)
+                          DLOG(ERROR) << "WKWebView snapshot error: "
+                                      << error.description;
+                        completion(snapshot);
+                      }];
+      return;
+    }
+  }
+  dispatch_async(dispatch_get_main_queue(), ^{
+    completion(nil);
+  });
+}
+
 #pragma mark -
 #pragma mark CRWWebControllerContainerViewDelegate
 
