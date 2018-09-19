@@ -397,7 +397,7 @@
     These charges could be one-time or recurring and may not be obvious.
   </message>
   <message name="IDS_BILLING_PRIMARY_BUTTON" desc="The text for the billing interstitial primary button.">
-    Go Back
+    Go back
   </message>
   <message name="IDS_BILLING_PROCEED_BUTTON" desc="The text for the billing interstitial proceed button.">
     Proceed
