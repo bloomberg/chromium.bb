@@ -5,9 +5,11 @@
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 
 #include <memory>
+#include <utility>
 
 #include <windows.ui.notifications.h>
 #include <wrl/client.h>
+#include <wrl/implements.h>
 
 #include "base/hash.h"
 #include "base/strings/string16.h"
@@ -200,7 +202,8 @@ TEST_F(NotificationPlatformBridgeWinTest, Suppress) {
 
   base::win::ScopedCOMInitializer com_initializer;
 
-  std::vector<winui::Notifications::IToastNotification*> notifications;
+  std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
+      notifications;
   notification_platform_bridge_win_->SetDisplayedNotificationsForTesting(
       &notifications);
 
@@ -220,9 +223,10 @@ TEST_F(NotificationPlatformBridgeWinTest, Suppress) {
   // Register a single notification with a specific tag.
   std::string tag_data = std::string(kNotificationId) + "|" + kProfileId + "|0";
   base::string16 tag = base::UintToString16(base::Hash(tag_data));
-  MockIToastNotification item1(
-      L"<toast launch=\"0|0|Default|0|https://foo.com/|id\"></toast>", tag);
-  notifications.push_back(&item1);
+  // Microsoft::WRL::Make() requires MockIToastNotification to derive from
+  // RuntimeClass.
+  notifications.push_back(Microsoft::WRL::Make<MockIToastNotification>(
+      L"<toast launch=\"0|0|Default|0|https://foo.com/|id\"></toast>", tag));
 
   // Request this notification with renotify true (should not be suppressed).
   ASSERT_HRESULT_SUCCEEDED(GetToast(launch_id, /*renotify=*/true, kProfileId,

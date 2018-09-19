@@ -6,6 +6,7 @@
 
 #include <windows.data.xml.dom.h>
 #include <wrl/client.h>
+#include <wrl/implements.h>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -341,7 +342,8 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   NotificationPlatformBridgeWin* bridge = GetBridge();
   ASSERT_TRUE(bridge);
 
-  std::vector<winui::Notifications::IToastNotification*> notifications;
+  std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
+      notifications;
   bridge->SetDisplayedNotificationsForTesting(&notifications);
 
   // Validate that empty list of notifications show 0 results.
@@ -361,20 +363,16 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   bool incognito = true;
 
   Profile* profile1 = CreateTestingProfile("P1");
-  MockIToastNotification item1(GetToastString(L"P1i", L"P1", incognito),
-                               L"tag");
-  notifications.push_back(&item1);
-  MockIToastNotification item2(GetToastString(L"P1reg", L"P1", !incognito),
-                               L"tag");
-  notifications.push_back(&item2);
+  notifications.push_back(Microsoft::WRL::Make<MockIToastNotification>(
+      GetToastString(L"P1i", L"P1", incognito), L"tag"));
+  notifications.push_back(Microsoft::WRL::Make<MockIToastNotification>(
+      GetToastString(L"P1reg", L"P1", !incognito), L"tag"));
 
   Profile* profile2 = CreateTestingProfile("P2");
-  MockIToastNotification item3(GetToastString(L"P2i", L"P2", incognito),
-                               L"tag");
-  notifications.push_back(&item3);
-  MockIToastNotification item4(GetToastString(L"P2reg", L"P2", !incognito),
-                               L"tag");
-  notifications.push_back(&item4);
+  notifications.push_back(Microsoft::WRL::Make<MockIToastNotification>(
+      GetToastString(L"P2i", L"P2", incognito), L"tag"));
+  notifications.push_back(Microsoft::WRL::Make<MockIToastNotification>(
+      GetToastString(L"P2reg", L"P2", !incognito), L"tag"));
 
   // Query for profile P1 in incognito (should return 1 item).
   {

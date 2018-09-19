@@ -18,40 +18,6 @@ MockIToastNotification::MockIToastNotification(const base::string16& xml,
                                                const base::string16& tag)
     : xml_(xml), group_(L"Notifications"), tag_(tag) {}
 
-HRESULT MockIToastNotification::QueryInterface(REFIID riid, void** ppvObject) {
-  if (riid == ABI::Windows::UI::Notifications::IID_IToastNotification) {
-    AddRef();
-    *ppvObject = static_cast<IToastNotification*>(this);
-    return S_OK;
-  } else if (riid == ABI::Windows::UI::Notifications::IID_IToastNotification2) {
-    AddRef();
-    *ppvObject = static_cast<IToastNotification2*>(this);
-    return S_OK;
-  }
-
-  return E_NOINTERFACE;
-}
-
-ULONG MockIToastNotification::AddRef() {
-  return ++refcount_;
-}
-
-ULONG MockIToastNotification::Release() {
-  return --refcount_;
-}
-
-HRESULT MockIToastNotification::GetIids(ULONG* iidCount, IID** iids) {
-  return E_NOTIMPL;
-}
-
-HRESULT MockIToastNotification::GetRuntimeClassName(HSTRING* className) {
-  return E_NOTIMPL;
-}
-
-HRESULT MockIToastNotification::GetTrustLevel(TrustLevel* trustLevel) {
-  return E_NOTIMPL;
-}
-
 HRESULT MockIToastNotification::get_Content(winxml::Dom::IXmlDocument** value) {
   mswr::ComPtr<ABI::Windows::Data::Xml::Dom::IXmlDocumentIO> xml_document_io;
   base::win::ScopedHString id = base::win::ScopedHString::Create(
