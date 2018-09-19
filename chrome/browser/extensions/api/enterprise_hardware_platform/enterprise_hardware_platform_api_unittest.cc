@@ -6,13 +6,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
-#include "base/json/json_writer.h"
-#include "chrome/browser/extensions/extension_api_unittest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
-#include "components/crx_file/id_util.h"
+#include "chrome/common/pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,47 +22,44 @@ class EnterpriseHardwarePlatformAPITest
  public:
   EnterpriseHardwarePlatformAPITest() = default;
   ~EnterpriseHardwarePlatformAPITest() override = default;
-  Browser* browser() { return browser_.get(); }
+
+ protected:
+  EnterpriseHardwarePlatformGetHardwarePlatformInfoFunction* function() {
+    return function_.get();
+  }
 
  private:
   void SetUp() override {
     ExtensionServiceTestWithInstall::SetUp();
-    InitializeEmptyExtensionService();
-    browser_window_ = std::make_unique<TestBrowserWindow>();
-    Browser::CreateParams params(profile(), true);
-    params.type = Browser::TYPE_TABBED;
-    params.window = browser_window_.get();
-    browser_ = std::make_unique<Browser>(params);
+    InitializeExtensionService(ExtensionServiceInitParams());
+
+    extension_ = ExtensionBuilder("Test").Build();
+    function_ = new EnterpriseHardwarePlatformGetHardwarePlatformInfoFunction();
+    function_->set_extension(extension_.get());
+    function_->set_has_callback(true);
   }
 
   void TearDown() override {
-    browser_.reset();
-    browser_window_.reset();
+    function_.reset();
+    extension_.reset();
     ExtensionServiceTestWithInstall::TearDown();
   }
 
-  std::unique_ptr<TestBrowserWindow> browser_window_;
-  std::unique_ptr<Browser> browser_;
+  scoped_refptr<const Extension> extension_;
+  scoped_refptr<EnterpriseHardwarePlatformGetHardwarePlatformInfoFunction>
+      function_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseHardwarePlatformAPITest);
 };
 
-TEST_F(EnterpriseHardwarePlatformAPITest, GetHardwarePlatformInfo) {
-  scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
-  scoped_refptr<EnterpriseHardwarePlatformGetHardwarePlatformInfoFunction>
-      function =
-          new EnterpriseHardwarePlatformGetHardwarePlatformInfoFunction();
-  function->set_extension(extension.get());
-  function->set_has_callback(true);
+TEST_F(EnterpriseHardwarePlatformAPITest, GetHardwarePlatformInfoAllowed) {
+  testing_pref_service()->SetManagedPref(
+      prefs::kEnterpriseHardwarePlatformAPIEnabled,
+      std::make_unique<base::Value>(true));
 
-  std::string args;
-  base::JSONWriter::Write(base::ListValue(), &args);
-
-  std::unique_ptr<base::Value> result(
-      extension_function_test_utils::RunFunctionAndReturnSingleResult(
-          function.get(), args, browser()));
-  base::RunLoop().RunUntilIdle();
-
+  std::unique_ptr<base::Value> result =
+      api_test_utils::RunFunctionAndReturnSingleResult(function(), "[]",
+                                                       browser_context());
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->is_dict());
   ASSERT_EQ(result->DictSize(), 2u);
@@ -79,6 +75,22 @@ TEST_F(EnterpriseHardwarePlatformAPITest, GetHardwarePlatformInfo) {
 
   EXPECT_FALSE(manufacturer.empty());
   EXPECT_FALSE(model.empty());
+}
+
+TEST_F(EnterpriseHardwarePlatformAPITest,
+       GetHardwarePlatformInfoNotAllowedExplicit) {
+  testing_pref_service()->SetDefaultPrefValue(
+      prefs::kEnterpriseHardwarePlatformAPIEnabled, base::Value(false));
+  std::string error = api_test_utils::RunFunctionAndReturnError(
+      function(), "[]", browser_context());
+  EXPECT_FALSE(error.empty());
+}
+
+TEST_F(EnterpriseHardwarePlatformAPITest,
+       GetHardwarePlatformInfoNotAllowedImplicit) {
+  std::string error = api_test_utils::RunFunctionAndReturnError(
+      function(), "[]", browser_context());
+  EXPECT_FALSE(error.empty());
 }
 
 }  // namespace extensions

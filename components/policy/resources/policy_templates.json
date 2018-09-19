@@ -13273,6 +13273,23 @@
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
     },
+    {
+      'name': 'EnterpriseHardwarePlatformAPIEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:71-', 'chrome_os:71-', 'android:71-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 483,
+      'caption': '''Enables the Hardware Platform API to policy-installed extensions''',
+      'tags': [],
+      'desc': '''When this policy is set to enabled, extensions installed by enterprise policy are allowed to use the Enterprise Hardware Platform API.
+      When this policy is set to disabled or not set, no extensions are allowed to use the Enterprise Hardware Platform API.
+      This policy also applies to component extensions such as the Hangout Services extension.''',
+    },
   ],
 
   'messages': {
@@ -13414,5 +13431,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 482
+  'highest_id_currently_used': 483
 }
