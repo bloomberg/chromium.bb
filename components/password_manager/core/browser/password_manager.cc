@@ -978,7 +978,14 @@ void PasswordManager::OnLoginSuccessful() {
               .only_for_fallback_saving);
 
   PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();
-  DCHECK(submitted_manager);
+  if (!submitted_manager) {
+    // This is a simple crash fix for merging in M-70.
+    // TODO(https://crbug.com/831123): fit it properly by making
+    // |submitted_manager| is not null here and put DCHECK(submitted_manager)
+    // instead.
+    return;
+  }
+
   if (ShouldPromptUserToSavePassword(*submitted_manager)) {
     bool empty_password =
         submitted_manager->GetPendingCredentials().username_value.empty();
