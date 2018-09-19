@@ -32,6 +32,8 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -571,6 +573,30 @@ class FakeTestVolume : public LocalTestVolume {
     return true;
   }
 
+  bool PrepareDcimTestEntries(Profile* profile) {
+    if (!CreateRootDirectory(profile))
+      return false;
+
+    CreateEntry(AddEntriesMessage::TestEntryInfo(
+        AddEntriesMessage::DIRECTORY, "", "DCIM", std::string(), "",
+        AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
+        AddEntriesMessage::EntryCapabilities(), false));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(
+        AddEntriesMessage::FILE, "image2.png", "image2.png", std::string(),
+        "image/png", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
+        AddEntriesMessage::EntryCapabilities(), false));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(
+        AddEntriesMessage::FILE, "image3.jpg", "DCIM/image3.jpg", std::string(),
+        "image/jpeg", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
+        AddEntriesMessage::EntryCapabilities(), false));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(
+        AddEntriesMessage::FILE, "text.txt", "DCIM/hello.txt", std::string(),
+        "text/plain", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
+        AddEntriesMessage::EntryCapabilities(), false));
+    base::RunLoop().RunUntilIdle();
+    return true;
+  }
+
   bool Mount(Profile* profile) override {
     if (!CreateRootDirectory(profile))
       return false;
@@ -1031,6 +1057,14 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
 }
 
 void FileManagerBrowserTestBase::SetUpOnMainThread() {
+  // Must happen after the browser process is created because instantiating
+  // the factory will instantiate ExtensionSystemFactory which depends on
+  // ExtensionsBrowserClient setup in BrowserProcessImpl.
+  sync_file_system::SyncFileSystemServiceFactory::GetInstance()
+      ->set_mock_remote_file_service(
+          std::make_unique<::testing::NiceMock<
+              sync_file_system::MockRemoteFileSyncService>>());
+
   extensions::ExtensionApiTest::SetUpOnMainThread();
   CHECK(profile());
   CHECK_EQ(!!browser(), GetRequiresStartupBrowser());
@@ -1266,13 +1300,16 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
-  if (name == "mountFakeUsb" || name == "mountFakeUsbEmpty") {
+  if (name == "mountFakeUsb" || name == "mountFakeUsbEmpty" ||
+      name == "mountFakeUsbDcim") {
     usb_volume_ = std::make_unique<FakeTestVolume>(
         "fake-usb", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
         chromeos::DEVICE_TYPE_USB);
 
     if (name == "mountFakeUsb")
       ASSERT_TRUE(usb_volume_->PrepareTestEntries(profile()));
+    else if (name == "mountFakeUsbDcim")
+      ASSERT_TRUE(usb_volume_->PrepareDcimTestEntries(profile()));
 
     ASSERT_TRUE(usb_volume_->Mount(profile()));
     return;
