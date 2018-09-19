@@ -5054,9 +5054,6 @@ crbug.com/873873 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/873873 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 
-# Tests that work only when LazyImageLoading feature is enabled.
-crbug.com/846170 http/tests/lazyload/lazy.html [ Skip ]
-
 # IntersectionObserverV2 tests run in a virtual test suite
 crbug.com/827639 intersection-observer/v2 [ Skip ]
 crbug.com/827639 http/tests/intersection-observer/v2 [ Skip ]

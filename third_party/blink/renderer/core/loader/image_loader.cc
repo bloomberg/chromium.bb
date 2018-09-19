@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/lazy_load_image_observer.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
@@ -451,6 +452,8 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
         params.SetClientLoFiPlaceholder();
       } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
         if (html_image->ElementCreatedByParser() &&
+            !EqualIgnoringASCIICase(
+                html_image->FastGetAttribute(HTMLNames::lazyloadAttr), "off") &&
             frame->IsLazyLoadingImageAllowed()) {
           params.SetAllowImagePlaceholder();
           lazy_image_load_state_ = LazyImageLoadState::kDeferred;
