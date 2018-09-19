@@ -252,6 +252,15 @@ std::string DemoSession::GetScreensaverAppId() {
   return extension_misc::kScreensaverAppId;
 }
 
+// static
+bool DemoSession::ShouldDisplayInAppLauncher(const std::string& app_id) {
+  if (!IsDeviceInDemoMode())
+    return true;
+  return app_id != GetScreensaverAppId() &&
+         app_id != extensions::kWebStoreAppId &&
+         app_id != extension_misc::kGeniusAppId;
+}
+
 void DemoSession::EnsureOfflineResourcesLoaded(
     base::OnceClosure load_callback) {
   if (offline_resources_loaded_) {
