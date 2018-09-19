@@ -4,6 +4,7 @@
 
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
@@ -12,26 +13,36 @@
 void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
     content::BrowserContext* context,
     TestingFactoryFunction testing_factory) {
-  RefcountedKeyedServiceFactory::TestingFactoryFunction func;
+  RefcountedKeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {
-    func = [=](base::SupportsUserData* context) {
-      return testing_factory(static_cast<content::BrowserContext*>(context));
-    };
+    wrapped_factory = base::BindRepeating(
+        [](TestingFactoryFunction testing_factory,
+           base::SupportsUserData* context) {
+          return testing_factory(
+              static_cast<content::BrowserContext*>(context));
+        },
+        testing_factory);
   }
-  RefcountedKeyedServiceFactory::SetTestingFactory(context, func);
+  RefcountedKeyedServiceFactory::SetTestingFactory(context,
+                                                   std::move(wrapped_factory));
 }
 
 scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
     content::BrowserContext* context,
     TestingFactoryFunction testing_factory) {
-  RefcountedKeyedServiceFactory::TestingFactoryFunction func;
+  RefcountedKeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {
-    func = [=](base::SupportsUserData* context) {
-      return testing_factory(static_cast<content::BrowserContext*>(context));
-    };
+    wrapped_factory = base::BindRepeating(
+        [](TestingFactoryFunction testing_factory,
+           base::SupportsUserData* context) {
+          return testing_factory(
+              static_cast<content::BrowserContext*>(context));
+        },
+        testing_factory);
   }
-  return RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(context, func);
+  return RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(
+      context, std::move(wrapped_factory));
 }
 
 RefcountedBrowserContextKeyedServiceFactory::

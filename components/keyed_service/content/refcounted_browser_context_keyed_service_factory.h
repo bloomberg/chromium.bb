@@ -33,7 +33,7 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
   // A function that supplies the instance of a KeyedService for a given
   // BrowserContext. This is used primarily for testing, where we want to feed
   // a specific mock into the BCKSF system.
-  typedef scoped_refptr<RefcountedKeyedService>(*TestingFactoryFunction)(
+  using TestingFactoryFunction = scoped_refptr<RefcountedKeyedService> (*)(
       content::BrowserContext* context);
 
   // Associates |factory| with |context| so that |factory| is used to create
