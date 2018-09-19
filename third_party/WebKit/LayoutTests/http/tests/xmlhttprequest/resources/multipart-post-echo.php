@@ -1,4 +1,5 @@
 <?php
+header('Access-Control-Allow-Origin: *');
 if (strpos($_SERVER['CONTENT_TYPE'], 'multipart/form-data; boundary=') != 0) {
     echo 'Invalid Content-Types.';
     return;
