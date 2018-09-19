@@ -129,6 +129,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void ClearCachedMetadata(const blink::WebURL&) override;
   void WorkerReadyForInspection() override;
   void WorkerContextFailedToStart() override;
+  void FailedToLoadInstalledScript() override;
   void WorkerScriptLoaded() override;
   void WorkerContextStarted(
       blink::WebServiceWorkerContextProxy* proxy) override;
