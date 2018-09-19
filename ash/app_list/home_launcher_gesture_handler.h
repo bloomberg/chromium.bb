@@ -55,6 +55,12 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   bool OnScrollEvent(const gfx::Point& location);
   bool OnReleaseEvent(const gfx::Point& location);
 
+  // Cancel a current drag and animates the items to their final state based on
+  // |last_event_location_|.
+  void Cancel();
+
+  bool IsDragInProgress() const { return last_event_location_.has_value(); }
+
   // TODO(sammiequon): Investigate if it is needed to observe potential window
   // visibility changes, if they can happen.
   // aura::WindowObserver:
@@ -67,8 +73,12 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   void OnImplicitAnimationsCompleted() override;
 
   aura::Window* window() { return window_; }
+  Mode mode() const { return mode_; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(HomeLauncherModeGestureHandlerTest,
+                           AnimatingToEndResetsState);
+
   // Stores the initial and target opacities and transforms of a window.
   struct WindowValues {
     float initial_opacity;
@@ -76,6 +86,9 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
     gfx::Transform initial_transform;
     gfx::Transform target_transform;
   };
+
+  // Animates the items based on |last_event_location_|.
+  void AnimateToFinalState();
 
   // Updates |settings| based on what we want for this class. This will listen
   // for animation complete call if |observe| is true.

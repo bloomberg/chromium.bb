@@ -749,6 +749,14 @@ bool AppListControllerImpl::ProcessHomeLauncherGesture(
   return false;
 }
 
+bool AppListControllerImpl::IsSwipingUpOnShelf() {
+  if (!home_launcher_gesture_handler_)
+    return false;
+
+  return home_launcher_gesture_handler_->mode() ==
+         HomeLauncherGestureHandler::Mode::kSwipeUpToShow;
+}
+
 ws::WindowService* AppListControllerImpl::GetWindowService() {
   return window_service_;
 }

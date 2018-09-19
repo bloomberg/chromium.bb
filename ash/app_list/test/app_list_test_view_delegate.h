@@ -78,6 +78,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::EventType type,
                                   const gfx::Point& screen_location) override;
+  bool IsSwipingUpOnShelf() override;
   ws::WindowService* GetWindowService() override;
 
   // Do a bulk replacement of the items in the model.

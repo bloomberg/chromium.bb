@@ -94,6 +94,10 @@ bool AppListTestViewDelegate::ProcessHomeLauncherGesture(
   return false;
 }
 
+bool AppListTestViewDelegate::IsSwipingUpOnShelf() {
+  return false;
+}
+
 ws::WindowService* AppListTestViewDelegate::GetWindowService() {
   return nullptr;
 }

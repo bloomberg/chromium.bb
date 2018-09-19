@@ -176,6 +176,7 @@ class ASH_EXPORT AppListControllerImpl
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::EventType type,
                                   const gfx::Point& screen_location) override;
+  bool IsSwipingUpOnShelf() override;
   ws::WindowService* GetWindowService() override;
 
   void OnVisibilityChanged(bool visible);

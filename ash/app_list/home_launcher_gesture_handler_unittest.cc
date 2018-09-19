@@ -95,6 +95,27 @@ TEST_F(HomeLauncherGestureHandlerTest, ShowWindowsAreHidden) {
   EXPECT_FALSE(window3->IsVisible());
 }
 
+TEST_F(HomeLauncherGestureHandlerTest, CancellingSwipeUp) {
+  UpdateDisplay("400x448");
+
+  auto window = CreateWindowForTesting();
+  ASSERT_TRUE(window->IsVisible());
+
+  // Tests that when cancelling a scroll that was on the bottom half, the window
+  // is still visible.
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300));
+  GetGestureHandler()->Cancel();
+  EXPECT_TRUE(window->IsVisible());
+
+  // Tests that when cancelling a scroll that was on the top half, the window is
+  // now invisible.
+  GetGestureHandler()->OnPressEvent(Mode::kSwipeUpToShow);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100));
+  GetGestureHandler()->Cancel();
+  EXPECT_FALSE(window->IsVisible());
+}
+
 // Tests that the home launcher gestures work with overview mode as expected.
 TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   UpdateDisplay("400x448");
@@ -293,6 +314,43 @@ TEST_P(HomeLauncherModeGestureHandlerTest, EndScrollOnTabletModeEnd) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_FALSE(GetGestureHandler()->window());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());
+}
+
+// Tests that the variables get set as expected during dragging, and get reset
+// after finishing a drag.
+TEST_P(HomeLauncherModeGestureHandlerTest, AnimatingToEndResetsState) {
+  // Create a window with a transient child to test that case.
+  auto window1 = CreateWindowForTesting();
+  auto window2 = CreateWindowForTesting();
+  auto child = CreateTestWindow(gfx::Rect(100, 100, 200, 200),
+                                aura::client::WINDOW_TYPE_POPUP);
+  ::wm::AddTransientChild(window1.get(), child.get());
+  ::wm::ActivateWindow(window1.get());
+
+  // For swipe down to hide launcher, all windows must be minimized.
+  if (mode_ == Mode::kSwipeDownToHide) {
+    wm::GetWindowState(window2.get())->Minimize();
+    wm::GetWindowState(window1.get())->Minimize();
+  }
+
+  // Tests that the variables which change when dragging are as expected.
+  GetGestureHandler()->OnPressEvent(mode_);
+  EXPECT_EQ(window1.get(), GetGestureHandler()->window());
+  EXPECT_TRUE(GetGestureHandler()->last_event_location_);
+  EXPECT_EQ(mode_, GetGestureHandler()->mode_);
+  // We only need to hide windows when swiping up, so this will only be non
+  // empty in that case.
+  if (mode_ == Mode::kSwipeUpToShow)
+    EXPECT_FALSE(GetGestureHandler()->hidden_windows_.empty());
+  EXPECT_FALSE(GetGestureHandler()->transient_descendants_values_.empty());
+
+  // Tests that after a drag, the variables are either null or empty.
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(10, 10));
+  EXPECT_FALSE(GetGestureHandler()->window());
+  EXPECT_FALSE(GetGestureHandler()->last_event_location_);
+  EXPECT_EQ(Mode::kNone, GetGestureHandler()->mode_);
+  EXPECT_TRUE(GetGestureHandler()->hidden_windows_.empty());
+  EXPECT_TRUE(GetGestureHandler()->transient_descendants_values_.empty());
 }
 
 }  // namespace ash
