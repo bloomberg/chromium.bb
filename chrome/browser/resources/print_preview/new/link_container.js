@@ -11,7 +11,10 @@ Polymer({
     /** @type {?print_preview.Destination} */
     destination: Object,
 
-    disabled: Boolean,
+    disabled: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
 
     /** @private {boolean} */
     shouldShowSystemDialogLink_: {

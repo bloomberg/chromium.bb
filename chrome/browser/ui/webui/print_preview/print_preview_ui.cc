@@ -372,8 +372,9 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_PRINT_CONFIGURING_FAILED_TEXT);
 #else
   const base::string16 shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
-  source->AddLocalizedString("systemDialogOption",
-                             IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION);
+  source->AddString("systemDialogOption",
+                    l10n_util::GetStringFUTF16(
+                        IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION, shortcut_text));
 #endif
 #if defined(OS_MACOSX)
   source->AddLocalizedString("openingPDFInPreview",
