@@ -193,6 +193,9 @@ MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
             ->window_tree_client()
             ->BindWindowManagerInterface<ash::mojom::AshWindowManager>();
   }
+
+  if (TabletModeClient::Get())
+    tablet_mode_observer_.Add(TabletModeClient::Get());
 }
 
 MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
@@ -500,6 +503,21 @@ void MultiUserWindowManagerChromeOS::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_OPENED, type);
   AddBrowserWindow(content::Source<Browser>(source).ptr());
+}
+
+void MultiUserWindowManagerChromeOS::OnTabletModeToggled(bool enabled) {
+  if (!enabled)
+    return;
+
+  for (auto entry : window_to_entry_) {
+    aura::Window* window = entry.first;
+    if (ash_window_manager_) {
+      ash_window_manager_->AddWindowToTabletMode(
+          aura::WindowMus::Get(window)->server_id());
+    } else {
+      ash::Shell::Get()->tablet_mode_controller()->AddWindow(window);
+    }
+  }
 }
 
 void MultiUserWindowManagerChromeOS::SetAnimationSpeedForTest(
