@@ -429,6 +429,8 @@ static_library("content_shell_lib") {
   if (is_chromeos) {
     deps += [
       "//chromeos",
+      "//services/ws/test_ws:lib",
+      "//services/ws/test_ws:mojom",
       "//ui/wm:test_support",
     ]
   }
@@ -921,6 +923,10 @@ service_manifest("content_shell_packaged_services_manifest_overlay") {
 
   source = "//content/shell/browser/content_shell_packaged_services_manifest_overlay.json"
   packaged_services = [ "//services/test/echo:manifest" ]
+
+  if (is_chromeos) {
+    packaged_services += [ "//services/ws/test_ws:manifest" ]
+  }
 }
 
 group("content_shell_crash_test") {

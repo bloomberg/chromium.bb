@@ -49,6 +49,7 @@
 #include "services/test/echo/public/mojom/echo.mojom.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -57,6 +58,14 @@
 #include "base/android/path_utils.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "content/shell/android/shell_descriptors.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+// TODO(https://crbug.com/784179): Remove nogncheck.
+#include "content/public/browser/context_factory.h"
+#include "content/public/browser/gpu_interface_provider_factory.h"
+#include "services/ws/test_ws/test_window_service_factory.h"  // nogncheck
+#include "services/ws/test_ws/test_ws.mojom.h"                // nogncheck
 #endif
 
 #if defined(OS_LINUX)
@@ -220,6 +229,19 @@ void ShellContentBrowserClient::RegisterInProcessServices(
     services->insert(std::make_pair(media::mojom::kMediaServiceName, info));
   }
 #endif
+#if defined(OS_CHROMEOS)
+  if (features::IsSingleProcessMash()) {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory =
+        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
+          return ws::test::CreateInProcessWindowService(
+              GetContextFactory(), GetContextFactoryPrivate(),
+              CreateGpuInterfaceProvider());
+        });
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    services->insert(std::make_pair(test_ws::mojom::kServiceName, info));
+  }
+#endif
 }
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
@@ -228,6 +250,12 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
       base::BindRepeating(&base::ASCIIToUTF16, "Test Service");
   (*services)[echo::mojom::kServiceName] =
       base::BindRepeating(&base::ASCIIToUTF16, "Echo Service");
+#if defined(OS_CHROMEOS)
+  if (features::IsMultiProcessMash()) {
+    (*services)[test_ws::mojom::kServiceName] =
+        base::BindRepeating(&base::ASCIIToUTF16, "Test Window Service");
+  }
+#endif
 }
 
 bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(
@@ -300,6 +328,15 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
           switches::kBrowserTest)) {
     command_line->AppendSwitch(switches::kBrowserTest);
   }
+#endif
+}
+
+void ShellContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
+    const service_manager::Identity& identity,
+    base::CommandLine* command_line) {
+#if defined(OS_CHROMEOS)
+  if (identity.name() == test_ws::mojom::kServiceName)
+    command_line->AppendSwitch(switches::kMessageLoopTypeUi);
 #endif
 }
 

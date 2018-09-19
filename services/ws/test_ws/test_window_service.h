@@ -17,12 +17,19 @@
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/ws/gpu_host/gpu_host.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
+#include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/test_ws/test_drag_drop_client.h"
+#include "services/ws/test_ws/test_ws.mojom.h"
 #include "services/ws/window_service_delegate.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/default_screen_position_client.h"
+
+namespace ui {
+class ContextFactory;
+class ContextFactoryPrivate;
+}  // namespace ui
 
 namespace ws {
 namespace test {
@@ -32,12 +39,20 @@ namespace test {
 class TestWindowService : public service_manager::Service,
                           public service_manager::mojom::ServiceFactory,
                           public gpu_host::GpuHostDelegate,
-                          public WindowServiceDelegate {
+                          public WindowServiceDelegate,
+                          public test_ws::mojom::TestWs {
  public:
   TestWindowService();
   ~TestWindowService() override;
 
+  void InitForInProcess(
+      ui::ContextFactory* context_factory,
+      ui::ContextFactoryPrivate* context_factory_private,
+      std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider);
+
  private:
+  void InitForOutOfProcess();
+
   // WindowServiceDelegate:
   std::unique_ptr<aura::Window> NewTopLevel(
       aura::PropertyConverter* property_converter,
@@ -68,17 +83,24 @@ class TestWindowService : public service_manager::Service,
   // gpu_host::GpuHostDelegate:
   void OnGpuServiceInitialized() override;
 
+  // test_ws::mojom::TestWs:
+  void Shutdown(test_ws::mojom::TestWs::ShutdownCallback callback) override;
+
   void BindServiceFactory(
       service_manager::mojom::ServiceFactoryRequest request);
+  void BindTestWs(test_ws::mojom::TestWsRequest request);
 
   void CreateGpuHost();
 
   void CreateAuraTestHelper();
+  void SetupAuraTestHelper(ui::ContextFactory* context_factory,
+                           ui::ContextFactoryPrivate* context_factory_private);
 
   service_manager::BinderRegistry registry_;
 
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
+  mojo::BindingSet<test_ws::mojom::TestWs> test_ws_bindings_;
 
   // Handles the ServiceRequest. Owns the WindowService instance.
   std::unique_ptr<service_manager::ServiceContext> service_context_;
@@ -98,6 +120,13 @@ class TestWindowService : public service_manager::Service,
   bool ui_service_created_ = false;
 
   base::OnceClosure pending_create_service_;
+
+  // GpuInterfaceProvider that is passed to WindowService when creating it.
+  std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider_;
+
+  // Whether the service is used in process. Not using features because it
+  // is used in service_unittests where ui features is not used there.
+  bool is_in_process_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowService);
 };
