@@ -642,14 +642,6 @@ void AssistantManagerServiceImpl::OnNotificationRemoved(
           weak_factory_.GetWeakPtr(), grouping_key));
 }
 
-void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &AssistantManagerServiceImpl::OnCommunicationErrorOnMainThread,
-          weak_factory_.GetWeakPtr(), error_code));
-}
-
 void AssistantManagerServiceImpl::OnVoiceInteractionSettingsEnabled(
     bool enabled) {
   assistant_enabled_ = enabled;
@@ -894,12 +886,6 @@ void AssistantManagerServiceImpl::OnNotificationRemovedOnMainThread(
     const std::string& grouping_key) {
   notification_subscribers_.ForAllPtrs(
       [grouping_key](auto* ptr) { ptr->OnRemoveNotification(grouping_key); });
-}
-
-void AssistantManagerServiceImpl::OnCommunicationErrorOnMainThread(
-    int error_code) {
-  if (IsAuthError(error_code))
-    service_->RequestAccessToken();
 }
 
 void AssistantManagerServiceImpl::OnRecognitionStateChangedOnMainThread(
