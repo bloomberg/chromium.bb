@@ -11,7 +11,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-namespace {
+namespace autofill_assistant {
 
 class WebControllerBrowserTest : public content::ContentBrowserTest {
  public:
@@ -28,8 +28,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     ASSERT_TRUE(NavigateToURL(
         shell(),
         http_server_->GetURL("/autofill_assistant_target_website.html")));
-    web_controller_ = autofill_assistant::WebController::CreateForWebContents(
-        shell()->web_contents());
+    web_controller_ =
+        WebController::CreateForWebContents(shell()->web_contents());
   }
 
   void IsElementExists(const std::vector<std::string>& selectors,
@@ -98,9 +98,37 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
     std::move(done_callback).Run();
   }
 
+  void FindElement(const std::vector<std::string>& selectors,
+                   size_t expected_index,
+                   bool is_main_frame) {
+    base::RunLoop run_loop;
+    web_controller_->FindElement(
+        selectors,
+        base::BindOnce(&WebControllerBrowserTest::OnFindElement,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       expected_index, is_main_frame));
+    run_loop.Run();
+  }
+
+  void OnFindElement(const base::Closure& done_callback,
+                     size_t expected_index,
+                     bool is_main_frame,
+                     std::unique_ptr<WebController::FindElementResult> result) {
+    done_callback.Run();
+    if (is_main_frame) {
+      ASSERT_EQ(shell()->web_contents()->GetMainFrame(),
+                result->container_frame_host);
+    } else {
+      ASSERT_NE(shell()->web_contents()->GetMainFrame(),
+                result->container_frame_host);
+    }
+    ASSERT_EQ(result->container_frame_selector_index, expected_index);
+    ASSERT_FALSE(result->object_id.empty());
+  }
+
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
-  std::unique_ptr<autofill_assistant::WebController> web_controller_;
+  std::unique_ptr<WebController> web_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WebControllerBrowserTest);
 };
@@ -133,6 +161,15 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, IsElementExists) {
   IsElementExists(selectors, true);
   selectors.emplace_back("#whatever");
   IsElementExists(selectors, false);
+
+  // IFrame inside IFrame.
+  selectors.clear();
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("#button");
+  IsElementExists(selectors, true);
+  selectors.emplace_back("#whatever");
+  IsElementExists(selectors, false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
@@ -155,6 +192,30 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   selectors.emplace_back("#iframe");
   selectors.emplace_back("#button");
   WaitForElementRemove(selectors);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElement) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#button");
+  FindElement(selectors, 0, true);
+
+  // IFrame.
+  selectors.clear();
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("#button");
+  FindElement(selectors, 0, false);
+
+  selectors.clear();
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("[name=name]");
+  FindElement(selectors, 0, false);
+
+  // IFrame inside IFrame.
+  selectors.clear();
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("#iframe");
+  selectors.emplace_back("#button");
+  FindElement(selectors, 1, false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {

@@ -210,6 +210,10 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   void SetQueryPasswordSuggestion(bool query) override{};
 
+  void GetElementFormAndFieldData(
+      const std::vector<std::string>& selectors,
+      GetElementFormAndFieldDataCallback callback) override {}
+
   mojo::AssociatedBindingSet<mojom::AutofillAgent> bindings_;
 
   base::Closure quit_closure_;
