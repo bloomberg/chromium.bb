@@ -998,7 +998,9 @@ void ThemeService::OnThemeBuiltFromExtension(
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 bool ThemeService::IsSupervisedUser() const {
-  return profile_->IsSupervised();
+  // Do not treat child users as supervised users, so they get the same theme as the parent account
+  // instead of getting the default theme.
+  return profile_->IsLegacySupervised();
 }
 
 void ThemeService::SetSupervisedUserTheme() {
