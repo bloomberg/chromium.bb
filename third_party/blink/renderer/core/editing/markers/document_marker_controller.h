@@ -29,9 +29,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_DOCUMENT_MARKER_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_DOCUMENT_MARKER_CONTROLLER_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/markers/composition_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
@@ -98,6 +101,24 @@ class CORE_EXPORT DocumentMarkerController final
   // TODO(rlanday): can these methods for retrieving markers be consolidated
   // without hurting efficiency?
 
+  // If the given position is either at the boundary or inside a word, expands
+  // the position to the surrounding word and then looks for a marker having the
+  // specified type. If the position is neither at the boundary or inside a
+  // word, expands the position to cover the space between the end of the
+  // previous and the start of the next words. If such a marker exists, this
+  // method will return one of them (no guarantees are provided as to which
+  // one). Otherwise, this method will return null.
+  DocumentMarker* FirstMarkerAroundPosition(const Position&,
+                                            DocumentMarker::MarkerTypes);
+  // Looks for a marker in the specified EphemeralRange of the specified type
+  // whose interior has non-empty overlap with the bounds of the range.
+  // If the range is collapsed, it uses FirstMarkerAroundPosition to expand the
+  // range to the surrounding word.
+  // If such a marker exists, this method will return one of them (no guarantees
+  // are provided as to which one). Otherwise, this method will return null.
+  DocumentMarker* FirstMarkerIntersectingEphemeralRange(
+      const EphemeralRange&,
+      DocumentMarker::MarkerTypes);
   // Looks for a marker in the specified node of the specified type whose
   // interior has non-empty overlap with the range [start_offset, end_offset].
   // If the range is collapsed, this looks for a marker containing the offset of

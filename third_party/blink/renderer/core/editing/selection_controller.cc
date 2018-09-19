@@ -132,14 +132,8 @@ VisiblePositionInFlatTree VisiblePositionOfHitTestResult(
 DocumentMarker* SpellCheckMarkerAtPosition(
     DocumentMarkerController& document_marker_controller,
     const Position& position) {
-  const Node* const node = position.ComputeContainerNode();
-  if (!node->IsTextNode())
-    return nullptr;
-
-  const unsigned offset = position.ComputeOffsetInContainerNode();
-  return document_marker_controller.FirstMarkerIntersectingOffsetRange(
-      *ToText(node), offset, offset,
-      DocumentMarker::MarkerTypes::Misspelling());
+  return document_marker_controller.FirstMarkerAroundPosition(
+      position, DocumentMarker::MarkerTypes::Misspelling());
 }
 
 }  // namespace
