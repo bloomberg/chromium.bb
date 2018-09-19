@@ -102,6 +102,8 @@
 - (void)updateForInsets:(UIEdgeInsets)insets {
   UIView* webView = self.webState->GetView();
 
+  id<CRWWebViewProxy> webViewProxy = self.webState->GetWebViewProxy();
+  CRWWebViewScrollViewProxy* scrollViewProxy = webViewProxy.scrollViewProxy;
   CGRect newFrame = UIEdgeInsetsInsetRect(webView.superview.bounds, insets);
 
   // Make sure the frame has changed to avoid a loop as the frame property is
@@ -112,7 +114,22 @@
       std::fabs(newFrame.size.height - webView.frame.size.height) < 0.01)
     return;
 
+  // Update the content offset of the scroll view to match the padding
+  // that will be included in the frame.
+  CGFloat currentTopInset = webView.frame.origin.y;
+  CGPoint newContentOffset = scrollViewProxy.contentOffset;
+  newContentOffset.y += insets.top - currentTopInset;
+  scrollViewProxy.contentOffset = newContentOffset;
+
   webView.frame = newFrame;
+
+  // Setting WKWebView frame can mistakenly reset contentOffset. Change it
+  // back to the initial value if necessary.
+  // TODO(crbug.com/645857): Remove this workaround once WebKit bug is
+  // fixed.
+  if ([scrollViewProxy contentOffset].y != newContentOffset.y) {
+    [scrollViewProxy setContentOffset:newContentOffset];
+  }
 }
 
 // Observes the frame property of the view of the |webState| using KVO.
