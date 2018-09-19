@@ -199,6 +199,8 @@ class HeadlessProtocolBrowserTest
 // Headless-specific tests
 HEADLESS_PROTOCOL_TEST(VirtualTimeAdvance, "emulation/virtual-time-advance.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeBasics, "emulation/virtual-time-basics.js");
+HEADLESS_PROTOCOL_TEST(VirtualTimeInterrupt,
+                       "emulation/virtual-time-interrupt.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeCrossProcessNavigation,
                        "emulation/virtual-time-cross-process-navigation.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeDetachFrame,
