@@ -322,62 +322,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   manager->ShowWindowForUser(window, account_id2);
   EXPECT_TRUE(MultiUserWindowManager::ShouldShowAvatar(window));
 
-  if (GetParam() != switches::kTopChromeMDMaterialRefresh) {
-    // An icon should show on the top left corner of the teleported browser
-    // window.
-    EXPECT_TRUE(frame_view->profile_indicator_icon());
-  }
-
   // Teleport the window back to owner desktop.
   manager->ShowWindowForUser(window, account_id1);
   EXPECT_FALSE(MultiUserWindowManager::ShouldShowAvatar(window));
   EXPECT_FALSE(frame_view->profile_indicator_icon());
-}
-
-// Hit Test for Avatar Menu Button on ChromeOS.
-IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
-                       AvatarMenuButtonHitTestOnChromeOS) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-
-  gfx::Point avatar_center(profiles::kAvatarIconWidth / 2,
-                           profiles::kAvatarIconHeight / 2);
-  // The increased header height in the touch-optimized UI affects the expected
-  // result.
-  int expected_value =
-      GetParam() == switches::kTopChromeMDMaterialTouchOptimized ? HTCAPTION
-                                                                 : HTCLIENT;
-  EXPECT_EQ(expected_value, frame_view->NonClientHitTest(avatar_center));
-  EXPECT_FALSE(frame_view->profile_indicator_icon());
-
-  const AccountId current_user =
-      multi_user_util::GetAccountIdFromProfile(browser()->profile());
-  TestMultiUserWindowManager* manager =
-      new TestMultiUserWindowManager(browser(), current_user);
-
-  // Teleport the window to another desktop.
-  const AccountId account_id2(AccountId::FromUserEmail("user2"));
-  manager->ShowWindowForUser(browser()->window()->GetNativeWindow(),
-                             account_id2);
-  if (GetParam() != switches::kTopChromeMDMaterialRefresh) {
-    // Clicking on the avatar icon should have same behaviour like clicking on
-    // the caption area, i.e., allow the user to drag the browser window around.
-    EXPECT_EQ(HTCAPTION, frame_view->NonClientHitTest(avatar_center));
-    EXPECT_TRUE(frame_view->profile_indicator_icon());
-  }
-}
-
-// Tests that for an incognito browser, there is an avatar icon view, unless in
-// touch-optimized mode.
-IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, IncognitoAvatar) {
-  Browser* incognito_browser = CreateIncognitoBrowser();
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForBrowser(incognito_browser);
-  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-
-  const bool should_have_avatar = GetParam() == switches::kTopChromeMDMaterial;
-  const bool has_avatar = !!frame_view->profile_indicator_icon();
-  EXPECT_EQ(should_have_avatar, has_avatar);
 }
 
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
@@ -1448,12 +1396,11 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
   EXPECT_EQ(expected_height, frame_view->frame_header_->GetHeaderHeight());
 }
 
-#define INSTANTIATE_TEST_CASE(name)                                   \
-  INSTANTIATE_TEST_CASE_P(                                            \
-      , name,                                                         \
-      ::testing::Values(switches::kTopChromeMDMaterial,               \
-                        switches::kTopChromeMDMaterialTouchOptimized, \
-                        switches::kTopChromeMDMaterialRefresh),       \
+#define INSTANTIATE_TEST_CASE(name)                                           \
+  INSTANTIATE_TEST_CASE_P(                                                    \
+      , name,                                                                 \
+      ::testing::Values(switches::kTopChromeMDMaterialRefresh,                \
+                        switches::kTopChromeMDMaterialRefreshTouchOptimized), \
       &TopChromeMdParamToString)
 
 INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshTest);

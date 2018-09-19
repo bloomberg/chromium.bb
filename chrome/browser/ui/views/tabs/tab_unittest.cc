@@ -719,8 +719,7 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
     SkColor fg_active;
     SkColor bg_inactive;
     SkColor fg_inactive;
-  };
-  ColorScheme color_schemes[] = {
+  } color_schemes[] = {
       {
           SK_ColorBLACK, SK_ColorWHITE, SK_ColorBLACK, SK_ColorWHITE,
       },
@@ -731,8 +730,15 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
           kDarkGray, kLightGray, kDarkGray, kLightGray,
       },
   };
+
+  // Create a tab inside a Widget, so it has a theme provider, so the call to
+  // UpdateForegroundColors() below doesn't no-op.
+  Widget widget;
+  InitWidget(&widget);
   FakeTabController controller;
   Tab tab(&controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+
   for (const auto& colors : color_schemes) {
     controller.SetTabColors(colors.bg_active, colors.fg_active,
                             colors.bg_inactive, colors.fg_inactive);

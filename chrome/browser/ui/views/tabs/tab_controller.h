@@ -36,9 +36,9 @@ class TabController {
   // Returns true if multiple selection is supported.
   virtual bool SupportsMultipleSelection() = 0;
 
-  // Under Refresh, returns where the new tab button should be placed. This is
-  // needed to determine which tab separators need to be faded in/out while
-  // animating into position.
+  // Returns where the new tab button should be placed. This is needed to
+  // determine which tab separators need to be faded in/out while animating into
+  // position.
   virtual NewTabButtonPosition GetNewTabButtonPosition() const = 0;
 
   // Returns true if the close button for the given tab is forced to be hidden.
@@ -130,8 +130,8 @@ class TabController {
           border_callback,
       gfx::Path* clip) = 0;
 
-  // Returns the thickness of the stroke around all tabs (for pre-refresh) or
-  // the active tab (for refresh) in DIP.  Returns 0 if there is no stroke.
+  // Returns the thickness of the stroke around the active tab in DIP.  Returns
+  // 0 if there is no stroke.
   virtual int GetStrokeThickness() const = 0;
 
   // Returns true if tab loading throbbers can be painted to a composited layer.
@@ -147,7 +147,7 @@ class TabController {
   // state of the window.
   virtual SkColor GetToolbarTopSeparatorColor() const = 0;
 
-  // Under Refresh, returns the color of the separator between the tabs.
+  // Returns the color of the separator between the tabs.
   virtual SkColor GetTabSeparatorColor() const = 0;
 
   // Returns the tab background color based on both the |state| of the tab and

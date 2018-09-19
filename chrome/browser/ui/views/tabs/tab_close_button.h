@@ -65,8 +65,8 @@ class TabCloseButton : public views::ImageButton,
   // Draw the close "X" glyph.
   void DrawCloseGlyph(gfx::Canvas* canvas, ButtonState state);
 
-  // In material refresh mode, calculates opacity based on the current state of
-  // the hover animation on the parent tab.
+  // Calculates opacity based on the current state of the hover animation on the
+  // parent tab.
   SkAlpha GetOpacity();
 
   MouseEventCallback mouse_event_callback_;
