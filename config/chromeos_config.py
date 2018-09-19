@@ -2409,6 +2409,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'arm-generic',
       'auron_paine',
       'auron_yuna',
+      'atlas',
       'beaglebone',
       'betty',
       'betty-arc64',
@@ -2418,6 +2419,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'caroline-arcnext',
       'cave',
       'chell',
+      'cheza',
       'coral',
       'cyan',
       'daisy',
@@ -2435,6 +2437,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kevin',
       'kevin-arcnext',
       'kip',
+      'kukui',
       'lakitu',
       'lakitu-gpu',
       'lakitu-st',
@@ -2457,6 +2460,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'scarlet',
       'sentry',
       'stout',
+      'tael',
       'tatl',
       'terra',
       'tidus',
@@ -2493,13 +2497,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
-      'cheza', #contact: philipchen@
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
-      'kukui', # contact:zhuohao@
       'rammus', # contact:zhuohao@
-      'tael',
-      'atlas',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
