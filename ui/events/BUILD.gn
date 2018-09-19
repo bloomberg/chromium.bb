@@ -299,6 +299,15 @@ jumbo_component("events") {
   if (is_mac) {
     libs = [ "AppKit.framework" ]
   }
+
+  if (is_fuchsia) {
+    sources += [
+      "fuchsia/input_event_dispatcher.cc",
+      "fuchsia/input_event_dispatcher.h",
+      "fuchsia/input_event_dispatcher_delegate.h",
+    ]
+    public_deps += [ "//third_party/fuchsia-sdk:input" ]
+  }
 }
 
 jumbo_component("gesture_detection") {
@@ -576,6 +585,10 @@ if (!is_ios) {
 
     if (is_chromecast && !is_android) {
       sources += [ "chromecast/scroller_unittest.cc" ]
+    }
+
+    if (is_fuchsia) {
+      sources += [ "fuchsia/input_event_dispatcher_unittest.cc" ]
     }
   }
 }

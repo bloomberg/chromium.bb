@@ -127,6 +127,10 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include "ui/base/ime/input_method_keyboard_controller.h"
+#endif
+
 using gfx::RectToSkIRect;
 using gfx::SkIRectToRect;
 
@@ -1743,6 +1747,13 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
           ->DismissVirtualKeyboard();
     }
   }
+#elif defined(OS_FUCHSIA)
+  if (!editable && window_) {
+    if (input_method) {
+      input_method->GetInputMethodKeyboardController()
+          ->DismissVirtualKeyboard();
+    }
+  }
 #endif
 }
 
@@ -2401,7 +2412,7 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
   if (state && state->type != ui::TEXT_INPUT_TYPE_NONE &&
       state->mode != ui::TEXT_INPUT_MODE_NONE) {
     bool show_virtual_keyboard = true;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
     show_virtual_keyboard =
         last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH;
 #endif
