@@ -38,9 +38,6 @@ extern const char kSyncPasswordEntryVerdictHistogram[];
 extern const char kSyncPasswordInterstitialHistogram[];
 extern const char kSyncPasswordPageInfoHistogram[];
 extern const char kSyncPasswordWarningDialogHistogram[];
-extern const char kReferrerChainSizeOfLowRepVerdictHistogram[];
-extern const char kReferrerChainSizeOfPhishingVerdictHistogram[];
-extern const char kReferrerChainSizeOfSafeVerdictHistogram[];
 extern const char kVerdictMigrationHistogram[];
 
 using PasswordReuseEvent = LoginReputationClientRequest::PasswordReuseEvent;

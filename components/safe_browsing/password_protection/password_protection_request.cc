@@ -336,11 +336,6 @@ void PasswordProtectionRequest::Finish(
         trigger_type_, reused_password_type_,
         password_protection_service_->GetSyncAccountType(),
         response->verdict_type());
-    int referrer_chain_size =
-        request_proto_->frames_size() > 0
-            ? request_proto_->frames(0).referrer_chain_size()
-            : 0;
-    LogReferrerChainSize(response->verdict_type(), referrer_chain_size);
   }
 
   password_protection_service_->RequestFinished(
