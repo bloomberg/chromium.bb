@@ -95,6 +95,36 @@ TEST_P(QpackEncoderTest, Multiple) {
       output);
 }
 
+TEST_P(QpackEncoderTest, StaticTable) {
+  {
+    spdy::SpdyHeaderBlock header_list;
+    header_list[":method"] = "GET";
+    header_list["accept-encoding"] = "gzip, deflate";
+    header_list["cache-control"] = "";
+
+    QuicString output = Encode(&header_list);
+    EXPECT_EQ(QuicTextUtils::HexDecode("c2d0d8"), output);
+  }
+  {
+    spdy::SpdyHeaderBlock header_list;
+    header_list[":method"] = "POST";
+    header_list["accept-encoding"] = "brotli";
+    header_list["cache-control"] = "foo";
+
+    QuicString output = Encode(&header_list);
+    DLOG(INFO) << QuicTextUtils::HexEncode(output);
+    EXPECT_EQ(QuicTextUtils::HexDecode("c35f01858ec3a6837f5f098294e7"), output);
+  }
+  {
+    spdy::SpdyHeaderBlock header_list;
+    header_list[":method"] = "CONNECT";
+    header_list["accept-encoding"] = "";
+
+    QuicString output = Encode(&header_list);
+    EXPECT_EQ(QuicTextUtils::HexDecode("5207434f4e4e4543545f0100"), output);
+  }
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

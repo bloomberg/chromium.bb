@@ -11,7 +11,6 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 namespace quic {
 namespace test {

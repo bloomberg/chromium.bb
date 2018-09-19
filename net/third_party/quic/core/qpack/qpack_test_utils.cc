@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "net/third_party/quic/core/qpack/qpack_encoder.h"
+#include "net/third_party/quic/platform/api/quic_test.h"
 
 namespace quic {
 namespace test {

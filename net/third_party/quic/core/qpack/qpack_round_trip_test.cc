@@ -90,6 +90,41 @@ TEST_P(QpackRoundTripTest, MultipleWithLongEntries) {
   EXPECT_EQ(header_list, output);
 }
 
+TEST_P(QpackRoundTripTest, StaticTable) {
+  {
+    spdy::SpdyHeaderBlock header_list;
+    header_list[":method"] = "GET";
+    header_list["accept-encoding"] = "gzip, deflate";
+    header_list["cache-control"] = "";
+    header_list["foo"] = "bar";
+    header_list[":path"] = "/";
+
+    spdy::SpdyHeaderBlock output = EncodeThenDecode(header_list);
+    EXPECT_EQ(header_list, output);
+  }
+  {
+    spdy::SpdyHeaderBlock header_list;
+    header_list[":method"] = "POST";
+    header_list["accept-encoding"] = "brotli";
+    header_list["cache-control"] = "foo";
+    header_list["foo"] = "bar";
+    header_list[":path"] = "/";
+
+    spdy::SpdyHeaderBlock output = EncodeThenDecode(header_list);
+    EXPECT_EQ(header_list, output);
+  }
+  {
+    spdy::SpdyHeaderBlock header_list;
+    header_list[":method"] = "CONNECT";
+    header_list["accept-encoding"] = "";
+    header_list["foo"] = "bar";
+    header_list[":path"] = "/";
+
+    spdy::SpdyHeaderBlock output = EncodeThenDecode(header_list);
+    EXPECT_EQ(header_list, output);
+  }
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

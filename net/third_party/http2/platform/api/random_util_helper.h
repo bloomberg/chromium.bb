@@ -7,8 +7,6 @@ namespace http2 {
 
 namespace test {
 
-class RandomBase;
-
 inline Http2String RandomString(RandomBase* random,
                                 int len,
                                 Http2StringPiece alphabet) {
