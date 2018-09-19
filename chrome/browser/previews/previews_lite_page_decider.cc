@@ -87,6 +87,10 @@ void PreviewsLitePageDecider::SetClockForTesting(const base::TickClock* clock) {
   clock_ = clock;
 }
 
+void PreviewsLitePageDecider::ClearSingleBypassForTesting() {
+  single_bypass_.clear();
+}
+
 void PreviewsLitePageDecider::SetServerUnavailableFor(
     base::TimeDelta retry_after) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

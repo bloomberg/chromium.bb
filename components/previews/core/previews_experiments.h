@@ -89,6 +89,10 @@ base::TimeDelta SingleOptOutDuration();
 // shown as a preview.
 base::TimeDelta OfflinePreviewFreshnessDuration();
 
+// The amount of time that a Server Lite Page Preview navigation can take before
+// it is killed and the original page is loaded.
+base::TimeDelta LitePagePreviewsNavigationTimeoutDuration();
+
 // The host for Lite Page server previews.
 GURL GetLitePagePreviewsDomainURL();
 

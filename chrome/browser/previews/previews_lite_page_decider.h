@@ -46,6 +46,9 @@ class PreviewsLitePageDecider
   // Sets the internal clock for testing.
   void SetClockForTesting(const base::TickClock* clock);
 
+  // Clears all single bypasses for testing.
+  void ClearSingleBypassForTesting();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageDeciderTest, TestServerUnavailable);
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageDeciderTest, TestSingleBypass);

@@ -137,6 +137,13 @@ base::TimeDelta LitePagePreviewsSingleBypassDuration() {
       60 * 5));
 }
 
+base::TimeDelta LitePagePreviewsNavigationTimeoutDuration() {
+  return base::TimeDelta::FromMilliseconds(
+      base::GetFieldTrialParamByFeatureAsInt(features::kLitePageServerPreviews,
+                                             "navigation_timeout_milliseconds",
+                                             30 * 1000));
+}
+
 std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes() {
   const std::string csv = base::GetFieldTrialParamValueByFeature(
       features::kLitePageServerPreviews, "blacklisted_path_suffixes");

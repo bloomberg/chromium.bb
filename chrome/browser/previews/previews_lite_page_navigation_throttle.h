@@ -50,7 +50,8 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kServiceUnavailable = 3,
     kOther = 4,
     kFailed = 5,
-    kMaxValue = kFailed,
+    kTimeout = 6,
+    kMaxValue = kTimeout,
   };
 
   PreviewsLitePageNavigationThrottle(
@@ -66,6 +67,13 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
 
   // Returns the URL for a preview given by the url.
   static GURL GetPreviewsURLForURL(const GURL& original_url);
+
+  // Starts a new navigation with |params| page in the given |web_contents|,
+  // adding the params' url as a single bypass to |manager|.
+  static void LoadAndBypass(content::WebContents* web_contents,
+                            PreviewsLitePageNavigationThrottleManager* manager,
+                            const content::OpenURLParams& params,
+                            bool use_post_task);
 
  private:
   // The current effective connection type;
@@ -85,13 +93,6 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   // return PROCEED if the preview is not triggered.
   content::NavigationThrottle::ThrottleCheckResult MaybeNavigateToPreview()
       const;
-
-  // Can be called by any of the content::NavigationThrottle implementation
-  // methods to create a new navigation with the give |content::OpenURLParams|.
-  // Returns the |content::NavigationThrottle::ThrottleCheckResult| for the
-  // implemented method to return.
-  content::NavigationThrottle::ThrottleCheckResult CreateNewNavigation(
-      content::OpenURLParams url_params) const;
 
   // Can be called by any of the content::NavigationThrottle implementation
   // methods to trigger the preview. Returns the

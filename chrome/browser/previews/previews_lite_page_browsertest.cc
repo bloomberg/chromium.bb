@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -102,6 +103,14 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         base::Unretained(this)));
     ASSERT_TRUE(previews_server_->Start());
 
+    // Set up the slow HTTP server with delayed resource handler.
+    slow_http_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTP);
+    slow_http_server_->RegisterRequestHandler(base::BindRepeating(
+        &PreviewsLitePageServerBrowserTest::HandleSlowResourceRequest,
+        base::Unretained(this)));
+    ASSERT_TRUE(slow_http_server_->Start());
+
     std::unique_ptr<base::FeatureList> feature_list =
         std::make_unique<base::FeatureList>();
     {
@@ -111,7 +120,8 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
       std::map<std::string, std::string> feature_parameters = {
           {"previews_host", previews_server().spec()},
           {"blacklisted_path_suffixes", ".mp4,.jpg"},
-          {"trigger_on_localhost", "true"}};
+          {"trigger_on_localhost", "true"},
+          {"navigation_timeout_milliseconds", "2000"}};
       base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
           "TrialName1", "GroupName1", feature_parameters);
 
@@ -168,6 +178,10 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
+
+    // Clear the decider's single bypass map so that future page loads aren't
+    // bypassed for the wrong reason.
+    ClearSingleBypass();
   }
 
   void VerifyErrorPageLoaded() const {
@@ -183,9 +197,16 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   }
 
   // Returns a HTTP URL that will respond with the given HTTP response code and
-  // headers when used by the previews server.
-  GURL HttpLitePageURL(int return_code, std::string* headers = nullptr) const {
-    std::string query = "resp=" + base::IntToString(return_code);
+  // headers when used by the previews server. The response can be delayed a
+  // number of milliseconds by passing a value > 0 for |delay_ms| or pass -1 to
+  // make the response hang indefinitely.
+  GURL HttpLitePageURL(int return_code,
+                       std::string* headers = nullptr,
+                       int delay_ms = 0) const {
+    std::string query = "resp=" + base::IntToString(return_code) + "&rand=" +
+                        base::IntToString(base::RandInt(INT_MIN, INT_MAX));
+    if (delay_ms != 0)
+      query += "&delay_ms=" + base::IntToString(delay_ms);
     if (headers)
       query += "&headers=" + *headers;
     GURL::Replacements replacements;
@@ -194,14 +215,31 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   }
 
   // Returns a HTTPS URL that will respond with the given HTTP response code and
-  // headers when used by the previews server.
-  GURL HttpsLitePageURL(int return_code, std::string* headers = nullptr) const {
-    std::string query = "resp=" + base::IntToString(return_code);
+  // headers when used by the previews server. The response can be delayed a
+  // number of milliseconds by passing a value > 0 for |delay_ms| or pass -1 to
+  // make the response hang indefinitely.
+  GURL HttpsLitePageURL(int return_code,
+                        std::string* headers = nullptr,
+                        int delay_ms = 0) const {
+    std::string query = "resp=" + base::IntToString(return_code) + "&rand=" +
+                        base::IntToString(base::RandInt(INT_MIN, INT_MAX));
+    if (delay_ms != 0)
+      query += "&delay_ms=" + base::IntToString(delay_ms);
     if (headers)
       query += "&headers=" + *headers;
     GURL::Replacements replacements;
     replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
     return base_https_lite_page_url().ReplaceComponents(replacements);
+  }
+
+  void ClearSingleBypass() const {
+    PreviewsService* previews_service =
+        PreviewsServiceFactory::GetForProfile(browser()->profile());
+    ASSERT_TRUE(previews_service);
+    PreviewsLitePageDecider* decider =
+        previews_service->previews_lite_page_decider();
+    ASSERT_TRUE(decider);
+    decider->ClearSingleBypassForTesting();
   }
 
   virtual GURL previews_server() const { return previews_server_->base_url(); }
@@ -212,6 +250,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   }
   const GURL& https_media_url() const { return https_media_url_; }
   const GURL& http_url() const { return http_url_; }
+  const GURL& slow_http_url() const { return slow_http_server_->base_url(); }
   const GURL& base_http_lite_page_url() const {
     return base_http_lite_page_url_;
   }
@@ -230,10 +269,20 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     return std::move(response);
   }
 
+  std::unique_ptr<net::test_server::HttpResponse> HandleSlowResourceRequest(
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::DelayedHttpResponse> response =
+        std::make_unique<net::test_server::DelayedHttpResponse>(
+            base::TimeDelta::FromSeconds(3));
+    response->set_code(net::HttpStatusCode::HTTP_OK);
+    return std::move(response);
+  }
+
   std::unique_ptr<net::test_server::HttpResponse> HandleResourceRequest(
       const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::BasicHttpResponse> response =
         std::make_unique<net::test_server::BasicHttpResponse>();
+
     std::string original_url_str;
 
     // Ignore anything that's not a previews request with an unused status.
@@ -260,6 +309,23 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
       response->set_code(
           net::HttpStatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED);
       return response;
+    }
+
+    std::string delay_query_param;
+    int delay_ms = 0;
+
+    // Determine whether to delay the preview response using the |original_url|.
+    if (net::GetValueForKeyInQuery(original_url, "delay_ms",
+                                   &delay_query_param)) {
+      base::StringToInt(delay_query_param, &delay_ms);
+    }
+
+    if (delay_ms == -1) {
+      return std::make_unique<net::test_server::HungResponse>();
+    }
+    if (delay_ms > 0) {
+      response = std::make_unique<net::test_server::DelayedHttpResponse>(
+          base::TimeDelta::FromMilliseconds(delay_ms));
     }
 
     std::string code_query_param;
@@ -302,6 +368,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> previews_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
+  std::unique_ptr<net::EmbeddedTestServer> slow_http_server_;
   GURL https_url_;
   GURL base_https_lite_page_url_;
   GURL https_media_url_;
@@ -481,6 +548,37 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     VerifyPreviewLoaded();
     histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
                                        true, 2);
+  }
+}
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsTimeout LitePagePreviewsTimeout
+#else
+#define MAYBE_LitePagePreviewsTimeout DISABLED_LitePagePreviewsTimeout
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       MAYBE_LitePagePreviewsTimeout) {
+  {
+    // Ensure that a hung previews navigation doesn't wind up at the previews
+    // server.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(200, nullptr, -1));
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kTimeout, 1);
+  }
+
+  {
+    // Ensure that a hung normal navigation eventually loads.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), slow_http_url());
+    VerifyPreviewNotLoaded();
+    histogram_tester.ExpectTotalCount("Previews.ServerLitePage.ServerResponse",
+                                      0);
   }
 }
 
