@@ -266,20 +266,20 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   const base::FilePath device_path_;
 
   // DRM device.
-  base::File file_;
+  const base::File file_;
 
   std::unique_ptr<PageFlipManager> page_flip_manager_;
 
   // Watcher for |fd_| listening for page flip events.
   std::unique_ptr<IOWatcher> watcher_;
 
-  bool is_primary_device_;
+  const bool is_primary_device_;
 
   bool is_atomic_ = false;
 
   bool allow_addfb2_modifiers_ = false;
 
-  std::unique_ptr<GbmDevice> gbm_;
+  const std::unique_ptr<GbmDevice> gbm_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDevice);
 };

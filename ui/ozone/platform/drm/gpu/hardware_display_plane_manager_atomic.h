@@ -14,7 +14,7 @@ namespace ui {
 
 class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
  public:
-  HardwareDisplayPlaneManagerAtomic();
+  HardwareDisplayPlaneManagerAtomic(DrmDevice* drm);
   ~HardwareDisplayPlaneManagerAtomic() override;
 
   // HardwareDisplayPlaneManager:
@@ -41,7 +41,7 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
                     CrtcController* crtc) override;
 
  private:
-  bool InitializePlanes(DrmDevice* drm) override;
+  bool InitializePlanes() override;
   std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id) override;
   bool CommitColorMatrix(const CrtcProperties& crtc_props) override;
   bool CommitGammaCorrection(const CrtcProperties& crtc_props) override;

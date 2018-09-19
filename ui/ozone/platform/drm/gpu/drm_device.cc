@@ -260,10 +260,10 @@ bool DrmDevice::Initialize() {
   // Use atomic only if kernel allows it.
   is_atomic_ = SetCapability(DRM_CLIENT_CAP_ATOMIC, 1);
   if (is_atomic_)
-    plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic());
+    plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic(this));
   else
-    plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
-  if (!plane_manager_->Initialize(this)) {
+    plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy(this));
+  if (!plane_manager_->Initialize()) {
     LOG(ERROR) << "Failed to initialize the plane manager for "
                << device_path_.value();
     plane_manager_.reset();

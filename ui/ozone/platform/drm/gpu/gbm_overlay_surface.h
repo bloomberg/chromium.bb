@@ -49,7 +49,7 @@ class GbmOverlaySurface : public OverlaySurface {
                     std::unique_ptr<gfx::GpuFence> out_fence);
   void OnPresentation(const gfx::PresentationFeedback& presentation_feedback);
 
-  std::unique_ptr<DrmWindowProxy> window_;
+  const std::unique_ptr<DrmWindowProxy> window_;
   Frame unsubmitted_frame_;
   Frame submitted_frame_;
   Frame presented_frame_;

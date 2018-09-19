@@ -92,7 +92,7 @@ MockDrmDevice::MockDrmDevice(std::unique_ptr<GbmDevice> gbm_device)
       page_flip_expectation_(true),
       create_dumb_buffer_expectation_(true),
       current_framebuffer_(0) {
-  plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
+  plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy(this));
 }
 
 // static
@@ -141,12 +141,12 @@ bool MockDrmDevice::InitializeStateWithResult(
   plane_properties_ = plane_properties;
   property_names_ = property_names;
   if (use_atomic) {
-    plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic());
+    plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic(this));
   } else {
-    plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
+    plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy(this));
   }
 
-  return plane_manager_->Initialize(this);
+  return plane_manager_->Initialize();
 }
 
 MockDrmDevice::~MockDrmDevice() {}

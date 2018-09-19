@@ -27,7 +27,7 @@ class DrmOverlayValidator {
       const DrmOverlayPlaneList& last_used_planes);
 
  private:
-  DrmWindow* window_;  // Not owned.
+  DrmWindow* const window_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayValidator);
 };

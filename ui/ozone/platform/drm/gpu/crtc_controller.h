@@ -69,10 +69,10 @@ class CrtcController {
 
   const scoped_refptr<DrmDevice> drm_;
 
-  uint32_t crtc_;
+  const uint32_t crtc_;
 
   // TODO(dnicoara) Add support for hardware mirroring (multiple connectors).
-  uint32_t connector_;
+  const uint32_t connector_;
 
   drmModeModeInfo mode_ = {};
 

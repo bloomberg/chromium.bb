@@ -98,17 +98,17 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
 
   void NotifyDisplayDelegate() const;
 
-  GpuThreadAdapter* proxy_;                 // Not owned.
-  DeviceManager* device_manager_;           // Not owned.
-  DrmOverlayManager* overlay_manager_;      // Not owned.
-  InputControllerEvdev* input_controller_;  // Not owned.
+  GpuThreadAdapter* const proxy_;                 // Not owned.
+  DeviceManager* const device_manager_;           // Not owned.
+  DrmOverlayManager* const overlay_manager_;      // Not owned.
+  InputControllerEvdev* const input_controller_;  // Not owned.
 
   DrmNativeDisplayDelegate* delegate_ = nullptr;  // Not owned.
 
   // File path for the primary graphics card which is opened by default in the
   // GPU process. We'll avoid opening this in hotplug events since it will race
   // with the GPU process trying to open it and aquire DRM master.
-  base::FilePath primary_graphics_card_path_;
+  const base::FilePath primary_graphics_card_path_;
 
   // Keeps track if there is a dummy display. This happens on initialization
   // when there is no connection to the GPU to update the displays.

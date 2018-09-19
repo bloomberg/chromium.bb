@@ -36,8 +36,9 @@ ui::DrmOverlayPlaneList WaitForPlaneFences(ui::DrmOverlayPlaneList planes) {
 
 }  // namespace
 
-HardwareDisplayPlaneManagerLegacy::HardwareDisplayPlaneManagerLegacy() {
-}
+HardwareDisplayPlaneManagerLegacy::HardwareDisplayPlaneManagerLegacy(
+    DrmDevice* drm)
+    : HardwareDisplayPlaneManager(drm) {}
 
 HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() {
 }
@@ -125,8 +126,8 @@ void HardwareDisplayPlaneManagerLegacy::RequestPlanesReadyCallback(
       std::move(callback));
 }
 
-bool HardwareDisplayPlaneManagerLegacy::InitializePlanes(DrmDevice* drm) {
-  ScopedDrmPlaneResPtr plane_resources = drm->GetPlaneResources();
+bool HardwareDisplayPlaneManagerLegacy::InitializePlanes() {
+  ScopedDrmPlaneResPtr plane_resources = drm_->GetPlaneResources();
   if (!plane_resources) {
     PLOG(ERROR) << "Failed to get plane resources.";
     return false;
@@ -136,7 +137,7 @@ bool HardwareDisplayPlaneManagerLegacy::InitializePlanes(DrmDevice* drm) {
     std::unique_ptr<HardwareDisplayPlane> plane(
         CreatePlane(plane_resources->planes[i]));
 
-    if (!plane->Initialize(drm))
+    if (!plane->Initialize(drm_))
       continue;
 
     // Overlays are not supported on the legacy path, so ignore all overlay
@@ -159,7 +160,7 @@ bool HardwareDisplayPlaneManagerLegacy::InitializePlanes(DrmDevice* drm) {
               }) == planes_.end()) {
         std::unique_ptr<HardwareDisplayPlane> dummy_plane(
             new HardwareDisplayPlaneDummy(id, 1 << i));
-        if (dummy_plane->Initialize(drm)) {
+        if (dummy_plane->Initialize(drm_)) {
           planes_.push_back(std::move(dummy_plane));
         }
       }

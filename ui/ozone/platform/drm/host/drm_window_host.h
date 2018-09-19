@@ -92,16 +92,16 @@ class DrmWindowHost : public PlatformWindow,
  private:
   void SendBoundsChange();
 
-  PlatformWindowDelegate* delegate_;                   // Not owned.
-  GpuThreadAdapter* sender_;                           // Not owned.
-  EventFactoryEvdev* event_factory_;                   // Not owned.
-  DrmCursor* cursor_;                                  // Not owned.
-  DrmWindowHostManager* window_manager_;               // Not owned.
-  DrmDisplayHostManager* display_manager_;             // Not owned.
-  DrmOverlayManager* overlay_manager_;                 // Not owned.
+  PlatformWindowDelegate* const delegate_;        // Not owned.
+  GpuThreadAdapter* const sender_;                // Not owned.
+  EventFactoryEvdev* const event_factory_;        // Not owned.
+  DrmCursor* const cursor_;                       // Not owned.
+  DrmWindowHostManager* const window_manager_;    // Not owned.
+  DrmDisplayHostManager* const display_manager_;  // Not owned.
+  DrmOverlayManager* const overlay_manager_;      // Not owned.
 
   gfx::Rect bounds_;
-  gfx::AcceleratedWidget widget_;
+  const gfx::AcceleratedWidget widget_;
 
   gfx::Rect cursor_confined_bounds_;
 

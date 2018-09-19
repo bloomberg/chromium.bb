@@ -58,13 +58,13 @@ class DrmDeviceConnector : public GpuPlatformSupportHost {
   bool am_running_in_ws_mode() { return !!ws_runner_; }
 
   // This will be present if the Viz host has a service manager.
-  service_manager::Connector* connector_;
+  service_manager::Connector* const connector_;
 
   // This will be used if we are operating under content/gpu without a service
   // manager.
   GpuHostBindInterfaceCallback binder_callback_;
 
-  scoped_refptr<HostDrmDevice> host_drm_device_;
+  const scoped_refptr<HostDrmDevice> host_drm_device_;
   scoped_refptr<base::SingleThreadTaskRunner> ws_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDeviceConnector);

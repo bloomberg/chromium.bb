@@ -56,7 +56,7 @@ class DrmDisplayHost : public GpuThreadObserver {
   // Calls all the callbacks with failure.
   void ClearCallbacks();
 
-  GpuThreadAdapter* sender_;  // Not owned.
+  GpuThreadAdapter* const sender_;  // Not owned.
 
   std::unique_ptr<display::DisplaySnapshot> snapshot_;
 
