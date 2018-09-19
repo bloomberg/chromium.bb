@@ -389,7 +389,7 @@ VolumeManager::VolumeManager(
     chromeos::PowerManagerClient* power_manager_client,
     chromeos::disks::DiskMountManager* disk_mount_manager,
     chromeos::file_system_provider::Service* file_system_provider_service,
-    const GetMtpStorageInfoCallback& get_mtp_storage_info_callback)
+    GetMtpStorageInfoCallback get_mtp_storage_info_callback)
     : profile_(profile),
       drive_integration_service_(drive_integration_service),
       disk_mount_manager_(disk_mount_manager),

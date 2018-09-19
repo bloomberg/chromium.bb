@@ -68,7 +68,7 @@ class FileDefinitionListConverter {
   FileDefinitionListConverter(Profile* profile,
                               const std::string& extension_id,
                               const FileDefinitionList& file_definition_list,
-                              const EntryDefinitionListCallback& callback);
+                              EntryDefinitionListCallback callback);
   ~FileDefinitionListConverter() = default;
 
  private:
@@ -98,7 +98,7 @@ class FileDefinitionListConverter {
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   const std::string extension_id_;
   const FileDefinitionList file_definition_list_;
-  const EntryDefinitionListCallback callback_;
+  EntryDefinitionListCallback callback_;
   std::unique_ptr<EntryDefinitionList> result_;
 };
 
@@ -106,10 +106,10 @@ FileDefinitionListConverter::FileDefinitionListConverter(
     Profile* profile,
     const std::string& extension_id,
     const FileDefinitionList& file_definition_list,
-    const EntryDefinitionListCallback& callback)
+    EntryDefinitionListCallback callback)
     : extension_id_(extension_id),
       file_definition_list_(file_definition_list),
-      callback_(callback),
+      callback_(std::move(callback)),
       result_(new EntryDefinitionList) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -134,7 +134,7 @@ void FileDefinitionListConverter::ConvertNextIterator(
   if (iterator == file_definition_list_.end()) {
     // The converter object will be destroyed since |self_deleter| gets out of
     // scope.
-    callback_.Run(std::move(result_));
+    std::move(callback_).Run(std::move(result_));
     return;
   }
 
@@ -216,10 +216,10 @@ void FileDefinitionListConverter::OnIteratorConverted(
 // Helper function to return the converted definition entry directly, without
 // the redundant container.
 void OnConvertFileDefinitionDone(
-    const EntryDefinitionCallback& callback,
+    EntryDefinitionCallback callback,
     std::unique_ptr<EntryDefinitionList> entry_definition_list) {
   DCHECK_EQ(1u, entry_definition_list->size());
-  callback.Run(entry_definition_list->at(0));
+  std::move(callback).Run(entry_definition_list->at(0));
 }
 
 // Checks if the |file_path| points non-native location or not.
@@ -251,10 +251,10 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
       storage::FileSystemContext* context,
       const GURL& origin,
       const SelectedFileInfoList& selected_info_list,
-      const FileChooserFileInfoListCallback& callback)
+      FileChooserFileInfoListCallback callback)
       : context_(context),
         chooser_info_list_(new FileChooserFileInfoList),
-        callback_(callback) {
+        callback_(std::move(callback)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     Lifetime lifetime(this);
@@ -309,7 +309,7 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   FillMetadataOnIOThread,
-              base::Unretained(this), base::Passed(&lifetime),
+              base::Unretained(this), std::move(lifetime),
               chooser_info_list_->begin()));
       return;
     }
@@ -341,7 +341,7 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   NotifyComplete,
-              base::Unretained(this), base::Passed(&lifetime)));
+              base::Unretained(this), std::move(lifetime)));
       return;
     }
 
@@ -373,7 +373,7 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   NotifyError,
-              base::Unretained(this), base::Passed(&lifetime)));
+              base::Unretained(this), std::move(lifetime)));
       return;
     }
 
@@ -386,7 +386,7 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
   // Returns a result to the |callback_|.
   void NotifyComplete(Lifetime /* lifetime */) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    callback_.Run(*chooser_info_list_);
+    std::move(callback_).Run(*chooser_info_list_);
     // Reset the list so that the file systems are not revoked at the
     // destructor.
     chooser_info_list_.reset();
@@ -395,12 +395,12 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
   // Returns an empty list to the |callback_|.
   void NotifyError(Lifetime /* lifetime */) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    callback_.Run(FileChooserFileInfoList());
+    std::move(callback_).Run(FileChooserFileInfoList());
   }
 
   scoped_refptr<storage::FileSystemContext> context_;
   std::unique_ptr<FileChooserFileInfoList> chooser_info_list_;
-  const FileChooserFileInfoListCallback callback_;
+  FileChooserFileInfoListCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(
       ConvertSelectedFileInfoListToFileChooserFileInfoListImpl);
@@ -519,38 +519,36 @@ void ConvertFileDefinitionListToEntryDefinitionList(
     Profile* profile,
     const std::string& extension_id,
     const FileDefinitionList& file_definition_list,
-    const EntryDefinitionListCallback& callback) {
+    EntryDefinitionListCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The converter object destroys itself.
-  new FileDefinitionListConverter(
-      profile, extension_id, file_definition_list, callback);
+  new FileDefinitionListConverter(profile, extension_id, file_definition_list,
+                                  std::move(callback));
 }
 
 void ConvertFileDefinitionToEntryDefinition(
     Profile* profile,
     const std::string& extension_id,
     const FileDefinition& file_definition,
-    const EntryDefinitionCallback& callback) {
+    EntryDefinitionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FileDefinitionList file_definition_list;
   file_definition_list.push_back(file_definition);
   ConvertFileDefinitionListToEntryDefinitionList(
-      profile,
-      extension_id,
-      file_definition_list,
-      base::Bind(&OnConvertFileDefinitionDone, callback));
+      profile, extension_id, file_definition_list,
+      base::BindOnce(&OnConvertFileDefinitionDone, std::move(callback)));
 }
 
 void ConvertSelectedFileInfoListToFileChooserFileInfoList(
     storage::FileSystemContext* context,
     const GURL& origin,
     const SelectedFileInfoList& selected_info_list,
-    const FileChooserFileInfoListCallback& callback) {
+    FileChooserFileInfoListCallback callback) {
   // The object deletes itself.
   new ConvertSelectedFileInfoListToFileChooserFileInfoListImpl(
-      context, origin, selected_info_list, callback);
+      context, origin, selected_info_list, std::move(callback));
 }
 
 std::unique_ptr<base::DictionaryValue> ConvertEntryDefinitionToValue(

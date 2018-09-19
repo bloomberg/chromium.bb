@@ -264,7 +264,7 @@ class VolumeManager : public KeyedService,
       chromeos::PowerManagerClient* power_manager_client,
       chromeos::disks::DiskMountManager* disk_mount_manager,
       chromeos::file_system_provider::Service* file_system_provider_service,
-      const GetMtpStorageInfoCallback& get_mtp_storage_info_callback);
+      GetMtpStorageInfoCallback get_mtp_storage_info_callback);
   ~VolumeManager() override;
 
   // Returns the instance corresponding to the |context|.

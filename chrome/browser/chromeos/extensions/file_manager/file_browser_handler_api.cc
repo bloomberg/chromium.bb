@@ -342,10 +342,8 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
       render_frame_host()->GetProcess()->GetID(), full_path);
 
   file_manager::util::ConvertFileDefinitionToEntryDefinition(
-      GetProfile(),
-      extension_id(),
-      file_definition,
-      base::Bind(
+      GetProfile(), extension_id(), file_definition,
+      base::BindOnce(
           &FileBrowserHandlerInternalSelectFileFunction::RespondEntryDefinition,
           this));
 }

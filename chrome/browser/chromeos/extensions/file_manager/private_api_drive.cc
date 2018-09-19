@@ -229,7 +229,7 @@ void ConvertSearchResultInfoListToEntryDefinitionList(
     Profile* profile,
     const std::string& extension_id,
     const std::vector<T>& search_result_info_list,
-    const EntryDefinitionListCallback& callback) {
+    EntryDefinitionListCallback callback) {
   FileDefinitionList file_definition_list;
 
   for (size_t i = 0; i < search_result_info_list.size(); ++i) {
@@ -242,10 +242,9 @@ void ConvertSearchResultInfoListToEntryDefinitionList(
   }
 
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-      profile,
-      extension_id,
+      profile, extension_id,
       file_definition_list,  // Safe, since copied internally.
-      callback);
+      std::move(callback));
 }
 
 class SingleEntryPropertiesGetterForDrive {
@@ -1037,13 +1036,10 @@ void FileManagerPrivateSearchDriveFunction::OnSearch(
   const SearchResultInfoList& results_ref = *results.get();
 
   ConvertSearchResultInfoListToEntryDefinitionList(
-      GetProfile(),
-      extension_->id(),
-      results_ref,
-      base::Bind(&FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList,
-                 this,
-                 next_link,
-                 base::Passed(&results)));
+      GetProfile(), extension_->id(), results_ref,
+      base::BindOnce(
+          &FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList, this,
+          next_link, std::move(results)));
 }
 
 void FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList(
@@ -1126,13 +1122,10 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchMetadata(
   const drive::MetadataSearchResultVector& results_ref = *results.get();
 
   ConvertSearchResultInfoListToEntryDefinitionList(
-      GetProfile(),
-      extension_->id(),
-      results_ref,
-      base::Bind(
+      GetProfile(), extension_->id(), results_ref,
+      base::BindOnce(
           &FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList,
-          this,
-          base::Passed(&results)));
+          this, std::move(results)));
 }
 
 void FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(

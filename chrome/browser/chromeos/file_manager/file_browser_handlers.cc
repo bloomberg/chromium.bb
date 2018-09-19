@@ -307,12 +307,10 @@ void FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess(
   const FileDefinitionList& file_definition_list_ref =
       *file_definition_list.get();
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-      profile_,
-      extension_->id(),
-      file_definition_list_ref,
-      base::Bind(&FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&file_definition_list)));
+      profile_, extension_->id(), file_definition_list_ref,
+      base::BindOnce(&FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(file_definition_list)));
 }
 
 void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {

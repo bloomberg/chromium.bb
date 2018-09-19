@@ -919,14 +919,10 @@ void EventRouter::DispatchDirectoryChangeEventImpl(
     file_definition.is_directory = true;
 
     file_manager::util::ConvertFileDefinitionToEntryDefinition(
-        profile_,
-        *extension_id,
-        file_definition,
-        base::Bind(
+        profile_, *extension_id, file_definition,
+        base::BindOnce(
             &EventRouter::DispatchDirectoryChangeEventWithEntryDefinition,
-            weak_factory_.GetWeakPtr(),
-            changes,
-            base::Owned(extension_id),
+            weak_factory_.GetWeakPtr(), changes, base::Owned(extension_id),
             got_error));
   }
 }

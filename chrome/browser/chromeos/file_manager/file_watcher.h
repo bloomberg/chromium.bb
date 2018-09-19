@@ -28,7 +28,7 @@ namespace file_manager {
 // files is handled differently in EventRouter.
 class FileWatcher {
  public:
-  typedef base::Callback<void(bool success)> BoolCallback;
+  typedef base::OnceCallback<void(bool success)> BoolCallback;
 
   // Creates a FileWatcher associated with the virtual path.
   explicit FileWatcher(const base::FilePath& virtual_path);
@@ -64,12 +64,12 @@ class FileWatcher {
   void WatchLocalFile(
       const base::FilePath& local_path,
       const base::FilePathWatcher::Callback& file_watcher_callback,
-      const BoolCallback& callback);
+      BoolCallback callback);
 
  private:
   // Called when a FilePathWatcher is created and started.
   // |file_path_watcher| is NULL, if the watcher wasn't started successfully.
-  void OnWatcherStarted(const BoolCallback& callback,
+  void OnWatcherStarted(BoolCallback callback,
                         base::FilePathWatcher* file_path_watcher);
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
