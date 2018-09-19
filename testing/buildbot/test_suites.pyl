@@ -895,6 +895,12 @@
     },
   },
 
+  'webrtc_chromium_android_gtests': {
+    'content_browsertests': {
+      'args': ['--gtest_filter=WebRtc*'],
+    },
+  },
+
   'webrtc_chromium_gtests': {
     'content_browsertests': {
       # Run all normal WebRTC content_browsertests. This is mostly so
