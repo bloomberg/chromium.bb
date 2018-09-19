@@ -3898,6 +3898,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES" desc="The label in an extension's context menu to always allow the extension access on all sites (sentence case).">
             On all sites
           </message>
+          <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_LEARN_MORE" desc="The label in an extension's context menu that the user can click to learn more about site access (sentence case).">
+            Learn more about site access
+          </message>
           <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (sentence case).">
             Options
           </message>
@@ -3935,6 +3938,9 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_ALL_SITES" desc="The label in an extension's context menu to always allow the extension access on all sites (title case).">
             On All Sites
+          </message>
+          <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_LEARN_MORE" desc="The label in an extension's context menu that the user can click to learn more about site access (title case).">
+            Learn More About Site Access
           </message>
           <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (title case).">
             Options
