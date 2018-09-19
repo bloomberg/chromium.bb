@@ -504,6 +504,7 @@ class BlinkPerfParser(_BlinkPerfBenchmark):
 
 
 @benchmark.Info(emails=['kouhei@chromium.org', 'fs@opera.com'],
+                component='Blink>SVG',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfSVG(_BlinkPerfBenchmark):
   subdir = 'svg'

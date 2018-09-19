@@ -14,7 +14,7 @@ blink_perf.owp_storage,dmurph@chromium.org,,https://bit.ly/blink-perf-benchmarks
 blink_perf.paint,wangxianzhu@chromium.org,,https://bit.ly/blink-perf-benchmarks,
 blink_perf.parser,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",,https://bit.ly/blink-perf-benchmarks,
 blink_perf.shadow_dom,hayato@chromium.org,,https://bit.ly/blink-perf-benchmarks,
-blink_perf.svg,"kouhei@chromium.org, fs@opera.com",,https://bit.ly/blink-perf-benchmarks,
+blink_perf.svg,"kouhei@chromium.org, fs@opera.com",Blink>SVG,https://bit.ly/blink-perf-benchmarks,
 components_perftests,csharrison@chromium.org,,,
 dromaeo,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",,,
 dummy_benchmark.histogram_benchmark_1,"eakuefner@chromium.org, simonhatch@chromium.org",,,
