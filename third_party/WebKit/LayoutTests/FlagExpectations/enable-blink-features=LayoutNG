@@ -58,9 +58,7 @@ crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-basic.html [ Failure ]
 
 # New failures are appended below by the script.
 crbug.com/728378 compositing/culling/tile-occlusion-boundaries.html [ Failure ]
-crbug.com/591099 compositing/geometry/transfrom-origin-on-zero-size-layer.html [ Failure ]
 crbug.com/591099 compositing/iframes/floating-self-painting-frame.html [ Failure ]
-crbug.com/591099 compositing/massive-scale-interest-rect.html [ Failure ]
 crbug.com/591099 css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
 crbug.com/714962 css3/masking/clip-path-reference-box-inline.html [ Failure ]
 crbug.com/591099 editing/selection/paint-hyphen.html [ Pass ]
