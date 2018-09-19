@@ -138,8 +138,7 @@ void AudioDecoderForMixer::Initialize() {
   paused_pts_ = kInvalidTimestamp;
   pending_output_frames_ = kNoPendingOutput;
 
-  last_mixer_delay_.timestamp_microseconds = kInvalidTimestamp;
-  last_mixer_delay_.delay_microseconds = 0;
+  last_mixer_delay_ = RenderingDelay();
 }
 
 bool AudioDecoderForMixer::Start(int64_t playback_start_pts,
@@ -163,8 +162,6 @@ bool AudioDecoderForMixer::Start(int64_t playback_start_pts,
   }
   playback_start_pts_ = playback_start_pts;
   start_playback_asap_ = start_playback_asap;
-  last_push_timestamp_ = kInvalidTimestamp;
-  last_push_pts_ = kInvalidTimestamp;
 
   return true;
 }
@@ -180,6 +177,7 @@ void AudioDecoderForMixer::RestartPlaybackAt(int64_t timestamp, int64_t pts) {
 
   last_push_timestamp_ = kInvalidTimestamp;
   last_push_pts_ = kInvalidTimestamp;
+  last_mixer_delay_ = RenderingDelay();
 
   mixer_input_->RestartPlaybackAt(timestamp, pts);
 }
@@ -207,6 +205,9 @@ bool AudioDecoderForMixer::Resume() {
   DCHECK(mixer_input_);
   paused_pts_ = kInvalidTimestamp;
   mixer_input_->SetPaused(false);
+  last_push_timestamp_ = kInvalidTimestamp;
+  last_push_pts_ = kInvalidTimestamp;
+  last_mixer_delay_ = RenderingDelay();
   return true;
 }
 

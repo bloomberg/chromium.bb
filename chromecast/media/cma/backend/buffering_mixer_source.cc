@@ -37,13 +37,12 @@ namespace {
 const int kNumOutputChannels = 2;
 const int64_t kInputQueueMs = 90;
 const int kFadeTimeMs = 5;
-const int kAudioReadyForPlaybackThresholdMs = kInputQueueMs / 2;
+const int kAudioReadyForPlaybackThresholdMs = 70;
 
 // Special queue size and start threshold for "communications" streams to avoid
 // issues with voice calling.
 const int64_t kCommsInputQueueMs = 200;
 const int64_t kCommsStartThresholdMs = 150;
-const int64_t kNonCommsStartThresholdMs = 40;
 
 void PostTaskShim(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                   base::OnceClosure task) {
@@ -82,7 +81,7 @@ int StartThreshold(const std::string& device_id, int sample_rate) {
   if (device_id == ::media::AudioDeviceDescription::kCommunicationsDeviceId) {
     return MsToSamples(kCommsStartThresholdMs, sample_rate);
   }
-  return MsToSamples(kNonCommsStartThresholdMs, sample_rate);
+  return MsToSamples(kAudioReadyForPlaybackThresholdMs, sample_rate);
 }
 
 }  // namespace
@@ -203,7 +202,6 @@ void BufferingMixerSource::RestartPlaybackAt(int64_t timestamp, int64_t pts) {
   LOG(INFO) << __func__ << " timestamp=" << timestamp << " pts=" << pts;
 
   bool post_pcm_completion = false;
-  RenderingDelay cached_mixer_rendering_delay;
   {
     auto locked = locked_members_.Lock();
     DCHECK(locked->started_);
@@ -216,14 +214,14 @@ void BufferingMixerSource::RestartPlaybackAt(int64_t timestamp, int64_t pts) {
     locked->queue_.clear();
     locked->current_buffer_offset_ = 0;
     locked->queued_frames_ = 0;
+    locked->mixer_rendering_delay_ = RenderingDelay();
     if (locked->pending_data_) {
       locked->pending_data_.reset();
       post_pcm_completion = true;
-      cached_mixer_rendering_delay = locked->mixer_rendering_delay_;
     }
   }
   if (post_pcm_completion) {
-    POST_TASK_TO_CALLER_THREAD(PostPcmCompletion, cached_mixer_rendering_delay);
+    POST_TASK_TO_CALLER_THREAD(PostPcmCompletion, RenderingDelay());
   }
 }
 
@@ -319,7 +317,7 @@ BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(
   }
 
   RenderingDelay delay;
-  if (locked->started_) {
+  if (locked->started_ && !locked->paused_) {
     delay = locked->mixer_rendering_delay_;
     delay.delay_microseconds += SamplesToMicroseconds(
         locked->queued_frames_ + locked->extra_delay_frames_,
@@ -332,6 +330,7 @@ void BufferingMixerSource::SetPaused(bool paused) {
   LOG(INFO) << (paused ? "Pausing " : "Unpausing ") << device_id_ << " ("
             << this << ")";
   auto locked = locked_members_.Lock();
+  locked->mixer_rendering_delay_ = RenderingDelay();
   locked->paused_ = paused;
 }
 
@@ -526,11 +525,11 @@ int BufferingMixerSource::FillAudioPlaybackFrames(
 }
 
 bool BufferingMixerSource::CanDropFrames(int64_t frames_to_drop) {
-  int64_t duration_of_frames =
+  int64_t duration_of_frames_us =
       SamplesToMicroseconds(frames_to_drop, input_samples_per_second_);
 
-  return (GetCurrentBufferedDataInUs() - duration_of_frames) >=
-         kAudioReadyForPlaybackThresholdMs;
+  return (GetCurrentBufferedDataInUs() - duration_of_frames_us) >=
+         (kAudioReadyForPlaybackThresholdMs * 1000);
 }
 
 int64_t BufferingMixerSource::DataToFrames(int64_t size_in_bytes) {
