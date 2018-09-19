@@ -2330,6 +2330,7 @@ test("unit_tests") {
     "../browser/android/explore_sites/explore_sites_schema_unittest.cc",
     "../browser/android/explore_sites/explore_sites_store_unittest.cc",
     "../browser/android/explore_sites/get_catalog_task_unittest.cc",
+    "../browser/android/explore_sites/get_images_task_unittest.cc",
     "../browser/android/explore_sites/import_catalog_task_unittest.cc",
     "../browser/android/explore_sites/ntp_json_fetcher_unittest.cc",
     "../browser/android/history_report/data_observer_unittest.cc",

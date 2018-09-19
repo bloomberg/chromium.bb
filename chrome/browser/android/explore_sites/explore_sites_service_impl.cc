@@ -8,6 +8,7 @@
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
 #include "chrome/browser/android/explore_sites/get_catalog_task.h"
+#include "chrome/browser/android/explore_sites/get_images_task.h"
 #include "chrome/browser/android/explore_sites/import_catalog_task.h"
 #include "components/offline_pages/task/task.h"
 
@@ -15,6 +16,15 @@ using chrome::android::explore_sites::ExploreSitesVariation;
 using chrome::android::explore_sites::GetExploreSitesVariation;
 
 namespace explore_sites {
+namespace {
+const int kFaviconsPerCategoryImage = 4;
+}
+
+void DecodeImageBytes(BitmapCallback callback, EncodedImageList images) {
+  // TODO(freedjm): implement image decode.
+  NOTIMPLEMENTED();
+  std::move(callback).Run(nullptr);
+}
 
 ExploreSitesServiceImpl::ExploreSitesServiceImpl(
     std::unique_ptr<ExploreSitesStore> store)
@@ -33,6 +43,22 @@ void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {
   task_queue_.AddTask(std::make_unique<GetCatalogTask>(
       explore_sites_store_.get(), check_for_new_catalog_, std::move(callback)));
   check_for_new_catalog_ = false;
+}
+
+void ExploreSitesServiceImpl::GetCategoryImage(int category_id,
+                                               BitmapCallback callback) {
+  task_queue_.AddTask(std::make_unique<GetImagesTask>(
+      explore_sites_store_.get(), category_id, kFaviconsPerCategoryImage,
+      base::BindOnce(&DecodeImageBytes, std::move(callback))));
+  // TODO(dewittj, freedjm): implement.
+  std::move(callback).Run(nullptr);
+}
+
+void ExploreSitesServiceImpl::GetSiteImage(int site_id,
+                                           BitmapCallback callback) {
+  task_queue_.AddTask(std::make_unique<GetImagesTask>(
+      explore_sites_store_.get(), site_id,
+      base::BindOnce(&DecodeImageBytes, std::move(callback))));
 }
 
 void ExploreSitesServiceImpl::Shutdown() {}

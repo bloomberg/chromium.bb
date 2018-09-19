@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
 namespace explore_sites {
@@ -55,6 +56,11 @@ struct ExploreSitesCategory {
 
 using CatalogCallback = base::OnceCallback<void(
     std::unique_ptr<std::vector<ExploreSitesCategory>>)>;
+using EncodedImageBytes = std::vector<uint8_t>;
+using EncodedImageList = std::vector<std::unique_ptr<EncodedImageBytes>>;
+using EncodedImageListCallback = base::OnceCallback<void(EncodedImageList)>;
+
+using BitmapCallback = base::OnceCallback<void(std::unique_ptr<SkBitmap>)>;
 }  // namespace explore_sites
 
 #endif  // CHROME_BROWSER_ANDROID_EXPLORE_SITES_EXPLORE_SITES_TYPES_H_
