@@ -103,8 +103,6 @@ BrowserPlugin::BrowserPlugin(
 
   if (delegate_)
     delegate_->SetElementInstanceID(browser_plugin_instance_id_);
-
-  enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
 }
 
 BrowserPlugin::~BrowserPlugin() {
@@ -136,25 +134,8 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_FirstSurfaceActivation,
-                        OnFirstSurfaceActivation)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void BrowserPlugin::OnFirstSurfaceActivation(
-    int browser_plugin_instance_id,
-    const viz::SurfaceInfo& surface_info) {
-  if (!attached() || features::IsUsingWindowService())
-    return;
-
-  if (!enable_surface_synchronization_) {
-    compositing_helper_->SetPrimarySurfaceId(
-        surface_info.id(), screen_space_rect().size(),
-        cc::DeadlinePolicy::UseDefaultDeadline());
-  }
-  compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
-                                            screen_space_rect().size());
 }
 
 void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
@@ -286,7 +267,7 @@ void BrowserPlugin::SynchronizeVisualProperties() {
   if (synchronized_props_changed)
     parent_local_surface_id_allocator_.GenerateId();
 
-  if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
+  if (frame_sink_id_.is_valid()) {
     // If we're synchronizing surfaces, then use an infinite deadline to ensure
     // everything is synchronized.
     cc::DeadlinePolicy deadline =
@@ -849,15 +830,6 @@ bool BrowserPlugin::HandleMouseLockedInputEvent(
 }
 
 #if defined(USE_AURA)
-void BrowserPlugin::OnMusEmbeddedFrameSurfaceChanged(
-    const viz::SurfaceInfo& surface_info) {
-  if (!attached_)
-    return;
-
-  compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
-                                            screen_space_rect().size());
-}
-
 void BrowserPlugin::OnMusEmbeddedFrameSinkIdAllocated(
     const viz::FrameSinkId& frame_sink_id) {
   // RendererWindowTreeClient should only call this when mus is hosting viz.

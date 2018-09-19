@@ -63,7 +63,6 @@ class RenderFrameMetadata;
 
 namespace viz {
 class LocalSurfaceId;
-class SurfaceInfo;
 }  // namespace viz
 
 namespace content {
@@ -245,9 +244,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                                   const std::string& user_input);
 
   void PointerLockPermissionResponse(bool allow);
-
-  // The next function is virtual for test purposes.
-  virtual void FirstSurfaceActivation(const viz::SurfaceInfo& surface_info);
 
   void ResendEventToEmbedder(const blink::WebInputEvent& event);
 
