@@ -474,7 +474,6 @@
 <translation id="4797039098279997504">터치하여 <ph name="URL_OF_THE_CURRENT_TAB" />(으)로 돌아가기</translation>
 <translation id="4807098396393229769">카드 명의</translation>
 <translation id="4807963036345170158">데이터 절약 모드 사용 안함</translation>
-<translation id="4811736444948656478">중간 높이로 탐색 패널이 열림</translation>
 <translation id="4816465935029283692">데이터 유형</translation>
 <translation id="4837753911714442426">옵션을 열어 페이지 인쇄</translation>
 <translation id="4842092870884894799">비밀번호 생성 팝업 표시</translation>
@@ -636,6 +635,7 @@
 <translation id="5956665950594638604">새 탭에서 Chrome 고객센터 열기</translation>
 <translation id="5958275228015807058">다운로드에서 파일 및 페이지를 찾아보세요.</translation>
 <translation id="5962718611393537961">탭하여 접기</translation>
+<translation id="5990142338020175451">향상된 페이지 추천과 같이 더욱 맞춤설정된 Google 서비스</translation>
 <translation id="6000066717592683814">계속 Google 사용</translation>
 <translation id="6005538289190791541">추천 비밀번호</translation>
 <translation id="6039379616847168523">다음 탭으로 이동</translation>
@@ -658,7 +658,6 @@
 <translation id="6177111841848151710">현재 검색 엔진에는 허용되지 않음</translation>
 <translation id="6177390657002841081">데이터 세이버 사용 설정</translation>
 <translation id="6181444274883918285">사이트 예외 추가</translation>
-<translation id="618555311922999635">전체 높이로 탐색 패널이 열림</translation>
 <translation id="6192333916571137726">다운로드 파일</translation>
 <translation id="6192792657125177640">예외</translation>
 <translation id="6206551242102657620">이 사이트와의 연결은 안전합니다. 사이트 정보</translation>
@@ -909,7 +908,6 @@
 <translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
 <translation id="8084114998886531721">저장된 비밀번호</translation>
 <translation id="8087000398470557479">이 콘텐츠의 출처는 Google에서 제공하는 <ph name="DOMAIN_NAME" />입니다.</translation>
-<translation id="8100932616285851614">탐색 패널이 닫힘</translation>
 <translation id="8103578431304235997">시크릿 탭</translation>
 <translation id="8105951947646329362">관련 페이지 추천</translation>
 <translation id="8109613176066109935">어느 기기에서나 내 북마크를 사용하려면 동기화를 사용 설정하세요.</translation>
@@ -935,7 +933,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 및 그 외 사이트</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />로 된 페이지를 번역하지 않습니다.</translation>
 <translation id="8349013245300336738">사용된 데이터 양에 따라 정렬</translation>
-<translation id="8363501664269050863">탐색 패널입니다. 닫으려면 아래로 스와이프하세요.</translation>
 <translation id="8372893542064058268">특정 사이트에서 백그라운드 동기화를 허용합니다.</translation>
 <translation id="8374821112118309944">음성 안내 지원을 최신 버전으로 업데이트해야 합니다.</translation>
 <translation id="8393700583063109961">메시지 보내기</translation>

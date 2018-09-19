@@ -474,7 +474,6 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4797039098279997504">Touch to return to <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Name on card</translation>
 <translation id="4807963036345170158">Data Saver is off</translation>
-<translation id="4811736444948656478">Navigation panel opened at half height</translation>
 <translation id="4816465935029283692">Data types</translation>
 <translation id="4837753911714442426">Open options to print page</translation>
 <translation id="4842092870884894799">Showing password generation pop-up</translation>
@@ -636,6 +635,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5956665950594638604">Open the Chrome Help Centre in a new tab</translation>
 <translation id="5958275228015807058">Find your files and pages in Downloads</translation>
 <translation id="5962718611393537961">Tap to collapse</translation>
+<translation id="5990142338020175451">More personal Google services, such as better page suggestions</translation>
 <translation id="6000066717592683814">Keep Google</translation>
 <translation id="6005538289190791541">Suggested password</translation>
 <translation id="6039379616847168523">Jump to the next tab</translation>
@@ -658,7 +658,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="6177111841848151710">Blocked for current search engine</translation>
 <translation id="6177390657002841081">Turn on Data Saver</translation>
 <translation id="6181444274883918285">Add site exception</translation>
-<translation id="618555311922999635">Navigation panel opened at full height</translation>
 <translation id="6192333916571137726">Download File</translation>
 <translation id="6192792657125177640">Exceptions</translation>
 <translation id="6206551242102657620">Connection is secure. Site information</translation>
@@ -909,7 +908,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8084114998886531721">Saved password</translation>
 <translation id="8087000398470557479">This content is from <ph name="DOMAIN_NAME" />, delivered by Google.</translation>
-<translation id="8100932616285851614">Navigation panel closed</translation>
 <translation id="8103578431304235997">Incognito Tab</translation>
 <translation id="8105951947646329362">Suggest related pages</translation>
 <translation id="8109613176066109935">To get your bookmarks on all your devices, turn on sync</translation>
@@ -935,7 +933,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> and more sites</translation>
 <translation id="8339163506404995330">Pages in <ph name="LANGUAGE" /> will not be translated</translation>
 <translation id="8349013245300336738">Sort by amount of data used</translation>
-<translation id="8363501664269050863">Navigation panel. Swipe down to close.</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8393700583063109961">Send message</translation>

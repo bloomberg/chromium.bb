@@ -474,7 +474,6 @@
 <translation id="4797039098279997504">輕觸即可返回 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="4807963036345170158">Data Saver 已關閉</translation>
-<translation id="4811736444948656478">導覽面版已開啟，顯示在畫面下半部</translation>
 <translation id="4816465935029283692">資料類型</translation>
 <translation id="4837753911714442426">開啟列印網頁的選項</translation>
 <translation id="4842092870884894799">目前顯示的是密碼產生彈出式視窗</translation>
@@ -658,7 +657,6 @@
 <translation id="6177111841848151710">禁止目前的搜尋引擎存取位置資訊</translation>
 <translation id="6177390657002841081">開啟 Data Saver</translation>
 <translation id="6181444274883918285">新增例外網站</translation>
-<translation id="618555311922999635">導覽面版已開啟，填滿整個畫面</translation>
 <translation id="6192333916571137726">下載檔案</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6206551242102657620">已建立安全連線。網站資訊</translation>
@@ -909,7 +907,6 @@
 <translation id="8073388330009372546">在新分頁中開啟圖片</translation>
 <translation id="8084114998886531721">已儲存的密碼</translation>
 <translation id="8087000398470557479">這個內容來自 <ph name="DOMAIN_NAME" />，由 Google 所提供。</translation>
-<translation id="8100932616285851614">導覽面版已關閉</translation>
 <translation id="8103578431304235997">無痕式分頁</translation>
 <translation id="8105951947646329362">建議相關的網頁</translation>
 <translation id="8109613176066109935">如要將書籤同步到所有裝置，請開啟同步處理功能</translation>
@@ -935,7 +932,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 和其他網站</translation>
 <translation id="8339163506404995330">系統將不會翻譯<ph name="LANGUAGE" />網頁</translation>
 <translation id="8349013245300336738">依使用資料量排序</translation>
-<translation id="8363501664269050863">導覽面板。向下滑動即可關閉。</translation>
 <translation id="8372893542064058268">允許特定網站執行背景同步處理作業。</translation>
 <translation id="8374821112118309944">請更新至新版 TalkBack。</translation>
 <translation id="8393700583063109961">傳送訊息</translation>

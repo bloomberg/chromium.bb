@@ -474,7 +474,6 @@
 <translation id="4797039098279997504">برای برگشتن به <ph name="URL_OF_THE_CURRENT_TAB" />، لمس کنید</translation>
 <translation id="4807098396393229769">نام روی کارت</translation>
 <translation id="4807963036345170158">صرفه‌جویی داده خاموش است</translation>
-<translation id="4811736444948656478">پانل پیمایش تا نیمه باز شد</translation>
 <translation id="4816465935029283692">انواع داده</translation>
 <translation id="4837753911714442426">باز کردن گزینه‌های چاپ صفحه</translation>
 <translation id="4842092870884894799">نمایش پنجره تولید گذرواژه</translation>
@@ -635,6 +634,7 @@
 <translation id="5956665950594638604">‏باز کردن مرکز راهنمایی Chrome در برگه جدید</translation>
 <translation id="5958275228015807058">فایل‌ها و صفحه‌هایتان را در «بارگیری‌ها» پیدا کنید</translation>
 <translation id="5962718611393537961">برای کوچک کردن ضربه بزنید</translation>
+<translation id="5990142338020175451">‏سرویس‌های Google شخصی‌شده بیشتر، مثل پیشنهادهای بهتر برای صفحه</translation>
 <translation id="6000066717592683814">‏حفظ Google</translation>
 <translation id="6005538289190791541">گذرواژه پیشنهادی</translation>
 <translation id="6039379616847168523">رفتن به برگه بعدی</translation>
@@ -657,7 +657,6 @@
 <translation id="6177111841848151710">برای موتور جستجوی فعلی مسدود شده است</translation>
 <translation id="6177390657002841081">روشن کردن «صرفه‌جویی در مصرف داده»</translation>
 <translation id="6181444274883918285">افزودن استثنای سایت</translation>
-<translation id="618555311922999635">پانل پیمایش کاملاً باز شد</translation>
 <translation id="6192333916571137726">فایل بارگیری</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
 <translation id="6206551242102657620">اتصال امن است. اطلاعات سایت</translation>
@@ -908,7 +907,6 @@
 <translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
 <translation id="8084114998886531721">گذرواژه ذخیره‌شده</translation>
 <translation id="8087000398470557479">‏این محتوا از <ph name="DOMAIN_NAME" /> است و توسط Google ارائه می‌شود.</translation>
-<translation id="8100932616285851614">پانل پیمایش بسته شد</translation>
 <translation id="8103578431304235997">برگه ناشناس</translation>
 <translation id="8105951947646329362">پیشنهاد صفحه‌های مرتبط</translation>
 <translation id="8109613176066109935">برای اینکه به نشانک‌ها در همه دستگاه‌هایتان دسترسی داشته باشید، همگام‌سازی را روشن کنید</translation>
@@ -934,7 +932,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> و سایت‌های دیگر</translation>
 <translation id="8339163506404995330">صفحه‌های <ph name="LANGUAGE" /> ترجمه نخواند شد</translation>
 <translation id="8349013245300336738">مرتب‌سازی براساس مقدار داده استفاده‌شده</translation>
-<translation id="8363501664269050863">پانل پیمایش. برای بستن، صفحه را تند به پایین بکشید.</translation>
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>
 <translation id="8393700583063109961">ارسال پیام</translation>

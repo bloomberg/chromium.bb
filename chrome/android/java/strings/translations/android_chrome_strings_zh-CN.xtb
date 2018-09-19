@@ -474,7 +474,6 @@
 <translation id="4797039098279997504">触摸即可返回到 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="4807963036345170158">流量节省程序已关闭</translation>
-<translation id="4811736444948656478">已半屏打开导航面板</translation>
 <translation id="4816465935029283692">数据类型</translation>
 <translation id="4837753911714442426">打开选项以打印网页</translation>
 <translation id="4842092870884894799">目前显示的是密码生成弹出式窗口</translation>
@@ -636,6 +635,7 @@
 <translation id="5956665950594638604">在新标签页中打开 Chrome 帮助中心</translation>
 <translation id="5958275228015807058">在“下载内容”中查找您的文件和网页</translation>
 <translation id="5962718611393537961">点按即可收起</translation>
+<translation id="5990142338020175451">畅享更加个性化的 Google 服务，例如更贴合个人需求的网页建议</translation>
 <translation id="6000066717592683814">继续使用 Google</translation>
 <translation id="6005538289190791541">建议的密码</translation>
 <translation id="6039379616847168523">跳转到下一个标签页</translation>
@@ -658,7 +658,6 @@
 <translation id="6177111841848151710">已设为不可供当前的搜索引擎使用</translation>
 <translation id="6177390657002841081">启用流量节省程序</translation>
 <translation id="6181444274883918285">添加例外网站</translation>
-<translation id="618555311922999635">已全屏打开导航面板</translation>
 <translation id="6192333916571137726">下载文件</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6206551242102657620">连接是安全的。网站信息</translation>
@@ -909,7 +908,6 @@
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="8084114998886531721">保存的密码</translation>
 <translation id="8087000398470557479">此内容来自 <ph name="DOMAIN_NAME" />（由 Google 提供）。</translation>
-<translation id="8100932616285851614">已关闭导航面板</translation>
 <translation id="8103578431304235997">隐身标签页</translation>
 <translation id="8105951947646329362">提供相关页面建议</translation>
 <translation id="8109613176066109935">要将您的书签同步到您的所有设备上，请开启同步功能</translation>
@@ -935,7 +933,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 及更多网站</translation>
 <translation id="8339163506404995330">系统不会自动翻译源语言为<ph name="LANGUAGE" />的网页</translation>
 <translation id="8349013245300336738">按已使用的数据流量排序</translation>
-<translation id="8363501664269050863">导航面板。向下滑动手指即可关闭。</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
 <translation id="8393700583063109961">发送消息</translation>

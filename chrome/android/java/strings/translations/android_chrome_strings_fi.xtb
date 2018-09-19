@@ -474,7 +474,6 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="4797039098279997504">Palaa osoitteeseen <ph name="URL_OF_THE_CURRENT_TAB" /> koskettamalla.</translation>
 <translation id="4807098396393229769">Kortissa oleva nimi</translation>
 <translation id="4807963036345170158">Data Saver on pois käytöstä.</translation>
-<translation id="4811736444948656478">Navigointipalkki avattu näytön puolivälin korkeudelle</translation>
 <translation id="4816465935029283692">Tietotyypit</translation>
 <translation id="4837753911714442426">Avaa sivun tulostusvaihtoehdot</translation>
 <translation id="4842092870884894799">Salasanojen luomisen ponnahdusikkuna on näkyvissä.</translation>
@@ -658,7 +657,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="6177111841848151710">Estetty nykyiseltä hakukoneelta</translation>
 <translation id="6177390657002841081">Ota Data Saver käyttöön</translation>
 <translation id="6181444274883918285">Lisää sivustopoikkeus</translation>
-<translation id="618555311922999635">Navigointipalkki avattu koko näytön korkeudelle</translation>
 <translation id="6192333916571137726">Lataaminen-tiedosto</translation>
 <translation id="6192792657125177640">Poikkeukset</translation>
 <translation id="6206551242102657620">Yhteys on turvallinen. Sivuston tiedot</translation>
@@ -909,7 +907,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8073388330009372546">Avaa kuva uudessa välilehdessä</translation>
 <translation id="8084114998886531721">Salasana tallennettu</translation>
 <translation id="8087000398470557479">Google on toimittanut tämän sisällön osoitteesta <ph name="DOMAIN_NAME" />.</translation>
-<translation id="8100932616285851614">Navigointipalkki suljettu</translation>
 <translation id="8103578431304235997">Incognito-välilehti</translation>
 <translation id="8105951947646329362">Ehdota aiheeseen liittyviä sivuja</translation>
 <translation id="8109613176066109935">Ota synkronointi käyttöön, niin voit käyttää kirjanmerkkejä kaikilla laitteillasi</translation>
@@ -935,7 +932,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ja muita sivustoja</translation>
 <translation id="8339163506404995330">Kielellä <ph name="LANGUAGE" /> kirjoitettuja sivuja ei käännetä.</translation>
 <translation id="8349013245300336738">Lajittele käytetyn datan määrän mukaan</translation>
-<translation id="8363501664269050863">Navigointipaneeli. Sulje pyyhkäisemällä alas.</translation>
 <translation id="8372893542064058268">Salli taustasynkronointi tietyllä sivustolla.</translation>
 <translation id="8374821112118309944">TalkBack täytyy päivittää uudempaan versioon.</translation>
 <translation id="8393700583063109961">Lähetä viesti</translation>

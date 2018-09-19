@@ -475,7 +475,6 @@
 <translation id="4797039098279997504">المس  للعودة إلى <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
 <translation id="4807963036345170158">تم إيقاف توفير البيانات</translation>
-<translation id="4811736444948656478">لوحة التنقل مفتوحة بنصف ارتفاع</translation>
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4837753911714442426">فتح الخيارات لطباعة الصفحة</translation>
 <translation id="4842092870884894799">عرض نافذة إنشاء كلمة المرور المنبثقة</translation>
@@ -637,6 +636,7 @@
 <translation id="5956665950594638604">‏فتح مركز مساعدة Chrome في علامة تبويب جديدة</translation>
 <translation id="5958275228015807058">العثور على الملفات والصفحات في التنزيلات</translation>
 <translation id="5962718611393537961">النقر للتصغير</translation>
+<translation id="5990142338020175451">‏مزيد من خدمات Google الشخصية، مثل أفضل اقتراحات الصفحة</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
 <translation id="6005538289190791541">كلمة المرور المُقترحَة</translation>
 <translation id="6039379616847168523">الانتقال السريع إلى علامة التبويب التالية</translation>
@@ -659,7 +659,6 @@
 <translation id="6177111841848151710">تم حظره لمحرك البحث الحالي</translation>
 <translation id="6177390657002841081">تشغيل إضافة "توفير البيانات"</translation>
 <translation id="6181444274883918285">إضافة موقع ويب إلى قائمة الاستثناءات</translation>
-<translation id="618555311922999635">لوحة التنقل مفتوحة بالارتفاع الكامل</translation>
 <translation id="6192333916571137726">ملف تحميل</translation>
 <translation id="6192792657125177640">الاستثناءات</translation>
 <translation id="6206551242102657620">يُعدُّ اتصالك آمنًا. معلومات موقع الويب</translation>
@@ -910,7 +909,6 @@
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="8084114998886531721">كلمة مرور محفوظة</translation>
 <translation id="8087000398470557479">‏هذا المحتوى من <ph name="DOMAIN_NAME" />، وتم عرضه من قبل Google.</translation>
-<translation id="8100932616285851614">تم إغلاق لوحة التنقل</translation>
 <translation id="8103578431304235997">علامة تبويب للتصفح المتخفي</translation>
 <translation id="8105951947646329362">اقتراح الصفحات ذات الصلة</translation>
 <translation id="8109613176066109935">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تفعيل المزامنة.</translation>
@@ -936,7 +934,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ومواقع أخرى</translation>
 <translation id="8339163506404995330">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">الترتيب حسب مقدار البيانات المُستخدَمة</translation>
-<translation id="8363501664269050863">لوحة التنقل. يمكنك التمرير للأسفل للإغلاق.</translation>
 <translation id="8372893542064058268">السماح بتشغيل "مزامنة الخلفية" لموقع ويب معين.</translation>
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
 <translation id="8393700583063109961">إرسال رسالة</translation>

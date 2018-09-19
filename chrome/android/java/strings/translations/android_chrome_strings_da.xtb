@@ -474,7 +474,6 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4797039098279997504">Tryk for at gå tilbage til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Navn på kort</translation>
 <translation id="4807963036345170158">Datasparefunktionen er slået fra</translation>
-<translation id="4811736444948656478">Navigationspanelet er halvt åbnet</translation>
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4837753911714442426">Åbn valgmuligheder for udskrivning af siden</translation>
 <translation id="4842092870884894799">Viser pop op for generering af adgangskoder</translation>
@@ -636,6 +635,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5956665950594638604">Åbn Hjælp til Chrome i en ny fane</translation>
 <translation id="5958275228015807058">Find dine filer og sider i Downloads</translation>
 <translation id="5962718611393537961">Tryk for at skjule</translation>
+<translation id="5990142338020175451">Mere personlige Google-tjenester, f.eks. bedre sideforslag</translation>
 <translation id="6000066717592683814">Behold Google</translation>
 <translation id="6005538289190791541">Foreslået adgangskode</translation>
 <translation id="6039379616847168523">Gå til den næste fane</translation>
@@ -658,7 +658,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="6177111841848151710">Blokeret for den nuværende søgemaskine</translation>
 <translation id="6177390657002841081">Slå Datasparefunktion til</translation>
 <translation id="6181444274883918285">Tilføj en undtagelse for et website</translation>
-<translation id="618555311922999635">Navigationspanelet er helt åbnet</translation>
 <translation id="6192333916571137726">Download fil</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
 <translation id="6206551242102657620">Forbindelsen er sikker. Websiteoplysninger</translation>
@@ -909,7 +908,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8073388330009372546">Åbn billede på ny fane</translation>
 <translation id="8084114998886531721">Gemt adgangskode</translation>
 <translation id="8087000398470557479">Dette indhold er fra <ph name="DOMAIN_NAME" />, som leveres af Google.</translation>
-<translation id="8100932616285851614">Navigationspanelet er lukket</translation>
 <translation id="8103578431304235997">Inkognitofane</translation>
 <translation id="8105951947646329362">Foreslå relaterede sider</translation>
 <translation id="8109613176066109935">Aktivér synkronisering for at få vist dine bogmærker på alle dine enheder</translation>
@@ -935,7 +933,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> og andre websites</translation>
 <translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversættes ikke</translation>
 <translation id="8349013245300336738">Sortér efter mængden af data, der er brugt</translation>
-<translation id="8363501664269050863">Navigationspanel. Stryg nedad for at lukke.</translation>
 <translation id="8372893542064058268">Tillad synkronisering i baggrunden for et bestemt website.</translation>
 <translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
 <translation id="8393700583063109961">Send en besked</translation>

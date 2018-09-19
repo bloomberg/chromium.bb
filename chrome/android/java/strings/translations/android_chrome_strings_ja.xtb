@@ -474,7 +474,6 @@
 <translation id="4797039098279997504">タップすると <ph name="URL_OF_THE_CURRENT_TAB" /> に戻ります</translation>
 <translation id="4807098396393229769">カード名義人（半角英文字）</translation>
 <translation id="4807963036345170158">データセーバー OFF</translation>
-<translation id="4811736444948656478">画面の下半分にナビゲーション パネルが開かれています</translation>
 <translation id="4816465935029283692">データタイプ</translation>
 <translation id="4837753911714442426">ページの印刷オプションを開く</translation>
 <translation id="4842092870884894799">パスワード作成のポップアップを表示しています</translation>
@@ -658,7 +657,6 @@
 <translation id="6177111841848151710">現在の検索エンジンに対してはブロック</translation>
 <translation id="6177390657002841081">データセーバーをオンにする</translation>
 <translation id="6181444274883918285">サイトの例外を追加</translation>
-<translation id="618555311922999635">画面全体にナビゲーション パネルが開かれています</translation>
 <translation id="6192333916571137726">ダウンロード ファイル</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6206551242102657620">接続は保護されています。サイト情報</translation>
@@ -909,7 +907,6 @@
 <translation id="8073388330009372546">新しいタブで画像を開く</translation>
 <translation id="8084114998886531721">保存したパスワード</translation>
 <translation id="8087000398470557479"><ph name="DOMAIN_NAME" /> のコンテンツを Google から配信しています。</translation>
-<translation id="8100932616285851614">ナビゲーションパネルを閉じました</translation>
 <translation id="8103578431304235997">シークレット タブ</translation>
 <translation id="8105951947646329362">関連ページを表示する</translation>
 <translation id="8109613176066109935">お使いのどの端末でも同じブックマークを使用するには、同期を有効にします</translation>
@@ -935,7 +932,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> とその他のサイト</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />のページは翻訳されません</translation>
 <translation id="8349013245300336738">データ使用量で並べ替え</translation>
-<translation id="8363501664269050863">ナビゲーション パネルです。閉じるには下にスワイプします。</translation>
 <translation id="8372893542064058268">特定のサイトに対してバックグラウンド同期を許可します。</translation>
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>

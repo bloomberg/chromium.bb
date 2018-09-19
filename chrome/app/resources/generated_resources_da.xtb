@@ -3314,9 +3314,11 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5979469435153841984">Klik på stjernen i adresselinjen for at gemme sider som bogmærker.</translation>
 <translation id="5982621672636444458">Sorteringsmuligheder</translation>
 <translation id="5984222099446776634">Besøgt for nylig</translation>
+<translation id="5990142338020175451">Mere personlige Google-tjenester, f.eks. bedre sideforslag</translation>
 <translation id="5990386583461751448">Oversat</translation>
 <translation id="5991049340509704927">Forstør</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne denne app.}one{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne denne app.}other{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne disse apps.}}</translation>
+<translation id="5997337190805127100">Få flere oplysninger om websiteadgang</translation>
 <translation id="6002458620803359783">Foretrukne stemmer</translation>
 <translation id="6005695835120147974">Medierouter</translation>
 <translation id="6006484371116297560">Klassisk</translation>
@@ -4014,6 +4016,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7040230719604914234">Udbyder</translation>
 <translation id="7042418530779813870">Indsæt og søg</translation>
 <translation id="7043108582968290193">Udført. Der blev ikke fundet nogen ikke-kompatible apps.</translation>
+<translation id="7044124535091449260">Få flere oplysninger om websiteadgang</translation>
 <translation id="7049293980323620022">Vil du beholde filen?</translation>
 <translation id="7051943809462976355">Søger efter mus...</translation>
 <translation id="7052237160939977163">Send data om ydeevne</translation>

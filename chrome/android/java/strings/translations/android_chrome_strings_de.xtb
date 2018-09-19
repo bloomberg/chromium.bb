@@ -474,7 +474,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4797039098279997504">Tippen, um zu <ph name="URL_OF_THE_CURRENT_TAB" /> zurückzukehren</translation>
 <translation id="4807098396393229769">Name auf Karte</translation>
 <translation id="4807963036345170158">Datensparmodus deaktiviert</translation>
-<translation id="4811736444948656478">Navigationsbereich halb geöffnet</translation>
 <translation id="4816465935029283692">Datentypen</translation>
 <translation id="4837753911714442426">Optionen zum Drucken einer Seite öffnen</translation>
 <translation id="4842092870884894799">Pop-up-Fenster zur Passwortgenerierung wird angezeigt.</translation>
@@ -658,7 +657,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6177111841848151710">Für die aktuelle Suchmaschine blockiert</translation>
 <translation id="6177390657002841081">Datensparmodus aktivieren</translation>
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
-<translation id="618555311922999635">Navigationsbereich ganz geöffnet</translation>
 <translation id="6192333916571137726">Download-Datei</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
 <translation id="6206551242102657620">Die Verbindung ist sicher. Websiteinformationen</translation>
@@ -909,7 +907,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8073388330009372546">Bild in neuem Tab öffnen</translation>
 <translation id="8084114998886531721">Gespeichertes Passwort</translation>
 <translation id="8087000398470557479">Dieser Inhalt ist von <ph name="DOMAIN_NAME" /> und wurde von Google bereitgestellt.</translation>
-<translation id="8100932616285851614">Navigationsbereich geschlossen</translation>
 <translation id="8103578431304235997">Inkognito-Tab</translation>
 <translation id="8105951947646329362">Ähnliche Seiten vorschlagen</translation>
 <translation id="8109613176066109935">Aktivieren Sie die Synchronisierung, um Ihre Lesezeichen auf allen Ihren Geräten zu sehen</translation>
@@ -935,7 +932,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> und weitere Websites</translation>
 <translation id="8339163506404995330">Seiten auf <ph name="LANGUAGE" /> werden nicht übersetzt</translation>
 <translation id="8349013245300336738">Nach Menge der verwendeten Daten sortieren</translation>
-<translation id="8363501664269050863">Navigationsbereich. Zum Schließen nach unten wischen.</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
 <translation id="8374821112118309944">TalkBack muss auf eine neuere Version aktualisiert werden.</translation>
 <translation id="8393700583063109961">Nachricht senden</translation>

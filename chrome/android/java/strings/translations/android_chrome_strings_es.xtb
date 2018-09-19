@@ -474,7 +474,6 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4797039098279997504">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Titular de la tarjeta</translation>
 <translation id="4807963036345170158">Ahorro de datos desactivado</translation>
-<translation id="4811736444948656478">El panel de navegación ocupa la mitad inferior de la pantalla</translation>
 <translation id="4816465935029283692">Tipos de datos</translation>
 <translation id="4837753911714442426">Abre las opciones para imprimir la página</translation>
 <translation id="4842092870884894799">Mostrando la ventana emergente de generación de contraseña</translation>
@@ -658,7 +657,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo de in
 <translation id="6177111841848151710">Bloqueado en el motor de búsqueda actual</translation>
 <translation id="6177390657002841081">Activar Ahorro de Datos</translation>
 <translation id="6181444274883918285">Añadir excepción de sitio web</translation>
-<translation id="618555311922999635">El panel de navegación ocupa toda la pantalla</translation>
 <translation id="6192333916571137726">Descargar archivo</translation>
 <translation id="6192792657125177640">Excepciones</translation>
 <translation id="6206551242102657620">La conexión es segura. Información del sitio web</translation>
@@ -909,7 +907,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8073388330009372546">Abrir en pestaña nueva</translation>
 <translation id="8084114998886531721">Contraseña guardada</translation>
 <translation id="8087000398470557479">Este contenido procede de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
-<translation id="8100932616285851614">Panel de navegación cerrado</translation>
 <translation id="8103578431304235997">Pestaña de incógnito</translation>
 <translation id="8105951947646329362">Sugerir páginas relacionadas</translation>
 <translation id="8109613176066109935">Activa la sincronización para ver tus marcadores en todos tus dispositivos</translation>
@@ -935,7 +932,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> y más sitios web</translation>
 <translation id="8339163506404995330">No se traducirán las páginas en <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">Ordenar por cantidad de datos usados</translation>
-<translation id="8363501664269050863">Panel de navegación. Desliza el dedo hacia abajo para cerrarlo.</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano de un sitio web específico.</translation>
 <translation id="8374821112118309944">Debes instalar una nueva versión de TalkBack.</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>

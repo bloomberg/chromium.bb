@@ -474,7 +474,6 @@
 <translation id="4797039098279997504">แตะเพื่อกลับไปยัง <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">ชื่อบนบัตร</translation>
 <translation id="4807963036345170158">โปรแกรมประหยัดอินเทอร์เน็ตปิดอยู่</translation>
-<translation id="4811736444948656478">แผงการนำทางเปิดที่ระดับความสูงครึ่งหนึ่งของหน้าจอ</translation>
 <translation id="4816465935029283692">ชนิดข้อมูล</translation>
 <translation id="4837753911714442426">เปิดตัวเลือกในการพิมพ์หน้า</translation>
 <translation id="4842092870884894799">กำลังแสดงป๊อปอัปการสร้างรหัสผ่าน</translation>
@@ -636,6 +635,7 @@
 <translation id="5956665950594638604">เปิดศูนย์ช่วยเหลือของ Chrome ในแท็บใหม่</translation>
 <translation id="5958275228015807058">หาไฟล์และหน้าในโฟลเดอร์ดาวน์โหลด</translation>
 <translation id="5962718611393537961">แตะเพื่อยุบ</translation>
+<translation id="5990142338020175451">บริการของ Google ที่ตรงกับตัวคุณมากขึ้น เช่น คำแนะนำหน้าเว็บที่ดียิ่งขึ้น</translation>
 <translation id="6000066717592683814">ใช้ Google ต่อ</translation>
 <translation id="6005538289190791541">รหัสผ่านที่แนะนำ</translation>
 <translation id="6039379616847168523">ข้ามไปยังแท็บถัดไป</translation>
@@ -658,7 +658,6 @@
 <translation id="6177111841848151710">ถูกบล็อกสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="6177390657002841081">เปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="6181444274883918285">เพิ่มข้อยกเว้นของเว็บไซต์</translation>
-<translation id="618555311922999635">แผงการนำทางเปิดที่ระดับความสูงเต็มหน้าจอ</translation>
 <translation id="6192333916571137726">ดาวน์โหลดไฟล์</translation>
 <translation id="6192792657125177640">ข้อยกเว้น</translation>
 <translation id="6206551242102657620">การเชื่อมต่อปลอดภัย ข้อมูลเว็บไซต์</translation>
@@ -909,7 +908,6 @@
 <translation id="8073388330009372546">เปิดภาพในแท็บใหม่</translation>
 <translation id="8084114998886531721">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="8087000398470557479">เนื้อหานี้มาจาก <ph name="DOMAIN_NAME" /> และนำส่งโดย Google</translation>
-<translation id="8100932616285851614">ปิดแผงการนำทางแล้ว</translation>
 <translation id="8103578431304235997">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="8105951947646329362">แนะนำหน้าเว็บที่เกี่ยวข้อง</translation>
 <translation id="8109613176066109935">เปิดการซิงค์เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
@@ -935,7 +933,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> และเว็บไซต์อื่นๆ</translation>
 <translation id="8339163506404995330">ระบบจะไม่แปลหน้าเว็บภาษา<ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">จัดเรียงตามปริมาณเน็ตมือถือที่ใช้</translation>
-<translation id="8363501664269050863">แผงการนำทาง เลื่อนลงเพื่อปิด</translation>
 <translation id="8372893542064058268">อนุญาตให้ใช้การซิงค์ในแบ็กกราวด์สำหรับเว็บไซต์ที่เจาะจง</translation>
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>

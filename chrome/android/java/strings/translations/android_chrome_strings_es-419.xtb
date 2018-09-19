@@ -474,7 +474,6 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="4797039098279997504">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Nombre en la tarjeta</translation>
 <translation id="4807963036345170158">La extensión Ahorro de datos está desactivada</translation>
-<translation id="4811736444948656478">Se abrió el panel de navegación a media altura</translation>
 <translation id="4816465935029283692">Tipos de datos</translation>
 <translation id="4837753911714442426">Abrir opciones para imprimir la página</translation>
 <translation id="4842092870884894799">Mostrando mensaje emergente de generación de contraseña</translation>
@@ -658,7 +657,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="6177111841848151710">Se bloqueó para el motor de búsqueda actual</translation>
 <translation id="6177390657002841081">Activar la extensión Ahorro de datos</translation>
 <translation id="6181444274883918285">Agregar excepción del sitio</translation>
-<translation id="618555311922999635">Se abrió el panel de navegación por completo</translation>
 <translation id="6192333916571137726">Descargar archivo</translation>
 <translation id="6192792657125177640">Excepciones</translation>
 <translation id="6206551242102657620">La conexión es segura. Consulta la información del sitio.</translation>
@@ -909,7 +907,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8073388330009372546">Abrir imagen en pestaña nueva</translation>
 <translation id="8084114998886531721">Se guardó la contraseña</translation>
 <translation id="8087000398470557479">Este contenido es de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
-<translation id="8100932616285851614">Se cerró el panel de navegación</translation>
 <translation id="8103578431304235997">Pestaña de incógnito</translation>
 <translation id="8105951947646329362">Sugerir páginas relacionadas</translation>
 <translation id="8109613176066109935">Para que tus favoritos estén en todos tus dispositivos, activa la sincronización</translation>
@@ -935,7 +932,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> y más sitios</translation>
 <translation id="8339163506404995330">No se traducirán las páginas en <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">Ordenar por cantidad de datos utilizados</translation>
-<translation id="8363501664269050863">Panel de navegación. Deslízalo hacia abajo para cerrarlo.</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano para un sitio específico.</translation>
 <translation id="8374821112118309944">Debes actualizar a una versión más reciente de TalkBack</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>

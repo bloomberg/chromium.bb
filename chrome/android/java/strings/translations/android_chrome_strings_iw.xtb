@@ -474,7 +474,6 @@
 <translation id="4797039098279997504">גע כדי לחזור אל <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">שם על הכרטיס</translation>
 <translation id="4807963036345170158">‏חוסך הנתונים (Data Saver) כבוי</translation>
-<translation id="4811736444948656478">חלונית הניווט נפתחה בחצי הגובה</translation>
 <translation id="4816465935029283692">סוגי נתונים</translation>
 <translation id="4837753911714442426">פתח אפשרויות להדפסת דפים</translation>
 <translation id="4842092870884894799">מציג את החלון הקופץ של יצירת סיסמה</translation>
@@ -658,7 +657,6 @@
 <translation id="6177111841848151710">חסוּם למנוע החיפוש הנוכחי</translation>
 <translation id="6177390657002841081">‏הפעל את חוסך הנתונים (Data Saver)</translation>
 <translation id="6181444274883918285">הוסף חריג של אתר</translation>
-<translation id="618555311922999635">חלונית הניווט נפתחה בגובה מלא</translation>
 <translation id="6192333916571137726">קובץ הורדה</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
 <translation id="6206551242102657620">החיבור מאובטח. פרטי האתר</translation>
@@ -909,7 +907,6 @@
 <translation id="8073388330009372546">פתח את התמונה בכרטיסייה חדשה</translation>
 <translation id="8084114998886531721">סיסמה שמורה</translation>
 <translation id="8087000398470557479">‏התוכן הזה הוא מ-<ph name="DOMAIN_NAME" />, ומוגש על-ידי Google.</translation>
-<translation id="8100932616285851614">חלונית הניווט נסגרה</translation>
 <translation id="8103578431304235997">כרטיסיית גלישה בסתר</translation>
 <translation id="8105951947646329362">הצעת דפים קשורים</translation>
 <translation id="8109613176066109935">כדי שהסימניות יופיעו בכל המכשירים שלך, יש להפעיל את הסנכרון</translation>
@@ -935,7 +932,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ועוד אתרים</translation>
 <translation id="8339163506404995330">דפים ב<ph name="LANGUAGE" /> לא יתורגמו</translation>
 <translation id="8349013245300336738">מיון לפי כמות הנתונים שבהם נעשה שימוש</translation>
-<translation id="8363501664269050863">חלונית הניווט. כדי לסגור יש להחליק כלפי מטה.</translation>
 <translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
 <translation id="8374821112118309944">‏עליך לעדכן את TalkBack לגרסה חדשה יותר.</translation>
 <translation id="8393700583063109961">שלח הודעה</translation>

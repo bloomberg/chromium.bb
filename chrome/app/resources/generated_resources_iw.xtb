@@ -250,7 +250,7 @@
 <translation id="1358741672408003399">איות ודקדוק</translation>
 <translation id="1361164813881551742">הוסף ידנית</translation>
 <translation id="1361655923249334273">לא בשימוש</translation>
-<translation id="1361872463926621533">השמעת צליל בעת ההפעלה</translation>
+<translation id="1361872463926621533">השמעת צליל בהפעלה</translation>
 <translation id="1363028406613469049">רצועה</translation>
 <translation id="1367951781824006909">בחר קובץ</translation>
 <translation id="1368265273904755308">דיווח על בעיה</translation>
@@ -3252,7 +3252,7 @@
 <translation id="5882919346125742463">רשתות מוכרות</translation>
 <translation id="5884474295213649357">‏הכרטיסייה הזו מחוברת להתקן USB.</translation>
 <translation id="5885324376209859881">נהל הגדרות מדיה...</translation>
-<translation id="5886009770935151472">אצבע 1</translation>
+<translation id="5886009770935151472">אצבע ראשונה</translation>
 <translation id="5889282057229379085">המספר המרבי של רשויות אישורים ברמת ביניים: <ph name="NUM_INTERMEDIATE_CA" /></translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5895187275912066135">הונפק בתאריך</translation>
@@ -3353,7 +3353,7 @@
 <translation id="6042308850641462728">עוד</translation>
 <translation id="6043317578411397101">‏<ph name="APP_NAME" /> משתף כרטיסיית Chrome עם <ph name="TAB_NAME" />.</translation>
 <translation id="6044805581023976844">‏<ph name="APP_NAME" /> משתף כרטיסייה ואודיו של Chrome עם <ph name="TAB_NAME" />.</translation>
-<translation id="6047938872139769630">אפשר להשתמש בקוד כדי לבטל את הנעילה של המכשיר אם לא התחברת לחשבון</translation>
+<translation id="6047938872139769630">אם לא התחברת לחשבון, אפשר להשתמש בקוד כדי לבטל את הנעילה של המכשיר</translation>
 <translation id="6049004884579590341">לחץ לחיצה ארוכה על |<ph name="ACCELERATOR" />| כדי לצאת ממסך מלא</translation>
 <translation id="6049065490165456785">תמונה מהמצלמה הפנימית</translation>
 <translation id="6051354611314852653">‏אופס!  המערכת לא הצליחה לאמת את הגישה של מכשיר זה לממשק ה-API.</translation>
@@ -3946,7 +3946,7 @@
 <translation id="694592694773692225">הפניה לכתובת אתר אחרת נחסמה בדף הזה.</translation>
 <translation id="6949306908218145636">הוספת דפים פתוחים לסימניות...</translation>
 <translation id="6950627417367801484">שחזור אפליקציות</translation>
-<translation id="6950943362443484797">נתקין את האפליקציה עבורך</translation>
+<translation id="6950943362443484797">התקנת האפליקציה תבוצע</translation>
 <translation id="6951153907720526401">‏מעבדי handler לתשלומים</translation>
 <translation id="6955446738988643816">בדוק חלון מוקפץ</translation>
 <translation id="6957231940976260713">שם שירות</translation>
@@ -4161,7 +4161,7 @@
 <translation id="7256710573727326513">פתח בכרטיסייה</translation>
 <translation id="725758059478686223">שירות הדפסה</translation>
 <translation id="7257666756905341374">קריאת נתונים שאתה מעתיק ומדביק</translation>
-<translation id="7258697411818564379">הקוד שלך נוסף</translation>
+<translation id="7258697411818564379">הקוד נוסף</translation>
 <translation id="7260764918845374269">כדי לראות את מפתח האבטחה, הוא צריך להיות במצב התאמה. יש ללחוץ על הלחצן במפתח למשך 5 שניות לפחות.</translation>
 <translation id="7262004276116528033">שירות הכניסה הזה מתארח ב-<ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">סגור כרטיסיות</translation>
@@ -4787,7 +4787,7 @@
 <translation id="8191453843330043793">V8 Proxy Resolver</translation>
 <translation id="8193175696669055101">דגם מכשיר</translation>
 <translation id="8195027750202970175">גודל בדיסק</translation>
-<translation id="8198323535106903877">נתקין את <ph name="NUMBER_OF_APPS" /> האפליקציות האלה עבורך</translation>
+<translation id="8198323535106903877"><ph name="NUMBER_OF_APPS" /> האפליקציות יותקנו</translation>
 <translation id="8199300056570174101">מאפייני רשת (שירות) ומכשיר</translation>
 <translation id="8200772114523450471">חדש</translation>
 <translation id="8202160505685531999">הזן שוב את הסיסמה כדי לעדכן את פרופיל <ph name="DEVICE_TYPE" />.</translation>
@@ -5121,7 +5121,7 @@
 <translation id="8719653885894320876">הורדת <ph name="PLUGIN_NAME" /> נכשלה</translation>
 <translation id="8723829621484579639">תת-מסגרות במצב גלישה בסתר של: <ph name="PARENT_SITE" /></translation>
 <translation id="8724405322205516354">כשיוצג לך הסמל הזה, משמעות הדבר היא שאפשר להשתמש בטביעת אצבע לצורכי זיהוי או לאישור רכישה.</translation>
-<translation id="8724409975248965964">טביעת האצבע שלך נקלטה</translation>
+<translation id="8724409975248965964">טביעת האצבע נקלטה</translation>
 <translation id="8724859055372736596">&amp;הצג בתיקייה</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8725178340343806893">מועדפים/סימניות</translation>

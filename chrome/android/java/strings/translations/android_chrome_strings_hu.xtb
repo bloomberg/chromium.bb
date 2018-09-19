@@ -474,7 +474,6 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4797039098279997504">Érintse meg, hogy visszatérjen ide: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">A kártyán feltüntetett név</translation>
 <translation id="4807963036345170158">Az Adatforgalom-csökkentő ki van kapcsolva</translation>
-<translation id="4811736444948656478">Navigációs panel megnyitva félmagasságban</translation>
 <translation id="4816465935029283692">Adattípusok</translation>
 <translation id="4837753911714442426">Oldalnyomtatási lehetőségek megnyitása</translation>
 <translation id="4842092870884894799">Jelszógenerálás előugró ablakának megjelenítése</translation>
@@ -658,7 +657,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="6177111841848151710">Tiltott a jelenlegi keresőmotor számára</translation>
 <translation id="6177390657002841081">Az Adatforgalom-csökkentő bekapcsolása</translation>
 <translation id="6181444274883918285">Webhelykivétel hozzáadása</translation>
-<translation id="618555311922999635">Navigációs panel megnyitva teljes magasságban</translation>
 <translation id="6192333916571137726">Fájl letöltése</translation>
 <translation id="6192792657125177640">Kivételek</translation>
 <translation id="6206551242102657620">A kapcsolat biztonságos. Webhelyadatok</translation>
@@ -909,7 +907,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8073388330009372546">Kép megnyitása új lapon</translation>
 <translation id="8084114998886531721">Mentett jelszó</translation>
 <translation id="8087000398470557479">Ez a Google által megjelenített tartalom a(z) <ph name="DOMAIN_NAME" /> domainről származik.</translation>
-<translation id="8100932616285851614">Navigációs panel bezárva</translation>
 <translation id="8103578431304235997">Inkognitólap</translation>
 <translation id="8105951947646329362">Kapcsolódó oldalak ajánlása</translation>
 <translation id="8109613176066109935">Ha az összes eszközén szeretné elérni könyvjelzőit, kapcsolja be a szinkronizálást</translation>
@@ -935,7 +932,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> és további webhelyek</translation>
 <translation id="8339163506404995330">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva</translation>
 <translation id="8349013245300336738">Rendezés a felhasznált adatmennyiség szerint</translation>
-<translation id="8363501664269050863">Navigációs panel. Csúsztassa le a bezáráshoz.</translation>
 <translation id="8372893542064058268">Háttérben történő szinkronizálás engedélyezése adott webhely esetében.</translation>
 <translation id="8374821112118309944">Frissítenie kell a TalkBack alkalmazást egy újabb verzióra.</translation>
 <translation id="8393700583063109961">Üzenet küldése</translation>

@@ -474,7 +474,6 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4797039098279997504">Appuyer ici pour revenir à l'adresse <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Titulaire de la carte</translation>
 <translation id="4807963036345170158">L'économiseur de données est désactivé</translation>
-<translation id="4811736444948656478">Panneau de navigation ouvert à mi-hauteur</translation>
 <translation id="4816465935029283692">Types de données</translation>
 <translation id="4837753911714442426">Afficher les options d'impression de la page</translation>
 <translation id="4842092870884894799">Affichage de la fenêtre contextuelle de génération de mot de passe</translation>
@@ -658,7 +657,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="6177111841848151710">Bloqué pour le moteur de recherche actuel</translation>
 <translation id="6177390657002841081">Activer l'Économiseur de données</translation>
 <translation id="6181444274883918285">Ajouter une exception pour un site</translation>
-<translation id="618555311922999635">Panneau de navigation ouvert sur toute la hauteur</translation>
 <translation id="6192333916571137726">Télécharger le fichier</translation>
 <translation id="6192792657125177640">Exceptions</translation>
 <translation id="6206551242102657620">La connexion est sécurisée. Informations sur le site</translation>
@@ -909,7 +907,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8073388330009372546">Ouvrir image dans autre onglet</translation>
 <translation id="8084114998886531721">Mot de passe enregistré</translation>
 <translation id="8087000398470557479">Ce contenu est issu de <ph name="DOMAIN_NAME" />. Il est diffusé par Google.</translation>
-<translation id="8100932616285851614">Panneau de navigation fermé</translation>
 <translation id="8103578431304235997">Onglet de navigation privée</translation>
 <translation id="8105951947646329362">Suggérer des pages associées</translation>
 <translation id="8109613176066109935">Activez la synchronisation pour accéder à vos favoris sur tous vos appareils</translation>
@@ -935,7 +932,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> et autres sites</translation>
 <translation id="8339163506404995330">Les pages en <ph name="LANGUAGE" /> ne seront pas traduites</translation>
 <translation id="8349013245300336738">Trier en fonction de la quantité de données utilisées</translation>
-<translation id="8363501664269050863">Panneau de navigation. Balayez l'écran vers le bas pour le fermer.</translation>
 <translation id="8372893542064058268">Autorise la synchronisation en arrière-plan pour un site spécifique.</translation>
 <translation id="8374821112118309944">Vous devez mettre à jour TalkBack vers une version plus récente</translation>
 <translation id="8393700583063109961">Envoyer un message</translation>
