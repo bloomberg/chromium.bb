@@ -47,7 +47,7 @@ class PLATFORM_EXPORT ImageFrame final {
 
  public:
   enum PixelFormat { kN32, kRGBA_F16 };
-  enum Status { kFrameEmpty, kFramePartial, kFrameComplete };
+  enum Status { kFrameEmpty, kFrameInitialized, kFramePartial, kFrameComplete };
   enum DisposalMethod {
     // If you change the numeric values of these, make sure you audit
     // all users, as some users may cast raw values to/from these

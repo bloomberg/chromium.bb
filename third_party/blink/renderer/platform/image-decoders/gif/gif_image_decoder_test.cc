@@ -57,16 +57,7 @@ void TestRepetitionCount(const char* dir,
   scoped_refptr<SharedBuffer> data = ReadFile(dir, file);
   ASSERT_TRUE(data.get());
   decoder->SetData(data.get(), true);
-  EXPECT_EQ(kAnimationLoopOnce,
-            decoder->RepetitionCount());  // Default value before decode.
-
-  for (size_t i = 0; i < decoder->FrameCount(); ++i) {
-    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(i);
-    EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
-  }
-
-  EXPECT_EQ(expected_repetition_count,
-            decoder->RepetitionCount());  // Expected value after decode.
+  EXPECT_EQ(expected_repetition_count, decoder->RepetitionCount());
 }
 
 }  // anonymous namespace
@@ -78,7 +69,6 @@ TEST(GIFImageDecoderTest, decodeTwoFrames) {
       ReadFile(kLayoutTestResourcesDir, "animated.gif");
   ASSERT_TRUE(data.get());
   decoder->SetData(data.get(), true);
-  EXPECT_EQ(kAnimationLoopOnce, decoder->RepetitionCount());
 
   ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   uint32_t generation_id0 = frame->Bitmap().getGenerationID();
@@ -125,7 +115,6 @@ TEST(GIFImageDecoderTest, parseAndDecode) {
       ReadFile(kLayoutTestResourcesDir, "animated.gif");
   ASSERT_TRUE(data.get());
   decoder->SetData(data.get(), true);
-  EXPECT_EQ(kAnimationLoopOnce, decoder->RepetitionCount());
 
   // This call will parse the entire file.
   EXPECT_EQ(2u, decoder->FrameCount());
@@ -345,10 +334,13 @@ TEST(GIFImageDecoderTest, invalidDisposalMethod) {
 
   EXPECT_EQ(2u, decoder->FrameCount());
   // Disposal method 4 is converted to ImageFrame::DisposeOverwritePrevious.
+  // This is because some specs say method 3 is "overwrite previous", while
+  // others say setting the third bit (i.e. method 4) is.
   EXPECT_EQ(ImageFrame::kDisposeOverwritePrevious,
             decoder->DecodeFrameBufferAtIndex(0)->GetDisposalMethod());
-  // Disposal method 5 is ignored.
-  EXPECT_EQ(ImageFrame::kDisposeNotSpecified,
+  // Unknown disposal methods (5 in this case) are converted to
+  // ImageFrame::DisposeKeep.
+  EXPECT_EQ(ImageFrame::kDisposeKeep,
             decoder->DecodeFrameBufferAtIndex(1)->GetDisposalMethod());
 }
 
@@ -384,6 +376,28 @@ TEST(GIFImageDecoderTest, verifyRepetitionCount) {
   TestRepetitionCount(kDecodersTestingDir, "radient.gif", kAnimationNone);
 }
 
+TEST(GIFImageDecoderTest, repetitionCountChangesWhenSeen) {
+  scoped_refptr<SharedBuffer> full_data_buffer =
+      ReadFile(kLayoutTestResourcesDir, "animated-10color.gif");
+  ASSERT_TRUE(full_data_buffer.get());
+  const Vector<char> full_data = full_data_buffer->CopyAs<Vector<char>>();
+
+  // This size must be before the repetition count is encountered in the file.
+  const size_t kTruncatedSize = 60;
+  ASSERT_TRUE(kTruncatedSize < full_data.size());
+  scoped_refptr<SharedBuffer> partial_data =
+      SharedBuffer::Create(full_data.data(), kTruncatedSize);
+
+  std::unique_ptr<ImageDecoder> decoder = std::make_unique<GIFImageDecoder>(
+      ImageDecoder::kAlphaPremultiplied, ColorBehavior::TransformToSRGB(),
+      ImageDecoder::kNoDecodedImageByteLimit);
+
+  decoder->SetData(partial_data.get(), false);
+  ASSERT_EQ(kAnimationLoopOnce, decoder->RepetitionCount());
+  decoder->SetData(full_data_buffer.get(), true);
+  ASSERT_EQ(kAnimationLoopInfinite, decoder->RepetitionCount());
+}
+
 TEST(GIFImageDecoderTest, bitmapAlphaType) {
   scoped_refptr<SharedBuffer> full_data_buffer =
       ReadFile(kDecodersTestingDir, "radient.gif");
@@ -416,11 +430,11 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
   ImageFrame* premul_frame = premul_decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_TRUE(premul_frame &&
               premul_frame->GetStatus() != ImageFrame::kFrameComplete);
-  EXPECT_EQ(premul_frame->Bitmap().alphaType(), kPremul_SkAlphaType);
+  EXPECT_EQ(kPremul_SkAlphaType, premul_frame->Bitmap().alphaType());
   ImageFrame* unpremul_frame = unpremul_decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_TRUE(unpremul_frame &&
               unpremul_frame->GetStatus() != ImageFrame::kFrameComplete);
-  EXPECT_EQ(unpremul_frame->Bitmap().alphaType(), kUnpremul_SkAlphaType);
+  EXPECT_EQ(kUnpremul_SkAlphaType, unpremul_frame->Bitmap().alphaType());
 
   // Fully decoded frame => the frame alpha type is known (opaque).
   premul_decoder->SetData(full_data_buffer.get(), true);
@@ -430,11 +444,11 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
   premul_frame = premul_decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_TRUE(premul_frame &&
               premul_frame->GetStatus() == ImageFrame::kFrameComplete);
-  EXPECT_EQ(premul_frame->Bitmap().alphaType(), kOpaque_SkAlphaType);
+  EXPECT_EQ(kOpaque_SkAlphaType, premul_frame->Bitmap().alphaType());
   unpremul_frame = unpremul_decoder->DecodeFrameBufferAtIndex(0);
   EXPECT_TRUE(unpremul_frame &&
               unpremul_frame->GetStatus() == ImageFrame::kFrameComplete);
-  EXPECT_EQ(unpremul_frame->Bitmap().alphaType(), kOpaque_SkAlphaType);
+  EXPECT_EQ(kOpaque_SkAlphaType, unpremul_frame->Bitmap().alphaType());
 }
 
 namespace {
