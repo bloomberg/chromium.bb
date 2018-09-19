@@ -405,8 +405,15 @@ def _CommitAndPush(manifest_repo, buildspec, contents, dryrun):
   filename = os.path.join(manifest_repo, buildspec)
   assert not os.path.exists(filename)
 
+  logging.info('Creating buildspec: %s as %s', buildspec, filename)
+
   git.CreatePushBranch(PUSH_BRANCH, manifest_repo, sync=False)
   osutils.WriteFile(filename, contents, makedirs=True)
+
+  git.RunGit(manifest_repo, ['add', '-A'])
+  message = 'Creating buildspec: %s' % buildspec
+  git.RunGit(manifest_repo, ['commit', '-m', message])
+
   git.PushBranch(PUSH_BRANCH, manifest_repo, dryrun=dryrun)
 
   return filename
@@ -445,7 +452,7 @@ def PopulateAndPublishBuildSpec(rel_build_spec,
     _CommitAndPush(manifest_versions_ext, rel_build_spec, manifest_ext, dryrun)
 
 
-def GenerateAndPublishOfficialAndBuildSpec(
+def GenerateAndPublishOfficialBuildSpec(
     repo,
     incr_type,
     manifest_versions_int,

@@ -190,7 +190,7 @@ class WorkspacePublishBuildspecStage(WorkspaceStageBase):
     else:
       incr_type = 'branch'
 
-    manifest_version.GenerateAndPublishOfficialAndBuildSpec(
+    manifest_version.GenerateAndPublishOfficialBuildSpec(
         repo,
         incr_type,
         manifest_versions_int=int_manifest_versions_path,
