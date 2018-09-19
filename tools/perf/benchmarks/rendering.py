@@ -10,7 +10,8 @@ from telemetry import story as story_module
 
 
 @benchmark.Info(emails=['sadrul@chromium.org', 'vmiura@chromium.org'],
-                documentation_url='https://bit.ly/rendering-benchmarks')
+                documentation_url='https://bit.ly/rendering-benchmarks',
+                component='Internals>GPU>Metrics')
 class RenderingDesktop(perf_benchmark.PerfBenchmark):
 
   test = rendering.Rendering
@@ -32,7 +33,8 @@ class RenderingDesktop(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Info(emails=['sadrul@chromium.org', 'vmiura@chromium.org'],
-                documentation_url='https://bit.ly/rendering-benchmarks')
+                documentation_url='https://bit.ly/rendering-benchmarks',
+                component='Internals>GPU>Metrics')
 class RenderingMobile(perf_benchmark.PerfBenchmark):
 
   test = rendering.Rendering
