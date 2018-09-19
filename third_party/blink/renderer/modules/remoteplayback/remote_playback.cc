@@ -564,7 +564,8 @@ void RemotePlayback::DidChangeState(
   StateChanged(remote_playback_state);
 }
 
-void RemotePlayback::RequestClose() {
+void RemotePlayback::DidClose(
+    mojom::blink::PresentationConnectionCloseReason reason) {
   StateChanged(WebRemotePlaybackState::kDisconnected);
 }
 

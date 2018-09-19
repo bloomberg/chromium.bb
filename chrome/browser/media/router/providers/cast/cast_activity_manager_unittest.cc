@@ -49,7 +49,7 @@ class ClientPresentationConnection
   MOCK_METHOD1(OnMessage, void(blink::mojom::PresentationConnectionMessagePtr));
   MOCK_METHOD1(DidChangeState,
                void(blink::mojom::PresentationConnectionState state));
-  MOCK_METHOD0(RequestClose, void());
+  MOCK_METHOD1(DidClose, void(blink::mojom::PresentationConnectionCloseReason));
 
   mojo::Binding<blink::mojom::PresentationConnection> binding_;
   blink::mojom::PresentationConnectionPtr connection_;

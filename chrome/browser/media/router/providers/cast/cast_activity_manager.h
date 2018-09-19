@@ -68,10 +68,8 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
   // Instead, |PresentationService::Close/TerminateConnection| is used.
   void DidChangeState(
       blink::mojom::PresentationConnectionState state) override {}
-  // TODO(https://crbug.com/809249): Implement close connection with this
-  // method once we make sure Blink calls this on navigation and on
-  // PresentationConnection::close().
-  void RequestClose() override {}
+  void DidClose(
+      blink::mojom::PresentationConnectionCloseReason reason) override;
 
  private:
   void HandleParsedClientMessage(std::unique_ptr<base::Value> message);

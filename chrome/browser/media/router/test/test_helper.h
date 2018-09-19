@@ -104,7 +104,7 @@ class MockPresentationConnectionProxy
   MOCK_METHOD1(OnMessage, void(blink::mojom::PresentationConnectionMessagePtr));
   MOCK_METHOD1(DidChangeState,
                void(blink::mojom::PresentationConnectionState state));
-  MOCK_METHOD0(RequestClose, void());
+  MOCK_METHOD1(DidClose, void(blink::mojom::PresentationConnectionCloseReason));
 };
 
 #if !defined(OS_ANDROID)

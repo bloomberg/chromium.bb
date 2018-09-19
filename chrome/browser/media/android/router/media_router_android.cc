@@ -50,7 +50,8 @@ void MediaRouterAndroid::PresentationConnectionProxy::OnMessage(
     media_router_android_->SendRouteMessage(route_id_, message->get_message());
 }
 
-void MediaRouterAndroid::PresentationConnectionProxy::RequestClose() {
+void MediaRouterAndroid::PresentationConnectionProxy::DidClose(
+    blink::mojom::PresentationConnectionCloseReason reason) {
   auto& route_connections =
       media_router_android_->presentation_connections_[route_id_];
   DCHECK(!route_connections.empty());

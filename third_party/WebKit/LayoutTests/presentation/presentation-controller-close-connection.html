@@ -40,6 +40,7 @@ async_test(t => {
     } else if (e.data == "receiver connection ready") {
       assert_not_equals(connection, null);
       connection.close();
+      assert_equals(connection.state, "closed");
     }
   }));
 }, "controller connection.close() should fire both controller's and receiver's onclose event handler");

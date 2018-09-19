@@ -64,6 +64,13 @@ void CastSessionClient::OnMessage(
                           activity_->route().media_route_id()));
 }
 
+void CastSessionClient::DidClose(
+    blink::mojom::PresentationConnectionCloseReason reason) {
+  // TODO(https://crbug.com/809249): Implement close connection with this
+  // method once we make sure Blink calls this on navigation and on
+  // PresentationConnection::close().
+}
+
 void CastSessionClient::HandleParsedClientMessage(
     std::unique_ptr<base::Value> message) {
   std::unique_ptr<CastInternalMessage> cast_message =

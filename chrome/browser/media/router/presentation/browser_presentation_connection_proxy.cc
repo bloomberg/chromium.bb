@@ -58,6 +58,13 @@ void BrowserPresentationConnectionProxy::OnMessage(
   }
 }
 
+void BrowserPresentationConnectionProxy::DidClose(
+    blink::mojom::PresentationConnectionCloseReason reason) {
+  // Closing PresentationConnection is handled by
+  // PresentationService::CloseConnection or PresentationConnection implemented
+  // by a Media Route Provider.
+}
+
 void BrowserPresentationConnectionProxy::OnMessagesReceived(
     std::vector<mojom::RouteMessagePtr> messages) {
   DVLOG(2) << __func__ << ", number of messages : " << messages.size();
