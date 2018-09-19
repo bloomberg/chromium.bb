@@ -92,6 +92,12 @@ class GenericChangeProcessor : public ChangeProcessor,
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool CryptoReadyIfNecessary();
 
+  // Disconnect from the syncable service. After a call to this function, no
+  // further calls to the syncable service are placed by the processor.
+  // TODO(crbug.com/880029): This is a speculative fix for the bug. Remove if it
+  // does not work or if a deeper root cause is found.
+  void Disconnect();
+
  protected:
   // ChangeProcessor interface.
   void StartImpl() override;  // Does nothing.
@@ -125,7 +131,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   const ModelType type_;
 
   // The SyncableService this change processor will forward changes on to.
-  const base::WeakPtr<SyncableService> local_service_;
+  base::WeakPtr<SyncableService> local_service_;
 
   // A SyncMergeResult used to track the changes made during association. The
   // owner will invalidate the weak pointer when association is complete. While
