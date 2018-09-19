@@ -33,7 +33,7 @@ class BubbleDialogDelegateView;
 
 // Represents an inbuilt (as opposed to an extension) page action icon that
 // shows a bubble when clicked.
-// TODO(spqchan): Convert this to subclass Button.
+// TODO(ellyjones): Convert this to subclass Button.
 class PageActionIconView : public IconLabelBubbleView {
  public:
   class Delegate {
