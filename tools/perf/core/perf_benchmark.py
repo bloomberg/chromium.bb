@@ -109,7 +109,7 @@ class PerfBenchmark(benchmark.Benchmark):
 
     # TODO(crbug.com/881469): remove this once Webview support surface
     # synchronization.
-    if 'android-webview' in options.browser_type:
+    if options.browser_type and 'android-webview' in options.browser_type:
       options.AppendExtraBrowserArgs(
           '--disable-features=SurfaceSynchronization')
     self.SetExtraBrowserOptions(options)
