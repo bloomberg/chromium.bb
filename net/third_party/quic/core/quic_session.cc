@@ -1165,8 +1165,17 @@ bool QuicSession::IsFrameOutstanding(const QuicFrame& frame) const {
                                           frame.stream_frame.fin);
 }
 
-bool QuicSession::HasPendingCryptoData() const {
-  return GetStream(kCryptoStreamId)->IsWaitingForAcks();
+bool QuicSession::HasUnackedCryptoData() const {
+  const QuicStream* crypto_stream = GetCryptoStream();
+  if (crypto_stream->IsWaitingForAcks()) {
+    return true;
+  }
+  if (GetQuicReloadableFlag(quic_fix_has_pending_crypto_data) &&
+      crypto_stream->HasBufferedData()) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_has_pending_crypto_data);
+    return true;
+  }
+  return false;
 }
 
 WriteStreamDataResult QuicSession::WriteStreamData(QuicStreamId id,

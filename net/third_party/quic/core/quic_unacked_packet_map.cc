@@ -355,7 +355,7 @@ bool QuicUnackedPacketMap::HasPendingCryptoPackets() const {
   if (!session_decides_what_to_write_) {
     return pending_crypto_packet_count_ > 0;
   }
-  return session_notifier_->HasPendingCryptoData();
+  return session_notifier_->HasUnackedCryptoData();
 }
 
 bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {

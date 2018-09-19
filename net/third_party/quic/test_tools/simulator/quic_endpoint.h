@@ -117,7 +117,7 @@ class QuicEndpoint : public Endpoint,
   void RetransmitFrames(const QuicFrames& frames,
                         TransmissionType type) override;
   bool IsFrameOutstanding(const QuicFrame& frame) const override;
-  bool HasPendingCryptoData() const override;
+  bool HasUnackedCryptoData() const override;
   // End SessionNotifierInterface implementation.
 
  private:

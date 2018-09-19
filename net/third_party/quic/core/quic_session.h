@@ -135,7 +135,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   void RetransmitFrames(const QuicFrames& frames,
                         TransmissionType type) override;
   bool IsFrameOutstanding(const QuicFrame& frame) const override;
-  bool HasPendingCryptoData() const override;
+  bool HasUnackedCryptoData() const override;
 
   // Called on every incoming packet. Passes |packet| through to |connection_|.
   virtual void ProcessUdpPacket(const QuicSocketAddress& self_address,

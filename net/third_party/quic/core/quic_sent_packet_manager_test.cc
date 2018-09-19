@@ -100,7 +100,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
     EXPECT_CALL(*network_change_visitor_, OnPathMtuIncreased(1000))
         .Times(AnyNumber());
     EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(notifier_, HasPendingCryptoData())
+    EXPECT_CALL(notifier_, HasUnackedCryptoData())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(notifier_, OnStreamFrameRetransmitted(_)).Times(AnyNumber());
     EXPECT_CALL(notifier_, OnFrameAcked(_, _)).WillRepeatedly(Return(true));
@@ -277,7 +277,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
     manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);
     if (manager_.session_decides_what_to_write()) {
-      EXPECT_CALL(notifier_, HasPendingCryptoData())
+      EXPECT_CALL(notifier_, HasUnackedCryptoData())
           .WillRepeatedly(Return(true));
     }
   }
@@ -1037,7 +1037,7 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
   QuicPacketNumber acked[] = {3, 4, 5, 8, 9};
   ExpectAcksAndLosses(true, acked, QUIC_ARRAYSIZE(acked), nullptr, 0);
   if (manager_.session_decides_what_to_write()) {
-    EXPECT_CALL(notifier_, HasPendingCryptoData())
+    EXPECT_CALL(notifier_, HasUnackedCryptoData())
         .WillRepeatedly(Return(false));
   }
   manager_.OnAckFrameStart(9, QuicTime::Delta::Infinite(), clock_.Now());
@@ -1113,7 +1113,7 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeoutVersionNegotiation) {
   manager_.OnAckRange(8, 10);
   EXPECT_TRUE(manager_.OnAckFrameEnd(clock_.Now()));
   if (manager_.session_decides_what_to_write()) {
-    EXPECT_CALL(notifier_, HasPendingCryptoData())
+    EXPECT_CALL(notifier_, HasUnackedCryptoData())
         .WillRepeatedly(Return(false));
   }
   EXPECT_EQ(10u, manager_.GetLeastUnacked());
@@ -1149,7 +1149,7 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
   QuicPacketNumber acked[] = {2};
   ExpectAcksAndLosses(true, acked, QUIC_ARRAYSIZE(acked), nullptr, 0);
   if (manager_.session_decides_what_to_write()) {
-    EXPECT_CALL(notifier_, HasPendingCryptoData())
+    EXPECT_CALL(notifier_, HasUnackedCryptoData())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(false));
   }
@@ -1257,7 +1257,7 @@ TEST_P(QuicSentPacketManagerTest,
   // connection goes forward secure.
   manager_.NeuterUnencryptedPackets();
   if (manager_.session_decides_what_to_write()) {
-    EXPECT_CALL(notifier_, HasPendingCryptoData())
+    EXPECT_CALL(notifier_, HasUnackedCryptoData())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillRepeatedly(Return(false));
   }

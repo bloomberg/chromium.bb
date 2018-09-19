@@ -273,7 +273,7 @@ bool QuicEndpoint::IsFrameOutstanding(const QuicFrame& frame) const {
   return notifier_->IsFrameOutstanding(frame);
 }
 
-bool QuicEndpoint::HasPendingCryptoData() const {
+bool QuicEndpoint::HasUnackedCryptoData() const {
   return false;
 }
 
