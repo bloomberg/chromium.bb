@@ -64,6 +64,10 @@ Polymer({
         this.addShareResultText_ =
             loadTimeData.getString('smbShareAddedMountExistsMessage');
         break;
+      case SmbMountResult.INVALID_URL:
+        this.addShareResultText_ =
+            loadTimeData.getString('smbShareAddedInvalidURLMessage');
+        break;
       default:
         this.addShareResultText_ =
             loadTimeData.getString('smbShareAddedErrorMessage');
