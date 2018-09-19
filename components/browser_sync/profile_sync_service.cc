@@ -189,6 +189,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       network_time_update_callback_(
           std::move(init_params.network_time_update_callback)),
       url_loader_factory_(std::move(init_params.url_loader_factory)),
+      network_connection_tracker_(init_params.network_connection_tracker),
       is_first_time_sync_configure_(false),
       engine_initialized_(false),
       sync_disabled_by_admin_(false),
@@ -636,7 +637,8 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       sync_client_->GetInvalidationService();
   params.invalidator_client_id =
       invalidator ? invalidator->GetInvalidatorClientId() : "",
-  params.sync_manager_factory = std::make_unique<syncer::SyncManagerFactory>();
+  params.sync_manager_factory =
+      std::make_unique<syncer::SyncManagerFactory>(network_connection_tracker_);
   // The first time we start up the engine we want to ensure we have a clean
   // directory, so delete any old one that might be there.
   params.delete_sync_data_folder = !IsFirstSetupComplete();

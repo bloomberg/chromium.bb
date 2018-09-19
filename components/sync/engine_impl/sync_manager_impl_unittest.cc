@@ -63,6 +63,7 @@
 #include "components/sync/test/engine/fake_sync_scheduler.h"
 #include "components/sync/test/engine/test_id_factory.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
@@ -918,7 +919,9 @@ class SyncManagerTest : public testing::Test,
 
   enum EncryptionStatus { UNINITIALIZED, DEFAULT_ENCRYPTION, FULL_ENCRYPTION };
 
-  SyncManagerTest() : sync_manager_("Test sync manager") {
+  SyncManagerTest()
+      : sync_manager_("Test sync manager",
+                      network::TestNetworkConnectionTracker::GetInstance()) {
     switches_.encryption_method = EngineComponentsFactory::ENCRYPTION_KEYSTORE;
   }
 

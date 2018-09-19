@@ -21,6 +21,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/test_user_share.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "services/network/test/test_network_connection_tracker.h"
 
 using syncer::SyncBackendHostImpl;
 using syncer::ModelType;
@@ -80,7 +81,8 @@ void SyncEngineForProfileSyncTest::Initialize(InitParams params) {
   params.http_factory_getter = base::Bind(&GetHttpPostProviderFactory);
   params.sync_manager_factory =
       std::make_unique<syncer::SyncManagerFactoryForProfileSyncTest>(
-          std::move(callback_));
+          std::move(callback_),
+          network::TestNetworkConnectionTracker::GetInstance());
   params.credentials.email = "testuser@gmail.com";
   params.credentials.sync_token = "token";
   params.credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);

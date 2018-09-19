@@ -56,6 +56,7 @@ class IdentityManager;
 }
 
 namespace network {
+class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 }  // namespace network
 
@@ -218,6 +219,7 @@ class ProfileSyncService : public syncer::SyncService,
     StartBehavior start_behavior = MANUAL_START;
     syncer::NetworkTimeUpdateCallback network_time_update_callback;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+    network::NetworkConnectionTracker* network_connection_tracker;
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
     bool user_events_separate_pref_group = false;
@@ -679,6 +681,9 @@ class ProfileSyncService : public syncer::SyncService,
 
   // The URL loader factory for the sync.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // The global NetworkConnectionTracker instance.
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   // Indicates if this is the first time sync is being configured.
   // This is set to true if last synced time is not set at the time of
