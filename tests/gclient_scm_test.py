@@ -570,6 +570,41 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     rev_info = scm.revinfo(options, (), None)
     self.assertEquals(rev_info, '069c602044c5388d2d15c3f875b057c852003458')
 
+  def testMirrorPushUrl(self):
+    if not self.enabled:
+      return
+    fakes = fake_repos.FakeRepos()
+    fakes.set_up_git()
+    self.url = fakes.git_base + 'repo_1'
+    self.root_dir = fakes.root_dir
+    self.addCleanup(fake_repos.FakeRepos.tear_down_git, fakes)
+
+    mirror = tempfile.mkdtemp()
+    self.addCleanup(rmtree, mirror)
+
+    # This should never happen, but if it does, it'd render the other assertions
+    # in this test meaningless.
+    self.assertFalse(self.url.startswith(mirror))
+
+    git_cache.Mirror.SetCachePath(mirror)
+    self.addCleanup(git_cache.Mirror.SetCachePath, None)
+
+    options = self.Options()
+    scm = gclient_scm.GitWrapper(self.url, self.root_dir, self.relpath)
+    self.assertIsNotNone(scm._GetMirror(self.url, options))
+    scm.update(options, (), [])
+
+    fetch_url = scm._Capture(['remote', 'get-url', 'origin'])
+    self.assertTrue(
+        fetch_url.startswith(mirror),
+        msg='\n'.join([
+            'Repository fetch url should be in the git cache mirror directory.',
+            '  fetch_url: %s' % fetch_url,
+            '  mirror:    %s' % mirror]))
+    push_url = scm._Capture(['remote', 'get-url', '--push', 'origin'])
+    self.assertEquals(push_url, self.url)
+    sys.stdout.close()
+
 
 class ManagedGitWrapperTestCaseMox(BaseTestCase):
   class OptionsObject(object):

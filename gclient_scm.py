@@ -550,13 +550,20 @@ class GitWrapper(SCMWrapper):
         self._Clone(revision, url, options)
       if file_list is not None:
         files = self._Capture(
-          ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
+            ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
         file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+      if mirror:
+        self._Capture(
+            ['remote', 'set-url', '--push', 'origin', mirror.url])
       if not verbose:
         # Make the output a little prettier. It's nice to have some whitespace
         # between projects when cloning.
         self.Print('')
       return self._Capture(['rev-parse', '--verify', 'HEAD'])
+
+    if mirror:
+      self._Capture(
+          ['remote', 'set-url', '--push', 'origin', mirror.url])
 
     if not managed:
       self._SetFetchConfig(options)
