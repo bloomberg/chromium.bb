@@ -4,7 +4,7 @@ PASS Property alignment-baseline does not inherit
 PASS Property baseline-shift has initial value 0px
 PASS Property baseline-shift does not inherit
 FAIL Property dominant-baseline has initial value normal assert_equals: expected "normal" but got "auto"
-FAIL Property dominant-baseline inherits assert_not_equals: got disallowed value "central"
+PASS Property dominant-baseline inherits
 PASS Property initial-letters has initial value normal
 PASS Property initial-letters does not inherit
 PASS Property initial-letters-align has initial value alphabetic
