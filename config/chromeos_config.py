@@ -2407,6 +2407,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_important_boards = frozenset([
       'amd64-generic',
       'arm-generic',
+      'auron_paine',
       'auron_yuna',
       'beaglebone',
       'betty',
@@ -2492,7 +2493,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
-      'auron_paine',
       'cheza', #contact: philipchen@
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
