@@ -1069,7 +1069,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const IntPoint& point_in_root_frame) const;
   static LayoutBox* FindAutoscrollable(LayoutObject*);
   virtual void StopAutoscroll() {}
-  virtual void DispatchFakeMouseMoveEventSoon(EventHandler&);
+  virtual void MayUpdateHoverWhenContentUnderMouseChanged(EventHandler&);
 
   DISABLE_CFI_PERF bool HasAutoVerticalScrollbar() const {
     return HasOverflowClip() && StyleRef().HasAutoVerticalScroll();

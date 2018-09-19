@@ -487,8 +487,8 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
   if (!values_changed)
     return false;
 
-  MainFrame()->GetEventHandler().DispatchFakeMouseMoveEventSoon(
-      MouseEventManager::FakeMouseMoveReason::kDuringScroll);
+  MainFrame()->GetEventHandler().MayUpdateHoverWhenContentUnderMouseChanged(
+      MouseEventManager::UpdateHoverReason::kScrollOffsetChanged);
 
   probe::didChangeViewport(MainFrame());
   MainFrame()->Loader().SaveScrollState();

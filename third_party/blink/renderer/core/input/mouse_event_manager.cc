@@ -68,7 +68,7 @@ constexpr TimeDelta kFakeMouseMoveIntervalDuringScroll =
 
 // The amount of time to wait before sending a fake mouse event on style and
 // layout changes sets to 50Hz, same as common screen refresh rate.
-constexpr TimeDelta kFakeMouseMoveIntervalPerFrame =
+constexpr TimeDelta kFakeMouseMoveIntervalAfterLayoutChange =
     TimeDelta::FromMilliseconds(20);
 
 // TODO(crbug.com/653490): Read these values from the OS.
@@ -609,10 +609,17 @@ void MouseEventManager::SetLastMousePositionAsUnknown() {
   is_mouse_position_unknown_ = true;
 }
 
-void MouseEventManager::DispatchFakeMouseMoveEventSoon(
-    MouseEventManager::FakeMouseMoveReason fake_mouse_move_reason) {
-  if (fake_mouse_move_reason ==
-          MouseEventManager::FakeMouseMoveReason::kDuringScroll &&
+void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
+    MouseEventManager::UpdateHoverReason update_hover_reason) {
+  if (RuntimeEnabledFeatures::NoHoverAfterLayoutChangeEnabled() &&
+      update_hover_reason ==
+          MouseEventManager::UpdateHoverReason::kLayoutOrStyleChanged) {
+    frame_->GetEventHandler().ScheduleCursorUpdate();
+    return;
+  }
+
+  if (update_hover_reason ==
+          MouseEventManager::UpdateHoverReason::kScrollOffsetChanged &&
       mouse_pressed_)
     return;
 
@@ -628,24 +635,25 @@ void MouseEventManager::DispatchFakeMouseMoveEventSoon(
   // Or dispatch a fake mouse move to update hover states when the layout
   // changes.
   TimeDelta interval =
-      fake_mouse_move_reason ==
-              MouseEventManager::FakeMouseMoveReason::kDuringScroll
+      update_hover_reason ==
+              MouseEventManager::UpdateHoverReason::kScrollOffsetChanged
           ? kFakeMouseMoveIntervalDuringScroll
-          : kFakeMouseMoveIntervalPerFrame;
+          : kFakeMouseMoveIntervalAfterLayoutChange;
   fake_mouse_move_event_timer_.StartOneShot(interval, FROM_HERE);
 }
 
-void MouseEventManager::DispatchFakeMouseMoveEventSoonInQuad(
-    const FloatQuad& quad) {
+void MouseEventManager::MayUpdateHoverAfterScroll(
+    const FloatQuad& scroller_rect_in_frame) {
   LocalFrameView* view = frame_->View();
   if (!view)
     return;
 
-  if (!quad.ContainsPoint(view->ViewportToFrame(last_known_mouse_position_)))
+  if (!scroller_rect_in_frame.ContainsPoint(
+          view->ViewportToFrame(last_known_mouse_position_)))
     return;
 
-  DispatchFakeMouseMoveEventSoon(
-      MouseEventManager::FakeMouseMoveReason::kDuringScroll);
+  MayUpdateHoverWhenContentUnderMouseChanged(
+      MouseEventManager::UpdateHoverReason::kScrollOffsetChanged);
 }
 
 WebInputEventResult MouseEventManager::HandleMousePressEvent(

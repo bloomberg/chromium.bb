@@ -96,8 +96,9 @@ class CORE_EXPORT EventHandler final
 
   void StopAutoscroll();
 
-  void DispatchFakeMouseMoveEventSoon(MouseEventManager::FakeMouseMoveReason);
-  void DispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
+  void MayUpdateHoverWhenContentUnderMouseChanged(
+      MouseEventManager::UpdateHoverReason);
+  void MayUpdateHoverAfterScroll(const FloatQuad&);
 
   HitTestResult HitTestResultAtLocation(
       const HitTestLocation&,

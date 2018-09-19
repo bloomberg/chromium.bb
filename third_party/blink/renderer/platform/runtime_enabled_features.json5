@@ -816,6 +816,10 @@
       name: "NewRemotePlaybackPipeline",
     },
     {
+      name: "NoHoverAfterLayoutChange",
+      settable_from_internals: true,
+    },
+    {
       name: "NoIdleEncodingForLayoutTests",
       status: "test",
     },
