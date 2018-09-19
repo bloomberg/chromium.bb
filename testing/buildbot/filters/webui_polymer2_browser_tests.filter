@@ -31,7 +31,6 @@
 -CrSettingsPrivacyPageTest.All
 
 # Tests that fail only on official builds.
--CrSettingsChromeCleanupPageTest.All
 -CrSettingsIncompatibleApplicationsPageTest.All
 
 # Most of the a11y tests are failing because they use /deep/. Should be
@@ -71,7 +70,6 @@
 -CrSettingsLanguagesPageTest.AddLanguagesDialog
 -CrSettingsLanguagesPageTest.LanguageMenu
 -CrSettingsLanguagesPageTest.Spellcheck
--CrSettingsMultidevicePageContainerTest.All
 -CrSettingsMultidevicePageTest.All
 -CrSettingsPeoplePageLockScreenTest.All
 -CrSettingsPeoplePageQuickUnlockAuthenticateTest.All
@@ -169,6 +167,7 @@ CrSettingsCategorySettingExceptionsTest.*
 CrSettingsCertificateManagerTest.*
 CrSettingsChangePasswordPageTest.*
 CrSettingsCheckboxTest.*
+CrSettingsChromeCleanupPageTest.*
 CrSettingsDateTimePageTest.*
 CrSettingsDefaultBrowserTest.*
 CrSettingsDevicePageTest.DevicePageTest
@@ -191,6 +190,7 @@ CrSettingsMainPageTest.*
 CrSettingsMetricsReportingTest.*
 CrSettingsMultideviceFeatureItemTest.*
 CrSettingsMultideviceFeatureToggleTest.*
+CrSettingsMultidevicePageContainerTest.*
 CrSettingsMultidevicePageTest.*
 CrSettingsNonExistentRouteTest.*
 CrSettingsOnStartupPageTest.*
@@ -198,12 +198,10 @@ CrSettingsPaymentsSectionTest.*
 CrSettingsPeoplePageChangePictureTest.*
 CrSettingsPeoplePageManageProfileTest.*
 CrSettingsPeoplePageSetupPinDialogTest.*
-CrSettingsPeoplePageSyncAccountControlTest.*
 CrSettingsPersonalizationOptionsTest.*
 CrSettingsPrefsTest.*
 CrSettingsPrefUtilTest.*
 CrSettingsPrintingPageTest.*
-CrSettingsPrivacyPageTest.*
 CrSettingsProtocolHandlersTest.*
 CrSettingsResetPageTest.*
 CrSettingsResetProfileBannerTest.*

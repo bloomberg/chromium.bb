@@ -103,7 +103,7 @@ const defaultScannerResults = {
  */
 function validateVisibleItemsList(originalItems, visibleItems) {
   let visibleItemsList =
-      visibleItems.querySelectorAll('* /deep/ .visible-item');
+      visibleItems.shadowRoot.querySelectorAll('.visible-item');
   const moreItemsLink = visibleItems.$$('#more-items-link');
 
   if (originalItems.length <= settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW) {
@@ -119,7 +119,8 @@ function validateVisibleItemsList(originalItems, visibleItems) {
     moreItemsLink.click();
     Polymer.dom.flush();
 
-    visibleItemsList = visibleItems.querySelectorAll('* /deep/ .visible-item');
+    visibleItemsList =
+        visibleItems.shadowRoot.querySelectorAll('.visible-item');
     assertEquals(visibleItemsList.length, originalItems.length);
     assertTrue(moreItemsLink.hidden);
   }
