@@ -112,6 +112,7 @@ class CreditCardSaveManager {
                                const std::string& server_id);
 
  private:
+  friend class CreditCardSaveManagerTest;
   friend class CreditCardSaveManagerTestObserverBridge;
   friend class SaveCardBubbleViewsBrowserTestBase;
 
