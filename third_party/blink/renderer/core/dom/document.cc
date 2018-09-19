@@ -4736,7 +4736,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
       goto SetFocusedElementDone;
     }
     CancelFocusAppearanceUpdate();
-    UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(focused_element_);
+    EnsurePaintLocationDataValidForNode(focused_element_);
     // UpdateStyleAndLayout can call SetFocusedElement (through
     // ScrollAndFocusFragmentAnchor called in Document::LayoutUpdated) and clear
     // focused_element_.
