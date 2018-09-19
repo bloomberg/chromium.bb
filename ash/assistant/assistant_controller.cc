@@ -183,9 +183,16 @@ void AssistantController::DownloadImage(
 void AssistantController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
+  using assistant::util::DeepLinkParam;
   using assistant::util::DeepLinkType;
 
   switch (type) {
+    case DeepLinkType::kChromeSettings: {
+      // Chrome Settings deep links are opened in a new browser tab.
+      OpenUrl(assistant::util::GetChromeSettingsUrl(
+          assistant::util::GetDeepLinkParam(params, DeepLinkParam::kPage)));
+      break;
+    }
     case DeepLinkType::kFeedback:
       // TODO(dmblack): Possibly use a new FeedbackSource (this method defaults
       // to kFeedbackSourceAsh). This may be useful for differentiating feedback
