@@ -719,6 +719,7 @@ static_library("test_support_engine") {
 
   deps = [
     ":sync",
+    "//services/network:test_support",
   ]
 
   defines = [ "SYNC_TEST" ]

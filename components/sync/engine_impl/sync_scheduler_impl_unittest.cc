@@ -1549,7 +1549,7 @@ TEST_F(SyncSchedulerImplTest, StartWhenNotConnected) {
   base::RunLoop().RunUntilIdle();
 
   scheduler()->OnConnectionStatusChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
   base::RunLoop().RunUntilIdle();
@@ -1575,7 +1575,7 @@ TEST_F(SyncSchedulerImplTest, SyncShareNotCalledWhenDisconnected) {
   // Simulate a disconnect signal. The scheduler should not retry the previously
   // failed nudge.
   scheduler()->OnConnectionStatusChange(
-      net::NetworkChangeNotifier::CONNECTION_NONE);
+      network::mojom::ConnectionType::CONNECTION_NONE);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1600,7 +1600,7 @@ TEST_F(SyncSchedulerImplTest, ServerConnectionChangeDuringBackoff) {
 
   // Before we run the scheduled canary, trigger a server connection change.
   scheduler()->OnConnectionStatusChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
   base::RunLoop().RunUntilIdle();
@@ -1633,7 +1633,7 @@ TEST_F(SyncSchedulerImplTest, ConnectionChangeCanaryPreemptedByNudge) {
 
   // Before we run the scheduled canary, trigger a server connection change.
   scheduler()->OnConnectionStatusChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   PumpLoop();
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
@@ -1661,9 +1661,9 @@ TEST_F(SyncSchedulerImplTest, DoubleCanaryInConfigure) {
   scheduler()->ScheduleConfiguration(params);
 
   scheduler()->OnConnectionStatusChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   scheduler()->OnConnectionStatusChange(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+      network::mojom::ConnectionType::CONNECTION_WIFI);
 
   PumpLoop();  // Run the nudge, that will fail and schedule a quick retry.
 }

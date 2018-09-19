@@ -51,6 +51,7 @@
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -192,6 +193,8 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();
+  init_params.network_connection_tracker =
+      content::GetNetworkConnectionTracker();
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
   init_params.user_events_separate_pref_group =

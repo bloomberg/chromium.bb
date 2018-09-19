@@ -47,10 +47,11 @@
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/network_change_notifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
 #include "url/gurl.h"
 
@@ -325,10 +326,6 @@ int SyncClientMain(int argc, char* argv[]) {
     return -1;
   }
 
-  // Set up objects that monitor the network.
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
-
   // Set up sync notifier factory.
   const scoped_refptr<MyTestURLRequestContextGetter> context_getter =
       new MyTestURLRequestContextGetter(io_thread.task_runner());
@@ -385,7 +382,10 @@ int SyncClientMain(int argc, char* argv[]) {
   workers.push_back(passive_model_safe_worker);
 
   // Set up sync manager.
-  SyncManagerFactory sync_manager_factory;
+  std::unique_ptr<network::NetworkConnectionTracker>
+      network_connection_tracker =
+          network::TestNetworkConnectionTracker::CreateInstance();
+  SyncManagerFactory sync_manager_factory(network_connection_tracker.get());
   std::unique_ptr<SyncManager> sync_manager =
       sync_manager_factory.CreateSyncManager("sync_client manager");
   LoggingJsEventHandler js_event_handler;

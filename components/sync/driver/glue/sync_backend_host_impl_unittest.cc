@@ -43,6 +43,7 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -91,8 +92,11 @@ class TestSyncEngineHost : public SyncEngineHostStub {
 
 class FakeSyncManagerFactory : public SyncManagerFactory {
  public:
-  explicit FakeSyncManagerFactory(FakeSyncManager** fake_manager)
-      : fake_manager_(fake_manager) {
+  explicit FakeSyncManagerFactory(
+      FakeSyncManager** fake_manager,
+      network::NetworkConnectionTracker* network_connection_tracker)
+      : SyncManagerFactory(network_connection_tracker),
+        fake_manager_(fake_manager) {
     *fake_manager_ = nullptr;
   }
   ~FakeSyncManagerFactory() override {}
@@ -182,8 +186,8 @@ class SyncEngineTest : public testing::Test {
     credentials_.sync_token = "sync_token";
     credentials_.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
-    fake_manager_factory_ =
-        std::make_unique<FakeSyncManagerFactory>(&fake_manager_);
+    fake_manager_factory_ = std::make_unique<FakeSyncManagerFactory>(
+        &fake_manager_, network::TestNetworkConnectionTracker::GetInstance());
 
     // These types are always implicitly enabled.
     enabled_types_.PutAll(ControlTypes());

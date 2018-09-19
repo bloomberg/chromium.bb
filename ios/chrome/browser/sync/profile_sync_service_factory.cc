@@ -142,6 +142,8 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
       std::make_unique<IOSChromeSyncClient>(browser_state);
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
   init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();
+  init_params.network_connection_tracker =
+      GetApplicationContext()->GetNetworkConnectionTracker();
   init_params.debug_identifier = browser_state->GetDebugName();
   init_params.channel = ::GetChannel();
 

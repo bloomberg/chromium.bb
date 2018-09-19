@@ -15,8 +15,9 @@ namespace syncer {
 
 class SyncManagerFactoryForProfileSyncTest : public SyncManagerFactory {
  public:
-  explicit SyncManagerFactoryForProfileSyncTest(
-      base::OnceClosure init_callback);
+  SyncManagerFactoryForProfileSyncTest(
+      base::OnceClosure init_callback,
+      network::NetworkConnectionTracker* network_connection_tracker);
   ~SyncManagerFactoryForProfileSyncTest() override;
   std::unique_ptr<SyncManager> CreateSyncManager(
       const std::string& name) override;

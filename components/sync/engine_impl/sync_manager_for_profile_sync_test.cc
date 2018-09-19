@@ -7,13 +7,16 @@
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/test_user_share.h"
 #include "components/sync/syncable/user_share.h"
+#include "services/network/test/test_network_connection_tracker.h"
 
 namespace syncer {
 
 SyncManagerForProfileSyncTest::SyncManagerForProfileSyncTest(
     std::string name,
     base::OnceClosure init_callback)
-    : SyncManagerImpl(name), init_callback_(std::move(init_callback)) {}
+    : SyncManagerImpl(name,
+                      network::TestNetworkConnectionTracker::GetInstance()),
+      init_callback_(std::move(init_callback)) {}
 
 SyncManagerForProfileSyncTest::~SyncManagerForProfileSyncTest() {}
 

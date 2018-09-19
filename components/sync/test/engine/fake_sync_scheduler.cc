@@ -43,7 +43,7 @@ void FakeSyncScheduler::SetNotificationsEnabled(bool notifications_enabled) {}
 void FakeSyncScheduler::OnCredentialsUpdated() {}
 
 void FakeSyncScheduler::OnConnectionStatusChange(
-    net::NetworkChangeNotifier::ConnectionType type) {}
+    network::mojom::ConnectionType type) {}
 
 void FakeSyncScheduler::OnThrottled(const base::TimeDelta& throttle_duration) {}
 
