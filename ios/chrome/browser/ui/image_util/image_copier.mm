@@ -6,6 +6,7 @@
 
 #include <MobileCoreServices/MobileCoreServices.h>
 
+#include "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/strings/grit/components_strings.h"
@@ -22,6 +23,27 @@
 #endif
 
 namespace {
+// Name of the UMA ContextMenu.iOS.CopyImage histogram.
+const char kUmaContextMenuCopyImage[] = "ContextMenu.iOS.CopyImage";
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Enum for the ContextMenu.iOS.CopyImage UMA histogram to report
+// the results of Copy Image.
+enum class ContextMenuCopyImage {
+  // Copy Image is called.
+  kInvoked = 0,
+  // Image data is fetched.
+  kImageFetched = 1,
+  // Image data is fetched, and Copy Image is not canceled by user.
+  kTryCopyImage = 2,
+  // Fetched image data is valid and copied to pasteboard.
+  kImageCopied = 3,
+  // Fetching image data takes too long, a waiting alert popped up.
+  kAlertPopUp = 4,
+  // Copy Image is canceled by user from the alert.
+  kCanceled = 5,
+  kMaxValue = kCanceled,
+};
 // Time Period between "Copy Image" is clicked and "Copying..." alert is
 // launched.
 const int kAlertDelayInMs = 300;
@@ -42,6 +64,7 @@ const int kNoActiveCopy = 0;
 // CopyImageAtURL:referrer:webState is called, and before user cancels the
 // copy or the copy finishes.
 @property(nonatomic) int activeID;
+
 @end
 
 @implementation ImageCopier
@@ -65,24 +88,7 @@ const int kNoActiveCopy = 0;
 - (void)copyImageAtURL:(const GURL&)url
               referrer:(const web::Referrer&)referrer
               webState:(web::WebState*)webState {
-  // Dismiss current alert.
-  [self.alertCoordinator stop];
-
   __weak ImageCopier* weakSelf = self;
-
-  self.alertCoordinator = [[AlertCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
-                           title:l10n_util::GetNSStringWithFixup(
-                                     IDS_IOS_CONTENT_COPYIMAGE_ALERT_COPYING)
-                         message:nil];
-  [self.alertCoordinator
-      addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)
-                action:^() {
-                  // Cancel current copy and closes the alert.
-                  weakSelf.activeID = kNoActiveCopy;
-                  [weakSelf.alertCoordinator stop];
-                }
-                 style:UIAlertActionStyleCancel];
 
   // |idGenerator| is initiated to 1 and incremented by 2, so it will always be
   // odd number and won't collides with |kNoActiveCopy| or nil.activeID, which
@@ -101,31 +107,60 @@ const int kNoActiveCopy = 0;
   tabHelper->GetImageData(url, referrer, ^(NSData* data) {
     // Check that the copy has not been canceled.
     if (callbackID == weakSelf.activeID) {
+      [weakSelf.alertCoordinator stop];
+      weakSelf.activeID = kNoActiveCopy;
+
+      // Copy image url and data to pasteboard.
       NSMutableDictionary* item =
           [NSMutableDictionary dictionaryWithCapacity:3];
       [item setValue:urlStr forKey:(__bridge NSString*)kUTTypeText];
       [item setValue:[NSURL URLWithString:urlStr]
               forKey:(__bridge NSString*)kUTTypeURL];
       NSString* uti = GetImageUTIFromData(data);
-      if (uti)
+      if (uti) {
         [item setValue:data forKey:uti];
+        [weakSelf recordCopyImageUMA:ContextMenuCopyImage::kImageCopied];
+      }
       UIPasteboard.generalPasteboard.items =
           [NSMutableArray arrayWithObject:item];
-      // Finishes this copy.
-      weakSelf.activeID = kNoActiveCopy;
-      [weakSelf.alertCoordinator stop];
+      [weakSelf recordCopyImageUMA:ContextMenuCopyImage::kTryCopyImage];
     }
+    [weakSelf recordCopyImageUMA:ContextMenuCopyImage::kImageFetched];
   });
 
-  // Delay launching alert by |kAlertDelayInMs|.
+  // Dismiss current alert.
+  [self.alertCoordinator stop];
+  self.alertCoordinator = [[AlertCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                           title:l10n_util::GetNSStringWithFixup(
+                                     IDS_IOS_CONTENT_COPYIMAGE_ALERT_COPYING)
+                         message:nil];
+  [self.alertCoordinator
+      addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)
+                action:^() {
+                  // Cancels current copy and closes the alert.
+                  weakSelf.activeID = kNoActiveCopy;
+                  [weakSelf.alertCoordinator stop];
+                  [weakSelf recordCopyImageUMA:ContextMenuCopyImage::kCanceled];
+                }
+                 style:UIAlertActionStyleCancel];
+
+  // Delays launching alert by |kAlertDelayInMs|.
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         // Checks that the copy has not finished yet.
         if (callbackID == weakSelf.activeID) {
           [weakSelf.alertCoordinator start];
+          [weakSelf recordCopyImageUMA:ContextMenuCopyImage::kAlertPopUp];
         }
       }),
       base::TimeDelta::FromMilliseconds(kAlertDelayInMs));
+
+  [self recordCopyImageUMA:ContextMenuCopyImage::kInvoked];
+}
+
+- (void)recordCopyImageUMA:(ContextMenuCopyImage)UMAEnum {
+  UMA_HISTOGRAM_ENUMERATION(kUmaContextMenuCopyImage, UMAEnum);
 }
 
 @end

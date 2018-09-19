@@ -7765,6 +7765,44 @@ Called by update_net_error_codes.py.-->
   </int>
 </enum>
 
+<enum name="ContextMenuIOSCopyImage">
+  <summary>
+    Events of Copy Image from context menu under iOS.  Enum0 is the entrance of
+    an image copy process; Enum1~3 are correlated and they are recorded in the
+    callback of fetching image data; Enum4~5 are correlated and they are
+    recorded in the callback of popping up waiting alert. There is no gurantee
+    that each callback will be invoked in the process, so enum1~3 and enum4~5
+    are not necessarily corelated. But since enum5 blocks enum1 from advancing
+    to enum2, approximately we have enum5 = enum2 - enum1.
+  </summary>
+  <int value="0" label="Copy Image invoked">
+    Recorded when Copy Image is invoked. This is the universal set.
+  </int>
+  <int value="1" label="Image data fetched">
+    Recorded when image data is fetched and ready for pasting to system
+    pasteboard. This is a subset of &quot;Copy Image invoked&quot;.
+  </int>
+  <int value="2" label="Try copying fetched image (copy is not canceled)">
+    Recorded when image data is fetched and the copy process is not canceled, so
+    pasting image data to system pasteboard will be attempted. This is a subset
+    of &quot;Image data fetched&quot;.
+  </int>
+  <int value="3" label="Image copied (image is valid)">
+    Recorded when image data is valid and pasted to system pasteboard
+    successfully. This is a subset of &quot;Try copying fetched image&quot;.
+  </int>
+  <int value="4" label="Waiting alert popped up">
+    Recorded when copy does not finish in a short time, thus an alert is popped
+    up to let the user wait until copy finish. This is a subset of &quot;Copy
+    Image invoked&quot;.
+  </int>
+  <int value="5" label="Copy Image canceled by user">
+    Recorded when the alert is popped up, and user clicks the &quot;Cancel&quot;
+    button on the alert. This is a subset of &quot;Waiting alert popped
+    up&quot;.
+  </int>
+</enum>
+
 <enum name="ContextMenuIOSGetImageDataByJsResult">
   <int value="0" label="Canvas succeed"/>
   <int value="1" label="XMLHttpRequest succeed"/>
