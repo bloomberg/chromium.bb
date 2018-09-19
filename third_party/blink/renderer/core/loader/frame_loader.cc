@@ -922,6 +922,9 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     return;
   }
 
+  if (request.Form())
+    Client()->DispatchWillSubmitForm(request.Form());
+
   DCHECK(policy == kNavigationPolicyCurrentTab ||
          policy == kNavigationPolicyHandledByClient);
 
@@ -932,9 +935,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   provisional_document_loader_ = CreateDocumentLoader(
       resource_request, request, frame_load_type, navigation_type,
       nullptr /* navigation_params */, nullptr /* extra_data */);
-
-  if (request.Form())
-    Client()->DispatchWillSubmitForm(request.Form());
 
   provisional_document_loader_->AppendRedirect(
       provisional_document_loader_->Url());
