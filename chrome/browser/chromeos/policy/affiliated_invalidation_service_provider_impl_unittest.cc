@@ -208,7 +208,8 @@ void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
   ASSERT_TRUE(profile_manager_.SetUp());
 
   chromeos::DeviceOAuth2TokenServiceFactory::Initialize(
-      test_shared_loader_factory_);
+      test_shared_loader_factory_,
+      TestingBrowserProcess::GetGlobal()->local_state());
 
   invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
       ->RegisterTestingFactory(BuildProfileInvalidationProvider);

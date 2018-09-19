@@ -678,7 +678,10 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   CHECK(base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
                                &downloads_directory));
 
-  DeviceOAuth2TokenServiceFactory::Initialize();
+  DeviceOAuth2TokenServiceFactory::Initialize(
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory(),
+      g_browser_process->local_state());
 
   wake_on_wifi_manager_.reset(new WakeOnWifiManager());
   network_throttling_observer_.reset(
