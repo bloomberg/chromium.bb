@@ -22,6 +22,8 @@ import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -146,7 +148,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
     }
 
     @Override
-    public void onShown(Tab shownTab) {
+    public void onShown(Tab shownTab, @TabSelectionType int type) {
         if (mTabModelSelector == null) return;
 
         int shownTabId = shownTab.getId();
@@ -186,7 +188,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
     }
 
     @Override
-    public void onHidden(Tab tab) {
+    public void onHidden(Tab tab, @TabHidingType int reason) {
         ReaderModeTabInfo info = mTabStatusMap.get(tab.getId());
         if (info != null && info.isViewingReaderModePage()) {
             long timeMs = info.onExitReaderMode();

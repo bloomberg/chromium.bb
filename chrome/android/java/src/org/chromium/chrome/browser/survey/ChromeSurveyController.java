@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.infobar.SurveyInfoBarDelegate;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -238,7 +239,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
             }
 
             @Override
-            public void onHidden(Tab tab) {
+            public void onHidden(Tab tab, @TabHidingType int type) {
                 // An infobar shouldn't appear on a tab that the user left.
                 tab.removeObserver(this);
             }

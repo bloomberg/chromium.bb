@@ -385,7 +385,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
-            public void onShown(Tab tab) {
+            public void onShown(Tab tab, @TabSelectionType int type) {
                 if (TextUtils.isEmpty(tab.getUrl())) return;
                 mControlContainer.setReadyForBitmapCapture(true);
             }

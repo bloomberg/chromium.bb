@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -282,7 +283,7 @@ public class ManualFillingControllerTest {
 
         // Simulate closing the tab:
         mediator.getTabModelObserverForTesting().willCloseTab(tab, false);
-        mediator.getTabObserverForTesting().onHidden(tab);
+        mediator.getTabObserverForTesting().onHidden(tab, TabHidingType.CHANGED_TABS);
         // Temporary removes the tab, but keeps it in memory so it can be brought back on undo:
         assertThat(keyboardAccessoryModel.get(TABS).size(), is(0));
 
@@ -484,13 +485,13 @@ public class ManualFillingControllerTest {
         int lastId = INVALID_TAB_ID;
         if (lastTab != null) {
             lastId = lastTab.getId();
-            mediator.getTabObserverForTesting().onHidden(lastTab);
+            mediator.getTabObserverForTesting().onHidden(lastTab, TabHidingType.CHANGED_TABS);
         }
         Tab tab = mock(Tab.class);
         when(tab.getId()).thenReturn(id);
         when(mMockTabModelSelector.getCurrentTab()).thenReturn(tab);
         mediator.getTabModelObserverForTesting().didAddTab(tab, FROM_BROWSER_ACTIONS);
-        mediator.getTabObserverForTesting().onShown(tab);
+        mediator.getTabObserverForTesting().onShown(tab, FROM_NEW);
         mediator.getTabModelObserverForTesting().didSelectTab(tab, FROM_NEW, lastId);
         return tab;
     }
@@ -505,11 +506,11 @@ public class ManualFillingControllerTest {
         int lastId = INVALID_TAB_ID;
         if (from != null) {
             lastId = from.getId();
-            mediator.getTabObserverForTesting().onHidden(from);
+            mediator.getTabObserverForTesting().onHidden(from, TabHidingType.CHANGED_TABS);
         }
         when(mMockTabModelSelector.getCurrentTab()).thenReturn(to);
         mediator.getTabModelObserverForTesting().didSelectTab(to, FROM_USER, lastId);
-        mediator.getTabObserverForTesting().onShown(to);
+        mediator.getTabObserverForTesting().onShown(to, FROM_USER);
     }
 
     /**
@@ -520,7 +521,7 @@ public class ManualFillingControllerTest {
      */
     private void closeTab(ManualFillingMediator mediator, Tab tabToBeClosed, @Nullable Tab next) {
         mediator.getTabModelObserverForTesting().willCloseTab(tabToBeClosed, false);
-        mediator.getTabObserverForTesting().onHidden(tabToBeClosed);
+        mediator.getTabObserverForTesting().onHidden(tabToBeClosed, TabHidingType.CHANGED_TABS);
         if (next != null) {
             when(mMockTabModelSelector.getCurrentTab()).thenReturn(next);
             mediator.getTabModelObserverForTesting().didSelectTab(

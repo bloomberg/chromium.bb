@@ -95,6 +95,7 @@ import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -2554,7 +2555,7 @@ public class CustomTabActivityTest {
         final CallbackHelper tabHiddenHelper = new CallbackHelper();
         TabObserver observer = new EmptyTabObserver() {
             @Override
-            public void onHidden(Tab tab) {
+            public void onHidden(Tab tab, @TabHidingType int type) {
                 tabHiddenHelper.notifyCalled();
             }
         };

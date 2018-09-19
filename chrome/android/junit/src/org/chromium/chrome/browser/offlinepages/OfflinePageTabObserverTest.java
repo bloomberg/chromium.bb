@@ -15,6 +15,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_NEW;
+
 import android.content.Context;
 
 import org.junit.Before;
@@ -31,6 +33,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
 /**
@@ -93,14 +97,14 @@ public class OfflinePageTabObserverTest {
     private void showTab(OfflinePageTabObserver observer) {
         doReturn(false).when(mTab).isHidden();
         if (observer != null) {
-            observer.onShown(mTab);
+            observer.onShown(mTab, FROM_NEW);
         }
     }
 
     private void hideTab(OfflinePageTabObserver observer) {
         doReturn(true).when(mTab).isHidden();
         if (observer != null) {
-            observer.onHidden(mTab);
+            observer.onHidden(mTab, TabHidingType.CHANGED_TABS);
         }
     }
 
@@ -298,7 +302,7 @@ public class OfflinePageTabObserverTest {
         observer.startObservingTab(mTab);
         observer.onPageLoadFinished(mTab);
 
-        observer.onShown(mTab);
+        observer.onShown(mTab, FROM_NEW);
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
     }
 
@@ -312,7 +316,7 @@ public class OfflinePageTabObserverTest {
 
         observer.startObservingTab(mTab);
 
-        observer.onShown(mTab);
+        observer.onShown(mTab, FROM_NEW);
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
     }
 
@@ -592,7 +596,7 @@ public class OfflinePageTabObserverTest {
         verify(observer, times(1)).showReloadSnackbar(any(Tab.class));
 
         // Event ignored, snackbar not shown again.
-        observer.onShown(mTab);
+        observer.onShown(mTab, TabSelectionType.FROM_NEW);
         verify(observer, times(1)).showReloadSnackbar(any(Tab.class));
 
         // Event triggers snackbar again.

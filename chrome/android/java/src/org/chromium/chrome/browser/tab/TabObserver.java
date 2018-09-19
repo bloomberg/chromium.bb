@@ -10,6 +10,8 @@ import android.view.ContextMenu;
 
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -18,18 +20,19 @@ import org.chromium.content_public.common.BrowserControlsState;
  * An observer that is notified of changes to a {@link Tab} object.
  */
 public interface TabObserver {
-
     /**
      * Called when a {@link Tab} is shown.
      * @param tab The notifying {@link Tab}.
+     * @param type Specifies how the tab was selected.
      */
-    void onShown(Tab tab);
+    void onShown(Tab tab, @TabSelectionType int type);
 
     /**
      * Called when a {@link Tab} is hidden.
      * @param tab The notifying {@link Tab}.
+     * @param type Specifies how the tab was hidden.
      */
-    void onHidden(Tab tab);
+    void onHidden(Tab tab, @TabHidingType int type);
 
     /**
      * Called when a {@link Tab}'s closing state has changed.
@@ -125,6 +128,12 @@ public interface TabObserver {
      * @param sadTabShown Whether or not the sad tab was shown
      */
     void onCrash(Tab tab, boolean sadTabShown);
+
+    /**
+     * Called when restore of the corresponding tab is triggered.
+     * @param tab The notifying {@link Tab}.
+     */
+    void onRestoreStarted(Tab tab);
 
     /**
      * Called when the WebContents of a {@link Tab} have been swapped.

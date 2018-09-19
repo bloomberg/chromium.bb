@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -123,7 +124,7 @@ class ManualFillingMediator
 
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
-        public void onHidden(Tab tab) {
+        public void onHidden(Tab tab, @TabHidingType int type) {
             pause();
         }
 

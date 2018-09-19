@@ -16,6 +16,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
@@ -122,6 +123,8 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.ui.widget.AnchoredPopupWindow;
 import org.chromium.ui.widget.ViewRectProvider;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -160,6 +163,22 @@ public class Tab
     private static final String TAG = "Tab";
 
     private static final String PRODUCT_VERSION = ChromeVersionInfo.getProductVersion();
+
+    /**
+     * A list of the various ways tabs can be hidden.
+     */
+    @IntDef({TabHidingType.CHANGED_TABS, TabHidingType.ACTIVITY_HIDDEN, TabHidingType.REPARENTED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TabHidingType {
+        /** A tab was hidden due to other tab getting foreground. */
+        int CHANGED_TABS = 0;
+
+        /** A tab was hidden together with an activity. */
+        int ACTIVITY_HIDDEN = 1;
+
+        /** A tab was hidden while being reparented to a new activity. */
+        int REPARENTED = 2;
+    }
 
     private long mNativeTabAndroid;
 
@@ -350,12 +369,6 @@ public class Tab
      * {@link WindowAndroid}.
      */
     private boolean mIsDetached;
-
-    /**
-     * The UMA object used to report stats for this tab. Note that this may be null under certain
-     * conditions, such as incognito mode.
-     */
-    private TabUma mTabUma;
 
     /**
      * Reference to the current sadTabView if one is defined.
@@ -583,7 +596,7 @@ public class Tab
         MediaSessionTabHelper.createForTab(this);
 
         if (creationState != null) {
-            mTabUma = new TabUma(creationState);
+            TabUma.create(this, creationState);
             if (frozenState == null) {
                 assert creationState != TabCreationState.FROZEN_ON_RESTORE;
             } else {
@@ -1172,9 +1185,7 @@ public class Tab
      * Called on the foreground tab when the Activity showing the Tab gets stopped.
      */
     public void onActivityHidden() {
-        hide();
-
-        if (mTabUma != null) mTabUma.onActivityHidden();
+        hide(TabHidingType.ACTIVITY_HIDDEN);
     }
 
     /**
@@ -1205,11 +1216,6 @@ public class Tab
 
             if (getWebContents() != null) getWebContents().onShow();
 
-            if (mTabUma != null) {
-                mTabUma.onShow(type, getTimestampMillis(),
-                        computeMRURank(this, getTabModelSelector().getModel(mIncognito)));
-            }
-
             // If the NativePage was frozen while in the background (see NativePageAssassin),
             // recreate the NativePage now.
             NativePage nativePage = getNativePage();
@@ -1224,11 +1230,11 @@ public class Tab
                 notifyLoadProgress(getProgress());
             }
 
+            for (TabObserver observer : mObservers) observer.onShown(this, type);
+
             // Updating the timestamp has to happen after the showInternal() call since subclasses
             // may use it for logging.
             mTimestampMillis = System.currentTimeMillis();
-
-            for (TabObserver observer : mObservers) observer.onShown(this);
         } finally {
             TraceEvent.end("Tab.show");
         }
@@ -1237,7 +1243,7 @@ public class Tab
     /**
      * Triggers the hiding logic for the view backing the tab.
      */
-    public final void hide() {
+    public final void hide(@TabHidingType int type) {
         try {
             TraceEvent.begin("Tab.hide");
             if (isHidden()) return;
@@ -1251,12 +1257,10 @@ public class Tab
                 mFullscreenManager.exitPersistentFullscreenMode();
             }
 
-            if (mTabUma != null) mTabUma.onHide();
-
             // Allow this tab's NativePage to be frozen if it stays hidden for a while.
             NativePageAssassin.getInstance().tabHidden(this);
 
-            for (TabObserver observer : mObservers) observer.onHidden(this);
+            for (TabObserver observer : mObservers) observer.onHidden(this, type);
         } finally {
             TraceEvent.end("Tab.hide");
         }
@@ -1397,7 +1401,7 @@ public class Tab
         // TODO(peconn): Figure out why this is necessary - it is something to do with
         // Tab.mIsDetached being true and TabModelSelectorImpl#requestToShowTab not calling
         // |mVisibleTab.hide()| because of it.
-        hide();
+        hide(TabHidingType.REPARENTED);
         attachAndFinishReparenting(activity, tabDelegateFactory, null);
     }
 
@@ -1619,8 +1623,6 @@ public class Tab
 
         if (mIsRendererUnresponsive) handleRendererResponsiveStateChanged(true);
 
-        if (mTabUma != null) mTabUma.onPageLoadStarted();
-
         for (TabObserver observer : mObservers) observer.onPageLoadStarted(this, validatedUrl);
     }
 
@@ -1634,8 +1636,6 @@ public class Tab
 
         // Reset the succressiveRefresh counter after successfully loading a page.
         mSadTabSuccessiveRefreshCounter = 0;
-
-        if (mTabUma != null) mTabUma.onPageLoadFinished();
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
         mIsBeingRestored = false;
@@ -1689,7 +1689,6 @@ public class Tab
      * @param errorCode The error code causing the page to fail loading.
      */
     protected void didFailPageLoad(int errorCode) {
-        if (mTabUma != null) mTabUma.onLoadFailed(errorCode);
         for (TabObserver observer : mObservers) {
             observer.onPageLoadFailed(this, errorCode);
         }
@@ -1967,8 +1966,6 @@ public class Tab
         // Update the title before destroying the tab. http://b/5783092
         updateTitle();
 
-        if (mTabUma != null) mTabUma.onDestroy();
-
         for (TabObserver observer : mObservers) observer.onDestroyed(this);
         mObservers.clear();
 
@@ -2147,7 +2144,7 @@ public class Tab
 
             loadIfNecessary();
             mIsBeingRestored = true;
-            if (mTabUma != null) mTabUma.onRestoreStarted();
+            for (TabObserver observer : mObservers) observer.onRestoreStarted(this);
         } finally {
             TraceEvent.end("Tab.restoreIfNeeded");
         }
@@ -2183,7 +2180,7 @@ public class Tab
                 // that can be done at this point. TODO(jcivelli) http://b/5910521 - we should show
                 // an error page instead of a blank page in that case (and the last loaded URL).
                 webContents = WebContentsFactory.createWebContents(isIncognito(), isHidden());
-                mTabUma = new TabUma(TabCreationState.FROZEN_ON_RESTORE_FAILED);
+                TabUma.create(this, TabCreationState.FROZEN_ON_RESTORE_FAILED);
                 mFailedToRestore = true;
             }
             View compositorView = getActivity().getCompositorViewHolder();
@@ -2606,7 +2603,7 @@ public class Tab
     /**
      * @return See {@link #mTimestampMillis}.
      */
-    private long getTimestampMillis() {
+    long getTimestampMillis() {
         return mTimestampMillis;
     }
 
@@ -2763,13 +2760,9 @@ public class Tab
     void handleTabCrash() {
         mIsLoading = false;
 
-        if (mTabUma != null) mTabUma.onRendererCrashed();
-
         boolean sadTabShown = isShowingSadTab();
         RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onCrash(this, sadTabShown);
-        }
+        while (observers.hasNext()) observers.next().onCrash(this, sadTabShown);
         mIsBeingRestored = false;
     }
 
@@ -2977,30 +2970,6 @@ public class Tab
             return activity.getInsetObserverView().getSystemWindowInsetsBottom();
         }
         return 0;
-    }
-
-    /**
-     * @return the UMA object for the tab. Note that this may be null in some
-     * cases.
-     */
-    public TabUma getTabUma() {
-        return mTabUma;
-    }
-
-    /**
-     * @return The most recently used rank for this tab in the given TabModel.
-     */
-    private static int computeMRURank(Tab tab, TabModel model) {
-        final long tabLastShow = tab.getTabUma().getLastShownTimestamp();
-        int mruRank = 0;
-        for (int i = 0; i < model.getCount(); i++) {
-            Tab otherTab = model.getTabAt(i);
-            if (otherTab != tab && otherTab.getTabUma() != null
-                    && otherTab.getTabUma().getLastShownTimestamp() > tabLastShow) {
-                mruRank++;
-            }
-        }
-        return mruRank;
     }
 
     /**

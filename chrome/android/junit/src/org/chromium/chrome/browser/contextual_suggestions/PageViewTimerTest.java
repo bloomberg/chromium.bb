@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer.DurationBucket;
 import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer.NavigationSource;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -356,11 +357,11 @@ public final class PageViewTimerTest {
     }
 
     private Runnable pauseTimerByHidingTab(Tab tab) {
-        return () -> getTabObserver().onHidden(tab);
+        return () -> getTabObserver().onHidden(tab, TabHidingType.CHANGED_TABS);
     }
 
     private Runnable resumeTimerByShowingTab(Tab tab) {
-        return () -> getTabObserver().onShown(tab);
+        return () -> getTabObserver().onShown(tab, TabSelectionType.FROM_USER);
     }
 
     private void selectTab_showContent_pauseTimer_resumeTimer_stopTimer(
