@@ -1063,9 +1063,17 @@ FileManagerPrivateInternalSetEntryTagFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const base::FilePath local_path = file_manager::util::GetLocalPathFromURL(
-      render_frame_host(), chrome_details_.GetProfile(), GURL(params->url));
-  const base::FilePath drive_path = drive::util::ExtractDrivePath(local_path);
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          Profile::FromBrowserContext(browser_context()), render_frame_host());
+  const storage::FileSystemURL file_system_url(
+      file_system_context->CrackURL(GURL(params->url)));
+  if (file_system_url.type() == storage::kFileSystemTypeDriveFs) {
+    return RespondNow(NoArguments());
+  }
+
+  const base::FilePath drive_path =
+      drive::util::ExtractDrivePath(file_system_url.path());
   if (drive_path.empty())
     return RespondNow(Error("Only Drive files and directories are supported."));
 

@@ -416,3 +416,87 @@ testcase.driveMigratePinnedFile = function() {
       }));
 
 };
+
+// Match the way the production version formats dates.
+function formatDate(date) {
+  var padAndConvert = function(i) {
+    return (i < 10 ? '0' : '') + i.toString();
+  };
+
+  var year = date.getFullYear().toString();
+  // Months are 0-based, but days aren't.
+  var month = padAndConvert(date.getMonth() + 1);
+  var day = padAndConvert(date.getDate());
+
+  return `${year}-${month}-${day}`;
+}
+
+testcase.driveBackupPhotos = function() {
+  let appId;
+
+  const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
+  let date;
+
+  StepsRunner.run([
+    // Open Files app on local downloads.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Mount USB volume in the Downloads window.
+    function(results) {
+      appId = results.windowId;
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'mountFakeUsbDcim'}), this.next);
+    },
+    // Wait for the USB mount.
+    function() {
+      remoteCall.waitForElement(appId, USB_VOLUME_QUERY).then(this.next);
+    },
+    // Navigate to the DCIM directory.
+    function() {
+      remoteCall
+          .navigateWithDirectoryTree(appId, '/DCIM', 'fake-usb', 'removable')
+          .then(this.next);
+    },
+    // Wait for the import button to be ready.
+    function() {
+      remoteCall
+          .waitForElement(
+              appId, '#cloud-import-button [icon="files:cloud-upload"]')
+          .then(this.next);
+    },
+    // Start the import.
+    function() {
+      date = new Date();
+      remoteCall
+          .callRemoteTestUtil('fakeMouseClick', appId, ['#cloud-import-button'])
+          .then(this.next);
+    },
+    // Wait for the image to be marked as imported.
+    function(success) {
+      chrome.test.assertTrue(success);
+      remoteCall
+          .waitForElement(appId, '.status-icon[file-status-icon="imported"]')
+          .then(this.next);
+    },
+    // Navigate to today's backup directory in Drive.
+    function() {
+      const formattedDate = formatDate(date);
+      remoteCall
+          .navigateWithDirectoryTree(
+              appId, `/root/Chrome OS Cloud backup/${formattedDate}`,
+              'My Drive', 'drive')
+          .then(this.next);
+    },
+    // Verify the backed-up file list contains only a copy of the image within
+    // DCIM in the removable storage.
+    function() {
+      const files = TestEntryInfo.getExpectedRows([ENTRIES.image3]);
+      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};

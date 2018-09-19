@@ -388,7 +388,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("drivePinFileMobileNetwork").EnableDriveFs(),
                       TestCase("driveClickFirstSearchResult"),
                       TestCase("drivePressEnterToSearch"),
-                      TestCase("drivePressCtrlAFromSearch")));
+                      TestCase("drivePressCtrlAFromSearch"),
+                      TestCase("driveBackupPhotos"),
+                      TestCase("driveBackupPhotos").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Transfer, /* transfer.js */
