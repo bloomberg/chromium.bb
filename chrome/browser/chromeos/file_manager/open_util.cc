@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>

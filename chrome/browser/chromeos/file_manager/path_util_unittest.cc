@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"

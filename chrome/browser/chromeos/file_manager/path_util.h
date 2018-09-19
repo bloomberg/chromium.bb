@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_PATH_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "storage/browser/fileapi/file_system_url.h"

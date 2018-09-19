@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
