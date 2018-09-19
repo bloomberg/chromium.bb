@@ -227,6 +227,10 @@ class ExtensionsBrowserClient {
   // Return true if the device is enrolled in Demo Mode.
   virtual bool IsInDemoMode() = 0;
 
+  // Return true if |app_id| matches the screensaver and the device is enrolled
+  // in Demo Mode.
+  virtual bool IsScreensaverInDemoMode(const std::string& app_id) = 0;
+
   // Return true if the system is run in forced app mode.
   virtual bool IsRunningInForcedAppMode() = 0;
 

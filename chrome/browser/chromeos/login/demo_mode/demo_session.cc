@@ -66,10 +66,6 @@ constexpr char kHighlightsAppPath[] = "chrome_apps/highlights";
 // contains sample photos.
 constexpr char kPhotosPath[] = "media/photos";
 
-constexpr char kDefaultHighlightsAppId[] = "lpmakjfjcconjeehbidjclhdlpjmfjjj";
-
-constexpr char kEveHighlightsAppId[] = "iggildboghmjpbjcpmobahnkmoefkike";
-
 bool IsDemoModeOfflineEnrolled() {
   DCHECK(DemoSession::IsDeviceInDemoMode());
   return DemoSession::GetDemoConfig() == DemoSession::DemoModeConfig::kOffline;
@@ -113,8 +109,8 @@ std::string GetBoardName() {
 
 std::string GetHighlightsAppId() {
   if (GetBoardName() == "eve")
-    return kEveHighlightsAppId;
-  return kDefaultHighlightsAppId;
+    return extension_misc::kHighlightsAlt1AppId;
+  return extension_misc::kHighlightsAppId;
 }
 
 }  // namespace
@@ -243,11 +239,6 @@ void DemoSession::ShutDownIfInitialized() {
 // static
 DemoSession* DemoSession::Get() {
   return g_demo_session;
-}
-
-// static
-bool DemoSession::IsScreensaverInDemoMode(const std::string& app_id) {
-  return app_id == extension_misc::kScreensaverAppId && IsDeviceInDemoMode();
 }
 
 void DemoSession::EnsureOfflineResourcesLoaded(
