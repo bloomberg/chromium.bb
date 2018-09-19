@@ -142,16 +142,6 @@ void DidNavigateClient(
   callbacks->OnSuccess(std::move(web_client));
 }
 
-void DidSkipWaiting(
-    std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks> callbacks,
-    bool success) {
-  // OnError() should not be called here since per spec the promise returned by
-  // skipWaiting() can never reject.
-  if (!success)
-    return;
-  callbacks->OnSuccess();
-}
-
 }  // namespace
 
 ServiceWorkerGlobalScopeClient::ServiceWorkerGlobalScopeClient(
@@ -208,11 +198,8 @@ void ServiceWorkerGlobalScopeClient::PostMessageToClient(
   service_worker_host_->PostMessageToClient(client_uuid, std::move(message));
 }
 
-void ServiceWorkerGlobalScopeClient::SkipWaiting(
-    std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks> callbacks) {
-  DCHECK(callbacks);
-  service_worker_host_->SkipWaiting(
-      WTF::Bind(&DidSkipWaiting, std::move(callbacks)));
+void ServiceWorkerGlobalScopeClient::SkipWaiting(SkipWaitingCallback callback) {
+  service_worker_host_->SkipWaiting(std::move(callback));
 }
 
 void ServiceWorkerGlobalScopeClient::Claim(ClaimCallback callback) {
