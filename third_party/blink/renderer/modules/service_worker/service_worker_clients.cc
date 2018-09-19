@@ -29,28 +29,6 @@ namespace blink {
 
 namespace {
 
-class ClientArray {
- public:
-  using WebType = const WebServiceWorkerClientsInfo&;
-  static HeapVector<Member<ServiceWorkerClient>> Take(
-      ScriptPromiseResolver*,
-      const WebServiceWorkerClientsInfo& web_clients) {
-    HeapVector<Member<ServiceWorkerClient>> clients;
-    for (size_t i = 0; i < web_clients.clients.size(); ++i) {
-      const WebServiceWorkerClientInfo& client = web_clients.clients[i];
-      if (client.client_type == mojom::ServiceWorkerClientType::kWindow)
-        clients.push_back(ServiceWorkerWindowClient::Create(client));
-      else
-        clients.push_back(ServiceWorkerClient::Create(client));
-    }
-    return clients;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClientArray);
-  ClientArray() = delete;
-};
-
 mojom::ServiceWorkerClientType GetClientType(const String& type) {
   if (type == "window")
     return mojom::ServiceWorkerClientType::kWindow;
@@ -100,7 +78,7 @@ void DidClaim(ScriptPromiseResolver* resolver,
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed())
     return;
-  if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
+  if (error != mojom::blink::ServiceWorkerErrorType::kNone) {
     DCHECK(!error_msg.IsNull());
     resolver->Reject(
         ServiceWorkerError::GetException(resolver, error, error_msg));
@@ -108,6 +86,22 @@ void DidClaim(ScriptPromiseResolver* resolver,
   }
   DCHECK(error_msg.IsNull());
   resolver->Resolve();
+}
+
+void DidGetClients(ScriptPromiseResolver* resolver,
+                   Vector<mojom::blink::ServiceWorkerClientInfoPtr> infos) {
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed())
+    return;
+
+  HeapVector<Member<ServiceWorkerClient>> clients;
+  for (const auto& info : infos) {
+    if (info->client_type == mojom::blink::ServiceWorkerClientType::kWindow)
+      clients.push_back(ServiceWorkerWindowClient::Create(*info));
+    else
+      clients.push_back(ServiceWorkerClient::Create(*info));
+  }
+  resolver->Resolve(std::move(clients));
 }
 
 }  // namespace
@@ -143,16 +137,12 @@ ScriptPromise ServiceWorkerClients::matchAll(
     return ScriptPromise();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->GetClients(
           mojom::blink::ServiceWorkerClientQueryOptions::New(
               options.includeUncontrolled(), GetClientType(options.type())),
-          std::make_unique<
-              CallbackPromiseAdapter<ClientArray, ServiceWorkerError>>(
-              resolver));
-  return promise;
+          WTF::Bind(&DidGetClients, WrapPersistent(resolver)));
+  return resolver->Promise();
 }
 
 ScriptPromise ServiceWorkerClients::claim(ScriptState* script_state) {
