@@ -59,6 +59,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleFrame {
   FidoBleFrame();
   FidoBleFrame(FidoBleDeviceCommand command, std::vector<uint8_t> data);
 
+  FidoBleFrame(const FidoBleFrame&);
+  FidoBleFrame& operator=(const FidoBleFrame&);
+
   FidoBleFrame(FidoBleFrame&&);
   FidoBleFrame& operator=(FidoBleFrame&&);
 
@@ -86,9 +89,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleFrame {
  private:
   FidoBleDeviceCommand command_ = FidoBleDeviceCommand::kMsg;
   std::vector<uint8_t> data_;
-
-  DISALLOW_COPY_AND_ASSIGN(FidoBleFrame);
 };
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+bool operator==(const FidoBleFrame& lhs, const FidoBleFrame& rhs);
 
 // A single frame sent over BLE may be split over multiple writes and
 // notifications because the technology was not designed for large messages.

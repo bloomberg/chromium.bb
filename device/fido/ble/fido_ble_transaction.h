@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -22,7 +23,7 @@ class FidoBleConnection;
 // This class encapsulates logic related to a single U2F BLE request and
 // response. FidoBleTransaction is owned by FidoBleDevice, which is the only
 // class that should make use of this class.
-class FidoBleTransaction {
+class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleTransaction {
  public:
   using FrameCallback = base::OnceCallback<void(base::Optional<FidoBleFrame>)>;
 
@@ -36,7 +37,7 @@ class FidoBleTransaction {
  private:
   void WriteRequestFragment(const FidoBleFrameFragment& fragment);
   void OnRequestFragmentWritten(bool success);
-  void ProcessResponseFrame(FidoBleFrame response_frame);
+  void ProcessResponseFrame();
 
   void StartTimeout();
   void StopTimeout();
@@ -53,6 +54,8 @@ class FidoBleTransaction {
 
   std::vector<uint8_t> buffer_;
   base::OneShotTimer timer_;
+
+  bool has_pending_request_fragment_write_ = false;
 
   base::WeakPtrFactory<FidoBleTransaction> weak_factory_;
 
