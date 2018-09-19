@@ -74,8 +74,10 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
     client_->DidFinishNavigation(
         navigation_handle->GetURL(), navigation_handle->IsInMainFrame(),
         navigation_handle->IsErrorPage(),
-        base::MakeRefCounted<net::HttpResponseHeaders>(
-            navigation_handle->GetResponseHeaders()->raw_headers()));
+        navigation_handle->GetResponseHeaders()
+            ? base::MakeRefCounted<net::HttpResponseHeaders>(
+                  navigation_handle->GetResponseHeaders()->raw_headers())
+            : nullptr);
   }
 
   void DidStopLoading() override { client_->DidStopLoading(); }
