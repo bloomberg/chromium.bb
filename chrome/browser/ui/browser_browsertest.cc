@@ -2763,3 +2763,31 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DialogsDropFullscreen) {
 
   browser_as_dialog_delegate->SetWebContentsBlocked(tab, false);
 }
+
+// Makes sure showing dialogs does NOT drop fullscreen when the browser is in
+// FullscreenWithinTab mode. This is an exception to the primary behavior tested
+// by BrowserTest.DialogsDropFullscreen above. See "FullscreenWithinTab note" in
+// FullscreenController's class-level comments for further details.
+IN_PROC_BROWSER_TEST_F(BrowserTest, DialogsAllowedInFullscreenWithinTabMode) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::WebContentsDelegate* browser_as_wc_delegate =
+      static_cast<content::WebContentsDelegate*>(browser());
+  web_modal::WebContentsModalDialogManagerDelegate* browser_as_dialog_delegate =
+      static_cast<web_modal::WebContentsModalDialogManagerDelegate*>(browser());
+
+  // Simulate a screen-captured tab requesting fullscreen.
+  tab->IncrementCapturerCount(gfx::Size(1280, 720));
+  browser_as_wc_delegate->EnterFullscreenModeForTab(
+      tab, GURL(), blink::WebFullscreenOptions());
+  EXPECT_TRUE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
+
+  // The tab gets a modal dialog.
+  browser_as_dialog_delegate->SetWebContentsBlocked(tab, true);
+
+  // The dialog should NOT drop fullscreen.
+  EXPECT_TRUE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
+
+  browser_as_dialog_delegate->SetWebContentsBlocked(tab, false);
+  tab->DecrementCapturerCount();
+}
