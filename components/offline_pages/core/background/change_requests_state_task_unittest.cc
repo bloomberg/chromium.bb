@@ -7,9 +7,11 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/core/background/request_queue_store.h"
+#include "components/offline_pages/core/background/request_queue_task_test_base.h"
+#include "components/offline_pages/core/background/test_request_queue_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -21,17 +23,12 @@ const GURL kUrl1("http://example.com");
 const GURL kUrl2("http://another-example.com");
 const ClientId kClientId1("bookmark", "1234");
 const ClientId kClientId2("async", "5678");
-}  // namespace
 
-class ChangeRequestsStateTaskTest : public testing::Test {
+class ChangeRequestsStateTaskTest : public RequestQueueTaskTestBase {
  public:
-  ChangeRequestsStateTaskTest();
-  ~ChangeRequestsStateTaskTest() override;
+  ~ChangeRequestsStateTaskTest() override = default;
 
-  void PumpLoop();
-
-  void InitializeStore(RequestQueueStore* store);
-  void AddItemsToStore(RequestQueueStore* store);
+  void AddItemsToStore();
   void ChangeRequestsStateCallback(
       std::unique_ptr<UpdateRequestsResult> result);
 
@@ -42,37 +39,18 @@ class ChangeRequestsStateTaskTest : public testing::Test {
   void AddRequestDone(ItemActionStatus status);
 
   std::unique_ptr<UpdateRequestsResult> result_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
 };
 
-ChangeRequestsStateTaskTest::ChangeRequestsStateTaskTest()
-    : task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {}
-
-ChangeRequestsStateTaskTest::~ChangeRequestsStateTaskTest() {}
-
-void ChangeRequestsStateTaskTest::PumpLoop() {
-  task_runner_->RunUntilIdle();
-}
-
-void ChangeRequestsStateTaskTest::InitializeStore(RequestQueueStore* store) {
-  store->Initialize(
-      base::BindOnce(&ChangeRequestsStateTaskTest::InitializeStoreDone,
-                     base::Unretained(this)));
-  PumpLoop();
-}
-
-void ChangeRequestsStateTaskTest::AddItemsToStore(RequestQueueStore* store) {
+void ChangeRequestsStateTaskTest::AddItemsToStore() {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  store->AddRequest(request_1,
+  store_.AddRequest(request_1,
                     base::BindOnce(&ChangeRequestsStateTaskTest::AddRequestDone,
                                    base::Unretained(this)));
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
                             true);
-  store->AddRequest(request_2,
+  store_.AddRequest(request_2,
                     base::BindOnce(&ChangeRequestsStateTaskTest::AddRequestDone,
                                    base::Unretained(this)));
   PumpLoop();
@@ -92,12 +70,11 @@ void ChangeRequestsStateTaskTest::AddRequestDone(ItemActionStatus status) {
 }
 
 TEST_F(ChangeRequestsStateTaskTest, UpdateWhenStoreEmpty) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
+  InitializeStore();
 
   std::vector<int64_t> request_ids{kRequestId1};
   ChangeRequestsStateTask task(
-      &store, request_ids, SavePageRequest::RequestState::PAUSED,
+      &store_, request_ids, SavePageRequest::RequestState::PAUSED,
       base::BindOnce(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
   task.Run();
@@ -111,13 +88,12 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateWhenStoreEmpty) {
 }
 
 TEST_F(ChangeRequestsStateTaskTest, UpdateSingleItem) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
-  AddItemsToStore(&store);
+  InitializeStore();
+  AddItemsToStore();
 
   std::vector<int64_t> request_ids{kRequestId1};
   ChangeRequestsStateTask task(
-      &store, request_ids, SavePageRequest::RequestState::PAUSED,
+      &store_, request_ids, SavePageRequest::RequestState::PAUSED,
       base::BindOnce(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
   task.Run();
@@ -133,13 +109,12 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateSingleItem) {
 }
 
 TEST_F(ChangeRequestsStateTaskTest, UpdateMultipleItems) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
-  AddItemsToStore(&store);
+  InitializeStore();
+  AddItemsToStore();
 
   std::vector<int64_t> request_ids{kRequestId1, kRequestId2};
   ChangeRequestsStateTask task(
-      &store, request_ids, SavePageRequest::RequestState::PAUSED,
+      &store_, request_ids, SavePageRequest::RequestState::PAUSED,
       base::BindOnce(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
   task.Run();
@@ -173,12 +148,11 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateMultipleItems) {
 }
 
 TEST_F(ChangeRequestsStateTaskTest, EmptyRequestsList) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
+  InitializeStore();
 
   std::vector<int64_t> request_ids;
   ChangeRequestsStateTask task(
-      &store, request_ids, SavePageRequest::RequestState::PAUSED,
+      &store_, request_ids, SavePageRequest::RequestState::PAUSED,
       base::BindOnce(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
   task.Run();
@@ -189,13 +163,12 @@ TEST_F(ChangeRequestsStateTaskTest, EmptyRequestsList) {
 }
 
 TEST_F(ChangeRequestsStateTaskTest, UpdateMissingItem) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
-  AddItemsToStore(&store);
+  InitializeStore();
+  AddItemsToStore();
 
   std::vector<int64_t> request_ids{kRequestId1, kRequestId3};
   ChangeRequestsStateTask task(
-      &store, request_ids, SavePageRequest::RequestState::PAUSED,
+      &store_, request_ids, SavePageRequest::RequestState::PAUSED,
       base::BindOnce(&ChangeRequestsStateTaskTest::ChangeRequestsStateCallback,
                      base::Unretained(this)));
   task.Run();
@@ -213,4 +186,5 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateMissingItem) {
             last_result()->updated_items.at(0).request_state());
 }
 
+}  // namespace
 }  // namespace offline_pages

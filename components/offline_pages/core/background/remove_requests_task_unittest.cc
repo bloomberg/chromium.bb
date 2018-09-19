@@ -7,9 +7,11 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/core/background/request_queue_store.h"
+#include "components/offline_pages/core/background/request_queue_task_test_base.h"
+#include "components/offline_pages/core/background/test_request_queue_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -21,56 +23,39 @@ const GURL kUrl1("http://example.com");
 const GURL kUrl2("http://another-example.com");
 const ClientId kClientId1("bookmark", "1234");
 const ClientId kClientId2("async", "5678");
-}  // namespace
 
-class RemoveRequestsTaskTest : public testing::Test {
+class RemoveRequestsTaskTest : public RequestQueueTaskTestBase {
  public:
-  RemoveRequestsTaskTest();
-  ~RemoveRequestsTaskTest() override;
+  RemoveRequestsTaskTest() {}
+  ~RemoveRequestsTaskTest() override {}
 
   void PumpLoop();
 
-  void InitializeStore(RequestQueueStore* store);
-  void AddRequestsToStore(RequestQueueStore* store);
+  void AddRequestsToStore();
   void RemoveRequestsCallback(std::unique_ptr<UpdateRequestsResult> result);
 
   UpdateRequestsResult* last_result() const { return result_.get(); }
 
  private:
-  void InitializeStoreDone(bool succesS);
   void AddRequestDone(ItemActionStatus status);
 
   std::unique_ptr<UpdateRequestsResult> result_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
 };
-
-RemoveRequestsTaskTest::RemoveRequestsTaskTest()
-    : task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {}
-
-RemoveRequestsTaskTest::~RemoveRequestsTaskTest() {}
 
 void RemoveRequestsTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
-void RemoveRequestsTaskTest::InitializeStore(RequestQueueStore* store) {
-  store->Initialize(base::BindOnce(&RemoveRequestsTaskTest::InitializeStoreDone,
-                                   base::Unretained(this)));
-  PumpLoop();
-}
-
-void RemoveRequestsTaskTest::AddRequestsToStore(RequestQueueStore* store) {
+void RemoveRequestsTaskTest::AddRequestsToStore() {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  store->AddRequest(request_1,
+  store_.AddRequest(request_1,
                     base::BindOnce(&RemoveRequestsTaskTest::AddRequestDone,
                                    base::Unretained(this)));
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
                             true);
-  store->AddRequest(request_2,
+  store_.AddRequest(request_2,
                     base::BindOnce(&RemoveRequestsTaskTest::AddRequestDone,
                                    base::Unretained(this)));
   PumpLoop();
@@ -81,21 +66,16 @@ void RemoveRequestsTaskTest::RemoveRequestsCallback(
   result_ = std::move(result);
 }
 
-void RemoveRequestsTaskTest::InitializeStoreDone(bool success) {
-  ASSERT_TRUE(success);
-}
-
 void RemoveRequestsTaskTest::AddRequestDone(ItemActionStatus status) {
   ASSERT_EQ(ItemActionStatus::SUCCESS, status);
 }
 
 TEST_F(RemoveRequestsTaskTest, RemoveWhenStoreEmpty) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
+  InitializeStore();
 
   std::vector<int64_t> request_ids{kRequestId1};
   RemoveRequestsTask task(
-      &store, request_ids,
+      &store_, request_ids,
       base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                      base::Unretained(this)));
   task.Run();
@@ -109,13 +89,12 @@ TEST_F(RemoveRequestsTaskTest, RemoveWhenStoreEmpty) {
 }
 
 TEST_F(RemoveRequestsTaskTest, RemoveSingleItem) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
-  AddRequestsToStore(&store);
+  InitializeStore();
+  AddRequestsToStore();
 
   std::vector<int64_t> request_ids{kRequestId1};
   RemoveRequestsTask task(
-      &store, request_ids,
+      &store_, request_ids,
       base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                      base::Unretained(this)));
   task.Run();
@@ -130,13 +109,12 @@ TEST_F(RemoveRequestsTaskTest, RemoveSingleItem) {
 }
 
 TEST_F(RemoveRequestsTaskTest, RemoveMultipleItems) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
-  AddRequestsToStore(&store);
+  InitializeStore();
+  AddRequestsToStore();
 
   std::vector<int64_t> request_ids{kRequestId1, kRequestId2};
   RemoveRequestsTask task(
-      &store, request_ids,
+      &store_, request_ids,
       base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                      base::Unretained(this)));
   task.Run();
@@ -155,12 +133,11 @@ TEST_F(RemoveRequestsTaskTest, RemoveMultipleItems) {
 }
 
 TEST_F(RemoveRequestsTaskTest, DeleteWithEmptyIdList) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
+  InitializeStore();
 
   std::vector<int64_t> request_ids;
   RemoveRequestsTask task(
-      &store, request_ids,
+      &store_, request_ids,
       base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                      base::Unretained(this)));
   task.Run();
@@ -171,13 +148,12 @@ TEST_F(RemoveRequestsTaskTest, DeleteWithEmptyIdList) {
 }
 
 TEST_F(RemoveRequestsTaskTest, RemoveMissingItem) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
-  AddRequestsToStore(&store);
+  InitializeStore();
+  AddRequestsToStore();
 
   std::vector<int64_t> request_ids{kRequestId1, kRequestId3};
   RemoveRequestsTask task(
-      &store, request_ids,
+      &store_, request_ids,
       base::BindOnce(&RemoveRequestsTaskTest::RemoveRequestsCallback,
                      base::Unretained(this)));
   task.Run();
@@ -194,4 +170,5 @@ TEST_F(RemoveRequestsTaskTest, RemoveMissingItem) {
   EXPECT_EQ(kRequestId1, last_result()->updated_items.at(0).request_id());
 }
 
+}  // namespace
 }  // namespace offline_pages

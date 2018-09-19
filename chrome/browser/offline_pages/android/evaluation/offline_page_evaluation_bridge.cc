@@ -31,7 +31,6 @@
 #include "components/offline_pages/core/background/request_notifier.h"
 #include "components/offline_pages/core/background/request_queue.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
-#include "components/offline_pages/core/background/request_queue_store_sql.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/downloads/download_notifying_observer.h"
 #include "components/offline_pages/core/offline_page_item.h"
@@ -147,8 +146,8 @@ std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
   base::FilePath queue_store_path =
       profile->GetPath().Append(kTestRequestQueueDirname);
 
-  std::unique_ptr<RequestQueueStoreSQL> queue_store(
-      new RequestQueueStoreSQL(background_task_runner, queue_store_path));
+  std::unique_ptr<RequestQueueStore> queue_store(
+      new RequestQueueStore(background_task_runner, queue_store_path));
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(queue_store)));
   std::unique_ptr<android::EvaluationTestScheduler> scheduler(
       new android::EvaluationTestScheduler());
