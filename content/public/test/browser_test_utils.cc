@@ -80,6 +80,7 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_fileapi_operation_waiter.h"
+#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/accessibility_browser_test_utils.h"
@@ -1607,6 +1608,24 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
   ExecuteScriptAsync(web_contents, script);
 
   DOMMessageQueue message_queue;
+
+  bool should_wait_flag =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kWaitForDebuggerWebUI);
+
+  const std::string debugger_port =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          ::switches::kRemoteDebuggingPort);
+
+  // Only wait if there is a debugger port, so user can issue go() command.
+  if (should_wait_flag && !debugger_port.empty()) {
+    ExecuteScriptAsync(
+        web_contents,
+        "window.waitUser = true; "
+        "window.go = function() { window.waitUser = false }; "
+        "console.log('Waiting for debugger...'); "
+        "console.log('Run: go() in the JS console when you are ready.');");
+  }
+
   ExecuteScriptAsync(web_contents, "runTests()");
 
   std::string message;
