@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -40,6 +42,19 @@ bool StringToScrollDirection(String scroll_direction,
   }
   return false;
 }
+
+bool StringToScrollOffset(String scroll_offset, CSSPrimitiveValue** result) {
+  CSSTokenizer tokenizer(scroll_offset);
+  const auto tokens = tokenizer.TokenizeToEOF();
+  CSSParserTokenRange range(tokens);
+  CSSValue* value = CSSParsingUtils::ConsumeScrollOffset(range);
+  if (!value)
+    return false;
+
+  // We support 'auto', but for simplicity just store it as nullptr.
+  *result = value->IsIdentifierValue() ? nullptr : ToCSSPrimitiveValue(value);
+  return true;
+}
 }  // namespace
 
 ScrollTimeline* ScrollTimeline::Create(Document& document,
@@ -55,6 +70,19 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
     return nullptr;
   }
 
+  CSSPrimitiveValue* start_scroll_offset = nullptr;
+  if (!StringToScrollOffset(options.startScrollOffset(),
+                            &start_scroll_offset)) {
+    exception_state.ThrowTypeError("Invalid startScrollOffset");
+    return nullptr;
+  }
+
+  CSSPrimitiveValue* end_scroll_offset = nullptr;
+  if (!StringToScrollOffset(options.endScrollOffset(), &end_scroll_offset)) {
+    exception_state.ThrowTypeError("Invalid endScrollOffset");
+    return nullptr;
+  }
+
   // TODO(smcgruer): Support 'auto' value.
   if (options.timeRange().IsScrollTimelineAutoKeyword()) {
     exception_state.ThrowDOMException(
@@ -63,15 +91,20 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
     return nullptr;
   }
 
-  return new ScrollTimeline(scroll_source, orientation,
+  return new ScrollTimeline(scroll_source, orientation, start_scroll_offset,
+                            end_scroll_offset,
                             options.timeRange().GetAsDouble());
 }
 
 ScrollTimeline::ScrollTimeline(Element* scroll_source,
                                ScrollDirection orientation,
+                               CSSPrimitiveValue* start_scroll_offset,
+                               CSSPrimitiveValue* end_scroll_offset,
                                double time_range)
     : scroll_source_(scroll_source),
       orientation_(orientation),
+      start_scroll_offset_(start_scroll_offset),
+      end_scroll_offset_(end_scroll_offset),
       time_range_(time_range) {
   DCHECK(scroll_source_);
 }
@@ -163,6 +196,14 @@ String ScrollTimeline::orientation() {
   }
 }
 
+String ScrollTimeline::startScrollOffset() {
+  return start_scroll_offset_ ? start_scroll_offset_->CssText() : "auto";
+}
+
+String ScrollTimeline::endScrollOffset() {
+  return end_scroll_offset_ ? end_scroll_offset_->CssText() : "auto";
+}
+
 void ScrollTimeline::timeRange(DoubleOrScrollTimelineAutoKeyword& result) {
   result.SetDouble(time_range_);
 }
@@ -211,6 +252,8 @@ void ScrollTimeline::DetachAnimation() {
 
 void ScrollTimeline::Trace(blink::Visitor* visitor) {
   visitor->Trace(scroll_source_);
+  visitor->Trace(start_scroll_offset_);
+  visitor->Trace(end_scroll_offset_);
   AnimationTimeline::Trace(visitor);
 }
 
