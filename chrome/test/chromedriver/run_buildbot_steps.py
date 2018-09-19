@@ -346,14 +346,9 @@ def _MaybeUpdateLatestRelease(version):
 
 def _WaitForLatestSnapshot(commit_position):
   util.MarkBuildStepStart('wait_for_snapshot')
-  assert commit_position is not None, 'Missing commit_position'
-  if util.IsMac():
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2584
-    # Mac Chromium builds are slow. Allow slightly out-of-date builds.
-    commit_position = int(commit_position) - 100
   for attempt in range(0, 200):
     snapshot_position = archive.GetLatestSnapshotPosition()
-    if snapshot_position is not None:
+    if commit_position is not None and snapshot_position is not None:
       if int(snapshot_position) >= int(commit_position):
         break
       util.PrintAndFlush('Waiting for snapshot >= %s, found %s' %
