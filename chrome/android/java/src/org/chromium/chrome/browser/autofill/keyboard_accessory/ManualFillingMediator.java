@@ -190,6 +190,8 @@ class ManualFillingMediator
     void onKeyboardVisibilityChanged(boolean isShowing) {
         if (!mKeyboardAccessory.hasContents()) return; // Exit early to not affect the layout.
         if (isShowing) {
+            // Don't open the accessory inside the contextual search panel.
+            if (mActivity.getContextualSearchManager().isSearchPanelOpened()) return;
             mKeyboardAccessory.requestShowing();
             mActivity.getFullscreenManager().setBottomControlsHeight(calculateAccessoryBarHeight());
             mKeyboardAccessory.closeActiveTab();
