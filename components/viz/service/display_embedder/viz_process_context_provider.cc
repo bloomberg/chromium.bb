@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
@@ -103,12 +104,20 @@ VizProcessContextProvider::VizProcessContextProvider(
     // there will be a circular reference preventing destruction.
     gles2_implementation_->SetLostContextCallback(base::BindOnce(
         &VizProcessContextProvider::OnContextLost, base::Unretained(this)));
+
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "VizProcessContextProvider", base::ThreadTaskRunnerHandle::Get());
   } else {
     UmaRecordContextLost(CONTEXT_INIT_FAILED);
   }
 }
 
-VizProcessContextProvider::~VizProcessContextProvider() = default;
+VizProcessContextProvider::~VizProcessContextProvider() {
+  if (context_result_ == gpu::ContextResult::kSuccess) {
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        this);
+  }
+}
 
 void VizProcessContextProvider::AddRef() const {
   base::RefCountedThreadSafe<VizProcessContextProvider>::AddRef();
@@ -237,6 +246,22 @@ void VizProcessContextProvider::OnContextLost() {
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   UmaRecordContextLost(
       GetContextLostReason(state.error, state.context_lost_reason));
+}
+
+bool VizProcessContextProvider::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK_EQ(context_result_, gpu::ContextResult::kSuccess);
+
+  gles2_implementation_->OnMemoryDump(args, pmd);
+  gles2_helper_->OnMemoryDump(args, pmd);
+
+  if (gr_context_) {
+    gpu::raster::DumpGrMemoryStatistics(
+        gr_context_->get(), pmd,
+        gles2_implementation_->ShareGroupTracingGUID());
+  }
+  return true;
 }
 
 }  // namespace viz

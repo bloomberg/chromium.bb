@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/observer_list.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/service/viz_service_export.h"
@@ -42,7 +43,8 @@ class ContextLostObserver;
 // for the display compositor.
 class VIZ_SERVICE_EXPORT VizProcessContextProvider
     : public base::RefCountedThreadSafe<VizProcessContextProvider>,
-      public ContextProvider {
+      public ContextProvider,
+      public base::trace_event::MemoryDumpProvider {
  public:
   VizProcessContextProvider(
       scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
@@ -83,6 +85,10 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
       gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
       const gpu::SharedMemoryLimits& mem_limits);
   void OnContextLost();
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   const gpu::ContextCreationAttribs attributes_;
 
