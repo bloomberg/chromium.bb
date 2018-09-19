@@ -4,6 +4,7 @@
 
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "ash/assistant/model/assistant_query.h"
@@ -39,6 +40,10 @@ AssistantQueryView::AssistantQueryView() {
 }
 
 AssistantQueryView::~AssistantQueryView() = default;
+
+const char* AssistantQueryView::GetClassName() const {
+  return "AssistantQueryView";
+}
 
 gfx::Size AssistantQueryView::CalculatePreferredSize() const {
   return gfx::Size(kMaxWidthDip, GetHeightForWidth(kMaxWidthDip));

@@ -46,6 +46,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   static void OnlyAllowMouseClickEvents(aura::Window* window);
 
   // views::BubbleDialogDelegateView:
+  const char* GetClassName() const override;
   void AddedToWidget() override;
   int GetDialogButtons() const override;
   void ChildPreferredSizeChanged(views::View* child) override;

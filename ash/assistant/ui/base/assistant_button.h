@@ -18,6 +18,7 @@ class AssistantButton : public views::ImageButton {
   ~AssistantButton() override;
 
   // views::Button:
+  const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()

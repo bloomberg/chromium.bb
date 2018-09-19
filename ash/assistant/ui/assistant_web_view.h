@@ -5,7 +5,9 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_WEB_VIEW_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_WEB_VIEW_H_
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/ui/caption_bar.h"
@@ -35,6 +37,7 @@ class AssistantWebView : public views::View,
   ~AssistantWebView() override;
 
   // views::View:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildPreferredSizeChanged(views::View* child) override;

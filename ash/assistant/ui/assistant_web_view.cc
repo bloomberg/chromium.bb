@@ -42,6 +42,10 @@ AssistantWebView::~AssistantWebView() {
   ReleaseWebContents();
 }
 
+const char* AssistantWebView::GetClassName() const {
+  return "AssistantWebView";
+}
+
 gfx::Size AssistantWebView::CalculatePreferredSize() const {
   return gfx::Size(kPreferredWidthDip, GetHeightForWidth(kPreferredWidthDip));
 }

@@ -41,6 +41,7 @@ class SuggestionContainerView : public AssistantScrollView,
   ~SuggestionContainerView() override;
 
   // AssistantScrollView:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnContentsPreferredSizeChanged(views::View* content_view) override;

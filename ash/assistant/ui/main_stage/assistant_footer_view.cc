@@ -59,6 +59,10 @@ AssistantFooterView::AssistantFooterView(
 
 AssistantFooterView::~AssistantFooterView() = default;
 
+const char* AssistantFooterView::GetClassName() const {
+  return "AssistantFooterView";
+}
+
 gfx::Size AssistantFooterView::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }

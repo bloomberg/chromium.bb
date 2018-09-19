@@ -22,6 +22,7 @@ class AssistantMainView : public views::View, public AssistantUiModelObserver {
   ~AssistantMainView() override;
 
   // views::View:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildPreferredSizeChanged(views::View* child) override;

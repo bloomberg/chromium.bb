@@ -44,7 +44,8 @@ class ContentView : public views::View, views::ViewObserver {
 
 class InvisibleScrollBar : public views::OverlayScrollBar {
  public:
-  InvisibleScrollBar(bool horizontal) : views::OverlayScrollBar(horizontal) {}
+  explicit InvisibleScrollBar(bool horizontal)
+      : views::OverlayScrollBar(horizontal) {}
 
   ~InvisibleScrollBar() override = default;
 
@@ -64,6 +65,10 @@ AssistantScrollView::AssistantScrollView() {
 }
 
 AssistantScrollView::~AssistantScrollView() = default;
+
+const char* AssistantScrollView::GetClassName() const {
+  return "AssistantScrollView";
+}
 
 void AssistantScrollView::OnViewPreferredSizeChanged(views::View* view) {
   OnContentsPreferredSizeChanged(content_view_);

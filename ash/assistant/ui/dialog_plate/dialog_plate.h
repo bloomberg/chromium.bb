@@ -73,6 +73,7 @@ class DialogPlate : public views::View,
   void RemoveObserver(DialogPlateObserver* observer);
 
   // views::View:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void RequestFocus() override;

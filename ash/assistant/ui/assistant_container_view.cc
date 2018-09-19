@@ -195,6 +195,10 @@ void AssistantContainerView::OnlyAllowMouseClickEvents(aura::Window* window) {
   window->SetProperty(kOnlyAllowMouseClickEvents, true);
 }
 
+const char* AssistantContainerView::GetClassName() const {
+  return "AssistantContainerView";
+}
+
 void AssistantContainerView::AddedToWidget() {
   GetWidget()->GetNativeWindow()->SetEventTargeter(
       std::make_unique<AssistantContainerEventTargeter>());

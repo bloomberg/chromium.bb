@@ -16,6 +16,9 @@ class AssistantScrollView : public views::ScrollView, views::ViewObserver {
   AssistantScrollView();
   ~AssistantScrollView() override;
 
+  // views::ScrollView:
+  const char* GetClassName() const override;
+
   // views::ViewObserver:
   void OnViewPreferredSizeChanged(views::View* view) override;
 

@@ -67,6 +67,10 @@ AssistantHeaderView::~AssistantHeaderView() {
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
+const char* AssistantHeaderView::GetClassName() const {
+  return "AssistantHeaderView";
+}
+
 gfx::Size AssistantHeaderView::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }

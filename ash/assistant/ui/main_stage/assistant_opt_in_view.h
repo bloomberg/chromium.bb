@@ -32,7 +32,8 @@ class AssistantOptInView : public views::View, public views::ButtonListener {
   AssistantOptInView();
   ~AssistantOptInView() override;
 
-  // views::Button:
+  // views::View:
+  const char* GetClassName() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 

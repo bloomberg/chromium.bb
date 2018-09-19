@@ -39,6 +39,10 @@ AssistantButton::AssistantButton(views::ButtonListener* listener)
 
 AssistantButton::~AssistantButton() = default;
 
+const char* AssistantButton::GetClassName() const {
+  return "AssistantButton";
+}
+
 void AssistantButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // Note that the current assumption is that button bounds are square.
   DCHECK_EQ(width(), height());

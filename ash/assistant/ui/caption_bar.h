@@ -39,6 +39,7 @@ class CaptionBar : public views::View, views::ButtonListener {
   ~CaptionBar() override;
 
   // views::View:
+  const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;

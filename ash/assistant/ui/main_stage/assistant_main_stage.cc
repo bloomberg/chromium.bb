@@ -226,6 +226,10 @@ AssistantMainStage::~AssistantMainStage() {
   assistant_controller_->interaction_controller()->RemoveModelObserver(this);
 }
 
+const char* AssistantMainStage::GetClassName() const {
+  return "AssistantMainStage";
+}
+
 void AssistantMainStage::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
