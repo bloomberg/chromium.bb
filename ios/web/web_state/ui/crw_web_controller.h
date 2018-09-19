@@ -211,6 +211,11 @@ class WebStateImpl;
             (web::NavigationInitiationType)type
                                           hasUserGesture:(BOOL)hasUserGesture;
 
+// Takes snapshot of web view. |completion| is always called,
+// but |snapshot| may be nil. Prior to iOS 11, |completion| is called with a nil
+// snapshot.
+- (void)takeSnapshotWithCompletion:(void (^)(UIImage* snapshot))completion;
+
 @end
 
 #pragma mark Testing
