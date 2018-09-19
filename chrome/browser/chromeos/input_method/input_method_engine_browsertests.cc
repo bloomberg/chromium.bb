@@ -32,7 +32,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/keyboard_controller.h"
 
 namespace chromeos {
 namespace input_method {
@@ -1041,12 +1041,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
       ui::IMEBridge::Get()->GetCurrentEngineHandler();
   ASSERT_TRUE(engine_handler);
 
-  keyboard::KeyboardConfig keyboard_config = keyboard::GetKeyboardConfig();
+  auto keyboard_config = keyboard::KeyboardController::Get()->keyboard_config();
   // Turn off these features, which are on by default.
   keyboard_config.auto_correct = false;
   keyboard_config.auto_complete = false;
   keyboard_config.spell_check = false;
-  keyboard::UpdateKeyboardConfig(keyboard_config);
+  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(keyboard_config);
   extensions::ExtensionHost* host =
       extensions::ProcessManager::Get(profile())->GetBackgroundHostForExtension(
           extension_->id());

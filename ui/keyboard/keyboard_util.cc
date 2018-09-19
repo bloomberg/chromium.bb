@@ -27,7 +27,6 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_ui.h"
 
@@ -52,8 +51,6 @@ bool g_keyboard_load_time_logged = false;
 base::LazyInstance<base::Time>::DestructorAtExit g_keyboard_load_time_start =
     LAZY_INSTANCE_INITIALIZER;
 
-struct keyboard::KeyboardConfig g_keyboard_config;
-
 bool g_accessibility_keyboard_enabled = false;
 
 bool g_hotrod_keyboard_enabled = false;
@@ -64,26 +61,9 @@ bool g_touch_keyboard_enabled = false;
 
 KeyboardState g_requested_keyboard_state = KEYBOARD_STATE_AUTO;
 
-KeyboardOverscrolOverride g_keyboard_overscroll_override =
-    KEYBOARD_OVERSCROLL_OVERRIDE_NONE;
-
 KeyboardShowOverride g_keyboard_show_override = KEYBOARD_SHOW_OVERRIDE_NONE;
 
 }  // namespace
-
-bool UpdateKeyboardConfig(const KeyboardConfig& keyboard_config) {
-  if (g_keyboard_config == keyboard_config)
-    return false;
-  g_keyboard_config = keyboard_config;
-  auto* controller = KeyboardController::Get();
-  if (controller->enabled())
-    controller->NotifyKeyboardConfigChanged();
-  return true;
-}
-
-const KeyboardConfig& GetKeyboardConfig() {
-  return g_keyboard_config;
-}
 
 void SetAccessibilityKeyboardEnabled(bool enabled) {
   g_accessibility_keyboard_enabled = enabled;
@@ -156,42 +136,8 @@ bool IsKeyboardEnabled() {
          g_requested_keyboard_state == KEYBOARD_STATE_ENABLED;
 }
 
-bool IsKeyboardVisible() {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  return keyboard_controller->enabled() &&
-         keyboard_controller->IsKeyboardVisible();
-}
-
-bool IsKeyboardOverscrollEnabled() {
-  if (!IsKeyboardEnabled())
-    return false;
-
-  // Users of the sticky accessibility on-screen keyboard are likely to be using
-  // mouse input, which may interfere with overscrolling.
-  if (keyboard::KeyboardController::Get()->enabled() &&
-      !keyboard::KeyboardController::Get()->IsOverscrollAllowed())
-    return false;
-
-  // If overscroll enabled override is set, use it instead. Currently
-  // login / out-of-box disable keyboard overscroll. http://crbug.com/363635
-  if (g_keyboard_overscroll_override != KEYBOARD_OVERSCROLL_OVERRIDE_NONE) {
-    return g_keyboard_overscroll_override ==
-        KEYBOARD_OVERSCROLL_OVERRIDE_ENABLED;
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableVirtualKeyboardOverscroll)) {
-    return false;
-  }
-  return true;
-}
-
-void SetKeyboardOverscrollOverride(KeyboardOverscrolOverride override) {
-  g_keyboard_overscroll_override = override;
-}
-
-void SetKeyboardShowOverride(KeyboardShowOverride override) {
-  g_keyboard_show_override = override;
+void SetKeyboardShowOverride(KeyboardShowOverride show_override) {
+  g_keyboard_show_override = show_override;
 }
 
 bool IsInputViewEnabled() {
@@ -229,24 +175,6 @@ bool IsGestureEditingEnabled() {
 bool IsImeServiceEnabled() {
   return base::FeatureList::IsEnabled(
       chromeos::features::kImeServiceConnectable);
-}
-
-bool InsertText(const base::string16& text) {
-  auto* controller = KeyboardController::Get();
-  if (!controller->enabled())
-    return false;
-
-  ui::InputMethod* input_method = controller->ui()->GetInputMethod();
-  if (!input_method)
-    return false;
-
-  ui::TextInputClient* tic = input_method->GetTextInputClient();
-  if (!tic || tic->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
-    return false;
-
-  tic->InsertText(text);
-
-  return true;
 }
 
 bool SendKeyEvent(const std::string type,
@@ -333,11 +261,6 @@ void MarkKeyboardLoadFinished() {
         base::Time::Now() - g_keyboard_load_time_start.Get());
     g_keyboard_load_time_logged = true;
   }
-}
-
-void LogKeyboardControlEvent(KeyboardControlEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("VirtualKeyboard.KeyboardControlEvent", event,
-                            KEYBOARD_CONTROL_MAX);
 }
 
 }  // namespace keyboard

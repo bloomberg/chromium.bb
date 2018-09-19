@@ -25,7 +25,6 @@
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_layout_delegate.h"
 #include "ui/keyboard/keyboard_ukm_recorder.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/notification_manager.h"
 #include "ui/keyboard/queued_container_type.h"
 #include "ui/keyboard/queued_display_change.h"
@@ -36,7 +35,7 @@ class Window;
 namespace ui {
 class InputMethod;
 class TextInputClient;
-}
+}  // namespace ui
 
 namespace keyboard {
 
@@ -65,6 +64,13 @@ enum class KeyboardControllerState {
   COUNT,
 };
 
+// An enumeration of keyboard overscroll override value.
+enum KeyboardOverscrollOverride {
+  KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED = 0,
+  KEYBOARD_OVERSCROLL_OVERRIDE_ENABLED,
+  KEYBOARD_OVERSCROLL_OVERRIDE_NONE,
+};
+
 // Provides control of the virtual keyboard, including enabling/disabling the
 // keyboard and controlling its visibility.
 class KEYBOARD_EXPORT KeyboardController
@@ -72,6 +78,24 @@ class KEYBOARD_EXPORT KeyboardController
       public aura::WindowObserver,
       public ui::InputMethodKeyboardController {
  public:
+  struct KeyboardConfig {
+    bool auto_complete = true;
+    bool auto_correct = true;
+    bool auto_capitalize = true;
+    bool handwriting = true;
+    bool spell_check = true;
+    // It denotes the preferred value, and can be true even if there is no
+    // actual audio input device.
+    bool voice_input = true;
+
+    bool operator==(const KeyboardConfig& rhs) const {
+      return auto_complete == rhs.auto_complete &&
+             auto_correct == rhs.auto_correct &&
+             auto_capitalize == rhs.auto_capitalize &&
+             handwriting == rhs.handwriting && spell_check == rhs.spell_check &&
+             voice_input == rhs.voice_input;
+    }
+  };
 
   KeyboardController();
   ~KeyboardController() override;
@@ -96,6 +120,16 @@ class KEYBOARD_EXPORT KeyboardController
   // keyboard if it is currently visible.
   void DeactivateKeyboard();
 
+  // Retrieves the active keyboard controller. Guaranteed to not be null while
+  // there is an ash::Shell.
+  // TODO(stevenjb/shuchen/shend): Remove all access from src/chrome.
+  // https://crbug.com/843332.
+  static KeyboardController* Get();
+
+  // Returns true if there is a valid KeyboardController instance (e.g. while
+  // there is an ash::Shell).
+  static bool HasInstance();
+
   // Returns the keyboard window, or null if the keyboard window has not been
   // created yet.
   aura::Window* GetKeyboardWindow() const;
@@ -103,6 +137,16 @@ class KEYBOARD_EXPORT KeyboardController
   // Returns the root window that this keyboard controller is attached to, or
   // null if the keyboard has not been attached to any root window.
   aura::Window* GetRootWindow();
+
+  // Moves an already loaded keyboard.
+  void MoveKeyboard(const gfx::Rect& new_bounds);
+
+  // Sets the bounds of the keyboard window.
+  void SetKeyboardWindowBounds(const gfx::Rect& new_bounds);
+
+  // Called by KeyboardUI when the keyboard window has loaded. Shows
+  // the keyboard if show_on_keyboard_window_load_ is true.
+  void NotifyKeyboardWindowLoaded();
 
   // Reloads the content of the keyboard. No-op if the keyboard content is not
   // loaded yet.
@@ -118,9 +162,33 @@ class KEYBOARD_EXPORT KeyboardController
   // Gets the currently focused text input client.
   ui::TextInputClient* GetTextInputClient();
 
+  // Insert |text| into the active TextInputClient if there is one. Returns true
+  // if |text| was successfully inserted.
+  bool InsertText(const base::string16& text);
+
+  // Updates |keyboard_config_| with |config|. Returns |false| if there is no
+  // change, otherwise returns true and notifies observers if this is enabled().
+  bool UpdateKeyboardConfig(const KeyboardConfig& config);
+  const KeyboardConfig& keyboard_config() { return keyboard_config_; }
+
+  // Returns true if keyboard overscroll is enabled.
+  bool IsKeyboardOverscrollEnabled() const;
+
+  void set_keyboard_overscroll_override(
+      KeyboardOverscrollOverride overscroll_override) {
+    keyboard_overscroll_override_ = overscroll_override;
+  }
+
+  KeyboardOverscrollOverride keyboard_overscroll_override() {
+    return keyboard_overscroll_override_;
+  };
+
   void set_keyboard_locked(bool lock) { keyboard_locked_ = lock; }
 
   bool keyboard_locked() const { return keyboard_locked_; }
+
+  void MoveToDisplayWithTransition(display::Display display,
+                                   gfx::Rect new_bounds_in_local);
 
   // Hide the keyboard because the user has chosen to specifically hide the
   // keyboard, such as pressing the dismiss button.
@@ -145,21 +213,13 @@ class KEYBOARD_EXPORT KeyboardController
   // |lock| is true.
   void ShowKeyboard(bool lock);
 
-  // Loads the keyboard window in the background, but does not display
-  // the keyboard.
-  void LoadKeyboardWindowInBackground();
-
   // Force the keyboard to show up in the specific display if not showing and
   // lock the keyboard
   void ShowKeyboardInDisplay(const display::Display& display);
 
-  // Retrieves the active keyboard controller. Guaranteed to not be null while
-  // there is an ash::Shell.
-  static KeyboardController* Get();
-
-  // Returns true if there is a valid KeyboardController instance (e.g. while
-  // there is an ash::Shell).
-  static bool HasInstance();
+  // Loads the keyboard window in the background, but does not display
+  // the keyboard.
+  void LoadKeyboardWindowInBackground();
 
   // Returns the bounds in screen for the visible portion of the keyboard. An
   // empty rectangle will get returned when the keyboard is hidden.
@@ -203,9 +263,6 @@ class KEYBOARD_EXPORT KeyboardController
   // will not stop propagation to the keyboard extension.
   bool HandlePointerEvent(const ui::LocatedEvent& event);
 
-  // Moves an already loaded keyboard.
-  void MoveKeyboard(const gfx::Rect& new_bounds);
-
   // Sets the active container type. If the keyboard is currently shown, this
   // will trigger a hide animation and a subsequent show animation. Otherwise
   // the ContainerBehavior change is synchronous.
@@ -215,13 +272,6 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Sets floating keyboard draggable rect.
   bool SetDraggableArea(const gfx::Rect& rect);
-
-  void MoveToDisplayWithTransition(display::Display display,
-                                   gfx::Rect new_bounds_in_local);
-
-  // Called by KeyboardUI when the keyboard window has loaded. Shows
-  // the keyboard if show_on_keyboard_window_load_ is true.
-  void NotifyKeyboardWindowLoaded();
 
   // InputMethodKeyboardController overrides.
   bool DisplayVirtualKeyboard() override;
@@ -235,10 +285,6 @@ class KEYBOARD_EXPORT KeyboardController
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
-
-  // For access to NotifyKeyboardConfigChanged
-  friend bool keyboard::UpdateKeyboardConfig(
-      const keyboard::KeyboardConfig& config);
 
   // Different ways to hide the keyboard.
   enum HideReason {
@@ -279,9 +325,6 @@ class KEYBOARD_EXPORT KeyboardController
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
   void OnShowVirtualKeyboardIfEnabled() override;
-
-  // Sets the bounds of the keyboard window.
-  void SetKeyboardWindowBounds(const gfx::Rect& new_bounds);
 
   // Show virtual keyboard immediately with animation.
   void ShowKeyboardInternal(const display::Display& display);
@@ -351,6 +394,10 @@ class KEYBOARD_EXPORT KeyboardController
   // If true, show the keyboard window when it loads.
   bool show_on_keyboard_window_load_ = false;
 
+  // Temporary keyboard overscroll override.
+  KeyboardOverscrollOverride keyboard_overscroll_override_ =
+      KEYBOARD_OVERSCROLL_OVERRIDE_NONE;
+
   // If true, the keyboard is always visible even if no window has input focus.
   bool keyboard_locked_ = false;
   KeyboardEventFilter event_filter_;
@@ -363,6 +410,9 @@ class KEYBOARD_EXPORT KeyboardController
   gfx::Rect visual_bounds_in_screen_;
 
   KeyboardControllerState state_ = KeyboardControllerState::UNKNOWN;
+
+  // Keyboard configuration associated with the controller.
+  KeyboardConfig keyboard_config_;
 
   NotificationManager notification_manager_;
 

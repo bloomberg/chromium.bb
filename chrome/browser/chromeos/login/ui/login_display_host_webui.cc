@@ -104,7 +104,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -294,12 +293,16 @@ std::string GetManagedLoginScreenLocale() {
 // Disables virtual keyboard overscroll. Login UI will scroll user pods
 // into view on JS side when virtual keyboard is shown.
 void DisableKeyboardOverscroll() {
-  keyboard::SetKeyboardOverscrollOverride(
+  if (!keyboard::KeyboardController::HasInstance())
+    return;  // May be null in Mash tests. TODO(mash): https://crbug.com/843332.
+  keyboard::KeyboardController::Get()->set_keyboard_overscroll_override(
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
 }
 
 void ResetKeyboardOverscrollOverride() {
-  keyboard::SetKeyboardOverscrollOverride(
+  if (!keyboard::KeyboardController::HasInstance())
+    return;  // May be null in Mash tests. TODO(mash): https://crbug.com/843332.
+  keyboard::KeyboardController::Get()->set_keyboard_overscroll_override(
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
 }
 

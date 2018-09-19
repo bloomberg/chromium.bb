@@ -264,7 +264,7 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
   bool ShouldEnableInsets(aura::Window* window) {
     aura::Window* contents_window = controller_.ui()->GetKeyboardWindow();
     return (contents_window->GetRootWindow() == window->GetRootWindow() &&
-            keyboard::IsKeyboardOverscrollEnabled() &&
+            controller_.IsKeyboardOverscrollEnabled() &&
             contents_window->IsVisible() && controller_.IsKeyboardVisible());
   }
 
@@ -458,7 +458,7 @@ TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
   // Enable touch keyboard / overscroll mode to test insets.
-  EXPECT_TRUE(keyboard::IsKeyboardOverscrollEnabled());
+  EXPECT_TRUE(controller().IsKeyboardOverscrollEnabled());
 
   SetFocus(&input_client);
   SetFocus(&no_input_client);

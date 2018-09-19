@@ -22,7 +22,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_resource_util.h"
-#include "ui/keyboard/keyboard_util.h"
 
 namespace {
 

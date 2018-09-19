@@ -7,7 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
 
@@ -28,12 +28,12 @@ LockWindow::LockWindow() {
 
   // Disable virtual keyboard overscroll because it interferes with scrolling
   // login/lock content. See crbug.com/363635.
-  keyboard::SetKeyboardOverscrollOverride(
+  keyboard::KeyboardController::Get()->set_keyboard_overscroll_override(
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
 }
 
 LockWindow::~LockWindow() {
-  keyboard::SetKeyboardOverscrollOverride(
+  keyboard::KeyboardController::Get()->set_keyboard_overscroll_override(
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
 
   // We need to destroy the root view before destroying |data_dispatcher_|

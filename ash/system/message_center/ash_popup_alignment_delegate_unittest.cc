@@ -18,6 +18,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -233,7 +234,8 @@ TEST_F(AshPopupAlignmentDelegateTest, Unified) {
 // and that they return to normal once the keyboard is gone.
 TEST_F(AshPopupAlignmentDelegateTest, KeyboardShowing) {
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
-  ASSERT_TRUE(keyboard::IsKeyboardOverscrollEnabled());
+  ASSERT_TRUE(
+      keyboard::KeyboardController::Get()->IsKeyboardOverscrollEnabled());
 
   UpdateDisplay("600x600");
   int baseline = alignment_delegate()->GetBaseline();
