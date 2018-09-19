@@ -367,6 +367,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("dirPasteWithoutChangingCurrent"),
                       TestCase("dirRenameWithContextMenu"),
                       TestCase("dirRenameWithContextMenu").InGuestMode(),
+                      TestCase("dirRenameUpdateChildrenBreadcrumbs"),
                       TestCase("dirRenameWithKeyboard"),
                       TestCase("dirRenameWithKeyboard").InGuestMode(),
                       TestCase("dirRenameWithoutChangingCurrent"),
