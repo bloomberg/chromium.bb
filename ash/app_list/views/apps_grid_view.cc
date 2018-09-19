@@ -1058,11 +1058,7 @@ int AppsGridView::TilesPerPage(int page) const {
   if (folder_delegate_)
     return kMaxFolderItemsPerPage;
 
-  // In new style launcher, the first row of first page is no longger suggestion
-  // apps.
-  if (page == 0 && !is_new_style_launcher_enabled_)
-    return cols_ * (rows_per_page_ - 1);
-  return cols_ * rows_per_page_;
+  return AppListConfig::instance().GetMaxNumOfItemsPerPage(page);
 }
 
 void AppsGridView::UpdatePaging() {
