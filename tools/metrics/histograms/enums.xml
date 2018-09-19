@@ -45020,6 +45020,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Unknown"/>
 </enum>
 
+<enum name="SigninSSOWKWebViewGetAllCookiesRequest">
+  <int value="0" label="Started"/>
+  <int value="1" label="Finished"/>
+</enum>
+
 <enum name="SigninSwitchSyncAccountSource">
   <int value="0" label="Manual signout and signin"/>
   <int value="1" label="Sync account switcher"/>
