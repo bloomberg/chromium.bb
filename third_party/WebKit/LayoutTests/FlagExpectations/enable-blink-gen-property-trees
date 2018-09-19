@@ -210,8 +210,6 @@ crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-i
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Failure Pass ]
 
-crbug.com/879169 transforms/3d/point-mapping/3d-point-mapping-2.html [ Failure ]
-
 crbug.com/882973 http/tests/devtools/layers/layer-tree-model.js [ Failure ]
 
 crbug.com/884239 virtual/threaded/fast/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
