@@ -54,6 +54,10 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   bool DestroySharedImage(const Mailbox& mailbox);
   bool HasImages() const { return !mailboxes_.empty(); }
   void DestroyAllSharedImages(bool have_context);
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd,
+                    int client_id,
+                    uint64_t client_tracing_id);
 
  private:
   struct FormatInfo {

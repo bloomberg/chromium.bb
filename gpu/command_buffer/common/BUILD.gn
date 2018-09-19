@@ -87,6 +87,8 @@ jumbo_source_set("common_sources") {
     "mailbox_holder.h",
     "scheduling_priority.cc",
     "scheduling_priority.h",
+    "shared_image_trace_utils.cc",
+    "shared_image_trace_utils.h",
     "shared_image_usage.h",
     "swap_buffers_complete_params.cc",
     "swap_buffers_complete_params.h",
