@@ -19,10 +19,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cancelation_signal.h"
+#include "components/sync/base/hash_util.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
+#include "components/sync/base/unique_position.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
+#include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 
 namespace {
@@ -184,7 +188,42 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data.non_unique_name = update_entity.name();
   data.is_folder = update_entity.folder();
   data.parent_id = update_entity.parent_id_string();
-  data.unique_position = update_entity.unique_position();
+
+  // Handle deprecated positioning fields. Relevant only for bookmarks.
+  // TODO(crbug.com/516866): Add coressponding UMA metrics for each case below.
+  if (update_entity.has_unique_position()) {
+    data.unique_position = update_entity.unique_position();
+  } else if (update_entity.has_position_in_parent() ||
+             update_entity.has_insert_after_item_id()) {
+    bool missing_originator_fields = false;
+    if (!update_entity.has_originator_cache_guid() ||
+        !update_entity.has_originator_client_item_id()) {
+      DLOG(ERROR) << "Update is missing requirements for bookmark position.";
+      missing_originator_fields = true;
+    }
+
+    std::string suffix =
+        missing_originator_fields
+            ? UniquePosition::RandomSuffix()
+            : GenerateSyncableHash(
+                  syncer::GetModelType(update_entity),
+                  /*client_tag=*/update_entity.originator_cache_guid() +
+                      update_entity.originator_client_item_id());
+
+    if (update_entity.has_originator_cache_guid()) {
+      data.unique_position =
+          UniquePosition::FromInt64(update_entity.position_in_parent(), suffix)
+              .ToProto();
+
+    } else {
+      // If update_entity has insert_after_item_id, use 0 index.
+      data.unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
+    }
+  } else if (SyncerProtoUtil::ShouldMaintainPosition(update_entity) &&
+             !update_entity.deleted()) {
+    DLOG(ERROR) << "Missing required position information in update.";
+  }
+
   data.server_defined_unique_tag = update_entity.server_defined_unique_tag();
 
   // Deleted entities must use the default instance of EntitySpecifics in
