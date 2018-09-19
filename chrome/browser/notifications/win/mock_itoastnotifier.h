@@ -7,30 +7,26 @@
 
 #include <windows.ui.notifications.h>
 
+#include <wrl/implements.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 
 class NotificationLaunchId;
 
 class MockIToastNotifier
-    : public ABI::Windows::UI::Notifications::IToastNotifier {
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<
+              Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
+          ABI::Windows::UI::Notifications::IToastNotifier> {
  public:
   MockIToastNotifier();
-  ~MockIToastNotifier();
+  ~MockIToastNotifier() override;
 
   // Sets a callback to be notified when Show has been called.
   void SetNotificationShownCallback(
       const base::RepeatingCallback<
           void(const NotificationLaunchId& launch_id)>& callback);
-
-  // IInspectable implementation:
-  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,
-                                           void** ppvObject) override;
-  ULONG STDMETHODCALLTYPE AddRef() override;
-  ULONG STDMETHODCALLTYPE Release() override;
-  HRESULT STDMETHODCALLTYPE GetIids(ULONG* iidCount, IID** iids) override;
-  HRESULT STDMETHODCALLTYPE GetRuntimeClassName(HSTRING* className) override;
-  HRESULT STDMETHODCALLTYPE GetTrustLevel(TrustLevel* trustLevel) override;
 
   // ABI::Windows::UI::Notifications::IToastNotifier implementation:
   HRESULT STDMETHODCALLTYPE
@@ -57,8 +53,6 @@ class MockIToastNotifier
           scheduledToasts) override;
 
  private:
-  int refcount_ = 0;
-
   base::RepeatingCallback<void(const NotificationLaunchId& launch_id)>
       notification_shown_callback_;
 
