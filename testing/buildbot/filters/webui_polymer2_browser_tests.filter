@@ -15,7 +15,6 @@
 # --gtest_repeat=5, but might pass on a single invocation).
 
 # Chrome Desktop failures (Mac, Linux, Windows).
--CrSettingsMenuTest.SettingsMenu
 -CrSettingsPeoplePageSyncAccountControlTest.All
 -MediaRouterElementsBrowserTest.MediaRouterContainerCastModeList
 -MediaRouterElementsBrowserTest.MediaRouterContainerFilterPart1
@@ -183,6 +182,7 @@ CrSettingsImportDataDialogTest.*
 CrSettingsLanguagesPageTest.InputMethods
 CrSettingsLanguagesTest.*
 CrSettingsMainPageTest.*
+CrSettingsMenuTest.*
 CrSettingsMetricsReportingTest.*
 CrSettingsMultideviceFeatureItemTest.*
 CrSettingsMultideviceFeatureToggleTest.*
