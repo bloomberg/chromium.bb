@@ -57,6 +57,10 @@ interface Assistant {
   // voice queries, and may also be used in standalone screen context
   // interactions (see StartCachedScreenContextInteraction()).
   CacheScreenContext() => ();
+
+  // Invoked when accessibility status is changed. Note that though
+  // accessibility status has changed, |spoken_feedback_enabled| may not have.
+  OnAccessibilityStatusChanged(bool spoken_feedback_enabled);
 };
 
 // Subscribes to assistant's interaction event. These events are server driven

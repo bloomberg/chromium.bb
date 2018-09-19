@@ -55,6 +55,8 @@ class MockAssistant : public mojom::Assistant {
     DoCacheScreenContext(&callback);
   }
 
+  MOCK_METHOD1(OnAccessibilityStatusChanged, void(bool));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAssistant);
 };

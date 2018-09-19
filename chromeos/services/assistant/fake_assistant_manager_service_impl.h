@@ -53,6 +53,7 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
   void CacheScreenContext(CacheScreenContextCallback callback) override;
+  void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
 
  private:
   State state_ = State::STOPPED;
