@@ -176,17 +176,22 @@ def GenerateUpdatePayload(opts):
     dst_root_path = ExtractRoot(opts.image, opts.root_path,
                                 opts.root_pretruncate_path)
 
-    # TODO(tbrindus): delta_generator should be called with partition lists
-    #                 to support major version 2 more easily.
+    # In major version 2 we need to explicity mark the postinst on the root
+    # partition to run.
+    postinst_config_path = tempfile.NamedTemporaryFile(prefix='postinst').name
+    with open(postinst_config_path, 'w') as postinst_config:
+      postinst_config.write('RUN_POSTINSTALL_root=true\n')
+
     generator_args = [
         # Common payload args:
-        '--major_version=1',
+        '--major_version=2',
         '--out_file=' + opts.output,
         '--private_key=' + (opts.private_key or ''),
         '--out_metadata_size_file=' + (opts.out_metadata_size_file or ''),
         # Target image args:
-        '--new_image=' + dst_root_path,
-        '--new_kernel=' + dst_kernel_path,
+        '--partition_names=' + ':'.join(['root', 'kernel']),
+        '--new_partitions=' + ':'.join([dst_root_path, dst_kernel_path]),
+        '--new_postinstall_config_file=' + postinst_config_path,
         '--new_channel=' + opts.channel,
         '--new_board=' + opts.board,
         '--new_version=' + opts.version,
@@ -198,8 +203,7 @@ def GenerateUpdatePayload(opts):
     if delta:
       generator_args += [
           # Source image args:
-          '--old_image=' + src_root_path,
-          '--old_kernel=' + src_kernel_path,
+          '--old_partitions=' + ':'.join([src_root_path, src_kernel_path]),
           '--old_channel=' + opts.src_channel,
           '--old_board=' + opts.src_board,
           '--old_version=' + opts.src_version,
