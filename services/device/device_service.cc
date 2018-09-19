@@ -114,9 +114,6 @@ DeviceService::~DeviceService() {
 }
 
 void DeviceService::OnStart() {
-  registry_.AddInterface<mojom::BluetoothSystemFactory>(
-      base::BindRepeating(&DeviceService::BindBluetoothSystemFactoryRequest,
-                          base::Unretained(this)));
   registry_.AddInterface<mojom::Fingerprint>(base::Bind(
       &DeviceService::BindFingerprintRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::GeolocationConfig>(base::BindRepeating(
@@ -165,6 +162,9 @@ void DeviceService::OnStart() {
 #endif
 
 #if defined(OS_CHROMEOS)
+  registry_.AddInterface<mojom::BluetoothSystemFactory>(
+      base::BindRepeating(&DeviceService::BindBluetoothSystemFactoryRequest,
+                          base::Unretained(this)));
   registry_.AddInterface<mojom::MtpManager>(base::BindRepeating(
       &DeviceService::BindMtpManagerRequest, base::Unretained(this)));
 #endif
@@ -180,11 +180,6 @@ void DeviceService::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
-}
-
-void DeviceService::BindBluetoothSystemFactoryRequest(
-    mojom::BluetoothSystemFactoryRequest request) {
-  BluetoothSystemFactory::CreateFactory(std::move(request));
 }
 
 #if !defined(OS_ANDROID)
@@ -211,6 +206,11 @@ void DeviceService::BindVibrationManagerRequest(
 #endif
 
 #if defined(OS_CHROMEOS)
+void DeviceService::BindBluetoothSystemFactoryRequest(
+    mojom::BluetoothSystemFactoryRequest request) {
+  BluetoothSystemFactory::CreateFactory(std::move(request));
+}
+
 void DeviceService::BindMtpManagerRequest(mojom::MtpManagerRequest request) {
   if (!mtp_device_manager_)
     mtp_device_manager_ = MtpDeviceManager::Initialize();

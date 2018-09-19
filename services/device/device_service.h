@@ -15,7 +15,6 @@
 #include "services/device/geolocation/geolocation_provider_impl.h"
 #include "services/device/geolocation/public_ip_address_geolocation_provider.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
-#include "services/device/public/mojom/bluetooth_system.mojom.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
@@ -42,6 +41,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "services/device/media_transfer_protocol/mtp_device_manager.h"
+#include "services/device/public/mojom/bluetooth_system.mojom.h"
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
@@ -114,8 +114,6 @@ class DeviceService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  void BindBluetoothSystemFactoryRequest(
-      mojom::BluetoothSystemFactoryRequest request);
   void BindFingerprintRequest(mojom::FingerprintRequest request);
   void BindGeolocationConfigRequest(mojom::GeolocationConfigRequest request);
   void BindGeolocationContextRequest(mojom::GeolocationContextRequest request);
@@ -133,6 +131,8 @@ class DeviceService : public service_manager::Service {
 #endif
 
 #if defined(OS_CHROMEOS)
+  void BindBluetoothSystemFactoryRequest(
+      mojom::BluetoothSystemFactoryRequest request);
   void BindMtpManagerRequest(mojom::MtpManagerRequest request);
 #endif
 

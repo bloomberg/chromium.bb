@@ -4,10 +4,10 @@
 
 import("//build/config/features.gni")
 
-source_set("bluetooth") {
+source_set("bluetooth_system") {
   visibility = [
     "//services/device:lib",
-    "//services/device/bluetooth:tests",
+    "//services/device/bluetooth:bluetooth_system_tests",
   ]
 
   sources = [
@@ -26,7 +26,7 @@ source_set("bluetooth") {
   ]
 }
 
-source_set("tests") {
+source_set("bluetooth_system_tests") {
   testonly = true
 
   sources = [
@@ -34,7 +34,7 @@ source_set("tests") {
   ]
 
   deps = [
-    ":bluetooth",
+    ":bluetooth_system",
     "//net",
     "//services/device:test_support",
     "//testing/gtest",
