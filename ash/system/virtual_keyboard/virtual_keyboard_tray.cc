@@ -132,6 +132,8 @@ void VirtualKeyboardTray::UpdateIcon() {
       icon,
       TrayIconColor(Shell::Get()->session_controller()->GetSessionState()));
   icon_->SetImage(image);
+  icon_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
   const int vertical_padding = (kTrayItemSize - image.height()) / 2;
   const int horizontal_padding = (kTrayItemSize - image.width()) / 2;
   icon_->SetBorder(views::CreateEmptyBorder(
