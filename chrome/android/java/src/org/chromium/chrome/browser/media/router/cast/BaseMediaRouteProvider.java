@@ -216,7 +216,7 @@ public abstract class BaseMediaRouteProvider
     @Override
     public void onSessionStartFailed() {
         for (String routeId : mRoutes.keySet()) {
-            mManager.onRouteClosedWithError(routeId, "Launch error");
+            mManager.onRouteClosed(routeId, "Launch error");
         }
         mRoutes.clear();
     };

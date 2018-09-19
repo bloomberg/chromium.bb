@@ -148,7 +148,7 @@ public class ChromeMediaRouterRouteTest extends ChromeMediaRouterTestBase {
         verify(mRouteProvider).closeRoute(routeId1);
         assertEquals(1, mChromeMediaRouter.getRouteIdsToProvidersForTest().size());
 
-        mChromeMediaRouter.onRouteClosed(routeId1);
+        mChromeMediaRouter.onRouteTerminated(routeId1);
         assertEquals(0, mChromeMediaRouter.getRouteIdsToProvidersForTest().size());
     }
 }

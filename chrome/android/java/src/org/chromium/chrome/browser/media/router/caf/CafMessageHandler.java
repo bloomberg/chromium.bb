@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media.router.caf;
 
+import static org.chromium.chrome.browser.media.router.caf.CastUtils.isSameOrigin;
 
 import android.os.Handler;
 import android.support.v4.util.ArrayMap;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.media.router.CastRequestIdGenerator;
 import org.chromium.chrome.browser.media.router.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.ClientRecord;
 import org.chromium.chrome.browser.media.router.MediaSink;
+import org.chromium.chrome.browser.media.router.cast.CastMediaSource;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -216,40 +218,36 @@ public class CafMessageHandler {
         String sessionId = jsonMessage.getString("message");
         if (!mSessionController.getSession().getSessionId().equals(sessionId)) return false;
 
-        ClientRecord leavingClient = mRouteProvider.getClientIdToRecords().get(clientId);
-        if (leavingClient == null) return false;
+        ClientRecord currentClient = mRouteProvider.getClientIdToRecords().get(clientId);
+        if (currentClient == null) return false;
 
         int sequenceNumber = jsonMessage.optInt("sequenceNumber", VOID_SEQUENCE_NUMBER);
+
+        // The web sender SDK doesn't actually recognize "leave_session" response, but this is to
+        // acknowledge the "leave_session" request.
         mRouteProvider.sendMessageToClient(clientId,
                 buildSimpleSessionMessage("leave_session", sequenceNumber, clientId, null));
-        mRouteProvider.removeRoute(leavingClient.routeId, /* error= */ null);
 
-        // TODO(zqzhang): handle leave_session message properly.
+        List<ClientRecord> leavingClients = new ArrayList<>();
 
-        // int sequenceNumber = jsonMessage.optInt("sequenceNumber", VOID_SEQUENCE_NUMBER);
-        // mRouteProvider.sendMessageToClient(clientId,
-        //         buildSimpleSessionMessage("leave_session", sequenceNumber, clientId, null));
+        for (ClientRecord client : mRouteProvider.getClientIdToRecords().values()) {
+            boolean shouldNotifyClient = false;
+            if (CastMediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED.equals(currentClient.autoJoinPolicy)
+                    && isSameOrigin(client.origin, currentClient.origin)
+                    && client.tabId == currentClient.tabId) {
+                shouldNotifyClient = true;
+            } else if (CastMediaSource.AUTOJOIN_ORIGIN_SCOPED.equals(currentClient.autoJoinPolicy)
+                    && isSameOrigin(client.origin, currentClient.origin)) {
+                shouldNotifyClient = true;
+            }
+            if (shouldNotifyClient) {
+                leavingClients.add(client);
+            }
+        }
 
-        // // Send a "disconnect_session" message to all the clients that match with the leaving
-        // // client's auto join policy.
-        // for (ClientRecord client : mRouteProvider.getClientIdToRecords().values()) {
-        //     boolean shouldNotifyClient = false;
-        //     if
-        //     (CastMediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
-        //             && isSameOrigin(client.origin, leavingClient.origin)
-        //             && client.tabId == leavingClient.tabId) {
-        //         shouldNotifyClient = true;
-        //     }
-        //     if (CastMediaSource.AUTOJOIN_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
-        //             && isSameOrigin(client.origin, leavingClient.origin)) {
-        //         shouldNotifyClient = true;
-        //     }
-        //     if (shouldNotifyClient) {
-        //         mRouteProvider.sendMessageToClient(client.clientId,
-        //                 buildSimpleSessionMessage("disconnect_session", VOID_SEQUENCE_NUMBER,
-        //                         client.clientId, sessionId));
-        //     }
-        // }
+        for (ClientRecord client : leavingClients) {
+            mRouteProvider.removeRoute(client.routeId, /* error= */ null);
+        }
 
         return true;
     }

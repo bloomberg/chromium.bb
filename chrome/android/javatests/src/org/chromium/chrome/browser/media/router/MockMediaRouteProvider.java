@@ -162,7 +162,7 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
         }
         mPresentationIdToRoute.clear();
         mPresentationIdToRoute.putAll(newPresentationIdToRoute);
-        mManager.onRouteClosed(routeId);
+        mManager.onRouteTerminated(routeId);
     }
 
     @Override
@@ -172,7 +172,7 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
     @Override
     public void sendStringMessage(String routeId, String message) {
         if (mCloseRouteWithErrorOnSend) {
-            mManager.onRouteClosedWithError(routeId, "Sending message failed. Closing the route.");
+            mManager.onRouteClosed(routeId, "Sending message failed. Closing the route.");
         } else {
             mManager.onMessage(routeId, "Pong: " + message);
         }

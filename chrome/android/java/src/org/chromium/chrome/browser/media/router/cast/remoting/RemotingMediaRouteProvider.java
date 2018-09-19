@@ -65,7 +65,7 @@ public class RemotingMediaRouteProvider extends BaseMediaRouteProvider {
 
         if (mSession == null) {
             mRoutes.remove(routeId);
-            mManager.onRouteClosed(routeId);
+            mManager.onRouteTerminated(routeId);
             return;
         }
 
@@ -91,7 +91,7 @@ public class RemotingMediaRouteProvider extends BaseMediaRouteProvider {
     public void onSessionEnded() {
         if (mSession == null) return;
 
-        for (String routeId : mRoutes.keySet()) mManager.onRouteClosed(routeId);
+        for (String routeId : mRoutes.keySet()) mManager.onRouteTerminated(routeId);
         mRoutes.clear();
 
         mSession = null;

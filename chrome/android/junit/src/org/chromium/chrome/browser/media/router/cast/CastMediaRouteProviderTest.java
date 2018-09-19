@@ -85,7 +85,7 @@ public class CastMediaRouteProviderTest {
         mProvider.addRoute(route, "", -1);
         mProvider.onSessionEnded();
 
-        verify(mMockManager).onRouteClosed(route.id);
+        verify(mMockManager).onRouteTerminated(route.id);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class CastMediaRouteProviderTest {
         mProvider.addRoute(route, "", -1);
         mProvider.closeRoute(route.id);
 
-        verify(mMockManager).onRouteClosed(route.id);
+        verify(mMockManager).onRouteTerminated(route.id);
     }
 
     @Test

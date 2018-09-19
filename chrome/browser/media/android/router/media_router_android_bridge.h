@@ -61,14 +61,14 @@ class MediaRouterAndroidBridge {
                            const base::android::JavaRef<jobject>& obj,
                            const base::android::JavaRef<jstring>& jerror_text,
                            jint jroute_request_id);
-  void OnRouteClosed(JNIEnv* env,
-                     const base::android::JavaRef<jobject>& obj,
-                     const base::android::JavaRef<jstring>& jmedia_route_id);
-  void OnRouteClosedWithError(
+  void OnRouteTerminated(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& obj,
-      const base::android::JavaRef<jstring>& jmedia_route_id,
-      const base::android::JavaRef<jstring>& jmessage);
+      const base::android::JavaRef<jstring>& jmedia_route_id);
+  void OnRouteClosed(JNIEnv* env,
+                     const base::android::JavaRef<jobject>& obj,
+                     const base::android::JavaRef<jstring>& jmedia_route_id,
+                     const base::android::JavaRef<jstring>& jerror);
   void OnMessage(JNIEnv* env,
                  const base::android::JavaRef<jobject>& obj,
                  const base::android::JavaRef<jstring>& jmedia_route_id,
