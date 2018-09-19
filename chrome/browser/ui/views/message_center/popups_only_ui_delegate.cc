@@ -34,5 +34,5 @@ void PopupsOnlyUiDelegate::ShowPopups() {
 
 void PopupsOnlyUiDelegate::HidePopups() {
   DCHECK(popup_collection_.get());
-  popup_collection_->MarkAllPopupsShown();
+  popup_collection_->MarkAllPopupsShown(true /* animate */);
 }

@@ -42,7 +42,7 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
   // MessageCenterUiDelegate:
   void OnMessageCenterContentsChanged() override;
   bool ShowPopups() override;
-  void HidePopups() override;
+  void HidePopups(bool animate) override;
   bool ShowMessageCenter(bool show_by_click) override;
   void HideMessageCenter() override;
 
@@ -91,8 +91,8 @@ bool UnifiedSystemTray::UiDelegate::ShowPopups() {
   return true;
 }
 
-void UnifiedSystemTray::UiDelegate::HidePopups() {
-  message_popup_collection_->MarkAllPopupsShown();
+void UnifiedSystemTray::UiDelegate::HidePopups(bool animate) {
+  message_popup_collection_->MarkAllPopupsShown(animate);
   popup_alignment_delegate_->SetTrayBubbleHeight(0);
 }
 

@@ -84,7 +84,7 @@ class ASH_EXPORT NotificationTray
   bool ShowMessageCenter(bool show_by_click) override;
   void HideMessageCenter() override;
   bool ShowPopups() override;
-  void HidePopups() override;
+  void HidePopups(bool animate) override;
 
   // Activates the notification tray bubble.
   void ActivateBubble();

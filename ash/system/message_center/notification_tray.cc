@@ -404,9 +404,9 @@ bool NotificationTray::ShowPopups() {
   return true;
 }
 
-void NotificationTray::HidePopups() {
+void NotificationTray::HidePopups(bool animate) {
   DCHECK(popup_collection_.get());
-  popup_collection_->MarkAllPopupsShown();
+  popup_collection_->MarkAllPopupsShown(animate);
 }
 
 // Private methods.
