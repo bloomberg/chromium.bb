@@ -37,19 +37,14 @@ namespace chromeos {
 
 namespace {
 
-constexpr char kAdMachineNameInput[] =
-    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
-    "#machineNameInput')";
-constexpr char kAdMachineOrgUnitInput[] =
-    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
-    "#orgUnitInput')";
-constexpr char kAdEncryptionTypesSelect[] =
-    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
-    "#encryptionList')";
-constexpr char kAdUsernameInput[] =
-    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ #userInput')";
-constexpr char kAdPasswordInput[] =
-    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ #passwordInput')";
+#define AD_JS_ELEMENT "document.querySelector('#oauth-enroll-ad-join-ui').$."
+constexpr char kAdMachineNameInput[] = AD_JS_ELEMENT "machineNameInput";
+constexpr char kAdMachineOrgUnitInput[] = AD_JS_ELEMENT "orgUnitInput";
+constexpr char kAdEncryptionTypesSelect[] = AD_JS_ELEMENT "encryptionList";
+constexpr char kAdUsernameInput[] = AD_JS_ELEMENT "userInput";
+constexpr char kAdPasswordInput[] = AD_JS_ELEMENT "passwordInput";
+constexpr char kAdSubmitCreds[] = AD_JS_ELEMENT "adCreds.$.button.fire('tap')";
+#undef AD_JS_ELEMENT
 constexpr char kAdUserDomain[] = "user.domain.com";
 constexpr char kAdMachineDomain[] = "machine.domain.com";
 constexpr char kAdMachineDomainDN[] =
@@ -267,17 +262,15 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
           encryption_types + "'";
       js_checker().ExecuteAsync(set_encryption_types);
     }
-    js_checker().ExecuteAsync(
-        "document.querySelector('#oauth-enroll-ad-join-ui /deep/ #adCreds"
-        "    /deep/ #button').fire('tap')");
+    js_checker().ExecuteAsync(kAdSubmitCreds);
     ExecutePendingJavaScript();
   }
 
   void ClickRetryOnErrorScreen() {
     js_checker().ExecuteAsync(
         "document.querySelector('"
-        "#oauth-enroll-active-directory-join-error-card /deep/ #submitButton'"
-        ").fire('tap')");
+        "#oauth-enroll-active-directory-join-error-card').$.submitButton"
+        ".fire('tap')");
     ExecutePendingJavaScript();
   }
 
