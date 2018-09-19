@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <tuple>
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -19,6 +20,9 @@ FidoBleFrame::FidoBleFrame() = default;
 FidoBleFrame::FidoBleFrame(FidoBleDeviceCommand command,
                            std::vector<uint8_t> data)
     : command_(command), data_(std::move(data)) {}
+
+FidoBleFrame::FidoBleFrame(const FidoBleFrame&) = default;
+FidoBleFrame& FidoBleFrame::operator=(const FidoBleFrame&) = default;
 
 FidoBleFrame::FidoBleFrame(FidoBleFrame&&) = default;
 FidoBleFrame& FidoBleFrame::operator=(FidoBleFrame&&) = default;
@@ -80,6 +84,11 @@ FidoBleFrame::ToFragments(size_t max_fragment_size) const {
   }
 
   return {initial_fragment, std::move(other_fragments)};
+}
+
+bool operator==(const FidoBleFrame& lhs, const FidoBleFrame& rhs) {
+  return std::forward_as_tuple(lhs.command(), lhs.data()) ==
+         std::forward_as_tuple(rhs.command(), rhs.data());
 }
 
 FidoBleFrameFragment::FidoBleFrameFragment() = default;
