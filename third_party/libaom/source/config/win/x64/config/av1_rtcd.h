@@ -990,6 +990,10 @@ void av1_highbd_inv_txfm_add_32x32_c(const tran_low_t* dqcoeff,
                                      uint8_t* dst,
                                      int stride,
                                      const TxfmParam* txfm_param);
+void av1_highbd_inv_txfm_add_32x32_sse4_1(const tran_low_t* dqcoeff,
+                                          uint8_t* dst,
+                                          int stride,
+                                          const TxfmParam* txfm_param);
 void av1_highbd_inv_txfm_add_32x32_avx2(const tran_low_t* dqcoeff,
                                         uint8_t* dst,
                                         int stride,
@@ -2184,6 +2188,8 @@ static void setup_rtcd_internal(void) {
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_16x8 = av1_highbd_inv_txfm_add_16x8_sse4_1;
   av1_highbd_inv_txfm_add_32x32 = av1_highbd_inv_txfm_add_32x32_c;
+  if (flags & HAS_SSE4_1)
+    av1_highbd_inv_txfm_add_32x32 = av1_highbd_inv_txfm_add_32x32_sse4_1;
   if (flags & HAS_AVX2)
     av1_highbd_inv_txfm_add_32x32 = av1_highbd_inv_txfm_add_32x32_avx2;
   av1_highbd_inv_txfm_add_4x4 = av1_highbd_inv_txfm_add_4x4_c;
