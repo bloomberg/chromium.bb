@@ -829,6 +829,11 @@ void AudioRendererImpl::AttemptRead_Locked() {
     return;
 
   pending_read_ = true;
+
+  // Don't hold the lock while calling Read(), if the demuxer is busy this will
+  // block audio rendering for an extended period of time.
+  // |audio_buffer_stream_| is only accessed on |task_runner_| so this is safe.
+  base::AutoUnlock auto_unlock(lock_);
   audio_buffer_stream_->Read(base::BindOnce(
       &AudioRendererImpl::DecodedAudioReady, weak_factory_.GetWeakPtr()));
 }
