@@ -41,10 +41,6 @@
 -TtsAccessibilityTest.*
 
 # ChromeOS only test failures.
--ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_DistinguishedName
--ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_ErrorCard
--ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_Success
--ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_UIErrors
 -AudioPlayerBrowserTest.ChangeTracks
 -AudioPlayerBrowserTest.ChangeTracksPlayList
 -AudioPlayerBrowserTest.ChangeTracksPlayListIcon
@@ -96,7 +92,7 @@
 # enabled by default and run the full set of tests, and collect any missing
 # failing tests.
 
-ActiveDirectoryJoinTest.TestActiveDirectoryEnrollment_ErrorCard
+ActiveDirectoryJoinTest.*
 AudioPlayerBrowserTest.ChangeTracksPlayList
 AudioPlayerBrowserTest.ChangeTracksPlayListIcon
 AudioPlayerBrowserTest.ChangeVolumeLevel
