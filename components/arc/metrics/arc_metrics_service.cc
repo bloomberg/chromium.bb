@@ -255,17 +255,16 @@ void ArcMetricsService::ReportNativeBridge(
 }
 
 void ArcMetricsService::RecordNativeBridgeUMA() {
-  UMA_HISTOGRAM_ENUMERATION("Arc.NativeBridge", native_bridge_type_,
-                            NativeBridgeType::COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Arc.NativeBridge", native_bridge_type_);
 }
 
 void ArcMetricsService::OnWindowFocused(aura::Window* gained_focus,
                                         aura::Window* lost_focus) {
   if (!arc_window_delegate_->IsActiveArcAppWindow(gained_focus))
     return;
-  UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction",
-                            UserInteractionType::APP_CONTENT_WINDOW_INTERACTION,
-                            UserInteractionType::SIZE);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Arc.UserInteraction",
+      UserInteractionType::APP_CONTENT_WINDOW_INTERACTION);
 }
 
 ArcMetricsService::ProcessObserver::ProcessObserver(

@@ -156,8 +156,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
           event->type() == ui::ET_GESTURE_TAP) {
         UMA_HISTOGRAM_ENUMERATION(
             "Arc.UserInteraction",
-            arc::UserInteractionType::NOTIFICATION_INTERACTION,
-            arc::UserInteractionType::SIZE);
+            arc::UserInteractionType::NOTIFICATION_INTERACTION);
       }
     }
 

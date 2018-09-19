@@ -244,8 +244,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
                          int64_t display_id) {
   DCHECK(!launch_intent.has_value() || !launch_intent->empty());
   if (user_action != UserInteractionType::NOT_USER_INITIATED)
-    UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction", user_action,
-                              UserInteractionType::SIZE);
+    UMA_HISTOGRAM_ENUMERATION("Arc.UserInteraction", user_action);
 
   Profile* const profile = Profile::FromBrowserContext(context);
 

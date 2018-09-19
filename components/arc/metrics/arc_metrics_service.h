@@ -47,7 +47,7 @@ class ArcMetricsService : public KeyedService,
     HOUDINI = 2,
     // Using ndk-translation translator.
     NDK_TRANSLATION = 3,
-    COUNT
+    kMaxValue = NDK_TRANSLATION,
   };
 
   // Delegate for handling window focus observation that is used to track ARC

@@ -521,8 +521,7 @@ NoteTakingHelper::LaunchResult NoteTakingHelper::LaunchAppInternal(
 
     UMA_HISTOGRAM_ENUMERATION(
         "Arc.UserInteraction",
-        arc::UserInteractionType::APP_STARTED_FROM_STYLUS_TOOLS,
-        arc::UserInteractionType::SIZE);
+        arc::UserInteractionType::APP_STARTED_FROM_STYLUS_TOOLS);
 
     return LaunchResult::ANDROID_SUCCESS;
   } else {

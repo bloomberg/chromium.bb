@@ -70,8 +70,7 @@ enum class UserInteractionType {
   // User started an app from Smart Text Selection context menu.
   APP_STARTED_FROM_SMART_TEXT_SELECTION_CONTEXT_MENU = 17,
 
-  // The size of this enum; keep last.
-  SIZE,
+  kMaxValue = APP_STARTED_FROM_SMART_TEXT_SELECTION_CONTEXT_MENU,
 };
 
 }  // namespace arc
