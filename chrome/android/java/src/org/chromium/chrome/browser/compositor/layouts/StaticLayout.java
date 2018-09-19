@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.RectF;
 import android.os.Handler;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
@@ -78,7 +77,7 @@ public class StaticLayout extends Layout {
         mHandler = new Handler();
         mUnstallRunnable = new UnstallRunnable();
         mUnstalling = false;
-        mSceneLayer = new StaticTabSceneLayer(R.id.control_container);
+        mSceneLayer = new StaticTabSceneLayer();
     }
 
     /**

@@ -38,7 +38,6 @@ class StaticTabSceneLayer : public SceneLayer {
       const base::android::JavaParamRef<jobject>& jobj,
       const base::android::JavaParamRef<jobject>& jtab_content_manager,
       jint id,
-      jint toolbar_resource_id,
       jboolean can_use_live_layer,
       jint default_background_color,
       jfloat x,
