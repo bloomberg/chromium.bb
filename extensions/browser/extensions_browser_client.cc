@@ -98,4 +98,8 @@ ExtensionsBrowserClient::GetSystemNetworkContext() {
   return nullptr;
 }
 
+UserScriptListener* ExtensionsBrowserClient::GetUserScriptListener() {
+  return nullptr;
+}
+
 }  // namespace extensions
