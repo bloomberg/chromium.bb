@@ -1851,6 +1851,9 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
   // Clear mouse press state to avoid initiating a drag while context menu is
   // up.
   mouse_event_manager_->ReleaseMousePress();
+  if (last_scrollbar_under_mouse_)
+    last_scrollbar_under_mouse_->MouseUp(event);
+
   LayoutPoint position_in_contents =
       v->ConvertFromRootFrame(FlooredIntPoint(event.PositionInRootFrame()));
   HitTestRequest request(HitTestRequest::kActive);
