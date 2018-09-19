@@ -124,6 +124,7 @@ class AssistantManagerServiceImpl
   bool IsSettingSupported(const std::string& setting_id) override;
   bool SupportsModifySettings() override;
   void OnNotificationRemoved(const std::string& grouping_key) override;
+  void OnCommunicationError(int error_code) override;
   // Last search source will be cleared after it is retrieved.
   std::string GetLastSearchSource() override;
 
@@ -171,6 +172,7 @@ class AssistantManagerServiceImpl
   void OnShowNotificationOnMainThread(
       const mojom::AssistantNotificationPtr& notification);
   void OnNotificationRemovedOnMainThread(const std::string& grouping_id);
+  void OnCommunicationErrorOnMainThread(int error_code);
   void OnRecognitionStateChangedOnMainThread(
       assistant_client::ConversationStateListener::RecognitionState state,
       const assistant_client::ConversationStateListener::RecognitionResult&
