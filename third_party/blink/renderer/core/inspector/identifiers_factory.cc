@@ -27,6 +27,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/process/process_handle.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -94,7 +95,12 @@ String IdentifiersFactory::IdFromToken(const base::UnguessableToken& token) {
 }
 
 // static
-String IdentifiersFactory::AddProcessIdPrefixTo(int id) {
+int IdentifiersFactory::IntIdForNode(Node* node) {
+  return static_cast<int>(DOMNodeIds::IdForNode(node));
+}
+
+// static
+String IdentifiersFactory::AddProcessIdPrefixTo(uint64_t id) {
   uint32_t process_id = base::GetUniqueIdForProcess();
 
   StringBuilder builder;
@@ -104,17 +110,6 @@ String IdentifiersFactory::AddProcessIdPrefixTo(int id) {
   builder.AppendNumber(id);
 
   return builder.ToString();
-}
-
-// static
-int IdentifiersFactory::RemoveProcessIdPrefixFrom(const String& id, bool* ok) {
-  size_t dot_index = id.find('.');
-
-  if (dot_index == kNotFound) {
-    *ok = false;
-    return 0;
-  }
-  return id.Substring(dot_index + 1).ToInt(ok);
 }
 
 }  // namespace blink

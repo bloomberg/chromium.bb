@@ -309,7 +309,7 @@ static Vector<String> NormalizeEventTypes(
     types.push_back(ToCoreString(info[1].As<v8::String>()));
   if (info.Length() > 1 && info[1]->IsArray()) {
     v8::Local<v8::Array> types_array = v8::Local<v8::Array>::Cast(info[1]);
-    for (size_t i = 0; i < types_array->Length(); ++i) {
+    for (wtf_size_t i = 0; i < types_array->Length(); ++i) {
       v8::Local<v8::Value> type_value;
       if (!types_array->Get(info.GetIsolate()->GetCurrentContext(), i)
                .ToLocal(&type_value) ||
@@ -329,7 +329,7 @@ static Vector<String> NormalizeEventTypes(
                         "search",  "devicemotion", "deviceorientation"}));
 
   Vector<String> output_types;
-  for (size_t i = 0; i < types.size(); ++i) {
+  for (wtf_size_t i = 0; i < types.size(); ++i) {
     if (types[i] == "mouse")
       output_types.AppendVector(
           Vector<String>({"auxclick", "click", "dblclick", "mousedown",
@@ -379,7 +379,7 @@ void ThreadDebugger::SetMonitorEventsCallback(
       enabled ? kListenerFindOrCreate : kListenerFindOnly);
   if (!event_listener)
     return;
-  for (size_t i = 0; i < types.size(); ++i) {
+  for (wtf_size_t i = 0; i < types.size(); ++i) {
     if (enabled)
       event_target->addEventListener(AtomicString(types[i]), event_listener,
                                      false);
@@ -427,7 +427,7 @@ void ThreadDebugger::GetEventListenersCallback(
   v8::Local<v8::Object> result = v8::Object::New(isolate);
   AtomicString current_event_type;
   v8::Local<v8::Array> listeners;
-  size_t output_index = 0;
+  wtf_size_t output_index = 0;
   for (auto& info : listener_info) {
     if (current_event_type != info.event_type) {
       current_event_type = info.event_type;
@@ -500,7 +500,7 @@ void ThreadDebugger::startRepeatingTimer(
 }
 
 void ThreadDebugger::cancelTimer(void* data) {
-  for (size_t index = 0; index < timer_data_.size(); ++index) {
+  for (wtf_size_t index = 0; index < timer_data_.size(); ++index) {
     if (timer_data_[index] == data) {
       timers_[index]->Stop();
       timer_callbacks_.EraseAt(index);
@@ -512,7 +512,7 @@ void ThreadDebugger::cancelTimer(void* data) {
 }
 
 void ThreadDebugger::OnTimer(TimerBase* timer) {
-  for (size_t index = 0; index < timers_.size(); ++index) {
+  for (wtf_size_t index = 0; index < timers_.size(); ++index) {
     if (timers_[index].get() == timer) {
       timer_callbacks_[index](timer_data_[index]);
       return;

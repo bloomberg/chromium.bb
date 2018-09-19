@@ -238,7 +238,7 @@ static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
 
 static void MaybeEncodeTextContent(const String& text_content,
                                    const char* buffer_data,
-                                   size_t buffer_size,
+                                   wtf_size_t buffer_size,
                                    String* result,
                                    bool* base64_encoded) {
   if (!text_content.IsNull() &&
@@ -269,7 +269,8 @@ static void MaybeEncodeTextContent(const String& text_content,
 
   const SharedBuffer::DeprecatedFlatData flat_buffer(std::move(buffer));
   return MaybeEncodeTextContent(text_content, flat_buffer.Data(),
-                                flat_buffer.size(), result, base64_encoded);
+                                SafeCast<wtf_size_t>(flat_buffer.size()),
+                                result, base64_encoded);
 }
 
 // static
@@ -299,11 +300,13 @@ bool InspectorPageAgent::SharedBufferContent(
     text_content = decoder->Decode(flat_buffer.Data(), flat_buffer.size());
     text_content = text_content + decoder->Flush();
   } else if (encoding.IsValid()) {
-    text_content = encoding.Decode(flat_buffer.Data(), flat_buffer.size());
+    text_content = encoding.Decode(flat_buffer.Data(),
+                                   SafeCast<wtf_size_t>(flat_buffer.size()));
   }
 
-  MaybeEncodeTextContent(text_content, flat_buffer.Data(), flat_buffer.size(),
-                         result, base64_encoded);
+  MaybeEncodeTextContent(text_content, flat_buffer.Data(),
+                         SafeCast<wtf_size_t>(flat_buffer.size()), result,
+                         base64_encoded);
   return true;
 }
 
@@ -323,7 +326,8 @@ bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
       return false;
 
     const SharedBuffer::DeprecatedFlatData flat_buffer(std::move(buffer));
-    *result = Base64Encode(flat_buffer.Data(), flat_buffer.size());
+    *result = Base64Encode(flat_buffer.Data(),
+                           SafeCast<wtf_size_t>(flat_buffer.size()));
     *base64_encoded = true;
     return true;
   }
@@ -671,7 +675,7 @@ HeapVector<Member<Document>> InspectorPageAgent::ImportsForFrame(
   Document* root_document = frame->GetDocument();
 
   if (HTMLImportsController* controller = root_document->ImportsController()) {
-    for (size_t i = 0; i < controller->LoaderCount(); ++i) {
+    for (wtf_size_t i = 0; i < controller->LoaderCount(); ++i) {
       if (Document* document = controller->LoaderAt(i)->GetDocument())
         result.push_back(document);
     }
@@ -688,7 +692,7 @@ static HeapVector<Member<Resource>> CachedResourcesForFrame(LocalFrame* frame,
       InspectorPageAgent::ImportsForFrame(frame);
 
   CachedResourcesForDocument(root_document, result, skip_xhrs);
-  for (size_t i = 0; i < loaders.size(); ++i)
+  for (wtf_size_t i = 0; i < loaders.size(); ++i)
     CachedResourcesForDocument(loaders[i], result, skip_xhrs);
 
   return result;

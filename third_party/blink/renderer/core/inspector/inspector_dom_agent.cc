@@ -1064,9 +1064,8 @@ Response InspectorDOMAgent::performSearch(
       if (exception_state.HadException() || !result)
         continue;
 
-      unsigned long size = result->snapshotLength(exception_state);
-      for (unsigned long i = 0; !exception_state.HadException() && i < size;
-           ++i) {
+      wtf_size_t size = result->snapshotLength(exception_state);
+      for (wtf_size_t i = 0; !exception_state.HadException() && i < size; ++i) {
         Node* node = result->snapshotItem(i, exception_state);
         if (exception_state.HadException())
           break;
@@ -1445,7 +1444,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
   std::unique_ptr<protocol::DOM::Node> value =
       protocol::DOM::Node::create()
           .setNodeId(id)
-          .setBackendNodeId(DOMNodeIds::IdForNode(node))
+          .setBackendNodeId(IdentifiersFactory::IntIdForNode(node))
           .setNodeType(static_cast<int>(node->getNodeType()))
           .setNodeName(node->nodeName())
           .setLocalName(local_name)
@@ -1654,7 +1653,7 @@ InspectorDOMAgent::BuildArrayForDistributedNodes(
     V0InsertionPoint* insertion_point) {
   std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
       distributed_nodes = protocol::Array<protocol::DOM::BackendNode>::create();
-  for (size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i) {
+  for (wtf_size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i) {
     Node* distributed_node = insertion_point->DistributedNodeAt(i);
     if (IsWhitespace(distributed_node))
       continue;
@@ -1663,7 +1662,8 @@ InspectorDOMAgent::BuildArrayForDistributedNodes(
         protocol::DOM::BackendNode::create()
             .setNodeType(distributed_node->getNodeType())
             .setNodeName(distributed_node->nodeName())
-            .setBackendNodeId(DOMNodeIds::IdForNode(distributed_node))
+            .setBackendNodeId(
+                IdentifiersFactory::IntIdForNode(distributed_node))
             .build();
     distributed_nodes->addItem(std::move(backend_node));
   }
@@ -1687,7 +1687,7 @@ InspectorDOMAgent::BuildDistributedNodesForSlot(HTMLSlotElement* slot_element) {
           protocol::DOM::BackendNode::create()
               .setNodeType(node->getNodeType())
               .setNodeName(node->nodeName())
-              .setBackendNodeId(DOMNodeIds::IdForNode(node))
+              .setBackendNodeId(IdentifiersFactory::IntIdForNode(node))
               .build();
       distributed_nodes->addItem(std::move(backend_node));
     }
@@ -1702,7 +1702,7 @@ InspectorDOMAgent::BuildDistributedNodesForSlot(HTMLSlotElement* slot_element) {
         protocol::DOM::BackendNode::create()
             .setNodeType(node->getNodeType())
             .setNodeName(node->nodeName())
-            .setBackendNodeId(DOMNodeIds::IdForNode(node))
+            .setBackendNodeId(IdentifiersFactory::IntIdForNode(node))
             .build();
     distributed_nodes->addItem(std::move(backend_node));
   }
@@ -2116,10 +2116,10 @@ Node* InspectorDOMAgent::NodeForPath(const String& path) {
   if (!path_tokens.size())
     return nullptr;
 
-  for (size_t i = 0; i < path_tokens.size() - 1; i += 2) {
+  for (wtf_size_t i = 0; i < path_tokens.size() - 1; i += 2) {
     bool success = true;
     String& index_value = path_tokens[i];
-    unsigned child_number = index_value.ToUInt(&success);
+    wtf_size_t child_number = index_value.ToUInt(&success);
     Node* child;
     if (!success) {
       child = ShadowRootForNode(node, index_value);
@@ -2130,7 +2130,7 @@ Node* InspectorDOMAgent::NodeForPath(const String& path) {
       child = InnerFirstChild(node);
     }
     String child_name = path_tokens[i + 1];
-    for (size_t j = 0; child && j < child_number; ++j)
+    for (wtf_size_t j = 0; child && j < child_number; ++j)
       child = InnerNextSibling(child);
 
     if (!child || child->nodeName() != child_name)
@@ -2179,7 +2179,7 @@ class InspectableNode final
   }
 
  private:
-  int node_id_;
+  DOMNodeId node_id_;
 };
 
 Response InspectorDOMAgent::setInspectedNode(int node_id) {

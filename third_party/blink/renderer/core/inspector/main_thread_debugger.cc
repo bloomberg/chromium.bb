@@ -420,7 +420,7 @@ void MainThreadDebugger::QuerySelectorAllCallback(
   v8::Isolate* isolate = info.GetIsolate();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Array> nodes = v8::Array::New(isolate, element_list->length());
-  for (size_t i = 0; i < element_list->length(); ++i) {
+  for (wtf_size_t i = 0; i < element_list->length(); ++i) {
     Element* element = element_list->item(i);
     if (!CreateDataPropertyInArray(
              context, nodes, i, ToV8(element, info.Holder(), info.GetIsolate()))
@@ -462,7 +462,7 @@ void MainThreadDebugger::XpathSelectorCallback(
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Local<v8::Array> nodes = v8::Array::New(isolate);
-    size_t index = 0;
+    wtf_size_t index = 0;
     while (Node* node = result->iterateNext(exception_state)) {
       if (exception_state.HadException())
         return;

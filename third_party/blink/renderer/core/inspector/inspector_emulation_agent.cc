@@ -422,7 +422,7 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
   default_background_color_override_rgba_.Set(
       rgba->toValue()->serialize());
   // Clamping of values is done by Color() constructor.
-  int alpha = lroundf(255.0f * rgba->getA(1.0f));
+  int alpha = static_cast<int>(lroundf(255.0f * rgba->getA(1.0f)));
   GetWebViewImpl()->SetBaseBackgroundColorOverride(
       Color(rgba->getR(), rgba->getG(), rgba->getB(), alpha).Rgb());
   return Response::OK();

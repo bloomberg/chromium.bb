@@ -145,8 +145,8 @@ class NetworkResourcesData final
       downloaded_file_blob_ = std::move(blob);
     }
 
-    int RawHeaderSize() const { return raw_header_size_; }
-    void SetRawHeaderSize(int size) { raw_header_size_ = size; }
+    int64_t RawHeaderSize() const { return raw_header_size_; }
+    void SetRawHeaderSize(int64_t size) { raw_header_size_ = size; }
 
     Vector<AtomicString> Certificate() { return certificate_; }
     void SetCertificate(const Vector<AtomicString>& certificate) {
@@ -188,7 +188,7 @@ class NetworkResourcesData final
 
     String mime_type_;
     String text_encoding_name_;
-    int raw_header_size_;
+    int64_t raw_header_size_;
     int pending_encoded_data_length_;
 
     scoped_refptr<SharedBuffer> buffer_;

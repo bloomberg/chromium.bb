@@ -26,11 +26,12 @@ std::unique_ptr<v8_inspector::StringBuffer> ToV8InspectorStringBuffer(
 }
 
 String ToCoreString(const v8_inspector::StringView& string) {
-  if (string.is8Bit())
+  if (string.is8Bit()) {
     return String(reinterpret_cast<const LChar*>(string.characters8()),
-                  string.length());
+                  SafeCast<wtf_size_t>(string.length()));
+  }
   return String(reinterpret_cast<const UChar*>(string.characters16()),
-                string.length());
+                SafeCast<wtf_size_t>(string.length()));
 }
 
 String ToCoreString(std::unique_ptr<v8_inspector::StringBuffer> buffer) {

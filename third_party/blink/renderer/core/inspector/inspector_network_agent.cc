@@ -105,7 +105,7 @@ constexpr int kDefaultResourceBufferSize = 10 * 1000 * 1000;  // 10 MB
 bool Matches(const String& url, const String& pattern) {
   Vector<String> parts;
   pattern.Split("*", parts);
-  size_t pos = 0;
+  wtf_size_t pos = 0;
   for (const String& part : parts) {
     pos = url.Find(part, pos);
     if (pos == kNotFound)
@@ -234,7 +234,7 @@ class InspectorPostBodyParser
       return;
 
     parts_.Grow(request_body->Elements().size());
-    for (size_t i = 0; i < request_body->Elements().size(); i++) {
+    for (wtf_size_t i = 0; i < request_body->Elements().size(); i++) {
       const FormDataElement& data = request_body->Elements()[i];
       switch (data.type_) {
         case FormDataElement::kData:
@@ -940,8 +940,10 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
   // If we revalidated the resource and got Not modified, send content length
   // following didReceiveResponse as there will be no calls to didReceiveData
   // from the network stack.
-  if (is_not_modified && cached_resource && cached_resource->EncodedSize())
-    DidReceiveData(identifier, loader, nullptr, cached_resource->EncodedSize());
+  if (is_not_modified && cached_resource && cached_resource->EncodedSize()) {
+    DidReceiveData(identifier, loader, nullptr,
+                   static_cast<int>(cached_resource->EncodedSize()));
+  }
 }
 
 static bool IsErrorStatusCode(int status_code) {
