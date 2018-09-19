@@ -13,12 +13,8 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/apps/platform_apps/platform_app_launch.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_metrics.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -26,24 +22,6 @@
 #else
 #include "chrome/browser/ui/android/tab_model/android_live_tab_context.h"
 #endif
-
-namespace {
-
-void RecordAppLaunch(Profile* profile, const GURL& url) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)
-          ->enabled_extensions()
-          .GetAppByURL(url);
-  if (!extension)
-    return;
-
-  extensions::RecordAppLaunchType(
-      extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED, extension->GetType());
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-}
-
-}  // namespace
 
 ChromeTabRestoreServiceClient::ChromeTabRestoreServiceClient(Profile* profile)
     : profile_(profile) {}
@@ -142,5 +120,7 @@ void ChromeTabRestoreServiceClient::GetLastSession(
 }
 
 void ChromeTabRestoreServiceClient::OnTabRestored(const GURL& url) {
-  RecordAppLaunch(profile_, url);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  apps::RecordExtensionAppLaunchOnTabRestored(profile_, url);
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
