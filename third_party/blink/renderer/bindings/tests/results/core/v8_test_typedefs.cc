@@ -208,6 +208,8 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
 }
 
 static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestTypedefs", "voidMethodTestCallbackInterfaceTypeArg");
+
   TestTypedefs* impl = V8TestTypedefs::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
@@ -217,7 +219,11 @@ static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
 
   V8TestCallbackInterface* testCallbackInterfaceTypeArg;
   if (info[0]->IsObject()) {
-    testCallbackInterfaceTypeArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
+    testCallbackInterfaceTypeArg = V8TestCallbackInterface::CreateOrNull(info[0].As<v8::Object>());
+    if (!testCallbackInterfaceTypeArg) {
+      exceptionState.ThrowSecurityError("The callback provided as parameter 1 is a cross origin object.");
+      return;
+    }
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", "The callback provided as parameter 1 is not an object."));
     return;

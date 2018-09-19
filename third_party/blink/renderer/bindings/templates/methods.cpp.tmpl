@@ -152,7 +152,16 @@ if (UNLIKELY(numArgsPassed <= {{argument.index}})) {
 {% if argument.is_callback_interface %}
 {# FIXME: remove EventListener special case. crbug.com/630986 #}
 {% if argument.idl_type == 'EventListener' %}
-if (!IsUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->IsObject()) {
+if (info[{{argument.index}}]->IsNullOrUndefined()) {
+  // Just go through.
+} else if (info[{{argument.index}}]->IsObject()) {
+  // TODO(crbug.com/886588): Remove the following special casing.
+  if (info[{{argument.index}}].As<v8::Object>()->CreationContext().IsEmpty()) {
+    {{define_exception_state}}
+    exceptionState.ThrowSecurityError("The callback provided as parameter {{argument.index + 1}} is a cross origin object.");
+    return;
+  }
+} else {
   {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not an object.")}}
   return;
 }
@@ -163,7 +172,12 @@ if (!IsUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->I
 {% endif %}{# method.name #}
 {% else %}{# argument.idl_type == 'EventListener' #}
 if (info[{{argument.index}}]->IsObject()) {
-  {{argument.name}} = V8{{argument.idl_type}}::Create(info[{{argument.index}}].As<v8::Object>());
+  {{argument.name}} = V8{{argument.idl_type}}::CreateOrNull(info[{{argument.index}}].As<v8::Object>());
+  if (!{{argument.name}}) {
+    {{define_exception_state}}
+    exceptionState.ThrowSecurityError("The callback provided as parameter {{argument.index + 1}} is a cross origin object.");
+    return;
+  }
 {% if argument.is_nullable %}
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.name}} = nullptr;

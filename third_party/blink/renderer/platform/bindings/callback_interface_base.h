@@ -65,6 +65,7 @@ class PLATFORM_EXPORT CallbackInterfaceBase
 
  protected:
   CallbackInterfaceBase(v8::Local<v8::Object> callback_object,
+                        v8::Local<v8::Context> callback_object_creation_context,
                         SingleOperationOrNot);
 
   // Returns true iff the callback interface is a single operation callback
