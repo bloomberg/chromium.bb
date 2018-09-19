@@ -87,16 +87,6 @@ class OmahaServiceTest : public PlatformTest {
         ->GetApplicationID();
   }
 
-  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
-      size_t index = 0) {
-    if (index >= test_url_loader_factory_.pending_requests()->size())
-      return nullptr;
-    network::TestURLLoaderFactory::PendingRequest* request =
-        &(*test_url_loader_factory_.pending_requests())[index];
-    DCHECK(request);
-    return request;
-  }
-
  protected:
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory>
@@ -235,8 +225,9 @@ TEST_F(OmahaServiceTest, SendPingSuccess) {
       "\" status=\"ok\">"
       "<updatecheck status=\"noupdate\"/><ping status=\"ok\"/>"
       "</app></response>";
+  auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest()->request.url.spec(), response);
+      pending_request->request.url.spec(), response);
 
   EXPECT_EQ(0, service.number_of_tries_);
   EXPECT_FALSE(service.current_ping_time_.is_null());
@@ -268,8 +259,9 @@ TEST_F(OmahaServiceTest, SendInstallEventSuccess) {
       "\" status=\"ok\">"
       "<event status=\"ok\"/>"
       "</app></response>";
+  auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest()->request.url.spec(), response);
+      pending_request->request.url.spec(), response);
 
   EXPECT_FALSE(service.current_ping_time_.is_null());
   EXPECT_GT(service.last_sent_time_, now);
@@ -310,8 +302,9 @@ TEST_F(OmahaServiceTest, SendPingReceiveUpdate) {
       "</manifest>"
       "</updatecheck><ping status=\"ok\"/>"
       "</app></response>";
+  auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest()->request.url.spec(), response);
+      pending_request->request.url.spec(), response);
 
   EXPECT_EQ(0, service.number_of_tries_);
   EXPECT_FALSE(service.current_ping_time_.is_null());
@@ -337,12 +330,12 @@ TEST_F(OmahaServiceTest, SendPingFailure) {
   EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
   base::Time next_tries_time = service.next_tries_time_;
 
+  auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   auto resource_response_head =
       network::CreateResourceResponseHead(net::HTTP_BAD_REQUEST);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest()->request.url,
-      network::URLLoaderCompletionStatus(net::OK), resource_response_head,
-      std::string());
+      pending_request->request.url, network::URLLoaderCompletionStatus(net::OK),
+      resource_response_head, std::string());
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
@@ -359,8 +352,9 @@ TEST_F(OmahaServiceTest, SendPingFailure) {
   EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
   next_tries_time = service.next_tries_time_;
 
+  pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest()->request.url.spec(), "Incorrect Message");
+      pending_request->request.url.spec(), "Incorrect Message");
 
   EXPECT_EQ(2, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
@@ -426,8 +420,9 @@ TEST_F(OmahaServiceTest, ActivePingAfterInstallEventTest) {
       "\" status=\"ok\">"
       "<event status=\"ok\"/>"
       "</app></response>";
+  auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest()->request.url.spec(), response);
+      pending_request->request.url.spec(), response);
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_LT(service.current_ping_time_ - now, base::TimeDelta::FromMinutes(1));
@@ -459,8 +454,9 @@ TEST_F(OmahaServiceTest, NonSpammingTest) {
       "\" status=\"ok\">"
       "<updatecheck status=\"noupdate\"/><ping status=\"ok\"/>"
       "</app></response>";
+  auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest()->request.url.spec(), response);
+      pending_request->request.url.spec(), response);
 
   EXPECT_EQ(0, service.number_of_tries_);
   EXPECT_FALSE(service.current_ping_time_.is_null());
@@ -491,8 +487,9 @@ TEST_F(OmahaServiceTest, InstallRetryTest) {
       "\" status=\"ok\">"
       "<updatecheck status=\"noupdate\"/><ping status=\"ok\"/>"
       "</app></response>";
+  auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetPendingRequest()->request.url.spec(), response);
+      pending_request->request.url.spec(), response);
 
   EXPECT_FALSE(service.IsNextPingInstallRetry());
   id1 = service.GetNextPingRequestId(OmahaService::USAGE_PING);
