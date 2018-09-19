@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/parser/preload_request.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/script/document_write_intervention.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
@@ -98,6 +99,16 @@ Resource* PreloadRequest::Start(Document* document) {
     MaybeDisallowFetchForDocWrittenScript(params, *document);
     // We intentionally ignore the returned value, because we don't resend
     // the async request to the blocked script here.
+  }
+
+  if (resource_type_ == ResourceType::kImage) {
+    if (const auto* frame = document->Loader()->GetFrame()) {
+      if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
+        params.SetClientLoFiPlaceholder();
+      } else if (!is_lazyload_attr_off_ && frame->IsLazyLoadingImageAllowed()) {
+        params.SetAllowImagePlaceholder();
+      }
+    }
   }
 
   return document->Loader()->StartPreload(resource_type_, params);

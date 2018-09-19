@@ -143,6 +143,7 @@ class TokenPreloadScanner::StartTagScanner {
         referrer_policy_(kReferrerPolicyDefault),
         integrity_attr_set_(false),
         integrity_features_(features),
+        lazyload_attr_set_to_off_(false),
         scanner_type_(scanner_type) {
     if (Match(tag_impl_, imgTag) || Match(tag_impl_, sourceTag)) {
       source_size_ = SizesAttributeParser(media_values_, String()).length();
@@ -272,6 +273,7 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetNonce(nonce_);
     request->SetCharset(Charset());
     request->SetDefer(defer_);
+    request->SetIsLazyloadAttrOff(lazyload_attr_set_to_off_);
 
     // The only link tags that should keep the integrity metadata are
     // stylesheets until crbug.com/677022 is resolved.
@@ -336,6 +338,11 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (!importance_mode_set_ && Match(attribute_name, importanceAttr) &&
                RuntimeEnabledFeatures::PriorityHintsEnabled()) {
       SetImportance(attribute_value);
+    } else if (!lazyload_attr_set_to_off_ &&
+               Match(attribute_name, lazyloadAttr) &&
+               RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
+               EqualIgnoringASCIICase(attribute_value, "off")) {
+      lazyload_attr_set_to_off_ = true;
     }
   }
 
@@ -629,6 +636,7 @@ class TokenPreloadScanner::StartTagScanner {
   bool integrity_attr_set_;
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
+  bool lazyload_attr_set_to_off_;
   TokenPreloadScanner::ScannerType scanner_type_;
 };
 

@@ -312,6 +312,9 @@ void HTMLImageElement::ParseAttribute(
     if (intrinsic_size_changed && GetLayoutObject() &&
         GetLayoutObject()->IsLayoutImage())
       ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();
+  } else if (name == lazyloadAttr &&
+             EqualIgnoringASCIICase(params.new_value, "off")) {
+    GetImageLoader().LoadDeferredImage(referrer_policy_);
   } else {
     HTMLElement::ParseAttribute(params);
   }

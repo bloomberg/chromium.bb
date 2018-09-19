@@ -121,6 +121,10 @@ class CORE_EXPORT PreloadRequest {
     return is_image_set_ == ResourceFetcher::kImageIsImageSet;
   }
 
+  void SetIsLazyloadAttrOff(bool is_lazyload_attr_off) {
+    is_lazyload_attr_off_ = is_lazyload_attr_off;
+  }
+
  private:
   PreloadRequest(const String& initiator_name,
                  const TextPosition& initiator_position,
@@ -148,7 +152,8 @@ class CORE_EXPORT PreloadRequest {
         referrer_policy_(referrer_policy),
         referrer_source_(referrer_source),
         from_insertion_scanner_(false),
-        is_image_set_(is_image_set) {}
+        is_image_set_(is_image_set),
+        is_lazyload_attr_off_(false) {}
 
   KURL CompleteURL(Document*);
 
@@ -171,6 +176,7 @@ class CORE_EXPORT PreloadRequest {
   IntegrityMetadataSet integrity_metadata_;
   bool from_insertion_scanner_;
   ResourceFetcher::IsImageSet is_image_set_;
+  bool is_lazyload_attr_off_;
 };
 
 typedef Vector<std::unique_ptr<PreloadRequest>> PreloadRequestStream;
