@@ -395,6 +395,9 @@ class WebMediaPlayer {
   // Test helper methods for exercising media suspension.
   virtual void ForceStaleStateForTesting(ReadyState target_state) {}
   virtual bool IsSuspendedForTesting() { return false; }
+
+  virtual bool DidLazyLoad() const { return false; }
+  virtual void OnBecameVisible() {}
 };
 
 }  // namespace blink

@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -524,7 +525,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       autoplay_policy_(new AutoplayPolicy(this)),
       remote_playback_client_(nullptr),
       media_controls_(nullptr),
-      controls_list_(HTMLMediaElementControlsList::Create(this)) {
+      controls_list_(HTMLMediaElementControlsList::Create(this)),
+      lazy_load_visibility_observer_(nullptr) {
   BLINK_MEDIA_LOG << "HTMLMediaElement(" << (void*)this << ")";
 
   LocalFrame* frame = document.GetFrame();
@@ -1303,7 +1305,8 @@ void HTMLMediaElement::StartPlayerLoad() {
 
   web_media_player_->SetPoster(PosterImageURL());
 
-  web_media_player_->SetPreload(EffectivePreloadType());
+  const auto preload = EffectivePreloadType();
+  web_media_player_->SetPreload(preload);
 
   web_media_player_->RequestRemotePlaybackDisabled(
       FastHasAttribute(disableremoteplaybackAttr));
@@ -1877,6 +1880,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
 
   bool should_update_display_state = false;
 
+  bool is_potentially_playing = PotentiallyPlaying();
   if (ready_state_ >= kHaveCurrentData && old_state < kHaveCurrentData &&
       !have_fired_loaded_data_) {
     // Force an update to official playback position to catch non-zero start
@@ -1888,9 +1892,19 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
     should_update_display_state = true;
     ScheduleEvent(EventTypeNames::loadeddata);
     SetShouldDelayLoadEvent(false);
+
+    // If the player did a lazy load, it's expecting to be called when the
+    // element actually becomes visible to complete the load.
+    if (IsHTMLVideoElement() && web_media_player_->DidLazyLoad() &&
+        !is_potentially_playing) {
+      lazy_load_visibility_observer_ = new ElementVisibilityObserver(
+          this,
+          WTF::BindRepeating(&HTMLMediaElement::OnVisibilityChangedForLazyLoad,
+                             WrapWeakPersistent(this)));
+      lazy_load_visibility_observer_->Start();
+    }
   }
 
-  bool is_potentially_playing = PotentiallyPlaying();
   if (ready_state_ == kHaveFutureData && old_state <= kHaveCurrentData &&
       tracks_are_ready) {
     ScheduleEvent(EventTypeNames::canplay);
@@ -2458,6 +2472,12 @@ base::Optional<DOMExceptionCode> HTMLMediaElement::Play() {
 
 void HTMLMediaElement::PlayInternal() {
   BLINK_MEDIA_LOG << "playInternal(" << (void*)this << ")";
+
+  // Playback aborts any lazy loading.
+  if (lazy_load_visibility_observer_) {
+    lazy_load_visibility_observer_->Stop();
+    lazy_load_visibility_observer_ = nullptr;
+  }
 
   // 4.8.12.8. Playing the media resource
   if (network_state_ == kNetworkEmpty)
@@ -3527,6 +3547,10 @@ void HTMLMediaElement::StopPeriodicTimers() {
   progress_event_timer_.Stop();
   playback_progress_timer_.Stop();
   check_viewport_intersection_timer_.Stop();
+  if (lazy_load_visibility_observer_) {
+    lazy_load_visibility_observer_->Stop();
+    lazy_load_visibility_observer_ = nullptr;
+  }
 }
 
 void HTMLMediaElement::
@@ -3968,6 +3992,7 @@ void HTMLMediaElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(autoplay_policy_);
   visitor->Trace(media_controls_);
   visitor->Trace(controls_list_);
+  visitor->Trace(lazy_load_visibility_observer_);
   visitor->template RegisterWeakMembers<HTMLMediaElement,
                                         &HTMLMediaElement::ClearWeakMembers>(
       this);
@@ -4255,6 +4280,15 @@ void HTMLMediaElement::CheckViewportIntersectionTimerFired(TimerBase*) {
   mostly_filling_viewport_ = is_mostly_filling_viewport;
   if (web_media_player_)
     web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
+}
+
+void HTMLMediaElement::OnVisibilityChangedForLazyLoad(bool is_visible) {
+  if (!is_visible || !web_media_player_)
+    return;
+
+  web_media_player_->OnBecameVisible();
+  lazy_load_visibility_observer_->Stop();
+  lazy_load_visibility_observer_ = nullptr;
 }
 
 STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveNothing,

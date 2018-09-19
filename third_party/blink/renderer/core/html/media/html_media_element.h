@@ -58,6 +58,7 @@ class AudioTrackList;
 class AutoplayPolicy;
 class ContentType;
 class CueTimeline;
+class ElementVisibilityObserver;
 class EnumerationHistogram;
 class Event;
 class EventQueue;
@@ -557,6 +558,8 @@ class CORE_EXPORT HTMLMediaElement
 
   EnumerationHistogram& ShowControlsHistogram() const;
 
+  void OnVisibilityChangedForLazyLoad(bool);
+
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
   TaskRunnerTimer<HTMLMediaElement> progress_event_timer_;
   TaskRunnerTimer<HTMLMediaElement> playback_progress_timer_;
@@ -750,6 +753,8 @@ class CORE_EXPORT HTMLMediaElement
 
   Member<MediaControls> media_controls_;
   Member<HTMLMediaElementControlsList> controls_list_;
+
+  Member<ElementVisibilityObserver> lazy_load_visibility_observer_;
 
   static URLRegistry* media_stream_registry_;
 };

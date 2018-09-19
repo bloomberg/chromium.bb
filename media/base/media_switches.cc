@@ -213,8 +213,9 @@ const base::Feature kPictureInPicture {
 #endif
 };
 
-const base::Feature kPreloadMetadataSuspend{"PreloadMetadataSuspend",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+// Only decode preload=metadata elements upon visibility?
+const base::Feature kPreloadMetadataLazyLoad{"PreloadMetadataLazyLoad",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Let videos be resumed via remote controls (for example, the notification)
 // when in background.

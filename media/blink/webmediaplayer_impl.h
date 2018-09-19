@@ -286,6 +286,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void ForceStaleStateForTesting(ReadyState target_state) override;
   bool IsSuspendedForTesting() override;
 
+  bool DidLazyLoad() const override;
+  void OnBecameVisible() override;
+
   // Called from WebMediaPlayerCast.
   // TODO(hubbe): WMPI_CAST make private.
   void OnPipelineSeeked(bool time_updated);
@@ -926,6 +929,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // True if a frame has ever been rendered.
   bool has_first_frame_ = false;
+
+  // True if we have not yet rendered a first frame, but one is needed. Set back
+  // to false as soon as |has_first_frame_| is set to true.
+  bool needs_first_frame_ = false;
+
+  // True if StartPipeline() completed a lazy load startup.
+  bool did_lazy_load_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
