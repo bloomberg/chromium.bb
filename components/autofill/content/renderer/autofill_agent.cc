@@ -669,6 +669,58 @@ void AutofillAgent::SetFocusRequiresScroll(bool require) {
   focus_requires_scroll_ = require;
 }
 
+void AutofillAgent::GetElementFormAndFieldData(
+    const std::vector<std::string>& selectors,
+    GetElementFormAndFieldDataCallback callback) {
+  FormData form;
+  FormFieldData field;
+  blink::WebElement target_element = FindUniqueWebElement(selectors);
+  if (target_element.IsNull() || !target_element.IsFormControlElement()) {
+    return std::move(callback).Run(form, field);
+  }
+
+  blink::WebFormControlElement target_form_control_element =
+      target_element.To<blink::WebFormControlElement>();
+  form_util::FindFormAndFieldForFormControlElement(target_form_control_element,
+                                                   &form, &field);
+  return std::move(callback).Run(form, field);
+}
+
+blink::WebElement AutofillAgent::FindUniqueWebElement(
+    const std::vector<std::string>& selectors) {
+  DCHECK(selectors.size() > 0);
+
+  blink::WebVector<blink::WebElement> elements =
+      render_frame()->GetWebFrame()->GetDocument().QuerySelectorAll(
+          blink::WebString::FromUTF8(selectors[0]));
+  if (elements.size() != 1) {
+    return blink::WebElement();
+  }
+
+  // Get the unique element in |elements| and match the next selector inside it
+  // if there are remaining selectors haven't been matched.
+  blink::WebElement query_element = elements[0];
+  for (size_t i = 1; i < selectors.size(); i++) {
+    elements = query_element.QuerySelectorAll(
+        blink::WebString::FromUTF8(selectors[i]));
+
+    // Query shadow DOM if necessary.
+    if (elements.size() == 0 && !query_element.ShadowRoot().IsNull()) {
+      elements = query_element.ShadowRoot().QuerySelectorAll(
+          blink::WebString::FromUTF8(selectors[i]));
+    }
+
+    // Return an empty element if there are multiple matching elements.
+    if (elements.size() != 1) {
+      return blink::WebElement();
+    }
+
+    query_element = elements[0];
+  }
+
+  return query_element;
+}
+
 void AutofillAgent::QueryAutofillSuggestions(
     const WebFormControlElement& element,
     bool autoselect_first_suggestion) {

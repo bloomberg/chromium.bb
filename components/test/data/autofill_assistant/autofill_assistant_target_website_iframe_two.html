@@ -10,27 +10,6 @@ found in the LICENSE file.
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Autofill Assistant Test</title>
-
-    <script>
-      var createShadowDom = function() {
-      var shadowSection = document.getElementById("shadowsection");
-      var shadowRoot = shadowSection.attachShadow({mode: 'open'});
-      shadowRoot.innerHTML =
-          '<button id="shadowbutton" type="button" onclick="removeButton()">\
-          Test Button</button>';
-      }
-
-      var removeButton = function() {
-        var button = document.getElementById("button");
-        button.parentNode.removeChild(button);
-      }
-    </script>
-
-    <style>
-      #full_height_section {
-        height: 100vh;
-      }
-    </style>
   </head>
 
   <body onload="createShadowDom()">
@@ -61,18 +40,5 @@ found in the LICENSE file.
     <div>
       <button id="button" type="button">Test Button</button><br>
     </div>
-
-    <hr>
-    <div id="shadowsection"></div>
-
-    <!--
-    Intentionally make this section has the full height of the window
-    to force scroll when operating on the elements below not in this
-    section.
-    -->
-    <div id="full_height_section">
-      <p>Blank Section
-    </div>
-    <div id="focus">Hidden Text</div>
   </body>
 </html>

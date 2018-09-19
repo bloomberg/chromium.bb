@@ -19,6 +19,12 @@
 
 namespace content {
 class WebContents;
+class RenderFrameHost;
+}  // namespace content
+
+namespace autofill {
+struct FormData;
+struct FormFieldData;
 }
 
 namespace autofill_assistant {
@@ -79,8 +85,31 @@ class WebController {
       base::OnceCallback<void(const std::vector<std::string>&)> callback);
 
  private:
+  friend class WebControllerBrowserTest;
+
+  struct FindElementResult {
+    FindElementResult() = default;
+    ~FindElementResult() = default;
+
+    // The render frame host contains the element.
+    content::RenderFrameHost* container_frame_host;
+
+    // The selector index in the given selectors corresponding to the container
+    // frame. Zero indicates the element is in main frame or the first element
+    // is the container frame selector. Compare main frame with the above
+    // |container_frame_host| to distinguish them.
+    size_t container_frame_selector_index;
+
+    // The object id of the element.
+    std::string object_id;
+  };
+  using FindElementCallback =
+      base::OnceCallback<void(std::unique_ptr<FindElementResult>)>;
+
   void OnFindElementForClick(base::OnceCallback<void(bool)> callback,
-                             std::string object_id);
+                             std::unique_ptr<FindElementResult> result);
+  void ClickObject(const std::string& object_id,
+                   base::OnceCallback<void(bool)> callback);
   void OnScrollIntoView(base::OnceCallback<void(bool)> callback,
                         std::string object_id,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
@@ -95,35 +124,61 @@ class WebController {
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<input::DispatchMouseEventResult> result);
   void OnFindElementForExist(base::OnceCallback<void(bool)> callback,
-                             std::string object_id);
+                             std::unique_ptr<FindElementResult> result);
   void FindElement(const std::vector<std::string>& selectors,
-                   base::OnceCallback<void(std::string)> callback);
+                   FindElementCallback callback);
   void OnGetDocument(const std::vector<std::string>& selectors,
-                     base::OnceCallback<void(std::string)> callback,
+                     FindElementCallback callback,
                      std::unique_ptr<dom::GetDocumentResult> result);
   void RecursiveFindElement(int node_id,
                             size_t index,
                             const std::vector<std::string>& selectors,
-                            base::OnceCallback<void(std::string)> callback);
+                            std::unique_ptr<FindElementResult> element_result,
+                            FindElementCallback callback);
   void OnQuerySelectorAll(size_t index,
                           const std::vector<std::string>& selectors,
-                          base::OnceCallback<void(std::string)> callback,
+                          std::unique_ptr<FindElementResult> element_result,
+                          FindElementCallback callback,
                           std::unique_ptr<dom::QuerySelectorAllResult> result);
-  void OnResolveNode(base::OnceCallback<void(std::string)> callback,
+  void OnResolveNode(std::unique_ptr<FindElementResult> element_result,
+                     FindElementCallback callback,
                      std::unique_ptr<dom::ResolveNodeResult> result);
   void OnDescribeNode(int node_id,
                       size_t index,
                       const std::vector<std::string>& selectors,
-                      base::OnceCallback<void(std::string)> callback,
+                      std::unique_ptr<FindElementResult> element_result,
+                      FindElementCallback callback,
                       std::unique_ptr<dom::DescribeNodeResult> result);
+  content::RenderFrameHost* FindCorrespondingRenderFrameHost(
+      std::string name,
+      std::string document_url);
   void OnPushNodesByBackendIds(
       size_t index,
       const std::vector<std::string>& selectors,
-      base::OnceCallback<void(std::string)> callback,
+      std::unique_ptr<FindElementResult> element_result,
+      FindElementCallback callback,
       std::unique_ptr<dom::PushNodesByBackendIdsToFrontendResult> result);
   void OnResult(bool result, base::OnceCallback<void(bool)> callback);
-  void OnFindElementForFocusElement(base::OnceCallback<void(bool)> callback,
-                                    std::string object_id);
+  void OnFindElementForFillingForm(
+      const std::string& autofill_data_guid,
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<FindElementResult> element_result);
+  void OnClickObjectForFillingForm(
+      const std::string& autofill_data_guid,
+      const std::vector<std::string>& selectors,
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<FindElementResult> element_result,
+      bool click_result);
+  void OnGetFormAndFieldDataForFillingForm(
+      const std::string& autofill_data_guid,
+      base::OnceCallback<void(bool)> callback,
+      content::RenderFrameHost* container_frame_host,
+      const autofill::FormData& form_data,
+      const autofill::FormFieldData& form_field);
+  void OnFindElementForFocusElement(
+      base::OnceCallback<void(bool)> callback,
+      std::unique_ptr<FindElementResult> element_result);
   void OnFocusElement(base::OnceCallback<void(bool)> callback,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
 

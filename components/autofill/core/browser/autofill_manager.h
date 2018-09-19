@@ -110,6 +110,11 @@ class AutofillManager : public AutofillHandler,
                           const FormData& form,
                           const FormFieldData& field);
 
+  // Called from autofill assistant.
+  virtual void FillProfileForm(const std::string& guid,
+                               const FormData& form,
+                               const FormFieldData& field);
+
   // Returns true if the value/identifier is deletable. Fills out
   // |title| and |body| with relevant user-facing text.
   bool GetDeletionConfirmationText(const base::string16& value,
