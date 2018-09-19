@@ -474,7 +474,6 @@
 <translation id="4797039098279997504">Докоснете, за да се върнете към <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Име върху картата</translation>
 <translation id="4807963036345170158">Функцията Икономия на данни е изключена</translation>
-<translation id="4811736444948656478">Навигационният панел е отворен върху долната половина на екрана</translation>
 <translation id="4816465935029283692">Типове данни</translation>
 <translation id="4837753911714442426">Отваряне на опциите за отпечатване на страницата</translation>
 <translation id="4842092870884894799">Изскачащият прозорец за генериране на пароли е показан</translation>
@@ -659,7 +658,6 @@
 <translation id="6177111841848151710">Блокирано за текущата търсеща машина</translation>
 <translation id="6177390657002841081">Включване на Икономия на данни</translation>
 <translation id="6181444274883918285">Добавяне на изключение за сайт</translation>
-<translation id="618555311922999635">Навигационният панел е отворен на цял екран</translation>
 <translation id="6192333916571137726">Изтегляне на файл</translation>
 <translation id="6192792657125177640">Изключения</translation>
 <translation id="6206551242102657620">Връзката е защитена. Информация за сайта</translation>
@@ -910,7 +908,6 @@
 <translation id="8073388330009372546">Отваряне в нов раздел</translation>
 <translation id="8084114998886531721">Запазена парола</translation>
 <translation id="8087000398470557479">Това съдържание се показва от Google, а източникът му е <ph name="DOMAIN_NAME" />.</translation>
-<translation id="8100932616285851614">Затворихте панела за навигация</translation>
 <translation id="8103578431304235997">Раздел в режим „инкогнито“</translation>
 <translation id="8105951947646329362">Предложения за сродни страници</translation>
 <translation id="8109613176066109935">Включете синхронизирането, за да получите отметките си на всичките си устройства</translation>
@@ -936,7 +933,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и още сайтове</translation>
 <translation id="8339163506404995330">Страниците на <ph name="LANGUAGE" /> няма да се превеждат</translation>
 <translation id="8349013245300336738">Сортиране по количеството използвани данни</translation>
-<translation id="8363501664269050863">Навигационен панел. Прекарайте пръст надолу, за да го затворите.</translation>
 <translation id="8372893542064058268">Разрешаване на синхронизирането на заден план за конкретен сайт.</translation>
 <translation id="8374821112118309944">Трябва да актуализирате TalkBack до по-нова версия.</translation>
 <translation id="8393700583063109961">Изпратете съобщение</translation>

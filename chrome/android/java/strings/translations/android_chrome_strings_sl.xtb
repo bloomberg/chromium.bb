@@ -473,7 +473,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4797039098279997504">Dotaknite se, če se želite vrniti na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Ime na kartici</translation>
 <translation id="4807963036345170158">Varčevanje s podatki je izklopljeno</translation>
-<translation id="4811736444948656478">Podokno za krmarjenje je odprto pri polovični višini</translation>
 <translation id="4816465935029283692">Vrste podatkov</translation>
 <translation id="4837753911714442426">Odpiranje možnosti za tiskanje strani</translation>
 <translation id="4842092870884894799">Prikaz pojavnega okna za ustvarjanje gesel</translation>
@@ -635,6 +634,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="5956665950594638604">Odpiranje centra za pomoč za Chrome na nov. zavih.</translation>
 <translation id="5958275228015807058">Iskanje datotek in strani v prenosih</translation>
 <translation id="5962718611393537961">Dotik za strnitev</translation>
+<translation id="5990142338020175451">Bolj osebne Googlove storitve, kot so boljši predlogi strani</translation>
 <translation id="6000066717592683814">Ohrani Google</translation>
 <translation id="6005538289190791541">Predlagano geslo</translation>
 <translation id="6039379616847168523">Premik na naslednji zavihek</translation>
@@ -657,7 +657,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="6177111841848151710">Blokirano za trenutni iskalnik</translation>
 <translation id="6177390657002841081">Vklop varčevanja s podatki</translation>
 <translation id="6181444274883918285">Dodaj izjemo za spletno mesto</translation>
-<translation id="618555311922999635">Podokno za krmarjenje je odprto pri polni višini</translation>
 <translation id="6192333916571137726">Datoteka Odjemanje</translation>
 <translation id="6192792657125177640">Izjeme</translation>
 <translation id="6206551242102657620">Povezava je varna. Podatki o spletnem mestu.</translation>
@@ -908,7 +907,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8073388330009372546">Odpri sliko na novem zavihku</translation>
 <translation id="8084114998886531721">Shranjeno geslo</translation>
 <translation id="8087000398470557479">Ta vsebina je iz domene <ph name="DOMAIN_NAME" /> in jo prikazuje Google.</translation>
-<translation id="8100932616285851614">Podokno za krmarjenje je zaprto</translation>
 <translation id="8103578431304235997">Zavihek brez beleženja zgodovine</translation>
 <translation id="8105951947646329362">Predlaganje sorodnih strani</translation>
 <translation id="8109613176066109935">Če želite dostopati do zaznamkov v vseh napravah, vklopite sinhronizacijo</translation>
@@ -934,7 +932,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> in več spletnih mest</translation>
 <translation id="8339163506404995330">Strani v jeziku <ph name="LANGUAGE" /> ne bodo prevedene</translation>
 <translation id="8349013245300336738">Razvrsti glede na količino prenesenih podatkov</translation>
-<translation id="8363501664269050863">Podokno za krmarjenje. Zaprete ga tako, da povlečete dol.</translation>
 <translation id="8372893542064058268">Dovoli sinhroniziranje v ozadju za določeno spletno mesto.</translation>
 <translation id="8374821112118309944">TalkBack morate posodobiti na novejšo različico.</translation>
 <translation id="8393700583063109961">Pošlji sporočilo</translation>

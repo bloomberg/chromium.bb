@@ -474,7 +474,6 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4797039098279997504">Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Nome sulla carta di credito</translation>
 <translation id="4807963036345170158">Risparmio dati disattivato</translation>
-<translation id="4811736444948656478">Riquadro di navigazione aperto nella metà inferiore dello schermo</translation>
 <translation id="4816465935029283692">Tipi di dati</translation>
 <translation id="4837753911714442426">Apri la pagina delle opzioni di stampa</translation>
 <translation id="4842092870884894799">È mostrato il popup di generazione della password</translation>
@@ -636,6 +635,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5956665950594638604">Apri Centro assistenza di Chrome in nuova scheda</translation>
 <translation id="5958275228015807058">Puoi trovare i tuoi file e le tue pagine nella cartella Download</translation>
 <translation id="5962718611393537961">Tocca per comprimere</translation>
+<translation id="5990142338020175451">Più servizi Google personali, ad esempio suggerimenti di pagine migliori</translation>
 <translation id="6000066717592683814">Mantieni Google</translation>
 <translation id="6005538289190791541">Password consigliata</translation>
 <translation id="6039379616847168523">Vai alla scheda successiva</translation>
@@ -658,7 +658,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="6177111841848151710">Bloccata per il motore di ricerca corrente</translation>
 <translation id="6177390657002841081">Attiva Risparmio dati</translation>
 <translation id="6181444274883918285">Aggiungi eccezione per un sito</translation>
-<translation id="618555311922999635">Riquadro di navigazione aperto a schermo intero</translation>
 <translation id="6192333916571137726">Scarica file</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
 <translation id="6206551242102657620">La connessione è sicura. Informazioni sul sito</translation>
@@ -909,7 +908,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8073388330009372546">Immagine in nuova scheda</translation>
 <translation id="8084114998886531721">Password salvata</translation>
 <translation id="8087000398470557479">Questi contenuti derivano da <ph name="DOMAIN_NAME" /> e sono offerti da Google.</translation>
-<translation id="8100932616285851614">Riquadro di navigazione chiuso</translation>
 <translation id="8103578431304235997">Scheda di navigazione in incognito</translation>
 <translation id="8105951947646329362">Suggerisci pagine correlate</translation>
 <translation id="8109613176066109935">Attiva la sincronizzazione per trovare i tuoi preferiti su tutti i dispositivi</translation>
@@ -935,7 +933,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> e altri siti</translation>
 <translation id="8339163506404995330">Le pagine in <ph name="LANGUAGE" /> non verranno tradotte</translation>
 <translation id="8349013245300336738">Ordina per quantità di dati utilizzati</translation>
-<translation id="8363501664269050863">Riquadro di navigazione. Scorri verso il basso per chiudere.</translation>
 <translation id="8372893542064058268">Consenti la sincronizzazione in background per un sito specifico.</translation>
 <translation id="8374821112118309944">Aggiorna TalkBack a una versione più recente.</translation>
 <translation id="8393700583063109961">Invia messaggio</translation>

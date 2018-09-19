@@ -474,7 +474,6 @@
 <translation id="4797039098279997504">Нажмите, чтобы вернуться на страницу <ph name="URL_OF_THE_CURRENT_TAB" />.</translation>
 <translation id="4807098396393229769">Имя владельца</translation>
 <translation id="4807963036345170158">Режим экономии трафика отключен</translation>
-<translation id="4811736444948656478">Панель навигации открыта наполовину</translation>
 <translation id="4816465935029283692">Типы данных</translation>
 <translation id="4837753911714442426">Открыть параметры печати страницы</translation>
 <translation id="4842092870884894799">Открыто всплывающее окно создания пароля</translation>
@@ -636,6 +635,7 @@
 <translation id="5956665950594638604">Открыть Справочный центр Chrome в новой вкладке</translation>
 <translation id="5958275228015807058">Скачанные файлы и веб-страницы хранятся в одноименном разделе</translation>
 <translation id="5962718611393537961">Нажмите, чтобы свернуть</translation>
+<translation id="5990142338020175451">Расширенная персонализация сервисов Google, например более актуальные подсказки на странице быстрого доступа.</translation>
 <translation id="6000066717592683814">Использовать Google</translation>
 <translation id="6005538289190791541">Предложенный пароль</translation>
 <translation id="6039379616847168523">Перейти к следующей вкладке</translation>
@@ -658,7 +658,6 @@
 <translation id="6177111841848151710">Закрыт доступ для текущей поисковой системы</translation>
 <translation id="6177390657002841081">Включить режим экономии трафика</translation>
 <translation id="6181444274883918285">Добавить исключение</translation>
-<translation id="618555311922999635">Панель навигации открыта полностью</translation>
 <translation id="6192333916571137726">Скачивание файла</translation>
 <translation id="6192792657125177640">Исключения</translation>
 <translation id="6206551242102657620">Подключение защищено. Информация о сайте</translation>
@@ -909,7 +908,6 @@
 <translation id="8073388330009372546">Открыть в новой вкладке</translation>
 <translation id="8084114998886531721">Сохраненный пароль</translation>
 <translation id="8087000398470557479">Контент с сайта <ph name="DOMAIN_NAME" />. Получен с помощью Google.</translation>
-<translation id="8100932616285851614">Панель навигации закрыта</translation>
 <translation id="8103578431304235997">Вкладка инкогнито</translation>
 <translation id="8105951947646329362">Предлагать похожие страницы</translation>
 <translation id="8109613176066109935">Чтобы получить доступ к закладкам на всех устройствах, включите синхронизацию.</translation>
@@ -935,7 +933,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и другие сайты</translation>
 <translation id="8339163506404995330">Страницы на этом языке (<ph name="LANGUAGE" />) не будут переводиться автоматически</translation>
 <translation id="8349013245300336738">Сортировать по объему использованного трафика</translation>
-<translation id="8363501664269050863">Панель навигации. Чтобы закрыть ее, проведите вниз по экрану.</translation>
 <translation id="8372893542064058268">Разрешить фоновую синхронизацию для конкретного сайта.</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
 <translation id="8393700583063109961">Отправить сообщение</translation>

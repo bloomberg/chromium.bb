@@ -474,7 +474,6 @@
 <translation id="4797039098279997504">Торкніться, щоб повернутися на сторінку <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Ім'я на картці</translation>
 <translation id="4807963036345170158">Заощадження трафіку вимкнено</translation>
-<translation id="4811736444948656478">Панель навігації відкрито на половину екрана</translation>
 <translation id="4816465935029283692">Типи даних</translation>
 <translation id="4837753911714442426">Відкрити налаштування друку сторінки</translation>
 <translation id="4842092870884894799">Показ спливаючих вікон для створення пароля</translation>
@@ -636,6 +635,7 @@
 <translation id="5956665950594638604">Відкрити Довідковий центр Chrome у новій вкладці</translation>
 <translation id="5958275228015807058">Знаходьте свої файли та сторінки в розділі "Завантаження"</translation>
 <translation id="5962718611393537961">Торкніться, щоб згорнути</translation>
+<translation id="5990142338020175451">Більш персоналізовані сервіси Google, як-от кращі пропозиції сторінок</translation>
 <translation id="6000066717592683814">Залишити Google</translation>
 <translation id="6005538289190791541">Запропонований пароль</translation>
 <translation id="6039379616847168523">Перейти до наступної вкладки</translation>
@@ -658,7 +658,6 @@
 <translation id="6177111841848151710">Заблоковано для поточної пошукової системи</translation>
 <translation id="6177390657002841081">Увімкнути Заощадження трафіку</translation>
 <translation id="6181444274883918285">Додати сайт у список винятків</translation>
-<translation id="618555311922999635">Панель навігації відкрито на весь екран</translation>
 <translation id="6192333916571137726">Завантажити файл</translation>
 <translation id="6192792657125177640">Винятки</translation>
 <translation id="6206551242102657620">З’єднання безпечне. Інформація про сайт</translation>
@@ -909,7 +908,6 @@
 <translation id="8073388330009372546">Відкрити в новій вкладці</translation>
 <translation id="8084114998886531721">Збережений пароль</translation>
 <translation id="8087000398470557479">Це вміст із сайту <ph name="DOMAIN_NAME" />, який доставляє Google.</translation>
-<translation id="8100932616285851614">Панель навігації закрито</translation>
 <translation id="8103578431304235997">Анонімна вкладка</translation>
 <translation id="8105951947646329362">Пропонувати схожі сторінки</translation>
 <translation id="8109613176066109935">Щоб мати доступ до закладок на всіх своїх пристроях, увімкніть синхронізацію</translation>
@@ -935,7 +933,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> та інші сайти</translation>
 <translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>
 <translation id="8349013245300336738">Сортувати за кількістю використаного трафіку</translation>
-<translation id="8363501664269050863">Панель навігації. Проведіть пальцем униз, щоб закрити.</translation>
 <translation id="8372893542064058268">сайті.</translation>
 <translation id="8374821112118309944">Потрібно оновити додаток TalkBack до новішої версії.</translation>
 <translation id="8393700583063109961">Надіслати повідомлення</translation>

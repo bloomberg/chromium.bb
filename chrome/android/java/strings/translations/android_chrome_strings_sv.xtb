@@ -474,7 +474,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4797039098279997504">Tryck här om du vill återgå till <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Namn på kort</translation>
 <translation id="4807963036345170158">Databesparing är inaktiverat</translation>
-<translation id="4811736444948656478">Navigeringspanelen har öppnats och tar upp halva skärmen</translation>
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4837753911714442426">Öppna utskriftsalternativ</translation>
 <translation id="4842092870884894799">Visar popupfönster för lösenordsgenerering</translation>
@@ -636,6 +635,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5956665950594638604">Öppna hjälpcentret för Chrome på en ny flik</translation>
 <translation id="5958275228015807058">Du hittar filerna och sidorna i Nedladdningar</translation>
 <translation id="5962718611393537961">Tryck här om du vill komprimera</translation>
+<translation id="5990142338020175451">Personligare tjänster från Google, till exempel förbättrade förslag på sidor</translation>
 <translation id="6000066717592683814">Behåll Google</translation>
 <translation id="6005538289190791541">Föreslaget lösenord</translation>
 <translation id="6039379616847168523">Hoppa till nästa flik</translation>
@@ -658,7 +658,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6177111841848151710">Blockerad för den nuvarande sökmotorn</translation>
 <translation id="6177390657002841081">Aktivera Databesparing</translation>
 <translation id="6181444274883918285">Lägg till en webbplats i undantagen</translation>
-<translation id="618555311922999635">Navigeringspanelen har öppnats och tar upp hela skärmen</translation>
 <translation id="6192333916571137726">Ladda ned fil</translation>
 <translation id="6192792657125177640">Undantag</translation>
 <translation id="6206551242102657620">Anslutningen är säker. Webbplatsinformation</translation>
@@ -909,7 +908,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8084114998886531721">Sparat lösenord</translation>
 <translation id="8087000398470557479">Innehållet kommer från <ph name="DOMAIN_NAME" /> via Google.</translation>
-<translation id="8100932616285851614">Navigeringspanelen har stängts</translation>
 <translation id="8103578431304235997">Inkognitoflik</translation>
 <translation id="8105951947646329362">Föreslå relaterade sidor</translation>
 <translation id="8109613176066109935">Aktivera synkronisering om du vill ha dina bokmärken tillgängliga på alla enheter</translation>
@@ -935,7 +933,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> och fler webbplatser</translation>
 <translation id="8339163506404995330">Sidor på <ph name="LANGUAGE" /> översätts inte</translation>
 <translation id="8349013245300336738">Sortera efter dataförbrukning</translation>
-<translation id="8363501664269050863">Navigeringspanel. Stäng genom att svepa nedåt.</translation>
 <translation id="8372893542064058268">Tillåt bakgrundssynkronisering för en specifik webbplats.</translation>
 <translation id="8374821112118309944">Du måste uppdatera till en senare version av TalkBack.</translation>
 <translation id="8393700583063109961">Skicka meddelande</translation>

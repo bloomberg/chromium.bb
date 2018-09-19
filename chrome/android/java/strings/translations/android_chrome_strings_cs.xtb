@@ -474,7 +474,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4797039098279997504">Klepnutím se vrátíte na kartu <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Jméno na kartě</translation>
 <translation id="4807963036345170158">Spořič dat je vypnutý</translation>
-<translation id="4811736444948656478">Je otevřen navigační panel na poloviční výšku</translation>
 <translation id="4816465935029283692">Typy dat</translation>
 <translation id="4837753911714442426">Otevřít možnosti tisku stránky</translation>
 <translation id="4842092870884894799">Je zobrazeno vyskakovací okno generování hesla</translation>
@@ -636,6 +635,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5956665950594638604">Otevřít centrum nápovědy Chrome na nové kartě</translation>
 <translation id="5958275228015807058">Najděte stažené soubory a stránky</translation>
 <translation id="5962718611393537961">Klepnutím sbalíte</translation>
+<translation id="5990142338020175451">Více osobních služeb Google, např. lepší návrhy stránek</translation>
 <translation id="6000066717592683814">Ponechat Google</translation>
 <translation id="6005538289190791541">Navrhované heslo</translation>
 <translation id="6039379616847168523">Přejít na další kartu</translation>
@@ -658,7 +658,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="6177111841848151710">Pro aktuální vyhledávač blokováno</translation>
 <translation id="6177390657002841081">Zapnutí Spořiče dat</translation>
 <translation id="6181444274883918285">Přidat výjimku pro konkrétní web</translation>
-<translation id="618555311922999635">Je otevřen navigační panel na plnou výšku</translation>
 <translation id="6192333916571137726">Stáhnout soubor</translation>
 <translation id="6192792657125177640">Výjimky</translation>
 <translation id="6206551242102657620">Připojení je zabezpečené. Informace o webu</translation>
@@ -909,7 +908,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8073388330009372546">Otevřít na nové kartě</translation>
 <translation id="8084114998886531721">Uložené heslo</translation>
 <translation id="8087000398470557479">Tento obsah pochází z domény <ph name="DOMAIN_NAME" />. Poskytováno společností Google.</translation>
-<translation id="8100932616285851614">Navigační panel je zavřen</translation>
 <translation id="8103578431304235997">Anonymní karta</translation>
 <translation id="8105951947646329362">Navrhovat související stránky</translation>
 <translation id="8109613176066109935">Chcete-li mít záložky ve všech zařízeních, zapněte synchronizaci</translation>
@@ -935,7 +933,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> a další weby</translation>
 <translation id="8339163506404995330">Stránky v jazyce <ph name="LANGUAGE" /> nebudou překládány</translation>
 <translation id="8349013245300336738">Seřadit podle množství využitých dat</translation>
-<translation id="8363501664269050863">Navigační panel. Zavřete přejetím prstem dolů.</translation>
 <translation id="8372893542064058268">Povolit synchronizaci na pozadí konkrétnímu webu.</translation>
 <translation id="8374821112118309944">Aplikaci TalkBack je potřeba aktualizovat na novější verzi.</translation>
 <translation id="8393700583063109961">Odeslat zprávu</translation>

@@ -474,7 +474,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4797039098279997504">Tik om terug te gaan naar <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Naam op kaart</translation>
 <translation id="4807963036345170158">Databesparing is uitgeschakeld</translation>
-<translation id="4811736444948656478">Navigatievenster geopend op halve hoogte</translation>
 <translation id="4816465935029283692">Gegevenstypen</translation>
 <translation id="4837753911714442426">Afdrukopties voor de pagina openen</translation>
 <translation id="4842092870884894799">Pop-upvenster voor wachtwoord genereren wordt weergegeven</translation>
@@ -636,6 +635,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="5956665950594638604">Helpcentrum van Chrome openen in een nieuw tabblad</translation>
 <translation id="5958275228015807058">Vind je bestanden en pagina's in Downloads</translation>
 <translation id="5962718611393537961">Tik om samen te vouwen</translation>
+<translation id="5990142338020175451">Meer persoonlijke Google-services, zoals betere paginasuggesties</translation>
 <translation id="6000066717592683814">Google blijven gebruiken</translation>
 <translation id="6005538289190791541">Voorgesteld wachtwoord</translation>
 <translation id="6039379616847168523">Naar het volgende tabblad gaan</translation>
@@ -658,7 +658,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="6177111841848151710">Geblokkeerd voor de huidige zoekmachine</translation>
 <translation id="6177390657002841081">Databesparing inschakelen</translation>
 <translation id="6181444274883918285">Site-uitzondering toevoegen</translation>
-<translation id="618555311922999635">Navigatievenster geopend op volledige hoogte</translation>
 <translation id="6192333916571137726">Bestand downloaden</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
 <translation id="6206551242102657620">De verbinding is beveiligd. Site-informatie</translation>
@@ -909,7 +908,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8073388330009372546">Openen op nieuw tabblad</translation>
 <translation id="8084114998886531721">Opgeslagen wachtwoord</translation>
 <translation id="8087000398470557479">Deze content is afkomstig van <ph name="DOMAIN_NAME" />, geleverd door Google.</translation>
-<translation id="8100932616285851614">Navigatievenster gesloten</translation>
 <translation id="8103578431304235997">Incognitotabblad</translation>
 <translation id="8105951947646329362">Gerelateerde pagina's voorstellen</translation>
 <translation id="8109613176066109935">Schakel synchronisatie in om op al je apparaten toegang tot je bladwijzers te hebben</translation>
@@ -935,7 +933,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> en meer sites</translation>
 <translation id="8339163506404995330">Pagina's in het <ph name="LANGUAGE" /> worden niet vertaald</translation>
 <translation id="8349013245300336738">Sorteren op hoeveelheid gebruikte data</translation>
-<translation id="8363501664269050863">Navigatievenster. Veeg omlaag om te sluiten.</translation>
 <translation id="8372893542064058268">Synchronisatie op de achtergrond toestaan voor een specifieke site.</translation>
 <translation id="8374821112118309944">Je moet TalkBack bijwerken naar een nieuwere versie.</translation>
 <translation id="8393700583063109961">Bericht verzenden</translation>

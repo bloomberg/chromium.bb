@@ -474,7 +474,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4797039098279997504">Klepnutím sa vrátite na kartu <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Meno na karte</translation>
 <translation id="4807963036345170158">Šetrič dát je vypnutý</translation>
-<translation id="4811736444948656478">Navigačný panel bol otvorený na polovičnú výšku</translation>
 <translation id="4816465935029283692">Typy údajov</translation>
 <translation id="4837753911714442426">Otvorenie možností tlače stránky</translation>
 <translation id="4842092870884894799">Zobrazuje sa okno generovania hesiel</translation>
@@ -658,7 +657,6 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="6177111841848151710">Blokované v aktuálnom vyhľadávači</translation>
 <translation id="6177390657002841081">Zapnúť Šetrič dát</translation>
 <translation id="6181444274883918285">Pridať výnimku pre web</translation>
-<translation id="618555311922999635">Navigačný panel bol otvorený na celú výšku</translation>
 <translation id="6192333916571137726">Sťahovanie súboru</translation>
 <translation id="6192792657125177640">Výnimky</translation>
 <translation id="6206551242102657620">Pripojenie je zabezpečené. Informácie o webe</translation>
@@ -909,7 +907,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8073388330009372546">Otvoriť obrázok na novej karte</translation>
 <translation id="8084114998886531721">Uložené heslo</translation>
 <translation id="8087000398470557479">Tento obsah pochádza z domény <ph name="DOMAIN_NAME" /> a bol doručený Googlom.</translation>
-<translation id="8100932616285851614">Bol zavretý navigačný panel</translation>
 <translation id="8103578431304235997">Karta inkognito</translation>
 <translation id="8105951947646329362">Navrhovať súvisiace stránky</translation>
 <translation id="8109613176066109935">Ak chcete získať záložky vo všetkých zariadeniach, zapnite synchronizáciu</translation>
@@ -935,7 +932,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> a ďalšie weby</translation>
 <translation id="8339163506404995330">Stránky v jazyku <ph name="LANGUAGE" /> nebudú prekladané</translation>
 <translation id="8349013245300336738">Zoradiť podľa množstva využitých dát</translation>
-<translation id="8363501664269050863">Navigačný panel. Zatvorte potiahnutím nadol.</translation>
 <translation id="8372893542064058268">Povolenie synchronizácie na pozadí na konkrétnom webe.</translation>
 <translation id="8374821112118309944">Aplikáciu TalkBack je potrebné aktualizovať na novšiu verziu.</translation>
 <translation id="8393700583063109961">Odoslať správu</translation>

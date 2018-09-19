@@ -474,7 +474,6 @@
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> पर वापस लौटने के लिए स्पर्श करें</translation>
 <translation id="4807098396393229769">कार्ड पर नाम</translation>
 <translation id="4807963036345170158">डेटा बचाने का साधन बंद है</translation>
-<translation id="4811736444948656478">नेविगेशन पैनल नीचे से आधी स्क्रीन पर खुला</translation>
 <translation id="4816465935029283692">डेटा प्रकार</translation>
 <translation id="4837753911714442426">पेज प्रिंट करने के विकल्प खोलें</translation>
 <translation id="4842092870884894799">पासवर्ड जेनरेशन पॉपअप दिखाया जा रहा है</translation>
@@ -636,6 +635,7 @@
 <translation id="5956665950594638604">Chrome सहायता केंद्र को नए टैब में खोलें</translation>
 <translation id="5958275228015807058">डाउनलोड में जाकर अपनी फ़ाइलें और पेज पाएं</translation>
 <translation id="5962718611393537961">संक्षिप्त करने के लिए टैप करें</translation>
+<translation id="5990142338020175451">ज़्यादा निजी Google सेवाएं, जैसे कि बेहतर पेज सुझाव</translation>
 <translation id="6000066717592683814">Google को डिफ़ॉल्ट बनाए रखें</translation>
 <translation id="6005538289190791541">सुझाया गया पासवर्ड</translation>
 <translation id="6039379616847168523">सीधे अगले टैब पर जाएं</translation>
@@ -658,7 +658,6 @@
 <translation id="6177111841848151710">अभी के खोज इंजन के लिए ब्लॉक किया गया</translation>
 <translation id="6177390657002841081">डेटा बचाने का साधन चालू करना</translation>
 <translation id="6181444274883918285">साइट का अपवाद जोड़ें</translation>
-<translation id="618555311922999635">नेविगेशन पैनल पूरी स्क्रीन पर खुला</translation>
 <translation id="6192333916571137726">डाउनलोड फ़ाइल कहां सेव करें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
 <translation id="6206551242102657620">कनेक्शन सुरक्षित है. साइट की जानकारी</translation>
@@ -909,7 +908,6 @@
 <translation id="8073388330009372546">चित्र नए टैब में खोलें</translation>
 <translation id="8084114998886531721">सहेजा गया पासवर्ड</translation>
 <translation id="8087000398470557479">यह सामग्री <ph name="DOMAIN_NAME" /> की है जिसे Google के द्वारा वितरित किया गया है.</translation>
-<translation id="8100932616285851614">मार्गदर्शक फलक बंद है</translation>
 <translation id="8103578431304235997">गुप्त टैब</translation>
 <translation id="8105951947646329362">मिलते-जुलते पेज सुझाएं</translation>
 <translation id="8109613176066109935">अपने सभी डिवाइस पर अपने बुकमार्क पाने के लिए, 'सिंक करें' को चालू करें</translation>
@@ -935,7 +933,6 @@
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> और कई साइटें</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> भाषा के पेज का अनुवाद नहीं किया जाएगा</translation>
 <translation id="8349013245300336738">इस्तेमाल किए गए डेटा की मात्रा के हिसाब से क्रम में लगाएं</translation>
-<translation id="8363501664269050863">मार्गदर्शक पैनल. बंद करने के लिए नीचे स्वाइप करें.</translation>
 <translation id="8372893542064058268">किसी विशिष्ट साइट के लिए पृष्ठभूमि समन्वयन की अनुमति दें.</translation>
 <translation id="8374821112118309944">आपको TalkBack को अधिक नए वर्शन से अपडेट करना होगा.</translation>
 <translation id="8393700583063109961">संदेश भेजें</translation>

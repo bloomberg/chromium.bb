@@ -474,7 +474,6 @@ Akun Google Anda mungkin memiliki bentuk histori browsing lain seperti penelusur
 <translation id="4797039098279997504">Sentuh untuk kembali ke <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Nama di kartu</translation>
 <translation id="4807963036345170158">Penghemat Kuota Internet nonaktif</translation>
-<translation id="4811736444948656478">Panel navigasi dibuka dalam setengah layar</translation>
 <translation id="4816465935029283692">Jenis data</translation>
 <translation id="4837753911714442426">Membuka opsi untuk mencetak halaman</translation>
 <translation id="4842092870884894799">Menampilkan pop-up pembuatan sandi</translation>
@@ -636,6 +635,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5956665950594638604">Membuka Pusat Bantuan Chrome di tab baru</translation>
 <translation id="5958275228015807058">Temukan file dan halaman di Download</translation>
 <translation id="5962718611393537961">Tap untuk menciutkan</translation>
+<translation id="5990142338020175451">Layanan Google yang lebih personal, seperti saran halaman yang lebih baik</translation>
 <translation id="6000066717592683814">Tetap menggunakan Google</translation>
 <translation id="6005538289190791541">Sandi yang disarankan</translation>
 <translation id="6039379616847168523">Beralih ke tab berikutnya</translation>
@@ -658,7 +658,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="6177111841848151710">Diblokir untuk mesin telusur yang sedang digunakan</translation>
 <translation id="6177390657002841081">Mengaktifkan Penghemat Kuota Internet</translation>
 <translation id="6181444274883918285">Tambahkan pengecualian situs</translation>
-<translation id="618555311922999635">Panel navigasi dibuka dalam layar penuh</translation>
 <translation id="6192333916571137726">Download file</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
 <translation id="6206551242102657620">Sambungan aman. Informasi situs</translation>
@@ -909,7 +908,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="8084114998886531721">Sandi tersimpan</translation>
 <translation id="8087000398470557479">Konten ini dari <ph name="DOMAIN_NAME" />, dikirimkan oleh Google.</translation>
-<translation id="8100932616285851614">Panel navigasi ditutup</translation>
 <translation id="8103578431304235997">Tab Penyamaran</translation>
 <translation id="8105951947646329362">Sarankan halaman terkait</translation>
 <translation id="8109613176066109935">Untuk mendapatkan bookmark di semua perangkat Anda, aktifkan sinkronisasi</translation>
@@ -935,7 +933,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> dan situs lainnya</translation>
 <translation id="8339163506404995330">Halaman dalam bahasa <ph name="LANGUAGE" /> tidak akan diterjemahkan</translation>
 <translation id="8349013245300336738">Urutkan menurut jumlah kuota yang digunakan</translation>
-<translation id="8363501664269050863">Panel navigasi. Geser ke bawah untuk menutup.</translation>
 <translation id="8372893542064058268">Mengizinkan Sinkronisasi Latar Belakang untuk situs tertentu.</translation>
 <translation id="8374821112118309944">Anda perlu memperbarui TalkBack ke versi yang lebih baru.</translation>
 <translation id="8393700583063109961">Kirim pesan</translation>

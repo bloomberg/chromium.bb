@@ -3316,9 +3316,11 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5979469435153841984">Per afegir pàgines a les adreces d'interès, fes clic a l'estrella de la barra d'adreces</translation>
 <translation id="5982621672636444458">Ordena les opcions</translation>
 <translation id="5984222099446776634">Visitats recentment</translation>
+<translation id="5990142338020175451">Serveis de Google més personals, com ara millors suggeriments de pàgines</translation>
 <translation id="5990386583461751448">Traduïda</translation>
 <translation id="5991049340509704927">Amplia</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Per assegurar-te que pots continuar navegant per Internet, demana a l'administrador que suprimeixi aquesta aplicació.}other{Per assegurar-te que pots continuar navegant per Internet, demana a l'administrador que suprimeixi aquestes aplicacions.}}</translation>
+<translation id="5997337190805127100">Més informació sobre l'accés als llocs web</translation>
 <translation id="6002458620803359783">Veus preferides</translation>
 <translation id="6005695835120147974">Encaminador multimèdia</translation>
 <translation id="6006484371116297560">Clàssic</translation>
@@ -4014,6 +4016,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7042418530779813870">En&amp;ganxa i cerca</translation>
 <translation id="7043108582968290193">Fet! No s'ha trobat cap aplicació incompatible.</translation>
+<translation id="7044124535091449260">Més informació sobre l'accés als llocs web</translation>
 <translation id="7049293980323620022">Vols desar el fitxer?</translation>
 <translation id="7051943809462976355">S'està cercant el ratolí...</translation>
 <translation id="7052237160939977163">Envia dades de traça del rendiment</translation>

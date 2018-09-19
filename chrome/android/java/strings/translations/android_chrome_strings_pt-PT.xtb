@@ -474,7 +474,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4797039098279997504">Toque para voltar a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Nome no cartão</translation>
 <translation id="4807963036345170158">Poupança de dados desativada</translation>
-<translation id="4811736444948656478">Painel de navegação aberto a meia altura</translation>
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4837753911714442426">Abrir opções para imprimir página</translation>
 <translation id="4842092870884894799">A mostrar pop-up de geração de palavra-passe</translation>
@@ -636,6 +635,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5956665950594638604">Abrir Centro de Ajuda do Chrome num novo separador</translation>
 <translation id="5958275228015807058">Encontre os seus ficheiros e páginas nas Transferências.</translation>
 <translation id="5962718611393537961">Toque para reduzir</translation>
+<translation id="5990142338020175451">Serviços Google mais pessoais, como melhores sugestões de páginas</translation>
 <translation id="6000066717592683814">Manter o Google</translation>
 <translation id="6005538289190791541">Palavra-passe sugerida</translation>
 <translation id="6039379616847168523">Ir para o próximo separador</translation>
@@ -658,7 +658,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6177111841848151710">Bloqueado para o motor de pesquisa atual</translation>
 <translation id="6177390657002841081">Ativar a Poupança de dados</translation>
 <translation id="6181444274883918285">Adicionar exceção de site</translation>
-<translation id="618555311922999635">Painel de navegação aberto à altura total</translation>
 <translation id="6192333916571137726">Transferir ficheiro</translation>
 <translation id="6192792657125177640">Excepções</translation>
 <translation id="6206551242102657620">A ligação é segura. Informações do site</translation>
@@ -909,7 +908,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8073388330009372546">Abrir imagem num novo separad.</translation>
 <translation id="8084114998886531721">Palavra-passe guardada</translation>
 <translation id="8087000398470557479">Este conteúdo é proveniente de <ph name="DOMAIN_NAME" />, fornecido pela Google.</translation>
-<translation id="8100932616285851614">Painel de navegação fechado</translation>
 <translation id="8103578431304235997">Separador de navegação anónima</translation>
 <translation id="8105951947646329362">Páginas relacionadas sugeridas</translation>
 <translation id="8109613176066109935">Para obter os seus marcadores em todos os dispositivos, ative a sincronização.</translation>
@@ -935,7 +933,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8316092324682955408">De <ph name="DOMAIN_NAME" /> e de mais sites</translation>
 <translation id="8339163506404995330">As páginas em <ph name="LANGUAGE" /> não serão traduzidas</translation>
 <translation id="8349013245300336738">Ordenar por quantidade de dados utilizados</translation>
-<translation id="8363501664269050863">Painel de navegação. Deslize rapidamente para baixo para fechar.</translation>
 <translation id="8372893542064058268">Permitir Sincronização em segundo plano num site específico.</translation>
 <translation id="8374821112118309944">Tem de atualizar o TalkBack para uma versão mais recente.</translation>
 <translation id="8393700583063109961">Enviar mensagem</translation>

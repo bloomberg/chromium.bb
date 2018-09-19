@@ -474,7 +474,6 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4797039098279997504">Pindutin upang bumalik sa <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Pangalang makikita sa card</translation>
 <translation id="4807963036345170158">Naka-off ang Data Saver</translation>
-<translation id="4811736444948656478">Binuksan ang panel ng navigation sa ibabang bahagi ng screen</translation>
 <translation id="4816465935029283692">Mga uri ng data</translation>
 <translation id="4837753911714442426">Buksan ang mga opsyon sa pag-print ng page</translation>
 <translation id="4842092870884894799">Ipinapakita ang popup para sa pagbuo ng password</translation>
@@ -636,6 +635,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="5956665950594638604">Buksan ang Help Center ng Chrome sa bagong tab</translation>
 <translation id="5958275228015807058">Hanapin ang iyong mga file at page sa Mga Download</translation>
 <translation id="5962718611393537961">I-tap upang i-collapse</translation>
+<translation id="5990142338020175451">Higit pang personal na serbisyo ng Google, tulad ng mas mahuhusay na suhestyon sa page</translation>
 <translation id="6000066717592683814">Panatilihin ang Google</translation>
 <translation id="6005538289190791541">Iminumungkahing password</translation>
 <translation id="6039379616847168523">Pumunta sa susunod na tab</translation>
@@ -658,7 +658,6 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="6177111841848151710">Naka-block para sa kasalukuyang search engine</translation>
 <translation id="6177390657002841081">I-on ang Data Saver</translation>
 <translation id="6181444274883918285">Magdagdag ng pagbubukod ng site</translation>
-<translation id="618555311922999635">Binuksan ang panel ng navigation sa buong screen</translation>
 <translation id="6192333916571137726">File ng download</translation>
 <translation id="6192792657125177640">Mga Pagbubukod</translation>
 <translation id="6206551242102657620">Secure ang koneksyon. Impormasyon ng site</translation>
@@ -909,7 +908,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8073388330009372546">Buksan ang larawan sa bagong tab</translation>
 <translation id="8084114998886531721">Naka-save na password</translation>
 <translation id="8087000398470557479">Ang content na ito ay mula sa <ph name="DOMAIN_NAME" />, na ipinadala ng Google.</translation>
-<translation id="8100932616285851614">Sinara ang panel ng navigation</translation>
 <translation id="8103578431304235997">Tab na Incognito</translation>
 <translation id="8105951947646329362">Magmungkahi ng mga nauugnay na page</translation>
 <translation id="8109613176066109935">Para makuha ang iyong mga bookmark sa lahat ng device mo, i-on ang pag-sync</translation>
@@ -935,7 +933,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> at higit pang site</translation>
 <translation id="8339163506404995330">Hindi isasalin ang mga page na nasa <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">Pagbukud-bukurin ayon sa dami ng data na nagamit</translation>
-<translation id="8363501664269050863">Panel ng navigation. Mag-swipe pababa upang isara.</translation>
 <translation id="8372893542064058268">Payagan ang Pag-sync sa Background para sa isang partikular na site.</translation>
 <translation id="8374821112118309944">Kailangan mong i-update ang TalkBack sa isang mas bagong bersyon.</translation>
 <translation id="8393700583063109961">Ipadala ang mensahe</translation>
