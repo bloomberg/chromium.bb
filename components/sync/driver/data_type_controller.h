@@ -164,7 +164,7 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   virtual bool ReadyForStart() const;
 
   // Returns a ListValue representing all nodes for this data type through
-  // |callback| on this thread.
+  // |callback| on this thread. Can only be called if state() != NOT_RUNNING.
   // Used for populating nodes in Sync Node Browser of chrome://sync-internals.
   virtual void GetAllNodes(const AllNodesCallback& callback) = 0;
 
