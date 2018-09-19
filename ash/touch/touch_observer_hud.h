@@ -73,7 +73,6 @@ class ASH_EXPORT TouchObserverHUD
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // display::DisplayObserver:
-  void OnDisplayAdded(const display::Display& new_display) override;
   void OnDisplayRemoved(const display::Display& old_display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;

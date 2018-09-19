@@ -44,12 +44,6 @@ ScreenObserverDelegate::~ScreenObserverDelegate() {
   DCHECK(!observer_);
 }
 
-void ScreenObserverDelegate::OnDisplayAdded(
-    const display::Display& /*new_display*/) {}
-
-void ScreenObserverDelegate::OnDisplayRemoved(
-    const display::Display& /*old_display*/) {}
-
 void ScreenObserverDelegate::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
