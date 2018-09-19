@@ -7,7 +7,6 @@
  */
 class Commands {
   /**
-   * @constructor
    * @param {SwitchAccessInterface} switchAccess
    */
   constructor(switchAccess) {
