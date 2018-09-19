@@ -723,9 +723,7 @@ WKBasedNavigationManagerImpl::WKWebViewCache::GetNavigationItemImplAtIndex(
   // components outside of //ios/web layer.
   if (wk_navigation_util::IsRestoreSessionUrl(url)) {
     GURL virtual_url;
-    bool success = wk_navigation_util::ExtractTargetURL(url, &virtual_url);
-    DCHECK(success);
-    if (success) {
+    if (wk_navigation_util::ExtractTargetURL(url, &virtual_url)) {
       if (wk_navigation_util::IsPlaceholderUrl(virtual_url)) {
         new_item->SetVirtualURL(
             wk_navigation_util::ExtractUrlFromPlaceholderUrl(virtual_url));
