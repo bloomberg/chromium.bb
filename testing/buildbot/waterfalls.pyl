@@ -3470,12 +3470,12 @@
     'machines': {
       'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)': {
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_gtests',
+          'gtest_tests': 'webrtc_chromium_android_gtests',
         },
       },
       'WebRTC Chromium FYI Android Tests (dbg) (M Nexus5X)': {
         'test_suites': {
-          'gtest_tests': 'webrtc_chromium_gtests',
+          'gtest_tests': 'webrtc_chromium_android_gtests',
         },
       },
       'WebRTC Chromium FYI Linux Tester': {
