@@ -89,7 +89,7 @@
     </style>
     <iron-selector id="topMenu" selectable="a:not(#extensionsLink)"
         attr-for-selected="href" on-iron-activate="onSelectorActivate_"
-        role="navigation">
+        role="navigation" on-click="onLinkClick_">
 <if expr="chromeos">
       <a href="/internet">
         <iron-icon icon="settings:network-wifi"></iron-icon>
@@ -152,7 +152,7 @@
       <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]"
           hidden="[[!pageVisibility.advancedSettings]]">
         <iron-selector id="subMenu" selectable="a" attr-for-selected="href"
-            role="navigation">
+            role="navigation" on-click="onLinkClick_">
 <if expr="chromeos">
           <a href="/dateTime">
             <iron-icon icon="settings:access-time"></iron-icon>
