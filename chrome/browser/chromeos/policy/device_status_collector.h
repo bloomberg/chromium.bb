@@ -124,6 +124,11 @@ class DeviceStatusCollector {
   // Virtual to allow mocking.
   virtual std::unique_ptr<DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo();
 
+  bool report_activity_times() const { return report_activity_times_; }
+  bool report_network_interfaces() const { return report_network_interfaces_; }
+  bool report_users() const { return report_users_; }
+  bool report_hardware_status() const { return report_hardware_status_; }
+
   // How often, in seconds, to poll to see if the user is idle.
   static const unsigned int kIdlePollIntervalSeconds = 30;
 
