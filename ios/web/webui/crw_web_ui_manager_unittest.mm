@@ -63,9 +63,9 @@ class MockURLFetcherBlockAdapter : public URLFetcherBlockAdapter {
  public:
   MockURLFetcherBlockAdapter(
       const GURL& url,
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLFetcherBlockAdapterCompletion completion_handler)
-      : URLFetcherBlockAdapter(url, request_context, completion_handler),
+      : URLFetcherBlockAdapter(url, url_loader_factory, completion_handler),
         url_(url),
         completion_handler_([completion_handler copy]) {}
 

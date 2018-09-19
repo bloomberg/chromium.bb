@@ -529,6 +529,7 @@ source_set("ios_web_webui_unittests") {
     "//ios/web/test:test_constants",
     "//ios/web/test:test_support",
     "//net:test_support",
+    "//services/network:test_support",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",

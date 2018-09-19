@@ -10,50 +10,49 @@
 #include <memory>
 
 #include "base/mac/scoped_block.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "base/memory/scoped_refptr.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+};  // namespace network
 
 namespace web {
 
-// Class for use of URLFetcher from Objective-C with a completion handler block.
+// Class for use of URLLoader from Objective-C with a completion handler block.
 class URLFetcherBlockAdapter;
 // Block type for URLFetcherBlockAdapter callbacks.
 typedef void (^URLFetcherBlockAdapterCompletion)(NSData*,
                                                  URLFetcherBlockAdapter*);
 
 // Class to manage retrieval of WebUI resources.
-class URLFetcherBlockAdapter : public net::URLFetcherDelegate {
+class URLFetcherBlockAdapter {
  public:
   // Creates URLFetcherBlockAdapter for resource at |url| with
   // |request_context|.
   // |completion_handler| is called with results of the fetch.
   URLFetcherBlockAdapter(
       const GURL& url,
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       web::URLFetcherBlockAdapterCompletion completion_handler);
-  ~URLFetcherBlockAdapter() override;
+  virtual ~URLFetcherBlockAdapter();
   // Starts the fetch.
   virtual void Start();
 
  protected:
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
  private:
   // The URL to fetch.
   const GURL url_;
-  // The request context.
-  net::URLRequestContextGetter* request_context_;
+  // The URL loader factory.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   // Callback for resource load.
   base::mac::ScopedBlock<web::URLFetcherBlockAdapterCompletion>
       completion_handler_;
-  // URLFetcher for retrieving data from net stack.
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  // URLLoader for retrieving data from net stack.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 };
 
 }  // namespace web
