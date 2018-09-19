@@ -609,7 +609,7 @@ TEST_P(MediaCodecVideoDecoderVp8Test, ResetDrainsVP8CodecsBeforeFlushing) {
   testing::Mock::VerifyAndClearExpectations(&reset_cb);
 }
 
-TEST_P(MediaCodecVideoDecoderVp8Test, ResetDoesNotDrainNonVp8Codecs) {
+TEST_P(MediaCodecVideoDecoderH264Test, ResetDoesNotDrainNonVp8Codecs) {
   auto* codec =
       InitializeFully_OneDecodePending(TestVideoConfig::Large(codec_));
   // Accept the first decode to transition out of the flushed state.
@@ -617,8 +617,9 @@ TEST_P(MediaCodecVideoDecoderVp8Test, ResetDoesNotDrainNonVp8Codecs) {
   PumpCodec();
 
   // The reset should complete immediately because the codec is not VP8 so
-  // it doesn't need draining.
-  EXPECT_CALL(*codec, Flush());
+  // it doesn't need draining.  Note that it will be deferred until the next
+  // decode, so we provide one.  We don't expect a flush since it will be
+  // defererd until the first decode after the reset.
   base::MockCallback<base::Closure> reset_cb;
   EXPECT_CALL(reset_cb, Run());
   mcvd_->Reset(reset_cb.Get());
@@ -713,7 +714,7 @@ TEST_P(MediaCodecVideoDecoderTest, TeardownDoesNotDrainFlushedCodecs) {
   // MCVD is destructed without requiring the codec to output an EOS buffer.
 }
 
-TEST_P(MediaCodecVideoDecoderVp8Test, TeardownDoesNotDrainNonVp8Codecs) {
+TEST_P(MediaCodecVideoDecoderH264Test, TeardownDoesNotDrainNonVp8Codecs) {
   auto* codec =
       InitializeFully_OneDecodePending(TestVideoConfig::Large(codec_));
   // Accept the first decode to transition out of the flushed state.
@@ -853,6 +854,34 @@ TEST_P(MediaCodecVideoDecoderH264Test, VideoFramesArePowerEfficient) {
   EXPECT_TRUE(power_efficient);
 }
 
+TEST_P(MediaCodecVideoDecoderH264Test, CsdIsIncludedInCodecConfig) {
+  // Make sure that any CSD is included in the CodecConfig that MCVD uses to
+  // allocate the codec.
+  VideoDecoderConfig config = TestVideoConfig::NormalH264();
+
+  // Csd, excluding '0 0 0 1'.
+  std::vector<uint8_t> csd0 = {103, 77,  64, 30,  232, 128, 80, 23,
+                               252, 184, 8,  128, 0,   0,   3,  0,
+                               128, 0,   0,  30,  7,   139, 22, 137};
+  std::vector<uint8_t> csd1 = {104, 235, 239, 32};
+  std::vector<uint8_t> extra_data_separator = {1, 0, 4};
+  std::vector<uint8_t> extra_data = {1, 77, 64, 30, 255, 225, 0, 24};
+  extra_data.insert(extra_data.end(), csd0.begin(), csd0.end());
+  extra_data.insert(extra_data.end(), extra_data_separator.begin(),
+                    extra_data_separator.end());
+  extra_data.insert(extra_data.end(), csd1.begin(), csd1.end());
+  config.SetExtraData(extra_data);
+
+  EXPECT_TRUE(InitializeFully_OneDecodePending(config));
+
+  // Prepend the headers and check for equality.
+  std::vector<uint8_t> csd_header = {0, 0, 0, 1};
+  csd0.insert(csd0.begin(), csd_header.begin(), csd_header.end());
+  EXPECT_EQ(csd0, codec_allocator_->most_recent_config->csd0);
+  csd1.insert(csd1.begin(), csd_header.begin(), csd_header.end());
+  EXPECT_EQ(csd1, codec_allocator_->most_recent_config->csd1);
+}
+
 static std::vector<VideoCodec> GetTestList() {
   std::vector<VideoCodec> test_codecs;
 
@@ -871,15 +900,15 @@ static std::vector<VideoCodec> GetTestList() {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 static std::vector<VideoCodec> GetH264IfAvailable() {
   return MediaCodecUtil::IsMediaCodecAvailable()
-             ? std::vector<VideoCodec>()
-             : std::vector<VideoCodec>(1, kCodecH264);
+             ? std::vector<VideoCodec>(1, kCodecH264)
+             : std::vector<VideoCodec>();
 }
 #endif
 
 static std::vector<VideoCodec> GetVp8IfAvailable() {
   return MediaCodecUtil::IsVp8DecoderAvailable()
-             ? std::vector<VideoCodec>()
-             : std::vector<VideoCodec>(1, kCodecVP8);
+             ? std::vector<VideoCodec>(1, kCodecVP8)
+             : std::vector<VideoCodec>();
 }
 
 INSTANTIATE_TEST_CASE_P(MediaCodecVideoDecoderTest,

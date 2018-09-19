@@ -430,6 +430,8 @@ void MediaCodecVideoDecoder::CreateCodec() {
 
   scoped_refptr<CodecConfig> config = new CodecConfig();
   config->codec = decoder_config_.codec();
+  config->csd0 = csd0_;
+  config->csd1 = csd1_;
   config->requires_secure_codec = requires_secure_codec_;
   // TODO(liberato): per android_util.h, remove JavaObjectPtr.
   config->media_crypto =
