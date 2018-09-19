@@ -128,6 +128,7 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
       known_to_have_no_overflow_and_no_fallback_fonts_(false),
       contains_only_whitespace_or_nbsp_(
           static_cast<unsigned>(OnlyWhitespaceOrNbsp::kUnknown)),
+      has_abstract_inline_text_box_(false),
       min_width_(-1),
       max_width_(-1),
       first_line_min_width_(0),
@@ -256,8 +257,10 @@ void LayoutText::SetFirstInlineFragment(NGPaintFragment* first_fragment) {
   // TODO(layout-dev): Because We should call |WillDestroy()| once for
   // associated fragments, when you reuse fragments, you should construct
   // NGAbstractInlineTextBox for them.
-  for (NGPaintFragment* fragment : NGPaintFragment::InlineFragmentsFor(this))
-    NGAbstractInlineTextBox::WillDestroy(fragment);
+  if (has_abstract_inline_text_box_) {
+    for (NGPaintFragment* fragment : NGPaintFragment::InlineFragmentsFor(this))
+      NGAbstractInlineTextBox::WillDestroy(fragment);
+  }
   first_paint_fragment_ = first_fragment;
 }
 
@@ -2342,6 +2345,7 @@ scoped_refptr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
         first_letter_part ? first_letter_part : this);
     if (!fragments.IsEmpty() &&
         fragments.IsInLayoutNGInlineFormattingContext()) {
+      has_abstract_inline_text_box_ = true;
       return NGAbstractInlineTextBox::GetOrCreate(LineLayoutText(this),
                                                   **fragments.begin());
     }

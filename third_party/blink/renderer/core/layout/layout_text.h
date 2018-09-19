@@ -418,6 +418,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   unsigned contains_only_whitespace_or_nbsp_ : 2;
 
  private:
+  // Used for LayoutNG with accessibility. True if inline fragments are
+  // associated to |NGAbstractInlineTextBox|.
+  unsigned has_abstract_inline_text_box_ : 1;
   float min_width_;
   float max_width_;
   float first_line_min_width_;
