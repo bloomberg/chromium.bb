@@ -24,7 +24,9 @@ Entry::Entry()
       attempt_count(0),
       resumption_count(0),
       cleanup_attempt_count(0),
-      has_upload_data(false) {}
+      has_upload_data(false),
+      did_received_response(false),
+      require_response_headers(true) {}
 Entry::Entry(const Entry& other) = default;
 
 Entry::Entry(const DownloadParams& params)
@@ -38,7 +40,9 @@ Entry::Entry(const DownloadParams& params)
       resumption_count(0),
       cleanup_attempt_count(0),
       has_upload_data(false),
-      traffic_annotation(params.traffic_annotation) {}
+      traffic_annotation(params.traffic_annotation),
+      did_received_response(false),
+      require_response_headers(true) {}
 
 Entry::~Entry() = default;
 
@@ -65,7 +69,10 @@ bool Entry::operator==(const Entry& other) const {
          has_upload_data == other.has_upload_data &&
          traffic_annotation == other.traffic_annotation &&
          url_chain == other.url_chain &&
-         AreHeadersEqual(response_headers.get(), other.response_headers.get());
+         AreHeadersEqual(response_headers.get(),
+                         other.response_headers.get()) &&
+         did_received_response == other.did_received_response &&
+         require_response_headers == other.require_response_headers;
 }
 
 size_t Entry::EstimateMemoryUsage() const {

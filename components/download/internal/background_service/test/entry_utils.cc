@@ -54,6 +54,7 @@ Entry BuildBasicEntry(Entry::State state) {
     entry.response_headers =
         base::MakeRefCounted<const net::HttpResponseHeaders>(
             "HTTP/1.1 200 OK\nContent-type: text/html\n\n");
+    entry.did_received_response = true;
   }
   return entry;
 }
@@ -103,6 +104,7 @@ Entry BuildEntry(DownloadClient client,
   entry.url_chain = {url, url};
   entry.response_headers = base::MakeRefCounted<const net::HttpResponseHeaders>(
       "HTTP/1.1 200 OK\nContent-type: text/html\n\n");
+  entry.did_received_response = true;
   return entry;
 }
 

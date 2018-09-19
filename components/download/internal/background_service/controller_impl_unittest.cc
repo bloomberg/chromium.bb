@@ -1007,7 +1007,9 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
   DriverEntry dentry = BuildDriverEntry(entry, DriverEntry::State::IN_PROGRESS);
   driver_->AddTestData(std::vector<DriverEntry>{dentry});
 
-  CompletionInfo completion_info(base::FilePath::FromUTF8Unsafe("123"), 1024u);
+  CompletionInfo completion_info(dentry.current_file_path,
+                                 dentry.bytes_downloaded, entry.url_chain,
+                                 entry.response_headers);
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
   EXPECT_CALL(*client_, OnDownloadSucceeded(entry.guid, completion_info))
       .Times(1);
@@ -1558,6 +1560,44 @@ TEST_F(DownloadServiceControllerImplTest, StartupRecoveryForUploadEntries) {
   verify_entry(entries[12].guid, Entry::State::COMPLETE, base::nullopt);
   verify_entry(entries[13].guid, Entry::State::COMPLETE, base::nullopt);
   verify_entry(entries[14].guid, Entry::State::COMPLETE, base::nullopt);
+}
+
+// Download driver will remove the download if failed to persist the response
+// headers.
+TEST_F(DownloadServiceControllerImplTest, StartupRecoveryNoResponseHeaders) {
+  std::vector<Entry> entries;
+  std::vector<DriverEntry> driver_entries;
+  entries.push_back(test::BuildBasicEntry(Entry::State::ACTIVE));
+  entries.back().response_headers = nullptr;
+  entries.back().did_received_response = false;
+
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::IN_PROGRESS));
+
+  device_status_listener_->SetDeviceStatus(
+      DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
+
+  InitializeController();
+  driver_->AddTestData(driver_entries);
+  driver_->MakeReady();
+  store_->AutomaticallyTriggerAllFutureCallbacks(true);
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
+  file_monitor_->TriggerInit(true);
+
+  // Verify that the driver entry will be removed without response headers.
+  EXPECT_FALSE(driver_->Find(entries[0].guid).has_value());
+
+  task_runner_->RunUntilIdle();
+
+  // The download is retried.
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entries[0].guid)->state);
+  EXPECT_TRUE(model_->Get(entries[0].guid)->did_received_response);
+  auto expected_driver_entry = driver_->Find(entries[0].guid);
+  EXPECT_TRUE(expected_driver_entry.has_value());
+  EXPECT_EQ(model_->Get(entries[0].guid)->url_chain,
+            expected_driver_entry->url_chain);
+  EXPECT_EQ(model_->Get(entries[0].guid)->response_headers->raw_headers(),
+            expected_driver_entry->response_headers->raw_headers());
 }
 
 TEST_F(DownloadServiceControllerImplTest, ExistingExternalDownload) {

@@ -110,7 +110,7 @@ void InMemoryDownloadDriver::Start(
   download_ptr->Start();
 }
 
-void InMemoryDownloadDriver::Remove(const std::string& guid) {
+void InMemoryDownloadDriver::Remove(const std::string& guid, bool remove_file) {
   downloads_.erase(guid);
 }
 

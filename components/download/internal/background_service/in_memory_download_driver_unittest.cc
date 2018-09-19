@@ -163,7 +163,7 @@ TEST_F(InMemoryDownloadDriverTest, DownloadSuccessAndRemove) {
   EXPECT_EQ(guid, entry->guid);
   EXPECT_EQ(DriverEntry::State::COMPLETE, entry->state);
 
-  driver()->Remove(guid);
+  driver()->Remove(guid, false);
   entry = driver()->Find(guid);
   EXPECT_FALSE(entry.has_value());
 }

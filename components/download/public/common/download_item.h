@@ -347,7 +347,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // If the file is successfully deleted, then GetFileExternallyRemoved() will
   // become true, GetFullPath() will become empty, and
   // DownloadItem::OnDownloadUpdated() will be called. Does nothing if
-  // GetState() == COMPLETE or GetFileExternallyRemoved() is already true or
+  // GetState() != COMPLETE or GetFileExternallyRemoved() is already true or
   // GetFullPath() is already empty. The callback is always run, and it is
   // always run asynchronously. It will be passed true if the file is
   // successfully deleted or if GetFilePath() was already empty or if

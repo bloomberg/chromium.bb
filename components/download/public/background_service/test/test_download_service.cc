@@ -138,7 +138,8 @@ void TestDownloadService::ProcessDownload() {
   if (!failed_download_id_.empty() && params.guid == failed_download_id_) {
     OnDownloadFailed(params.guid, Client::FailureReason::ABORTED);
   } else {
-    CompletionInfo completion_info(base::FilePath(), file_size_);
+    CompletionInfo completion_info(base::FilePath(), file_size_,
+                                   {params.request_params.url}, nullptr);
     OnDownloadSucceeded(params.guid, completion_info);
   }
 }
