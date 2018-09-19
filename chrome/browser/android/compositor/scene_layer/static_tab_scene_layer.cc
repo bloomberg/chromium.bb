@@ -42,7 +42,6 @@ void StaticTabSceneLayer::UpdateTabLayer(
     const JavaParamRef<jobject>& jobj,
     const JavaParamRef<jobject>& jtab_content_manager,
     jint id,
-    jint toolbar_resource_id,
     jboolean can_use_live_layer,
     jint default_background_color,
     jfloat x,
