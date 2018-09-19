@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
@@ -82,8 +81,8 @@ LayoutRect RectInDocument(const LayoutObject* layout_object) {
 }
 
 LayoutRect TextFragmentRectInDocument(const LayoutObject* layout_object,
-                                      const InlineTextBox* text_box) {
-  FloatRect local_coords_text_box_rect(text_box->FrameRect());
+                                      const LayoutText::TextBoxInfo& text_box) {
+  FloatRect local_coords_text_box_rect(text_box.local_rect);
   LayoutRect absolute_coords_text_box_rect(
       layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
           .BoundingBox());
@@ -866,15 +865,16 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
   if (layout_object->IsText()) {
     LayoutText* layout_text = ToLayoutText(layout_object);
     layout_tree_node->setLayoutText(layout_text->GetText());
-    if (layout_text->HasTextBoxes()) {
+    Vector<LayoutText::TextBoxInfo> text_boxes = layout_text->GetTextBoxInfo();
+    if (!text_boxes.IsEmpty()) {
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::InlineTextBox>>
           inline_text_nodes =
               protocol::Array<protocol::DOMSnapshot::InlineTextBox>::create();
-      for (const InlineTextBox* text_box : layout_text->TextBoxes()) {
+      for (const auto& text_box : text_boxes) {
         inline_text_nodes->addItem(
             protocol::DOMSnapshot::InlineTextBox::create()
-                .setStartCharacterIndex(text_box->Start())
-                .setNumCharacters(text_box->Len())
+                .setStartCharacterIndex(text_box.dom_start_offset)
+                .setNumCharacters(text_box.dom_length)
                 .setBoundingBox(BuildRectForLayoutRect(
                     TextFragmentRectInDocument(layout_object, text_box)))
                 .build());
@@ -913,15 +913,16 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
     return layout_index;
 
   LayoutText* layout_text = ToLayoutText(layout_object);
-  if (!layout_text->HasTextBoxes())
+  Vector<LayoutText::TextBoxInfo> text_boxes = layout_text->GetTextBoxInfo();
+  if (text_boxes.IsEmpty())
     return layout_index;
 
-  for (const InlineTextBox* text_box : layout_text->TextBoxes()) {
+  for (const auto& text_box : text_boxes) {
     text_box_snapshot->getLayoutIndex()->addItem(layout_index);
     text_box_snapshot->getBounds()->addItem(BuildRectForLayoutRect2(
         TextFragmentRectInDocument(layout_object, text_box)));
-    text_box_snapshot->getStart()->addItem(text_box->Start());
-    text_box_snapshot->getLength()->addItem(text_box->Len());
+    text_box_snapshot->getStart()->addItem(text_box.dom_start_offset);
+    text_box_snapshot->getLength()->addItem(text_box.dom_length);
   }
 
   return layout_index;
