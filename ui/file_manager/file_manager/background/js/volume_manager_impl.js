@@ -488,10 +488,3 @@ VolumeManagerImpl.prototype.invokeRequestCallbacks_ = function(
     callEach(request.errorCallbacks, this, [status]);
   }
 };
-
-/** @override */
-VolumeManagerImpl.prototype.toString = function() {
-  return 'VolumeManager\n' +
-      '- MountQueue_:\n' +
-      '  ' + this.mountQueue_.toString().replace(/\n/g, '\n  ');
-};

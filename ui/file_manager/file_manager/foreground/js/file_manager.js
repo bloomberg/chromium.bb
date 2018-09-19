@@ -18,7 +18,7 @@ function FileManager() {
 
   /**
    * Volume manager.
-   * @type {VolumeManagerWrapper}
+   * @type {FilteredVolumeManager}
    * @private
    */
   this.volumeManager_ = null;
@@ -466,7 +466,7 @@ FileManager.prototype = /** @struct */ {
     return this.backgroundPage_;
   },
   /**
-   * @return {VolumeManagerWrapper}
+   * @return {FilteredVolumeManager}
    */
   get volumeManager() {
     return this.volumeManager_;
@@ -905,7 +905,7 @@ FileManager.prototype = /** @struct */ {
     var writableOnly =
         this.launchParams_.type === DialogType.SELECT_SAVEAS_FILE;
 
-    // VolumeManagerWrapper hides virtual file system related event and data
+    // FilteredVolumeManager hides virtual file system related event and data
     // even depends on the value of |supportVirtualPath|. If it is
     // VirtualPathSupport.NO_VIRTUAL_PATH, it hides Drive even if Drive is
     // enabled on preference.
@@ -914,7 +914,7 @@ FileManager.prototype = /** @struct */ {
     // true.
     // Note that the Drive enabling preference change is listened by
     // DriveIntegrationService, so here we don't need to take care about it.
-    this.volumeManager_ = new VolumeManagerWrapper(
+    this.volumeManager_ = new FilteredVolumeManager(
         allowedPaths, writableOnly, this.backgroundPage_);
   };
 
@@ -1582,18 +1582,5 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.getCurrentList = function() {
     return this.ui.listContainer.currentList;
-  };
-
-  /**
-   * Outputs the current state for debugging.
-   */
-  FileManager.prototype.debugMe = function() {
-    var out = 'Debug information.\n';
-
-    out += '1. VolumeManagerWrapper\n' +
-        this.volumeManager_.toString() + '\n';
-
-    out += 'End of debug information.';
-    console.log(out);
   };
 })();

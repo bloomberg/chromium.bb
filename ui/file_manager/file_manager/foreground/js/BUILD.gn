@@ -62,7 +62,6 @@ js_type_check("closure_compile_module") {
     ":task_history",
     ":thumbnail_loader",
     ":toolbar_controller",
-    ":volume_manager_wrapper",
     ":web_store_utils",
     ":webui_command_extender",
   ]
@@ -260,10 +259,10 @@ js_library("file_manager") {
     ":spinner_controller",
     ":task_controller",
     ":toolbar_controller",
-    ":volume_manager_wrapper",
     "ui:commandbutton",
     "ui:directory_tree",
     "ui:file_manager_ui",
+    "//ui/file_manager/base/js:filtered_volume_manager",
     "//ui/webui/resources/js/cr/ui:list_selection_model",
   ]
 }
@@ -339,11 +338,11 @@ js_library("file_watcher") {
 
 js_library("folder_shortcuts_data_model") {
   deps = [
-    ":volume_manager_wrapper",
-    "../../common/js:async_util",
-    "../../common/js:metrics",
-    "../../common/js:util",
-    "../../common/js:volume_manager_common",
+    "//ui/file_manager/base/js:filtered_volume_manager",
+    "//ui/file_manager/file_manager/common/js:async_util",
+    "//ui/file_manager/file_manager/common/js:metrics",
+    "//ui/file_manager/file_manager/common/js:util",
+    "//ui/file_manager/file_manager/common/js:volume_manager_common",
   ]
 }
 
@@ -593,26 +592,6 @@ js_library("toolbar_controller") {
     "ui:list_container",
     "ui:location_line",
     "//ui/webui/resources/js/cr/ui:command",
-  ]
-}
-
-# TODO(tapted): Move this to //ui/file_manager/base.
-js_library("volume_manager_wrapper") {
-  visibility += [
-    "//ui/file_manager/audio_player/*",
-    "//ui/file_manager/gallery/*",
-    "//ui/file_manager/video_player/*",
-  ]
-  deps = [
-    "../../common/js:async_util",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js/cr:event_target",
-    "//ui/webui/resources/js/cr/ui:array_data_model",
-  ]
-  externs_list = [
-    "../../../externs/background/volume_manager_factory.js",
-    "../../../externs/volume_info_list.js",
-    "../../../externs/volume_manager.js",
   ]
 }
 

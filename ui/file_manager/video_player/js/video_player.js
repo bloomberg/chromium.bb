@@ -802,7 +802,7 @@ function initStrings(callback) {
 }
 
 function initVolumeManager(callback) {
-  var volumeManager = new VolumeManagerWrapper(AllowedPaths.ANY_PATH, false);
+  var volumeManager = new FilteredVolumeManager(AllowedPaths.ANY_PATH, false);
   volumeManager.ensureInitialized(callback);
 }
 
