@@ -44,8 +44,12 @@ class WindowsSDKApi(recipe_api.RecipeApi):
       finally:
         # cl.exe automatically starts background mspdbsrv.exe daemon which
         # needs to be manually stopped so Swarming can tidy up after itself.
+        #
+        # Since mspdbsrv may not actually be running, don't fail if we can't
+        # actually kill it.
         self.m.step('taskkill mspdbsrv',
-                    ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'])
+                    ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
+                    ok_ret='any')
     else:
       yield
 

@@ -242,7 +242,7 @@ Returns (Path): The "depot_tools" root directory.
 
 Wrapper for easy calling of gclient steps.
 
-&mdash; **def [break\_locks](/recipes/recipe_modules/gclient/api.py#283)(self):**
+&mdash; **def [break\_locks](/recipes/recipe_modules/gclient/api.py#270)(self):**
 
 Remove all index.lock files. If a previous run of git crashed, bot was
 reset, etc... we might end up with leftover index.lock files.
@@ -255,7 +255,7 @@ Return a step generator function for gclient checkouts.
 
 &mdash; **def [get\_config\_defaults](/recipes/recipe_modules/gclient/api.py#114)(self):**
 
-&mdash; **def [get\_gerrit\_patch\_root](/recipes/recipe_modules/gclient/api.py#305)(self, gclient_config=None):**
+&mdash; **def [get\_gerrit\_patch\_root](/recipes/recipe_modules/gclient/api.py#292)(self, gclient_config=None):**
 
 Returns local path to the repo where gerrit patch will be applied.
 
@@ -268,7 +268,7 @@ Instead, properly map a repository to a local path using repo_path_map.
 TODO(nodir): remove this. Update all recipe tests to specify a git_repo
 matching the recipe.
 
-&mdash; **def [get\_repo\_path](/recipes/recipe_modules/gclient/api.py#332)(self, repo_url, gclient_config=None):**
+&mdash; **def [get\_repo\_path](/recipes/recipe_modules/gclient/api.py#319)(self, repo_url, gclient_config=None):**
 
 Returns local path to the repo checkout given its url.
 
@@ -294,20 +294,11 @@ Args:
   override (bool) - If True, will forcibly set revision and custom_vars
     even if the config already contains values for them.
 
-&emsp; **@property**<br>&mdash; **def [is\_blink\_mode](/recipes/recipe_modules/gclient/api.py#270)(self):**
-
-Indicates wether the caller is to use the Blink config rather than the
-Chromium config. This may happen for one of two reasons:
-1. The builder is configured to always use TOT Blink. (factory property
-   top_of_tree_blink=True)
-2. A try job comes in that applies to the Blink tree. (patch_project is
-   blink)
-
 &mdash; **def [resolve\_revision](/recipes/recipe_modules/gclient/api.py#142)(self, revision):**
 
 &mdash; **def [runhooks](/recipes/recipe_modules/gclient/api.py#264)(self, args=None, name='runhooks', \*\*kwargs):**
 
-&mdash; **def [set\_patch\_repo\_revision](/recipes/recipe_modules/gclient/api.py#362)(self, gclient_config=None):**
+&mdash; **def [set\_patch\_repo\_revision](/recipes/recipe_modules/gclient/api.py#349)(self, gclient_config=None):**
 
 Updates config revision corresponding to patch_project.
 
