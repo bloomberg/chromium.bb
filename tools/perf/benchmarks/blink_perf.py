@@ -354,6 +354,7 @@ class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Info(emails=['dmazzoni@chromium.org'],
+                component=['Blink>Accessibility'],
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfAccessibility(_BlinkPerfBenchmark):
   tag = 'accessibility'
