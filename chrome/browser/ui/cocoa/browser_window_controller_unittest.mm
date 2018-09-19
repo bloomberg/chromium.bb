@@ -166,38 +166,6 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
   [[controller nsWindowController] close];
 }
 
-// https://crbug.com/667698 - When Auto Layout is in use, adding the download
-// shelf without ever showing it shouldn't prevent the window from being
-// resized to its minimum width.
-TEST_F(BrowserWindowControllerTest, TestSetBoundsWithDownloadShelf) {
-  BrowserWindow* browser_window = [controller_ browserWindow];
-  browser_window->SetBounds(gfx::Rect(0, 0, 1000, 50));
-
-  // Auto Layout only acts on the window if it's visible.
-  browser_window->ShowInactive();
-
-  // The browser window should lazily create the download shelf when requested.
-  EXPECT_NE(nullptr, browser_window->GetDownloadShelf());
-
-  // The controller should now have a download shelf, which should have a view.
-  EXPECT_NE(nil, [[controller_ downloadShelf] view]);
-
-  // But, just requesting the download shelf shouldn't make it visible.
-  EXPECT_FALSE([controller_ isDownloadShelfVisible]);
-
-  browser_window->SetBounds(gfx::Rect(0, 0, 50, 50));
-
-  // When linking against an SDK >= 10.11, AppKit may lay out the window
-  // asynchronously (CFExecutableLinkedOnOrAfter check in -[NSThemeFrame
-  // handleSetFrameCommonRedisplay]). Do layout now instead.
-  [[controller_ window] layoutIfNeeded];
-
-  // The window should have returned to its minimum size.
-  EXPECT_EQ(browser_window->GetBounds().size(), kMinCocoaTabbedWindowSize);
-
-  browser_window->Close();
-}
-
 TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
   // Create a popup with bounds smaller than the minimum.
   Browser::CreateParams params(Browser::TYPE_POPUP, profile(), true);
@@ -323,22 +291,16 @@ BOOL ViewHierarchyContainmentValid(NSView* view) {
   return YES;
 }
 
-// Verifies that the toolbar, infobar, tab content area, and download shelf
+// Verifies that the toolbar, infobar and tab content area
 // completely fill the area under the tabstrip.
 void CheckViewPositions(BrowserWindowController* controller) {
   EXPECT_TRUE(ViewHierarchyContainmentValid([[controller window] contentView]));
 
-  NSRect contentView = FrameInWindowForView([[controller window] contentView]);
   NSRect tabstrip = FrameInWindowForView([controller tabStripView]);
   NSRect toolbar = FrameInWindowForView([controller toolbarView]);
   NSRect infobar = FrameInWindowForView([controller infoBarContainerView]);
   NSRect tabContent = FrameInWindowForView([controller tabContentArea]);
-  NSRect download = NSZeroRect;
-  if ([[[controller downloadShelf] view] superview])
-    download = [[[controller downloadShelf] view] frame];
 
-  EXPECT_EQ(NSMinY(contentView), NSMinY(download));
-  EXPECT_EQ(NSMaxY(download), NSMinY(tabContent));
   EXPECT_EQ(NSMaxY(tabContent), NSMinY(infobar));
 
   // Bookmark bar frame is random memory when hidden.
@@ -500,13 +462,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   tabstripFrame.origin.y = NSMaxY([contentView frame]);
   [tabstrip setFrame:tabstripFrame];
 
-  // Make the download shelf and set its initial height to 0.
-  [controller_ createAndAddDownloadShelf];
-  NSView* download = [[controller_ downloadShelf] view];
-  NSRect downloadFrame = [download frame];
-  downloadFrame.size.height = 0;
-  [download setFrame:downloadFrame];
-
   // Force a layout and check each view's frame.
   [controller_ layoutSubviews];
   CheckViewPositions(controller_);
@@ -517,10 +472,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
 
   // Expand the toolbar to 64px and recheck
   [controller_ resizeView:toolbar newHeight:64];
-  CheckViewPositions(controller_);
-
-  // Add a 30px download shelf and recheck
-  [controller_ resizeView:download newHeight:30];
   CheckViewPositions(controller_);
 
   // Shrink the infobar to 0px and toolbar to 39px and recheck
@@ -549,14 +500,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   tabstripFrame.origin.y = NSMaxY([contentView frame]);
   [tabstrip setFrame:tabstripFrame];
 
-  // The download shelf is created lazily.  Force-create it and set its initial
-  // height to 0.
-  [controller_ createAndAddDownloadShelf];
-  NSView* download = [[controller_ downloadShelf] view];
-  NSRect downloadFrame = [download frame];
-  downloadFrame.size.height = 0;
-  [download setFrame:downloadFrame];
-
   // Force a layout and check each view's frame.
   [controller_ layoutSubviews];
   CheckViewPositions(controller_);
@@ -571,10 +514,6 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
 
   // Expand the toolbar to 64px and recheck
   [controller_ resizeView:toolbar newHeight:64];
-  CheckViewPositions(controller_);
-
-  // Add a 30px download shelf and recheck
-  [controller_ resizeView:download newHeight:30];
   CheckViewPositions(controller_);
 
   // Remove the bookmark bar and recheck

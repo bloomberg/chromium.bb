@@ -895,10 +895,6 @@ willPositionSheet:(NSWindow*)sheet
       NSHeight([[bookmarkBarController_ view] bounds])];
 
   [layout setInfoBarHeight:[infoBarContainerController_ heightOfInfoBars]];
-
-  [layout setHasDownloadShelf:(downloadShelfController_.get() != nil)];
-  [layout setDownloadShelfHeight:
-      NSHeight([[downloadShelfController_ view] bounds])];
 }
 
 - (void)applyLayout:(BrowserWindowLayout*)layout {
@@ -915,8 +911,6 @@ willPositionSheet:(NSWindow*)sheet
 
   // The info bar is never hidden. Sometimes it has zero effective height.
   [[infoBarContainerController_ view] setFrame:output.infoBarFrame];
-
-  [[downloadShelfController_ view] setFrame:output.downloadShelfFrame];
 
   [self layoutTabContentArea:output.contentAreaFrame];
 
@@ -940,8 +934,6 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)updateSubviewZOrderNormal {
   base::scoped_nsobject<NSMutableArray> subviews([[NSMutableArray alloc] init]);
-  if ([downloadShelfController_ view])
-    [subviews addObject:[downloadShelfController_ view]];
   if ([bookmarkBarController_ view])
     [subviews addObject:[bookmarkBarController_ view]];
   if ([toolbarController_ view])
@@ -959,8 +951,6 @@ willPositionSheet:(NSWindow*)sheet
 - (void)updateSubviewZOrderFullscreen {
   base::scoped_nsobject<NSMutableArray> subviews([[NSMutableArray alloc] init]);
 
-  if ([downloadShelfController_ view])
-    [subviews addObject:[downloadShelfController_ view]];
   if ([self tabContentArea])
     [subviews addObject:[self tabContentArea]];
 

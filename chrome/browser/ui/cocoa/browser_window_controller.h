@@ -40,7 +40,6 @@ class BrowserWindowCocoa;
 @class BrowserWindowFullscreenTransition;
 @class BrowserWindowTouchBarController;
 @class DevToolsController;
-@class DownloadShelfController;
 class ExtensionKeybindingRegistryCocoa;
 class ExclusiveAccessController;
 class ExclusiveAccessContext;
@@ -84,7 +83,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
   base::scoped_nsobject<TabStripControllerCocoa> tabStripController_;
   base::scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
   base::scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
-  base::scoped_nsobject<DownloadShelfController> downloadShelfController_;
   base::scoped_nsobject<BookmarkBarController> bookmarkBarController_;
   base::scoped_nsobject<DevToolsController> devToolsController_;
   base::scoped_nsobject<OverlayableContentsController>
@@ -314,14 +312,6 @@ constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
 - (BookmarkBarController*)bookmarkBarController;
 
 - (DevToolsController*)devToolsController;
-
-- (BOOL)isDownloadShelfVisible;
-
-// Lazily creates the download shelf in visible state if it doesn't exist yet.
-- (void)createAndAddDownloadShelf;
-
-// Returns the download shelf controller, if it exists.
-- (DownloadShelfController*)downloadShelf;
 
 // Retains the given FindBarCocoaController and adds its view to this
 // browser window.  Must only be called once per

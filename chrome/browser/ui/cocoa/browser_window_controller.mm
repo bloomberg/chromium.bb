@@ -50,7 +50,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
-#import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
@@ -439,7 +438,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   [toolbarController_ browserWillBeDestroyed];
   [tabStripController_ browserWillBeDestroyed];
   [findBarCocoaController_ browserWillBeDestroyed];
-  [downloadShelfController_ browserWillBeDestroyed];
   [bookmarkBarController_ browserWillBeDestroyed];
   [avatarButtonController_ browserWillBeDestroyed];
 
@@ -935,13 +933,12 @@ bool IsTabDetachingInFullscreenEnabled() {
 // directly.  If the view is already the correct height, does not force a
 // relayout.
 - (void)resizeView:(NSView*)view newHeight:(CGFloat)height {
-  // We should only ever be called for one of the following four views.
-  // |downloadShelfController_| may be nil. If we are asked to size the bookmark
+  // We should only ever be called for one of the following three views.
+  // If we are asked to size the bookmark
   // bar directly, its superview must be this controller's content view.
   DCHECK(view);
   DCHECK(view == [toolbarController_ view] ||
          view == [infoBarContainerController_ view] ||
-         view == [downloadShelfController_ view] ||
          view == [bookmarkBarController_ view]);
 
   // The infobar has insufficient information to determine its new height. It
@@ -982,8 +979,7 @@ bool IsTabDetachingInFullscreenEnabled() {
       [bookmarkBarController_ isAnimatingBetweenState:BookmarkBar::HIDDEN
                                              andState:BookmarkBar::SHOW];
 
-  if ((shouldAdjustBookmarkHeight && view == [bookmarkBarController_ view]) ||
-      view == [downloadShelfController_ view]) {
+  if ((shouldAdjustBookmarkHeight && view == [bookmarkBarController_ view])) {
     CGFloat deltaH = height - NSHeight(frame);
     [self adjustWindowHeightBy:deltaH];
   }
@@ -1168,7 +1164,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   // lock the toolbar.
   NSView* view = base::mac::ObjCCastStrict<NSView>(responder);
   if (![view isDescendantOf:[[self window] contentView]] ||
-      [view isDescendantOf:[downloadShelfController_ view]] ||
       [view isDescendantOf:[self tabContentArea]]) {
     [self releaseToolbarVisibilityForOwner:self withAnimation:YES];
     return;
@@ -1361,24 +1356,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (DevToolsController*)devToolsController {
   return devToolsController_;
-}
-
-- (BOOL)isDownloadShelfVisible {
-  return downloadShelfController_ != nil &&
-      [downloadShelfController_ isVisible];
-}
-
-- (void)createAndAddDownloadShelf {
-  if (!downloadShelfController_.get()) {
-    downloadShelfController_.reset([[DownloadShelfController alloc]
-        initWithBrowser:browser_.get() resizeDelegate:self]);
-    [self.chromeContentView addSubview:[downloadShelfController_ view]];
-    [self layoutSubviews];
-  }
-}
-
-- (DownloadShelfController*)downloadShelf {
-  return downloadShelfController_;
 }
 
 - (void)addFindBar:(FindBarCocoaController*)findBarCocoaController {
