@@ -57,6 +57,7 @@ config("skia_config") {
   ]
 
   if (!is_ios) {
+    include_dirs += [ "//third_party/skia/include/codec" ]
     defines += [ "SK_HAS_JPEG_LIBRARY" ]
   }
   if (enable_vulkan) {

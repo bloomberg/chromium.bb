@@ -89,9 +89,16 @@ bool ImageFrame::CopyBitmapData(const ImageFrame& other) {
   pixel_format_ = other.pixel_format_;
   bitmap_.reset();
   SkImageInfo info = other.bitmap_.info();
-  return bitmap_.tryAllocPixels(info) &&
-         other.bitmap_.readPixels(info, bitmap_.getPixels(), bitmap_.rowBytes(),
-                                  0, 0);
+  if (!bitmap_.tryAllocPixels(info)) {
+    return false;
+  }
+
+  if (!other.bitmap_.readPixels(info, bitmap_.getPixels(), bitmap_.rowBytes(),
+                                0, 0))
+    return false;
+
+  status_ = kFrameInitialized;
+  return true;
 }
 
 bool ImageFrame::TakeBitmapDataIfWritable(ImageFrame* other) {
@@ -106,6 +113,7 @@ bool ImageFrame::TakeBitmapDataIfWritable(ImageFrame* other) {
   bitmap_.reset();
   bitmap_.swap(other->bitmap_);
   other->status_ = kFrameEmpty;
+  status_ = kFrameInitialized;
   return true;
 }
 
@@ -122,7 +130,11 @@ bool ImageFrame::AllocatePixelData(int new_width,
   if (pixel_format_ == kRGBA_F16)
     info = info.makeColorType(kRGBA_F16_SkColorType);
   bitmap_.setInfo(info);
-  return bitmap_.tryAllocPixels(allocator_);
+  bool allocated = bitmap_.tryAllocPixels(allocator_);
+  if (allocated)
+    status_ = kFrameInitialized;
+
+  return allocated;
 }
 
 sk_sp<SkImage> ImageFrame::FinalizePixelsAndGetImage() {
