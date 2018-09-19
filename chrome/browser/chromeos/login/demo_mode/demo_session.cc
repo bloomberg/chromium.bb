@@ -33,6 +33,8 @@
 #include "chromeos/dbus/image_loader_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
@@ -96,7 +98,7 @@ void InstallDemoMedia(base::FilePath offline_resources_path) {
 
   base::FilePath src_path = offline_resources_path.Append(kPhotosPath);
   base::FilePath dest_path = file_manager::util::GetDownloadsFolderForProfile(
-      ProfileManager::GetPrimaryUserProfile());
+      ProfileManager::GetActiveUserProfile());
 
   if (!base::CopyDirectory(src_path, dest_path, false /* recursive */))
     LOG(ERROR) << "Failed to install demo mode media.";
@@ -243,6 +245,11 @@ DemoSession* DemoSession::Get() {
   return g_demo_session;
 }
 
+// static
+bool DemoSession::IsScreensaverInDemoMode(const std::string& app_id) {
+  return app_id == extension_misc::kScreensaverAppId && IsDeviceInDemoMode();
+}
+
 void DemoSession::EnsureOfflineResourcesLoaded(
     base::OnceClosure load_callback) {
   if (offline_resources_loaded_) {
@@ -324,6 +331,12 @@ bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {
                    app_id_or_package) != ignore_pin_policy_offline_apps_.end();
 }
 
+void DemoSession::SetExtensionsExternalLoader(
+    scoped_refptr<DemoExtensionsExternalLoader> extensions_external_loader) {
+  extensions_external_loader_ = extensions_external_loader;
+  InstallAppFromUpdateUrl(extension_misc::kScreensaverAppId);
+}
+
 void DemoSession::OverrideIgnorePinPolicyAppsForTesting(
     std::vector<std::string> apps) {
   ignore_pin_policy_offline_apps_ = std::move(apps);
@@ -386,10 +399,10 @@ void DemoSession::LoadAndLaunchHighlightsApp() {
   DCHECK(offline_resources_loaded_);
   if (offline_resources_path_.empty()) {
     LOG(ERROR) << "Offline resources not loaded - no highlights app available.";
-    InstallHighlightsAppFromUpdateUrl();
+    InstallAppFromUpdateUrl(GetHighlightsAppId());
     return;
   }
-  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   const base::FilePath resources_path =
       offline_resources_path_.Append(kHighlightsAppPath);
@@ -397,17 +410,24 @@ void DemoSession::LoadAndLaunchHighlightsApp() {
           resources_path, base::CommandLine(base::CommandLine::NO_PROGRAM),
           base::FilePath() /* cur_dir */)) {
     LOG(WARNING) << "Failed to launch highlights app from offline resources.";
-    InstallHighlightsAppFromUpdateUrl();
+    InstallAppFromUpdateUrl(GetHighlightsAppId());
   }
 }
 
-void DemoSession::InstallHighlightsAppFromUpdateUrl() {
+void DemoSession::InstallAppFromUpdateUrl(const std::string& id) {
   if (!extensions_external_loader_)
     return;
-  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  auto* user = user_manager::UserManager::Get()->GetActiveUser();
+  if (!user->is_profile_created()) {
+    user->AddProfileCreatedObserver(
+        base::BindOnce(&DemoSession::InstallAppFromUpdateUrl,
+                       weak_ptr_factory_.GetWeakPtr(), id));
+    return;
+  }
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
-  extensions_external_loader_->LoadApp(GetHighlightsAppId());
+  extensions_external_loader_->LoadApp(id);
 }
 
 void DemoSession::OnSessionStateChanged() {
@@ -425,7 +445,7 @@ void DemoSession::OnExtensionInstalled(content::BrowserContext* browser_context,
                                        bool is_update) {
   if (extension->id() != GetHighlightsAppId())
     return;
-  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   OpenApplication(AppLaunchParams(
       profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,

@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/extensions/install_limiter_factory.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/notification_types.h"
@@ -46,8 +47,17 @@ InstallLimiter::DeferredInstall::~DeferredInstall() {
 ////////////////////////////////////////////////////////////////////////////////
 // InstallLimiter
 
+// static
 InstallLimiter* InstallLimiter::Get(Profile* profile) {
   return InstallLimiterFactory::GetForProfile(profile);
+}
+
+// static
+bool InstallLimiter::ShouldDeferInstall(int64_t app_size,
+                                        const std::string& app_id) {
+  constexpr int64_t kBigAppSizeThreshold = 1048576;  // 1MB in bytes
+  return app_size > kBigAppSizeThreshold &&
+         !chromeos::DemoSession::IsScreensaverInDemoMode(app_id);
 }
 
 InstallLimiter::InstallLimiter() : disabled_for_test_(false) {
@@ -76,9 +86,7 @@ void InstallLimiter::Add(const scoped_refptr<CrxInstaller>& installer,
 void InstallLimiter::AddWithSize(const scoped_refptr<CrxInstaller>& installer,
                                  const base::FilePath& path,
                                  int64_t size) {
-  const int64_t kBigAppSizeThreshold = 1048576;  // 1MB
-
-  if (size <= kBigAppSizeThreshold) {
+  if (!ShouldDeferInstall(size, installer->expected_id())) {
     RunInstall(installer, path);
 
     // Stop wait timer and let install notification drive deferred installs.

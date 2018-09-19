@@ -2091,6 +2091,7 @@ source_set("unit_tests") {
     "extensions/file_manager/drivefs_event_router_unittest.cc",
     "extensions/file_manager/job_event_router_unittest.cc",
     "extensions/gfx_utils_unittest.cc",
+    "extensions/install_limiter_unittest.cc",
     "extensions/permissions_updater_delegate_chromeos_unittest.cc",
     "extensions/public_session_permission_helper_unittest.cc",
     "extensions/quick_unlock_private/quick_unlock_private_api_unittest.cc",
