@@ -18,6 +18,16 @@ class ExploreSitesService : public KeyedService {
 
   // Returns via callback the current catalog stored locally.
   virtual void GetCatalog(CatalogCallback callback) = 0;
+
+  // Returns via callback the image for a category. This image is composed from
+  // multiple site images. The site images are checked against the user
+  // blacklist so that unwanted sites are not represented in the category image.
+  // Returns |nullptr| if there was an error, or no match.
+  virtual void GetCategoryImage(int category_id, BitmapCallback callback) = 0;
+
+  // Returns via callback the image for a site. This is typically the site
+  // favicon. Returns |nullptr| if there was an error or no match for |site_id|.
+  virtual void GetSiteImage(int site_id, BitmapCallback callback) = 0;
 };
 
 }  // namespace explore_sites

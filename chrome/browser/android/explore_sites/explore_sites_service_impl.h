@@ -28,6 +28,8 @@ class ExploreSitesServiceImpl : public ExploreSitesService,
 
   // ExploreSitesService implementation.
   void GetCatalog(CatalogCallback callback) override;
+  void GetCategoryImage(int category_id, BitmapCallback callback) override;
+  void GetSiteImage(int site_id, BitmapCallback callback) override;
 
  private:
   // KeyedService implementation:

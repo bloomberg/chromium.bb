@@ -2151,6 +2151,8 @@ jumbo_split_static_library("browser") {
       "android/explore_sites/explore_sites_types.h",
       "android/explore_sites/get_catalog_task.cc",
       "android/explore_sites/get_catalog_task.h",
+      "android/explore_sites/get_images_task.cc",
+      "android/explore_sites/get_images_task.h",
       "android/explore_sites/import_catalog_task.cc",
       "android/explore_sites/import_catalog_task.h",
       "android/explore_sites/ntp_json_fetcher.cc",
