@@ -15,10 +15,13 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_item.h"
+#include "components/offline_items_collection/core/offline_item.h"
 
 namespace gfx {
 class FontList;
 }
+
+using offline_items_collection::ContentId;
 
 // This class is an abstraction for common UI tasks and properties associated
 // with a download.
@@ -39,6 +42,9 @@ class DownloadUIModel {
 
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
+
+  // Returns the content id associated with this download.
+  virtual ContentId GetContentId() const;
 
   // Returns a long descriptive string for a download that's in the INTERRUPTED
   // state. For other downloads, the returned string will be empty.
@@ -74,7 +80,7 @@ class DownloadUIModel {
   // warning.
   virtual base::string16 GetWarningConfirmButtonText() const;
 
-  // Get the number of bytes that has completed so far. Virtual for testing.
+  // Get the number of bytes that has completed so far.
   virtual int64_t GetCompletedBytes() const;
 
   // Get the total number of bytes for this download. Should return 0 if the
@@ -213,6 +219,39 @@ class DownloadUIModel {
 
   // Marks the download as having been opened (without actually opening it).
   virtual void SetOpened(bool opened);
+
+  // Returns true if the download is in a terminal state. This includes
+  // completed downloads, cancelled downloads, and interrupted downloads that
+  // can't be resumed.
+  virtual bool IsDone() const;
+
+  // Cancels the download operation. Set |user_cancel| to true if the
+  // cancellation was triggered by an explicit user action.
+  virtual void Cancel(bool user_cancel);
+
+  // Marks the download to be auto-opened when completed.
+  virtual void SetOpenWhenComplete(bool open);
+
+  // Returns the most recent interrupt reason for this download. Returns
+  // |DOWNLOAD_INTERRUPT_REASON_NONE| if there is no previous interrupt reason.
+  virtual download::DownloadInterruptReason GetLastReason() const;
+
+  // Returns the full path to the downloaded or downloading file. This is the
+  // path to the physical file, if one exists.
+  virtual base::FilePath GetFullPath() const;
+
+  // Returns whether the download can be resumed.
+  virtual bool CanResume() const;
+
+  // Returns whether this download has saved all of its data.
+  virtual bool AllDataSaved() const;
+
+  // Returns whether the file associated with the download has been removed by
+  // external action.
+  virtual bool GetFileExternallyRemoved() const;
+
+  // Returns the URL represented by this download.
+  virtual GURL GetURL() const;
 
 #if !defined(OS_ANDROID)
   // Creates a download command for the underlying download item.

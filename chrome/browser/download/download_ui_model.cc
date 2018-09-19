@@ -18,6 +18,11 @@ void DownloadUIModel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+ContentId DownloadUIModel::GetContentId() const {
+  NOTREACHED();
+  return ContentId();
+}
+
 base::string16 DownloadUIModel::GetInterruptReasonText() const {
   return base::string16();
 }
@@ -164,6 +169,38 @@ bool DownloadUIModel::GetOpened() const {
 }
 
 void DownloadUIModel::SetOpened(bool opened) {}
+
+bool DownloadUIModel::IsDone() const {
+  return false;
+}
+
+void DownloadUIModel::Cancel(bool user_cancel) {}
+
+void DownloadUIModel::SetOpenWhenComplete(bool open) {}
+
+download::DownloadInterruptReason DownloadUIModel::GetLastReason() const {
+  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
+}
+
+base::FilePath DownloadUIModel::GetFullPath() const {
+  return base::FilePath();
+}
+
+bool DownloadUIModel::CanResume() const {
+  return false;
+}
+
+bool DownloadUIModel::AllDataSaved() const {
+  return false;
+}
+
+bool DownloadUIModel::GetFileExternallyRemoved() const {
+  return false;
+}
+
+GURL DownloadUIModel::GetURL() const {
+  return GURL();
+}
 
 #if !defined(OS_ANDROID)
 DownloadCommands DownloadUIModel::GetDownloadCommands() const {

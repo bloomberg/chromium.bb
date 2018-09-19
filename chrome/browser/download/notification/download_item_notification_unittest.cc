@@ -13,6 +13,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/download/notification/download_notification_manager.h"
+#include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -59,7 +60,7 @@ class DownloadItemNotificationTest : public testing::Test {
         std::make_unique<NotificationDisplayServiceTester>(profile_);
 
     download_notification_manager_.reset(
-        new DownloadNotificationManagerForProfile(profile_, nullptr));
+        new DownloadNotificationManager(profile_));
 
     base::FilePath download_item_target_path(kDownloadItemTargetPathString);
     download_item_.reset(new NiceMock<download::MockDownloadItem>());
@@ -118,9 +119,12 @@ class DownloadItemNotificationTest : public testing::Test {
   }
 
   void CreateDownloadItemNotification() {
+    offline_items_collection::ContentId id(
+        OfflineItemUtils::GetDownloadNamespace(profile_->IsOffTheRecord()),
+        download_item_->GetGuid());
     download_notification_manager_->OnNewDownloadReady(download_item_.get());
     download_item_notification_ =
-        download_notification_manager_->items_[download_item_.get()].get();
+        download_notification_manager_->items_[id].get();
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
         NotificationHandler::Type::TRANSIENT,
         *download_item_notification_->notification_);
@@ -132,8 +136,7 @@ class DownloadItemNotificationTest : public testing::Test {
   Profile* profile_;
 
   std::unique_ptr<NiceMock<download::MockDownloadItem>> download_item_;
-  std::unique_ptr<DownloadNotificationManagerForProfile>
-      download_notification_manager_;
+  std::unique_ptr<DownloadNotificationManager> download_notification_manager_;
   DownloadItemNotification* download_item_notification_;
   std::unique_ptr<NotificationDisplayServiceTester> service_tester_;
 };
