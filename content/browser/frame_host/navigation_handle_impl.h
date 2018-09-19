@@ -152,7 +152,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const std::string& raw_response_header) override;
   void CallDidCommitNavigationForTesting(const GURL& url) override;
   void CallResumeForTesting() override;
-  bool IsDeferredForTesting() override;
   bool WasStartedFromContextMenu() const override;
   const GURL& GetSearchableFormURL() override;
   const std::string& GetSearchableFormEncoding() override;

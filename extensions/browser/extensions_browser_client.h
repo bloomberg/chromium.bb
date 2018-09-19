@@ -74,7 +74,6 @@ class KioskDelegate;
 class ProcessManagerDelegate;
 class ProcessMap;
 class RuntimeAPIDelegate;
-class UserScriptListener;
 
 // Interface to allow the extensions module to make browser-process-specific
 // queries of the embedder. Should be Set() once in the browser process.
@@ -355,8 +354,6 @@ class ExtensionsBrowserClient {
   virtual bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin);
 
   virtual network::mojom::NetworkContext* GetSystemNetworkContext();
-
-  virtual UserScriptListener* GetUserScriptListener();
 
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;

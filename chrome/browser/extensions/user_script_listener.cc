@@ -13,26 +13,26 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/resource_throttle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/url_pattern.h"
+#include "net/url_request/url_request.h"
 
 using content::BrowserThread;
-using content::NavigationThrottle;
+using content::ResourceThrottle;
 using content::ResourceType;
 
 namespace extensions {
 
 class UserScriptListener::Throttle
-    : public NavigationThrottle,
+    : public ResourceThrottle,
       public base::SupportsWeakPtr<UserScriptListener::Throttle> {
  public:
-  explicit Throttle(content::NavigationHandle* navigation_handle)
-      : NavigationThrottle(navigation_handle) {}
+  Throttle() : should_defer_(true), did_defer_(false) {
+  }
 
   void ResumeIfDeferred() {
     DCHECK(should_defer_);
@@ -45,24 +45,23 @@ class UserScriptListener::Throttle
     }
   }
 
-  // NavigationThrottle implementation:
-  ThrottleCheckResult WillStartRequest() override {
+  // ResourceThrottle implementation:
+  void WillStartRequest(bool* defer) override {
     // Only defer requests if Resume has not yet been called.
     if (should_defer_) {
+      *defer = true;
       did_defer_ = true;
       timer_.reset(new base::ElapsedTimer());
-      return DEFER;
     }
-    return PROCEED;
   }
 
-  const char* GetNameForLogging() override {
+  const char* GetNameForLogging() const override {
     return "UserScriptListener::Throttle";
   }
 
  private:
-  bool should_defer_ = true;
-  bool did_defer_ = false;
+  bool should_defer_;
+  bool did_defer_;
   std::unique_ptr<base::ElapsedTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(Throttle);
@@ -71,21 +70,21 @@ class UserScriptListener::Throttle
 struct UserScriptListener::ProfileData {
   // True if the user scripts contained in |url_patterns| are ready for
   // injection.
-  bool user_scripts_ready = false;
+  bool user_scripts_ready;
 
   // A list of URL patterns that have will have user scripts applied to them.
   URLPatterns url_patterns;
+
+  ProfileData() : user_scripts_ready(false) {}
 };
 
-UserScriptListener::UserScriptListener() : extension_registry_observer_(this) {
+UserScriptListener::UserScriptListener()
+    : user_scripts_ready_(false), extension_registry_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Profile manager can be null in unit tests.
-  if (g_browser_process->profile_manager()) {
-    for (auto* profile :
-         g_browser_process->profile_manager()->GetLoadedProfiles()) {
-      extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
-    }
+  for (auto* profile :
+       g_browser_process->profile_manager()->GetLoadedProfiles()) {
+    extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
@@ -98,27 +97,30 @@ UserScriptListener::UserScriptListener() : extension_registry_observer_(this) {
                  content::NotificationService::AllSources());
 }
 
-std::unique_ptr<NavigationThrottle>
-UserScriptListener::CreateNavigationThrottle(
-    content::NavigationHandle* navigation_handle) {
-  if (!ShouldDelayRequest(navigation_handle->GetURL()))
-    return nullptr;
+ResourceThrottle* UserScriptListener::CreateResourceThrottle(
+    const GURL& url,
+    ResourceType resource_type) {
+  if (!ShouldDelayRequest(url, resource_type))
+    return NULL;
 
-  auto throttle = std::make_unique<Throttle>(navigation_handle);
+  Throttle* throttle = new Throttle();
   throttles_.push_back(throttle->AsWeakPtr());
   return throttle;
 }
 
-void UserScriptListener::SetUserScriptsNotReadyForTesting(
-    content::BrowserContext* context) {
-  AppendNewURLPatterns(context, {URLPattern(URLPattern::SCHEME_ALL,
-                                            URLPattern::kAllUrlsPattern)});
+UserScriptListener::~UserScriptListener() {
 }
 
-UserScriptListener::~UserScriptListener() {}
+bool UserScriptListener::ShouldDelayRequest(const GURL& url,
+                                            ResourceType resource_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-bool UserScriptListener::ShouldDelayRequest(const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // If it's a frame load, then we need to check the URL against the list of
+  // user scripts to see if we need to wait.
+  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME &&
+      resource_type != content::RESOURCE_TYPE_SUB_FRAME)
+    return false;
+
   // Note: we could delay only requests made by the profile who is causing the
   // delay, but it's a little more complicated to associate requests with the
   // right profile. Since this is a rare case, we'll just take the easy way
@@ -153,7 +155,7 @@ void UserScriptListener::StartDelayedRequests() {
 }
 
 void UserScriptListener::CheckIfAllUserScriptsReady() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool was_ready = user_scripts_ready_;
 
   user_scripts_ready_ = true;
@@ -167,39 +169,39 @@ void UserScriptListener::CheckIfAllUserScriptsReady() {
     StartDelayedRequests();
 }
 
-void UserScriptListener::UserScriptsReady(content::BrowserContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+void UserScriptListener::UserScriptsReady(void* profile_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  profile_data_[context].user_scripts_ready = true;
+  profile_data_[profile_id].user_scripts_ready = true;
   CheckIfAllUserScriptsReady();
 }
 
-void UserScriptListener::ProfileDestroyed(content::BrowserContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  profile_data_.erase(context);
+void UserScriptListener::ProfileDestroyed(void* profile_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  profile_data_.erase(profile_id);
 
   // We may have deleted the only profile we were waiting on.
   CheckIfAllUserScriptsReady();
 }
 
-void UserScriptListener::AppendNewURLPatterns(content::BrowserContext* context,
+void UserScriptListener::AppendNewURLPatterns(void* profile_id,
                                               const URLPatterns& new_patterns) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   user_scripts_ready_ = false;
 
-  ProfileData& data = profile_data_[context];
+  ProfileData& data = profile_data_[profile_id];
   data.user_scripts_ready = false;
 
   data.url_patterns.insert(data.url_patterns.end(),
                            new_patterns.begin(), new_patterns.end());
 }
 
-void UserScriptListener::ReplaceURLPatterns(content::BrowserContext* context,
+void UserScriptListener::ReplaceURLPatterns(void* profile_id,
                                             const URLPatterns& patterns) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  ProfileData& data = profile_data_[context];
+  ProfileData& data = profile_data_[profile_id];
   data.url_patterns = patterns;
 }
 
@@ -229,12 +231,16 @@ void UserScriptListener::Observe(int type,
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       Profile* profile = content::Source<Profile>(source).ptr();
-      ProfileDestroyed(profile);
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&UserScriptListener::ProfileDestroyed, this, profile));
       break;
     }
     case extensions::NOTIFICATION_USER_SCRIPTS_UPDATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
-      UserScriptsReady(profile);
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&UserScriptListener::UserScriptsReady, this, profile));
       break;
     }
     default:
@@ -251,7 +257,10 @@ void UserScriptListener::OnExtensionLoaded(
   URLPatterns new_patterns;
   CollectURLPatterns(extension, &new_patterns);
   if (!new_patterns.empty()) {
-    AppendNewURLPatterns(browser_context, new_patterns);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&UserScriptListener::AppendNewURLPatterns, this,
+                       browser_context, new_patterns));
   }
 }
 
@@ -271,7 +280,10 @@ void UserScriptListener::OnExtensionUnloaded(
     if (it->get() != extension)
       CollectURLPatterns(it->get(), &new_patterns);
   }
-  ReplaceURLPatterns(browser_context, new_patterns);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&UserScriptListener::ReplaceURLPatterns, this,
+                     browser_context, new_patterns));
 }
 
 void UserScriptListener::OnShutdown(ExtensionRegistry* registry) {

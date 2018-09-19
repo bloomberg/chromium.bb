@@ -11,19 +11,20 @@
 #include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/resource_type.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class GURL;
 class URLPattern;
 
 namespace content {
-class BrowserContext;
-class NavigationHandle;
-class NavigationThrottle;
+class ResourceThrottle;
 }
 
 namespace extensions {
@@ -34,24 +35,33 @@ class Extension;
 // script, and if so, whether that user script is ready; if not, we delay the
 // request.
 //
-// This class lives on the UI thread.
-class UserScriptListener : public content::NotificationObserver,
+// This class lives mostly on the IO thread. It listens on the UI thread for
+// updates to loaded extensions.
+class UserScriptListener : public base::RefCountedThreadSafe<
+                               UserScriptListener,
+                               content::BrowserThread::DeleteOnUIThread>,
+                           public content::NotificationObserver,
                            public ExtensionRegistryObserver {
  public:
   UserScriptListener();
-  ~UserScriptListener() override;
 
-  // Constructs a NavigationThrottle if the UserScriptListener needs to delay
-  // the given navigation. Otherwise, this method returns NULL.
-  std::unique_ptr<content::NavigationThrottle> CreateNavigationThrottle(
-      content::NavigationHandle* navigation_handle);
-
-  void SetUserScriptsNotReadyForTesting(content::BrowserContext* context);
+  // Constructs a ResourceThrottle if the UserScriptListener needs to delay the
+  // given URL.  Otherwise, this method returns NULL.
+  content::ResourceThrottle* CreateResourceThrottle(
+      const GURL& url,
+      content::ResourceType resource_type);
 
  private:
-  using URLPatterns = std::list<URLPattern>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<UserScriptListener>;
 
-  bool ShouldDelayRequest(const GURL& url);
+  typedef std::list<URLPattern> URLPatterns;
+
+  ~UserScriptListener() override;
+
+  bool ShouldDelayRequest(const GURL& url,
+                          content::ResourceType resource_type);
   void StartDelayedRequests();
 
   // Update user_scripts_ready_ based on the status of all profiles. On a
@@ -59,23 +69,21 @@ class UserScriptListener : public content::NotificationObserver,
   void CheckIfAllUserScriptsReady();
 
   // Resume any requests that we delayed in order to wait for user scripts.
-  void UserScriptsReady(content::BrowserContext* context);
+  void UserScriptsReady(void* profile_id);
 
   // Clean up per-profile information related to the given profile.
-  void ProfileDestroyed(content::BrowserContext* context);
+  void ProfileDestroyed(void* profile_id);
 
   // Appends new url patterns to our list, also setting user_scripts_ready_
   // to false.
-  void AppendNewURLPatterns(content::BrowserContext* context,
-                            const URLPatterns& new_patterns);
+  void AppendNewURLPatterns(void* profile_id, const URLPatterns& new_patterns);
 
   // Replaces our url pattern list. This is only used when patterns have been
   // deleted, so user_scripts_ready_ remains unchanged.
-  void ReplaceURLPatterns(content::BrowserContext* context,
-                          const URLPatterns& patterns);
+  void ReplaceURLPatterns(void* profile_id, const URLPatterns& patterns);
 
   // True if all user scripts from all profiles are ready.
-  bool user_scripts_ready_ = false;
+  bool user_scripts_ready_;
 
   // Stores a throttle per URL request that we have delayed.
   class Throttle;
@@ -85,7 +93,7 @@ class UserScriptListener : public content::NotificationObserver,
 
   // Per-profile bookkeeping so we know when all user scripts are ready.
   struct ProfileData;
-  using ProfileDataMap = std::map<content::BrowserContext*, ProfileData>;
+  typedef std::map<void*, ProfileData> ProfileDataMap;
   ProfileDataMap profile_data_;
 
   // --- UI thread:
