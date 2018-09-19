@@ -16,7 +16,9 @@ static_library("storage") {
   ]
   deps = [
     "proto",
+    "//components/base32",
     "//components/leveldb_proto",
+    "//components/prefs",
     "//net",
   ]
   public_deps = [
@@ -27,6 +29,7 @@ static_library("storage") {
 source_set("storage_unit_tests") {
   testonly = true
   sources = [
+    "image_cache_unittest.cc",
     "image_data_store_disk_unittest.cc",
     "image_metadata_store_leveldb_unittest.cc",
   ]
@@ -36,6 +39,7 @@ source_set("storage_unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/leveldb_proto:test_support",
+    "//components/prefs:test_support",
     "//testing/gmock",
     "//testing/gtest:gtest",
   ]
