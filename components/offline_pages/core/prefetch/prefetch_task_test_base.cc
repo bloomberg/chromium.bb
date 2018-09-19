@@ -76,11 +76,7 @@ std::set<PrefetchItem> PrefetchTaskTestBase::FilterByState(
 
 network::TestURLLoaderFactory::PendingRequest*
 PrefetchTaskTestBase::GetPendingRequest(size_t index) {
-  if (index >= test_url_loader_factory_.pending_requests()->size())
-    return nullptr;
-  auto* request = &(*test_url_loader_factory_.pending_requests())[index];
-  DCHECK(request);
-  return request;
+  return test_url_loader_factory_.GetPendingRequest(index);
 }
 
 }  // namespace offline_pages

@@ -87,6 +87,15 @@ int TestURLLoaderFactory::NumPending() {
   return pending;
 }
 
+TestURLLoaderFactory::PendingRequest* TestURLLoaderFactory::GetPendingRequest(
+    size_t index) {
+  if (index >= pending_requests_.size())
+    return nullptr;
+  auto* request = &(pending_requests_[index]);
+  DCHECK(request);
+  return request;
+}
+
 void TestURLLoaderFactory::ClearResponses() {
   responses_.clear();
 }
