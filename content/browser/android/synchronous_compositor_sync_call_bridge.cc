@@ -85,7 +85,7 @@ bool SynchronousCompositorSyncCallBridge::WaitAfterVSyncOnUIThread(
   base::AutoLock lock(lock_);
   if (remote_state_ != RemoteState::READY)
     return false;
-  DCHECK(!begin_frame_response_valid_);
+  CHECK(!begin_frame_response_valid_);
   if (window_android_in_vsync_) {
     DCHECK_EQ(window_android_in_vsync_, window_android);
     return true;
