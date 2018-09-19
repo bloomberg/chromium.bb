@@ -78,10 +78,10 @@ js_library("gallery") {
     ":gallery_constants",
     ":gallery_item",
     ":thumbnail_mode",
-    "../../file_manager/common/js:util",
-    "../../file_manager/foreground/js:volume_manager_wrapper",
-    "../../file_manager/foreground/js/ui:files_confirm_dialog",
-    "../../gallery/js:slide_mode",
+    "//ui/file_manager/base/js:filtered_volume_manager",
+    "//ui/file_manager/file_manager/common/js:util",
+    "//ui/file_manager/file_manager/foreground/js/ui:files_confirm_dialog",
+    "//ui/file_manager/gallery/js:slide_mode",
     "//ui/webui/resources/js:i18n_template_no_process",
   ]
 }

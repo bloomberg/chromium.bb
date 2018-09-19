@@ -59,7 +59,7 @@
 // <include src="../../file_manager/foreground/js/ui/file_manager_dialog_base.js">
 // <include src="../../file_manager/foreground/js/ui/files_alert_dialog.js">
 // <include src="../../file_manager/foreground/js/ui/files_confirm_dialog.js">
-// <include src="../../file_manager/foreground/js/volume_manager_wrapper.js">
+// <include src="../../base/js/filtered_volume_manager.js">
 
 // <include src="image_editor/image_util.js">
 // <include src="image_editor/viewport.js">

@@ -1047,7 +1047,7 @@ const loadTimeDataPromise = new Promise(function(fulfill, reject) {
  * @type {!Promise}
  */
 const volumeManagerPromise = new Promise(function(fulfill, reject) {
-  let volumeManager = new VolumeManagerWrapper(AllowedPaths.ANY_PATH, false);
+  let volumeManager = new FilteredVolumeManager(AllowedPaths.ANY_PATH, false);
   volumeManager.ensureInitialized(fulfill.bind(null, volumeManager));
 });
 

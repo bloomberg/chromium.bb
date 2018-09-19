@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 /**
- * Implementation of VolumeInfoList for VolumeManagerWrapper.
+ * Implementation of VolumeInfoList for FilteredVolumeManager.
  * In foreground/ we want to enforce this list to be filtered, so we forbid
  * adding/removing/splicing of the list.
- * The inner list ownership is shared between VolumeInfoListWrapper and
- * VolumeManagerWrapper to enforce these constraints.
+ * The inner list ownership is shared between FilteredVolumeInfoList and
+ * FilteredVolumeManager to enforce these constraints.
  *
  * @implements {VolumeInfoList}
  */
-class VolumeInfoListWrapper {
+class FilteredVolumeInfoList {
   /**
    * @param {!cr.ui.ArrayDataModel} list
    */
@@ -33,11 +33,11 @@ class VolumeInfoListWrapper {
   }
   /** @override */
   add(volumeInfo) {
-    throw new Error('VolumeInfoListWrapper.add not allowed in foreground');
+    throw new Error('FilteredVolumeInfoList.add not allowed in foreground');
   }
   /** @override */
   remove(volumeInfo) {
-    throw new Error('VolumeInfoListWrapper.remove not allowed in foreground');
+    throw new Error('FilteredVolumeInfoList.remove not allowed in foreground');
   }
   /** @override */
   item(index) {
@@ -63,7 +63,7 @@ class VolumeInfoListWrapper {
  *     TODO(hirono): Let all clients of the class pass the background page and
  *     make the argument not optional.
  */
-function VolumeManagerWrapper(allowedPaths, writableOnly, opt_backgroundPage) {
+function FilteredVolumeManager(allowedPaths, writableOnly, opt_backgroundPage) {
   cr.EventTarget.call(this);
 
   this.allowedPaths_ = allowedPaths;
@@ -72,7 +72,7 @@ function VolumeManagerWrapper(allowedPaths, writableOnly, opt_backgroundPage) {
   /** @private */
   this.list_ = new cr.ui.ArrayDataModel([]);
   // Public VolumeManager.volumeInfoList property accessed by callers.
-  this.volumeInfoList = new VolumeInfoListWrapper(this.list_);
+  this.volumeInfoList = new FilteredVolumeInfoList(this.list_);
 
   this.volumeManager_ = null;
   this.pendingTasks_ = [];
@@ -109,7 +109,7 @@ function VolumeManagerWrapper(allowedPaths, writableOnly, opt_backgroundPage) {
 /**
  * Extends cr.EventTarget.
  */
-VolumeManagerWrapper.prototype.__proto__ = cr.EventTarget.prototype;
+FilteredVolumeManager.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
  * Checks if a volume type is allowed.
@@ -121,7 +121,7 @@ VolumeManagerWrapper.prototype.__proto__ = cr.EventTarget.prototype;
  * @param {VolumeManagerCommon.VolumeType} volumeType
  * @return {boolean}
  */
-VolumeManagerWrapper.prototype.isAllowedVolumeType_ = function(volumeType) {
+FilteredVolumeManager.prototype.isAllowedVolumeType_ = function(volumeType) {
   switch (this.allowedPaths_) {
     case AllowedPaths.ANY_PATH:
       return true;
@@ -140,7 +140,7 @@ VolumeManagerWrapper.prototype.isAllowedVolumeType_ = function(volumeType) {
  * @param {!VolumeInfo} volumeInfo
  * @return {boolean}
  */
-VolumeManagerWrapper.prototype.isAllowedVolume_ = function(volumeInfo) {
+FilteredVolumeManager.prototype.isAllowedVolume_ = function(volumeInfo) {
   if (!this.isAllowedVolumeType_(volumeInfo.volumeType))
     return false;
   if (this.writableOnly_ && volumeInfo.isReadOnly)
@@ -153,7 +153,7 @@ VolumeManagerWrapper.prototype.isAllowedVolume_ = function(volumeInfo) {
  * @param {VolumeManager} volumeManager The initialized VolumeManager instance.
  * @private
  */
-VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
+FilteredVolumeManager.prototype.onReady_ = function(volumeManager) {
   if (this.disposed_)
     return;
 
@@ -168,7 +168,7 @@ VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
       VolumeManagerCommon.ARCHIVE_OPENED_EVENT_TYPE, this.onEventBound_);
 
   // Dispatch 'drive-connection-changed' to listeners, since the return value of
-  // VolumeManagerWrapper.getDriveConnectionState() can be changed by setting
+  // FilteredVolumeManager.getDriveConnectionState() can be changed by setting
   // this.volumeManager_.
   cr.dispatchSimpleEvent(this, 'drive-connection-changed');
 
@@ -200,7 +200,7 @@ VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
  * Disposes the instance. After the invocation of this method, any other
  * method should not be called.
  */
-VolumeManagerWrapper.prototype.dispose = function() {
+FilteredVolumeManager.prototype.dispose = function() {
   this.disposed_ = true;
 
   if (!this.volumeManager_)
@@ -219,7 +219,7 @@ VolumeManagerWrapper.prototype.dispose = function() {
  * @param {!Event} event Event object sent from VolumeManager.
  * @private
  */
-VolumeManagerWrapper.prototype.onEvent_ = function(event) {
+FilteredVolumeManager.prototype.onEvent_ = function(event) {
   switch (event.type) {
     case 'drive-connection-changed':
       if (this.isAllowedVolumeType_(VolumeManagerCommon.VolumeType.DRIVE))
@@ -241,7 +241,7 @@ VolumeManagerWrapper.prototype.onEvent_ = function(event) {
  * @param {Event} event Event object sent from VolumeInfoList.
  * @private
  */
-VolumeManagerWrapper.prototype.onVolumeInfoListUpdated_ = function(event) {
+FilteredVolumeManager.prototype.onVolumeInfoListUpdated_ = function(event) {
   // Filters some volumes.
   var index = event.index;
   for (var i = 0; i < event.index; i++) {
@@ -273,7 +273,7 @@ VolumeManagerWrapper.prototype.onVolumeInfoListUpdated_ = function(event) {
  * Returns whether the VolumeManager is initialized or not.
  * @return {boolean} True if the VolumeManager is initialized.
  */
-VolumeManagerWrapper.prototype.isInitialized = function() {
+FilteredVolumeManager.prototype.isInitialized = function() {
   return this.pendingTasks_ === null;
 };
 
@@ -283,7 +283,7 @@ VolumeManagerWrapper.prototype.isInitialized = function() {
  * immediately.
  * @param {function()} callback Called on initialization completion.
  */
-VolumeManagerWrapper.prototype.ensureInitialized = function(callback) {
+FilteredVolumeManager.prototype.ensureInitialized = function(callback) {
   if (!this.isInitialized()) {
     this.pendingTasks_.push(this.ensureInitialized.bind(this, callback));
     return;
@@ -296,7 +296,7 @@ VolumeManagerWrapper.prototype.ensureInitialized = function(callback) {
  * @return {VolumeManagerCommon.DriveConnectionState} Current drive connection
  *     state.
  */
-VolumeManagerWrapper.prototype.getDriveConnectionState = function() {
+FilteredVolumeManager.prototype.getDriveConnectionState = function() {
   if (!this.isAllowedVolumeType_(VolumeManagerCommon.VolumeType.DRIVE) ||
       !this.volumeManager_) {
     return {
@@ -309,7 +309,7 @@ VolumeManagerWrapper.prototype.getDriveConnectionState = function() {
 };
 
 /** @override */
-VolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
+FilteredVolumeManager.prototype.getVolumeInfo = function(entry) {
   return this.filterDisallowedVolume_(
       this.volumeManager_ && this.volumeManager_.getVolumeInfo(entry));
 };
@@ -319,7 +319,7 @@ VolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
  * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
  * @return {VolumeInfo} Found volume info.
  */
-VolumeManagerWrapper.prototype.getCurrentProfileVolumeInfo =
+FilteredVolumeManager.prototype.getCurrentProfileVolumeInfo =
     function(volumeType) {
   return this.filterDisallowedVolume_(
       this.volumeManager_ &&
@@ -330,7 +330,7 @@ VolumeManagerWrapper.prototype.getCurrentProfileVolumeInfo =
  * Obtains the default display root entry.
  * @param {function(Entry)} callback Callback passed the default display root.
  */
-VolumeManagerWrapper.prototype.getDefaultDisplayRoot =
+FilteredVolumeManager.prototype.getDefaultDisplayRoot =
     function(callback) {
   this.ensureInitialized(function() {
     var defaultVolume = this.getCurrentProfileVolumeInfo(
@@ -349,7 +349,7 @@ VolumeManagerWrapper.prototype.getDefaultDisplayRoot =
  * @param {(!Entry|!FilesAppEntry)} entry File or directory entry.
  * @return {EntryLocation} Location information.
  */
-VolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
+FilteredVolumeManager.prototype.getLocationInfo = function(entry) {
   var locationInfo =
       this.volumeManager_ && this.volumeManager_.getLocationInfo(entry);
   if (!locationInfo)
@@ -361,7 +361,7 @@ VolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
 };
 
 /** @override */
-VolumeManagerWrapper.prototype.findByDevicePath = function(devicePath) {
+FilteredVolumeManager.prototype.findByDevicePath = function(devicePath) {
   for (var i = 0; i < this.volumeInfoList.length; i++) {
     const volumeInfo = this.volumeInfoList.item(i);
     if (volumeInfo.devicePath && volumeInfo.devicePath === devicePath)
@@ -378,7 +378,7 @@ VolumeManagerWrapper.prototype.findByDevicePath = function(devicePath) {
  * @return {!Promise<!VolumeInfo>} The VolumeInfo. Will not resolve
  *     if the volume is never mounted.
  */
-VolumeManagerWrapper.prototype.whenVolumeInfoReady = function(volumeId) {
+FilteredVolumeManager.prototype.whenVolumeInfoReady = function(volumeId) {
   return new Promise(resolve => {
     this.volumeManager_.whenVolumeInfoReady(volumeId).then((volumeInfo) => {
       volumeInfo = this.filterDisallowedVolume_(volumeInfo);
@@ -396,7 +396,7 @@ VolumeManagerWrapper.prototype.whenVolumeInfoReady = function(volumeId) {
  * @param {function(VolumeManagerCommon.VolumeError)} errorCallback Called when
  *     an error occurs.
  */
-VolumeManagerWrapper.prototype.mountArchive = function(
+FilteredVolumeManager.prototype.mountArchive = function(
     fileUrl, successCallback, errorCallback) {
   if (this.pendingTasks_) {
     this.pendingTasks_.push(
@@ -414,7 +414,7 @@ VolumeManagerWrapper.prototype.mountArchive = function(
  * @param {function(VolumeManagerCommon.VolumeError)} errorCallback Called when
  *     an error occurs.
  */
-VolumeManagerWrapper.prototype.unmount = function(
+FilteredVolumeManager.prototype.unmount = function(
     volumeInfo, successCallback, errorCallback) {
   if (this.pendingTasks_) {
     this.pendingTasks_.push(
@@ -431,7 +431,7 @@ VolumeManagerWrapper.prototype.unmount = function(
  * @return {!Promise} Fulfilled on success, otherwise rejected with an error
  *     message.
  */
-VolumeManagerWrapper.prototype.configure = function(volumeInfo) {
+FilteredVolumeManager.prototype.configure = function(volumeInfo) {
   if (this.pendingTasks_) {
     return new Promise(function(fulfill, reject) {
       this.pendingTasks_.push(function() {
@@ -451,31 +451,11 @@ VolumeManagerWrapper.prototype.configure = function(volumeInfo) {
  *     the volume.
  * @private
  */
-VolumeManagerWrapper.prototype.filterDisallowedVolume_ =
+FilteredVolumeManager.prototype.filterDisallowedVolume_ =
     function(volumeInfo) {
   if (volumeInfo && this.isAllowedVolume_(volumeInfo)) {
     return volumeInfo;
   } else {
     return null;
   }
-};
-
-/**
- * Returns current state of VolumeManagerWrapper.
- * @return {string} Current state of VolumeManagerWrapper.
- */
-VolumeManagerWrapper.prototype.toString = function() {
-  var initialized = this.isInitialized();
-  var volumeManager = initialized ?
-      this.volumeManager_ :
-      this.backgroundPage_.volumeManagerFactory.getInstanceForDebug();
-
-  var str = 'VolumeManagerWrapper\n' +
-      '- Initialized: ' + initialized + '\n';
-
-  if (!initialized)
-    str += '- PendingTasksCount: ' + this.pendingTasks_.length + '\n';
-
-  return str + '- VolumeManager:\n' +
-      '  ' + volumeManager.toString().replace(/\n/g, '\n  ');
 };

@@ -33,6 +33,7 @@ group("closure_compile") {
   deps = [
     "audio_player/elements:closure_compile",
     "audio_player/js:closure_compile",
+    "base/js:closure_compile",
     "file_manager/background/js:closure_compile",
     "file_manager/common/js:closure_compile",
     "file_manager/foreground/elements:closure_compile",

@@ -29,12 +29,12 @@ js_library("closure_compile_externs") {
 
 js_library("audio_player") {
   deps = [
-    "../../file_manager/common/js:util",
-    "../../file_manager/foreground/js:volume_manager_wrapper",
-    "../../file_manager/foreground/js/metadata:content_metadata_provider",
-    "../../file_manager/foreground/js/metadata:metadata_model",
     "../elements:audio_player",
     "../elements:track_list",
+    "//ui/file_manager/base/js:filtered_volume_manager",
+    "//ui/file_manager/file_manager/common/js:util",
+    "//ui/file_manager/file_manager/foreground/js/metadata:content_metadata_provider",
+    "//ui/file_manager/file_manager/foreground/js/metadata:metadata_model",
   ]
 }
 

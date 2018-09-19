@@ -187,7 +187,7 @@
 // <include src="ui/search_box.js">
 // <include src="ui/suggest_apps_dialog.js">
 // <include src="main_window_component.js">
-// <include src="volume_manager_wrapper.js">
+// <include src="../../../base/js/filtered_volume_manager.js">
 // <include src="webui_command_extender.js">
 
 // // For accurate load performance tracking place main.js should be
