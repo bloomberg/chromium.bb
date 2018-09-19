@@ -23,34 +23,23 @@ Polymer({
   metrics_: new print_preview.PrintSettingsUiMetricsContext(),
 
   /**
-   * @return {string} 'plus-icon' if settings are collapsed, 'minus-icon' if
-   *     they are expanded.
+   * Toggles the expand button within the element being listened to.
+   * @param {!Event} e
    * @private
    */
-  getIconClass_: function() {
-    return this.settingsExpandedByUser ? 'minus-icon' : 'plus-icon';
-  },
+  toggleExpandButton_: function(e) {
+    // The expand button handles toggling itself.
+    const expandButtonTag = 'CR-EXPAND-BUTTON';
+    if (e.target.tagName == expandButtonTag)
+      return;
 
-  /**
-   * @return {string} The text to display on the label.
-   * @private
-   */
-  getLabelText_: function() {
-    return this.i18n(
-        this.settingsExpandedByUser ? 'lessOptionsLabel' : 'moreOptionsLabel');
-  },
+    if (!e.currentTarget.hasAttribute('actionable'))
+      return;
 
-  /**
-   * @return {string} 'true' if the settings are expanded, 'false' otherwise
-   * @private
-   */
-  getAriaExpanded_: function() {
-    return this.settingsExpandedByUser ? 'true' : 'false';
-  },
-
-  /** @private */
-  onMoreSettingsClick_: function() {
-    this.settingsExpandedByUser = !this.settingsExpandedByUser;
+    /** @type {!CrExpandButtonElement} */
+    const expandButton = e.currentTarget.querySelector(expandButtonTag);
+    assert(expandButton);
+    expandButton.expanded = !expandButton.expanded;
     this.metrics_.record(
         this.settingsExpandedByUser ?
             print_preview.Metrics.PrintSettingsUiBucket.MORE_SETTINGS_CLICKED :
