@@ -4,6 +4,7 @@
 struct VertexShaderInput
 {
   float2 pos : POSITION;
+  float2 tex : TEXCOORD;
 };
 
 struct PixelShaderInput
@@ -18,7 +19,7 @@ PixelShaderInput flip_vertex(VertexShaderInput input)
   float4 pos = float4(input.pos, 1.0f, 1.0f);
 
   output.pos = pos;
-  output.tex = (input.pos + float2(1, 1)) / float2(2, 2);
+  output.tex = input.tex;
 
   return output;
 }

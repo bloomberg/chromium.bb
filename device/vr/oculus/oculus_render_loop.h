@@ -58,6 +58,7 @@ class OculusRenderLoop : public XRCompositorCommon {
   ovrGraphicsLuid luid_ = {};
   ovrPosef last_render_pose_;
   ovrTextureSwapChain texture_swap_chain_ = 0;
+  gfx::Size swap_chain_size_;
   double sensor_time_;
   bool primary_input_pressed[kMaxOculusRenderLoopInputId];
 

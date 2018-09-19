@@ -68,13 +68,16 @@ bool OpenVRRenderLoop::SubmitCompositedFrame() {
   texture.eType = vr::TextureType_DirectX;
   texture.eColorSpace = vr::ColorSpace_Auto;
 
+  gfx::RectF left_bounds = texture_helper_.BackBufferLeft();
+  gfx::RectF right_bounds = texture_helper_.BackBufferRight();
+
   vr::VRTextureBounds_t bounds[2];
-  bounds[0] = {left_bounds_.x(), left_bounds_.y(),
-               left_bounds_.width() + left_bounds_.x(),
-               left_bounds_.height() + left_bounds_.y()};
-  bounds[1] = {right_bounds_.x(), right_bounds_.y(),
-               right_bounds_.width() + right_bounds_.x(),
-               right_bounds_.height() + right_bounds_.y()};
+  bounds[0] = {left_bounds.x(), left_bounds.y(),
+               left_bounds.width() + left_bounds.x(),
+               left_bounds.height() + left_bounds.y()};
+  bounds[1] = {right_bounds.x(), right_bounds.y(),
+               right_bounds.width() + right_bounds.x(),
+               right_bounds.height() + right_bounds.y()};
 
   vr::EVRCompositorError error =
       vr_compositor->Submit(vr::EVREye::Eye_Left, &texture, &bounds[0]);
@@ -111,6 +114,10 @@ bool OpenVRRenderLoop::StartRuntime() {
     return false;
   }
 #endif
+
+  uint32_t width, height;
+  openvr_->GetSystem()->GetRecommendedRenderTargetSize(&width, &height);
+  texture_helper_.SetDefaultSize(gfx::Size(width, height));
 
   return true;
 }

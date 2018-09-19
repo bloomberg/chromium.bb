@@ -26,6 +26,9 @@ bool XRDeviceAbstraction::PreComposite() {
 };
 void XRDeviceAbstraction::OnLayerBoundsChanged() {}
 
+XRCompositorCommon::OutstandingFrame::OutstandingFrame() = default;
+XRCompositorCommon::OutstandingFrame::~OutstandingFrame() = default;
+
 XRCompositorCommon::XRCompositorCommon()
     : base::Thread("WindowsXRCompositor"),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -42,17 +45,25 @@ XRCompositorCommon::~XRCompositorCommon() {
 }
 
 void XRCompositorCommon::ClearPendingFrame() {
-  has_outstanding_frame_ = false;
-  if (delayed_get_frame_data_callback_) {
-    base::ResetAndReturn(&delayed_get_frame_data_callback_).Run();
+  pending_frame_.reset();
+  // Send frame data to outstanding requests.
+  if (delayed_get_frame_data_callback_ && webxr_visible_) {
+    std::move(delayed_get_frame_data_callback_).Run();
+  }
+
+  if (delayed_overlay_get_frame_data_callback_ && overlay_visible_) {
+    std::move(delayed_overlay_get_frame_data_callback_).Run();
   }
 }
 
 void XRCompositorCommon::SubmitFrameMissing(int16_t frame_index,
                                             const gpu::SyncToken& sync_token) {
-  // Nothing to do. It's OK to start the next frame even if the current
-  // one didn't get sent to the runtime.
-  ClearPendingFrame();
+  if (pending_frame_) {
+    // WebXR for this frame is hidden.
+    pending_frame_->waiting_for_webxr_ = false;
+  }
+
+  MaybeCompositeAndSubmit();
 }
 
 void XRCompositorCommon::SubmitFrame(int16_t frame_index,
@@ -74,33 +85,34 @@ void XRCompositorCommon::SubmitFrameWithTextureHandle(
     mojo::ScopedHandle texture_handle) {
   TRACE_EVENT1("gpu", "SubmitFrameWithTextureHandle", "frameIndex",
                frame_index);
+  if (!pending_frame_ || pending_frame_->frame_data_->frame_id != frame_index) {
+    // We weren't expecting a submitted frame.  This can happen if WebXR was
+    // hidden by an overlay for some time.
+    if (submit_client_) {
+      submit_client_->OnSubmitFrameTransferred(false);
+      submit_client_->OnSubmitFrameRendered();
+    }
+    return;
+  }
+
+  pending_frame_->waiting_for_webxr_ = false;
+
 #if defined(OS_WIN)
   MojoPlatformHandle platform_handle;
   platform_handle.struct_size = sizeof(platform_handle);
   MojoResult result = MojoUnwrapPlatformHandle(texture_handle.release().value(),
                                                nullptr, &platform_handle);
-  if (result != MOJO_RESULT_OK) {
-    ClearPendingFrame();
-    return;
+  if (result == MOJO_RESULT_OK) {
+    texture_helper_.SetSourceTexture(
+        base::win::ScopedHandle(
+            reinterpret_cast<HANDLE>(platform_handle.value)),
+        left_webxr_bounds_, right_webxr_bounds_);
+    pending_frame_->webxr_submitted_ = true;
   }
 
-  texture_helper_.SetSourceTexture(
-      base::win::ScopedHandle(reinterpret_cast<HANDLE>(platform_handle.value)));
-
-  bool copy_successful =
-      PreComposite() && texture_helper_.CopyTextureToBackBuffer(true);
-  if (copy_successful) {
-    if (!SubmitCompositedFrame()) {
-      ExitPresent();
-    }
-  }
-
-  // Tell WebVR that we are done with the texture.
-  submit_client_->OnSubmitFrameTransferred(copy_successful);
-  submit_client_->OnSubmitFrameRendered();
+  // Regardless of success - try to composite what we have.
+  MaybeCompositeAndSubmit();
 #endif
-
-  ClearPendingFrame();
 }
 
 void XRCompositorCommon::CleanUp() {
@@ -125,8 +137,8 @@ void XRCompositorCommon::UpdateLayerBounds(int16_t frame_id,
   // since blink always passes the current frame_id when updating the bounds.
   // Ignoring the frame_id keeps the logic simpler, so this can more easily
   // merge with vr_shell_gl eventually.
-  left_bounds_ = left_bounds;
-  right_bounds_ = right_bounds;
+  left_webxr_bounds_ = left_bounds;
+  right_webxr_bounds_ = right_bounds;
   source_size_ = source_size;
 
   OnLayerBoundsChanged();
@@ -176,6 +188,8 @@ void XRCompositorCommon::RequestSession(
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true, std::move(session)));
   is_presenting_ = true;
+
+  texture_helper_.SetSourceAndOverlayVisible(webxr_visible_, overlay_visible_);
 }
 
 void XRCompositorCommon::ExitPresent() {
@@ -185,11 +199,20 @@ void XRCompositorCommon::ExitPresent() {
   submit_client_ = nullptr;
   StopRuntime();
 
-  has_outstanding_frame_ = false;
+  pending_frame_.reset();
   delayed_get_frame_data_callback_.Reset();
+
+  // Reset webxr_visible_ for subsequent presentations.
+  webxr_visible_ = true;
 
   // Push out one more controller update so we don't have stale controllers.
   UpdateControllerState();
+
+  // Kill outstanding overlays:
+  overlay_visible_ = false;
+  delayed_overlay_get_frame_data_callback_.Reset();
+
+  texture_helper_.SetSourceAndOverlayVisible(false, false);
 
   if (on_presentation_ended_) {
     main_thread_task_runner_->PostTask(FROM_HERE,
@@ -203,7 +226,7 @@ void XRCompositorCommon::UpdateControllerState() {
     return;
   }
 
-  if (!is_presenting_) {
+  if (!is_presenting_ || !webxr_visible_) {
     std::move(gamepad_callback_).Run(nullptr);
     return;
   }
@@ -224,19 +247,37 @@ void XRCompositorCommon::RequestUpdate(
 
 void XRCompositorCommon::Init() {}
 
+void XRCompositorCommon::StartPendingFrame() {
+  if (!pending_frame_) {
+    pending_frame_.emplace();
+    pending_frame_->waiting_for_webxr_ = webxr_visible_;
+    pending_frame_->waiting_for_overlay_ = overlay_visible_;
+    pending_frame_->frame_data_ = GetNextFrameData();
+  }
+}
+
 void XRCompositorCommon::GetFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  DCHECK(is_presenting_);
+  if (!is_presenting_) {
+    return;
+  }
 
-  if (has_outstanding_frame_) {
-    DCHECK(!delayed_get_frame_data_callback_);
+  // If we've already given out a pose for the current frame, or aren't visible,
+  // delay giving out a pose until the next frame we are visible.
+  if (!webxr_visible_ || (pending_frame_ && pending_frame_->webxr_has_pose_)) {
+    // There should only be one outstanding GetFrameData call at a time.  We
+    // shouldn't get new ones until this resolves or presentation ends/restarts.
+    if (delayed_get_frame_data_callback_) {
+      mojo::ReportBadMessage("Multiple outstanding GetFrameData calls");
+    }
     delayed_get_frame_data_callback_ =
         base::BindOnce(&XRCompositorCommon::GetFrameData,
                        base::Unretained(this), std::move(callback));
     return;
   }
 
-  has_outstanding_frame_ = true;
+  StartPendingFrame();
+  pending_frame_->webxr_has_pose_ = true;
 
   // Yield here to let the event queue process pending mojo messages,
   // specifically the next gamepad callback request that's likely to
@@ -245,7 +286,7 @@ void XRCompositorCommon::GetFrameData(
       FROM_HERE,
       base::BindOnce(&XRCompositorCommon::GetControllerDataAndSendFrameData,
                      base::Unretained(this), std::move(callback),
-                     GetNextFrameData()));
+                     pending_frame_->frame_data_.Clone()));
 
   next_frame_id_ += 1;
   if (next_frame_id_ < 0) {
@@ -259,7 +300,143 @@ void XRCompositorCommon::GetControllerDataAndSendFrameData(
   // Update gamepad controllers.
   UpdateControllerState();
 
-  std::move(callback).Run(std::move(frame_data));
+  // We have posted a message to allow other calls to get through, and now state
+  // may have changed.  WebXR may not be presenting any more, or may be hidden.
+  std::move(callback).Run(
+      is_presenting_ && webxr_visible_ ? std::move(frame_data) : nullptr);
+}
+
+void XRCompositorCommon::SubmitOverlayTexture(
+    int16_t frame_id,
+    const gfx::RectF& left_bounds,
+    const gfx::RectF& right_bounds,
+    mojo::ScopedHandle texture_handle,
+    base::OnceCallback<void(bool)> present_succeeded) {
+  DCHECK(overlay_visible_);
+  overlay_submit_succeeded_ = std::move(present_succeeded);
+  if (!pending_frame_) {
+    // We may stop presenting while there is a pending SubmitOverlayTexture
+    // outstanding.  If we get an overlay submit we weren't expecting, just
+    // ignore it.
+    DCHECK(!is_presenting_);
+    std::move(overlay_submit_succeeded_).Run(false);
+    return;
+  }
+
+  pending_frame_->waiting_for_overlay_ = false;
+
+#if defined(OS_WIN)
+  MojoPlatformHandle platform_handle;
+  platform_handle.struct_size = sizeof(platform_handle);
+  MojoResult result = MojoUnwrapPlatformHandle(texture_handle.release().value(),
+                                               nullptr, &platform_handle);
+  if (result == MOJO_RESULT_OK) {
+    texture_helper_.SetOverlayTexture(
+        base::win::ScopedHandle(
+            reinterpret_cast<HANDLE>(platform_handle.value)),
+        left_bounds, right_bounds);
+    pending_frame_->overlay_submitted_ = true;
+  } else {
+    std::move(overlay_submit_succeeded_).Run(false);
+  }
+
+  // Regardless of success - try to composite what we have.
+  MaybeCompositeAndSubmit();
+#endif
+}
+
+void XRCompositorCommon::RequestOverlayPose(
+    XRFrameDataProvider::GetFrameDataCallback callback) {
+  // We will only request poses while the overlay is visible.
+  DCHECK(overlay_visible_);
+
+  // If we've already given out a pose for the current frame delay giving out a
+  // pose until the next frame we are visible.
+  if (pending_frame_ && pending_frame_->overlay_has_pose_) {
+    DCHECK(!delayed_overlay_get_frame_data_callback_);
+    delayed_overlay_get_frame_data_callback_ =
+        base::BindOnce(&XRCompositorCommon::RequestOverlayPose,
+                       base::Unretained(this), std::move(callback));
+    return;
+  }
+
+  // Ensure we have a pending frame.
+  StartPendingFrame();
+  pending_frame_->overlay_has_pose_ = true;
+  std::move(callback).Run(pending_frame_->frame_data_.Clone());
+}
+
+void XRCompositorCommon::SetOverlayAndWebXRVisibility(bool overlay_visible,
+                                                      bool webxr_visible) {
+  // Update state.
+  webxr_visible_ = webxr_visible;
+  overlay_visible_ = overlay_visible;
+  if (pending_frame_) {
+    pending_frame_->waiting_for_webxr_ =
+        pending_frame_->waiting_for_webxr_ && webxr_visible;
+    pending_frame_->waiting_for_overlay_ =
+        pending_frame_->waiting_for_overlay_ && overlay_visible;
+  }
+
+  // Update texture helper.
+  texture_helper_.SetSourceAndOverlayVisible(webxr_visible, overlay_visible);
+
+  // Maybe composite and submit if we have a pending that is now valid to
+  // submit.
+  MaybeCompositeAndSubmit();
+}
+
+void XRCompositorCommon::MaybeCompositeAndSubmit() {
+  if (!pending_frame_) {
+    // There is no frame to composite.
+    return;
+  }
+
+  // Check if we have obtained all layers (overlay and webxr) that we need.
+  if (pending_frame_->waiting_for_webxr_ ||
+      pending_frame_->waiting_for_overlay_) {
+    // Haven't received submits from all layers.
+    return;
+  }
+
+  bool no_submit = false;
+  if (!(pending_frame_->webxr_submitted_ && webxr_visible_) &&
+      !(pending_frame_->overlay_submitted_ && overlay_visible_)) {
+    // Nothing visible was submitted - we can't composite/submit to headset.
+    no_submit = true;
+  }
+
+  bool copy_successful;
+
+  // If so, tell texture helper to composite, then grab the output texture, and
+  // submit. If we submitted, set up the next frame, and send outstanding pose
+  // requests.
+  if (no_submit) {
+    copy_successful = false;
+    texture_helper_.CleanupNoSubmit();
+  } else {
+    copy_successful = texture_helper_.UpdateBackbufferSizes() &&
+                      PreComposite() && texture_helper_.CompositeToBackBuffer();
+    if (copy_successful) {
+      if (!SubmitCompositedFrame()) {
+        ExitPresent();
+      }
+    }
+  }
+
+  if (pending_frame_->webxr_submitted_ && submit_client_) {
+    // Tell WebVR that we are done with the texture (if we got a texture)
+    submit_client_->OnSubmitFrameTransferred(copy_successful);
+    submit_client_->OnSubmitFrameRendered();
+  }
+
+  if (pending_frame_->overlay_submitted_ && overlay_submit_succeeded_) {
+    // Tell the browser/overlay that we are done with its texture so it can be
+    // reused.
+    std::move(overlay_submit_succeeded_).Run(copy_successful);
+  }
+
+  ClearPendingFrame();
 }
 
 }  // namespace device
