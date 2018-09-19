@@ -1900,3 +1900,64 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForOmniboxMatch) {
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
 }
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       InputEventsForJavaScriptHref) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(
+                                   "/page_load_metrics/javascript_href.html"));
+  waiter->Wait();
+  waiter = CreatePageLoadMetricsTestWaiter();
+  content::SimulateMouseClickAt(
+      browser()->tab_strip_model()->GetActiveWebContents(), 0,
+      blink::WebMouseEvent::Button::kLeft, gfx::Point(100, 100));
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
+  waiter->Wait();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramInputToNavigation, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramInputToNavigationLinkClick, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramInputToFirstContentfulPaint, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       InputEventsForJavaScriptWindowOpen) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/javascript_window_open.html"));
+  waiter->Wait();
+  content::WebContentsAddedObserver web_contents_added_observer;
+  content::SimulateMouseClickAt(
+      browser()->tab_strip_model()->GetActiveWebContents(), 0,
+      blink::WebMouseEvent::Button::kLeft, gfx::Point(100, 100));
+  // Wait for new window to open.
+  auto* web_contents = web_contents_added_observer.GetWebContents();
+  waiter = std::make_unique<PageLoadMetricsTestWaiter>(web_contents);
+  waiter->AddPageExpectation(TimingField::kLoadEvent);
+  waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
+  waiter->Wait();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramInputToNavigation, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramInputToNavigationLinkClick, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramInputToFirstContentfulPaint, 1);
+}
