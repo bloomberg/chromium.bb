@@ -404,6 +404,26 @@ Status ExecuteGetElementValue(Session* session,
       value);
 }
 
+Status ExecuteGetElementProperty(Session* session,
+                              WebView* web_view,
+                              const std::string& element_id,
+                              const base::DictionaryValue& params,
+                              std::unique_ptr<base::Value>* value) {
+  base::ListValue args;
+  args.Append(CreateElement(element_id));
+
+  std::string name;
+  if (!params.GetString("name", &name))
+    return Status(kUnknownError, "missing 'name'");
+  args.AppendString(name);
+
+  return web_view->CallFunction(
+      session->GetCurrentFrameId(),
+      "function(elem, name) { return elem[name] }",
+      args,
+      value);
+}
+
 Status ExecuteGetElementTagName(Session* session,
                                 WebView* web_view,
                                 const std::string& element_id,

@@ -33,7 +33,7 @@ Below is a list of all WebDriver commands and their current support in ChromeDri
 | POST   | /session/{session id}/element/{element id}/elements            | Find Elements From Element |                    |
 | GET    | /session/{session id}/element/{element id}/selected            | Is Element Selected        |                    |
 | GET    | /session/{session id}/element/{element id}/attribute/{name}    | Get Element Attribute      |                    |
-| GET    | /session/{session id}/element/{element id}/property/{name}     | Get Element Property       | Incomplete         | [1936](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1936)
+| GET    | /session/{session id}/element/{element id}/property/{name}     | Get Element Property       | Complete           | 
 | GET    | /session/{session id}/element/{element id}/css/{property name} | Get Element CSS Value      | Partially Complete | [1994](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1994)
 | GET    | /session/{session id}/element/{element id}/text                | Get Element Text           | Complete           |
 | GET    | /session/{session id}/element/{element id}/name	              | Get Element Tag Name       | Complete           |

@@ -129,6 +129,13 @@ Status ExecuteGetElementValue(Session* session,
                               const base::DictionaryValue& params,
                               std::unique_ptr<base::Value>* value);
 
+// Returns the value of a given element property.
+Status ExecuteGetElementProperty(Session* session,
+                              WebView* web_view,
+                              const std::string& element_id,
+                              const base::DictionaryValue& params,
+                              std::unique_ptr<base::Value>* value);
+
 // Returns the lower case tag name of a given element.
 Status ExecuteGetElementTagName(Session* session,
                                 WebView* web_view,

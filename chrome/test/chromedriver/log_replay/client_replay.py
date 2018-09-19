@@ -115,6 +115,8 @@ _COMMANDS = {
     "GetCookies": (Method.GET, "/session/:sessionId/cookie"),
     "GetElementAttribute":
     (Method.GET, "/session/:sessionId/element/:id/attribute/:name"),
+    "GetElementProperty":
+    (Method.GET, "/session/:sessionId/element/:id/property/:name"),
     "GetElementCSSProperty":
     (Method.GET, "/session/:sessionId/element/:id/css/:propertyName"),
     "GetElementLocation":

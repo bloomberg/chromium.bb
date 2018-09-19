@@ -31,6 +31,9 @@ class WebElement(object):
   def GetAttribute(self,name):
     return self._Execute(Command.GET_ELEMENT_ATTRIBUTE, {'name': name})
 
+  def GetProperty(self,name):
+    return self._Execute(Command.GET_ELEMENT_PROPERTY, {'name': name})
+
   def HoverOver(self):
     self._Execute(Command.HOVER_OVER_ELEMENT)
 
