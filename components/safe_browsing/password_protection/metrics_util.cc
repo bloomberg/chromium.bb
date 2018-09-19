@@ -58,12 +58,6 @@ const char kSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.SyncPasswordEntry";
 const char kSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.SyncPasswordEntry";
-const char kReferrerChainSizeOfLowRepVerdictHistogram[] =
-    "PasswordProtection.ReferrerChainSize.LowReputation";
-const char kReferrerChainSizeOfPhishingVerdictHistogram[] =
-    "PasswordProtection.ReferrerChainSize.Phishing";
-const char kReferrerChainSizeOfSafeVerdictHistogram[] =
-    "PasswordProtection.ReferrerChainSize.Safe";
 const char kVerdictMigrationHistogram[] =
     "PasswordProtection.NumberOfVerdictsMigratedDuringInitialization";
 
@@ -248,28 +242,6 @@ void LogNumberOfReuseBeforeSyncPasswordChange(size_t reuse_count) {
   UMA_HISTOGRAM_COUNTS_100(
       "PasswordProtection.GaiaPasswordReusesBeforeGaiaPasswordChanged",
       reuse_count);
-}
-
-void LogReferrerChainSize(
-    LoginReputationClientResponse::VerdictType verdict_type,
-    int referrer_chain_size) {
-  switch (verdict_type) {
-    case LoginReputationClientResponse::SAFE:
-      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfSafeVerdictHistogram,
-                               referrer_chain_size);
-      return;
-    case LoginReputationClientResponse::LOW_REPUTATION:
-      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfLowRepVerdictHistogram,
-                               referrer_chain_size);
-      return;
-    case LoginReputationClientResponse::PHISHING:
-      UMA_HISTOGRAM_COUNTS_100(kReferrerChainSizeOfPhishingVerdictHistogram,
-                               referrer_chain_size);
-      return;
-    case LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED:
-      break;
-  }
-  NOTREACHED();
 }
 
 }  // namespace safe_browsing

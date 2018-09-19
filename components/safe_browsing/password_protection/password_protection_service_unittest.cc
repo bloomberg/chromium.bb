@@ -758,7 +758,6 @@ TEST_P(PasswordProtectionServiceTest,
       ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
   EXPECT_THAT(histograms_.GetAllSamples(kPasswordOnFocusVerdictHistogram),
               ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
-  histograms_.ExpectTotalCount(kReferrerChainSizeOfPhishingVerdictHistogram, 1);
   LoginReputationClientResponse* actual_response =
       password_protection_service_->latest_response();
   EXPECT_EQ(expected_response.verdict_type(), actual_response->verdict_type());
@@ -806,7 +805,6 @@ TEST_P(PasswordProtectionServiceTest,
   EXPECT_THAT(
       histograms_.GetAllSamples(kProtectedPasswordEntryVerdictHistogram),
       ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
-  histograms_.ExpectTotalCount(kReferrerChainSizeOfPhishingVerdictHistogram, 1);
 }
 
 TEST_P(PasswordProtectionServiceTest,
@@ -844,7 +842,6 @@ TEST_P(PasswordProtectionServiceTest,
   EXPECT_THAT(histograms_.GetAllSamples(kSyncPasswordEntryVerdictHistogram),
               ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
   histograms_.ExpectTotalCount(kProtectedPasswordEntryVerdictHistogram, 0);
-  histograms_.ExpectTotalCount(kReferrerChainSizeOfPhishingVerdictHistogram, 1);
 }
 
 TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
