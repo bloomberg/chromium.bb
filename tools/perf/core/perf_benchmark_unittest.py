@@ -200,3 +200,20 @@ class PerfBenchmarkTest(unittest.TestCase):
 
     benchmark.CustomizeBrowserOptions(options.browser_options)
     self._ExpectAdTaggingProfileFiles(options.browser_options, False)
+
+  def testAdTaggingRulesetInvalidJson(self):
+    self._PopulateGenFiles()
+    json_path = os.path.join(
+        self._output_dir, 'gen', 'components', 'subresource_filter', 'tools',
+        'default_local_state.json')
+    self.assertTrue(os.path.exists(json_path))
+    with open(json_path, 'w') as f:
+      f.write('{some invalid : json, 19')
+
+    benchmark = perf_benchmark.PerfBenchmark()
+    options = options_for_unittests.GetCopy()
+    options.chromium_output_dir = self._output_dir
+
+    # Should fail due to invalid JSON.
+    with self.assertRaises(ValueError):
+      benchmark.CustomizeBrowserOptions(options.browser_options)
