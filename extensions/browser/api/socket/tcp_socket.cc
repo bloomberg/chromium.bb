@@ -333,7 +333,7 @@ void TCPSocket::ConnectOnUIThread(
         content::BrowserContext::GetDefaultStoragePartition(browser_context);
   }
   storage_partition->GetNetworkContext()->CreateTCPConnectedSocket(
-      base::nullopt, remote_addr_list,
+      base::nullopt, remote_addr_list, nullptr /* options */,
       net::MutableNetworkTrafficAnnotationTag(
           Socket::GetNetworkTrafficAnnotationTag()),
       std::move(request), nullptr /* observer */,

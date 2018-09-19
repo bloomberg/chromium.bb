@@ -141,6 +141,7 @@ class TLSClientSocketTestBase {
     int net_error = net::ERR_FAILED;
     factory_->CreateTCPConnectedSocket(
         base::nullopt /* local_addr */, remote_addr_list,
+        nullptr /* tcp_connected_socket_options */,
         TRAFFIC_ANNOTATION_FOR_TESTS, std::move(request),
         pre_tls_observer()->GetObserverPtr(),
         base::BindLambdaForTesting(

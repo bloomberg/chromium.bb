@@ -811,12 +811,13 @@ void NetworkContext::CreateTCPServerSocket(
 void NetworkContext::CreateTCPConnectedSocket(
     const base::Optional<net::IPEndPoint>& local_addr,
     const net::AddressList& remote_addr_list,
+    mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TCPConnectedSocketRequest request,
     mojom::SocketObserverPtr observer,
     CreateTCPConnectedSocketCallback callback) {
   socket_factory_->CreateTCPConnectedSocket(
-      local_addr, remote_addr_list,
+      local_addr, remote_addr_list, std::move(tcp_connected_socket_options),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(request), std::move(observer), std::move(callback));
 }

@@ -197,6 +197,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CreateTCPConnectedSocket(
       const base::Optional<net::IPEndPoint>& local_addr,
       const net::AddressList& remote_addr_list,
+      mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TCPConnectedSocketRequest request,
       mojom::SocketObserverPtr observer,
