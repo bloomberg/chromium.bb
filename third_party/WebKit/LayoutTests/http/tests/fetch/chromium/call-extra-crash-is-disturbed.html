@@ -6,8 +6,6 @@
 test(() => {
   const rs = new ReadableStream();
   const response = new Response(rs);
-  assert_throws("InvalidStateError",
-                () => fillStackAndRun(() => response.bodyUsed),
-                'getter should throw a DOMException');
+  fillStackAndRun(() => response.bodyUsed)
 }, 'stack overflow in bodyUsed should not crash the browser');
 </script>
