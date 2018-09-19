@@ -68,6 +68,8 @@ class Command(object):
   GET_ELEMENT_SIZE = (_Method.GET, '/session/:sessionId/element/:id/size')
   GET_ELEMENT_ATTRIBUTE = (
       _Method.GET, '/session/:sessionId/element/:id/attribute/:name')
+  GET_ELEMENT_PROPERTY = (
+      _Method.GET, '/session/:sessionId/element/:id/property/:name')
   ELEMENT_EQUALS = (
       _Method.GET, '/session/:sessionId/element/:id/equals/:other')
   GET_COOKIES = (_Method.GET, '/session/:sessionId/cookie')

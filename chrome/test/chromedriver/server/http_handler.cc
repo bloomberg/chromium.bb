@@ -181,6 +181,9 @@ HttpHandler::HttpHandler(
       CommandMapping(kGet, "session/:sessionId/element/:id/attribute/:name",
                      WrapToCommand("GetElementAttribute",
                                    base::Bind(&ExecuteGetElementAttribute))),
+      CommandMapping(kGet, "session/:sessionId/element/:id/property/:name",
+                     WrapToCommand("GetElementProperty",
+                                   base::Bind(&ExecuteGetElementProperty))),
       CommandMapping(
           kGet, "session/:sessionId/element/:id/css/:propertyName",
           WrapToCommand("GetElementCSSProperty",

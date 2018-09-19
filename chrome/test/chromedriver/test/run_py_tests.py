@@ -755,6 +755,13 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     elem = self._driver.FindElement("name", "phones")
     self.assertEquals('3', elem.GetAttribute('size'))
 
+  def testGetElementProperty(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/two_inputs.html'))
+    elem = self._driver.FindElement("id", "first")
+    self.assertEquals('text', elem.GetProperty('type'))
+    self.assertEquals('first', elem.GetProperty('id'))
+
   def testGetElementSpecialCharAttribute(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/attribute_colon_test.html'))
