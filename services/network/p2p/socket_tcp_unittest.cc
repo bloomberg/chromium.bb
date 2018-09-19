@@ -192,11 +192,13 @@ TEST_F(P2PSocketTcpTest, SendDataNoAuth) {
   rtc::PacketOptions options;
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
-  socket_impl_->Send(
+
+  auto* socket_impl_ptr = socket_impl_.get();
+  socket_delegate_.ExpectDestruction(std::move(socket_impl_));
+  socket_impl_ptr->Send(
       packet, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  socket_delegate_.ExpectDestroyed(socket_impl_.get());
   EXPECT_EQ(0U, sent_data_.size());
 
   base::RunLoop().RunUntilIdle();
@@ -418,11 +420,13 @@ TEST_F(P2PSocketStunTcpTest, SendDataNoAuth) {
   rtc::PacketOptions options;
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
-  socket_impl_->Send(
+
+  auto* socket_impl_ptr = socket_impl_.get();
+  socket_delegate_.ExpectDestruction(std::move(socket_impl_));
+  socket_impl_ptr->Send(
       packet, P2PPacketInfo(dest_.ip_address, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  socket_delegate_.ExpectDestroyed(socket_impl_.get());
   EXPECT_EQ(0U, sent_data_.size());
 
   base::RunLoop().RunUntilIdle();

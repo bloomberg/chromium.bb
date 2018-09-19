@@ -187,13 +187,13 @@ void P2PSocketUdp::Init(const net::IPEndPoint& local_address,
 }
 
 void P2PSocketUdp::DoRead() {
-  do {
-    int result = socket_->RecvFrom(
+  while (true) {
+    const int result = socket_->RecvFrom(
         recv_buffer_.get(), kUdpReadBufferSize, &recv_address_,
         base::BindOnce(&P2PSocketUdp::OnRecv, base::Unretained(this)));
     if (result == net::ERR_IO_PENDING || !HandleReadResult(result))
       return;
-  } while (state_ == STATE_OPEN);
+  }
 }
 
 void P2PSocketUdp::OnRecv(int result) {
@@ -403,7 +403,9 @@ void P2PSocketUdp::Send(
     PendingPacket packet(packet_info.destination, data,
                          packet_info.packet_options, packet_info.packet_id,
                          net::NetworkTrafficAnnotationTag(traffic_annotation));
-    DoSend(packet);
+
+    // We are not going to use |this| again, so it's safe to ignore the result.
+    ignore_result(DoSend(packet));
   }
 }
 

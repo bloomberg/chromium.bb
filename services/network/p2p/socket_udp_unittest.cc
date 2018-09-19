@@ -293,11 +293,12 @@ TEST_F(P2PSocketUdpTest, SendDataNoAuth) {
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
 
-  socket_impl_->Send(
+  auto* socket_impl_ptr = socket_impl_.get();
+  socket_delegate_.ExpectDestruction(std::move(socket_impl_));
+  socket_impl_ptr->Send(
       packet, P2PPacketInfo(dest1_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  socket_delegate_.ExpectDestroyed(socket_impl_.get());
   ASSERT_EQ(sent_packets_.size(), 0U);
 
   base::RunLoop().RunUntilIdle();
@@ -372,11 +373,11 @@ TEST_F(P2PSocketUdpTest, SendAfterStunResponseDifferentHost) {
   std::vector<int8_t> packet;
   CreateRandomPacket(&packet);
 
-  socket_impl_->Send(
+  auto* socket_impl_ptr = socket_impl_.get();
+  socket_delegate_.ExpectDestruction(std::move(socket_impl_));
+  socket_impl_ptr->Send(
       packet, P2PPacketInfo(dest2_, options, 0),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-
-  socket_delegate_.ExpectDestroyed(socket_impl_.get());
 
   base::RunLoop().RunUntilIdle();
 
@@ -589,12 +590,12 @@ TEST_F(P2PSocketUdpTest, PortRangeImplicitPort) {
                        /*net_log=*/nullptr, std::move(fake_socket_factory)));
   net::IPEndPoint local_address = ParseAddress(kTestLocalIpAddress, 0);
 
-  socket_impl->Init(
+  auto* socket_impl_ptr = socket_impl.get();
+  socket_delegate_.ExpectDestruction(std::move(socket_impl));
+  socket_impl_ptr->Init(
       local_address, min_port, max_port,
       P2PHostAndIPEndPoint(std::string(),
                            ParseAddress(kTestIpAddress1, kTestPort1)));
-
-  socket_delegate_.ExpectDestroyed(socket_impl.get());
 
   base::RunLoop().RunUntilIdle();
 
@@ -663,18 +664,18 @@ TEST_F(P2PSocketUdpTest, PortRangeExplictInvalidPort) {
   FakeSocketClient fake_client2(std::move(socket_ptr),
                                 std::move(socket_client_request));
 
-  auto p2p_socket = std::make_unique<P2PSocketUdp>(
+  auto socket_impl = std::make_unique<P2PSocketUdp>(
       &socket_delegate_, std::move(socket_client), std::move(socket_request),
       &throttler, /*net_log=*/nullptr, std::move(fake_socket_factory));
   net::IPEndPoint local_address =
       ParseAddress(kTestLocalIpAddress, invalid_port);
 
-  p2p_socket->Init(
+  auto* socket_impl_ptr = socket_impl.get();
+  socket_delegate_.ExpectDestruction(std::move(socket_impl));
+  socket_impl_ptr->Init(
       local_address, min_port, max_port,
       P2PHostAndIPEndPoint(std::string(),
                            ParseAddress(kTestIpAddress1, kTestPort1)));
-
-  socket_delegate_.ExpectDestroyed(p2p_socket.get());
 
   base::RunLoop().RunUntilIdle();
 

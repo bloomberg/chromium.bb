@@ -24,11 +24,15 @@ const uint32_t kStunMagicCookie = 0x2112A442;
 
 FakeP2PSocketDelegate::FakeP2PSocketDelegate() = default;
 FakeP2PSocketDelegate::~FakeP2PSocketDelegate() {
-  CHECK(destroyed_sockets_.empty());
+  CHECK(sockets_to_be_destroyed_.empty());
 }
 
 void FakeP2PSocketDelegate::DestroySocket(P2PSocket* socket) {
-  destroyed_sockets_.insert(socket);
+  auto it = std::find_if(
+      sockets_to_be_destroyed_.begin(), sockets_to_be_destroyed_.end(),
+      [&socket](const auto& x) { return socket == x.get(); });
+  CHECK(it != sockets_to_be_destroyed_.end());
+  sockets_to_be_destroyed_.erase(it);
 }
 
 void FakeP2PSocketDelegate::DumpPacket(base::span<const uint8_t> data,
@@ -39,9 +43,9 @@ void FakeP2PSocketDelegate::AddAcceptedConnection(
   accepted_.push_back(std::move(accepted));
 }
 
-void FakeP2PSocketDelegate::ExpectDestroyed(P2PSocket* socket) {
-  auto erased = destroyed_sockets_.erase(socket);
-  CHECK(erased);
+void FakeP2PSocketDelegate::ExpectDestruction(
+    std::unique_ptr<P2PSocket> socket) {
+  sockets_to_be_destroyed_.push_back(std::move(socket));
 }
 
 std::unique_ptr<P2PSocket> FakeP2PSocketDelegate::pop_accepted_socket() {
@@ -214,6 +218,18 @@ FakeSocketClient::FakeSocketClient(mojom::P2PSocketPtr socket,
 }
 
 FakeSocketClient::~FakeSocketClient() {}
+
+void FakeSocketClient::IncomingTcpConnection(
+    const net::IPEndPoint& endpoint,
+    network::mojom::P2PSocketPtr socket,
+    network::mojom::P2PSocketClientRequest client_request) {
+  accepted_.push_back(
+      std::make_pair(std::move(socket), std::move(client_request)));
+}
+
+void FakeSocketClient::CloseAccepted() {
+  accepted_.clear();
+}
 
 void CreateRandomPacket(std::vector<int8_t>* packet) {
   size_t size = kStunHeaderSize + rand() % 1000;

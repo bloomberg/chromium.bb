@@ -70,7 +70,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcpBase : public P2PSocket {
   };
 
   // Derived classes will provide the implementation.
-  virtual int ProcessInput(char* input, int input_len) = 0;
+  virtual bool ProcessInput(char* input,
+                            int input_len,
+                            size_t* bytes_consumed) = 0;
   virtual void DoSend(
       const net::IPEndPoint& to,
       const std::vector<int8_t>& data,
@@ -78,17 +80,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcpBase : public P2PSocket {
       const net::NetworkTrafficAnnotationTag traffic_annotation) = 0;
 
   void WriteOrQueue(SendBuffer& send_buffer);
-  void OnPacket(std::vector<int8_t> data);
+  WARN_UNUSED_RESULT bool OnPacket(std::vector<int8_t> data);
 
  private:
   friend class P2PSocketTcpTestBase;
   friend class P2PSocketTcpServerTest;
 
-  void DidCompleteRead(int result);
   void DoRead();
-
   void DoWrite();
-  void HandleWriteResult(int result);
+
+  // Return |false| in case of an error. The socket is destroyed in that case,
+  // so the caller should not use |this|.
+  WARN_UNUSED_RESULT bool HandleReadResult(int result);
+  WARN_UNUSED_RESULT bool HandleWriteResult(int result);
 
   // Callbacks for Connect(), Read() and Write().
   void OnConnected(int result);
@@ -127,7 +131,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketTcp : public P2PSocketTcpBase {
   ~P2PSocketTcp() override;
 
  protected:
-  int ProcessInput(char* input, int input_len) override;
+  bool ProcessInput(char* input,
+                    int input_len,
+                    size_t* bytes_consumed) override;
   void DoSend(
       const net::IPEndPoint& to,
       const std::vector<int8_t>& data,
@@ -155,7 +161,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketStunTcp
   ~P2PSocketStunTcp() override;
 
  protected:
-  int ProcessInput(char* input, int input_len) override;
+  bool ProcessInput(char* input,
+                    int input_len,
+                    size_t* bytes_consumed) override;
   void DoSend(
       const net::IPEndPoint& to,
       const std::vector<int8_t>& data,

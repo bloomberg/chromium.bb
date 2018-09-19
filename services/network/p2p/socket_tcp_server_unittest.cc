@@ -134,7 +134,6 @@ TEST_F(P2PSocketTcpServerTest, Accept) {
   network::mojom::P2PSocketPtr socket;
   network::mojom::P2PSocketClientRequest client_request;
 
-  EXPECT_CALL(*fake_client_.get(), IncomingTcpConnection(addr, _, _)).Times(1);
   socket_->AddIncoming(incoming);
 
   std::unique_ptr<P2PSocket> accepted_socket =
@@ -145,8 +144,13 @@ TEST_F(P2PSocketTcpServerTest, Accept) {
 
   base::RunLoop().RunUntilIdle();
 
-  // IncomingTcpConnection() dropped the sockets.
-  socket_delegate_.ExpectDestroyed(accepted_socket.get());
+  EXPECT_EQ(fake_client_->num_accepted(), 1U);
+
+  // Verify that the socket is destroyed when the client drops it.
+  socket_delegate_.ExpectDestruction(std::move(accepted_socket));
+  fake_client_->CloseAccepted();
+
+  base::RunLoop().RunUntilIdle();
 }
 
 // Accept 2 simultaneous connections.
@@ -160,8 +164,6 @@ TEST_F(P2PSocketTcpServerTest, Accept2) {
   net::IPEndPoint addr2 = ParseAddress(kTestIpAddress2, kTestPort2);
   incoming2->SetPeerAddress(addr2);
 
-  EXPECT_CALL(*fake_client_.get(), IncomingTcpConnection(addr1, _, _)).Times(1);
-  EXPECT_CALL(*fake_client_.get(), IncomingTcpConnection(addr2, _, _)).Times(1);
   socket_->AddIncoming(incoming1);
   socket_->AddIncoming(incoming2);
 
@@ -179,9 +181,7 @@ TEST_F(P2PSocketTcpServerTest, Accept2) {
 
   base::RunLoop().RunUntilIdle();
 
-  // IncomingTcpConnection() dropped the sockets.
-  socket_delegate_.ExpectDestroyed(accepted_socket_1.get());
-  socket_delegate_.ExpectDestroyed(accepted_socket_2.get());
+  EXPECT_EQ(fake_client_->num_accepted(), 2U);
 }
 
 }  // namespace network
