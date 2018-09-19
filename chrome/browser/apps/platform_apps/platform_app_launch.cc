@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
@@ -146,6 +147,18 @@ bool OpenExtensionAppShortcutWindow(Profile* profile, const GURL& url) {
 
   content::WebContents* app_tab = ::OpenAppShortcutWindow(profile, url);
   return app_tab != nullptr;
+}
+
+void RecordExtensionAppLaunchOnTabRestored(Profile* profile, const GURL& url) {
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)
+          ->enabled_extensions()
+          .GetAppByURL(url);
+  if (!extension)
+    return;
+
+  extensions::RecordAppLaunchType(
+      extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED, extension->GetType());
 }
 
 }  // namespace apps

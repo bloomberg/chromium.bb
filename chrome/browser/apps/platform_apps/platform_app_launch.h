@@ -44,6 +44,9 @@ bool OpenExtensionApplicationWithReenablePrompt(
 // otherwise.
 bool OpenExtensionAppShortcutWindow(Profile* profile, const GURL& url);
 
+// Records the restored app launch for UMA.
+void RecordExtensionAppLaunchOnTabRestored(Profile* profile, const GURL& url);
+
 }  // namespace apps
 
 #endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_PLATFORM_APP_LAUNCH_H_
