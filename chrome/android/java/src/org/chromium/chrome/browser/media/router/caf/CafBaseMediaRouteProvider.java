@@ -146,11 +146,19 @@ public abstract class CafBaseMediaRouteProvider
     public final void createRoute(String sourceId, String sinkId, String presentationId,
             String origin, int tabId, boolean isIncognito, int nativeRequestId) {
         Log.d(TAG, "createRoute");
+        if (sessionController().isConnected()) {
+            // If there is an active session or a pending create route request, force end the
+            // current session and clean up the routes (can't wait for session ending as the signal
+            // might be delayed).
+            sessionController().endSession();
+            handleSessionEnd();
+        }
+        if (mPendingCreateRouteRequestInfo != null) {
+            cancelPendingRequest("Request repaced");
+        }
+
         CastUtils.getCastContext().getSessionManager().addSessionManagerListener(
                 this, CastSession.class);
-        if (mPendingCreateRouteRequestInfo != null) {
-            // TODO(zqzhang): do something.
-        }
 
         MediaSink sink = MediaSink.fromSinkId(sinkId, mAndroidMediaRouter);
         if (sink == null) {
@@ -211,7 +219,7 @@ public abstract class CafBaseMediaRouteProvider
     @Override
     public void onSessionStartFailed(CastSession session, int error) {
         removeAllRoutes("Launch error");
-        mPendingCreateRouteRequestInfo = null;
+        cancelPendingRequest("Launch error");
     }
 
     @Override
@@ -275,6 +283,13 @@ public abstract class CafBaseMediaRouteProvider
         terminateAllRoutes();
         CastUtils.getCastContext().getSessionManager().removeSessionManagerListener(
                 this, CastSession.class);
+    }
+
+    private void cancelPendingRequest(String error) {
+        if (mPendingCreateRouteRequestInfo == null) return;
+
+        mManager.onRouteRequestError(error, mPendingCreateRouteRequestInfo.nativeRequestId);
+        mPendingCreateRouteRequestInfo = null;
     }
 
     public @NonNull MediaRouter getAndroidMediaRouter() {
