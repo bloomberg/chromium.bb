@@ -73,6 +73,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "ui/base/cocoa/defaults_utils.h"
 #include "ui/base/cocoa/secure_password_input.h"
 #endif
 
@@ -229,8 +230,6 @@ const char Textfield::kViewClassName[] = "Textfield";
 
 // static
 base::TimeDelta Textfield::GetCaretBlinkInterval() {
-  static constexpr base::TimeDelta default_value =
-      base::TimeDelta::FromMilliseconds(500);
 #if defined(OS_WIN)
   static const size_t system_value = ::GetCaretBlinkTime();
   if (system_value != 0) {
@@ -238,8 +237,12 @@ base::TimeDelta Textfield::GetCaretBlinkInterval() {
                ? base::TimeDelta()
                : base::TimeDelta::FromMilliseconds(system_value);
   }
+#elif defined(OS_MACOSX)
+  base::TimeDelta system_value;
+  if (ui::TextInsertionCaretBlinkPeriod(&system_value))
+    return system_value;
 #endif
-  return default_value;
+  return base::TimeDelta::FromMilliseconds(500);
 }
 
 // static
