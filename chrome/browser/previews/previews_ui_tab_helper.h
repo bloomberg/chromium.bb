@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -31,6 +32,13 @@ class PreviewsUITabHelper
                      bool is_reload,
                      OnDismissPreviewsUICallback on_dismiss_callback);
 
+  // Reloads the content of the page without previews.
+  void ReloadWithoutPreviews();
+
+  // Reloads the content of the page without previews for the given preview
+  // type.
+  void ReloadWithoutPreviews(previews::PreviewsType previews_type);
+
   // Indicates whether the UI for a preview has been shown for the page.
   bool displayed_preview_ui() const { return displayed_preview_ui_; }
 
@@ -41,11 +49,13 @@ class PreviewsUITabHelper
     displayed_preview_ui_ = displayed;
   }
 
+#if defined(OS_ANDROID)
   // Indicates whether the Android Omnibox badge should be shown as the Previews
   // UI.
   bool should_display_android_omnibox_badge() const {
     return should_display_android_omnibox_badge_;
   }
+#endif
 
   // Sets whether the timestamp on the UI for a preview has been shown for
   // the page. |displayed_preview_timestamp_| is reset to false on
@@ -76,8 +86,13 @@ class PreviewsUITabHelper
   // True if the UI with a timestamp was shown for the page.
   bool displayed_preview_timestamp_ = false;
 
+#if defined(OS_ANDROID)
   // True if the Android Omnibox badge should be shown as the Previews UI.
   bool should_display_android_omnibox_badge_ = false;
+#endif
+
+  // The callback to run when the original page is loaded.
+  OnDismissPreviewsUICallback on_dismiss_callback_;
 
   // The Previews information related to the navigation that was most recently
   // finished.

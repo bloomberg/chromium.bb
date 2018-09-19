@@ -222,8 +222,6 @@ class PreviewsInfoBarDelegateUnitTest
                                          bool is_reload) {
     PreviewsInfoBarDelegate::Create(
         web_contents(), type, previews_freshness, is_data_saver_user, is_reload,
-        base::Bind(&PreviewsInfoBarDelegateUnitTest::OnDismissPreviewsInfobar,
-                   base::Unretained(this)),
         previews_ui_service_.get());
 
     EXPECT_EQ(1U, infobar_service()->infobar_count());
@@ -270,10 +268,6 @@ class PreviewsInfoBarDelegateUnitTest
         ->set_displayed_preview_ui(false);
   }
 
-  void OnDismissPreviewsInfobar(bool user_opt_out) {
-    user_opt_out_ = user_opt_out;
-  }
-
   InfoBarService* infobar_service() {
     return InfoBarService::FromWebContents(web_contents());
   }
@@ -293,7 +287,6 @@ class PreviewsInfoBarDelegateUnitTest
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       drp_test_context_;
 
-  base::Optional<bool> user_opt_out_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<base::HistogramTester> tester_;
@@ -320,14 +313,12 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   PreviewsInfoBarDelegate::Create(
       web_contents(), previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
-      false /* is_reload */, OnDismissPreviewsUICallback(),
-      previews_ui_service_.get());
+      false /* is_reload */, previews_ui_service_.get());
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
   // Navigate and make sure the infobar is dismissed.
   NavigateAndCommit(GURL(kTestUrl));
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  EXPECT_FALSE(user_opt_out_.value());
 
   tester_->ExpectBucketCount(
       kUMAPreviewsInfoBarActionLoFi,
@@ -347,15 +338,13 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   PreviewsInfoBarDelegate::Create(
       web_contents(), previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
-      false /* is_reload */, OnDismissPreviewsUICallback(),
-      previews_ui_service_.get());
+      false /* is_reload */, previews_ui_service_.get());
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
   // Navigate to test URL as a reload to dismiss the infobar.
   content::NavigationSimulator::Reload(web_contents());
 
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  EXPECT_FALSE(user_opt_out_.value());
 
   tester_->ExpectBucketCount(
       kUMAPreviewsInfoBarActionLoFi,
@@ -378,7 +367,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   tester_->ExpectBucketCount(kUMAPreviewsInfoBarActionLoFi,
                              PreviewsInfoBarDelegate::INFOBAR_DISMISSED_BY_USER,
                              1);
-  EXPECT_FALSE(user_opt_out_.value());
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest,
@@ -393,7 +381,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   tester_->ExpectBucketCount(
       kUMAPreviewsInfoBarActionLoFi,
       PreviewsInfoBarDelegate::INFOBAR_DISMISSED_BY_TAB_CLOSURE, 1);
-  EXPECT_FALSE(user_opt_out_.value());
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest,
@@ -428,7 +415,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
     tester_->ExpectBucketCount(
         kUMAPreviewsInfoBarActionLoFi,
         PreviewsInfoBarDelegate::INFOBAR_LOAD_ORIGINAL_CLICKED, 1);
-    EXPECT_TRUE(user_opt_out_.value());
 
     EXPECT_TRUE(opt_out_called_);
   }
@@ -476,8 +462,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   PreviewsInfoBarDelegate::Create(
       web_contents(), previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
-      false /* is_reload */, OnDismissPreviewsUICallback(),
-      previews_ui_service_.get());
+      false /* is_reload */, previews_ui_service_.get());
 
   // Infobar should not be shown again since a navigation hasn't happened.
   EXPECT_EQ(0U, infobar_service()->infobar_count());

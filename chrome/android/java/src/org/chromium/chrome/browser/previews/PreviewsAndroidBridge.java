@@ -29,7 +29,21 @@ public final class PreviewsAndroidBridge {
         return nativeShouldShowPreviewUI(mNativePreviewsAndroidBridge, webContents);
     }
 
+    public String getOriginalHost(WebContents webContents) {
+        assert shouldShowPreviewUI(webContents) : "getOriginalHost called on a non-preview page";
+        return nativeGetOriginalHost(mNativePreviewsAndroidBridge, webContents);
+    }
+
+    public void loadOriginal(WebContents webContents) {
+        assert shouldShowPreviewUI(webContents) : "loadOriginal called on a non-preview page";
+        nativeLoadOriginal(mNativePreviewsAndroidBridge, webContents);
+    }
+
     private native long nativeInit();
     private native boolean nativeShouldShowPreviewUI(
+            long nativePreviewsAndroidBridge, WebContents webContents);
+    private native String nativeGetOriginalHost(
+            long nativePreviewsAndroidBridge, WebContents webContents);
+    private native void nativeLoadOriginal(
             long nativePreviewsAndroidBridge, WebContents webContents);
 }

@@ -61,7 +61,6 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
                      base::Time previews_freshness,
                      bool is_data_saver_user,
                      bool is_reload,
-                     OnDismissPreviewsUICallback on_dismiss_callback,
                      previews::PreviewsUIService* previews_ui_service);
 
   // ConfirmInfoBarDelegate overrides:
@@ -79,8 +78,7 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
                           previews::PreviewsType previews_type,
                           base::Time previews_freshness,
                           bool is_data_saver_user,
-                          bool is_reload,
-                          OnDismissPreviewsUICallback on_dismiss_callback);
+                          bool is_reload);
 
   // ConfirmInfoBarDelegate overrides:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -98,8 +96,6 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   mutable PreviewsInfoBarAction infobar_dismissed_action_;
 
   const base::string16 message_text_;
-
-  OnDismissPreviewsUICallback on_dismiss_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsInfoBarDelegate);
 };

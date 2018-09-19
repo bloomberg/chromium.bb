@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
@@ -78,8 +79,9 @@ public class PageInfoControllerTest {
                 testUrl, PageTransition.TYPED, mActivityTestRule.getActivity().getActivityTab());
         ThreadUtils.runOnUiThreadBlocking(() -> {
             PageInfoController pageInfo = new PageInfoController(mActivityTestRule.getActivity(),
-                    mActivityTestRule.getActivity().getActivityTab(), null, null,
-                    PageInfoController.OfflinePageState.NOT_OFFLINE_PAGE, null);
+                    mActivityTestRule.getActivity().getActivityTab(), ConnectionSecurityLevel.NONE,
+                    null, null, PageInfoController.OfflinePageState.NOT_OFFLINE_PAGE, null,
+                    PageInfoController.PreviewPageState.NOT_PREVIEW, null);
             PageInfoView pageInfoView = pageInfo.getPageInfoViewForTesting();
             // Test that the title contains the Unicode hostname rather than strict equality, as
             // the test server will be bound to a random port.
