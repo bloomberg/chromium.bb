@@ -48,7 +48,7 @@ interface NavigableContentsClient {
   DidFinishNavigation(url.mojom.Url url,
                       bool is_main_frame,
                       bool is_error_page,
-                      network.mojom.HttpResponseHeaders response_headers);
+                      network.mojom.HttpResponseHeaders? response_headers);
 
   // Notifies the client that the NavigableContents has stopped loading
   // resources pertaining to a prior navigation request.
