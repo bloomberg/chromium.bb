@@ -205,10 +205,9 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   return view;
 }
 
-void SaveCardBubbleViews::InitFootnoteView(views::View* footnote_view) {
-  DCHECK(!footnote_view_);
+void SaveCardBubbleViews::SetFootnoteViewForTesting(
+    views::View* footnote_view) {
   footnote_view_ = footnote_view;
-  footnote_view_->set_id(DialogViewId::FOOTNOTE_VIEW);
 }
 
 void SaveCardBubbleViews::AssignIdsToDialogClientView() {

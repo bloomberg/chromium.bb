@@ -13,10 +13,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
-#include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/credit_card_save_manager.h"
 #include "components/autofill/core/browser/test_event_waiter.h"
@@ -38,8 +36,7 @@ namespace autofill {
 // need to show and interact with the offer-to-save bubble.
 class SaveCardBubbleViewsBrowserTestBase
     : public InProcessBrowserTest,
-      public CreditCardSaveManager::ObserverForTest,
-      public SaveCardBubbleControllerImpl::ObserverForTest {
+      public CreditCardSaveManager::ObserverForTest {
  public:
   // Various events that can be waited on by the DialogEventWaiter.
   enum DialogEvent : int {
@@ -47,7 +44,6 @@ class SaveCardBubbleViewsBrowserTestBase
     REQUESTED_UPLOAD_SAVE,
     RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
     SENT_UPLOAD_CARD_REQUEST,
-    BUBBLE_SHOWN
   };
 
  protected:
@@ -66,9 +62,6 @@ class SaveCardBubbleViewsBrowserTestBase
   void OnDecideToRequestUploadSave() override;
   void OnReceivedGetUploadDetailsResponse() override;
   void OnSentUploadCardRequest() override;
-
-  // SaveCardBubbleControllerImpl::ObserverForTest:
-  void OnBubbleShown() override;
 
   // BrowserTestBase:
   void SetUpInProcessBrowserTestFixture() override;
@@ -97,12 +90,9 @@ class SaveCardBubbleViewsBrowserTestBase
   void SetUploadDetailsRpcServerError();
 
   // Clicks on the given views::View*.
-  void ClickOnView(views::View* view);
-
-  // Clicks on the given dialog views::View*.
   void ClickOnDialogView(views::View* view);
 
-  // Clicks on the given dialog views::View* and waits for the dialog to close.
+  // Clicks on the given views::View* and waits for the dialog to close.
   void ClickOnDialogViewAndWait(views::View* view);
 
   // Clicks on a view from within the dialog.
@@ -114,25 +104,10 @@ class SaveCardBubbleViewsBrowserTestBase
   // Returns the views::View* that was previously assigned the id |view_id|.
   views::View* FindViewInBubbleById(DialogViewId view_id);
 
-  // Assert that there is a SaveCardBubbleViews bubble open, then click on the
-  // [X] button.
-  void ClickOnCloseButton();
-
   // Gets the views::View* instance of the save credit card bubble.
   SaveCardBubbleViews* GetSaveCardBubbleViews();
 
-  // Gets the views::View* instance of the credit card icon.
-  SaveCardIconView* GetSaveCardIconView();
-
   content::WebContents* GetActiveWebContents();
-
-  // Adding an observer to the controller so we know when the sign-in promo
-  // shows after the animation.
-  void AddEventObserverToController();
-
-  // Reduces the animation time to one millisecond so that the test does not
-  // take long.
-  void ReduceAnimationTime();
 
   // Resets the event waiter for a given |event_sequence|.
   void ResetEventWaiterForSequence(std::list<DialogEvent> event_sequence);

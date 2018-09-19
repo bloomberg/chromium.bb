@@ -110,10 +110,6 @@ void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
   NOTREACHED();
 }
 
-views::View* DiceBubbleSyncPromoView::GetSigninButtonForTesting() {
-  return signin_button_view_ ? signin_button_view_->signin_button() : nullptr;
-}
-
 void DiceBubbleSyncPromoView::EnableSync(
     bool is_default_promo_account,
     const base::Optional<AccountInfo>& account) {

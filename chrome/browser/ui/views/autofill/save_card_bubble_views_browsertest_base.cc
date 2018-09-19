@@ -7,7 +7,6 @@
 #include <list>
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -17,13 +16,9 @@
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
-#include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/credit_card_save_manager.h"
@@ -137,11 +132,6 @@ void SaveCardBubbleViewsBrowserTestBase::OnReceivedGetUploadDetailsResponse() {
 void SaveCardBubbleViewsBrowserTestBase::OnSentUploadCardRequest() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::SENT_UPLOAD_CARD_REQUEST);
-}
-
-void SaveCardBubbleViewsBrowserTestBase::OnBubbleShown() {
-  if (event_waiter_)
-    event_waiter_->OnEvent(DialogEvent::BUBBLE_SHOWN);
 }
 
 void SaveCardBubbleViewsBrowserTestBase::SetUpInProcessBrowserTestFixture() {
@@ -346,18 +336,6 @@ void SaveCardBubbleViewsBrowserTestBase::SetUploadDetailsRpcServerError() {
                                          net::HTTP_INTERNAL_SERVER_ERROR);
 }
 
-void SaveCardBubbleViewsBrowserTestBase::ClickOnView(views::View* view) {
-  DCHECK(view);
-  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                         ui::EF_LEFT_MOUSE_BUTTON);
-  view->OnMousePressed(pressed);
-  ui::MouseEvent released_event = ui::MouseEvent(
-      ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  view->OnMouseReleased(released_event);
-}
-
 void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogView(views::View* view) {
   GetSaveCardBubbleViews()
       ->GetDialogClientView()
@@ -368,7 +346,16 @@ void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogView(views::View* view) {
                                                ->non_client_view()
                                                ->frame_view());
   bubble_frame_view->ResetViewShownTimeStampForTesting();
-  ClickOnView(view);
+
+  DCHECK(view);
+  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                         ui::EF_LEFT_MOUSE_BUTTON);
+  view->OnMousePressed(pressed);
+  ui::MouseEvent released_event = ui::MouseEvent(
+      ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  view->OnMouseReleased(released_event);
 }
 
 void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogViewAndWait(
@@ -420,13 +407,6 @@ views::View* SaveCardBubbleViewsBrowserTestBase::FindViewInBubbleById(
   return specified_view;
 }
 
-void SaveCardBubbleViewsBrowserTestBase::ClickOnCloseButton() {
-  SaveCardBubbleViews* save_card_bubble_views = GetSaveCardBubbleViews();
-  DCHECK(save_card_bubble_views);
-  ClickOnDialogViewAndWait(
-      save_card_bubble_views->GetBubbleFrameView()->GetCloseButtonForTest());
-}
-
 SaveCardBubbleViews*
 SaveCardBubbleViewsBrowserTestBase::GetSaveCardBubbleViews() {
   SaveCardBubbleControllerImpl* save_card_bubble_controller_impl =
@@ -440,29 +420,9 @@ SaveCardBubbleViewsBrowserTestBase::GetSaveCardBubbleViews() {
   return static_cast<SaveCardBubbleViews*>(save_card_bubble_view);
 }
 
-SaveCardIconView* SaveCardBubbleViewsBrowserTestBase::GetSaveCardIconView() {
-  if (!browser())
-    return nullptr;
-  LocationBarView* location_bar_view =
-      static_cast<LocationBarView*>(browser()->window()->GetLocationBar());
-  DCHECK(location_bar_view->save_credit_card_icon_view());
-  return location_bar_view->save_credit_card_icon_view();
-}
-
 content::WebContents*
 SaveCardBubbleViewsBrowserTestBase::GetActiveWebContents() {
   return browser()->tab_strip_model()->GetActiveWebContents();
-}
-
-void SaveCardBubbleViewsBrowserTestBase::AddEventObserverToController() {
-  SaveCardBubbleControllerImpl* save_card_bubble_controller_impl =
-      SaveCardBubbleControllerImpl::FromWebContents(GetActiveWebContents());
-  DCHECK(save_card_bubble_controller_impl);
-  save_card_bubble_controller_impl->SetEventObserverForTesting(this);
-}
-
-void SaveCardBubbleViewsBrowserTestBase::ReduceAnimationTime() {
-  GetSaveCardIconView()->ReduceAnimationTimeForTesting();
 }
 
 void SaveCardBubbleViewsBrowserTestBase::ResetEventWaiterForSequence(
