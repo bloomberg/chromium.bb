@@ -16,6 +16,8 @@
 
 namespace autofill {
 
+// The default length for a generated password. If you intend to change this
+// constant, make sure to update the corresponding constant on the server.
 const uint32_t kDefaultPasswordLength = 15;
 
 namespace {
