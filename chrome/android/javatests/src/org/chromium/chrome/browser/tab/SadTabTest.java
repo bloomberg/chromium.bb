@@ -20,6 +20,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.net.test.util.TestWebServer;
@@ -162,7 +163,7 @@ public class SadTabTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                if (!visible) tab.hide();
+                if (!visible) tab.hide(TabHidingType.CHANGED_TABS);
                 tab.simulateRendererKilledForTesting(false);
             }
         });

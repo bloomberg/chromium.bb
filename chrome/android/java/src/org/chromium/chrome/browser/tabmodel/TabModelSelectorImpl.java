@@ -11,6 +11,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
@@ -356,7 +357,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                         && (!isFromExternalApp || type != TabSelectionType.FROM_NEW)) {
                     cacheTabBitmap(mVisibleTab);
                 }
-                mVisibleTab.hide();
+                mVisibleTab.hide(TabHidingType.CHANGED_TABS);
                 mTabSaver.addTabToSaveQueue(mVisibleTab);
             }
             tabToDropImportance = mVisibleTab;

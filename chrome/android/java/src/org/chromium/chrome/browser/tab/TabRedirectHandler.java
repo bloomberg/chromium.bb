@@ -18,6 +18,7 @@ import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.PageTransition;
 
@@ -109,7 +110,7 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
     }
 
     @Override
-    public void onHidden(Tab tab) {
+    public void onHidden(Tab tab, @TabHidingType int type) {
         clear();
     }
 

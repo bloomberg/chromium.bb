@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 
 /**
@@ -60,7 +61,7 @@ public class AutoSigninSnackbarController
         mSnackbarManager = snackbarManager;
         mTabObserver = new EmptyTabObserver() {
             @Override
-            public void onHidden(Tab tab) {
+            public void onHidden(Tab tab, @TabHidingType int type) {
                 AutoSigninSnackbarController.this.dismissAutoSigninSnackbar();
             }
 

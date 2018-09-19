@@ -172,13 +172,8 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         RecordUserAction.record("MobileNewTabOpened");
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setReferrer(referrer);
-        Tab newTab = mTab.getTabModelSelector().openNewTab(
+        mTab.getTabModelSelector().openNewTab(
                 loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());
-
-        // {@code newTab} is null in document mode. Do not record metrics for document mode.
-        if (mTab.getTabUma() != null && newTab != null) {
-            mTab.getTabUma().onBackgroundTabOpenedFromContextMenu(newTab);
-        }
     }
 
     @Override

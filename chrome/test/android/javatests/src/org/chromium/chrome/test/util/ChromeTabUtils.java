@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.compositor.layouts.components.CompositorButto
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -270,7 +271,7 @@ public class ChromeTabUtils {
         }
 
         @Override
-        public void onHidden(Tab tab) {
+        public void onHidden(Tab tab, @TabHidingType int type) {
             mCallback.notifyCalled();
             mTab.removeObserver(this);
         }
