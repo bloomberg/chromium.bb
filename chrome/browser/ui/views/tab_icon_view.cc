@@ -44,9 +44,8 @@ void TabIconView::InitializeIfNeeded() {
     // The default window icon is the application icon, not the default
     // favicon.
     HICON app_icon = GetAppIcon();
-    std::unique_ptr<SkBitmap> bitmap(
-        IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16)));
-    g_default_favicon = new gfx::ImageSkia(gfx::ImageSkiaRep(*bitmap, 1.0f));
+    g_default_favicon = new gfx::ImageSkia(gfx::ImageSkiaRep(
+        IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16)), 1.0f));
     DestroyIcon(app_icon);
 #else
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

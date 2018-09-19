@@ -154,17 +154,15 @@ TEST_F(IconUtilTest, TestIconToBitmapInvalidParameters) {
 
   // Invalid size parameter.
   gfx::Size invalid_icon_size(kSmallIconHeight, 0);
-  EXPECT_EQ(IconUtil::CreateSkBitmapFromHICON(icon.get(), invalid_icon_size),
-            static_cast<SkBitmap*>(NULL));
+  EXPECT_TRUE(IconUtil::CreateSkBitmapFromHICON(icon.get(), invalid_icon_size)
+                  .isNull());
 
   // Invalid icon.
-  EXPECT_EQ(IconUtil::CreateSkBitmapFromHICON(NULL, icon_size),
-            static_cast<SkBitmap*>(NULL));
+  EXPECT_TRUE(IconUtil::CreateSkBitmapFromHICON(nullptr, icon_size).isNull());
 
   // The following code should succeed.
-  std::unique_ptr<SkBitmap> bitmap;
-  bitmap.reset(IconUtil::CreateSkBitmapFromHICON(icon.get(), icon_size));
-  EXPECT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
+  EXPECT_FALSE(
+      IconUtil::CreateSkBitmapFromHICON(icon.get(), icon_size).drawsNothing());
 }
 
 // The following test case makes sure IconUtil::CreateHICONFromSkBitmap fails
@@ -272,19 +270,18 @@ TEST_F(IconUtilTest, TestCreateIconFileEmptyImageFamily) {
 // This test case makes sure that when we load an icon from disk and convert
 // the HICON into a bitmap, the bitmap has the expected format and dimensions.
 TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
-  std::unique_ptr<SkBitmap> bitmap;
   base::FilePath small_icon_filename = test_data_directory_.AppendASCII(
       kSmallIconName);
   gfx::Size small_icon_size(kSmallIconWidth, kSmallIconHeight);
   ScopedHICON small_icon(LoadIconFromFile(
       small_icon_filename, small_icon_size.width(), small_icon_size.height()));
   ASSERT_TRUE(small_icon.is_valid());
-  bitmap.reset(
-      IconUtil::CreateSkBitmapFromHICON(small_icon.get(), small_icon_size));
-  ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  EXPECT_EQ(bitmap->width(), small_icon_size.width());
-  EXPECT_EQ(bitmap->height(), small_icon_size.height());
-  EXPECT_EQ(bitmap->colorType(), kN32_SkColorType);
+  SkBitmap bitmap =
+      IconUtil::CreateSkBitmapFromHICON(small_icon.get(), small_icon_size);
+  ASSERT_FALSE(bitmap.isNull());
+  EXPECT_EQ(bitmap.width(), small_icon_size.width());
+  EXPECT_EQ(bitmap.height(), small_icon_size.height());
+  EXPECT_EQ(bitmap.colorType(), kN32_SkColorType);
 
   base::FilePath large_icon_filename = test_data_directory_.AppendASCII(
       kLargeIconName);
@@ -292,12 +289,11 @@ TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
   ScopedHICON large_icon(LoadIconFromFile(
       large_icon_filename, large_icon_size.width(), large_icon_size.height()));
   ASSERT_TRUE(large_icon.is_valid());
-  bitmap.reset(
-      IconUtil::CreateSkBitmapFromHICON(large_icon.get(), large_icon_size));
-  ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  EXPECT_EQ(bitmap->width(), large_icon_size.width());
-  EXPECT_EQ(bitmap->height(), large_icon_size.height());
-  EXPECT_EQ(bitmap->colorType(), kN32_SkColorType);
+  bitmap = IconUtil::CreateSkBitmapFromHICON(large_icon.get(), large_icon_size);
+  ASSERT_FALSE(bitmap.isNull());
+  EXPECT_EQ(bitmap.width(), large_icon_size.width());
+  EXPECT_EQ(bitmap.height(), large_icon_size.height());
+  EXPECT_EQ(bitmap.colorType(), kN32_SkColorType);
 }
 
 // This test case makes sure that when an HICON is created from an SkBitmap,

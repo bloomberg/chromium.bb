@@ -93,11 +93,8 @@ class GFX_EXPORT IconUtil {
   // dimensions specified in |s|. |s| must specify valid dimensions (both
   // width() an height() must be greater than zero). If the function cannot
   // convert the icon to a bitmap (most probably due to an invalid parameter),
-  // the return value is NULL.
-  //
-  // The client owns the returned bitmap object and is responsible for deleting
-  // it when it is no longer needed.
-  static SkBitmap* CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s);
+  // the returned SkBitmap's isNull() method will return true.
+  static SkBitmap CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s);
 
   // Loads an icon resource  as a SkBitmap for the specified |size| from a
   // loaded .dll or .exe |module|. Supports loading smaller icon sizes as well
@@ -110,11 +107,9 @@ class GFX_EXPORT IconUtil {
   // Given a valid HICON handle representing an icon, this function converts
   // the icon into an SkBitmap object containing an ARGB bitmap using the
   // dimensions of HICON. If the function cannot convert the icon to a bitmap
-  // (most probably due to an invalid parameter), the return value is NULL.
-  //
-  // The client owns the returned bitmap object and is responsible for deleting
-  // it when it is no longer needed.
-  static SkBitmap* CreateSkBitmapFromHICON(HICON icon);
+  // (most probably due to an invalid parameter), the returned SkBitmap's
+  // isNull() method will return true.
+  static SkBitmap CreateSkBitmapFromHICON(HICON icon);
 
   // Creates Windows .ico file at |icon_path|. The icon file is created with
   // multiple BMP representations at varying predefined dimensions (by resizing

@@ -292,7 +292,7 @@ SkBitmap Cursor::GetDefaultBitmap() const {
   Cursor cursor_copy = *this;
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor_copy);
-  return *IconUtil::CreateSkBitmapFromHICON(cursor_copy.platform());
+  return IconUtil::CreateSkBitmapFromHICON(cursor_copy.platform());
 #else
   int resource_id;
   gfx::Point hotspot;
