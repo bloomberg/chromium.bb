@@ -380,7 +380,9 @@ TEST_P(FlingControllerTest, DISABLED_EarlyTouchpadFlingCancelationOnFlingStop) {
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-TEST_P(FlingControllerTest, EarlyTouchscreenFlingCancelationOnFlingStop) {
+// Flaky. https://crbug.com/886992
+TEST_P(FlingControllerTest,
+       DISABLED_EarlyTouchscreenFlingCancelationOnFlingStop) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
