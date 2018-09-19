@@ -312,7 +312,9 @@ class BackgroundFetchDataManagerTest
   // BackgroundFetchDataManager::PopNextRequest().
   void PopNextRequest(
       const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchError* out_error,
       scoped_refptr<BackgroundFetchRequestInfo>* out_request_info) {
+    DCHECK(out_error);
     DCHECK(out_request_info);
 
     base::RunLoop run_loop;
@@ -320,7 +322,7 @@ class BackgroundFetchDataManagerTest
         registration_id,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidPopNextRequest,
                        base::Unretained(this), run_loop.QuitClosure(),
-                       out_request_info));
+                       out_error, out_request_info));
     run_loop.Run();
   }
 
@@ -353,13 +355,16 @@ class BackgroundFetchDataManagerTest
   // Synchronous version of BackgroundFetchDataManager::MarkRequestAsComplete().
   void MarkRequestAsComplete(
       const BackgroundFetchRegistrationId& registration_id,
-      BackgroundFetchRequestInfo* request_info) {
+      BackgroundFetchRequestInfo* request_info,
+      blink::mojom::BackgroundFetchError* out_error) {
+    DCHECK(out_error);
+
     base::RunLoop run_loop;
     background_fetch_data_manager_->MarkRequestAsComplete(
         registration_id, request_info,
         base::BindOnce(
             &BackgroundFetchDataManagerTest::DidMarkRequestAsComplete,
-            base::Unretained(this), run_loop.QuitClosure()));
+            base::Unretained(this), run_loop.QuitClosure(), out_error));
     run_loop.Run();
   }
 
@@ -615,13 +620,19 @@ class BackgroundFetchDataManagerTest
 
   void DidPopNextRequest(
       base::OnceClosure quit_closure,
+      blink::mojom::BackgroundFetchError* out_error,
       scoped_refptr<BackgroundFetchRequestInfo>* out_request_info,
+      blink::mojom::BackgroundFetchError error,
       scoped_refptr<BackgroundFetchRequestInfo> request_info) {
+    *out_error = error;
     *out_request_info = request_info;
     std::move(quit_closure).Run();
   }
 
-  void DidMarkRequestAsComplete(base::OnceClosure quit_closure) {
+  void DidMarkRequestAsComplete(base::OnceClosure quit_closure,
+                                blink::mojom::BackgroundFetchError* out_error,
+                                blink::mojom::BackgroundFetchError error) {
+    *out_error = error;
     std::move(quit_closure).Run();
   }
 
@@ -1108,6 +1119,7 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
+  blink::mojom::BackgroundFetchError error;
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
 
   BackgroundFetchRegistrationId registration_id(
@@ -1115,7 +1127,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   // There registration hasn't been created yet, so there are no pending
   // requests.
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_FALSE(request_info);
   EXPECT_EQ(
       GetRequestStats(sw_id),
@@ -1124,7 +1137,6 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   std::vector<ServiceWorkerFetchRequest> requests(2u);
   BackgroundFetchOptions options;
-  blink::mojom::BackgroundFetchError error;
 
   {
     EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _));
@@ -1139,7 +1151,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
                           0 /* completed_requests */}));
 
   // Popping should work now.
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_TRUE(request_info);
   EXPECT_EQ(request_info->request_index(), 0);
   EXPECT_FALSE(request_info->download_guid().empty());
@@ -1150,7 +1163,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   // Mark as complete.
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(
       GetRequestStats(sw_id),
       (ResponseStateStats{1 /* pending_requests */, 0 /* active_requests */,
@@ -1158,7 +1172,8 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   RestartDataManagerFromPersistentStorage();
 
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_TRUE(request_info);
   EXPECT_EQ(request_info->request_index(), 1);
   EXPECT_FALSE(request_info->download_guid().empty());
@@ -1169,14 +1184,16 @@ TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
 
   // Mark as complete.
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_EQ(
       GetRequestStats(sw_id),
       (ResponseStateStats{0 /* pending_requests */, 0 /* active_requests */,
                           2 /* completed_requests */}));
 
   // We are out of pending requests.
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_FALSE(request_info);
   EXPECT_EQ(
       GetRequestStats(sw_id),
@@ -1207,28 +1224,34 @@ TEST_F(BackgroundFetchDataManagerTest, DownloadTotalUpdated) {
   EXPECT_EQ(registration.download_total, 0u);
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* succeeded */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(registration.download_total, kResponseFileSize);
 
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* succeeded */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(registration.download_total, 2 * kResponseFileSize);
 
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  false /* succeeded */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   registration = GetRegistration(sw_id, origin(), kExampleDeveloperId, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
@@ -1254,12 +1277,14 @@ TEST_F(BackgroundFetchDataManagerTest, ExceedingQuotaAbandonsFetch) {
   }
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   AnnotateRequestInfoWithFakeDownloadManagerData(
       request_info.get(), true /* succeeded */, true /* over_quota */);
   {
     EXPECT_CALL(*this, OnQuotaExceeded(registration_id));
-    MarkRequestAsComplete(registration_id, request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
   }
 }
 
@@ -1281,12 +1306,14 @@ TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {
   }
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
 
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   EXPECT_TRUE(HasCache(kExampleUniqueId));
   EXPECT_FALSE(HasCache("foo"));
@@ -1294,12 +1321,14 @@ TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {
   EXPECT_TRUE(MatchCache(requests[0]));
   EXPECT_FALSE(MatchCache(requests[1]));
 
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
 
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_TRUE(MatchCache(requests[0]));
   EXPECT_TRUE(MatchCache(requests[1]));
 
@@ -1328,12 +1357,14 @@ TEST_F(BackgroundFetchDataManagerTest, CacheDeleted) {
   }
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
 
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   EXPECT_TRUE(HasCache(kExampleUniqueId));
   EXPECT_TRUE(MatchCache(request));
@@ -1382,10 +1413,12 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
 
   for (size_t i = 0; i < requests.size(); i++) {
     scoped_refptr<BackgroundFetchRequestInfo> request_info;
-    PopNextRequest(registration_id, &request_info);
+    PopNextRequest(registration_id, &error, &request_info);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     ASSERT_TRUE(request_info);
     AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-    MarkRequestAsComplete(registration_id, request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   RestartDataManagerFromPersistentStorage();
@@ -1435,11 +1468,13 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesFromCache) {
   EXPECT_EQ(settled_fetches.size(), 0u);
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   GetSettledFetchesForRegistration(
       registration_id, base::nullopt /* request_to_match */,
@@ -1449,11 +1484,13 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesFromCache) {
   EXPECT_TRUE(succeeded);
   EXPECT_EQ(settled_fetches.size(), 1u);
 
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   GetSettledFetchesForRegistration(
       registration_id, base::nullopt /* request_to_match */,
@@ -1502,10 +1539,12 @@ TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesForASpecificRequest) {
   for (size_t i = 0; i < requests.size(); i++) {
     SCOPED_TRACE(i);
     scoped_refptr<BackgroundFetchRequestInfo> request_info;
-    PopNextRequest(registration_id, &request_info);
+    PopNextRequest(registration_id, &error, &request_info);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     ASSERT_TRUE(request_info);
     AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-    MarkRequestAsComplete(registration_id, request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   EXPECT_EQ(
@@ -1547,10 +1586,12 @@ TEST_F(BackgroundFetchDataManagerTest,
   for (size_t i = 0; i < requests.size() - 1; i++) {
     SCOPED_TRACE(i);
     scoped_refptr<BackgroundFetchRequestInfo> request_info;
-    PopNextRequest(registration_id, &request_info);
+    PopNextRequest(registration_id, &error, &request_info);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     ASSERT_TRUE(request_info);
     AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-    MarkRequestAsComplete(registration_id, request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   EXPECT_EQ(
@@ -1593,10 +1634,12 @@ TEST_F(BackgroundFetchDataManagerTest, IgnoreMethodAndMatchAll) {
   for (size_t i = 0; i < requests.size(); i++) {
     SCOPED_TRACE(i);
     scoped_refptr<BackgroundFetchRequestInfo> request_info;
-    PopNextRequest(registration_id, &request_info);
+    PopNextRequest(registration_id, &error, &request_info);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     ASSERT_TRUE(request_info);
     AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-    MarkRequestAsComplete(registration_id, request_info.get());
+    MarkRequestAsComplete(registration_id, request_info.get(), &error);
+    EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   }
 
   EXPECT_EQ(
@@ -1738,11 +1781,16 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
 
   // Mark one request as complete and start another.
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
+
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get());
-  MarkRequestAsComplete(registration_id, request_info.get());
-  PopNextRequest(registration_id, &request_info);
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   {
     std::vector<BackgroundFetchInitializationData> data =
@@ -1868,11 +1916,13 @@ TEST_F(BackgroundFetchDataManagerTest, StorageErrorsReported) {
   }
 
   scoped_refptr<BackgroundFetchRequestInfo> request_info;
-  PopNextRequest(registration_id, &request_info);
+  PopNextRequest(registration_id, &error, &request_info);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   ASSERT_TRUE(request_info);
   AnnotateRequestInfoWithFakeDownloadManagerData(request_info.get(),
                                                  true /* success */);
-  MarkRequestAsComplete(registration_id, request_info.get());
+  MarkRequestAsComplete(registration_id, request_info.get(), &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   bool succeeded = false;
   std::vector<BackgroundFetchSettledFetch> settled_fetches;

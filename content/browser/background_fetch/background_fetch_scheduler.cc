@@ -100,6 +100,7 @@ void BackgroundFetchScheduler::ScheduleDownload() {
 }
 
 void BackgroundFetchScheduler::DidPopNextRequest(
+    blink::mojom::BackgroundFetchError error,
     scoped_refptr<BackgroundFetchRequestInfo> request_info) {
   // It's possible for the |active_controller_| to have been aborted while the
   // next request was being retrieved. Bail out when that happens.
@@ -108,15 +109,15 @@ void BackgroundFetchScheduler::DidPopNextRequest(
     return;
   }
 
-  // There might've been a storage error when |request_info| could not be loaded
-  // from the database. Bail out in this case as well.
-  if (!request_info) {
-    // TODO(peter): Should we abort the |active_controller_| in this case?
+  if (error != blink::mojom::BackgroundFetchError::NONE) {
+    active_controller_->Finish(
+        blink::mojom::BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE);
     active_controller_ = nullptr;
-
     ScheduleDownload();
     return;
   }
+
+  DCHECK(request_info);
 
   // Otherwise start the |request_info| through the live Job Controller.
   active_controller_->StartRequest(
@@ -138,11 +139,21 @@ void BackgroundFetchScheduler::MarkRequestAsComplete(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BackgroundFetchScheduler::DidMarkRequestAsComplete() {
+void BackgroundFetchScheduler::DidMarkRequestAsComplete(
+    blink::mojom::BackgroundFetchError error) {
   // It's possible for the |active_controller_| to have been aborted while the
   // request was being marked as completed. Bail out in that case.
   if (!active_controller_)
     return;
+
+  if (error != blink::mojom::BackgroundFetchError::NONE) {
+    DCHECK_EQ(error, blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    active_controller_->Finish(
+        blink::mojom::BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE);
+    active_controller_ = nullptr;
+    ScheduleDownload();
+    return;
+  }
 
   // Continue with the |active_controller_| while there are files pending.
   if (active_controller_->HasMoreRequests()) {

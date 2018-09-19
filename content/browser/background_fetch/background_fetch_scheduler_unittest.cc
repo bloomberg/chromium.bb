@@ -96,14 +96,15 @@ class BackgroundFetchSchedulerTest
         0 /* request_count */, fetch_request);
     request->InitializeDownloadGuid();
 
-    std::move(callback).Run(std::move(request));
+    std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
+                            std::move(request));
   }
 
   void MarkRequestAsComplete(
       const BackgroundFetchRegistrationId& registration_id,
       scoped_refptr<BackgroundFetchRequestInfo> request_info,
-      base::OnceClosure closure) override {
-    std::move(closure).Run();
+      BackgroundFetchScheduler::MarkRequestCompleteCallback closure) override {
+    std::move(closure).Run(blink::mojom::BackgroundFetchError::NONE);
   }
 
  protected:

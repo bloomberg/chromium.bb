@@ -21,11 +21,14 @@ namespace background_fetch {
 // download response in cache storage.
 class MarkRequestCompleteTask : public DatabaseTask {
  public:
+  using MarkRequestCompleteCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
+
   MarkRequestCompleteTask(
       DatabaseTaskHost* host,
       BackgroundFetchRegistrationId registration_id,
       scoped_refptr<BackgroundFetchRequestInfo> request_info,
-      base::OnceClosure closure);
+      MarkRequestCompleteCallback callback);
 
   ~MarkRequestCompleteTask() override;
 
@@ -73,7 +76,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
 
   BackgroundFetchRegistrationId registration_id_;
   scoped_refptr<BackgroundFetchRequestInfo> request_info_;
-  base::OnceClosure closure_;
+  MarkRequestCompleteCallback callback_;
 
   proto::BackgroundFetchCompletedRequest completed_request_;
   bool is_response_successful_ = true;

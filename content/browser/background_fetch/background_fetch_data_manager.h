@@ -71,8 +71,11 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   using GetRegistrationCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
                               const BackgroundFetchRegistration&)>;
+  using MarkRequestCompleteCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
   using NextRequestCallback =
-      base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              scoped_refptr<BackgroundFetchRequestInfo>)>;
 
   BackgroundFetchDataManager(
       BrowserContext* browser_context,
@@ -166,7 +169,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   void MarkRequestAsComplete(
       const BackgroundFetchRegistrationId& registration_id,
       scoped_refptr<BackgroundFetchRequestInfo> request_info,
-      base::OnceClosure closure) override;
+      MarkRequestCompleteCallback callback) override;
 
   void ShutdownOnIO();
 
@@ -192,12 +195,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   storage::QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();
   }
-
-  void AddStartNextPendingRequestTask(
-      const BackgroundFetchRegistrationId& registration_id,
-      NextRequestCallback callback,
-      blink::mojom::BackgroundFetchError error,
-      const BackgroundFetchRegistration& registration);
 
   void AddDatabaseTask(std::unique_ptr<background_fetch::DatabaseTask> task);
 
