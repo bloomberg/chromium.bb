@@ -1051,7 +1051,21 @@ blacklistedFormItemWithText:(NSString*)text
       base::mac::ObjCCastStrict<SettingsSearchItem>(
           [model itemAtIndexPath:itemPath]);
   [searchItem setEnabled:enabled];
-  [self reconfigureCellsForItems:@[ searchItem ]];
+
+  NSIndexPath* indexPath =
+      [self.collectionViewModel indexPathForItem:searchItem];
+  MDCCollectionViewCell* cell =
+      base::mac::ObjCCastStrict<MDCCollectionViewCell>(
+          [self.collectionView cellForItemAtIndexPath:indexPath]);
+
+  // |cell| may be nil if the row is not currently on screen. If that's the case
+  // and we are disabling we force the keyboard down (since the cell can't do it
+  // for us).
+  if (cell) {
+    [searchItem configureCell:cell];
+  } else if (!enabled) {
+    [self.view endEditing:YES];
+  }
 }
 
 #pragma mark - Testing
