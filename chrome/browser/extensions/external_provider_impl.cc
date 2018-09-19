@@ -707,7 +707,7 @@ void ExternalProviderImpl::CreateExternalProviders(
             Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS);
     demo_apps_provider->set_auto_acknowledge(true);
     demo_apps_provider->set_install_immediately(true);
-    chromeos::DemoSession::Get()->set_extensions_external_loader(loader);
+    chromeos::DemoSession::Get()->SetExtensionsExternalLoader(loader);
     provider_list->push_back(std::move(demo_apps_provider));
   }
 

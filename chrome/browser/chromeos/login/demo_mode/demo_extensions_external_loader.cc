@@ -80,12 +80,14 @@ DemoExtensionsExternalLoader::DemoExtensionsExternalLoader(
 DemoExtensionsExternalLoader::~DemoExtensionsExternalLoader() = default;
 
 void DemoExtensionsExternalLoader::LoadApp(const std::string& app_id) {
+  app_ids_.push_back(app_id);
   base::DictionaryValue prefs;
-  base::DictionaryValue app_dict;
-  app_dict.SetKey(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                  base::Value(extension_urls::kChromeWebstoreUpdateURL));
-  prefs.SetKey(app_id, std::move(app_dict));
-
+  for (const std::string& app_id : app_ids_) {
+    base::DictionaryValue app_dict;
+    app_dict.SetKey(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+                    base::Value(extension_urls::kChromeWebstoreUpdateURL));
+    prefs.SetKey(app_id, std::move(app_dict));
+  }
   if (!external_cache_) {
     external_cache_ = std::make_unique<ExternalCacheImpl>(
         cache_dir_, g_browser_process->shared_url_loader_factory(),

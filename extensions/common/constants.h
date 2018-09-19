@@ -254,6 +254,9 @@ extern const char kHighlightsAlt1AppId[];
 
 // The extension id of an alternate Demo Mode Highlights app.
 extern const char kHighlightsAlt2AppId[];
+
+// The extension id of the default Demo Mode screensaver app.
+extern const char kScreensaverAppId[];
 #endif
 
 // The extension id for the production version of Hangouts.
