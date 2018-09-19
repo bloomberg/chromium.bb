@@ -185,6 +185,8 @@ DirectoryTreeNamingController.prototype.performRename_ = function(
             label.textContent = newName;
 
             this.currentDirectoryItem_.entry = newEntry;
+            this.currentDirectoryItem_.updateSubDirectories(
+                true /* recursive */);
 
             this.detach_();
 
