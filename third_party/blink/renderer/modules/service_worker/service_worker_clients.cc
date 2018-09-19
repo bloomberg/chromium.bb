@@ -40,44 +40,41 @@ mojom::ServiceWorkerClientType GetClientType(const String& type) {
   return mojom::ServiceWorkerClientType::kWindow;
 }
 
-class GetCallback : public WebServiceWorkerClientCallbacks {
- public:
-  explicit GetCallback(ScriptPromiseResolver* resolver) : resolver_(resolver) {}
-  ~GetCallback() override = default;
-
-  void OnSuccess(
-      std::unique_ptr<WebServiceWorkerClientInfo> web_client) override {
-    std::unique_ptr<WebServiceWorkerClientInfo> client =
-        base::WrapUnique(web_client.release());
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    if (!client) {
-      // Resolve the promise with undefined.
-      resolver_->Resolve();
-      return;
-    }
-    resolver_->Resolve(ServiceWorkerClient::Take(resolver_, std::move(client)));
+void DidGetClient(ScriptPromiseResolver* resolver,
+                  mojom::blink::ServiceWorkerClientInfoPtr info) {
+  if (!resolver->GetExecutionContext() ||
+      resolver->GetExecutionContext()->IsContextDestroyed()) {
+    return;
   }
 
-  void OnError(const WebServiceWorkerError& error) override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    resolver_->Reject(ServiceWorkerError::Take(resolver_.Get(), error));
+  if (!info) {
+    // Resolve the promise with undefined.
+    resolver->Resolve();
+    return;
   }
-
- private:
-  Persistent<ScriptPromiseResolver> resolver_;
-  DISALLOW_COPY_AND_ASSIGN(GetCallback);
-};
+  ServiceWorkerClient* client;
+  switch (info->client_type) {
+    case mojom::ServiceWorkerClientType::kWindow:
+      client = ServiceWorkerWindowClient::Create(*info);
+      break;
+    case mojom::ServiceWorkerClientType::kSharedWorker:
+      client = ServiceWorkerClient::Create(*info);
+      break;
+    case mojom::ServiceWorkerClientType::kAll:
+      NOTREACHED();
+      return;
+  }
+  resolver->Resolve(client);
+}
 
 void DidClaim(ScriptPromiseResolver* resolver,
               mojom::blink::ServiceWorkerErrorType error,
               const String& error_msg) {
   if (!resolver->GetExecutionContext() ||
-      resolver->GetExecutionContext()->IsContextDestroyed())
+      resolver->GetExecutionContext()->IsContextDestroyed()) {
     return;
+  }
+
   if (error != mojom::blink::ServiceWorkerErrorType::kNone) {
     DCHECK(!error_msg.IsNull());
     resolver->Reject(
@@ -91,8 +88,9 @@ void DidClaim(ScriptPromiseResolver* resolver,
 void DidGetClients(ScriptPromiseResolver* resolver,
                    Vector<mojom::blink::ServiceWorkerClientInfoPtr> infos) {
   if (!resolver->GetExecutionContext() ||
-      resolver->GetExecutionContext()->IsContextDestroyed())
+      resolver->GetExecutionContext()->IsContextDestroyed()) {
     return;
+  }
 
   HeapVector<Member<ServiceWorkerClient>> clients;
   for (const auto& info : infos) {
@@ -121,11 +119,9 @@ ScriptPromise ServiceWorkerClients::get(ScriptState* script_state,
     return ScriptPromise();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   ServiceWorkerGlobalScopeClient::From(execution_context)
-      ->GetClient(id, std::make_unique<GetCallback>(resolver));
-  return promise;
+      ->GetClient(id, WTF::Bind(&DidGetClient, WrapPersistent(resolver)));
+  return resolver->Promise();
 }
 
 ScriptPromise ServiceWorkerClients::matchAll(

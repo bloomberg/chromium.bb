@@ -17,18 +17,12 @@
 namespace blink {
 
 class PostMessageOptions;
-class ScriptPromiseResolver;
 class ScriptState;
 
 class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // To be used by CallbackPromiseAdapter.
-  using WebType = std::unique_ptr<WebServiceWorkerClientInfo>;
-
-  static ServiceWorkerClient* Take(ScriptPromiseResolver*,
-                                   std::unique_ptr<WebServiceWorkerClientInfo>);
   static ServiceWorkerClient* Create(const WebServiceWorkerClientInfo&);
   static ServiceWorkerClient* Create(
       const mojom::blink::ServiceWorkerClientInfo&);
