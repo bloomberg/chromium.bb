@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
@@ -46,7 +47,8 @@ class ASH_EXPORT AssistantController
       public mojom::ManagedWebContentsOpenUrlDelegate,
       public mojom::VoiceInteractionObserver,
       public mojom::AssistantVolumeControl,
-      public chromeos::CrasAudioHandler::AudioObserver {
+      public chromeos::CrasAudioHandler::AudioObserver,
+      public AccessibilityObserver {
  public:
   AssistantController();
   ~AssistantController() override;
@@ -124,6 +126,9 @@ class ASH_EXPORT AssistantController
   // chromeos::CrasAudioHandler::AudioObserver:
   void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
   void OnOutputNodeVolumeChanged(uint64_t node, int volume) override;
+
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
 
   // Opens the specified |url| in a new browser tab.
   // TODO(dmblack): Support opening specific URLs in the Assistant container.

@@ -73,5 +73,8 @@ void FakeAssistantManagerServiceImpl::DismissNotification(
 void FakeAssistantManagerServiceImpl::CacheScreenContext(
     CacheScreenContextCallback callback) {}
 
+void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
+    bool spoken_feedback_enabled) {}
+
 }  // namespace assistant
 }  // namespace chromeos

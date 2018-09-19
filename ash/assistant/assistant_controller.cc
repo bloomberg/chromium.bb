@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/assistant/assistant_cache_controller.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
@@ -44,15 +45,17 @@ AssistantController::AssistantController()
   mojom::VoiceInteractionObserverPtr ptr;
   voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
   Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
-
-  AddObserver(this);
-  NotifyConstructed();
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
+  AddObserver(this);
+
+  NotifyConstructed();
 }
 
 AssistantController::~AssistantController() {
-  chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
   NotifyDestroying();
+
+  chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
+  Shell::Get()->accessibility_controller()->RemoveObserver(this);
   RemoveObserver(this);
 }
 
@@ -84,6 +87,12 @@ void AssistantController::SetAssistant(
   assistant_notification_controller_->SetAssistant(assistant_.get());
   assistant_screen_context_controller_->SetAssistant(assistant_.get());
   assistant_ui_controller_->SetAssistant(assistant_.get());
+
+  // The Assistant service needs to have accessibility state synced with ash
+  // and be notified of any accessibility status changes in the future to
+  // provide an opportunity to turn on/off A11Y features.
+  Shell::Get()->accessibility_controller()->AddObserver(this);
+  OnAccessibilityStatusChanged();
 }
 
 void AssistantController::SetAssistantImageDownloader(
@@ -279,6 +288,13 @@ void AssistantController::OnOutputNodeVolumeChanged(uint64_t node, int volume) {
   volume_observer_.ForAllPtrs([volume](mojom::VolumeObserver* observer) {
     observer->OnVolumeChanged(volume);
   });
+}
+
+void AssistantController::OnAccessibilityStatusChanged() {
+  // The Assistant service needs to be informed of changes to accessibility
+  // state so that it can turn on/off A11Y features appropriately.
+  assistant_->OnAccessibilityStatusChanged(
+      Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled());
 }
 
 void AssistantController::OpenUrl(const GURL& url) {

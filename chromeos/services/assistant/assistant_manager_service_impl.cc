@@ -663,17 +663,14 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
     const std::string& arc_version) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
 
+  arc_version_ = arc_version;
+
   assistant_manager_.reset(assistant_client::AssistantManager::Create(
       platform_api_.get(), CreateLibAssistantConfig(!enable_hotword_)));
   assistant_manager_internal_ =
       UnwrapAssistantManagerInternal(assistant_manager_.get());
 
-  auto* internal_options =
-      assistant_manager_internal_->CreateDefaultInternalOptions();
-  SetAssistantOptions(internal_options, BuildUserAgent(arc_version));
-  assistant_manager_internal_->SetOptions(*internal_options, [](bool success) {
-    DVLOG(2) << "set options: " << success;
-  });
+  UpdateInternalOptions();
 
   assistant_manager_internal_->SetDisplayConnection(display_connection_.get());
   assistant_manager_internal_->RegisterActionModule(action_module_.get());
@@ -743,6 +740,21 @@ void AssistantManagerServiceImpl::UpdateDeviceSettings() {
   // Device settings update result is not handled because it is not included in
   // the SettingsUiUpdateResult.
   SendUpdateSettingsUiRequest(update.SerializeAsString(), base::DoNothing());
+}
+
+void AssistantManagerServiceImpl::UpdateInternalOptions() {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  if (!assistant_manager_internal_)
+    return;
+
+  auto* internal_options =
+      assistant_manager_internal_->CreateDefaultInternalOptions();
+  SetAssistantOptions(internal_options, BuildUserAgent(arc_version_.value()),
+                      spoken_feedback_enabled_);
+  assistant_manager_internal_->SetOptions(*internal_options, [](bool success) {
+    DVLOG(2) << "set options: " << success;
+  });
 }
 
 void AssistantManagerServiceImpl::HandleGetSettingsResponse(
@@ -956,6 +968,19 @@ void AssistantManagerServiceImpl::CacheScreenContext(
       gfx::Rect(),
       base::BindOnce(&AssistantManagerServiceImpl::CacheAssistantScreenshot,
                      weak_factory_.GetWeakPtr(), on_done));
+}
+
+void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
+    bool spoken_feedback_enabled) {
+  if (spoken_feedback_enabled_ == spoken_feedback_enabled)
+    return;
+
+  spoken_feedback_enabled_ = spoken_feedback_enabled;
+
+  // When |spoken_feedback_enabled_| changes we need to update our internal
+  // options to turn on/off A11Y features in LibAssistant.
+  if (assistant_manager_internal_)
+    UpdateInternalOptions();
 }
 
 void AssistantManagerServiceImpl::CacheAssistantStructure(

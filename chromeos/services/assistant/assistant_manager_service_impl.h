@@ -94,6 +94,7 @@ class AssistantManagerServiceImpl
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
   void CacheScreenContext(CacheScreenContextCallback callback) override;
+  void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
 
   // AssistantActionObserver overrides:
   void OnShowContextualQueryFallback() override;
@@ -152,6 +153,7 @@ class AssistantManagerServiceImpl
 
   // Update device id, type and locale
   void UpdateDeviceSettings();
+  void UpdateInternalOptions();
 
   void HandleGetSettingsResponse(
       base::RepeatingCallback<void(const std::string&)> callback,
@@ -215,8 +217,12 @@ class AssistantManagerServiceImpl
 
   Service* service_;  // unowned.
 
+  base::Optional<std::string> arc_version_;
+
   bool assistant_enabled_ = false;
   bool context_enabled_ = false;
+  bool spoken_feedback_enabled_ = false;
+
   ax::mojom::AssistantExtraPtr assistant_extra_;
   std::unique_ptr<ui::AssistantTree> assistant_tree_;
   std::vector<uint8_t> assistant_screenshot_;
