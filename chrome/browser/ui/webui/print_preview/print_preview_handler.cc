@@ -1143,32 +1143,29 @@ void PrintPreviewHandler::SendPrinterSetup(
     const std::string& callback_id,
     const std::string& printer_name,
     std::unique_ptr<base::DictionaryValue> destination_info) {
-  auto response = std::make_unique<base::DictionaryValue>();
-  bool success = true;
-  auto caps_value = std::make_unique<base::Value>();
-  auto caps = std::make_unique<base::DictionaryValue>();
-  if (destination_info &&
-      destination_info->Remove(printing::kSettingCapabilities, &caps_value) &&
-      caps_value->is_dict()) {
-    caps = base::DictionaryValue::From(std::move(caps_value));
+  base::DictionaryValue response;
+  base::Value* caps_value =
+      destination_info
+          ? destination_info->FindKeyOfType(printing::kSettingCapabilities,
+                                            base::Value::Type::DICTIONARY)
+          : nullptr;
+  response.SetString("printerId", printer_name);
+  response.SetBoolean("success", !!caps_value);
+  response.SetKey("capabilities", caps_value ? std::move(*caps_value)
+                                             : base::DictionaryValue());
+  if (caps_value) {
     base::Value* printer = destination_info->FindKeyOfType(
         printing::kPrinter, base::Value::Type::DICTIONARY);
     if (printer) {
       base::Value* policies_value = printer->FindKeyOfType(
           printing::kSettingPolicies, base::Value::Type::DICTIONARY);
       if (policies_value)
-        response->SetKey("policies", std::move(*policies_value));
+        response.SetKey("policies", std::move(*policies_value));
     }
   } else {
     LOG(WARNING) << "Printer setup failed";
-    success = false;
   }
-
-  response->SetString("printerId", printer_name);
-  response->SetBoolean("success", success);
-  response->Set("capabilities", std::move(caps));
-
-  ResolveJavascriptCallback(base::Value(callback_id), *response);
+  ResolveJavascriptCallback(base::Value(callback_id), response);
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
