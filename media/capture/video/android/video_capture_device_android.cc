@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jni/VideoCapture_jni.h"
+#include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/android/photo_capabilities.h"
 #include "media/capture/video/android/video_capture_device_factory_android.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -396,7 +397,7 @@ void VideoCaptureDeviceAndroid::OnGetPhotoCapabilitiesReply(
 
   // TODO(mcasas): Manual member copying sucks, consider adding typemapping from
   // PhotoCapabilities to mojom::PhotoStatePtr, https://crbug.com/622002.
-  mojom::PhotoStatePtr photo_capabilities = mojom::PhotoState::New();
+  mojom::PhotoStatePtr photo_capabilities = mojo::CreateEmptyPhotoState();
 
   const auto jni_white_balance_modes = caps.getWhiteBalanceModes();
   std::vector<mojom::MeteringMode> white_balance_modes;
