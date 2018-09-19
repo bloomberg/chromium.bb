@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences.privacy;
 
 import android.os.Bundle;
+import android.support.v4.util.ArraySet;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -20,8 +21,6 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 
-import java.util.EnumSet;
-
 /**
  * A simpler version of {@link ClearBrowsingDataPreferences} with fewer dialog options and more
  * explanatory text.
@@ -32,9 +31,11 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
         super.onCreate(savedInstanceState);
 
         ClearBrowsingDataCheckBoxPreference historyCheckbox =
-                (ClearBrowsingDataCheckBoxPreference) findPreference(PREF_HISTORY);
+                (ClearBrowsingDataCheckBoxPreference) findPreference(
+                        getPreferenceKey(DialogOption.CLEAR_HISTORY));
         ClearBrowsingDataCheckBoxPreference cookiesCheckbox =
-                (ClearBrowsingDataCheckBoxPreference) findPreference(PREF_COOKIES);
+                (ClearBrowsingDataCheckBoxPreference) findPreference(
+                        getPreferenceKey(DialogOption.CLEAR_COOKIES_AND_SITE_DATA));
 
         historyCheckbox.setLinkClickDelegate(() -> {
             new TabDelegate(false /* incognito */)
@@ -43,11 +44,9 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
         });
 
         if (ChromeSigninController.get().isSignedIn()) {
-            if (isHistorySyncEnabled()) {
-                historyCheckbox.setSummary(R.string.clear_browsing_history_summary_synced);
-            } else {
-                historyCheckbox.setSummary(R.string.clear_browsing_history_summary_signed_in);
-            }
+            historyCheckbox.setSummary(isHistorySyncEnabled()
+                            ? R.string.clear_browsing_history_summary_synced
+                            : R.string.clear_browsing_history_summary_signed_in);
         }
 
         // On the basic tab the COOKIES checkbox includes Media Licenses,
@@ -68,13 +67,13 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
     }
 
     @Override
-    protected DialogOption[] getDialogOptions() {
-        return new DialogOption[] {DialogOption.CLEAR_HISTORY,
-                DialogOption.CLEAR_COOKIES_AND_SITE_DATA, DialogOption.CLEAR_CACHE};
+    protected int[] getDialogOptions() {
+        return new int[] {DialogOption.CLEAR_HISTORY, DialogOption.CLEAR_COOKIES_AND_SITE_DATA,
+                DialogOption.CLEAR_CACHE};
     }
 
     @Override
-    protected int[] getDataTypesFromOptions(EnumSet<DialogOption> options) {
+    protected int[] getDataTypesFromOptions(ArraySet<Integer> options) {
         int[] dataTypes;
         int i = 0;
         if (options.contains(DialogOption.CLEAR_COOKIES_AND_SITE_DATA)) {
@@ -86,8 +85,8 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
         } else {
             dataTypes = new int[options.size()];
         }
-        for (DialogOption option : options) {
-            dataTypes[i++] = option.getDataType();
+        for (Integer option : options) {
+            dataTypes[i++] = getDataType(option);
         }
         return dataTypes;
     }
