@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -70,7 +71,8 @@ class ScheduledURLNavigation : public ScheduledNavigation {
                          Document* origin_document,
                          const KURL& url,
                          bool replaces_current_item,
-                         bool is_location_change)
+                         bool is_location_change,
+                         base::TimeTicks input_timestamp)
       : ScheduledNavigation(reason,
                             delay,
                             origin_document,
@@ -78,7 +80,8 @@ class ScheduledURLNavigation : public ScheduledNavigation {
                             is_location_change),
         url_(url),
         should_check_main_world_content_security_policy_(
-            kCheckContentSecurityPolicy) {
+            kCheckContentSecurityPolicy),
+        input_timestamp_(input_timestamp) {
     if (ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)) {
       should_check_main_world_content_security_policy_ =
           kDoNotCheckContentSecurityPolicy;
@@ -98,6 +101,9 @@ class ScheduledURLNavigation : public ScheduledNavigation {
                              should_check_main_world_content_security_policy_);
     request.SetReplacesCurrentItem(ReplacesCurrentItem());
     request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+    if (!input_timestamp_.is_null()) {
+      request.SetInputStartTime(input_timestamp_);
+    }
 
     if (blob_url_token_) {
       mojom::blink::BlobURLTokenPtr token_clone;
@@ -115,6 +121,7 @@ class ScheduledURLNavigation : public ScheduledNavigation {
   mojom::blink::BlobURLTokenPtr blob_url_token_;
   ContentSecurityPolicyDisposition
       should_check_main_world_content_security_policy_;
+  base::TimeTicks input_timestamp_;
 };
 
 class ScheduledRedirect final : public ScheduledURLNavigation {
@@ -172,7 +179,8 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
                                origin_document,
                                url,
                                replaces_current_item,
-                               false) {
+                               false,
+                               base::TimeTicks()) {
     ClearUserGesture();
   }
 };
@@ -181,21 +189,24 @@ class ScheduledFrameNavigation final : public ScheduledURLNavigation {
  public:
   static ScheduledFrameNavigation* Create(Document* origin_document,
                                           const KURL& url,
-                                          bool replaces_current_item) {
+                                          bool replaces_current_item,
+                                          base::TimeTicks input_timestamp) {
     return new ScheduledFrameNavigation(origin_document, url,
-                                        replaces_current_item);
+                                        replaces_current_item, input_timestamp);
   }
 
  private:
   ScheduledFrameNavigation(Document* origin_document,
                            const KURL& url,
-                           bool replaces_current_item)
+                           bool replaces_current_item,
+                           base::TimeTicks input_timestamp)
       : ScheduledURLNavigation(Reason::kFrameNavigation,
                                0.0,
                                origin_document,
                                url,
                                replaces_current_item,
-                               !url.ProtocolIsJavaScript()) {}
+                               !url.ProtocolIsJavaScript(),
+                               input_timestamp) {}
 };
 
 class ScheduledReload final : public ScheduledNavigation {
@@ -391,6 +402,11 @@ void NavigationScheduler::ScheduleFrameNavigation(Document* origin_document,
   if (!ShouldScheduleNavigation(url))
     return;
 
+  base::TimeTicks input_timestamp;
+  if (const WebInputEvent* input_event = CurrentInputEvent::Get()) {
+    input_timestamp = input_event->TimeStamp();
+  }
+
   replaces_current_item =
       replaces_current_item || MustReplaceCurrentItem(frame_);
 
@@ -404,6 +420,7 @@ void NavigationScheduler::ScheduleFrameNavigation(Document* origin_document,
         EqualIgnoringFragmentIdentifier(frame_->GetDocument()->Url(), url)) {
       FrameLoadRequest request(origin_document, ResourceRequest(url), "_self");
       request.SetReplacesCurrentItem(replaces_current_item);
+      request.SetInputStartTime(input_timestamp);
       if (replaces_current_item)
         request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
       frame_->Loader().StartNavigation(request);
@@ -411,8 +428,8 @@ void NavigationScheduler::ScheduleFrameNavigation(Document* origin_document,
     }
   }
 
-  Schedule(ScheduledFrameNavigation::Create(origin_document, url,
-                                            replaces_current_item));
+  Schedule(ScheduledFrameNavigation::Create(
+      origin_document, url, replaces_current_item, input_timestamp));
 }
 
 void NavigationScheduler::SchedulePageBlock(Document* origin_document,

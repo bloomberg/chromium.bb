@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -446,6 +447,9 @@ DOMWindow* CreateWindow(const String& url_string,
     FrameLoadRequest request(calling_window.document(),
                              ResourceRequest(completed_url));
     request.GetResourceRequest().SetHasUserGesture(has_user_gesture);
+    if (const WebInputEvent* input_event = CurrentInputEvent::Get()) {
+      request.SetInputStartTime(input_event->TimeStamp());
+    }
     new_frame->Navigate(request);
   } else if (!url_string.IsEmpty()) {
     new_frame->ScheduleNavigation(*calling_window.document(), completed_url,
