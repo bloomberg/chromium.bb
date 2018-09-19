@@ -552,6 +552,7 @@ class OrderfileGenerator(object):
       orderfile.write('\n'.join(ordered_symbols))
 
   def _CollectLegacyProfile(self):
+    files = []
     try:
       files = self._profiler.CollectProfile(
           self._compiler.chrome_apk,
