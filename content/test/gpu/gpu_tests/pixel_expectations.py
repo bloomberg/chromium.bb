@@ -130,3 +130,11 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CanvasLowLatencyWebGL', ['android', 'nvidia'], bug=868596)
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
               ['android', 'nvidia'], bug=868596)
+
+    # Fails on Nexus 5, 6 and 6P
+    self.Fail('Pixel_BackgroundImage',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=883500)
+    self.Fail('Pixel_BackgroundImage',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=883500)
+    self.Fail('Pixel_BackgroundImage',
+        ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
