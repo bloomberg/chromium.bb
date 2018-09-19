@@ -90,6 +90,7 @@ source_set("internal") {
     ":ui",
     "//base",
     "//components/keyed_service/ios",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/broadcaster",

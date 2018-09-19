@@ -170,6 +170,7 @@
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
 #import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+#import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
@@ -4107,6 +4108,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 #pragma mark - ToolbarHeightProviderForFullscreen
 
 - (CGFloat)collapsedTopToolbarHeight {
+  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
+      IsVisibleUrlNewTabPage(self.currentWebState)) {
+    return 0;
+  }
   // For the legacy UI, the toolbar is completely hidden when in fullscreen
   // mode.  After the UI refresh, kToolbarHeightFullscreen is still visible
   // after scroll events.
@@ -4121,10 +4126,18 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (CGFloat)expandedTopToolbarHeight {
+  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
+      IsVisibleUrlNewTabPage(self.currentWebState)) {
+    return 0;
+  }
   return self.headerHeight;
 }
 
 - (CGFloat)bottomToolbarHeight {
+  if (base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
+      IsVisibleUrlNewTabPage(self.currentWebState)) {
+    return 0;
+  }
   return [self secondaryToolbarHeightWithInset];
 }
 
@@ -5202,6 +5215,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)tabModel:(TabModel*)model
     didFinishLoadingTab:(Tab*)tab
                 success:(BOOL)success {
+  [_toolbarUIUpdater updateState];
   [self tabLoadComplete:tab withSuccess:success];
   if ([self canShowTabStrip]) {
     UIUserInterfaceSizeClass sizeClass =

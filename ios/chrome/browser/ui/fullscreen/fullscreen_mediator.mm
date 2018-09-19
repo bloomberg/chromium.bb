@@ -71,7 +71,7 @@ void FullscreenMediator::FullscreenModelProgressUpdated(
     observer.FullscreenProgressUpdated(controller_, model_->progress());
   }
 
-  [resizer_ updateForFullscreenProgress:model->progress()];
+  [resizer_ updateForCurrentState];
 }
 
 void FullscreenMediator::FullscreenModelEnabledStateChanged(
@@ -114,7 +114,7 @@ void FullscreenMediator::FullscreenModelWasReset(FullscreenModel* model) {
     observer.FullscreenProgressUpdated(controller_, model_->progress());
   }
 
-  [resizer_ updateForFullscreenProgress:model_->progress()];
+  [resizer_ updateForCurrentState];
 }
 
 void FullscreenMediator::AnimateWithStyle(FullscreenAnimatorStyle style) {
@@ -129,13 +129,16 @@ void FullscreenMediator::AnimateWithStyle(FullscreenAnimatorStyle style) {
                                                   style:style];
   __weak FullscreenAnimator* weakAnimator = animator_;
   FullscreenModel** modelPtr = &model_;
+  [animator_ addAnimations:^{
+    // Updates the WebView frame during the animation to have it animated.
+    [resizer_ forceToUpdateToProgress:animator_.finalProgress];
+  }];
   [animator_ addCompletion:^(UIViewAnimatingPosition finalPosition) {
     DCHECK_EQ(finalPosition, UIViewAnimatingPositionEnd);
     if (!weakAnimator || !*modelPtr)
       return;
     model_->AnimationEndedWithProgress(
         [weakAnimator progressForAnimatingPosition:finalPosition]);
-    [resizer_ updateForFullscreenProgress:animator_.finalProgress];
     animator_ = nil;
   }];
 
