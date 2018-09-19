@@ -45,6 +45,7 @@ namespace blink {
 
 class FrameOrWorkerScheduler;
 class ThreadScheduler;
+class Platform;
 
 // Always an integer value.
 typedef uintptr_t PlatformThreadId;
@@ -70,6 +71,8 @@ struct BLINK_PLATFORM_EXPORT WebThreadCreationParams {
 // run.
 class BLINK_PLATFORM_EXPORT WebThread {
  public:
+  friend class Platform;  // For IsSimpleMainThread().
+
   // An IdleTask is expected to complete before the deadline it is passed.
   using IdleTask = base::OnceCallback<void(base::TimeTicks deadline)>;
 
@@ -114,6 +117,11 @@ class BLINK_PLATFORM_EXPORT WebThread {
   virtual ThreadScheduler* Scheduler() const = 0;
 
   virtual ~WebThread() = default;
+
+ private:
+  // This is used to identify the actual WebThread instance. This should be
+  // used only in Platform, and other users should ignore this.
+  virtual bool IsSimpleMainThread() const { return false; }
 };
 
 }  // namespace blink

@@ -92,20 +92,12 @@ TestingPlatformSupport::ScopedOverrideMojoInterface::
 TestingPlatformSupport::ScopedOverrideMojoInterface::
     ~ScopedOverrideMojoInterface() = default;
 
-namespace {
-
-class DummyThread final : public blink::WebThread {
- public:
-  bool IsCurrentThread() const override { return true; }
-  blink::ThreadScheduler* Scheduler() const override { return nullptr; }
-};
-
-}  // namespace
-
 TestingPlatformSupport::TestingPlatformSupport()
     : old_platform_(Platform::Current()),
       interface_provider_(new TestingInterfaceProvider) {
   DCHECK(old_platform_);
+  DCHECK(WTF::IsMainThread());
+  main_thread_ = old_platform_->CurrentThread();
 }
 
 TestingPlatformSupport::~TestingPlatformSupport() {
@@ -158,17 +150,6 @@ void TestingPlatformSupport::SetThreadedAnimationEnabled(bool enabled) {
   is_threaded_animation_enabled_ = enabled;
 }
 
-class ScopedUnittestsEnvironmentSetup::DummyPlatform final
-    : public blink::Platform {
- public:
-  DummyPlatform() = default;
-
-  blink::WebThread* CurrentThread() override {
-    static DummyThread dummy_thread;
-    return &dummy_thread;
-  };
-};
-
 class ScopedUnittestsEnvironmentSetup::DummyRendererResourceCoordinator final
     : public blink::RendererResourceCoordinator {};
 
@@ -183,7 +164,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_memory_allocator_.get());
 
-  dummy_platform_ = std::make_unique<DummyPlatform>();
+  dummy_platform_ = std::make_unique<Platform>();
   Platform::SetCurrentPlatformForTesting(dummy_platform_.get());
 
   WTF::Partitions::Initialize(nullptr);

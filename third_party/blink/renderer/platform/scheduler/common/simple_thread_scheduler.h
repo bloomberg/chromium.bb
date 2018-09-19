@@ -35,7 +35,7 @@ class SimpleThreadScheduler : public ThreadScheduler {
   // Always return false.
   bool CanExceedIdleDeadlineIfRequired() const override;
 
-  // Post the task to the thread task runner with the time limit of 1 second.
+  // Those tasks are simply ignored (we assume there's no idle period).
   void PostIdleTask(const base::Location&, WebThread::IdleTask) override;
   void PostNonNestableIdleTask(const base::Location&,
                                WebThread::IdleTask) override;

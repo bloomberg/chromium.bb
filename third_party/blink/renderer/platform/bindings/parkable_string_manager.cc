@@ -32,13 +32,11 @@ void ParkableStringManager::SetRendererBackgrounded(bool backgrounded) {
   if (backgrounded_) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         Platform::Current()->CurrentThread()->GetTaskRunner();
-    if (task_runner) {  // nullptr in tests.
-      task_runner->PostDelayedTask(
-          FROM_HERE,
-          base::BindOnce(&ParkableStringManager::ParkAllIfRendererBackgrounded,
-                         base::Unretained(this)),
-          base::TimeDelta::FromSeconds(10));
-    }
+    task_runner->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ParkableStringManager::ParkAllIfRendererBackgrounded,
+                       base::Unretained(this)),
+        base::TimeDelta::FromSeconds(10));
   }
 }
 

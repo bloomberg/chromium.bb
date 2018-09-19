@@ -39,6 +39,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_image_capture_frame_grabber.h"
@@ -119,31 +120,56 @@ namespace {
 
 class SimpleMainThread : public WebThread {
  public:
-  SimpleMainThread() {
-    // WTF is not initialized at this point, so we can't use WTF::IsMainThread()
-    // yet.
-    DCHECK(base::ThreadTaskRunnerHandle::IsSet());
-  }
+  // We rely on base::ThreadTaskRunnerHandle for tasks posted on the main
+  // thread. The task runner handle may not be available on Blink's startup
+  // (== on SimpleMainThread's construction), because some tests like
+  // blink_platform_unittests do not set up a global task environment.
+  // In those cases, a task environment is set up on a test fixture's
+  // creation, and GetTaskRunner() returns the right task runner during
+  // a test.
+  //
+  // If GetTaskRunner() can be called from a non-main thread (including
+  // a worker thread running Mojo callbacks), we need to somehow get a task
+  // runner for the main thread. This is not possible with
+  // ThreadTaskRunnerHandle. We currently deal with this issue by setting
+  // the main thread task runner on the test startup and clearing it on
+  // the test tear-down. This is what SetMainThreadTaskRunnerForTesting() for.
+  // This function is called from Platform::SetMainThreadTaskRunnerForTesting()
+  // and Platform::UnsetMainThreadTaskRunnerForTesting().
 
   bool IsCurrentThread() const override { return WTF::IsMainThread(); }
   // TODO(yutak): Remove the const qualifier so we don't have to use mutable.
   ThreadScheduler* Scheduler() const override { return &scheduler_; }
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {
+    if (main_thread_task_runner_for_testing_)
+      return main_thread_task_runner_for_testing_;
     DCHECK(WTF::IsMainThread());
     return base::ThreadTaskRunnerHandle::Get();
   }
 
+  void SetMainThreadTaskRunnerForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    main_thread_task_runner_for_testing_ = std::move(task_runner);
+  }
+
  private:
+  bool IsSimpleMainThread() const override { return true; }
+
   mutable scheduler::SimpleThreadScheduler scheduler_;
+  scoped_refptr<base::SingleThreadTaskRunner>
+      main_thread_task_runner_for_testing_;
 };
 
 }  // namespace
 
-void Platform::Initialize(Platform* platform, WebThread* main_thread) {
+void Platform::Initialize(
+    Platform* platform,
+    scheduler::WebThreadScheduler* main_thread_scheduler) {
   DCHECK(!g_platform);
   DCHECK(platform);
   g_platform = platform;
-  g_platform->main_thread_ = main_thread;
+  g_platform->owned_main_thread_ = main_thread_scheduler->CreateMainThread();
+  g_platform->main_thread_ = g_platform->owned_main_thread_.get();
   InitializeCommon(platform);
 }
 
@@ -200,8 +226,35 @@ void Platform::InitializeCommon(Platform* platform) {
 
 void Platform::SetCurrentPlatformForTesting(Platform* platform) {
   DCHECK(platform);
+
+  // The overriding platform does not necessarily own the main thread
+  // (owned_main_thread_ may be null), but must have a pointer to a valid
+  // main thread object (which may be from the overridden platform).
+  //
+  // If the new platform's main_thread_ is null, that means we need to
+  // create a new main thread for it. This happens only in
+  // ScopedUnittestsEnvironmentSetup's constructor, which bypasses
+  // Platform::Initialize().
+  if (!platform->main_thread_) {
+    platform->owned_main_thread_ = std::make_unique<SimpleMainThread>();
+    platform->main_thread_ = platform->owned_main_thread_.get();
+  }
+
   g_platform = platform;
-  g_platform->main_thread_ = platform->CurrentThread();
+}
+
+void Platform::SetMainThreadTaskRunnerForTesting() {
+  DCHECK(WTF::IsMainThread());
+  DCHECK(g_platform->main_thread_->IsSimpleMainThread());
+  static_cast<SimpleMainThread*>(g_platform->main_thread_)
+      ->SetMainThreadTaskRunnerForTesting(base::ThreadTaskRunnerHandle::Get());
+}
+
+void Platform::UnsetMainThreadTaskRunnerForTesting() {
+  DCHECK(WTF::IsMainThread());
+  DCHECK(g_platform->main_thread_->IsSimpleMainThread());
+  static_cast<SimpleMainThread*>(g_platform->main_thread_)
+      ->SetMainThreadTaskRunnerForTesting(nullptr);
 }
 
 Platform* Platform::Current() {
@@ -213,9 +266,8 @@ WebThread* Platform::MainThread() const {
 }
 
 WebThread* Platform::CurrentThread() {
-  // This version must be called only if the main thread is owned by Platform.
-  // See the comments in the header.
-  DCHECK(owned_main_thread_);
+  DCHECK(main_thread_);
+  DCHECK(WTF::IsMainThread());
   return main_thread_;
 }
 

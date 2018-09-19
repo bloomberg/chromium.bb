@@ -68,6 +68,10 @@ class RenderViewTest : public testing::Test {
     void Initialize();
     void Shutdown();
 
+    blink::scheduler::WebThreadScheduler* GetMainThreadScheduler() {
+      return main_thread_scheduler_.get();
+    }
+
    private:
     std::unique_ptr<blink::scheduler::WebThreadScheduler>
         main_thread_scheduler_;
