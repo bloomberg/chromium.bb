@@ -516,7 +516,7 @@ typedef enum SpvBuiltIn_ {
     SpvBuiltInBaryCoordNoPerspNV = 5287,
     SpvBuiltInFragmentSizeNV = 5292,
     SpvBuiltInInvocationsPerPixelNV = 5293,
-    SpvBuiltInLaunchIDNVX = 5319,
+    SpvBuiltInLaunchIdNVX = 5319,
     SpvBuiltInLaunchSizeNVX = 5320,
     SpvBuiltInWorldRayOriginNVX = 5321,
     SpvBuiltInWorldRayDirectionNVX = 5322,

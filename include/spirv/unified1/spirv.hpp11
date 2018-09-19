@@ -512,7 +512,7 @@ enum class BuiltIn : unsigned {
     BaryCoordNoPerspNV = 5287,
     FragmentSizeNV = 5292,
     InvocationsPerPixelNV = 5293,
-    LaunchIDNVX = 5319,
+    LaunchIdNVX = 5319,
     LaunchSizeNVX = 5320,
     WorldRayOriginNVX = 5321,
     WorldRayDirectionNVX = 5322,

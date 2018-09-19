@@ -6361,7 +6361,7 @@
           "version" : "None"
         },
         {
-          "enumerant" : "LaunchIDNVX",
+          "enumerant" : "LaunchIdNVX",
           "value" : 5319,
           "capabilities" : [ "RaytracingNVX" ],
           "extensions" : [ "SPV_NVX_raytracing" ]
