@@ -897,6 +897,11 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
+    protected void setStatusBarColor(int color, boolean isDefaultThemeColor) {
+        // Intentionally do nothing as WebappActivity explicitly sets status bar color.
+    }
+
+    @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         if (id == R.id.open_in_browser_id) {
             openCurrentUrlInChrome();
