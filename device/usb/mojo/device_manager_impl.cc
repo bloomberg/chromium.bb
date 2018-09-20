@@ -24,31 +24,18 @@
 namespace device {
 namespace usb {
 
-// static
-std::unique_ptr<DeviceManagerImpl> DeviceManagerImpl::Create(
-    mojom::UsbDeviceManagerRequest request) {
-  DCHECK(DeviceClient::Get());
-  UsbService* service = DeviceClient::Get()->GetUsbService();
-  if (!service)
-    return nullptr;
-
-  auto* device_manager = new DeviceManagerImpl(service);
-  device_manager->binding_.Bind(std::move(request));
-  return base::WrapUnique(device_manager);
-}
-
-DeviceManagerImpl::DeviceManagerImpl(UsbService* usb_service)
-    : usb_service_(usb_service),
-      observer_(this),
-      binding_(this),
-      weak_factory_(this) {
-  // This object owns itself and will be destroyed if the message pipe it is
-  // bound to is closed, the message loop is destructed, or the UsbService is
-  // shut down.
-  observer_.Add(usb_service_);
+DeviceManagerImpl::DeviceManagerImpl() : observer_(this), weak_factory_(this) {
+  usb_service_ = DeviceClient::Get()->GetUsbService();
+  if (usb_service_)
+    observer_.Add(usb_service_);
 }
 
 DeviceManagerImpl::~DeviceManagerImpl() = default;
+
+void DeviceManagerImpl::AddBinding(mojom::UsbDeviceManagerRequest request) {
+  if (usb_service_)
+    bindings_.AddBinding(this, std::move(request));
+}
 
 void DeviceManagerImpl::GetDevices(mojom::UsbEnumerationOptionsPtr options,
                                    GetDevicesCallback callback) {
@@ -71,7 +58,9 @@ void DeviceManagerImpl::GetDevice(const std::string& guid,
 void DeviceManagerImpl::SetClient(
     mojom::UsbDeviceManagerClientAssociatedPtrInfo client) {
   DCHECK(client);
-  client_.Bind(std::move(client));
+  mojom::UsbDeviceManagerClientAssociatedPtr client_ptr;
+  client_ptr.Bind(std::move(client));
+  clients_.AddPtr(std::move(client_ptr));
 }
 
 void DeviceManagerImpl::OnGetDevices(
@@ -93,19 +82,28 @@ void DeviceManagerImpl::OnGetDevices(
 }
 
 void DeviceManagerImpl::OnDeviceAdded(scoped_refptr<UsbDevice> device) {
-  if (client_)
-    client_->OnDeviceAdded(mojom::UsbDeviceInfo::From(*device));
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
+  clients_.ForAllPtrs([&device_info](mojom::UsbDeviceManagerClient* client) {
+    client->OnDeviceAdded(device_info->Clone());
+  });
 }
 
 void DeviceManagerImpl::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
-  if (client_)
-    client_->OnDeviceRemoved(mojom::UsbDeviceInfo::From(*device));
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
+  clients_.ForAllPtrs([&device_info](mojom::UsbDeviceManagerClient* client) {
+    client->OnDeviceRemoved(device_info->Clone());
+  });
 }
 
 void DeviceManagerImpl::WillDestroyUsbService() {
   observer_.RemoveAll();
-  binding_.Close();
-  client_.reset();
+  usb_service_ = nullptr;
+
+  // Close all the connections.
+  bindings_.CloseAllBindings();
+  clients_.CloseAll();
 }
 
 }  // namespace usb
