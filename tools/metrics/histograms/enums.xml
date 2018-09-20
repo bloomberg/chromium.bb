@@ -19471,7 +19471,7 @@ Called by update_net_error_codes.py.-->
   <int value="1873" label="V0CustomElementsRegisterHTMLCustomTag"/>
   <int value="1874" label="V0CustomElementsRegisterHTMLTypeExtension"/>
   <int value="1875" label="V0CustomElementsRegisterSVGElement"/>
-  <int value="1876" label="V0CustomElementsRegisterEmbedderElement"/>
+  <int value="1876" label="OBSOLETE_V0CustomElementsRegisterEmbedderElement"/>
   <int value="1877" label="V0CustomElementsCreateCustomTagElement"/>
   <int value="1878" label="V0CustomElementsCreateTypeExtensionElement"/>
   <int value="1879" label="V0CustomElementsConstruct"/>

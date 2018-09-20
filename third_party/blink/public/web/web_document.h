@@ -39,12 +39,6 @@
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace v8 {
-class Value;
-template <class T>
-class Local;
-}
-
 namespace blink {
 
 class Document;
@@ -127,11 +121,6 @@ class WebDocument : public WebNode {
   BLINK_EXPORT void WatchCSSSelectors(const WebVector<WebString>& selectors);
 
   BLINK_EXPORT WebVector<WebDraggableRegion> DraggableRegions() const;
-
-  // TODO(867831): Remove once the caller migrates to Custom Elements V1.
-  BLINK_EXPORT v8::Local<v8::Value> RegisterEmbedderCustomElement(
-      const WebString& name,
-      v8::Local<v8::Value> options);
 
   BLINK_EXPORT WebURL ManifestURL() const;
   BLINK_EXPORT bool ManifestUseCredentials() const;

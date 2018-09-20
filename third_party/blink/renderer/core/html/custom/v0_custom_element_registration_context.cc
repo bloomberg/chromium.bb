@@ -51,10 +51,9 @@ void V0CustomElementRegistrationContext::RegisterElement(
     Document* document,
     V0CustomElementConstructorBuilder* constructor_builder,
     const AtomicString& type,
-    V0CustomElement::NameSet valid_names,
     ExceptionState& exception_state) {
   V0CustomElementDefinition* definition = registry_.RegisterElement(
-      document, constructor_builder, type, valid_names, exception_state);
+      document, constructor_builder, type, exception_state);
 
   if (!definition)
     return;

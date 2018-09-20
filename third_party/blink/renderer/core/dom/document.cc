@@ -1166,8 +1166,7 @@ CSSStyleSheet* Document::createEmptyCSSStyleSheet(
 ScriptValue Document::registerElement(ScriptState* script_state,
                                       const AtomicString& name,
                                       const ElementRegistrationOptions& options,
-                                      ExceptionState& exception_state,
-                                      V0CustomElement::NameSet valid_names) {
+                                      ExceptionState& exception_state) {
   if (!RegistrationContext()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
@@ -1184,7 +1183,7 @@ ScriptValue Document::registerElement(ScriptState* script_state,
 
   V0CustomElementConstructorBuilder constructor_builder(script_state, options);
   RegistrationContext()->RegisterElement(this, &constructor_builder, name,
-                                         valid_names, exception_state);
+                                         exception_state);
   return constructor_builder.BindingsReturnValue();
 }
 

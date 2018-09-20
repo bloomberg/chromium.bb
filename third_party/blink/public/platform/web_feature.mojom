@@ -1360,7 +1360,6 @@ enum WebFeature {
   kV0CustomElementsRegisterHTMLCustomTag = 1873,
   kV0CustomElementsRegisterHTMLTypeExtension = 1874,
   kV0CustomElementsRegisterSVGElement = 1875,
-  kV0CustomElementsRegisterEmbedderElement = 1876,
   kV0CustomElementsCreateCustomTagElement = 1877,
   kV0CustomElementsCreateTypeExtensionElement = 1878,
   kV0CustomElementsConstruct = 1879,

@@ -1201,12 +1201,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   TextAutosizer* GetTextAutosizer();
 
-  ScriptValue registerElement(
-      ScriptState*,
-      const AtomicString& name,
-      const ElementRegistrationOptions&,
-      ExceptionState&,
-      V0CustomElement::NameSet valid_names = V0CustomElement::kStandardNames);
+  ScriptValue registerElement(ScriptState*,
+                              const AtomicString& name,
+                              const ElementRegistrationOptions&,
+                              ExceptionState&);
   V0CustomElementRegistrationContext* RegistrationContext() const {
     return registration_context_.Get();
   }
