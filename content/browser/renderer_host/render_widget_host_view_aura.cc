@@ -758,7 +758,7 @@ void RenderWidgetHostViewAura::SetInsets(const gfx::Insets& insets) {
 void RenderWidgetHostViewAura::FocusedNodeTouched(bool editable) {
 #if defined(OS_WIN)
   auto* input_method = GetInputMethod();
-  if (!input_method)
+  if (!input_method || !input_method->GetInputMethodKeyboardController())
     return;
   auto* controller = input_method->GetInputMethodKeyboardController();
   if (editable && host()->GetView() && host()->delegate()) {
@@ -1736,7 +1736,7 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
   if (!editable && virtual_keyboard_requested_ && window_) {
     virtual_keyboard_requested_ = false;
 
-    if (input_method) {
+    if (input_method && input_method->GetInputMethodKeyboardController()) {
       input_method->GetInputMethodKeyboardController()
           ->DismissVirtualKeyboard();
     }
