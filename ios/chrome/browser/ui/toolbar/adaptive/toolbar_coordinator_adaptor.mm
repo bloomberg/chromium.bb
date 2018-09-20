@@ -63,8 +63,10 @@
     // points on the max X and Y edges, which will happen frequently with edge
     // swipes from the right side.
     CGRect toolbarFrame =
-        CGRectInset([coordinator viewController].view.frame, -1, -1);
-    if (CGRectContainsPoint(toolbarFrame, point))
+        CGRectInset([coordinator viewController].view.bounds, -1, -1);
+    CGPoint pointInToolbarCoordinates =
+        [[coordinator viewController].view convertPoint:point fromView:nil];
+    if (CGRectContainsPoint(toolbarFrame, pointInToolbarCoordinates))
       return YES;
   }
   return NO;

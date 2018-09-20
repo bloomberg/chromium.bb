@@ -242,7 +242,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
   // Since the toolbar and the contentView can overlap, check the toolbar frame
   // first, and confirm the right gesture recognizer is firing.
-  if ([self.toolbarInteractionHandler isInsideToolbar:location]) {
+  if ([self.toolbarInteractionHandler
+          isInsideToolbar:[gesture.view convertPoint:location toView:nil]]) {
     if (![gesture isEqual:panGestureRecognizer_]) {
       return NO;
     }
