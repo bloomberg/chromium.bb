@@ -1543,6 +1543,7 @@ test("browser_tests") {
       ]
       if (!is_chromeos && (!is_mac || mac_views_browser)) {
         sources += [
+          "../browser/ui/views/frame/opaque_browser_frame_view_browsertest.cc",
           "../browser/ui/views/policy/enterprise_startup_dialog_view_browsertest.cc",
           "../browser/ui/views/profiles/forced_reauthentication_dialog_view_browsertest.cc",
           "../browser/ui/views/toolbar/outdated_upgrade_bubble_view_browsertest.cc",
