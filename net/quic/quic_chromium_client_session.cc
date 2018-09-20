@@ -1788,7 +1788,8 @@ void QuicChromiumClientSession::OnMigrationTimeout(size_t num_sockets) {
 
   LogConnectionMigrationResultToHistogram(MIGRATION_STATUS_TIMEOUT);
   CloseSessionOnError(ERR_NETWORK_CHANGED,
-                      quic::QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
+                      quic::QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK,
+                      quic::ConnectionCloseBehavior::SILENT_CLOSE);
 }
 
 void QuicChromiumClientSession::OnProbeNetworkSucceeded(
@@ -1822,7 +1823,8 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
   if (GetNumActiveStreams() == 0 && GetNumDrainingStreams() == 0) {
     CloseSessionOnErrorLater(
         ERR_NETWORK_CHANGED,
-        quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
+        quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+        quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
 
@@ -1937,7 +1939,8 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
     // handshake is not allowed.
     CloseSessionOnErrorLater(
         ERR_NETWORK_CHANGED,
-        quic::QUIC_CONNECTION_MIGRATION_HANDSHAKE_UNCONFIRMED);
+        quic::QUIC_CONNECTION_MIGRATION_HANDSHAKE_UNCONFIRMED,
+        quic::ConnectionCloseBehavior::SILENT_CLOSE);
     return;
   }
 
@@ -2184,7 +2187,8 @@ void QuicChromiumClientSession::StartReading() {
 
 void QuicChromiumClientSession::CloseSessionOnError(
     int net_error,
-    quic::QuicErrorCode quic_error) {
+    quic::QuicErrorCode quic_error,
+    quic::ConnectionCloseBehavior behavior) {
   base::UmaHistogramSparse("Net.QuicSession.CloseSessionOnError", -net_error);
   if (quic_error == quic::QUIC_INTERNAL_ERROR) {
     RecordInternalErrorLocation(
@@ -2200,8 +2204,7 @@ void QuicChromiumClientSession::CloseSessionOnError(
                     NetLog::IntCallback("net_error", net_error));
 
   if (connection()->connected())
-    connection()->CloseConnection(quic_error, "net error",
-                                  quic::ConnectionCloseBehavior::SILENT_CLOSE);
+    connection()->CloseConnection(quic_error, "net error", behavior);
   DCHECK(!connection()->connected());
 
   NotifyFactoryOfSessionClosed();
@@ -2209,7 +2212,8 @@ void QuicChromiumClientSession::CloseSessionOnError(
 
 void QuicChromiumClientSession::CloseSessionOnErrorLater(
     int net_error,
-    quic::QuicErrorCode quic_error) {
+    quic::QuicErrorCode quic_error,
+    quic::ConnectionCloseBehavior behavior) {
   base::UmaHistogramSparse("Net.QuicSession.CloseSessionOnError", -net_error);
 
   if (!callback_.is_null()) {
@@ -2221,8 +2225,7 @@ void QuicChromiumClientSession::CloseSessionOnErrorLater(
                     NetLog::IntCallback("net_error", net_error));
 
   if (connection()->connected())
-    connection()->CloseConnection(quic_error, "net error",
-                                  quic::ConnectionCloseBehavior::SILENT_CLOSE);
+    connection()->CloseConnection(quic_error, "net error", behavior);
   DCHECK(!connection()->connected());
 
   NotifyFactoryOfSessionClosedLater();
@@ -2282,7 +2285,8 @@ ProbingResult QuicChromiumClientSession::StartProbeNetwork(
                                     connection_id(), "No active streams");
     CloseSessionOnErrorLater(
         ERR_NETWORK_CHANGED,
-        quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
+        quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+        quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return ProbingResult::DISABLED_WITH_IDLE_SESSION;
   }
 
@@ -2427,7 +2431,8 @@ bool QuicChromiumClientSession::IsSessionMigratable(
     if (close_session_if_not_migratable) {
       CloseSessionOnErrorLater(
           ERR_NETWORK_CHANGED,
-          quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
+          quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+          quic::ConnectionCloseBehavior::SILENT_CLOSE);
     }
     return false;
   }
@@ -2440,7 +2445,8 @@ bool QuicChromiumClientSession::IsSessionMigratable(
     if (close_session_if_not_migratable) {
       CloseSessionOnErrorLater(
           ERR_NETWORK_CHANGED,
-          quic::QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG);
+          quic::QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG,
+          quic::ConnectionCloseBehavior::SILENT_CLOSE);
     }
     return false;
   }
@@ -2705,7 +2711,8 @@ MigrationResult QuicChromiumClientSession::Migrate(
       if (close_session_on_error) {
         CloseSessionOnErrorLater(
             ERR_NETWORK_CHANGED,
-            quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
+            quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+            quic::ConnectionCloseBehavior::SILENT_CLOSE);
       }
       return MigrationResult::FAILURE;
     }
@@ -2721,12 +2728,13 @@ MigrationResult QuicChromiumClientSession::Migrate(
         "Socket configuration failed");
     if (close_session_on_error) {
       if (migrate_session_on_network_change_v2_) {
-        CloseSessionOnErrorLater(
-            ERR_NETWORK_CHANGED,
-            quic::QUIC_CONNECTION_MIGRATION_INTERNAL_ERROR);
+        CloseSessionOnErrorLater(ERR_NETWORK_CHANGED,
+                                 quic::QUIC_CONNECTION_MIGRATION_INTERNAL_ERROR,
+                                 quic::ConnectionCloseBehavior::SILENT_CLOSE);
       } else {
         CloseSessionOnError(ERR_NETWORK_CHANGED,
-                            quic::QUIC_CONNECTION_MIGRATION_INTERNAL_ERROR);
+                            quic::QUIC_CONNECTION_MIGRATION_INTERNAL_ERROR,
+                            quic::ConnectionCloseBehavior::SILENT_CLOSE);
       }
     }
     return MigrationResult::FAILURE;
@@ -2755,10 +2763,12 @@ MigrationResult QuicChromiumClientSession::Migrate(
       if (migrate_session_on_network_change_v2_) {
         CloseSessionOnErrorLater(
             ERR_NETWORK_CHANGED,
-            quic::QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
+            quic::QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES,
+            quic::ConnectionCloseBehavior::SILENT_CLOSE);
       } else {
         CloseSessionOnError(ERR_NETWORK_CHANGED,
-                            quic::QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
+                            quic::QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES,
+                            quic::ConnectionCloseBehavior::SILENT_CLOSE);
       }
     }
     return MigrationResult::FAILURE;
