@@ -15,7 +15,6 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 
@@ -323,7 +322,7 @@ public class FeedNewTabPage extends NewTabPage {
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mSectionHeaderView = (SectionHeaderView) inflater.inflate(
-                R.layout.new_tab_page_snippets_expandable_header, null);
+                R.layout.new_tab_page_snippets_expandable_header, mRootView, false);
         mSectionHeaderViewMarginResizer = MarginResizer.createAndAttach(
                 mSectionHeaderView, mUiConfig, mDefaultMargin, mWideMargin);
 
@@ -395,12 +394,8 @@ public class FeedNewTabPage extends NewTabPage {
         if (mSigninPromoView == null) {
             LayoutInflater inflater = LayoutInflater.from(mRootView.getContext());
             mSigninPromoView = (PersonalizedSigninPromoView) inflater.inflate(
-                    R.layout.personalized_signin_promo_view_modern_content_suggestions, null);
-
-            ViewGroup.MarginLayoutParams lp = new ViewGroup.MarginLayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.bottomMargin = mDefaultMargin;
-            mSigninPromoView.setLayoutParams(lp);
+                    R.layout.personalized_signin_promo_view_modern_content_suggestions, mRootView,
+                    false);
             mSignInPromoViewMarginResizer = MarginResizer.createAndAttach(
                     mSigninPromoView, mUiConfig, mDefaultMargin, mWideMargin);
         }
@@ -431,5 +426,20 @@ public class FeedNewTabPage extends NewTabPage {
         } else {
             FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
         }
+    }
+
+    @VisibleForTesting
+    FeedNewTabPageMediator getMediatorForTesting() {
+        return mMediator;
+    }
+
+    @Override
+    public View getSignInPromoViewForTesting() {
+        return getSigninPromoView();
+    }
+
+    @Override
+    public View getSectionHeaderViewForTesting() {
+        return getSectionHeaderView();
     }
 }

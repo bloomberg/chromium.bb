@@ -31,6 +31,8 @@ import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.cards.ItemViewType;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -628,5 +630,23 @@ public class NewTabPage
     @VisibleForTesting
     public NewTabPageManager getManagerForTesting() {
         return mNewTabPageManager;
+    }
+
+    @VisibleForTesting
+    public View getSignInPromoViewForTesting() {
+        RecyclerView recyclerView = mNewTabPageView.getRecyclerView();
+        NewTabPageAdapter adapter = (NewTabPageAdapter) recyclerView.getAdapter();
+        return recyclerView
+                .findViewHolderForAdapterPosition(
+                        adapter.getFirstPositionForType(ItemViewType.PROMO))
+                .itemView;
+    }
+
+    @VisibleForTesting
+    public View getSectionHeaderViewForTesting() {
+        RecyclerView recyclerView = mNewTabPageView.getRecyclerView();
+        NewTabPageAdapter adapter = (NewTabPageAdapter) recyclerView.getAdapter();
+        return recyclerView.findViewHolderForAdapterPosition(adapter.getFirstHeaderPosition())
+                .itemView;
     }
 }

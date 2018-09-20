@@ -46,6 +46,7 @@ if (enable_feed_in_chrome) {
 
   feed_test_java_sources = [
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedNetworkBridgeConformanceTest.java",
+    "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedNewTabPageTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedSchedulerBridgeConformanceTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedRefreshTaskTest.java",
   ]
