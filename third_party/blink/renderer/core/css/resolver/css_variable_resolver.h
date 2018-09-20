@@ -117,10 +117,11 @@ class CORE_EXPORT CSSVariableResolver {
   // These return null if the custom property is invalid.
 
   // Returns the CSSVariableData for an environment variable.
-  CSSVariableData* ValueForEnvironmentVariable(const AtomicString& name);
+  scoped_refptr<CSSVariableData> ValueForEnvironmentVariable(
+      const AtomicString& name);
   // Returns the CSSVariableData for a custom property, resolving and storing it
   // if necessary.
-  CSSVariableData* ValueForCustomProperty(AtomicString name);
+  scoped_refptr<CSSVariableData> ValueForCustomProperty(AtomicString name);
   // Resolves the CSSVariableData from a custom property declaration.
   scoped_refptr<CSSVariableData> ResolveCustomProperty(AtomicString name,
                                                        const CSSVariableData&,
