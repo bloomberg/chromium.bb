@@ -885,6 +885,20 @@ void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   Refresh();
 }
 
+void PersonalDataManager::DeleteLocalCreditCards(
+    const std::vector<CreditCard>& cards) {
+  DCHECK(database_helper_);
+  DCHECK(database_helper_->GetLocalDatabase())
+      << "Use of local card without local storage.";
+
+  for (const auto& card : cards)
+    database_helper_->GetLocalDatabase()->RemoveCreditCard(card.guid());
+
+  // Refresh the database, so latest state is reflected in all consumers.
+  if (!cards.empty())
+    Refresh();
+}
+
 void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   DCHECK_EQ(CreditCard::LOCAL_CARD, credit_card.record_type());
   if (is_off_the_record_)

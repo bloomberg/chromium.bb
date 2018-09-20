@@ -183,6 +183,7 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
   if (!save_result)
     return;
 
+  std::vector<CreditCard> migrated_cards;
   // Traverse the migratable credit cards to update each migrated card status.
   for (MigratableCreditCard& card : migratable_credit_cards_) {
     // Not every card exists in the |save_result| since some cards are unchecked
@@ -200,11 +201,15 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
       } else if (it->second == kMigrationResultSuccess) {
         card.set_migration_status(
             autofill::MigratableCreditCard::SUCCESS_ON_UPLOAD);
+        migrated_cards.push_back(card.credit_card());
       } else {
         NOTREACHED();
       }
     }
   }
+  // Remove cards that were successfully migrated from local storage.
+  personal_data_manager_->DeleteLocalCreditCards(migrated_cards);
+
   // TODO(crbug.com/852904): Trigger the show result window.
 }
 

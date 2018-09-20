@@ -4971,6 +4971,42 @@ TEST_F(PersonalDataManagerTest,
   histogram_tester.ExpectBucketCount(kHistogramName, 1, 1);
 }
 
+TEST_F(PersonalDataManagerTest, DeleteLocalCreditCards) {
+  CreditCard credit_card1(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&credit_card1, "Alice",
+                          "378282246310005" /* American Express */, "04",
+                          "2020", "1");
+  CreditCard credit_card2(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&credit_card2, "Ben",
+                          "378282246310006" /* American Express */, "04",
+                          "2021", "1");
+  CreditCard credit_card3(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetCreditCardInfo(&credit_card3, "Clyde",
+                          "5105105105105100" /* Mastercard */, "04", "2022",
+                          "1");
+  std::vector<CreditCard> cards;
+  cards.push_back(credit_card1);
+  cards.push_back(credit_card2);
+
+  personal_data_->AddCreditCard(credit_card1);
+  personal_data_->AddCreditCard(credit_card2);
+  personal_data_->AddCreditCard(credit_card3);
+
+  personal_data_->DeleteLocalCreditCards(cards);
+
+  // Wait for the data to be refreshed.
+  WaitForOnPersonalDataChanged();
+
+  EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
+
+  std::unordered_set<base::string16> expectedToRemain = {
+      base::UTF8ToUTF16("Clyde")};
+  for (auto* card : personal_data_->GetCreditCards()) {
+    EXPECT_NE(expectedToRemain.end(),
+              expectedToRemain.find(card->GetRawInfo(CREDIT_CARD_NAME_FULL)));
+  }
+}
+
 // Tests that a new local profile is created if no existing one is a duplicate
 // of the server address. Also tests that the billing address relationship was
 // transferred to the converted address.
