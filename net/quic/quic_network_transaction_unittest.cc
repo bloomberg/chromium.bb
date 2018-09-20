@@ -5508,6 +5508,10 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterAsyncNoBufferSpace) {
                                        false, true, 0, "hello!"));
   socket_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(3, 2, 1, 1));
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+  socket_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeAckAndConnectionClosePacket(
+                       4, false, quic::QuicTime::Delta::FromMilliseconds(0), 2,
+                       1, 1, quic::QUIC_CONNECTION_CANCELLED, "net error"));
 
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -5537,6 +5541,10 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterSynchronousNoBufferSpace) {
                                        false, true, 0, "hello!"));
   socket_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(3, 2, 1, 1));
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+  socket_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeAckAndConnectionClosePacket(
+                       4, false, quic::QuicTime::Delta::FromMilliseconds(0), 2,
+                       1, 1, quic::QUIC_CONNECTION_CANCELLED, "net error"));
 
   socket_data.AddSocketDataToFactory(&socket_factory_);
 

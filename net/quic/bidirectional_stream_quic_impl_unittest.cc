@@ -436,7 +436,8 @@ class BidirectionalStreamQuicImplTest
   }
 
   ~BidirectionalStreamQuicImplTest() {
-    session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR);
+    session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
+                                  quic::ConnectionCloseBehavior::SILENT_CLOSE);
     for (size_t i = 0; i < writes_.size(); i++) {
       delete writes_[i].packet;
     }
@@ -2288,7 +2289,8 @@ TEST_P(BidirectionalStreamQuicImplTest, ReleaseStreamFails) {
   delegate->Start(&request, net_log().bound(),
                   session()->CreateHandle(destination_));
   // Now closes the underlying session.
-  session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR);
+  session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
+                                quic::ConnectionCloseBehavior::SILENT_CLOSE);
   delegate->WaitUntilNextCallback(kOnFailed);
 
   EXPECT_THAT(delegate->error(), IsError(ERR_CONNECTION_CLOSED));

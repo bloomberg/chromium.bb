@@ -1307,7 +1307,8 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
 
   // Close server-migrated session.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
-  session->CloseSessionOnError(0u, quic::QUIC_NO_ERROR);
+  session->CloseSessionOnError(0u, quic::QUIC_NO_ERROR,
+                               quic::ConnectionCloseBehavior::SILENT_CLOSE);
 
   // Set up server IP, socket, proof, and config for new session.
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
@@ -1764,6 +1765,9 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddWrite(
       SYNCHRONOUS, ConstructClientRstPacket(2, quic::QUIC_RST_ACKNOWLEDGEMENT));
+  socket_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           3, true, quic::QUIC_INTERNAL_ERROR, "net error"));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   MockQuicData socket_data2;
@@ -1952,6 +1956,9 @@ TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddWrite(
       SYNCHRONOUS, ConstructClientRstPacket(2, quic::QUIC_RST_ACKNOWLEDGEMENT));
+  socket_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
+                       3, true, quic::QUIC_IP_ADDRESS_CHANGED, "net error"));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   MockQuicData socket_data2;
@@ -2610,6 +2617,13 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  socket_data.AddWrite(
+      SYNCHRONOUS,
+      client_maker_.MakeRstAckAndConnectionClosePacket(
+          3, false, 5, quic::QUIC_STREAM_CANCELLED,
+          quic::QuicTime::Delta::FromMilliseconds(0), 1, 1, 1,
+          quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS, "net error"));
+
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Set up the second socket data provider that is used for probing.
@@ -2847,6 +2861,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNoOpenStreams) {
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  socket_data.AddWrite(
+      SYNCHRONOUS,
+      client_maker_.MakeConnectionClosePacket(
+          2, true, quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+          "net error"));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
@@ -4263,6 +4282,12 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  socket_data.AddWrite(
+      SYNCHRONOUS,
+      client_maker_.MakeRstAckAndConnectionClosePacket(
+          3, false, 5, quic::QUIC_STREAM_CANCELLED,
+          quic::QuicTime::Delta::FromMilliseconds(0), 1, 1, 1,
+          quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS, "net error"));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   // Set up the second socket data provider that is used for probing.
@@ -7151,6 +7176,9 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   socket_data.AddWrite(
       SYNCHRONOUS, ConstructClientRstPacket(2, quic::QUIC_RST_ACKNOWLEDGEMENT));
+  socket_data.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeConnectionClosePacket(
+                       3, true, quic::QUIC_CONNECTION_CANCELLED, "net error"));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   MockQuicData socket_data2;

@@ -291,7 +291,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Cancels a pending request.
   void CancelRequest(QuicStreamRequest* request);
 
-  // Closes all current sessions with specified network and QUIC error codes.
+  // Closes all current sessions with specified network, QUIC error codes.
+  // It sends connection close packet when closing connections.
   void CloseAllSessions(int error, quic::QuicErrorCode quic_error);
 
   std::unique_ptr<base::Value> QuicStreamFactoryInfoToValue() const;

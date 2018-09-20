@@ -262,6 +262,10 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
   mock_quic_data_.AddWrite(
       SYNCHRONOUS,
       ConstructAckAndRstPacket(3, quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+  mock_quic_data_.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeAckAndConnectionClosePacket(
+                       4, false, quic::QuicTime::Delta::FromMilliseconds(0), 1,
+                       1, 1, quic::QUIC_CONNECTION_CANCELLED, "net error"));
   mock_quic_data_.AddSocketDataToFactory(&socket_factory_);
 
   scoped_refptr<TransportSocketParams> transport_params =
@@ -294,7 +298,6 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
 
   client_socket_wrapper_.reset();
   EXPECT_TRUE(mock_quic_data_.AllReadDataConsumed());
-  EXPECT_TRUE(mock_quic_data_.AllWriteDataConsumed());
 }
 
 // Test that the SocketTag is appropriately applied to the underlying socket
@@ -312,6 +315,10 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
   mock_quic_data_.AddWrite(
       SYNCHRONOUS,
       ConstructAckAndRstPacket(3, quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
+  mock_quic_data_.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeAckAndConnectionClosePacket(
+                       4, false, quic::QuicTime::Delta::FromMilliseconds(0), 1,
+                       1, 1, quic::QUIC_CONNECTION_CANCELLED, "net error"));
   mock_quic_data_.AddSocketDataToFactory(&socket_factory_);
 
   scoped_refptr<TransportSocketParams> transport_params =
@@ -349,7 +356,6 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
 
   client_socket_wrapper_.reset();
   EXPECT_TRUE(mock_quic_data_.AllReadDataConsumed());
-  EXPECT_TRUE(mock_quic_data_.AllWriteDataConsumed());
 }
 #endif
 

@@ -1244,12 +1244,16 @@ void QuicStreamFactory::CloseAllSessions(int error,
   base::UmaHistogramSparse("Net.QuicSession.CloseAllSessionsError", -error);
   while (!active_sessions_.empty()) {
     size_t initial_size = active_sessions_.size();
-    active_sessions_.begin()->second->CloseSessionOnError(error, quic_error);
+    active_sessions_.begin()->second->CloseSessionOnError(
+        error, quic_error,
+        quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     DCHECK_NE(initial_size, active_sessions_.size());
   }
   while (!all_sessions_.empty()) {
     size_t initial_size = all_sessions_.size();
-    all_sessions_.begin()->first->CloseSessionOnError(error, quic_error);
+    all_sessions_.begin()->first->CloseSessionOnError(
+        error, quic_error,
+        quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     DCHECK_NE(initial_size, all_sessions_.size());
   }
   DCHECK(all_sessions_.empty());
