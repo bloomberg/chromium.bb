@@ -74,21 +74,14 @@ id<GREYMatcher> TitleOfTestPage() {
       web::test::HttpServer::MakeUrl(kURLOfTestPage),
       std::string(kHTMLOfTestPage),
   }});
-  if (IsUIRefreshPhase1Enabled()) {
-    [NSUserDefaults.standardUserDefaults setObject:@{}
-                                            forKey:kListModelCollapsedKey];
-  } else {
-    [NSUserDefaults.standardUserDefaults setObject:@{}
-                                            forKey:kCollapsedSectionsKey];
-  }
+  [NSUserDefaults.standardUserDefaults setObject:@{}
+                                          forKey:kListModelCollapsedKey];
 }
 
 // Closes the recent tabs panel.
 - (void)closeRecentTabs {
-  NSString* exitID = IsUIRefreshPhase1Enabled()
-                         ? kTableViewNavigationDismissButtonId
-                         : @"Exit";
-  id<GREYMatcher> exitMatcher = grey_accessibilityID(exitID);
+  id<GREYMatcher> exitMatcher =
+      grey_accessibilityID(kTableViewNavigationDismissButtonId);
   [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
   // Wait until the recent tabs panel is dismissed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -137,11 +130,8 @@ id<GREYMatcher> TitleOfTestPage() {
 
   // Tap "Show Full History"
   id<GREYMatcher> showHistoryMatcher =
-      IsUIRefreshPhase1Enabled()
-          ? chrome_test_util::StaticTextWithAccessibilityLabelId(
-                IDS_HISTORY_SHOWFULLHISTORY_LINK)
-          : chrome_test_util::ButtonWithAccessibilityLabelId(
-                IDS_HISTORY_SHOWFULLHISTORY_LINK);
+      chrome_test_util::StaticTextWithAccessibilityLabelId(
+          IDS_HISTORY_SHOWFULLHISTORY_LINK);
   [[EarlGrey selectElementWithMatcher:showHistoryMatcher]
       performAction:grey_tap()];
 
@@ -156,17 +146,9 @@ id<GREYMatcher> TitleOfTestPage() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Close History.
-  if (IsUIRefreshPhase1Enabled()) {
-    id<GREYMatcher> exitMatcher =
-        grey_accessibilityID(kHistoryNavigationControllerDoneButtonIdentifier);
-    [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
-  } else {
-    [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
-                                     l10n_util::GetNSString(
-                                         IDS_IOS_NAVIGATION_BAR_DONE_BUTTON))]
-        performAction:grey_tap()];
-  }
+  id<GREYMatcher> exitMatcher =
+      grey_accessibilityID(kHistoryNavigationControllerDoneButtonIdentifier);
+  [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
 
   // Close tab.
   chrome_test_util::CloseCurrentTab();
