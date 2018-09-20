@@ -790,33 +790,51 @@ VideoPlayer.prototype.updateInactivityWatcherState_ = function() {
 var player = new VideoPlayer();
 
 /**
- * Initializes the strings.
- * @param {function()} callback Called when the sting data is ready.
+ * Initializes the load time data.
+ * @param {function()} callback Called when the load time data is ready.
  */
 function initStrings(callback) {
   chrome.fileManagerPrivate.getStrings(function(strings) {
     loadTimeData.data = strings;
-    i18nTemplate.process(document, loadTimeData);
     callback();
   }.wrap(null));
 }
 
+/**
+ * Initializes the volume manager.
+ * @param {function()} callback Called when the volume manager is ready.
+ */
 function initVolumeManager(callback) {
   var volumeManager = new FilteredVolumeManager(AllowedPaths.ANY_PATH, false);
   volumeManager.ensureInitialized(callback);
 }
 
-var initPromise = Promise.all(
-    [new Promise(initStrings.wrap(null)),
-     new Promise(initVolumeManager.wrap(null)),
-     new Promise(util.addPageLoadHandler.wrap(null))]);
+/**
+ * Promise to initialize both the volume manager and the load time data.
+ * @type {!Promise}
+ */
+const initPromise = Promise.all([
+  new Promise(initStrings.wrap(null)),
+  new Promise(initVolumeManager.wrap(null)),
+]);
 
-initPromise.then(function(unused) {
+/**
+ * Initialize the video player.
+ */
+initPromise.then(function() {
+  if (document.readyState !== 'loading')
+    return;
+  return new Promise(function(fulfill, reject) {
+    document.addEventListener('DOMContentLoaded', fulfill);
+  }.wrap());
+}.wrap()).then(function() {
+  const isReady = document.readyState !== 'loading';
+  assert(isReady, 'VideoPlayer DOM document is still loading');
+  i18nTemplate.process(document, loadTimeData);
   return new Promise(function(fulfill, reject) {
     util.URLsToEntries(window.appState.items, function(entries) {
       metrics.recordOpenVideoPlayerAction();
       metrics.recordNumberOfOpenedFiles(entries.length);
-
       player.prepare(entries);
       player.playFirstVideo(player, fulfill);
     }.wrap());
