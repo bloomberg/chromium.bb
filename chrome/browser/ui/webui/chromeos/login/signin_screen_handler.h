@@ -73,7 +73,6 @@ class ErrorScreensHistogramHelper;
 class GaiaScreenHandler;
 class LoginFeedback;
 class NativeWindowDelegate;
-class SupervisedUserCreationScreenHandler;
 class User;
 class UserContext;
 
@@ -280,7 +279,6 @@ class SigninScreenHandler
 
   friend class GaiaScreenHandler;
   friend class ReportDnsCacheClearedOnUIThread;
-  friend class SupervisedUserCreationScreenHandler;
   friend class LoginDisplayHostMojo;
 
   void ShowImpl();
@@ -391,7 +389,6 @@ class SigninScreenHandler
   void HandleUnlockOnLoginSuccess();
   void HandleLoginScreenUpdate();
   void HandleShowLoadingTimeoutError();
-  void HandleShowSupervisedUserCreationScreen();
   void HandleFocusPod(const AccountId& account_id, bool is_large_pod);
   void HandleNoPodFocused();
   void HandleHardlockPod(const std::string& user_id);

@@ -66,7 +66,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
@@ -335,12 +334,6 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(std::make_unique<KioskAutolaunchScreenHandler>());
 
   AddScreenHandler(std::make_unique<KioskEnableScreenHandler>());
-
-  auto supervised_user_creation_screen_handler =
-      std::make_unique<SupervisedUserCreationScreenHandler>();
-  supervised_user_creation_screen_view_ =
-      supervised_user_creation_screen_handler.get();
-  AddScreenHandler(std::move(supervised_user_creation_screen_handler));
 
   AddScreenHandler(std::make_unique<WrongHWIDScreenHandler>());
 
@@ -611,11 +604,6 @@ UserImageView* OobeUI::GetUserImageView() {
 
 ErrorScreen* OobeUI::GetErrorScreen() {
   return error_screen_.get();
-}
-
-SupervisedUserCreationScreenHandler*
-OobeUI::GetSupervisedUserCreationScreenView() {
-  return supervised_user_creation_screen_view_;
 }
 
 GaiaView* OobeUI::GetGaiaScreenView() {

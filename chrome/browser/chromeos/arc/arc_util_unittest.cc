@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
-#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -353,18 +352,6 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcSupported) {
                    ->GetUserByProfile(profile())
                    ->HasGaiaAccount());
   EXPECT_TRUE(IsArcAllowedForProfileOnFirstCall(profile()));
-}
-
-TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_SupervisedUserFlow) {
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(
-      {"", "--arc-availability=officially-supported"});
-  auto manager_id = AccountId::FromUserEmailGaiaId(
-      profile()->GetProfileUserName(), kTestGaiaId);
-  ScopedLogIn login(GetFakeUserManager(), manager_id);
-  GetFakeUserManager()->SetUserFlow(
-      manager_id, new chromeos::SupervisedUserCreationFlow(manager_id));
-  EXPECT_FALSE(IsArcAllowedForProfileOnFirstCall(profile()));
-  GetFakeUserManager()->ResetUserFlow(manager_id);
 }
 
 // Guest account is interpreted as EphemeralDataUser.

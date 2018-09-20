@@ -60,7 +60,6 @@ class RecommendAppsScreenView;
 class ResetView;
 class SigninScreenHandler;
 class SigninScreenHandlerDelegate;
-class SupervisedUserCreationScreenHandler;
 class SyncConsentScreenView;
 class TermsOfServiceScreenView;
 class UserBoardView;
@@ -127,7 +126,6 @@ class OobeUI : public content::WebUIController,
   ErrorScreen* GetErrorScreen();
   WrongHWIDScreenView* GetWrongHWIDScreenView();
   AutoEnrollmentCheckScreenView* GetAutoEnrollmentCheckScreenView();
-  SupervisedUserCreationScreenHandler* GetSupervisedUserCreationScreenView();
   AppLaunchSplashScreenView* GetAppLaunchSplashScreenView();
   ArcKioskSplashScreenView* GetArcKioskSplashScreenView();
   HIDDetectionView* GetHIDDetectionView();
@@ -238,8 +236,6 @@ class OobeUI : public content::WebUIController,
   // Reference to CoreOobeHandler that handles common requests of Oobe page.
   CoreOobeHandler* core_handler_ = nullptr;
 
-  SupervisedUserCreationScreenHandler* supervised_user_creation_screen_view_ =
-      nullptr;
   // Reference to SigninScreenHandler that handles sign-in screen requests and
   // forwards calls from native code to JS side.
   SigninScreenHandler* signin_screen_handler_ = nullptr;

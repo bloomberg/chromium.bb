@@ -73,7 +73,6 @@
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -181,7 +180,7 @@ constexpr const Entry kLegacyUmaOobeScreenNames[] = {
     {chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE, "arc_tos"},
     {chromeos::OobeScreen::SCREEN_OOBE_ENROLLMENT, "enroll"},
     {chromeos::OobeScreen::SCREEN_OOBE_WELCOME, "network"},
-    {chromeos::OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW,
+    {chromeos::OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW_DEPRECATED,
      "supervised-user-creation-flow"},
     {chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE, "tos"},
     {chromeos::OobeScreen::SCREEN_USER_IMAGE_PICKER, "image"}};
@@ -476,9 +475,6 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_WRONG_HWID) {
     return std::make_unique<WrongHWIDScreen>(this,
                                              oobe_ui->GetWrongHWIDScreenView());
-  } else if (screen == OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW) {
-    return std::make_unique<SupervisedUserCreationScreen>(
-        this, oobe_ui->GetSupervisedUserCreationScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_HID_DETECTION) {
     return std::make_unique<chromeos::HIDDetectionScreen>(
         this, oobe_ui->GetHIDDetectionView());
@@ -755,13 +751,6 @@ void WizardController::ShowAutoEnrollmentCheckScreen() {
     screen->ClearState();
   screen->set_auto_enrollment_controller(GetAutoEnrollmentController());
   SetCurrentScreen(screen);
-}
-
-void WizardController::ShowSupervisedUserCreationScreen() {
-  VLOG(1) << "Showing Locally managed user creation screen screen.";
-  UpdateStatusAreaVisibilityForScreen(
-      OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW);
-  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW));
 }
 
 void WizardController::ShowArcKioskSplashScreen() {
@@ -1493,8 +1482,6 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowWrongHWIDScreen();
   } else if (screen == OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK) {
     ShowAutoEnrollmentCheckScreen();
-  } else if (screen == OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW) {
-    ShowSupervisedUserCreationScreen();
   } else if (screen == OobeScreen::SCREEN_APP_LAUNCH_SPLASH) {
     AutoLaunchKioskApp();
   } else if (screen == OobeScreen::SCREEN_ARC_KIOSK_SPLASH) {

@@ -29,10 +29,6 @@ cr.define('login', function() {
     // normal mode.
     showShutdown_: true,
 
-    // Whether the create supervised user button should be shown when the header
-    // bar is in normal mode. It will be shown in "More settings" menu.
-    showCreateSupervised_: false,
-
     // Current UI state of the sign-in screen.
     signinUIState_: SIGNIN_UI_STATE.HIDDEN,
 
@@ -67,10 +63,6 @@ cr.define('login', function() {
           .addEventListener('click', this.handleCancelMultipleSignInClick_);
       $('unlock-user-button')
           .addEventListener('click', this.handleUnlockUserClick_);
-      this.addSupervisedUserMenu.addEventListener(
-          'click', this.handleAddSupervisedUserClick_.bind(this));
-      this.addSupervisedUserMenu.addEventListener(
-          'keydown', this.handleAddSupervisedUserKeyDown_.bind(this));
       if (Oobe.getInstance().displayType == DISPLAY_TYPE.LOGIN ||
           Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE) {
         if (Oobe.getInstance().newKioskUI)
@@ -109,10 +101,6 @@ cr.define('login', function() {
       return $('more-settings-header-bar-item');
     },
 
-    get addSupervisedUserMenu() {
-      return this.querySelector('.add-supervised-user-menu');
-    },
-
     /**
      * Whether action box button is in active state.
      * @type {boolean}
@@ -142,7 +130,6 @@ cr.define('login', function() {
 
     handleMoreSettingsClick_: function(e) {
       this.isMoreSettingsActive = !this.isMoreSettingsActive;
-      this.addSupervisedUserMenu.focus();
       e.stopPropagation();
     },
 
@@ -209,28 +196,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Add supervised user button handler.
-     *
-     * @private
-     */
-    handleAddSupervisedUserClick_: function(e) {
-      chrome.send('showSupervisedUserCreationScreen');
-      e.preventDefault();
-    },
-
-    /**
-     * Add supervised user key handler, ESC closes menu.
-     *
-     * @private
-     */
-    handleAddSupervisedUserKeyDown_: function(e) {
-      if (e.key == 'Escape' && this.isMoreSettingsActive) {
-        this.isMoreSettingsActive = false;
-        $('more-settings-button').focus();
-      }
-    },
-
-    /**
      * Unlock user button handler. Sends a request to Chrome to show user pods
      * in foreground.
      *
@@ -248,11 +213,6 @@ cr.define('login', function() {
      */
     set showGuestButton(value) {
       this.showGuest_ = value;
-      this.updateUI_();
-    },
-
-    set showCreateSupervisedButton(value) {
-      this.showCreateSupervised_ = value;
       this.updateUI_();
     },
 
@@ -321,9 +281,6 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.ENROLLMENT);
       var accountPickerIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER);
-      var supervisedUserCreationDialogIsActive =
-          (this.signinUIState_ ==
-           SIGNIN_UI_STATE.SUPERVISED_USER_CREATION_FLOW);
       var wrongHWIDWarningIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.WRONG_HWID_WARNING);
       var isSamlPasswordConfirm =
@@ -337,12 +294,9 @@ cr.define('login', function() {
 
       $('add-user-button').hidden = !accountPickerIsActive ||
           isMultiProfilesUI || isLockScreen || errorScreenIsActive;
-      $('more-settings-header-bar-item').hidden = !this.showCreateSupervised_ ||
-          gaiaIsActive || isLockScreen || errorScreenIsActive ||
-          supervisedUserCreationDialogIsActive;
+      $('more-settings-header-bar-item').hidden = true;
       $('guest-user-header-bar-item').hidden = !this.showGuest_ ||
-          isLockScreen || supervisedUserCreationDialogIsActive ||
-          wrongHWIDWarningIsActive || isSamlPasswordConfirm ||
+          isLockScreen || wrongHWIDWarningIsActive || isSamlPasswordConfirm ||
           isMultiProfilesUI || (gaiaIsActive && $('gaia-signin').closable) ||
           (enrollmentIsActive && !$('oauth-enrollment').isAtTheBeginning()) ||
           (gaiaIsActive && !$('gaia-signin').isAtTheBeginning());
