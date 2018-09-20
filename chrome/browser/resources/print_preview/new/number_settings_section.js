@@ -37,6 +37,8 @@ Polymer({
 
     inputLabel: String,
 
+    inputAriaLabel: String,
+
     hintMessage: String,
 
     disabled: Boolean,

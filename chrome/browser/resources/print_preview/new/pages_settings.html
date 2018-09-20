@@ -47,6 +47,7 @@
           <cr-radio-button name="pages" id="custom-radio-button"
               checked$="[[customSelected_]]"
               disabled$="[[getDisabled_(disabled)]]"
+              aria-label="$i18n{optionCustomPages}"
               on-click="onCustomRadioClick_">
             <cr-input id="pageSettingsCustomInput" type="text"
                 data-timeout-delay="500"
@@ -54,7 +55,6 @@
                 pattern="[[inputPattern_]]"
                 on-focus="onCustomInputFocus_" on-blur="onCustomInputBlur_"
                 placeholder="$i18n{examplePageRangeText}"
-                aria-label="$i18n{examplePageRangeText}"
                 error-message="[[getHintMessage_(errorState_,
                     documentInfo.pageCount)]]"
                 auto-validate>
