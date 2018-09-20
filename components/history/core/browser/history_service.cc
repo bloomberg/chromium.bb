@@ -27,12 +27,16 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/download_row.h"
@@ -98,6 +102,92 @@ void ExpireWebHistoryComplete(bool success) {
   // TODO(davidben): ExpireLocalAndRemoteHistoryBetween callback should not fire
   // until this completes.
 }
+
+// Used for debugging 807009. This keeps a static of the number of instances of
+// AddPageMemoryDebuggingTask that have been created but not destroyed. This
+// count corresponds to the number of calls to AddPage() that have not yet been
+// processed by the HistoryBackend.
+class AddPageMemoryDebuggingTask {
+ public:
+  // |real_task| is the task to actually call to HistoryBackend.
+  explicit AddPageMemoryDebuggingTask(base::OnceClosure real_task)
+      : real_task_(std::move(real_task)) {
+    base::AutoLock auto_lock(GetLock());
+    ++live_count_;
+  }
+
+  ~AddPageMemoryDebuggingTask() {
+    base::AutoLock auto_lock(GetLock());
+    DCHECK_GT(live_count_, 0);
+    --live_count_;
+  }
+
+  // Called on the background/db-thread to run the closure supplied to the
+  // constructor. The instance is deleted right after this call.
+  void RunOnDbThread() { std::move(real_task_).Run(); }
+
+  static int live_count() {
+    base::AutoLock auto_lock(GetLock());
+    return live_count_;
+  }
+
+ private:
+  static base::Lock& GetLock() {
+    static base::NoDestructor<base::Lock> lock;
+    return *lock;
+  }
+
+  // The number of instances waiting to run.
+  static int live_count_;  // Guarded by getLock()
+
+  base::OnceClosure real_task_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddPageMemoryDebuggingTask);
+};
+
+// static
+int AddPageMemoryDebuggingTask::live_count_ = 0;
+
+class HistoryMemoryDumpProvider : public base::trace_event::MemoryDumpProvider {
+ public:
+  static HistoryMemoryDumpProvider* Get() {
+    if (!instance_)
+      instance_ = new HistoryMemoryDumpProvider();
+    return instance_;
+  }
+
+  // base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override {
+    // NOTE: this may be called on any thread, see constructor.
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump("history/history_service");
+    dump->AddScalar("pending_add_pages",
+                    base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                    AddPageMemoryDebuggingTask::live_count());
+    return true;
+  }
+
+ private:
+  HistoryMemoryDumpProvider() {
+    // NOTE: the nullptr arg means OnMemoryDump() may be called from any
+    // thread.
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "HistoryService", nullptr);
+  }
+
+  ~HistoryMemoryDumpProvider() override {
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        this);
+  }
+
+  static HistoryMemoryDumpProvider* instance_;
+
+  DISALLOW_COPY_AND_ASSIGN(HistoryMemoryDumpProvider);
+};
+
+// static
+HistoryMemoryDumpProvider* HistoryMemoryDumpProvider::instance_ = nullptr;
 
 }  // namespace
 
@@ -198,7 +288,10 @@ HistoryService::HistoryService(std::unique_ptr<HistoryClient> history_client,
       history_client_(std::move(history_client)),
       visit_delegate_(std::move(visit_delegate)),
       backend_loaded_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  // Make sure the HistoryMemoryDumpProvider is created and registered.
+  HistoryMemoryDumpProvider::Get();
+}
 
 HistoryService::~HistoryService() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -409,9 +502,13 @@ void HistoryService::AddPage(const HistoryAddPageArgs& add_page_args) {
     }
   }
 
+  auto real_task =
+      base::BindOnce(&HistoryBackend::AddPage, history_backend_, add_page_args);
+  std::unique_ptr<AddPageMemoryDebuggingTask> debug_task =
+      std::make_unique<AddPageMemoryDebuggingTask>(std::move(real_task));
   ScheduleTask(PRIORITY_NORMAL,
-               base::BindOnce(&HistoryBackend::AddPage, history_backend_,
-                              add_page_args));
+               base::BindOnce(&AddPageMemoryDebuggingTask::RunOnDbThread,
+                              std::move(debug_task)));
 }
 
 void HistoryService::AddPageNoVisitForBookmark(const GURL& url,
