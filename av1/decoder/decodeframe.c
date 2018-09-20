@@ -3346,6 +3346,16 @@ static int tile_worker_hook(void *arg1, void *arg2) {
   return !td->xd.corrupted;
 }
 
+// The caller must hold pbi->row_mt_mutex_ when calling this function.
+// Returns 1 if either the next job is stored in *next_job_info or 1 is stored
+// in *end_of_frame.
+// NOTE: The caller waits on pbi->row_mt_cond_ if this function returns 0.
+// The return value of this function depends on the following variables:
+// - frame_row_mt_info->mi_rows_parse_done
+// - frame_row_mt_info->mi_rows_decode_started
+// - frame_row_mt_info->row_mt_exit
+// Therefore we may need to signal or broadcast pbi->row_mt_cond_ if any of
+// these variables is modified.
 static int get_next_job_info(AV1Decoder *const pbi,
                              AV1DecRowMTJobInfo *next_job_info,
                              int *end_of_frame) {
@@ -3380,9 +3390,10 @@ static int get_next_job_info(AV1Decoder *const pbi,
   }
 
   // Decoding cannot start as bit-stream parsing is not complete.
-  if (frame_row_mt_info->mi_rows_parse_done -
-          frame_row_mt_info->mi_rows_decode_started ==
-      0)
+  assert(frame_row_mt_info->mi_rows_parse_done >=
+         frame_row_mt_info->mi_rows_decode_started);
+  if (frame_row_mt_info->mi_rows_parse_done ==
+      frame_row_mt_info->mi_rows_decode_started)
     return 0;
 
   // Choose the tile to decode.
@@ -3435,6 +3446,14 @@ static int get_next_job_info(AV1Decoder *const pbi,
   dec_row_mt_sync->num_threads_working++;
   dec_row_mt_sync->mi_rows_decode_started += sb_mi_size;
   frame_row_mt_info->mi_rows_decode_started += sb_mi_size;
+  assert(frame_row_mt_info->mi_rows_parse_done >=
+         frame_row_mt_info->mi_rows_decode_started);
+#if CONFIG_MULTITHREAD
+  if (frame_row_mt_info->mi_rows_decode_started ==
+      frame_row_mt_info->mi_rows_to_decode) {
+    pthread_cond_broadcast(pbi->row_mt_cond_);
+  }
+#endif
 
   return 1;
 }
@@ -3446,10 +3465,16 @@ static INLINE void signal_parse_sb_row_done(AV1Decoder *const pbi,
 #if CONFIG_MULTITHREAD
   pthread_mutex_lock(pbi->row_mt_mutex_);
 #endif
+  assert(frame_row_mt_info->mi_rows_parse_done >=
+         frame_row_mt_info->mi_rows_decode_started);
   tile_data->dec_row_mt_sync.mi_rows_parse_done += sb_mi_size;
   frame_row_mt_info->mi_rows_parse_done += sb_mi_size;
 #if CONFIG_MULTITHREAD
-  pthread_cond_broadcast(pbi->row_mt_cond_);
+  // A new decode job is available. Wake up one worker thread to handle the
+  // new decode job.
+  // NOTE: This assumes we bump mi_rows_parse_done and mi_rows_decode_started
+  // by the same increment (sb_mi_size).
+  pthread_cond_signal(pbi->row_mt_cond_);
   pthread_mutex_unlock(pbi->row_mt_mutex_);
 #endif
 }
