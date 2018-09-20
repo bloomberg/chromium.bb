@@ -402,7 +402,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     AVxWorker *const worker = &ctx->frame_workers[i];
     FrameWorkerData *frame_worker_data = NULL;
     winterface->init(worker);
-    worker->thread_name = "aom frame worker";
+    worker->thread_name = "aom frameworker";
     worker->data1 = aom_memalign(32, sizeof(FrameWorkerData));
     if (worker->data1 == NULL) {
       set_error_detail(ctx, "Failed to allocate frame_worker_data");

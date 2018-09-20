@@ -16,7 +16,9 @@
 
 // Enable GNU extensions in glibc so that we can call pthread_setname_np().
 // This must be before any #include statements.
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <assert.h>
 #include <string.h>  // for memset()
@@ -39,7 +41,7 @@ static void execute(AVxWorker *const worker);  // Forward declaration.
 static THREADFN thread_loop(void *ptr) {
   AVxWorker *const worker = (AVxWorker *)ptr;
 #if defined(__GLIBC__) || defined(__BIONIC__)
-  if (worker->thread_name) {
+  if (worker->thread_name != NULL) {
     // Android and recent versions of glibc on Linux have a form of
     // pthread_setname_np().
     // Linux requires names (with nul) fit in 16 chars, otherwise
