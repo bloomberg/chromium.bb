@@ -540,7 +540,7 @@ CryptohomeAuthenticator::CryptohomeAuthenticator(
       owner_is_verified_(false),
       user_can_login_(false),
       remove_user_data_on_failure_(false),
-      delayed_login_failure_(NULL) {}
+      delayed_login_failure_(AuthFailure::NONE) {}
 
 void CryptohomeAuthenticator::AuthenticateToLogin(
     content::BrowserContext* context,
@@ -737,7 +737,7 @@ void CryptohomeAuthenticator::OnAuthFailure(const AuthFailure& error) {
   // OnAuthFailure will be called again with the same |error|
   // after the cryptohome has been removed.
   if (remove_user_data_on_failure_) {
-    delayed_login_failure_ = &error;
+    delayed_login_failure_ = error;
     RemoveEncryptedData();
     return;
   }
@@ -861,7 +861,7 @@ void CryptohomeAuthenticator::Resolve() {
       remove_user_data_on_failure_ = false;
       task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure,
-                                    this, *delayed_login_failure_));
+                                    this, delayed_login_failure_));
       break;
     case CREATE_NEW:
       create_if_nonexistent = true;
