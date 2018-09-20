@@ -57,7 +57,6 @@ Controller::Controller(
       memory_(std::make_unique<ClientMemory>()),
       allow_autostart_(true) {
   GetUiController()->SetUiDelegate(this);
-  GetUiController()->ShowOverlay();
   if (!web_contents->IsLoading()) {
     GetOrCheckScripts(web_contents->GetLastCommittedURL());
   }
