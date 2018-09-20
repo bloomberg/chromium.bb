@@ -83,10 +83,6 @@ bool GetFileMetadata(const String& path, FileMetadata& metadata) {
   return true;
 }
 
-String DirectoryName(const String& path) {
-  return FilePathToWebString(WebStringToFilePath(path).DirName());
-}
-
 KURL FilePathToURL(const String& path) {
   GURL gurl = net::FilePathToFileURL(WebStringToFilePath(path));
   const std::string& url_spec = gurl.possibly_invalid_spec();
