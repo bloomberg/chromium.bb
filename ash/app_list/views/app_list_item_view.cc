@@ -68,6 +68,9 @@ constexpr SkColor kFolderGridSelectedColor = SkColorSetARGB(31, 0, 0, 0);
 // The duration in milliseconds of dragged view hover animation.
 constexpr int kDraggedViewHoverAnimationDuration = 250;
 
+// The duration in milliseconds of dragged view hover animation for folder icon.
+constexpr int kDraggedViewHoverAnimationDurationForFolder = 125;
+
 // The shadow blur of title.
 constexpr int kTitleShadowBlur = 28;
 
@@ -900,7 +903,8 @@ void AppListItemView::CreateDraggedViewHoverAnimation() {
   dragged_view_hover_animation_ = std::make_unique<gfx::SlideAnimation>(this);
   dragged_view_hover_animation_->SetTweenType(gfx::Tween::EASE_IN);
   dragged_view_hover_animation_->SetSlideDuration(
-      kDraggedViewHoverAnimationDuration);
+      is_folder_ ? kDraggedViewHoverAnimationDurationForFolder
+                 : kDraggedViewHoverAnimationDuration);
 }
 
 void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {
