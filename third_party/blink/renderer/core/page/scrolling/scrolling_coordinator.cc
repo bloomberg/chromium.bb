@@ -266,6 +266,11 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
 
   const auto& layer_state = layer.GetPropertyTreeState();
   Vector<TouchActionRect> touch_action_rects_in_layer_space;
+  if (layer.Client().ShouldThrottleRendering()) {
+    layer.CcLayer()->SetTouchActionRegion(
+        TouchActionRect::BuildRegion(touch_action_rects_in_layer_space));
+    return;
+  }
   for (const auto& chunk : layer.GetPaintController().PaintChunks()) {
     const auto* hit_test_data = chunk.GetHitTestData();
     if (!hit_test_data || hit_test_data->touch_action_rects.IsEmpty())
