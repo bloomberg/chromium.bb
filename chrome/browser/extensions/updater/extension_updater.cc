@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/module/module.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/update_query_params.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -282,9 +284,10 @@ void ExtensionUpdater::CheckSoon() {
   DCHECK(alive_);
   if (will_check_soon_)
     return;
-  if (BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::BindOnce(&ExtensionUpdater::DoCheckSoon,
-                                             weak_ptr_factory_.GetWeakPtr()))) {
+  if (base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(&ExtensionUpdater::DoCheckSoon,
+                         weak_ptr_factory_.GetWeakPtr()))) {
     will_check_soon_ = true;
   } else {
     NOTREACHED();

@@ -5,7 +5,9 @@
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
@@ -111,8 +113,8 @@ void WebViewContentScriptManager::AddContentScripts(
   // since WebViewRendererState::GetInstance() always returns a Singleton of
   // WebViewRendererState.
   if (!ids_to_add.empty()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::Bind(&WebViewRendererState::AddContentScriptIDs,
                    base::Unretained(WebViewRendererState::GetInstance()),
                    embedder_process_id, view_instance_id, ids_to_add));
@@ -196,8 +198,8 @@ void WebViewContentScriptManager::RemoveContentScripts(
 
   // Step 4: updates WebViewRenderState in the IO thread.
   if (!ids_to_delete.empty()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::Bind(&WebViewRendererState::RemoveContentScriptIDs,
                    base::Unretained(WebViewRendererState::GetInstance()),
                    embedder_process_id, view_instance_id, ids_to_delete));

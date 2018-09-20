@@ -20,6 +20,7 @@
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/navigation_controller.h"
@@ -147,8 +148,8 @@ void MemoryDetails::StartFetch() {
 
   // In order to process this request, we need to use the plugin information.
   // However, plugin process information is only available from the IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MemoryDetails::CollectChildInfoOnIOThread, this));
 }
 

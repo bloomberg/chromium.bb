@@ -92,6 +92,7 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/plugin_data_remover.h"
@@ -152,7 +153,7 @@ namespace {
 // Generic functions but currently only used when ENABLE_NACL.
 #if BUILDFLAG(ENABLE_NACL)
 void UIThreadTrampolineHelper(base::OnceClosure callback) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, std::move(callback));
 }
 
 // Convenience method to create a callback that can be run on any thread and
@@ -859,13 +860,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     web_cache::WebCacheManager::GetInstance()->ClearCache();
 
 #if BUILDFLAG(ENABLE_NACL)
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ClearNaClCacheOnIOThread,
                        base::AdaptCallbackForRepeating(UIThreadTrampoline(
                            CreatePendingTaskCompletionClosure()))));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ClearPnaclCacheOnIOThread, delete_begin_, delete_end_,
                        base::AdaptCallbackForRepeating(UIThreadTrampoline(
                            CreatePendingTaskCompletionClosure()))));

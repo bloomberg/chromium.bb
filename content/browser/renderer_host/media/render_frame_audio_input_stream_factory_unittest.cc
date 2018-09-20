@@ -12,8 +12,10 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -52,7 +54,8 @@ class RenderFrameAudioInputStreamFactoryTest
         audio_system_(media::AudioSystemImpl::CreateInstance()),
         media_stream_manager_(std::make_unique<MediaStreamManager>(
             audio_system_.get(),
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::UI))) {}
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {BrowserThread::UI}))) {}
 
   ~RenderFrameAudioInputStreamFactoryTest() override {}
 

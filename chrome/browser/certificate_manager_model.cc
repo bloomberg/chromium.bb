@@ -14,12 +14,14 @@
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 #include "chrome/common/net/x509_certificate_model_nss.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "crypto/nss_util.h"
@@ -492,8 +494,8 @@ void CertificateManagerModel::Create(
       certificate_provider_service->CreateCertificateProvider();
 #endif
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CertificateManagerModel::GetCertDBOnIOThread,
                      std::move(params), browser_context->GetResourceContext(),
                      observer, callback));
@@ -694,8 +696,8 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
 #if defined(OS_CHROMEOS)
   is_tpm_available = crypto::IsTPMTokenEnabledForNSS();
 #endif
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CertificateManagerModel::DidGetCertDBOnUIThread,
                      std::move(params), observer, callback, cert_db,
                      is_user_db_available, is_tpm_available));

@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
@@ -171,9 +173,8 @@ std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
   if (!network_context) {
     // Cannot invoke the callback right away because it would cause the
     // use-after-free after returning from this function.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(std::move(callback), false));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             base::BindOnce(std::move(callback), false));
     return nullptr;
   }
 

@@ -34,6 +34,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #include "base/test/thread_test_helper.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -72,6 +73,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
 #include "components/security_interstitials/core/controller_client.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
@@ -348,23 +350,23 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
   std::string GetThreatHash() const { return threat_hash_; }
 
   void CheckDownloadUrl(const std::vector<GURL>& url_chain) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&TestSBClient::CheckDownloadUrlOnIOThread, this,
                        url_chain));
     content::RunMessageLoop();  // Will stop in OnCheckDownloadUrlResult.
   }
 
   void CheckBrowseUrl(const GURL& url) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&TestSBClient::CheckBrowseUrlOnIOThread, this, url));
     content::RunMessageLoop();  // Will stop in OnCheckBrowseUrlResult.
   }
 
   void CheckResourceUrl(const GURL& url) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&TestSBClient::CheckResourceUrlOnIOThread, this, url));
     content::RunMessageLoop();  // Will stop in OnCheckResourceUrlResult.
   }
@@ -379,8 +381,8 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
                                                                      this);
     if (synchronous_safe_signal) {
       threat_type_ = SB_THREAT_TYPE_SAFE;
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::BindOnce(&TestSBClient::CheckDone, this));
+      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                               base::BindOnce(&TestSBClient::CheckDone, this));
     }
   }
 
@@ -396,8 +398,8 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
             this);
     if (synchronous_safe_signal) {
       threat_type_ = SB_THREAT_TYPE_SAFE;
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::BindOnce(&TestSBClient::CheckDone, this));
+      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                               base::BindOnce(&TestSBClient::CheckDone, this));
     }
   }
 
@@ -406,8 +408,8 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
         safe_browsing_service_->database_manager()->CheckResourceUrl(url, this);
     if (synchronous_safe_signal) {
       threat_type_ = SB_THREAT_TYPE_SAFE;
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::BindOnce(&TestSBClient::CheckDone, this));
+      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                               base::BindOnce(&TestSBClient::CheckDone, this));
     }
   }
 
@@ -415,8 +417,8 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
   void OnCheckDownloadUrlResult(const std::vector<GURL>& /* url_chain */,
                                 SBThreatType threat_type) override {
     threat_type_ = threat_type;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&TestSBClient::CheckDone, this));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&TestSBClient::CheckDone, this));
   }
 
   // Called when the result of checking a browse URL is known.
@@ -424,8 +426,8 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
                               SBThreatType threat_type,
                               const ThreatMetadata& /* metadata */) override {
     threat_type_ = threat_type;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&TestSBClient::CheckDone, this));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&TestSBClient::CheckDone, this));
   }
 
   // Called when the result of checking a resource URL is known.
@@ -434,8 +436,8 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
                                 const std::string& threat_hash) override {
     threat_type_ = threat_type;
     threat_hash_ = threat_hash;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&TestSBClient::CheckDone, this));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&TestSBClient::CheckDone, this));
   }
 
   void CheckDone() { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }

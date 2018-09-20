@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/base/bind_to_current_loop.h"
@@ -113,8 +115,8 @@ void RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorization(
 
   // Unretained is safe since |authorization_handler_| is deleted on the IO
   // thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
           base::Unretained(authorization_handler_.get()),

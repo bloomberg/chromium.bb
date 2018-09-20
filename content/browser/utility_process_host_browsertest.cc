@@ -5,10 +5,12 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/utility_process_host.h"
 #include "content/browser/utility_process_host_client.h"
 #include "content/public/browser/browser_child_process_observer.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_termination_info.h"
@@ -45,8 +47,8 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     done_closure_ =
         base::BindOnce(&UtilityProcessHostBrowserTest::DoneRunning,
                        base::Unretained(this), run_loop.QuitClosure(), crash);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &UtilityProcessHostBrowserTest::RunUtilityProcessOnIOThread,
             base::Unretained(this), elevated, crash));
@@ -98,8 +100,8 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     // If service crashes then this never gets called.
     ASSERT_EQ(false, expect_crash);
     ResetServiceOnIOThread();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            std::move(done_closure_));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             std::move(done_closure_));
   }
 
   mojom::TestServicePtr service_;
@@ -138,8 +140,8 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     EXPECT_EQ(kTestProcessName, data.metrics_name);
     EXPECT_EQ(false, has_crashed);
     has_crashed = true;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&UtilityProcessHostBrowserTest::ResetServiceOnIOThread,
                        base::Unretained(this)));
     std::move(done_closure_).Run();

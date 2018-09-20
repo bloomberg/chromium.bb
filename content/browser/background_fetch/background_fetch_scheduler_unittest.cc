@@ -8,8 +8,10 @@
 
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,8 +51,8 @@ class FakeController : public BackgroundFetchScheduler::Controller {
     controller_sequence_list_->push_back(name_ +
                                          base::IntToString(jobs_started_));
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(std::move(callback), std::move(request)));
   }
   bool IsProcessingARequest() override { return false; }
@@ -78,8 +80,8 @@ class BackgroundFetchSchedulerTest
       return;
     }
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &BackgroundFetchSchedulerTest::PostQuitAfterRepeatingBarriers,
             base::Unretained(this), std::move(quit_closure),

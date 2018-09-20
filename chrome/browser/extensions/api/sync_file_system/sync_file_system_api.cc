@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -99,8 +101,8 @@ bool SyncFileSystemDeleteFileSystemFunction::RunAsync() {
   storage::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       BindOnce(
           &storage::FileSystemContext::DeleteFileSystem, file_system_context,
           source_url().GetOrigin(), file_system_url.type(),
@@ -114,8 +116,8 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         BindOnce(&SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem,
                  this, error));
     return;
@@ -142,8 +144,8 @@ bool SyncFileSystemRequestFileSystemFunction::RunAsync() {
 
   // Initializes sync context for this extension and continue to open
   // a new file system.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       BindOnce(&storage::FileSystemContext::OpenFileSystem,
                GetFileSystemContext(), source_url().GetOrigin(),
                storage::kFileSystemTypeSyncable,
@@ -167,8 +169,8 @@ void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         BindOnce(&SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem,
                  this, root_url, file_system_name, error));
     return;
@@ -329,8 +331,8 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunAsync() {
           GetProfile(), render_frame_host()->GetSiteInstance())
           ->GetQuotaManager();
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       BindOnce(
           &storage::QuotaManager::GetUsageAndQuotaForWebApps, quota_manager,
           source_url().GetOrigin(),
@@ -348,8 +350,8 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         BindOnce(&SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota,
                  this, status, usage, quota));
     return;

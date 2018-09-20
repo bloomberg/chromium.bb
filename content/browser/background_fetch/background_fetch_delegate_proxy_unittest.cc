@@ -9,10 +9,12 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
@@ -59,8 +61,8 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
 
     client()->OnDownloadStarted(job_unique_id, guid, std::move(response));
     if (complete_downloads_) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&FakeBackgroundFetchDelegate::CompleteDownload,
                          base::Unretained(this), job_unique_id, guid));
     }

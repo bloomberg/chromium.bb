@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/metrics/field_trial.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -214,8 +216,8 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     // Post a task to process next queued request. It has to be done
     // asynchronously to make sure that calling infobar is not destroyed until
     // after this function returns.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest,
             base::Unretained(this), web_contents));

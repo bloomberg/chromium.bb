@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -39,6 +40,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -851,8 +853,8 @@ void PageInfoBubbleView::HandleMoreInfoRequest(views::View* source) {
   // The bubble closes automatically when the collected cookies dialog or the
   // certificate viewer opens. So delay handling of the link clicked to avoid
   // a crash in the base class which needs to complete the mouse event handling.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&PageInfoBubbleView::HandleMoreInfoRequestAsync,
                      weak_factory_.GetWeakPtr(), source->id()));
 }

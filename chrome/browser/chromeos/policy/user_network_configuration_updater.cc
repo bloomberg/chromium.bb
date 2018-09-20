@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -20,6 +21,7 @@
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/policy/policy_constants.h"
 #include "components/user_manager/user.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "net/cert/x509_certificate.h"
@@ -188,8 +190,8 @@ void UserNetworkConfigurationUpdater::CreateAndSetClientCertificateImporter(
   DCHECK(database);
   SetClientCertificateImporter(
       std::make_unique<chromeos::onc::CertificateImporterImpl>(
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO),
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::IO}),
           database));
 }
 

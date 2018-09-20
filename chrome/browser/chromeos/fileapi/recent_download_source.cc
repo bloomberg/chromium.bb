@@ -8,8 +8,10 @@
 
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -30,8 +32,8 @@ void OnReadDirectoryOnIOThread(
     bool has_more) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(callback, result, std::move(entries), has_more));
 }
 
@@ -51,8 +53,8 @@ void OnGetMetadataOnIOThread(
     const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, result, info));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback, result, info));
 }
 
 void GetMetadataOnIOThread(
@@ -106,8 +108,8 @@ void RecentDownloadSource::ScanDirectory(const base::FilePath& path) {
   storage::FileSystemURL url = BuildDownloadsURL(path);
 
   ++inflight_readdirs_;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &ReadDirectoryOnIOThread,
           base::WrapRefCounted(params_.value().file_system_context()), url,
@@ -130,8 +132,8 @@ void RecentDownloadSource::OnReadDirectory(
     } else {
       storage::FileSystemURL url = BuildDownloadsURL(subpath);
       ++inflight_stats_;
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &GetMetadataOnIOThread,
               base::WrapRefCounted(params_.value().file_system_context()), url,

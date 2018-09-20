@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -34,6 +35,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
@@ -162,7 +164,8 @@ class ClearAllServiceWorkersHelper
   friend class base::RefCounted<ClearAllServiceWorkersHelper>;
   ~ClearAllServiceWorkersHelper() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback_));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             std::move(callback_));
   }
 
   base::OnceClosure callback_;
@@ -412,8 +415,8 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
     provider_host_iterator.Advance();
   }
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&FrameListContainsMainFrameOnUI, std::move(render_frames)),
       std::move(callback));
 }

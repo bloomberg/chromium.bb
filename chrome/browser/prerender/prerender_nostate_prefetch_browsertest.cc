@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/appcache_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -109,15 +110,15 @@ class NoStatePrefetchBrowserTest
             ->GetAppCacheService();
     do {
       base::RunLoop wait_loop;
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(WaitForAppcacheOnIO, manifest_url, appcache_service,
                          wait_loop.QuitClosure(), &found_manifest));
       // There seems to be some flakiness in the appcache getting back to us, so
       // use a timeout task to try the appcache query again.
-      content::BrowserThread::PostDelayedTask(
-          content::BrowserThread::UI, FROM_HERE, wait_loop.QuitClosure(),
-          base::TimeDelta::FromMilliseconds(2000));
+      base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                                      wait_loop.QuitClosure(),
+                                      base::TimeDelta::FromMilliseconds(2000));
       wait_loop.Run();
     } while (!found_manifest);
   }
@@ -181,8 +182,7 @@ class NoStatePrefetchBrowserTest
         }
       }
     }
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     callback);
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, callback);
   }
 
   base::test::ScopedFeatureList feature_list_;

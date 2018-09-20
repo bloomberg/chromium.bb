@@ -11,11 +11,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -35,16 +36,16 @@ void BrowsingDataQuotaHelperImpl::StartFetching(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread,
                      this, callback));
 }
 
 void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread,
                      this, host));
 }
@@ -159,8 +160,8 @@ void BrowsingDataQuotaHelperImpl::OnGetHostsUsageComplete(
     result.push_back(info);
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, result));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback, result));
 }
 
 void BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread(

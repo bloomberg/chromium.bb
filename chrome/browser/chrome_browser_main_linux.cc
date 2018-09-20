@@ -18,6 +18,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/metrics/metrics_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/dbus_thread_manager_linux.h"
 #include "media/audio/audio_manager.h"
@@ -76,8 +77,8 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   // Forward the product name
   config->product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   // OSCrypt may target keyring, which requires calls from the main thread.
-  config->main_thread_runner = content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::UI);
+  config->main_thread_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+      {content::BrowserThread::UI});
   // OSCrypt can be disabled in a special settings file.
   config->should_use_preference =
       parsed_command_line().HasSwitch(switches::kEnableEncryptionSelection);

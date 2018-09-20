@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/media_galleries/media_file_system_context.h"
@@ -28,6 +29,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/media_storage_util.h"
 #include "components/storage_monitor/storage_monitor.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
@@ -466,8 +468,8 @@ class ExtensionGalleriesHost
       rph_refs_.Reset();
       CleanUp();
     }
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(std::move(callback), result));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::BindOnce(std::move(callback), result));
   }
 
   std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
@@ -561,8 +563,8 @@ void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
 
   if (gallery == preferences->known_galleries().end() ||
       !base::ContainsKey(permitted_galleries, pref_id)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(std::move(callback), base::File::FILE_ERROR_NOT_FOUND));
     return;
   }
@@ -672,10 +674,11 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-        &MTPDeviceMapService::RevokeMTPFileSystem,
-        base::Unretained(MTPDeviceMapService::GetInstance()),
-        fs_name));
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::Bind(&MTPDeviceMapService::RevokeMTPFileSystem,
+                   base::Unretained(MTPDeviceMapService::GetInstance()),
+                   fs_name));
 #endif
   }
 
@@ -721,8 +724,8 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
         storage::FileSystemMountOption(),
         path);
     CHECK(result);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::Bind(&MTPDeviceMapService::RegisterMTPFileSystem,
                    base::Unretained(MTPDeviceMapService::GetInstance()),
                    path.value(), fs_name, true /* read only */));

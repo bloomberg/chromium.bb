@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -44,6 +45,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -628,8 +630,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ChromeVoxNextStickyMode) {
 
   // Sticky key has a minimum 100 ms check to prevent key repeat from toggling
   // it.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::Bind(&LoggedInSpokenFeedbackTest::SendKeyPress,
                  base::Unretained(this), ui::VKEY_LWIN),
       base::TimeDelta::FromMilliseconds(200));
@@ -644,8 +646,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ChromeVoxNextStickyMode) {
 
   // Sticky key has a minimum 100 ms check to prevent key repeat from toggling
   // it.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::Bind(&LoggedInSpokenFeedbackTest::SendKeyPress,
                  base::Unretained(this), ui::VKEY_LWIN),
       base::TimeDelta::FromMilliseconds(200));

@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
@@ -40,6 +41,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/renderer_host/media/video_capture_provider_switcher.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/desktop_media_id.h"
@@ -434,8 +436,8 @@ class MediaStreamManager::DeviceRequest {
 // static
 void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&MediaStreamManager::SendMessageToNativeLog, message));
     return;
   }
@@ -516,7 +518,8 @@ MediaStreamManager::MediaStreamManager(
       video_capture_provider = InProcessVideoCaptureProvider::CreateInstance(
           std::make_unique<media::VideoCaptureSystemImpl>(
               media::CreateVideoCaptureDeviceFactory(
-                  BrowserThread::GetTaskRunnerForThread(BrowserThread::UI))),
+                  base::CreateSingleThreadTaskRunnerWithTraits(
+                      {BrowserThread::UI}))),
           std::move(device_task_runner),
           base::BindRepeating(&SendVideoCaptureLogMessage));
     }
@@ -615,9 +618,9 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
   // and thus can not handle a response. Using base::Unretained is safe since
   // MediaStreamManager is deleted on the UI thread, after the IO thread has
   // been stopped.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&MediaStreamManager::SetUpRequest,
-                                         base::Unretained(this), label));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(&MediaStreamManager::SetUpRequest,
+                                          base::Unretained(this), label));
   return label;
 }
 
@@ -659,9 +662,9 @@ void MediaStreamManager::GenerateStream(
   // and thus can not handle a response. Using base::Unretained is safe since
   // MediaStreamManager is deleted on the UI thread, after the IO thread has
   // been stopped.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&MediaStreamManager::SetUpRequest,
-                                         base::Unretained(this), label));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(&MediaStreamManager::SetUpRequest,
+                                          base::Unretained(this), label));
 }
 
 void MediaStreamManager::CancelRequest(int render_process_id,
@@ -859,9 +862,9 @@ void MediaStreamManager::OpenDevice(int render_process_id,
   // and thus can not handle a response. Using base::Unretained is safe since
   // MediaStreamManager is deleted on the UI thread, after the IO thread has
   // been stopped.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&MediaStreamManager::SetUpRequest,
-                                         base::Unretained(this), label));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(&MediaStreamManager::SetUpRequest,
+                                          base::Unretained(this), label));
 }
 
 bool MediaStreamManager::TranslateSourceIdToDeviceId(
@@ -1242,8 +1245,8 @@ bool MediaStreamManager::SetUpTabCaptureRequest(DeviceRequest* request,
     return false;
   }
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&MediaStreamManager::ResolveTabCaptureDeviceIdOnUIThread,
                      base::Unretained(this), capture_device_id,
                      request->requesting_process_id,
@@ -1459,8 +1462,8 @@ void MediaStreamManager::InitializeMaybeAsync(
   // initialization is done synchronously. Other clients call this from a
   // different thread and expect initialization to run asynchronously.
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&MediaStreamManager::InitializeMaybeAsync,
                        base::Unretained(this),
                        std::move(video_capture_provider)));

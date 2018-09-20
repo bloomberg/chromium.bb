@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -22,6 +23,7 @@
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/url_request/url_request_test_util.h"
@@ -46,8 +48,8 @@ class SafeBrowsingTriggeredPopupBlockerTest
 
     system_request_context_getter_ =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::IO));
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::IO}));
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         system_request_context_getter_.get());
     // Set up safe browsing service with the fake database manager.

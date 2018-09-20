@@ -15,6 +15,7 @@
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
@@ -23,6 +24,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
@@ -279,8 +281,8 @@ void PreviewsLitePageNavigationThrottle::LoadAndBypass(
     return;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WebContentsLifetimeHelper::PostNewNavigation,
                      helper->GetWeakPtr(), params));
 }
@@ -327,8 +329,8 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
   // timeout whether the previews navigation has finished (either in success or
   // failure). If not, the helper will stop the ongoing previews navigation and
   // load the original page.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &WebContentsLifetimeHelper::CheckForHungNavigation,
           helper->GetWeakPtr(), GetPreviewsURL(),
@@ -344,8 +346,8 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
   // dying in-between the PostTask and its execution, resulting in a use after
   // free crash. Since the helper is a WebContentsUserData, it will be
   // destroyed when the WebContents is and the task will not be executed.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WebContentsLifetimeHelper::PostNewNavigation,
                      helper->GetWeakPtr(),
                      MakeOpenURLParams(navigation_handle(), GetPreviewsURL(),

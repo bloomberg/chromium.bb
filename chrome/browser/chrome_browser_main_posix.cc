@@ -16,10 +16,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/app/shutdown_signal_handlers_posix.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/sessions/session_restore.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/result_codes.h"
 
@@ -87,8 +89,8 @@ void ExitHandler::OnSessionRestoreDone(int /* num_tabs */) {
     // At this point the message loop may not be running (meaning we haven't
     // gotten through browser startup, but are close). Post the task to at which
     // point the message loop is running.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&ExitHandler::Exit));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&ExitHandler::Exit));
     delete this;
   }
 }
@@ -136,7 +138,7 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   // Exit in response to SIGINT, SIGTERM, etc.
   InstallShutdownSignalHandlers(
       base::Bind(&ExitHandler::ExitWhenPossibleOnUIThread),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
 }
 
 void ChromeBrowserMainPartsPosix::ShowMissingLocaleMessageBox() {

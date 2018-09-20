@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
@@ -55,6 +56,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -321,8 +323,8 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
                               base::Unretained(this), port));
     } else {
       base::RunLoop run_loop;
-      content::BrowserThread::PostTaskAndReply(
-          content::BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraitsAndReply(
+          FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(&SetUpDevToolsFrontendInterceptorOnIO, port,
                          test_root_dir_),
           run_loop.QuitClosure());
@@ -335,8 +337,8 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
       url_loader_interceptor_.reset();
     } else {
       base::RunLoop run_loop;
-      content::BrowserThread::PostTaskAndReply(
-          content::BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraitsAndReply(
+          FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(&TearDownDevToolsFrontendInterceptorOnIO),
           run_loop.QuitClosure());
       run_loop.Run();

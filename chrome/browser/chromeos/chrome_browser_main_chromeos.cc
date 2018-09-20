@@ -150,6 +150,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/notification_service.h"
@@ -230,8 +231,8 @@ void GotSystemSlotOnUIThread(
 void GotSystemSlotOnIOThread(
     base::Callback<void(crypto::ScopedPK11Slot)> callback_ui_thread,
     crypto::ScopedPK11Slot system_slot) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&GotSystemSlotOnUIThread, callback_ui_thread,
                      std::move(system_slot)));
 }
@@ -502,8 +503,8 @@ class SystemTokenCertDBInitializer {
     base::Callback<void(crypto::ScopedPK11Slot)> callback =
         base::BindRepeating(&SystemTokenCertDBInitializer::InitializeDatabase,
                             weak_ptr_factory_.GetWeakPtr());
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&GetSystemSlotOnIOThread, callback));
   }
 
@@ -647,8 +648,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // Set the crypto thread after the IO thread has been created/started.
   TPMTokenLoader::Get()->SetCryptoTaskRunner(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO}));
 
   // Initialize NSS database for system token.
   system_token_certdb_initializer_ =

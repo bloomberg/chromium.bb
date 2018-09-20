@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
@@ -47,6 +48,7 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/network_hints/browser/network_hints_message_filter.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -226,8 +228,8 @@ CastContentBrowserClient::CreateAudioManager(
       std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI}),
       GetMediaTaskRunner(),
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       use_mixer);
@@ -236,8 +238,8 @@ CastContentBrowserClient::CreateAudioManager(
       std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI}),
       GetMediaTaskRunner(),
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       use_mixer);
@@ -302,8 +304,8 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
     service_manager::mojom::ServiceRequest* service_request) {
   // Forcibly trigger I/O-thread URLRequestContext initialization before
   // getting HostResolver.
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {content::BrowserThread::IO},
       base::Bind(
           &net::URLRequestContextGetter::GetURLRequestContext,
           base::Unretained(url_request_context_factory_->GetSystemGetter())),
@@ -395,8 +397,8 @@ void CastContentBrowserClient::SiteInstanceGotProcess(
       ->Insert(extension->id(), site_instance->GetProcess()->GetID(),
                site_instance->GetId());
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&extensions::InfoMap::RegisterExtensionProcess,
                      extension_system->info_map(), extension->id(),
                      site_instance->GetProcess()->GetID(),
@@ -575,8 +577,8 @@ void CastContentBrowserClient::SelectClientCertificate(
   std::string session_id =
       CastNavigationUIData::GetSessionIdForWebContents(web_contents);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &CastContentBrowserClient::SelectClientCertificateOnIOThread,
           base::Unretained(this), requesting_url, session_id,

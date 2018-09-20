@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
@@ -131,8 +133,8 @@ void DriveFsAsyncFileUtil::CopyFileLocal(
     CopyOrMoveOption option,
     CopyFileProgressCallback progress_callback,
     StatusCallback callback) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &CopyOperation::Start,
           base::Unretained(new CopyOperation(

@@ -4,12 +4,14 @@
 
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_util.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -210,8 +212,8 @@ void ServiceWorkerRegistrationObjectHost::DelayUpdate(
     return;
   }
 
-  BrowserThread::PostDelayedTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(update_function),
                      blink::ServiceWorkerStatusCode::kOk),
       delay);

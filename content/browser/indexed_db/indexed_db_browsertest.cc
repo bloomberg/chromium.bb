@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/thread_test_helper.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -28,6 +29,7 @@
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -133,8 +135,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   static void SetTempQuota(int per_host_quota_kilobytes,
                            scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&IndexedDBBrowserTest::SetTempQuota,
                          per_host_quota_kilobytes, qm));
       return;

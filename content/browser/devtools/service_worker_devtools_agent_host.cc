@@ -5,6 +5,7 @@
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
@@ -13,6 +14,7 @@
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
@@ -91,8 +93,8 @@ void ServiceWorkerDevToolsAgentHost::Reload() {
 }
 
 bool ServiceWorkerDevToolsAgentHost::Close() {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&TerminateServiceWorkerOnIO, context_weak_, version_id_));
   return true;
 }
@@ -119,9 +121,10 @@ bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
                                                    TargetRegistry* registry) {
   if (state_ == WORKER_READY) {
     if (sessions().size() == 1) {
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                              base::BindOnce(&SetDevToolsAttachedOnIO,
-                                             context_weak_, version_id_, true));
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
+          base::BindOnce(&SetDevToolsAttachedOnIO, context_weak_, version_id_,
+                         true));
     }
     session->SetRenderer(worker_process_id_, nullptr);
     session->AttachToAgent(agent_ptr_);
@@ -136,9 +139,9 @@ bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
 void ServiceWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
   if (state_ == WORKER_READY && sessions().empty()) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(&SetDevToolsAttachedOnIO,
-                                           context_weak_, version_id_, false));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::BindOnce(&SetDevToolsAttachedOnIO,
+                                            context_weak_, version_id_, false));
   }
 }
 
@@ -148,9 +151,9 @@ void ServiceWorkerDevToolsAgentHost::WorkerReadyForInspection(
   state_ = WORKER_READY;
   agent_ptr_.Bind(std::move(devtools_agent_ptr_info));
   if (!sessions().empty()) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(&SetDevToolsAttachedOnIO,
-                                           context_weak_, version_id_, true));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::BindOnce(&SetDevToolsAttachedOnIO,
+                                            context_weak_, version_id_, true));
   }
 
   for (DevToolsSession* session : sessions()) {

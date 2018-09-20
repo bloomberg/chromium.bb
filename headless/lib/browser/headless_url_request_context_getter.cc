@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/cookie_config/cookie_store_util.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/devtools_network_transaction_factory.h"
@@ -126,8 +127,8 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     config->product_name = "HeadlessChrome";
     // OSCrypt may target keyring, which requires calls from the main
     // thread.
-    config->main_thread_runner = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::UI);
+    config->main_thread_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::UI});
     config->should_use_preference = false;
     config->user_data_path = user_data_path_;
     OSCrypt::SetConfig(std::move(config));

@@ -25,6 +25,7 @@
 #include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -176,8 +177,8 @@ void DownloadProtectionService::CheckDownloadUrl(
   scoped_refptr<DownloadUrlSBClient> client(new DownloadUrlSBClient(
       item, this, callback, ui_manager_, database_manager_));
   // The client will release itself once it is done.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
 }
 

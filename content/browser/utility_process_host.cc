@@ -14,6 +14,7 @@
 #include "base/i18n/base_i18n_switches.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -22,6 +23,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
@@ -229,7 +231,7 @@ bool UtilityProcessHost::StartProcess() {
     // support single process mode this way.
     in_process_thread_.reset(
         g_utility_main_thread_factory(InProcessChildThreadParams(
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
             process_->GetInProcessMojoInvitation(),
             process_->child_connection()->service_token())));
     in_process_thread_->Start();

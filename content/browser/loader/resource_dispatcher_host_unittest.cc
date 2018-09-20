@@ -36,6 +36,7 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/navigation_params.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_frame_host.h"
@@ -129,7 +130,7 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
             BrowserContext::GetSharedCorsOriginAccessList(browser_context),
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
                        base::Unretained(this)),
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
+            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
         resource_context_(browser_context->GetResourceContext()) {
     InitializeForTest();
     set_peer_process_for_testing(base::Process::Current());
@@ -680,8 +681,8 @@ class ResourceDispatcherHostTest : public testing::Test {
         web_contents_->GetMainFrame()->GetProcess()->GetID());
     child_ids_.insert(web_contents_->GetMainFrame()->GetProcess()->GetID());
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::UI));
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {content::BrowserThread::UI}));
   }
 
   void TearDown() override {

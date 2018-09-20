@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 
+#include "base/task/post_task.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_task_traits.h"
 
 MediaRouterActionController::MediaRouterActionController(Profile* profile)
     : MediaRouterActionController(
@@ -87,8 +89,8 @@ void MediaRouterActionController::OnDialogHidden() {
       observer.DeactivateIcon();
     // Call MaybeAddOrRemoveAction() asynchronously, so that the action icon
     // doesn't get hidden until we have a chance to show a context menu.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&MediaRouterActionController::MaybeAddOrRemoveAction,
                        weak_factory_.GetWeakPtr()));
   }

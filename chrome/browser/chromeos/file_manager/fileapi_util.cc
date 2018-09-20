@@ -10,11 +10,13 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/drive/file_system_core_util.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
@@ -302,8 +304,8 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     // If the list includes at least one non-native file (wihtout a snapshot
     // file), move to IO thread to obtian metadata for the non-native file.
     if (need_fill_metadata) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   FillMetadataOnIOThread,
@@ -334,8 +336,8 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     if (it == chooser_info_list_->end()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   NotifyComplete,
@@ -366,8 +368,8 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     if (result != base::File::FILE_OK) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   NotifyError,
@@ -583,8 +585,8 @@ void CheckIfDirectoryExists(
   const storage::FileSystemURL internal_url =
       backend->CreateInternalURL(file_system_context.get(), directory_path);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CheckIfDirectoryExistsOnIoThread, file_system_context,
                      internal_url, google_apis::CreateRelayCallback(callback)));
 }
@@ -602,8 +604,8 @@ void GetMetadataForPath(
   const storage::FileSystemURL internal_url =
       backend->CreateInternalURL(file_system_context.get(), entry_path);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&GetMetadataForPathOnIoThread, file_system_context,
                      internal_url, fields,
                      google_apis::CreateRelayCallback(callback)));

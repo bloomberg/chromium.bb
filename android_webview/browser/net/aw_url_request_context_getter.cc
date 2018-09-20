@@ -31,6 +31,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -194,7 +195,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
 
   auth_server_whitelist_.Init(
       prefs::kAuthServerWhitelist, user_pref_service,
@@ -370,7 +371,7 @@ net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 AwURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+  return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
 }
 
 void AwURLRequestContextGetter::SetHandlersAndInterceptors(

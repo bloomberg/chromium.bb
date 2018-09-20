@@ -5,7 +5,9 @@
 #include "content/public/browser/network_service_instance.h"
 
 #include "base/feature_list.h"
+#include "base/task/post_task.h"
 #include "content/browser/network_service_client.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/service_manager_connection.h"
@@ -66,8 +68,8 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
                                g_network_service_ptr);
     } else {
       DCHECK(!g_network_service_ptr->is_bound());
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(CreateNetworkServiceOnIO,
                          mojo::MakeRequest(g_network_service_ptr)));
     }

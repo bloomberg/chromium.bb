@@ -15,11 +15,13 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/audio_focus_manager.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -269,8 +271,8 @@ void MediaInternals::AudioLogImpl::SendWebContentsTitleHelper(
     int render_frame_id) {
   // Page title information can only be retrieved from the UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SendWebContentsTitleHelper, cache_key, std::move(dict),
                        render_process_id, render_frame_id));
     return;
@@ -825,26 +827,26 @@ void MediaInternals::OnFocusGained(
     media_session::mojom::AudioFocusType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&MediaInternals::SendAudioFocusState,
-                                         base::Unretained(this)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&MediaInternals::SendAudioFocusState,
+                                          base::Unretained(this)));
 }
 
 void MediaInternals::OnFocusLost(
     media_session::mojom::MediaSessionPtr media_session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&MediaInternals::SendAudioFocusState,
-                                         base::Unretained(this)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&MediaInternals::SendAudioFocusState,
+                                          base::Unretained(this)));
 }
 
 void MediaInternals::SendUpdate(const base::string16& update) {
   // SendUpdate() may be called from any thread, but must run on the UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&MediaInternals::SendUpdate,
-                                           base::Unretained(this), update));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&MediaInternals::SendUpdate,
+                                            base::Unretained(this), update));
     return;
   }
 

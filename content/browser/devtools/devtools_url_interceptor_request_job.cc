@@ -7,10 +7,12 @@
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/browser/loader/download_utils_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -634,8 +636,8 @@ void DevToolsURLInterceptorRequestJob::StartWithCookies(
   DCHECK(stage_to_intercept_ == InterceptionStage::REQUEST ||
          stage_to_intercept_ == InterceptionStage::BOTH);
   waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_REQUEST_ACK;
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback_, BuildRequestInfo()));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback_, BuildRequestInfo()));
 }
 
 void DevToolsURLInterceptorRequestJob::Kill() {
@@ -761,8 +763,8 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestAuthRequired(
           .SetScheme(auth_info->scheme)
           .SetRealm(auth_info->realm)
           .Build();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback_, std::move(request_info)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback_, std::move(request_info)));
 }
 
 void DevToolsURLInterceptorRequestJob::OnSubRequestResponseStarted(
@@ -817,8 +819,8 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestRedirectReceived(
       protocol::Object::fromValue(headers_dict.get(), nullptr);
   request_info->http_response_status_code = redirectinfo.status_code;
   request_info->redirect_url = redirectinfo.new_url.spec();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback_, std::move(request_info)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback_, std::move(request_info)));
   sub_request_.reset();
 }
 
@@ -853,8 +855,8 @@ void DevToolsURLInterceptorRequestJob::OnInterceptedRequestResponseStarted(
         protocol::Object::fromValue(headers_dict.get(), nullptr);
     request_info->is_download = IsDownload(request(), sub_request_->request());
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback_, std::move(request_info)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback_, std::move(request_info)));
 }
 
 // If result is < 0 it means error.
@@ -864,8 +866,8 @@ void DevToolsURLInterceptorRequestJob::OnInterceptedRequestResponseReady(
   DCHECK(sub_request_);
   if (result < 0) {
     sub_request_->Cancel();
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &SendPendingBodyRequestsWithErrorOnUiThread,
             std::move(pending_body_requests_),
@@ -873,10 +875,10 @@ void DevToolsURLInterceptorRequestJob::OnInterceptedRequestResponseReady(
                 "Could not get response body because of error code: %d",
                 result))));
   } else {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&SendPendingBodyRequestsOnUiThread,
-                                           std::move(pending_body_requests_),
-                                           std::string(buf.data(), result)));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&SendPendingBodyRequestsOnUiThread,
+                                            std::move(pending_body_requests_),
+                                            std::string(buf.data(), result)));
   }
   if (request_->status().status() == net::URLRequestStatus::CANCELED ||
       waiting_for_user_response_ != WaitingForUserResponse::NOT_WAITING) {
@@ -937,8 +939,8 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   switch (waiting_for_user_response_) {
     case WaitingForUserResponse::NOT_WAITING:
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
                          std::move(callback),
                          protocol::Response::InvalidParams(
@@ -949,8 +951,8 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
     // Fallthough.
     case WaitingForUserResponse::WAITING_FOR_REQUEST_ACK:
       if (modifications->auth_challenge_response.isJust()) {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
                            std::move(callback),
                            protocol::Response::InvalidParams(
@@ -958,16 +960,16 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
         break;
       }
       ProcessInterceptionResponse(std::move(modifications));
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&ContinueInterceptedRequestCallback::sendSuccess,
                          std::move(callback)));
       break;
 
     case WaitingForUserResponse::WAITING_FOR_AUTH_ACK:
       if (!modifications->auth_challenge_response.isJust()) {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
                            std::move(callback),
                            protocol::Response::InvalidParams(
@@ -975,13 +977,13 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
         break;
       }
       if (ProcessAuthResponse(std::move(modifications))) {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&ContinueInterceptedRequestCallback::sendSuccess,
                            std::move(callback)));
       } else {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
                            std::move(callback),
                            protocol::Response::InvalidParams(
@@ -1027,8 +1029,8 @@ void DevToolsURLInterceptorRequestJob::GetResponseBody(
         "received.";
   }
   if (error_reason.size()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &GetResponseBodyForInterceptionCallback::sendFailure,
             std::move(callback),

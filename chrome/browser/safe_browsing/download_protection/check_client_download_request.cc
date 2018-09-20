@@ -27,6 +27,7 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/common/service_manager_connection.h"
 #include "net/base/load_flags.h"
@@ -143,7 +144,7 @@ void CheckClientDownloadRequest::Start() {
   // analyzing file. Otherwise, AnalyzeFile() will be called to continue with
   // analysis.
   auto io_task_runner =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
   cancelable_task_tracker_.PostTask(
       io_task_runner.get(), FROM_HERE,
       base::BindOnce(&CheckClientDownloadRequest::CheckUrlAgainstWhitelist,
@@ -159,8 +160,8 @@ void CheckClientDownloadRequest::StartTimeout() {
     return;
   }
   timeout_start_time_ = base::TimeTicks::Now();
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CheckClientDownloadRequest::Cancel,
                      weakptr_factory_.GetWeakPtr(), false),
       base::TimeDelta::FromMilliseconds(
@@ -264,8 +265,8 @@ void CheckClientDownloadRequest::OnURLLoaderComplete(
       }
     }
 
-    BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &WebUIInfoSingleton::AddToClientDownloadResponsesReceived,
             base::Unretained(WebUIInfoSingleton::GetInstance()),
@@ -445,8 +446,8 @@ void CheckClientDownloadRequest::OnFileFeatureExtractionDone() {
   // TODO(noelutz): DownloadInfo should also contain the IP address of
   // every URL in the redirect chain.  We also should check whether the
   // download URL is hosted on the internal network.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &CheckClientDownloadRequest::CheckCertificateChainAgainstWhitelist,
           this));
@@ -454,8 +455,8 @@ void CheckClientDownloadRequest::OnFileFeatureExtractionDone() {
   // We wait until after the file checks finish to start the timeout, as
   // windows can cause permissions errors if the timeout fired while we were
   // checking the file signature and we tried to complete the download.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CheckClientDownloadRequest::StartTimeout, this));
 }
 
@@ -789,8 +790,8 @@ void CheckClientDownloadRequest::CheckUrlAgainstWhitelist() {
   }
 
   // Posts task to continue with analysis.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CheckClientDownloadRequest::AnalyzeFile, this));
 }
 
@@ -829,8 +830,8 @@ void CheckClientDownloadRequest::CheckCertificateChainAgainstWhitelist() {
 
   // The URLLoader is owned by the UI thread, so post a message to
   // start the pingback.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CheckClientDownloadRequest::GetTabRedirects, this));
 }
 
@@ -1091,8 +1092,8 @@ void CheckClientDownloadRequest::SendRequest() {
   // The following is to log this ClientDownloadRequest on any open
   // chrome://safe-browsing pages. If no such page is open, the request is
   // dropped and the |request| object deleted.
-  BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WebUIInfoSingleton::AddToClientDownloadRequestsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
                      std::move(request)));
@@ -1101,8 +1102,8 @@ void CheckClientDownloadRequest::SendRequest() {
 void CheckClientDownloadRequest::PostFinishTask(
     DownloadCheckResult result,
     DownloadCheckResultReason reason) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CheckClientDownloadRequest::FinishRequest, this, result,
                      reason));
 }

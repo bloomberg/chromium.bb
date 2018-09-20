@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/task/post_task.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_metrics.h"
@@ -17,6 +18,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -184,8 +186,8 @@ void BackgroundFetchContext::DidGetPermission(
     bool has_permission) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&background_fetch::RecordBackgroundFetchUkmEvent,
                      registration_id.origin(), requests, options, icon,
                      std::move(ukm_data), frame_tree_node_id, has_permission));
@@ -612,8 +614,8 @@ void BackgroundFetchContext::LastObserverGarbageCollected(
 void BackgroundFetchContext::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BackgroundFetchContext::ShutdownOnIO, this));
 }
 

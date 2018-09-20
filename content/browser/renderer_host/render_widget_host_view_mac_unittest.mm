@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -31,6 +32,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view_mac_delegate.h"
@@ -1132,8 +1134,8 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
 
   // Let |guest_rwhv_weak| have a chance to delete itself.
   base::RunLoop run_loop;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE, run_loop.QuitClosure());
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           run_loop.QuitClosure());
   run_loop.Run();
 
   ASSERT_FALSE(guest_rwhv_weak.get());

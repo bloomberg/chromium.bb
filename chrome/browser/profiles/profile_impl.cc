@@ -120,6 +120,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_service.h"
@@ -1168,8 +1169,8 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
     info.factory =
         InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
             ->CreatePrefServiceFactory();
-    info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::UI);
+    info.task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::UI});
     services->insert(std::make_pair(prefs::mojom::kServiceName, info));
   }
 
@@ -1181,8 +1182,8 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
       return std::unique_ptr<service_manager::Service>(
           std::make_unique<chromeos::assistant::Service>());
     });
-    info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::UI);
+    info.task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::UI});
     services->insert(
         std::make_pair(chromeos::assistant::mojom::kServiceName, info));
   }
@@ -1503,8 +1504,8 @@ ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
     return std::unique_ptr<domain_reliability::DomainReliabilityMonitor>();
 
   return service->CreateMonitor(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 }
 
 std::unique_ptr<service_manager::Service> ProfileImpl::CreateIdentityService() {

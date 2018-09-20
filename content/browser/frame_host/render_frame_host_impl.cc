@@ -118,6 +118,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
@@ -352,8 +353,8 @@ void NotifyForEachFrameFromUI(RenderFrameHostImpl* root_frame_host,
     if (pending_frame_host)
       routing_ids->insert(pending_frame_host->GetGlobalFrameRoutingId());
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&NotifyRouteChangesOnIO, frame_callback,
                      std::move(routing_ids)));
 }
@@ -395,8 +396,8 @@ void NotifyResourceSchedulerOfNavigation(
   if (!ui::PageTransitionIsMainFrame(params.transition))
     return;
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ResourceSchedulerFilter::OnDidCommitMainframeNavigation,
                      render_process_id, params.render_view_routing_id));
 }
@@ -3241,8 +3242,8 @@ void RenderFrameHostImpl::CreateNewWindow(
               rdh->BlockRequestsForRoute(id);
           },
           GlobalFrameRoutingId(render_process_id, main_frame_route_id));
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                              std::move(block_requests_for_route));
+      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                               std::move(block_requests_for_route));
     }
   }
 
@@ -3513,15 +3514,14 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         BrowserMainLoop::GetInstance()->media_stream_manager();
     registry_->AddInterface(
         base::Bind(&MediaDevicesDispatcherHost::Create, GetProcess()->GetID(),
-                   GetRoutingID(),
-                   base::Unretained(media_stream_manager)),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+                   GetRoutingID(), base::Unretained(media_stream_manager)),
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
     registry_->AddInterface(
         base::BindRepeating(
             &RenderFrameHostImpl::CreateMediaStreamDispatcherHost,
             base::Unretained(this), base::Unretained(media_stream_manager)),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -3588,7 +3588,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::BindRepeating(SpeechRecognitionDispatcherHost::Create,
                           GetProcess()->GetID(), routing_id_),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
   if (Portal::IsEnabled()) {
     registry_->AddInterface(base::BindRepeating(IgnoreResult(&Portal::Create),
@@ -4130,8 +4130,8 @@ void RenderFrameHostImpl::CommitNavigation(
       auto* storage_partition = static_cast<StoragePartitionImpl*>(
           BrowserContext::GetStoragePartition(
               GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&PrefetchURLLoaderService::GetFactory,
                          storage_partition->GetPrefetchURLLoaderService(),
                          mojo::MakeRequest(&prefetch_loader_factory),
@@ -4170,8 +4170,8 @@ void RenderFrameHostImpl::CommitNavigation(
     // it until its request endpoint is sent. Now that the request endpoint was
     // sent, it can be used, so add it to ServiceWorkerObjectHost.
     if (remote_object.is_valid()) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
               subresource_loader_params->controller_service_worker_object_host,

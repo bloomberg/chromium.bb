@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/syslog_logging.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -81,6 +82,7 @@
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_sync_bridge.h"
 #include "components/sync_sessions/sync_sessions_client.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/buildflags/buildflags.h"
@@ -255,8 +257,8 @@ void ChromeSyncClient::Initialize() {
         this, chrome::GetChannel(), chrome::GetVersionString(),
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
         prefs::kSavingBrowserHistoryDisabled,
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::UI),
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {content::BrowserThread::UI}),
         web_data_service_thread_, profile_web_data_service_,
         account_web_data_service_, password_store_,
         BookmarkSyncServiceFactory::GetForProfile(profile_));
@@ -407,7 +409,7 @@ ChromeSyncClient::CreateDataTypeControllers(
 #if BUILDFLAG(ENABLE_APP_LIST)
   controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
       syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if defined(OS_LINUX) || defined(OS_WIN)
@@ -415,7 +417,7 @@ ChromeSyncClient::CreateDataTypeControllers(
   if (!disabled_types.Has(syncer::DICTIONARY)) {
     controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
         syncer::DICTIONARY, error_callback, this, syncer::GROUP_UI,
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
   }
 #endif  // defined(OS_LINUX) || defined(OS_WIN)
 
@@ -425,7 +427,7 @@ ChromeSyncClient::CreateDataTypeControllers(
       !disabled_types.Has(syncer::WIFI_CREDENTIALS)) {
     controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
         syncer::WIFI_CREDENTIALS, error_callback, this, syncer::GROUP_UI,
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
   }
   if (arc::IsArcAllowedForProfile(profile_)) {
     controllers.push_back(std::make_unique<ArcPackageSyncDataTypeController>(
@@ -655,7 +657,7 @@ ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
     case syncer::GROUP_HISTORY: {
@@ -664,7 +666,7 @@ ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
         return nullptr;
       return new HistoryModelWorker(
           history_service->AsWeakPtr(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
     }
     case syncer::GROUP_PASSWORD: {
       if (!password_store_.get())

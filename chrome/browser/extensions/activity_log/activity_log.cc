@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -36,6 +37,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -436,8 +438,8 @@ void LogApiActivity(content::BrowserContext* browser_context,
       state.IsWhitelistedId(extension_id))
     return;
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&LogApiActivityOnUI, browser_context, extension_id,
                        activity_name, args.CreateDeepCopy(), type));
     return;
@@ -497,8 +499,8 @@ void LogWebRequestActivity(content::BrowserContext* browser_context,
       state.IsWhitelistedId(extension_id))
     return;
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&LogWebRequestActivityOnUI, browser_context,
                        extension_id, url, is_incognito, api_call,
                        std::move(details)));

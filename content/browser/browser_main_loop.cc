@@ -38,6 +38,7 @@
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system_monitor/system_monitor.h"
+#include "base/task/post_task.h"
 #include "base/task/task_scheduler/initialization_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -99,6 +100,7 @@
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/common/task_scheduler.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -518,8 +520,8 @@ class HDRProxy {
 
   static void RequestHDRStatus() {
     // The request must be sent to the GPU process from the IO thread.
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(&HDRProxy::RequestOnIOThread));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::BindOnce(&HDRProxy::RequestOnIOThread));
   }
 
  private:
@@ -536,8 +538,8 @@ class HDRProxy {
     }
   }
   static void GotResultOnIOThread(bool hdr_enabled) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&HDRProxy::GotResult, hdr_enabled));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&HDRProxy::GotResult, hdr_enabled));
   }
   static void GotResult(bool hdr_enabled) {
     display::win::ScreenWin::SetHDREnabled(hdr_enabled);
@@ -780,7 +782,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 
   {
     base::SetRecordActionTaskRunner(
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
   }
 
   if (!features::IsMultiProcessMash()) {
@@ -1079,8 +1081,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // Teardown may start in PostMainMessageLoopRun, and during teardown we
   // need to be able to perform IO.
   base::ThreadRestrictions::SetIOAllowed(true);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed), true));
 
@@ -1295,12 +1297,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // BrowserGpuChannelHostFactory below, since that depends on an initialized
   // ShaderCacheFactory.
   InitShaderCacheFactorySingleton(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
   // Initialize the FontRenderParams on IO thread. This needs to be initialized
   // before gpu process initialization below.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &viz::GpuHostImpl::InitFontRenderParams,
           gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr)));
@@ -1417,7 +1419,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     // network service.
     resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl(
         base::Bind(&DownloadResourceHandler::Create),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
         !parsed_command_line_.HasSwitch(switches::kDisableResourceScheduler)));
     GetContentClient()->browser()->ResourceDispatcherHostCreated();
 
@@ -1483,8 +1485,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       !established_gpu_channel && always_uses_gpu && browser_is_viz_host) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
                          TRACE_EVENT_SCOPE_THREAD);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(base::IgnoreResult(&GpuProcessHost::Get),
                        GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                        true /* force_create */));
@@ -1607,7 +1609,7 @@ void BrowserMainLoop::InitializeMojo() {
   }
 
   mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
 
   service_manager_context_.reset(
@@ -1740,7 +1742,8 @@ void BrowserMainLoop::InitializeAudio() {
   if (base::FeatureList::IsEnabled(features::kAudioServiceLaunchOnStartup)) {
     // Schedule the audio service startup on the main thread.
     BrowserThread::PostAfterStartupTask(
-        FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+        FROM_HERE,
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
         base::BindOnce([]() {
           TRACE_EVENT0("audio", "Starting audio service");
           ServiceManagerConnection* connection =

@@ -41,6 +41,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
@@ -53,6 +54,7 @@
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -605,12 +607,12 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
             base::BindRepeating(
                 &AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
                 base::Unretained(this))),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   }
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   registry->AddInterface(
       base::BindRepeating(&SpellCheckHostImpl::Create),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
 #endif
 }
 

@@ -30,10 +30,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/page_state_serialization.h"
 #include "content/common/unique_name_helper.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -912,8 +914,8 @@ void BlinkTestController::OnTestFinished() {
 
   // Resets the SignedHTTPExchange verification time overriding. The time for
   // the verification may be changed in the LayoutTest using Mojo JS API.
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &WebPackageContext::SetSignedExchangeVerificationTimeForTesting,
           base::Unretained(storage_partition->GetWebPackageContext()),
@@ -1257,8 +1259,8 @@ void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
         ->GetCookieManagerForBrowserProcess()
         ->BlockThirdPartyCookies(block);
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(ShellNetworkDelegate::SetBlockThirdPartyCookies, block));
   }
 }

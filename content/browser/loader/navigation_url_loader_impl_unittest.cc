@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
 #include "content/browser/frame_host/navigation_request_info.h"
@@ -19,6 +20,7 @@
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
@@ -133,7 +135,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
     ServiceManagerConnection::SetForProcess(
         std::make_unique<ServiceManagerConnectionImpl>(
             mojo::MakeRequest(&service),
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
 
     browser_context_.reset(new TestBrowserContext);
     http_test_server_.AddDefaultHandlers(

@@ -25,6 +25,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -37,6 +38,7 @@
 #include "components/subresource_filter/core/browser/ruleset_service_delegate.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
@@ -79,8 +81,8 @@ class TestContentBrowserClient : public ::content::ContentBrowserClient {
                             const scoped_refptr<base::TaskRunner>& task_runner,
                             base::OnceClosure task) override {
     scoped_refptr<base::TaskRunner> ui_task_runner =
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::UI);
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {content::BrowserThread::UI});
     EXPECT_EQ(ui_task_runner, task_runner);
     last_task_ = std::move(task);
   }

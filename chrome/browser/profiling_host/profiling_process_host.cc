@@ -24,6 +24,7 @@
 #include "components/services/heap_profiling/public/cpp/controller.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/zlib/zlib.h"
@@ -128,8 +129,8 @@ void ProfilingProcessHost::SaveTraceWithHeapDumpToFile(
       [](base::FilePath dest, SaveTraceFinishedCallback done, bool success,
          std::string trace) {
         if (!success) {
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::UI)
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::UI})
               ->PostTask(FROM_HERE, base::BindOnce(std::move(done), false));
           return;
         }
@@ -185,7 +186,7 @@ void ProfilingProcessHost::SaveTraceToFileOnBlockingThread(
   gzFile gz_file = gzdopen(fd, "w");
   if (!gz_file) {
     DLOG(ERROR) << "Cannot compress trace file";
-    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
         ->PostTask(FROM_HERE, base::BindOnce(std::move(done), false));
     return;
   }
@@ -193,7 +194,7 @@ void ProfilingProcessHost::SaveTraceToFileOnBlockingThread(
   size_t written_bytes = gzwrite(gz_file, trace.c_str(), trace.size());
   gzclose(gz_file);
 
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
       ->PostTask(FROM_HERE, base::BindOnce(std::move(done),
                                            written_bytes == trace.size()));
 }

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/browsertest_util.h"
@@ -81,8 +83,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrTest, TlsClientAuth) {
   // Install a null ClientCertStore so the client auth prompt isn't bypassed due
   // to the system certificate store returning no certificates.
   base::RunLoop loop;
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&InstallNullCertStoreFactoryOnIOThread,
                      browser()->profile()->GetResourceContext()),
       loop.QuitClosure());

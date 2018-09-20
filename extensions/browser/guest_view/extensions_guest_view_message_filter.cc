@@ -6,9 +6,11 @@
 
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/task/post_task.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -145,8 +147,8 @@ void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuest(
     const gfx::Size& element_size,
     mime_handler::BeforeUnloadControlPtr before_unload_control,
     int32_t plugin_frame_routing_id) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&ExtensionsGuestViewMessageFilter::
                          CreateMimeHandlerViewGuestOnUIThread,
                      this, render_frame_id, view_id, element_instance_id,
@@ -222,8 +224,8 @@ void ExtensionsGuestViewMessageFilter::CreateEmbeddedMimeHandlerViewGuest(
     content::mojom::TransferrableURLLoaderPtr transferrable_url_loader,
     int32_t plugin_frame_routing_id) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ExtensionsGuestViewMessageFilter::
                            CreateEmbeddedMimeHandlerViewGuest,
                        this, render_frame_id, tab_id, original_url,

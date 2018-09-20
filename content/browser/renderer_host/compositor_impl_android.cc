@@ -27,6 +27,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -68,6 +69,7 @@
 #include "content/common/gpu_stream_constants.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/compositor_client.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -249,8 +251,8 @@ class CompositorDependencies {
     }
 
     // Forward |connect_on_io| to the IO thread to run.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&CompositorDependencies::
                            OnReadyToConnectVizFrameSinkManagerOnIOThread,
                        base::Unretained(this), std::move(request),

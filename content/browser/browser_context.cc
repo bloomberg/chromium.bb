@@ -41,6 +41,7 @@
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/blob_handle.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -65,7 +66,6 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/external_mount_points.h"
-
 
 using base::UserDataAdapter;
 
@@ -198,7 +198,8 @@ class BrowserContextServiceManagerConnectionHolder
       service_manager::mojom::ServiceRequest request)
       : service_manager_connection_(ServiceManagerConnection::Create(
             std::move(request),
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO))) {}
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {BrowserThread::IO}))) {}
   ~BrowserContextServiceManagerConnectionHolder() override {}
 
   ServiceManagerConnection* service_manager_connection() {
@@ -367,8 +368,8 @@ void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
 
   ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(browser_context);
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
                      base::WrapRefCounted(blob_context), data, length,
                      content_type),
@@ -466,8 +467,8 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
                      base::WrapRefCounted(database_tracker)));
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &SaveSessionStateOnIOThread,
             base::WrapRefCounted(storage_partition->GetURLRequestContext()),

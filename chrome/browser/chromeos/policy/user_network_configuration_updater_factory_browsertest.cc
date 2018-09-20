@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -43,6 +44,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -146,8 +148,8 @@ int VerifyTestServerCert(
   int verification_result;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
       profile->GetRequestContext();
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&VerifyTestServerCertOnIOThread,
                      url_request_context_getter, certificate,
                      &verification_result),
@@ -213,8 +215,8 @@ bool IsCertInNSSDatabase(Profile* profile,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::RunLoop run_loop;
   bool cert_found = false;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(IsCertInNSSDatabaseOnIOThread,
                      profile->GetResourceContext(), subject_common_name,
                      &cert_found, run_loop.QuitClosure()));

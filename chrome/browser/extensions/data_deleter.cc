@@ -6,12 +6,14 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -72,8 +74,8 @@ void DeleteOrigin(Profile* profile,
     // Delete cookies separately from other data so that the request context
     // for extensions doesn't need to be passed into the StoragePartition.
     // TODO(rdsmith): Mojoify this call and get rid of the thread hopping.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ClearCookiesOnIOThread,
             base::WrapRefCounted(profile->GetRequestContextForExtensions()),

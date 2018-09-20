@@ -16,6 +16,7 @@
 #include "components/storage_monitor/image_capture_device_manager.h"
 #include "components/storage_monitor/media_storage_util.h"
 #include "components/storage_monitor/storage_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace storage_monitor {
@@ -303,8 +304,8 @@ void StorageMonitorMac::EjectDevice(
   options->bsd_name = bsd_name;
   options->callback = callback;
   options->disk = std::move(disk);
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(EjectDisk, options));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::Bind(EjectDisk, options));
 }
 
 // static

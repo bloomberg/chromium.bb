@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -40,6 +41,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/zoom/page_zoom.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
@@ -258,8 +260,8 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
   base::Value* chunkValue = new base::Value(chunk);
   base::Value* encodedValue = new base::Value(encoded);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&DevToolsUIBindings::CallClientFunction, bindings_,
                      "DevToolsAPI.streamWrite", base::Owned(id),
                      base::Owned(chunkValue), base::Owned(encodedValue)));

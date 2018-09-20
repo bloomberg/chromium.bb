@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
@@ -25,6 +26,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -342,7 +344,7 @@ class ChromeCleanerRunnerTest
                     ChromePrompt::PromptUserCallback response) {
     on_prompt_user_called_ = true;
     received_scanner_results_ = std::move(scanner_results);
-    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+    base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
         ->PostTask(FROM_HERE, base::BindOnce(std::move(response),
                                              prompt_acceptance_to_send_));
   }

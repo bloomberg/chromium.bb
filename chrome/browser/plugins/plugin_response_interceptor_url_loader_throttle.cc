@@ -5,8 +5,10 @@
 #include "chrome/browser/plugins/plugin_response_interceptor_url_loader_throttle.h"
 
 #include "base/guid.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/plugins/plugin_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_utils.h"
 #include "content/public/browser/stream_info.h"
@@ -82,8 +84,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
 
   int64_t expected_content_size = response_head->content_length;
   bool embedded = resource_type_ != content::RESOURCE_TYPE_MAIN_FRAME;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
           expected_content_size, extension_id, view_id, embedded,

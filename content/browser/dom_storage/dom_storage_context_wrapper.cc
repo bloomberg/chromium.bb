@@ -28,6 +28,7 @@
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/local_storage_usage_info.h"
@@ -147,7 +148,8 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
     storage_dir = local_partition_path.AppendASCII(kLocalStorageDirectory);
   // TODO(dmurph): Change this to a sequenced task runner after
   // https://crbug.com/809255 is fixed.
-  mojo_task_runner_ = BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+  mojo_task_runner_ =
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
   mojo_state_ = new LocalStorageContextMojo(
       mojo_task_runner_, connector, context_->task_runner(),
       legacy_localstorage_path_, storage_dir, special_storage_policy);

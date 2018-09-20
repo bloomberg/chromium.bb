@@ -10,11 +10,13 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_test_base.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "crypto/nss_util_internal.h"
@@ -220,8 +222,8 @@ IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, PRE_Basic) {
 IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
   // Enable the URLRequestMock, which is required for force-installing the
   // test extension through policy.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(chrome_browser_net::SetUrlRequestMocksEnabled, true));
 
   {

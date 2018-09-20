@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 using component_updater::ComponentUpdateService;
@@ -45,7 +46,7 @@ void LoadProtoFromDisk(const base::FilePath& pb_path) {
     DVLOG(1) << "Failed parsing proto " << pb_path.value();
     return;
   }
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&SSLErrorHandler::SetErrorAssistantProto,
                                 std::move(proto)));

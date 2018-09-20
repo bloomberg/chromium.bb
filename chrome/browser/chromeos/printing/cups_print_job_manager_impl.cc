@@ -29,6 +29,7 @@
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -263,8 +264,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
         cups_wrapper_(new CupsWrapper(),
                       base::OnTaskRunnerDeleter(query_runner_)),
         weak_ptr_factory_(this) {
-    timer_.SetTaskRunner(content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::UI));
+    timer_.SetTaskRunner(base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::UI}));
     registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                    content::NotificationService::AllSources());
   }
@@ -348,7 +349,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     NotifyJobUpdated(job->GetWeakPtr());
 
     // Run a query now.
-    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
         ->PostTask(FROM_HERE, base::Bind(&CupsPrintJobManagerImpl::PostQuery,
                                          weak_ptr_factory_.GetWeakPtr()));
     // Start the timer for ongoing queries.

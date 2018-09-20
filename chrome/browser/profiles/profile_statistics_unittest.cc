@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
@@ -29,6 +30,7 @@
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,8 +51,8 @@ void LoadBookmarkModel(Profile* profile,
                        bookmarks::BookmarkModel* bookmark_model) {
   bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
                        profile->GetIOTaskRunner(),
-                       content::BrowserThread::GetTaskRunnerForThread(
-                           content::BrowserThread::UI));
+                       base::CreateSingleThreadTaskRunnerWithTraits(
+                           {content::BrowserThread::UI}));
 }
 
 bookmarks::BookmarkModel* CreateBookmarkModelWithoutLoad(Profile* profile) {

@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -78,8 +79,8 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
 #else
   // On all other platforms, UpdateHistograms should be called on the UI
   // thread because it needs to be able to access PrefService.
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
 #endif

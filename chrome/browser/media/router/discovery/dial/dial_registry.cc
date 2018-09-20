@@ -9,11 +9,13 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/media/router/discovery/dial/dial_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 
@@ -47,8 +49,8 @@ DialRegistry::DialRegistry()
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(max_devices_, 0U);
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&content::GetNetworkConnectionTracker),
       base::BindOnce(&DialRegistry::SetNetworkConnectionTracker,
                      base::Unretained(this)));

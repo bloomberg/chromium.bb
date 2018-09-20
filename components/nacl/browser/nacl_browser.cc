@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -100,8 +101,7 @@ void WriteCache(const base::FilePath& filename, const base::Pickle* pickle) {
 void RemoveCache(const base::FilePath& filename,
                  const base::Closure& callback) {
   base::DeleteFile(filename, false);
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                   callback);
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO}, callback);
 }
 
 void LogCacheQuery(nacl::NaClBrowser::ValidationCacheStatus status) {
@@ -316,9 +316,8 @@ void NaClBrowser::SetProcessGdbDebugStubPort(int process_id, int port) {
   gdb_debug_stub_port_map_[process_id] = port;
   if (port != kGdbDebugStubPortUnknown &&
       !debug_stub_port_listener_.is_null()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(debug_stub_port_listener_, port));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                             base::BindOnce(debug_stub_port_listener_, port));
   }
 }
 
@@ -526,8 +525,7 @@ void NaClBrowser::ClearValidationCache(const base::Closure& callback) {
 
   if (validation_cache_file_path_.empty()) {
     // Can't figure out what file to remove, but don't drop the callback.
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     callback);
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO}, callback);
   } else {
     // Delegate the removal of the cache from the filesystem to another thread
     // to avoid blocking the IO thread.

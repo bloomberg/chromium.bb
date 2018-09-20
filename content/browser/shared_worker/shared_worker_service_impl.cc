@@ -32,6 +32,7 @@
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker_client.mojom.h"
 #include "content/common/throttling_url_loader.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
@@ -111,8 +112,8 @@ void DidCreateScriptLoaderOnIO(
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(callback),
                      std::move(service_worker_provider_info),
                      std::move(main_script_loader_factory),
@@ -439,8 +440,8 @@ void SharedWorkerServiceImpl::CreateWorker(
       weak_host->SetAppCacheHandle(std::move(appcache_handle));
     }
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &CreateScriptLoaderOnIO,
             storage_partition_->url_loader_factory_getter(),

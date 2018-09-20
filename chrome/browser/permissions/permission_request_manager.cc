@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "url/origin.h"
@@ -308,8 +310,8 @@ void PermissionRequestManager::ScheduleShowBubble() {
   if (!main_frame_has_fully_loaded_)
     return;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&PermissionRequestManager::DequeueRequestsAndShowBubble,
                      weak_factory_.GetWeakPtr()));
 }

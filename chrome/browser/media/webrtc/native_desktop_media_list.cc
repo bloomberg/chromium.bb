@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_observer.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/video_util.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
@@ -172,8 +173,8 @@ void NativeDesktopMediaList::Worker::Refresh(
         SourceDescription(DesktopMediaID(type_, sources[i].id), title));
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&NativeDesktopMediaList::RefreshForAuraWindows,
                      media_list_, result));
 }
@@ -202,8 +203,8 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
       if (it == image_hashes_.end() || it->second != frame_hash) {
         gfx::ImageSkia thumbnail =
             ScaleDesktopFrame(std::move(current_frame_), thumbnail_size);
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&NativeDesktopMediaList::UpdateSourceThumbnail,
                            media_list_, id, thumbnail));
       }
@@ -212,8 +213,8 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
 
   image_hashes_.swap(new_image_hashes);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&NativeDesktopMediaList::UpdateNativeThumbnailsFinished,
                      media_list_));
 }

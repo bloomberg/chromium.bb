@@ -41,6 +41,7 @@
 #include "components/component_updater/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_status_code.h"
 #include "ui/base/window_open_disposition.h"
@@ -412,8 +413,8 @@ void ChromeCleanerControllerImpl::RequestUserInitiatedScan() {
   if (cached_reporter_invocations_) {
     SwReporterInvocationSequence copied_sequence(*cached_reporter_invocations_);
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &safe_browsing::MaybeStartSwReporter, invocation_type,
             // The invocations will be modified by the |ReporterRunner|.
@@ -504,7 +505,7 @@ void ChromeCleanerControllerImpl::ReplyWithUserResponse(
       break;
   }
 
-  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+  base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
       ->PostTask(FROM_HERE,
                  base::BindOnce(std::move(prompt_user_callback_), acceptance));
 
@@ -648,7 +649,7 @@ void ChromeCleanerControllerImpl::WeakOnPromptUser(
   // If the weak pointer has been invalidated, the controller is no longer able
   // to receive callbacks, so respond with PromptAcceptance::Denied immediately.
   if (!controller) {
-    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+    base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
         ->PostTask(FROM_HERE, base::BindOnce(std::move(prompt_user_callback),
                                              PromptAcceptance::DENIED));
   }
@@ -672,7 +673,7 @@ void ChromeCleanerControllerImpl::OnPromptUser(
                                base::Time::Now() - time_scanning_started_);
 
   if (scanner_results.files_to_delete().empty()) {
-    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+    base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
         ->PostTask(FROM_HERE, base::BindOnce(std::move(prompt_user_callback),
                                              PromptAcceptance::DENIED));
     idle_reason_ = IdleReason::kScanningFoundNothing;

@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -477,8 +478,8 @@ void FileSelectHelper::GetFileTypesInThreadPool(FileChooserParamsPtr params) {
       params->need_local_path ? ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH
                               : ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&FileSelectHelper::GetSanitizedFilenameOnUIThread, this,
                      std::move(params)));
 }

@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 
 namespace {
 
@@ -142,7 +143,7 @@ void AppShimHostManager::InitOnBackgroundThread() {
   base::CreateSymbolicLink(base::FilePath(version_info::GetVersionNumber()),
                            version_path);
 
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
       ->PostTask(FROM_HERE,
                  base::Bind(&AppShimHostManager::ListenOnIOThread, this));
 }
@@ -150,7 +151,7 @@ void AppShimHostManager::InitOnBackgroundThread() {
 void AppShimHostManager::ListenOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!acceptor_->Listen()) {
-    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
         ->PostTask(FROM_HERE,
                    base::Bind(&AppShimHostManager::OnListenError, this));
   }
@@ -159,7 +160,7 @@ void AppShimHostManager::ListenOnIOThread() {
 void AppShimHostManager::OnClientConnected(
     mojo::PlatformChannelEndpoint endpoint) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&CreateAppShimHost, std::move(endpoint)));
 }

@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -39,6 +40,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -362,10 +364,9 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
   if (params.service_type == GAIA_SERVICE_TYPE_NONE)
     return;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(ProcessMirrorHeaderUIThread, params,
-                     response->GetWebContentsGetter()));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::BindOnce(ProcessMirrorHeaderUIThread, params,
+                                          response->GetWebContentsGetter()));
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -401,8 +402,8 @@ void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
   if (params.user_intention == DiceAction::NONE)
     return;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::Bind(ProcessDiceHeaderUIThread, base::Passed(std::move(params)),
                  response->GetWebContentsGetter()));
 }
@@ -525,8 +526,8 @@ void FixAccountConsistencyRequestHeader(ChromeRequestAdapter* request,
   // starts.
   if (dice_header_added && ShouldBlockReconcilorForRequest(request)) {
     auto lock_wrapper = base::MakeRefCounted<AccountReconcilorLockWrapper>();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&AccountReconcilorLockWrapper::CreateLockOnUI,
                        lock_wrapper, request->GetWebContentsGetter()));
 

@@ -26,6 +26,7 @@
 #include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -56,6 +57,7 @@
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -214,8 +216,8 @@ ACTION_P(TrustSignature, contents) {
 }
 
 ACTION_P(CheckDownloadUrlDone, threat_type) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &SafeBrowsingDatabaseManager::Client::OnCheckDownloadUrlResult,
           base::Unretained(arg1), arg0, threat_type));
@@ -229,8 +231,8 @@ class DownloadProtectionServiceTest : public testing::Test {
   void SetUp() override {
     system_request_context_getter_ =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::IO));
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::IO}));
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         system_request_context_getter_.get());
     // Start real threads for the IO and File threads so that the DCHECKs
@@ -460,21 +462,21 @@ class DownloadProtectionServiceTest : public testing::Test {
   // Helper functions for FlushThreadMessageLoops.
   void RunAllPendingAndQuitUI(const base::Closure& quit_closure) {
     RunLoop().RunUntilIdle();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_closure);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_closure);
   }
 
   void PostRunMessageLoopTask(BrowserThread::ID thread,
                               const base::Closure& quit_closure) {
-    BrowserThread::PostTask(
-        thread, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {thread},
         base::BindOnce(&DownloadProtectionServiceTest::RunAllPendingAndQuitUI,
                        base::Unretained(this), quit_closure));
   }
 
   void FlushMessageLoop(BrowserThread::ID thread) {
     RunLoop run_loop;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&DownloadProtectionServiceTest::PostRunMessageLoopTask,
                        base::Unretained(this), thread, run_loop.QuitClosure()));
     run_loop.Run();

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -13,6 +14,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/resource_hints.h"
@@ -87,14 +89,14 @@ void AuthPrewarmer::Observe(int type,
 void AuthPrewarmer::DoPrewarm() {
   const int kConnectionsNeeded = 1;
   const GURL& url = GaiaUrls::GetInstance()->service_login_url();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&content::PreconnectUrl,
                      base::RetainedRef(GetRequestContext()), url, url,
                      kConnectionsNeeded, true));
   if (!completion_callback_.is_null()) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     std::move(completion_callback_));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             std::move(completion_callback_));
   }
 }
 

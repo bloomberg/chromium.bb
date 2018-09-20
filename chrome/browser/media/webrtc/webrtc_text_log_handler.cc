@@ -21,6 +21,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_process_host.h"
@@ -343,8 +344,8 @@ void WebRtcTextLogHandler::FireGenericDoneCallback(
 
   if (error_message.empty()) {
     DCHECK(success);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(callback, success, error_message));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(callback, success, error_message));
     return;
   }
 
@@ -373,8 +374,8 @@ void WebRtcTextLogHandler::FireGenericDoneCallback(
       break;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(callback, success, error_message_with_state));
 }
 

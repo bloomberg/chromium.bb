@@ -20,6 +20,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -29,6 +30,7 @@
 #include "content/browser/appcache/appcache_update_url_loader_request.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -705,15 +707,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         tested_manifest_path_override_(nullptr),
         request_handler_type_(GetParam()),
         thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&IOThread::Init, base::Unretained(io_thread_.get())));
 
     if (request_handler_type_ == URLLOADER) {
       loader_factory_getter_ = new URLLoaderFactoryGetter();
       feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&AppCacheUpdateJobTest::InitializeFactory,
                          base::Unretained(this)));
     }
@@ -724,8 +726,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // The TestBrowserThreadBundle dtor guarantees that all posted tasks are
     // executed before the IO thread shuts down. It is safe to use the
     // Unretained pointer here.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&IOThread::CleanUp, base::Unretained(io_thread_.get())));
   }
 
@@ -737,8 +739,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED));
 
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(method, base::Unretained(this)));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::BindOnce(method, base::Unretained(this)));
 
     // Wait until task is done before exiting the test.
     event_->Wait();

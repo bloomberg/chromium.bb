@@ -24,9 +24,11 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -433,9 +435,9 @@ void WebRequestAPI::Proxy::HandleAuthRequest(
     int32_t request_id,
     AuthRequestCallback callback) {
   // Default implementation cancels the request.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(std::move(callback), base::nullopt,
-                                         false /* should_cancel */));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(std::move(callback), base::nullopt,
+                                          false /* should_cancel */));
 }
 
 WebRequestAPI::ProxySet::ProxySet() {
@@ -517,9 +519,9 @@ void WebRequestAPI::ProxySet::MaybeProxyAuthRequest(
   Proxy* proxy = GetProxyFromRequestId(request_id);
   if (!proxy) {
     // No proxy found, so the request must already be dead.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(std::move(callback), base::nullopt,
-                                           true /* should_cancel */));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(std::move(callback), base::nullopt,
+                                            true /* should_cancel */));
     return;
   }
 
@@ -579,8 +581,8 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
 
   // This Unretained is safe because the ExtensionWebRequestEventRouter
   // singleton is leaked.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::Bind(
           &ExtensionWebRequestEventRouter::RemoveEventListener,
           base::Unretained(ExtensionWebRequestEventRouter::GetInstance()), id,
@@ -620,8 +622,8 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
           ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context) ==
               browser_context_));
   const bool is_for_browser_initiated_requests = is_navigation || !frame;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &WebRequestProxyingURLLoaderFactory::StartProxying, browser_context,
           browser_context->GetResourceContext(),
@@ -646,8 +648,8 @@ bool WebRequestAPI::MaybeProxyAuthRequest(
   content::GlobalRequestID proxied_request_id = request_id;
   if (is_main_frame)
     proxied_request_id.child_id = -1;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MaybeProxyAuthRequestOnIO,
                      browser_context_->GetResourceContext(),
                      base::RetainedRef(auth_info), std::move(response_headers),
@@ -668,8 +670,8 @@ void WebRequestAPI::MaybeProxyWebSocket(
   *request = mojo::MakeRequest(&proxied_socket_ptr_info);
   auto authentication_request = mojo::MakeRequest(auth_handler);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &WebRequestProxyingWebSocket::StartProxying,
           frame->GetProcess()->GetID(), frame->GetRoutingID(),
@@ -1989,8 +1991,8 @@ void ExtensionWebRequestEventRouter::SendMessages(
       event_details->SetString(keys::kMessageKey, message);
       event_details->SetString(keys::kStageKey,
                                GetRequestStageAsString(blocked_request.event));
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::Bind(&SendOnMessageEventOnUI, browser_context,
                      delta->extension_id, blocked_request.request->is_web_view,
                      blocked_request.request->web_view_instance_id,
@@ -2051,8 +2053,8 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   SendMessages(browser_context, blocked_request);
 
   if (!ignored_actions.empty()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NotifyIgnoredActionsOnUI, browser_context, request->id,
                        std::move(ignored_actions)));
   }
@@ -2567,9 +2569,8 @@ void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
   WarningSet warnings;
   warnings.insert(
       Warning::CreateRepeatedCacheFlushesWarning(extension_id_safe()));
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::Bind(&WarningService::NotifyWarningsOnUI, profile_id(), warnings));
 
   // Continue gracefully.

@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
@@ -37,6 +38,7 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/manifest.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -632,7 +634,7 @@ EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::Run() {
       &EPKPChallengeMachineKey::DecodeAndRun, base::Unretained(impl_),
       scoped_refptr<UIThreadExtensionFunction>(AsUIThreadExtensionFunction()),
       callback, params->challenge, false);
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, task);
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, task);
   return RespondLater();
 }
 
@@ -675,7 +677,7 @@ EnterprisePlatformKeysPrivateChallengeUserKeyFunction::Run() {
       &EPKPChallengeUserKey::DecodeAndRun, base::Unretained(impl_),
       scoped_refptr<UIThreadExtensionFunction>(AsUIThreadExtensionFunction()),
       callback, params->challenge, params->register_key);
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, task);
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, task);
   return RespondLater();
 }
 

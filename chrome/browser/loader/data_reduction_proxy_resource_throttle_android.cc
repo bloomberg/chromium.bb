@@ -5,10 +5,12 @@
 #include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
 
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
@@ -96,15 +98,15 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
   unsafe_resource.callback = base::Bind(
       &DataReductionProxyResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
   unsafe_resource.callback_thread =
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO);
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO});
   unsafe_resource.web_contents_getter = info->GetWebContentsGetterForRequest();
   unsafe_resource.threat_source = safe_browsing::ThreatSource::DATA_SAVER;
 
   *defer = true;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::Bind(
           &DataReductionProxyResourceThrottle::StartDisplayingBlockingPage,
           AsWeakPtr(), safe_browsing_->ui_manager(), unsafe_resource));
@@ -127,8 +129,8 @@ void DataReductionProxyResourceThrottle::StartDisplayingBlockingPage(
         prerender::PrerenderContents::FromWebContents(web_contents);
     if (prerender_contents) {
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
-      content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                       base::Bind(resource.callback, false));
+      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                               base::Bind(resource.callback, false));
       return;
     }
   }

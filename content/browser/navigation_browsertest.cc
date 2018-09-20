@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -17,6 +18,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
@@ -315,8 +317,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, FailedNavigation) {
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL error_url(embedded_test_server()->GetURL("/close-socket"));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
     NavigateToURL(shell(), error_url);
     EXPECT_EQ(error_url, observer.last_navigation_url());
@@ -730,8 +732,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
         static_cast<ResourceDispatcherHostImpl*>(ResourceDispatcherHost::Get());
     rdh->CancelRequest(global_id.child_id, global_id.request_id);
   };
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(cancel_request, global_id));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(cancel_request, global_id));
 
   // 3) Check that the load stops properly.
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));

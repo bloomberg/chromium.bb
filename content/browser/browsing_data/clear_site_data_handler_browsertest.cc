@@ -12,12 +12,14 @@
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/content_browser_client.h"
@@ -206,8 +208,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
     // Initialize the cookie store pointer on the IO thread.
     base::RunLoop run_loop;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ClearSiteDataHandlerBrowserTest::InitializeCookieStore,
             base::Unretained(this),
@@ -277,8 +279,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     blink::mojom::ServiceWorkerRegistrationOptions options(
         scope_url, blink::mojom::ScriptType::kClassic,
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ServiceWorkerContextWrapper::RegisterServiceWorker,
             base::Unretained(service_worker_context), js_url, options,
@@ -288,8 +290,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
     // Wait for its activation.
     base::RunLoop run_loop;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ServiceWorkerActivationObserver::SignalActivation,
                        base::Unretained(service_worker_context),
                        run_loop.QuitClosure()));
@@ -307,8 +309,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     std::vector<ServiceWorkerUsageInfo> service_workers;
     base::RunLoop run_loop;
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ServiceWorkerContextWrapper::GetAllOriginsInfo,
             base::Unretained(service_worker_context),

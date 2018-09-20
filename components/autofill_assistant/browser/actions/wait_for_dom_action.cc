@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -76,8 +78,8 @@ void WaitForDomAction::OnCheckElementExists(ActionDelegate* delegate,
   }
 
   --rounds;
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WaitForDomAction::CheckElementExists,
                      weak_ptr_factory_.GetWeakPtr(), delegate, rounds,
                      std::move(callback)),

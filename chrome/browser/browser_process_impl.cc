@@ -115,6 +115,7 @@
 #include "components/ukm/ukm_service.h"
 #include "components/update_client/update_query_params.h"
 #include "components/web_resource/web_resource_pref_names.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/network_service_instance.h"
@@ -535,8 +536,8 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
 
 void RequestProxyResolvingSocketFactory(
     network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
                      std::move(request)));
 }
@@ -1347,8 +1348,8 @@ void BrowserProcessImpl::CreateOptimizationGuideService() {
 
   optimization_guide_service_ =
       std::make_unique<optimization_guide::OptimizationGuideService>(
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO));
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::IO}));
 }
 
 void BrowserProcessImpl::CreateGCMDriver() {
@@ -1373,10 +1374,10 @@ void BrowserProcessImpl::CreateGCMDriver() {
       base::BindRepeating(&RequestProxyResolvingSocketFactory),
       system_network_context_manager()->GetSharedURLLoaderFactory(),
       chrome::GetChannel(), gcm::GetProductCategoryForSubtypes(local_state()),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO}),
       blocking_task_runner);
 #endif  // defined(OS_ANDROID)
 }

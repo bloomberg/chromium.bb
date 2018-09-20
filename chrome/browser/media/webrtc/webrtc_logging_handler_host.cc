@@ -20,6 +20,7 @@
 #include "chrome/common/media/webrtc_logging_messages.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -174,8 +175,8 @@ void WebRtcLoggingHandlerHost::StoreLog(
   }
 
   if (rtp_dump_handler_) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(stop_rtp_dump_callback_, true, true));
 
     rtp_dump_handler_->StopOngoingDumps(
@@ -241,8 +242,8 @@ void WebRtcLoggingHandlerHost::StopRtpDump(
   }
 
   if (!stop_rtp_dump_callback_.is_null()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(stop_rtp_dump_callback_,
                        type == RTP_DUMP_INCOMING || type == RTP_DUMP_BOTH,
                        type == RTP_DUMP_OUTGOING || type == RTP_DUMP_BOTH));
@@ -282,8 +283,8 @@ void WebRtcLoggingHandlerHost::GrantLogsDirectoryAccess(
     const base::FilePath& logs_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (logs_path.empty()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(error_callback, "Logs directory not available"));
     return;
   }
@@ -304,8 +305,8 @@ void WebRtcLoggingHandlerHost::GrantLogsDirectoryAccess(
   policy->GrantReadFileSystem(render_process_id_, filesystem_id);
   // Delete is needed to prevent accumulation of files.
   policy->GrantDeleteFromFileSystem(render_process_id_, filesystem_id);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(callback, filesystem_id, registered_name));
 }
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -317,8 +318,8 @@ void WebRtcLoggingHandlerHost::OnRtpPacket(
     bool incoming) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&WebRtcLoggingHandlerHost::DumpRtpPacketOnIOThread, this,
                      std::move(packet_header), header_length, packet_length,
                      incoming));
@@ -436,8 +437,8 @@ void WebRtcLoggingHandlerHost::TriggerUpload(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (rtp_dump_handler_) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(stop_rtp_dump_callback_, true, true));
 
     rtp_dump_handler_->StopOngoingDumps(
@@ -460,8 +461,8 @@ void WebRtcLoggingHandlerHost::StoreLogInDirectory(
 
   if (text_log_handler_->GetState() != WebRtcTextLogHandler::STOPPED &&
       text_log_handler_->GetState() != WebRtcTextLogHandler::CHANNEL_CLOSING) {
-    BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(done_callback, false,
                        "Logging not stopped or no log open."));
     return;
@@ -487,8 +488,8 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
 
   if (text_log_handler_->GetState() != WebRtcTextLogHandler::STOPPED &&
       text_log_handler_->GetState() != WebRtcTextLogHandler::CHANNEL_CLOSING) {
-    BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(callback, false, "",
                        "Logging not stopped or no log open."));
     return;
@@ -562,6 +563,6 @@ void WebRtcLoggingHandlerHost::FireGenericDoneCallback(
   DCHECK(!callback.is_null());
   DCHECK_EQ(success, error_message.empty());
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, success, error_message));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback, success, error_message));
 }

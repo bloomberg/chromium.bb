@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
+#include "base/task/post_task.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -35,6 +36,7 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -85,8 +87,8 @@ base::LazyInstance<StoragePartitionImpl::CreateNetworkFactoryCallback>::Leaky
 void OnClearedCookies(base::OnceClosure callback, uint32_t num_deleted) {
   // The final callback needs to happen from UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&OnClearedCookies, std::move(callback), num_deleted));
     return;
   }
@@ -122,8 +124,8 @@ void OnQuotaManagedOriginDeleted(const GURL& origin,
 
 void ClearedShaderCache(const base::Closure& callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&ClearedShaderCache, callback));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(&ClearedShaderCache, callback));
     return;
   }
   callback.Run();
@@ -541,8 +543,8 @@ StoragePartitionImpl::~StoragePartitionImpl() {
     GetBackgroundFetchContext()->Shutdown();
 
   if (GetAppCacheService()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ChromeAppCacheService::Shutdown, appcache_service_));
   }
 
@@ -577,7 +579,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   // that utilizes the QuotaManager.
   partition->quota_manager_ = new storage::QuotaManager(
       in_memory, partition_path,
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(),
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}).get(),
       context->GetSpecialStoragePolicy(),
       base::Bind(&StoragePartitionImpl::GetQuotaSettings,
                  partition->weak_factory_.GetWeakPtr()));
@@ -1047,8 +1049,8 @@ void StoragePartitionImpl::DataDeletionHelper::IncrementTaskCountOnUI() {
 
 void StoragePartitionImpl::DataDeletionHelper::DecrementTaskCount() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&DataDeletionHelper::DecrementTaskCount,
                        base::Unretained(this)));
     return;
@@ -1111,8 +1113,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       remove_mask_ & REMOVE_DATA_MASK_SERVICE_WORKERS ||
       remove_mask_ & REMOVE_DATA_MASK_CACHE_STORAGE) {
     IncrementTaskCountOnUI();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
             base::Unretained(this), base::WrapRefCounted(quota_manager), begin,
@@ -1141,9 +1143,9 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
 
   if (remove_mask_ & REMOVE_DATA_MASK_SHADER_CACHE) {
     IncrementTaskCountOnUI();
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(&ClearShaderCacheOnIOThread, path,
-                                           begin, end, decrement_callback));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::BindOnce(&ClearShaderCacheOnIOThread, path,
+                                            begin, end, decrement_callback));
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1297,8 +1299,8 @@ void StoragePartitionImpl::InitNetworkContext() {
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK(!network_context_owner_);
     network_context_owner_ = std::make_unique<NetworkContextOwner>();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&NetworkContextOwner::Initialize,
                        base::Unretained(network_context_owner_.get()),
                        MakeRequest(&network_context_), url_request_context_));

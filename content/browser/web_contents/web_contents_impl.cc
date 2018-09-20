@@ -29,6 +29,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -98,6 +99,7 @@
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager.h"
@@ -3952,8 +3954,8 @@ int WebContentsImpl::DownloadImage(
     // Android), the downloader service will be invalid. Pre-Mojo, this would
     // hang the callback indefinitely since the IPC would be dropped. Now,
     // respond with a 400 HTTP error code to indicate that something went wrong.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WebContentsImpl::OnDidDownloadImage,
                        weak_factory_.GetWeakPtr(), std::move(callback),
                        download_id, url, 400, std::vector<SkBitmap>(),
@@ -4301,8 +4303,8 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
         resource_type == RESOURCE_TYPE_MEDIA
             ? partition->GetMediaURLRequestContext()
             : partition->GetURLRequestContext());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&NotifyCacheOnIO, request_context, url, http_method));
   }
 }

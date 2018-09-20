@@ -22,6 +22,7 @@
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/infobars/core/infobar.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_service.h"
@@ -658,8 +660,8 @@ DebuggerGetTargetsFunction::~DebuggerGetTargetsFunction() {
 
 bool DebuggerGetTargetsFunction::RunAsync() {
   content::DevToolsAgentHost::List list = DevToolsAgentHost::GetOrCreateAll();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&DebuggerGetTargetsFunction::SendTargetList, this, list));
   return true;
 }

@@ -46,6 +46,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -239,8 +240,8 @@ void RenderMessageFilter::DidGenerateCacheableMetadata(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!base::FeatureList::IsEnabled(features::kIsolatedCodeCache)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&RenderMessageFilter::DidGenerateCacheableMetadataOnUI,
                        this, url, expected_response_time, data));
   } else {

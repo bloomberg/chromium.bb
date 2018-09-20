@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/version.h"
@@ -36,6 +37,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -522,8 +524,8 @@ void CrxInstaller::OnUnpackSuccess(
     return;
   }
 
-  if (!BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+  if (!base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CrxInstaller::CheckInstall, this)))
     NOTREACHED();
 }
@@ -868,8 +870,8 @@ void CrxInstaller::ReloadExtensionAfterInstall(
 
 void CrxInstaller::ReportFailureFromFileThread(const CrxInstallError& error) {
   DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
-  if (!BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+  if (!base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CrxInstaller::ReportFailureFromUIThread, this,
                          error))) {
     NOTREACHED();
@@ -913,8 +915,8 @@ void CrxInstaller::ReportSuccessFromFileThread() {
   if (install_cause() == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD)
     UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionInstalled", 1, 2);
 
-  if (!BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+  if (!base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CrxInstaller::ReportSuccessFromUIThread, this)))
     NOTREACHED();
 
@@ -977,7 +979,7 @@ void CrxInstaller::NotifyCrxInstallComplete(
     ConfirmReEnable();
 
   if (!installer_callback_.is_null() &&
-      !BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)
+      !base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
            ->PostTask(FROM_HERE,
                       base::BindOnce(std::move(installer_callback_), error))) {
     NOTREACHED();

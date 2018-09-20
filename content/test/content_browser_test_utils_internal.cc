@@ -14,6 +14,7 @@
 
 #include "base/containers/stack.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -24,6 +25,7 @@
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/common/frame_visual_properties.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -406,8 +408,8 @@ void ShowWidgetMessageFilter::Reset() {
 
 void ShowWidgetMessageFilter::OnShowWidget(int route_id,
                                            const gfx::Rect& initial_rect) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI, this, route_id,
                      initial_rect));
 }
@@ -415,8 +417,8 @@ void ShowWidgetMessageFilter::OnShowWidget(int route_id,
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 void ShowWidgetMessageFilter::OnShowPopup(
     const FrameHostMsg_ShowPopup_Params& params) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::Bind(&ShowWidgetMessageFilter::OnShowWidgetOnUI, this,
                  MSG_ROUTING_NONE, params.bounds));
 }

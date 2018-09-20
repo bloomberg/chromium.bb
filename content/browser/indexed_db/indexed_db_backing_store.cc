@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -38,6 +39,7 @@
 #include "content/browser/indexed_db/leveldb/leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "net/base/load_flags.h"
@@ -1850,8 +1852,8 @@ bool IndexedDBBackingStore::WriteBlobFile(
     DCHECK(descriptor.blob());
     scoped_refptr<LocalWriteClosure> write_closure(
         new LocalWriteClosure(chained_blob_writer, task_runner_.get()));
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &LocalWriteClosure::WriteBlobToFileOnIOThread, write_closure, path,
             std::make_unique<storage::BlobDataHandle>(*descriptor.blob()),

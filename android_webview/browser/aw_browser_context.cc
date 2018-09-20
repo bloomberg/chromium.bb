@@ -28,6 +28,7 @@
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
@@ -66,7 +67,7 @@ AwBrowserContext* g_browser_context = NULL;
 std::unique_ptr<net::ProxyConfigServiceAndroid> CreateProxyConfigService() {
   std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android =
       std::make_unique<net::ProxyConfigServiceAndroid>(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
           base::ThreadTaskRunnerHandle::Get());
 
   // TODO(csharrison) Architect the wrapper better so we don't need a cast for
@@ -82,7 +83,7 @@ CreateSafeBrowsingWhitelistManager() {
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
   return std::make_unique<AwSafeBrowsingWhitelistManager>(
       background_task_runner, io_task_runner);
 }

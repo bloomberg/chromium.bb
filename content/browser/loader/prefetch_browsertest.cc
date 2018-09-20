@@ -10,11 +10,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_loader.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -77,8 +79,8 @@ class PrefetchBrowserTest
     StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
         BrowserContext::GetDefaultStoragePartition(
             shell()->web_contents()->GetBrowserContext()));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         BindOnce(
             &PrefetchURLLoaderService::RegisterPrefetchLoaderCallbackForTest,
             base::RetainedRef(partition->GetPrefetchURLLoaderService()),

@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -647,7 +648,7 @@ CreateFileSystemURLLoaderFactory(
 
   return std::make_unique<FileSystemURLLoaderFactory>(
       std::move(params),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 }
 
 }  // namespace content

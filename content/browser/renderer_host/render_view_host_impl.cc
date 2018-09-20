@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -56,6 +57,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -244,8 +246,8 @@ RenderViewHostImpl::RenderViewHostImpl(
     GetWidget()->UpdatePriority();
 
   if (ResourceDispatcherHostImpl::Get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
             base::Unretained(ResourceDispatcherHostImpl::Get()),
@@ -262,8 +264,8 @@ RenderViewHostImpl::RenderViewHostImpl(
 
 RenderViewHostImpl::~RenderViewHostImpl() {
   if (ResourceDispatcherHostImpl::Get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
                        base::Unretained(ResourceDispatcherHostImpl::Get()),
                        GetProcess()->GetID(), GetRoutingID()));
@@ -731,8 +733,8 @@ void RenderViewHostImpl::DirectoryEnumerationFinished(
 
 void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
   if (ResourceDispatcherHostImpl::Get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading,
             base::Unretained(ResourceDispatcherHostImpl::Get()),

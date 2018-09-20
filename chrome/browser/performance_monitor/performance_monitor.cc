@@ -9,9 +9,11 @@
 
 #include "base/process/process_iterator.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
@@ -108,8 +110,8 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
     MarkProcessAsAlive(data, current_update_sequence);
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PerformanceMonitor::GatherMetricsMapOnIOThread,
                      base::Unretained(this), current_update_sequence));
 }
@@ -166,8 +168,8 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
   browser_process_data.handle = base::GetCurrentProcessHandle();
   process_data_list->push_back(browser_process_data);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PerformanceMonitor::MarkProcessesAsAliveOnUIThread,
                      base::Unretained(this), std::move(process_data_list),
                      current_update_sequence));
@@ -180,8 +182,8 @@ void PerformanceMonitor::MarkProcessesAsAliveOnUIThread(
   for (const ProcessMetricsMetadata& data : *process_data_list)
     MarkProcessAsAlive(data, current_update_sequence);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PerformanceMonitor::UpdateMetricsOnIOThread,
                      base::Unretained(this), current_update_sequence));
 }
@@ -201,8 +203,8 @@ void PerformanceMonitor::UpdateMetricsOnIOThread(int current_update_sequence) {
     }
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PerformanceMonitor::RunTriggersUIThread,
                      base::Unretained(this)));
 }

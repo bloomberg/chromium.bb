@@ -42,6 +42,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -196,8 +197,8 @@ InstantService::InstantService(Profile* profile)
   }
 
   if (profile_ && profile_->GetResourceContext()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstantIOContext::SetUserDataOnIO,
                        profile->GetResourceContext(), instant_io_context_));
   }
@@ -239,8 +240,8 @@ void InstantService::AddInstantProcess(int process_id) {
   process_ids_.insert(process_id);
 
   if (instant_io_context_.get()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstantIOContext::AddInstantProcessOnIO,
                        instant_io_context_, process_id));
   }
@@ -403,8 +404,8 @@ void InstantService::Shutdown() {
   process_ids_.clear();
 
   if (instant_io_context_.get()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstantIOContext::ClearInstantProcessesOnIO,
                        instant_io_context_));
   }
@@ -451,8 +452,8 @@ void InstantService::OnRendererProcessTerminated(int process_id) {
   process_ids_.erase(process_id);
 
   if (instant_io_context_.get()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstantIOContext::RemoveInstantProcessOnIO,
                        instant_io_context_, process_id));
   }

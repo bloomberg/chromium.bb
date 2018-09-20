@@ -5,11 +5,13 @@
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
@@ -182,8 +184,8 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
   resource.callback =
       base::Bind(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
                  weak_factory_.GetWeakPtr());
-  resource.callback_thread = content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::IO);
+  resource.callback_thread = base::CreateSingleThreadTaskRunnerWithTraits(
+      {content::BrowserThread::IO});
   resource.web_contents_getter = web_contents_getter_;
   resource.threat_source = database_manager_->GetThreatSource();
 
@@ -258,8 +260,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       TRACE_EVENT_ASYNC_BEGIN1("safe_browsing", "CheckUrl", this, "url",
                                url.spec());
 
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(&SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult,
                          weak_factory_.GetWeakPtr(), url, threat_type,
                          ThreatMetadata()));

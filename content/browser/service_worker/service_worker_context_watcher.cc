@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/console_message_level.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -40,8 +42,8 @@ ServiceWorkerContextWatcher::ServiceWorkerContextWatcher(
 
 void ServiceWorkerContextWatcher::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &ServiceWorkerContextWatcher::GetStoredRegistrationsOnIOThread,
           this));
@@ -50,8 +52,8 @@ void ServiceWorkerContextWatcher::Start() {
 void ServiceWorkerContextWatcher::Stop() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   stop_called_ = true;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ServiceWorkerContextWatcher::StopOnIOThread, this));
 }
 
@@ -99,13 +101,13 @@ void ServiceWorkerContextWatcher::OnStoredRegistrationsOnIOThread(
       ++version_it;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ServiceWorkerContextWatcher::RunWorkerRegistrationUpdatedCallback,
           this, std::move(registrations)));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ServiceWorkerContextWatcher::RunWorkerVersionUpdatedCallback, this,
           std::move(versions)));
@@ -159,8 +161,8 @@ void ServiceWorkerContextWatcher::SendRegistrationInfo(
     registrations->push_back(
         ServiceWorkerRegistrationInfo(pattern, registration_id, delete_flag));
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ServiceWorkerContextWatcher::RunWorkerRegistrationUpdatedCallback,
           this, std::move(registrations)));
@@ -172,8 +174,8 @@ void ServiceWorkerContextWatcher::SendVersionInfo(
   std::unique_ptr<std::vector<ServiceWorkerVersionInfo>> versions =
       std::make_unique<std::vector<ServiceWorkerVersionInfo>>();
   versions->push_back(version_info);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ServiceWorkerContextWatcher::RunWorkerVersionUpdatedCallback, this,
           std::move(versions)));
@@ -304,8 +306,8 @@ void ServiceWorkerContextWatcher::OnErrorReported(int64_t version_id,
   auto it = version_info_map_.find(version_id);
   if (it != version_info_map_.end())
     registration_id = it->second->registration_id;
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ServiceWorkerContextWatcher::RunWorkerErrorReportedCallback, this,
           registration_id, version_id, std::make_unique<ErrorInfo>(info)));
@@ -322,8 +324,8 @@ void ServiceWorkerContextWatcher::OnReportConsoleMessage(
   if (it != version_info_map_.end())
     registration_id = it->second->registration_id;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ServiceWorkerContextWatcher::RunWorkerErrorReportedCallback, this,
           registration_id, version_id,

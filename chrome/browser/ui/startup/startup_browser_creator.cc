@@ -56,6 +56,7 @@
 #include "components/search_engines/util.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/url_formatter/url_fixer.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
@@ -182,8 +183,8 @@ class ProfileLaunchObserver : public content::NotificationObserver {
     }
     // Asynchronous post to give a chance to the last window to completely
     // open and activate before trying to activate |profile_to_activate_|.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&ProfileLaunchObserver::ActivateProfile,
                        base::Unretained(this)));
     // Avoid posting more than once before ActivateProfile gets called.

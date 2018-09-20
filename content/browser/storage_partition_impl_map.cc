@@ -41,6 +41,7 @@
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
@@ -556,8 +557,8 @@ void StoragePartitionImplMap::PostCreateInitialization(
 
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ChromeAppCacheService::InitializeOnIOThread,
             partition->GetAppCacheService(),
@@ -567,29 +568,29 @@ void StoragePartitionImplMap::PostCreateInitialization(
             base::RetainedRef(partition->GetURLRequestContext()),
             base::RetainedRef(browser_context_->GetSpecialStoragePolicy())));
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&CacheStorageContextImpl::SetBlobParametersForCache,
                        partition->GetCacheStorageContext(),
                        base::RetainedRef(partition->GetURLRequestContext()),
                        base::RetainedRef(ChromeBlobStorageContext::GetFor(
                            browser_context_))));
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ServiceWorkerContextWrapper::InitializeResourceContext,
                        partition->GetServiceWorkerContext(),
                        browser_context_->GetResourceContext()));
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PrefetchURLLoaderService::InitializeResourceContext,
                        partition->GetPrefetchURLLoaderService(),
                        browser_context_->GetResourceContext(),
                        base::RetainedRef(partition->GetURLRequestContext())));
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&BackgroundFetchContext::InitializeOnIOThread,
                        partition->GetBackgroundFetchContext()));
 

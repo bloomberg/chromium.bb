@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -183,8 +184,8 @@ void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
     raw_device_id = mac_address + disk_id;
   }
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::BindOnce(callback, raw_device_id));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::BindOnce(callback, raw_device_id));
 }
 
 }  // namespace

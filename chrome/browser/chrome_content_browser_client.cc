@@ -28,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/after_startup_task_utils.h"
@@ -221,6 +222,7 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_ppapi_host.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -1077,8 +1079,8 @@ void ChromeContentBrowserClient::SetApplicationLocale(
   // the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&SetApplicationLocaleOnIOThread, locale));
 }
 
@@ -2323,8 +2325,8 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
   // Record access to database for potential display in UI.
   // Only post the task if this is for a specific tab.
   if (!wc_getter.is_null()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::ServiceWorkerAccessed,
                        wc_getter, scope, !allow_javascript,
                        !allow_serviceworker));
@@ -2398,8 +2400,8 @@ void ChromeContentBrowserClient::OnCookiesRead(
   base::RepeatingCallback<content::WebContents*(void)> wc_getter =
       base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
                           routing_id);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
                      first_party_url, cookie_list, blocked_by_policy));
 }
@@ -2414,8 +2416,8 @@ void ChromeContentBrowserClient::OnCookieChange(
   base::RepeatingCallback<content::WebContents*(void)> wc_getter =
       base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
                           routing_id);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&TabSpecificContentSettings::CookieChanged, wc_getter, url,
                      first_party_url, cookie, blocked_by_policy));
 }
@@ -2464,8 +2466,8 @@ void ChromeContentBrowserClient::GuestPermissionRequestHelper(
   }
   DCHECK_EQ(1U, process_map.size());
   it = process_map.begin();
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ChromeContentBrowserClient::RequestFileSystemPermissionOnUIThread,
           it->first, it->second, url, allow,
@@ -2499,8 +2501,8 @@ void ChromeContentBrowserClient::FileSystemAccessed(
     bool allow) {
   // Record access to file system for potential display in UI.
   for (const auto& it : render_frames) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::FileSystemAccessed,
                        it.child_id, it.frame_routing_id, url, !allow));
   }
@@ -2520,8 +2522,8 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
 
   // Record access to IndexedDB for potential display in UI.
   for (const auto& it : render_frames) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::IndexedDBAccessed,
                        it.child_id, it.frame_routing_id, url, name, !allow));
   }
@@ -3503,8 +3505,8 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
       base::Bind(&CacheStatsRecorder::Create, render_process_host->GetID()));
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI);
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI});
   registry->AddInterface(
       base::Bind(&rappor::RapporRecorderImpl::Create,
                  g_browser_process->rappor_service()),
@@ -3536,7 +3538,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
             base::Bind(
                 &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
                 base::Unretained(this), resource_context)),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   }
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 
@@ -3566,7 +3568,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   registry->AddInterface(
       base::BindRepeating(&android::AvailableOfflineContentProvider::Create,
                           render_process_host->GetBrowserContext()),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
 #endif
 
   for (auto* ep : extra_parts_) {
@@ -4348,7 +4350,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
           chrome_navigation_ui_data->prerender_mode(),
           chrome_navigation_ui_data->prerender_histogram_prefix(),
           base::BindOnce(GetPrerenderCanceller, wc_getter),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
     }
   }
 
@@ -4727,9 +4729,9 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
     return false;
 #endif  // defined(ANDROID)
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&LaunchURL, url, web_contents_getter,
-                                         page_transition, has_user_gesture));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&LaunchURL, url, web_contents_getter,
+                                          page_transition, has_user_gesture));
   return true;
 }
 

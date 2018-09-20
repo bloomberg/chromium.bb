@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -19,6 +20,7 @@
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/http/http_util.h"
@@ -235,8 +237,8 @@ URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback)
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     base::RunLoop run_loop;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&URLLoaderInterceptor::InitializeOnIOThread,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -258,8 +260,8 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
           StoragePartitionImpl::CreateNetworkFactoryCallback());
 
   base::RunLoop run_loop;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLLoaderInterceptor::ShutdownOnIOThread,
                      base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
@@ -336,8 +338,8 @@ void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
     int process_id,
     network::mojom::URLLoaderFactoryPtrInfo original_factory) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
             base::Unretained(this), std::move(request), process_id,

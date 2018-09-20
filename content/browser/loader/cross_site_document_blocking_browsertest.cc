@@ -12,10 +12,12 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/loader/cross_site_document_resource_handler.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -217,8 +219,8 @@ class RequestInterceptor {
 
     // Wait until IO cleanup completes.
     base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&RequestInterceptor::CleanUpOnIOThread,
                        base::Unretained(this)),
         run_loop.QuitClosure());

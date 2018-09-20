@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -57,6 +58,7 @@
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
@@ -621,7 +623,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
       if (host->GetType() == DevToolsAgentHost::kTypeSharedWorker &&
           host->GetURL().path().rfind(path_) != std::string::npos) {
         *out_host_ = host;
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_);
+        base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_);
         delete this;
       }
     }
@@ -2163,8 +2165,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
   ASSERT_TRUE(https_test_server.Start());
   GURL https_url = https_test_server.GetURL("localhost", "/devtools/image.png");
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             AddHSTSHost,
             base::RetainedRef(browser()->profile()->GetRequestContext()),

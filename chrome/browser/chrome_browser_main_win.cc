@@ -71,6 +71,7 @@
 #include "components/crash/content/app/dump_hung_process_with_ptype.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/version_info/channel.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
@@ -399,8 +400,8 @@ void MaybePostSettingsResetPrompt() {
   if (base::FeatureList::IsEnabled(safe_browsing::kSettingsResetPrompt)) {
     content::BrowserThread::PostAfterStartupTask(
         FROM_HERE,
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::UI),
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {content::BrowserThread::UI}),
         base::Bind(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
   }
 }
@@ -571,11 +572,9 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
 
   // Record UMA data about whether the fault-tolerant heap is enabled.
   // Use a delayed task to minimize the impact on startup time.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&DetectFaultTolerantHeap),
-      base::TimeDelta::FromMinutes(1));
+  base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                                  base::Bind(&DetectFaultTolerantHeap),
+                                  base::TimeDelta::FromMinutes(1));
 
   // Start the swap thrashing monitor if it's enabled.
   //

@@ -35,6 +35,7 @@
 #include "components/subresource_filter/core/common/time_measurements.h"
 #include "components/subresource_filter/core/common/unindexed_ruleset.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -576,8 +577,8 @@ void ContentRulesetService::SetRulesetPublishedCallbackForTesting(
 void ContentRulesetService::PostAfterStartupTask(base::Closure task) {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE,
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI}),
       task);
 }
 

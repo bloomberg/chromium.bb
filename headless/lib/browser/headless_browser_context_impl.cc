@@ -11,6 +11,8 @@
 
 #include "base/guid.h"
 #include "base/path_service.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -98,8 +100,8 @@ HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
   ShutdownStoragePartitions();
 
   if (url_request_getter_) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &HeadlessURLRequestContextGetter::NotifyContextShuttingDown,
             url_request_getter_));
@@ -275,8 +277,8 @@ net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   url_request_getter_ = base::MakeRefCounted<HeadlessURLRequestContextGetter>(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO}),
       protocol_handlers, context_options_->TakeProtocolHandlers(),
       std::move(request_interceptors), context_options_.get(), net_log_.get(),
       this);

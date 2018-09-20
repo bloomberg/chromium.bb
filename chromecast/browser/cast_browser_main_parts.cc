@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -58,6 +59,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/viz/common/switches.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/storage_partition.h"
@@ -78,7 +80,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/task/post_task.h"
 #include "chromecast/app/android/crash_handler.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
@@ -528,8 +529,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetConnectivityChecker(new FakeConnectivityChecker());
 #else
   cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO),
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO}),
       url_request_context_factory_->GetSystemGetter()));
 #endif  // defined(OS_FUCHSIA)
 

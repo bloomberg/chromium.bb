@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -31,6 +32,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -284,8 +286,8 @@ void NetInternalsTest::MessageHandler::AddCacheEntry(
   ASSERT_TRUE(list_value->GetDouble(3, &expire_days_from_now));
   ASSERT_TRUE(browser());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AddCacheEntryOnIOThread,
           base::RetainedRef(browser()->profile()->GetRequestContext()),

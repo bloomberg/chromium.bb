@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ssl/captive_portal_helper_android.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/ssl/captive_portal_helper.h"
+#include "content/public/browser/browser_task_traits.h"
 
 #include <stddef.h>
 
@@ -30,8 +32,8 @@ void JNI_CaptivePortalHelper_SetCaptivePortalCertificateForTesting(
   config_proto->set_version_id(INT_MAX);
   config_proto->add_captive_portal_cert()->set_sha256_hash(hash);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(SSLErrorHandler::SetErrorAssistantProto,
                      std::move(config_proto)));
 }
@@ -40,8 +42,8 @@ void JNI_CaptivePortalHelper_SetOSReportsCaptivePortalForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller,
     jboolean os_reports_captive_portal) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(SSLErrorHandler::SetOSReportsCaptivePortalForTesting,
                      os_reports_captive_portal));
 }

@@ -88,6 +88,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/stop_source.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
@@ -957,8 +958,8 @@ void ProfileManager::CleanUpDeletedProfiles() {
             base::BindOnce(&ProfileCleanedUp, &value));
       } else {
         // Everything is fine, the profile was removed on shutdown.
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::BindOnce(&ProfileCleanedUp, &value));
+        base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                                 base::BindOnce(&ProfileCleanedUp, &value));
       }
     } else {
       LOG(ERROR) << "Found invalid profile path in deleted_profiles: "
@@ -1681,8 +1682,8 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
       // in.
       if (signin_util::IsForceSigninEnabled() && was_authenticated_status &&
           !entry->IsAuthenticated()) {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&SignOut, SigninManager::FromSigninManagerBase(
                                          signin_manager)));
       }

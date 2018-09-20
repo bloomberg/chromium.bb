@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/syslog_logging.h"
+#include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
@@ -30,6 +31,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/storage_partition.h"
@@ -143,8 +145,8 @@ void DownloadBlobURLFromToken(
       blob_handle = context->GetBlobDataFromUUID(uuid);
     }
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DownloadUrlOnUIThread, std::move(params),
                      std::move(blob_handle), nullptr));
 }
@@ -280,8 +282,8 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
   AddRef();
   base::ThreadTaskRunnerHandle::Get()->ReleaseSoon(FROM_HERE, this);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&RenderFrameMessageFilter::InitializeOnIO, this,
                      cookie_manager.PassInterface()));
 }
@@ -412,8 +414,8 @@ void RenderFrameMessageFilter::DownloadUrl(
     // through and allow it to be interrupted so that the embedder can deal.
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DownloadUrlOnUIThread, std::move(parameters),
                      std::move(blob_data_handle), std::move(blob_url_token)));
 }
@@ -432,8 +434,8 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
 
   *devtools_frame_token = base::UnguessableToken::Create();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CreateChildFrameOnUI, render_process_id_,
                      params.parent_routing_id, params.scope, params.frame_name,
                      params.frame_unique_name, params.is_created_by_script,

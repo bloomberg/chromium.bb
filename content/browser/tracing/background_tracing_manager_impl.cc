@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -22,6 +23,7 @@
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/tracing_delegate.h"
@@ -343,8 +345,8 @@ BackgroundTracingManagerImpl::GetRuleAbleToTriggerTracing(
 void BackgroundTracingManagerImpl::OnHistogramTrigger(
     const std::string& histogram_name) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&BackgroundTracingManagerImpl::OnHistogramTrigger,
                        base::Unretained(this), histogram_name));
     return;
@@ -363,8 +365,8 @@ void BackgroundTracingManagerImpl::TriggerNamedEvent(
     BackgroundTracingManagerImpl::TriggerHandle handle,
     StartedFinalizingCallback callback) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&BackgroundTracingManagerImpl::TriggerNamedEvent,
                        base::Unretained(this), handle, std::move(callback)));
     return;
@@ -532,8 +534,8 @@ void BackgroundTracingManagerImpl::OnFinalizeStarted(
 
 void BackgroundTracingManagerImpl::OnFinalizeComplete(bool success) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&BackgroundTracingManagerImpl::OnFinalizeComplete,
                        base::Unretained(this), success));
     return;
