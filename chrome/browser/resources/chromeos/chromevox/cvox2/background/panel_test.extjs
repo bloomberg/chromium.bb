@@ -26,7 +26,7 @@ PanelTest.prototype = {
     -// Flaky on dbg, see https://crbug.com/795840
     GEN_BLOCK(function() { /*!
 
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
 #define MAYBE_ActivateMenu DISABLED_ActivateMenu
 #define MAYBE_LinkMenu DISABLED_LinkMenu
 #else
