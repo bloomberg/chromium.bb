@@ -44822,6 +44822,22 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Dismiss"/>
 </enum>
 
+<enum name="SignedExchangeLoadResult">
+  <int value="0" label="Loaded successfully"/>
+  <int value="1" label="Served from non-secure origin"/>
+  <int value="2" label="Parse Error (no fallback URL)"/>
+  <int value="3" label="Unsupported SXG version (has fallback URL)"/>
+  <int value="4" label="Parse Error (has fallback URL)"/>
+  <int value="5" label="Network error"/>
+  <int value="6" label="Cert fetch error"/>
+  <int value="7" label="Cert parse error"/>
+  <int value="8" label="Signature verification error"/>
+  <int value="9" label="Cert verification error"/>
+  <int value="10" label="CT verification error"/>
+  <int value="11" label="OCSP error"/>
+  <int value="12" label="Certificate requirements not met"/>
+</enum>
+
 <enum name="SigninAccessPoint">
   <int value="0" label="Start page"/>
   <int value="1" label="NTP Link"/>

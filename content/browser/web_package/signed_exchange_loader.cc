@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/loader/data_pipe_to_source_stream.h"
 #include "content/browser/loader/source_stream_to_data_pipe.h"
@@ -28,6 +29,8 @@
 namespace content {
 
 namespace {
+
+constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult";
 
 net::RedirectInfo CreateRedirectInfo(const GURL& new_url,
                                      const GURL& outer_request_url) {
@@ -129,6 +132,8 @@ SignedExchangeLoader::SignedExchangeLoader(
   // transport layer, and MUST NOT accept exchanges transferred over plain HTTP
   // without TLS. [spec text]
   if (!IsOriginSecure(outer_request_url)) {
+    UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram,
+                              SignedExchangeLoadResult::kSXGServedFromNonHTTPS);
     devtools_proxy_->ReportError(
         "Signed exchange response from non secure origin is not supported.",
         base::nullopt /* error_field */);
@@ -272,6 +277,8 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     const std::string& request_method,
     const network::ResourceResponseHead& resource_response,
     std::unique_ptr<net::SourceStream> payload_stream) {
+  UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
+
   if (error) {
     if (error != net::ERR_INVALID_SIGNED_EXCHANGE ||
         !should_redirect_on_failure_ || !request_url.is_valid()) {

@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -137,6 +138,7 @@ class SignedExchangeRequestHandlerBrowserTest : public CertVerifierBrowserTest {
   }
 
   base::test::ScopedFeatureList feature_list_;
+  const base::HistogramTester histogram_tester_;
 
  private:
   static void InstallMockInterceptors(const GURL& url,
@@ -217,6 +219,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
       net::X509Certificate::CalculateFingerprint256(
           original_cert->cert_buffer());
   EXPECT_EQ(original_fingerprint, fingerprint);
+  histogram_tester_.ExpectUniqueSample("SignedExchange.LoadResult",
+                                       SignedExchangeLoadResult::kSuccess, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
@@ -250,6 +254,9 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   EXPECT_EQ(303, redirect_observer.response_code());
+  histogram_tester_.ExpectUniqueSample(
+      "SignedExchange.LoadResult", SignedExchangeLoadResult::kVersionMismatch,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
@@ -276,6 +283,13 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
     NavigateToURL(shell(), url);
     EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   }
+  histogram_tester_.ExpectTotalCount("SignedExchange.LoadResult", 2);
+  histogram_tester_.ExpectBucketCount(
+      "SignedExchange.LoadResult", SignedExchangeLoadResult::kVersionMismatch,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "SignedExchange.LoadResult", SignedExchangeLoadResult::kHeaderParseError,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
@@ -292,6 +306,9 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  histogram_tester_.ExpectUniqueSample(
+      "SignedExchange.LoadResult", SignedExchangeLoadResult::kCertFetchError,
+      1);
 }
 
 class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
@@ -329,23 +346,13 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
   // TODO(https://crbug.com/815024): Make this test pass the OCSP check. We'll
   // need to either generate an OCSP response on the fly, or override the OCSP
   // verification time.
-  content::ConsoleObserverDelegate console_observer(shell()->web_contents(),
-                                                    "*OCSP*");
-  shell()->web_contents()->SetDelegate(&console_observer);
-
   base::string16 title = base::ASCIIToUTF16("Fallback URL response");
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-
   // Verify that it failed at the OCSP check step.
-  // TODO(https://crbug.com/803774): Find a better way than matching against the
-  // error message. We can probably make DevToolsProxy derive some context from
-  // StoragePartition so that we can record and extract the detailed error
-  // status for testing via that.
-  console_observer.Wait();
-  EXPECT_TRUE(base::StartsWith(console_observer.message(), "OCSP check failed:",
-                               base::CompareCase::SENSITIVE));
+  histogram_tester_.ExpectUniqueSample("SignedExchange.LoadResult",
+                                       SignedExchangeLoadResult::kOCSPError, 1);
 }
 
 }  // namespace content
