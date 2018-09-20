@@ -254,8 +254,8 @@ class TabManagerDelegate::MemoryStat {
   // pre-configured low memory margin.
   virtual int TargetMemoryToFreeKB();
 
-  // Returns estimated memory to be freed if the process |pid| is killed.
-  virtual int EstimatedMemoryFreedKB(base::ProcessHandle pid);
+  // Returns estimated memory to be freed if the process |handle| is killed.
+  virtual int EstimatedMemoryFreedKB(base::ProcessHandle handle);
 
  private:
   // Returns the low memory margin system config. Low memory condition is
