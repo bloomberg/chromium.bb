@@ -55,12 +55,12 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool initialized_ = false;
 #endif
   // The accessibility role, not taking ARIA into account.
-  AccessibilityRole native_role_;
+  ax::mojom::Role native_role_;
 
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
   const AXObject* InheritsPresentationalRoleFrom() const override;
-  AccessibilityRole DetermineAccessibilityRole() override;
-  virtual AccessibilityRole NativeAccessibilityRoleIgnoringAria() const;
+  ax::mojom::Role DetermineAccessibilityRole() override;
+  virtual ax::mojom::Role NativeRoleIgnoringAria() const;
   String AccessibilityDescriptionForElements(
       HeapVector<Member<Element>>& elements) const;
   void AlterSliderOrSpinButtonValue(bool increase);
@@ -156,7 +156,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String StringValue() const override;
 
   // ARIA attributes.
-  AccessibilityRole AriaRoleAttribute() const final;
+  ax::mojom::Role AriaRoleAttribute() const final;
 
   // AX name calculation.
   String GetName(AXNameFrom&, AXObjectVector* name_objects) const override;

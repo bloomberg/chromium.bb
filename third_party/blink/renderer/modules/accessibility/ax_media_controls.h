@@ -42,7 +42,7 @@ class AccessibilityMediaControl : public AXLayoutObject {
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AccessibilityMediaControl() override = default;
 
-  AccessibilityRole RoleValue() const override;
+  ax::mojom::Role RoleValue() const override;
 
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
@@ -85,7 +85,9 @@ class AXMediaControlsContainer final : public AccessibilityMediaControl {
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXMediaControlsContainer() override = default;
 
-  AccessibilityRole RoleValue() const override { return kToolbarRole; }
+  ax::mojom::Role RoleValue() const override {
+    return ax::mojom::Role::kToolbar;
+  }
 
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
@@ -109,7 +111,9 @@ class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AccessibilityMediaTimeDisplay() override = default;
 
-  AccessibilityRole RoleValue() const override { return kStaticTextRole; }
+  ax::mojom::Role RoleValue() const override {
+    return ax::mojom::Role::kStaticText;
+  }
 
   String StringValue() const override;
   String TextAlternative(bool recursive,

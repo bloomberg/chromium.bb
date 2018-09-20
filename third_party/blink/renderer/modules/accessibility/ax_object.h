@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/accessibility/ax_enums.mojom-blink.h"
 
 class SkMatrix44;
 
@@ -457,15 +458,17 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsAXSVGRoot() const { return false; }
 
   // Check object role or purpose.
-  virtual AccessibilityRole RoleValue() const { return role_; }
+  virtual ax::mojom::Role RoleValue() const { return role_; }
   bool IsARIATextControl() const;
   virtual bool IsARIARow() const { return false; }
   virtual bool IsAnchor() const { return false; }
   bool IsButton() const;
-  bool IsCanvas() const { return RoleValue() == kCanvasRole; }
-  bool IsCheckbox() const { return RoleValue() == kCheckBoxRole; }
+  bool IsCanvas() const { return RoleValue() == ax::mojom::Role::kCanvas; }
+  bool IsCheckbox() const { return RoleValue() == ax::mojom::Role::kCheckBox; }
   bool IsCheckboxOrRadio() const { return IsCheckbox() || IsRadioButton(); }
-  bool IsColorWell() const { return RoleValue() == kColorWellRole; }
+  bool IsColorWell() const {
+    return RoleValue() == ax::mojom::Role::kColorWell;
+  }
   virtual bool IsControl() const { return false; }
   virtual bool IsEmbeddedObject() const { return false; }
   virtual bool IsFieldset() const { return false; }
@@ -495,26 +498,36 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsPasswordField() const { return false; }
   virtual bool IsPasswordFieldAndShouldHideValue() const;
   bool IsPresentational() const {
-    return RoleValue() == kNoneRole || RoleValue() == kPresentationalRole;
+    return RoleValue() == ax::mojom::Role::kNone ||
+           RoleValue() == ax::mojom::Role::kPresentational;
   }
   virtual bool IsProgressIndicator() const { return false; }
-  bool IsRadioButton() const { return RoleValue() == kRadioButtonRole; }
-  bool IsRange() const {
-    return RoleValue() == kProgressIndicatorRole ||
-           RoleValue() == kScrollBarRole || RoleValue() == kSliderRole ||
-           RoleValue() == kSpinButtonRole || IsMoveableSplitter();
+  bool IsRadioButton() const {
+    return RoleValue() == ax::mojom::Role::kRadioButton;
   }
-  bool IsScrollbar() const { return RoleValue() == kScrollBarRole; }
+  bool IsRange() const {
+    return RoleValue() == ax::mojom::Role::kProgressIndicator ||
+           RoleValue() == ax::mojom::Role::kScrollBar ||
+           RoleValue() == ax::mojom::Role::kSlider ||
+           RoleValue() == ax::mojom::Role::kSpinButton || IsMoveableSplitter();
+  }
+  bool IsScrollbar() const {
+    return RoleValue() == ax::mojom::Role::kScrollBar;
+  }
   virtual bool IsSlider() const { return false; }
   virtual bool IsNativeSlider() const { return false; }
   virtual bool IsMoveableSplitter() const { return false; }
-  virtual bool IsSpinButton() const { return RoleValue() == kSpinButtonRole; }
-  bool IsTabItem() const { return RoleValue() == kTabRole; }
+  virtual bool IsSpinButton() const {
+    return RoleValue() == ax::mojom::Role::kSpinButton;
+  }
+  bool IsTabItem() const { return RoleValue() == ax::mojom::Role::kTab; }
   virtual bool IsTextControl() const { return false; }
   bool IsTextObject() const;
-  bool IsTree() const { return RoleValue() == kTreeRole; }
+  bool IsTree() const { return RoleValue() == ax::mojom::Role::kTree; }
   virtual bool IsVirtualObject() const { return false; }
-  bool IsWebArea() const { return RoleValue() == kWebAreaRole; }
+  bool IsWebArea() const {
+    return RoleValue() == ax::mojom::Role::kRootWebArea;
+  }
 
   // Check object state.
   virtual bool IsAutofillAvailable() { return false; }
@@ -713,9 +726,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual AXRestriction Restriction() const;
 
   // ARIA attributes.
-  virtual AccessibilityRole DetermineAccessibilityRole();
-  AccessibilityRole DetermineAriaRoleAttribute() const;
-  virtual AccessibilityRole AriaRoleAttribute() const;
+  virtual ax::mojom::Role DetermineAccessibilityRole();
+  ax::mojom::Role DetermineAriaRoleAttribute() const;
+  virtual ax::mojom::Role AriaRoleAttribute() const;
   virtual AXObject* ActiveDescendant() { return nullptr; }
   virtual String AriaAutoComplete() const { return String(); }
   virtual void AriaOwnsElements(AXObjectVector& owns) const {}
@@ -964,13 +977,13 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void LineBreaks(Vector<int>&) const {}
 
   // Static helper functions.
-  static bool IsARIAControl(AccessibilityRole);
-  static bool IsARIAInput(AccessibilityRole);
+  static bool IsARIAControl(ax::mojom::Role);
+  static bool IsARIAInput(ax::mojom::Role);
   // Is this a widget that requires container widget.
   bool IsSubWidget() const;
-  static AccessibilityRole AriaRoleToWebCoreRole(const String&);
-  static const AtomicString& RoleName(AccessibilityRole);
-  static const AtomicString& InternalRoleName(AccessibilityRole);
+  static ax::mojom::Role AriaRoleToWebCoreRole(const String&);
+  static const AtomicString& RoleName(ax::mojom::Role);
+  static const AtomicString& InternalRoleName(ax::mojom::Role);
   static void AccessibleNodeListToElementVector(const AccessibleNodeList&,
                                                 HeapVector<Member<Element>>&);
 
@@ -987,8 +1000,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   AXID id_;
   AXObjectVector children_;
   mutable bool have_children_;
-  AccessibilityRole role_;
-  AccessibilityRole aria_role_;
+  ax::mojom::Role role_;
+  ax::mojom::Role aria_role_;
   mutable AXObjectInclusion last_known_is_ignored_value_;
   LayoutRect explicit_element_rect_;
   AXID explicit_container_id_;
@@ -1027,7 +1040,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool CanReceiveAccessibilityFocus() const;
   bool NameFromContents(bool recursive) const;
 
-  AccessibilityRole ButtonRoleType() const;
+  ax::mojom::Role ButtonRoleType() const;
 
   virtual LayoutObject* LayoutObjectForRelativeBounds() const {
     return nullptr;
@@ -1078,7 +1091,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   static bool IsNativeCheckboxInMixedState(const Node*);
   static bool IncludesARIAWidgetRole(const String&);
   static bool HasInteractiveARIAAttribute(const Element&);
-  AccessibilityRole RemapAriaRoleDueToParent(AccessibilityRole) const;
+  ax::mojom::Role RemapAriaRoleDueToParent(ax::mojom::Role) const;
   unsigned ComputeAriaColumnIndex() const;
   unsigned ComputeAriaRowIndex() const;
 

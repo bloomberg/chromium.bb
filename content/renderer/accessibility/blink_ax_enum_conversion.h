@@ -13,9 +13,6 @@
 
 namespace content {
 
-// Convert a Blink WebAXRole to an ax::mojom::Role defined in ui/accessibility.
-ax::mojom::Role AXRoleFromBlink(blink::WebAXRole role);
-
 // Provides a conversion between the WebAXObject state
 // accessors and a state bitmask stored in an AXNodeData.
 // (Note that some rare states are sent as boolean attributes

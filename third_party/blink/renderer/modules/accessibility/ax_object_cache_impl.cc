@@ -456,14 +456,14 @@ AXObject* AXObjectCacheImpl::GetOrCreate(
   return new_obj;
 }
 
-AXObject* AXObjectCacheImpl::GetOrCreate(AccessibilityRole role) {
+AXObject* AXObjectCacheImpl::GetOrCreate(ax::mojom::Role role) {
   AXObject* obj = nullptr;
 
   switch (role) {
-    case kSliderThumbRole:
+    case ax::mojom::Role::kSliderThumb:
       obj = AXSliderThumb::Create(*this);
       break;
-    case kMenuListPopupRole:
+    case ax::mojom::Role::kMenuListPopup:
       obj = AXMenuListPopup::Create(*this);
       break;
     default:
@@ -892,7 +892,7 @@ void AXObjectCacheImpl::HandleAriaSelectedChanged(Node* node) {
   PostNotification(obj, ax::mojom::Event::kCheckedStateChanged);
 
   AXObject* listbox = obj->ParentObjectUnignored();
-  if (listbox && listbox->RoleValue() == kListBoxRole)
+  if (listbox && listbox->RoleValue() == ax::mojom::Role::kListBox)
     PostNotification(listbox, ax::mojom::Event::kSelectedChildrenChanged);
 }
 
@@ -1247,7 +1247,7 @@ void AXObjectCacheImpl::HandleScrollPositionChanged(
 const AtomicString& AXObjectCacheImpl::ComputedRoleForNode(Node* node) {
   AXObject* obj = GetOrCreate(node);
   if (!obj)
-    return AXObject::RoleName(kUnknownRole);
+    return AXObject::RoleName(ax::mojom::Role::kUnknown);
   return AXObject::RoleName(obj->RoleValue());
 }
 

@@ -263,7 +263,7 @@ bool AccessibilityMediaControl::ComputeAccessibilityIsIgnored(
   return AccessibilityIsIgnoredByDefault(ignored_reasons);
 }
 
-AccessibilityRole AccessibilityMediaControl::RoleValue() const {
+ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
   switch (ControlType()) {
     case kMediaEnterFullscreenButton:
     case kMediaExitFullscreenButton:
@@ -282,13 +282,13 @@ AccessibilityRole AccessibilityMediaControl::RoleValue() const {
     case kMediaEnterPictureInPictureButton:
     case kMediaExitPictureInPictureButton:
     case kMediaDisplayCutoutFullscreenButton:
-      return kButtonRole;
+      return ax::mojom::Role::kButton;
 
     case kMediaTimelineContainer:
     case kMediaVolumeSliderContainer:
     case kMediaTextTrackList:
     case kMediaOverflowList:
-      return kGroupRole;
+      return ax::mojom::Role::kGroup;
 
     case kMediaControlsPanel:
     case kMediaCurrentTimeDisplay:
@@ -299,16 +299,16 @@ AccessibilityRole AccessibilityMediaControl::RoleValue() const {
     case kMediaVolumeSliderThumb:
     case kMediaScrubbingMessage:
     case kMediaAnimatedArrowContainer:
-      return kUnknownRole;
+      return ax::mojom::Role::kUnknown;
 
     case kMediaSlider:
       // Not using AccessibilityMediaControl.
       NOTREACHED();
-      return kUnknownRole;
+      return ax::mojom::Role::kUnknown;
   }
 
   NOTREACHED();
-  return kUnknownRole;
+  return ax::mojom::Role::kUnknown;
 }
 
 //

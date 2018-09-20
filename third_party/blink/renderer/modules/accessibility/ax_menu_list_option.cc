@@ -55,16 +55,16 @@ LocalFrameView* AXMenuListOption::DocumentFrameView() const {
   return element_->GetDocument().View();
 }
 
-AccessibilityRole AXMenuListOption::RoleValue() const {
+ax::mojom::Role AXMenuListOption::RoleValue() const {
   const AtomicString& aria_role =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
   if (aria_role.IsEmpty())
-    return kMenuListOptionRole;
+    return ax::mojom::Role::kMenuListOption;
 
-  AccessibilityRole role = AriaRoleToWebCoreRole(aria_role);
-  if (role)
+  ax::mojom::Role role = AriaRoleToWebCoreRole(aria_role);
+  if (role != ax::mojom::Role::kUnknown)
     return role;
-  return kMenuListOptionRole;
+  return ax::mojom::Role::kMenuListOption;
 }
 
 Element* AXMenuListOption::ActionElement() const {

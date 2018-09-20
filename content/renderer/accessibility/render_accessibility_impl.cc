@@ -283,7 +283,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
 
   // If some cell IDs have been added or removed, we need to update the whole
   // table.
-  if (obj.Role() == blink::kWebAXRoleRow &&
+  if (obj.Role() == ax::mojom::Role::kRow &&
       event == ax::mojom::Event::kChildrenChanged) {
     WebAXObject table_like_object = obj.ParentObject();
     if (!table_like_object.IsDetached()) {
@@ -294,7 +294,7 @@ void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,
 
   // If a select tag is opened or closed, all the children must be updated
   // because their visibility may have changed.
-  if (obj.Role() == blink::kWebAXRoleMenuListPopup &&
+  if (obj.Role() == ax::mojom::Role::kMenuListPopup &&
       event == ax::mojom::Event::kChildrenChanged) {
     WebAXObject popup_like_object = obj.ParentObject();
     if (!popup_like_object.IsDetached()) {
@@ -464,12 +464,11 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
     // Whenever there's a change within a table, invalidate the
     // whole table so that row and cell indexes are recomputed.
-    ax::mojom::Role role = AXRoleFromBlink(obj.Role());
+    ax::mojom::Role role = obj.Role();
     if (ui::IsTableLikeRole(role) || role == ax::mojom::Role::kRow ||
         ui::IsCellOrTableHeaderRole(role)) {
       auto table = obj;
-      while (!table.IsDetached() &&
-             !ui::IsTableLikeRole(AXRoleFromBlink(table.Role())))
+      while (!table.IsDetached() && !ui::IsTableLikeRole(table.Role()))
         table = table.ParentObject();
       if (!table.IsDetached())
         serializer_.InvalidateSubtree(table);

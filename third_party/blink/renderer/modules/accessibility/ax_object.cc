@@ -72,372 +72,384 @@ using namespace HTMLNames;
 
 namespace {
 
-struct AccessibilityRoleHashTraits : HashTraits<AccessibilityRole> {
+struct RoleHashTraits : HashTraits<ax::mojom::Role> {
   static const bool kEmptyValueIsZero = true;
-  static AccessibilityRole EmptyValue() {
-    return AccessibilityRole::kUnknownRole;
-  }
+  static ax::mojom::Role EmptyValue() { return ax::mojom::Role::kUnknown; }
 };
 
 using ARIARoleMap = HashMap<String,
-                            AccessibilityRole,
+                            ax::mojom::Role,
                             CaseFoldingHash,
                             HashTraits<String>,
-                            AccessibilityRoleHashTraits>;
+                            RoleHashTraits>;
 
 struct RoleEntry {
   const char* aria_role;
-  AccessibilityRole webcore_role;
+  ax::mojom::Role webcore_role;
 };
 
 // Mapping of ARIA role name to internal role name.
-const RoleEntry kRoles[] = {{"alert", kAlertRole},
-                            {"alertdialog", kAlertDialogRole},
-                            {"application", kApplicationRole},
-                            {"article", kArticleRole},
-                            {"banner", kBannerRole},
-                            {"blockquote", kBlockquoteRole},
-                            {"button", kButtonRole},
-                            {"caption", kCaptionRole},
-                            {"cell", kCellRole},
-                            {"checkbox", kCheckBoxRole},
-                            {"columnheader", kColumnHeaderRole},
-                            {"combobox", kComboBoxGroupingRole},
-                            {"complementary", kComplementaryRole},
-                            {"contentinfo", kContentInfoRole},
-                            {"definition", kDefinitionRole},
-                            {"dialog", kDialogRole},
-                            {"directory", kDirectoryRole},
-                            // -------------------------------------------------
-                            // DPub Roles:
-                            // www.w3.org/TR/dpub-aam-1.0/#mapping_role_table
-                            {"doc-abstract", kDocAbstractRole},
-                            {"doc-acknowledgments", kDocAcknowledgmentsRole},
-                            {"doc-afterword", kDocAfterwordRole},
-                            {"doc-appendix", kDocAppendixRole},
-                            {"doc-backlink", kDocBackLinkRole},
-                            {"doc-biblioentry", kDocBiblioEntryRole},
-                            {"doc-bibliography", kDocBibliographyRole},
-                            {"doc-biblioref", kDocBiblioRefRole},
-                            {"doc-chapter", kDocChapterRole},
-                            {"doc-colophon", kDocColophonRole},
-                            {"doc-conclusion", kDocConclusionRole},
-                            {"doc-cover", kDocCoverRole},
-                            {"doc-credit", kDocCreditRole},
-                            {"doc-credits", kDocCreditsRole},
-                            {"doc-dedication", kDocDedicationRole},
-                            {"doc-endnote", kDocEndnoteRole},
-                            {"doc-endnotes", kDocEndnotesRole},
-                            {"doc-epigraph", kDocEpigraphRole},
-                            {"doc-epilogue", kDocEpilogueRole},
-                            {"doc-errata", kDocErrataRole},
-                            {"doc-example", kDocExampleRole},
-                            {"doc-footnote", kDocFootnoteRole},
-                            {"doc-foreword", kDocForewordRole},
-                            {"doc-glossary", kDocGlossaryRole},
-                            {"doc-glossref", kDocGlossRefRole},
-                            {"doc-index", kDocIndexRole},
-                            {"doc-introduction", kDocIntroductionRole},
-                            {"doc-noteref", kDocNoteRefRole},
-                            {"doc-notice", kDocNoticeRole},
-                            {"doc-pagebreak", kDocPageBreakRole},
-                            {"doc-pagelist", kDocPageListRole},
-                            {"doc-part", kDocPartRole},
-                            {"doc-preface", kDocPrefaceRole},
-                            {"doc-prologue", kDocPrologueRole},
-                            {"doc-pullquote", kDocPullquoteRole},
-                            {"doc-qna", kDocQnaRole},
-                            {"doc-subtitle", kDocSubtitleRole},
-                            {"doc-tip", kDocTipRole},
-                            {"doc-toc", kDocTocRole},
-                            // End DPub roles.
-                            // -------------------------------------------------
-                            {"document", kDocumentRole},
-                            {"feed", kFeedRole},
-                            {"figure", kFigureRole},
-                            {"form", kFormRole},
-                            // -------------------------------------------------
-                            // ARIA Graphics module roles:
-                            // https://rawgit.com/w3c/graphics-aam/master/
-                            {"graphics-document", kGraphicsDocumentRole},
-                            {"graphics-object", kGraphicsObjectRole},
-                            {"graphics-symbol", kGraphicsSymbolRole},
-                            // End ARIA Graphics module roles.
-                            // -------------------------------------------------
-                            {"grid", kGridRole},
-                            {"gridcell", kCellRole},
-                            {"group", kGroupRole},
-                            {"heading", kHeadingRole},
-                            {"img", kImageRole},
-                            {"link", kLinkRole},
-                            {"list", kListRole},
-                            {"listbox", kListBoxRole},
-                            {"listitem", kListItemRole},
-                            {"log", kLogRole},
-                            {"main", kMainRole},
-                            {"marquee", kMarqueeRole},
-                            {"math", kMathRole},
-                            {"menu", kMenuRole},
-                            {"menubar", kMenuBarRole},
-                            {"menuitem", kMenuItemRole},
-                            {"menuitemcheckbox", kMenuItemCheckBoxRole},
-                            {"menuitemradio", kMenuItemRadioRole},
-                            {"navigation", kNavigationRole},
-                            {"none", kNoneRole},
-                            {"note", kNoteRole},
-                            {"option", kListBoxOptionRole},
-                            {"paragraph", kParagraphRole},
-                            {"presentation", kPresentationalRole},
-                            {"progressbar", kProgressIndicatorRole},
-                            {"radio", kRadioButtonRole},
-                            {"radiogroup", kRadioGroupRole},
-                            // TODO(accessibility) region should only be mapped
-                            // if name present. See http://crbug.com/840819.
-                            {"region", kRegionRole},
-                            {"row", kRowRole},
-                            {"rowheader", kRowHeaderRole},
-                            {"scrollbar", kScrollBarRole},
-                            {"search", kSearchRole},
-                            {"searchbox", kSearchBoxRole},
-                            {"separator", kSplitterRole},
-                            {"slider", kSliderRole},
-                            {"spinbutton", kSpinButtonRole},
-                            {"status", kStatusRole},
-                            {"switch", kSwitchRole},
-                            {"tab", kTabRole},
-                            {"table", kTableRole},
-                            {"tablist", kTabListRole},
-                            {"tabpanel", kTabPanelRole},
-                            {"term", kTermRole},
-                            {"text", kStaticTextRole},
-                            {"textbox", kTextFieldRole},
-                            {"timer", kTimerRole},
-                            {"toolbar", kToolbarRole},
-                            {"tooltip", kUserInterfaceTooltipRole},
-                            {"tree", kTreeRole},
-                            {"treegrid", kTreeGridRole},
-                            {"treeitem", kTreeItemRole}};
+const RoleEntry kRoles[] = {
+    {"alert", ax::mojom::Role::kAlert},
+    {"alertdialog", ax::mojom::Role::kAlertDialog},
+    {"application", ax::mojom::Role::kApplication},
+    {"article", ax::mojom::Role::kArticle},
+    {"banner", ax::mojom::Role::kBanner},
+    {"blockquote", ax::mojom::Role::kBlockquote},
+    {"button", ax::mojom::Role::kButton},
+    {"caption", ax::mojom::Role::kCaption},
+    {"cell", ax::mojom::Role::kCell},
+    {"checkbox", ax::mojom::Role::kCheckBox},
+    {"columnheader", ax::mojom::Role::kColumnHeader},
+    {"combobox", ax::mojom::Role::kComboBoxGrouping},
+    {"complementary", ax::mojom::Role::kComplementary},
+    {"contentinfo", ax::mojom::Role::kContentInfo},
+    {"definition", ax::mojom::Role::kDefinition},
+    {"dialog", ax::mojom::Role::kDialog},
+    {"directory", ax::mojom::Role::kDirectory},
+    // -------------------------------------------------
+    // DPub Roles:
+    // www.w3.org/TR/dpub-aam-1.0/#mapping_role_table
+    {"doc-abstract", ax::mojom::Role::kDocAbstract},
+    {"doc-acknowledgments", ax::mojom::Role::kDocAcknowledgments},
+    {"doc-afterword", ax::mojom::Role::kDocAfterword},
+    {"doc-appendix", ax::mojom::Role::kDocAppendix},
+    {"doc-backlink", ax::mojom::Role::kDocBackLink},
+    {"doc-biblioentry", ax::mojom::Role::kDocBiblioEntry},
+    {"doc-bibliography", ax::mojom::Role::kDocBibliography},
+    {"doc-biblioref", ax::mojom::Role::kDocBiblioRef},
+    {"doc-chapter", ax::mojom::Role::kDocChapter},
+    {"doc-colophon", ax::mojom::Role::kDocColophon},
+    {"doc-conclusion", ax::mojom::Role::kDocConclusion},
+    {"doc-cover", ax::mojom::Role::kDocCover},
+    {"doc-credit", ax::mojom::Role::kDocCredit},
+    {"doc-credits", ax::mojom::Role::kDocCredits},
+    {"doc-dedication", ax::mojom::Role::kDocDedication},
+    {"doc-endnote", ax::mojom::Role::kDocEndnote},
+    {"doc-endnotes", ax::mojom::Role::kDocEndnotes},
+    {"doc-epigraph", ax::mojom::Role::kDocEpigraph},
+    {"doc-epilogue", ax::mojom::Role::kDocEpilogue},
+    {"doc-errata", ax::mojom::Role::kDocErrata},
+    {"doc-example", ax::mojom::Role::kDocExample},
+    {"doc-footnote", ax::mojom::Role::kDocFootnote},
+    {"doc-foreword", ax::mojom::Role::kDocForeword},
+    {"doc-glossary", ax::mojom::Role::kDocGlossary},
+    {"doc-glossref", ax::mojom::Role::kDocGlossRef},
+    {"doc-index", ax::mojom::Role::kDocIndex},
+    {"doc-introduction", ax::mojom::Role::kDocIntroduction},
+    {"doc-noteref", ax::mojom::Role::kDocNoteRef},
+    {"doc-notice", ax::mojom::Role::kDocNotice},
+    {"doc-pagebreak", ax::mojom::Role::kDocPageBreak},
+    {"doc-pagelist", ax::mojom::Role::kDocPageList},
+    {"doc-part", ax::mojom::Role::kDocPart},
+    {"doc-preface", ax::mojom::Role::kDocPreface},
+    {"doc-prologue", ax::mojom::Role::kDocPrologue},
+    {"doc-pullquote", ax::mojom::Role::kDocPullquote},
+    {"doc-qna", ax::mojom::Role::kDocQna},
+    {"doc-subtitle", ax::mojom::Role::kDocSubtitle},
+    {"doc-tip", ax::mojom::Role::kDocTip},
+    {"doc-toc", ax::mojom::Role::kDocToc},
+    // End DPub roles.
+    // -------------------------------------------------
+    {"document", ax::mojom::Role::kDocument},
+    {"feed", ax::mojom::Role::kFeed},
+    {"figure", ax::mojom::Role::kFigure},
+    {"form", ax::mojom::Role::kForm},
+    // -------------------------------------------------
+    // ARIA Graphics module roles:
+    // https://rawgit.com/w3c/graphics-aam/master/
+    {"graphics-document", ax::mojom::Role::kGraphicsDocument},
+    {"graphics-object", ax::mojom::Role::kGraphicsObject},
+    {"graphics-symbol", ax::mojom::Role::kGraphicsSymbol},
+    // End ARIA Graphics module roles.
+    // -------------------------------------------------
+    {"grid", ax::mojom::Role::kGrid},
+    {"gridcell", ax::mojom::Role::kCell},
+    {"group", ax::mojom::Role::kGroup},
+    {"heading", ax::mojom::Role::kHeading},
+    {"img", ax::mojom::Role::kImage},
+    {"link", ax::mojom::Role::kLink},
+    {"list", ax::mojom::Role::kList},
+    {"listbox", ax::mojom::Role::kListBox},
+    {"listitem", ax::mojom::Role::kListItem},
+    {"log", ax::mojom::Role::kLog},
+    {"main", ax::mojom::Role::kMain},
+    {"marquee", ax::mojom::Role::kMarquee},
+    {"math", ax::mojom::Role::kMath},
+    {"menu", ax::mojom::Role::kMenu},
+    {"menubar", ax::mojom::Role::kMenuBar},
+    {"menuitem", ax::mojom::Role::kMenuItem},
+    {"menuitemcheckbox", ax::mojom::Role::kMenuItemCheckBox},
+    {"menuitemradio", ax::mojom::Role::kMenuItemRadio},
+    {"navigation", ax::mojom::Role::kNavigation},
+    {"none", ax::mojom::Role::kNone},
+    {"note", ax::mojom::Role::kNote},
+    {"option", ax::mojom::Role::kListBoxOption},
+    {"paragraph", ax::mojom::Role::kParagraph},
+    {"presentation", ax::mojom::Role::kPresentational},
+    {"progressbar", ax::mojom::Role::kProgressIndicator},
+    {"radio", ax::mojom::Role::kRadioButton},
+    {"radiogroup", ax::mojom::Role::kRadioGroup},
+    // TODO(accessibility) region should only be mapped
+    // if name present. See http://crbug.com/840819.
+    {"region", ax::mojom::Role::kRegion},
+    {"row", ax::mojom::Role::kRow},
+    {"rowheader", ax::mojom::Role::kRowHeader},
+    {"scrollbar", ax::mojom::Role::kScrollBar},
+    {"search", ax::mojom::Role::kSearch},
+    {"searchbox", ax::mojom::Role::kSearchBox},
+    {"separator", ax::mojom::Role::kSplitter},
+    {"slider", ax::mojom::Role::kSlider},
+    {"spinbutton", ax::mojom::Role::kSpinButton},
+    {"status", ax::mojom::Role::kStatus},
+    {"switch", ax::mojom::Role::kSwitch},
+    {"tab", ax::mojom::Role::kTab},
+    {"table", ax::mojom::Role::kTable},
+    {"tablist", ax::mojom::Role::kTabList},
+    {"tabpanel", ax::mojom::Role::kTabPanel},
+    {"term", ax::mojom::Role::kTerm},
+    {"text", ax::mojom::Role::kStaticText},
+    {"textbox", ax::mojom::Role::kTextField},
+    {"timer", ax::mojom::Role::kTimer},
+    {"toolbar", ax::mojom::Role::kToolbar},
+    {"tooltip", ax::mojom::Role::kTooltip},
+    {"tree", ax::mojom::Role::kTree},
+    {"treegrid", ax::mojom::Role::kTreeGrid},
+    {"treeitem", ax::mojom::Role::kTreeItem}};
 
 struct InternalRoleEntry {
-  AccessibilityRole webcore_role;
+  ax::mojom::Role webcore_role;
   const char* internal_role_name;
 };
 
 const InternalRoleEntry kInternalRoles[] = {
-    {kUnknownRole, "Unknown"},
-    {kAbbrRole, "Abbr"},
-    {kAlertDialogRole, "AlertDialog"},
-    {kAlertRole, "Alert"},
-    {kAnchorRole, "Anchor"},
-    {kAnnotationRole, "Annotation"},
-    {kApplicationRole, "Application"},
-    {kArticleRole, "Article"},
-    {kAudioRole, "Audio"},
-    {kBannerRole, "Banner"},
-    {kBlockquoteRole, "Blockquote"},
-    {kButtonRole, "Button"},
-    {kCanvasRole, "Canvas"},
-    {kCaptionRole, "Caption"},
-    {kCellRole, "Cell"},
-    {kCheckBoxRole, "CheckBox"},
-    {kColorWellRole, "ColorWell"},
-    {kColumnHeaderRole, "ColumnHeader"},
-    {kColumnRole, "Column"},
-    {kComboBoxGroupingRole, "ComboBox"},
-    {kComboBoxMenuButtonRole, "ComboBox"},
-    {kComplementaryRole, "Complementary"},
-    {kContentDeletionRole, "ContentDeletion"},
-    {kContentInsertionRole, "ContentInsertion"},
-    {kContentInfoRole, "ContentInfo"},
-    {kDateRole, "Date"},
-    {kDateTimeRole, "DateTime"},
-    {kDefinitionRole, "Definition"},
-    {kDescriptionListDetailRole, "DescriptionListDetail"},
-    {kDescriptionListRole, "DescriptionList"},
-    {kDescriptionListTermRole, "DescriptionListTerm"},
-    {kDetailsRole, "Details"},
-    {kDialogRole, "Dialog"},
-    {kDirectoryRole, "Directory"},
-    {kDisclosureTriangleRole, "DisclosureTriangle"},
+    {ax::mojom::Role::kNone, "None"},
+    {ax::mojom::Role::kAbbr, "Abbr"},
+    {ax::mojom::Role::kAlertDialog, "AlertDialog"},
+    {ax::mojom::Role::kAlert, "Alert"},
+    {ax::mojom::Role::kAnchor, "Anchor"},
+    {ax::mojom::Role::kAnnotation, "Annotation"},
+    {ax::mojom::Role::kApplication, "Application"},
+    {ax::mojom::Role::kArticle, "Article"},
+    {ax::mojom::Role::kAudio, "Audio"},
+    {ax::mojom::Role::kBanner, "Banner"},
+    {ax::mojom::Role::kBlockquote, "Blockquote"},
+    {ax::mojom::Role::kButton, "Button"},
+    {ax::mojom::Role::kCanvas, "Canvas"},
+    {ax::mojom::Role::kCaption, "Caption"},
+    {ax::mojom::Role::kCaret, "Caret"},
+    {ax::mojom::Role::kCell, "Cell"},
+    {ax::mojom::Role::kCheckBox, "CheckBox"},
+    {ax::mojom::Role::kClient, "Client"},
+    {ax::mojom::Role::kColorWell, "ColorWell"},
+    {ax::mojom::Role::kColumnHeader, "ColumnHeader"},
+    {ax::mojom::Role::kColumn, "Column"},
+    {ax::mojom::Role::kComboBoxGrouping, "ComboBox"},
+    {ax::mojom::Role::kComboBoxMenuButton, "ComboBox"},
+    {ax::mojom::Role::kComplementary, "Complementary"},
+    {ax::mojom::Role::kContentDeletion, "ContentDeletion"},
+    {ax::mojom::Role::kContentInsertion, "ContentInsertion"},
+    {ax::mojom::Role::kContentInfo, "ContentInfo"},
+    {ax::mojom::Role::kDate, "Date"},
+    {ax::mojom::Role::kDateTime, "DateTime"},
+    {ax::mojom::Role::kDefinition, "Definition"},
+    {ax::mojom::Role::kDescriptionListDetail, "DescriptionListDetail"},
+    {ax::mojom::Role::kDescriptionList, "DescriptionList"},
+    {ax::mojom::Role::kDescriptionListTerm, "DescriptionListTerm"},
+    {ax::mojom::Role::kDesktop, "Desktop"},
+    {ax::mojom::Role::kDetails, "Details"},
+    {ax::mojom::Role::kDialog, "Dialog"},
+    {ax::mojom::Role::kDirectory, "Directory"},
+    {ax::mojom::Role::kDisclosureTriangle, "DisclosureTriangle"},
     // --------------------------------------------------------------
     // DPub Roles:
     // https://www.w3.org/TR/dpub-aam-1.0/#mapping_role_table
-    {kDocAbstractRole, "DocAbstract"},
-    {kDocAcknowledgmentsRole, "DocAcknowledgments"},
-    {kDocAfterwordRole, "DocAfterword"},
-    {kDocAppendixRole, "DocAppendix"},
-    {kDocBackLinkRole, "DocBackLink"},
-    {kDocBiblioEntryRole, "DocBiblioentry"},
-    {kDocBibliographyRole, "DocBibliography"},
-    {kDocBiblioRefRole, "DocBiblioref"},
-    {kDocChapterRole, "DocChapter"},
-    {kDocColophonRole, "DocColophon"},
-    {kDocConclusionRole, "DocConclusion"},
-    {kDocCoverRole, "DocCover"},
-    {kDocCreditRole, "DocCredit"},
-    {kDocCreditsRole, "DocCredits"},
-    {kDocDedicationRole, "DocDedication"},
-    {kDocEndnoteRole, "DocEndnote"},
-    {kDocEndnotesRole, "DocEndnotes"},
-    {kDocEpigraphRole, "DocEpigraph"},
-    {kDocEpilogueRole, "DocEpilogue"},
-    {kDocErrataRole, "DocErrata"},
-    {kDocExampleRole, "DocExample"},
-    {kDocFootnoteRole, "DocFootnote"},
-    {kDocForewordRole, "DocForeword"},
-    {kDocGlossaryRole, "DocGlossary"},
-    {kDocGlossRefRole, "DocGlossref"},
-    {kDocIndexRole, "DocIndex"},
-    {kDocIntroductionRole, "DocIntroduction"},
-    {kDocNoteRefRole, "DocNoteref"},
-    {kDocNoticeRole, "DocNotice"},
-    {kDocPageBreakRole, "DocPagebreak"},
-    {kDocPageListRole, "DocPagelist"},
-    {kDocPartRole, "DocPart"},
-    {kDocPrefaceRole, "DocPreface"},
-    {kDocPrologueRole, "DocPrologue"},
-    {kDocPullquoteRole, "DocPullquote"},
-    {kDocQnaRole, "DocQna"},
-    {kDocSubtitleRole, "DocSubtitle"},
-    {kDocTipRole, "DocTip"},
-    {kDocTocRole, "DocToc"},
+    {ax::mojom::Role::kDocAbstract, "DocAbstract"},
+    {ax::mojom::Role::kDocAcknowledgments, "DocAcknowledgments"},
+    {ax::mojom::Role::kDocAfterword, "DocAfterword"},
+    {ax::mojom::Role::kDocAppendix, "DocAppendix"},
+    {ax::mojom::Role::kDocBackLink, "DocBackLink"},
+    {ax::mojom::Role::kDocBiblioEntry, "DocBiblioentry"},
+    {ax::mojom::Role::kDocBibliography, "DocBibliography"},
+    {ax::mojom::Role::kDocBiblioRef, "DocBiblioref"},
+    {ax::mojom::Role::kDocChapter, "DocChapter"},
+    {ax::mojom::Role::kDocColophon, "DocColophon"},
+    {ax::mojom::Role::kDocConclusion, "DocConclusion"},
+    {ax::mojom::Role::kDocCover, "DocCover"},
+    {ax::mojom::Role::kDocCredit, "DocCredit"},
+    {ax::mojom::Role::kDocCredits, "DocCredits"},
+    {ax::mojom::Role::kDocDedication, "DocDedication"},
+    {ax::mojom::Role::kDocEndnote, "DocEndnote"},
+    {ax::mojom::Role::kDocEndnotes, "DocEndnotes"},
+    {ax::mojom::Role::kDocEpigraph, "DocEpigraph"},
+    {ax::mojom::Role::kDocEpilogue, "DocEpilogue"},
+    {ax::mojom::Role::kDocErrata, "DocErrata"},
+    {ax::mojom::Role::kDocExample, "DocExample"},
+    {ax::mojom::Role::kDocFootnote, "DocFootnote"},
+    {ax::mojom::Role::kDocForeword, "DocForeword"},
+    {ax::mojom::Role::kDocGlossary, "DocGlossary"},
+    {ax::mojom::Role::kDocGlossRef, "DocGlossref"},
+    {ax::mojom::Role::kDocIndex, "DocIndex"},
+    {ax::mojom::Role::kDocIntroduction, "DocIntroduction"},
+    {ax::mojom::Role::kDocNoteRef, "DocNoteref"},
+    {ax::mojom::Role::kDocNotice, "DocNotice"},
+    {ax::mojom::Role::kDocPageBreak, "DocPagebreak"},
+    {ax::mojom::Role::kDocPageList, "DocPagelist"},
+    {ax::mojom::Role::kDocPart, "DocPart"},
+    {ax::mojom::Role::kDocPreface, "DocPreface"},
+    {ax::mojom::Role::kDocPrologue, "DocPrologue"},
+    {ax::mojom::Role::kDocPullquote, "DocPullquote"},
+    {ax::mojom::Role::kDocQna, "DocQna"},
+    {ax::mojom::Role::kDocSubtitle, "DocSubtitle"},
+    {ax::mojom::Role::kDocTip, "DocTip"},
+    {ax::mojom::Role::kDocToc, "DocToc"},
     // End DPub roles.
     // --------------------------------------------------------------
-    {kDocumentRole, "Document"},
-    {kEmbeddedObjectRole, "EmbeddedObject"},
-    {kFeedRole, "feed"},
-    {kFigcaptionRole, "Figcaption"},
-    {kFigureRole, "Figure"},
-    {kFooterRole, "Footer"},
-    {kFormRole, "Form"},
-    {kGenericContainerRole, "GenericContainer"},
+    {ax::mojom::Role::kDocument, "Document"},
+    {ax::mojom::Role::kEmbeddedObject, "EmbeddedObject"},
+    {ax::mojom::Role::kFeed, "feed"},
+    {ax::mojom::Role::kFigcaption, "Figcaption"},
+    {ax::mojom::Role::kFigure, "Figure"},
+    {ax::mojom::Role::kFooter, "Footer"},
+    {ax::mojom::Role::kForm, "Form"},
+    {ax::mojom::Role::kGenericContainer, "GenericContainer"},
     // --------------------------------------------------------------
     // ARIA Graphics module roles:
     // https://rawgit.com/w3c/graphics-aam/master/#mapping_role_table
-    {kGraphicsDocumentRole, "GraphicsDocument"},
-    {kGraphicsObjectRole, "GraphicsObject"},
-    {kGraphicsSymbolRole, "GraphicsSymbol"},
+    {ax::mojom::Role::kGraphicsDocument, "GraphicsDocument"},
+    {ax::mojom::Role::kGraphicsObject, "GraphicsObject"},
+    {ax::mojom::Role::kGraphicsSymbol, "GraphicsSymbol"},
     // End ARIA Graphics module roles.
     // --------------------------------------------------------------
-    {kGridRole, "Grid"},
-    {kGroupRole, "Group"},
-    {kHeadingRole, "Heading"},
-    {kIframePresentationalRole, "IframePresentational"},
-    {kIframeRole, "Iframe"},
-    {kIgnoredRole, "Ignored"},
-    {kImageMapRole, "ImageMap"},
-    {kImageRole, "Image"},
-    {kInlineTextBoxRole, "InlineTextBox"},
-    {kInputTimeRole, "InputTime"},
-    {kLabelRole, "Label"},
-    {kLayoutTableRole, "LayoutTable"},
-    {kLayoutTableCellRole, "LayoutCellTable"},
-    {kLayoutTableColumnRole, "LayoutColumnTable"},
-    {kLayoutTableRowRole, "LayoutRowTable"},
-    {kLegendRole, "Legend"},
-    {kLinkRole, "Link"},
-    {kLineBreakRole, "LineBreak"},
-    {kListBoxOptionRole, "ListBoxOption"},
-    {kListBoxRole, "ListBox"},
-    {kListItemRole, "ListItem"},
-    {kListMarkerRole, "ListMarker"},
-    {kListRole, "List"},
-    {kLogRole, "Log"},
-    {kMainRole, "Main"},
-    {kMarkRole, "Mark"},
-    {kMarqueeRole, "Marquee"},
-    {kMathRole, "Math"},
-    {kMenuBarRole, "MenuBar"},
-    {kMenuButtonRole, "MenuButton"},
-    {kMenuItemRole, "MenuItem"},
-    {kMenuItemCheckBoxRole, "MenuItemCheckBox"},
-    {kMenuItemRadioRole, "MenuItemRadio"},
-    {kMenuListOptionRole, "MenuListOption"},
-    {kMenuListPopupRole, "MenuListPopup"},
-    {kMenuRole, "Menu"},
-    {kMeterRole, "Meter"},
-    {kNavigationRole, "Navigation"},
-    {kNoneRole, "None"},
-    {kNoteRole, "Note"},
-    {kParagraphRole, "Paragraph"},
-    {kPopUpButtonRole, "PopUpButton"},
-    {kPreRole, "Pre"},
-    {kPresentationalRole, "Presentational"},
-    {kProgressIndicatorRole, "ProgressIndicator"},
-    {kRadioButtonRole, "RadioButton"},
-    {kRadioGroupRole, "RadioGroup"},
-    {kRegionRole, "Region"},
-    {kRowHeaderRole, "RowHeader"},
-    {kRowRole, "Row"},
-    {kRubyRole, "Ruby"},
-    {kSVGRootRole, "SVGRoot"},
-    {kScrollBarRole, "ScrollBar"},
-    {kSearchRole, "Search"},
-    {kSearchBoxRole, "SearchBox"},
-    {kSliderRole, "Slider"},
-    {kSliderThumbRole, "SliderThumb"},
-    {kSpinButtonRole, "SpinButton"},
-    {kSplitterRole, "Splitter"},
-    {kStaticTextRole, "StaticText"},
-    {kStatusRole, "Status"},
-    {kSwitchRole, "Switch"},
-    {kTabListRole, "TabList"},
-    {kTabPanelRole, "TabPanel"},
-    {kTabRole, "Tab"},
-    {kTableHeaderContainerRole, "TableHeaderContainer"},
-    {kTableRole, "Table"},
-    {kTermRole, "Term"},
-    {kTextFieldRole, "TextField"},
-    {kTextFieldWithComboBoxRole, "ComboBox"},
-    {kTimeRole, "Time"},
-    {kTimerRole, "Timer"},
-    {kToggleButtonRole, "ToggleButton"},
-    {kToolbarRole, "Toolbar"},
-    {kTreeGridRole, "TreeGrid"},
-    {kTreeItemRole, "TreeItem"},
-    {kTreeRole, "Tree"},
-    {kUserInterfaceTooltipRole, "UserInterfaceTooltip"},
-    {kVideoRole, "Video"},
-    {kWebAreaRole, "WebArea"}};
+    {ax::mojom::Role::kGrid, "Grid"},
+    {ax::mojom::Role::kGroup, "Group"},
+    {ax::mojom::Role::kHeading, "Heading"},
+    {ax::mojom::Role::kIframePresentational, "IframePresentational"},
+    {ax::mojom::Role::kIframe, "Iframe"},
+    {ax::mojom::Role::kIgnored, "Ignored"},
+    {ax::mojom::Role::kImageMap, "ImageMap"},
+    {ax::mojom::Role::kImage, "Image"},
+    {ax::mojom::Role::kInlineTextBox, "InlineTextBox"},
+    {ax::mojom::Role::kInputTime, "InputTime"},
+    {ax::mojom::Role::kKeyboard, "Keyboard"},
+    {ax::mojom::Role::kLabelText, "Label"},
+    {ax::mojom::Role::kLayoutTable, "LayoutTable"},
+    {ax::mojom::Role::kLayoutTableCell, "LayoutCellTable"},
+    {ax::mojom::Role::kLayoutTableColumn, "LayoutColumnTable"},
+    {ax::mojom::Role::kLayoutTableRow, "LayoutRowTable"},
+    {ax::mojom::Role::kLegend, "Legend"},
+    {ax::mojom::Role::kLink, "Link"},
+    {ax::mojom::Role::kLineBreak, "LineBreak"},
+    {ax::mojom::Role::kListBoxOption, "ListBoxOption"},
+    {ax::mojom::Role::kListBox, "ListBox"},
+    {ax::mojom::Role::kListItem, "ListItem"},
+    {ax::mojom::Role::kListMarker, "ListMarker"},
+    {ax::mojom::Role::kList, "List"},
+    {ax::mojom::Role::kLog, "Log"},
+    {ax::mojom::Role::kMain, "Main"},
+    {ax::mojom::Role::kMark, "Mark"},
+    {ax::mojom::Role::kMarquee, "Marquee"},
+    {ax::mojom::Role::kMath, "Math"},
+    {ax::mojom::Role::kMenuBar, "MenuBar"},
+    {ax::mojom::Role::kMenuButton, "MenuButton"},
+    {ax::mojom::Role::kMenuItem, "MenuItem"},
+    {ax::mojom::Role::kMenuItemCheckBox, "MenuItemCheckBox"},
+    {ax::mojom::Role::kMenuItemRadio, "MenuItemRadio"},
+    {ax::mojom::Role::kMenuListOption, "MenuListOption"},
+    {ax::mojom::Role::kMenuListPopup, "MenuListPopup"},
+    {ax::mojom::Role::kMenu, "Menu"},
+    {ax::mojom::Role::kMeter, "Meter"},
+    {ax::mojom::Role::kNavigation, "Navigation"},
+    {ax::mojom::Role::kNote, "Note"},
+    {ax::mojom::Role::kPane, "Pane"},
+    {ax::mojom::Role::kParagraph, "Paragraph"},
+    {ax::mojom::Role::kPopUpButton, "PopUpButton"},
+    {ax::mojom::Role::kPre, "Pre"},
+    {ax::mojom::Role::kPresentational, "Presentational"},
+    {ax::mojom::Role::kProgressIndicator, "ProgressIndicator"},
+    {ax::mojom::Role::kRadioButton, "RadioButton"},
+    {ax::mojom::Role::kRadioGroup, "RadioGroup"},
+    {ax::mojom::Role::kRegion, "Region"},
+    {ax::mojom::Role::kRootWebArea, "WebArea"},
+    {ax::mojom::Role::kRowHeader, "RowHeader"},
+    {ax::mojom::Role::kRow, "Row"},
+    {ax::mojom::Role::kRuby, "Ruby"},
+    {ax::mojom::Role::kSvgRoot, "SVGRoot"},
+    {ax::mojom::Role::kScrollBar, "ScrollBar"},
+    {ax::mojom::Role::kScrollView, "ScrollView"},
+    {ax::mojom::Role::kSearch, "Search"},
+    {ax::mojom::Role::kSearchBox, "SearchBox"},
+    {ax::mojom::Role::kSlider, "Slider"},
+    {ax::mojom::Role::kSliderThumb, "SliderThumb"},
+    {ax::mojom::Role::kSpinButton, "SpinButton"},
+    {ax::mojom::Role::kSplitter, "Splitter"},
+    {ax::mojom::Role::kStaticText, "StaticText"},
+    {ax::mojom::Role::kStatus, "Status"},
+    {ax::mojom::Role::kSwitch, "Switch"},
+    {ax::mojom::Role::kTabList, "TabList"},
+    {ax::mojom::Role::kTabPanel, "TabPanel"},
+    {ax::mojom::Role::kTab, "Tab"},
+    {ax::mojom::Role::kTableHeaderContainer, "TableHeaderContainer"},
+    {ax::mojom::Role::kTable, "Table"},
+    {ax::mojom::Role::kTerm, "Term"},
+    {ax::mojom::Role::kTextField, "TextField"},
+    {ax::mojom::Role::kTextFieldWithComboBox, "ComboBox"},
+    {ax::mojom::Role::kTime, "Time"},
+    {ax::mojom::Role::kTimer, "Timer"},
+    {ax::mojom::Role::kTitleBar, "TitleBar"},
+    {ax::mojom::Role::kToggleButton, "ToggleButton"},
+    {ax::mojom::Role::kToolbar, "Toolbar"},
+    {ax::mojom::Role::kTreeGrid, "TreeGrid"},
+    {ax::mojom::Role::kTreeItem, "TreeItem"},
+    {ax::mojom::Role::kTree, "Tree"},
+    {ax::mojom::Role::kTooltip, "UserInterfaceTooltip"},
+    {ax::mojom::Role::kUnknown, "Unknown"},
+    {ax::mojom::Role::kVideo, "Video"},
+    {ax::mojom::Role::kWebArea, "WebArea"},
+    {ax::mojom::Role::kWebView, "WebView"},
+    {ax::mojom::Role::kWindow, "Window"}};
 
-static_assert(arraysize(kInternalRoles) == kNumRoles,
+static_assert(base::size(kInternalRoles) ==
+                  static_cast<size_t>(ax::mojom::Role::kMaxValue) + 1,
               "Not all internal roles have an entry in internalRoles array");
 
 // Roles which we need to map in the other direction
-const RoleEntry kReverseRoles[] = {{"button", kToggleButtonRole},
-                                   {"combobox", kPopUpButtonRole},
-                                   {"contentinfo", kFooterRole},
-                                   {"menuitem", kMenuButtonRole},
-                                   {"menuitem", kMenuListOptionRole},
-                                   {"progressbar", kMeterRole},
-                                   {"textbox", kTextFieldRole},
-                                   {"combobox", kComboBoxMenuButtonRole},
-                                   {"combobox", kTextFieldWithComboBoxRole}};
+const RoleEntry kReverseRoles[] = {
+    {"button", ax::mojom::Role::kToggleButton},
+    {"combobox", ax::mojom::Role::kPopUpButton},
+    {"contentinfo", ax::mojom::Role::kFooter},
+    {"menuitem", ax::mojom::Role::kMenuButton},
+    {"menuitem", ax::mojom::Role::kMenuListOption},
+    {"progressbar", ax::mojom::Role::kMeter},
+    {"textbox", ax::mojom::Role::kTextField},
+    {"combobox", ax::mojom::Role::kComboBoxMenuButton},
+    {"combobox", ax::mojom::Role::kTextFieldWithComboBox}};
 
 static ARIARoleMap* CreateARIARoleMap() {
   ARIARoleMap* role_map = new ARIARoleMap;
 
-  for (size_t i = 0; i < arraysize(kRoles); ++i)
+  for (size_t i = 0; i < base::size(kRoles); ++i)
     role_map->Set(String(kRoles[i].aria_role), kRoles[i].webcore_role);
 
   // Grids "ignore" their non-row children during computation of children.
-  role_map->Set(String("rowgroup"), kIgnoredRole);
+  role_map->Set(String("rowgroup"), ax::mojom::Role::kIgnored);
 
   return role_map;
 }
 
 static Vector<AtomicString>* CreateRoleNameVector() {
-  Vector<AtomicString>* role_name_vector = new Vector<AtomicString>(kNumRoles);
-  for (int i = 0; i < kNumRoles; i++)
+  Vector<AtomicString>* role_name_vector =
+      new Vector<AtomicString>(base::size(kInternalRoles));
+  for (size_t i = 0; i < base::size(kInternalRoles); i++)
     (*role_name_vector)[i] = g_null_atom;
 
-  for (size_t i = 0; i < arraysize(kRoles); ++i) {
-    (*role_name_vector)[kRoles[i].webcore_role] =
+  for (size_t i = 0; i < base::size(kRoles); ++i) {
+    (*role_name_vector)[static_cast<size_t>(kRoles[i].webcore_role)] =
         AtomicString(kRoles[i].aria_role);
   }
 
-  for (size_t i = 0; i < arraysize(kReverseRoles); ++i) {
-    (*role_name_vector)[kReverseRoles[i].webcore_role] =
+  for (size_t i = 0; i < base::size(kReverseRoles); ++i) {
+    (*role_name_vector)[static_cast<size_t>(kReverseRoles[i].webcore_role)] =
         AtomicString(kReverseRoles[i].aria_role);
   }
 
@@ -446,9 +458,10 @@ static Vector<AtomicString>* CreateRoleNameVector() {
 
 static Vector<AtomicString>* CreateInternalRoleNameVector() {
   Vector<AtomicString>* internal_role_name_vector =
-      new Vector<AtomicString>(kNumRoles);
-  for (size_t i = 0; i < arraysize(kInternalRoles); i++) {
-    (*internal_role_name_vector)[kInternalRoles[i].webcore_role] =
+      new Vector<AtomicString>(base::size(kInternalRoles));
+  for (size_t i = 0; i < base::size(kInternalRoles); i++) {
+    (*internal_role_name_vector)[static_cast<size_t>(
+        kInternalRoles[i].webcore_role)] =
         AtomicString(kInternalRoles[i].internal_role_name);
   }
 
@@ -466,8 +479,8 @@ unsigned AXObject::number_of_live_ax_objects_ = 0;
 AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
     : id_(0),
       have_children_(false),
-      role_(kUnknownRole),
-      aria_role_(kUnknownRole),
+      role_(ax::mojom::Role::kUnknown),
+      aria_role_(ax::mojom::Role::kUnknown),
       last_known_is_ignored_value_(kDefaultBehavior),
       explicit_container_id_(0),
       parent_(nullptr),
@@ -656,30 +669,31 @@ void AXObject::GetSparseAXAttributes(
 }
 
 bool AXObject::IsARIATextControl() const {
-  return AriaRoleAttribute() == kTextFieldRole ||
-         AriaRoleAttribute() == kSearchBoxRole ||
-         AriaRoleAttribute() == kTextFieldWithComboBoxRole;
+  return AriaRoleAttribute() == ax::mojom::Role::kTextField ||
+         AriaRoleAttribute() == ax::mojom::Role::kSearchBox ||
+         AriaRoleAttribute() == ax::mojom::Role::kTextFieldWithComboBox;
 }
 
 bool AXObject::IsButton() const {
-  AccessibilityRole role = RoleValue();
+  ax::mojom::Role role = RoleValue();
 
-  return role == kButtonRole || role == kPopUpButtonRole ||
-         role == kToggleButtonRole;
+  return role == ax::mojom::Role::kButton ||
+         role == ax::mojom::Role::kPopUpButton ||
+         role == ax::mojom::Role::kToggleButton;
 }
 
 bool AXObject::IsCheckable() const {
   switch (RoleValue()) {
-    case kCheckBoxRole:
-    case kMenuItemCheckBoxRole:
-    case kMenuItemRadioRole:
-    case kRadioButtonRole:
-    case kSwitchRole:
-    case kToggleButtonRole:
+    case ax::mojom::Role::kCheckBox:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kSwitch:
+    case ax::mojom::Role::kToggleButton:
       return true;
-    case kTreeItemRole:
-    case kListBoxOptionRole:
-    case kMenuListOptionRole:
+    case ax::mojom::Role::kTreeItem:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kMenuListOption:
       return AriaCheckedIsPresent();
     default:
       return false;
@@ -695,14 +709,15 @@ AccessibilityCheckedState AXObject::CheckedState() const {
     return kCheckedStateUndefined;
 
   // Try ARIA checked/pressed state
-  const AccessibilityRole role = RoleValue();
-  const auto prop = role == kToggleButtonRole ? AOMStringProperty::kPressed
-                                              : AOMStringProperty::kChecked;
+  const ax::mojom::Role role = RoleValue();
+  const auto prop = role == ax::mojom::Role::kToggleButton
+                        ? AOMStringProperty::kPressed
+                        : AOMStringProperty::kChecked;
   const AtomicString& checked_attribute = GetAOMPropertyOrARIAAttribute(prop);
   if (checked_attribute) {
     if (EqualIgnoringASCIICase(checked_attribute, "mixed")) {
       // Only checkable role that doesn't support mixed is the switch.
-      if (role != kSwitchRole)
+      if (role != ax::mojom::Role::kSwitch)
         return kCheckedStateMixed;
     }
 
@@ -713,7 +728,7 @@ AccessibilityCheckedState AXObject::CheckedState() const {
   }
 
   // Native checked state
-  if (role != kToggleButtonRole) {
+  if (role != ax::mojom::Role::kToggleButton) {
     const Node* node = this->GetNode();
     if (!node)
       return kCheckedStateUndefined;
@@ -748,34 +763,34 @@ bool AXObject::IsNativeCheckboxInMixedState(const Node* node) {
 
 bool AXObject::IsLandmarkRelated() const {
   switch (RoleValue()) {
-    case kApplicationRole:
-    case kArticleRole:
-    case kBannerRole:
-    case kComplementaryRole:
-    case kContentInfoRole:
-    case kDocAcknowledgmentsRole:
-    case kDocAfterwordRole:
-    case kDocAppendixRole:
-    case kDocBibliographyRole:
-    case kDocChapterRole:
-    case kDocConclusionRole:
-    case kDocCreditsRole:
-    case kDocEndnotesRole:
-    case kDocEpilogueRole:
-    case kDocErrataRole:
-    case kDocForewordRole:
-    case kDocGlossaryRole:
-    case kDocIntroductionRole:
-    case kDocPartRole:
-    case kDocPrefaceRole:
-    case kDocPrologueRole:
-    case kDocTocRole:
-    case kFooterRole:
-    case kFormRole:
-    case kMainRole:
-    case kNavigationRole:
-    case kRegionRole:
-    case kSearchRole:
+    case ax::mojom::Role::kApplication:
+    case ax::mojom::Role::kArticle:
+    case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kComplementary:
+    case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kDocAcknowledgments:
+    case ax::mojom::Role::kDocAfterword:
+    case ax::mojom::Role::kDocAppendix:
+    case ax::mojom::Role::kDocBibliography:
+    case ax::mojom::Role::kDocChapter:
+    case ax::mojom::Role::kDocConclusion:
+    case ax::mojom::Role::kDocCredits:
+    case ax::mojom::Role::kDocEndnotes:
+    case ax::mojom::Role::kDocEpilogue:
+    case ax::mojom::Role::kDocErrata:
+    case ax::mojom::Role::kDocForeword:
+    case ax::mojom::Role::kDocGlossary:
+    case ax::mojom::Role::kDocIntroduction:
+    case ax::mojom::Role::kDocPart:
+    case ax::mojom::Role::kDocPreface:
+    case ax::mojom::Role::kDocPrologue:
+    case ax::mojom::Role::kDocToc:
+    case ax::mojom::Role::kFooter:
+    case ax::mojom::Role::kForm:
+    case ax::mojom::Role::kMain:
+    case ax::mojom::Role::kNavigation:
+    case ax::mojom::Role::kRegion:
+    case ax::mojom::Role::kSearch:
       return true;
     default:
       return false;
@@ -784,12 +799,12 @@ bool AXObject::IsLandmarkRelated() const {
 
 bool AXObject::IsMenuRelated() const {
   switch (RoleValue()) {
-    case kMenuRole:
-    case kMenuBarRole:
-    case kMenuButtonRole:
-    case kMenuItemRole:
-    case kMenuItemCheckBoxRole:
-    case kMenuItemRadioRole:
+    case ax::mojom::Role::kMenu:
+    case ax::mojom::Role::kMenuBar:
+    case ax::mojom::Role::kMenuButton:
+    case ax::mojom::Role::kMenuItem:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
       return true;
     default:
       return false;
@@ -805,11 +820,12 @@ bool AXObject::IsPasswordFieldAndShouldHideValue() const {
 }
 
 bool AXObject::IsTextObject() const {
-  // Objects with |kLineBreakRole| are HTML <br> elements and are not backed by
-  // DOM text nodes. We can't mark them as text objects for that reason.
+  // Objects with |ax::mojom::Role::kLineBreak| are HTML <br> elements and are
+  // not backed by DOM text nodes. We can't mark them as text objects for that
+  // reason.
   switch (RoleValue()) {
-    case kInlineTextBoxRole:
-    case kStaticTextRole:
+    case ax::mojom::Role::kInlineTextBox:
+    case ax::mojom::Role::kStaticText:
       return true;
     default:
       return false;
@@ -820,21 +836,22 @@ bool AXObject::IsClickable() const {
   if (IsButton() || IsLink() || IsTextControl())
     return true;
 
-  // TODO(dmazzoni): Ensure that kColorWellRole and kSpinButtonRole are
-  // correctly handled here via their constituent parts.
+  // TODO(dmazzoni): Ensure that ax::mojom::Role::kColorWell and
+  // ax::mojom::Role::kSpinButton are correctly handled here via their
+  // constituent parts.
   switch (RoleValue()) {
-    case kCheckBoxRole:
-    case kComboBoxMenuButtonRole:
-    case kDisclosureTriangleRole:
-    case kListBoxRole:
-    case kListBoxOptionRole:
-    case kMenuItemCheckBoxRole:
-    case kMenuItemRadioRole:
-    case kMenuItemRole:
-    case kMenuListOptionRole:
-    case kRadioButtonRole:
-    case kSwitchRole:
-    case kTabRole:
+    case ax::mojom::Role::kCheckBox:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kDisclosureTriangle:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kMenuItem:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kSwitch:
+    case ax::mojom::Role::kTab:
       return true;
     default:
       return false;
@@ -1133,10 +1150,10 @@ const AXObject* AXObject::DisabledAncestor() const {
 
 const AXObject* AXObject::DatetimeAncestor(int max_levels_to_check) const {
   switch (RoleValue()) {
-    case kDateTimeRole:
-    case kDateRole:
-    case kInputTimeRole:
-    case kTimeRole:
+    case ax::mojom::Role::kDateTime:
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kInputTime:
+    case ax::mojom::Role::kTime:
       return this;
     default:
       break;
@@ -1185,17 +1202,17 @@ bool AXObject::CanReceiveAccessibilityFocus() const {
 
 bool AXObject::CanSetValueAttribute() const {
   switch (RoleValue()) {
-    case kColorWellRole:
-    case kDateRole:
-    case kDateTimeRole:
-    case kScrollBarRole:
-    case kSliderRole:
-    case kSpinButtonRole:
-    case kSplitterRole:
-    case kTextFieldRole:
-    case kTextFieldWithComboBoxRole:
-    case kTimeRole:
-    case kSearchBoxRole:
+    case ax::mojom::Role::kColorWell:
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kDateTime:
+    case ax::mojom::Role::kScrollBar:
+    case ax::mojom::Role::kSlider:
+    case ax::mojom::Role::kSpinButton:
+    case ax::mojom::Role::kSplitter:
+    case ax::mojom::Role::kTextField:
+    case ax::mojom::Role::kTextFieldWithComboBox:
+    case ax::mojom::Role::kTime:
+    case ax::mojom::Role::kSearchBox:
       return Restriction() == kNone;
     default:
       break;
@@ -1213,7 +1230,7 @@ bool AXObject::CanSetFocusAttribute() const {
 
   // Children of elements with an aria-activedescendant attribute should be
   // focusable if they have a (non-presentational) ARIA role.
-  if (!IsPresentational() && AriaRoleAttribute() != kUnknownRole &&
+  if (!IsPresentational() && AriaRoleAttribute() != ax::mojom::Role::kUnknown &&
       CanBeActiveDescendant()) {
     return true;
   }
@@ -1228,7 +1245,8 @@ bool AXObject::CanSetFocusAttribute() const {
   // don't help when the <option> is canvas fallback, and because
   // a common case for aria-owns from a textbox that points to a list
   // does not change the hierarchy (textboxes don't support children)
-  if (RoleValue() == kListBoxOptionRole || RoleValue() == kMenuListOptionRole)
+  if (RoleValue() == ax::mojom::Role::kListBoxOption ||
+      RoleValue() == ax::mojom::Role::kMenuListOption)
     return true;
 
   return node->IsElementNode() && ToElement(node)->SupportsFocus();
@@ -1299,7 +1317,7 @@ bool AXObject::AncestorExposesActiveDescendant() const {
 }
 
 bool AXObject::HasIndirectChildren() const {
-  return IsTableCol() || RoleValue() == kTableHeaderContainerRole;
+  return IsTableCol() || RoleValue() == ax::mojom::Role::kTableHeaderContainer;
 }
 
 bool AXObject::CanSetSelectedAttribute() const {
@@ -1309,11 +1327,11 @@ bool AXObject::CanSetSelectedAttribute() const {
 
 bool AXObject::IsSubWidget() const {
   switch (RoleValue()) {
-    case kCellRole:
-    case kColumnHeaderRole:
-    case kRowHeaderRole:
-    case kColumnRole:
-    case kRowRole: {
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kRowHeader:
+    case ax::mojom::Role::kColumn:
+    case ax::mojom::Role::kRow: {
       // If it has an explicit ARIA role, it's a subwidget.
       //
       // Reasoning:
@@ -1327,7 +1345,7 @@ bool AXObject::IsSubWidget() const {
       // an ARIA 1.1 role of "table", should not be selectable. We may
       // need to create separate role enums for grid cells vs table cells
       // to implement this.
-      if (AriaRoleAttribute() != kUnknownRole)
+      if (AriaRoleAttribute() != ax::mojom::Role::kUnknown)
         return true;
 
       // Otherwise it's only a subwidget if it's in a grid or treegrid,
@@ -1335,15 +1353,15 @@ bool AXObject::IsSubWidget() const {
       AXObject* parent = ParentObjectUnignored();
       while (parent && !parent->IsTableLikeRole())
         parent = parent->ParentObjectUnignored();
-      if (parent && (parent->RoleValue() == kGridRole ||
-                     parent->RoleValue() == kTreeGridRole))
+      if (parent && (parent->RoleValue() == ax::mojom::Role::kGrid ||
+                     parent->RoleValue() == ax::mojom::Role::kTreeGrid))
         return true;
       return false;
     }
-    case kListBoxOptionRole:
-    case kMenuListOptionRole:
-    case kTabRole:
-    case kTreeItemRole:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kTab:
+    case ax::mojom::Role::kTreeItem:
       return true;
     default:
       break;
@@ -1353,17 +1371,17 @@ bool AXObject::IsSubWidget() const {
 
 bool AXObject::SupportsARIASetSizeAndPosInSet() const {
   switch (RoleValue()) {
-    case kArticleRole:
-    case kListBoxOptionRole:
-    case kListItemRole:
-    case kMenuItemRole:
-    case kMenuItemRadioRole:
-    case kMenuItemCheckBoxRole:
-    case kMenuListOptionRole:
-    case kRadioButtonRole:
-    case kRowRole:
-    case kTabRole:
-    case kTreeItemRole:
+    case ax::mojom::Role::kArticle:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kListItem:
+    case ax::mojom::Role::kMenuItem:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kRow:
+    case ax::mojom::Role::kTab:
+    case ax::mojom::Role::kTreeItem:
       return true;
     default:
       break;
@@ -1398,9 +1416,10 @@ String AXObject::GetName(AXNameFrom& name_from,
   String text = TextAlternative(false, false, visited, name_from,
                                 &related_objects, nullptr);
 
-  AccessibilityRole role = RoleValue();
-  if (!GetNode() || (!IsHTMLBRElement(GetNode()) && role != kStaticTextRole &&
-                     role != kInlineTextBoxRole))
+  ax::mojom::Role role = RoleValue();
+  if (!GetNode() ||
+      (!IsHTMLBRElement(GetNode()) && role != ax::mojom::Role::kStaticText &&
+       role != ax::mojom::Role::kInlineTextBox))
     text = CollapseWhitespace(text);
 
   if (name_objects) {
@@ -1702,19 +1721,19 @@ AXDefaultActionVerb AXObject::Action() const {
   }
 
   switch (RoleValue()) {
-    case kButtonRole:
-    case kDisclosureTriangleRole:
-    case kToggleButtonRole:
+    case ax::mojom::Role::kButton:
+    case ax::mojom::Role::kDisclosureTriangle:
+    case ax::mojom::Role::kToggleButton:
       return AXDefaultActionVerb::kPress;
-    case kListBoxOptionRole:
-    case kMenuItemRadioRole:
-    case kMenuItemRole:
-    case kMenuListOptionRole:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kMenuItem:
+    case ax::mojom::Role::kMenuListOption:
       return AXDefaultActionVerb::kSelect;
-    case kLinkRole:
+    case ax::mojom::Role::kLink:
       return AXDefaultActionVerb::kJump;
-    case kComboBoxMenuButtonRole:
-    case kPopUpButtonRole:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kPopUpButton:
       return AXDefaultActionVerb::kOpen;
     default:
       if (action_element == GetNode())
@@ -1735,65 +1754,65 @@ bool AXObject::AriaCheckedIsPresent() const {
 
 bool AXObject::SupportsARIAExpanded() const {
   switch (RoleValue()) {
-    case kAlertDialogRole:
-    case kAlertRole:
-    case kArticleRole:
-    case kBannerRole:
-    case kButtonRole:
-    case kCellRole:
-    case kColumnHeaderRole:
-    case kComboBoxGroupingRole:
-    case kComboBoxMenuButtonRole:
-    case kComplementaryRole:
-    case kContentInfoRole:
-    case kDefinitionRole:
-    case kDialogRole:
-    case kDirectoryRole:
-    case kDisclosureTriangleRole:
-    case kDocumentRole:
-    case kFeedRole:
-    case kFigureRole:
-    case kFormRole:
-    case kGridRole:
-    case kGroupRole:
-    case kHeadingRole:
-    case kImageRole:
-    case kLayoutTableRole:
-    case kListRole:
-    case kListBoxRole:
-    case kListBoxOptionRole:
-    case kListItemRole:
-    case kLinkRole:
-    case kLogRole:
-    case kMainRole:
-    case kMarqueeRole:
-    case kMathRole:
-    case kMenuRole:
-    case kMenuBarRole:
-    case kMenuButtonRole:
-    case kMenuItemRole:
-    case kMenuItemCheckBoxRole:
-    case kMenuItemRadioRole:
-    case kNavigationRole:
-    case kNoteRole:
-    case kProgressIndicatorRole:
-    case kRadioGroupRole:
-    case kRegionRole:
-    case kRowRole:
-    case kRowHeaderRole:
-    case kSearchRole:
-    case kStatusRole:
-    case kTabRole:
-    case kTableRole:
-    case kTabPanelRole:
-    case kTermRole:
-    case kTextFieldWithComboBoxRole:
-    case kTimerRole:
-    case kToolbarRole:
-    case kUserInterfaceTooltipRole:
-    case kTreeRole:
-    case kTreeGridRole:
-    case kTreeItemRole:
+    case ax::mojom::Role::kAlertDialog:
+    case ax::mojom::Role::kAlert:
+    case ax::mojom::Role::kArticle:
+    case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kButton:
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kComplementary:
+    case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kDefinition:
+    case ax::mojom::Role::kDialog:
+    case ax::mojom::Role::kDirectory:
+    case ax::mojom::Role::kDisclosureTriangle:
+    case ax::mojom::Role::kDocument:
+    case ax::mojom::Role::kFeed:
+    case ax::mojom::Role::kFigure:
+    case ax::mojom::Role::kForm:
+    case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kGroup:
+    case ax::mojom::Role::kHeading:
+    case ax::mojom::Role::kImage:
+    case ax::mojom::Role::kLayoutTable:
+    case ax::mojom::Role::kList:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kListItem:
+    case ax::mojom::Role::kLink:
+    case ax::mojom::Role::kLog:
+    case ax::mojom::Role::kMain:
+    case ax::mojom::Role::kMarquee:
+    case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kMenu:
+    case ax::mojom::Role::kMenuBar:
+    case ax::mojom::Role::kMenuButton:
+    case ax::mojom::Role::kMenuItem:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kNavigation:
+    case ax::mojom::Role::kNote:
+    case ax::mojom::Role::kProgressIndicator:
+    case ax::mojom::Role::kRadioGroup:
+    case ax::mojom::Role::kRegion:
+    case ax::mojom::Role::kRow:
+    case ax::mojom::Role::kRowHeader:
+    case ax::mojom::Role::kSearch:
+    case ax::mojom::Role::kStatus:
+    case ax::mojom::Role::kTab:
+    case ax::mojom::Role::kTable:
+    case ax::mojom::Role::kTabPanel:
+    case ax::mojom::Role::kTerm:
+    case ax::mojom::Role::kTextFieldWithComboBox:
+    case ax::mojom::Role::kTimer:
+    case ax::mojom::Role::kToolbar:
+    case ax::mojom::Role::kTooltip:
+    case ax::mojom::Role::kTree:
+    case ax::mojom::Role::kTreeGrid:
+    case ax::mojom::Role::kTreeItem:
       return true;
     default:
       return false;
@@ -1853,82 +1872,85 @@ AXRestriction AXObject::Restriction() const {
   return kNone;
 }
 
-AccessibilityRole AXObject::DetermineAccessibilityRole() {
+ax::mojom::Role AXObject::DetermineAccessibilityRole() {
   aria_role_ = DetermineAriaRoleAttribute();
   return aria_role_;
 }
 
-AccessibilityRole AXObject::AriaRoleAttribute() const {
+ax::mojom::Role AXObject::AriaRoleAttribute() const {
   return aria_role_;
 }
 
-AccessibilityRole AXObject::DetermineAriaRoleAttribute() const {
+ax::mojom::Role AXObject::DetermineAriaRoleAttribute() const {
   const AtomicString& aria_role =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
   if (aria_role.IsNull() || aria_role.IsEmpty())
-    return kUnknownRole;
+    return ax::mojom::Role::kUnknown;
 
-  AccessibilityRole role = AriaRoleToWebCoreRole(aria_role);
+  ax::mojom::Role role = AriaRoleToWebCoreRole(aria_role);
 
   // ARIA states if an item can get focus, it should not be presentational.
-  if ((role == kNoneRole || role == kPresentationalRole) &&
+  if ((role == ax::mojom::Role::kNone ||
+       role == ax::mojom::Role::kPresentational) &&
       CanSetFocusAttribute())
-    return kUnknownRole;
+    return ax::mojom::Role::kUnknown;
 
-  if (role == kButtonRole)
+  if (role == ax::mojom::Role::kButton)
     role = ButtonRoleType();
 
   role = RemapAriaRoleDueToParent(role);
 
   // Distinguish between different uses of the "combobox" role:
   //
-  // kComboBoxGroupingRole:
+  // ax::mojom::Role::kComboBoxGrouping:
   //   <div role="combobox"><input></div>
-  // kTextFieldWithComboBoxRole:
+  // ax::mojom::Role::kTextFieldWithComboBox:
   //   <input role="combobox">
-  // kComboBoxMenuButtonRole:
+  // ax::mojom::Role::kComboBoxMenuButton:
   //   <div tabindex=0 role="combobox">Select</div>
-  if (role == kComboBoxGroupingRole) {
+  if (role == ax::mojom::Role::kComboBoxGrouping) {
     if (IsNativeTextControl())
-      role = kTextFieldWithComboBoxRole;
+      role = ax::mojom::Role::kTextFieldWithComboBox;
     else if (GetElement() && GetElement()->SupportsFocus())
-      role = kComboBoxMenuButtonRole;
+      role = ax::mojom::Role::kComboBoxMenuButton;
   }
 
-  if (role)
+  if (role != ax::mojom::Role::kUnknown)
     return role;
 
-  return kUnknownRole;
+  return ax::mojom::Role::kUnknown;
 }
 
-AccessibilityRole AXObject::RemapAriaRoleDueToParent(
-    AccessibilityRole role) const {
+ax::mojom::Role AXObject::RemapAriaRoleDueToParent(ax::mojom::Role role) const {
   // Some objects change their role based on their parent.
   // However, asking for the unignoredParent calls accessibilityIsIgnored(),
   // which can trigger a loop.  While inside the call stack of creating an
   // element, we need to avoid accessibilityIsIgnored().
   // https://bugs.webkit.org/show_bug.cgi?id=65174
 
-  if (role != kListBoxOptionRole && role != kMenuItemRole)
+  if (role != ax::mojom::Role::kListBoxOption &&
+      role != ax::mojom::Role::kMenuItem)
     return role;
 
   for (AXObject* parent = ParentObject();
        parent && !parent->AccessibilityIsIgnored();
        parent = parent->ParentObject()) {
-    AccessibilityRole parent_aria_role = parent->AriaRoleAttribute();
+    ax::mojom::Role parent_aria_role = parent->AriaRoleAttribute();
 
     // Selects and listboxes both have options as child roles, but they map to
     // different roles within WebCore.
-    if (role == kListBoxOptionRole && parent_aria_role == kMenuRole)
-      return kMenuItemRole;
+    if (role == ax::mojom::Role::kListBoxOption &&
+        parent_aria_role == ax::mojom::Role::kMenu)
+      return ax::mojom::Role::kMenuItem;
     // An aria "menuitem" may map to MenuButton or MenuItem depending on its
     // parent.
-    if (role == kMenuItemRole && parent_aria_role == kGroupRole)
-      return kMenuButtonRole;
+    if (role == ax::mojom::Role::kMenuItem &&
+        parent_aria_role == ax::mojom::Role::kGroup)
+      return ax::mojom::Role::kMenuButton;
 
     // If the parent had a different role, then we don't need to continue
     // searching up the chain.
-    if (parent_aria_role)
+    if (parent_aria_role != ax::mojom::Role::kUnknown)
       break;
   }
 
@@ -1952,7 +1974,8 @@ bool AXObject::LiveRegionAtomic() const {
 
   // ARIA roles "alert" and "status" should have an implicit aria-atomic value
   // of true.
-  return RoleValue() == kAlertRole || RoleValue() == kStatusRole;
+  return RoleValue() == ax::mojom::Role::kAlert ||
+         RoleValue() == ax::mojom::Role::kStatus;
 }
 
 const AtomicString& AXObject::ContainerLiveRegionStatus() const {
@@ -2166,18 +2189,18 @@ AXObject* AXObject::ParentObjectUnignored() const {
 // sub-widgets
 bool AXObject::IsContainerWidget() const {
   switch (RoleValue()) {
-    case kComboBoxGroupingRole:
-    case kComboBoxMenuButtonRole:
-    case kGridRole:
-    case kListBoxRole:
-    case kMenuBarRole:
-    case kMenuRole:
-    case kRadioGroupRole:
-    case kSpinButtonRole:
-    case kTabListRole:
-    case kToolbarRole:
-    case kTreeGridRole:
-    case kTreeRole:
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kMenuBar:
+    case ax::mojom::Role::kMenu:
+    case ax::mojom::Role::kRadioGroup:
+    case ax::mojom::Role::kSpinButton:
+    case ax::mojom::Role::kTabList:
+    case ax::mojom::Role::kToolbar:
+    case ax::mojom::Role::kTreeGrid:
+    case ax::mojom::Role::kTree:
       return true;
     default:
       return false;
@@ -2349,10 +2372,10 @@ void AXObject::SetScrollOffset(const IntPoint& offset) const {
 
 bool AXObject::IsTableLikeRole() const {
   switch (RoleValue()) {
-    case kLayoutTableRole:
-    case kTableRole:
-    case kGridRole:
-    case kTreeGridRole:
+    case ax::mojom::Role::kLayoutTable:
+    case ax::mojom::Role::kTable:
+    case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kTreeGrid:
       return true;
     default:
       return false;
@@ -2360,15 +2383,16 @@ bool AXObject::IsTableLikeRole() const {
 }
 
 bool AXObject::IsTableRowLikeRole() const {
-  return RoleValue() == kRowRole || RoleValue() == kLayoutTableRowRole;
+  return RoleValue() == ax::mojom::Role::kRow ||
+         RoleValue() == ax::mojom::Role::kLayoutTableRow;
 }
 
 bool AXObject::IsTableCellLikeRole() const {
   switch (RoleValue()) {
-    case kLayoutTableCellRole:
-    case kCellRole:
-    case kColumnHeaderRole:
-    case kRowHeaderRole:
+    case ax::mojom::Role::kLayoutTableCell:
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kRowHeader:
       return true;
     default:
       return false;
@@ -2401,7 +2425,7 @@ void AXObject::ColumnHeaders(AXObjectVector& headers) const {
 
   for (const auto& row : TableRowChildren()) {
     for (const auto& cell : row->TableCellChildren()) {
-      if (cell->RoleValue() == kColumnHeaderRole)
+      if (cell->RoleValue() == ax::mojom::Role::kColumnHeader)
         headers.push_back(cell);
     }
   }
@@ -2413,7 +2437,7 @@ void AXObject::RowHeaders(AXObjectVector& headers) const {
 
   for (const auto& row : TableRowChildren()) {
     for (const auto& cell : row->TableCellChildren()) {
-      if (cell->RoleValue() == kRowHeaderRole)
+      if (cell->RoleValue() == ax::mojom::Role::kRowHeader)
         headers.push_back(cell);
     }
   }
@@ -2632,7 +2656,7 @@ AXObject::AXObjectVector AXObject::TableRowChildren() const {
   for (const auto& child : Children()) {
     if (child->IsTableRowLikeRole())
       result.push_back(child);
-    else if (child->RoleValue() == kGenericContainerRole)
+    else if (child->RoleValue() == ax::mojom::Role::kGenericContainer)
       result.AppendVector(child->TableRowChildren());
   }
   return result;
@@ -2643,7 +2667,7 @@ AXObject::AXObjectVector AXObject::TableCellChildren() const {
   for (const auto& child : Children()) {
     if (child->IsTableCellLikeRole())
       result.push_back(child);
-    else if (child->RoleValue() == kGenericContainerRole)
+    else if (child->RoleValue() == ax::mojom::Role::kGenericContainer)
       result.AppendVector(child->TableCellChildren());
   }
   return result;
@@ -2652,7 +2676,7 @@ AXObject::AXObjectVector AXObject::TableCellChildren() const {
 const AXObject* AXObject::TableRowParent() const {
   const AXObject* row = ParentObjectUnignored();
   while (row && !row->IsTableRowLikeRole() &&
-         row->RoleValue() == kGenericContainerRole)
+         row->RoleValue() == ax::mojom::Role::kGenericContainer)
     row = row->ParentObjectUnignored();
   return row;
 }
@@ -2660,7 +2684,7 @@ const AXObject* AXObject::TableRowParent() const {
 const AXObject* AXObject::TableParent() const {
   const AXObject* table = ParentObjectUnignored();
   while (table && !table->IsTableLikeRole() &&
-         table->RoleValue() == kGenericContainerRole)
+         table->RoleValue() == ax::mojom::Role::kGenericContainer)
     table = table->ParentObjectUnignored();
   return table;
 }
@@ -3058,29 +3082,33 @@ int AXObject::LineForPosition(const VisiblePosition& position) const {
 }
 
 // static
-bool AXObject::IsARIAControl(AccessibilityRole aria_role) {
-  return IsARIAInput(aria_role) || aria_role == kButtonRole ||
-         aria_role == kComboBoxMenuButtonRole || aria_role == kSliderRole;
+bool AXObject::IsARIAControl(ax::mojom::Role aria_role) {
+  return IsARIAInput(aria_role) || aria_role == ax::mojom::Role::kButton ||
+         aria_role == ax::mojom::Role::kComboBoxMenuButton ||
+         aria_role == ax::mojom::Role::kSlider;
 }
 
 // static
-bool AXObject::IsARIAInput(AccessibilityRole aria_role) {
-  return aria_role == kRadioButtonRole || aria_role == kCheckBoxRole ||
-         aria_role == kTextFieldRole || aria_role == kSwitchRole ||
-         aria_role == kSearchBoxRole || aria_role == kTextFieldWithComboBoxRole;
+bool AXObject::IsARIAInput(ax::mojom::Role aria_role) {
+  return aria_role == ax::mojom::Role::kRadioButton ||
+         aria_role == ax::mojom::Role::kCheckBox ||
+         aria_role == ax::mojom::Role::kTextField ||
+         aria_role == ax::mojom::Role::kSwitch ||
+         aria_role == ax::mojom::Role::kSearchBox ||
+         aria_role == ax::mojom::Role::kTextFieldWithComboBox;
 }
 
-AccessibilityRole AXObject::AriaRoleToWebCoreRole(const String& value) {
+ax::mojom::Role AXObject::AriaRoleToWebCoreRole(const String& value) {
   DCHECK(!value.IsEmpty());
 
   static const ARIARoleMap* role_map = CreateARIARoleMap();
 
   Vector<String> role_vector;
   value.Split(' ', role_vector);
-  AccessibilityRole role = kUnknownRole;
+  ax::mojom::Role role = ax::mojom::Role::kUnknown;
   for (const auto& child : role_vector) {
     role = role_map->at(child);
-    if (role)
+    if (role != ax::mojom::Role::kUnknown)
       return role;
   }
 
@@ -3094,191 +3122,200 @@ bool AXObject::NameFromContents(bool recursive) const {
   switch (RoleValue()) {
     // ----- NameFrom: contents -------------------------
     // Get their own name from contents, or contribute to ancestors
-    case kAnchorRole:
-    case kButtonRole:
-    case kCellRole:
-    case kCheckBoxRole:
-    case kColumnHeaderRole:
-    case kComboBoxMenuButtonRole:
-    case kDocBackLinkRole:
-    case kDocBiblioRefRole:
-    case kDocNoteRefRole:
-    case kDocGlossRefRole:
-    case kDisclosureTriangleRole:
-    case kHeadingRole:
-    case kLayoutTableCellRole:
-    case kLineBreakRole:
-    case kLinkRole:
-    case kListBoxOptionRole:
-    case kMenuButtonRole:
-    case kMenuItemRole:
-    case kMenuItemCheckBoxRole:
-    case kMenuItemRadioRole:
-    case kMenuListOptionRole:
-    case kPopUpButtonRole:
-    case kRadioButtonRole:
-    case kRowHeaderRole:
-    case kStaticTextRole:
-    case kSwitchRole:
-    case kTabRole:
-    case kToggleButtonRole:
-    case kTreeItemRole:
-    case kUserInterfaceTooltipRole:
+    case ax::mojom::Role::kAnchor:
+    case ax::mojom::Role::kButton:
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kCheckBox:
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kDocBackLink:
+    case ax::mojom::Role::kDocBiblioRef:
+    case ax::mojom::Role::kDocNoteRef:
+    case ax::mojom::Role::kDocGlossRef:
+    case ax::mojom::Role::kDisclosureTriangle:
+    case ax::mojom::Role::kHeading:
+    case ax::mojom::Role::kLayoutTableCell:
+    case ax::mojom::Role::kLineBreak:
+    case ax::mojom::Role::kLink:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kMenuButton:
+    case ax::mojom::Role::kMenuItem:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kPopUpButton:
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kRowHeader:
+    case ax::mojom::Role::kStaticText:
+    case ax::mojom::Role::kSwitch:
+    case ax::mojom::Role::kTab:
+    case ax::mojom::Role::kToggleButton:
+    case ax::mojom::Role::kTreeItem:
+    case ax::mojom::Role::kTooltip:
       result = true;
       break;
 
     // ----- No name from contents -------------------------
     // These never have or contribute a name from contents, as they are
     // containers for many subobjects. Superset of nameFrom:author ARIA roles.
-    case kAlertRole:
-    case kAlertDialogRole:
-    case kApplicationRole:
-    case kAudioRole:
-    case kArticleRole:
-    case kBannerRole:
-    case kBlockquoteRole:
-    case kColorWellRole:
-    case kColumnRole:
-    case kComboBoxGroupingRole:
-    case kComplementaryRole:
-    case kContentInfoRole:
-    case kDateRole:
-    case kDateTimeRole:
-    case kDefinitionRole:
-    case kDialogRole:
-    case kDirectoryRole:
-    case kDocCoverRole:
-    case kDocBiblioEntryRole:
-    case kDocEndnoteRole:
-    case kDocFootnoteRole:
-    case kDocPageBreakRole:
-    case kDocAbstractRole:
-    case kDocAcknowledgmentsRole:
-    case kDocAfterwordRole:
-    case kDocAppendixRole:
-    case kDocBibliographyRole:
-    case kDocChapterRole:
-    case kDocColophonRole:
-    case kDocConclusionRole:
-    case kDocCreditRole:
-    case kDocCreditsRole:
-    case kDocDedicationRole:
-    case kDocEndnotesRole:
-    case kDocEpigraphRole:
-    case kDocEpilogueRole:
-    case kDocErrataRole:
-    case kDocExampleRole:
-    case kDocForewordRole:
-    case kDocGlossaryRole:
-    case kDocIndexRole:
-    case kDocIntroductionRole:
-    case kDocNoticeRole:
-    case kDocPageListRole:
-    case kDocPartRole:
-    case kDocPrefaceRole:
-    case kDocPrologueRole:
-    case kDocPullquoteRole:
-    case kDocQnaRole:
-    case kDocSubtitleRole:
-    case kDocTipRole:
-    case kDocTocRole:
-    case kDocumentRole:
-    case kEmbeddedObjectRole:
-    case kFeedRole:
-    case kFigureRole:
-    case kFormRole:
-    case kGraphicsDocumentRole:
-    case kGraphicsObjectRole:
-    case kGraphicsSymbolRole:
-    case kGridRole:
-    case kGroupRole:
-    case kIframePresentationalRole:
-    case kIframeRole:
-    case kImageRole:
-    case kInputTimeRole:
-    case kListBoxRole:
-    case kLogRole:
-    case kMainRole:
-    case kMarqueeRole:
-    case kMathRole:
-    case kMenuListPopupRole:
-    case kMenuRole:
-    case kMenuBarRole:
-    case kMeterRole:
-    case kNavigationRole:
-    case kNoteRole:
-    case kProgressIndicatorRole:
-    case kRadioGroupRole:
-    case kScrollBarRole:
-    case kSearchRole:
-    case kSearchBoxRole:
-    case kSplitterRole:
-    case kSliderRole:
-    case kSpinButtonRole:
-    case kStatusRole:
-    case kSliderThumbRole:
-    case kSVGRootRole:
-    case kTableRole:
-    case kTableHeaderContainerRole:
-    case kTabListRole:
-    case kTabPanelRole:
-    case kTermRole:
-    case kTextFieldRole:
-    case kTextFieldWithComboBoxRole:
-    case kTimeRole:
-    case kTimerRole:
-    case kToolbarRole:
-    case kTreeRole:
-    case kTreeGridRole:
-    case kVideoRole:
-    case kWebAreaRole:
+    case ax::mojom::Role::kAlert:
+    case ax::mojom::Role::kAlertDialog:
+    case ax::mojom::Role::kApplication:
+    case ax::mojom::Role::kAudio:
+    case ax::mojom::Role::kArticle:
+    case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kBlockquote:
+    case ax::mojom::Role::kCaret:
+    case ax::mojom::Role::kClient:
+    case ax::mojom::Role::kColorWell:
+    case ax::mojom::Role::kColumn:
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComplementary:
+    case ax::mojom::Role::kContentInfo:
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kDateTime:
+    case ax::mojom::Role::kDefinition:
+    case ax::mojom::Role::kDesktop:
+    case ax::mojom::Role::kDialog:
+    case ax::mojom::Role::kDirectory:
+    case ax::mojom::Role::kDocCover:
+    case ax::mojom::Role::kDocBiblioEntry:
+    case ax::mojom::Role::kDocEndnote:
+    case ax::mojom::Role::kDocFootnote:
+    case ax::mojom::Role::kDocPageBreak:
+    case ax::mojom::Role::kDocAbstract:
+    case ax::mojom::Role::kDocAcknowledgments:
+    case ax::mojom::Role::kDocAfterword:
+    case ax::mojom::Role::kDocAppendix:
+    case ax::mojom::Role::kDocBibliography:
+    case ax::mojom::Role::kDocChapter:
+    case ax::mojom::Role::kDocColophon:
+    case ax::mojom::Role::kDocConclusion:
+    case ax::mojom::Role::kDocCredit:
+    case ax::mojom::Role::kDocCredits:
+    case ax::mojom::Role::kDocDedication:
+    case ax::mojom::Role::kDocEndnotes:
+    case ax::mojom::Role::kDocEpigraph:
+    case ax::mojom::Role::kDocEpilogue:
+    case ax::mojom::Role::kDocErrata:
+    case ax::mojom::Role::kDocExample:
+    case ax::mojom::Role::kDocForeword:
+    case ax::mojom::Role::kDocGlossary:
+    case ax::mojom::Role::kDocIndex:
+    case ax::mojom::Role::kDocIntroduction:
+    case ax::mojom::Role::kDocNotice:
+    case ax::mojom::Role::kDocPageList:
+    case ax::mojom::Role::kDocPart:
+    case ax::mojom::Role::kDocPreface:
+    case ax::mojom::Role::kDocPrologue:
+    case ax::mojom::Role::kDocPullquote:
+    case ax::mojom::Role::kDocQna:
+    case ax::mojom::Role::kDocSubtitle:
+    case ax::mojom::Role::kDocTip:
+    case ax::mojom::Role::kDocToc:
+    case ax::mojom::Role::kDocument:
+    case ax::mojom::Role::kEmbeddedObject:
+    case ax::mojom::Role::kFeed:
+    case ax::mojom::Role::kFigure:
+    case ax::mojom::Role::kForm:
+    case ax::mojom::Role::kGraphicsDocument:
+    case ax::mojom::Role::kGraphicsObject:
+    case ax::mojom::Role::kGraphicsSymbol:
+    case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kGroup:
+    case ax::mojom::Role::kIframePresentational:
+    case ax::mojom::Role::kIframe:
+    case ax::mojom::Role::kImage:
+    case ax::mojom::Role::kInputTime:
+    case ax::mojom::Role::kKeyboard:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kLog:
+    case ax::mojom::Role::kMain:
+    case ax::mojom::Role::kMarquee:
+    case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kMenuListPopup:
+    case ax::mojom::Role::kMenu:
+    case ax::mojom::Role::kMenuBar:
+    case ax::mojom::Role::kMeter:
+    case ax::mojom::Role::kNavigation:
+    case ax::mojom::Role::kNote:
+    case ax::mojom::Role::kPane:
+    case ax::mojom::Role::kProgressIndicator:
+    case ax::mojom::Role::kRadioGroup:
+    case ax::mojom::Role::kRootWebArea:
+    case ax::mojom::Role::kScrollBar:
+    case ax::mojom::Role::kScrollView:
+    case ax::mojom::Role::kSearch:
+    case ax::mojom::Role::kSearchBox:
+    case ax::mojom::Role::kSplitter:
+    case ax::mojom::Role::kSlider:
+    case ax::mojom::Role::kSpinButton:
+    case ax::mojom::Role::kStatus:
+    case ax::mojom::Role::kSliderThumb:
+    case ax::mojom::Role::kSvgRoot:
+    case ax::mojom::Role::kTable:
+    case ax::mojom::Role::kTableHeaderContainer:
+    case ax::mojom::Role::kTabList:
+    case ax::mojom::Role::kTabPanel:
+    case ax::mojom::Role::kTerm:
+    case ax::mojom::Role::kTextField:
+    case ax::mojom::Role::kTextFieldWithComboBox:
+    case ax::mojom::Role::kTitleBar:
+    case ax::mojom::Role::kTime:
+    case ax::mojom::Role::kTimer:
+    case ax::mojom::Role::kToolbar:
+    case ax::mojom::Role::kTree:
+    case ax::mojom::Role::kTreeGrid:
+    case ax::mojom::Role::kVideo:
+    case ax::mojom::Role::kWebArea:
+    case ax::mojom::Role::kWebView:
       result = false;
       break;
 
     // ----- Conditional: contribute to ancestor only, unless focusable -------
     // Some objects can contribute their contents to ancestor names, but
     // only have their own name if they are focusable
-    case kAbbrRole:
-    case kAnnotationRole:
-    case kCanvasRole:
-    case kCaptionRole:
-    case kContentDeletionRole:
-    case kContentInsertionRole:
-    case kDescriptionListDetailRole:
-    case kDescriptionListRole:
-    case kDescriptionListTermRole:
-    case kDetailsRole:
-    case kFigcaptionRole:
-    case kFooterRole:
-    case kGenericContainerRole:
-    case kIgnoredRole:
-    case kImageMapRole:
-    case kInlineTextBoxRole:
-    case kLabelRole:
-    case kLayoutTableRole:
-    case kLayoutTableColumnRole:
-    case kLayoutTableRowRole:
-    case kLegendRole:
-    case kListRole:
-    case kListItemRole:
-    case kListMarkerRole:
-    case kMarkRole:
-    case kNoneRole:
-    case kParagraphRole:
-    case kPreRole:
-    case kPresentationalRole:
-    case kRegionRole:
+    case ax::mojom::Role::kAbbr:
+    case ax::mojom::Role::kAnnotation:
+    case ax::mojom::Role::kCanvas:
+    case ax::mojom::Role::kCaption:
+    case ax::mojom::Role::kContentDeletion:
+    case ax::mojom::Role::kContentInsertion:
+    case ax::mojom::Role::kDescriptionListDetail:
+    case ax::mojom::Role::kDescriptionList:
+    case ax::mojom::Role::kDescriptionListTerm:
+    case ax::mojom::Role::kDetails:
+    case ax::mojom::Role::kFigcaption:
+    case ax::mojom::Role::kFooter:
+    case ax::mojom::Role::kGenericContainer:
+    case ax::mojom::Role::kIgnored:
+    case ax::mojom::Role::kImageMap:
+    case ax::mojom::Role::kInlineTextBox:
+    case ax::mojom::Role::kLabelText:
+    case ax::mojom::Role::kLayoutTable:
+    case ax::mojom::Role::kLayoutTableColumn:
+    case ax::mojom::Role::kLayoutTableRow:
+    case ax::mojom::Role::kLegend:
+    case ax::mojom::Role::kList:
+    case ax::mojom::Role::kListItem:
+    case ax::mojom::Role::kListMarker:
+    case ax::mojom::Role::kMark:
+    case ax::mojom::Role::kNone:
+    case ax::mojom::Role::kParagraph:
+    case ax::mojom::Role::kPre:
+    case ax::mojom::Role::kPresentational:
+    case ax::mojom::Role::kRegion:
     // Spec says we should always expose the name on rows,
     // but for performance reasons we only do it
     // if the row might receive focus
-    case kRowRole:
-    case kRubyRole:
+    case ax::mojom::Role::kRow:
+    case ax::mojom::Role::kRuby:
       result = recursive || (CanReceiveAccessibilityFocus() && !IsEditable());
       break;
 
-    case kUnknownRole:
-    case kNumRoles:
-      LOG(ERROR) << "kUnknownRole for " << GetNode();
+    case ax::mojom::Role::kUnknown:
+    case ax::mojom::Role::kMaxValue:
+      LOG(ERROR) << "ax::mojom::Role::kUnknown for " << GetNode();
       NOTREACHED();
       break;
   }
@@ -3288,31 +3325,31 @@ bool AXObject::NameFromContents(bool recursive) const {
 
 bool AXObject::SupportsARIAReadOnly() const {
   switch (RoleValue()) {
-    case kCellRole:
-    case kCheckBoxRole:
-    case kColorWellRole:
-    case kColumnHeaderRole:
-    case kComboBoxGroupingRole:
-    case kComboBoxMenuButtonRole:
-    case kDateRole:
-    case kDateTimeRole:
-    case kGridRole:
-    case kInputTimeRole:
-    case kListBoxRole:
-    case kMenuButtonRole:
-    case kMenuItemCheckBoxRole:
-    case kMenuItemRadioRole:
-    case kPopUpButtonRole:
-    case kRadioGroupRole:
-    case kRowHeaderRole:
-    case kSearchBoxRole:
-    case kSliderRole:
-    case kSpinButtonRole:
-    case kSwitchRole:
-    case kTextFieldRole:
-    case kTextFieldWithComboBoxRole:
-    case kToggleButtonRole:
-    case kTreeGridRole:
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kCheckBox:
+    case ax::mojom::Role::kColorWell:
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kDateTime:
+    case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kInputTime:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kMenuButton:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kPopUpButton:
+    case ax::mojom::Role::kRadioGroup:
+    case ax::mojom::Role::kRowHeader:
+    case ax::mojom::Role::kSearchBox:
+    case ax::mojom::Role::kSlider:
+    case ax::mojom::Role::kSpinButton:
+    case ax::mojom::Role::kSwitch:
+    case ax::mojom::Role::kTextField:
+    case ax::mojom::Role::kTextFieldWithComboBox:
+    case ax::mojom::Role::kToggleButton:
+    case ax::mojom::Role::kTreeGrid:
       return true;
     default:
       break;
@@ -3320,32 +3357,32 @@ bool AXObject::SupportsARIAReadOnly() const {
   return false;
 }
 
-AccessibilityRole AXObject::ButtonRoleType() const {
+ax::mojom::Role AXObject::ButtonRoleType() const {
   // If aria-pressed is present, then it should be exposed as a toggle button.
   // http://www.w3.org/TR/wai-aria/states_and_properties#aria-pressed
   if (AriaPressedIsPresent())
-    return kToggleButtonRole;
+    return ax::mojom::Role::kToggleButton;
   if (HasPopup())
-    return kPopUpButtonRole;
+    return ax::mojom::Role::kPopUpButton;
   // We don't contemplate RadioButtonRole, as it depends on the input
   // type.
 
-  return kButtonRole;
+  return ax::mojom::Role::kButton;
 }
 
 // static
-const AtomicString& AXObject::RoleName(AccessibilityRole role) {
+const AtomicString& AXObject::RoleName(ax::mojom::Role role) {
   static const Vector<AtomicString>* role_name_vector = CreateRoleNameVector();
 
-  return role_name_vector->at(role);
+  return role_name_vector->at(static_cast<size_t>(role));
 }
 
 // static
-const AtomicString& AXObject::InternalRoleName(AccessibilityRole role) {
+const AtomicString& AXObject::InternalRoleName(ax::mojom::Role role) {
   static const Vector<AtomicString>* internal_role_name_vector =
       CreateInternalRoleNameVector();
 
-  return internal_role_name_vector->at(role);
+  return internal_role_name_vector->at(static_cast<size_t>(role));
 }
 
 // static

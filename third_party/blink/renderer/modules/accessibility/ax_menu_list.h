@@ -52,7 +52,7 @@ class AXMenuList final : public AXLayoutObject {
   AXMenuList(LayoutMenuList*, AXObjectCacheImpl&);
 
   bool IsMenuList() const override { return true; }
-  AccessibilityRole DetermineAccessibilityRole() final;
+  ax::mojom::Role DetermineAccessibilityRole() final;
 
   void AddChildren() override;
 
