@@ -29,6 +29,20 @@ void KeyboardUI::HideKeyboardWindow() {
     GetKeyboardWindow()->Hide();
 }
 
+void KeyboardUI::EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds) {
+  if (!GetInputMethod())
+    return;
+
+  TRACE_EVENT0("vk", "EnsureCaretInWorkArea");
+
+  if (keyboard_controller_->IsOverscrollAllowed()) {
+    GetInputMethod()->SetOnScreenKeyboardBounds(occluded_bounds);
+  } else if (GetInputMethod()->GetTextInputClient()) {
+    GetInputMethod()->GetTextInputClient()->EnsureCaretNotInRect(
+        occluded_bounds);
+  }
+}
+
 void KeyboardUI::SetController(KeyboardController* controller) {
   keyboard_controller_ = controller;
 }
