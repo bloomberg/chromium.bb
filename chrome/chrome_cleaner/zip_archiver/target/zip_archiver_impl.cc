@@ -5,6 +5,7 @@
 #include "chrome/chrome_cleaner/zip_archiver/target/zip_archiver_impl.h"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -52,8 +53,11 @@ bool CalculateFileCrc32(base::File* file,
   uint32_t crc32_value = 0;
 
   while (offset < length) {
+    static_assert(kReadBufferSize < std::numeric_limits<int>::max(),
+                  "kReadBufferSize too large.");
     const int read_size = file->Read(
-        offset, buffer.data(), std::min(length - offset, kReadBufferSize));
+        offset, buffer.data(),
+        static_cast<int>(std::min(length - offset, kReadBufferSize)));
     if (read_size <= 0) {
       LOG(ERROR) << "Unable to read the file when calculating CRC32.";
       return false;
@@ -160,9 +164,11 @@ ZipArchiverResultCode AddToArchive(zipFile zip_object,
   std::vector<char> buffer(kReadBufferSize);
   int64_t src_offset = 0;
   while (src_offset < src_length) {
-    const int read_size =
-        src_file.Read(src_offset, buffer.data(),
-                      std::min(src_length - src_offset, kReadBufferSize));
+    static_assert(kReadBufferSize <= std::numeric_limits<int>::max(),
+                  "kReadBufferSize too large.");
+    const int read_size = src_file.Read(
+        src_offset, buffer.data(),
+        static_cast<int>(std::min(src_length - src_offset, kReadBufferSize)));
     if (read_size <= 0) {
       LOG(ERROR) << "Unable to read the source file when archiving.";
       return ZipArchiverResultCode::kErrorIO;

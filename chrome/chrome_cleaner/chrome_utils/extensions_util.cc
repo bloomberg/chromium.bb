@@ -37,15 +37,18 @@ const int kExtensionIdLength = 32;
 class ParseTasksRemainingCounter
     : public base::RefCountedThreadSafe<ParseTasksRemainingCounter> {
  public:
-  ParseTasksRemainingCounter(int count, WaitableEvent* done)
-      : count_(count), done_(done) {}
+  ParseTasksRemainingCounter(size_t count, WaitableEvent* done)
+      : count_(count), done_(done) {
+    DCHECK(count_ > 0) << "Must be constructed with a positive count.";
+  }
 
   void Increment() {
-    DCHECK(count_ > 0);
+    DCHECK(count_ > 0) << "Once decremented to zero, Increment should never be called.";
     count_++;
   }
 
   void Decrement() {
+    DCHECK(count_);
     count_--;
     if (count_ == 0) {
       done_->Signal();
@@ -56,7 +59,7 @@ class ParseTasksRemainingCounter
   friend class base::RefCountedThreadSafe<ParseTasksRemainingCounter>;
   ~ParseTasksRemainingCounter() = default;
 
-  int count_;
+  size_t count_;
   WaitableEvent* done_;
 };
 

@@ -57,7 +57,7 @@ std::string GetHttpResponseData(chrome_cleaner::HttpResponse* http_response) {
   std::string response_data;
   while (true) {
     char buffer[8192] = {};
-    size_t count = base::size(buffer);
+    uint32_t count = static_cast<uint32_t>(base::size(buffer));
     if (!http_response->ReadData(buffer, &count)) {
       LOG(ERROR) << "ReadData failed";
       break;
