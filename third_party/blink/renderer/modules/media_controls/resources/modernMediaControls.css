@@ -243,37 +243,21 @@ video::-webkit-media-controls.sizing-large input[pseudo="-internal-media-control
 
 video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-button-panel" i] {
   height: 48px;
-  line-height: 48px;
+  line-height: 44px;
   padding: 0 0 0 16px;
 }
 
 video::-webkit-media-controls.sizing-medium div[pseudo="-internal-media-controls-button-panel" i] {
   height: 64px;
-  line-height: 64px;
-  padding: 0 32px 0 32px;
+  line-height: 60px;
+  padding: 0 16px 0 32px;
 }
 
 /* TODO(https://crbug.com/857120): remove these rules and the sizing-large CSS class. */
 video::-webkit-media-controls.sizing-large div[pseudo="-internal-media-controls-button-panel" i] {
   height: 64px;
-  line-height: 64px;
-  padding: 0 32px 0 32px;
-}
-
-/* TODO(https://crbug.com/857120): All these are the same, so these are unnecessary. */
-video::-webkit-media-controls.sizing-small [pseudo="-webkit-media-controls-current-time-display"],
-video::-webkit-media-controls.sizing-small [pseudo="-webkit-media-controls-time-remaining-display"] {
-  font-size: 16px;
-}
-
-video::-webkit-media-controls.sizing-medium [pseudo="-webkit-media-controls-current-time-display"],
-video::-webkit-media-controls.sizing-medium [pseudo="-webkit-media-controls-time-remaining-display"] {
-  font-size: 16px;
-}
-
-video::-webkit-media-controls.sizing-large [pseudo="-webkit-media-controls-current-time-display"],
-video::-webkit-media-controls.sizing-large [pseudo="-webkit-media-controls-time-remaining-display"] {
-  font-size: 16px;
+  line-height: 60px;
+  padding: 0 16px 0 32px;
 }
 
 audio::-webkit-media-controls-play-button,
@@ -478,16 +462,16 @@ video::-webkit-media-controls-timeline {
 }
 
 video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i] {
-  padding: 0 16px 12px 16px;
+  padding: 0 16px 20px 16px;
 }
 
 video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i] {
-  padding: 0 32px 36px 32px;
+  padding: 0 32px 20px 32px;
 }
 
 /* TODO(https://crbug.com/857120): remove these rules and the sizing-large CSS class. */
 video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i] {
-  padding: 0 32px 36px 32px;
+  padding: 0 32px 20px 32px;
 }
 
 /* TODO(https://crbug.com/857120): All these are the same, so these are unnecessary. */
@@ -547,25 +531,10 @@ video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-
   border-radius: 2px;
 }
 
-video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-frame {
+video::-webkit-media-controls div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-frame {
   margin-top: calc(
       (var(--overlay-play-button-width, 48px)
-          + 16px /* timeline height + padding-bottom */)
-      / -2);
-}
-
-video::-webkit-media-controls.sizing-medium div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-frame {
-  margin-top: calc(
-      (var(--overlay-play-button-width, 48px)
-          + 40px /* timeline height + padding-bottom */)
-      / -2);
-}
-
-/* TODO(https://crbug.com/857120): remove these rules and the sizing-large CSS class. */
-video::-webkit-media-controls.sizing-large div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-frame {
-  margin-top: calc(
-      (var(--overlay-play-button-width, 48px)
-          + 40px /* timeline height + padding-bottom */)
+          + 24px /* timeline height + padding-bottom */)
       / -2);
 }
 
