@@ -141,16 +141,11 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (void)addSuggestions:(NSArray<CSCollectionViewItem*>*)suggestions
          toSectionInfo:(ContentSuggestionsSectionInformation*)sectionInfo {
-  [self.collectionView performBatchUpdates:^{
+  void (^batchUpdates)(void) = ^{
     NSIndexSet* addedSections = [self.collectionUpdater
         addSectionsForSectionInfoToModel:@[ sectionInfo ]];
     [self.collectionView insertSections:addedSections];
-  }
-      completion:^(BOOL) {
-        [self.audience contentOffsetDidChange];
-      }];
 
-  [self.collectionView performBatchUpdates:^{
     NSIndexPath* removedItem = [self.collectionUpdater
         removeEmptySuggestionsForSectionInfo:sectionInfo];
     if (removedItem) {
@@ -161,10 +156,12 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
         [self.collectionUpdater addSuggestionsToModel:suggestions
                                       withSectionInfo:sectionInfo];
     [self.collectionView insertItemsAtIndexPaths:addedItems];
-  }
-      completion:^(BOOL) {
-        [self.audience contentOffsetDidChange];
-      }];
+  };
+
+  [self.collectionView performBatchUpdates:batchUpdates
+                                completion:^(BOOL) {
+                                  [self.audience contentOffsetDidChange];
+                                }];
 }
 
 - (NSInteger)numberOfSuggestionsAbove:(NSInteger)section {
