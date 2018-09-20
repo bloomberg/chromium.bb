@@ -1173,13 +1173,12 @@ protocol::Response InspectorPageAgent::createIsolatedWorld(
   if (!world)
     return Response::Error("Could not create isolated world");
 
-  if (grant_universal_access.fromMaybe(false)) {
-    scoped_refptr<SecurityOrigin> security_origin =
-        frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
+  scoped_refptr<SecurityOrigin> security_origin =
+      frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
+  if (grant_universal_access.fromMaybe(false))
     security_origin->GrantUniversalAccess();
-    DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world->GetWorldId(),
-                                                    security_origin);
-  }
+  DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world->GetWorldId(),
+                                                  security_origin);
 
   LocalWindowProxy* isolated_world_window_proxy =
       frame->GetScriptController().WindowProxy(*world);
