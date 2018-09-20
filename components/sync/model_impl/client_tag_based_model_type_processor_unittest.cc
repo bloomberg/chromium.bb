@@ -1876,36 +1876,51 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldReportOrphanMetadataInGetLocalChangesWhenDataIsMissing) {
+       ShouldClearOrphanMetadataInGetLocalChangesWhenDataIsMissing) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
 
   // Loose the entity in the bridge (keeping the metadata around as an orphan).
   bridge()->MimicBugToLooseItemWithoutNotifyingProcessor(kKey1);
 
+  ASSERT_FALSE(db().HasData(kKey1));
+  ASSERT_TRUE(db().HasMetadata(kKey1));
+  ASSERT_NE(nullptr, GetEntityForStorageKey(kKey1));
+
   // Reset "the browser" so that the processor looses the copy of the data.
   ResetState(/*keep_db=*/true);
 
   // Initializing the processor will trigger it to commit again. It does not
   // have a copy of the data so it will ask the bridge.
-  base::HistogramTester histogram_tester;
-  bridge()->ExpectSynchronousDataCallback();
-  InitializeToReadyState();
+  {
+    base::HistogramTester histogram_tester;
+    bridge()->ExpectSynchronousDataCallback();
+    InitializeToReadyState();
 
-  // Do it again, explicitly. The processor cannot return the entity as a
-  // LocalChange (because it cannot load its data) so it needs to ask the
-  // bridge.
+    histogram_tester.ExpectBucketCount(
+        "Sync.ModelTypeOrphanMetadata",
+        /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/1);
+  }
+
+  // Orphan metadata should have been deleted.
+  EXPECT_EQ(1, bridge()->apply_call_count());
+  EXPECT_FALSE(db().HasMetadata(kKey1));
+  EXPECT_EQ(nullptr, GetEntityForStorageKey(kKey1));
+
+  base::HistogramTester histogram_tester;
+
+  // Do it again, explicitly. The processor does not track the entity so it
+  // shouldn't ask the bridge or return local changes.
   CommitRequestDataList commit_request;
-  bridge()->ExpectSynchronousDataCallback();
   type_processor()->GetLocalChanges(
       INT_MAX, base::BindOnce(&CaptureCommitRequest, &commit_request));
   EXPECT_EQ(0U, commit_request.size());
+  EXPECT_TRUE(bridge()->GetDataCallback().is_null());
 
-  // The processor reports the same orphan to UMA on both calls, so the total
-  // count is 2.
+  // The processor should not report orphan again in UMA.
   histogram_tester.ExpectBucketCount(
       "Sync.ModelTypeOrphanMetadata",
-      /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/2);
+      /*bucket=*/ModelTypeToHistogramInt(GetModelType()), /*count=*/0);
 }
 
 TEST_F(
@@ -1916,6 +1931,10 @@ TEST_F(
 
   // Loose the entity in the bridge (keeping the metadata around as an orphan).
   bridge()->MimicBugToLooseItemWithoutNotifyingProcessor(kKey1);
+
+  ASSERT_FALSE(db().HasData(kKey1));
+  ASSERT_TRUE(db().HasMetadata(kKey1));
+  ASSERT_NE(nullptr, GetEntityForStorageKey(kKey1));
 
   // Reset "the browser" so that the processor looses the copy of the data.
   ResetState(/*keep_db=*/true);
@@ -1934,6 +1953,13 @@ TEST_F(
   std::move(bridge()->GetDataCallback()).Run();
   histogram_tester.ExpectTotalCount("Sync.ModelTypeOrphanMetadata",
                                     /*count=*/0);
+
+  EXPECT_EQ(0, bridge()->apply_call_count());
+  EXPECT_EQ(nullptr, GetEntityForStorageKey(kKey1));
+
+  // The expectation below documents the fact that bridges are responsible for
+  // clearing the untracked metadata from their databases.
+  EXPECT_TRUE(db().HasMetadata(kKey1));
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
@@ -1943,6 +1969,10 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 
   // Loose the entity in the bridge (keeping the metadata around as an orphan).
   bridge()->MimicBugToLooseItemWithoutNotifyingProcessor(kKey1);
+
+  ASSERT_FALSE(db().HasData(kKey1));
+  ASSERT_TRUE(db().HasMetadata(kKey1));
+  ASSERT_NE(nullptr, GetEntityForStorageKey(kKey1));
 
   // Reset "the browser" so that the processor looses the copy of the data.
   ResetState(/*keep_db=*/true);
@@ -1961,12 +1991,19 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   std::move(bridge()->GetDataCallback()).Run();
   histogram_tester.ExpectTotalCount("Sync.ModelTypeOrphanMetadata",
                                     /*count=*/0);
+
+  EXPECT_EQ(0, bridge()->apply_call_count());
+  EXPECT_EQ(nullptr, GetEntityForStorageKey(kKey1));
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldNotReportOrphanMetadataInGetLocalChangesWhenDataIsPresent) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
+
+  ASSERT_TRUE(db().HasData(kKey1));
+  ASSERT_TRUE(db().HasMetadata(kKey1));
+  ASSERT_NE(nullptr, GetEntityForStorageKey(kKey1));
 
   // Reset "the browser" so that the processor looses the copy of the data.
   ResetState(/*keep_db=*/true);
@@ -1986,6 +2023,10 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   // The processor never reports any orphan.
   histogram_tester.ExpectTotalCount("Sync.ModelTypeOrphanMetadata",
                                     /*count=*/0);
+
+  EXPECT_TRUE(db().HasData(kKey1));
+  EXPECT_TRUE(db().HasMetadata(kKey1));
+  EXPECT_NE(nullptr, GetEntityForStorageKey(kKey1));
 }
 
 class CommitOnlyClientTagBasedModelTypeProcessorTest

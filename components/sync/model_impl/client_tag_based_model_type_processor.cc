@@ -1042,7 +1042,8 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     }
   }
 
-  // Report failed loading of entities to UMA.
+  // Detect failed loads that shouldn't have failed.
+  std::vector<std::string> storage_keys_to_untrack;
   for (const std::string& storage_key : storage_keys_to_load) {
     ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
     if (entity == nullptr || entity->metadata().is_deleted()) {
@@ -1050,10 +1051,33 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
       // deletion.
       continue;
     }
+    // This scenario indicates a bug in the bridge, which didn't properly
+    // propagate a local deletion to the processor, either in the form of
+    // Delete() or UntrackEntity(). As a workaround to avoid negative side
+    // effects of this inconsistent state, we treat it as if UntrackEntity()
+    // had been called.
+    storage_keys_to_untrack.push_back(storage_key);
     UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeOrphanMetadata",
                               ModelTypeToHistogramInt(type_),
                               static_cast<int>(MODEL_TYPE_COUNT));
   }
+
+  if (storage_keys_to_untrack.empty()) {
+    return;
+  }
+
+  DCHECK(model_ready_to_sync_);
+  DCHECK(IsTrackingMetadata());
+
+  std::unique_ptr<MetadataChangeList> metadata_changes =
+      bridge_->CreateMetadataChangeList();
+
+  for (const std::string& storage_key : storage_keys_to_untrack) {
+    UntrackEntityForStorageKey(storage_key);
+    metadata_changes->ClearMetadata(storage_key);
+  }
+
+  bridge_->ApplySyncChanges(std::move(metadata_changes), EntityChangeList());
 }
 
 void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
