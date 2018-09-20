@@ -367,8 +367,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/history",
-    "//ios/chrome/browser/ui/history_popup:coordinator",
-    "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/main:feature_flags",

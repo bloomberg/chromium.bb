@@ -9,7 +9,6 @@
 
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/external_search_commands.h"
-#import "ios/chrome/browser/ui/commands/history_popup_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
@@ -28,7 +27,6 @@
                           PopupMenuCommands,
                           QRScannerCommands,
                           SnackbarCommands,
-                          TabHistoryPopupCommands,
                           ToolsMenuCommands>
 
 // Closes the current tab.

@@ -158,8 +158,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
-#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
-#import "ios/chrome/browser/ui/history_popup/tab_history_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/image_util/image_copier.h"
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
@@ -448,7 +446,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     SigninPresenter,
                                     SnapshotGeneratorDelegate,
                                     TabDialogDelegate,
-                                    TabHistoryPresentation,
                                     TabModelObserver,
                                     TabStripPresentation,
                                     ToolbarHeightProviderForFullscreen,
@@ -5841,16 +5838,6 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
                             completion:(void (^)(void))completion {
   DCHECK_EQ(controller, self.presentedViewController);
   [self dismissViewControllerAnimated:YES completion:completion];
-}
-
-#pragma mark - TabHistoryPresentation
-
-- (UIView*)viewForTabHistoryPresentation {
-  return self.view;
-}
-
-- (void)prepareForTabHistoryPresentation {
-  [self.dispatcher prepareForPopupMenuPresentation:PopupMenuCommandTypeDefault];
 }
 
 #pragma mark - CaptivePortalDetectorTabHelperDelegate

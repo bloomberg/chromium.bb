@@ -28,7 +28,6 @@ source_set("overscroll_actions") {
     "//ios/chrome/browser/ui:notifications",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/fullscreen",
-    "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/page_info:coordinator",
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/toolbar/legacy",
