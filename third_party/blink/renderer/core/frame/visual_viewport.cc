@@ -289,7 +289,7 @@ void VisualViewport::SetSize(const IntSize& size) {
   needs_paint_property_update_ = true;
 
   if (inner_viewport_container_layer_) {
-    inner_viewport_container_layer_->SetSize(size_);
+    inner_viewport_container_layer_->SetSize(gfx::Size(size_));
     inner_viewport_scroll_layer_->CcLayer()->SetScrollable(
         static_cast<gfx::Size>(size_));
 
@@ -328,7 +328,7 @@ void VisualViewport::MainFrameDidChangeSize() {
 
   // In unit tests we may not have initialized the layer tree.
   if (inner_viewport_scroll_layer_)
-    inner_viewport_scroll_layer_->SetSize(ContentsSize());
+    inner_viewport_scroll_layer_->SetSize(gfx::Size(ContentsSize()));
 
   needs_paint_property_update_ = true;
   ClampToBoundaries();
@@ -562,7 +562,7 @@ void VisualViewport::CreateLayerTree() {
   // set inner viewport container layer size.
   inner_viewport_container_layer_->SetMasksToBounds(
       GetPage().GetSettings().GetMainFrameClipsContent());
-  inner_viewport_container_layer_->SetSize(size_);
+  inner_viewport_container_layer_->SetSize(gfx::Size(size_));
 
   inner_viewport_scroll_layer_->CcLayer()->SetScrollable(
       static_cast<gfx::Size>(size_));
@@ -681,23 +681,23 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
 
   int x_position = is_horizontal
                        ? 0
-                       : inner_viewport_container_layer_->Size().Width() -
+                       : inner_viewport_container_layer_->Size().width() -
                              scrollbar_thickness;
   int y_position = is_horizontal
-                       ? inner_viewport_container_layer_->Size().Height() -
+                       ? inner_viewport_container_layer_->Size().height() -
                              scrollbar_thickness
                        : 0;
-  int width = is_horizontal ? inner_viewport_container_layer_->Size().Width() -
+  int width = is_horizontal ? inner_viewport_container_layer_->Size().width() -
                                   scrollbar_thickness
                             : scrollbar_thickness;
   int height = is_horizontal
                    ? scrollbar_thickness
-                   : inner_viewport_container_layer_->Size().Height() -
+                   : inner_viewport_container_layer_->Size().height() -
                          scrollbar_thickness;
 
   // Use the GraphicsLayer to position the scrollbars.
   scrollbar_graphics_layer->SetPosition(FloatPoint(x_position, y_position));
-  scrollbar_graphics_layer->SetSize(IntSize(width, height));
+  scrollbar_graphics_layer->SetSize(gfx::Size(width, height));
   scrollbar_graphics_layer->SetContentsRect(IntRect(0, 0, width, height));
 
   needs_paint_property_update_ = true;

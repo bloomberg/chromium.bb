@@ -430,7 +430,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
   if (!layer->DrawsContent())
     return Response::Error("Layer does not draw content");
 
-  IntRect interest_rect(IntPoint(), layer->Size());
+  IntRect interest_rect(IntPoint(), IntSize(layer->Size()));
   suppress_layer_paint_events_ = true;
 
   // If we hit a devtool break point in the middle of document lifecycle, for

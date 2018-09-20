@@ -94,7 +94,7 @@ void PageOverlay::Update() {
                           IntPoint());
   }
 
-  IntSize size = frame_->GetPage()->GetVisualViewport().Size();
+  gfx::Size size(frame_->GetPage()->GetVisualViewport().Size());
   if (size != layer_->Size())
     layer_->SetSize(size);
 
@@ -104,12 +104,12 @@ void PageOverlay::Update() {
 
 LayoutRect PageOverlay::VisualRect() const {
   DCHECK(layer_.get());
-  return LayoutRect(IntPoint(), layer_->Size());
+  return LayoutRect(IntPoint(), IntSize(layer_->Size()));
 }
 
 IntRect PageOverlay::ComputeInterestRect(const GraphicsLayer* graphics_layer,
                                          const IntRect&) const {
-  return IntRect(IntPoint(), layer_->Size());
+  return IntRect(IntPoint(), IntSize(layer_->Size()));
 }
 
 void PageOverlay::PaintContents(const GraphicsLayer* graphics_layer,

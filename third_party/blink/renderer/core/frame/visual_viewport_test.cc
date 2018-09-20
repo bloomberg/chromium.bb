@@ -403,8 +403,8 @@ TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
       frame_view.GetLayoutView()->Compositor()->RootGraphicsLayer());
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240),
-                       visual_viewport.ContainerLayer()->Size());
+  EXPECT_FLOAT_SIZE_EQ(IntSize(320, 240),
+                       IntSize(visual_viewport.ContainerLayer()->Size()));
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     EXPECT_EQ(IntSize(320, 240),
@@ -748,7 +748,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   WebView()->UpdateAllLifecyclePhases();
 
   // Ensure the scroll contents size matches the frame view's size.
-  EXPECT_EQ(IntSize(320, 240), visual_viewport.ScrollLayer()->Size());
+  EXPECT_EQ(IntSize(320, 240), IntSize(visual_viewport.ScrollLayer()->Size()));
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     EXPECT_EQ(IntSize(320, 240),
               visual_viewport.GetScrollNode()->ContentsSize());
@@ -2018,8 +2018,8 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
                                        ->MainGraphicsLayer();
   ASSERT_TRUE(backgroundLayer);
 
-  ASSERT_EQ(page_width, backgroundLayer->Size().Width());
-  ASSERT_EQ(page_height, backgroundLayer->Size().Height());
+  ASSERT_EQ(page_width, backgroundLayer->Size().width());
+  ASSERT_EQ(page_height, backgroundLayer->Size().height());
   ASSERT_EQ(page_width, document->View()->GetLayoutSize().Width());
   ASSERT_EQ(smallest_height, document->View()->GetLayoutSize().Height());
 
@@ -2031,15 +2031,15 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   ASSERT_EQ(smallest_height, document->View()->GetLayoutSize().Height());
 
   // The background layer's size should have changed though.
-  EXPECT_EQ(page_width, backgroundLayer->Size().Width());
-  EXPECT_EQ(smallest_height, backgroundLayer->Size().Height());
+  EXPECT_EQ(page_width, backgroundLayer->Size().width());
+  EXPECT_EQ(smallest_height, backgroundLayer->Size().height());
 
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, page_height),
                                            browser_controls_height, 0, true);
 
   // The background layer's size should change again.
-  EXPECT_EQ(page_width, backgroundLayer->Size().Width());
-  EXPECT_EQ(page_height, backgroundLayer->Size().Height());
+  EXPECT_EQ(page_width, backgroundLayer->Size().width());
+  EXPECT_EQ(page_height, backgroundLayer->Size().height());
 }
 
 static void configureAndroidNonCompositing(WebSettings* settings) {
@@ -2372,10 +2372,10 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   ASSERT_EQ(1.25f, WebView().MinimumPageScaleFactor());
 
   VisualViewport& visual_viewport = WebView().GetPage()->GetVisualViewport();
-  EXPECT_EQ(IntSize(400, 600), visual_viewport.ContainerLayer()->Size());
+  EXPECT_EQ(gfx::Size(400, 600), visual_viewport.ContainerLayer()->Size());
   EXPECT_EQ(gfx::Size(400, 600),
             visual_viewport.ContainerLayer()->CcLayer()->bounds());
-  EXPECT_EQ(IntSize(320, 480), visual_viewport.ScrollLayer()->Size());
+  EXPECT_EQ(gfx::Size(320, 480), visual_viewport.ScrollLayer()->Size());
   EXPECT_EQ(gfx::Size(320, 480),
             visual_viewport.ScrollLayer()->CcLayer()->bounds());
 
@@ -2388,10 +2388,10 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
 
   WebView().ApplyViewportDeltas(WebFloatSize(1, 1), WebFloatSize(),
                                 WebFloatSize(), 2, 1);
-  EXPECT_EQ(IntSize(400, 600), visual_viewport.ContainerLayer()->Size());
+  EXPECT_EQ(gfx::Size(400, 600), visual_viewport.ContainerLayer()->Size());
   EXPECT_EQ(gfx::Size(400, 600),
             visual_viewport.ContainerLayer()->CcLayer()->bounds());
-  EXPECT_EQ(IntSize(320, 480), visual_viewport.ScrollLayer()->Size());
+  EXPECT_EQ(gfx::Size(320, 480), visual_viewport.ScrollLayer()->Size());
   EXPECT_EQ(gfx::Size(320, 480),
             visual_viewport.ScrollLayer()->CcLayer()->bounds());
 

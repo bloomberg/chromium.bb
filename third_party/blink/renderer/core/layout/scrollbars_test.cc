@@ -226,9 +226,9 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
 
   VisualViewport& visual_viewport = document->GetPage()->GetVisualViewport();
   int horizontal_scrollbar = clampTo<int>(std::floor(
-      visual_viewport.LayerForHorizontalScrollbar()->Size().Height()));
+      visual_viewport.LayerForHorizontalScrollbar()->Size().height()));
   int vertical_scrollbar = clampTo<int>(
-      std::floor(visual_viewport.LayerForVerticalScrollbar()->Size().Width()));
+      std::floor(visual_viewport.LayerForVerticalScrollbar()->Size().width()));
 
   const float device_scale = 3.5f;
   client.set_device_scale_factor(device_scale);
@@ -237,10 +237,10 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
   EXPECT_EQ(
       clampTo<int>(std::floor(horizontal_scrollbar * device_scale)),
       clampTo<int>(std::floor(
-          visual_viewport.LayerForHorizontalScrollbar()->Size().Height())));
+          visual_viewport.LayerForHorizontalScrollbar()->Size().height())));
   EXPECT_EQ(clampTo<int>(std::floor(vertical_scrollbar * device_scale)),
             clampTo<int>(std::floor(
-                visual_viewport.LayerForVerticalScrollbar()->Size().Width())));
+                visual_viewport.LayerForVerticalScrollbar()->Size().width())));
 
   client.set_device_scale_factor(1.f);
   web_view_impl->Resize(IntSize(800, 600));
@@ -248,10 +248,10 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
   EXPECT_EQ(
       horizontal_scrollbar,
       clampTo<int>(std::floor(
-          visual_viewport.LayerForHorizontalScrollbar()->Size().Height())));
+          visual_viewport.LayerForHorizontalScrollbar()->Size().height())));
   EXPECT_EQ(vertical_scrollbar,
             clampTo<int>(std::floor(
-                visual_viewport.LayerForVerticalScrollbar()->Size().Width())));
+                visual_viewport.LayerForVerticalScrollbar()->Size().width())));
 }
 
 // Ensure that causing a change in scrollbar existence causes a nested layout

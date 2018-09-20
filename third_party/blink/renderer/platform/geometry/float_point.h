@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "ui/gfx/geometry/point_f.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGPoint CGPoint;
@@ -73,7 +74,8 @@ class PLATFORM_EXPORT FloatPoint {
   explicit FloatPoint(const LayoutSize&);
   constexpr explicit FloatPoint(const IntSize& size)
       : x_(size.Width()), y_(size.Height()) {}
-  explicit FloatPoint(const gfx::PointF&);
+  explicit FloatPoint(const gfx::PointF& point)
+      : x_(point.x()), y_(point.y()) {}
 
   static constexpr FloatPoint Zero() { return FloatPoint(); }
 

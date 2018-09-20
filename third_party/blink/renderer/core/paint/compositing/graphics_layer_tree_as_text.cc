@@ -87,8 +87,9 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
                    SizeAsJSONArray(layer->OffsetFromLayoutObject()));
   }
 
-  if (layer->Size() != IntSize())
-    json->SetArray("bounds", SizeAsJSONArray(layer->Size()));
+  // This is testing against gfx::Size(), *not* whether the size is empty.
+  if (layer->Size() != gfx::Size())
+    json->SetArray("bounds", SizeAsJSONArray(IntSize(layer->Size())));
 
   if (layer->Opacity() != 1)
     json->SetDouble("opacity", layer->Opacity());
