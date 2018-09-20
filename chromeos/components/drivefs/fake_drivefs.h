@@ -39,6 +39,7 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
 
  private:
   struct FileMetadata;
+  class SearchQuery;
 
   // drivefs::mojom::DriveFsBootstrap:
   void Init(drivefs::mojom::DriveFsConfigurationPtr config,
@@ -65,6 +66,10 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   void CopyFile(const base::FilePath& source,
                 const base::FilePath& target,
                 CopyFileCallback callback) override;
+
+  void StartSearchQuery(
+      drivefs::mojom::SearchQueryRequest query,
+      drivefs::mojom::QueryParametersPtr query_params) override;
 
   const base::FilePath mount_path_;
 

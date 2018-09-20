@@ -8,11 +8,15 @@
 #include <vector>
 
 #include "base/files/file.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace drivefs {
 namespace {
@@ -83,6 +87,93 @@ struct FakeDriveFs::FileMetadata {
   bool pinned = false;
   bool hosted = false;
   std::string original_name;
+};
+
+class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
+ public:
+  SearchQuery(base::WeakPtr<FakeDriveFs> drive_fs,
+              const drivefs::mojom::QueryParameters& params)
+      : drive_fs_(std::move(drive_fs)),
+        query_(base::ToLowerASCII(
+            params.title.value_or(params.text_content.value_or("")))),
+        weak_ptr_factory_(this) {
+    CHECK(!query_.empty());
+  }
+
+ private:
+  void GetNextPage(GetNextPageCallback callback) override {
+    if (!drive_fs_) {
+      std::move(callback).Run(drive::FileError::FILE_ERROR_ABORT, {});
+    } else {
+      // Default implementation: just search for a file name.
+      callback_ = std::move(callback);
+      base::PostTaskWithTraitsAndReplyWithResult(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+          base::BindOnce(&SearchQuery::SearchByTitle, drive_fs_->mount_path(),
+                         query_),
+          base::BindOnce(&SearchQuery::GetMetadata,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
+  }
+
+  static std::vector<drivefs::mojom::QueryItemPtr> SearchByTitle(
+      const base::FilePath& mount_path,
+      const std::string& query) {
+    std::vector<drivefs::mojom::QueryItemPtr> results;
+    base::FileEnumerator walker(mount_path, true, base::FileEnumerator::FILES);
+    for (auto file = walker.Next(); !file.empty(); file = walker.Next()) {
+      if (base::ToLowerASCII(file.BaseName().value()).find(query) !=
+          std::string::npos) {
+        auto item = drivefs::mojom::QueryItem::New();
+        item->path = base::FilePath("/");
+        CHECK(mount_path.AppendRelativePath(file, &item->path));
+        results.push_back(std::move(item));
+      }
+    }
+    return results;
+  }
+
+  void GetMetadata(std::vector<drivefs::mojom::QueryItemPtr> results) {
+    if (!drive_fs_) {
+      std::move(callback_).Run(drive::FileError::FILE_ERROR_ABORT, {});
+    } else {
+      results_ = std::move(results);
+      pending_callbacks_ = results_.size() + 1;
+      for (size_t i = 0; i < results_.size(); ++i) {
+        drive_fs_->GetMetadata(
+            results_[i]->path, false,
+            base::BindOnce(&SearchQuery::OnMetadata,
+                           weak_ptr_factory_.GetWeakPtr(), i));
+      }
+      OnComplete();
+    }
+  }
+
+  void OnMetadata(size_t index,
+                  drive::FileError error,
+                  drivefs::mojom::FileMetadataPtr metadata) {
+    if (error == drive::FileError::FILE_ERROR_OK) {
+      results_[index]->metadata = std::move(metadata);
+    }
+    OnComplete();
+  }
+
+  void OnComplete() {
+    if (--pending_callbacks_ == 0) {
+      std::move(callback_).Run(drive::FileError::FILE_ERROR_OK,
+                               {std::move(results_)});
+    }
+  }
+
+  base::WeakPtr<FakeDriveFs> drive_fs_;
+  const std::string query_;
+  GetNextPageCallback callback_;
+  std::vector<drivefs::mojom::QueryItemPtr> results_;
+  size_t pending_callbacks_ = 0;
+
+  base::WeakPtrFactory<SearchQuery> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchQuery);
 };
 
 FakeDriveFs::FakeDriveFs(const base::FilePath& mount_path)
@@ -240,6 +331,14 @@ void FakeDriveFs::CopyFile(const base::FilePath& source,
   }
   metadata_[target_absolute_path] = metadata_[source_absolute_path];
   std::move(callback).Run(drive::FILE_ERROR_OK);
+}
+
+void FakeDriveFs::StartSearchQuery(
+    drivefs::mojom::SearchQueryRequest query,
+    drivefs::mojom::QueryParametersPtr query_params) {
+  auto search_query =
+      std::make_unique<SearchQuery>(weak_factory_.GetWeakPtr(), *query_params);
+  mojo::MakeStrongBinding(std::move(search_query), std::move(query));
 }
 
 }  // namespace drivefs
