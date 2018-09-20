@@ -121,10 +121,12 @@ class CORE_EXPORT CSSVariableResolver {
       const AtomicString& name);
   // Returns the CSSVariableData for a custom property, resolving and storing it
   // if necessary.
-  scoped_refptr<CSSVariableData> ValueForCustomProperty(AtomicString name);
+  scoped_refptr<CSSVariableData> ValueForCustomProperty(AtomicString name,
+                                                        const Options&);
   // Resolves the CSSVariableData from a custom property declaration.
   scoped_refptr<CSSVariableData> ResolveCustomProperty(AtomicString name,
                                                        const CSSVariableData&,
+                                                       const Options&,
                                                        bool resolve_urls,
                                                        bool& cycle_detected);
   // Rewrites (in-place) kUrlTokens and kFunctionToken/CSSValueUrls to contain
