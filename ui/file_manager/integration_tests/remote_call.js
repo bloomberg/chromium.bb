@@ -524,9 +524,9 @@ RemoteCallFilesApp.prototype.navigateWithDirectoryTree = function(
             'fakeMouseClick', windowId, [`[full-path-for-testing="${path}"]`]);
       })
       .then(() => {
-        if (rootLabel === 'My Drive') {
-          path = path.replace(/^\/root\//, '/');
-        }
+        // Entries within Drive starts with /root/ but it isn't displayed in the
+        // breadcrubms used by waitUntilCurrentDirectoryIsChanged.
+        path = path.replace(/^\/root\//, '/').replace(/^\/team_drives/, '');
 
         // Wait until the Files app is navigated to the path.
         return this.waitUntilCurrentDirectoryIsChanged(
