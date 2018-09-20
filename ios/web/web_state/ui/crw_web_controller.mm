@@ -4417,8 +4417,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
     if (action.targetFrame.mainFrame) {
       [_pendingNavigationInfo setCancelled:YES];
       // Discard the pending item to ensure that the current URL is not
-      // different from what is displayed on the view.
-      self.navigationManagerImpl->DiscardNonCommittedItems();
+      // different from what is displayed on the view. Discard only happens
+      // if the last item was not a native view, to avoid ugly animation of
+      // inserting the webview.
+      [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
+
       if (!_isBeingDestroyed && [self shouldClosePageOnNativeApplicationLoad])
         _webStateImpl->CloseWebState();
     }
