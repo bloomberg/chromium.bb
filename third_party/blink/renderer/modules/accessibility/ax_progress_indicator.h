@@ -35,7 +35,7 @@ class AXProgressIndicator final : public AXLayoutObject {
   static AXProgressIndicator* Create(LayoutProgress*, AXObjectCacheImpl&);
 
  private:
-  AccessibilityRole DetermineAccessibilityRole() final;
+  ax::mojom::Role DetermineAccessibilityRole() final;
 
   bool IsProgressIndicator() const override { return true; }
 

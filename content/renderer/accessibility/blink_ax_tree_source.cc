@@ -373,8 +373,8 @@ void BlinkAXTreeSource::GetChildren(
     std::vector<WebAXObject>* out_children) const {
   CHECK(frozen_);
 
-  if ((parent.Role() == blink::kWebAXRoleStaticText ||
-       parent.Role() == blink::kWebAXRoleLineBreak) &&
+  if ((parent.Role() == ax::mojom::Role::kStaticText ||
+       parent.Role() == ax::mojom::Role::kLineBreak) &&
       ShouldLoadInlineTextBoxes(parent)) {
     parent.LoadInlineTextBoxes();
   }
@@ -398,9 +398,9 @@ void BlinkAXTreeSource::GetChildren(
 
     // Skip table headers and columns, they're only needed on Mac
     // and soon we'll get rid of this code entirely.
-    if (child.Role() == blink::kWebAXRoleColumn ||
-        child.Role() == blink::kWebAXRoleLayoutTableColumn ||
-        child.Role() == blink::kWebAXRoleTableHeaderContainer)
+    if (child.Role() == ax::mojom::Role::kColumn ||
+        child.Role() == ax::mojom::Role::kLayoutTableColumn ||
+        child.Role() == ax::mojom::Role::kTableHeaderContainer)
       continue;
 
     out_children->push_back(child);
@@ -436,7 +436,7 @@ WebAXObject BlinkAXTreeSource::GetNull() const {
 
 void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                                       AXContentNodeData* dst) const {
-  dst->role = AXRoleFromBlink(src.Role());
+  dst->role = src.Role();
   AXStateFromBlink(src, dst);
   dst->id = src.AxID();
 
@@ -579,7 +579,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
 
     if (src.HasPopup())
       dst->SetHasPopup(AXHasPopupFromBlink(src.HasPopup()));
-    else if (src.Role() == blink::kWebAXRolePopUpButton)
+    else if (src.Role() == ax::mojom::Role::kPopUpButton)
       dst->SetHasPopup(ax::mojom::HasPopup::kMenu);
 
     if (src.AriaCurrentState()) {

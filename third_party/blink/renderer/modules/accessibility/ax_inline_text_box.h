@@ -53,7 +53,9 @@ class AXInlineTextBox final : public AXObject {
   bool IsAXInlineTextBox() const override { return true; }
 
  public:
-  AccessibilityRole RoleValue() const override { return kInlineTextBoxRole; }
+  ax::mojom::Role RoleValue() const override {
+    return ax::mojom::Role::kInlineTextBox;
+  }
   String GetName(AXNameFrom&,
                  AXObject::AXObjectVector* name_objects) const override;
   void TextCharacterOffsets(Vector<int>&) const override;

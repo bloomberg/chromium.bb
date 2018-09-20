@@ -284,70 +284,74 @@ static bool IsImageOrAltText(LayoutBoxModelObject* box, Node* node) {
   return false;
 }
 
-AccessibilityRole AXLayoutObject::NativeAccessibilityRoleIgnoringAria() const {
+ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   Node* node = layout_object_->GetNode();
   LayoutBoxModelObject* css_box = GetLayoutBoxModelObject();
 
   if ((css_box && css_box->IsListItem()) || IsHTMLLIElement(node))
-    return kListItemRole;
+    return ax::mojom::Role::kListItem;
   if (layout_object_->IsListMarkerIncludingNG())
-    return kListMarkerRole;
+    return ax::mojom::Role::kListMarker;
   if (layout_object_->IsBR())
-    return kLineBreakRole;
+    return ax::mojom::Role::kLineBreak;
   if (layout_object_->IsText())
-    return kStaticTextRole;
-  if (layout_object_->IsTable() && node)
-    return IsDataTable() ? kTableRole : kLayoutTableRole;
+    return ax::mojom::Role::kStaticText;
+  if (layout_object_->IsTable() && node) {
+    return IsDataTable() ? ax::mojom::Role::kTable
+                         : ax::mojom::Role::kLayoutTable;
+  }
   if (layout_object_->IsTableRow() && node)
     return DetermineTableRowRole();
   if (layout_object_->IsTableCell() && node)
     return DetermineTableCellRole();
   if (css_box && IsImageOrAltText(css_box, node)) {
     if (node && node->IsLink())
-      return kImageMapRole;
+      return ax::mojom::Role::kImageMap;
     if (IsHTMLInputElement(node))
       return ButtonRoleType();
     if (IsSVGImage())
-      return kSVGRootRole;
+      return ax::mojom::Role::kSvgRoot;
 
-    return kImageRole;
+    return ax::mojom::Role::kImage;
   }
 
   if (IsHTMLCanvasElement(node))
-    return kCanvasRole;
+    return ax::mojom::Role::kCanvas;
 
   if (css_box && css_box->IsLayoutView())
-    return kWebAreaRole;
+    return ax::mojom::Role::kRootWebArea;
 
   if (layout_object_->IsSVGImage())
-    return kImageRole;
+    return ax::mojom::Role::kImage;
   if (layout_object_->IsSVGRoot())
-    return kSVGRootRole;
+    return ax::mojom::Role::kSvgRoot;
 
   // Table sections should be ignored.
   if (layout_object_->IsTableSection())
-    return kIgnoredRole;
+    return ax::mojom::Role::kIgnored;
 
   if (layout_object_->IsHR())
-    return kSplitterRole;
+    return ax::mojom::Role::kSplitter;
 
-  return AXNodeObject::NativeAccessibilityRoleIgnoringAria();
+  return AXNodeObject::NativeRoleIgnoringAria();
 }
 
-AccessibilityRole AXLayoutObject::DetermineAccessibilityRole() {
+ax::mojom::Role AXLayoutObject::DetermineAccessibilityRole() {
   if (!layout_object_)
-    return kUnknownRole;
+    return ax::mojom::Role::kUnknown;
 
-  native_role_ = NativeAccessibilityRoleIgnoringAria();
+  native_role_ = NativeRoleIgnoringAria();
 
-  if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
+  if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;
 
   // Anything that needs to still be exposed but doesn't have a more specific
   // role should be considered a generic container. Examples are
   // layout blocks with no node, in-page link targets, and plain elements
   // such as a <span> with ARIA markup.
-  return native_role_ == kUnknownRole ? kGenericContainerRole : native_role_;
+  return native_role_ == ax::mojom::Role::kUnknown
+             ? ax::mojom::Role::kGenericContainer
+             : native_role_;
 }
 
 Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
@@ -526,7 +530,7 @@ bool AXLayoutObject::IsFocused() const {
   // A web area is represented by the Document node in the DOM tree, which isn't
   // focusable.  Check instead if the frame's selection controller is focused
   if (focused_object == this ||
-      (RoleValue() == kWebAreaRole &&
+      (RoleValue() == ax::mojom::Role::kRootWebArea &&
        GetDocument()->GetFrame()->Selection().FrameIsFocusedAndActive()))
     return true;
 
@@ -655,7 +659,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return true;
   }
 
-  if (RoleValue() == kIgnoredRole) {
+  if (RoleValue() == ax::mojom::Role::kIgnored) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
     return true;
@@ -665,7 +669,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     if (ignored_reasons) {
       const AXObject* inherits_from = InheritsPresentationalRoleFrom();
       if (inherits_from == this)
-        ignored_reasons->push_back(IgnoredReason(kAXPresentationalRole));
+        ignored_reasons->push_back(IgnoredReason(kAXPresentational));
       else
         ignored_reasons->push_back(
             IgnoredReason(kAXInheritsPresentation, inherits_from));
@@ -748,7 +752,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (IsControl())
     return false;
 
-  if (AriaRoleAttribute() != kUnknownRole)
+  if (AriaRoleAttribute() != ax::mojom::Role::kUnknown)
     return false;
 
   // don't ignore labels, because they serve as TitleUIElements
@@ -763,54 +767,54 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (HasContentEditableAttributeSet())
     return false;
 
-  if (RoleValue() == kAbbrRole)
+  if (RoleValue() == ax::mojom::Role::kAbbr)
     return false;
 
   // List items play an important role in defining the structure of lists. They
   // should not be ignored.
-  if (RoleValue() == kListItemRole)
+  if (RoleValue() == ax::mojom::Role::kListItem)
     return false;
 
-  if (RoleValue() == kBlockquoteRole)
+  if (RoleValue() == ax::mojom::Role::kBlockquote)
     return false;
 
-  if (RoleValue() == kDialogRole)
+  if (RoleValue() == ax::mojom::Role::kDialog)
     return false;
 
-  if (RoleValue() == kFigcaptionRole)
+  if (RoleValue() == ax::mojom::Role::kFigcaption)
     return false;
 
-  if (RoleValue() == kFigureRole)
+  if (RoleValue() == ax::mojom::Role::kFigure)
     return false;
 
-  if (RoleValue() == kContentDeletionRole)
+  if (RoleValue() == ax::mojom::Role::kContentDeletion)
     return false;
 
-  if (RoleValue() == kContentInsertionRole)
+  if (RoleValue() == ax::mojom::Role::kContentInsertion)
     return false;
 
-  if (RoleValue() == kDetailsRole)
+  if (RoleValue() == ax::mojom::Role::kDetails)
     return false;
 
-  if (RoleValue() == kMarkRole)
+  if (RoleValue() == ax::mojom::Role::kMark)
     return false;
 
-  if (RoleValue() == kMathRole)
+  if (RoleValue() == ax::mojom::Role::kMath)
     return false;
 
-  if (RoleValue() == kMeterRole)
+  if (RoleValue() == ax::mojom::Role::kMeter)
     return false;
 
-  if (RoleValue() == kRubyRole)
+  if (RoleValue() == ax::mojom::Role::kRuby)
     return false;
 
-  if (RoleValue() == kSplitterRole)
+  if (RoleValue() == ax::mojom::Role::kSplitter)
     return false;
 
-  if (RoleValue() == kTimeRole)
+  if (RoleValue() == ax::mojom::Role::kTime)
     return false;
 
-  if (RoleValue() == kProgressIndicatorRole)
+  if (RoleValue() == ax::mojom::Role::kProgressIndicator)
     return false;
 
   // if this element has aria attributes on it, it should not be ignored.
@@ -898,9 +902,10 @@ bool AXLayoutObject::HasAriaCellRole(Element* elem) const {
   if (aria_role_str.IsEmpty())
     return false;
 
-  AccessibilityRole aria_role = AriaRoleToWebCoreRole(aria_role_str);
-  return aria_role == kCellRole || aria_role == kColumnHeaderRole ||
-         aria_role == kRowHeaderRole;
+  ax::mojom::Role aria_role = AriaRoleToWebCoreRole(aria_role_str);
+  return aria_role == ax::mojom::Role::kCell ||
+         aria_role == ax::mojom::Role::kColumnHeader ||
+         aria_role == ax::mojom::Role::kRowHeader;
 }
 
 // Return true if whitespace is not necessary to keep adjacent_node separate
@@ -1634,8 +1639,8 @@ AXHasPopup AXLayoutObject::HasPopup() const {
   }
 
   // ARIA 1.1 default value of haspopup for combobox is "listbox".
-  if (RoleValue() == kComboBoxMenuButtonRole ||
-      RoleValue() == kTextFieldWithComboBoxRole)
+  if (RoleValue() == ax::mojom::Role::kComboBoxMenuButton ||
+      RoleValue() == ax::mojom::Role::kTextFieldWithComboBox)
     return kAXHasPopupListbox;
 
   return AXObject::HasPopup();
@@ -1684,13 +1689,13 @@ const AtomicString& AXLayoutObject::LiveRegionStatus() const {
   // These roles have implicit live region status.
   if (live_region_status.IsEmpty()) {
     switch (RoleValue()) {
-      case kAlertRole:
+      case ax::mojom::Role::kAlert:
         return live_region_status_assertive;
-      case kLogRole:
-      case kStatusRole:
+      case ax::mojom::Role::kLog:
+      case ax::mojom::Role::kStatus:
         return live_region_status_polite;
-      case kTimerRole:
-      case kMarqueeRole:
+      case ax::mojom::Role::kTimer:
+      case ax::mojom::Role::kMarquee:
         return live_region_status_off;
       default:
         break;
@@ -1790,12 +1795,12 @@ AXObject* AXLayoutObject::ComputeParent() const {
   if (!layout_object_)
     return nullptr;
 
-  if (AriaRoleAttribute() == kMenuBarRole)
+  if (AriaRoleAttribute() == ax::mojom::Role::kMenuBar)
     return AXObjectCache().GetOrCreate(layout_object_->Parent());
 
   // menuButton and its corresponding menu are DOM siblings, but Accessibility
   // needs them to be parent/child.
-  if (AriaRoleAttribute() == kMenuRole) {
+  if (AriaRoleAttribute() == ax::mojom::Role::kMenu) {
     AXObject* parent = MenuButtonForMenu();
     if (parent)
       return parent;
@@ -1818,12 +1823,12 @@ AXObject* AXLayoutObject::ComputeParentIfExists() const {
   if (!layout_object_)
     return nullptr;
 
-  if (AriaRoleAttribute() == kMenuBarRole)
+  if (AriaRoleAttribute() == ax::mojom::Role::kMenuBar)
     return AXObjectCache().Get(layout_object_->Parent());
 
   // menuButton and its corresponding menu are DOM siblings, but Accessibility
   // needs them to be parent/child.
-  if (AriaRoleAttribute() == kMenuRole) {
+  if (AriaRoleAttribute() == ax::mojom::Role::kMenu) {
     AXObject* parent = MenuButtonForMenuIfExists();
     if (parent)
       return parent;
@@ -2467,11 +2472,11 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
     bool found_parent = false;
 
     switch (container_parent->RoleValue()) {
-      case kLayoutTableRole:
-      case kTreeRole:
-      case kTreeGridRole:
-      case kGridRole:
-      case kTableRole:
+      case ax::mojom::Role::kLayoutTable:
+      case ax::mojom::Role::kTree:
+      case ax::mojom::Role::kTreeGrid:
+      case ax::mojom::Role::kGrid:
+      case ax::mojom::Role::kTable:
         found_parent = true;
         break;
       default:
@@ -2495,7 +2500,8 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
   if (!expanded)
     return;
 
-  if (RoleValue() == kRowRole || RoleValue() == kTreeItemRole) {
+  if (RoleValue() == ax::mojom::Role::kRow ||
+      RoleValue() == ax::mojom::Role::kTreeItem) {
     ax::mojom::Event notification = ax::mojom::Event::kRowExpanded;
     if (expanded == kExpandedCollapsed)
       notification = ax::mojom::Event::kRowCollapsed;
@@ -2522,7 +2528,7 @@ void AXLayoutObject::TextChanged() {
 
   Settings* settings = GetDocument()->GetSettings();
   if (settings && settings->GetInlineTextBoxAccessibilityEnabled() &&
-      RoleValue() == kStaticTextRole)
+      RoleValue() == ax::mojom::Role::kStaticText)
     ChildrenChanged();
 
   // Do this last - AXNodeObject::textChanged posts live region announcements,
@@ -2663,7 +2669,8 @@ void AXLayoutObject::LineBreaks(Vector<int>& line_breaks) const {
 }
 
 // The following is a heuristic used to determine if a
-// <table> should be with kTableRole or kLayoutTableRole.
+// <table> should be with ax::mojom::Role::kTable or
+// ax::mojom::Role::kLayoutTable.
 bool AXLayoutObject::IsDataTable() const {
   if (!layout_object_ || !GetNode())
     return false;
@@ -2871,7 +2878,7 @@ bool AXLayoutObject::IsDataTable() const {
 }
 
 unsigned AXLayoutObject::ColumnCount() const {
-  if (AriaRoleAttribute() != kUnknownRole)
+  if (AriaRoleAttribute() != ax::mojom::Role::kUnknown)
     return AXNodeObject::ColumnCount();
 
   LayoutObject* layout_object = GetLayoutObject();
@@ -2888,7 +2895,7 @@ unsigned AXLayoutObject::ColumnCount() const {
 }
 
 unsigned AXLayoutObject::RowCount() const {
-  if (AriaRoleAttribute() != kUnknownRole)
+  if (AriaRoleAttribute() != ax::mojom::Role::kUnknown)
     return AXNodeObject::RowCount();
 
   LayoutObject* layout_object = GetLayoutObject();
@@ -2986,7 +2993,8 @@ unsigned AXLayoutObject::RowSpan() const {
 }
 
 SortDirection AXLayoutObject::GetSortDirection() const {
-  if (RoleValue() != kRowHeaderRole && RoleValue() != kColumnHeaderRole)
+  if (RoleValue() != ax::mojom::Role::kRowHeader &&
+      RoleValue() != ax::mojom::Role::kColumnHeader)
     return kSortDirectionUndefined;
 
   const AtomicString& aria_sort =
@@ -3005,79 +3013,79 @@ SortDirection AXLayoutObject::GetSortDirection() const {
   return kSortDirectionOther;
 }
 
-static AccessibilityRole DecideRoleFromSibling(LayoutTableCell* sibling_cell) {
+static ax::mojom::Role DecideRoleFromSibling(LayoutTableCell* sibling_cell) {
   if (!sibling_cell)
-    return kCellRole;
+    return ax::mojom::Role::kCell;
 
   if (Node* sibling_node = sibling_cell->GetNode()) {
     if (sibling_node->HasTagName(thTag))
-      return kColumnHeaderRole;
+      return ax::mojom::Role::kColumnHeader;
     if (sibling_node->HasTagName(tdTag))
-      return kRowHeaderRole;
+      return ax::mojom::Role::kRowHeader;
   }
 
-  return kCellRole;
+  return ax::mojom::Role::kCell;
 }
 
-AccessibilityRole AXLayoutObject::DetermineTableRowRole() const {
+ax::mojom::Role AXLayoutObject::DetermineTableRowRole() const {
   AXObject* parent = ParentObjectUnignored();
   if (!parent)
-    return kGenericContainerRole;
+    return ax::mojom::Role::kGenericContainer;
 
-  if (parent->RoleValue() == kLayoutTableRole)
-    return kLayoutTableRowRole;
+  if (parent->RoleValue() == ax::mojom::Role::kLayoutTable)
+    return ax::mojom::Role::kLayoutTableRow;
 
   if (parent->IsTableLikeRole())
-    return kRowRole;
+    return ax::mojom::Role::kRow;
 
-  return kGenericContainerRole;
+  return ax::mojom::Role::kGenericContainer;
 }
 
-AccessibilityRole AXLayoutObject::DetermineTableCellRole() const {
+ax::mojom::Role AXLayoutObject::DetermineTableCellRole() const {
   DCHECK(layout_object_);
 
   AXObject* parent = ParentObjectUnignored();
   if (!parent || !parent->IsTableRowLikeRole())
-    return kGenericContainerRole;
+    return ax::mojom::Role::kGenericContainer;
 
   AXObject* grandparent = parent->ParentObjectUnignored();
   if (!grandparent || !grandparent->IsTableLikeRole())
-    return kGenericContainerRole;
+    return ax::mojom::Role::kGenericContainer;
 
-  if (parent->RoleValue() == kLayoutTableRowRole)
-    return kLayoutTableCellRole;
+  if (parent->RoleValue() == ax::mojom::Role::kLayoutTableRow)
+    return ax::mojom::Role::kLayoutTableCell;
 
   if (!parent->IsTableRowLikeRole())
-    return kGenericContainerRole;
+    return ax::mojom::Role::kGenericContainer;
 
   if (!GetNode() || !GetNode()->HasTagName(thTag))
-    return kCellRole;
+    return ax::mojom::Role::kCell;
 
   const AtomicString& scope = GetAttribute(scopeAttr);
   if (EqualIgnoringASCIICase(scope, "row") ||
       EqualIgnoringASCIICase(scope, "rowgroup"))
-    return kRowHeaderRole;
+    return ax::mojom::Role::kRowHeader;
   if (EqualIgnoringASCIICase(scope, "col") ||
       EqualIgnoringASCIICase(scope, "colgroup"))
-    return kColumnHeaderRole;
+    return ax::mojom::Role::kColumnHeader;
 
   // Check the previous cell and the next cell on the same row.
   LayoutTableCell* layout_cell = ToLayoutTableCell(layout_object_);
-  AccessibilityRole header_role = kCellRole;
+  ax::mojom::Role header_role = ax::mojom::Role::kCell;
   // if header is preceded by header cells on the same row, then it is a
   // column header. If it is preceded by other cells then it's a row header.
   if ((header_role = DecideRoleFromSibling(layout_cell->PreviousCell())) !=
-      kCellRole)
+      ax::mojom::Role::kCell)
     return header_role;
 
   // if header is followed by header cells on the same row, then it is a
   // column header. If it is followed by other cells then it's a row header.
   if ((header_role = DecideRoleFromSibling(layout_cell->NextCell())) !=
-      kCellRole)
+      ax::mojom::Role::kCell)
     return header_role;
 
   // If there are no other cells on that row, then it is a column header.
-  return kColumnHeaderRole;
+  return ax::mojom::Role::kColumnHeader;
 }
 
 AXObject* AXLayoutObject::CellForColumnAndRow(unsigned target_column_index,
@@ -3129,7 +3137,7 @@ AXObject* AXLayoutObject::CellForColumnAndRow(unsigned target_column_index,
   return nullptr;
 }
 
-bool AXLayoutObject::FindAllTableCellsWithRole(AccessibilityRole role,
+bool AXLayoutObject::FindAllTableCellsWithRole(ax::mojom::Role role,
                                                AXObjectVector& cells) const {
   LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object || !layout_object->IsTable())
@@ -3160,12 +3168,12 @@ bool AXLayoutObject::FindAllTableCellsWithRole(AccessibilityRole role,
 }
 
 void AXLayoutObject::ColumnHeaders(AXObjectVector& headers) const {
-  if (!FindAllTableCellsWithRole(kColumnHeaderRole, headers))
+  if (!FindAllTableCellsWithRole(ax::mojom::Role::kColumnHeader, headers))
     AXNodeObject::ColumnHeaders(headers);
 }
 
 void AXLayoutObject::RowHeaders(AXObjectVector& headers) const {
-  if (!FindAllTableCellsWithRole(kRowHeaderRole, headers))
+  if (!FindAllTableCellsWithRole(ax::mojom::Role::kRowHeader, headers))
     AXNodeObject::RowHeaders(headers);
 }
 
@@ -3178,7 +3186,7 @@ AXObject* AXLayoutObject::HeaderObject() const {
   for (LayoutTableCell* cell = row->FirstCell(); cell;
        cell = cell->NextCell()) {
     AXObject* ax_cell = AXObjectCache().GetOrCreate(cell);
-    if (ax_cell && ax_cell->RoleValue() == kRowHeaderRole)
+    if (ax_cell && ax_cell->RoleValue() == ax::mojom::Role::kRowHeader)
       return ax_cell;
   }
 
@@ -3213,7 +3221,7 @@ bool AXLayoutObject::IsTabItemSelected() const {
     AXObject* tab_panel = AXObjectCache().GetOrCreate(element);
 
     // A tab item should only control tab panels.
-    if (!tab_panel || tab_panel->RoleValue() != kTabPanelRole)
+    if (!tab_panel || tab_panel->RoleValue() != ax::mojom::Role::kTabPanel)
       continue;
 
     AXObject* check_focus_element = focused_element;

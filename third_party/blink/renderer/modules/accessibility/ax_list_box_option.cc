@@ -49,8 +49,8 @@ AXListBoxOption* AXListBoxOption::Create(LayoutObject* layout_object,
   return new AXListBoxOption(layout_object, ax_object_cache);
 }
 
-AccessibilityRole AXListBoxOption::DetermineAccessibilityRole() {
-  if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
+ax::mojom::Role AXListBoxOption::DetermineAccessibilityRole() {
+  if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;
 
   // http://www.w3.org/TR/wai-aria/complete#presentation
@@ -59,9 +59,9 @@ AccessibilityRole AXListBoxOption::DetermineAccessibilityRole() {
   // does not cause the content contained within the element to be removed from
   // the accessibility tree.
   if (IsParentPresentationalRole())
-    return kStaticTextRole;
+    return ax::mojom::Role::kStaticText;
 
-  return kListBoxOptionRole;
+  return ax::mojom::Role::kListBoxOption;
 }
 
 bool AXListBoxOption::IsParentPresentationalRole() const {

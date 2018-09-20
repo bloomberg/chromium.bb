@@ -63,10 +63,10 @@ AXObject* AXSVGRoot::ComputeParent() const {
 }
 
 // SVG AAM 1.0 S8.2: the default role for an SVG root is "group".
-AccessibilityRole AXSVGRoot::DetermineAccessibilityRole() {
-  AccessibilityRole role = AXLayoutObject::DetermineAccessibilityRole();
-  if (role == kUnknownRole)
-    role = kGroupRole;
+ax::mojom::Role AXSVGRoot::DetermineAccessibilityRole() {
+  ax::mojom::Role role = AXLayoutObject::DetermineAccessibilityRole();
+  if (role == ax::mojom::Role::kUnknown)
+    role = ax::mojom::Role::kGroup;
   return role;
 }
 

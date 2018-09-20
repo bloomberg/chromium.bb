@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 
 class SkMatrix44;
 
@@ -172,7 +173,7 @@ class WebAXObject {
   BLINK_EXPORT WebAXObject InPageLinkTarget() const;
   BLINK_EXPORT WebAXOrientation Orientation() const;
   BLINK_EXPORT WebVector<WebAXObject> RadioButtonsInGroup() const;
-  BLINK_EXPORT WebAXRole Role() const;
+  BLINK_EXPORT ax::mojom::Role Role() const;
   BLINK_EXPORT WebString StringValue() const;
   BLINK_EXPORT WebAXTextDirection GetTextDirection() const;
   BLINK_EXPORT WebAXTextPosition GetTextPosition() const;

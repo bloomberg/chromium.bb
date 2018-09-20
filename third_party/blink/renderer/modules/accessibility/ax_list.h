@@ -46,7 +46,7 @@ class AXList final : public AXLayoutObject {
 
   bool IsList() const override { return true; }
 
-  AccessibilityRole RoleValue() const final;
+  ax::mojom::Role RoleValue() const final;
 
  private:
   bool IsDescriptionList() const;

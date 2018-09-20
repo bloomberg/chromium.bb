@@ -153,41 +153,52 @@ void FillGlobalStates(AXObject& ax_object,
   }
 }
 
-bool RoleAllowsModal(AccessibilityRole role) {
-  return role == kDialogRole || role == kAlertDialogRole;
+bool RoleAllowsModal(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kDialog ||
+         role == ax::mojom::Role::kAlertDialog;
 }
 
-bool RoleAllowsMultiselectable(AccessibilityRole role) {
-  return role == kGridRole || role == kListBoxRole || role == kTabListRole ||
-         role == kTreeGridRole || role == kTreeRole;
+bool RoleAllowsMultiselectable(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kGrid || role == ax::mojom::Role::kListBox ||
+         role == ax::mojom::Role::kTabList ||
+         role == ax::mojom::Role::kTreeGrid || role == ax::mojom::Role::kTree;
 }
 
-bool RoleAllowsOrientation(AccessibilityRole role) {
-  return role == kScrollBarRole || role == kSplitterRole || role == kSliderRole;
+bool RoleAllowsOrientation(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kScrollBar ||
+         role == ax::mojom::Role::kSplitter || role == ax::mojom::Role::kSlider;
 }
 
-bool RoleAllowsReadonly(AccessibilityRole role) {
-  return role == kGridRole || role == kCellRole || role == kTextFieldRole ||
-         role == kColumnHeaderRole || role == kRowHeaderRole ||
-         role == kTreeGridRole;
+bool RoleAllowsReadonly(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kGrid || role == ax::mojom::Role::kCell ||
+         role == ax::mojom::Role::kTextField ||
+         role == ax::mojom::Role::kColumnHeader ||
+         role == ax::mojom::Role::kRowHeader ||
+         role == ax::mojom::Role::kTreeGrid;
 }
 
-bool RoleAllowsRequired(AccessibilityRole role) {
-  return role == kComboBoxGroupingRole || role == kComboBoxMenuButtonRole ||
-         role == kCellRole || role == kListBoxRole || role == kRadioGroupRole ||
-         role == kSpinButtonRole || role == kTextFieldRole ||
-         role == kTextFieldWithComboBoxRole || role == kTreeRole ||
-         role == kColumnHeaderRole || role == kRowHeaderRole ||
-         role == kTreeGridRole;
+bool RoleAllowsRequired(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kComboBoxGrouping ||
+         role == ax::mojom::Role::kComboBoxMenuButton ||
+         role == ax::mojom::Role::kCell || role == ax::mojom::Role::kListBox ||
+         role == ax::mojom::Role::kRadioGroup ||
+         role == ax::mojom::Role::kSpinButton ||
+         role == ax::mojom::Role::kTextField ||
+         role == ax::mojom::Role::kTextFieldWithComboBox ||
+         role == ax::mojom::Role::kTree ||
+         role == ax::mojom::Role::kColumnHeader ||
+         role == ax::mojom::Role::kRowHeader ||
+         role == ax::mojom::Role::kTreeGrid;
 }
 
-bool RoleAllowsSort(AccessibilityRole role) {
-  return role == kColumnHeaderRole || role == kRowHeaderRole;
+bool RoleAllowsSort(ax::mojom::Role role) {
+  return role == ax::mojom::Role::kColumnHeader ||
+         role == ax::mojom::Role::kRowHeader;
 }
 
 void FillWidgetProperties(AXObject& ax_object,
                           protocol::Array<AXProperty>& properties) {
-  AccessibilityRole role = ax_object.RoleValue();
+  ax::mojom::Role role = ax_object.RoleValue();
   String autocomplete = ax_object.AriaAutoComplete();
   if (!autocomplete.IsEmpty())
     properties.addItem(
@@ -232,7 +243,7 @@ void FillWidgetProperties(AXObject& ax_object,
     }
   }
 
-  if (role == kTextFieldRole) {
+  if (role == ax::mojom::Role::kTextField) {
     properties.addItem(
         CreateProperty(AXPropertyNameEnum::Multiline,
                        CreateBooleanValue(ax_object.IsMultiline())));
@@ -275,7 +286,7 @@ void FillWidgetProperties(AXObject& ax_object,
 
 void FillWidgetStates(AXObject& ax_object,
                       protocol::Array<AXProperty>& properties) {
-  AccessibilityRole role = ax_object.RoleValue();
+  ax::mojom::Role role = ax_object.RoleValue();
   const char* checked_prop_val = nullptr;
   switch (ax_object.CheckedState()) {
     case kCheckedStateTrue:
@@ -291,7 +302,7 @@ void FillWidgetStates(AXObject& ax_object,
       break;
   }
   if (checked_prop_val) {
-    auto* const checked_prop_name = role == kToggleButtonRole
+    auto* const checked_prop_name = role == ax::mojom::Role::kToggleButton
                                         ? AXPropertyNameEnum::Pressed
                                         : AXPropertyNameEnum::Checked;
     properties.addItem(CreateProperty(
@@ -450,7 +461,7 @@ void FillRelationships(AXObject& ax_object,
   results.clear();
 }
 
-std::unique_ptr<AXValue> CreateRoleNameValue(AccessibilityRole role) {
+std::unique_ptr<AXValue> CreateRoleNameValue(ax::mojom::Role role) {
   AtomicString role_name = AXObject::RoleName(role);
   std::unique_ptr<AXValue> role_name_value;
   if (!role_name.IsNull()) {
@@ -545,7 +556,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildObjectForIgnoredNode(
           .setNodeId(String::Number(ax_id))
           .setIgnored(true)
           .build();
-  AccessibilityRole role = AccessibilityRole::kIgnoredRole;
+  ax::mojom::Role role = ax::mojom::Role::kIgnored;
   ignored_node_object->setRole(CreateRoleNameValue(role));
 
   if (ax_object && ax_object->IsAXLayoutObject()) {
@@ -619,7 +630,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
     bool fetch_relatives,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
-  AccessibilityRole role = ax_object.RoleValue();
+  ax::mojom::Role role = ax_object.RoleValue();
   std::unique_ptr<AXNode> node_object =
       AXNode::create()
           .setNodeId(String::Number(ax_object.AXObjectID()))

@@ -723,11 +723,11 @@ WebVector<WebAXObject> WebAXObject::RadioButtonsInGroup() const {
   return web_radio_buttons;
 }
 
-WebAXRole WebAXObject::Role() const {
+ax::mojom::Role WebAXObject::Role() const {
   if (IsDetached())
-    return kWebAXRoleUnknown;
+    return ax::mojom::Role::kUnknown;
 
-  return static_cast<WebAXRole>(private_->RoleValue());
+  return private_->RoleValue();
 }
 
 void WebAXObject::Selection(WebAXObject& anchor_object,
@@ -1171,7 +1171,7 @@ unsigned WebAXObject::ColumnIndex() const {
   if (IsDetached())
     return 0;
 
-  if (private_->RoleValue() != kColumnRole)
+  if (private_->RoleValue() != ax::mojom::Role::kColumn)
     return 0;
 
   return private_->ColumnIndex();
@@ -1181,7 +1181,7 @@ WebAXObject WebAXObject::ColumnHeader() const {
   if (IsDetached())
     return WebAXObject();
 
-  if (private_->RoleValue() != kColumnRole)
+  if (private_->RoleValue() != ax::mojom::Role::kColumn)
     return WebAXObject();
 
   return WebAXObject(private_->HeaderObject());

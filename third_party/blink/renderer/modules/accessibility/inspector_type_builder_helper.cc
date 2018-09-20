@@ -46,7 +46,7 @@ String IgnoredReasonName(AXIgnoredReason reason) {
       return "notRendered";
     case kAXNotVisible:
       return "notVisible";
-    case kAXPresentationalRole:
+    case kAXPresentational:
       return "presentationalRole";
     case kAXProbablyPresentational:
       return "probablyPresentational";

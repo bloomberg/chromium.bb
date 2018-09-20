@@ -41,11 +41,11 @@ AXMenuList* AXMenuList::Create(LayoutMenuList* layout_object,
   return new AXMenuList(layout_object, ax_object_cache);
 }
 
-AccessibilityRole AXMenuList::DetermineAccessibilityRole() {
-  if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
+ax::mojom::Role AXMenuList::DetermineAccessibilityRole() {
+  if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;
 
-  return kPopUpButtonRole;
+  return ax::mojom::Role::kPopUpButton;
 }
 
 bool AXMenuList::OnNativeClickAction() {
@@ -78,7 +78,7 @@ void AXMenuList::AddChildren() {
 
   AXObjectCacheImpl& cache = AXObjectCache();
 
-  AXObject* list = cache.GetOrCreate(kMenuListPopupRole);
+  AXObject* list = cache.GetOrCreate(ax::mojom::Role::kMenuListPopup);
   if (!list)
     return;
 

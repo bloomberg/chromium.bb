@@ -56,8 +56,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   LayoutObject* GetLayoutObject() const final { return layout_object_; }
   LayoutBoxModelObject* GetLayoutBoxModelObject() const;
   ScrollableArea* GetScrollableAreaIfScrollable() const final;
-  AccessibilityRole DetermineAccessibilityRole() override;
-  AccessibilityRole NativeAccessibilityRoleIgnoringAria() const override;
+  ax::mojom::Role DetermineAccessibilityRole() override;
+  ax::mojom::Role NativeRoleIgnoringAria() const override;
 
   // If this is an anonymous block, returns the node of its containing layout
   // block, otherwise returns the node of this layout object.
@@ -224,9 +224,9 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AddRemoteSVGChildren();
   void AddTableChildren();
   void AddInlineTextBoxChildren(bool force);
-  AccessibilityRole DetermineTableCellRole() const;
-  AccessibilityRole DetermineTableRowRole() const;
-  bool FindAllTableCellsWithRole(AccessibilityRole, AXObjectVector&) const;
+  ax::mojom::Role DetermineTableCellRole() const;
+  ax::mojom::Role DetermineTableRowRole() const;
+  bool FindAllTableCellsWithRole(ax::mojom::Role, AXObjectVector&) const;
 
   LayoutRect ComputeElementRect() const;
   AXSelection TextControlSelection() const;

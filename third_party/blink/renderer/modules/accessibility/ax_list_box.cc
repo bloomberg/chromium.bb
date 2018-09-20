@@ -50,11 +50,11 @@ AXListBox* AXListBox::Create(LayoutObject* layout_object,
   return new AXListBox(layout_object, ax_object_cache);
 }
 
-AccessibilityRole AXListBox::DetermineAccessibilityRole() {
-  if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
+ax::mojom::Role AXListBox::DetermineAccessibilityRole() {
+  if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;
 
-  return kListBoxRole;
+  return ax::mojom::Role::kListBox;
 }
 
 AXObject* AXListBox::ActiveDescendant() {
