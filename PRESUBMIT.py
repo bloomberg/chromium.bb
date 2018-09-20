@@ -638,6 +638,7 @@ _VALID_OS_MACROS = (
 
 
 _ANDROID_SPECIFIC_PYDEPS_FILES = [
+    'android_webview/tools/run_cts.pydeps',
     'base/android/jni_generator/jni_generator.pydeps',
     'base/android/jni_generator/jni_registration_generator.pydeps',
     'build/android/gyp/aar.pydeps',
