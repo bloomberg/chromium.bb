@@ -105,7 +105,7 @@ source_set("tests") {
 
     deps += [
       "//third_party/perfetto/include/perfetto/protozero:protozero",
-      "//third_party/perfetto/protos/perfetto/common",
+      "//third_party/perfetto/protos/perfetto/common:lite",
       "//third_party/perfetto/protos/perfetto/trace:lite",
       "//third_party/perfetto/protos/perfetto/trace/chrome:lite",
     ]
