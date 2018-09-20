@@ -35,6 +35,7 @@
   } while (0)
 
 namespace {
+const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
 const int kMaxQueuedDataMs = 1000;
 }  // namespace
 
@@ -250,6 +251,14 @@ void CastAudioOutputStream::CmaWrapper::PushBuffer() {
   base::TimeTicks delay_timestamp =
       base::TimeTicks() +
       base::TimeDelta::FromMicroseconds(rendering_delay.timestamp_microseconds);
+
+  // The delay must be greater than zero, and if the timestamp is invalid, we
+  // cannot trust the current delay.
+  if (rendering_delay.timestamp_microseconds == kInvalidTimestamp ||
+      rendering_delay.delay_microseconds < 0) {
+    delay = base::TimeDelta();
+  }
+
   int frame_count =
       source_callback_->OnMoreData(delay, delay_timestamp, 0, audio_bus_.get());
   VLOG(3) << "frames_filled=" << frame_count << " with latency=" << delay;
