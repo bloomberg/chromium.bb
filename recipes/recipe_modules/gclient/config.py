@@ -128,7 +128,7 @@ def android(c):
 def nacl(c):
   s = c.solutions.add()
   s.name = 'native_client'
-  s.url = ChromiumGitURL(c, 'native_client', 'src', 'native_client.git')
+  s.url = ChromiumGitURL(c, 'native_client', 'src', 'native_client')
   m = c.got_revision_mapping
   m['native_client'] = 'got_revision'
 
@@ -136,7 +136,7 @@ def nacl(c):
 def webports(c):
   s = c.solutions.add()
   s.name = 'src'
-  s.url = ChromiumGitURL(c, 'webports.git')
+  s.url = ChromiumGitURL(c, 'webports')
   m = c.got_revision_mapping
   m['src'] = 'got_revision'
 
@@ -145,7 +145,7 @@ def wasm_llvm(c):
   s = c.solutions.add()
   s.name = 'src'
   s.url = ChromiumGitURL(
-      c, 'external', 'github.com', 'WebAssembly', 'waterfall.git')
+      c, 'external', 'github.com', 'WebAssembly', 'waterfall')
   m = c.got_revision_mapping
   m['src'] = 'got_waterfall_revision'
   c.revisions['src'] = 'origin/master'
@@ -154,7 +154,7 @@ def wasm_llvm(c):
 def gyp(c):
   s = c.solutions.add()
   s.name = 'gyp'
-  s.url = ChromiumGitURL(c, 'external', 'gyp.git')
+  s.url = ChromiumGitURL(c, 'external', 'gyp')
   m = c.got_revision_mapping
   m['gyp'] = 'got_revision'
 
@@ -162,7 +162,7 @@ def gyp(c):
 def build(c):
   s = c.solutions.add()
   s.name = 'build'
-  s.url = ChromiumGitURL(c, 'chromium', 'tools', 'build.git')
+  s.url = ChromiumGitURL(c, 'chromium', 'tools', 'build')
   m = c.got_revision_mapping
   m['build'] = 'got_revision'
 
@@ -170,7 +170,7 @@ def build(c):
 def depot_tools(c):  # pragma: no cover
   s = c.solutions.add()
   s.name = 'depot_tools'
-  s.url = ChromiumGitURL(c, 'chromium', 'tools', 'depot_tools.git')
+  s.url = ChromiumGitURL(c, 'chromium', 'tools', 'depot_tools')
   m = c.got_revision_mapping
   m['depot_tools'] = 'got_revision'
 
@@ -178,7 +178,7 @@ def depot_tools(c):  # pragma: no cover
 def skia(c):  # pragma: no cover
   s = c.solutions.add()
   s.name = 'skia'
-  s.url = 'https://skia.googlesource.com/skia.git'
+  s.url = 'https://skia.googlesource.com/skia'
   m = c.got_revision_mapping
   m['skia'] = 'got_revision'
 
@@ -186,7 +186,7 @@ def skia(c):  # pragma: no cover
 def skia_buildbot(c):  # pragma: no cover
   s = c.solutions.add()
   s.name = 'skia_buildbot'
-  s.url = 'https://skia.googlesource.com/buildbot.git'
+  s.url = 'https://skia.googlesource.com/buildbot'
   m = c.got_revision_mapping
   m['skia_buildbot'] = 'got_revision'
 
@@ -194,14 +194,14 @@ def skia_buildbot(c):  # pragma: no cover
 def chrome_golo(c):  # pragma: no cover
   s = c.solutions.add()
   s.name = 'chrome_golo'
-  s.url = 'https://chrome-internal.googlesource.com/chrome-golo/chrome-golo.git'
+  s.url = 'https://chrome-internal.googlesource.com/chrome-golo/chrome-golo'
   c.got_revision_mapping['chrome_golo'] = 'got_revision'
 
 @config_ctx()
 def build_internal(c):
   s = c.solutions.add()
   s.name = 'build_internal'
-  s.url = 'https://chrome-internal.googlesource.com/chrome/tools/build.git'
+  s.url = 'https://chrome-internal.googlesource.com/chrome/tools/build'
   c.got_revision_mapping['build_internal'] = 'got_revision'
   # We do not use 'includes' here, because we want build_internal to be the
   # first solution in the list as run_presubmit computes upstream revision
@@ -214,7 +214,7 @@ def build_internal_scripts_slave(c):
   s = c.solutions.add()
   s.name = 'build_internal/scripts/slave'
   s.url = ('https://chrome-internal.googlesource.com/'
-           'chrome/tools/build_limited/scripts/slave.git')
+           'chrome/tools/build_limited/scripts/slave')
   c.got_revision_mapping['build_internal/scripts/slave'] = 'got_revision'
   # We do not use 'includes' here, because we want build_internal to be the
   # first solution in the list as run_presubmit computes upstream revision
@@ -227,7 +227,7 @@ def master_deps(c):
   s = c.solutions.add()
   s.name = 'master.DEPS'
   s.url = ('https://chrome-internal.googlesource.com/'
-           'chrome/tools/build/master.DEPS.git')
+           'chrome/tools/build/master.DEPS')
   c.got_revision_mapping['master.DEPS'] = 'got_revision'
 
 @config_ctx()
@@ -235,7 +235,7 @@ def slave_deps(c):
   s = c.solutions.add()
   s.name = 'slave.DEPS'
   s.url = ('https://chrome-internal.googlesource.com/'
-           'chrome/tools/build/slave.DEPS.git')
+           'chrome/tools/build/slave.DEPS')
   c.got_revision_mapping['slave.DEPS'] = 'got_revision'
 
 @config_ctx()
@@ -243,14 +243,14 @@ def internal_deps(c):
   s = c.solutions.add()
   s.name = 'internal.DEPS'
   s.url = ('https://chrome-internal.googlesource.com/'
-           'chrome/tools/build/internal.DEPS.git')
+           'chrome/tools/build/internal.DEPS')
   c.got_revision_mapping['internal.DEPS'] = 'got_revision'
 
 @config_ctx()
 def pdfium(c):
   soln = c.solutions.add()
   soln.name = 'pdfium'
-  soln.url = 'https://pdfium.googlesource.com/pdfium.git'
+  soln.url = 'https://pdfium.googlesource.com/pdfium'
   m = c.got_revision_mapping
   m['pdfium'] = 'got_revision'
 
@@ -258,26 +258,26 @@ def pdfium(c):
 def mojo(c):
   soln = c.solutions.add()
   soln.name = 'src'
-  soln.url = 'https://chromium.googlesource.com/external/mojo.git'
+  soln.url = 'https://chromium.googlesource.com/external/mojo'
 
 @config_ctx()
 def crashpad(c):
   soln = c.solutions.add()
   soln.name = 'crashpad'
-  soln.url = 'https://chromium.googlesource.com/crashpad/crashpad.git'
+  soln.url = 'https://chromium.googlesource.com/crashpad/crashpad'
 
 @config_ctx()
 def boringssl(c):
   soln = c.solutions.add()
   soln.name = 'boringssl'
-  soln.url = 'https://boringssl.googlesource.com/boringssl.git'
+  soln.url = 'https://boringssl.googlesource.com/boringssl'
   soln.deps_file = 'util/bot/DEPS'
 
 @config_ctx()
 def dart(c):
   soln = c.solutions.add()
   soln.name = 'sdk'
-  soln.url = ('https://dart.googlesource.com/sdk.git')
+  soln.url = ('https://dart.googlesource.com/sdk')
   soln.deps_file = 'DEPS'
   soln.managed = False
 
@@ -285,14 +285,14 @@ def dart(c):
 def expect_tests(c):
   soln = c.solutions.add()
   soln.name = 'expect_tests'
-  soln.url = 'https://chromium.googlesource.com/infra/testing/expect_tests.git'
+  soln.url = 'https://chromium.googlesource.com/infra/testing/expect_tests'
   c.got_revision_mapping['expect_tests'] = 'got_revision'
 
 @config_ctx()
 def infra(c):
   soln = c.solutions.add()
   soln.name = 'infra'
-  soln.url = 'https://chromium.googlesource.com/infra/infra.git'
+  soln.url = 'https://chromium.googlesource.com/infra/infra'
   c.got_revision_mapping['infra'] = 'got_revision'
   c.repo_path_map.update({
       'https://chromium.googlesource.com/infra/luci/gae': (
@@ -309,7 +309,7 @@ def infra(c):
 def infra_internal(c):  # pragma: no cover
   soln = c.solutions.add()
   soln.name = 'infra_internal'
-  soln.url = 'https://chrome-internal.googlesource.com/infra/infra_internal.git'
+  soln.url = 'https://chrome-internal.googlesource.com/infra/infra_internal'
   c.got_revision_mapping['infra_internal'] = 'got_revision'
 
 @config_ctx(includes=['infra'])
@@ -373,7 +373,7 @@ def infradata_master_manager(c):
   soln = c.solutions.add()
   soln.name = 'infra-data-master-manager'
   soln.url = (
-      'https://chrome-internal.googlesource.com/infradata/master-manager.git')
+      'https://chrome-internal.googlesource.com/infradata/master-manager')
   del c.got_revision_mapping['infra_internal']
   c.got_revision_mapping['infra-data-master-manager'] = 'got_revision'
 
@@ -381,7 +381,7 @@ def infradata_master_manager(c):
 def infradata_config(c):
   soln = c.solutions.add()
   soln.name = 'infra-data-config'
-  soln.url = 'https://chrome-internal.googlesource.com/infradata/config.git'
+  soln.url = 'https://chrome-internal.googlesource.com/infradata/config'
   c.got_revision_mapping['infra-data-config'] = 'got_revision'
 
 @config_ctx()
@@ -404,17 +404,17 @@ def custom_tabs_client(c):
 def gerrit_test_cq_normal(c):
   soln = c.solutions.add()
   soln.name = 'gerrit-test-cq-normal'
-  soln.url = 'https://chromium.googlesource.com/playground/gerrit-cq/normal.git'
+  soln.url = 'https://chromium.googlesource.com/playground/gerrit-cq/normal'
 
 @config_ctx()
 def angle(c):
   soln = c.solutions.add()
   soln.name = 'angle'
-  soln.url = 'https://chromium.googlesource.com/angle/angle.git'
+  soln.url = 'https://chromium.googlesource.com/angle/angle'
 
 @config_ctx()
 def dawn(c):
   soln = c.solutions.add()
   soln.name = 'dawn'
-  soln.url = 'https://dawn.googlesource.com/dawn.git'
+  soln.url = 'https://dawn.googlesource.com/dawn'
   c.got_revision_mapping['dawn'] = 'got_revision'
