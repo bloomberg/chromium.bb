@@ -3184,7 +3184,8 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
   ClearOutOldGarbage();
   IntWrapper::destructor_calls_ = 0;
 
-  PersistentHeapVector<Member<IntWrapper>> keep_numbers_alive;
+  Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
+      new HeapVector<Member<IntWrapper>>;
 
   typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper>> WeakStrong;
   typedef HeapHashMap<Member<IntWrapper>, WeakMember<IntWrapper>> StrongWeak;
@@ -3200,8 +3201,8 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
 
   Persistent<IntWrapper> two = IntWrapper::Create(2);
 
-  keep_numbers_alive.push_back(IntWrapper::Create(103));
-  keep_numbers_alive.push_back(IntWrapper::Create(10));
+  keep_numbers_alive->push_back(IntWrapper::Create(103));
+  keep_numbers_alive->push_back(IntWrapper::Create(10));
 
   {
     weak_strong->insert(IntWrapper::Create(1), two);
@@ -3210,14 +3211,14 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
     weak_weak->insert(IntWrapper::Create(42), two);
     weak_set->insert(IntWrapper::Create(0));
     weak_set->insert(two);
-    weak_set->insert(keep_numbers_alive[0]);
-    weak_set->insert(keep_numbers_alive[1]);
+    weak_set->insert(keep_numbers_alive->at(0));
+    weak_set->insert(keep_numbers_alive->at(1));
     weak_counted_set->insert(IntWrapper::Create(0));
     weak_counted_set->insert(two);
     weak_counted_set->insert(two);
     weak_counted_set->insert(two);
-    weak_counted_set->insert(keep_numbers_alive[0]);
-    weak_counted_set->insert(keep_numbers_alive[1]);
+    weak_counted_set->insert(keep_numbers_alive->at(0));
+    weak_counted_set->insert(keep_numbers_alive->at(1));
     EXPECT_EQ(1u, weak_strong->size());
     EXPECT_EQ(1u, strong_weak->size());
     EXPECT_EQ(2u, weak_weak->size());
@@ -3228,7 +3229,7 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
     EXPECT_EQ(2u, weak_counted_set->find(two)->value);
   }
 
-  keep_numbers_alive[0] = nullptr;
+  keep_numbers_alive->at(0) = nullptr;
 
   PreciselyCollectGarbage();
 
@@ -3244,21 +3245,22 @@ void OrderedSetHelper(bool strong) {
   ClearOutOldGarbage();
   IntWrapper::destructor_calls_ = 0;
 
-  PersistentHeapVector<Member<IntWrapper>> keep_numbers_alive;
+  Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
+      new HeapVector<Member<IntWrapper>>;
 
   Persistent<Set> set1 = new Set();
   Persistent<Set> set2 = new Set();
 
   const Set& const_set = *set1.Get();
 
-  keep_numbers_alive.push_back(IntWrapper::Create(2));
-  keep_numbers_alive.push_back(IntWrapper::Create(103));
-  keep_numbers_alive.push_back(IntWrapper::Create(10));
+  keep_numbers_alive->push_back(IntWrapper::Create(2));
+  keep_numbers_alive->push_back(IntWrapper::Create(103));
+  keep_numbers_alive->push_back(IntWrapper::Create(10));
 
   set1->insert(IntWrapper::Create(0));
-  set1->insert(keep_numbers_alive[0]);
-  set1->insert(keep_numbers_alive[1]);
-  set1->insert(keep_numbers_alive[2]);
+  set1->insert(keep_numbers_alive->at(0));
+  set1->insert(keep_numbers_alive->at(1));
+  set1->insert(keep_numbers_alive->at(2));
 
   set2->clear();
   set2->insert(IntWrapper::Create(42));
@@ -3325,9 +3327,9 @@ void OrderedSetHelper(bool strong) {
   EXPECT_EQ(set2->end(), i_x);
 
   if (strong)
-    set1->erase(keep_numbers_alive[0]);
+    set1->erase(keep_numbers_alive->at(0));
 
-  keep_numbers_alive[0] = nullptr;
+  keep_numbers_alive->at(0) = nullptr;
 
   PreciselyCollectGarbage();
 
@@ -3551,7 +3553,8 @@ template <typename WSSet, typename SWSet, typename WUSet, typename UWSet>
 void WeakPairsHelper() {
   IntWrapper::destructor_calls_ = 0;
 
-  PersistentHeapVector<Member<IntWrapper>> keep_numbers_alive;
+  Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
+      new HeapVector<Member<IntWrapper>>;
 
   Persistent<WSSet> weak_strong = new WSSet();
   Persistent<SWSet> strong_weak = new SWSet();
@@ -3646,12 +3649,13 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
       Persistent<WeakSet> weak_set = new WeakSet();
       Persistent<WeakOrderedSet> weak_ordered_set = new WeakOrderedSet();
 
-      PersistentHeapVector<Member<IntWrapper>> keep_numbers_alive;
+      Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
+          new HeapVector<Member<IntWrapper>>;
       for (int i = 0; i < 128; i += 2) {
         IntWrapper* wrapped = IntWrapper::Create(i);
         IntWrapper* wrapped2 = IntWrapper::Create(i + 1);
-        keep_numbers_alive.push_back(wrapped);
-        keep_numbers_alive.push_back(wrapped2);
+        keep_numbers_alive->push_back(wrapped);
+        keep_numbers_alive->push_back(wrapped2);
         weak_strong->insert(wrapped, wrapped2);
         strong_weak->insert(wrapped2, wrapped);
         weak_weak->insert(wrapped, wrapped2);
@@ -3676,8 +3680,8 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
       EXPECT_EQ(64u, weak_ordered_set->size());
 
       for (int i = 0; i < 128; i += 2) {
-        IntWrapper* wrapped = keep_numbers_alive[i];
-        IntWrapper* wrapped2 = keep_numbers_alive[i + 1];
+        IntWrapper* wrapped = keep_numbers_alive->at(i);
+        IntWrapper* wrapped2 = keep_numbers_alive->at(i + 1);
         EXPECT_EQ(wrapped2, weak_strong->at(wrapped));
         EXPECT_EQ(wrapped, strong_weak->at(wrapped2));
         EXPECT_EQ(wrapped2, weak_weak->at(wrapped));
@@ -3686,7 +3690,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
       }
 
       for (int i = 0; i < 128; i += 3)
-        keep_numbers_alive[i] = nullptr;
+        keep_numbers_alive->at(i) = nullptr;
 
       if (collection_number != kWeakStrongIndex)
         weak_strong->clear();
@@ -3730,38 +3734,43 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
         PreciselyCollectGarbage();
         unsigned count = 0;
         for (int i = 0; i < 128; i += 2) {
-          bool first_alive = keep_numbers_alive[i];
-          bool second_alive = keep_numbers_alive[i + 1];
+          bool first_alive = keep_numbers_alive->at(i);
+          bool second_alive = keep_numbers_alive->at(i + 1);
           if (first_alive && (collection_number == kWeakStrongIndex ||
                               collection_number == kStrongWeakIndex))
             second_alive = true;
           if (first_alive && second_alive &&
               collection_number < kNumberOfMapIndices) {
             if (collection_number == kWeakStrongIndex) {
-              if (delete_afterwards)
-                EXPECT_EQ(i + 1,
-                          weak_strong->Take(keep_numbers_alive[i])->Value());
-            } else if (collection_number == kStrongWeakIndex) {
-              if (delete_afterwards)
+              if (delete_afterwards) {
                 EXPECT_EQ(
-                    i, strong_weak->Take(keep_numbers_alive[i + 1])->Value());
+                    i + 1,
+                    weak_strong->Take(keep_numbers_alive->at(i))->Value());
+              }
+            } else if (collection_number == kStrongWeakIndex) {
+              if (delete_afterwards) {
+                EXPECT_EQ(
+                    i,
+                    strong_weak->Take(keep_numbers_alive->at(i + 1))->Value());
+              }
             } else if (collection_number == kWeakWeakIndex) {
-              if (delete_afterwards)
+              if (delete_afterwards) {
                 EXPECT_EQ(i + 1,
-                          weak_weak->Take(keep_numbers_alive[i])->Value());
+                          weak_weak->Take(keep_numbers_alive->at(i))->Value());
+              }
             }
             if (!delete_afterwards)
               count++;
           } else if (collection_number == kWeakSetIndex && first_alive) {
-            ASSERT_TRUE(weak_set->Contains(keep_numbers_alive[i]));
+            ASSERT_TRUE(weak_set->Contains(keep_numbers_alive->at(i)));
             if (delete_afterwards)
-              weak_set->erase(keep_numbers_alive[i]);
+              weak_set->erase(keep_numbers_alive->at(i));
             else
               count++;
           } else if (collection_number == kWeakOrderedSetIndex && first_alive) {
-            ASSERT_TRUE(weak_ordered_set->Contains(keep_numbers_alive[i]));
+            ASSERT_TRUE(weak_ordered_set->Contains(keep_numbers_alive->at(i)));
             if (delete_afterwards)
-              weak_ordered_set->erase(keep_numbers_alive[i]);
+              weak_ordered_set->erase(keep_numbers_alive->at(i));
             else
               count++;
           }
@@ -3769,7 +3778,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
         if (add_afterwards) {
           for (int i = 1000; i < 1100; i++) {
             IntWrapper* wrapped = IntWrapper::Create(i);
-            keep_numbers_alive.push_back(wrapped);
+            keep_numbers_alive->push_back(wrapped);
             weak_strong->insert(wrapped, wrapped);
             strong_weak->insert(wrapped, wrapped);
             weak_weak->insert(wrapped, wrapped);
@@ -3809,7 +3818,7 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
             (collection_number == kWeakOrderedSetIndex ? count : 0) + added);
       }
       for (unsigned i = 0; i < 128 + added; i++)
-        keep_numbers_alive[i] = nullptr;
+        keep_numbers_alive->at(i) = nullptr;
       PreciselyCollectGarbage();
       EXPECT_EQ(0u, weak_strong->size());
       EXPECT_EQ(0u, strong_weak->size());
@@ -4086,8 +4095,6 @@ TEST(HeapTest, CheckAndMarkPointer) {
 TEST(HeapTest, PersistentHeapCollectionTypes) {
   IntWrapper::destructor_calls_ = 0;
 
-  typedef HeapVector<Member<IntWrapper>> Vec;
-  typedef PersistentHeapVector<Member<IntWrapper>> PVec;
   typedef PersistentHeapHashSet<Member<IntWrapper>> PSet;
   typedef PersistentHeapListHashSet<Member<IntWrapper>> PListSet;
   typedef PersistentHeapLinkedHashSet<Member<IntWrapper>> PLinkedSet;
@@ -4098,7 +4105,6 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
 
   ClearOutOldGarbage();
   {
-    PVec p_vec;
     PDeque p_deque;
     PSet p_set;
     PListSet p_list_set;
@@ -4106,9 +4112,7 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     PMap p_map;
     WeakPMap wp_map;
 
-    IntWrapper* one(IntWrapper::Create(1));
     IntWrapper* two(IntWrapper::Create(2));
-    IntWrapper* three(IntWrapper::Create(3));
     IntWrapper* four(IntWrapper::Create(4));
     IntWrapper* five(IntWrapper::Create(5));
     IntWrapper* six(IntWrapper::Create(6));
@@ -4118,17 +4122,8 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     Persistent<IntWrapper> ten(IntWrapper::Create(10));
     IntWrapper* eleven(IntWrapper::Create(11));
 
-    p_vec.push_back(one);
-    p_vec.push_back(two);
-
     p_deque.push_back(seven);
     p_deque.push_back(two);
-
-    Vec* vec = new Vec();
-    vec->swap(p_vec);
-
-    p_vec.push_back(two);
-    p_vec.push_back(three);
 
     p_set.insert(four);
     p_list_set.insert(eight);
@@ -4136,14 +4131,8 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     p_map.insert(five, six);
     wp_map.insert(ten, eleven);
 
-    // Collect |vec| and |one|.
-    vec = nullptr;
     PreciselyCollectGarbage();
-    EXPECT_EQ(1, IntWrapper::destructor_calls_);
-
-    EXPECT_EQ(2u, p_vec.size());
-    EXPECT_EQ(two, p_vec.at(0));
-    EXPECT_EQ(three, p_vec.at(1));
+    EXPECT_EQ(0, IntWrapper::destructor_calls_);
 
     EXPECT_EQ(2u, p_deque.size());
     EXPECT_EQ(seven, p_deque.front());
@@ -4173,7 +4162,7 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
 
   // Collect previous roots.
   PreciselyCollectGarbage();
-  EXPECT_EQ(11, IntWrapper::destructor_calls_);
+  EXPECT_EQ(9, IntWrapper::destructor_calls_);
 }
 
 TEST(HeapTest, CollectionNesting) {
@@ -4296,20 +4285,23 @@ TEST(HeapTest, EmbeddedInVector) {
   ClearOutOldGarbage();
   SimpleFinalizedObject::destructor_calls_ = 0;
   {
-    PersistentHeapVector<VectorObject, 2> inline_vector;
-    PersistentHeapVector<VectorObject> outline_vector;
+    Persistent<HeapVector<VectorObject, 2>> inline_vector =
+        new HeapVector<VectorObject, 2>;
+    Persistent<HeapVector<VectorObject>> outline_vector =
+        new HeapVector<VectorObject>;
     VectorObject i1, i2;
-    inline_vector.push_back(i1);
-    inline_vector.push_back(i2);
+    inline_vector->push_back(i1);
+    inline_vector->push_back(i2);
 
     VectorObject o1, o2;
-    outline_vector.push_back(o1);
-    outline_vector.push_back(o2);
+    outline_vector->push_back(o1);
+    outline_vector->push_back(o2);
 
-    PersistentHeapVector<VectorObjectInheritedTrace> vector_inherited_trace;
+    Persistent<HeapVector<VectorObjectInheritedTrace>> vector_inherited_trace =
+        new HeapVector<VectorObjectInheritedTrace>;
     VectorObjectInheritedTrace it1, it2;
-    vector_inherited_trace.push_back(it1);
-    vector_inherited_trace.push_back(it2);
+    vector_inherited_trace->push_back(it1);
+    vector_inherited_trace->push_back(it2);
 
     PreciselyCollectGarbage();
     EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
@@ -6541,56 +6533,6 @@ TEST(HeapTest, CrossThreadWeakPersistent) {
   ParkMainThread();
 }
 
-class TestPersistentHeapVectorWithUnusedSlots
-    : public PersistentHeapVector<VectorObject, 16> {
- public:
-  void CheckUnused() { CheckUnusedSlots(end(), end() + (capacity() - size())); }
-};
-
-TEST(HeapTest, TestPersistentHeapVectorWithUnusedSlots) {
-  TestPersistentHeapVectorWithUnusedSlots vector1;
-  TestPersistentHeapVectorWithUnusedSlots vector2(vector1);
-
-  vector1.CheckUnused();
-  vector2.CheckUnused();
-
-  vector2.push_back(VectorObject());
-  vector2.CheckUnused();
-
-  EXPECT_EQ(0u, vector1.size());
-
-  EXPECT_EQ(1u, vector2.size());
-// TODO(Oilpan): when Vector.h's contiguous container support no longer disables
-// Vector<>s with inline capacity, remove.
-#if !defined(ANNOTATE_CONTIGUOUS_CONTAINER)
-  EXPECT_EQ(16u, vector1.capacity());
-  EXPECT_EQ(16u, vector2.capacity());
-#endif
-}
-
-TEST(HeapTest, TestStaticLocals) {
-  // Sanity check DEFINE_STATIC_LOCAL()s over heap allocated objects and
-  // collections.
-
-  DEFINE_STATIC_LOCAL(IntWrapper, int_wrapper, (new IntWrapper(33)));
-  DEFINE_STATIC_LOCAL(PersistentHeapVector<Member<IntWrapper>>,
-                      persistent_heap_vector_int_wrapper, ());
-  DEFINE_STATIC_LOCAL(HeapVector<Member<IntWrapper>>, heap_vector_int_wrapper,
-                      (new HeapVector<Member<IntWrapper>>));
-
-  EXPECT_EQ(33, int_wrapper.Value());
-  EXPECT_EQ(0u, persistent_heap_vector_int_wrapper.size());
-  EXPECT_EQ(0u, heap_vector_int_wrapper.size());
-
-  persistent_heap_vector_int_wrapper.push_back(&int_wrapper);
-  heap_vector_int_wrapper.push_back(&int_wrapper);
-  EXPECT_EQ(1u, persistent_heap_vector_int_wrapper.size());
-  EXPECT_EQ(1u, heap_vector_int_wrapper.size());
-
-  EXPECT_EQ(persistent_heap_vector_int_wrapper[0], heap_vector_int_wrapper[0]);
-  EXPECT_EQ(33, heap_vector_int_wrapper[0]->Value());
-}
-
 namespace {
 
 class ThreadedClearOnShutdownTester : public ThreadedTesterBase {
@@ -6864,15 +6806,6 @@ TEST(HeapTest, HeapDoublyLinkedList) {
   container->list_.RemoveHead();
   PreciselyCollectGarbage();
   EXPECT_EQ(DoublyLinkedListNodeImpl::destructor_calls_, 2);
-}
-
-TEST(HeapTest, PersistentHeapVectorCopyAssignment) {
-  PersistentHeapVector<Member<IntWrapper>> vector1;
-  {
-    PersistentHeapVector<Member<IntWrapper>> vector2;
-    vector1 = vector2;
-  }
-  PreciselyCollectGarbage();
 }
 
 TEST(HeapTest, PromptlyFreeStackAllocatedHeapVector) {

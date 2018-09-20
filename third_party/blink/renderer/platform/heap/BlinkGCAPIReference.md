@@ -320,11 +320,7 @@ private:
 };
 ```
 
-`persistent.h` provides these persistent pointers.  It also provides
-persistent collections such as `PersistentHeapHashMap`, `PersistentHeapHashSet`,
-`PersistentHeapLinkedHashSet`, `PersistentheapListHashSet`,
-`PersistentHeapHashCountedSet`, `PersistentHeapVector`, and
-`PersistentHeapDeque`.
+`persistent.h` provides these persistent pointers.
 
 *** note
 **Warning:** `Persistent<T>` and `CrossThreadPersistent<T>` are vulnerable to reference cycles. If a reference cycle
@@ -480,12 +476,12 @@ class MyGarbageCollectedClass : public GarbageCollected<MyGarbageCollectedClass>
 };
 ```
 
-When you want to add a heap collection as a member of a non-garbage-collected class (on the main thread), please use the persistent variants (just prefix the type with Persistent e.g. PersistentHeapVector, PersistentHeapHashMap, etc.).
+When you want to add a heap collection as a member of a non-garbage-collected class (on the main thread), please use a Persistent to reference it.
 
 ```c++
 class MyNotGarbageCollectedClass {
  private:
-  PersistentHeapVector<Member<MyGarbageCollectedClass>> list_;
+  Persistent<HeapVector<Member<MyGarbageCollectedClass>>> list_;
 };
 ```
 

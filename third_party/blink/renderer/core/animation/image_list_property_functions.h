@@ -11,17 +11,17 @@
 
 namespace blink {
 
-using StyleImageList = PersistentHeapVector<Member<StyleImage>, 1>;
+using StyleImageList = HeapVector<Member<StyleImage>, 1>;
 
 class ImageListPropertyFunctions {
  public:
-  static void GetInitialImageList(const CSSProperty&, StyleImageList& result) {
-    result.clear();
+  static void GetInitialImageList(const CSSProperty&, StyleImageList* result) {
+    result->clear();
   }
 
   static void GetImageList(const CSSProperty& property,
                            const ComputedStyle& style,
-                           StyleImageList& result) {
+                           StyleImageList* result) {
     const FillLayer* fill_layer = nullptr;
     switch (property.PropertyID()) {
       case CSSPropertyBackgroundImage:
@@ -35,16 +35,16 @@ class ImageListPropertyFunctions {
         return;
     }
 
-    result.clear();
+    result->clear();
     while (fill_layer) {
-      result.push_back(fill_layer->GetImage());
+      result->push_back(fill_layer->GetImage());
       fill_layer = fill_layer->Next();
     }
   }
 
   static void SetImageList(const CSSProperty& property,
                            ComputedStyle& style,
-                           const StyleImageList& image_list) {
+                           const StyleImageList* image_list) {
     FillLayer* fill_layer = nullptr;
     switch (property.PropertyID()) {
       case CSSPropertyBackgroundImage:
@@ -59,10 +59,10 @@ class ImageListPropertyFunctions {
     }
 
     FillLayer* prev = nullptr;
-    for (wtf_size_t i = 0; i < image_list.size(); i++) {
+    for (wtf_size_t i = 0; i < image_list->size(); i++) {
       if (!fill_layer)
         fill_layer = prev->EnsureNext();
-      fill_layer->SetImage(image_list[i]);
+      fill_layer->SetImage(image_list->at(i));
       prev = fill_layer;
       fill_layer = fill_layer->Next();
     }
