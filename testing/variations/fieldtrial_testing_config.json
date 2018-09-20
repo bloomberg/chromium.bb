@@ -2707,6 +2707,24 @@
             ]
         }
     ],
+    "OfflineContentOnDinoPage": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "ui-alternate": "content_preview"
+                    },
+                    "enable_features": [
+                        "NewNetErrorPageUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "OfflinePagesAsyncLoading": [
         {
             "platforms": [
