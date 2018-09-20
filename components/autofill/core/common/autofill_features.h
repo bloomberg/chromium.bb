@@ -148,6 +148,13 @@ bool IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled();
 bool IsMacViewsAutofillPopupExperimentEnabled();
 #endif  // defined(OS_MACOSX)
 
+// Returns whether the UI for passwords in manual fallback is enabled.
+bool IsPasswordManualFallbackEnabled();
+
+// Returns whether the UI for addresses and credit cards in manual fallback is
+// enabled.
+bool IsAutofillManualFallbackEnabled();
+
 // Returns true if the native Views implementation of the Desktop dropdown
 // should be used. This will also be true if the kExperimentalUi flag is true,
 // which forces a bunch of forthcoming UI changes on.

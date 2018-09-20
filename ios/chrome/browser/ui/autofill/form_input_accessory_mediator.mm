@@ -372,15 +372,12 @@ queryViewBlockForProvider:(id<FormInputAccessoryViewProvider>)provider
     self.currentProvider = provider;
   }
   // If Manual Fallback is enabled, add its view after the suggestions.
-  BOOL isManualFillEnabled =
-      base::FeatureList::IsEnabled(autofill::features::kAutofillManualFallback);
-  if (isManualFillEnabled) {
+  if (autofill::features::IsPasswordManualFallbackEnabled()) {
     FormSuggestionView* formSuggestionView =
         base::mac::ObjCCast<FormSuggestionView>(consumerView);
     formSuggestionView.trailingView =
         self.manualFillAccessoryViewController.view;
   }
-
   // Post it to the consumer.
   [self.consumer showCustomInputAccessoryView:consumerView
                            navigationDelegate:self.formInputAccessoryHandler];

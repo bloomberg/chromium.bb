@@ -362,6 +362,14 @@ bool IsMacViewsAutofillPopupExperimentEnabled() {
 }
 #endif  // defined(OS_MACOSX)
 
+bool IsPasswordManualFallbackEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillManualFallback);
+}
+
+bool IsAutofillManualFallbackEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillManualFallbackPhaseTwo);
+}
+
 bool ShouldUseNativeViews() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   return base::FeatureList::IsEnabled(kAutofillExpandedPopupViews) ||
