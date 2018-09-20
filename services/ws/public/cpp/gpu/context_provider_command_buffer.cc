@@ -396,11 +396,6 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
   return gr_context_->get();
 }
 
-gpu::SharedImageInterface*
-ContextProviderCommandBuffer::SharedImageInterface() {
-  return command_buffer_->channel()->shared_image_interface();
-}
-
 viz::ContextCacheController* ContextProviderCommandBuffer::CacheController() {
   CheckValidThreadOrLockAcquired();
   return cache_controller_.get();

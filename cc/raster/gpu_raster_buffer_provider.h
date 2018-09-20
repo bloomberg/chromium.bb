@@ -49,9 +49,10 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   void Shutdown() override;
 
   gpu::SyncToken PlaybackOnWorkerThread(
-      gpu::Mailbox* mailbox,
+      const gpu::Mailbox& mailbox,
       GLenum texture_target,
       bool texture_is_overlay_candidate,
+      bool texture_storage_allocated,
       const gpu::SyncToken& sync_token,
       const gfx::Size& resource_size,
       viz::ResourceFormat resource_format,
@@ -96,10 +97,11 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     const gfx::ColorSpace color_space_;
     const bool resource_has_previous_content_;
     const gpu::SyncToken before_raster_sync_token_;
+    const gpu::Mailbox mailbox_;
     const GLenum texture_target_;
     const bool texture_is_overlay_candidate_;
-
-    gpu::Mailbox mailbox_;
+    // Set to true once allocation is done in the worker thread.
+    bool texture_storage_allocated_;
     // A SyncToken to be returned from the worker thread, and waited on before
     // using the rastered resource.
     gpu::SyncToken after_raster_sync_token_;

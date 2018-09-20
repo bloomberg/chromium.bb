@@ -162,15 +162,6 @@ class GrContext* TestInProcessContextProvider::GrContext() {
   return gr_context_->get();
 }
 
-gpu::SharedImageInterface*
-TestInProcessContextProvider::SharedImageInterface() {
-  if (gles2_context_) {
-    return gles2_context_->GetSharedImageInterface();
-  } else {
-    return raster_context_->GetSharedImageInterface();
-  }
-}
-
 viz::ContextCacheController* TestInProcessContextProvider::CacheController() {
   return cache_controller_.get();
 }

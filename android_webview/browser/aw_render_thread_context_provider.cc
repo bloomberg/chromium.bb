@@ -149,11 +149,6 @@ class GrContext* AwRenderThreadContextProvider::GrContext() {
   return gr_context_.get();
 }
 
-gpu::SharedImageInterface*
-AwRenderThreadContextProvider::SharedImageInterface() {
-  return context_->GetSharedImageInterface();
-}
-
 viz::ContextCacheController* AwRenderThreadContextProvider::CacheController() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   return cache_controller_.get();

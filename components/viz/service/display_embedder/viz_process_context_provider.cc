@@ -154,10 +154,6 @@ class GrContext* VizProcessContextProvider::GrContext() {
   return gr_context_->get();
 }
 
-gpu::SharedImageInterface* VizProcessContextProvider::SharedImageInterface() {
-  return command_buffer_->GetSharedImageInterface();
-}
-
 ContextCacheController* VizProcessContextProvider::CacheController() {
   return cache_controller_.get();
 }
