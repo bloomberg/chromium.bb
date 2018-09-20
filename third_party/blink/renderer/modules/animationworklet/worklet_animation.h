@@ -66,7 +66,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   AnimationTimeline* timeline() { return timeline_; }
   String playState();
-  void play();
+  void play(ExceptionState& exception_state);
   void cancel();
 
   // AnimationEffectOwner implementation:

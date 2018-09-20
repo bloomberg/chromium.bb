@@ -310,7 +310,7 @@ String WorkletAnimation::playState() {
   return Animation::PlayStateString(play_state_);
 }
 
-void WorkletAnimation::play() {
+void WorkletAnimation::play(ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   if (play_state_ == Animation::kPending)
     return;
@@ -318,10 +318,8 @@ void WorkletAnimation::play() {
 
   String failure_message;
   if (!CheckCanStart(&failure_message)) {
-    // TODO(yigu): Throw an exception instead of a console message.
-    // https://crbug.com/882939.
-    document_->AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, kErrorMessageLevel, failure_message));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      failure_message);
     return;
   }
 
